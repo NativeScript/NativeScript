@@ -8,6 +8,7 @@ export class Border extends ContentView implements BorderDefinition {
         if (typeof this.borderRadius === "number") {
             return <number>this.borderRadius;
         }
+
         return 0;
     }
     set cornerRadius(value: number) {

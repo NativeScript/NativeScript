@@ -1,6 +1,7 @@
-﻿const _allColors = {};
+const _allColors = {};
 function registerColor(name, value): string {
     _allColors[name.toLowerCase()] = value;
+
     return value;
 }
 

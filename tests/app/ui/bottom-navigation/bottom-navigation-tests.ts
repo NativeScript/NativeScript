@@ -1,18 +1,17 @@
 import { UITest } from "../../ui-test";
 import { Label } from "tns-core-modules/ui/label";
-import { unsetValue } from "tns-core-modules/ui/core/view";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as tabViewTestsNative from "./bottom-navigation-tests-native";
 
 import { BottomNavigation, TabContentItem, TabStrip, TabStripItem, SelectedIndexChangedEventData } from "tns-core-modules/ui/bottom-navigation";
-import { constants } from "zlib";
 
 export class BottomNavigationTest extends UITest<BottomNavigation> {
 
     public create(): BottomNavigation {
         var tabView = new BottomNavigation();
         tabView.id = "TabView";
+
         return tabView;
     }
 
@@ -31,6 +30,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
             tabEntry.view = label;
             items.push(tabEntry);
         }
+
         return items;
     }
 
@@ -78,11 +78,11 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
 
     public test_when_created_items_are_undefined = function () {
         TKUnit.assertEqual(this.testView.items, undefined, "Items should be undefined initally.");
-    }
+    };
 
     public test_when_created_selected_index_is_undefined = function () {
         TKUnit.assertEqual(this.testView.selectedIndex, -1, "selectedIndex should be undefined initally.");
-    }
+    };
 
     // TODO: Do we need this test?
     public test_when_setting_items_to_non_empty_array_the_same_amount_of_native_tabs_is_created = function () {
@@ -93,7 +93,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
         let actualValue = tabViewTestsNative.getNativeTabCount(this.testView);
 
         TKUnit.assertEqual(actualValue, expectedValue, "NativeItems not equal to JS items.");
-    }
+    };
 
     // TODO: Do we need this test?
     public test_when_setting_items_to_empty_array_zero_native_tabs_are_created = function () {
@@ -105,7 +105,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
         var actualValue = tabViewTestsNative.getNativeTabCount(tabView);
 
         TKUnit.assertEqual(actualValue, expectedValue, "Should have 0 native tabs.");
-    }
+    };
 
     public test_selected_index_becomes_zero_when_items_bound_to_non_empty_array = function () {
         var tabView = this.testView;
@@ -136,7 +136,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
         var expectedValue = 0;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "When bound selectedIndex should be 0.");
-    }
+    };
 
     public test_selected_index_becomes_undefined_when_items_bound_to_empty_array = function () {
         var tabView = this.testView;
@@ -150,7 +150,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
         var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
-    }
+    };
 
     public test_selected_index_becomes_undefined_when_items_set_to_undefined = function () {
         var tabView = this.testView;
@@ -164,7 +164,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
         var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
-    }
+    };
 
     public test_selected_index_becomes_undefined_when_items_set_to_null = function () {
         var tabView = this.testView;
@@ -177,7 +177,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
         var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
-    }
+    };
 
     public test_items_is_resolved_correctly_if_set_before_view_is_loaded = function () {
         var tabView = this.testView;
@@ -188,7 +188,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
 
         var actualValue = tabView.items.length;
         TKUnit.assertEqual(actualValue, expectedValue, "items.length should be 5");
-    }
+    };
 
     public test_selected_index_is_resolved_correctly_if_set_before_view_is_loaded = function () {
         var tabView = this.testView;
@@ -199,7 +199,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
 
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex");
-    }
+    };
 
     public test_binding_to_tabitem_with_undefined_view_should_throw = function () {
         var tabView = this.testView;
@@ -212,7 +212,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
             tabView.items = [item];
 
         }, "Binding TabNavigation to a TabItem with undefined view should throw.");
-    }
+    };
 
     public test_binding_to_tabitem_with_null_view_should_throw = function () {
         var tabView = this.testView;
@@ -225,7 +225,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
             tabView.items = [item];
 
         }, "Binding TabNavigation to a TabItem with null view should throw.");
-    }
+    };
 
     public test_when_selecting_tab_natively_selectedIndex_is_updated_properly = function () {
         var tabView = this.testView;
@@ -240,7 +240,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
 
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex");
-    }
+    };
 
     public test_when_selecting_tab_natively_selectedIndexChangedEvent_is_raised = function () {
         var tabView = this.testView;
@@ -269,7 +269,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
 
         TKUnit.assertEqual(actualOldIndex, expectedOldIndex, "expectedOldIndex");
         TKUnit.assertEqual(actualNewIndex, expectedNewIndex, "expectedNewIndex");
-    }
+    };
 
     // TODO: Do we need this test?
     public test_when_setting_selectedIndex_programatically_selectedIndexChangedEvent_is_raised = function () {
@@ -290,7 +290,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
         tabView.on(BottomNavigation.selectedIndexChangedEvent, (args: SelectedIndexChangedEventData) => {
             actualOldIndex = args.oldIndex;
             actualNewIndex = args.newIndex;
-            TKUnit.assertEqual(args.object, tabView, "args.object should be TabView")
+            TKUnit.assertEqual(args.object, tabView, "args.object should be TabView");
         });
 
         tabView.selectedIndex = expectedNewIndex;
@@ -300,7 +300,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
 
         TKUnit.assertEqual(actualOldIndex, expectedOldIndex, "expectedOldIndex");
         TKUnit.assertEqual(actualNewIndex, expectedNewIndex, "expectedNewIndex");
-    }
+    };
 
     // TODO: fonts are not yet supported
     // public test_font_is_reapplied_when_tab_items_change = function () {

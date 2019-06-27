@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as styleScope from "tns-core-modules/ui/styling/style-scope";
 import * as keyframeAnimation from "tns-core-modules/ui/animation/keyframe-animation";
 import * as enums from "tns-core-modules/ui/enums";
@@ -19,13 +19,16 @@ function createAnimationFromCSS(css: string, name: string): keyframeAnimation.Ke
     let selector = findSelectorInScope(scope, name);
     if (selector !== undefined) {
         let animation = scope.getAnimations(selector.ruleset)[0];
+
         return animation;
     }
+
     return undefined;
 }
 
 function findSelectorInScope(scope: styleScope.StyleScope, cssClass: string): SelectorCore {
     let selectors = scope.query({cssClasses: new Set([cssClass])});
+
     return selectors[0];
 }
 
@@ -144,7 +147,7 @@ export function test_ReadTransformNone() {
 
 export function test_ReadScale() {
     const animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: scale(-5, 12.3pt); } }", "test");
-    const { scale, rotate } = getTransforms(animation.keyframes[0].declarations);
+    const { scale } = getTransforms(animation.keyframes[0].declarations);
 
     TKUnit.assertEqual(scale.property, "scale");
     TKUnit.assertAreClose(scale.value.x, -5, DELTA);
@@ -213,7 +216,7 @@ export function test_ReadTranslate() {
 
 export function test_ReadTranslateSingle() {
     const animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: translate(30); } }", "test");
-    const { translate, rotate } = getTransforms(animation.keyframes[0].declarations);
+    const { translate } = getTransforms(animation.keyframes[0].declarations);
 
     TKUnit.assertEqual(translate.property, "translate");
     TKUnit.assertAreClose(translate.value.x, 30, DELTA);
@@ -351,7 +354,7 @@ export function test_LoadAnimationProgrammatically() {
 export function test_ExecuteCSSAnimation() {
     let mainPage = helper.getCurrentPage();
     mainPage.css = null;
-    let label = new labelModule.Label()
+    let label = new labelModule.Label();
     label.text = "label";
     let stackLayout = new stackModule.StackLayout();
     stackLayout.addChild(label);
@@ -387,7 +390,7 @@ export function test_ExecuteCSSAnimation() {
 
 //    TKUnit.assertEqual(label.backgroundColor, undefined, "label.backgroundColor should be undefind");
 
-//    label.className = "l";    
+//    label.className = "l";
 //    TKUnit.assertEqual(label.backgroundColor, undefined, "label.backgroundColor should be undefind");
 
 //    label.className = "l2";
@@ -429,5 +432,6 @@ function getTransformsValues(declarations) {
 
 function getTransforms(declarations) {
     const [ translate, rotate, scale  ] = [...declarations];
+
     return { translate, rotate, scale };
 }

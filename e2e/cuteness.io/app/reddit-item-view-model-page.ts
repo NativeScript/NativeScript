@@ -1,4 +1,4 @@
-﻿import { Observable } from "tns-core-modules/data/observable";
+import { Observable } from "tns-core-modules/data/observable";
 import { ImageSource, fromFile as imageSourceFromFile, fromUrl as imageSourceFromUrl } from "tns-core-modules/image-source";
 
 import { ItemData } from "./reddit-model";
@@ -54,7 +54,7 @@ export class RedditViewModel extends Observable {
         var url = this._source.thumbnail;
 
         if (!_isValidImageUrl(url)) {
-            return defaultNoThumbnailImageSource
+            return defaultNoThumbnailImageSource;
         }
 
         var image = cache.get(url);

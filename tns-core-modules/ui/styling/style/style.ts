@@ -10,16 +10,34 @@ import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
     Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
 } from "../../layouts/flexbox-layout";
-
+import {
+    write as traceWrite,
+    categories as traceCategories,
+    messageType as traceMessageType,
+} from "../../../trace";
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
 
 export class Style extends Observable implements StyleDefinition {
-    constructor(public view: ViewBase) {
+    constructor(ownerView: ViewBase | WeakRef<ViewBase>) {
         super();
+
+        // HACK: Could not find better way for cross platform WeakRef type checking.
+        if (ownerView.constructor.toString().indexOf("[native code]") !== -1) {
+            this.viewRef = <WeakRef<ViewBase>>ownerView;
+        } else  {
+            this.viewRef = new WeakRef(<ViewBase>ownerView);
+        }
     }
 
     toString() {
-        return `${this.view}.style`;
+        const view = this.viewRef.get();
+        if (!view) {
+            traceWrite(`toString() of Style cannot execute correctly because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+
+            return "";
+        }
+
+        return `${view}.style`;
     }
 
     public fontInternal: Font;
@@ -125,5 +143,15 @@ export class Style extends Observable implements StyleDefinition {
     public alignSelf: AlignSelf;
 
     public PropertyBag: { new(): { [property: string]: string }, prototype: { [property: string]: string } };
+
+    public viewRef: WeakRef<ViewBase>;
+
+    public get view(): ViewBase {
+        if (this.viewRef) {
+            return this.viewRef.get();
+        }
+
+        return undefined;
+    }
 }
-Style.prototype.PropertyBag = class { [property: string]: string; }
+Style.prototype.PropertyBag = class { [property: string]: string; };

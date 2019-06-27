@@ -21,7 +21,7 @@ import {
 } from "../../gestures";
 
 import { createViewFromEntry } from "../../builder";
-import { isAndroid } from "../../../platform";
+import { sanitizeModuleName } from "../../builder/module-name-sanitizer";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
 import { BackgroundRepeat } from "../../styling/style-properties";
@@ -46,20 +46,21 @@ export function CSSType(type: string): ClassDecorator {
 
 export function viewMatchesModuleContext(
     view: ViewDefinition,
-    context: ModuleContext, 
+    context: ModuleContext,
     types: ModuleType[]): boolean {
         
     return context &&
         view._moduleName &&
-        context.type && 
+        context.type &&
         types.some(type => type === context.type) &&
-        context.path && 
+        context.path &&
         context.path.includes(view._moduleName);
 }
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
     const stateEventNames = pseudoClasses.map(s => ":" + s);
     const listeners = Symbol("listeners");
+
     return <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
         function update(change: number) {
             let prev = this[listeners] || 0;
@@ -105,6 +106,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     get css(): string {
         const scope = this._styleScope;
+
         return scope && scope.css;
     }
     set css(value: string) {
@@ -163,9 +165,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.eachChildView((child) => {
             if (child._onLivesync(context)) {
                 handled = true;
+
                 return false;
             }
         });
+
         return handled;
     }
 
@@ -180,7 +184,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 traceWrite(`Change Handled: Changing CSS for ${this}`, traceCategories.Livesync);
             }
 
-            this.changeCssFile(context.path);
+            // Always load styles with ".css" extension. Even when changes are in ".scss" ot ".less" files
+            const cssModuleName = `${sanitizeModuleName(context.path)}.css`;
+
+            this.changeCssFile(cssModuleName);
+
             return true;
         }
 
@@ -194,7 +202,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
     }
 
-    observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+    _observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
         if (!this._gestureObservers[type]) {
             this._gestureObservers[type] = [];
         }
@@ -212,7 +220,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
             let gesture = gestureFromString(arg);
             if (gesture && !this._isEvent(arg)) {
-                this.observe(gesture, callback, thisArg);
+                this._observe(gesture, callback, thisArg);
             } else {
                 let events = (arg).split(",");
                 if (events.length > 0) {
@@ -220,7 +228,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                         let evt = events[i].trim();
                         let gst = gestureFromString(evt);
                         if (gst && !this._isEvent(arg)) {
-                            this.observe(gst, callback, thisArg);
+                            this._observe(gst, callback, thisArg);
                         } else {
                             super.addEventListener(evt, callback, thisArg);
                         }
@@ -230,7 +238,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 }
             }
         } else if (typeof arg === "number") {
-            this.observe(<GestureTypes>arg, callback, thisArg);
+            this._observe(<GestureTypes>arg, callback, thisArg);
         }
     }
 
@@ -348,7 +356,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                     if (typeof options.closeCallback === "function") {
                         options.closeCallback.apply(undefined, originalArgs);
                     }
-                }
+                };
 
                 that._hideNativeModalView(parent, whenClosedCallback);
             }
@@ -381,7 +389,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             object: this,
             context: this._modalContext,
             closeCallback: this._closeModalCallback
-        }
+        };
         this.notify(args);
     }
 
@@ -711,6 +719,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         if (!this._cssType) {
             this._cssType = this.typeName.toLowerCase();
         }
+
         return this._cssType;
     }
     set cssType(type: string) {
@@ -954,6 +963,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let changed: boolean = this._currentWidthMeasureSpec !== widthMeasureSpec || this._currentHeightMeasureSpec !== heightMeasureSpec;
         this._currentWidthMeasureSpec = widthMeasureSpec;
         this._currentHeightMeasureSpec = heightMeasureSpec;
+
         return changed;
     }
 
@@ -972,6 +982,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this._oldTop = top;
         this._oldRight = right;
         this._oldBottom = bottom;
+
         return { boundsChanged, sizeChanged };
     }
 
@@ -1035,6 +1046,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         animation.target = this;
         const anim = new animationModule.Animation([animation]);
         this._localAnimations.add(anim);
+
         return anim;
     }
 

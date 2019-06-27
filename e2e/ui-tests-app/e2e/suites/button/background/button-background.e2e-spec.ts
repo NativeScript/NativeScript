@@ -1,14 +1,18 @@
-import { AppiumDriver, createDriver, SearchOptions, nsCapabilities } from "nativescript-dev-appium";
-import { assert } from "chai";
+import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
 import { ButtonBackgroundPage } from "./button-background-page";
+import { assert } from "chai";
 
-describe("button-background-suite", () => {
+const suite = "button";
+const spec = "background";
+
+describe(`${suite}-${spec}-suite`, () => {
     let driver: AppiumDriver;
     let backgroundPage: ButtonBackgroundPage;
 
     before(async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
+        await driver.resetApp();
         backgroundPage = new ButtonBackgroundPage(driver);
         await backgroundPage.initSuite();
     });
@@ -17,16 +21,22 @@ describe("button-background-suite", () => {
         await backgroundPage.endSuite();
     });
 
+    beforeEach(function () {
+        driver.imageHelper.testName = this.currentTest.title;
+    });
+
     afterEach(async function () {
         if (this.currentTest.state === "failed") {
             await driver.logTestArtifacts(this.currentTest.title);
+            await driver.resetApp();
+            await backgroundPage.initSuite();
         }
     });
 
     it("background_11", async function () {
         const presenter = await backgroundPage.testElement();
-        await backgroundPage.imageHelper.compareElement("background_11_clean", presenter, 0.1, 2);
-        backgroundPage.imageHelper.assertImages()
+        await driver.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
     });
 
     it("background_12", async function () {
@@ -36,8 +46,8 @@ describe("button-background-suite", () => {
     it("background_13", async function () {
         await backgroundPage.tapResetBtn();
         const presenter = await backgroundPage.testElement();
-        await backgroundPage.imageHelper.compareElement("background_11_clean", presenter, 0.1, 2);
-        backgroundPage.imageHelper.assertImages();
+        await driver.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
     });
 
     // Border
@@ -76,11 +86,9 @@ describe("button-background-suite", () => {
         await backgroundPage.executeScenario("background_42_position", "42");
     });
 
-
     it("background_43_position", async function () {
         await backgroundPage.executeScenario("background_43_position", "43");
     });
-
 
     it("background_44_position", async function () {
         await backgroundPage.executeScenario("background_44_position", "44");

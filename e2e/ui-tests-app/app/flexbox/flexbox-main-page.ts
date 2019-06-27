@@ -18,5 +18,6 @@ export function loadExamples() {
     examples.set("flex-perf", "flexbox/flexbox-perf-comparison-page");
     examples.set("flexbox-4143", "flexbox/flexbox-4143-page");
     examples.set("flexbox-4834", "flexbox/flexbox-4834-page");
+
     return examples;
 }

@@ -12,5 +12,6 @@ export function pageLoaded(args: EventData) {
 export function loadExamples() {
     const examples = new Map<string, string>();
     examples.set("statusBar", "page/status-bar-css-page");
+
     return examples;
 }

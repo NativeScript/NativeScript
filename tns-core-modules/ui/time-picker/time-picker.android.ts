@@ -1,4 +1,4 @@
-﻿import { TimePickerBase, getValidTime, timeProperty, hourProperty, minuteProperty } from "./time-picker-common";
+import { TimePickerBase, getValidTime, timeProperty, hourProperty, minuteProperty } from "./time-picker-common";
 
 export * from "./time-picker-common";
 
@@ -19,6 +19,7 @@ function initializeTimeChangedListener(): void {
     class TimeChangedListenerImpl extends java.lang.Object implements android.widget.TimePicker.OnTimeChangedListener {
         constructor(public owner: TimePicker) {
             super();
+
             return global.__native(this);
         }
 

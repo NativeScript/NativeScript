@@ -1,25 +1,24 @@
-﻿import * as utils from "../utils/utils";
-
-//iOS specific timer functions implementation.
+﻿//iOS specific timer functions implementation.
 const timeoutCallbacks = new Map<number, KeyValuePair<NSTimer, TimerTargetImpl>>();
 let timerId = 0;
 
 interface KeyValuePair<K, V> {
     k: K;
-    v: V
+    v: V;
 }
 
 class TimerTargetImpl extends NSObject {
     private callback: Function;
     private disposed: boolean;
-    private id: number
-    private shouldRepeat: boolean
+    private id: number;
+    private shouldRepeat: boolean;
 
     public static initWithCallback(callback: Function, id: number, shouldRepeat: boolean): TimerTargetImpl {
         let handler = <TimerTargetImpl>TimerTargetImpl.new();
         handler.callback = callback;
         handler.id = id;
         handler.shouldRepeat = shouldRepeat;
+
         return handler;
     }
 
@@ -65,6 +64,7 @@ function createTimerAndGetId(callback: Function, milliseconds: number, shouldRep
 
 export function setTimeout(callback: Function, milliseconds = 0, ...args): number {
     let invoke = () => callback(...args);
+
     return createTimerAndGetId(zonedCallback(invoke), milliseconds, false);
 }
 
@@ -77,6 +77,7 @@ export function clearTimeout(id: number): void {
 
 export function setInterval(callback: Function, milliseconds = 0, ...args): number {
     let invoke = () => callback(...args);
+
     return createTimerAndGetId(zonedCallback(invoke), milliseconds, true);
 }
 

@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { addLabelToPage } from "./page-tests-common";
 import { Page } from "tns-core-modules/ui/page";
@@ -12,6 +12,7 @@ export function test_NavigateToNewPage_WithAndroidCache() {
     helper.navigate(() => {
         const launchPage = new Page();
         launchPage.id = "launchPage_test_NavigateToNewPage_WithAndroidCache";
+
         return launchPage;
     });
 
@@ -26,20 +27,14 @@ export function test_NavigateToNewPage_WithAndroidCache() {
         label = new Label();
         label.text = "The quick brown fox jumps over the lazy dog.";
         testPage.content = label;
+
         return testPage;
     };
 
-    const androidFrame = topmost().android;
-    const cachingBefore = androidFrame.cachePagesOnNavigate;
-    try {
-        const currentPage = topmost().currentPage;
-        androidFrame.cachePagesOnNavigate = true;
-        helper.navigateWithHistory(pageFactory);
-        TKUnit.assertNotNull(currentPage.nativeView);
-        helper.goBack();
-    } finally {
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
+    const currentPage = topmost().currentPage;
+    helper.navigateWithHistory(pageFactory);
+    TKUnit.assertNotNull(currentPage.nativeView);
+    helper.goBack();
 
     TKUnit.assertNull(testPage.parent, "Page.parent should become undefined after navigating back");
     TKUnit.assertFalse(testPage.isLoaded, "Page.isLoaded should become false after navigating back");
@@ -59,6 +54,7 @@ export function test_NavigateToNewPage_InnerControl() {
         testPage = new Page();
         testPage.id = "testPage_test_NavigateToNewPage_InnerControl";
         addLabelToPage(testPage);
+
         return testPage;
     };
 
@@ -77,27 +73,18 @@ export function test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow()
     const pageFactory = function () {
         const testPage = new Page();
         testPage.id = "testPage_test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow";
+
         return testPage;
     };
 
-    const androidFrame = topmost().android;
-    const cachingBefore = androidFrame.cachePagesOnNavigate;
-
     helper.navigate(pageFactory);
-
-    try {
-        // Set caching to same value.
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
-    finally {
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
 }
 
-export var test_Resolve_Fragment_ForPage = function () {
+export function test_Resolve_Fragment_ForPage() {
     let testPage: Page;
     const pageFactory = () => {
         testPage = new Page();
+
         return testPage;
     };
 

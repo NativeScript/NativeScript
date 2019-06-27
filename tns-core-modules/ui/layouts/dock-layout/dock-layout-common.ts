@@ -1,10 +1,11 @@
-﻿import { DockLayout as DockLayoutDefinition, Dock } from ".";
+import { DockLayout as DockLayoutDefinition, Dock } from ".";
 import { LayoutBase, View, Property, isIOS, booleanConverter, makeValidator, makeParser, CSSType } from "../layout-base";
 
 function validateArgs(element: View): View {
     if (!element) {
         throw new Error("element cannot be null or undefinied.");
     }
+
     return element;
 }
 

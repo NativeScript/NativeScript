@@ -1,17 +1,15 @@
-﻿// Deifinitions.
+// Definitions.
 import { ComponentModule } from ".";
 import { View } from "../../core/view";
 
 // Types.
 import { isEventOrGesture } from "../../core/bindable";
-import { File, path, knownFolders } from "../../../file-system";
 import { getBindingOptions, bindingConstants } from "../binding-builder";
-import { resolveFileName } from "../../../file-system/file-name-resolver";
 import { profile } from "../../../profiling";
 import * as debugModule from "../../../utils/debug";
 import * as platform from "../../../platform";
-
-import * as filesystem from "../../../file-system";
+import { sanitizeModuleName } from "../module-name-sanitizer";
+import { resolveModuleName } from "../../../module-name-resolver";
 
 const UI_PATH = "ui/";
 const MODULES = {
@@ -26,40 +24,26 @@ const MODULES = {
     "SegmentedBarItem": "ui/segmented-bar",
 };
 
-const CODEFILE = "codeFile";
-const CSSFILE = "cssFile";
+const CODE_FILE = "codeFile";
+const CSS_FILE = "cssFile";
 const IMPORT = "import";
 
 const createComponentInstance = profile("createComponentInstance", (elementName: string, namespace: string): { instance: View, instanceModule: Object } => {
     let instance: View;
     let instanceModule: Object;
     // Get module id.
-    let moduleId = MODULES[elementName] || UI_PATH +
-        (elementName.toLowerCase().indexOf("layout") !== -1 ? "layouts/" : "") +
-        elementName.split(/(?=[A-Z])/).join("-").toLowerCase();
-
+    let resolvedModuleName;
     try {
         if (typeof namespace === "string") {
-            if (global.moduleExists(namespace)) {
-                moduleId = namespace;
-            } else {
-                const pathInsideTNSModules = path.join(knownFolders.currentApp().path, "tns_modules", namespace);
-
-                try {
-                    // module inside tns_modules
-                    instanceModule = global.require(pathInsideTNSModules);
-                    moduleId = pathInsideTNSModules;
-                } catch (e) {
-                    // module at root level in the app.
-                    moduleId = path.join(knownFolders.currentApp().path, namespace);
-                }
-            }
+            resolvedModuleName = resolveModuleName(namespace, "");
+        } else {
+            // load module from tns-core-modules/ui or mapped paths
+            resolvedModuleName = MODULES[elementName] || UI_PATH +
+                (elementName.toLowerCase().indexOf("layout") !== -1 ? "layouts/" : "") +
+                elementName.split(/(?=[A-Z])/).join("-").toLowerCase();
         }
 
-        if (!instanceModule) {
-            // Require module by module id.
-            instanceModule = global.loadModule(moduleId);
-        }
+        instanceModule = global.loadModule(resolvedModuleName);
 
         // Get the component type from module.
         const instanceType = instanceModule[elementName] || Object;
@@ -68,7 +52,7 @@ const createComponentInstance = profile("createComponentInstance", (elementName:
         instance = new instanceType();
     } catch (ex) {
         const debug: typeof debugModule = require("utils/debug");
-        throw new debug.ScopeError(ex, "Module '" + moduleId + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
+        throw new debug.ScopeError(ex, "Module '" + resolvedModuleName + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
     }
 
     return { instance, instanceModule };
@@ -76,66 +60,39 @@ const createComponentInstance = profile("createComponentInstance", (elementName:
 
 const getComponentModuleExports = profile("getComponentModuleExports", (instance: View, moduleExports: Object, attributes: Object): Object => {
     if (attributes) {
-        if (attributes[IMPORT]) {
-            let importPath = attributes[IMPORT].trim();
-
-            if (importPath.indexOf("~/") === 0) {
-                importPath = path.join(knownFolders.currentApp().path, importPath.replace("~/", ""));
-            }
-
-            moduleExports = global.loadModule(importPath);
-            (<any>instance).exports = moduleExports;
-        }
-
-        if (attributes[CODEFILE]) {
-            let codeFilePath = attributes[CODEFILE].trim();
-            if (codeFilePath.indexOf("~/") === 0) {
-                codeFilePath = path.join(knownFolders.currentApp().path, codeFilePath.replace("~/", ""));
-            }
-
-            const codeFilePathWithExt = codeFilePath.indexOf(".js") !== -1 ? codeFilePath : `${codeFilePath}.js`;
-            if (File.exists(codeFilePathWithExt)) {
-                moduleExports = global.loadModule(codeFilePath);
+        const codeFileAttribute = attributes[CODE_FILE] || attributes[IMPORT];
+        if (codeFileAttribute) {
+            const resolvedCodeFileModule = resolveModuleName(sanitizeModuleName(codeFileAttribute), "");
+            if (resolvedCodeFileModule) {
+                moduleExports = global.loadModule(resolvedCodeFileModule);
                 (<any>instance).exports = moduleExports;
             } else {
-                throw new Error(`Code file with path "${codeFilePathWithExt}" cannot be found!`);
+                throw new Error(`Code file with path "${codeFileAttribute}" cannot be found! Looking for webpack module with name "${resolvedCodeFileModule}"`);
             }
         }
     }
+
     return moduleExports;
 });
 
-const applyComponentCss = profile("applyComponentCss", (instance: View, moduleNamePath: string, attributes: Object) => {
+const applyComponentCss = profile("applyComponentCss", (instance: View, moduleName: string, attributes: Object) => {
     let cssApplied = false;
-    if (attributes) {
-        if (attributes[CSSFILE] && typeof (<any>instance).addCssFile === "function") {
-            let cssFilePath = attributes[CSSFILE].trim();
-            if (cssFilePath.indexOf("~/") === 0) {
-                cssFilePath = path.join(knownFolders.currentApp().path, cssFilePath.replace("~/", ""));
-            }
-            if (File.exists(cssFilePath)) {
-                (<any>instance).addCssFile(cssFilePath);
-                cssApplied = true;
-            } else {
-                throw new Error(`Css file with path "${cssFilePath}" cannot be found!`);
-            }
+
+    if (attributes && attributes[CSS_FILE]) {
+        let resolvedCssModuleName = resolveModuleName(sanitizeModuleName(attributes[CSS_FILE]), "css");
+
+        if (resolvedCssModuleName) {
+            instance.addCssFile(resolvedCssModuleName);
+            cssApplied = true;
+        } else {
+            throw new Error(`Css file with path "${attributes[CSS_FILE]}" cannot be found! Looking for webpack module with name "${resolvedCssModuleName}"`);
         }
     }
 
-    if (typeof (<any>instance).addCssFile === "function") {//instance instanceof Page) {
-        if (moduleNamePath && !cssApplied) {
-
-            const appPath = filesystem.knownFolders.currentApp().path;
-            const cssPathRelativeToApp = (moduleNamePath.startsWith(appPath) ? "./" + moduleNamePath.substr(appPath.length + 1) : moduleNamePath) + ".css";
-            if (global.moduleExists(cssPathRelativeToApp)) {
-                (<any>instance).addCssFile(cssPathRelativeToApp);
-            }
-
-            let cssFilePath = resolveFileName(moduleNamePath, "css");
-            if (cssFilePath) {
-                (<any>instance).addCssFile(cssFilePath);
-                cssApplied = true;
-            }
+    if (moduleName && !cssApplied) {
+        let resolvedCssModuleName = resolveModuleName(moduleName, "css");
+        if (resolvedCssModuleName) {
+            instance.addCssFile(resolvedCssModuleName);
         }
     }
 });
@@ -193,11 +150,12 @@ export function getComponentModule(elementName: string, namespace: string, attri
     if (instance && instanceModule) {
         componentModule = { component: instance, exports: instanceModule };
     }
+
     return componentModule;
 }
 
 export function setPropertyValue(instance: View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: any) {
-    // Note: instanceModule can be null if we are loading custom compnenet with no code-behind.
+    // Note: instanceModule can be null if we are loading custom component with no code-behind.
     if (isBinding(propertyValue) && instance.bind) {
         const bindOptions = getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
         instance.bind({

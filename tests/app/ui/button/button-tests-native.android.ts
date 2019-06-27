@@ -1,4 +1,4 @@
-﻿import * as buttonModule from "tns-core-modules/ui/button";
+import * as buttonModule from "tns-core-modules/ui/button";
 import * as colorModule from "tns-core-modules/color";
 import * as utilsModule from "tns-core-modules/utils/utils";
 import * as enums from "tns-core-modules/ui/enums";
@@ -13,6 +13,7 @@ export function getNativeTextWrap(button: buttonModule.Button): boolean {
 
 export function getNativeFontSize(button: buttonModule.Button): number {
     var density = utilsModule.layout.getDisplayDensity();
+
     return button.android.getTextSize() / density;
 }
 
@@ -26,7 +27,7 @@ export function getNativeBackgroundColor(button: buttonModule.Button): colorModu
         return new colorModule.Color((<org.nativescript.widgets.BorderDrawable>bkg).getBackgroundColor());
     }
     else {
-        return new colorModule.Color(bkg.backgroundColor)
+        return new colorModule.Color(bkg.backgroundColor);
     }
 }
 

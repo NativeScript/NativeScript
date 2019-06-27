@@ -32,6 +32,7 @@ function makeFragmentName(viewId: number, id: number): string {
 function getTabById(id: number): BottomNavigation {
     const ref = tabs.find(ref => {
         const tab = ref.get();
+
         return tab && tab._domId === id;
     });
 
@@ -49,6 +50,7 @@ function initializeNativeClasses() {
 
         constructor() {
             super();
+
             return global.__native(this);
         }
 
@@ -58,6 +60,7 @@ function initializeNativeClasses() {
             args.putInt(INDEX, index);
             const fragment = new TabFragmentImplementation();
             fragment.setArguments(args);
+
             return fragment;
         }
 
@@ -65,7 +68,7 @@ function initializeNativeClasses() {
             super.onCreate(savedInstanceState);
             const args = this.getArguments();
             this.tab = getTabById(args.getInt(TABID));
-            this.index = args.getInt(INDEX)
+            this.index = args.getInt(INDEX);
             if (!this.tab) {
                 throw new Error(`Cannot find BottomNavigation`);
             }
@@ -82,6 +85,7 @@ function initializeNativeClasses() {
 
         constructor(context: android.content.Context, public owner: BottomNavigation) {
             super(context);
+
             return global.__native(this);
         }
 
@@ -89,7 +93,7 @@ function initializeNativeClasses() {
             this.owner.changeTab(position);
             this.owner.selectedIndex = position;
         }
-    }    
+    }
 
     TabFragment = TabFragmentImplementation;
     BottomNavigationBar = BottomNavigationBarImplementation;
@@ -103,16 +107,17 @@ function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): or
         if (tabStripItem.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
             result.iconId = ad.resources.getDrawableId(tabStripItem.iconSource.substr(RESOURCE_PREFIX.length));
             if (result.iconId === 0) {
-                // TODO: 
+                // TODO:
                 // traceMissingIcon(tabStripItem.iconSource);
             }
         } else {
             const is = fromFileOrResource(tabStripItem.iconSource);
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
+                // tslint:disable-next-line:deprecation
                 result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
             } else {
-                // TODO: 
+                // TODO:
                 // traceMissingIcon(tabStripItem.iconSource);
             }
         }
@@ -355,7 +360,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     [selectedIndexProperty.setNative](value: number) {
-        const smoothScroll = false;
+        // const smoothScroll = false;
 
         // if (traceEnabled()) {
         //     traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);

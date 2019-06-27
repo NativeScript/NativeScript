@@ -1,4 +1,4 @@
-﻿import { ListPickerBase, Color, selectedIndexProperty, itemsProperty, backgroundColorProperty, colorProperty } from "./list-picker-common";
+import { ListPickerBase, Color, selectedIndexProperty, itemsProperty, backgroundColorProperty, colorProperty } from "./list-picker-common";
 import { ItemsSource } from ".";
 import { profile } from "../../profiling";
 
@@ -6,6 +6,7 @@ export * from "./list-picker-common";
 
 export class ListPicker extends ListPickerBase {
     nativeViewProtected: UIPickerView;
+    // tslint:disable-next-line
     private _dataSource: ListPickerDataSource;
     private _delegate: ListPickerDelegateImpl;
     
@@ -83,6 +84,7 @@ class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
     public static initWithOwner(owner: WeakRef<ListPicker>): ListPickerDataSource {
         let dataSource = <ListPickerDataSource>ListPickerDataSource.new();
         dataSource._owner = owner;
+
         return dataSource;
     }
 
@@ -92,6 +94,7 @@ class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
 
     public pickerViewNumberOfRowsInComponent(pickerView: UIPickerView, component: number) {
         let owner = this._owner.get();
+
         return (owner && owner.items) ? owner.items.length : 0;
     }
 }
@@ -104,6 +107,7 @@ class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
     public static initWithOwner(owner: WeakRef<ListPicker>): ListPickerDelegateImpl {
         let delegate = <ListPickerDelegateImpl>ListPickerDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -111,8 +115,10 @@ class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
         let owner = this._owner.get();
         if (owner) {
             let title = NSAttributedString.alloc().initWithStringAttributes(owner._getItemAsString(row), <any>{ [NSForegroundColorAttributeName]: pickerView.tintColor });
+
             return title;
         }
+
         return NSAttributedString.alloc().initWithStringAttributes(row.toString(), <any>{ [NSForegroundColorAttributeName]: pickerView.tintColor });
     }
 

@@ -1,4 +1,4 @@
-﻿import {
+import {
     iOSApplication as IOSApplicationDefinition,
     LaunchEventData,
     ApplicationEventData,
@@ -44,6 +44,7 @@ class NotificationObserver extends NSObject {
     public static initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
         const observer = <NotificationObserver>super.new();
         observer._onReceiveCallback = onReceiveCallback;
+
         return observer;
     }
 
@@ -71,7 +72,7 @@ class CADisplayLinkTarget extends NSObject {
     }
     public static ObjCExposedMethods = {
         "onDisplayed": { returns: interop.types.void, params: [CADisplayLink] }
-    }
+    };
 }
 
 class IOSApplication implements IOSApplicationDefinition {
@@ -121,6 +122,7 @@ class IOSApplication implements IOSApplicationDefinition {
         const observer = NotificationObserver.initWithCallback(onReceiveCallback);
         NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
         this._observers.push(observer);
+
         return observer;
     }
 
@@ -277,7 +279,7 @@ setApplication(iosApp);
 // attach on global, so it can be overwritten in NativeScript Angular
 (<any>global).__onLiveSyncCore = function (context?: ModuleContext) {
     iosApp._onLivesync(context);
-}
+};
 
 let mainEntry: NavigationEntry;
 function createRootView(v?: View) {
@@ -310,7 +312,7 @@ export function getRootView() {
 // NOTE: for backwards compatibility. Remove for 4.0.0.
 const createRootFrame = { value: true };
 let started: boolean = false;
-function _start(entry?: string | NavigationEntry) {
+export function _start(entry?: string | NavigationEntry) {
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     started = true;
 
@@ -342,11 +344,6 @@ function _start(entry?: string | NavigationEntry) {
     }
 }
 
-export function start(entry?: string | NavigationEntry) {
-    console.log("application.start() is deprecated; use application.run() instead");
-    _start(entry);
-}
-
 export function run(entry?: string | NavigationEntry) {
     createRootFrame.value = false;
     _start(entry);
@@ -371,6 +368,7 @@ function getViewController(view: View): UIViewController {
         // At the moment the root view doesn't have its native view created. We set it in the setViewControllerView func
         viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view)) as UIViewController;
         view.viewController = viewController;
+
         return viewController;
     }
 }
@@ -395,4 +393,4 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
 
     const rootView = getRootView();
     livesync(rootView, context);
-}
+};

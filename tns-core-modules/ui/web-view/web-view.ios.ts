@@ -8,6 +8,7 @@ class WKNavigationDelegateImpl extends NSObject
     public static initWithOwner(owner: WeakRef<WebView>): WKNavigationDelegateImpl {
         const handler = <WKNavigationDelegateImpl>WKNavigationDelegateImpl.new();
         handler._owner = owner;
+
         return handler;
     }
     private _owner: WeakRef<WebView>;
@@ -47,7 +48,7 @@ class WKNavigationDelegateImpl extends NSObject
         if (traceEnabled()) {
             traceWrite("WKNavigationDelegateClass.webViewDidStartProvisionalNavigation(" + webView.URL + ")", traceCategories.Debug);
         }
-    };
+    }
 
     public webViewDidFinishNavigation(webView: WKWebView, navigation: WKNavigation): void {
         if (traceEnabled()) {
@@ -108,6 +109,7 @@ export class WebView extends WebViewBase {
             true,
             "allowFileAccessFromFileURLs"
         );
+
         return new WKWebView({
             frame: CGRectZero,
             configuration: configuration
@@ -175,4 +177,4 @@ export class WebView extends WebViewBase {
     public reload() {
         this.ios.reload();
     }
-} 
+}

@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from ".";
 import { Page } from "../page";
 
@@ -27,7 +27,7 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
     } else if (typeof arg === "function") {
         entry = {
             create: arg
-        }
+        };
     } else {
         entry = arg;
     }
@@ -39,7 +39,7 @@ export interface NavigationContext {
     entry: BackstackEntry;
     // TODO: remove isBackNavigation for NativeScript 6.0
     isBackNavigation: boolean;
-    navigationType: NavigationType
+    navigationType: NavigationType;
 }
 
 @CSSType("Frame")
@@ -139,7 +139,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             entry: backstackEntry,
             isBackNavigation: true,
             navigationType: NavigationType.back
-        }
+        };
 
         this._navigationQueue.push(navigationContext);
         this._processNextNavigationEntry();
@@ -154,6 +154,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         } else {
             page._tearDownUI(true);
         }
+        
+        removed.resolvedPage = null;
     }
 
     // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
@@ -208,7 +210,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             entry: backstackEntry,
             isBackNavigation: false,
             navigationType: NavigationType.forward
-        }
+        };
 
         this._navigationQueue.push(navigationContext);
         this._processNextNavigationEntry();
@@ -607,6 +609,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             traceWrite(`Change Handled: Replacing page ${context.path}`, traceCategories.Livesync);
 
             this.replacePage(context);
+
             return true;
         }
 
@@ -633,7 +636,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             create: currentEntry.create,
             moduleName: currentEntry.moduleName,
             backstackVisible: currentEntry.backstackVisible
-        }
+        };
 
         // If create returns the same page instance we can't recreate it.
         // Instead of navigation set activity content.
@@ -646,6 +649,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
 
         this.navigate(newEntry);
+
         return true;
     }
 
@@ -662,7 +666,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             frameId: currentBackstackEntry.frameId
         };
 
-        const navigationContext: NavigationContext = { 
+        const navigationContext: NavigationContext = {
             entry: newBackstackEntry,
             isBackNavigation: false,
             navigationType: NavigationType.replace
@@ -685,6 +689,7 @@ export function goBack(): boolean {
     const top = topmost();
     if (top && top.canGoBack()) {
         top.goBack();
+
         return true;
     } else if (top) {
         let parentFrameCanGoBack = false;
@@ -700,6 +705,7 @@ export function goBack(): boolean {
 
         if (parentFrame && parentFrameCanGoBack) {
             parentFrame.goBack();
+
             return true;
         }
     }
@@ -711,7 +717,7 @@ export function goBack(): boolean {
     return false;
 }
 
-export function stack(): Array<FrameBase> {
+export function _stack(): Array<FrameBase> {
     return frameStack;
 }
 
@@ -720,7 +726,7 @@ export const defaultPage = new Property<FrameBase, string>({
         frame.navigate({ moduleName: newValue });
     }
 });
-defaultPage.register(FrameBase)
+defaultPage.register(FrameBase);
 
 export const actionBarVisibilityProperty = new Property<FrameBase, "auto" | "never" | "always">({ name: "actionBarVisibility", defaultValue: "auto", affectsLayout: isIOS });
 actionBarVisibilityProperty.register(FrameBase);

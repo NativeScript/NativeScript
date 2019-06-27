@@ -1,4 +1,4 @@
-﻿import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
+import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
 import * as sp from "tns-core-modules/ui/layouts/stack-layout";
 import * as button from "tns-core-modules/ui/button";
 import { Page } from "tns-core-modules/ui/page";
@@ -70,6 +70,7 @@ export function createPage() {
             grid.getChildAt(i).android.setGravity(gravity);
         }
     });
+
     return page;
 }
-//export var Page = page; 
+//export var Page = page;

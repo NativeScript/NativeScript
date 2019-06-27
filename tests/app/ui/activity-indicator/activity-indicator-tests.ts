@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import * as imageModule from "tns-core-modules/ui/image";
@@ -29,7 +29,7 @@ export function test_default_native_values() {
 
     function testAction(views: Array<viewModule.View>) {
         TKUnit.assertEqual(getNativeBusy(indicator), false, "Default native indicator.busy");
-    };
+    }
 
     helper.buildUIAndRunTest(indicator, testAction);
 }
@@ -43,7 +43,7 @@ export function test_set_TNS_value_updates_native_value() {
         indicator.busy = true;
         TKUnit.waitUntilReady(() => getNativeBusy(indicator) === true);
         TKUnit.assertEqual(getNativeBusy(indicator), true, "Native value is different from TNS value.");
-    };
+    }
 
     helper.buildUIAndRunTest(indicator, testAction);
 }
@@ -56,10 +56,10 @@ if (platform.device.os === platform.platformNames.ios) {
 
         function testAction(views: Array<viewModule.View>) {
             TKUnit.assertEqual(ai.color.ios.CGColor, ai.nativeViewProtected.color.CGColor, "ai.color");
-        };
+        }
 
         helper.buildUIAndRunTest(ai, testAction);
-    }
+    };
 }
 
 // This method is only for the code snippet

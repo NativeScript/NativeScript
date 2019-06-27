@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import {
     iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition
 } from ".";
@@ -86,7 +86,7 @@ export class Frame extends FrameBase {
         let animated = this.currentPage ? this._getIsAnimatedNavigation(backstackEntry.entry) : false;
         if (isReplace) {
             animated = true;
-            navigationTransition = { name: HMR_REPLACE_TRANSITION, duration: 100 }
+            navigationTransition = { name: HMR_REPLACE_TRANSITION, duration: 100 };
             viewController[TRANSITION] = navigationTransition;
         } else if (animated) {
             navigationTransition = this._getNavigationTransition(backstackEntry.entry);
@@ -126,6 +126,7 @@ export class Frame extends FrameBase {
             if (traceEnabled()) {
                 traceWrite(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
             }
+
             return;
         }
 
@@ -145,6 +146,7 @@ export class Frame extends FrameBase {
             if (traceEnabled()) {
                 traceWrite(`${this}.setViewControllersAnimated([${viewController}], ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
             }
+
             return;
 
         }
@@ -172,6 +174,7 @@ export class Frame extends FrameBase {
             if (traceEnabled()) {
                 traceWrite(`${this}.setViewControllersAnimated([originalControllers - lastController + ${viewController}], ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
             }
+
             return;
         }
 
@@ -249,7 +252,8 @@ export class Frame extends FrameBase {
                             newValue = this.ios.controller.viewControllers.count > 1 || (page && page.actionBar && !page.actionBar._isEmpty());
                         }
 
-                        newValue = !!newValue; // Make sure it is boolean
+                        newValue = !!newValue;
+
                         return newValue;
                 }
         }
@@ -374,6 +378,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 
         let curve = _getNativeCurve(navigationTransition);
         let animationController = _createIOSAnimatedTransitioning(navigationTransition, curve, operation, fromVC, toVC);
+
         return animationController;
     }
 }
@@ -384,6 +389,7 @@ class UINavigationControllerImpl extends UINavigationController {
     public static initWithOwner(owner: WeakRef<Frame>): UINavigationControllerImpl {
         let controller = <UINavigationControllerImpl>UINavigationControllerImpl.new();
         controller._owner = owner;
+
         return controller;
     }
 
@@ -449,6 +455,7 @@ class UINavigationControllerImpl extends UINavigationController {
         let nativeTransition = _getNativeTransition(navigationTransition, true);
         if (!animated || !navigationTransition || !nativeTransition) {
             super.pushViewControllerAnimated(viewController, animated);
+
             return;
         }
 
@@ -469,6 +476,7 @@ class UINavigationControllerImpl extends UINavigationController {
         let nativeTransition = _getNativeTransition(navigationTransition, true);
         if (!animated || !navigationTransition || !nativeTransition) {
             super.setViewControllersAnimated(viewControllers, animated);
+
             return;
         }
 
@@ -565,30 +573,35 @@ export function _getNativeCurve(transition: NavigationTransition): UIViewAnimati
                 if (traceEnabled()) {
                     traceWrite("Transition curve resolved to UIViewAnimationCurve.EaseIn.", traceCategories.Transition);
                 }
+
                 return UIViewAnimationCurve.EaseIn;
 
             case "easeOut":
                 if (traceEnabled()) {
                     traceWrite("Transition curve resolved to UIViewAnimationCurve.EaseOut.", traceCategories.Transition);
                 }
+
                 return UIViewAnimationCurve.EaseOut;
 
             case "easeInOut":
                 if (traceEnabled()) {
                     traceWrite("Transition curve resolved to UIViewAnimationCurve.EaseInOut.", traceCategories.Transition);
                 }
+
                 return UIViewAnimationCurve.EaseInOut;
 
             case "linear":
                 if (traceEnabled()) {
                     traceWrite("Transition curve resolved to UIViewAnimationCurve.Linear.", traceCategories.Transition);
                 }
+
                 return UIViewAnimationCurve.Linear;
 
             default:
                 if (traceEnabled()) {
                     traceWrite("Transition curve resolved to original: " + transition.curve, traceCategories.Transition);
                 }
+
                 return transition.curve;
         }
     }

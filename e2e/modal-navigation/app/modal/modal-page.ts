@@ -1,4 +1,3 @@
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { NavigatedData, Page } from "tns-core-modules/ui/page";
 import { View, EventData } from "tns-core-modules/ui/core/view";
 import { Frame, ShownModallyData } from "tns-core-modules/ui/frame";
@@ -46,19 +45,21 @@ export function showNestedModalFrame(args: EventData) {
     const frame = new Frame();
     frame.navigate("modal-nested/modal-nested-page");
 
-    view.showModal(frame,
-        "nested-context",
-        () => console.log("modal frame nested closed"),
-        false);
+    view.showModal(frame, {
+        context: "nested-context",
+        closeCallback: () => console.log("modal frame nested closed"),
+        fullscreen: false
+    });
 }
 
 export function showNestedModalPage(args: EventData) {
     const view = args.object as View;
 
-    view.showModal("modal-nested/modal-nested-page",
-        "nested-context",
-        () => console.log("modal page nested closed"),
-        false);
+    view.showModal("modal-nested/modal-nested-page", {
+        context: "nested-context",
+        closeCallback: () => console.log("modal page nested closed"),
+        fullscreen: false
+    });
 }
 
 export function onNavigate(args: EventData) {
@@ -74,9 +75,9 @@ export function showDialog(args: EventData) {
         okButtonText: "Yes",
         cancelButtonText: "No"
 
-    }
+    };
 
     confirm(options).then((result: boolean) => {
         console.log(result);
-    })
+    });
 }

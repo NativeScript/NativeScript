@@ -1,5 +1,4 @@
 import * as pages from "tns-core-modules/ui/page";
-import { EventData } from "tns-core-modules/data/observable";
 import * as button from "tns-core-modules/ui/button";
 
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
@@ -28,7 +27,7 @@ const tests = [
     { name: "[shuffle] position percents, image, no-repeat, orange hex color", background: "100% 100% url(\"~/resources/images/icon.png\") no-repeat #F9791F" },
     { name: "[shuffle] position percents, image, repeat-x, green color", background: "100% 100% url(\"~/resources/images/icon.png\") repeat-x green" },
     { name: "[shuffle] image, repeat-x, position, blue color,", background: "url(\"~/resources/images/icon.png\") repeat-x 150 150 blue" },
-]
+];
 
 export function onLoaded(args) {
     applyNextStyle(args);

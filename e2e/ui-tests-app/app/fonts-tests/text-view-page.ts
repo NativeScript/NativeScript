@@ -10,6 +10,7 @@ export function resetStyles(args) {
         v.style.fontWeight = unsetValue;
         v.style.color = unsetValue;
         v.style.textAlignment = unsetValue;
+
         return true;
     });
 }

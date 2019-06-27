@@ -172,7 +172,7 @@ function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor:
         const base64Data = imageUri.split(",")[1];
         if (base64Data !== undefined) {
             const imageSource = fromBase64(base64Data);
-            bitmap = imageSource && imageSource.ios
+            bitmap = imageSource && imageSource.ios;
         }
     } else if (isFileOrResourcePath(imageUri)) {
         const imageSource = fromFileOrResource(imageUri);
@@ -219,7 +219,7 @@ function parsePosition(pos: string): { x: CSSValue, y: CSSValue } {
     }
 
     return null;
-};
+}
 
 function getDrawParams(this: void, image: UIImage, background: BackgroundDefinition, width: number, height: number): BackgroundDrawParams {
     if (!image) {
@@ -231,7 +231,7 @@ function getDrawParams(this: void, image: UIImage, background: BackgroundDefinit
         repeatY: true,
         posX: 0,
         posY: 0,
-    }
+    };
 
     // repeat
     if (background.repeat) {
@@ -334,6 +334,7 @@ function uiColorFromImage(img: UIImage, view: View, callback: (uiColor: UIColor)
 
     if (!img) {
         callback(background.color && background.color.ios);
+
         return;
     }
 
@@ -395,10 +396,11 @@ function _flipImage(originalImage: UIImage): UIImage {
     CGContextSaveGState(context);
     CGContextTranslateCTM(context, 0.0, originalImage.size.height);
     CGContextScaleCTM(context, 1.0, -1.0);
-    originalImage.drawInRect(CGRectMake(0, 0, originalImage.size.width, originalImage.size.height))
+    originalImage.drawInRect(CGRectMake(0, 0, originalImage.size.width, originalImage.size.height));
     CGContextRestoreGState(context);
     const flippedImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
+
     return flippedImage;
 }
 
@@ -438,7 +440,7 @@ function drawUniformColorNonUniformBorders(nativeView: NativeView, background: B
     const borderVWidth = borderTopWidth + borderBottomWidth;
     const borderHWidth = borderLeftWidth + borderRightWidth;
 
-    const cappedBorderTopWidth = borderTopWidth && borderTopWidth * min(1, height / borderVWidth)
+    const cappedBorderTopWidth = borderTopWidth && borderTopWidth * min(1, height / borderVWidth);
     const cappedBorderRightWidth = borderRightWidth && borderRightWidth * min(1, width / borderHWidth);
     const cappedBorderBottomWidth = borderBottomWidth && borderBottomWidth * min(1, height / borderVWidth);
     const cappedBorderLeftWidth = borderLeftWidth && borderLeftWidth * min(1, width / borderHWidth);
@@ -884,5 +886,6 @@ function polygonPath(value: string, bounds: Rect): UIBezierPath {
     }
 
     CGPathAddLineToPoint(path, null, firstPoint.x, firstPoint.y);
+
     return path;
 }

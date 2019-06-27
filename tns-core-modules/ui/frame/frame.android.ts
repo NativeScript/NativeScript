@@ -1,14 +1,14 @@
-﻿// Definitions.
+// Definitions.
 import {
     AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks,
-    AndroidFragmentCallbacks, BackstackEntry, NavigationTransition, NavigationEntry
+    AndroidFragmentCallbacks, BackstackEntry, NavigationTransition
 } from ".";
 import { Page } from "../page";
 
 // Types.
 import * as application from "../../application";
 import {
-    FrameBase, goBack, stack, NavigationType,
+    FrameBase, goBack, _stack, NavigationType,
     Observable, View, traceCategories, traceEnabled, traceError, traceWrite
 } from "./frame-common";
 
@@ -59,6 +59,7 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
         class AttachListener extends java.lang.Object implements android.view.View.OnAttachStateChangeListener {
             constructor() {
                 super();
+
                 return global.__native(this);
             }
 
@@ -330,6 +331,7 @@ export class Frame extends FrameBase {
     public onBackPressed(): boolean {
         if (this.canGoBack()) {
             this.goBack();
+
             return true;
         }
 
@@ -337,6 +339,7 @@ export class Frame extends FrameBase {
             const manager = this._getFragmentManager();
             if (manager) {
                 manager.executePendingTransactions();
+
                 return true;
             }
         }
@@ -596,7 +599,6 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
 
     private _showActionBar = true;
     private _owner: Frame;
-    public cachePagesOnNavigate: boolean = true;
 
     constructor(owner: Frame) {
         super();
@@ -657,7 +659,7 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
             return activity;
         }
 
-        let frames = stack();
+        let frames = _stack();
         for (let length = frames.length, i = length - 1; i >= 0; i--) {
             activity = frames[i].android.activity;
             if (activity) {
@@ -838,18 +840,21 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         const entry = this.entry;
         if (!entry) {
             traceError(`${fragment}.onCreateView: entry is null or undefined`);
+
             return null;
         }
 
         const page = entry.resolvedPage;
         if (!page) {
             traceError(`${fragment}.onCreateView: entry has no resolvedPage`);
+
             return null;
         }
 
         const frame = this.frame;
         if (!frame) {
             traceError(`${fragment}.onCreateView: this.frame is null or undefined`);
+
             return null;
         }
 
@@ -928,6 +933,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         const entry = this.entry;
         if (!entry) {
             traceError(`${fragment}.onDestroy: entry is null or undefined`);
+
             return null;
         }
 
@@ -940,6 +946,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         const page = entry.resolvedPage;
         if (!page) {
             traceError(`${fragment}.onDestroy: entry has no resolvedPage`);
+
             return null;
         }
     }
@@ -1213,7 +1220,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         savedInstanceState: android.os.Bundle,
         fireLaunchEvent: boolean
     ): void {
-        const shouldCreateRootFrame = application.shouldCreateRootFrame();
+        const shouldCreateRootFrame = application._shouldCreateRootFrame();
         let rootView = this._rootView;
 
         if (traceEnabled()) {
@@ -1297,6 +1304,7 @@ const notifyLaunch = profile("notifyLaunch", function notifyLaunch(intent: andro
 
     application.notify(launchArgs);
     application.notify(<application.LoadAppCSSEventData>{ eventName: "loadAppCss", object: <any>this, cssFile: application.getCssFileName() });
+
     return launchArgs.root;
 });
 

@@ -1,10 +1,10 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { Label } from "tns-core-modules/ui/label";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import * as frameModule from "tns-core-modules/ui/frame";
-import { Page, NavigatedData } from "tns-core-modules/ui/page";
+import { Page } from "tns-core-modules/ui/page";
 import { ListView, ItemEventData } from "tns-core-modules/ui/list-view";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
 import { Button } from "tns-core-modules/ui/button";
@@ -14,6 +14,7 @@ var ASYNC = 2;
 function _createTabView(): TabView {
     var tabView = new TabView();
     tabView.id = "TabView";
+
     return tabView;
 }
 
@@ -28,6 +29,7 @@ function _createItems(count: number): Array<TabViewItem> {
         tabEntry["index"] = i;
         items.push(tabEntry);
     }
+
     return items;
 }
 
@@ -61,16 +63,18 @@ function _clickHandlerFactory(index: number) {
             var detailsPage = new Page();
             detailsPage.id = "details-page";
             detailsPage.content = detailsLabel;
+
             return detailsPage;
         };
 
         helper.navigateWithHistory(pageFactory);
-    }
+    };
 }
 
 function _createFrameView(): frameModule.Frame {
     const frame = new frameModule.Frame();
     frame.navigate({ create: () => new Page() });
+
     return frame;
 }
 
@@ -101,7 +105,7 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
         tabViewPage.content = tabView;
 
         return tabViewPage;
-    }
+    };
 
     helper.waitUntilNavigatedFrom(() => topFrame.navigate(pageFactory), topFrame);
 
@@ -120,12 +124,6 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
 
 export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere() {
     var topFrame = frameModule.topmost();
-
-    let oldChache;
-    if (topFrame.android) {
-        oldChache = topFrame.android.cachePagesOnNavigate;
-        topFrame.android.cachePagesOnNavigate = true;
-    }
 
     let tabViewPage: Page;
     let tabView: TabView;
@@ -155,7 +153,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
         tabViewPage.content = tabView;
 
         return tabViewPage;
-    }
+    };
 
     let rootPage = helper.getCurrentPage();
 
@@ -172,10 +170,6 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
     frameModule.goBack();
 
     TKUnit.waitUntilReady(() => topFrame.currentPage === rootPage);
-
-    if (topFrame.android) {
-        topFrame.android.cachePagesOnNavigate = oldChache;
-    }
 
     TKUnit.assert(tabView.items[0].view instanceof ListView, "ListView should be created when navigating back to the main page.");
 }
@@ -214,13 +208,13 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     function createLoadedFor(tabIndex: number) {
         return function () {
             loadedEventsCount[tabIndex] = loadedEventsCount[tabIndex] + 1;
-        }
+        };
     }
 
     function createUnloadedFor(tabIndex: number) {
         return function () {
             unloadedEventsCount[tabIndex] = unloadedEventsCount[tabIndex] + 1;
-        }
+        };
     }
 
     tabView.items.forEach((item, i) => {
@@ -231,6 +225,7 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     const tabViewPage = new Page();
     helper.navigateWithHistory(() => {
         tabViewPage.content = tabView;
+
         return tabViewPage;
     });
     TKUnit.waitUntilReady(() => tabViewIsFullyLoaded(tabView), ASYNC);

@@ -1,4 +1,4 @@
-﻿import { TabViewItem as TabViewItemDefinition } from ".";
+import { TabViewItem as TabViewItemDefinition } from ".";
 import { Font } from "../styling/font";
 
 import { ios as iosView, ViewBase } from "../core/view";
@@ -6,12 +6,12 @@ import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
     View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon
-} from "./tab-view-common"
+} from "./tab-view-common";
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
 import { profile } from "../../profiling";
 import { Frame } from "../frame";
-import { ios as iosUtils } from "../../utils/utils"
+import { ios as iosUtils } from "../../utils/utils";
 import { device } from "../../platform";
 export * from "./tab-view-common";
 
@@ -25,6 +25,7 @@ class UITabBarControllerImpl extends UITabBarController {
     public static initWithOwner(owner: WeakRef<TabView>): UITabBarControllerImpl {
         let handler = <UITabBarControllerImpl>UITabBarControllerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 
@@ -80,6 +81,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
     public static initWithOwner(owner: WeakRef<TabView>): UITabBarControllerDelegateImpl {
         let delegate = <UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -126,6 +128,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     public static initWithOwner(owner: WeakRef<TabView>): UINavigationControllerDelegateImpl {
         let delegate = <UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -370,6 +373,7 @@ export class TabView extends TabViewBase {
             if (traceEnabled()) {
                 traceWrite(`TabView hid action bar`, traceCategories.Debug);
             }
+
             return;
         }
 
@@ -381,6 +385,7 @@ export class TabView extends TabViewBase {
             if (traceEnabled()) {
                 traceWrite(`TabView restored action bar`, traceCategories.Debug);
             }
+
             return;
         }
     }
@@ -390,6 +395,7 @@ export class TabView extends TabViewBase {
 
         if (newController) {
             item.setViewController(newController, newController.view);
+
             return newController;
         }
 
@@ -413,6 +419,7 @@ export class TabView extends TabViewBase {
         const length = items ? items.length : 0;
         if (length === 0) {
             this._ios.viewControllers = null;
+
             return;
         }
 
@@ -570,16 +577,16 @@ function getTitleAttributesForStates(tabView: TabView): TabStates {
     const font: UIFont = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
     const tabItemTextColor = tabView.style.tabTextColor;
     const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
-    result.normalState = { [NSFontAttributeName]: font }
+    result.normalState = { [NSFontAttributeName]: font };
     if (textColor) {
-        result.normalState[UITextAttributeTextColor] = textColor
+        result.normalState[UITextAttributeTextColor] = textColor;
     }
 
     const tabSelectedItemTextColor = tabView.style.selectedTabTextColor;
     const selectedTextColor = tabSelectedItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
-    result.selectedState = { [NSFontAttributeName]: font }
+    result.selectedState = { [NSFontAttributeName]: font };
     if (selectedTextColor) {
-        result.selectedState[UITextAttributeTextColor] = selectedTextColor
+        result.selectedState[UITextAttributeTextColor] = selectedTextColor;
     }
 
     return result;

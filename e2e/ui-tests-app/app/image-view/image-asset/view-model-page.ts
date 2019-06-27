@@ -1,5 +1,4 @@
-﻿import * as dialogs from "tns-core-modules/ui/dialogs";
-import * as observable from "tns-core-modules/data/observable";
+﻿import * as observable from "tns-core-modules/data/observable";
 import * as imageAssetModule from "tns-core-modules/image-asset";
 import { ImageSource } from "tns-core-modules/image-source";
 

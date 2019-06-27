@@ -9,11 +9,8 @@ export var test_getString_isDefined = function () {
 };
 
 export var test_getString = function (done: (err: Error, res?: string) => void) {
-    var result;
-
     http.getString("https://httpbin.org/get").then(function (r) {
         //// Argument (r) is string!
-        result = r;
         done(null);
     }, function (e) {
         //// Argument (e) is Error!
@@ -22,14 +19,8 @@ export var test_getString = function (done: (err: Error, res?: string) => void) 
 };
 
 export var test_getString_fail = function (done) {
-    var result;
-    var completed: boolean;
-    var isReady = function () { return completed; }
-
     http.getString({ url: "hgfttp://httpbin.org/get", method: "GET", timeout: 2000 }).catch(function (e) {
-        completed = true;
-        result = e;
-        done(null)
+        done(null);
     });
 };
 
@@ -157,7 +148,7 @@ export var test_gzip_request_explicit = function(done) {
     }, function (e) {
         done(e);
     });
-}
+};
 
 export var test_gzip_request_implicit = function(done) {
     var result;
@@ -176,7 +167,7 @@ export var test_gzip_request_implicit = function(done) {
     }, function (e) {
         done(e);
     });
-}
+};
 
 export var test_getImage_isDefined = function () {
     TKUnit.assert(typeof (http.getImage) !== "undefined", "Method http.getImage() should be defined!");
@@ -330,7 +321,7 @@ export var test_request_responseStatusCodeShouldBeDefined = function (done) {
         var statusCode = response.statusCode;
         result = response;
         try {
-            TKUnit.assert(typeof (result.statusCode) !== "undefined", "response.statusCode should be defined!");
+            TKUnit.assert(typeof (statusCode) !== "undefined", "response.statusCode should be defined!");
             done(null);
         }
         catch (err) {
@@ -384,9 +375,6 @@ export var test_request_responseContentShouldBeDefined = function (done) {
     http.request({ url: "https://httpbin.org/get", method: "GET" }).then(function (response) {
         //// Argument (response) is HttpResponse!
         //// Content property of the response is HttpContent!
-        var str = response.content.toString();
-        var obj = response.content.toJSON();
-        var img = response.content.toImage();
         result = response;
         try {
             TKUnit.assert(typeof (result.content) !== "undefined", "response.content should be defined!");

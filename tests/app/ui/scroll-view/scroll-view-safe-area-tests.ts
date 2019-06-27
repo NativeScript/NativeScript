@@ -4,13 +4,12 @@ import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import * as TKUnit from "../../tk-unit";
 import * as view from "tns-core-modules/ui/core/view";
 import * as platform from "tns-core-modules/platform";
-import { ios as iosUtils } from "tns-core-modules/utils/utils";
 
 import * as helper from "../../ui-helper";
 import { parse } from "tns-core-modules/ui/builder";
 import {
     dipToDp, left, top, right, bottom, height, width,
-    equal, check, lessOrCloseEnough, greaterOrCloseEnough,
+    equal, lessOrCloseEnough, greaterOrCloseEnough,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
     isLeftWith, isRightWith, isBelowWith
 } from "../layouts/layout-tests-helper";
@@ -29,14 +28,15 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
             waitUntilTestElementLayoutIsValid(ui.root);
             test(ui);
         }, pageOptions);
-    };
+    }
 
     private noop() {
         // no operation
-    };
+    }
 
     private getViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             grid: root.getViewById("grid") as GridLayout,
@@ -48,7 +48,7 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
                 [root.getViewById("cell20") as view.View, root.getViewById("cell21") as view.View, root.getViewById("cell22") as view.View]
             ]
         };
-    };
+    }
 
     private scroll_view_in_full_screen(scrollView: view.View, pageOptions?: helper.PageOptions) {
         const l = left(scrollView);
@@ -425,7 +425,7 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
 
                 greaterOrCloseEnough(width(cells[1][0]), width(cells[1][1]), `cell10 width<${width(cells[1][0])}> not greater or close enough cell11 width<${width(cells[1][1])}>`);
                 lessOrCloseEnough(width(cells[1][1]), width(cells[1][2]), `cell11 width<${width(cells[1][1])}> not less or close enough cell12 width<${width(cells[1][2])}>`);
-                const sumOfNestedScrollViewWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2])
+                const sumOfNestedScrollViewWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]);
                 equal(width(grid), sumOfNestedScrollViewWidths, `grid width<${width(grid)}> sum of nested scroll views width <${sumOfNestedScrollViewWidths}>`);
             },
             pageOptions

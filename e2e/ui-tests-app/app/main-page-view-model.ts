@@ -41,7 +41,7 @@ export class MainPageViewModel extends TestPageMainViewModel {
 
     set filteredListOfExamples(array: ObservableArray<TestExample>) {
         if (this._filteredListOfExamples !== array) {
-            this._filteredListOfExamples = array
+            this._filteredListOfExamples = array;
             this.notifyPropertyChange("filteredListOfExamples", array);
             this.toggleExamplePanels(array);
         }
@@ -121,7 +121,7 @@ export class MainPageViewModel extends TestPageMainViewModel {
                     const testExample = new TestExample(key, value);
                     this.filteredListOfExamples.push(testExample);
                     MainPageViewModel.ALL_EXAMPLES.push(testExample);
-                    MainPageViewModel._examplesDictionary.set(value, testExample)
+                    MainPageViewModel._examplesDictionary.set(value, testExample);
                 }
             }
         });

@@ -1,4 +1,4 @@
-﻿import {
+import {
     ButtonBase, PseudoClassHandler,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
     Length, zIndexProperty, textAlignmentProperty, TextAlignment
@@ -29,6 +29,7 @@ function initializeClickListener(): void {
     class ClickListenerImpl extends java.lang.Object implements android.view.View.OnClickListener {
         constructor(public owner: Button) {
             super();
+
             return global.__native(this);
         }
 
@@ -61,6 +62,7 @@ export class Button extends ButtonBase {
         if (!AndroidButton) {
             AndroidButton = android.widget.Button;
         }
+
         return new AndroidButton(this._context);
     }
 
@@ -90,7 +92,7 @@ export class Button extends ButtonBase {
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
-    _updateHandler(subscribe: boolean) {
+    _updateButtonStateChangeHandler(subscribe: boolean) {
         if (subscribe) {
             this._highlightedHandler = this._highlightedHandler || ((args: TouchGestureEventData) => {
                 switch (args.action) {
@@ -110,28 +112,28 @@ export class Button extends ButtonBase {
     }
 
     [paddingTopProperty.getDefault](): Length {
-        return { value: this._defaultPaddingTop, unit: "px" }
+        return { value: this._defaultPaddingTop, unit: "px" };
     }
     [paddingTopProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
     }
 
     [paddingRightProperty.getDefault](): Length {
-        return { value: this._defaultPaddingRight, unit: "px" }
+        return { value: this._defaultPaddingRight, unit: "px" };
     }
     [paddingRightProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
     }
 
     [paddingBottomProperty.getDefault](): Length {
-        return { value: this._defaultPaddingBottom, unit: "px" }
+        return { value: this._defaultPaddingBottom, unit: "px" };
     }
     [paddingBottomProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
     }
 
     [paddingLeftProperty.getDefault](): Length {
-        return { value: this._defaultPaddingLeft, unit: "px" }
+        return { value: this._defaultPaddingLeft, unit: "px" };
     }
     [paddingLeftProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));

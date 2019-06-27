@@ -4,13 +4,8 @@ import { parse } from "tns-core-modules/ui/builder";
 import * as view from "tns-core-modules/ui/core/view";
 import * as platform from "tns-core-modules/platform";
 import { WebView } from "tns-core-modules/ui/web-view";
-import { ios as iosUtils } from "tns-core-modules/utils/utils";
 import { UITest } from "../../ui-test";
-import {
-    dipToDp, left, top, right, bottom, height, width,
-    equal, check, lessOrCloseEnough, greaterOrCloseEnough,
-    isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith
-} from "../layouts/layout-tests-helper";
+import { left, top, right, bottom, equal } from "../layouts/layout-tests-helper";
 
 export class WebViewSafeAreaTest extends UITest<WebView> {
 
@@ -26,19 +21,20 @@ export class WebViewSafeAreaTest extends UITest<WebView> {
             waitUntilTestElementLayoutIsValid(ui.root);
             test(ui);
         }, pageOptions);
-    };
+    }
 
     private noop() {
         // no operation
-    };
+    }
 
     private getViews(template: string) {
         let root = parse(template);
+
         return {
             root,
             list: root.getViewById("webview") as WebView
         };
-    };
+    }
 
     private webview_in_full_screen(webView: WebView, pageOptions?: helper.PageOptions) {
         const l = left(webView);

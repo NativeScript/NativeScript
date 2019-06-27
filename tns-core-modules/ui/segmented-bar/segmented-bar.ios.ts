@@ -1,4 +1,4 @@
-﻿import { Font } from "../styling/font";
+import { Font } from "../styling/font";
 import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
     colorProperty, fontInternalProperty, Color
@@ -61,7 +61,7 @@ export class SegmentedBar extends SegmentedBarBase {
                 let title = item.title;
                 title = (title === null || title === undefined) ? "" : title;
                 segmentedControl.insertSegmentWithTitleAtIndexAnimated(title, index, false);
-            })
+            });
         }
 
         selectedIndexProperty.coerce(this);
@@ -88,7 +88,7 @@ export class SegmentedBar extends SegmentedBarBase {
     }
 
     [fontInternalProperty.getDefault](): Font {
-        return null
+        return null;
     }
     [fontInternalProperty.setNative](value: Font) {
         let font: UIFont = value ? value.getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize)) : null;
@@ -107,6 +107,7 @@ class SelectionHandlerImpl extends NSObject {
     public static initWithOwner(owner: WeakRef<SegmentedBar>): SelectionHandlerImpl {
         let handler = <SelectionHandlerImpl>SelectionHandlerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 

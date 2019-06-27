@@ -26,22 +26,24 @@ type ItemView = View & ViewItemIndex;
 class ListViewCell extends UITableViewCell {
     public static initWithEmptyBackground(): ListViewCell {
         const cell = <ListViewCell>ListViewCell.new();
-        // Clear background by default - this will make cells transparent 
+        // Clear background by default - this will make cells transparent
         cell.backgroundColor = null;
+
         return cell;
     }
 
     initWithStyleReuseIdentifier(style: UITableViewCellStyle, reuseIdentifier: string): this {
         const cell = <this>super.initWithStyleReuseIdentifier(style, reuseIdentifier);
-        // Clear background by default - this will make cells transparent 
+        // Clear background by default - this will make cells transparent
         cell.backgroundColor = null;
+
         return cell;
     }
 
     public willMoveToSuperview(newSuperview: UIView): void {
         let parent = <ListView>(this.view ? this.view.parent : null);
 
-        // When inside ListView and there is no newSuperview this cell is 
+        // When inside ListView and there is no newSuperview this cell is
         // removed from native visual tree so we remove it from our tree too.
         if (parent && !newSuperview) {
             parent._removeContainer(this);
@@ -49,7 +51,7 @@ class ListViewCell extends UITableViewCell {
     }
 
     public get view(): View {
-        return this.owner ? this.owner.get() : null
+        return this.owner ? this.owner.get() : null;
     }
 
     public owner: WeakRef<View>;
@@ -58,6 +60,7 @@ class ListViewCell extends UITableViewCell {
 function notifyForItemAtIndex(listView: ListViewBase, cell: any, view: View, eventName: string, indexPath: NSIndexPath) {
     let args = <ItemEventData>{ eventName: eventName, object: listView, index: indexPath.row, view: view, ios: cell, android: undefined };
     listView.notify(args);
+
     return args;
 }
 
@@ -69,11 +72,13 @@ class DataSource extends NSObject implements UITableViewDataSource {
     public static initWithOwner(owner: WeakRef<ListView>): DataSource {
         let dataSource = <DataSource>DataSource.new();
         dataSource._owner = owner;
+
         return dataSource;
     }
 
     public tableViewNumberOfRowsInSection(tableView: UITableView, section: number) {
         let owner = this._owner.get();
+
         return (owner && owner.items) ? owner.items.length : 0;
     }
 
@@ -88,7 +93,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
 
             let cellView: View = cell.view;
             if (cellView && cellView.isLayoutRequired) {
-                // Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called 
+                // Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called
                 // from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
                 let width = layout.getMeasureSpecSize(owner.widthMeasureSpec);
                 let rowHeight = owner._effectiveRowHeight;
@@ -100,6 +105,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
         else {
             cell = <ListViewCell>ListViewCell.initWithEmptyBackground();
         }
+
         return cell;
     }
 }
@@ -115,6 +121,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         const delegate = <UITableViewDelegateImpl>UITableViewDelegateImpl.new();
         delegate._owner = owner;
         delegate._measureCellMap = new Map<string, ListViewCell>();
+
         return delegate;
     }
 
@@ -131,6 +138,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
+
         return indexPath;
     }
 
@@ -171,6 +179,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
     public static initWithOwner(owner: WeakRef<ListView>): UITableViewRowHeightDelegateImpl {
         let delegate = <UITableViewRowHeightDelegateImpl>UITableViewRowHeightDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -187,6 +196,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
+
         return indexPath;
     }
 
@@ -208,6 +218,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 
 export class ListView extends ListViewBase {
     public nativeViewProtected: UITableView;
+    // tslint:disable-next-line
     private _dataSource;
     private _delegate;
     private _heights: Array<number>;
@@ -293,7 +304,7 @@ export class ListView extends ListViewBase {
         // mimic Android behavior that silently coerces index values within [0, itemsLength - 1] range
         if (itemsLength > 0) {
             if (index < 0) {
-                index = 0
+                index = 0;
             } else if (index >= itemsLength) {
                 index = itemsLength - 1;
             }
@@ -324,6 +335,7 @@ export class ListView extends ListViewBase {
 
     public isItemAtIndexVisible(itemIndex: number): boolean {
         const indexes: NSIndexPath[] = Array.from(this.ios.indexPathsForVisibleRows);
+
         return indexes.some(visIndex => visIndex.row === itemIndex);
     }
 
@@ -401,6 +413,7 @@ export class ListView extends ListViewBase {
             const measuredSize = View.measureChild(this, cellView, this.widthMeasureSpec, heightMeasureSpec);
             const height = measuredSize.measuredHeight;
             this.setHeight(indexPath.row, height);
+
             return height;
         }
 
@@ -450,6 +463,7 @@ export class ListView extends ListViewBase {
         } finally {
             this._preparingCell = false;
         }
+
         return cellHeight;
     }
 

@@ -1,4 +1,4 @@
-﻿import { ControlStateChangeListener } from "../core/control-state-change";
+import { ControlStateChangeListener } from "../core/control-state-change";
 import {
     ButtonBase, PseudoClassHandler, Length, layout,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
@@ -42,7 +42,7 @@ export class Button extends ButtonBase {
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
-    _updateHandler(subscribe: boolean) {
+    _updateButtonStateChangeHandler(subscribe: boolean) {
         if (subscribe) {
             if (!this._stateChangedHandler) {
                 this._stateChangedHandler = new ControlStateChangeListener(this.nativeViewProtected, (s: string) => {
@@ -188,7 +188,7 @@ export class Button extends ButtonBase {
         // If there is text-wrap UIButton.sizeThatFits will return wrong result (not respecting the text wrap).
         // So fallback to original onMeasure if there is no text-wrap and use custom measure otherwise.
         if (!this.textWrap) {
-            return super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            return super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         }
 
         let nativeView = this.nativeViewProtected;
@@ -231,6 +231,7 @@ class TapHandlerImpl extends NSObject {
     public static initWithOwner(owner: WeakRef<Button>): TapHandlerImpl {
         let handler = <TapHandlerImpl>TapHandlerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 

@@ -72,7 +72,7 @@ export class TestPageMainViewModel extends Observable {
 
             btn.text = key;
             btn.automationText = key;
-            this.buttonsPanel.addChild(btn)
+            this.buttonsPanel.addChild(btn);
         });
     }
 
@@ -80,7 +80,7 @@ export class TestPageMainViewModel extends Observable {
         let arrayOfKeys = new Array<string>();
         map.forEach((value, key, map) => {
             arrayOfKeys.push(key);
-        })
+        });
 
         arrayOfKeys.sort((a, b) => {
             if (a < b) {
@@ -89,13 +89,14 @@ export class TestPageMainViewModel extends Observable {
             if (a > b) {
                 return 1;
             }
+
             return a.localeCompare(b);
-        })
+        });
 
         let sortedExamples = new Map<string, string>();
         arrayOfKeys.forEach((k) => {
             sortedExamples.set(k, this._examples.get(k));
-        })
+        });
 
         this._examples.clear();
         this._examples = sortedExamples;

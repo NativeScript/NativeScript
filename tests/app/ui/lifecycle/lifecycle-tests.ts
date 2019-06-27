@@ -104,7 +104,7 @@ export function test_navigating_away_does_not_excessively_reset() {
             TKUnit.assertEqual(button.backgroundInternalSetNativeCount, count, `Expecting ${button.id}'s backgroundInternal.setNative call count`);
             TKUnit.assertEqual(button.fontInternalSetNativeCount, count, `Expecting ${button.id}'s fontInternal.setNative call count`);
             TKUnit.assertEqual(button.nativeBackgroundRedraws, count, `Expecting ${button.id}'s nativeBackgroundRedraws call count`);
-        })
+        });
     }
 
     assert(1);

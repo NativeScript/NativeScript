@@ -111,10 +111,12 @@ class CSSSource {
         const appPath = knownFolders.currentApp().path;
         if (!uri.startsWith(appPath)) {
             traceWrite(`${uri} does not start with ${appPath}`, traceCategories.Error, traceMessageType.error);
+
             return uri;
         }
 
         const relativeUri = `.${uri.substr(appPath.length)}`;
+
         return relativeUri;
     }
 
@@ -129,11 +131,13 @@ class CSSSource {
         }
 
         const file = CSSSource.resolveCSSPathFromURL(url);
+
         return new CSSSource(undefined, url, file, keyframes, undefined);
     }
 
     public static fromFileImport(url: string, keyframes: KeyframesMap, importSource: string): CSSSource {
         const file = CSSSource.resolveCSSPathFromURL(url, importSource);
+
         return new CSSSource(undefined, url, file, keyframes, undefined);
     }
 
@@ -141,6 +145,7 @@ class CSSSource {
     public static resolveCSSPathFromURL(url: string, importSource?: string): string {
         const app = knownFolders.currentApp().path;
         const file = resolveFileNameFromUrl(url, app, File.exists, importSource);
+
         return file;
     }
 
@@ -193,9 +198,11 @@ class CSSSource {
                     const stylesheet = cssparser.parseAStylesheet();
                     const cssNS = new CSSNativeScript();
                     this._ast = cssNS.parseStylesheet(stylesheet);
+
                     return;
                 case "rework":
                     this._ast = parseCss(this._source, { source: this._file });
+
                     return;
             }
         }
@@ -217,6 +224,7 @@ class CSSSource {
         const urlFromImportObject = importObject => {
             const importItem = importObject["import"] as string;
             const urlMatch = importItem && importItem.match(pattern);
+
             return urlMatch && urlMatch[2];
         };
 
@@ -238,6 +246,7 @@ class CSSSource {
             .map(getCssFile);
 
         const selectors = cssFiles.map(file => (file && file.selectors) || []);
+
         return selectors.reduce((acc, val) => acc.concat(val), []);
     }
 
@@ -273,6 +282,7 @@ export function removeTaggedAdditionalCSS(tag: String | Number): Boolean {
         }
     }
     if (changed) { mergeCssSelectors(); }
+
     return changed;
 }
 
@@ -289,6 +299,7 @@ export function addTaggedAdditionalCSS(cssText: string, tag?: string | Number): 
         applicationAdditionalSelectors.push.apply(applicationAdditionalSelectors, parsed);
         mergeCssSelectors();
     }
+
     return changed;
 }
 
@@ -350,7 +361,7 @@ export class CssState {
     _matchInvalid: boolean;
     _playsKeyframeAnimations: boolean;
 
-    constructor(private view: ViewBase) {
+    constructor(private viewRef: WeakRef<ViewBase>) {
         this._onDynamicStateChangeHandler = () => this.updateDynamicState();
     }
 
@@ -359,7 +370,8 @@ export class CssState {
      * As a result, at some point in time, the selectors matched have to be requerried from the style scope and applied to the view.
      */
     public onChange(): void {
-        if (this.view && this.view.isLoaded) {
+        const view = this.viewRef.get();
+        if (view && view.isLoaded) {
             this.unsubscribeFromDynamicUpdates();
             this.updateMatch();
             this.subscribeForDynamicUpdates();
@@ -370,7 +382,14 @@ export class CssState {
     }
 
     public isSelectorsLatestVersionApplied(): boolean {
-        return this.view._styleScope._getSelectorsVersion() === this._appliedSelectorsVersion;
+        const view = this.viewRef.get();
+        if (!view) {
+            traceWrite(`isSelectorsLatestVersionApplied returns default value "false" because "this.viewRef" cleared.`, traceCategories.Style, traceMessageType.warn);
+
+            return false;
+        }
+
+        return this.viewRef.get()._styleScope._getSelectorsVersion() === this._appliedSelectorsVersion;
     }
 
     public onLoaded(): void {
@@ -387,20 +406,28 @@ export class CssState {
 
     @profile
     private updateMatch() {
-        if (this.view._styleScope) {
-            this._appliedSelectorsVersion = this.view._styleScope._getSelectorsVersion();
-            this._match = this.view._styleScope.matchSelectors(this.view);
+        const view = this.viewRef.get();
+        if (view && view._styleScope) {
+            this._match = view._styleScope.matchSelectors(view);
+            this._appliedSelectorsVersion = view._styleScope._getSelectorsVersion();
         } else {
             this._match = CssState.emptyMatch;
         }
+
         this._matchInvalid = false;
     }
 
     @profile
     private updateDynamicState(): void {
-        const matchingSelectors = this._match.selectors.filter(sel => sel.dynamic ? sel.match(this.view) : true);
+        const view = this.viewRef.get();
+        if (!view) {
+            traceWrite(`updateDynamicState not executed to view because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
 
-        this.view._batchUpdate(() => {
+            return;
+        }
+
+        const matchingSelectors = this._match.selectors.filter(sel => sel.dynamic ? sel.match(view) : true);
+        view._batchUpdate(() => {
             this.stopKeyframeAnimations();
             this.setPropertyValues(matchingSelectors);
             this.playKeyframeAnimations(matchingSelectors);
@@ -424,7 +451,14 @@ export class CssState {
         });
 
         if (this._playsKeyframeAnimations = animations.length > 0) {
-            animations.map(animation => animation.play(<View>this.view));
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`KeyframeAnimations cannot play because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+
+                return;
+            }
+
+            animations.map(animation => animation.play(<View>view));
             Object.freeze(animations);
             this._appliedAnimations = animations;
         }
@@ -440,13 +474,19 @@ export class CssState {
             .forEach(animation => animation.cancel());
         this._appliedAnimations = CssState.emptyAnimationArray;
 
-        this.view.style["keyframe:rotate"] = unsetValue;
-        this.view.style["keyframe:scaleX"] = unsetValue;
-        this.view.style["keyframe:scaleY"] = unsetValue;
-        this.view.style["keyframe:translateX"] = unsetValue;
-        this.view.style["keyframe:translateY"] = unsetValue;
-        this.view.style["keyframe:backgroundColor"] = unsetValue;
-        this.view.style["keyframe:opacity"] = unsetValue;
+        const view = this.viewRef.get();
+        if (view) {
+            view.style["keyframe:rotate"] = unsetValue;
+            view.style["keyframe:scaleX"] = unsetValue;
+            view.style["keyframe:scaleY"] = unsetValue;
+            view.style["keyframe:translateX"] = unsetValue;
+            view.style["keyframe:translateY"] = unsetValue;
+            view.style["keyframe:backgroundColor"] = unsetValue;
+            view.style["keyframe:opacity"] = unsetValue;
+        } else {
+            traceWrite(`KeyframeAnimations cannot be stopped because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+        }
+
         this._playsKeyframeAnimations = false;
     }
 
@@ -457,7 +497,14 @@ export class CssState {
      * @param matchingSelectors
      */
     private setPropertyValues(matchingSelectors: SelectorCore[]): void {
-        const newPropertyValues = new this.view.style.PropertyBag();
+        const view = this.viewRef.get();
+        if (!view) {
+            traceWrite(`${matchingSelectors} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+
+            return;
+        }
+
+        const newPropertyValues = new view.style.PropertyBag();
         matchingSelectors.forEach(selector =>
             selector.ruleset.declarations.forEach(declaration =>
                 newPropertyValues[declaration.property] = declaration.value));
@@ -466,8 +513,8 @@ export class CssState {
         const oldProperties = this._appliedPropertyValues;
         for (const key in oldProperties) {
             if (!(key in newPropertyValues)) {
-                if (key in this.view.style) {
-                    this.view.style[`css:${key}`] = unsetValue;
+                if (key in view.style) {
+                    view.style[`css:${key}`] = unsetValue;
                 } else {
                     // TRICKY: How do we unset local value?
                 }
@@ -479,14 +526,14 @@ export class CssState {
             }
             const value = newPropertyValues[property];
             try {
-                if (property in this.view.style) {
-                    this.view.style[`css:${property}`] = value;
+                if (property in view.style) {
+                    view.style[`css:${property}`] = value;
                 } else {
                     const camelCasedProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
-                    this.view[camelCasedProperty] = value;
+                    view[camelCasedProperty] = value;
                 }
             } catch (e) {
-                traceWrite(`Failed to apply property [${property}] with value [${value}] to ${this.view}. ${e}`, traceCategories.Error, traceMessageType.error);
+                traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
             }
         }
 
@@ -535,7 +582,14 @@ export class CssState {
     }
 
     toString(): string {
-        return `${this.view}._cssState`;
+        const view = this.viewRef.get();
+        if (!view) {
+            traceWrite(`toString() of CssState cannot execute correctly because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+
+            return "";
+        }
+
+        return `${view}._cssState`;
     }
 }
 CssState.prototype._appliedChangeMap = CssState.emptyChangeMap;
@@ -563,7 +617,7 @@ export class StyleScope {
     }
 
     public addCss(cssString: string, cssFileName?: string): void {
-        this.appendCss(cssString, cssFileName)
+        this.appendCss(cssString, cssFileName);
     }
 
     public addCssFile(cssFileName: string): void {
@@ -660,11 +714,13 @@ export class StyleScope {
     @profile
     public matchSelectors(view: ViewBase): SelectorsMatch<ViewBase> {
         this.ensureSelectors();
+
         return this._selectors.query(view);
     }
 
     public query(node: Node): SelectorCore[] {
         this.ensureSelectors();
+
         return this._selectors.query(node).selectors;
     }
 
@@ -742,6 +798,7 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
     importSourceParts.pop();
     // remove element in case of dot-segment for parent directory or add file name
     fileNameParts.forEach(p => isParentDirectory(p) ? importSourceParts.pop() : importSourceParts.push(p));
+
     return importSourceParts.join(path.separator);
 }
 

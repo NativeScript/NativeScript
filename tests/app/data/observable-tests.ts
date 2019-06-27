@@ -1,4 +1,4 @@
-﻿// >> observable-require
+// >> observable-require
 import { Observable, fromObject, fromObjectRecursive, PropertyChangeData, EventData, WrappedValue } from "tns-core-modules/data/observable";
 // << observable-require
 
@@ -29,7 +29,7 @@ export var test_Observable_Constructor = function () {
     TKUnit.assert(name === "John", "Expected name is John");
     TKUnit.assert(age === 34, "Expected age is 34");
     TKUnit.assert(married === true, "Expected married is true");
-}
+};
 
 export var tests_DummyTestForCodeSnippet = function () {
     // >> observable-property-change
@@ -46,7 +46,7 @@ export var tests_DummyTestForCodeSnippet = function () {
     // propertyChange Age 35
     // propertyChange Married false
     // << observable-property-change
-}
+};
 
 export var test_Observable_Members = function () {
     var obj = new Observable();
@@ -60,7 +60,7 @@ export var test_Observable_Members = function () {
     TKUnit.assert(types.isDefined(obj.on), "Observable.on not defined");
     TKUnit.assert(types.isDefined(obj.removeEventListener), "Observable.removeEventListener not defined");
     TKUnit.assert(types.isDefined(obj.set), "Observable.set not defined");
-}
+};
 
 export var test_Observable_UpdateAnotherPropertyWithinChangedCallback = function () {
     var obj = new Observable();
@@ -69,7 +69,7 @@ export var test_Observable_UpdateAnotherPropertyWithinChangedCallback = function
         if (pcd.propertyName === "name") {
             pcd.object.set("test", "Changed test");
         }
-    }
+    };
 
     obj.addEventListener(Observable.propertyChangeEvent, changedCallback);
 
@@ -83,7 +83,7 @@ export var test_Observable_UpdateAnotherPropertyWithinChangedCallback = function
 
     TKUnit.assert(obj.get("name") === "Changed name", "Changed value for property name is not correct!");
     TKUnit.assert(obj.get("test") === "Changed test", "Changed value for property test is not correct!");
-}
+};
 
 // export var test_DependencyObservable_UpdateAnotherPropertyWithinChangedCallback = function () {
 //     var obj = new dependencyObservable.DependencyObservable();
@@ -135,12 +135,12 @@ export var test_Observable_addEventListener_SingleEvent = function () {
         TKUnit.assert(data.object === obj, "PropertyChangeData.object value not valid.");
         TKUnit.assert(data.propertyName === "testName", "PropertyChangeData.propertyName value not valid.");
         TKUnit.assert(data.value === 1, "PropertyChangeData.value value not valid.");
-    }
+    };
 
     obj.addEventListener(Observable.propertyChangeEvent, callback);
     obj.set("testName", 1);
     TKUnit.assert(receivedCount === 1, "PropertyChanged event not raised properly.");
-}
+};
 
 export var test_Observable_addEventListener_MultipleEvents = function () {
     var obj = new TestObservable();
@@ -158,14 +158,14 @@ export var test_Observable_addEventListener_MultipleEvents = function () {
         } else {
             TKUnit.assert(data.eventName === TESTED_NAME, "Expected event name " + TESTED_NAME);
         }
-    }
+    };
 
     var events = Observable.propertyChangeEvent + "," + TESTED_NAME;
     obj.addEventListener(events, callback);
     obj.set("testName", 1);
     obj.test();
     TKUnit.assert(receivedCount === 2, "Callbacks not raised properly.");
-}
+};
 
 export var test_Observable_addEventListener_MultipleEvents_ShouldTrim = function () {
     var obj = new TestObservable();
@@ -173,7 +173,7 @@ export var test_Observable_addEventListener_MultipleEvents_ShouldTrim = function
     var receivedCount = 0;
     var callback = function (data: EventData) {
         receivedCount++;
-    }
+    };
 
     var events = Observable.propertyChangeEvent + "  ,  " + TESTED_NAME;
     obj.addEventListener(events, callback);
@@ -184,7 +184,7 @@ export var test_Observable_addEventListener_MultipleEvents_ShouldTrim = function
     obj.test();
 
     TKUnit.assert(receivedCount === 2, "Callbacks not raised properly.");
-}
+};
 
 export var test_Observable_addEventListener_MultipleCallbacks = function () {
     var obj = new TestObservable();
@@ -192,18 +192,18 @@ export var test_Observable_addEventListener_MultipleCallbacks = function () {
     var receivedCount = 0;
     var callback1 = function (data: EventData) {
         receivedCount++;
-    }
+    };
 
     var callback2 = function (data: EventData) {
         receivedCount++;
-    }
+    };
 
     obj.addEventListener(Observable.propertyChangeEvent, callback1);
     obj.addEventListener(Observable.propertyChangeEvent, callback2);
 
     obj.set("testName", 1);
     TKUnit.assert(receivedCount === 2, "The propertyChanged notification should be raised twice.");
-}
+};
 
 export var test_Observable_addEventListener_MultipleCallbacks_MultipleEvents = function () {
     var obj = new TestObservable();
@@ -211,11 +211,11 @@ export var test_Observable_addEventListener_MultipleCallbacks_MultipleEvents = f
     var receivedCount = 0;
     var callback1 = function (data: EventData) {
         receivedCount++;
-    }
+    };
 
     var callback2 = function (data: EventData) {
         receivedCount++;
-    }
+    };
 
     var events = Observable.propertyChangeEvent + "  ,  " + TESTED_NAME;
     obj.addEventListener(events, callback1);
@@ -225,7 +225,7 @@ export var test_Observable_addEventListener_MultipleCallbacks_MultipleEvents = f
     obj.test();
 
     TKUnit.assert(receivedCount === 4, "The propertyChanged notification should be raised twice.");
-}
+};
 
 export var test_Observable_removeEventListener_SingleEvent_SingleCallback = function () {
     var obj = new Observable();
@@ -233,7 +233,7 @@ export var test_Observable_removeEventListener_SingleEvent_SingleCallback = func
     var receivedCount = 0;
     var callback = function (data: EventData) {
         receivedCount++;
-    }
+    };
 
     obj.addEventListener(Observable.propertyChangeEvent, callback);
     obj.set("testName", 1);
@@ -243,7 +243,7 @@ export var test_Observable_removeEventListener_SingleEvent_SingleCallback = func
 
     obj.set("testName", 2);
     TKUnit.assert(receivedCount === 1, "Observable.removeEventListener not working properly.");
-}
+};
 
 export var test_Observable_removeEventListener_SingleEvent_MultipleCallbacks = function () {
     var obj = new Observable();
@@ -251,11 +251,11 @@ export var test_Observable_removeEventListener_SingleEvent_MultipleCallbacks = f
     var receivedCount = 0;
     var callback1 = function (data: EventData) {
         receivedCount++;
-    }
+    };
 
     var callback2 = function (data: EventData) {
         receivedCount++;
-    }
+    };
 
     obj.addEventListener(Observable.propertyChangeEvent, callback1);
     obj.addEventListener(Observable.propertyChangeEvent, callback2);
@@ -272,7 +272,7 @@ export var test_Observable_removeEventListener_SingleEvent_MultipleCallbacks = f
 
     obj.set("testName", 3);
     TKUnit.assert(receivedCount === 3, "Observable.removeEventListener not working properly with multiple listeners.");
-}
+};
 
 export var test_Observable_removeEventListener_MutlipleEvents_SingleCallback = function () {
     var obj = new TestObservable();
@@ -280,7 +280,7 @@ export var test_Observable_removeEventListener_MutlipleEvents_SingleCallback = f
     var receivedCount = 0;
     var callback = function (data: EventData) {
         receivedCount++;
-    }
+    };
 
     var events = Observable.propertyChangeEvent + "  ,  " + TESTED_NAME;
     obj.addEventListener(events, callback);
@@ -297,7 +297,7 @@ export var test_Observable_removeEventListener_MutlipleEvents_SingleCallback = f
     obj.test();
 
     TKUnit.assert(receivedCount === 2, "Expected receive count is 2");
-}
+};
 
 export var test_Observable_removeEventListener_SingleEvent_NoCallbackSpecified = function () {
     var obj = new TestObservable();
@@ -305,11 +305,11 @@ export var test_Observable_removeEventListener_SingleEvent_NoCallbackSpecified =
     var receivedCount = 0;
     var callback1 = function (data: EventData) {
         receivedCount++;
-    }
+    };
 
     var callback2 = function (data: EventData) {
         receivedCount++;
-    }
+    };
 
     obj.addEventListener(Observable.propertyChangeEvent, callback1);
     obj.addEventListener(Observable.propertyChangeEvent, callback2);
@@ -321,7 +321,7 @@ export var test_Observable_removeEventListener_SingleEvent_NoCallbackSpecified =
 
     obj.set("testName", 2);
     TKUnit.assert(receivedCount === 2, "Expected receive count is 2");
-}
+};
 
 export var test_Observable_WhenCreatedWithJSON_PropertyChangedWithDotNotation_RaisesPropertyChangedEvent = function () {
     var json = {
@@ -336,14 +336,14 @@ export var test_Observable_WhenCreatedWithJSON_PropertyChangedWithDotNotation_Ra
         TKUnit.assert(data.object === obj, "PropertyChangeData.object value not valid.");
         TKUnit.assert(data.propertyName === "count", "PropertyChangeData.propertyName value not valid.");
         TKUnit.assert(data.value === 6, "PropertyChangeData.value value not valid.");
-    }
+    };
 
     obj.addEventListener(Observable.propertyChangeEvent, callback);
 
     (<any>obj).count++;
 
     TKUnit.assert(receivedCount === 1, "PropertyChanged event not raised properly.");
-}
+};
 
 export var test_Observable_WhenCreatedWithJSON_PropertyChangedWithBracketsNotation_RaisesPropertyChangedEvent = function () {
     var json = {
@@ -358,14 +358,14 @@ export var test_Observable_WhenCreatedWithJSON_PropertyChangedWithBracketsNotati
         TKUnit.assert(data.object === obj, "PropertyChangeData.object value not valid.");
         TKUnit.assert(data.propertyName === "count", "PropertyChangeData.propertyName value not valid.");
         TKUnit.assert(data.value === 6, "PropertyChangeData.value value not valid.");
-    }
+    };
 
     obj.addEventListener(Observable.propertyChangeEvent, callback);
 
     obj["count"]++;
 
     TKUnit.assert(receivedCount === 1, "PropertyChanged event not raised properly.");
-}
+};
 
 export var test_AddingTwoEventHandlersAndRemovingWithinHandlerShouldRaiseAllEvents = function () {
     var observableInstance = new Observable();
@@ -375,12 +375,12 @@ export var test_AddingTwoEventHandlersAndRemovingWithinHandlerShouldRaiseAllEven
     var firstHandler = function (args) {
         observableInstance.off(Observable.propertyChangeEvent, firstHandler, firstObserver);
         firstHandlerCalled = true;
-    }
+    };
 
     var secondHandler = function (args) {
         observableInstance.off(Observable.propertyChangeEvent, secondHandler, secondObserver);
         secondHandlerCalled = true;
-    }
+    };
 
     var firstObserver = new Observable();
     var secondObserver = new Observable();
@@ -392,7 +392,7 @@ export var test_AddingTwoEventHandlersAndRemovingWithinHandlerShouldRaiseAllEven
 
     TKUnit.assertEqual(firstHandlerCalled, true);
     TKUnit.assertEqual(secondHandlerCalled, true);
-}
+};
 
 export var test_ObservableCreatedWithJSON_shouldDistinguishSeparateObjects = function () {
     var obj1 = { val: 1 };
@@ -469,7 +469,7 @@ export function test_ObservablesCreatedWithJSON_shouldNotEmitTwoTimesPropertyCha
     var propertyChangeCounter = 0;
     var propertyChangeHandler = function (args) {
         propertyChangeCounter++;
-    }
+    };
     testObservable.on(Observable.propertyChangeEvent, propertyChangeHandler);
     testObservable.set("property1", 2);
 
@@ -482,7 +482,7 @@ export function test_ObservableShouldEmitPropertyChangeWithSameObjectUsingWrappe
     var propertyChangeCounter = 0;
     var propertyChangeHandler = function (args) {
         propertyChangeCounter++;
-    }
+    };
     testObservable.on(Observable.propertyChangeEvent, propertyChangeHandler);
     testArray.push(2);
 
@@ -501,7 +501,7 @@ export function test_CorrectEventArgsWhenWrappedValueIsUsed() {
     let actualArgsValue;
     let propertyChangeHandler = function (args) {
         actualArgsValue = args.value;
-    }
+    };
 
     testObservable.on(Observable.propertyChangeEvent, propertyChangeHandler);
     testArray.push(2);
@@ -575,5 +575,6 @@ export function test_fromObjectRecursive_does_not_override_source_object_propert
     const myObj = {};
     const source = { name: "a", value: myObj };
     const observable = fromObjectRecursive(source);
+    TKUnit.assertNotNull(observable);
     TKUnit.assertEqual(source.value, myObj);
 }

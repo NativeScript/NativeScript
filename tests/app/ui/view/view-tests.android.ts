@@ -1,11 +1,10 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { View, isIOS, unsetValue } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
 import * as types from "tns-core-modules/utils/types";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { Label } from "tns-core-modules/ui/label";
-import * as frame from "tns-core-modules/ui/frame";
 import * as trace from "tns-core-modules/trace";
 import { Color } from "tns-core-modules/color";
 // enable the trace, it is disabled by default
@@ -137,7 +136,7 @@ export function test_event_onContextChanged_IsRaised_WhenAttached() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_event_onContextChanged_IsRaised_WhenAttached_Dynamically() {
     const test = function (views: Array<View>) {
@@ -148,7 +147,7 @@ export function test_event_onContextChanged_IsRaised_WhenAttached_Dynamically() 
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_event_tearDownUI_IsRaised() {
     let btn;
@@ -201,7 +200,7 @@ export function test_events_tearDownUIAndRemovedFromNativeVisualTree_AreRaised_W
 
         TKUnit.assertNull(btnNativeParent, "button NativeParent should be null");
         TKUnit.assertNull(stackNativeParent, "stack NativeParent should be null");
-    }
+    };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
 }
@@ -270,16 +269,19 @@ export const test_StylePropertiesDefaultValuesCache = function () {
 
 export function getUniformNativeBorderWidth(v: View): number {
     const bkg = <org.nativescript.widgets.BorderDrawable>v.android.getBackground();
+
     return bkg ? bkg.getUniformBorderWidth() : 0;
 }
 
 export function checkUniformNativeBorderColor(v: View): boolean {
     const bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
+
     return bkg && bkg.getUniformBorderColor() === (<Color>v.borderColor).android;
 }
 
 export function getUniformNativeCornerRadius(v: View): number {
     const bkg = <org.nativescript.widgets.BorderDrawable>v.android.getBackground();
+
     return bkg ? bkg.getUniformBorderRadius() : 0;
 }
 
@@ -291,14 +293,6 @@ export function checkNativeBackgroundColor(v: View): boolean {
 
 export function checkNativeBackgroundImage(v: View): boolean {
     const bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
+
     return bkg && !types.isNullOrUndefined(bkg.getBackgroundImage());
-}
-
-let SDK: number;
-function getSDK() {
-    if (!SDK) {
-        SDK = android.os.Build.VERSION.SDK_INT;
-    }
-
-    return SDK;
 }

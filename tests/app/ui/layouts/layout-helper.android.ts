@@ -1,4 +1,4 @@
-﻿import { Button } from "tns-core-modules/ui/button";
+import { Button } from "tns-core-modules/ui/button";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 
@@ -11,6 +11,7 @@ var DELTA = 0.1;
 class NativeButton extends android.widget.Button {
     constructor(context: android.content.Context, public owner: def.MeasuredView) {
         super(context);
+
         return global.__native(this);
     }
 
@@ -30,6 +31,7 @@ class NativeButton extends android.widget.Button {
 class NativeStackLayout extends org.nativescript.widgets.StackLayout {
     constructor(context: android.content.Context, public owner: def.MeasuredView) {
         super(context);
+
         return global.__native(this);
     }
 
@@ -49,6 +51,7 @@ class NativeStackLayout extends org.nativescript.widgets.StackLayout {
 class NativeGridLayout extends org.nativescript.widgets.GridLayout {
     constructor(context: android.content.Context, public owner: def.MeasuredView) {
         super(context);
+
         return global.__native(this);
     }
 

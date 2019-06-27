@@ -1,4 +1,4 @@
-﻿import { Page } from "tns-core-modules/ui/page";
+import { Page } from "tns-core-modules/ui/page";
 import { GridLayout, ItemSpec } from "tns-core-modules/ui/layouts/grid-layout";
 import { Button } from "tns-core-modules/ui/button";
 import * as TKUnit from "../../tk-unit";
@@ -158,7 +158,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     public test_setColumn_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
             GridLayout.setColumn(null, 1);
-        }, "setColumn called with null should throw exception")
+        }, "setColumn called with null should throw exception");
     }
 
     public test_setColumnSpan_shouldThrow_onNullValues() {
@@ -746,7 +746,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         gridLayout.addRow(firstRow);
         gridLayout.addRow(secondRow);
         // << grid-layout-add-rowscols
-    }
+    };
 
     public test_percent_support_nativeLayoutParams_are_correct() {
         commonTests.percent_support_nativeLayoutParams_are_correct(this);

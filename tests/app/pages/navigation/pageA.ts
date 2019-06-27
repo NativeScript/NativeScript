@@ -1,13 +1,10 @@
-﻿import * as pages from "tns-core-modules/ui/page";
+import * as pages from "tns-core-modules/ui/page";
 import * as frame from "tns-core-modules/ui/frame";
 import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
 import * as button from "tns-core-modules/ui/button";
 import * as text from "tns-core-modules/ui/text-field";
 import * as color from "tns-core-modules/color";
 import * as list from "tns-core-modules/ui/list-view";
-
-//// Enable page caching
-//frame.topmost().android.cachePagesOnNavigate = true;
 
 export function createPage() {
     var page = new pages.Page();
@@ -54,5 +51,6 @@ export function createPage() {
     stack.addChild(lv);
 
     page.content = stack;
+
     return page;
 }

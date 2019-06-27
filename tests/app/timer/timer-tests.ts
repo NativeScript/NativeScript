@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../tk-unit";
+import * as TKUnit from "../tk-unit";
 import * as timer from "tns-core-modules/timer";
 
 // >> timer-require
@@ -9,19 +9,19 @@ import * as timer from "tns-core-modules/timer";
 
 export function test_setTimeout_isDefined() {
     TKUnit.assertNotEqual(timer.setTimeout, undefined, "Method timer.setTimeout() should be defined!");
-};
+}
 
 export function test_clearTimeout_isDefined() {
     TKUnit.assertNotEqual(timer.clearTimeout, undefined, "Method timer.clearTimeout() should be defined!");
-};
+}
 
 export function test_setInsDefined() {
     TKUnit.assertNotEqual(timer.setInterval, undefined, "Method timer.setInterval() should be defined!");
-};
+}
 
 export function test_clear_isDefined() {
     TKUnit.assertNotEqual(timer.clearInterval, undefined, "Method timer.clearInterval() should be defined!");
-};
+}
 
 export function test_setTimeout() {
     let completed: boolean;
@@ -37,7 +37,7 @@ export function test_setTimeout() {
     TKUnit.waitUntilReady(() => completed, 0.5, false);
     timer.clearTimeout(id);
     TKUnit.assert(completed, "Callback should be called!");
-};
+}
 
 export function test_setTimeout_extraArgs() {
     let completed: boolean;
@@ -54,7 +54,7 @@ export function test_setTimeout_extraArgs() {
     TKUnit.waitUntilReady(() => completed, 0.5, false);
     timer.clearTimeout(id);
     TKUnit.assert(completed, "Callback called with expected argument!");
-};
+}
 
 export function test_setTimeout_callbackCalledAfterSpecifiedTime() {
     let completed = false;
@@ -70,7 +70,7 @@ export function test_setTimeout_callbackCalledAfterSpecifiedTime() {
     TKUnit.waitUntilReady(() => completed, 1);
     timer.clearTimeout(id);
     TKUnit.assert(completed, "Callback should be called after the specified time!");
-};
+}
 
 export function test_setTimeout_callbackNotCalled() {
     let completed = false;
@@ -80,7 +80,7 @@ export function test_setTimeout_callbackNotCalled() {
     TKUnit.wait(30 / 1000);
 
     TKUnit.assert(!completed, "Callback should not be called after the specified time!");
-};
+}
 
 export function test_setTimeout_shouldReturnNumber() {
     let id = timer.setTimeout(() => {
@@ -88,7 +88,7 @@ export function test_setTimeout_shouldReturnNumber() {
     });
     timer.clearTimeout(id);
     TKUnit.assertTrue(typeof id === "number", "Callback should return number!");
-};
+}
 
 export function test_setTimeout_callbackShouldBeCleared() {
     let completed = false;
@@ -108,7 +108,7 @@ export function test_setTimeout_callbackShouldBeCleared() {
     TKUnit.wait(0.060);
     timer.clearTimeout(id);
     TKUnit.assert(!completed, "Callback should be cleared when clearTimeout() is executed for specified id!");
-};
+}
 
 export function test_setInterval_callbackCalledDuringPeriod(done) {
     let counter = 0;
@@ -129,11 +129,10 @@ export function test_setInterval_callbackCalledDuringPeriod(done) {
         // << (hide)
     }, 50);
     // << timer-set-expression
-};
+}
 
 export function test_setInterval_callbackCalledWithExtraArgs(done) {
     let counter: number = 0;
-    const expected: number = 4;
     const rnd: number = Math.random();
 
     const start = TKUnit.time();
@@ -145,11 +144,9 @@ export function test_setInterval_callbackCalledWithExtraArgs(done) {
             done(end - start > 250 ? new Error("setInterval too slow.") : null);
         }
     }, 50, rnd);
-};
+}
 
 export function test_setInterval_callbackShouldBeCleared(done) {
-    let counter = 0;
-
     const start = TKUnit.time();
     // >> timer-set-interval
     const id = timer.setInterval(() => {
@@ -161,7 +158,7 @@ export function test_setInterval_callbackShouldBeCleared(done) {
         timer.clearInterval(id);
     }, 50);
     // << timer-set-interval
-};
+}
 
 export function test_clearTimeout_multipleTimes_afterTick() {
     let completed = false;

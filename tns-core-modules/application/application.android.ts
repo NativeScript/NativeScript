@@ -1,11 +1,11 @@
-﻿import {
+import {
     AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData, OrientationChangedEventData,
     AndroidApplication as AndroidApplicationDefinition, AndroidActivityNewIntentEventData,
     AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityRequestPermissionsEventData
 } from ".";
 
 import {
-    notify, hasListeners, lowMemoryEvent, orientationChangedEvent, suspendEvent, resumeEvent, displayedEvent,
+    notify, hasListeners, lowMemoryEvent, orientationChangedEvent, suspendEvent, displayedEvent,
     setApplication, livesync, Observable
 } from "./application-common";
 import { profile } from "../profiling";
@@ -49,11 +49,6 @@ export class AndroidApplication extends Observable implements AndroidApplication
     public packageName: string;
     // we are using these property to store the callbacks to avoid early GC collection which would trigger MarkReachableObjects
     private callbacks: any = {};
-
-    public get currentContext(): android.content.Context {
-        console.log("application.currentContext is deprecated; use startActivity, foregroundActivity, or context instead");
-        return this.foregroundActivity;
-    }
 
     public init(nativeApp: android.app.Application) {
         if (this.nativeApp === nativeApp) {
@@ -132,10 +127,9 @@ setApplication(androidApp);
 
 let mainEntry: NavigationEntry;
 let started = false;
-// NOTE: for backwards compatibility. Remove for 4.0.0.
 const createRootFrame = { value: true };
 
-function _start(entry?: NavigationEntry | string) {
+export function _start(entry?: NavigationEntry | string) {
     if (started) {
         throw new Error("Application is already started.");
     }
@@ -148,12 +142,7 @@ function _start(entry?: NavigationEntry | string) {
     }
 }
 
-export function start(entry?: NavigationEntry | string) {
-    console.log("application.start() is deprecated; use application.run() instead");
-    _start(entry);
-}
-
-export function shouldCreateRootFrame(): boolean {
+export function _shouldCreateRootFrame(): boolean {
     return createRootFrame.value;
 }
 
@@ -218,7 +207,7 @@ export function getNativeApplication(): android.app.Application {
 
         // we cannot work without having the app instance
         if (!nativeApp) {
-            throw new Error("Failed to retrieve native Android Application object. If you have a custom android.app.Application type implemented make sure that you've called the '<application-module>.android.init' method.")
+            throw new Error("Failed to retrieve native Android Application object. If you have a custom android.app.Application type implemented make sure that you've called the '<application-module>.android.init' method.");
         }
     }
 
@@ -381,6 +370,7 @@ function ensureBroadCastReceiverClass() {
         constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
             super();
             this._onReceiveCallback = onReceiveCallback;
+
             return global.__native(this);
         }
 

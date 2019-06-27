@@ -1,4 +1,4 @@
-﻿import { encoding as textEncoding } from "../text";
+import { encoding as textEncoding } from "../text";
 import { ios } from "../utils/utils";
 
 // TODO: Implement all the APIs receiving callback using async blocks
@@ -59,6 +59,7 @@ export class FileSystemAccess {
                     if (onError) {
                         onError(new Error("Failed to create file at path '" + path + "'"));
                     }
+
                     return undefined;
                 }
             }
@@ -86,7 +87,7 @@ export class FileSystemAccess {
 
             if (!exists) {
                 try {
-                    fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path, true, null)
+                    fileManager.createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path, true, null);
                 }
                 catch (ex) {
                     if (onError) {
@@ -119,11 +120,13 @@ export class FileSystemAccess {
 
             if (exists) {
                 const dirName = fileManager.displayNameAtPath(path);
+
                 return {
                     path: path,
                     name: dirName
                 };
             }
+
             return undefined;
         } catch (ex) {
             if (onError) {
@@ -147,8 +150,9 @@ export class FileSystemAccess {
 
         const onEntity = function (entity: { path: string; name: string; extension: string }): boolean {
             fileInfos.push(entity);
+
             return true;
-        }
+        };
 
         let errorOccurred;
         const localError = function (error: any) {
@@ -157,7 +161,7 @@ export class FileSystemAccess {
             }
 
             errorOccurred = true;
-        }
+        };
 
         this.enumEntities(path, onEntity, localError);
 
@@ -170,11 +174,13 @@ export class FileSystemAccess {
 
     public fileExists(path: string): boolean {
         const result = this.exists(path);
+
         return result.exists;
     }
 
     public folderExists(path: string): boolean {
         const result = this.exists(path);
+
         return result.exists && result.isDirectory;
     }
 
@@ -235,6 +241,7 @@ export class FileSystemAccess {
     public getLogicalRootPath(): string {
         const mainBundlePath = NSBundle.mainBundle.bundlePath;
         const resolvedPath = NSString.stringWithString(mainBundlePath).stringByResolvingSymlinksInPath;
+
         return resolvedPath;
     }
 
@@ -255,6 +262,7 @@ export class FileSystemAccess {
 
         try {
             const nsString = NSString.stringWithContentsOfFileEncodingError(path, actualEncoding);
+
             return nsString.toString();
         } catch (ex) {
             if (onError) {
@@ -303,6 +311,7 @@ export class FileSystemAccess {
         const paths = fileManager.URLsForDirectoryInDomains(folderType, NSSearchPathDomainMask.UserDomainMask);
 
         const url = paths.objectAtIndex(0);
+
         return url.path;
     }
 
@@ -390,6 +399,7 @@ export class FileSystemAccess {
 
     public joinPath(left: string, right: string): string {
         const nsString: NSString = NSString.stringWithString(left);
+
         return nsString.stringByAppendingPathComponent(right);
     }
 
