@@ -3,7 +3,7 @@
   <ActionBar title="BottomNavigation background-color" icon="" class="action-bar">
   </ActionBar>
 
-  <BottomNavigation style="background-color: green;">
+  <BottomNavigation>
     <TabStrip>
         <TabStripItem title="First"></TabStripItem>
         <TabStripItem title="Second"></TabStripItem>
@@ -11,13 +11,13 @@
 
     <TabContentItem>
         <GridLayout>
-          <Label text="First View" verticalAlignment="center" horizontalAlignment="center"/>
+          <Label text="First View" />
         </GridLayout>
     </TabContentItem>
 
     <TabContentItem>
         <GridLayout>
-          <Label text="Second View" verticalAlignment="center" horizontalAlignment="center"/>
+          <Label text="Second View" />
         </GridLayout>
     </TabContentItem>
   </BottomNavigation>
