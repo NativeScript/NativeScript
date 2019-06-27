@@ -111,14 +111,14 @@ export function test_onLiveSync_ModuleContext_MarkupHtml_ScriptTs_StyleScss_File
     ]);
 }
 
-function _test_onLiveSync_ModuleContext_AppStyle(appStyleFileName: string, styleFileName: string) {
+function _test_onLiveSync_ModuleContext_AppStyle(appStyleFileName: string, livesyncStyleFileName: string) {
     const pageBeforeNavigation = helper.getCurrentPage();
     const buttonPage = <Page>createViewFromEntry(({ moduleName: buttonPageModuleName }));
     helper.navigateWithHistory(() => buttonPage);
 
     app.setCssFileName(appStyleFileName);
     const pageBeforeLiveSync = helper.getCurrentPage();
-    livesync({ type: "style", path: styleFileName });
+    livesync({ type: "style", path: livesyncStyleFileName });
 
     const pageAfterLiveSync = helper.getCurrentPage();
     TKUnit.waitUntilReady(() => pageAfterLiveSync.getViewById("button").style.color.toString() === green.toString());
@@ -163,7 +163,7 @@ function _test_onLiveSync_ModuleReplace(context: ModuleContext) {
     TKUnit.assertEqual(pageBeforeNavigation, pageAfterBackNavigation, "Pages are different!");
 }
 
-function _test_onLiveSync_ModuleContext_TypeStyle(styleModuleName: string, styleFileName: string) {
+function _test_onLiveSync_ModuleContext_TypeStyle(styleModuleName: string, livesyncStyleFileName: string) {
     const pageBeforeNavigation = helper.getCurrentPage();
     const buttonPage = <Page>createViewFromEntry(({ moduleName: buttonPageModuleName }));
     helper.navigateWithHistory(() => buttonPage);
@@ -171,7 +171,7 @@ function _test_onLiveSync_ModuleContext_TypeStyle(styleModuleName: string, style
     const pageBeforeLiveSync = helper.getCurrentPage();
     pageBeforeLiveSync._moduleName = styleModuleName;
 
-    livesync({ type: "style", path: styleFileName });
+    livesync({ type: "style", path: livesyncStyleFileName });
     const topmostFrame = frame.topmost();
     waitUntilLivesyncComplete(topmostFrame);
 
