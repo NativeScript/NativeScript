@@ -1,6 +1,6 @@
 <Page>
 
-  <ActionBar title="BottomNavigation" icon="" class="action-bar">
+  <ActionBar title="Tabs" icon="" class="action-bar">
   </ActionBar>
 
   <!-- w/o TabStrip -->
@@ -18,7 +18,7 @@
   </BottomNavigation> -->
 
   <!-- w/ TabStrip -->
-  <Tabs id="bottomNav">
+  <Tabs id="tabsNav">
     <TabStrip>
       <TabStripItem title="First Tab 11" iconSource="res://icon"></TabStripItem>
       <TabStripItem>
