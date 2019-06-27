@@ -1,4 +1,4 @@
-﻿import * as definition from ".";
+import * as definition from ".";
 import * as types from "../utils/types";
 import * as knownColors from "./known-colors";
 
@@ -147,6 +147,7 @@ export class Color implements definition.Color {
                 + hexStr.charAt(2) + hexStr.charAt(2)
                 + hexStr.charAt(3) + hexStr.charAt(3);
         }
+
         return hexStr;
     }
 
@@ -157,6 +158,7 @@ export class Color implements definition.Color {
 
 function isRgbOrRgba(value: string): boolean {
     const toLower = value.toLowerCase();
+
     return (toLower.indexOf("rgb(") === 0 || toLower.indexOf("rgba(") === 0) && toLower.indexOf(")") === (toLower.length - 1);
 }
 

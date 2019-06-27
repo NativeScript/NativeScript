@@ -13,6 +13,7 @@ export function createPage() {
     function createTxt(text: string) {
         var tv = new textView.TextView();
         tv.text = text;
+
         return tv;
     }
 
@@ -60,6 +61,7 @@ export function createPage() {
 
     page.content = scrollView;
     timer.setTimeout(performGet, 2000);
+
     return page;
 }
 

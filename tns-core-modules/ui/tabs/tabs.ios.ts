@@ -1,4 +1,4 @@
-﻿// Types
+// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
@@ -8,7 +8,7 @@ import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-n
 import { TabsBase, swipeEnabledProperty } from "./tabs-common";
 import { Frame } from "../frame";
 import { ios as iosView, View } from "../core/view";
-import { /*ios as iosUtils,*/ layout } from "../../utils/utils"
+import { /*ios as iosUtils,*/ layout } from "../../utils/utils";
 // import { device } from "../../platform";
 import { fromFileOrResource } from "../../image-source";
 
@@ -28,6 +28,7 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
     public static initWithOwner(owner: WeakRef<Tabs>): MDCTabBarDelegateImpl {
         let delegate = <MDCTabBarDelegateImpl>MDCTabBarDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -57,6 +58,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
     public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerImpl {
         const handler = <UIPageViewControllerImpl>UIPageViewControllerImpl.alloc().initWithTransitionStyleNavigationOrientationOptions(UIPageViewControllerTransitionStyle.Scroll, UIPageViewControllerNavigationOrientation.Horizontal, null);
         handler._owner = owner;
+
         return handler;
     }
 
@@ -245,6 +247,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
     public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerDataSourceImpl {
         let dataSource = <UIPageViewControllerDataSourceImpl>UIPageViewControllerDataSourceImpl.new();
         dataSource._owner = owner;
+
         return dataSource;
     }
 
@@ -328,6 +331,7 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
     public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerDelegateImpl {
         let delegate = <UIPageViewControllerDelegateImpl>UIPageViewControllerDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -359,7 +363,7 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
         const nextViewControllerIndex = ownerViewControllers.indexOf(nextViewController);
 
         if (selectedIndex !== nextViewControllerIndex) {
-            owner.selectedIndex = nextViewControllerIndex
+            owner.selectedIndex = nextViewControllerIndex;
         }
         
         console.log("test");
@@ -558,7 +562,7 @@ export class Tabs extends TabsBase {
         super();
 
         // this.viewController = this._ios = <UIPageViewControllerImpl>UIPageViewControllerImpl.initWithOwner(new WeakRef(this)); // .alloc().initWithTransitionStyleNavigationOrientationOptions(UIPageViewControllerTransitionStyle.Scroll, UIPageViewControllerNavigationOrientation.Horizontal, null); // UITabBarControllerImpl.initWithOwner(new WeakRef(this));
-        this.viewController = this._ios = <UIPageViewControllerImpl>UIPageViewControllerImpl.initWithOwner(new WeakRef(this)); //alloc().initWithTransitionStyleNavigationOrientationOptions(UIPageViewControllerTransitionStyle.Scroll, UIPageViewControllerNavigationOrientation.Horizontal, null);;        
+        this.viewController = this._ios = <UIPageViewControllerImpl>UIPageViewControllerImpl.initWithOwner(new WeakRef(this)); //alloc().initWithTransitionStyleNavigationOrientationOptions(UIPageViewControllerTransitionStyle.Scroll, UIPageViewControllerNavigationOrientation.Horizontal, null);;
         this.nativeViewProtected = this._ios.view;
     }
 
@@ -750,6 +754,7 @@ export class Tabs extends TabsBase {
 
         if (newController) {
             (<any>item).setViewController(newController, newController.view);
+
             return newController;
         }
 

@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import * as pagesModule from "tns-core-modules/ui/page";
@@ -22,69 +22,70 @@ export function test_recycling() {
 
 export var testSetText = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testSetText);
-}
+};
 
 export var testOnClick = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testOnClick);
-}
+};
 
 export var testBindTextDirectlyToModel = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testBindTextDirectlyToModel);
-}
+};
 
 export var testBindTextToBindingContext = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testBindTextToBindingContext);
-}
+};
 
 export var testLocalFontSizeFromCss = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testLocalFontSizeFromCss);
-}
+};
 
 export var testNativeFontSizeFromCss = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testNativeFontSizeFromCss);
-}
+};
 
 export var testNativeFontSizeFromLocal = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testNativeFontSizeFromLocal);
-}
+};
 
 export var testLocalColorFromCss = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testLocalColorFromCss);
-}
+};
 
 export var testNativeColorFromCss = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testNativeColorFromCss);
-}
+};
 
 export var testNativeColorFromLocal = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testNativeColorFromLocal);
-}
+};
 
 export var testLocalBackgroundColorFromCss = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testLocalBackgroundColorFromCss);
-}
+};
 
 export var testNativeBackgroundColorFromCss = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testNativeBackgroundColorFromCss);
-}
+};
 
 export var testNativeBackgroundColorFromLocal = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testNativeBackgroundColorFromLocal);
-}
+};
 
 export var testMemoryLeak = function (done) {
     helper.buildUIWithWeakRefAndInteract(_createButtonFunc, function (button) {
         buttonTestsNative.performNativeClick(button);
     }, done);
-}
+};
 
 var _createButtonFunc = function (): buttonModule.Button {
     // >>button-create
     var button = new buttonModule.Button();
     // << button-create
     button.text = "Button";
+
     return button;
-}
+};
 
 var _testSetText = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -96,7 +97,7 @@ var _testSetText = function (views: Array<viewModule.View>) {
     var actualValue = buttonTestsNative.getNativeText(button);
 
     TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-}
+};
 
 var _testOnClick = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -113,7 +114,7 @@ var _testOnClick = function (views: Array<viewModule.View>) {
 
     buttonTestsNative.performNativeClick(button);
     TKUnit.assertTrue(actualValue, "Actual: " + actualValue + "; Expected: " + true);
-}
+};
 
 var _testBindTextDirectlyToModel = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -124,7 +125,7 @@ var _testBindTextDirectlyToModel = function (views: Array<viewModule.View>) {
     var options: bindable.BindingOptions = {
         sourceProperty: "buttonTitle",
         targetProperty: "text"
-    }
+    };
     button.bind(options, model);
     // button.text is now "OK"
     // >> (hide)
@@ -136,7 +137,7 @@ var _testBindTextDirectlyToModel = function (views: Array<viewModule.View>) {
     TKUnit.assert(button.text === "Cancel", "Actual: " + button.text + "; Expected: " + "Cancel");
     // << (hide)
     // << button-bind
-}
+};
 
 var _testBindTextToBindingContext = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -149,13 +150,13 @@ var _testBindTextToBindingContext = function (views: Array<viewModule.View>) {
     var options: bindable.BindingOptions = {
         sourceProperty: "buttonTitle",
         targetProperty: "text"
-    }
+    };
     button.bind(options);
 
     TKUnit.assert(button.text === "OK", "Actual: " + button.text + "; Expected: " + "OK");
     model.set("buttonTitle", "Cancel");
     TKUnit.assert(button.text === "Cancel", "Actual: " + button.text + "; Expected: " + "Cancel");
-}
+};
 
 var expectedFontSize = 42;
 var _testLocalFontSizeFromCss = function (views: Array<viewModule.View>) {
@@ -165,7 +166,7 @@ var _testLocalFontSizeFromCss = function (views: Array<viewModule.View>) {
     page.css = "button { font-size: " + expectedFontSize + "; }";
     var actualResult = button.style.fontSize;
     TKUnit.assert(actualResult === expectedFontSize, "Actual: " + actualResult + "; Expected: " + 33);
-}
+};
 
 var _testNativeFontSizeFromCss = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -174,7 +175,7 @@ var _testNativeFontSizeFromCss = function (views: Array<viewModule.View>) {
 
     var actualResult = buttonTestsNative.getNativeFontSize(button);
     helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromCss");
-}
+};
 
 var _testNativeFontSizeFromLocal = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -182,10 +183,10 @@ var _testNativeFontSizeFromLocal = function (views: Array<viewModule.View>) {
 
     var actualResult = buttonTestsNative.getNativeFontSize(button);
     helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromLocal");
-}
+};
 
 var actualColorHex = "#ffff0000";
-var expectedNormalizedColorHex = "#FF0000"
+var expectedNormalizedColorHex = "#FF0000";
 var _testLocalColorFromCss = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
     var page = <pagesModule.Page>views[1];
@@ -193,7 +194,7 @@ var _testLocalColorFromCss = function (views: Array<viewModule.View>) {
 
     var actualResult = button.style.color.hex;
     TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
-}
+};
 
 var _testNativeColorFromCss = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -202,7 +203,7 @@ var _testNativeColorFromCss = function (views: Array<viewModule.View>) {
 
     var actualResult = buttonTestsNative.getNativeColor(button).hex;
     TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
-}
+};
 
 var _testNativeColorFromLocal = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -210,7 +211,7 @@ var _testNativeColorFromLocal = function (views: Array<viewModule.View>) {
 
     var actualResult = buttonTestsNative.getNativeColor(button).hex;
     TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
-}
+};
 
 var actualBackgroundColorHex = "#FF00FF00";
 var expectedNormalizedBackgroundColorHex = "#00FF00";
@@ -221,7 +222,7 @@ var _testLocalBackgroundColorFromCss = function (views: Array<viewModule.View>) 
 
     var actualResult = button.style.backgroundColor.hex;
     TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
-}
+};
 
 var _testNativeBackgroundColorFromCss = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -232,7 +233,7 @@ var _testNativeBackgroundColorFromCss = function (views: Array<viewModule.View>)
 
     var actualResult = buttonTestsNative.getNativeBackgroundColor(button).hex;
     TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
-}
+};
 
 var _testNativeBackgroundColorFromLocal = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -242,7 +243,7 @@ var _testNativeBackgroundColorFromLocal = function (views: Array<viewModule.View
 
     var actualResult = buttonTestsNative.getNativeBackgroundColor(button).hex;
     TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
-}
+};
 
 var expectedTextAlignment: "right" = "right";
 export var testLocalTextAlignmentFromCss = function () {
@@ -254,7 +255,7 @@ export var testLocalTextAlignmentFromCss = function () {
         var actualResult = view.style.textAlignment;
         TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
     });
-}
+};
 
 export var testNativeTextAlignmentFromCss = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
@@ -265,7 +266,7 @@ export var testNativeTextAlignmentFromCss = function () {
         var actualResult = buttonTestsNative.getNativeTextAlignment(view);
         TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
     });
-}
+};
 
 export var test_StateHighlighted_also_fires_pressedState = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
@@ -282,7 +283,7 @@ export var test_StateHighlighted_also_fires_pressedState = function () {
         var actualResult = buttonTestsNative.getNativeBackgroundColor(view);
         TKUnit.assert(actualResult.hex === expectedNormalizedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedNormalizedColor);
     });
-}
+};
 
 export var test_StateHighlighted_also_fires_activeState = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
@@ -299,7 +300,7 @@ export var test_StateHighlighted_also_fires_activeState = function () {
         var actualResult = buttonTestsNative.getNativeBackgroundColor(view);
         TKUnit.assert(actualResult.hex === expectedNormalizedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedNormalizedColor);
     });
-}
+};
 
 export var test_applying_disabled_visual_State_when_button_is_disable = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
@@ -316,7 +317,7 @@ export var test_applying_disabled_visual_State_when_button_is_disable = function
         var actualResult = buttonTestsNative.getNativeBackgroundColor(view);
         TKUnit.assert(actualResult.hex === expectedNormalizedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedNormalizedColor);
     });
-}
+};
 
 export var testNativeTextAlignmentFromLocal = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
@@ -326,7 +327,7 @@ export var testNativeTextAlignmentFromLocal = function () {
         var actualResult = buttonTestsNative.getNativeTextAlignment(view);
         TKUnit.assert(actualResult === expectedTextAlignment, "Actual: " + actualResult + "; Expected: " + expectedTextAlignment);
     });
-}
+};
 
 export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_Button = function () {
     var firstSpan = new spanModule.Span();
@@ -360,7 +361,7 @@ export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_Button = function
         view.formattedText = null;
         TKUnit.assertEqual(view.text, "");
     });
-}
+};
 
 export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
     let view = new buttonModule.Button();

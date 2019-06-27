@@ -48,7 +48,7 @@ interface ExpandedEntry extends BackstackEntry {
 
     transition: Transition;
     transitionName: string;
-    frameId: number
+    frameId: number;
     useLollipopTransition: boolean;
 }
 
@@ -291,6 +291,7 @@ function getTransitionListener(entry: ExpandedEntry, transition: android.transit
         class TransitionListenerImpl extends java.lang.Object implements android.transition.Transition.TransitionListener {
             constructor(public entry: ExpandedEntry, public transition: android.transition.Transition) {
                 super();
+
                 return global.__native(this);
             }
 
@@ -343,6 +344,7 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
         class AnimationListenerImpl extends java.lang.Object implements android.animation.Animator.AnimatorListener {
             constructor() {
                 super();
+
                 return global.__native(this);
             }
 
@@ -710,6 +712,7 @@ function setUpNativeTransition(navigationTransition: NavigationTransition, nativ
 function addNativeTransitionListener(entry: ExpandedEntry, nativeTransition: android.transition.Transition): ExpandedTransitionListener {
     const listener = getTransitionListener(entry, nativeTransition);
     nativeTransition.addListener(listener);
+
     return listener;
 }
 
@@ -778,12 +781,14 @@ function printTransitions(entry: ExpandedEntry) {
 function javaObjectArray(...params: java.lang.Object[]) {
     const nativeArray = Array.create(java.lang.Object, params.length);
     params.forEach((value, i) => nativeArray[i] = value);
+
     return nativeArray;
 }
 
 function createDummyZeroDurationAnimator(): android.animation.Animator {
     const animator = android.animation.ValueAnimator.ofObject(intEvaluator(), javaObjectArray(java.lang.Integer.valueOf(0), java.lang.Integer.valueOf(1)));
     animator.setDuration(0);
+
     return animator;
 }
 

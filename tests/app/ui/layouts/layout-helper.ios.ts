@@ -1,4 +1,4 @@
-﻿import { Button } from "tns-core-modules/ui/button";
+import { Button } from "tns-core-modules/ui/button";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import * as utils from "tns-core-modules/utils/utils";
@@ -44,21 +44,25 @@ export class MyGridLayout extends GridLayout implements def.MyGridLayout {
 
     get layoutWidth(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.right - bounds.left;
     }
 
     get layoutHeight(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.bottom - bounds.top;
     }
 
     get layoutLeft(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.left;
     }
 
     get layoutTop(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.top;
     }
 }
@@ -100,21 +104,25 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
 
     get layoutWidth(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.right - bounds.left;
     }
 
     get layoutHeight(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.bottom - bounds.top;
     }
 
     get layoutLeft(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.left;
     }
 
     get layoutTop(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.top;
     }
 }
@@ -156,21 +164,25 @@ export class MyButton extends Button implements def.MyButton {
 
     get layoutWidth(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.right - bounds.left;
     }
 
     get layoutHeight(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.bottom - bounds.top;
     }
     
     get layoutLeft(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.left;
     }
 
     get layoutTop(): number {
         let bounds = this._getCurrentLayoutBounds();
+
         return bounds.top;
     }
 }

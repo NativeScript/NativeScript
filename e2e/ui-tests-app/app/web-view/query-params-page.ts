@@ -20,16 +20,16 @@ const htmlString = `<html>
 </html>`;
 
 export function loadRelative() {
-    setSrc(relUrl)
+    setSrc(relUrl);
 }
 export function loadAbsolute() {
-    setSrc(absoluteUrl)
+    setSrc(absoluteUrl);
 }
 export function loadFile() {
-    setSrc(fileUrl)
+    setSrc(fileUrl);
 }
 export function loadString() {
-    setSrc(htmlString)
+    setSrc(htmlString);
 }
 
 function setSrc(src) {

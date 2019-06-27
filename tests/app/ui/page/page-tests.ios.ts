@@ -1,4 +1,4 @@
-﻿import { Page, View, EventData } from "tns-core-modules/ui/page";
+ import { Page, View, EventData } from "tns-core-modules/ui/page";
 import { Label } from "tns-core-modules/ui/label";
 import { topmost } from "tns-core-modules/ui/frame";
 import * as TKUnit from "../../tk-unit";
@@ -12,6 +12,7 @@ export function test_NavigateToNewPage_InnerControl() {
     var pageFactory = function (): Page {
         testPage = new Page();
         addLabelToPage(testPage);
+
         return testPage;
     };
 
@@ -34,7 +35,7 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
     let onModalUnloaded = function (args: EventData) {
         modalUnloaded++;
         modalPage.off(Page.unloadedEvent, onModalUnloaded);
-    }
+    };
 
     var navigatedToEventHandler = function (args) {
         modalPage = masterPage.showModal("ui/page/modal-page", { context: null, closeCallback: null, fullscreen: false }) as Page;
@@ -53,6 +54,7 @@ export function test_WhenShowingModalPageUnloadedIsNotFiredForTheMasterPage() {
         var label = new Label();
         label.text = "Modal Page";
         masterPage.content = label;
+
         return masterPage;
     };
 

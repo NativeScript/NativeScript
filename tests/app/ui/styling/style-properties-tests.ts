@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../tk-unit";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { Button } from "tns-core-modules/ui/button";
 import { Label } from "tns-core-modules/ui/label";
@@ -626,7 +626,7 @@ export function test_setting_label_whiteSpace_nowrap_sets_native() {
             TKUnit.assertEqual((<UILabel>testView.ios).numberOfLines, 1);
         }
     });
-};
+}
 
 export function test_setting_label_whiteSpace_normal_sets_native() {
     const testView = new Label();
@@ -640,7 +640,7 @@ export function test_setting_label_whiteSpace_normal_sets_native() {
             TKUnit.assertEqual((<UILabel>testView.ios).numberOfLines, 0);
         }
     });
-};
+}
 
 export function test_setting_button_whiteSpace_nowrap_sets_native() {
     const testView = new Button();
@@ -654,7 +654,7 @@ export function test_setting_button_whiteSpace_nowrap_sets_native() {
             TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 1);
         }
     });
-};
+}
 
 export function test_setting_button_whiteSpace_normal_sets_native() {
     const testView = new Button();
@@ -668,7 +668,7 @@ export function test_setting_button_whiteSpace_normal_sets_native() {
             TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 0);
         }
     });
-};
+}
 
 const initial = "text Text";
 const capitalized = "Text Text";
@@ -772,7 +772,7 @@ export const test_setting_textView_textTransform_and_textDecoration_sets_native 
 
         executeTransformTest(testView, androidText, iOSText);
     }
-}
+};
 
 export const test_setting_button_textTransform_sets_native = function () {
     const testView = new Button();

@@ -1,4 +1,4 @@
-﻿import {
+import {
     ActionBar as ActionBarDefinition,
     ActionItems as ActionItemsDefinition,
     ActionItem as ActionItemDefinition,
@@ -117,7 +117,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
     public static onTitleChanged;
 
     public update() {
-        // 
+        //
     }
 
     public _onTitlePropertyChanged() {

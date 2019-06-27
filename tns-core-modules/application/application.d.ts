@@ -197,16 +197,14 @@ export function run(entry?: NavigationEntry | string);
  */
 export function _resetRootView(entry?: NavigationEntry | string);
 
-//@private	
-/**		
- * @private	
- */	
+/**
+ * @private
+ */
 export function _shouldCreateRootFrame(): boolean;
-/**		
- * @private	
- */	
+/**
+ * @private
+ */
 export function _start(entry?: NavigationEntry | string);
-//@endprivate
 
 /**
  * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).

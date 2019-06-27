@@ -20,7 +20,7 @@ export class Item extends Observable {
   set name(value: string) {
     if (this._name !== value) {
       this._name = value;
-      this.notifyPropertyChange("name", value)
+      this.notifyPropertyChange("name", value);
     }
   }
 
@@ -31,7 +31,7 @@ export class Item extends Observable {
   set id(value: number) {
     if (this._id !== value) {
       this._id = value;
-      this.notifyPropertyChange("id", value)
+      this.notifyPropertyChange("id", value);
     }
   }
 
@@ -42,7 +42,7 @@ export class Item extends Observable {
   set age(value: number) {
     if (this._age !== value) {
       this._age = value;
-      this.notifyPropertyChange("age", value)
+      this.notifyPropertyChange("age", value);
     }
   }
 
@@ -59,6 +59,7 @@ export class ViewModel extends Observable {
     for (let i = 0; i < 100; i++) {
       this._items.push(new Item(`Item`, i, 0));
     }
+
     return this._items;
   }
 }

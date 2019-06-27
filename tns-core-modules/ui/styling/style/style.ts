@@ -154,4 +154,4 @@ export class Style extends Observable implements StyleDefinition {
         return undefined;
     }
 }
-Style.prototype.PropertyBag = class { [property: string]: string; }
+Style.prototype.PropertyBag = class { [property: string]: string; };

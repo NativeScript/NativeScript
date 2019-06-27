@@ -14,5 +14,6 @@ export function loadExamples() {
     examples.set("issue_2895", "list-picker/issue_2895-page");
     examples.set("list-picker", "list-picker/list-picker-page");
     examples.set("list-picker-json-array", "list-picker/list-picker-json-array-page");
+
     return examples;
 }

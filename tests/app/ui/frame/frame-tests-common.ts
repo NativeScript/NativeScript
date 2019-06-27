@@ -1,4 +1,4 @@
-﻿// >> frame-require
+// >> frame-require
 import { Frame, getFrameById, topmost, NavigationEntry } from "tns-core-modules/ui/frame";
 // << frame-require
 
@@ -25,6 +25,7 @@ export function ignore_test_DummyTestForSnippetOnly1() {
         label.text = "Hello, world!";
         const page = new Page();
         page.content = label;
+
         return page;
     };
     const frame = topmost();
@@ -161,6 +162,7 @@ export function test_page_parent_when_backstackVisible_is_false() {
     const create = () => {
         const page = new Page();
         pages.push(page);
+
         return page;
     };
 
@@ -186,6 +188,7 @@ export function test_page_parent_when_navigate_with_clear_history() {
     const create = () => {
         const page = new Page();
         pages.push(page);
+
         return page;
     };
 
@@ -212,6 +215,7 @@ export function test_page_parent_when_navigate_back() {
     const create = () => {
         const page = new Page();
         pages.push(page);
+
         return page;
     };
 

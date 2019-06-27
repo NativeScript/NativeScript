@@ -1,4 +1,4 @@
-﻿// Types
+// Types
 import { TabNavigationBase as TabNavigationBaseDefinition, SelectedIndexChangedEventData } from ".";
 import { TabContentItem } from "../tab-content-item";
 import { TabStrip } from "../tab-strip";
@@ -42,11 +42,13 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
 
     get _selectedView(): View {
         let selectedIndex = this.selectedIndex;
+
         return selectedIndex > -1 ? this.items[selectedIndex].view : null;
     }
 
     get _childrenCount(): number {
         const items = this.items;
+
         return items ? items.length : 0;
     }
 

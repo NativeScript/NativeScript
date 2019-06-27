@@ -71,7 +71,7 @@ export var testFileFromPath = function () {
             // << (hide)
         });
     // << file-system-create
-}
+};
 
 export var testFolderFromPath = function () {
     // >> file-system-create-folder
@@ -83,7 +83,7 @@ export var testFolderFromPath = function () {
     folder.remove();
     // << (hide)
     // << file-system-create-folder
-}
+};
 
 export var testFileWrite = function () {
     // >> file-system-write-string
@@ -124,7 +124,7 @@ export var testGetFile = function () {
     file.remove();
     // << (hide)
     // << file-system-create-file
-}
+};
 
 export var testGetFolder = function () {
     // >> file-system-get-folder
@@ -319,10 +319,11 @@ export var testEnumEntities = function () {
                 testFolderFound = true;
             }
         }
-    }
+    };
     // << (hide)
     documents.eachEntity(function (entity) {
         console.log(entity.name);
+
         // Return true to continue, or return false to stop the iteration.
         return true;
     });
@@ -490,7 +491,7 @@ export var testFolderRemove = function () {
             // << (hide)
         });
     // << file-system-remove-folder
-}
+};
 
 export var testFolderClear = function () {
     // >> file-system-clear-folder
@@ -550,7 +551,7 @@ export function testKnownFolderRemove(done) {
         function (error) {
             done(null);
         });
-};
+}
 
 export function test_FSEntity_Properties() {
     var documents = fs.knownFolders.documents();
@@ -570,6 +571,7 @@ export function test_FileSize(done) {
     var file = fs.knownFolders.documents().getFile("Test_File_Size.txt");
     file.writeText("Hello World!").then(() => {
         TKUnit.assert(file.size === "Hello World!".length);
+
         return file.remove();
     }).then(() => done())
     .catch(done);
@@ -581,6 +583,7 @@ export function test_UnlockAfterWrite(done) {
         return file.readText();
     }).then(value => {
         TKUnit.assert(value === "Hello World!");
+
         return file.remove();
     }).then(() => done())
     .catch(done);

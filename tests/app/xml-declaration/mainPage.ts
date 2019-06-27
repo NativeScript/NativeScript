@@ -8,11 +8,11 @@ var obj = new observable.Observable();
 obj.set("id", 0);
 obj.set("text", "Button with event binding");
 obj.set("myFunction", (args: observable.EventData) => {
-    console.log("Button with event binding: " + args.object)
+    console.log("Button with event binding: " + args.object);
 });
 
 //obj.set("someItems", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
-obj.set("someItems", ["One", "Two", "Three", "Four", "Five", "Six", "Seven"])
+obj.set("someItems", ["One", "Two", "Three", "Four", "Five", "Six", "Seven"]);
 
 var subObj = new observable.Observable();
 subObj.set("subId", 0);
@@ -36,11 +36,11 @@ export function buttonTap(args: observable.EventData) {
     }
 
     http.getString("http://it-ebooks-api.info/v1/book/1615005640").then(r => {
-        console.log("R: " + r)
+        console.log("R: " + r);
     });
 
     http.getString("http://www.telerik.com").then(r => {
-        console.log("R: " + r)
+        console.log("R: " + r);
     });
 }
 
@@ -52,5 +52,5 @@ export function MyPageLoaded(args: observable.EventData) {
 }
 
 export function setPicture(args: observable.EventData) {
-    // 
+    //
 }

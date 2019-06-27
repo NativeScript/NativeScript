@@ -1,4 +1,4 @@
-﻿import {
+import {
     TimePickerBase, timeProperty, minuteIntervalProperty,
     minuteProperty, minMinuteProperty, maxMinuteProperty,
     hourProperty, minHourProperty, maxHourProperty, colorProperty, Color
@@ -10,6 +10,7 @@ function getDate(hour: number, minute: number): Date {
     let components = NSDateComponents.alloc().init();
     components.hour = hour;
     components.minute = minute;
+
     return NSCalendar.currentCalendar.dateFromComponents(<any>components);
 }
 
@@ -31,6 +32,7 @@ export class TimePicker extends TimePickerBase {
     createNativeView() {
         const picker = UIDatePicker.new();
         picker.datePickerMode = UIDatePickerMode.Time;
+
         return picker;
     }
 
@@ -121,6 +123,7 @@ class UITimePickerChangeHandlerImpl extends NSObject {
     public static initWithOwner(owner: WeakRef<TimePicker>): UITimePickerChangeHandlerImpl {
         let handler = <UITimePickerChangeHandlerImpl>UITimePickerChangeHandlerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 
@@ -150,5 +153,5 @@ class UITimePickerChangeHandlerImpl extends NSObject {
 
     public static ObjCExposedMethods = {
         "valueChanged": { returns: interop.types.void, params: [UIDatePicker] }
-    }
+    };
 }

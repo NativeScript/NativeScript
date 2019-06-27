@@ -1,7 +1,7 @@
-﻿import { ProxyViewContainer as ProxyViewContainerDefinition } from ".";
+import { ProxyViewContainer as ProxyViewContainerDefinition } from ".";
 import { LayoutBase, View, traceEnabled, traceWrite, traceCategories, CSSType } from "../layouts/layout-base";
 /**
- * Proxy view container that adds all its native children directly to the parent. 
+ * Proxy view container that adds all its native children directly to the parent.
  * To be used as a logical grouping container of views.
  */
 // Cases to cover:
@@ -43,6 +43,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
         let result = 0;
         this.eachChildView((cv) => {
             result += cv._getNativeViewsCount();
+
             return true;
         });
 
@@ -54,6 +55,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
             if (!cv.isCollapsed) {
                 cv._eachLayoutView(callback);
             }
+
             return true;
         });
     }
@@ -82,6 +84,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
             if (traceEnabled()) {
                 traceWrite("ProxyViewContainer._addViewToNativeVisualTree at: " + atIndex + " base: " + baseIndex + " additional: " + insideIndex, traceCategories.ViewHierarchy);
             }
+
             return parent._addViewToNativeVisualTree(child, baseIndex + insideIndex);
         }
 
@@ -133,11 +136,13 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
         if (addingToParent && newLayout instanceof LayoutBase) {
             this.eachLayoutChild((child) => {
                 newLayout._registerLayoutChild(child);
+
                 return true;
             });
         } else if (oldLayout instanceof LayoutBase) {
             this.eachLayoutChild((child) => {
                 oldLayout._unregisterLayoutChild(child);
+
                 return true;
             });
         }

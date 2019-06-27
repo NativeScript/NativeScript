@@ -23,7 +23,7 @@ const TRANSFORM_MATRIXES = {
             Math.cos(angleInRad), -Math.sin(angleInRad), 0,
             Math.sin(angleInRad), Math.cos(angleInRad), 0,
             0, 0, 1,
-        ]
+        ];
     },
 };
 
@@ -40,7 +40,7 @@ export function multiplyAffine2d(m1: number[], m2: number[]): number[] {
         m1[3] * m2[0] + m1[4] * m2[3],
         m1[3] * m2[1] + m1[4] * m2[4],
         m1[3] * m2[2] + m1[4] * m2[5] + m1[5]
-    ]
+    ];
 }
 
 export function decompose2DTransformMatrix(matrix: number[])

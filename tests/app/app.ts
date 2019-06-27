@@ -10,7 +10,7 @@ import * as application from "tns-core-modules/application";
 if (application.ios) {
     // Observe application notifications.
     application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, (notification: NSNotification) => {
-        console.log("UIApplicationDidFinishLaunchingNotification: " + notification)
+        console.log("UIApplicationDidFinishLaunchingNotification: " + notification);
     });
 }
 

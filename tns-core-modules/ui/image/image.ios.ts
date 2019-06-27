@@ -14,6 +14,7 @@ export class Image extends ImageBase {
         const imageView = UIImageView.new();
         imageView.contentMode = UIViewContentMode.ScaleAspectFit;
         imageView.userInteractionEnabled = true;
+
         return imageView;
     }
 
@@ -118,6 +119,7 @@ export class Image extends ImageBase {
                 }
             }
         }
+
         return { width: scaleW, height: scaleH };
     }
 

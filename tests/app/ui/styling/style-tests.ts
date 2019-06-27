@@ -280,7 +280,7 @@ export function test_class_and_state_selector() {
     page.style.color = unsetValue;
 
     let btn = new buttonModule.Button();
-    btn.className = "test"
+    btn.className = "test";
 
     let testStack = new stackModule.StackLayout();
     page.content = testStack;
@@ -298,7 +298,7 @@ export function test_class_and_state_selector_with_multiple_classes() {
     let testStack = new stackModule.StackLayout();
     page.content = testStack;
 
-    btn.className = "test otherClass"
+    btn.className = "test otherClass";
     testStack.addChild(btn);
 
     page.css = ".test:pressed { color: red; }";
@@ -363,10 +363,10 @@ export const test_composite_selector_type_and_class = function () {
         TKUnit.assert(btnWithClass.style.color.hex === "#FF0000", "Color property no applied correctly.");
         TKUnit.assert(btnWithNoClass.style.color === undefined, "btnWithNoClass color should not have a value");
         TKUnit.assert(lblWithClass.style.color === undefined, "lblWithClass color should not have a value");
-    }
+    };
 
     helper.buildUIAndRunTest(testStack, testFunc, { pageCss: testCss });
-}
+};
 
 export const test_composite_selector_type_class_state = function () {
     const testStack = new stackModule.StackLayout();
@@ -394,9 +394,9 @@ export const test_composite_selector_type_class_state = function () {
         TKUnit.assertNull(btnWithNoClass.style.color, "Color should not have a value.");
 
         TKUnit.assertNull(lblWithClass.style.color, "Color should not have a value");
-    }
+    };
     helper.buildUIAndRunTest(testStack, testFunc, { pageCss: testCss });
-}
+};
 
 export const test_style_is_applied_when_control_is_added_after_load = function () {
     let page = helper.getClearCurrentPage();
@@ -408,7 +408,7 @@ export const test_style_is_applied_when_control_is_added_after_load = function (
     testStack.addChild(btn);
     TKUnit.assert(btn.style.color, "Color property no applied correctly.");
     TKUnit.assertEqual(btn.style.color.hex, "#FF0000", "Color property not applied correctly.");
-}
+};
 
 const changeIdOrClassTestCss =
     "button { background-color: #111111 } " +
@@ -588,7 +588,7 @@ function testSelectorsPrioritiesTemplate(css: string) {
 
     btnWithId = new buttonModule.Button();
     btnWithId.className = "button-class";
-    btnWithId.id = "myButton"
+    btnWithId.id = "myButton";
     testStack.addChild(btnWithId);
 
     page.css = css;
@@ -687,7 +687,7 @@ export function test_CSS_isAppliedOnPage_From_changeCssFile() {
         page.changeCssFile(fs.knownFolders.currentApp().path + "/ui/styling/test-page.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
         TKUnit.assert(testButton.style.color === undefined, "Color should not have a value");
-    }
+    };
 
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
@@ -758,7 +758,7 @@ export function test_basic_hierarchical_selectors() {
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#FF0000");
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -784,7 +784,7 @@ export function test_basic_hierarchical_direct_child_selectors() {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#FF0000");
         // only buttons that are direct children of StackLayout should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#00FF00");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -810,7 +810,7 @@ export function test_basic_hierarchical_direct_child_more_levels_selectors() {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // only buttons that are direct children of StackLayout and WrapLayout should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -838,7 +838,7 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types()
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // only buttons that are direct children of StackLayout and WrapLayout should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -867,7 +867,7 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types2(
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // only buttons that are direct children of Layout with id stack and Layout with cssClass wraplayoutClass should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -896,7 +896,7 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types_i
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // this is an invalid css so red style should not be applied
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#00FF00");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -925,7 +925,7 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types_i
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // this is an invalid css so red style should not be applied
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#00FF00");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -938,7 +938,7 @@ export function test_type_attr_selector() {
 
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -951,7 +951,7 @@ export function test_class_attr_selector() {
 
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -964,7 +964,7 @@ export function test_id_attr_selector() {
 
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -976,7 +976,7 @@ export function test_type_attr_value_selector() {
 
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -989,7 +989,7 @@ export function test_type_attr_invalid_value_selector() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1002,7 +1002,7 @@ export function test_tilde_attr_selector_correct_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1015,7 +1015,7 @@ export function test_tilde_attr_selector_correct_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1028,7 +1028,7 @@ export function test_tilde_attr_selector_correct_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1041,7 +1041,7 @@ export function test_tilde_attr_selector_incorrect_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1054,7 +1054,7 @@ export function test_tilde_attr_selector_incorrect_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1067,7 +1067,7 @@ export function test_tilde_attr_selector_incorrect_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1080,7 +1080,7 @@ export function test_pipe_attr_selector_correct_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1093,7 +1093,7 @@ export function test_pipe_attr_selector_correct_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1106,7 +1106,7 @@ export function test_pipe_attr_selector_incorrect_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1119,7 +1119,7 @@ export function test_pipe_attr_selector_incorrect_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1132,7 +1132,7 @@ export function test_pipe_attr_selector_incorrect_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1145,7 +1145,7 @@ export function test_power_attr_selector_correct_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1158,7 +1158,7 @@ export function test_power_attr_selector_correct_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1171,7 +1171,7 @@ export function test_power_attr_selector_correct_synta2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1184,7 +1184,7 @@ export function test_power_attr_selector_incorrect_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1197,7 +1197,7 @@ export function test_power_attr_selector_incorrect_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1210,7 +1210,7 @@ export function test_dollar_attr_selector_correct_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1223,7 +1223,7 @@ export function test_dollar_attr_selector_correct_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1236,7 +1236,7 @@ export function test_dollar_attr_selector_correct_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1249,7 +1249,7 @@ export function test_dollar_attr_selector_incorrect_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1262,7 +1262,7 @@ export function test_dollar_attr_selector_incorrect_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1275,7 +1275,7 @@ export function test_dollar_attr_selector_incorrect_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1288,7 +1288,7 @@ export function test_star_attr_selector_correct_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1301,7 +1301,7 @@ export function test_star_attr_selector_correct_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1314,7 +1314,7 @@ export function test_star_attr_selector_correct_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1327,7 +1327,7 @@ export function test_star_attr_selector_correct_syntax3() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1340,7 +1340,7 @@ export function test_star_attr_selector_correct_syntax4() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1353,7 +1353,7 @@ export function test_star_attr_selector_correct_syntax5() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1366,7 +1366,7 @@ export function test_star_attr_selector_incorrect_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1379,7 +1379,7 @@ export function test_alone_attr_selector() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1392,7 +1392,7 @@ export function test_UsingSameSelectors_ShouldApplyLatest() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1405,7 +1405,7 @@ export function test_UsingSameSelectorsWithSpecific_ShouldApplyLatest() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 

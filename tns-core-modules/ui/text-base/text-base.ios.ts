@@ -1,4 +1,4 @@
-﻿import { TextDecoration, TextAlignment, TextTransform } from "./text-base";
+import { TextDecoration, TextAlignment, TextTransform } from "./text-base";
 import { Font } from "../styling/font";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
@@ -55,6 +55,7 @@ export class TextBase extends TextBaseCommon {
     [fontInternalProperty.getDefault](): UIFont {
         let nativeView = this.nativeTextViewProtected;
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
+
         return nativeView.font;
     }
     [fontInternalProperty.setNative](value: Font | UIFont) {
@@ -243,6 +244,7 @@ export class TextBase extends TextBaseCommon {
                 spanStart += spanText.length;
             }
         }
+
         return mas;
     }
 

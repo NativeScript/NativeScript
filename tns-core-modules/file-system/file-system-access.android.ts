@@ -1,4 +1,4 @@
-﻿import * as textModule from "../text";
+import * as textModule from "../text";
 import { getNativeApplication } from "../application";
 
 let applicationContext: android.content.Context;
@@ -15,11 +15,13 @@ export class FileSystemAccess {
 
     public getLastModified(path: string): Date {
         const javaFile = new java.io.File(path);
+
         return new Date(javaFile.lastModified());
     }
 
     public getFileSize(path: string): number {
         const javaFile = new java.io.File(path);
+
         return javaFile.length();
     }
 
@@ -65,8 +67,9 @@ export class FileSystemAccess {
         const fileInfos = new Array<{ path: string; name: string; extension: string }>();
         const onEntity = function (entity: { path: string; name: string; extension: string }): boolean {
             fileInfos.push(entity);
+
             return true;
-        }
+        };
 
         let errorOccurred;
         const localError = function (error: any) {
@@ -75,7 +78,7 @@ export class FileSystemAccess {
             }
 
             errorOccurred = true;
-        }
+        };
 
         this.enumEntities(path, onEntity, localError);
 
@@ -88,11 +91,13 @@ export class FileSystemAccess {
 
     public fileExists(path: string): boolean {
         const file = new java.io.File(path);
+
         return file.exists();
     }
 
     public folderExists(path: string): boolean {
         const file = new java.io.File(path);
+
         return file.exists() && file.isDirectory();
     }
 
@@ -193,16 +198,19 @@ export class FileSystemAccess {
 
     public getDocumentsFolderPath(): string {
         const dir = getApplicationContext().getFilesDir();
+
         return dir.getAbsolutePath();
     }
 
     public getLogicalRootPath(): string {
         const dir = getApplicationContext().getFilesDir();
+
         return dir.getCanonicalPath();
     }
 
     public getTempFolderPath(): string {
         const dir = getApplicationContext().getCacheDir();
+
         return dir.getAbsolutePath();
     }
 
@@ -217,6 +225,7 @@ export class FileSystemAccess {
             const bytes = (<any>Array).create("byte", javaFile.length());
             const dataInputStream = new java.io.DataInputStream(stream);
             dataInputStream.readFully(bytes);
+
             return bytes;
         } catch (exception) {
             if (onError) {
@@ -362,6 +371,7 @@ export class FileSystemAccess {
             }
 
             const path = javaFile.getAbsolutePath();
+
             return { path: path, name: javaFile.getName(), extension: this.getFileExtension(path) };
         } catch (exception) {
             // TODO: unified approach for error messages
@@ -430,6 +440,7 @@ export class FileSystemAccess {
 
     public normalizePath(path: string): string {
         const file = new java.io.File(path);
+
         return file.getAbsolutePath();
     }
 

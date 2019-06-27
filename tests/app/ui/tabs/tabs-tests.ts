@@ -11,6 +11,7 @@ export class TabsTest extends UITest<Tabs> {
     public create(): Tabs {
         var tabView = new Tabs();
         tabView.id = "TabView";
+
         return tabView;
     }
 
@@ -29,6 +30,7 @@ export class TabsTest extends UITest<Tabs> {
             tabEntry.view = label;
             items.push(tabEntry);
         }
+
         return items;
     }
 
@@ -76,11 +78,11 @@ export class TabsTest extends UITest<Tabs> {
 
     public test_when_created_items_are_undefined = function () {
         TKUnit.assertEqual(this.testView.items, undefined, "Items should be undefined initally.");
-    }
+    };
 
     public test_when_created_selected_index_is_undefined = function () {
         TKUnit.assertEqual(this.testView.selectedIndex, -1, "selectedIndex should be undefined initally.");
-    }
+    };
 
     // TODO: Do we need this test? The number of tabs is dynamic and isn't kept in the native implementation.
     // TODO: Maybe test if all native tabBarItems are created.
@@ -92,7 +94,7 @@ export class TabsTest extends UITest<Tabs> {
         let actualValue = tabViewTestsNative.getNativeTabCount(this.testView);
 
         TKUnit.assertEqual(actualValue, expectedValue, "NativeItems not equal to JS items.");
-    }
+    };
 
     // TODO: Do we need this test? The number of tabs is dynamic and isn't kept in the native implementation.
     // TODO: Maybe test if all native tabBarItems are created.
@@ -105,7 +107,7 @@ export class TabsTest extends UITest<Tabs> {
         var actualValue = tabViewTestsNative.getNativeTabCount(tabView);
 
         TKUnit.assertEqual(actualValue, expectedValue, "Should have 0 native tabs.");
-    }
+    };
 
     public test_selected_index_becomes_zero_when_items_bound_to_non_empty_array = function () {
         var tabView = this.testView;
@@ -136,7 +138,7 @@ export class TabsTest extends UITest<Tabs> {
         var expectedValue = 0;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "When bound selectedIndex should be 0.");
-    }
+    };
 
     public test_selected_index_becomes_undefined_when_items_bound_to_empty_array = function () {
         var tabView = this.testView;
@@ -150,7 +152,7 @@ export class TabsTest extends UITest<Tabs> {
         var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
-    }
+    };
 
     public test_selected_index_becomes_undefined_when_items_set_to_undefined = function () {
         var tabView = this.testView;
@@ -164,7 +166,7 @@ export class TabsTest extends UITest<Tabs> {
         var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
-    }
+    };
 
     public test_selected_index_becomes_undefined_when_items_set_to_null = function () {
         var tabView = this.testView;
@@ -177,7 +179,7 @@ export class TabsTest extends UITest<Tabs> {
         var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
-    }
+    };
 
     public test_items_is_resolved_correctly_if_set_before_view_is_loaded = function () {
         var tabView = this.testView;
@@ -188,7 +190,7 @@ export class TabsTest extends UITest<Tabs> {
 
         var actualValue = tabView.items.length;
         TKUnit.assertEqual(actualValue, expectedValue, "items.length should be 5");
-    }
+    };
 
     public test_selected_index_is_resolved_correctly_if_set_before_view_is_loaded = function () {
         var tabView = this.testView;
@@ -199,7 +201,7 @@ export class TabsTest extends UITest<Tabs> {
 
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex");
-    }
+    };
 
     public test_binding_to_tabitem_with_undefined_view_should_throw = function () {
         var tabView = this.testView;
@@ -212,7 +214,7 @@ export class TabsTest extends UITest<Tabs> {
             tabView.items = [item];
 
         }, "Binding TabNavigation to a TabItem with undefined view should throw.");
-    }
+    };
 
     public test_binding_to_tabitem_with_null_view_should_throw = function () {
         var tabView = this.testView;
@@ -225,7 +227,7 @@ export class TabsTest extends UITest<Tabs> {
             tabView.items = [item];
 
         }, "Binding TabNavigation to a TabItem with null view should throw.");
-    }
+    };
 
     // TODO: times out
     // public test_when_selecting_tab_natively_selectedIndex_is_updated_properly = function () {
@@ -293,7 +295,7 @@ export class TabsTest extends UITest<Tabs> {
         tabView.on(Tabs.selectedIndexChangedEvent, (args: SelectedIndexChangedEventData) => {
             actualOldIndex = args.oldIndex;
             actualNewIndex = args.newIndex;
-            TKUnit.assertEqual(args.object, tabView, "args.object should be TabView")
+            TKUnit.assertEqual(args.object, tabView, "args.object should be TabView");
         });
 
         tabView.selectedIndex = expectedNewIndex;
@@ -303,7 +305,7 @@ export class TabsTest extends UITest<Tabs> {
 
         TKUnit.assertEqual(actualOldIndex, expectedOldIndex, "expectedOldIndex");
         TKUnit.assertEqual(actualNewIndex, expectedNewIndex, "expectedNewIndex");
-    }
+    };
 
     //TODO: Font styling is not ready
     // public test_font_is_reapplied_when_tab_items_change = function () {

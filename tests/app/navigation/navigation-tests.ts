@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../tk-unit";
+import * as TKUnit from "../tk-unit";
 import { EventData, Page, NavigatedData } from "tns-core-modules/ui/page";
 import { topmost as topmostFrame, NavigationTransition } from "tns-core-modules/ui/frame";
 import { StackLayout, } from "tns-core-modules/ui/layouts/stack-layout";
@@ -12,6 +12,7 @@ let pageFactory = function (): Page {
     page.actionBarHidden = true;
     page.id = `NavTestPage${id++}`;
     page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
     return page;
 };
 
@@ -60,6 +61,7 @@ export function test_backAndForwardParentPage_nestedFrames() {
     const page = (title) => {
         const p = new Page();
         p["tag"] = title;
+
         return p;
     };
 
@@ -74,7 +76,7 @@ export function test_backAndForwardParentPage_nestedFrames() {
         parentPage.content = stack;
 
         return parentPage;
-    }
+    };
 
     const back = pages => topmostFrame().goBack(topmostFrame().backStack[topmostFrame().backStack.length - pages]);
     const currentPageMustBe = tag => TKUnit.assertEqual(topmostFrame().currentPage["tag"], tag, "Expected current page to be " + tag + " it was " + topmostFrame().currentPage["tag"] + " instead.");
@@ -121,6 +123,7 @@ function _test_backToEntry(transition?: NavigationTransition) {
         p.actionBarHidden = true;
         p.id = `NavTestPage${id++}`;
         p["tag"] = tag;
+
         return p;
     };
 
@@ -275,6 +278,7 @@ function _test_NavigationEvents(transition?: NavigationTransition) {
         secondPage.id = "second-page";
         attachEventListeners(secondPage, actualSecondPageEvents);
         secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
         return secondPage;
     };
 
@@ -324,6 +328,7 @@ function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Back(transit
         secondPage.id = "second-page";
         attachEventListeners(secondPage, actualSecondPageEvents);
         secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
         return secondPage;
     };
 
@@ -363,6 +368,7 @@ function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Forward(tran
         secondPage.id = "second-page";
         attachEventListeners(secondPage, actualSecondPageEvents);
         secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
         return secondPage;
     };
 
@@ -409,6 +415,7 @@ function _test_NavigationEvents_WithClearHistory(transition?: NavigationTransiti
         secondPage.id = "second-page";
         attachEventListeners(secondPage, actualSecondPageEvents);
         secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+
         return secondPage;
     };
 
@@ -453,7 +460,7 @@ function _test_Navigate_From_Page_Event_Handler(eventName: string) {
             const secondPageFactory = function (): Page {
                 const secondPage = new Page();
                 secondPage.id = "second-page";
-                secondPage.on(Page.navigatedToEvent, () => { secondPageNavigatedTo = true });
+                secondPage.on(Page.navigatedToEvent, () => { secondPageNavigatedTo = true; });
 
                 return secondPage;
             };

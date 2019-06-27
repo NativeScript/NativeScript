@@ -9,7 +9,7 @@ import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import { Color } from "tns-core-modules/color";
 
 export function selectItemTemplate(item: Item, index: number, items: ObservableArray<Item>): string {
-    return item.id % 10 === 0 ? "red" : item.id % 2 === 0 ? "green" : "yellow"; 
+    return item.id % 10 === 0 ? "red" : item.id % 2 === 0 ? "green" : "yellow";
 }
 
 export function pageLoaded(args: EventData) {
@@ -18,17 +18,18 @@ export function pageLoaded(args: EventData) {
 
   let lv4 = page.getViewById<ListView>("lv4");
   lv4.itemTemplateSelector = (item: Item, index: number, items: ObservableArray<Item>) => {
-    return index % 10 === 0 ? "red" : index % 2 === 0 ? "green" : "yellow"; 
+    return index % 10 === 0 ? "red" : index % 2 === 0 ? "green" : "yellow";
   };
 
-  let createLabel = (backgroundColor: Color) => { 
-    let label = new Label(); 
+  let createLabel = (backgroundColor: Color) => {
+    let label = new Label();
     label.bind({
         sourceProperty: null,
         targetProperty: "text",
         expression: "$value"
     });
     label.style.backgroundColor = backgroundColor;
+
     return label;
   };
 
