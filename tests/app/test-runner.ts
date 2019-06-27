@@ -280,9 +280,8 @@ allTests["SEARCH-BAR"] = searchBarTests;
 import * as navigationTests from "./navigation/navigation-tests";
 allTests["NAVIGATION"] = navigationTests;
 
-// TODO: These test should be run with --no-hrm
-// import * as livesyncTests from "./livesync/livesync-tests";
-// allTests["LIVESYNC"] = livesyncTests;
+import * as livesyncTests from "./livesync/livesync-tests";
+allTests["LIVESYNC"] = livesyncTests;
 
 import * as tabViewRootTests from "./ui/tab-view/tab-view-root-tests";
 allTests["TAB-VIEW-ROOT"] = tabViewRootTests;
