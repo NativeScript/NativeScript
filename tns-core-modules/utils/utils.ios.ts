@@ -146,6 +146,8 @@ export module ios {
 
 }
 
+export const openFile = ios.openFile;
+
 export function GC() {
     __collect();
 }
