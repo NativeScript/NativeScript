@@ -34,7 +34,7 @@ import * as am from "../../animation";
 let animationModule: typeof am;
 function ensureAnimationModule() {
     if (!animationModule) {
-        animationModule = require("ui/animation");
+        animationModule = require("../../animation");
     }
 }
 
