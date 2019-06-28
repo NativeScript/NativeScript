@@ -1,3 +1,50 @@
+<a name="6.0.0"></a>
+# [6.0.0](https://github.com/NativeScript/NativeScript/compare/5.4.2...6.0.0) (2019-06-28)
+
+
+### Bug Fixes
+
+* clear the `resolvedPage` when entry is being cleared, change the passed `View` to be a weak reference ([#7327](https://github.com/NativeScript/NativeScript/issues/7327)) ([dfe7621](https://github.com/NativeScript/NativeScript/commit/dfe7621))
+* register layout child for nested custom components ([#7230](https://github.com/NativeScript/NativeScript/issues/7230)) ([888fc57](https://github.com/NativeScript/NativeScript/commit/888fc57))
+* restore TextField.textChange and Switch.checkedChange event syntax in xml ([#7403](https://github.com/NativeScript/NativeScript/issues/7403)) ([76b5089](https://github.com/NativeScript/NativeScript/commit/76b5089))
+* **android:** ignore gzip content-encoding for 204 statusCode ([#7417](https://github.com/NativeScript/NativeScript/issues/7417)) ([4437cd6](https://github.com/NativeScript/NativeScript/commit/4437cd6))
+* **android-transition:** exit transition not executed after app suspend resume ([#7402](https://github.com/NativeScript/NativeScript/issues/7402)) ([f08b491](https://github.com/NativeScript/NativeScript/commit/f08b491))
+* **css-state:** _appliedSelectorsVersion assignment ([#7405](https://github.com/NativeScript/NativeScript/issues/7405)) ([9ecf07f](https://github.com/NativeScript/NativeScript/commit/9ecf07f))
+* **cuteness:** allow cleartext HTTP for API 28 ([#7397](https://github.com/NativeScript/NativeScript/issues/7397)) ([7c3141b](https://github.com/NativeScript/NativeScript/commit/7c3141b))
+* **ios-actionbar:** parent/child gesture recognition ([#7400](https://github.com/NativeScript/NativeScript/issues/7400)) ([8722075](https://github.com/NativeScript/NativeScript/commit/8722075))
+
+
+### Features
+
+* **android:** androidX support ([#7039](https://github.com/NativeScript/NativeScript/issues/7039)) ([c5db112](https://github.com/NativeScript/NativeScript/commit/c5db112))
+* **bundle:** support for file qualifiers + builder refactor ([#7386](https://github.com/NativeScript/NativeScript/issues/7386)) ([9fcc1dd](https://github.com/NativeScript/NativeScript/commit/9fcc1dd))
+* add background color css to tab strip ([#7414](https://github.com/NativeScript/NativeScript/issues/7414)) ([4353450](https://github.com/NativeScript/NativeScript/commit/4353450))
+* bundle workflow support ([#7337](https://github.com/NativeScript/NativeScript/issues/7337)) ([ecd9fc3](https://github.com/NativeScript/NativeScript/commit/ecd9fc3))
+* cancel contradictory gesture events ([#7296](https://github.com/NativeScript/NativeScript/issues/7296)) ([b8a82f2](https://github.com/NativeScript/NativeScript/commit/b8a82f2))
+* re-design tab views ([#7340](https://github.com/NativeScript/NativeScript/issues/7340)) ([0c2c1cc](https://github.com/NativeScript/NativeScript/commit/0c2c1cc))
+* update android typings to include [@deprecated](https://github.com/deprecated) attributes ([#7364](https://github.com/NativeScript/NativeScript/issues/7364)) ([5f9eabd](https://github.com/NativeScript/NativeScript/commit/5f9eabd))
+
+
+### BREAKING CHANGES
+
+* Old behavior:
+ - iOS/Android:
+    - double tap: child tap -> parent tap -> child double tap -> parent double tap
+    - tap: child tap -> parent tap
+
+New behavior:
+ - iOS
+    - double tap: child double tap
+    - tap: child tap
+ - Android
+    - double tap: child double tap -> parent double tap
+    - tap: child tap -> parent tap
+
+Migration steps:
+Move event handlers accordingly.
+
+
+
 ## [5.4.3](https://github.com/NativeScript/NativeScript/compare/5.4.2...5.4.3) (2019-06-21)
 
 
