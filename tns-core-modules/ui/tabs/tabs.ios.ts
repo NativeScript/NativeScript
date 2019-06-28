@@ -8,6 +8,7 @@ import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-n
 import { TabsBase, swipeEnabledProperty } from "./tabs-common";
 import { Frame } from "../frame";
 import { ios as iosView, View } from "../core/view";
+import { Color } from "../../color";
 import { /*ios as iosUtils,*/ layout } from "../../utils/utils";
 // import { device } from "../../platform";
 import { fromFileOrResource } from "../../image-source";
@@ -845,11 +846,13 @@ export class Tabs extends TabsBase {
         items.forEach((item: TabStripItem, i, arr) => {
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title, null, 0);
             tabBarItems.push(tabBarItem);
+            item.setNativeView(tabBarItem);
         });
         this.tabBarItems = tabBarItems;
 
         if (this.viewController && this.viewController.tabBar) {
             this.viewController.tabBar.items = NSArray.arrayWithArray(tabBarItems);
+            this.tabStrip.setNativeView(this.viewController.tabBar);
         }
 
         // tabBar.items = <NSArray<UITabBarItem>>NSArray.alloc().initWithArray([
@@ -933,6 +936,14 @@ export class Tabs extends TabsBase {
     // [fontInternalProperty.setNative](value: Font) {
     //     this._updateIOSTabBarColorsAndFonts();
     // }
+
+    public getTabBarBackgroundColor(): UIColor {
+        return this._ios.tabBar.barTintColor;
+    }
+
+    public setTabBarBackgroundColor(value: UIColor | Color): void {
+        this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+    }
 
     [selectedIndexProperty.setNative](value: number) {
         // TODO

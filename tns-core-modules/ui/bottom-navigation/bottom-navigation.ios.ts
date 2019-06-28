@@ -277,6 +277,14 @@ export class BottomNavigation extends TabNavigationBase {
         super.onSelectedIndexChanged(oldIndex, newIndex);
     }
 
+    public getTabBarBackgroundColor(): UIColor {
+        return this._ios.tabBar.barTintColor;
+    }
+
+    public setTabBarBackgroundColor(value: UIColor | Color): void {
+        this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+    }
+
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         const width = layout.getMeasureSpecSize(widthMeasureSpec);
         const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
@@ -384,6 +392,10 @@ export class BottomNavigation extends TabNavigationBase {
         const controllers = NSMutableArray.alloc<UIViewController>().initWithCapacity(length);
         const states = getTitleAttributesForStates(this);
 
+        if (this.tabStrip) {
+            this.tabStrip.setNativeView(this._ios.tabBar);
+        }
+
         items.forEach((item, i) => {
             const controller = this.getViewController(item);
 
@@ -401,6 +413,7 @@ export class BottomNavigation extends TabNavigationBase {
                 applyStatesToItem(tabBarItem, states);
 
                 controller.tabBarItem = tabBarItem;
+                tabStripItem.setNativeView(tabBarItem);
             }
 
             controllers.addObject(controller);
