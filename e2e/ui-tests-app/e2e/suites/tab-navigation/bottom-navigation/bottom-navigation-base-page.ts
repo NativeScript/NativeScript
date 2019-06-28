@@ -17,13 +17,13 @@ export class BottomNavigationBasePage extends PageObjectBaseModel {
     }
 
     async bottomNavigationTab() {
-        let bottomNavigatioinTab
+        let bottomNavigatioinTab;
         if (this._driver.nsCapabilities.isAndroid) {
-            bottomNavigatioinTab = await this._driver.findElementByXPath('//android.view.ViewGroup[@content-desc="bottomNavigation"]/android.widget.LinearLayout');
-            this._bottomNavigationItems = await this._driver.findElementsByXPath('//android.view.ViewGroup[@content-desc="bottomNavigation"]/android.widget.LinearLayout/android.widget.LinearLayout/*');
+            bottomNavigatioinTab = await this._driver.findElementByXPath(`//android.view.ViewGroup[@content-desc="bottomNavigation"]/android.widget.LinearLayout`);
+            this._bottomNavigationItems = await this._driver.findElementsByXPath(`//android.view.ViewGroup[@content-desc="bottomNavigation"]/android.widget.LinearLayout/android.widget.LinearLayout/*`);
         } else {
-            bottomNavigatioinTab = await this._driver.findElementByXPath('//XCUIElementTypeOther[@name="bottomNavigation"]/XCUIElementTypeTabBar');
-            this._bottomNavigationItems = await this._driver.findElementsByXPath('//XCUIElementTypeOther[@name="bottomNavigation"]/XCUIElementTypeTabBar/*');
+            bottomNavigatioinTab = await this._driver.findElementByXPath(`//XCUIElementTypeOther[@name="bottomNavigation"]/XCUIElementTypeTabBar`);
+            this._bottomNavigationItems = await this._driver.findElementsByXPath(`//XCUIElementTypeOther[@name="bottomNavigation"]/XCUIElementTypeTabBar/*`);
         }
 
         for (let index = 0; index < this._bottomNavigationItems.length; index++) {
@@ -33,7 +33,7 @@ export class BottomNavigationBasePage extends PageObjectBaseModel {
 
         this._bottomNavigatioinTabRect = await bottomNavigatioinTab.getRectangle();
 
-        return this._bottomNavigatioinTabRect
+        return this._bottomNavigatioinTabRect;
     }
 
     async tabOnItem(index: number) {

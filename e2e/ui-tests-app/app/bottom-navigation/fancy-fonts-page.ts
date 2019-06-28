@@ -7,4 +7,4 @@ export const selectTab = (args: EventData) => {
 
     const index = (<any>args.object).tag;
     bottomNav.selectedIndex = index;
-}
+};
