@@ -57,20 +57,21 @@ export const createViewFromEntry = profile("createViewFromEntry", (entry: ViewEn
 
         return view;
     } else if (entry.moduleName) {
-        const resolvedCodeModuleName = resolveModuleName(entry.moduleName, ""); //`${moduleName}.xml`;
+        const moduleName = sanitizeModuleName(entry.moduleName);
+        const resolvedCodeModuleName = resolveModuleName(moduleName, ""); //`${moduleName}.xml`;
         let moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName) : null;
 
         if (moduleExports && moduleExports.createPage) {
             // Exports has a createPage() method
             const view = moduleExports.createPage();
-            const resolvedCssModuleName = resolveModuleName(entry.moduleName, "css"); //entry.moduleName + ".css";
+            const resolvedCssModuleName = resolveModuleName(moduleName, "css"); //entry.moduleName + ".css";
             if (resolvedCssModuleName) {
                 view.addCssFile(resolvedCssModuleName);
             }
 
             return view;
         } else {
-            const componentModule = loadInternal(entry.moduleName, moduleExports);
+            const componentModule = loadInternal(moduleName, moduleExports);
             const componentView = componentModule && componentModule.component;
 
             return componentView;
