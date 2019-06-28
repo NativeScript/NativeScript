@@ -409,8 +409,9 @@ public class Async {
 
                 // In the event we don't have a null stream, and we have gzip as part of the encoding
                 // then we will use gzip to decode the stream
+                // Ignore gzip encoding for 204 'No Content' status to prevent java.io.EOFException
                 String encodingHeader = connection.getHeaderField("Content-Encoding");
-                if (encodingHeader != null && encodingHeader.toLowerCase().contains("gzip")) {
+                if (encodingHeader != null && encodingHeader.toLowerCase().contains("gzip") && this.statusCode != 204) {
                     inStream = new GZIPInputStream(inStream);
                 }
 
