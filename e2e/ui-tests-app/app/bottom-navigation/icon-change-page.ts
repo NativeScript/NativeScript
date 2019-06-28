@@ -1,7 +1,7 @@
 import { BottomNavigation, SelectedIndexChangedEventData } from "tns-core-modules/ui/bottom-navigation";
 
 export function onSelectedIndexChanged(args: SelectedIndexChangedEventData) {
-    const bottomNav = args.object as BottomNavigation;
+    const bottomNav = <BottomNavigation>args.object;
     
     const newItem = bottomNav.tabStrip.items[args.newIndex];
     if (newItem) {

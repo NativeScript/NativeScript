@@ -5,7 +5,7 @@ import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 
 // Requires
 import { TabNavigationBase, itemsProperty, selectedIndexProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
-import { CSSType } from "../core/view";
+import { CSSType, Color } from "../core/view";
 import { Frame } from "../frame";
 import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
 import { fromFileOrResource } from "../../image-source";
@@ -352,11 +352,28 @@ export class BottomNavigation extends TabNavigationBase {
             });
 
             this._bottomNavigationBar.setItems(tabItems);
+            this.tabStrip.setNativeView(this._bottomNavigationBar);
+            this.tabStrip.items.forEach((item, i, arr) => {
+                const tv = this._bottomNavigationBar.getTextViewForItemAt(i);
+                item.setNativeView(tv);
+            });
         }
     }
 
     public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
         this._bottomNavigationBar.updateItemAt(index, spec);
+    }
+
+    public getTabBarBackgroundColor(): android.graphics.drawable.Drawable {
+        return this._bottomNavigationBar.getBackground();
+    }
+
+    public setTabBarBackgroundColor(value: android.graphics.drawable.Drawable | Color): void {
+        if (value instanceof Color) {
+            this._bottomNavigationBar.setBackgroundColor(value.android);
+        } else {
+            this._bottomNavigationBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
+        }
     }
 
     [selectedIndexProperty.setNative](value: number) {
@@ -382,4 +399,15 @@ export class BottomNavigation extends TabNavigationBase {
     [tabStripProperty.setNative](value: TabStrip) {
         this.setAdapterItems([]);
     }
+}
+
+function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
+    if (value) {
+        const constantState = value.getConstantState();
+        if (constantState) {
+            return constantState.newDrawable(resources);
+        }
+    }
+
+    return value;
 }

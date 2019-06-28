@@ -11,19 +11,19 @@
 
     <TabContentItem>
         <GridLayout>
-          <Label text="Title and icon" verticalAlignment="center" horizontalAlignment="center"/>
+          <Label text="Title and icon" />
         </GridLayout>
     </TabContentItem>
 
     <TabContentItem>
         <GridLayout>
-          <Label text="Only icon" verticalAlignment="center" horizontalAlignment="center"/>
+          <Label text="Only icon" />
         </GridLayout>
     </TabContentItem>
 
     <TabContentItem>
         <GridLayout>
-          <Label text="Only title" verticalAlignment="center" horizontalAlignment="center"/>
+          <Label text="Only title" />
         </GridLayout>
     </TabContentItem>
   </BottomNavigation>

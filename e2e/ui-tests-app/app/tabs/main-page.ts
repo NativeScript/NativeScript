@@ -11,14 +11,14 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();    
-    examples.set("default", "tabs/default-page");
-    examples.set("issue-5470", "tabs/issue-5470-page");
+    examples.set("tabs", "tabs/tabs-page");
+    examples.set("issue-5470", "tabs/issue-5470");
     examples.set("background-color", "tabs/background-color-page");
-    examples.set("color", "tabs/color-page");
-    examples.set("icon-title-placement", "tabs/icon-title-placement-page");
-    examples.set("icon-change", "tabs/icon-change-page");
-    examples.set("swipe-enabled", "tabs/swipe-enabled-page");
-    examples.set("tabs-position", "tabs/tabs-position-page");
+    examples.set("color", "tabs/color");
+    examples.set("icon-title-placement", "tabs/icon-title-placement");
+    examples.set("icon-change", "tabs/icon-change");
+    examples.set("swipe-enabled", "tabs/swipe-enabled");
+    examples.set("tabs-position", "tabs/tabs-position");
     
     return examples;
 }

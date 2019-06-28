@@ -1,8 +1,8 @@
- <Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page" navigatingTo="onNavigatingTo">
-    <ActionBar title="BottomNavigation icon change" icon="" class="action-bar">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page" navigatingTo="onNavigatingTo">
+    <ActionBar title="Tabs icon change" icon="" class="action-bar">
     </ActionBar>
 
-    <BottomNavigation id="tab-view" selectedIndexChanged="onSelectedIndexChanged">
+    <Tabs id="tab-view" selectedIndexChanged="onSelectedIndexChanged">
         <TabStrip>
             <TabStripItem iconSource="res://icon"></TabStripItem>
             <TabStripItem iconSource="res://testlogo"></TabStripItem>
@@ -19,5 +19,5 @@
                 <Label text="second tab"/>
             </GridLayout>
         </TabContentItem>
-    </BottomNavigation>
+    </Tabs>
 </Page> 

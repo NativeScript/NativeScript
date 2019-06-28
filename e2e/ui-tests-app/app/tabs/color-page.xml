@@ -1,23 +1,23 @@
 <Page class="page">
-  <ActionBar title="BottomNavigation color" icon="" class="action-bar">
+  <ActionBar title="Tabs color" icon="" class="action-bar">
   </ActionBar>
 
-  <BottomNavigation style="color: green;">
+  <Tabs style="color: green;">
     <TabStrip>
-        <TabStripItem title="First"></TabStripItem>
-        <TabStripItem title="Second"></TabStripItem>
+      <TabStripItem title="First"></TabStripItem>
+      <TabStripItem title="Second"></TabStripItem>
     </TabStrip>
 
     <TabContentItem>
-        <GridLayout>
-          <Label text="First View" verticalAlignment="center" horizontalAlignment="center"/>
-        </GridLayout>
+      <GridLayout>
+        <Label text="First View" />
+      </GridLayout>
     </TabContentItem>
 
     <TabContentItem>
-        <GridLayout>
-          <Label text="Second View" verticalAlignment="center" horizontalAlignment="center"/>
-        </GridLayout>
+      <GridLayout>
+        <Label text="Second View" />
+      </GridLayout>
     </TabContentItem>
-  </BottomNavigation>
+  </Tabs>
 </Page>
