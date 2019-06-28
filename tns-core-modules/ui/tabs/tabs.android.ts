@@ -7,6 +7,7 @@ import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
 import { TabsBase, swipeEnabledProperty, offscreenTabLimitProperty } from "./tabs-common";
 import { Frame } from "../frame";
+import { Color } from "../core/view";
 import { fromFileOrResource } from "../../image-source";
 import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
 import * as application from "../../application";
@@ -529,6 +530,7 @@ export class Tabs extends TabsBase {
 
         const tabLayout = this._tabLayout;
         tabLayout.setItems(tabItems, this._viewPager);
+        this.tabStrip.setNativeView(tabLayout);
         items.forEach((item, i, arr) => {
             const tv = tabLayout.getTextViewForItemAt(i);
             item.setNativeView(tv);
@@ -567,6 +569,18 @@ export class Tabs extends TabsBase {
 
     public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
         this._tabLayout.updateItemAt(index, spec);
+    }
+
+    public getTabBarBackgroundColor(): android.graphics.drawable.Drawable {
+        return this._tabLayout.getBackground();
+    }
+
+    public setTabBarBackgroundColor(value: android.graphics.drawable.Drawable | Color): void {
+        if (value instanceof Color) {
+            this._tabLayout.setBackgroundColor(value.android);
+        } else {
+            this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
+        }
     }
 
     [selectedIndexProperty.setNative](value: number) {
@@ -609,4 +623,15 @@ export class Tabs extends TabsBase {
     [offscreenTabLimitProperty.setNative](value: number) {
         this._viewPager.setOffscreenPageLimit(value);
     }
+}
+
+function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
+    if (value) {
+        const constantState = value.getConstantState();
+        if (constantState) {
+            return constantState.newDrawable(resources);
+        }
+    }
+
+    return value;
 }

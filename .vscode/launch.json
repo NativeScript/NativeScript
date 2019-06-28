@@ -66,10 +66,8 @@
             "platform": "android",
             "appRoot": "${workspaceRoot}/tests",
             "sourceMaps": true,
+            "stopOnEntry": true,
             "watch": true,
-            // "tnsArgs": [
-            //     "--debug-brk"
-            // ]
         },
         // {
         //     "name": "Test on Android",
