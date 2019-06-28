@@ -129,10 +129,10 @@ global.zonedCallback = function (callback: Function): Function {
     }
 };
 
-global.registerModule("timer", () => require("timer"));
-global.registerModule("ui/dialogs", () => require("ui/dialogs"));
-global.registerModule("xhr", () => require("xhr"));
-global.registerModule("fetch", () => require("fetch"));
+global.registerModule("timer", () => require("../timer"));
+global.registerModule("ui/dialogs", () => require("../ui/dialogs"));
+global.registerModule("xhr", () => require("../xhr"));
+global.registerModule("fetch", () => require("../fetch"));
 
 (<any>global).System = {
     import(path) {
@@ -167,10 +167,10 @@ export function install() {
     if ((<any>global).__snapshot || (<any>global).__snapshotEnabled) {
         if (!snapshotGlobals) {
             // require in snapshot mode is cheap
-            const timer: typeof timerModule = require("timer");
-            const dialogs: typeof dialogsModule = require("ui/dialogs");
-            const xhr = require("xhr");
-            const fetch = require("fetch");
+            const timer: typeof timerModule = require("../timer");
+            const dialogs: typeof dialogsModule = require("../ui/dialogs");
+            const xhr = require("../xhr");
+            const fetch = require("../fetch");
 
             snapshotGlobals = snapshotGlobals || {
                 setTimeout: timer.setTimeout,
@@ -193,7 +193,7 @@ export function install() {
                 Response: fetch.Response,
             };
         }
-        const consoleModule = require("console").Console;
+        const consoleModule = require("../console").Console;
         // Object.assign call will fire an error when trying to write to a read-only property of an object, such as 'console'
         global.console = global.console || new consoleModule();
         Object.assign(global, snapshotGlobals);

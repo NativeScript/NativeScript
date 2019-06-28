@@ -51,7 +51,7 @@ const createComponentInstance = profile("createComponentInstance", (elementName:
         // Create instance of the component.
         instance = new instanceType();
     } catch (ex) {
-        const debug: typeof debugModule = require("utils/debug");
+        const debug: typeof debugModule = require("../../../utils/debug");
         throw new debug.ScopeError(ex, "Module '" + resolvedModuleName + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
     }
 

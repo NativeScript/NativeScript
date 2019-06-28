@@ -35,7 +35,7 @@ import * as kam from "../animation/keyframe-animation";
 let keyframeAnimationModule: typeof kam;
 function ensureKeyframeAnimationModule() {
     if (!keyframeAnimationModule) {
-        keyframeAnimationModule = require("ui/animation/keyframe-animation");
+        keyframeAnimationModule = require("../animation/keyframe-animation");
     }
 }
 
