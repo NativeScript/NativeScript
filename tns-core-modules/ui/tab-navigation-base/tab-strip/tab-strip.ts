@@ -3,7 +3,7 @@ import { TabStrip as TabStripDefinition } from ".";
 import { TabStripItem } from "../tab-strip-item";
 import { TabNavigationBase } from "../tab-navigation-base";
 import { Color } from "../../../color";
-import { AddArrayFromBuilder, AddChildFromBuilder } from "../../core/view";
+import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "../../core/view";
 
 // Requires
 import { View, Property, CSSType, backgroundColorProperty, backgroundInternalProperty } from "../../core/view";
@@ -14,6 +14,15 @@ export const traceCategory = "TabView";
 export class TabStrip extends View implements TabStripDefinition, AddChildFromBuilder, AddArrayFromBuilder {
     public items: TabStripItem[];
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
+
+    public eachChild(callback: (child: ViewBase) => boolean) {
+        const items = this.items;
+        if (items) {
+            items.forEach((item, i) => {
+                callback(item);
+            });
+        }
+    }
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === "items") {

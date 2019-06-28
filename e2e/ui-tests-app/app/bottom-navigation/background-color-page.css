@@ -5,3 +5,7 @@ BottomNavigation {
 TabStrip {
   background-color: skyblue;
 }
+
+TabStripItem {
+  background-color: olive;
+}

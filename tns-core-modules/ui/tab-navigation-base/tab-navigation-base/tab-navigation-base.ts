@@ -1,7 +1,8 @@
-// Types
+﻿// Types
 import { TabNavigationBase as TabNavigationBaseDefinition, SelectedIndexChangedEventData } from ".";
 import { TabContentItem } from "../tab-content-item";
 import { TabStrip } from "../tab-strip";
+import { TabStripItem } from "../tab-strip-item";
 import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder, EventData } from "../../core/view";
 
 // Requires
@@ -115,6 +116,10 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     }
 
     public setTabBarBackgroundColor(value: any): void {
+        // overridden by inheritors
+    }
+
+    public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: any): void {
         // overridden by inheritors
     }
 }

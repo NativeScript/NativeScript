@@ -1,4 +1,4 @@
-// Types
+﻿// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 
@@ -283,6 +283,10 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarBackgroundColor(value: UIColor | Color): void {
         this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+    }
+
+    public setTabBarItemBackgroundColor(item: TabStripItem, value: UIColor | Color): void {
+        // TODO: implement for UITabBarItem
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {

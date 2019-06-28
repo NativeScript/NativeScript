@@ -7,6 +7,7 @@
     View, ViewBase, Property, CoercibleProperty, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData
 } from "../../core/view";
 import { TabStrip } from "../tab-strip";
+import { TabStripItem } from "../tab-strip-item";
 import { TabContentItem } from "../tab-content-item";
 
 /**
@@ -94,6 +95,12 @@ export class TabNavigationBase extends View {
      * Method is intended to be overridden by inheritors and used as "protected"
      */
     setTabBarBackgroundColor(value: any): void
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: any): void 
 }
 
 export const itemsProperty: Property<TabNavigationBase, TabContentItem[]>;
