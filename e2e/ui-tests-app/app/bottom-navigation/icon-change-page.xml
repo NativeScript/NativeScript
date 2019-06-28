@@ -1,4 +1,4 @@
- <Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page" navigatingTo="onNavigatingTo">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page" navigatingTo="onNavigatingTo">
     <ActionBar title="BottomNavigation icon change" icon="" class="action-bar">
     </ActionBar>
 

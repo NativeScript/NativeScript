@@ -11,6 +11,8 @@ import { Color } from "../../color";
  */
 export class Switch extends View {
 
+    public static checkedChangeEvent: string;
+
     /**
      * Gets the native [android widget](http://developer.android.com/reference/android/widget/Switch.html) that represents the user interface for this component. Valid only when running on Android OS.
      */
