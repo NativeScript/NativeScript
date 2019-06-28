@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Mocha Tests",
+            "name": "debug-tests",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
                 "-u",
@@ -15,9 +15,29 @@
                 "--colors",
                 "--opts",
                 "../config/mocha.opts",
-                "--grep=tab-view",
+                "--grep=bottom-navigation",
                 "-a",
-
+                "--port",
+                "8877"
+            ],
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "run-tests",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "args": [
+                "-u",
+                "tdd",
+                "--colors",
+                "--opts",
+                "../config/mocha.opts",
+                "--grep=bottom-navigation",
+                "ios",
+                "--grep=bottom-navigation",
+                "--port",
+                "8889",
             ],
             "internalConsoleOptions": "openOnSessionStart"
         }

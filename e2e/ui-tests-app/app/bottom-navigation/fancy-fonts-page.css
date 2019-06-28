@@ -1,0 +1,47 @@
+.font-awesome {
+    font-family: "FontAwesome";
+}
+
+Page {
+    background-color: tomato;
+}
+
+ActionBar {
+    background-color: aquamarine;
+}
+
+BottomNavigation {
+    background-color: lightgreen;
+}
+
+Button {
+    background-color: lightskyblue;
+}
+
+#lastItem {
+    color: black;
+}
+
+TabStripItem:active {
+    background-color: coral;
+}
+
+TabContentItem:active {
+    background-color: aquamarine;
+}
+
+#second-tab-content-item {
+    background-color: blueviolet;
+}
+
+#third-tab-content-item {
+    background-color: blue;
+}
+
+#fourth-tab-content-item {
+    background-color: gray;
+}
+
+#fifth-tab-content-item {
+    background-color: brown;
+}
