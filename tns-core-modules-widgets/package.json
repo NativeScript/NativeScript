@@ -3,7 +3,8 @@
   "version": "6.1.0",
   "description": "Native widgets used in the NativeScript framework.",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "(set -e; cd platforms/ios; unzip -q XCFrameworks.zip; rm XCFrameworks.zip)"
   },
   "repository": {
     "type": "git",

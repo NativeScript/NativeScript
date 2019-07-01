@@ -14,9 +14,12 @@ echo "Build iOS"
 cd ios
 ./build.sh
 cd ..
-echo "Copy ios/TNSWidgets/build/*.framework dist/package/platforms/ios"
-
-cp -R ios/TNSWidgets/build/TNSWidgets.xcframework dist/package/platforms/ios
+echo "Zip ios/TNSWidgets/build/*.xcframework to dist/package/platforms/ios"
+(
+    XCFRAMEWORKS_ZIPFILENAME="$PWD/dist/package/platforms/ios/XCFrameworks.zip"
+    cd ios/TNSWidgets/build
+    zip -q -r --symlinks $XCFRAMEWORKS_ZIPFILENAME *.xcframework
+)
 
 cp ios/TNSWidgets/build/*.framework.dSYM.zip dist/package/platforms/ios
 
