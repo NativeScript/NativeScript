@@ -8,8 +8,6 @@
 * **bundle:** code-only typescript custom components with webpack ([#7321](https://github.com/NativeScript/NativeScript/issues/7321)) ([9fcc1dd](https://github.com/NativeScript/NativeScript/commit/9fcc1dd))
 * **bundle:** component builder support for codeFile / cssFile / import with webpack ([#7324](https://github.com/NativeScript/NativeScript/issues/7324)) ([9fcc1dd](https://github.com/NativeScript/NativeScript/commit/9fcc1dd))
 * **bundle:** different event order ([NativeScript/nativescript-cli#4633](https://github.com/NativeScript/nativescript-cli/issues/4633)) ([8851835](https://github.com/NativeScript/NativeScript/commit/8851835cb11b939a64bc986b6fd834b16d2ed247))
-* clear the `resolvedPage` when entry is being cleared, change the passed `View` to be a weak reference ([#7327](https://github.com/NativeScript/NativeScript/issues/7327)) ([dfe7621](https://github.com/NativeScript/NativeScript/commit/dfe7621))
-* register layout child for nested custom components ([#7230](https://github.com/NativeScript/NativeScript/issues/7230)) ([888fc57](https://github.com/NativeScript/NativeScript/commit/888fc57))
 * restore TextField.textChange and Switch.checkedChange event syntax in xml ([#7403](https://github.com/NativeScript/NativeScript/issues/7403)) ([76b5089](https://github.com/NativeScript/NativeScript/commit/76b5089))
 * **android:** ignore gzip content-encoding for status code 204 ([#7417](https://github.com/NativeScript/NativeScript/issues/7417)) ([4437cd6](https://github.com/NativeScript/NativeScript/commit/4437cd6))
 * **android-transition:** exit transition not executed after app suspend resume ([#7402](https://github.com/NativeScript/NativeScript/issues/7402)) ([f08b491](https://github.com/NativeScript/NativeScript/commit/f08b491))
