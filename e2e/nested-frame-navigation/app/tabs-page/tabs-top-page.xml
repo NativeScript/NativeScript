@@ -1,0 +1,36 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+
+    <ActionBar class="action-bar">
+        <NavigationButton text="tabTopBack" tap="onBackButtonTap" android.systemIcon="ic_menu_back" />
+        <Label class="action-bar-title" text="tabs top page" horizontalAlignment="center" />
+    </ActionBar>
+
+    <GridLayout rows="auto, *">
+        <StackLayout>
+            <Button text="navigate to some page (default transition)" tap="onNavigate" />
+            <Button text="navigate to some page (no transition)" tap="onNavigateNone" />
+            <Button text="navigate to some page (slide transition)" tap="onNavigateSlide" />
+            <Button text="navigate to some page (flip transition)" tap="onNavigateFlip" />
+        </StackLayout>
+
+        <GridLayout row="1">
+            <Tabs tabsPosition="top">
+                <TabStrip>
+                    <TabStripItem title="Players"></TabStripItem>
+                    <TabStripItem title="Dummy"></TabStripItem>
+                    <TabStripItem title="Teams"></TabStripItem>
+                </TabStrip>
+
+                <TabContentItem>
+                    <Frame defaultPage="players/players-items-page" />
+                </TabContentItem>
+                <TabContentItem>
+                    <Label text="this is a tab" />
+                </TabContentItem>
+                <TabContentItem>
+                    <Frame defaultPage="teams/teams-items-page" />
+                </TabContentItem>
+            </Tabs>
+        </GridLayout>
+    </GridLayout>
+</Page>

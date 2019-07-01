@@ -10,6 +10,12 @@
             <Button text="Layout w/ multi frame" tap="onNavigateToLayoutMultiFrame" />
             <Button text="Page w/ frame" tap="onNavigateToPageFrame" />
             <Button text="Page w/ multi frame" tap="onNavigateToPageMultiFrame" />
+            <Button text="Page w/ tabview (top)" tap="onNavigateToTabViewTopPage" />
+            <Button text="Page w/ tabview (bottom)" tap="onNavigateToTabViewBottomPage" />
+            <Button text="Root tabview (top)" tap="onNavigateToTabViewTopRoot" />
+            <Button text="Root tabview (bottom)" tap="onNavigateToTabViewBottomRoot" />
+            <Button text="Page w/ bottom navigation" tap="onNavigateToBottomNavigationPage" />
+            <Button text="Root bottom navigation" tap="onNavigateToBottomNavigationRoot" />
             <Button text="Page w/ tabs (top)" tap="onNavigateToTabsTopPage" />
             <Button text="Page w/ tabs (bottom)" tap="onNavigateToTabsBottomPage" />
             <Button text="Root tabs (top)" tap="onNavigateToTabsTopRoot" />
