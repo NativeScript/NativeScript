@@ -16,7 +16,7 @@ cd ios
 cd ..
 echo "Copy ios/TNSWidgets/build/*.framework dist/package/platforms/ios"
 
-cp -R ios/TNSWidgets/build/TNSWidgets.framework dist/package/platforms/ios
+cp -R ios/TNSWidgets/build/TNSWidgets.xcframework dist/package/platforms/ios
 
 cp ios/TNSWidgets/build/*.framework.dSYM.zip dist/package/platforms/ios
 
@@ -28,7 +28,7 @@ fi
 
 if [ "$SKIP_PACK" ]
 then
-  echo "SKIP pack" 
+  echo "SKIP pack"
 else
   echo "Copy NPM artefacts"
   cp .npmignore LICENSE README.md package.json dist/package
