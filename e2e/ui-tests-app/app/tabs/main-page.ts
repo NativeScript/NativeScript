@@ -18,7 +18,8 @@ export function loadExamples() {
     examples.set("icon-title-placement", "tabs/icon-title-placement");
     examples.set("icon-change", "tabs/icon-change");
     examples.set("swipe-enabled", "tabs/swipe-enabled");
-    examples.set("tabs-position", "tabs/tabs-position");
+    examples.set("tabs-position", "tabs/tabs-position-page");
+    examples.set("tabs-binding", "tabs/tabs-binding-page");
     
     return examples;
 }
