@@ -25,7 +25,7 @@ if [ "$SKIP_PACK" ]
 then
   echo "SKIP pack" 
 else
-  echo "Copy NPM artefacts"
+  echo "Copy NPM artifacts"
   cp .npmignore LICENSE README.md package.json dist/package
   echo "NPM pack"
   cd dist/package
