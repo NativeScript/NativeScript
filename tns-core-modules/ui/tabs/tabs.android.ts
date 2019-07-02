@@ -229,7 +229,7 @@ function initializeNativeClasses() {
             }
         }
     }
-    
+
     PagerAdapter = FragmentPagerAdapter;
 }
 
@@ -451,7 +451,7 @@ export class Tabs extends TabsBase {
 
     public _onRootViewReset(): void {
         super._onRootViewReset();
-        
+
         // call this AFTER the super call to ensure descendants apply their rootview-reset logic first
         // i.e. in a scenario with tab frames let the frames cleanup their fragments first, and then
         // cleanup the tab fragments to avoid
@@ -508,6 +508,13 @@ export class Tabs extends TabsBase {
     private setItems(items: Array<TabContentItem>) {
         if (this.shouldUpdateAdapter(items)) {
             (<any>this._pagerAdapter).items = items;
+
+            if (items && items.length) {
+                items.forEach((item: TabContentItem, i) => {
+                    (<any>item).index = i;
+                });
+            }
+
             this._pagerAdapter.notifyDataSetChanged();
         }
     }
@@ -523,7 +530,6 @@ export class Tabs extends TabsBase {
         const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
         items.forEach((item: TabStripItem, i, arr) => {
             const tabItemSpec = createTabItemSpec(item);
-            (<any>item).index = i;
             (<any>item).tabItemSpec = tabItemSpec;
             tabItems.push(tabItemSpec);
         });

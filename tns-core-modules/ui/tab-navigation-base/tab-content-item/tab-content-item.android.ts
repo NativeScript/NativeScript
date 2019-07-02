@@ -3,7 +3,8 @@ import { TabContentItem as TabContentItemDefinition } from ".";
 import { TabNavigationBase } from "../tab-navigation-base";
 
 // Requires
-import { TabContentItemBase } from "./tab-content-item-common";
+import { TabContentItemBase, traceCategory } from "./tab-content-item-common";
+import { traceEnabled, traceWrite, traceMessageType } from "../../core/view";
 
 export * from "./tab-content-item-common";
 
@@ -49,6 +50,11 @@ export class TabContentItem extends TabContentItemBase {
         const tabView = <TabNavigationBase>this.parent;
         let tabFragment = null;
         const fragmentManager = tabView._getFragmentManager();
+
+        if (typeof this.index === "undefined") {
+            traceWrite(`Current TabContentItem index is not set`, traceCategory, traceMessageType.error);
+        }
+
         for (let fragment of (<Array<any>>fragmentManager.getFragments().toArray())) {
             if (fragment.index === this.index) {
                 tabFragment = fragment;
