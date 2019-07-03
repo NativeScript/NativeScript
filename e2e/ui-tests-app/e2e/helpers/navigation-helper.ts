@@ -66,12 +66,12 @@ export class NavigationHelper {
                 throw new Error(`Could not find ${sample}`);
             }
             const sampleElement = this._currentSuite.children.get(sample).rect;
-            await this._driver.clickPoint(sampleElement.x + (sampleElement.width / 2), sampleElement.y + (sampleElement.height / 2));
+            await this._driver.clickPoint(sampleElement.left + (sampleElement.width / 2), sampleElement.top + (sampleElement.height / 2));
             this._currentSuite = this._currentSuite.children.get(sample);
         } else if (this._elemtsCacheStrategy === ElementCacheStrategy.onload) {
             if (this._currentSuite.children.has(sample)) {
                 const sampleElement = this._currentSuite.children.get(sample).rect;
-                await this._driver.clickPoint(sampleElement.x + (sampleElement.width / 2), sampleElement.y + (sampleElement.height / 2));
+                await this._driver.clickPoint(sampleElement.left + (sampleElement.width / 2), sampleElement.top + (sampleElement.height / 2));
                 this._currentSuite = this._currentSuite.children.get(sample);
             } else {
                 const sampleElement = await this._driver.waitForElement(sample);
@@ -83,7 +83,7 @@ export class NavigationHelper {
                 const newSuite: ICachedElement = { name: text, rect: rect, children: new Map(), parent: this._currentSuite };
                 this._currentSuite.children.set(sample, newSuite);
                 this._currentSuite = newSuite;
-                await this._driver.clickPoint(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
+                await this._driver.clickPoint(rect.left + (rect.width / 2), rect.top + (rect.height / 2));
             }
         } else {
             const sampleElement = await this._driver.waitForElement(sample);

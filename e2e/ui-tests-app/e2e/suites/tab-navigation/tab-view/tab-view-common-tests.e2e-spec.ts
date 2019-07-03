@@ -63,13 +63,13 @@ describe(`${suite}-${spec}-suite`, async function () {
 
         const rect = await (await driver.waitForElement("automatic")).getActualRectangle();
 
-        await driver.clickPoint(rect.x + 10, rect.y + 10);
+        await driver.clickPoint(rect.left + 10, rect.top + 10);
         await driver.imageHelper.compareScreen();
 
-        await driver.clickPoint(rect.x + 10, rect.y + 10);
+        await driver.clickPoint(rect.left + 10, rect.top + 10);
         await driver.imageHelper.compareScreen();
 
-        await driver.clickPoint(rect.x + 10, rect.y + 10);
+        await driver.clickPoint(rect.left + 10, rect.top + 10);
         await driver.imageHelper.compareScreen();
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
@@ -94,7 +94,7 @@ describe(`${suite}-${spec}-suite`, async function () {
     it(`${spec}-icon-change`, async function () {
         await tabViewBasePage.navigateToSample("tab-view-icon-change");
         const index = driver.nsCapabilities.device.platform === Platform.IOS
-            ? (driver.nsCapabilities.device.apiLevel >= 11 ? 2 : 3) : 1;
+            ? (+driver.nsCapabilities.device.apiLevel >= 11 ? 2 : 3) : 1;
 
         let btns = await driver.findElementsByClassName(driver.locators.button, 5000);
         await btns[index].tap();

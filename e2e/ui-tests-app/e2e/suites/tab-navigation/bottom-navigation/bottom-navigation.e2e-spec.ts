@@ -16,6 +16,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         await driver.resetApp();
         bottomNavigationBasePage = new BottomNavigationBasePage(driver);
         await bottomNavigationBasePage.initSuite();
+        driver.imageHelper.blockOutAreas = [{ left: 40, top: 40, height: 150, width: 325 }]
     });
 
     after(async function () {
@@ -25,9 +26,8 @@ describe(`${suite}-${spec}-suite`, async function () {
     beforeEach(async function () {
         driver.imageHelper.testName = setImageName(suite, spec, this.currentTest.title);
         driver.imageHelper.options = {
-            tolerance: 0.01,
             timeOutSeconds: 5,
-            preserveImageName: true
+            preserveImageName: true,
         };
     });
 

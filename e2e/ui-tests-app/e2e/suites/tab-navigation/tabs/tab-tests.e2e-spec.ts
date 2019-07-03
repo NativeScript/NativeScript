@@ -48,14 +48,7 @@ describe(`${suite}-${spec}-suite`, async function () {
 
         await tabsViewBasePage.navigateBackToSuitMainPage();
     });
-
-    it(`${spec}-bottom-navigation`, async function () {
-        await tabsViewBasePage.navigateToSample("bottom-navigation");
-        await driver.imageHelper.compareScreen();
-       assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
-        await tabsViewBasePage.navigateBackToSuitMainPage();
-    });
-
+    
     it(`${spec}-color`, async function () {
         await tabsViewBasePage.navigateToSample("color");
         await driver.imageHelper.compareScreen();
@@ -66,7 +59,7 @@ describe(`${suite}-${spec}-suite`, async function () {
     it(`${spec}-icon-change`, async function () {
         await tabsViewBasePage.navigateToSample("tab-view-icon-change");
         const index = driver.nsCapabilities.device.platform === Platform.IOS
-            ? (driver.nsCapabilities.device.apiLevel >= 11 ? 2 : 3) : 1;
+            ? (+driver.nsCapabilities.device.apiLevel >= 11 ? 2 : 3) : 1;
 
         let btns = await driver.findElementsByClassName(driver.locators.button, 5000);
         await btns[index].tap();

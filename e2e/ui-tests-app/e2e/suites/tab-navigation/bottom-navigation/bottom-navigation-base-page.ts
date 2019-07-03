@@ -28,7 +28,7 @@ export class BottomNavigationBasePage extends PageObjectBaseModel {
 
         for (let index = 0; index < this._bottomNavigationItems.length; index++) {
             const point = await this._bottomNavigationItems[index].getRectangle();
-            this._bottomNavigationItemsRects.set(index, new Point(point.x + point.width / 2, point.y + point.height / 2));
+            this._bottomNavigationItemsRects.set(index, new Point(point.left + point.width / 2, point.top + point.height / 2));
         }
 
         this._bottomNavigatioinTabRect = await bottomNavigatioinTab.getRectangle();

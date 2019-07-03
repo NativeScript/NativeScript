@@ -11,7 +11,7 @@ export class ButtonBackgroundPage extends PageObjectBaseModel {
 
     public viewGroupLocator() {
         if (this._driver.nsCapabilities.device.platform === Platform.ANDROID) {
-            return this._driver.nsCapabilities.device.releaseVersion > 5.1 ? "android.view.ViewGroup" : "android.view.View";
+            return +this._driver.nsCapabilities.device.releaseVersion > 5.1 ? "android.view.ViewGroup" : "android.view.View";
         } else {
             throw new Error("Not implemented locator");
         }
