@@ -410,7 +410,7 @@ export const test_ObservableArray_spliceShouldRemoveAndInertSpecifiedNumberOfEle
         // args.action is "splice".
         // args.index is the start index.
         // args.removed.length is equal to the number of deleted items.
-        // args.addedCount is equal to the delta between number of inserted items and number of deleted items but not less than 0.
+        // args.addedCount is equal to the amount of added and replaced items.
 
         // >> (hide)
         result = args;
@@ -421,7 +421,7 @@ export const test_ObservableArray_spliceShouldRemoveAndInertSpecifiedNumberOfEle
     // << observable-array-splice-args-change
 
     TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Splice &&
-        result.removed.length === 2 && result.index === 1 && result.addedCount === 1, "ObservableArray splice() should raise 'change' event with correct args!");
+        result.removed.length === 2 && result.index === 1 && result.addedCount === 3, "ObservableArray splice() should raise 'change' event with correct args!");
 };
 
 export const test_ObservableArray_unshiftShouldInsertNewElementsFromTheStart = function () {
