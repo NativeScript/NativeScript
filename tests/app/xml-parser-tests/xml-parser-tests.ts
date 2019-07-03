@@ -54,6 +54,32 @@ export var test_XmlParser_EntityReferencesInAttributeValuesAreDecoded = function
     TKUnit.assert(data === "<>\"&'", "Expected result: <>\"&'; Actual result: " + data + ";");
 };
 
+export var test_XmlParser_UnicodeEntitiesAreDecoded = function () {
+    var data;
+    var xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
+        switch (event.eventType) {
+            case xmlModule.ParserEventType.Text:
+                data = event.data;
+                break;
+        }
+    });
+    xmlParser.parse("<element>&#x1f923;&#x2713;</element>");
+    TKUnit.assert(data === "\uD83E\uDD23\u2713", "Expected result: \uD83E\uDD23\u2713; Actual result: " + data + ";");
+};
+
+export var test_XmlParser_UnicodeEntitiesInAttributeValuesAreDecoded = function () {
+    var data;
+    var xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
+        switch (event.eventType) {
+            case xmlModule.ParserEventType.StartElement:
+                data = event.attributes["text"];
+                break;
+        }
+    });
+    xmlParser.parse("<Label text=\"&#x1f923;&#x2713;\"/>");
+    TKUnit.assert(data === "\uD83E\uDD23\u2713", "Expected result: \uD83E\uDD23\u2713; Actual result: " + data + ";");
+};
+
 export var test_XmlParser_OnErrorIsCalledWhenAnErrorOccurs = function () {
     var e;
     var xmlParser = new xmlModule.XmlParser(

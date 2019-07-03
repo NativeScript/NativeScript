@@ -100,17 +100,17 @@ function _HandleAmpEntities(found: string, decimalValue: string, hexValue: strin
         }
         const res = _ampCodes.get(wordValue);
         if (res) {
-            return String.fromCharCode(res);
+            return String.fromCodePoint(res);
         }
 
         // Invalid word; so we just return it
         return found;
     }
     if (decimalValue) {
-        return String.fromCharCode(parseInt(decimalValue, 10));
+        return String.fromCodePoint(parseInt(decimalValue, 10));
     }
 
-    return String.fromCharCode(parseInt(hexValue, 16));
+    return String.fromCodePoint(parseInt(hexValue, 16));
 }
 
 export class XmlParser implements definition.XmlParser {
