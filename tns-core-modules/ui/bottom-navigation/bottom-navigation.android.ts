@@ -99,7 +99,7 @@ function initializeNativeClasses() {
     BottomNavigationBar = BottomNavigationBarImplementation;
 }
 
-function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
+function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
     const result = new org.nativescript.widgets.TabItemSpec();
     result.title = tabStripItem.title;
 
@@ -202,7 +202,7 @@ export class BottomNavigation extends TabNavigationBase {
         (<any>nativeView).bottomNavigationBar = bottomNavigationBar;
 
         setElevation(nativeView, bottomNavigationBar);
-        
+
         const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
         if (primaryColor) {
             bottomNavigationBar.setBackgroundColor(primaryColor);
@@ -265,13 +265,13 @@ export class BottomNavigation extends TabNavigationBase {
     public onLoaded(): void {
         super.onLoaded();
 
-        this.setAdapterItems(this.items);
+        this.setTabStripItems();
     }
 
     public onUnloaded(): void {
         super.onUnloaded();
 
-        this.setAdapterItems(null);
+        this.setTabStripItems();
     }
 
     public disposeNativeView() {
@@ -341,12 +341,12 @@ export class BottomNavigation extends TabNavigationBase {
         transaction.commitNowAllowingStateLoss();
     }
 
-    private setAdapterItems(items: Array<TabContentItem>) {
+    private setTabStripItems() {
         if (this.tabStrip && this.tabStrip.items) {
             const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
             this.tabStrip.items.forEach((item, i, arr) => {
                 if (this.tabStrip.items[i]) {
-                    const tabItemSpec = createTabItemSpec(null, this.tabStrip.items[i]);
+                    const tabItemSpec = createTabItemSpec(this.tabStrip.items[i]);
                     tabItems.push(tabItemSpec);
                 }
             });
@@ -357,6 +357,8 @@ export class BottomNavigation extends TabNavigationBase {
                 const tv = this._bottomNavigationBar.getTextViewForItemAt(i);
                 item.setNativeView(tv);
             });
+        } else {
+            this._bottomNavigationBar.setItems(null);
         }
     }
 
@@ -390,6 +392,12 @@ export class BottomNavigation extends TabNavigationBase {
         return null;
     }
     [itemsProperty.setNative](value: TabContentItem[]) {
+        if (value) {
+            value.forEach((item: TabContentItem, i) => {
+                (<any>item).index = i;
+            });
+        }
+
         selectedIndexProperty.coerce(this);
     }
 
@@ -397,7 +405,7 @@ export class BottomNavigation extends TabNavigationBase {
         return null;
     }
     [tabStripProperty.setNative](value: TabStrip) {
-        this.setAdapterItems([]);
+        this.setTabStripItems();
     }
 }
 
