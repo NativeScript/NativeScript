@@ -481,10 +481,10 @@ export class BottomNavigation extends TabNavigationBase {
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform | "default"): void {
         const tv = tabStripItem.nativeViewProtected;
 
-        const _defaultTransformationMethod = this._defaultTransformationMethod || tv.getTransformationMethod();
+        this._defaultTransformationMethod = this._defaultTransformationMethod || tv.getTransformationMethod();
 
         if (value === "default") {
-            tv.setTransformationMethod(_defaultTransformationMethod);
+            tv.setTransformationMethod(this._defaultTransformationMethod);
             tv.setText(tabStripItem.title);
         } else {
             const result = getTransformedText(tabStripItem.title, value);
