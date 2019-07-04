@@ -207,7 +207,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
             action: ChangeType.Splice,
             index: start,
             removed: result,
-            addedCount: this._array.length > length ? this._array.length - length : 0
+            addedCount: this._array.length + result.length - length
         });
         if (this._array.length !== length) {
             this._notifyLengthChange();
