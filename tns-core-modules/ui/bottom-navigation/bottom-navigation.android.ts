@@ -101,18 +101,17 @@ function initializeNativeClasses() {
                 return;
             }
 
-            owner.changeTab(position);
-
             const tabStripItems = owner.tabStrip && owner.tabStrip.items;
 
-            if (position >= 0 && tabStripItems && tabStripItems[position]) {
+            if (position >= 0 && tabStripItems[position]) {
                 tabStripItems[position]._emit(TabStripItem.selectEvent);
             }
 
-            if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
+            if (prevPosition >= 0 && tabStripItems[prevPosition]) {
                 tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
             }
 
+            owner.changeTab(position);
             owner.selectedIndex = position;
         }
 
