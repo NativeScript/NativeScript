@@ -12,38 +12,14 @@ export class TabContentItem extends TabContentItemBase {
     public nativeViewProtected: android.widget.TextView;
     public tabItemSpec: org.nativescript.widgets.TabItemSpec;
     public index: number;
-    private _defaultTransformationMethod: android.text.method.TransformationMethod;
 
     get _hasFragments(): boolean {
         return true;
     }
 
-    public initNativeView(): void {
-        super.initNativeView();
-        if (this.nativeViewProtected) {
-            this._defaultTransformationMethod = this.nativeViewProtected.getTransformationMethod();
-        }
-    }
-
-    public onLoaded(): void {
-        super.onLoaded();
-    }
-
-    public resetNativeView(): void {
-        super.resetNativeView();
-        if (this.nativeViewProtected) {
-            // We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
-            this.nativeViewProtected.setTransformationMethod(this._defaultTransformationMethod);
-        }
-    }
-
     public disposeNativeView(): void {
         super.disposeNativeView();
         (<TabContentItemDefinition>this).canBeLoaded = false;
-    }
-
-    public createNativeView() {
-        return this.nativeViewProtected;
     }
 
     public _getChildFragmentManager(): androidx.fragment.app.FragmentManager {
