@@ -179,25 +179,14 @@ module.exports = env => {
                                 unitTesting,
                                 appFullPath,
                                 projectRoot,
-                                registerModules: /(root|page|app)(\.(land|port|phone|tablet|minH\d+|minW\d+|minWH\d+))?\.(xml|css|js|ts|scss)$/ // NB: MODIFIED                              
                             }
                         },
                     ].filter(loader => !!loader)
                 },
 
                 {
-                    test: /(page|app)(\.(land|port|phone|tablet|minH\d+|minW\d+|minWH\d+))?\.ts$/,
-                    use: "nativescript-dev-webpack/script-hot-loader"
-                },
-
-                {
-                    test: /\.(css|scss)$/,
-                    use: "nativescript-dev-webpack/style-hot-loader"
-                },
-
-                {
-                    test: /\.(html|xml)$/,
-                    use: "nativescript-dev-webpack/markup-hot-loader"
+                    test: /\.(ts|css|scss|less|html|xml)$/,
+                    use: "nativescript-dev-webpack/hmr/hot-loader"
                 },
 
                 { test: /\.(html|xml)$/, use: "nativescript-dev-webpack/xml-namespace-loader" },

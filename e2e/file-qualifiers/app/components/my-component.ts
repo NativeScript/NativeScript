@@ -1,3 +1,3 @@
-export function onLoaded(){
+export function onLoaded() {
     console.log("---> Custom component DEFAULT loaded");
 }

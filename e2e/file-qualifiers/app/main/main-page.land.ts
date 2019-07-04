@@ -7,11 +7,11 @@ export function onNavigatingTo(args) {
 }
 
 export function tap(args) {
-    console.log("---> [DEFAULT] tap");
+    console.log("---> [LANDSCAPE] tap");
 }
 
 export function navigate(args) {
-    console.log("---> [DEFAULT] navigate");
+    console.log("---> [LANDSCAPE] navigate");
 
     topmost().navigate("other/other-page");
 }
