@@ -8,7 +8,7 @@
 
     <TabContentItem>
         <GridLayout rows="auto, auto, *">
-            <Label text="tabs root top home" />
+            <Label text="bottom navigation root home" />
             <Button row="1" text="reset app" tap="onReset" />
             <GridLayout row="2">
                 <Frame defaultPage="players/players-items-page" />
