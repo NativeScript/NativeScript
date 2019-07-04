@@ -200,7 +200,7 @@ export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignme
 textAlignmentProperty.register(Style);
 
 const textTransformConverter = makeParser<TextTransform>(makeValidator<TextTransform>("initial", "none", "capitalize", "uppercase", "lowercase"));
-export const textTransformProperty = new CssProperty<Style, TextTransform>({ name: "textTransform", cssName: "text-transform", defaultValue: "initial", valueConverter: textTransformConverter });
+export const textTransformProperty = new InheritedCssProperty<Style, TextTransform>({ name: "textTransform", cssName: "text-transform", defaultValue: "initial", valueConverter: textTransformConverter });
 textTransformProperty.register(Style);
 
 const whiteSpaceConverter = makeParser<WhiteSpace>(makeValidator<WhiteSpace>("initial", "normal", "nowrap"));
