@@ -21,7 +21,7 @@
 
 * **bundle:** bundle workflow support ([#7320](https://github.com/NativeScript/NativeScript/issues/7320)) ([ecd9fc3](https://github.com/NativeScript/NativeScript/commit/ecd9fc3))
 * **android:** androidX support ([#7039](https://github.com/NativeScript/NativeScript/issues/7039)) ([c5db112](https://github.com/NativeScript/NativeScript/commit/c5db112))
-* **beta/experimental** bottom navigation and tabs components ([#6967](https://github.com/NativeScript/NativeScript/issues/6967)) ([0c2c1cc](https://github.com/NativeScript/NativeScript/commit/0c2c1cc))
+* **BETA/EXPERIMENTAL:** bottom navigation and tabs components ([#6967](https://github.com/NativeScript/NativeScript/issues/6967)) ([0c2c1cc](https://github.com/NativeScript/NativeScript/commit/0c2c1cc))
 * add support for :focus pseudo class in TextField / TextView ([#7396](https://github.com/NativeScript/NativeScript/pull/7396)) ([0bfddab](https://github.com/NativeScript/NativeScript/commit/0bfddab))
 
 
