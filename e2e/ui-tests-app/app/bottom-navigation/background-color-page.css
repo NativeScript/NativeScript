@@ -2,10 +2,18 @@ BottomNavigation {
   background-color: gold;
 }
 
+TabContentItem.special {
+  background-color: olive;
+}
+
 TabStrip {
   background-color: skyblue;
 }
 
-TabStripItem {
-  background-color: olive;
+TabStripItem.special {
+  background-color: teal;
+}
+
+TabStripItem.special:active {
+  background-color: yellowgreen;
 }

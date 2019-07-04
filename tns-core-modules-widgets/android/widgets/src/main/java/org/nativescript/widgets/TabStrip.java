@@ -29,6 +29,7 @@ import android.widget.TextView;
 
 class TabStrip extends LinearLayout {
 
+    private static final int DEFAULT_SELECTED_POSITION = -1;
     private static final int DEFAULT_BOTTOM_BORDER_THICKNESS_DIPS = 0;
     private static final byte DEFAULT_BOTTOM_BORDER_COLOR_ALPHA = 0x26;
     private static final int SELECTED_INDICATOR_THICKNESS_DIPS = 3;
@@ -60,6 +61,8 @@ class TabStrip extends LinearLayout {
         super(context, attrs);
 
         setWillNotDraw(false);
+
+        mSelectedPosition = DEFAULT_SELECTED_POSITION;
 
         final float density = getResources().getDisplayMetrics().density;
 
@@ -157,6 +160,10 @@ class TabStrip extends LinearLayout {
         mSelectionOffset = positionOffset;
         invalidate();
         updateTabsTextColor();
+    }
+
+    int getSelectedPosition(){
+        return mSelectedPosition;
     }
 
     void setSelectedPosition(int position) {

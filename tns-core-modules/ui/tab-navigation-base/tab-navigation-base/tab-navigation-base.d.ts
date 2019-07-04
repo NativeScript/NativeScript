@@ -100,7 +100,73 @@ export class TabNavigationBase extends View {
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: any): void 
+    getTabBarColor(): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarColor(value: any): void
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    getTabBarItemBackgroundColor(tabStripItem: TabStripItem): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: any): void
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    getTabBarItemColor(tabStripItem: TabStripItem): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarItemColor(tabStripItem: TabStripItem, value: any): void
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    getTabBarItemFontSize(tabStripItem: TabStripItem): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarItemFontSize(tabStripItem: TabStripItem, value: any): void
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    getTabBarItemFontInternal(tabStripItem: TabStripItem): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarItemFontInternal(tabStripItem: TabStripItem, value: any): void
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    getTabBarItemTextTransform(tabStripItem: TabStripItem): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarItemTextTransform(tabStripItem: TabStripItem, value: any): void
 }
 
 export const itemsProperty: Property<TabNavigationBase, TabContentItem[]>;

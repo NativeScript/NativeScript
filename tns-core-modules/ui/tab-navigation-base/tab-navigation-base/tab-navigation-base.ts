@@ -119,7 +119,57 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         // overridden by inheritors
     }
 
+    public getTabBarColor(): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarColor(value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarItemBackgroundColor(tabStripItem: TabStripItem): any {
+        // overridden by inheritors
+        return null;
+    }
+
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarItemColor(tabStripItem: TabStripItem): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarItemColor(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarItemFontSize(tabStripItem: TabStripItem): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarItemFontSize(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarItemFontInternal(tabStripItem: TabStripItem): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarItemTextTransform(tabStripItem: TabStripItem): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: any): void {
         // overridden by inheritors
     }
 }

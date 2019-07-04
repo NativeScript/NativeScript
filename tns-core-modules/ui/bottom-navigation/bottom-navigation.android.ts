@@ -2,9 +2,12 @@
 import { TabStrip } from "../tab-navigation-base/tab-strip";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
+import { TextTransform } from "../text-base";
 
 // Requires
 import { TabNavigationBase, itemsProperty, selectedIndexProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
+import { Font } from "../styling/font";
+import { getTransformedText } from "../text-base";
 import { CSSType, Color } from "../core/view";
 import { Frame } from "../frame";
 import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
@@ -89,9 +92,37 @@ function initializeNativeClasses() {
             return global.__native(this);
         }
 
-        public onSelectedPositionChange(position: number): void {
-            this.owner.changeTab(position);
-            this.owner.selectedIndex = position;
+        public onSelectedPositionChange(position: number, prevPosition: number): void {
+            const owner = this.owner;
+            if (!owner) {
+                return;
+            }
+
+            const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+
+            if (position >= 0 && tabStripItems[position]) {
+                tabStripItems[position]._emit(TabStripItem.selectEvent);
+            }
+
+            if (prevPosition >= 0 && tabStripItems[prevPosition]) {
+                tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+            }
+
+            owner.changeTab(position);
+            owner.selectedIndex = position;
+        }
+
+        public onTap(position: number): void {
+            const owner = this.owner;
+            if (!owner) {
+                return;
+            }
+
+            const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+
+            if (position >= 0 && tabStripItems[position]) {
+                tabStripItems[position]._emit(TabStripItem.tapEvent);
+            }
         }
     }
 
@@ -102,6 +133,12 @@ function initializeNativeClasses() {
 function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
     const result = new org.nativescript.widgets.TabItemSpec();
     result.title = tabStripItem.title;
+
+    if (tabStripItem.backgroundColor) {
+        if (tabStripItem.backgroundColor instanceof Color) {
+            result.backgroundColor = tabStripItem.backgroundColor.android;
+        }
+    }
 
     if (tabStripItem.iconSource) {
         if (tabStripItem.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
@@ -345,6 +382,7 @@ export class BottomNavigation extends TabNavigationBase {
         if (this.tabStrip && this.tabStrip.items) {
             const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
             this.tabStrip.items.forEach((item, i, arr) => {
+                (<any>item).index = i;
                 if (this.tabStrip.items[i]) {
                     const tabItemSpec = createTabItemSpec(this.tabStrip.items[i]);
                     tabItems.push(tabItemSpec);
@@ -378,8 +416,78 @@ export class BottomNavigation extends TabNavigationBase {
         }
     }
 
+    public getTabBarColor(): number {
+        return this._bottomNavigationBar.getTabTextColor();
+    }
+
+    public setTabBarColor(value: number | Color): void {
+        if (value instanceof Color) {
+            this._bottomNavigationBar.setTabTextColor(value.android);
+            this._bottomNavigationBar.setSelectedTabTextColor(value.android);
+        } else {
+            this._bottomNavigationBar.setTabTextColor(value);
+            this._bottomNavigationBar.setSelectedTabTextColor(value);
+        }
+    }
+
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
-        // TODO: Implement in org.nativescript.widgets.BottomNavigationBar
+        // TODO: Should figure out a way to do it directly with the the nativeView
+        const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
+        const tabItemSpec = createTabItemSpec(tabStripItem);
+        this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
+    }
+
+    public getTabBarItemColor(tabStripItem: TabStripItem): number {
+        return tabStripItem.nativeViewProtected.getCurrentTextColor();
+    }
+
+    public setTabBarItemColor(tabStripItem: TabStripItem, value: number | Color): void {
+        if (typeof value === "number") {
+            tabStripItem.nativeViewProtected.setTextColor(value);
+        } else {
+            tabStripItem.nativeViewProtected.setTextColor(value.android);
+        }
+    }
+
+    public getTabBarItemFontSize(tabStripItem: TabStripItem): { nativeSize: number } {
+        return { nativeSize: tabStripItem.nativeViewProtected.getTextSize() };
+    }
+
+    public setTabBarItemFontSize(tabStripItem: TabStripItem, value: number | { nativeSize: number }): void {
+        if (typeof value === "number") {
+            tabStripItem.nativeViewProtected.setTextSize(value);
+        } else {
+            tabStripItem.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
+        }
+    }
+
+    public getTabBarItemFontInternal(tabStripItem: TabStripItem): android.graphics.Typeface {
+        return tabStripItem.nativeViewProtected.getTypeface();
+    }
+
+    public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font | android.graphics.Typeface): void {
+        tabStripItem.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
+    }
+
+    private _defaultTransformationMethod: android.text.method.TransformationMethod;
+
+    public getTabBarItemTextTransform(tabStripItem: TabStripItem): "default" {
+        return "default";
+    }
+
+    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform | "default"): void {
+        const tv = tabStripItem.nativeViewProtected;
+
+        const _defaultTransformationMethod = this._defaultTransformationMethod || tv.getTransformationMethod();
+
+        if (value === "default") {
+            tv.setTransformationMethod(_defaultTransformationMethod);
+            tv.setText(tabStripItem.title);
+        } else {
+            const result = getTransformedText(tabStripItem.title, value);
+            tv.setText(result);
+            tv.setTransformationMethod(null);
+        }
     }
 
     [selectedIndexProperty.setNative](value: number) {

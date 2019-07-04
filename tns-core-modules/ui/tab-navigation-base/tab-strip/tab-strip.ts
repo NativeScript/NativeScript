@@ -6,7 +6,7 @@ import { Color } from "../../../color";
 import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "../../core/view";
 
 // Requires
-import { View, Property, CSSType, backgroundColorProperty, backgroundInternalProperty } from "../../core/view";
+import { View, Property, CSSType, backgroundColorProperty, backgroundInternalProperty, colorProperty } from "../../core/view";
 
 export const traceCategory = "TabView";
 
@@ -57,6 +57,17 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [backgroundInternalProperty.setNative](value: any) {
         // disable the background CSS properties
+    }
+
+    [colorProperty.getDefault](): Color {
+        const parent = <TabNavigationBase>this.parent;
+
+        return parent && parent.getTabBarColor();
+    }
+    [colorProperty.setNative](value: Color) {
+        const parent = <TabNavigationBase>this.parent;
+        
+        return parent && parent.setTabBarColor(value);
     }
 } 
 
