@@ -1,7 +1,9 @@
 import { topmost } from "tns-core-modules/ui/frame";
+import { vm } from "./main-page-vm";
 
-export function onNavigatedTo(args) {
-    console.log("---> [LANDSCAPE] onNavigatedTo");
+export function onNavigatingTo(args) {
+    console.log("---> [LANDSCAPE] onNavigatingTo");
+    args.object.page.bindingContext = vm;
 }
 
 export function tap(args) {
