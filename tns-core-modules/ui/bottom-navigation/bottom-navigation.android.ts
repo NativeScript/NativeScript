@@ -98,18 +98,20 @@ function initializeNativeClasses() {
                 return;
             }
 
-            const tabStripItems = owner.tabStrip && owner.tabStrip.items;
-
-            if (position >= 0 && tabStripItems[position]) {
-                tabStripItems[position]._emit(TabStripItem.selectEvent);
-            }
-
-            if (prevPosition >= 0 && tabStripItems[prevPosition]) {
-                tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
-            }
-
             owner.changeTab(position);
-            owner.selectedIndex = position;
+            if (position !== prevPosition) {
+                const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+
+                if (position >= 0 && tabStripItems && tabStripItems[position]) {
+                    tabStripItems[position]._emit(TabStripItem.selectEvent);
+                }
+
+                if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
+                    tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+                }
+
+                owner.selectedIndex = position;
+            }
         }
 
         public onTap(position: number): void {
@@ -302,6 +304,7 @@ export class BottomNavigation extends TabNavigationBase {
     public onLoaded(): void {
         super.onLoaded();
 
+        this.changeTab(this.selectedIndex);
         this.setTabStripItems();
     }
 

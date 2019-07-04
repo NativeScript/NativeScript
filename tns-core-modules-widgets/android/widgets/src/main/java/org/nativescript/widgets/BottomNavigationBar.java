@@ -252,10 +252,8 @@ public class BottomNavigationBar extends LinearLayout {
 
     public void setSelectedPosition(int position) {
         int prevPosition = mTabStrip.getSelectedPosition();
-        if (position != prevPosition) {
-            mTabStrip.setSelectedPosition(position);
-            onSelectedPositionChange(position, prevPosition);
-        }
+        mTabStrip.setSelectedPosition(position);
+        onSelectedPositionChange(position, prevPosition);
     }
 
     public void setContentDescription(int i, String desc) {
