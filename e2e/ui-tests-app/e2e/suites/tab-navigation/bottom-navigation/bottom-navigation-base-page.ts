@@ -16,7 +16,7 @@ export class BottomNavigationBasePage extends PageObjectBaseModel {
         await super.initSuite();
     }
 
-    async bottomNavigationTab() {
+    async refreshBottomNavigationTab() {
         let bottomNavigatioinTab;
         if (this._driver.nsCapabilities.isAndroid) {
             bottomNavigatioinTab = await this._driver.findElementByXPath(`//android.view.ViewGroup[@content-desc="bottomNavigation"]/android.widget.LinearLayout`);
@@ -38,7 +38,7 @@ export class BottomNavigationBasePage extends PageObjectBaseModel {
 
     async tabOnItem(index: number) {
         if (this._bottomNavigationItemsRects.size === 0) {
-            await this.bottomNavigationTab();
+            await this.refreshBottomNavigationTab();
         }
         const point = this._bottomNavigationItemsRects.get(index);
         logInfo(`Click on TabStrip index: ${index}`);

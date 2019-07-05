@@ -3,6 +3,7 @@ import { TabViewBasePage } from "./tab-view-base-page";
 import { Platform } from "mobile-devices-controller";
 import { setImageName } from "../../../helpers/image-helper";
 import { assert } from "chai";
+import { ElementCacheStrategy } from "../../../helpers/navigation-helper";
 
 const suite = "tab-navigation";
 const spec = "tab-view-common";
@@ -14,9 +15,11 @@ describe(`${suite}-${spec}-suite`, async function () {
     before(async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
-        await driver.resetApp();
-        tabViewBasePage = new TabViewBasePage(driver);
+        await driver.restartApp();
+        tabViewBasePage = new TabViewBasePage(driver, ElementCacheStrategy.onload);
         await tabViewBasePage.initSuite();
+        driver.imageHelper.options.donNotAppendActualSuffixOnIntialImageCapture = true;
+        driver.imageHelper.options.waitOnCreatingInitialImageCapture = 2000;
     });
 
     after(async function () {
@@ -25,10 +28,6 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     beforeEach(async function () {
         driver.imageHelper.testName = setImageName(suite, spec, this.currentTest.title);
-        driver.imageHelper.options = {
-            tolerance: 0.01,
-            timeOutSeconds: 5
-        };
     });
 
     afterEach(async function () {
@@ -39,18 +38,85 @@ describe(`${suite}-${spec}-suite`, async function () {
         }
     });
 
-    it(`${spec}-style`, async function () {
-        await tabViewBasePage.navigateToSample("tabStyle");
+    it(`${spec}-5470-issue`, async function () {
+        await tabViewBasePage.navigateToSample("issue-5470");
+        await driver.imageHelper.compareScreen();
 
+        const tab2 = await driver.waitForElement("Tab2");
+        await tab2.click();
+        await driver.imageHelper.compareScreen();
+
+        const tab1 = await driver.waitForElement("Tab1");
+        await tab1.click();
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await tabViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-text-color`, async function () {
+        await tabViewBasePage.navigateToSample("tab-text-color");
+        await driver.imageHelper.compareScreen();
+
+        const tab2 = await driver.waitForElement("Tab 2");
+        await tab2.click();
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await tabViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-android-swipe-disabled`, async function () {
+        if (driver.isIOS) {
+            this.skip();
+        }
+        await tabViewBasePage.navigateToSample("tab-view-android-swipe");
+
+        await driver.swipe(
+            {
+                x: driver.nsCapabilities.device.viewportRect.width + driver.nsCapabilities.device.viewportRect.x - 10,
+                y: driver.nsCapabilities.device.viewportRect.height / 2
+            },
+            {
+                yOffset: 0,
+                xOffset: driver.nsCapabilities.device.viewportRect.x + 10
+            }
+            , 100);
         await driver.imageHelper.compareScreen({ timeOutSeconds: 5, tolerance: 0.01 });
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await tabViewBasePage.navigateBackToSuitMainPage();
     });
 
-    it(`${spec}-more-items`, async function () {
-        await tabViewBasePage.navigateToSample("tabmore");
+    it(`${spec}-bottom-position`, async function () {
+        await tabViewBasePage.navigateToSample("tab-view-bottom-position");
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
+        await tabViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-icon-change`, async function () {
+        await tabViewBasePage.navigateToSample("tab-view-icon-change");
+        const index = driver.nsCapabilities.device.platform === Platform.IOS
+            ? (+driver.nsCapabilities.device.apiLevel >= 11 ? 2 : 3) : 1;
+
+        const tabItemLocator = driver.isAndroid ? driver.locators.image :  driver.locators.getElementByName("imagebutton");
+        let btns = await driver.findElementsByClassName(tabItemLocator, 5000);
+        await btns[index].tap();
+        await driver.imageHelper.compareScreen();
+
+        btns = await driver.findElementsByClassName(tabItemLocator, 5000);
+        await btns[index - 1].tap();
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+
+        await tabViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-icon-title-placement`, async function () {
+        await tabViewBasePage.navigateToSample("tab-view-icon-title-placement");
         await driver.imageHelper.compareScreen();
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
@@ -77,7 +143,91 @@ describe(`${suite}-${spec}-suite`, async function () {
         await tabViewBasePage.navigateBackToSuitMainPage();
     });
 
-    it(`${spec}-fonts`, async function () {
+    it(`${spec}-icons-local`, async function () {
+        await tabViewBasePage.navigateToSample("tab-view-icons-local");
+        await driver.imageHelper.compareScreen();
+
+        const rect = await (await driver.waitForElement("automatic")).getActualRectangle();
+
+        await driver.clickPoint(rect.left + 10, rect.top + 10);
+        await driver.imageHelper.compareScreen();
+
+        await driver.clickPoint(rect.left + 10, rect.top + 10);
+        await driver.imageHelper.compareScreen();
+
+        await driver.clickPoint(rect.left + 10, rect.top + 10);
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+
+        await tabViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-text-font-size`, async function () {
+        await tabViewBasePage.navigateToSample("tab-view-tab-text-font-size");
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+
+        await tabViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-background`, async function () {
+        await tabViewBasePage.navigateToSample("tabBG");
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+
+        await tabViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-color`, async function () {
+        await tabViewBasePage.navigateToSample("tabColor");
+        await driver.imageHelper.compareScreen();
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+
+        await tabViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-style`, async function () {
+        await tabViewBasePage.navigateToSample("tabStyle");
+        await driver.imageHelper.compareScreen();
+
+        const tab1 = await driver.waitForElement("First");
+        await tab1.click();
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await tabViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-tabs-background-color`, async function () {
+        await tabViewBasePage.navigateToSample("tabTabsBG");
+        await driver.imageHelper.compareScreen();
+
+        const tab2 = await driver.waitForElement("Second");
+        await tab2.click();
+        await driver.imageHelper.compareScreen();
+
+        const tab1 = await driver.waitForElement("First");
+        await tab1.click();
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await tabViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-more`, async function () {
+        await tabViewBasePage.navigateToSample("tabmore");
+        await driver.imageHelper.compareScreen();
+
+        const tab2 = await driver.waitForElement("Tab 2");
+        await tab2.click();
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await tabViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-text-transform`, async function () {
         await tabViewBasePage.navigateToSample("text-transform");
         await driver.imageHelper.compareScreen();
 
@@ -86,24 +236,6 @@ describe(`${suite}-${spec}-suite`, async function () {
 
         await (await driver.waitForElement("reset")).tap();
         await driver.imageHelper.compareScreen();
-        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
-
-        await tabViewBasePage.navigateBackToSuitMainPage();
-    });
-
-    it(`${spec}-icon-change`, async function () {
-        await tabViewBasePage.navigateToSample("tab-view-icon-change");
-        const index = driver.nsCapabilities.device.platform === Platform.IOS
-            ? (+driver.nsCapabilities.device.apiLevel >= 11 ? 2 : 3) : 1;
-
-        let btns = await driver.findElementsByClassName(driver.locators.button, 5000);
-        await btns[index].tap();
-        await driver.imageHelper.compareScreen();
-
-        btns = await driver.findElementsByClassName(driver.locators.button, 5000);
-        await btns[index - 1].tap();
-        await driver.imageHelper.compareScreen();
-
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await tabViewBasePage.navigateBackToSuitMainPage();

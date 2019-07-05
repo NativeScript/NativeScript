@@ -3,7 +3,7 @@
   <ActionBar title="BottomNavigation background-color" icon="" class="action-bar">
   </ActionBar>
 
-  <BottomNavigation>
+  <BottomNavigation automationText="bottomNavigation" >
     <TabStrip>
         <TabStripItem title="First"></TabStripItem>
         <TabStripItem title="Second"></TabStripItem>

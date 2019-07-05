@@ -14,7 +14,7 @@ describe(`${suite}-${spec}-suite`, async function () {
     before(async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
-        await driver.resetApp();
+        await driver.restartApp();
         tabsViewBasePage = new TabsViewBasePage(driver);
         await tabsViewBasePage.initSuite();
     });
@@ -28,7 +28,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         driver.imageHelper.options = {
             tolerance: 0.01,
             timeOutSeconds: 5,
-            preserveImageName: true
+            donNotAppendActualSuffixOnIntialImageCapture: true
         };
     });
 
@@ -44,15 +44,15 @@ describe(`${suite}-${spec}-suite`, async function () {
         await tabsViewBasePage.navigateToSample("background-color");
 
         await driver.imageHelper.compareScreen();
-       assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await tabsViewBasePage.navigateBackToSuitMainPage();
     });
-    
+
     it(`${spec}-color`, async function () {
         await tabsViewBasePage.navigateToSample("color");
         await driver.imageHelper.compareScreen();
-       assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await tabsViewBasePage.navigateBackToSuitMainPage();
     });
 
@@ -69,7 +69,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         await btns[index - 1].tap();
         await driver.imageHelper.compareScreen();
 
-       assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await tabsViewBasePage.navigateBackToSuitMainPage();
     });
@@ -77,28 +77,28 @@ describe(`${suite}-${spec}-suite`, async function () {
     it(`${spec}-icon-title-placment`, async function () {
         await tabsViewBasePage.navigateToSample("icon-title-placement");
         await driver.imageHelper.compareScreen();
-       assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await tabsViewBasePage.navigateBackToSuitMainPage();
     });
 
     it(`${spec}-issue-5470`, async function () {
         await tabsViewBasePage.navigateToSample("issue-5470");
         await driver.imageHelper.compareScreen();
-       assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await tabsViewBasePage.navigateBackToSuitMainPage();
     });
 
     it(`${spec}-swipe-enabled`, async function () {
         await tabsViewBasePage.navigateToSample("swipe-enabled");
         await driver.imageHelper.compareScreen();
-       assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await tabsViewBasePage.navigateBackToSuitMainPage();
     });
 
     it(`${spec}-tabs-position`, async function () {
         await tabsViewBasePage.navigateToSample("tabs-position");
         await driver.imageHelper.compareScreen();
-       assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await tabsViewBasePage.navigateBackToSuitMainPage();
     });
 });

@@ -2,7 +2,7 @@
   <ActionBar title="BottomNavigation color" icon="" class="action-bar">
   </ActionBar>
 
-  <BottomNavigation style="color: green;">
+  <BottomNavigation style="color: green;"  automationText="bottomNavigation" >
     <TabStrip>
       <TabStripItem title="First"></TabStripItem>
       <TabStripItem title="Second"></TabStripItem>
