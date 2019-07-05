@@ -234,29 +234,34 @@ function initializeNativeClasses() {
 }
 
 function createTabItemSpec(item: TabStripItem): org.nativescript.widgets.TabItemSpec {
-    const result = new org.nativescript.widgets.TabItemSpec();
-    result.title = item.title;
+    let iconSource;
+    const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
 
-    if (item.iconSource) {
-        if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-            result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
-            if (result.iconId === 0) {
+    // Image and Label children of TabStripItem
+    // take priority over its `iconSource` and `title` properties
+    iconSource = item.image ? item.image.src : item.iconSource;
+    tabItemSpec.title = item.label ? item.label.text : item.title;
+
+    if (iconSource) {
+        if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+            tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
+            if (tabItemSpec.iconId === 0) {
                 // TODO
-                // traceMissingIcon(item.iconSource);
+                // traceMissingIcon(iconSource);
             }
         } else {
-            const is = fromFileOrResource(item.iconSource);
+            const is = fromFileOrResource(iconSource);
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-                result.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
+                tabItemSpec.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
             } else {
                 // TODO
-                // traceMissingIcon(item.iconSource);
+                // traceMissingIcon(iconSource);
             }
         }
     }
 
-    return result;
+    return tabItemSpec;
 }
 
 let defaultAccentColor: number = undefined;
