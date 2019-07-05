@@ -100,7 +100,6 @@ global.loadModule = function loadModule(name: string, isUIModule: boolean = fals
     const moduleInfo = modules.get(name);
     if (moduleInfo) {
         if (isUIModule) {
-            // console.log(`--> load module for UI: ${moduleInfo.moduleId}`);
             modulesLoadedForUI.add(moduleInfo.moduleId);
         }
 
