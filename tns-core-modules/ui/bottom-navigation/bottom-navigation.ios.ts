@@ -99,6 +99,12 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
             // "< More" cannot be visible after clicking on the main tab bar buttons.
             let backToMoreWillBeVisible = false;
             owner._handleTwoNavigationBars(backToMoreWillBeVisible);
+
+            if (tabBarController.viewControllers && tabBarController.viewControllers.containsObject(viewController)) {
+                const position = tabBarController.viewControllers.indexOfObject(viewController);
+                const tabStripItems = owner.tabStrip.items;
+                tabStripItems[position]._emit(TabStripItem.tapEvent);
+            }
         }
 
         if ((<any>tabBarController).selectedViewController === viewController) {
@@ -118,6 +124,14 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 
         const owner = this._owner.get();
         if (owner) {
+            if (tabBarController.viewControllers && tabBarController.viewControllers.containsObject(viewController)) {
+                const position = tabBarController.viewControllers.indexOfObject(viewController);
+                const prevPosition = owner.selectedIndex;
+                const tabStripItems = owner.tabStrip.items;
+                tabStripItems[position]._emit(TabStripItem.selectEvent);
+                tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+            }
+
             owner._onViewControllerShown(viewController);
         }
 
@@ -303,14 +317,17 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        const index = (<any>tabStripItem).index;
-        const width = this.tabStrip.nativeView.frame.size.width / this.tabStrip.items.length;
-        const frame = CGRectMake(width * index, 0, width, this.tabStrip.nativeView.frame.size.width);
-        const bgView = UIView.alloc().initWithFrame(frame);
+        let bgView = (<any>tabStripItem).bgView;
+
+        if (!bgView) {
+            const index = (<any>tabStripItem).index;
+            const width = this.tabStrip.nativeView.frame.size.width / this.tabStrip.items.length;
+            const frame = CGRectMake(width * index, 0, width, this.tabStrip.nativeView.frame.size.width);
+            bgView = UIView.alloc().initWithFrame(frame);
+            this.tabStrip.nativeView.insertSubviewAtIndex(bgView, 0);
+            (<any>tabStripItem).bgView = bgView;
+        }
         bgView.backgroundColor = value instanceof Color ? value.ios : value;
-        this.tabStrip.nativeView.insertSubviewAtIndex(bgView, 0);
-        // const states = getTitleAttributesForStates(tabStripItem);
-        // applyStatesToItem(tabStripItem.nativeView, states);
     }
 
     public getTabBarItemColor(tabStripItem: TabStripItem): UIColor {
