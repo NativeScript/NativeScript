@@ -209,10 +209,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
-
-    it(`${spec}-gestures`, async function () {
-    });
-
+    
     it(`${spec}-icon-change`, async function () {
         await bottomNavigationBasePage.navigateToSample("icon-change");
         const index = driver.nsCapabilities.device.platform === Platform.IOS
