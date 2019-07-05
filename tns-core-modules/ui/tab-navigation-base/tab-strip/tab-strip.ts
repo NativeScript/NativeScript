@@ -14,6 +14,8 @@ export const traceCategory = "TabView";
 export class TabStrip extends View implements TabStripDefinition, AddChildFromBuilder, AddArrayFromBuilder {
     public items: TabStripItem[];
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
+    public _hasImage: boolean;
+    public _hasTitle: boolean;
 
     public eachChild(callback: (child: ViewBase) => boolean) {
         const items = this.items;
@@ -48,7 +50,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [backgroundColorProperty.setNative](value: Color) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarBackgroundColor(value);
     }
 
