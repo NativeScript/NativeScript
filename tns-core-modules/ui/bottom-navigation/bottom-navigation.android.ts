@@ -102,19 +102,18 @@ function initializeNativeClasses() {
             }
 
             owner.changeTab(position);
-            if (position !== prevPosition) {
-                const tabStripItems = owner.tabStrip && owner.tabStrip.items;
 
-                if (position >= 0 && tabStripItems && tabStripItems[position]) {
-                    tabStripItems[position]._emit(TabStripItem.selectEvent);
-                }
+            const tabStripItems = owner.tabStrip && owner.tabStrip.items;
 
-                if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
-                    tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
-                }
-
-                owner.selectedIndex = position;
+            if (position >= 0 && tabStripItems && tabStripItems[position]) {
+                tabStripItems[position]._emit(TabStripItem.selectEvent);
             }
+
+            if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
+                tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+            }
+
+            owner.selectedIndex = position;
         }
 
         public onTap(position: number): void {
