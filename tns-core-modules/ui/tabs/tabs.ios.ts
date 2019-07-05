@@ -557,8 +557,6 @@ export class Tabs extends TabsBase {
     private _delegate: UIPageViewControllerDelegateImpl;
     // private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
     private _iconsCache = {};
-    private _hasImage;
-    private _hasTitle;
 
     constructor() {
         super();
