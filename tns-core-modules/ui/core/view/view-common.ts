@@ -201,9 +201,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 traceWrite(`Change Handled: Changing ${context.type} for ${this} inside ${this.page}`, traceCategories.Livesync);
             }
 
-            if (this.page && this.page.frame) {
-                return this.page.frame._handleLivesync({ type: context.type, path: this.page._moduleName });
-            }
+            return this.page.frame._handleLivesync({ type: context.type, path: this.page._moduleName });
         }
 
         return false;
