@@ -99,19 +99,18 @@ function initializeNativeClasses() {
             }
 
             owner.changeTab(position);
-            if (position !== prevPosition) {
-                const tabStripItems = owner.tabStrip && owner.tabStrip.items;
 
-                if (position >= 0 && tabStripItems && tabStripItems[position]) {
-                    tabStripItems[position]._emit(TabStripItem.selectEvent);
-                }
+            const tabStripItems = owner.tabStrip && owner.tabStrip.items;
 
-                if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
-                    tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
-                }
-
-                owner.selectedIndex = position;
+            if (position >= 0 && tabStripItems && tabStripItems[position]) {
+                tabStripItems[position]._emit(TabStripItem.selectEvent);
             }
+
+            if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
+                tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+            }
+
+            owner.selectedIndex = position;
         }
 
         public onTap(position: number): void {
@@ -136,10 +135,8 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
     const result = new org.nativescript.widgets.TabItemSpec();
     result.title = tabStripItem.title;
 
-    if (tabStripItem.backgroundColor) {
-        if (tabStripItem.backgroundColor instanceof Color) {
-            result.backgroundColor = tabStripItem.backgroundColor.android;
-        }
+    if (tabStripItem.backgroundColor instanceof Color) {
+        result.backgroundColor = tabStripItem.backgroundColor.android;
     }
 
     if (tabStripItem.iconSource) {
@@ -190,6 +187,8 @@ export class BottomNavigation extends TabNavigationBase {
     private _contentViewId: number = -1;
     private _bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar;
     private _currentFragment: androidx.fragment.app.Fragment;
+    private _currentTransaction: androidx.fragment.app.FragmentTransaction;
+    private _timeoutId: number = -1;
 
     constructor() {
         super();
@@ -226,17 +225,17 @@ export class BottomNavigation extends TabNavigationBase {
 
         // CONTENT VIEW
         const contentView = new org.nativescript.widgets.ContentLayout(this._context);
-        const contentViewLP = new org.nativescript.widgets.CommonLayoutParams();
-        contentViewLP.row = 0;
-        contentView.setLayoutParams(contentViewLP);
+        const contentViewLayoutParams = new org.nativescript.widgets.CommonLayoutParams();
+        contentViewLayoutParams.row = 0;
+        contentView.setLayoutParams(contentViewLayoutParams);
         nativeView.addView(contentView);
         (<any>nativeView).contentView = contentView;
 
         // TABSTRIP
         const bottomNavigationBar = new BottomNavigationBar(context, this);
-        const bottomNavigationBarLP = new org.nativescript.widgets.CommonLayoutParams();
-        bottomNavigationBarLP.row = 1;
-        bottomNavigationBar.setLayoutParams(bottomNavigationBarLP);
+        const bottomNavigationBarLayoutParams = new org.nativescript.widgets.CommonLayoutParams();
+        bottomNavigationBarLayoutParams.row = 1;
+        bottomNavigationBar.setLayoutParams(bottomNavigationBarLayoutParams);
         nativeView.addView(bottomNavigationBar);
         (<any>nativeView).bottomNavigationBar = bottomNavigationBar;
 
@@ -252,15 +251,22 @@ export class BottomNavigation extends TabNavigationBase {
 
     public initNativeView(): void {
         super.initNativeView();
+
         if (this._contentViewId < 0) {
             this._contentViewId = android.view.View.generateViewId();
         }
 
         const nativeView: any = this.nativeViewProtected;
+
         this._contentView = (<any>nativeView).contentView;
         this._contentView.setId(this._contentViewId);
+
         this._bottomNavigationBar = (<any>nativeView).bottomNavigationBar;
         (<any>this._bottomNavigationBar).owner = this;
+
+        if (this.tabStrip) {
+            this.tabStrip.setNativeView(this._bottomNavigationBar);
+        }
     }
 
     public _loadUnloadTabItems(newIndex: number) {
@@ -304,14 +310,22 @@ export class BottomNavigation extends TabNavigationBase {
     public onLoaded(): void {
         super.onLoaded();
 
+        const items = this.tabStrip ? this.tabStrip.items : null;
+        this.setTabStripItems(items);
+
         this.changeTab(this.selectedIndex);
-        this.setTabStripItems();
     }
 
     public onUnloaded(): void {
         super.onUnloaded();
 
-        this.setTabStripItems();
+        this.setTabStripItems(null);
+
+        const fragmentToDetach = this._currentFragment;
+        if (fragmentToDetach) {
+            this.destroyItem((<any>fragmentToDetach).index, fragmentToDetach);
+            this.commitCurrentTransaction();
+        }
     }
 
     public disposeNativeView() {
@@ -328,79 +342,142 @@ export class BottomNavigation extends TabNavigationBase {
         // i.e. in a scenario with tab frames let the frames cleanup their fragments first, and then
         // cleanup the tab fragments to avoid
         // android.content.res.Resources$NotFoundException: Unable to find resource ID #0xfffffff6
-        this.disposeCurrentFragments();
+        this.disposeTabFragments();
     }
 
-    private disposeCurrentFragments(): void {
+    private disposeTabFragments(): void {
         const fragmentManager = this._getFragmentManager();
         const transaction = fragmentManager.beginTransaction();
         for (let fragment of (<Array<any>>fragmentManager.getFragments().toArray())) {
             transaction.remove(fragment);
         }
+
         transaction.commitNowAllowingStateLoss();
     }
 
-    public changeTab(index: number) {
-        // this is the case when there are no items
-        if (index === -1) {
-            return;
+    private get currentTransaction(): androidx.fragment.app.FragmentTransaction {
+        if (!this._currentTransaction) {
+            const fragmentManager = this._getFragmentManager();
+            this._currentTransaction = fragmentManager.beginTransaction();
         }
 
-        const containerView = this._contentView;
+        return this._currentTransaction;
+    }
+
+    private commitCurrentTransaction(): void {
+        if (this._currentTransaction) {
+            this._currentTransaction.commitNowAllowingStateLoss();
+            this._currentTransaction = null;
+        }
+    }
+
+    // TODO: Should we extract adapter-like class?
+    // TODO: Rename this?
+    public changeTab(index: number) {
+        if (this._timeoutId !== -1) {
+            clearTimeout(this._timeoutId);
+            this._timeoutId = -1;
+        }
+
+        // TODO: find better way to ensure we are not executing this logic multiple times on a single pass
+        this._timeoutId = setTimeout(() => {
+            // this is the case when there are no items
+            if (index === -1) {
+                return;
+            }
+
+            const fragmentToDetach = this._currentFragment;
+            if (fragmentToDetach) {
+                this.destroyItem((<any>fragmentToDetach).index, fragmentToDetach);
+            }
+
+            const fragment = this.instantiateItem(this._contentView, index);
+            this.setPrimaryItem(index, fragment);
+
+            this.commitCurrentTransaction();
+
+            this._timeoutId = -1;
+        });
+    }
+
+    private instantiateItem(container: android.view.ViewGroup, position: number): androidx.fragment.app.Fragment {
+        const name = makeFragmentName(container.getId(), position);
+
         const fragmentManager = this._getFragmentManager();
-        const transaction = fragmentManager.beginTransaction();
+        let fragment: androidx.fragment.app.Fragment = fragmentManager.findFragmentByTag(name);
+        if (fragment != null) {
+            this.currentTransaction.attach(fragment);
+        } else {
+            fragment = TabFragment.newInstance(this._domId, position);
+            this.currentTransaction.add(container.getId(), fragment, name);
+        }
 
-        if (this._currentFragment) {
-            const fragment = this._currentFragment;
-            transaction.detach(fragment);
+        if (fragment !== this._currentFragment) {
+            fragment.setMenuVisibility(false);
+            fragment.setUserVisibleHint(false);
+        }
 
+        return fragment;
+    }
+
+    private setPrimaryItem(position: number, fragment: androidx.fragment.app.Fragment): void {
+        if (fragment !== this._currentFragment) {
+            if (this._currentFragment != null) {
+                this._currentFragment.setMenuVisibility(false);
+                this._currentFragment.setUserVisibleHint(false);
+            }
+
+            if (fragment != null) {
+                fragment.setMenuVisibility(true);
+                fragment.setUserVisibleHint(true);
+            }
+
+            this._currentFragment = fragment;
+        
+            const tabItems = this.items;
+            const tabItem = tabItems ? tabItems[position] : null;
+            if (tabItem) {
+                tabItem.canBeLoaded = true;
+                this._loadUnloadTabItems(position);
+            }
+        }
+    }
+
+    private destroyItem(position: number, fragment: androidx.fragment.app.Fragment): void {
+        if (fragment) {
+            this.currentTransaction.detach(fragment);
             if (this._currentFragment === fragment) {
                 this._currentFragment = null;
             }
         }
 
-        const name = makeFragmentName(containerView.getId(), index);
-
-        let fragment: androidx.fragment.app.Fragment = fragmentManager.findFragmentByTag(name);
-        if (fragment != null) {
-            transaction.attach(fragment);
-        } else {
-            fragment = TabFragment.newInstance(this._domId, index);
-            transaction.add(containerView.getId(), fragment, name);
+        if (this.items && this.items[position]) {
+            this.items[position].canBeLoaded = false;
         }
-
-        this._currentFragment = fragment;
-
-        const tabItems = this.items;
-        const tabItem = tabItems ? tabItems[index] : null;
-        if (tabItem) {
-            tabItem.canBeLoaded = true;
-            this._loadUnloadTabItems(index);
-        }
-
-        transaction.commitNowAllowingStateLoss();
     }
 
-    private setTabStripItems() {
-        if (this.tabStrip && this.tabStrip.items) {
-            const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-            this.tabStrip.items.forEach((item, i, arr) => {
-                (<any>item).index = i;
-                if (this.tabStrip.items[i]) {
-                    const tabItemSpec = createTabItemSpec(this.tabStrip.items[i]);
-                    tabItems.push(tabItemSpec);
-                }
-            });
-
-            this._bottomNavigationBar.setItems(tabItems);
-            this.tabStrip.setNativeView(this._bottomNavigationBar);
-            this.tabStrip.items.forEach((item, i, arr) => {
-                const tv = this._bottomNavigationBar.getTextViewForItemAt(i);
-                item.setNativeView(tv);
-            });
-        } else {
+    private setTabStripItems(items: Array<TabStripItem>) {
+        if (!this.tabStrip || !items) {
             this._bottomNavigationBar.setItems(null);
+
+            return;
         }
+
+        const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
+        items.forEach((item, i, arr) => {
+            (<any>item).index = i;
+            if (items[i]) {
+                const tabItemSpec = createTabItemSpec(items[i]);
+                tabItems.push(tabItemSpec);
+            }
+        });
+
+        this._bottomNavigationBar.setItems(tabItems);
+
+        items.forEach((item, i, arr) => {
+            const textView = this._bottomNavigationBar.getTextViewForItemAt(i);
+            item.setNativeView(textView);
+        });
     }
 
     public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
@@ -520,7 +597,8 @@ export class BottomNavigation extends TabNavigationBase {
         return null;
     }
     [tabStripProperty.setNative](value: TabStrip) {
-        this.setTabStripItems();
+        const items = this.tabStrip ? this.tabStrip.items : null;
+        this.setTabStripItems(items);
     }
 }
 

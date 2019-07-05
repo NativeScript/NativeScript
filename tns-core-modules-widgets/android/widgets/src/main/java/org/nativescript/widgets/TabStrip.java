@@ -178,7 +178,7 @@ class TabStrip extends LinearLayout {
                 : mDefaultTabColorizer;
 
         // Thick colored underline below the current selection
-        if (childCount > 0) {
+        if (childCount > 0 && mSelectedPosition < childCount) {
             View selectedTitle = getChildAt(mSelectedPosition);
             int left = selectedTitle.getLeft();
             int right = selectedTitle.getRight();
