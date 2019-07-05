@@ -33,7 +33,7 @@ export class BottomNavigationViewModel extends Observable {
         this.itemsCount++;
     }
 
-    public removeLastItem(){
+    public removeLastItem() {
         console.log("Remove item");
         this.tabStripItems.pop();
         this.tabContentItems.pop();

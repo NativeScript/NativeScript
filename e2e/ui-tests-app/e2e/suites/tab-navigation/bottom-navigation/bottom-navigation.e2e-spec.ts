@@ -17,7 +17,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         await driver.restartApp();
         bottomNavigationBasePage = new BottomNavigationBasePage(driver);
         await bottomNavigationBasePage.initSuite();
-        driver.imageHelper.blockOutAreas = [{ x: 40, y: 0, height: 150, width: 325 }]
+        driver.imageHelper.blockOutAreas = [{ x: 40, y: 0, height: 150, width: 325 }];
     });
 
     after(async function () {
@@ -67,7 +67,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         const addTabBtn = await driver.waitForElement("add-tab");
         const addTabBtnRect = await addTabBtn.getActualRectangle();
         const clickAddTab = async () => {
-            await driver.clickPoint((addTabBtnRect.left + addTabBtnRect.width) / 2, (addTabBtnRect.top + addTabBtnRect.height) / 2)
+            await driver.clickPoint((addTabBtnRect.left + addTabBtnRect.width) / 2, (addTabBtnRect.top + addTabBtnRect.height) / 2);
         };
 
         await clickAddTab();
@@ -95,7 +95,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         const removeTabBtn = await driver.waitForElement("remove-last-tab");
         const removeTabBtnRect = await removeTabBtn.getActualRectangle();
         const clickRemoveTab = async () => {
-            await driver.clickPoint((removeTabBtnRect.left + removeTabBtnRect.width) / 2, (removeTabBtnRect.top + removeTabBtnRect.height) / 2)
+            await driver.clickPoint((removeTabBtnRect.left + removeTabBtnRect.width) / 2, (removeTabBtnRect.top + removeTabBtnRect.height) / 2);
         };
 
         await clickRemoveTab();
@@ -209,7 +209,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
-    
+
     it(`${spec}-icon-change`, async function () {
         await bottomNavigationBasePage.navigateToSample("icon-change");
         const index = driver.nsCapabilities.device.platform === Platform.IOS
