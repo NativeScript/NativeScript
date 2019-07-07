@@ -1,5 +1,5 @@
 import { nsCapabilities, createDriver, AppiumDriver, Direction } from "nativescript-dev-appium";
-import { TabViewBasePage } from "./tab-view-base-page";
+import { BottomNavigationBasePage } from "./bottom-navigation-base-page";
 import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 import { Platform } from "mobile-devices-controller";
 import { ElementCacheStrategy } from "../../../helpers/navigation-helper";
@@ -7,11 +7,11 @@ import { setImageName } from "../../../helpers/image-helper";
 import { assert } from "chai";
 
 const suite = "tab-navigation";
-const spec = "tab-view-css";
+const spec = "bottom-navigation-css";
 
 describe(`${suite}-${spec}-suite`, async function () {
     let driver: AppiumDriver;
-    let tabViewBasePage: TabViewBasePage;
+    let bottomNavigationBasePage: BottomNavigationBasePage;
 
     const samples = [
         { sample: "tab-text-color: green;", tab1: "IteM onE", tab2: "IteM twO" },
@@ -30,27 +30,21 @@ describe(`${suite}-${spec}-suite`, async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
         await driver.restartApp();
-        tabViewBasePage = new TabViewBasePage(driver, ElementCacheStrategy.none);
-        await tabViewBasePage.init("tabViewCss");
+        bottomNavigationBasePage = new BottomNavigationBasePage(driver, ElementCacheStrategy.none);
+        await bottomNavigationBasePage.init("css-text-transform");
         driver.imageHelper.options.keepOriginalImageSize = false;
         driver.imageHelper.options.donNotAppendActualSuffixOnIntialImageCapture = true;
     });
 
     after(async function () {
-        await tabViewBasePage.endSuite();
+        await bottomNavigationBasePage.endSuite();
     });
 
     afterEach(async function () {
-        // Fixes crashes when we try to apply some css. all -> reset
-        if (driver.isAndroid) {
-            await tabViewBasePage.navigateBackToSuitMainPage();
-            await tabViewBasePage.navigateToSample("tabViewCss");
-        }
-
         if (this.currentTest.state === "failed") {
             await driver.logTestArtifacts(this.currentTest.title);
-            await driver.resetApp();
-            await tabViewBasePage.initSuite();
+            await driver.restartApp();
+            await bottomNavigationBasePage.initSuite();
         }
     });
 
@@ -59,7 +53,8 @@ describe(`${suite}-${spec}-suite`, async function () {
         let imageName = `${spec}-${sample.sample.replace(/[^a-z]/ig, "-").replace(/(-+)/ig, "-").replace(/(_+)/ig, "_").replace(/-$/, "")}`;
         it(imageName, async function () {
             if (driver.platformName === Platform.ANDROID
-                && (sample.sample.toLowerCase() === "all" || sample.sample.toLowerCase() === "reset")) {
+                && (sample.sample.toLowerCase() === "all"
+                    || sample.sample.toLowerCase() === "reset")) {
                 await driver.scroll(Direction.down, 400, 200, 300, 200);
             }
             const scenarioBtn = await driver.waitForElement(sample.sample);
