@@ -1,6 +1,7 @@
 import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
 import { ButtonBackgroundPage } from "./button-background-page";
 import { assert } from "chai";
+import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 
 const suite = "button";
 const spec = "background";
@@ -12,9 +13,11 @@ describe(`${suite}-${spec}-suite`, () => {
     before(async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
-        await driver.resetApp();
+        await driver.restartApp();
         backgroundPage = new ButtonBackgroundPage(driver);
         await backgroundPage.initSuite();
+        driver.imageHelper.options.keepOriginalImageSize = false;
+        driver.imageHelper.options.toleranceType = ImageOptions.percent;
     });
 
     after(async function () {
@@ -28,14 +31,14 @@ describe(`${suite}-${spec}-suite`, () => {
     afterEach(async function () {
         if (this.currentTest.state === "failed") {
             await driver.logTestArtifacts(this.currentTest.title);
-            await driver.resetApp();
+            await driver.restartApp();
             await backgroundPage.initSuite();
         }
     });
 
     it("background_11", async function () {
         const presenter = await backgroundPage.testElement();
-        await driver.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
+        await driver.compareElement(presenter, "background_11_clean", 0.1, 2);
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
     });
 
@@ -46,7 +49,7 @@ describe(`${suite}-${spec}-suite`, () => {
     it("background_13", async function () {
         await backgroundPage.tapResetBtn();
         const presenter = await backgroundPage.testElement();
-        await driver.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
+        await driver.compareElement(presenter, "background_11_clean");
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
     });
 
