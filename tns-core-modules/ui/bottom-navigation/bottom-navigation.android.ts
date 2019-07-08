@@ -188,7 +188,6 @@ export class BottomNavigation extends TabNavigationBase {
     private _bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar;
     private _currentFragment: androidx.fragment.app.Fragment;
     private _currentTransaction: androidx.fragment.app.FragmentTransaction;
-    private _timeoutId: number = -1;
 
     constructor() {
         super();
@@ -374,30 +373,20 @@ export class BottomNavigation extends TabNavigationBase {
     // TODO: Should we extract adapter-like class?
     // TODO: Rename this?
     public changeTab(index: number) {
-        if (this._timeoutId !== -1) {
-            clearTimeout(this._timeoutId);
-            this._timeoutId = -1;
+        // this is the case when there are no items
+        if (index === -1) {
+            return;
         }
 
-        // TODO: find better way to ensure we are not executing this logic multiple times on a single pass
-        this._timeoutId = setTimeout(() => {
-            // this is the case when there are no items
-            if (index === -1) {
-                return;
-            }
+        const fragmentToDetach = this._currentFragment;
+        if (fragmentToDetach) {
+            this.destroyItem((<any>fragmentToDetach).index, fragmentToDetach);
+        }
 
-            const fragmentToDetach = this._currentFragment;
-            if (fragmentToDetach) {
-                this.destroyItem((<any>fragmentToDetach).index, fragmentToDetach);
-            }
+        const fragment = this.instantiateItem(this._contentView, index);
+        this.setPrimaryItem(index, fragment);
 
-            const fragment = this.instantiateItem(this._contentView, index);
-            this.setPrimaryItem(index, fragment);
-
-            this.commitCurrentTransaction();
-
-            this._timeoutId = -1;
-        });
+        this.commitCurrentTransaction();
     }
 
     private instantiateItem(container: android.view.ViewGroup, position: number): androidx.fragment.app.Fragment {
