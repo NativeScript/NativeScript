@@ -9,7 +9,7 @@ import { TabNavigationBase, itemsProperty, selectedIndexProperty, tabStripProper
 import { Font } from "../styling/font";
 import { getTransformedText } from "../text-base";
 import { CSSType, Color } from "../core/view";
-import { Frame } from "../frame";
+import { Frame, View } from "../frame";
 import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
 import { fromFileOrResource } from "../../image-source";
 // TODO: Impl trace
@@ -25,8 +25,11 @@ const DEFAULT_ELEVATION = 8;
 
 const TABID = "_tabId";
 const INDEX = "_index";
+const ownerSymbol = Symbol("_owner");
+
 let TabFragment: any;
 let BottomNavigationBar: any;
+let AttachStateChangeListener: any;
 
 function makeFragmentName(viewId: number, id: number): string {
     return "android:bottomnavigation:" + viewId + ":" + id;
@@ -127,8 +130,32 @@ function initializeNativeClasses() {
         }
     }
 
+    @Interfaces([android.view.View.OnAttachStateChangeListener])
+    class AttachListener extends java.lang.Object implements android.view.View.OnAttachStateChangeListener {
+        constructor() {
+            super();
+
+            return global.__native(this);
+        }
+
+        onViewAttachedToWindow(view: android.view.View): void {
+            const owner: View = view[ownerSymbol];
+            if (owner) {
+                owner._onAttachedToWindow();
+            }
+        }
+
+        onViewDetachedFromWindow(view: android.view.View): void {
+            const owner: View = view[ownerSymbol];
+            if (owner) {
+                owner._onDetachedFromWindow();
+            }
+        }
+    }
+
     TabFragment = TabFragmentImplementation;
     BottomNavigationBar = BottomNavigationBarImplementation;
+    AttachStateChangeListener = new AttachListener();
 }
 
 function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
@@ -188,6 +215,7 @@ export class BottomNavigation extends TabNavigationBase {
     private _bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar;
     private _currentFragment: androidx.fragment.app.Fragment;
     private _currentTransaction: androidx.fragment.app.FragmentTransaction;
+    private _attachedToWindow = false;
 
     constructor() {
         super();
@@ -257,6 +285,9 @@ export class BottomNavigation extends TabNavigationBase {
 
         const nativeView: any = this.nativeViewProtected;
 
+        nativeView.addOnAttachStateChangeListener(AttachStateChangeListener);
+        nativeView[ownerSymbol] = this;
+
         this._contentView = (<any>nativeView).contentView;
         this._contentView.setId(this._contentViewId);
 
@@ -312,7 +343,22 @@ export class BottomNavigation extends TabNavigationBase {
         const items = this.tabStrip ? this.tabStrip.items : null;
         this.setTabStripItems(items);
 
+        if (this._attachedToWindow) {
+            this.changeTab(this.selectedIndex);
+        }
+    }
+
+    _onAttachedToWindow(): void {
+        super._onAttachedToWindow();
+
+        this._attachedToWindow = true;
         this.changeTab(this.selectedIndex);
+    }
+
+    _onDetachedFromWindow(): void {
+        super._onDetachedFromWindow();
+
+        this._attachedToWindow = false;
     }
 
     public onUnloaded(): void {
@@ -330,6 +376,9 @@ export class BottomNavigation extends TabNavigationBase {
     public disposeNativeView() {
         this._bottomNavigationBar.setItems(null);
         this._bottomNavigationBar = null;
+
+        this.nativeViewProtected.removeOnAttachStateChangeListener(AttachStateChangeListener);
+        this.nativeViewProtected[ownerSymbol] = null;
 
         super.disposeNativeView();
     }
