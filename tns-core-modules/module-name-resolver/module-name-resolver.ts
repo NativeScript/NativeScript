@@ -68,3 +68,6 @@ export function _setResolver(resolver: ModuleNameResolver) {
 }
 
 appCommonModule.on("livesync", args => clearCache());
+appCommonModule.on("orientationChanged", args => {
+    resolverInstance = undefined;
+});

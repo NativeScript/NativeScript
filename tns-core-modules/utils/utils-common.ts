@@ -1,5 +1,6 @@
 import * as types from "./types";
 import { dispatchToMainThread, isMainThread } from "./mainthread-helper";
+import { sanitizeModuleName } from "../ui/builder/module-name-sanitizer";
 
 export * from "./mainthread-helper";
 
@@ -35,7 +36,7 @@ export function convertString(value: any): any {
 export function getModuleName(path: string): string {
     let moduleName = path.replace("./", "");
 
-    return moduleName.substring(0, moduleName.lastIndexOf("."));
+    return sanitizeModuleName(moduleName);
 }
 
 export module layoutCommon {

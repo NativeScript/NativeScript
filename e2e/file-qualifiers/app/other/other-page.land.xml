@@ -1,13 +1,12 @@
-<Page navigatingTo="onNavigatingTo" xmlns:cc="components">
+<Page navigatedTo="onNavigatedTo" xmlns:cc="components">
     <StackLayout class="page-content">
-        <Label text="This is DEFAULT page" />
+        <Label text="This is LANDSACPE other page" />
         
         <Button text="tap" tap="tap" />
 
         <Button text="navigate" tap="navigate" />
 
-        <Label text="{{ prop }}" />
-        
         <cc:my-component />
+
     </StackLayout>
 </Page>

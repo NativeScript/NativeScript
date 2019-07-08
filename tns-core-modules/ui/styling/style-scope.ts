@@ -83,7 +83,7 @@ class CSSSource {
         let appRelativeUri = CSSSource.pathRelativeToApp(uri);
 
         try {
-            const cssOrAst = global.loadModule(appRelativeUri);
+            const cssOrAst = global.loadModule(appRelativeUri, true);
             if (cssOrAst) {
                 if (typeof cssOrAst === "string") {
                     // raw-loader
