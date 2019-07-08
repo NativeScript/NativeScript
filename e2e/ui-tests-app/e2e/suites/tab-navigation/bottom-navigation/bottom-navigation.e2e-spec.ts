@@ -17,7 +17,6 @@ describe(`${suite}-${spec}-suite`, async function () {
         await driver.restartApp();
         bottomNavigationBasePage = new BottomNavigationBasePage(driver);
         await bottomNavigationBasePage.initSuite();
-        driver.imageHelper.blockOutAreas = [{ x: 40, y: 0, height: 150, width: 325 }];
     });
 
     after(async function () {

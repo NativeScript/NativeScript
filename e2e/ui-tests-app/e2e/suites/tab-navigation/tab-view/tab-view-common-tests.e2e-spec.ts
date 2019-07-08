@@ -18,7 +18,6 @@ describe(`${suite}-${spec}-suite`, async function () {
         await driver.restartApp();
         tabViewBasePage = new TabViewBasePage(driver, ElementCacheStrategy.onload);
         await tabViewBasePage.initSuite();
-        driver.imageHelper.options.donNotAppendActualSuffixOnIntialImageCapture = true;
     });
 
     after(async function () {
