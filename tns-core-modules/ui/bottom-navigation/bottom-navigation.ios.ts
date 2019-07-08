@@ -500,22 +500,20 @@ export class BottomNavigation extends TabNavigationBase {
         items.forEach((item, i) => {
             const controller = this.getViewController(item);
 
-            let icon = null;
-            let title = "";
-
             if (this.tabStrip && this.tabStrip.items && this.tabStrip.items[i]) {
-                const tabStripItem = <TabStripItem>this.tabStrip.items[i];
-                icon = this._getIcon(tabStripItem.iconSource);
-                title = tabStripItem.title;
-
-                const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((title || ""), icon, i);
-                updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
+                const item = <TabStripItem>this.tabStrip.items[i];
+                const tabBarItem = this.createTabBarItem(item, i);
+                updateTitleAndIconPositions(item, tabBarItem, controller);
 
                 applyStatesToItem(tabBarItem, states);
 
                 controller.tabBarItem = tabBarItem;
+<<<<<<< HEAD
                 (<any>tabStripItem).index = i;
                 tabStripItem.setNativeView(tabBarItem);
+=======
+                item.setNativeView(tabBarItem);
+>>>>>>> feat(ios-bottom-navigation): create tab bar from image nad label
             }
 
             controllers.addObject(controller);
@@ -526,6 +524,20 @@ export class BottomNavigation extends TabNavigationBase {
 
         // When we set this._ios.viewControllers, someone is clearing the moreNavigationController.delegate, so we have to reassign it each time here.
         this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
+    }
+
+    private createTabBarItem(item: TabStripItem, index: number): UITabBarItem {
+        let image: UIImage;
+        let title: string;
+
+        // Image and Label children of TabStripItem
+        // take priority over its `iconSource` and `title` properties
+        image = item.image ? this._getIcon(item.image.src) : this._getIcon(item.iconSource);
+        title = item.label ? item.label.text : item.title;
+
+        const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, image, index);
+
+        return tabBarItem;
     }
 
     private _getIconRenderingMode(): UIImageRenderingMode {
