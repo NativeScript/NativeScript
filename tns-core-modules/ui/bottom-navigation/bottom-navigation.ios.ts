@@ -1,4 +1,4 @@
-﻿// Types
+// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TextTransform } from "../text-base";
@@ -501,19 +501,15 @@ export class BottomNavigation extends TabNavigationBase {
             const controller = this.getViewController(item);
 
             if (this.tabStrip && this.tabStrip.items && this.tabStrip.items[i]) {
-                const item = <TabStripItem>this.tabStrip.items[i];
-                const tabBarItem = this.createTabBarItem(item, i);
-                updateTitleAndIconPositions(item, tabBarItem, controller);
+                const tabStripItem = <TabStripItem>this.tabStrip.items[i];
+                const tabBarItem = this.createTabBarItem(tabStripItem, i);
+                updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
 
                 applyStatesToItem(tabBarItem, states);
 
                 controller.tabBarItem = tabBarItem;
-<<<<<<< HEAD
                 (<any>tabStripItem).index = i;
                 tabStripItem.setNativeView(tabBarItem);
-=======
-                item.setNativeView(tabBarItem);
->>>>>>> feat(ios-bottom-navigation): create tab bar from image nad label
             }
 
             controllers.addObject(controller);
