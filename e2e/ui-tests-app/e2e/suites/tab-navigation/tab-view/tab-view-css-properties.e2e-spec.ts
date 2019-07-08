@@ -32,8 +32,6 @@ describe(`${suite}-${spec}-suite`, async function () {
         await driver.restartApp();
         tabViewBasePage = new TabViewBasePage(driver, ElementCacheStrategy.none);
         await tabViewBasePage.init("tabViewCss");
-        driver.imageHelper.options.keepOriginalImageSize = false;
-        driver.imageHelper.options.donNotAppendActualSuffixOnIntialImageCapture = true;
     });
 
     after(async function () {

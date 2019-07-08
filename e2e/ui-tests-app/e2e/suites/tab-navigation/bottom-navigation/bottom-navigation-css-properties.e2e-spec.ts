@@ -14,15 +14,10 @@ describe(`${suite}-${spec}-suite`, async function () {
     let bottomNavigationBasePage: BottomNavigationBasePage;
 
     const samples = [
-        { sample: "tab-text-color: green;", tab1: "IteM onE", tab2: "IteM twO" },
-        { sample: "tab-background-color: yellow;", tab1: "IteM onE", tab2: "IteM twO" },
-        { sample: "selected-tab-text-color: red;", tab1: "IteM onE", tab2: "IteM twO" },
-        { sample: "android-selected-tab-highlight-color: orange;", tab1: "IteM onE", tab2: "IteM twO" },
         { sample: "text-transform: uppercase;", tab1: "IteM onE", tab2: "IteM twO" },
         { sample: "text-transform: lowercase;", tab1: "IteM onE", tab2: "IteM twO" },
         { sample: "text-transform: capitalize;", tab1: "IteM onE", tab2: "IteM twO" },
         { sample: "text-transform: none;", tab1: "IteM onE", tab2: "IteM twO" },
-        { sample: "all", tab1: "IteM onE", tab2: "IteM twO" },
         { sample: "reset", tab1: "IteM onE", tab2: "IteM twO" },
     ];
 
@@ -32,8 +27,6 @@ describe(`${suite}-${spec}-suite`, async function () {
         await driver.restartApp();
         bottomNavigationBasePage = new BottomNavigationBasePage(driver, ElementCacheStrategy.none);
         await bottomNavigationBasePage.init("css-text-transform");
-        driver.imageHelper.options.keepOriginalImageSize = false;
-        driver.imageHelper.options.donNotAppendActualSuffixOnIntialImageCapture = true;
     });
 
     after(async function () {

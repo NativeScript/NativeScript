@@ -9,6 +9,8 @@ export class BottomNavigationBasePage extends PageObjectBaseModel {
 
     constructor(_driver: AppiumDriver, elementCacheStrategy?: ElementCacheStrategy) {
         super(_driver, ["bottom-navigation"], elementCacheStrategy);
+        this._driver.imageHelper.options.waitBeforeCreatingInitialImageCapture = 4000;
+        this._driver.imageHelper.options.keepOriginalImageSize = false;
     }
 
     async init(subSuiteName: string) {
