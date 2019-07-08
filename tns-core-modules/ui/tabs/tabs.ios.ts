@@ -34,7 +34,15 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
     }
 
     public tabBarShouldSelectItem(tabBar: MDCTabBar, item: UITabBarItem): boolean {
-        return true;
+        const owner = this._owner.get();
+        const shouldSelectItem = owner._canSelectItem;
+        const selectedIndex = owner.tabBarItems.indexOf(item);
+
+        if (owner.selectedIndex !== selectedIndex) {
+            owner._canSelectItem = false;
+        }
+
+        return shouldSelectItem;
     }
 
     public tabBarWillSelectItem(tabBar: MDCTabBar, item: UITabBarItem): void {
@@ -53,6 +61,7 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
 class UIPageViewControllerImpl extends UIPageViewController {
     tabBar: MDCTabBar;
     scrollView: UIScrollView;
+    tabBarDelegate: MDCTabBarDelegateImpl;
 
     private _owner: WeakRef<Tabs>;
 
@@ -87,7 +96,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
         //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
         // ]);
 
-        tabBar.delegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
+        tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
         tabBar.itemAppearance = MDCTabBarItemAppearance.Titles;
         tabBar.tintColor = UIColor.blueColor;
         tabBar.barTintColor = UIColor.whiteColor;
@@ -287,7 +296,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
         const owner = this._owner.get();
         let selectedIndex = owner.selectedIndex;
 
-        if (selectedIndex === 2) {
+        if (selectedIndex === owner.items.length - 1) {
             return null;
         }
 
@@ -352,7 +361,7 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
         //
     }
 
-    public pageViewControllerDidFinishAnimatingPreviousViewControllersTransitionCompleted(pageViewController: UIPageViewController, didFinishAnimating: boolean,  previousViewControllers: NSArray<UIViewController>, transitionCompleted: boolean): void {
+    public pageViewControllerDidFinishAnimatingPreviousViewControllersTransitionCompleted(pageViewController: UIPageViewController, didFinishAnimating: boolean, previousViewControllers: NSArray<UIViewController>, transitionCompleted: boolean): void {
         if (!transitionCompleted) {
             return;
         }
@@ -365,8 +374,9 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
 
         if (selectedIndex !== nextViewControllerIndex) {
             owner.selectedIndex = nextViewControllerIndex;
+            owner._canSelectItem = true;
         }
-        
+
         console.log("test");
         //
     }
@@ -547,6 +557,7 @@ export class Tabs extends TabsBase {
     // public swipeEnabled: boolean;
     // public offscreenTabLimit: number;
     // public tabsPosition: "top" | "bottom";
+    public _canSelectItem: boolean;
     public isLoaded: boolean;
     public viewController: UIPageViewControllerImpl;
     public items: TabContentItem[];
@@ -578,6 +589,8 @@ export class Tabs extends TabsBase {
     disposeNativeView() {
         this._dataSource = null;
         this._delegate = null;
+        this._ios.tabBarDelegate = null;
+        this._ios.tabBar = null;
         // this._moreNavigationControllerDelegate = null;
         super.disposeNativeView();
     }
@@ -812,7 +825,7 @@ export class Tabs extends TabsBase {
 
         // items.forEach((item, i) => {
         //     const controller = this.getViewController(item);
-                                                                            
+
         //     let icon = null;
         //     let title = "";
 
@@ -950,6 +963,7 @@ export class Tabs extends TabsBase {
         // if (traceEnabled()) {
         //     traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);
         // }
+        const that = this;
 
         if (value > -1) {
             const item = this.items[value];
@@ -970,8 +984,11 @@ export class Tabs extends TabsBase {
             }
 
             this._currentNativeSelectedIndex = value;
-
-            this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, null);
+            this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, (finished: boolean) => {
+                if (finished) {
+                    that._canSelectItem = true;
+                }
+            });
 
             if (this.tabBarItems && this.tabBarItems.length && this.viewController && this.viewController.tabBar) {
                 this.viewController.tabBar.setSelectedItemAnimated(this.tabBarItems[value], true);
