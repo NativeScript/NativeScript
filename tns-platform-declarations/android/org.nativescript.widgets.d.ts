@@ -410,7 +410,8 @@
                 setTabTextFontSize(fontSize: number): void;
                 getTabTextFontSize(): number;
 
-                onSelectedPositionChange(position: number): void ;
+                onTap(position: number): void;
+                onSelectedPositionChange(position: number, prevPosition: number): void ;
                 setSelectedPosition(position: number): void;
                 setItems(items: Array<TabItemSpec>): void;
                 updateItemAt(position: number, itemSpec: TabItemSpec): void;
@@ -431,6 +432,7 @@
                 title: string;
                 iconId: number;
                 iconDrawable: android.graphics.drawable.Drawable;
+                backgroundColor: number;
             }
 
             export namespace image {

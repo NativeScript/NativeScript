@@ -5,8 +5,8 @@
 
   <BottomNavigation>
     <TabStrip>
-        <TabStripItem title="First" class="special"></TabStripItem>
-        <TabStripItem title="Second"></TabStripItem>
+        <TabStripItem title="first" class="special"></TabStripItem>
+        <TabStripItem title="second"></TabStripItem>
     </TabStrip>
 
     <TabContentItem class="special">

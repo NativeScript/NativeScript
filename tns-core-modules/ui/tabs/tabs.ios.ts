@@ -1,4 +1,4 @@
-// Types
+﻿// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
@@ -956,6 +956,10 @@ export class Tabs extends TabsBase {
 
     public setTabBarBackgroundColor(value: UIColor | Color): void {
         this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+    }
+
+    public setTabBarItemBackgroundColor(item: TabStripItem, value: UIColor | Color): void {
+        // TODO: Implement for UITabBarItem
     }
 
     [selectedIndexProperty.setNative](value: number) {

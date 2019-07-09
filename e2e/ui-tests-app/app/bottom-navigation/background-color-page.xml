@@ -5,11 +5,11 @@
 
   <BottomNavigation>
     <TabStrip>
-        <TabStripItem title="First"></TabStripItem>
+        <TabStripItem title="First" class="special"></TabStripItem>
         <TabStripItem title="Second"></TabStripItem>
     </TabStrip>
 
-    <TabContentItem>
+    <TabContentItem class="special">
         <GridLayout>
           <Label text="First View" />
         </GridLayout>
