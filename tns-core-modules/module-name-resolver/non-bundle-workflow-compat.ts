@@ -1,7 +1,6 @@
 import * as fs from "../file-system/file-system";
 import * as appCommonModule from "../application/application-common";
 
-const appFolder = fs.knownFolders.currentApp();
 const cache = new Set<string>();
 let initialized = false;
 
@@ -10,7 +9,7 @@ function register(name, loader) {
 }
 
 function processFile(file: fs.File) {
-    const filePathRelativeToApp = file.path.substr(appFolder.path.length + 1);
+    const filePathRelativeToApp = file.path.substr(fs.knownFolders.currentApp().path.length + 1);
     const loadContent = () => file.readTextSync();
 
     switch (file.extension.toLocaleLowerCase()) {
