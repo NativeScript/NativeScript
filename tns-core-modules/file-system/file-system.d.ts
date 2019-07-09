@@ -185,7 +185,7 @@ export class Folder extends FileSystemEntity {
      * Gets all the top-level entities residing within this folder synchronously.
      * @param onError An optional function to be called if some error occurs.
      */
-    getEntitiesSync(onError?: (error: any) => any): Promise<Array<FileSystemEntity>>;
+    getEntitiesSync(onError?: (error: any) => any): Array<FileSystemEntity>;
 
     /**
      * Enumerates all the top-level FileSystem entities residing within this folder.
