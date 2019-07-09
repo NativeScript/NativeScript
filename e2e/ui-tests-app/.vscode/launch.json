@@ -27,7 +27,7 @@
                 "--colors",
                 "--opts",
                 "../config/mocha.opts",
-                "--grep=button",
+                "--grep=bottom-navigation",
                 "-a",
             ],
             "internalConsoleOptions": "openOnSessionStart",
