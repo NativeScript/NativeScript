@@ -102,8 +102,11 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 
             if (tabBarController.viewControllers && tabBarController.viewControllers.containsObject(viewController)) {
                 const position = tabBarController.viewControllers.indexOfObject(viewController);
-                const tabStripItems = owner.tabStrip.items;
-                tabStripItems[position]._emit(TabStripItem.tapEvent);
+                const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+
+                if (tabStripItems) {
+                    tabStripItems[position]._emit(TabStripItem.tapEvent);
+                }
             }
         }
 
@@ -127,9 +130,12 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
             if (tabBarController.viewControllers && tabBarController.viewControllers.containsObject(viewController)) {
                 const position = tabBarController.viewControllers.indexOfObject(viewController);
                 const prevPosition = owner.selectedIndex;
-                const tabStripItems = owner.tabStrip.items;
-                tabStripItems[position]._emit(TabStripItem.selectEvent);
-                tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+                const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+
+                if (tabStripItems) {
+                    tabStripItems[position]._emit(TabStripItem.selectEvent);
+                    tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+                }
             }
 
             owner._onViewControllerShown(viewController);
