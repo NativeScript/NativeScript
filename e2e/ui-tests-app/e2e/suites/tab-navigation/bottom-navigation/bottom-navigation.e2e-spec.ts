@@ -25,10 +25,6 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     beforeEach(async function () {
         driver.imageHelper.testName = setImageName(suite, spec, this.currentTest.title);
-        driver.imageHelper.options = {
-            timeOutSeconds: 5,
-            donNotAppendActualSuffixOnIntialImageCapture: true,
-        };
     });
 
     afterEach(async function () {
