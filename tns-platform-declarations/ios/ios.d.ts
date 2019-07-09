@@ -126,4 +126,3 @@
 /// <reference path="objc-x86_64/objc!os_object.d.ts" />
 /// <reference path="objc-x86_64/objc!simd.d.ts" />
 /// <reference path="objc-x86_64/objc!zlib.d.ts" />
-/// <reference path="objc-x86_64/objc!MaterialComponents.d.ts" />
