@@ -16,8 +16,6 @@ describe(`${suite}-${spec}-suite`, () => {
         await driver.restartApp();
         backgroundPage = new ButtonBackgroundPage(driver);
         await backgroundPage.initSuite();
-        driver.imageHelper.options.keepOriginalImageSize = false;
-        driver.imageHelper.options.toleranceType = ImageOptions.percent;
     });
 
     after(async function () {
@@ -38,8 +36,8 @@ describe(`${suite}-${spec}-suite`, () => {
 
     it("background_11", async function () {
         const presenter = await backgroundPage.testElement();
-        await driver.compareElement(presenter, "background_11_clean", 0.1, 2);
-        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        const result = await driver.compareElement(presenter, "background_11_clean", 0.1, 2);
+        assert.isTrue(result);
     });
 
     it("background_12", async function () {
@@ -49,8 +47,8 @@ describe(`${suite}-${spec}-suite`, () => {
     it("background_13", async function () {
         await backgroundPage.tapResetBtn();
         const presenter = await backgroundPage.testElement();
-        await driver.compareElement(presenter, "background_11_clean");
-        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        const result = await driver.compareElement(presenter, "background_11_clean");
+        assert.isTrue(result);
     });
 
     // Border

@@ -1,6 +1,7 @@
 import { AppiumDriver } from "nativescript-dev-appium";
 import { PageObjectBaseModel } from "../../../page-object-base-model";
 import { ElementCacheStrategy } from "./../../../helpers/navigation-helper";
+import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 
 export class TabViewBasePage extends PageObjectBaseModel {
 
@@ -11,7 +12,8 @@ export class TabViewBasePage extends PageObjectBaseModel {
     async init(subSuiteName: string) {
         this._naviagtionLinks.push(subSuiteName);
         await super.initSuite();
-        this._driver.imageHelper.options.keepOriginalImageSize = false;
-        this._driver.imageHelper.options.waitBeforeCreatingInitialImageCapture = 4000;
+        this._driver.imageHelper.options.keepOriginalImageSize = true;
+        this._driver.imageHelper.options.tolerance = 0;
+        this._driver.imageHelper.options.toleranceType = ImageOptions.pixel;
     }
 }

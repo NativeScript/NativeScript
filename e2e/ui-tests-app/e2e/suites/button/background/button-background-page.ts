@@ -8,6 +8,8 @@ export class ButtonBackgroundPage extends PageObjectBaseModel {
 
     constructor(_driver: AppiumDriver) {
         super(_driver, ["button", "background"], ElementCacheStrategy.none);
+        this._driver.imageHelper.options.keepOriginalImageSize = false;
+        this._driver.imageHelper.options.toleranceType = ImageOptions.percent;
     }
 
     public viewGroupLocator() {
@@ -47,7 +49,7 @@ export class ButtonBackgroundPage extends PageObjectBaseModel {
     async executeScenario(imageName: string, button: string) {
         const presenter = await this.testElement();
         await this.tapBtn(button);
-        const result = await this._driver.compareElement(presenter, imageName, 0.5, 5, ImageOptions.percent);
+        const result = await this._driver.compareElement(presenter, imageName, 0.01, 5, ImageOptions.percent);
         assert.isTrue(result);
     }
 }

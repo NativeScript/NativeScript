@@ -1,6 +1,7 @@
 import { AppiumDriver, Point, IRectangle, UIElement, logInfo } from "nativescript-dev-appium";
 import { PageObjectBaseModel } from "../../../page-object-base-model";
 import { ElementCacheStrategy } from "../../../helpers/navigation-helper";
+import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 
 export class BottomNavigationBasePage extends PageObjectBaseModel {
     private _bottomNavigatioinTabRect: IRectangle;
@@ -9,8 +10,10 @@ export class BottomNavigationBasePage extends PageObjectBaseModel {
 
     constructor(_driver: AppiumDriver, elementCacheStrategy?: ElementCacheStrategy) {
         super(_driver, ["bottom-navigation"], elementCacheStrategy);
-        this._driver.imageHelper.options.waitBeforeCreatingInitialImageCapture = 4000;
+        this._driver.imageHelper.options.waitBeforeCreatingInitialImageCapture = 6000;
         this._driver.imageHelper.options.keepOriginalImageSize = false;
+        this._driver.imageHelper.options.tolerance = 0;
+        this._driver.imageHelper.options.toleranceType = ImageOptions.pixel;
     }
 
     async init(subSuiteName: string) {

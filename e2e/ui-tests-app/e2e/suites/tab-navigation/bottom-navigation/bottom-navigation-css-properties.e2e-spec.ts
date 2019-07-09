@@ -1,6 +1,5 @@
 import { nsCapabilities, createDriver, AppiumDriver, Direction } from "nativescript-dev-appium";
 import { BottomNavigationBasePage } from "./bottom-navigation-base-page";
-import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 import { Platform } from "mobile-devices-controller";
 import { ElementCacheStrategy } from "../../../helpers/navigation-helper";
 import { setImageName } from "../../../helpers/image-helper";
@@ -51,19 +50,19 @@ describe(`${suite}-${spec}-suite`, async function () {
                 await driver.scroll(Direction.down, 400, 200, 300, 200);
             }
             const scenarioBtn = await driver.waitForElement(sample.sample);
-            await scenarioBtn.tap();
+            await scenarioBtn.click();
             imageName = setImageName(suite, spec, imageName);
-            await driver.imageHelper.compareScreen({ imageName: imageName, timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
+            await driver.imageHelper.compareScreen({ imageName: imageName });
             const tabTwo = await driver.waitForElement(sample.tab2);
             await tabTwo.click();
-            await driver.imageHelper.compareScreen({ imageName: imageName, timeOutSeconds: 5 });
+            await driver.imageHelper.compareScreen({ imageName: imageName });
 
             const imageComparissonresult = driver.imageHelper.hasImageComparisonPassed();
             assert.isTrue(imageComparissonresult);
 
             if (imageComparissonresult) {
                 const tabOne = await driver.waitForElement(sample.tab1);
-                await tabOne.tap();
+                await tabOne.click();
             }
         });
     }
