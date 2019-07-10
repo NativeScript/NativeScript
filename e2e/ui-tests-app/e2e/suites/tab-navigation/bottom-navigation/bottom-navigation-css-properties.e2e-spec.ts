@@ -7,8 +7,9 @@ import { assert } from "chai";
 
 const suite = "tab-navigation";
 const spec = "bottom-navigation-css";
+const imagePrefix = `${suite}-${spec}`;
 
-describe(`${suite}-${spec}-suite`, async function () {
+describe(`${imagePrefix}-suite`, async function () {
     let driver: AppiumDriver;
     let bottomNavigationBasePage: BottomNavigationBasePage;
 
@@ -44,6 +45,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         const sample = samples[index];
         let imageName = `${spec}-${sample.sample.replace(/[^a-z]/ig, "-").replace(/(-+)/ig, "-").replace(/(_+)/ig, "_").replace(/-$/, "")}`;
         it(imageName, async function () {
+            this.skip();
             if (driver.platformName === Platform.ANDROID
                 && (sample.sample.toLowerCase() === "all"
                     || sample.sample.toLowerCase() === "reset")) {

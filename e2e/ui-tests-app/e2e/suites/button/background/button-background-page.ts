@@ -46,10 +46,10 @@ export class ButtonBackgroundPage extends PageObjectBaseModel {
         }
     }
 
-    async executeScenario(imageName: string, button: string) {
+    async executeScenario(button: string) {
         const presenter = await this.testElement();
         await this.tapBtn(button);
-        const result = await this._driver.compareElement(presenter, imageName, 0.01, 5, ImageOptions.percent);
+        const result = await this._driver.compareElement(presenter, undefined, 0.01, 5, ImageOptions.percent);
         assert.isTrue(result);
     }
 }

@@ -10,24 +10,21 @@ ActionBar {
     background-color: aquamarine;
 }
 
-BottomNavigation {
-    background-color: lightgreen;
-}
-
 Button {
     background-color: lightskyblue;
 }
 
-#lastItem {
-    color: black;
+BottomNavigation {
+    background-color: lightgreen;
 }
 
-TabStripItem:active {
-    background-color: coral;
+#lastStripItem {
+    color: greenyellow;
+    background-color: black;
 }
 
-TabContentItem:active {
-    background-color: aquamarine;
+TabStripItem:active, #lastStripItem:active {
+    background-color:coral;
 }
 
 #second-tab-content-item {

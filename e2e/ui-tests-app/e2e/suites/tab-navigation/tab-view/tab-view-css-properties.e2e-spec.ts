@@ -32,6 +32,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         await driver.restartApp();
         tabViewBasePage = new TabViewBasePage(driver, ElementCacheStrategy.none);
         await tabViewBasePage.init("tabViewCss");
+        driver.imageHelper.options.keepOriginalImageSize = false;
     });
 
     after(async function () {
@@ -56,6 +57,9 @@ describe(`${suite}-${spec}-suite`, async function () {
         const sample = samples[index];
         let imageName = `${spec}-${sample.sample.replace(/[^a-z]/ig, "-").replace(/(-+)/ig, "-").replace(/(_+)/ig, "_").replace(/-$/, "")}`;
         it(imageName, async function () {
+            if (driver.isIOS && imageName.includes("android")) {
+                this.skip();
+            }
             if (driver.platformName === Platform.ANDROID
                 && (sample.sample.toLowerCase() === "all" || sample.sample.toLowerCase() === "reset")) {
                 await driver.scroll(Direction.down, 400, 200, 300, 200);

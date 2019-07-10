@@ -122,6 +122,9 @@ describe(`${suite}-${spec}-suite`, async function () {
     });
 
     it(`${spec}-icons`, async function () {
+        if (driver.isAndroid) {
+            this.skip();
+        }
         await tabViewBasePage.navigateToSample("tab-view-icons");
         await driver.imageHelper.compareScreen();
 
@@ -142,6 +145,9 @@ describe(`${suite}-${spec}-suite`, async function () {
     });
 
     it(`${spec}-icons-local`, async function () {
+        if (driver.isAndroid) {
+            this.skip();
+        }
         await tabViewBasePage.navigateToSample("tab-view-icons-local");
         await driver.imageHelper.compareScreen();
 

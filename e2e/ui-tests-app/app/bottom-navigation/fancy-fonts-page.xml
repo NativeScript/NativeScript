@@ -13,8 +13,8 @@
       <TabStripItem iconSource="res://up" title="ICON-RES"></TabStripItem>
 
       <TabStripItem title="Simply Long Title"></TabStripItem>
-
-      <TabStripItem iconSource="res://icon" id="lastItem" title="LAST"></TabStripItem>
+      
+      <TabStripItem iconSource="res://icon" id="lastStripItem" title="LAST"></TabStripItem>
 
     </TabStrip>
     <TabContentItem>

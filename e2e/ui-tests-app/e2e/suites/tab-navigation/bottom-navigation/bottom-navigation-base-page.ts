@@ -14,6 +14,8 @@ export class BottomNavigationBasePage extends PageObjectBaseModel {
         this._driver.imageHelper.options.keepOriginalImageSize = false;
         this._driver.imageHelper.options.tolerance = 0;
         this._driver.imageHelper.options.toleranceType = ImageOptions.pixel;
+        // this._driver.imageHelper.options.donNotAppendActualSuffixOnIntialImageCapture = true;
+        this._driver.imageHelper.options.timeOutSeconds = 7;
     }
 
     async init(subSuiteName: string) {
