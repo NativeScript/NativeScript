@@ -4,8 +4,8 @@ import {
     View, layout, colorProperty, flatProperty,
     Color, traceMissingIcon
 } from "./action-bar-common";
-import { RESOURCE_PREFIX } from "../../utils/utils";
-import { fromFileOrResource } from "../../image-source";
+import { RESOURCE_PREFIX, isFontIconURI } from "../../utils/utils";
+import { fromFileOrResource, fromFontIconCode } from "../../image-source";
 import * as application from "../../application";
 
 export * from "./action-bar-common";
@@ -311,9 +311,21 @@ export class ActionBar extends ActionBarBase {
                 }
             }
             else if (item.icon) {
-                let drawableOrId = getDrawableOrResourceId(item.icon, appResources);
-                if (drawableOrId) {
-                    menuItem.setIcon(drawableOrId);
+                if (isFontIconURI(item.icon)) {
+                    const fontIconCode = item.icon.split("//")[1];
+                    const font = item.style.fontInternal;
+                    const color = item.style.color;
+                    const is = fromFontIconCode(fontIconCode, font, color);
+
+                    if (is && is.android) {
+                        const drawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
+                        menuItem.setIcon(drawable);
+                    }
+                } else {
+                    let drawableOrId = getDrawableOrResourceId(item.icon, appResources);
+                    if (drawableOrId) {
+                        menuItem.setIcon(drawableOrId);
+                    }
                 }
             }
 

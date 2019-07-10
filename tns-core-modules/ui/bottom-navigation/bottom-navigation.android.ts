@@ -10,8 +10,8 @@ import { Font } from "../styling/font";
 import { getTransformedText } from "../text-base";
 import { CSSType, Color } from "../core/view";
 import { Frame, View } from "../frame";
-import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
-import { fromFileOrResource } from "../../image-source";
+import { RESOURCE_PREFIX, ad, layout, isFontIconURI } from "../../utils/utils";
+import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
 import * as application from "../../application";
 
 // TODO: Impl trace
@@ -177,7 +177,16 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
                 // traceMissingIcon(iconSource);
             }
         } else {
-            const is = fromFileOrResource(tabStripItem.iconSource);
+            let is = new ImageSource();
+            if (isFontIconURI(tabStripItem.iconSource)) {
+                const fontIconCode = tabStripItem.iconSource.split("//")[1];
+                const font = tabStripItem.style.fontInternal;
+                const color = tabStripItem.style.color;
+                is = fromFontIconCode(fontIconCode, font, color);
+            } else {
+                is = fromFileOrResource(tabStripItem.iconSource);
+            }
+
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                 // tslint:disable-next-line:deprecation

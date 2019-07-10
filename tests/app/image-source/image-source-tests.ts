@@ -3,6 +3,8 @@ import * as imageAssetModule from "tns-core-modules/image-asset";
 import * as fs from "tns-core-modules/file-system";
 import * as app from "tns-core-modules/application";
 import * as TKUnit from "../tk-unit";
+import { Font } from "tns-core-modules/ui/styling/font";
+import { Color } from "tns-core-modules/color";
 
 const imagePath = "~/assets/logo.png";
 const splashscreenPath = "~/assets/splashscreen.png";
@@ -284,4 +286,13 @@ export function testLoadFromBase64Encode_PNG() {
     TKUnit.assert(img !== null, "Actual: " + img);
     TKUnit.assertEqual(img.width, 4, "img.width");
     TKUnit.assertEqual(img.height, 4, "img.height");
+}
+
+export function testLoadFromFontIconCode() {
+    let img: imageSource.ImageSource;
+    img = imageSource.fromFontIconCode("F10B", Font.default.withFontFamily("FontAwesome"), new Color("red"));
+
+    TKUnit.assert(img !== null, "Actual: " + img);
+    TKUnit.assert(img.width !== null, "img.width");
+    TKUnit.assert(img.height !== null, "img.width");
 }

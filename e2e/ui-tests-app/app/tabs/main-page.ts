@@ -26,6 +26,7 @@ export function loadExamples() {
     examples.set("strip-items", "tabs/tab-strip-items-page");
     examples.set("tabs-position", "tabs/tabs-position-page");
     examples.set("tabs-binding", "tabs/tabs-binding-page");
+    examples.set("font-icons", "tabs/font-icons-page");
 
     return examples;
 }
