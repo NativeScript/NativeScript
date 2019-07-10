@@ -345,8 +345,6 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
         // } else {
         //     owner.selectedIndex++;
         // }
-        console.log("test");
-        //
     }
 
     public pageViewControllerDidFinishAnimatingPreviousViewControllersTransitionCompleted(pageViewController: UIPageViewController, didFinishAnimating: boolean, previousViewControllers: NSArray<UIViewController>, transitionCompleted: boolean): void {
@@ -364,9 +362,6 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
             owner.selectedIndex = nextViewControllerIndex;
             owner._canSelectItem = true;
         }
-
-        console.log("test");
-        //
     }
 }
 
