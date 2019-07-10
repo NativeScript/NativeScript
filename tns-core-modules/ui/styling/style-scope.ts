@@ -97,7 +97,8 @@ class CSSSource {
                 }
             }
         } catch (e) {
-            traceWrite(`Could not load CSS from ${uri}: ${e}`, traceCategories.Error, traceMessageType.error);
+            // TODO: Commented as this prints error in playground: https://github.com/NativeScript/NativeScript/issues/7497
+            // traceWrite(`Could not load CSS from ${uri}: ${e}`, traceCategories.Error, traceMessageType.error);
         }
 
         return CSSSource.fromFile(appRelativeUri, keyframes);
