@@ -47,6 +47,14 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         }
     }
 
+    public requestLayout(): void {
+        // Default implementation for non View instances (like TabViewItem).
+        const parent = this.parent;
+        if (parent) {
+            parent.requestLayout();
+        }
+    }
+
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
     _updateTabStateChangeHandler(subscribe: boolean) {
         if (subscribe) {
