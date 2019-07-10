@@ -112,6 +112,42 @@ export class TabNavigationBase extends View {
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
+    getTabBarFontInternal(): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarFontInternal(value: any): void
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    getTabBarTextTransform(): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarTextTransform(value: any): void
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    getTabBarHighlightColor(): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarHighlightColor(value: any)
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
     getTabBarItemBackgroundColor(tabStripItem: TabStripItem): any
 
     /**

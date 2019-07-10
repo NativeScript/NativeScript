@@ -139,13 +139,13 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         return tabStripParent && tabStripParent.setTabBarItemFontInternal(this, value);
     }
 
-    [textTransformProperty.getDefault](): "default" {
+    [textTransformProperty.getDefault](): any {
         const parent = <TabStrip>this.parent;
         const tabStripParent = parent && <TabNavigationBase>parent.parent;
 
         return tabStripParent && tabStripParent.getTabBarItemTextTransform(this);
     }
-    [textTransformProperty.setNative](value: TextTransform | "default") {
+    [textTransformProperty.setNative](value: any) {
         const parent = <TabStrip>this.parent;
         const tabStripParent = parent && <TabNavigationBase>parent.parent;
         

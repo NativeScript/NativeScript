@@ -1,12 +1,12 @@
 <Page class="page">
 
-  <ActionBar title="Tabs background-color" icon="" class="action-bar">
+  <ActionBar title="Tabs text-transform" icon="" class="action-bar">
   </ActionBar>
 
   <Tabs>
     <TabStrip>
-        <TabStripItem title="First" class="special"></TabStripItem>
-        <TabStripItem title="Second"></TabStripItem>
+        <TabStripItem title="first" class="special"></TabStripItem>
+        <TabStripItem title="second"></TabStripItem>
     </TabStrip>
 
     <TabContentItem class="special">

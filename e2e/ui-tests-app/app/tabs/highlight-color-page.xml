@@ -1,6 +1,6 @@
 <Page class="page">
 
-  <ActionBar title="Tabs background-color" icon="" class="action-bar">
+  <ActionBar title="Tabs highlight-color" icon="" class="action-bar">
   </ActionBar>
 
   <Tabs>
