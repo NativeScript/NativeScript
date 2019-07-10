@@ -84,10 +84,6 @@ class UIPageViewControllerImpl extends UIPageViewController {
         }
 
         tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
-        // Initially set `itemAppearance` to TitledImages.
-        // Reassign if needed when items available.
-        // Other combinations do not work.
-        tabBar.itemAppearance = MDCTabBarItemAppearance.TitledImages;
         tabBar.tintColor = UIColor.blueColor;
         tabBar.barTintColor = UIColor.whiteColor;
         tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
@@ -854,6 +850,8 @@ export class Tabs extends TabsBase {
         if (this.viewController && this.viewController.tabBar) {
             this.viewController.tabBar.itemAppearance = this._getTabBarItemAppearance();
             this.viewController.tabBar.items = NSArray.arrayWithArray(tabBarItems);
+            // TODO: investigate why this call is necessary to actually toggle item appearance
+            this.viewController.tabBar.sizeToFit();
             this.tabStrip.setNativeView(this.viewController.tabBar);
         }
 
