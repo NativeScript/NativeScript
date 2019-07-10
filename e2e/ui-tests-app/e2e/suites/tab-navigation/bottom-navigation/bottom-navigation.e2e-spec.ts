@@ -47,7 +47,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         await bottomNavigationBasePage.refreshBottomNavigationTab();
         await bottomNavigationBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
-
+ 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
@@ -203,7 +203,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         await driver.backgroundApp(1);
         await driver.imageHelper.compareScreen();
 
-        await driver.setOrientation(DeviceOrientaion.PORTRAIT);
+        // await driver.setOrientation(DeviceOrientaion.PORTRAIT);
         await driver.imageHelper.compareScreen();
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
@@ -212,15 +212,11 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-icon-change`, async function () {
         await bottomNavigationBasePage.navigateToSample("icon-change");
-        const index = driver.nsCapabilities.device.platform === Platform.IOS
-            ? (+driver.nsCapabilities.device.apiLevel >= 11 ? 2 : 3) : 1;
-
-        let btns = await driver.findElementsByClassName(driver.locators.button, 5000);
-        await btns[index].tap();
+        await bottomNavigationBasePage.refreshBottomNavigationTab();
+        await bottomNavigationBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 
-        btns = await driver.findElementsByClassName(driver.locators.button, 5000);
-        await btns[index - 1].tap();
+        await bottomNavigationBasePage.tabOnItem(0);
         await driver.imageHelper.compareScreen();
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
@@ -237,6 +233,30 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-5470-issue`, async function () {
         await bottomNavigationBasePage.navigateToSample("issue-5470");
+        await bottomNavigationBasePage.refreshBottomNavigationTab();
+        await driver.imageHelper.compareScreen();
+
+        await bottomNavigationBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await bottomNavigationBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-text-transform`, async function () {
+        await bottomNavigationBasePage.navigateToSample("text-transform");
+        await bottomNavigationBasePage.refreshBottomNavigationTab();
+        await driver.imageHelper.compareScreen();
+
+        await bottomNavigationBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await bottomNavigationBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-fonts`, async function () {
+        await bottomNavigationBasePage.navigateToSample("text-transform");
         await bottomNavigationBasePage.refreshBottomNavigationTab();
         await driver.imageHelper.compareScreen();
 
