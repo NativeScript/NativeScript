@@ -210,6 +210,22 @@ describe(`${suite}-${spec}-suite`, async function () {
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
 
+    it(`${spec}-font-icons`, async function () {
+        await bottomNavigationBasePage.navigateToSample("font-icons");
+        await bottomNavigationBasePage.refreshBottomNavigationTab();
+        await driver.imageHelper.compareScreen();
+
+        await bottomNavigationBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        await bottomNavigationBasePage.tabOnItem(2);
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+
+        await bottomNavigationBasePage.navigateBackToSuitMainPage();
+    });
+
     it(`${spec}-icon-change`, async function () {
         await bottomNavigationBasePage.navigateToSample("icon-change");
         await bottomNavigationBasePage.refreshBottomNavigationTab();
