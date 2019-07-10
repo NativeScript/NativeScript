@@ -11,8 +11,8 @@ import { Font } from "../styling/font";
 import { getTransformedText } from "../text-base";
 import { Frame } from "../frame";
 import { Color } from "../core/view";
-import { fromFileOrResource } from "../../image-source";
-import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
+import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
+import { RESOURCE_PREFIX, ad, layout, isFontIconURI } from "../../utils/utils";
 import * as application from "../../application";
 
 export * from "./tabs-common";
@@ -304,7 +304,16 @@ function createTabItemSpec(item: TabStripItem): org.nativescript.widgets.TabItem
                 // traceMissingIcon(iconSource);
             }
         } else {
-            const is = fromFileOrResource(iconSource);
+            let is = new ImageSource();
+            if (isFontIconURI(item.iconSource)) {
+                const fontIconCode = item.iconSource.split("//")[1];
+                const font = item.style.fontInternal;
+                const color = item.style.color;
+                is = fromFontIconCode(fontIconCode, font, color);
+            } else {
+                is = fromFileOrResource(item.iconSource);
+            }
+            
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                 tabItemSpec.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);

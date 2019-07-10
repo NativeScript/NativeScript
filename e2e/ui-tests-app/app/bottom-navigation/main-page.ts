@@ -20,6 +20,7 @@ export function loadExamples() {
     examples.set("icon-title-placement", "bottom-navigation/icon-title-placement-page");
     examples.set("icon-change", "bottom-navigation/icon-change-page");
     examples.set("binding", "bottom-navigation/binding-page");
+    examples.set("font-icons", "bottom-navigation/font-icons-page");
     
     return examples;
 }

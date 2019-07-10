@@ -1,4 +1,4 @@
-// Types
+﻿// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TextTransform } from "../text-base";
@@ -9,10 +9,10 @@ import { Font } from "../styling/font";
 import { getTransformedText } from "../text-base";
 import { Frame } from "../frame";
 import { ios as iosView, View, CSSType } from "../core/view";
-import { ios as iosUtils, layout } from "../../utils/utils";
+import { ios as iosUtils, layout, isFontIconURI } from "../../utils/utils";
 import { device } from "../../platform";
 import { Color } from "../../color";
-import { fromFileOrResource } from "../../image-source";
+import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
 // TODO:
 // import { profile } from "../../profiling";
 
@@ -526,9 +526,7 @@ export class BottomNavigation extends TabNavigationBase {
         let image: UIImage;
         let title: string;
 
-        // Image and Label children of TabStripItem
-        // take priority over its `iconSource` and `title` properties
-        image = item.image ? this._getIcon(item.image.src) : this._getIcon(item.iconSource);
+        image = this._getIcon(item);
         title = item.label ? item.label.text : item.title;
 
         const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, image, index);
@@ -540,14 +538,26 @@ export class BottomNavigation extends TabNavigationBase {
         return UIImageRenderingMode.AlwaysOriginal;
     }
 
-    public _getIcon(iconSource: string): UIImage {
+    public _getIcon(tabStripItem: TabStripItem): UIImage {
+        // Image and Label children of TabStripItem
+        // take priority over its `iconSource` and `title` properties
+        const iconSource = tabStripItem.image ? tabStripItem.image.src : tabStripItem.iconSource;
         if (!iconSource) {
             return null;
         }
 
         let image: UIImage = this._iconsCache[iconSource];
         if (!image) {
-            const is = fromFileOrResource(iconSource);
+            let is = new ImageSource;
+            if (isFontIconURI(iconSource)) {
+                const fontIconCode = iconSource.split("//")[1];
+                const font = tabStripItem.style.fontInternal;
+                const color = tabStripItem.style.color;
+                is = fromFontIconCode(fontIconCode, font, color);
+            } else {
+                is = fromFileOrResource(iconSource);
+            }
+
             if (is && is.ios) {
                 const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
                 this._iconsCache[iconSource] = originalRenderedImage;

@@ -113,6 +113,16 @@ export function isFileOrResourcePath(path: string): boolean {
         path.indexOf(RESOURCE_PREFIX) === 0;    // resource
 }
 
+export function isFontIconURI(uri: string): boolean {
+    if (!types.isString(uri)) {
+        return false;
+    }
+
+    const firstSegment = uri.trim().split("//")[0];
+
+    return firstSegment && firstSegment.indexOf("font:") === 0;
+}
+
 export function isDataURI(uri: string): boolean {
     if (!types.isString(uri)) {
         return false;

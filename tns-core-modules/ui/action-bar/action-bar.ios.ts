@@ -4,8 +4,8 @@ import {
     colorProperty, backgroundColorProperty,
     backgroundInternalProperty, flatProperty, iosIconRenderingModeProperty,
     layout, Color, traceMissingIcon } from "./action-bar-common";
-import { fromFileOrResource } from "../../image-source";
-import { ios as iosUtils } from "../../utils/utils";
+import { fromFileOrResource, fromFontIconCode } from "../../image-source";
+import { ios as iosUtils, isFontIconURI } from "../../utils/utils";
 
 export * from "./action-bar-common";
 
@@ -255,7 +255,23 @@ export class ActionBar extends ActionBarBase {
 
             barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(id, tapHandler, "tap");
         } else if (item.icon) {
-            const img = loadActionIconFromFileOrResource(item.icon);
+            let img = null;
+
+            if (isFontIconURI(item.icon)) {
+                const fontIconCode = item.icon.split("//")[1];
+                const font = item.style.fontInternal;
+                const color = item.style.color;
+                const is = fromFontIconCode(fontIconCode, font, color);
+
+                if (is && is.ios) {
+                    img = is.ios;
+                } else {
+                    traceMissingIcon(item.icon);
+                }
+            } else {
+                img = loadActionIconFromFileOrResource(item.icon);
+            }
+            
             const image = img.imageWithRenderingMode(this._getIconRenderingMode());
             barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, tapHandler, "tap");
         } else {
