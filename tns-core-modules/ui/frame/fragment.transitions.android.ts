@@ -787,7 +787,8 @@ function javaObjectArray(...params: java.lang.Object[]) {
 
 function createDummyZeroDurationAnimator(): android.animation.Animator {
     const animator = android.animation.ValueAnimator.ofObject(intEvaluator(), javaObjectArray(java.lang.Integer.valueOf(0), java.lang.Integer.valueOf(1)));
-    animator.setDuration(0);
+    // TODO: investigate why this is necessary for 3 levels of nested frames
+    animator.setDuration(1);
 
     return animator;
 }
