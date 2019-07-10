@@ -81,23 +81,11 @@ class UIPageViewControllerImpl extends UIPageViewController {
             tabBar.items = NSArray.arrayWithArray(tabBarItems);
         }
 
-        // tabBar.items = <NSArray<UITabBarItem>>NSArray.alloc().initWithArray([
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        // ]);
-
         tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
-        tabBar.itemAppearance = MDCTabBarItemAppearance.Titles;
+        // Initially set `itemAppearance` to TitledImages.
+        // Reassign if needed when items available.
+        // Other combinations do not work.
+        tabBar.itemAppearance = MDCTabBarItemAppearance.TitledImages;
         tabBar.tintColor = UIColor.blueColor;
         tabBar.barTintColor = UIColor.whiteColor;
         tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
@@ -856,32 +844,19 @@ export class Tabs extends TabsBase {
     public setTabStripItems(items: Array<TabStripItem>) {
         const tabBarItems = [];
 
-        items.forEach((item: TabStripItem, i, arr) => {
-            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title, null, 0);
+        items.forEach((item: TabStripItem, i) => {
+            const tabBarItem = this.createTabBarItem(item, i);
             tabBarItems.push(tabBarItem);
             item.setNativeView(tabBarItem);
         });
+
         this.tabBarItems = tabBarItems;
 
         if (this.viewController && this.viewController.tabBar) {
+            this.viewController.tabBar.itemAppearance = this._getTabBarItemAppearance();
             this.viewController.tabBar.items = NSArray.arrayWithArray(tabBarItems);
             this.tabStrip.setNativeView(this.viewController.tabBar);
         }
-
-        // tabBar.items = <NSArray<UITabBarItem>>NSArray.alloc().initWithArray([
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        // ]);
 
         // const length = items ? items.length : 0;
         // if (length === 0) {
@@ -903,6 +878,41 @@ export class Tabs extends TabsBase {
         //     const tv = tabLayout.getTextViewForItemAt(i);
         //     item.setNativeView(tv);
         // });
+    }
+
+    private createTabBarItem(item: TabStripItem, index: number): UITabBarItem {
+        let image: UIImage;
+        let title: string;
+
+        // Image and Label children of TabStripItem
+        // take priority over its `iconSource` and `title` properties
+        image = item.image ? this._getIcon(item.image.src) : this._getIcon(item.iconSource);
+        title = item.label ? item.label.text : item.title;
+
+        if (!this.tabStrip._hasImage) {
+            this.tabStrip._hasImage = !!image;
+        }
+
+        if (!this.tabStrip._hasTitle) {
+            this.tabStrip._hasTitle = !!title;
+        }
+
+        const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, image, index);
+
+        return tabBarItem;
+    }
+
+    private _getTabBarItemAppearance(): MDCTabBarItemAppearance {
+        let itemAppearance;
+        if (this.tabStrip._hasImage && this.tabStrip._hasTitle) {
+            itemAppearance = MDCTabBarItemAppearance.TitledImages;
+        } else if (this.tabStrip._hasImage) {
+            itemAppearance = MDCTabBarItemAppearance.Images;
+        } else {
+            itemAppearance = MDCTabBarItemAppearance.Titles;
+        }
+
+        return itemAppearance;
     }
 
     private _getIconRenderingMode(): UIImageRenderingMode {
