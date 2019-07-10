@@ -119,6 +119,32 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         // overridden by inheritors
     }
 
+    public getTabBarFontInternal(): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarFontInternal(value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarTextTransform(): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarTextTransform(value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarHighlightColor(): any {
+        // overridden by inheritors
+    }
+
+    public setTabBarHighlightColor(value: any) {
+        // overridden by inheritors
+    }
+
     public getTabBarColor(): any {
         // overridden by inheritors
         return null;

@@ -6,9 +6,17 @@ import { Color } from "../../../color";
 import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "../../core/view";
 
 // Requires
-import { View, Property, CSSType, backgroundColorProperty, backgroundInternalProperty, colorProperty } from "../../core/view";
+import { 
+    View, Property, CSSType, backgroundColorProperty, backgroundInternalProperty, 
+    colorProperty, fontInternalProperty
+} from "../../core/view";
+import { textTransformProperty } from "../../text-base";
 
 export const traceCategory = "TabView";
+
+// Place this on top because the webpack ts-loader doesn't work when export
+// is after reference
+export const highlightColorProperty = new Property<TabStrip, Color>({ name: "highlightColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 
 @CSSType("TabStrip")
 export class TabStrip extends View implements TabStripDefinition, AddChildFromBuilder, AddArrayFromBuilder {
@@ -71,7 +79,42 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
         
         return parent && parent.setTabBarColor(value);
     }
+
+    [fontInternalProperty.getDefault](): any {
+        const parent = <TabNavigationBase>this.parent;
+
+        return parent && parent.getTabBarFontInternal();
+    }
+    [fontInternalProperty.setNative](value: any) {
+        const parent = <TabNavigationBase>this.parent;
+        
+        return parent && parent.setTabBarFontInternal(value);
+    }
+
+    [textTransformProperty.getDefault](): any {
+        const parent = <TabNavigationBase>this.parent;
+
+        return parent && parent.getTabBarTextTransform();
+    }
+    [textTransformProperty.setNative](value: any) {
+        const parent = <TabNavigationBase>this.parent;
+        
+        return parent && parent.setTabBarTextTransform(value);
+    }
+
+    [highlightColorProperty.getDefault](): number {
+        const parent = <TabNavigationBase>this.parent;
+
+        return parent && parent.getTabBarHighlightColor();
+    }
+    [highlightColorProperty.setNative](value: number | Color) {
+        const parent = <TabNavigationBase>this.parent;
+        
+        return parent && parent.setTabBarHighlightColor(value);
+    }
 } 
 
 export const iosIconRenderingModeProperty = new Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
 iosIconRenderingModeProperty.register(TabStrip);
+
+highlightColorProperty.register(TabStrip);
