@@ -115,7 +115,6 @@ function _HandleAmpEntities(found, decimalValue, hexValue, wordValue) {
     }
     return String.fromCharCode(parseInt(hexValue, 16));
 }
-;
 var XmlParser = (function () {
     function XmlParser(onEvent, onError, processNamespaces) {
         this._processNamespaces = processNamespaces;
