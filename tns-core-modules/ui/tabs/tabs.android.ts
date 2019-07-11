@@ -281,20 +281,18 @@ function initializeNativeClasses() {
     TabLayout = TabLayoutImplementation;
 }
 
-function createTabItemSpec(item: TabStripItem): org.nativescript.widgets.TabItemSpec {
+function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
     let iconSource;
     const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
 
-    if (item.backgroundColor) {
-        if (item.backgroundColor instanceof Color) {
-            tabItemSpec.backgroundColor = item.backgroundColor.android;
-        }
+    if (tabStripItem.backgroundColor instanceof Color) {
+        tabItemSpec.backgroundColor = tabStripItem.backgroundColor.android;
     }
-    
+
     // Image and Label children of TabStripItem
     // take priority over its `iconSource` and `title` properties
-    iconSource = item.image ? item.image.src : item.iconSource;
-    tabItemSpec.title = item.label ? item.label.text : item.title;
+    iconSource = tabStripItem.image ? tabStripItem.image.src : tabStripItem.iconSource;
+    tabItemSpec.title = tabStripItem.label ? tabStripItem.label.text : tabStripItem.title;
 
     if (iconSource) {
         if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
@@ -305,15 +303,15 @@ function createTabItemSpec(item: TabStripItem): org.nativescript.widgets.TabItem
             }
         } else {
             let is = new ImageSource();
-            if (isFontIconURI(item.iconSource)) {
-                const fontIconCode = item.iconSource.split("//")[1];
-                const font = item.style.fontInternal;
-                const color = item.style.color;
+            if (isFontIconURI(tabStripItem.iconSource)) {
+                const fontIconCode = tabStripItem.iconSource.split("//")[1];
+                const font = tabStripItem.style.fontInternal;
+                const color = tabStripItem.style.color;
                 is = fromFontIconCode(fontIconCode, font, color);
             } else {
-                is = fromFileOrResource(item.iconSource);
+                is = fromFileOrResource(tabStripItem.iconSource);
             }
-            
+
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                 tabItemSpec.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
