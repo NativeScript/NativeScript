@@ -169,6 +169,10 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
     iconSource = tabStripItem.image ? tabStripItem.image.src : tabStripItem.iconSource;
     tabItemSpec.title = tabStripItem.label ? tabStripItem.label.text : tabStripItem.title;
 
+    if (tabStripItem.backgroundColor instanceof Color) {
+        tabItemSpec.backgroundColor = tabStripItem.backgroundColor.android;
+    }
+
     if (iconSource) {
         if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
             tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
