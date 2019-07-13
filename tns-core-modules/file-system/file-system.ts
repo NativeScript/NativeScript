@@ -1,6 +1,6 @@
 // imported for definition purposes only
 import * as platformModule from "../platform";
-
+import { FSWorker } from "./file-system-worker/components";
 import { FileSystemAccess } from "./file-system-access";
 import { profile } from "../profiling";
 
