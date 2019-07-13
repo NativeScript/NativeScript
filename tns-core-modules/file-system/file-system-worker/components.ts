@@ -1,10 +1,6 @@
 import { on, off, lowMemoryEvent } from "tns-core-modules/application";
 
 export namespace FSWorker {
-  export interface Context extends Worker {
-    close: { (): void };
-    onclose: { (): void };
-  }
 
   export interface FSJob {
     id: string;

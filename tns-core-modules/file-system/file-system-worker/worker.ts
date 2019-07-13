@@ -2,12 +2,17 @@ import "globals";
 import { FileSystemAccess } from "tns-core-modules/file-system/file-system-access";
 import { FSWorker, WorkerTimer } from "./components";
 
+interface Context extends Worker {
+  close: { (): void };
+  onclose: { (): void };
+}
+
 namespace Worker {
   declare let self: any;
   declare let fileAccess: FileSystemAccess;
 
   export const Jobs: string[] = [];
-  export const context: FSWorker.Context = self;
+  export const context: Context = self;
   export const Timer = new WorkerTimer(context.close);
 
   export function postResult(id, message) {
