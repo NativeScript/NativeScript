@@ -1,5 +1,5 @@
 import "globals";
-import { FileSystemAccess } from "tns-core-modules/file-system/file-system-access";
+import { FileSystemAccess } from "../file-system-access";
 import { FSWorker, WorkerTimer } from "./components";
 
 interface Context extends Worker {

@@ -1,4 +1,4 @@
-import { on, off, lowMemoryEvent } from "tns-core-modules/application";
+import { on, off, lowMemoryEvent } from "../../application";
 
 interface WorkerJob {
   id: string;
