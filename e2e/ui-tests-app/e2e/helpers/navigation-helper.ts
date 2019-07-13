@@ -1,4 +1,4 @@
-import { AppiumDriver, IRectangle, logInfo } from "nativescript-dev-appium";
+import { AppiumDriver, IRectangle, logInfo, logWarn, Point } from "nativescript-dev-appium";
 
 export enum ElementCacheStrategy {
     allAtOnce,
@@ -103,7 +103,19 @@ export class NavigationHelper {
 
     async swipeBackToSuitMainPage() {
         logInfo(`Swipe to back`);
-        throw new Error("Not implemented!");
+        const startPoint = <Point>{};
+        const endPoint = <Point>{};
+
+        if (this._driver.isIOS) {
+            startPoint.x = 5;
+            startPoint.y = this._driver.nsCapabilities.device.viewportRect.y / this._driver.nsCapabilities.device.config.density;
+            endPoint.x = (this._driver.nsCapabilities.device.viewportRect.width / this._driver.nsCapabilities.device.config.density) - 5;
+            endPoint.y = startPoint.y;
+
+            await this._driver.swipe(startPoint, endPoint);
+        } else {
+            logWarn("Swipe back is not supported from android!");
+        }
     }
 
     private async cacheAllElements(cachedElements: ICachedElement) {

@@ -10,7 +10,7 @@
       
     </StackLayout>
         <GridLayout row="1">
-            <BottomNavigation automationText="bottomNavigation" loaded="bottomNavigaitonLoaded" items="{{ tabContentItems }}">
+            <BottomNavigation automationText="tabNavigation"  loaded="bottomNavigaitonLoaded" items="{{ tabContentItems }}">
                 <TabStrip items="{{ tabStripItems }}">
                 </TabStrip>
             </BottomNavigation> 

@@ -76,8 +76,8 @@ describe(`${suite}-${spec}-suite`, async function () {
                 y: driver.nsCapabilities.device.viewportRect.height / 2
             },
             {
-                yOffset: 0,
-                xOffset: driver.nsCapabilities.device.viewportRect.x + 10
+                y: 0,
+                x: driver.nsCapabilities.device.viewportRect.x + 10
             }
             , 100);
         await driver.imageHelper.compareScreen({ timeOutSeconds: 5, tolerance: 0.01 });
