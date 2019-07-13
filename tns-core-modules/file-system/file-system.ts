@@ -4,41 +4,51 @@ import { FSWorker } from "./file-system-worker/components";
 import { FileSystemAccess } from "./file-system-access";
 import { profile } from "../profiling";
 
-// The FileSystemAccess implementation, used through all the APIs.
-let fileAccess: FileSystemAccess;
-function getFileAccess(): FileSystemAccess {
-    if (!fileAccess) {
-        fileAccess = new FileSystemAccess();
-    }
+namespace _FileSystem {
+  let fileAccess: FileSystemAccess;
+  let platform: typeof platformModule;
 
+  export function postJob(job: FSWorker.Job, resolve, reject): void {
+    if (!FSWorker.isRunning()) FSWorker.createWorkerInstance();
+    FSWorker.getWorkerInstance().postJob(job, resolve, reject);
+  }
+
+  export function getFileAccess() {
+    if (!(fileAccess instanceof FileSystemAccess)) {
+      fileAccess = new FileSystemAccess();
+    }
     return fileAccess;
-}
+  }
 
-let platform: typeof platformModule;
-function ensurePlatform() {
+  export function getPlatform() {
     if (!platform) {
-        platform = require("../platform");
+      platform = require("../platfrom");
     }
-}
+    return platform;
+  }
 
-function createFile(info: { path: string; name: string; extension: string }) {
+  export function createFile(info: {
+    path: string;
+    name: string;
+    extension: string;
+  }) {
     const file = new File();
     file._path = info.path;
     file._name = info.name;
     file._extension = info.extension;
 
     return file;
-}
+  }
 
-function createFolder(info: { path: string; name: string; }) {
+  export function createFolder(info: { path: string; name: string }) {
     const documents = knownFolders.documents();
     if (info.path === documents.path) {
-        return documents;
+      return documents;
     }
 
     const temp = knownFolders.temp();
     if (info.path === temp.path) {
-        return temp;
+      return temp;
     }
 
     const folder = new Folder();
@@ -47,6 +57,7 @@ function createFolder(info: { path: string; name: string; }) {
     folder._name = info.name;
 
     return folder;
+  }
 }
 
 export class FileSystemEntity {
