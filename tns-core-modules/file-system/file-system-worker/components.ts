@@ -1,13 +1,12 @@
 import { on, off, lowMemoryEvent } from "tns-core-modules/application";
 
+interface WorkerJob {
+  id: string;
+  onError: { (error: any): void };
+  onSuccess: { (message: any): void };
+}
+
 export namespace FSWorker {
-
-  export interface FSJob {
-    id: string;
-    onError: { (error: any): void };
-    onSuccess: { (message: any): void };
-  }
-
   export enum WorkType {
     file,
     folder,
@@ -31,7 +30,7 @@ export namespace FSWorker {
     closed = "WorkerCloseRequestFulfilled"
   }
 
-  export let fileWorker: Instance;
+  let fileWorker: Instance;
   export const isRunning = (): boolean => fileWorker instanceof Instance;
   export const getWorkerInstance = (): Instance => fileWorker;
   export const createWorkerInstance = (): Instance =>
@@ -58,7 +57,7 @@ export namespace FSWorker {
 
   export class Instance {
     private _worker: Worker;
-    private _jobs: FSJob[];
+    private _jobs: WorkerJob[];
 
     constructor() {
       this._jobs = [];
@@ -87,7 +86,7 @@ export namespace FSWorker {
       return this._jobs;
     }
 
-    public getJob(id: string): FSJob {
+    public getJob(id: string): WorkerJob {
       const job = this.jobs.find(job => job.id === id);
       this.jobs.splice(this.jobs.indexOf(job), 1);
       return job;
