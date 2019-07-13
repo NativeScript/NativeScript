@@ -5,7 +5,7 @@ import { setImageName } from "../../../helpers/image-helper";
 
 const suite = "tab-navigation";
 const spec = "tabs";
-const imagePrefix = `${suite}-${spec}`
+const imagePrefix = `${suite}-${spec}`;
 
 describe(`${imagePrefix}-suite`, async function () {
     let driver: AppiumDriver;

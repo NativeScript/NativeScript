@@ -15,6 +15,7 @@ export class TabsViewBasePage extends TabNavigationBasePage {
         if (this._driver.isIOS) {
             items.shift();
         }
+        
         return items;
     }
 
