@@ -18,7 +18,7 @@
   </BottomNavigation> -->
 
   <!-- w/ TabStrip -->
-  <BottomNavigation id="bottomNav"  automationText="bottomNavigation">
+  <BottomNavigation id="bottomNav"  automationText="tabNavigation" >
     <TabStrip>
       <TabStripItem title="First Tab 11" iconSource="res://icon"></TabStripItem>
       <TabStripItem>

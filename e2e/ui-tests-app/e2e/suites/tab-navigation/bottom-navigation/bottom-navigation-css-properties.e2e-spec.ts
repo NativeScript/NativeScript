@@ -25,7 +25,7 @@ describe(`${imagePrefix}-suite`, async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
         await driver.restartApp();
-        bottomNavigationBasePage = new BottomNavigationBasePage(driver, ElementCacheStrategy.none);
+        bottomNavigationBasePage = new BottomNavigationBasePage(driver);
         await bottomNavigationBasePage.init("css-text-transform");
     });
 

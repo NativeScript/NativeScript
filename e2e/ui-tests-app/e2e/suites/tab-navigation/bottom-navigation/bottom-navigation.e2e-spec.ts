@@ -2,7 +2,6 @@ import { nsCapabilities, createDriver, AppiumDriver, DeviceOrientaion, logInfo }
 import { BottomNavigationBasePage } from "./bottom-navigation-base-page";
 import { assert } from "chai";
 import { setImageName } from "../../../helpers/image-helper";
-import { Platform } from "mobile-devices-controller";
 
 const suite = "tab-navigation";
 const spec = "bottom-navigation";
@@ -17,7 +16,6 @@ describe(`${suite}-${spec}-suite`, async function () {
         await driver.restartApp();
         bottomNavigationBasePage = new BottomNavigationBasePage(driver);
         await bottomNavigationBasePage.initSuite();
-        driver.imageHelper.options.keepOriginalImageSize = true;
     });
 
     after(async function () {
@@ -44,7 +42,6 @@ describe(`${suite}-${spec}-suite`, async function () {
         await bottomNavigationBasePage.navigateToSample("background-color");
         await driver.imageHelper.compareScreen();
 
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
         await bottomNavigationBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
  
@@ -74,7 +71,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         await clickAddTab();
         await driver.imageHelper.compareScreen();
 
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
+        await bottomNavigationBasePage.refreshTabItems();
         await bottomNavigationBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 
@@ -111,7 +108,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         await addTabBtn.tap();
         await driver.imageHelper.compareScreen();
 
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
+        await bottomNavigationBasePage.refreshTabItems();
         await bottomNavigationBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 
@@ -128,7 +125,6 @@ describe(`${suite}-${spec}-suite`, async function () {
         await goToSecondBtn.tap();
         await driver.imageHelper.compareScreen();
 
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
         await bottomNavigationBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 
@@ -140,7 +136,6 @@ describe(`${suite}-${spec}-suite`, async function () {
         await bottomNavigationBasePage.navigateToSample("color");
         await driver.imageHelper.compareScreen();
 
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
         await bottomNavigationBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 
@@ -151,7 +146,6 @@ describe(`${suite}-${spec}-suite`, async function () {
     it(`${spec}-fancy-fonts-select-tabs`, async function () {
         await bottomNavigationBasePage.navigateToSample("fancy-fonts");
         await driver.imageHelper.compareScreen();
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
 
         for (let index = 1; index < 4; index++) {
             await bottomNavigationBasePage.tabOnItem(index);
@@ -164,7 +158,6 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-fancy-fonts-selected-index`, async function () {
         await bottomNavigationBasePage.navigateToSample("fancy-fonts");
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
 
         let selectSecondTabFromCodeBehind = await driver.waitForElement("selectSecondTab");
         logInfo(`Click on "select second tab button"`);
@@ -212,7 +205,6 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-font-icons`, async function () {
         await bottomNavigationBasePage.navigateToSample("font-icons");
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);
@@ -228,7 +220,6 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-icon-change`, async function () {
         await bottomNavigationBasePage.navigateToSample("icon-change");
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
         await bottomNavigationBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 
@@ -249,7 +240,6 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-5470-issue`, async function () {
         await bottomNavigationBasePage.navigateToSample("issue-5470");
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);
@@ -261,7 +251,6 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-text-transform`, async function () {
         await bottomNavigationBasePage.navigateToSample("text-transform");
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);
@@ -273,7 +262,6 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-fonts`, async function () {
         await bottomNavigationBasePage.navigateToSample("text-transform");
-        await bottomNavigationBasePage.refreshBottomNavigationTab();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);

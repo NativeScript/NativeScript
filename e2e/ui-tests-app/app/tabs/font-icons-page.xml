@@ -3,7 +3,7 @@
   <ActionBar title="Tabs font icons" icon="" class="action-bar">
   </ActionBar>
 
-  <Tabs class="font-awesome"> <!-- TODO: The font-awesome class here should be removed -->
+  <Tabs class="font-awesome" automationText="tabNavigation"  > <!-- TODO: The font-awesome class here should be removed -->
     <TabStrip>
         <!-- font family + font size + color -->
         <TabStripItem title="First" iconSource="font://&#xF10B;" class="special font-awesome font-size color"></TabStripItem>
