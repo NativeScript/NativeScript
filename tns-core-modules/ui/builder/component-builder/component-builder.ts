@@ -36,14 +36,16 @@ const createComponentInstance = profile("createComponentInstance", (elementName:
     try {
         if (typeof namespace === "string") {
             resolvedModuleName = resolveModuleName(namespace, "");
+            instanceModule = global.loadModule(resolvedModuleName, true);
         } else {
             // load module from tns-core-modules/ui or mapped paths
             resolvedModuleName = MODULES[elementName] || UI_PATH +
                 (elementName.toLowerCase().indexOf("layout") !== -1 ? "layouts/" : "") +
                 elementName.split(/(?=[A-Z])/).join("-").toLowerCase();
-        }
 
-        instanceModule = global.loadModule(resolvedModuleName);
+            // don't register core modules for HMR self-accept
+            instanceModule = global.loadModule(resolvedModuleName, false);
+        }
 
         // Get the component type from module.
         const instanceType = instanceModule[elementName] || Object;
@@ -64,7 +66,7 @@ const getComponentModuleExports = profile("getComponentModuleExports", (instance
         if (codeFileAttribute) {
             const resolvedCodeFileModule = resolveModuleName(sanitizeModuleName(codeFileAttribute), "");
             if (resolvedCodeFileModule) {
-                moduleExports = global.loadModule(resolvedCodeFileModule);
+                moduleExports = global.loadModule(resolvedCodeFileModule, true);
                 (<any>instance).exports = moduleExports;
             } else {
                 throw new Error(`Code file with path "${codeFileAttribute}" cannot be found! Looking for webpack module with name "${resolvedCodeFileModule}"`);

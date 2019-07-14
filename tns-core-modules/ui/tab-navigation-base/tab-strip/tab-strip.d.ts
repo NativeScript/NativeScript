@@ -21,6 +21,16 @@ export class TabStrip extends View {
      * Gets or sets the icon rendering mode on iOS
      */
     iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
+
+    /**
+     * @private
+     */
+    _hasImage: boolean;
+
+    /**
+     * @private
+     */
+    _hasTitle: boolean;
 }
 
 export const iosIconRenderingModeProperty: Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">;

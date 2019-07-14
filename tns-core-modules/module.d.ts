@@ -14,12 +14,14 @@ declare namespace NodeJS {
     interface Global {
         android?: any;
         require(id: string): any;
+
+        moduleMerge(sourceExports: any, destExports: any): void;
+
         registerModule(name: string, loader: ((name: string) => any)): void;
-        _unregisterModule(name: string): void;
         /**
          * Register all modules from a webpack context.
          * The context is one created using the following webpack utility:
-         * https://webpack.github.io/docs/context.html
+         * https://webpack.js.org/guides/dependency-management/#requirecontext
          *
          * The extension map is optional, modules in the webpack context will have their original file extension (e.g. may be ".ts" or ".scss" etc.),
          * while the built-in module builders in {N} will look for ".js", ".css" or ".xml" files. Adding a map such as:
@@ -27,9 +29,10 @@ declare namespace NodeJS {
          * { ".ts": ".js" }
          * ```
          * Will resolve lookups for .js to the .ts file.
-         * By default scss, and ts files are mapped.
+         * By default scss and ts files are mapped.
          */
         registerWebpackModules(context: { keys(): string[], (key: string): any }, extensionMap?: { [originalFileExtension: string]: string });
+
         /**
          * The NativeScript XML builder, style-scope, application modules use various resources such as:
          * app.css, page.xml files and modules during the application life-cycle.
@@ -43,15 +46,34 @@ declare namespace NodeJS {
          * By default the only member of the array is global.require, as last resort - if it fails to find a module it will throw.
          */
         readonly moduleResolvers: ModuleResolver[];
-        loadModule(name: string): any;
+
+        /**
+         * 
+         * @param name Name of the module to be loaded
+         * @param loadForUI Is this UI module is being loaded for UI from tns-core-modules/builder.
+         * Xml, css/scss and js/ts modules for pages and custom-components should load with loadForUI=true.
+         * Passing "true" will enable the HMR mechanics this module. Default value is false.
+         */
+        loadModule(name: string, loadForUI? : boolean): any;
+
+        /**
+         * Checks if the module has been registered with `registerModule` or in `registerWebpackModules`
+         * @param name Name of the module
+         */
         moduleExists(name: string): boolean;
-        moduleMerge(sourceExports: any, destExports: any): void;
+        
         getRegisteredModules(): string[];
+
+        _unregisterModule(name: string): void;
+
+        _isModuleLoadedForUI(moduleName: string): boolean;
+
         onGlobalLayoutListener: any;
         zonedCallback(callback: Function): Function;
         Reflect?: any;
         Deprecated(target: Object, key?: string | symbol, descriptor?: any): any;
         Experimental(target: Object, key?: string | symbol, descriptor?: any): any;
+
         __native?: any;
         __inspector?: any;
         __extends: any;

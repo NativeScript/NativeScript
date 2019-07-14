@@ -1,7 +1,8 @@
-// Types
+﻿// Types
 import { TabNavigationBase as TabNavigationBaseDefinition, SelectedIndexChangedEventData } from ".";
 import { TabContentItem } from "../tab-content-item";
 import { TabStrip } from "../tab-strip";
+import { TabStripItem } from "../tab-strip-item";
 import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder, EventData } from "../../core/view";
 
 // Requires
@@ -115,6 +116,86 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     }
 
     public setTabBarBackgroundColor(value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarFontInternal(): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarFontInternal(value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarTextTransform(): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarTextTransform(value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarHighlightColor(): any {
+        // overridden by inheritors
+    }
+
+    public setTabBarHighlightColor(value: any) {
+        // overridden by inheritors
+    }
+
+    public getTabBarColor(): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarColor(value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarItemBackgroundColor(tabStripItem: TabStripItem): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarItemColor(tabStripItem: TabStripItem): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarItemColor(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarItemFontSize(tabStripItem: TabStripItem): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarItemFontSize(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarItemFontInternal(tabStripItem: TabStripItem): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
+    public getTabBarItemTextTransform(tabStripItem: TabStripItem): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: any): void {
         // overridden by inheritors
     }
 }

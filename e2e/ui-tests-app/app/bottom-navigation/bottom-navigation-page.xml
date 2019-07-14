@@ -31,6 +31,7 @@
         <Label text="Places" />
       </TabStripItem>
       <TabStripItem title="Music" iconSource="res://icon"></TabStripItem>
+            <TabStripItem title="Music" iconSource="res://icon"></TabStripItem>
     </TabStrip>
 
     <TabContentItem>
@@ -58,6 +59,12 @@
       </StackLayout>
     </TabContentItem>
     <TabContentItem>
+      <StackLayout>
+        <Label text="First View"/>
+        <Button tap="goToSecond" text="go to second" />
+      </StackLayout>
+    </TabContentItem>
+        <TabContentItem>
       <StackLayout>
         <Label text="First View"/>
         <Button tap="goToSecond" text="go to second" />

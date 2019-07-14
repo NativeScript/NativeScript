@@ -2,9 +2,9 @@ import { Image as ImageDefinition, Stretch } from ".";
 import { View, Property, InheritedCssProperty, Length, Style, Color, isIOS, booleanConverter, CSSType, traceEnabled, traceWrite, traceCategories } from "../core/view";
 import { ImageAsset } from "../../image-asset";
 import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "../../image-source";
-import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "../../utils/utils";
+import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from "../../utils/utils";
 export * from "../core/view";
-export { ImageSource, ImageAsset, fromAsset, fromNativeSource, fromUrl, isDataURI, isFileOrResourcePath, RESOURCE_PREFIX };
+export { ImageSource, ImageAsset, fromAsset, fromNativeSource, fromUrl, isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX };
 
 @CSSType("Image")
 export abstract class ImageBase extends View implements ImageDefinition {
@@ -46,7 +46,16 @@ export abstract class ImageBase extends View implements ImageDefinition {
                 this.isLoading = false;
             };
 
-            if (isDataURI(value)) {
+            if (isFontIconURI(value)) {
+                const fontIconCode = value.split("//")[1];
+                if (fontIconCode !== undefined) {
+                    // support sync mode only
+                    const font = this.style.fontInternal;
+                    const color = this.style.color;
+                    source.loadFromFontIconCode(fontIconCode, font, color);
+                    imageLoaded();
+                }
+            } else if (isDataURI(value)) {
                 const base64Data = value.split(",")[1];
                 if (base64Data !== undefined) {
                     if (sync) {

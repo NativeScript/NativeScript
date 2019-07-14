@@ -279,6 +279,12 @@ export function executeOnMainThread(func: Function);
 export function mainThreadify(func: Function): (...args: any[]) => void
 
 /**
+ * Returns true if the specified URI is a font icon URI like "fontIcon://&#xf1e0".
+ * @param uri The URI.
+ */
+export function isFontIconURI(uri: string): boolean
+
+/**
  * Returns true if the specified path points to a resource or local file.
  * @param path The path.
  */

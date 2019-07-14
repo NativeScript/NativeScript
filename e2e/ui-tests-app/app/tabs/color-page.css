@@ -1,0 +1,19 @@
+Tabs {
+  color: gold;
+}
+
+TabContentItem.special {
+  color: olive;
+}
+
+TabStrip {
+  color: skyblue;
+}
+
+TabStripItem.special {
+  color: teal;
+}
+
+TabStripItem.special:active {
+  color: yellowgreen;
+}
