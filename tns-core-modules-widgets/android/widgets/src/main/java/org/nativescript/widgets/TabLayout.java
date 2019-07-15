@@ -383,7 +383,11 @@ public class TabLayout extends HorizontalScrollView {
             }
 
             int prevPosition = mTabStrip.getSelectedPosition();
-            onSelectedPositionChange(position, prevPosition);
+
+            if (prevPosition != position) {
+                onSelectedPositionChange(position, prevPosition);
+            }
+
             mTabStrip.onViewPagerPageChanged(position, positionOffset);
 
             View selectedTitle = mTabStrip.getChildAt(position);

@@ -248,18 +248,14 @@ function initializeNativeClasses() {
                 return;
             }
 
-            if (position !== prevPosition) {
-                const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+            const tabStripItems = owner.tabStrip && owner.tabStrip.items;
 
-                if (position >= 0 && tabStripItems && tabStripItems[position]) {
-                    tabStripItems[position]._emit(TabStripItem.selectEvent);
-                }
+            if (position >= 0 && tabStripItems && tabStripItems[position]) {
+                tabStripItems[position]._emit(TabStripItem.selectEvent);
+            }
 
-                if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
-                    tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
-                }
-
-                owner.selectedIndex = position;
+            if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
+                tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
             }
         }
 
