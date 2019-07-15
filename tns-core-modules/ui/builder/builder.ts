@@ -632,7 +632,7 @@ namespace xml2ui {
                             
                             //fix https://github.com/NativeScript/NativeScript/issues/4405
                             //explicitly reference page view as this.currentrootview can be any element depending on the traversal iteration level 2019/07/07 21:41:38 GMT+0200
-                            if (this.rootComponentModule && this.rootComponentModule.component.typeName === 'Page') {
+                            if (this.rootComponentModule && this.rootComponentModule.component.typeName === "Page") {
                                 rootView = this.rootComponentModule.component;
                                 //4405 fixed 2019/07/07 22:07:04 GMT+0200 worked; Praise be to God the Almight in Jesus' name, amen. 2019/07/07 22:28:51 GMT+0200
                             }
