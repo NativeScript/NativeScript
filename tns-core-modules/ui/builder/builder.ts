@@ -18,6 +18,8 @@ const android = platformNames.android.toLowerCase();
 
 const defaultNameSpaceMatcher = /tns\.xsd$/i;
 
+var rootView: View; //explicit reference to page view element to fix issue 4405. 2019/07/07 21:41:38 GMT+0200, 2019/07/08 14:01:22 GMT+0200, 2019/07/14 12:16:33 GMT+0200
+
 export function parse(value: string | Template, context: any): View {
     if (typeof value === "function") {
         return (<Template>value)();
@@ -541,7 +543,10 @@ namespace xml2ui {
         private buildComponent(args: xml.ParserEvent): ComponentModule {
             if (args.prefix && args.namespace) {
                 // Custom components
-                return loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView, !this.currentRootView, this.moduleName);
+
+                //fix https://github.com/NativeScript/NativeScript/issues/4405
+                //replaced this.currentRootView with rootView which explicitly points to the page view element 2019/07/07 21:41:38 GMT+0200
+                return loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, rootView, !this.currentRootView, this.moduleName);
             } else {
                 // Default components
                 let namespace = args.namespace;
@@ -623,6 +628,13 @@ namespace xml2ui {
                                 if ((<any>this.currentRootView).exports) {
                                     this.context = (<any>this.currentRootView).exports;
                                 }
+                            }
+                            
+                            //fix https://github.com/NativeScript/NativeScript/issues/4405
+                            //explicitly reference page view as this.currentrootview can be any element depending on the traversal iteration level 2019/07/07 21:41:38 GMT+0200
+                            if (this.rootComponentModule && this.rootComponentModule.component.typeName === 'Page') {
+                                rootView = this.rootComponentModule.component;
+                                //4405 fixed 2019/07/07 22:07:04 GMT+0200 worked; Praise be to God the Almight in Jesus' name, amen. 2019/07/07 22:28:51 GMT+0200
                             }
                         }
 
