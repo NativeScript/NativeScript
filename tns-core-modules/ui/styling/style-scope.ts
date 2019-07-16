@@ -40,6 +40,8 @@ function ensureKeyframeAnimationModule() {
 }
 
 import * as capm from "./css-animation-parser";
+import { sanitizeModuleName } from "../builder/module-name-sanitizer";
+import { resolveModuleName } from "../../module-name-resolver";
 let cssAnimationParserModule: typeof capm;
 function ensureCssAnimationParserModule() {
     if (!cssAnimationParserModule) {
@@ -80,25 +82,26 @@ class CSSSource {
 
     public static fromURI(uri: string, keyframes: KeyframesMap): CSSSource {
         // webpack modules require all file paths to be relative to /app folder
-        let appRelativeUri = CSSSource.pathRelativeToApp(uri);
+        const appRelativeUri = CSSSource.pathRelativeToApp(uri);
+        const sanitizedModuleName = sanitizeModuleName(appRelativeUri);
+        const resolvedModuleName = resolveModuleName(sanitizedModuleName, "css");
 
         try {
-            const cssOrAst = global.loadModule(appRelativeUri, true);
+            const cssOrAst = global.loadModule(resolvedModuleName, true);
             if (cssOrAst) {
                 if (typeof cssOrAst === "string") {
                     // raw-loader
-                    return CSSSource.fromSource(cssOrAst, keyframes, appRelativeUri);
+                    return CSSSource.fromSource(cssOrAst, keyframes, resolvedModuleName);
                 } else if (typeof cssOrAst === "object" && cssOrAst.type === "stylesheet" && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
                     // css-loader
-                    return CSSSource.fromAST(cssOrAst, keyframes, appRelativeUri);
+                    return CSSSource.fromAST(cssOrAst, keyframes, resolvedModuleName);
                 } else {
                     // css2json-loader
-                    return CSSSource.fromSource(cssOrAst.toString(), keyframes, appRelativeUri);
+                    return CSSSource.fromSource(cssOrAst.toString(), keyframes, resolvedModuleName);
                 }
             }
         } catch (e) {
-            // TODO: Commented as this prints error in playground: https://github.com/NativeScript/NativeScript/issues/7497
-            // traceWrite(`Could not load CSS from ${uri}: ${e}`, traceCategories.Error, traceMessageType.error);
+            traceWrite(`Could not load CSS from ${uri}: ${e}`, traceCategories.Error, traceMessageType.error);
         }
 
         return CSSSource.fromFile(appRelativeUri, keyframes);
@@ -320,12 +323,17 @@ function onLiveSync(args: applicationCommon.CssChangedEventData): void {
     loadCss(applicationCommon.getCssFileName());
 }
 
-const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
-    if (!cssFile) {
+const loadCss = profile(`"style-scope".loadCss`, (cssModule: string) => {
+    if (!cssModule) {
         return undefined;
     }
 
-    const result = CSSSource.fromURI(cssFile, applicationKeyframes).selectors;
+    // safely remove "./" as global CSS should be resolved relative to app folder
+    if (cssModule.startsWith("./")) {
+        cssModule = cssModule.substr(2);
+    }
+
+    const result = CSSSource.fromURI(cssModule, applicationKeyframes).selectors;
     if (result.length > 0) {
         applicationSelectors = result;
         mergeCssSelectors();

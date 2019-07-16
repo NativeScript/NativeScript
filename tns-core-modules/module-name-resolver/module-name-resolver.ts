@@ -3,6 +3,11 @@ import { screen, device } from "../platform/platform";
 import * as appCommonModule from "../application/application-common";
 import { PlatformContext, findMatch } from "./qualifier-matcher";
 import { registerModulesFromFileSystem } from "./non-bundle-workflow-compat";
+import {
+    isEnabled as traceEnabled,
+    write as traceWrite,
+    categories as traceCategories
+} from "../trace";
 
 export class ModuleNameResolver implements ModuleNameResolverDefinition {
     private _cache = {};
@@ -16,6 +21,10 @@ export class ModuleNameResolver implements ModuleNameResolverDefinition {
         if (result === undefined) {
             result = this.resolveModuleNameImpl(path, ext);
             this._cache[key] = result;
+        }
+
+        if (traceEnabled()) {
+            traceWrite(`path: '${path}' with ext: '${ext}' resolved: '${result}'`, traceCategories.ModuleNameResolver);
         }
 
         return result;
