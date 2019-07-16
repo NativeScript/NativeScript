@@ -9,7 +9,7 @@ import {
 const cache = new Set<string>();
 let initialized = false;
 
-function register(name, loader) {
+function register(name: string, loader: (name?: string) => void) {
     if (traceEnabled()) {
         traceWrite(`[Compat] Register module: ${name}`, traceCategories.ModuleNameResolver);
     }
