@@ -1,5 +1,6 @@
 import * as types from "./types";
 import { dispatchToMainThread, isMainThread } from "./mainthread-helper";
+import { sanitizeModuleName } from "../ui/builder/module-name-sanitizer";
 
 export * from "./mainthread-helper";
 
@@ -35,7 +36,7 @@ export function convertString(value: any): any {
 export function getModuleName(path: string): string {
     let moduleName = path.replace("./", "");
 
-    return moduleName.substring(0, moduleName.lastIndexOf("."));
+    return sanitizeModuleName(moduleName);
 }
 
 export module layoutCommon {
@@ -110,6 +111,16 @@ export function isFileOrResourcePath(path: string): boolean {
     return path.indexOf("~/") === 0 ||  // relative to AppRoot
         path.indexOf("/") === 0 ||      // absolute path
         path.indexOf(RESOURCE_PREFIX) === 0;    // resource
+}
+
+export function isFontIconURI(uri: string): boolean {
+    if (!types.isString(uri)) {
+        return false;
+    }
+
+    const firstSegment = uri.trim().split("//")[0];
+
+    return firstSegment && firstSegment.indexOf("font:") === 0;
 }
 
 export function isDataURI(uri: string): boolean {

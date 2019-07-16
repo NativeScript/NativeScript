@@ -2,14 +2,17 @@
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
+import { TextTransform } from "../text-base";
 
 // Requires
 import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
 import { TabsBase, swipeEnabledProperty, offscreenTabLimitProperty } from "./tabs-common";
+import { Font } from "../styling/font";
+import { getTransformedText } from "../text-base";
 import { Frame } from "../frame";
 import { Color } from "../core/view";
-import { fromFileOrResource } from "../../image-source";
-import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
+import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
+import { RESOURCE_PREFIX, ad, layout, isFontIconURI } from "../../utils/utils";
 import * as application from "../../application";
 
 export * from "./tabs-common";
@@ -25,6 +28,7 @@ interface PagerAdapter {
 const TABID = "_tabId";
 const INDEX = "_index";
 let PagerAdapter: PagerAdapter;
+let TabLayout: any;
 
 function makeFragmentName(viewId: number, id: number): string {
     return "android:viewpager:" + viewId + ":" + id;
@@ -229,34 +233,92 @@ function initializeNativeClasses() {
             }
         }
     }
-    
-    PagerAdapter = FragmentPagerAdapter;
-}
 
-function createTabItemSpec(item: TabStripItem): org.nativescript.widgets.TabItemSpec {
-    const result = new org.nativescript.widgets.TabItemSpec();
-    result.title = item.title;
+    class TabLayoutImplementation extends org.nativescript.widgets.TabLayout {
 
-    if (item.iconSource) {
-        if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-            result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
-            if (result.iconId === 0) {
-                // TODO
-                // traceMissingIcon(item.iconSource);
+        constructor(context: android.content.Context, public owner: Tabs) {
+            super(context);
+
+            return global.__native(this);
+        }
+
+        public onSelectedPositionChange(position: number, prevPosition: number): void {
+            const owner = this.owner;
+            if (!owner) {
+                return;
             }
-        } else {
-            const is = fromFileOrResource(item.iconSource);
-            if (is) {
-                // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-                result.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
-            } else {
-                // TODO
-                // traceMissingIcon(item.iconSource);
+
+            const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+
+            if (position >= 0 && tabStripItems && tabStripItems[position]) {
+                tabStripItems[position]._emit(TabStripItem.selectEvent);
+            }
+
+            if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
+                tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+            }
+        }
+
+        public onTap(position: number): void {
+            const owner = this.owner;
+            if (!owner) {
+                return;
+            }
+
+            const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+
+            if (position >= 0 && tabStripItems[position]) {
+                tabStripItems[position]._emit(TabStripItem.tapEvent);
             }
         }
     }
 
-    return result;
+    PagerAdapter = FragmentPagerAdapter;
+    TabLayout = TabLayoutImplementation;
+}
+
+function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
+    let iconSource;
+    const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
+
+    if (tabStripItem.backgroundColor instanceof Color) {
+        tabItemSpec.backgroundColor = tabStripItem.backgroundColor.android;
+    }
+
+    // Image and Label children of TabStripItem
+    // take priority over its `iconSource` and `title` properties
+    iconSource = tabStripItem.image ? tabStripItem.image.src : tabStripItem.iconSource;
+    tabItemSpec.title = tabStripItem.label ? tabStripItem.label.text : tabStripItem.title;
+
+    if (iconSource) {
+        if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+            tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
+            if (tabItemSpec.iconId === 0) {
+                // TODO
+                // traceMissingIcon(iconSource);
+            }
+        } else {
+            let is = new ImageSource();
+            if (isFontIconURI(tabStripItem.iconSource)) {
+                const fontIconCode = tabStripItem.iconSource.split("//")[1];
+                const font = tabStripItem.style.fontInternal;
+                const color = tabStripItem.style.color;
+                is = fromFontIconCode(fontIconCode, font, color);
+            } else {
+                is = fromFileOrResource(tabStripItem.iconSource);
+            }
+
+            if (is) {
+                // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
+                tabItemSpec.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
+            } else {
+                // TODO
+                // traceMissingIcon(iconSource);
+            }
+        }
+    }
+
+    return tabItemSpec;
 }
 
 let defaultAccentColor: number = undefined;
@@ -325,7 +387,7 @@ export class Tabs extends TabsBase {
         const context: android.content.Context = this._context;
         const nativeView = new org.nativescript.widgets.GridLayout(context);
         const viewPager = new org.nativescript.widgets.TabViewPager(context);
-        const tabLayout = new org.nativescript.widgets.TabLayout(context);
+        const tabLayout = new TabLayout(context, this);
         const lp = new org.nativescript.widgets.CommonLayoutParams();
         const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
         let accentColor = getDefaultAccentColor(context);
@@ -451,7 +513,7 @@ export class Tabs extends TabsBase {
 
     public _onRootViewReset(): void {
         super._onRootViewReset();
-        
+
         // call this AFTER the super call to ensure descendants apply their rootview-reset logic first
         // i.e. in a scenario with tab frames let the frames cleanup their fragments first, and then
         // cleanup the tab fragments to avoid
@@ -508,6 +570,13 @@ export class Tabs extends TabsBase {
     private setItems(items: Array<TabContentItem>) {
         if (this.shouldUpdateAdapter(items)) {
             (<any>this._pagerAdapter).items = items;
+
+            if (items && items.length) {
+                items.forEach((item: TabContentItem, i) => {
+                    (<any>item).index = i;
+                });
+            }
+
             this._pagerAdapter.notifyDataSetChanged();
         }
     }
@@ -522,8 +591,8 @@ export class Tabs extends TabsBase {
 
         const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
         items.forEach((item: TabStripItem, i, arr) => {
-            const tabItemSpec = createTabItemSpec(item);
             (<any>item).index = i;
+            const tabItemSpec = createTabItemSpec(item);
             (<any>item).tabItemSpec = tabItemSpec;
             tabItems.push(tabItemSpec);
         });
@@ -580,6 +649,89 @@ export class Tabs extends TabsBase {
             this._tabLayout.setBackgroundColor(value.android);
         } else {
             this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
+        }
+    }
+
+    public getTabBarColor(): number {
+        return this._tabLayout.getTabTextColor();
+    }
+
+    public setTabBarColor(value: number | Color): void {
+        if (value instanceof Color) {
+            this._tabLayout.setTabTextColor(value.android);
+            this._tabLayout.setSelectedTabTextColor(value.android);
+        } else {
+            this._tabLayout.setTabTextColor(value);
+            this._tabLayout.setSelectedTabTextColor(value);
+        }
+    }
+
+    public getTabBarHighlightColor(): number {
+        return getDefaultAccentColor(this._context);
+    }
+
+    public setTabBarHighlightColor(value: number | Color) {
+        const color = value instanceof Color ? value.android : value;
+        this._tabLayout.setSelectedIndicatorColors([color]);
+    }
+
+    public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
+        // TODO: Should figure out a way to do it directly with the the nativeView
+        const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
+        const tabItemSpec = createTabItemSpec(tabStripItem);
+        this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
+    }
+
+    public getTabBarItemColor(tabStripItem: TabStripItem): number {
+        return tabStripItem.nativeViewProtected.getCurrentTextColor();
+    }
+
+    public setTabBarItemColor(tabStripItem: TabStripItem, value: number | Color): void {
+        if (typeof value === "number") {
+            tabStripItem.nativeViewProtected.setTextColor(value);
+        } else {
+            tabStripItem.nativeViewProtected.setTextColor(value.android);
+        }
+    }
+
+    public getTabBarItemFontSize(tabStripItem: TabStripItem): { nativeSize: number } {
+        return { nativeSize: tabStripItem.nativeViewProtected.getTextSize() };
+    }
+
+    public setTabBarItemFontSize(tabStripItem: TabStripItem, value: number | { nativeSize: number }): void {
+        if (typeof value === "number") {
+            tabStripItem.nativeViewProtected.setTextSize(value);
+        } else {
+            tabStripItem.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
+        }
+    }
+
+    public getTabBarItemFontInternal(tabStripItem: TabStripItem): android.graphics.Typeface {
+        return tabStripItem.nativeViewProtected.getTypeface();
+    }
+
+    public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font | android.graphics.Typeface): void {
+        tabStripItem.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
+    }
+
+    private _defaultTransformationMethod: android.text.method.TransformationMethod;
+
+    public getTabBarItemTextTransform(tabStripItem: TabStripItem): "default" {
+        return "default";
+    }
+
+    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform | "default"): void {
+        const tv = tabStripItem.nativeViewProtected;
+
+        this._defaultTransformationMethod = this._defaultTransformationMethod || tv.getTransformationMethod();
+
+        if (value === "default") {
+            tv.setTransformationMethod(this._defaultTransformationMethod);
+            tv.setText(tabStripItem.title);
+        } else {
+            const result = getTransformedText(tabStripItem.title, value);
+            tv.setText(result);
+            tv.setTransformationMethod(null);
         }
     }
 

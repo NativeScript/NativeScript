@@ -1,0 +1,14 @@
+<Page class="page">
+
+  <ActionBar title="Tabs background-color" icon="" class="action-bar">
+  </ActionBar>
+
+ <GridLayout rows="auto,*">
+    <Button row="0" text="Add Tab" tap="addTabs"/>
+    <GridLayout row="1">
+        <Tabs loaded="tabsLoaded" items="{{ tabContentItems }}">
+            <TabStrip items="{{ tabStripItems }}"></TabStrip>
+        </Tabs>
+    </GridLayout>
+  </GridLayout>
+</Page>

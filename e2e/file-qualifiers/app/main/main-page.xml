@@ -1,7 +1,13 @@
-<Page navigatedTo="onNavigatedTo">
+<Page navigatingTo="onNavigatingTo" xmlns:cc="components">
     <StackLayout class="page-content">
         <Label text="This is DEFAULT page" />
         
-        <Button text="hey there" tap="navigate" />
+        <Button text="tap" tap="tap" />
+
+        <Button text="navigate" tap="navigate" />
+
+        <Label text="{{ prop }}" />
+        
+        <cc:my-component />
     </StackLayout>
 </Page>

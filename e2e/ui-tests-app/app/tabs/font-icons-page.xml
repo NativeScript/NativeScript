@@ -1,0 +1,34 @@
+<Page class="page">
+
+  <ActionBar title="Tabs font icons" icon="" class="action-bar">
+  </ActionBar>
+
+  <Tabs class="font-awesome"> <!-- TODO: The font-awesome class here should be removed -->
+    <TabStrip>
+        <!-- font family + font size + color -->
+        <TabStripItem title="First" iconSource="font://&#xF10B;" class="special font-awesome font-size color"></TabStripItem>
+        <!-- default font + valid char code -->
+        <TabStripItem title="Second" iconSource="font://&#xF10B;"></TabStripItem>
+        <!-- font family + invalid char code -->
+        <TabStripItem title="Third" iconSource="font://&#xF556;" class="font-awesome font-size"></TabStripItem>
+    </TabStrip>
+
+    <TabContentItem class="special">
+        <GridLayout>
+          <Label text="First View" />
+        </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+        <GridLayout>
+          <Label text="Second View" />
+        </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+        <GridLayout>
+          <Label text="Third View" />
+        </GridLayout>
+    </TabContentItem>
+  </Tabs>
+</Page>

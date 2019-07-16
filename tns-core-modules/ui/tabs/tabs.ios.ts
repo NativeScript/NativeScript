@@ -1,17 +1,19 @@
-// Types
+﻿// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
+import { TextTransform } from "../text-base";
 
 // Requires
 import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
 import { TabsBase, swipeEnabledProperty } from "./tabs-common";
+import { Font } from "../styling/font";
 import { Frame } from "../frame";
 import { ios as iosView, View } from "../core/view";
 import { Color } from "../../color";
-import { /*ios as iosUtils,*/ layout } from "../../utils/utils";
+import { /*ios as iosUtils,*/ layout, isFontIconURI } from "../../utils/utils";
 // import { device } from "../../platform";
-import { fromFileOrResource } from "../../image-source";
+import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
 
 // TODO
 // import { profile } from "../../profiling";
@@ -34,7 +36,15 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
     }
 
     public tabBarShouldSelectItem(tabBar: MDCTabBar, item: UITabBarItem): boolean {
-        return true;
+        const owner = this._owner.get();
+        const shouldSelectItem = owner._canSelectItem;
+        const selectedIndex = owner.tabBarItems.indexOf(item);
+
+        if (owner.selectedIndex !== selectedIndex) {
+            owner._canSelectItem = false;
+        }
+
+        return shouldSelectItem;
     }
 
     public tabBarWillSelectItem(tabBar: MDCTabBar, item: UITabBarItem): void {
@@ -53,6 +63,7 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
 class UIPageViewControllerImpl extends UIPageViewController {
     tabBar: MDCTabBar;
     scrollView: UIScrollView;
+    tabBarDelegate: MDCTabBarDelegateImpl;
 
     private _owner: WeakRef<Tabs>;
 
@@ -72,28 +83,13 @@ class UIPageViewControllerImpl extends UIPageViewController {
             tabBar.items = NSArray.arrayWithArray(tabBarItems);
         }
 
-        // tabBar.items = <NSArray<UITabBarItem>>NSArray.alloc().initWithArray([
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        // ]);
-
-        tabBar.delegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
-        tabBar.itemAppearance = MDCTabBarItemAppearance.Titles;
+        tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
         tabBar.tintColor = UIColor.blueColor;
         tabBar.barTintColor = UIColor.whiteColor;
         tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
         tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Selected);
         tabBar.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleBottomMargin;
+        tabBar.alignment = MDCTabBarAlignment.Leading;
         tabBar.sizeToFit();
 
         this.tabBar = tabBar;
@@ -287,7 +283,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
         const owner = this._owner.get();
         let selectedIndex = owner.selectedIndex;
 
-        if (selectedIndex === 2) {
+        if (selectedIndex === owner.items.length - 1) {
             return null;
         }
 
@@ -348,11 +344,9 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
         // } else {
         //     owner.selectedIndex++;
         // }
-        console.log("test");
-        //
     }
 
-    public pageViewControllerDidFinishAnimatingPreviousViewControllersTransitionCompleted(pageViewController: UIPageViewController, didFinishAnimating: boolean,  previousViewControllers: NSArray<UIViewController>, transitionCompleted: boolean): void {
+    public pageViewControllerDidFinishAnimatingPreviousViewControllersTransitionCompleted(pageViewController: UIPageViewController, didFinishAnimating: boolean, previousViewControllers: NSArray<UIViewController>, transitionCompleted: boolean): void {
         if (!transitionCompleted) {
             return;
         }
@@ -365,10 +359,8 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
 
         if (selectedIndex !== nextViewControllerIndex) {
             owner.selectedIndex = nextViewControllerIndex;
+            owner._canSelectItem = true;
         }
-        
-        console.log("test");
-        //
     }
 }
 
@@ -547,6 +539,7 @@ export class Tabs extends TabsBase {
     // public swipeEnabled: boolean;
     // public offscreenTabLimit: number;
     // public tabsPosition: "top" | "bottom";
+    public _canSelectItem: boolean;
     public isLoaded: boolean;
     public viewController: UIPageViewControllerImpl;
     public items: TabContentItem[];
@@ -578,6 +571,8 @@ export class Tabs extends TabsBase {
     disposeNativeView() {
         this._dataSource = null;
         this._delegate = null;
+        this._ios.tabBarDelegate = null;
+        this._ios.tabBar = null;
         // this._moreNavigationControllerDelegate = null;
         super.disposeNativeView();
     }
@@ -812,7 +807,7 @@ export class Tabs extends TabsBase {
 
         // items.forEach((item, i) => {
         //     const controller = this.getViewController(item);
-                                                                            
+
         //     let icon = null;
         //     let title = "";
 
@@ -843,32 +838,22 @@ export class Tabs extends TabsBase {
     public setTabStripItems(items: Array<TabStripItem>) {
         const tabBarItems = [];
 
-        items.forEach((item: TabStripItem, i, arr) => {
-            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(item.title, null, 0);
+        items.forEach((item: TabStripItem, i) => {
+            (<any>item).index = i;
+            const tabBarItem = this.createTabBarItem(item, i);
             tabBarItems.push(tabBarItem);
             item.setNativeView(tabBarItem);
         });
+
         this.tabBarItems = tabBarItems;
 
         if (this.viewController && this.viewController.tabBar) {
+            this.viewController.tabBar.itemAppearance = this._getTabBarItemAppearance();
             this.viewController.tabBar.items = NSArray.arrayWithArray(tabBarItems);
+            // TODO: investigate why this call is necessary to actually toggle item appearance
+            this.viewController.tabBar.sizeToFit();
             this.tabStrip.setNativeView(this.viewController.tabBar);
         }
-
-        // tabBar.items = <NSArray<UITabBarItem>>NSArray.alloc().initWithArray([
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        // ]);
 
         // const length = items ? items.length : 0;
         // if (length === 0) {
@@ -892,18 +877,63 @@ export class Tabs extends TabsBase {
         // });
     }
 
+    private createTabBarItem(item: TabStripItem, index: number): UITabBarItem {
+        let image: UIImage;
+        let title: string;
+
+        image = this._getIcon(item);
+        title = item.label ? item.label.text : item.title;
+
+        if (!this.tabStrip._hasImage) {
+            this.tabStrip._hasImage = !!image;
+        }
+
+        if (!this.tabStrip._hasTitle) {
+            this.tabStrip._hasTitle = !!title;
+        }
+
+        const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, image, index);
+
+        return tabBarItem;
+    }
+
+    private _getTabBarItemAppearance(): MDCTabBarItemAppearance {
+        let itemAppearance;
+        if (this.tabStrip._hasImage && this.tabStrip._hasTitle) {
+            itemAppearance = MDCTabBarItemAppearance.TitledImages;
+        } else if (this.tabStrip._hasImage) {
+            itemAppearance = MDCTabBarItemAppearance.Images;
+        } else {
+            itemAppearance = MDCTabBarItemAppearance.Titles;
+        }
+
+        return itemAppearance;
+    }
+
     private _getIconRenderingMode(): UIImageRenderingMode {
         return UIImageRenderingMode.AlwaysOriginal;
     }
 
-    public _getIcon(iconSource: string): UIImage {
+    public _getIcon(tabStripItem: TabStripItem): UIImage {
+        // Image and Label children of TabStripItem
+        // take priority over its `iconSource` and `title` properties
+        const iconSource = tabStripItem.image ? tabStripItem.image.src : tabStripItem.iconSource;
         if (!iconSource) {
             return null;
         }
 
         let image: UIImage = this._iconsCache[iconSource];
         if (!image) {
-            const is = fromFileOrResource(iconSource);
+            let is = new ImageSource;
+            if (isFontIconURI(iconSource)) {
+                const fontIconCode = iconSource.split("//")[1];
+                const font = tabStripItem.style.fontInternal;
+                const color = tabStripItem.style.color;
+                is = fromFontIconCode(fontIconCode, font, color);
+            } else {
+                is = fromFileOrResource(iconSource);
+            }
+
             if (is && is.ios) {
                 const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
                 this._iconsCache[iconSource] = originalRenderedImage;
@@ -945,11 +975,56 @@ export class Tabs extends TabsBase {
         this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
     }
 
+    public getTabBarFontInternal(): UIFont {
+        return this._ios.tabBar.unselectedItemTitleFont;
+    }
+
+    public setTabBarFontInternal(value: Font): void {
+        const defaultTabItemFontSize = 10;
+        const tabItemFontSize = this.tabStrip.style.fontSize || defaultTabItemFontSize;
+        const font: UIFont = this.tabStrip.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+
+        this._ios.tabBar.unselectedItemTitleFont = font;
+        this._ios.tabBar.selectedItemTitleFont = font;
+    }
+
+    public getTabBarTextTransform(): TextTransform {
+        return null;
+    }
+
+    public setTabBarTextTransform(value: TextTransform): void {
+        if (value === "none") {
+            this._ios.tabBar.titleTextTransform = MDCTabBarTextTransform.None;
+        } else if (value === "uppercase") {
+            this._ios.tabBar.titleTextTransform = MDCTabBarTextTransform.Uppercase;
+        }
+    }
+
+    public getTabBarColor(): UIColor {
+        return this._ios.tabBar.titleColorForState(MDCTabBarItemState.Normal);
+    }
+
+    public setTabBarColor(value: UIColor | Color): void {
+        const nativeColor = value instanceof Color ? value.ios : value;
+        this._ios.tabBar.setTitleColorForState(nativeColor, MDCTabBarItemState.Normal);
+        this._ios.tabBar.setTitleColorForState(nativeColor, MDCTabBarItemState.Selected);
+    }
+
+    public getTabBarHighlightColor(): UIColor {
+        return this._ios.tabBar.tintColor;
+    }
+
+    public setTabBarHighlightColor(value: UIColor | Color) {
+        const nativeColor = value instanceof Color ? value.ios : value;
+        this._ios.tabBar.tintColor = nativeColor;
+    }
+
     [selectedIndexProperty.setNative](value: number) {
         // TODO
         // if (traceEnabled()) {
         //     traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);
         // }
+        const that = this;
 
         if (value > -1) {
             const item = this.items[value];
@@ -970,8 +1045,11 @@ export class Tabs extends TabsBase {
             }
 
             this._currentNativeSelectedIndex = value;
-
-            this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, null);
+            this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, (finished: boolean) => {
+                if (finished) {
+                    that._canSelectItem = true;
+                }
+            });
 
             if (this.tabBarItems && this.tabBarItems.length && this.viewController && this.viewController.tabBar) {
                 this.viewController.tabBar.setSelectedItemAnimated(this.tabBarItems[value], true);
@@ -1006,36 +1084,3 @@ export class Tabs extends TabsBase {
         }
     }
 }
-
-// interface TabStates {
-//     normalState?: any;
-//     selectedState?: any;
-// }
-
-// function getTitleAttributesForStates(tabView: Tabs): TabStates {
-//     const result: TabStates = {};
-
-//     const defaultTabItemFontSize = 10;
-//     const tabItemFontSize = tabView.style.tabTextFontSize || defaultTabItemFontSize;
-//     const font: UIFont = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
-//     const tabItemTextColor = tabView.style.tabTextColor;
-//     const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
-//     result.normalState = { [NSFontAttributeName]: font }
-//     if (textColor) {
-//         result.normalState[UITextAttributeTextColor] = textColor
-//     }
-
-//     const tabSelectedItemTextColor = tabView.style.selectedTabTextColor;
-//     const selectedTextColor = tabItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
-//     result.selectedState = { [NSFontAttributeName]: font }
-//     if (selectedTextColor) {
-//         result.selectedState[UITextAttributeTextColor] = selectedTextColor
-//     }
-
-//     return result;
-// }
-
-// function applyStatesToItem(item: UITabBarItem, states: TabStates) {
-//     item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
-//     item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
-// }

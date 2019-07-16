@@ -6,18 +6,18 @@ const layoutWithMultiFrame = "Layout w/ multi frame";
 const pageWithFrame = "Page w/ frame";
 const pageWithFrameNonDefaultTransition = "Frame to NestedFrame (non-default transition)";
 const pageWithMultiFrame = "Page w/ multi frame";
-const pageTabTopWithFrames = "Page w/ tabs (top)";
-const pageTabBottomWithFrames = "Page w/ tabs (bottom)";
-const tabTopRootWithFrames = "Root tabs (top)";
-const tabBottomRootWithFrames = "Root tabs (bottom)";
+const pageTabTopWithFrames = "Page w/ tabview (top)";
+const pageTabBottomWithFrames = "Page w/ tabview (bottom)";
+const tabTopRootWithFrames = "Root tabview (top)";
+const tabBottomRootWithFrames = "Root tabview (bottom)";
 const layoutHome = "layout home page";
 const layoutHomeSecondary = "layout home secondary page";
 const frameHome = "frame home page";
 const frameHomeSecondary = "multi frame home page";
-const tabTopHome = "tab top page";
-const tabBottomHome = "tab bottom page";
-const tabRootTopHome = "tab root top home";
-const tabRootBottomHome = "tab root bottom home";
+const tabViewTopHome = "tabview top page";
+const tabViewBottomHome = "tabview bottom page";
+const tabViewRootTopHome = "tabview root top home";
+const tabViewRootBottomHome = "tabview root bottom home";
 const navigateToStillOtherPageSlide = "navigate to still other page (slide transition)";
 const navigateToSomePageDefault = "navigate to some page (default transition)";
 const navigateToSomePageNone = "navigate to some page (no transition)";
@@ -300,19 +300,19 @@ export class Screen {
     }
 
     loadedPageTabTopWithFrames = async () => {
-        await this.loadedPage(tabTopHome);
+        await this.loadedPage(tabViewTopHome);
     }
 
     loadedPageTabBottomWithFrames = async () => {
-        await this.loadedPage(tabBottomHome);
+        await this.loadedPage(tabViewBottomHome);
     }
 
     loadedTabTopRootWithFrames = async () => {
-        await this.loadedPage(tabRootTopHome);
+        await this.loadedPage(tabViewRootTopHome);
     }
 
     loadedTabBottomRootWithFrames = async () => {
-        await this.loadedPage(tabRootBottomHome);
+        await this.loadedPage(tabViewRootBottomHome);
     }
     
     loadedStillOtherPage = async () => {

@@ -48,7 +48,7 @@ export function viewMatchesModuleContext(
     view: ViewDefinition,
     context: ModuleContext,
     types: ModuleType[]): boolean {
-        
+
     return context &&
         view._moduleName &&
         context.type &&
@@ -190,6 +190,18 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             this.changeCssFile(cssModuleName);
 
             return true;
+        }
+
+        // Handle script/markup changes in custom components by falling back to page refresh
+        if (viewMatchesModuleContext(this, context, ["markup", "script"]) &&
+            this.page &&
+            this.page.frame) {
+
+            if (traceEnabled()) {
+                traceWrite(`Change Handled: Changing ${context.type} for ${this} inside ${this.page}`, traceCategories.Livesync);
+            }
+
+            return this.page.frame._handleLivesync({ type: context.type, path: this.page._moduleName });
         }
 
         return false;
