@@ -23,7 +23,7 @@
 * **android:** androidX support ([#7039](https://github.com/NativeScript/NativeScript/issues/7039)) ([c5db112](https://github.com/NativeScript/NativeScript/commit/c5db112))
 * **BETA/EXPERIMENTAL:** bottom navigation and tabs components ([#6967](https://github.com/NativeScript/NativeScript/issues/6967)) ([0c2c1cc](https://github.com/NativeScript/NativeScript/commit/0c2c1cc))
 * add support for :focus pseudo class in TextField / TextView ([#7396](https://github.com/NativeScript/NativeScript/pull/7396)) ([0bfddab](https://github.com/NativeScript/NativeScript/commit/0bfddab))
-
+* **animation:** support animating width/height properties ([#5147](https://github.com/NativeScript/NativeScript/pull/5147)) ([e7c575](https://github.com/NativeScript/NativeScript/commit/e7c575))
 
 ### BREAKING CHANGES
 
