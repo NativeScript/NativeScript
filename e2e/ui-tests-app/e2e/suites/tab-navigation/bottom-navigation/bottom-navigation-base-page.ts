@@ -8,9 +8,9 @@ export class BottomNavigationBasePage extends TabNavigationBasePage {
         super(_driver, ["bottom-navigation"]);
         this.mainWidgetXPath = this._driver.isIOS ?
         `//XCUIElementTypeOther[@name="tabNavigation"]/XCUIElementTypeTabBar`
-        : `//android.view.ViewGroup[@content-desc="tabNavigation"]/android.widget.LinearLayout`;
+        : `//android.view.ViewGroup[@content-desc="tabNavigation"]/android.widget.LinearLayout/android.widget.LinearLayout`;
     }
-
+    //android.view.ViewGroup[@content-desc="tabNavigation"]/android.widget.LinearLayout/android.widget.LinearLayout/*
     async getItems() {
         return await this._driver.findElementsByXPath(`${this.mainWidgetXPath}/*`);
     }
