@@ -12,8 +12,5 @@ export class TabViewBasePage extends PageObjectBaseModel {
     async init(subSuiteName: string) {
         this._naviagtionLinks.push(subSuiteName);
         await super.initSuite();
-        this._driver.imageHelper.options.keepOriginalImageSize = false;
-        this._driver.imageHelper.options.tolerance = 0;
-        this._driver.imageHelper.options.toleranceType = ImageOptions.pixel;
     }
 }
