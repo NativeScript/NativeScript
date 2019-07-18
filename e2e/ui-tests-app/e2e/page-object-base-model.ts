@@ -8,7 +8,7 @@ export abstract class PageObjectBaseModel {
 
     constructor(protected _driver: AppiumDriver, protected _naviagtionLinks: Array<string>, elementCacheStrategy: ElementCacheStrategy = ElementCacheStrategy.none) {
         this.navigationHelper = new NavigationHelper(this._driver, this._naviagtionLinks, elementCacheStrategy);
-        this._driver.imageHelper.options.overwriteActualImage = process.env["OVERWRITE_ACTUALIMAGE"] === 'true';
+        this._driver.imageHelper.options.overwriteActualImage = process.env["OVERWRITE_ACTUALIMAGE"] === "true";
         this._driver.imageHelper.options.waitBeforeCreatingInitialImageCapture = +process.env["WAIT_BEFORE_CREATING_INITIAL_IMAGE_CAPTURE"] || 9000;
         this._driver.imageHelper.options.keepOriginalImageSize = false;
         this._driver.imageHelper.options.tolerance = 0;
