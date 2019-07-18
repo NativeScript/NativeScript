@@ -27,6 +27,8 @@ export function loadExamples() {
     examples.set("tabs-position", "tabs/tabs-position-page");
     examples.set("tabs-binding", "tabs/tabs-binding-page");
     examples.set("font-icons", "tabs/font-icons-page");
+    examples.set("nested-layout", "tabs/nested-layout-page");
+    examples.set("nested-bottom-navigation", "tabs/nested-bottom-navigation-page");
 
     return examples;
 }
