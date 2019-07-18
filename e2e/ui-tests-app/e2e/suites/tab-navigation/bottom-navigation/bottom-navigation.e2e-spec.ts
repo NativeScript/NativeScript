@@ -54,8 +54,6 @@ describe(`${suite}-${spec}-suite`, async function () {
     * Bug
     */
     it(`${spec}-binding-add-items`, async function () {
-        this.skip();
-
         await bottomNavigationBasePage.navigateToSample("binding");
         await driver.imageHelper.compareScreen();
 
@@ -84,8 +82,6 @@ describe(`${suite}-${spec}-suite`, async function () {
     * Bug
     */
     it(`${spec}-binding-remove-items`, async function () {
-        this.skip();
-        
         await bottomNavigationBasePage.navigateToSample("binding");
         await driver.imageHelper.compareScreen();
 

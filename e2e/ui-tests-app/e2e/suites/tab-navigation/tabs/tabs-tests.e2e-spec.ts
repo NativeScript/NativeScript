@@ -177,8 +177,9 @@ describe(`${imagePrefix}-suite`, async function () {
     * Bug
     */
     it(`${imagePrefix}-binding-add-items`, async function () {
-        this.skip();
-
+        if (driver.isIOS) {
+            this.skip();
+        }
         await tabsViewBasePage.navigateToSample("tabs-binding");
         await driver.imageHelper.compareScreen();
 
@@ -207,8 +208,9 @@ describe(`${imagePrefix}-suite`, async function () {
     * Bug
     */
     it(`${imagePrefix}-binding-remove-items`, async function () {
-        this.skip();
-
+        if (driver.isIOS) {
+            this.skip();
+        }
         await tabsViewBasePage.navigateToSample("tabs-binding");
         await driver.imageHelper.compareScreen();
 

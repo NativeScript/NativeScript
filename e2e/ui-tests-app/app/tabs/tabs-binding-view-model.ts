@@ -58,4 +58,3 @@ export class TabsBindingNavigationViewModel extends Observable {
         return contentItem;
     }
 }
-export var tabsBindingNavigationViewModel = new TabsBindingNavigationViewModel();

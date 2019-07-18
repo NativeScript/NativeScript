@@ -10,12 +10,6 @@ export abstract class TabNavigationBasePage extends PageObjectBaseModel {
 
     constructor(_driver: AppiumDriver, navigationLinks: Array<string>) {
         super(_driver, navigationLinks, ElementCacheStrategy.none);
-        this._driver.imageHelper.options.waitBeforeCreatingInitialImageCapture = 6000;
-        this._driver.imageHelper.options.keepOriginalImageSize = false;
-        this._driver.imageHelper.options.tolerance = 0;
-        this._driver.imageHelper.options.toleranceType = ImageOptions.pixel;
-        this._driver.imageHelper.options.donNotAppendActualSuffixOnIntialImageCapture = true;
-        this._driver.imageHelper.options.timeOutSeconds = 7;
     }
 
     abstract async mainWidget();

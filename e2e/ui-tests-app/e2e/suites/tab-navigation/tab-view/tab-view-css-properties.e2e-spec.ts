@@ -1,4 +1,4 @@
-import { nsCapabilities, createDriver, AppiumDriver, Direction } from "nativescript-dev-appium";
+import { nsCapabilities, createDriver, AppiumDriver, Direction, logError } from "nativescript-dev-appium";
 import { TabViewBasePage } from "./tab-view-base-page";
 import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 import { Platform } from "mobile-devices-controller";
@@ -32,7 +32,6 @@ describe(`${suite}-${spec}-suite`, async function () {
         await driver.restartApp();
         tabViewBasePage = new TabViewBasePage(driver, ElementCacheStrategy.none);
         await tabViewBasePage.init("tabViewCss");
-        driver.imageHelper.options.keepOriginalImageSize = false;
     });
 
     after(async function () {
@@ -63,6 +62,9 @@ describe(`${suite}-${spec}-suite`, async function () {
             if (driver.platformName === Platform.ANDROID
                 && (sample.sample.toLowerCase() === "all" || sample.sample.toLowerCase() === "reset")) {
                 await driver.scroll(Direction.down, 400, 200, 300, 200);
+                await driver.scroll(Direction.down, 400, 200, 300, 200);
+                await driver.scroll(Direction.down, 400, 200, 300, 200);
+
             }
             const scenarioBtn = await driver.waitForElement(sample.sample);
             await scenarioBtn.tap();

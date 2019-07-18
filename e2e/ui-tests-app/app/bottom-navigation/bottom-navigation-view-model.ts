@@ -2,7 +2,6 @@
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import { Label } from "tns-core-modules/ui/label";
 import { Observable } from "tns-core-modules/data/observable";
-import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { TabStripItem } from "tns-core-modules/ui/tab-navigation-base/tab-strip-item";
 import { TabContentItem } from "tns-core-modules/ui/tab-navigation-base/tab-content-item";
 
@@ -58,4 +57,3 @@ export class BottomNavigationViewModel extends Observable {
         return contentItem;
     }
 }
-export const bottomNavigationViewModel = new BottomNavigationViewModel();
