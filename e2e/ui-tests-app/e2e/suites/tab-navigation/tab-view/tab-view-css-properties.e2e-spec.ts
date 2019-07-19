@@ -1,4 +1,4 @@
-import { nsCapabilities, createDriver, AppiumDriver, Direction } from "nativescript-dev-appium";
+import { nsCapabilities, createDriver, AppiumDriver, Direction, logError } from "nativescript-dev-appium";
 import { TabViewBasePage } from "./tab-view-base-page";
 import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 import { Platform } from "mobile-devices-controller";
@@ -14,21 +14,23 @@ describe(`${suite}-${spec}-suite`, async function () {
     let tabViewBasePage: TabViewBasePage;
 
     const samples = [
-        "tab-text-color: green;",
-        "tab-background-color: yellow;",
-        "selected-tab-text-color: red;",
-        "android-selected-tab-highlight-color: orange;",
-        "text-transform: uppercase;",
-        "text-transform: lowercase;",
-        "text-transform: none;",
-        "all",
-        "reset"];
+        { sample: "tab-text-color: green;", tab1: "IteM onE", tab2: "IteM twO" },
+        { sample: "tab-background-color: yellow;", tab1: "IteM onE", tab2: "IteM twO" },
+        { sample: "selected-tab-text-color: red;", tab1: "IteM onE", tab2: "IteM twO" },
+        { sample: "android-selected-tab-highlight-color: orange;", tab1: "IteM onE", tab2: "IteM twO" },
+        { sample: "text-transform: uppercase;", tab1: "IteM onE", tab2: "IteM twO" },
+        { sample: "text-transform: lowercase;", tab1: "IteM onE", tab2: "IteM twO" },
+        { sample: "text-transform: capitalize;", tab1: "IteM onE", tab2: "IteM twO" },
+        { sample: "text-transform: none;", tab1: "IteM onE", tab2: "IteM twO" },
+        { sample: "all", tab1: "IteM onE", tab2: "IteM twO" },
+        { sample: "reset", tab1: "IteM onE", tab2: "IteM twO" },
+    ];
 
     before(async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
-        await driver.resetApp();
-        tabViewBasePage = new TabViewBasePage(driver, ElementCacheStrategy.onload);
+        await driver.restartApp();
+        tabViewBasePage = new TabViewBasePage(driver, ElementCacheStrategy.none);
         await tabViewBasePage.init("tabViewCss");
     });
 
@@ -36,11 +38,13 @@ describe(`${suite}-${spec}-suite`, async function () {
         await tabViewBasePage.endSuite();
     });
 
-    beforeEach(function () {
-        driver.imageHelper.testName = setImageName(suite, spec, this.currentTest.title);
-    });
-
     afterEach(async function () {
+        // Fixes crashes when we try to apply some css. all -> reset
+        if (driver.isAndroid) {
+            await tabViewBasePage.navigateBackToSuitMainPage();
+            await tabViewBasePage.navigateToSample("tabViewCss");
+        }
+
         if (this.currentTest.state === "failed") {
             await driver.logTestArtifacts(this.currentTest.title);
             await driver.resetApp();
@@ -50,23 +54,33 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     for (let index = 0; index < samples.length; index++) {
         const sample = samples[index];
-        const imageName = `${spec}-${sample.replace(/[^a-z]/ig, "-").replace(/(-+)/ig, "-").replace(/(_+)/ig, "_").replace(/-$/, "")}`;
+        let imageName = `${spec}-${sample.sample.replace(/[^a-z]/ig, "-").replace(/(-+)/ig, "-").replace(/(_+)/ig, "_").replace(/-$/, "")}`;
         it(imageName, async function () {
+            if (driver.isIOS && imageName.includes("android")) {
+                this.skip();
+            }
             if (driver.platformName === Platform.ANDROID
-                && (sample === "All" || sample === "reset")) {
+                && (sample.sample.toLowerCase() === "all" || sample.sample.toLowerCase() === "reset")) {
                 await driver.scroll(Direction.down, 400, 200, 300, 200);
-            }
-            const scenarioBtn = await driver.waitForElement(sample);
-            await scenarioBtn.click();
-            await driver.wait(2000);
-            await driver.imageHelper.compareScreen({ imageName: imageName, timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
-            if (sample === "All") {
-                const tabTwo = await driver.waitForElement("twO");
-                await driver.wait(2000);
+                await driver.scroll(Direction.down, 400, 200, 300, 200);
+                await driver.scroll(Direction.down, 400, 200, 300, 200);
 
-                await driver.imageHelper.compareElement(tabTwo, { timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
             }
-            assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+            const scenarioBtn = await driver.waitForElement(sample.sample);
+            await scenarioBtn.tap();
+            imageName = setImageName(suite, spec, imageName);
+            await driver.imageHelper.compareScreen({ imageName: imageName, timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
+            const tabTwo = await driver.waitForElement(sample.tab2);
+            await tabTwo.click();
+            await driver.imageHelper.compareScreen({ imageName: imageName, timeOutSeconds: 5 });
+
+            const imageComparissonresult = driver.imageHelper.hasImageComparisonPassed();
+            assert.isTrue(imageComparissonresult);
+
+            if (imageComparissonresult) {
+                const tabOne = await driver.waitForElement(sample.tab1);
+                await tabOne.tap();
+            }
         });
     }
 });

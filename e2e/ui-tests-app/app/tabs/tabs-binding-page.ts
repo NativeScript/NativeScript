@@ -1,12 +1,6 @@
-import * as vmModule from "./tabs-binding-view-model";
-
-var viewModel = vmModule.tabsBindingNavigationViewModel;
+import { TabsBindingNavigationViewModel } from "./tabs-binding-view-model";
 
 export function tabsLoaded(args) {
-    let tabs = args.object;
-    tabs.bindingContext = viewModel;
-}
-
-export function addTabs(args) {
-    viewModel.createItems();
+    const page = args.object.page;
+    page.bindingContext = new TabsBindingNavigationViewModel();
 }
