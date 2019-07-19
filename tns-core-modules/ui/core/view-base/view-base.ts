@@ -899,6 +899,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         ensureStyleScopeModule();
         styleScopeModule.applyInlineStyle(this, style);
+
+        this._onCssStateChange();
     }
 
     public _parentChanged(oldParent: ViewBase): void {

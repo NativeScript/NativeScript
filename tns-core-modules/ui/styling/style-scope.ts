@@ -63,6 +63,9 @@ export function mergeCssSelectors(): void {
     applicationCssSelectorVersion++;
 }
 
+const cssVariableNameRegexp = /^--[^,\s]+?$/;
+const cssVarValueRegexp = /var\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
+
 let applicationCssSelectors: RuleSet[] = [];
 let applicationCssSelectorVersion: number = 0;
 let applicationSelectors: RuleSet[] = [];
@@ -509,32 +512,87 @@ export class CssState {
         matchingSelectors.forEach(selector =>
             selector.ruleset.declarations.forEach(declaration =>
                 newPropertyValues[declaration.property] = declaration.value));
+
+        // Get the CSS-variable values
+        for (const property in newPropertyValues) {
+            let value = newPropertyValues[property];
+
+            for (let m = cssVarValueRegexp.exec(value), lastValue: string; lastValue !== value && m; m = cssVarValueRegexp.exec(value)) {
+                lastValue = value;
+
+                const matchStr = m[0];
+                const matchLength = matchStr.length;
+                const cssVariableName = m[1];
+                const matchIndex = m.index;
+
+                let cssVariableValue = newPropertyValues[cssVariableName];
+                const cssPropName = makeCssVarPropName(cssVariableName);
+                const cssVarValuePropName = makeCssVarValuePropName(property);
+                for (let parent = view; !cssVariableValue && parent; parent = parent.parent) {
+                    const tmp = parent.style[cssPropName];
+                    if (tmp && tmp !== unsetValue) {
+                        cssVariableValue = tmp;
+                        break;
+                    }
+                }
+
+                if (!cssVariableValue) {
+                    traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${property}"=[${value}] to ${view}`, traceCategories.Error, traceMessageType.error);
+                    newPropertyValues[cssVarValuePropName] = null;
+                    break;
+                }
+
+                const newValue = `${value.substr(0, matchIndex)}${cssVariableValue}${value.substr(matchLength)}`;
+                if (newValue === value) {
+                    break;
+                }
+
+                newPropertyValues[cssVarValuePropName] = newValue;
+            }
+        }
+
         Object.freeze(newPropertyValues);
 
         const oldProperties = this._appliedPropertyValues;
-        for (const key in oldProperties) {
-            if (!(key in newPropertyValues)) {
-                if (key in view.style) {
-                    view.style[`css:${key}`] = unsetValue;
+        for (const property in oldProperties) {
+            if (!(property in newPropertyValues)) {
+                const cssPropName = makeCssVarPropName(property);
+                if (cssVariableNameRegexp.test(property) && cssPropName in view.style) {
+                    view.style[cssPropName] = unsetValue;
+                }
+
+                if (property in view.style) {
+                    view.style[`css:${property}`] = unsetValue;
                 } else {
                     // TRICKY: How do we unset local value?
                 }
             }
         }
+
         for (const property in newPropertyValues) {
             if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
                 continue;
             }
-            const value = newPropertyValues[property];
+
+            if (makeCssVarValuePropName(property) in newPropertyValues) {
+                continue;
+            }
+
+            let value = newPropertyValues[property];
+
+            const propName = property.replace(/^cssvar-value:/, "");
+
             try {
-                if (property in view.style) {
-                    view.style[`css:${property}`] = value;
+                if (cssVariableNameRegexp.test(propName)) {
+                    view.style[makeCssVarPropName(property)] = value;
+                } else if (propName in view.style) {
+                    view.style[`css:${propName}`] = value;
                 } else {
-                    const camelCasedProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+                    const camelCasedProperty = propName.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
                     view[camelCasedProperty] = value;
                 }
             } catch (e) {
-                traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
+                traceWrite(`Failed to apply property ${property} [${propName}] with value [${value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
             }
         }
 
@@ -803,6 +861,13 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
     return importSourceParts.join(path.separator);
 }
 
+function makeCssVarPropName(name: string) {
+    return `cssvar:${name}`;
+}
+function makeCssVarValuePropName(name: string) {
+    return `cssvar-value:${name}`;
+}
+
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
     let localStyle = `local { ${styleStr} }`;
     let inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
@@ -812,7 +877,9 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
         // Use the actual property name so that a local value is set.
         let name = d.property;
         try {
-            if (name in style) {
+            if (cssVariableNameRegexp.test(name)) {
+                style[makeCssVarPropName(name)] = d.value;
+            } else if (name in style) {
                 style[name] = d.value;
             } else {
                 view[name] = d.value;

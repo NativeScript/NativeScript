@@ -1426,6 +1426,65 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
     });
 }
 
+export function test_CssVars_from_cssclasses() {
+    const blackColor = "#000000";
+    const redColor = "#FF0000";
+    const greenColor = "#00FF00";
+    const blueColor = "#0000FF";
+
+    let page = helper.getClearCurrentPage();
+
+    let label: labelModule.Label;
+
+    const cssVarName = `--my-background-color-${Date.now()}`;
+
+    let stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout[use-css-vars] {
+        background-color: var(${cssVarName});
+    }
+
+    StackLayout.make-red {
+        ${cssVarName}: red;
+    }
+
+    StackLayout.make-blue {
+        ${cssVarName}: blue;
+    }
+
+    Label.lab1 {
+        background-color: var(${cssVarName});
+        color: black;
+    }`;
+
+    label = new labelModule.Label();
+    page.content = stack;
+    stack["use-css-vars"] = true;
+    stack.addChild(label);
+    (stack as any).style = `${cssVarName}: ${greenColor}`;
+    label.className = "lab1";
+
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, greenColor, "Stack - background-color is green");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, greenColor, "Label - background-color is green");
+
+    stack.className = "make-red";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, redColor, "Stack - background-color is red");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, redColor, "Label - background-color is red");
+
+    stack.className = "make-blue";
+
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, blueColor, "Stack - background-color is blue");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, blueColor, "Label - background-color is blue");
+
+    stack.className = "make-red";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, redColor, "Stack - background-color is red");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, redColor, "Label - background-color is red");
+}
+
 export function test_resolveFileNameFromUrl_local_file_tilda() {
     const localFileExistsMock = (fileName: string) => true;
     const url = "~/theme/core.css";
