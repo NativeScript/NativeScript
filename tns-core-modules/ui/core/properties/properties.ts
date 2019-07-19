@@ -58,7 +58,7 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
 
 export const cssVariableNameRegexp = /^--[^,\s]+?$/;
 export const cssVarValueRegexp = /var\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
-export function _processCssVariableValue<T>(view: ViewBase, cssName: string, value: string | T): string | T {
+export function _cssVariableConverter<T>(view: ViewBase, cssName: string, value: string | T): string | T {
     const res = [] as string[];
 
     if (typeof value !== "string") {
@@ -84,13 +84,18 @@ export function _processCssVariableValue<T>(view: ViewBase, cssName: string, val
             const cssVariableName = m[1];
             const matchIndex = m.index;
 
-            const cssPropName = `css:${cssVariableName}`;
-            let cssVariableValue = view.style[cssPropName];
+            // css-variable set on the style-attribute takes president over one set via css
+            const stylePropName = `style:${cssVariableName}`; // prop-name set from applyInlineStyle
+            const cssPropName = `css:${cssVariableName}`; // prop-name set by StyleScope
+
+            let cssVariableValue: string | T;
+
             for (let parent = view; !cssVariableValue && parent; parent = parent.parent) {
-                const tmp = parent.style[cssPropName];
-                if (tmp && tmp !== unsetValue) {
-                    cssVariableValue = tmp;
-                    break;
+                for (const propName of [stylePropName, cssPropName]) {
+                    if (propName in parent.style && parent.style[propName] !== unsetValue) {
+                        cssVariableValue = parent.style[propName];
+                        break;
+                    }
                 }
             }
 
@@ -109,6 +114,10 @@ export function _processCssVariableValue<T>(view: ViewBase, cssName: string, val
         }
 
         res.push(part);
+    }
+
+    if (res.length === 1) {
+        return res[0];
     }
 
     return res.join(", ");
@@ -539,7 +548,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 return;
             }
 
-            newValue = _processCssVariableValue(view, options.cssName, newValue);
+            newValue = _cssVariableConverter(view, options.cssName, newValue);
             const reset = newValue === unsetValue || newValue === "";
             let value: U;
             if (reset) {
@@ -614,7 +623,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 return;
             }
 
-            newValue = _processCssVariableValue(view, options.cssName, newValue);
+            newValue = _cssVariableConverter(view, options.cssName, newValue);
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
             // We have localValueSource - NOOP.
@@ -805,7 +814,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                         return;
                     }
 
-                    let boxedValue = _processCssVariableValue(view, cssName, inputBoxedValue);
+                    let boxedValue = _cssVariableConverter(view, cssName, inputBoxedValue);
 
                     const oldValue = this[computedValue];
                     const oldSource = this[computedSource];
@@ -962,7 +971,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 return;
             }
 
-            const boxedValue = _processCssVariableValue(view, options.cssName, inputBoxedValue);
+            const boxedValue = _cssVariableConverter(view, options.cssName, inputBoxedValue);
 
             const reset = boxedValue === unsetValue || boxedValue === "";
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;

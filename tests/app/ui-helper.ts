@@ -190,11 +190,6 @@ export function getCurrentPage(): Page {
 
 export function getClearCurrentPage(): Page {
     let page = frame.topmost().currentPage;
-    for (const key of Object.keys(page.style)) {
-        if (key.startsWith("--")) {
-            page.style[key] = unsetValue;
-        }
-    }
     page.style.backgroundColor = unsetValue;
     page.style.color = unsetValue;
     page.bindingContext = unsetValue;

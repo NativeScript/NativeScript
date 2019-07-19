@@ -831,7 +831,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
         let name = d.property;
         try {
             if (cssVariableNameRegexp.test(name)) {
-                style[`css:${name}`] = d.value;
+                style[`style:${name}`] = d.value;
             } else if (name in style) {
                 style[name] = d.value;
             } else {
