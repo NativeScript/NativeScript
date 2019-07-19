@@ -40,6 +40,7 @@ function ensureKeyframeAnimationModule() {
 }
 
 import * as capm from "./css-animation-parser";
+import { cssVariableNameRegexp, cssVarValueRegexp } from "../core/properties/properties";
 let cssAnimationParserModule: typeof capm;
 function ensureCssAnimationParserModule() {
     if (!cssAnimationParserModule) {
@@ -62,9 +63,6 @@ export function mergeCssSelectors(): void {
     applicationCssSelectors.push.apply(applicationCssSelectors, applicationAdditionalSelectors);
     applicationCssSelectorVersion++;
 }
-
-const cssVariableNameRegexp = /^--[^,\s]+?$/;
-const cssVarValueRegexp = /var\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
 
 let applicationCssSelectors: RuleSet[] = [];
 let applicationCssSelectorVersion: number = 0;
@@ -513,55 +511,12 @@ export class CssState {
             selector.ruleset.declarations.forEach(declaration =>
                 newPropertyValues[declaration.property] = declaration.value));
 
-        // Get the CSS-variable values
-        for (const property in newPropertyValues) {
-            let value = newPropertyValues[property];
-
-            for (let m = cssVarValueRegexp.exec(value), lastValue: string; lastValue !== value && m; m = cssVarValueRegexp.exec(value)) {
-                lastValue = value;
-
-                const matchStr = m[0];
-                const matchLength = matchStr.length;
-                const cssVariableName = m[1];
-                const matchIndex = m.index;
-
-                let cssVariableValue = newPropertyValues[cssVariableName];
-                const cssPropName = makeCssVarPropName(cssVariableName);
-                const cssVarValuePropName = makeCssVarValuePropName(property);
-                for (let parent = view; !cssVariableValue && parent; parent = parent.parent) {
-                    const tmp = parent.style[cssPropName];
-                    if (tmp && tmp !== unsetValue) {
-                        cssVariableValue = tmp;
-                        break;
-                    }
-                }
-
-                if (!cssVariableValue) {
-                    traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${property}"=[${value}] to ${view}`, traceCategories.Error, traceMessageType.error);
-                    newPropertyValues[cssVarValuePropName] = null;
-                    break;
-                }
-
-                const newValue = `${value.substr(0, matchIndex)}${cssVariableValue}${value.substr(matchLength)}`;
-                if (newValue === value) {
-                    break;
-                }
-
-                newPropertyValues[cssVarValuePropName] = newValue;
-            }
-        }
-
         Object.freeze(newPropertyValues);
 
         const oldProperties = this._appliedPropertyValues;
         for (const property in oldProperties) {
             if (!(property in newPropertyValues)) {
-                const cssPropName = makeCssVarPropName(property);
-                if (cssVariableNameRegexp.test(property) && cssPropName in view.style) {
-                    view.style[cssPropName] = unsetValue;
-                }
-
-                if (property in view.style) {
+                if (cssVariableNameRegexp.test(property) || property in view.style) {
                     view.style[`css:${property}`] = unsetValue;
                 } else {
                     // TRICKY: How do we unset local value?
@@ -569,30 +524,35 @@ export class CssState {
             }
         }
 
+        // Set all the css-variables first, so we can be sure they are up-to-date
         for (const property in newPropertyValues) {
-            if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
-                continue;
-            }
-
-            if (makeCssVarValuePropName(property) in newPropertyValues) {
-                continue;
-            }
-
             let value = newPropertyValues[property];
 
-            const propName = property.replace(/^cssvar-value:/, "");
+            if (cssVariableNameRegexp.test(property)) {
+                view.style[`css:${property}`] = value;
+            }
+        }
+
+        for (const property in newPropertyValues) {
+            let value = newPropertyValues[property];
+
+            if (cssVariableNameRegexp.test(property)) {
+                continue;
+            }
+
+            if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property] && !cssVarValueRegexp.test(value)) {
+                continue;
+            }
 
             try {
-                if (cssVariableNameRegexp.test(propName)) {
-                    view.style[makeCssVarPropName(property)] = value;
-                } else if (propName in view.style) {
-                    view.style[`css:${propName}`] = value;
+                if (property in view.style) {
+                    view.style[`css:${property}`] = value;
                 } else {
-                    const camelCasedProperty = propName.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
+                    const camelCasedProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
                     view[camelCasedProperty] = value;
                 }
             } catch (e) {
-                traceWrite(`Failed to apply property ${property} [${propName}] with value [${value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
+                traceWrite(`Failed to apply property ${property} [${property}] with value [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
             }
         }
 
@@ -861,13 +821,6 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
     return importSourceParts.join(path.separator);
 }
 
-function makeCssVarPropName(name: string) {
-    return `cssvar:${name}`;
-}
-function makeCssVarValuePropName(name: string) {
-    return `cssvar-value:${name}`;
-}
-
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
     let localStyle = `local { ${styleStr} }`;
     let inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
@@ -878,7 +831,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
         let name = d.property;
         try {
             if (cssVariableNameRegexp.test(name)) {
-                style[makeCssVarPropName(name)] = d.value;
+                style[`css:${name}`] = d.value;
             } else if (name in style) {
                 style[name] = d.value;
             } else {

@@ -56,6 +56,64 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
     return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
 }
 
+export const cssVariableNameRegexp = /^--[^,\s]+?$/;
+export const cssVarValueRegexp = /var\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
+export function _processCssVariableValue<T>(view: ViewBase, cssName: string, value: string | T): string | T {
+    const res = [] as string[];
+
+    if (typeof value !== "string") {
+        return value;
+    }
+
+    for (let part of value.split(",").map((part) =>  part.trim())) {
+        if (!part) {
+            continue;
+        }
+
+        const match = cssVarValueRegexp.exec(part);
+        if (!match) {
+            res.push(part);
+            continue;
+        }
+
+        for (let m = cssVarValueRegexp.exec(part), lastValue: string; lastValue !== part && m; m = cssVarValueRegexp.exec(part)) {
+            lastValue = part;
+
+            const matchStr = m[0];
+            const matchLength = matchStr.length;
+            const cssVariableName = m[1];
+            const matchIndex = m.index;
+
+            const cssPropName = `css:${cssVariableName}`;
+            let cssVariableValue = view.style[cssPropName];
+            for (let parent = view; !cssVariableValue && parent; parent = parent.parent) {
+                const tmp = parent.style[cssPropName];
+                if (tmp && tmp !== unsetValue) {
+                    cssVariableValue = tmp;
+                    break;
+                }
+            }
+
+            if (!cssVariableValue) {
+                traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Error, traceMessageType.error);
+                part = null;
+                break;
+            }
+
+            const newValue = `${part.substr(0, matchIndex)}${cssVariableValue}${part.substr(matchLength)}`;
+            if (newValue === part) {
+                break;
+            }
+
+            part = newValue;
+        }
+
+        res.push(part);
+    }
+
+    return res.join(", ");
+}
+
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
     const props = [];
     Object.getOwnPropertySymbols(map).forEach(symbol => props.push(map[symbol]));
@@ -481,6 +539,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 return;
             }
 
+            newValue = _processCssVariableValue(view, options.cssName, newValue);
             const reset = newValue === unsetValue || newValue === "";
             let value: U;
             if (reset) {
@@ -555,6 +614,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 return;
             }
 
+            newValue = _processCssVariableValue(view, options.cssName, newValue);
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
             // We have localValueSource - NOOP.
@@ -737,13 +797,15 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
             return {
                 enumerable, configurable,
                 get: getsComputed ? function (this: T) { return this[computedValue]; } : function (this: T) { return this[symbol]; },
-                set(this: T, boxedValue: U | string) {
+                set(this: T, inputBoxedValue: U | string) {
                     const view = this.viewRef.get();
                     if (!view) {
-                        traceWrite(`${boxedValue} not set to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+                        traceWrite(`${inputBoxedValue} not set to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
 
                         return;
                     }
+
+                    let boxedValue = _processCssVariableValue(view, cssName, inputBoxedValue);
 
                     const oldValue = this[computedValue];
                     const oldSource = this[computedSource];
@@ -892,13 +954,15 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
         const property = this;
 
-        const setFunc = (valueSource: ValueSource) => function (this: T, boxedValue: any): void {
+        const setFunc = (valueSource: ValueSource) => function (this: T, inputBoxedValue: any): void {
             const view = this.viewRef.get();
             if (!view) {
-                traceWrite(`${boxedValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+                traceWrite(`${inputBoxedValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
     
                 return;
             }
+
+            const boxedValue = _processCssVariableValue(view, options.cssName, inputBoxedValue);
 
             const reset = boxedValue === unsetValue || boxedValue === "";
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
