@@ -3,15 +3,17 @@ import { Platform } from "mobile-devices-controller";
 import { PageObjectBaseModel } from "../../../page-object-base-model";
 import { ElementCacheStrategy } from "../../../helpers/navigation-helper";
 import { assert } from "chai";
+import { ImageOptions } from "nativescript-dev-appium/lib/image-options";
 export class ButtonBackgroundPage extends PageObjectBaseModel {
 
     constructor(_driver: AppiumDriver) {
         super(_driver, ["button", "background"], ElementCacheStrategy.none);
+        this._driver.imageHelper.options.toleranceType = ImageOptions.percent;
     }
 
     public viewGroupLocator() {
         if (this._driver.nsCapabilities.device.platform === Platform.ANDROID) {
-            return this._driver.nsCapabilities.device.releaseVersion > 5.1 ? "android.view.ViewGroup" : "android.view.View";
+            return +this._driver.nsCapabilities.device.releaseVersion > 5.1 ? "android.view.ViewGroup" : "android.view.View";
         } else {
             throw new Error("Not implemented locator");
         }
@@ -43,10 +45,10 @@ export class ButtonBackgroundPage extends PageObjectBaseModel {
         }
     }
 
-    async executeScenario(imageName: string, button: string) {
+    async executeScenario(button: string) {
         const presenter = await this.testElement();
         await this.tapBtn(button);
-        await this._driver.imageHelper.compareElement(presenter, { imageName: imageName, tolerance: 0.1, timeOutSeconds: 5 });
-        assert.isTrue(this._driver.imageHelper.hasImageComparisonPassed());
+        const result = await this._driver.compareElement(presenter, undefined, 0.01, 5, ImageOptions.percent);
+        assert.isTrue(result);
     }
 }

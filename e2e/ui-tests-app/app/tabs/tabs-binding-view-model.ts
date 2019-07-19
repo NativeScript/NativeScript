@@ -18,6 +18,8 @@ export class TabsBindingNavigationViewModel extends Observable {
     }
 
     createItems() {
+        console.log("Create item");
+
         const _tabStripItems = new Array<TabStripItem>();
         const _tabContentItems = new Array<TabContentItem>();
 
@@ -29,6 +31,12 @@ export class TabsBindingNavigationViewModel extends Observable {
         this.tabStripItems = _tabStripItems;
         this.tabContentItems = _tabContentItems;
         this.itemsCount++;
+    }
+
+    public removeLastItem() {
+        console.log("Remove item");
+        this.tabStripItems.pop();
+        this.tabContentItems.pop();
     }
 
     private createTabStripItem(index: number): TabStripItem {
@@ -50,4 +58,3 @@ export class TabsBindingNavigationViewModel extends Observable {
         return contentItem;
     }
 }
-export var tabsBindingNavigationViewModel = new TabsBindingNavigationViewModel();

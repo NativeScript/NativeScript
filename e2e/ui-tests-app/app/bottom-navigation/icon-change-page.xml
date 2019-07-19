@@ -2,7 +2,7 @@
     <ActionBar title="BottomNavigation icon change" icon="" class="action-bar">
     </ActionBar>
 
-    <BottomNavigation id="tab-view" selectedIndexChanged="onSelectedIndexChanged">
+    <BottomNavigation id="tab-view" selectedIndexChanged="onSelectedIndexChanged" automationText="tabNavigation"  >
         <TabStrip>
             <TabStripItem iconSource="res://icon"></TabStripItem>
             <TabStripItem iconSource="res://testlogo"></TabStripItem>

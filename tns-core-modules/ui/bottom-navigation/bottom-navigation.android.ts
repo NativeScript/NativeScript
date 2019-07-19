@@ -118,10 +118,10 @@ function initializeNativeClasses() {
             owner.selectedIndex = position;
         }
 
-        public onTap(position: number): void {
+        public onTap(position: number): boolean {
             const owner = this.owner;
             if (!owner) {
-                return;
+                return false;
             }
 
             const tabStripItems = owner.tabStrip && owner.tabStrip.items;
@@ -129,6 +129,12 @@ function initializeNativeClasses() {
             if (position >= 0 && tabStripItems[position]) {
                 tabStripItems[position]._emit(TabStripItem.tapEvent);
             }
+
+            if (!owner.items[position]) {
+                return false;
+            }
+
+            return true;
         }
     }
 

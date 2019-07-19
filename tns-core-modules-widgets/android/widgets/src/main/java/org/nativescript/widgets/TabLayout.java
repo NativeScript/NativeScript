@@ -301,8 +301,9 @@ public class TabLayout extends HorizontalScrollView {
         }
     }
 
-    public void onTap(int position) {
+    public boolean onTap(int position) {
         // to be overridden in JS
+        return true;
     }
 
     public void onSelectedPositionChange(int position, int prevPosition) {
@@ -429,8 +430,9 @@ public class TabLayout extends HorizontalScrollView {
         public void onClick(View v) {
             for (int i = 0; i < mTabStrip.getChildCount(); i++) {
                 if (v == mTabStrip.getChildAt(i)) {
-                    onTap(i);
-                    mViewPager.setCurrentItem(i);
+                    if (onTap(i)) {
+                        mViewPager.setCurrentItem(i);
+                    }
                     return;
                 }
             }
