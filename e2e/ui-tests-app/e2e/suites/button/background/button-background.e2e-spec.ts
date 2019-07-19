@@ -1,20 +1,23 @@
 import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
 import { ButtonBackgroundPage } from "./button-background-page";
 import { assert } from "chai";
+import { setImageName } from "../../../helpers/image-helper";
 
 const suite = "button";
 const spec = "background";
+const imagePrefix = `${suite}-${spec}`;
 
-describe(`${suite}-${spec}-suite`, () => {
+describe(`${imagePrefix}-suite`, () => {
     let driver: AppiumDriver;
     let backgroundPage: ButtonBackgroundPage;
 
     before(async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
-        await driver.resetApp();
+        await driver.restartApp();
         backgroundPage = new ButtonBackgroundPage(driver);
         await backgroundPage.initSuite();
+        driver.imageHelper.options.donNotAppendActualSuffixOnIntialImageCapture = true;
     });
 
     after(async function () {
@@ -22,138 +25,137 @@ describe(`${suite}-${spec}-suite`, () => {
     });
 
     beforeEach(function () {
-        driver.imageHelper.testName = this.currentTest.title;
+        driver.imageHelper.testName = setImageName(suite, spec, this.currentTest.title);
     });
 
     afterEach(async function () {
         if (this.currentTest.state === "failed") {
             await driver.logTestArtifacts(this.currentTest.title);
-            await driver.resetApp();
+            await driver.restartApp();
             await backgroundPage.initSuite();
         }
     });
 
-    it("background_11", async function () {
+    it(`${imagePrefix}-init`, async function () {
         const presenter = await backgroundPage.testElement();
-        await driver.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
-        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        const result = await driver.compareElement(presenter, `${imagePrefix}-reset`);
+        assert.isTrue(result);
     });
 
-    it("background_12", async function () {
-        await await backgroundPage.executeScenario("background_12", "1");
+    it(`${imagePrefix}-1`, async function () {
+        await await backgroundPage.executeScenario("1");
     });
 
-    it("background_13", async function () {
+    it(`${imagePrefix}-reset`, async function () {
         await backgroundPage.tapResetBtn();
         const presenter = await backgroundPage.testElement();
-        await driver.imageHelper.compareElement(presenter, { imageName: "background_11_clean", tolerance: 0.1 });
-        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        const result = await driver.compareElement(presenter, `${imagePrefix}-reset`);
+        assert.isTrue(result);
     });
 
     // Border
-    it("background_21_border", async function () {
-        // await backgroundPage.navigateBackToSuitMainPage();
-        await backgroundPage.executeScenario("background_21_border", "21");
+    it(`${imagePrefix}-21-borders`, async function () {
+        await backgroundPage.executeScenario("21");
     });
 
-    it("background_22_border", async function () {
-        await backgroundPage.executeScenario("background_22_border", "22");
+    it(`${imagePrefix}-22-borders`, async function () {
+        await backgroundPage.executeScenario("22");
     });
 
-    it("background_23_border", async function () {
-        await backgroundPage.executeScenario("background_23_border", "23");
+    it(`${imagePrefix}-23-borders`, async function () {
+        await backgroundPage.executeScenario("23");
     });
 
     // Repeat
-    it("background_31_repeat", async function () {
-        await backgroundPage.executeScenario("background_31_repeat", "31");
+    it(`${imagePrefix}-31-repeat`, async function () {
+        await backgroundPage.executeScenario("31");
     });
 
-    it("background_32_repeat", async function () {
-        await backgroundPage.executeScenario("background_32_repeat", "32");
+    it(`${imagePrefix}-32-repeat`, async function () {
+        await backgroundPage.executeScenario("32");
     });
 
-    it("background_33_repeat", async function () {
-        await backgroundPage.executeScenario("background_33_repeat", "33");
+    it(`${imagePrefix}-33-repeat`, async function () {
+        await backgroundPage.executeScenario("33");
     });
 
     // Position
-    it("background_41_position", async function () {
-        await backgroundPage.executeScenario("background_41_position", "41");
+    it(`${imagePrefix}-41-position`, async function () {
+        await backgroundPage.executeScenario("41");
     });
 
-    it("background_42_position", async function () {
-        await backgroundPage.executeScenario("background_42_position", "42");
+    it(`${imagePrefix}-42-position`, async function () {
+        await backgroundPage.executeScenario("42");
     });
 
-    it("background_43_position", async function () {
-        await backgroundPage.executeScenario("background_43_position", "43");
+    it(`${imagePrefix}-43-position`, async function () {
+        await backgroundPage.executeScenario("43");
     });
 
-    it("background_44_position", async function () {
-        await backgroundPage.executeScenario("background_44_position", "44");
+    it(`${imagePrefix}-44-position`, async function () {
+        await backgroundPage.executeScenario("44");
     });
 
-    it("background_45_position", async function () {
-        await backgroundPage.executeScenario("background_45_position", "45");
+    it(`${imagePrefix}-45-position`, async function () {
+        await backgroundPage.executeScenario("45");
     });
 
-    it("background_46_position", async function () {
-        await backgroundPage.executeScenario("background_46_position", "46");
+    it(`${imagePrefix}-46-position`, async function () {
+        await backgroundPage.executeScenario("46");
     });
 
-    it("background_47_position", async function () {
-        await backgroundPage.executeScenario("background_47_position", "47");
+    it(`${imagePrefix}-47-position`, async function () {
+        await backgroundPage.executeScenario("47");
     });
 
-    it("background_48_position", async function () {
-        await backgroundPage.executeScenario("background_48_position", "48");
+    it(`${imagePrefix}-48-position`, async function () {
+        await backgroundPage.executeScenario("48");
     });
 
-    it("background_49_position", async function () {
-        await backgroundPage.executeScenario("background_49_position", "49");
+    it(`${imagePrefix}-49-position`, async function () {
+        await backgroundPage.executeScenario("49");
     });
 
-    it("background_50_position", async function () {
-        await backgroundPage.executeScenario("background_50_position", "50");
+    it(`${imagePrefix}-50-position`, async function () {
+        await backgroundPage.executeScenario("50");
     });
 
-    it("background_51_position", async function () {
-        await backgroundPage.executeScenario("background_51_position", "51");
+    it(`${imagePrefix}-51-position`, async function () {
+        await backgroundPage.executeScenario("51");
     });
 
-    it("background_52_position", async function () {
-        await backgroundPage.executeScenario("background_52_position", "52");
+    it(`${imagePrefix}-52-position`, async function () {
+        await backgroundPage.executeScenario("52");
     });
 
     // Size
-    it("background_61_size", async function () {
-        await backgroundPage.executeScenario("background_61_size", "61");
+    it(`${imagePrefix}-61-size`, async function () {
+        await backgroundPage.executeScenario("61");
     });
 
-    it("background_62_size", async function () {
-        await backgroundPage.executeScenario("background_62_size", "62");
+    it(`${imagePrefix}-62-size`, async function () {
+        await backgroundPage.executeScenario("62");
     });
 
-    it("background_63_size", async function () {
-        await backgroundPage.executeScenario("background_63_size", "63");
+    it(`${imagePrefix}-63-size`, async function () {
+        await backgroundPage.executeScenario("63");
     });
 
-    it("background_64_size", async function () {
-        await backgroundPage.executeScenario("background_64_size", "64");
+    it(`${imagePrefix}-64-size`, async function () {
+        await backgroundPage.executeScenario("64");
     });
 
     // All
-    it("background_71_all", async function () {
-        await backgroundPage.executeScenario("background_71_all", "71");
+    it(`${imagePrefix}-71-all`, async function () {
+        await backgroundPage.executeScenario("71");
     });
 
-    it("background_72_all", async function () {
-        await backgroundPage.executeScenario("background_72_all", "72");
+    it(`${imagePrefix}-72-all`, async function () {
+        await backgroundPage.executeScenario("72");
     });
 
     // Antialiasing
-    it("background_78_antialiasing", async function () {
-        await backgroundPage.executeScenario("background_78_antialiasing", "78");
+    it(`${imagePrefix}-78-antialiasing`, async function () {
+        await backgroundPage.executeScenario("78");
     });
 });
