@@ -30,7 +30,7 @@ export class Frame extends View {
      * This method will require the module and will check for a Page property in the exports of the module.
      * @param pageModuleName The name of the module to require starting from the application root.
      * For example if you want to navigate to page called "myPage.js" in a folder called "subFolder" and your root folder is "app" you can call navigate method like this:
-     * const frames = require("ui/frame");
+     * const frames = require("tns-core-modules/ui/frame");
      * frames.topmost().navigate("app/subFolder/myPage");
      */
     navigate(pageModuleName: string);
