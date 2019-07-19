@@ -1,5 +1,5 @@
 <Page>
-  <Tabs id="tabs">
+  <Tabs id="tabs" automationText="tabNavigation"  >
 
     <TabStrip>
 

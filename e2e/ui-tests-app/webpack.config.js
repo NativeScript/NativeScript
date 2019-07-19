@@ -6,7 +6,6 @@ const nativescriptTarget = require("nativescript-dev-webpack/nativescript-target
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 const { NativeScriptWorkerPlugin } = require("nativescript-worker-loader/NativeScriptWorkerPlugin");
 const TerserPlugin = require("terser-webpack-plugin");
@@ -214,11 +213,7 @@ module.exports = env => {
                         "sass-loader"
                     ]
                 },
-                // TODO: Invetigate why do we need???
-                {
-                    test: /\.png$|.jpg$|.ttf$|.otf$|.gradle$|.storyboard$|.plist$/,
-                    use: { loader: "raw-loader" }
-                },
+
                 {
                     test: /\.ts$/,
                     use: {
@@ -242,7 +237,7 @@ module.exports = env => {
             // Define useful constants like TNS_WEBPACK
             new webpack.DefinePlugin({
                 "global.TNS_WEBPACK": "true",
-                "process": undefined,
+                "process": "global.process",
             }),
             // Remove all files from the out dir.
             new CleanWebpackPlugin(itemsToClean, { verbose: !!verbose }),
@@ -271,9 +266,6 @@ module.exports = env => {
                 async: false,
                 useTypescriptIncrementalApi: true,
                 memoryLimit: 4096
-            }),
-            new ExtraWatchWebpackPlugin({
-                files: [`node_modules/**/*.${platform}.ts`]
             })
         ],
     };

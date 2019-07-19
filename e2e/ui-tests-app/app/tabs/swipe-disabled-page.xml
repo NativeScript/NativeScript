@@ -1,9 +1,9 @@
 <Page>
 
-  <ActionBar title="Tabs Swipe Enabled False" icon="" class="action-bar">
+  <ActionBar title="Tabs Swipe Disabled" icon="" class="action-bar">
   </ActionBar>
 
-  <Tabs id="tabs" swipeEnabled="false">
+  <Tabs id="tabs" swipeEnabled="false" automationText="tabNavigation"  >
     <TabStrip>
       <TabStripItem title="First Tab 11" iconSource="res://icon"></TabStripItem>
       <TabStripItem>
