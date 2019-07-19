@@ -1426,19 +1426,45 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
     });
 }
 
+export function test_css_calc() {
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout.slim {
+        width: calc(100 * .1);
+    }
+
+    StackLayout.wide {
+        width: calc(100 * 1.25);
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    stack.className = "slim";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10");
+
+    stack.className = "wide";
+    TKUnit.assertEqual(stack.width as any, 125, "Stack - width === 125");
+
+    (stack as any).style = `width: calc(100% / 2)`;
+    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+}
+
 export function test_css_variables() {
     const blackColor = "#000000";
     const redColor = "#FF0000";
     const greenColor = "#00FF00";
     const blueColor = "#0000FF";
 
-    let page = helper.getClearCurrentPage();
-
-    let label: labelModule.Label;
+    const page = helper.getClearCurrentPage();
 
     const cssVarName = `--my-background-color-${Date.now()}`;
 
-    let stack = new stackModule.StackLayout();
+    const stack = new stackModule.StackLayout();
     stack.css = `
     StackLayout[use-css-vars] {
         background-color: var(${cssVarName});
@@ -1457,7 +1483,7 @@ export function test_css_variables() {
         color: black;
     }`;
 
-    label = new labelModule.Label();
+    const label = new labelModule.Label();
     page.content = stack;
     stack["use-css-vars"] = true;
     stack.addChild(label);
@@ -1486,7 +1512,46 @@ export function test_css_variables() {
     TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
     TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, greenColor, "Stack - background-color is green");
     TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, greenColor, "Label - background-color is green");
+}
 
+export function test_css_calc_and_variables() {
+    const page = helper.getClearCurrentPage();
+
+    const cssVarName = `--my-width-factor-${Date.now()}`;
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout[use-css-vars] {
+        ${cssVarName}: 1;
+        width: calc(100% * var(${cssVarName}));
+    }
+
+    StackLayout.slim {
+        ${cssVarName}: 0.1;
+    }
+
+    StackLayout.wide {
+        ${cssVarName}: 1.25;
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack["use-css-vars"] = true;
+    stack.addChild(label);
+
+    stack.className = ""
+    TKUnit.assertDeepEqual(stack.width, { unit: '%', value: 1 }, "Stack - width === 100%");
+
+    stack.className = "slim";
+    TKUnit.assertDeepEqual(stack.width, { unit: '%', value: 0.1 }, "Stack - width === 10%");
+
+    stack.className = "wide";
+    TKUnit.assertDeepEqual(stack.width, { unit: '%', value: 1.25 }, "Stack - width === 125%");
+
+    // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
+    (stack as any).style = `${cssVarName}: 0.5`;
+    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
 }
 
 export function test_resolveFileNameFromUrl_local_file_tilda() {

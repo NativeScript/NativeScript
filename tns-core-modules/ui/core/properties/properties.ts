@@ -1,3 +1,5 @@
+import reduceCSSCalc from "reduce-css-calc";
+
 // Definitions.
 import * as definitions from "../view-base";
 import { ViewBase } from "../view-base";
@@ -56,10 +58,11 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
     return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
 }
 
+export const cssCalcRegexp = /^calc\((.*)\)/;
 export const cssVariableNameRegexp = /^--[^,\s]+?$/;
 export const cssVarValueRegexp = /var\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
 export function _cssVariableConverter<T>(view: ViewBase, cssName: string, value: string | T): string | T {
-    const res = [] as string[];
+    let res = [] as string[];
 
     if (typeof value !== "string") {
         return value;
@@ -105,7 +108,7 @@ export function _cssVariableConverter<T>(view: ViewBase, cssName: string, value:
                 break;
             }
 
-            const newValue = `${part.substr(0, matchIndex)}${cssVariableValue}${part.substr(matchLength)}`;
+            const newValue = `${part.substr(0, matchIndex)}${cssVariableValue}${part.substr(matchIndex + matchLength)}`;
             if (newValue === part) {
                 break;
             }
@@ -121,6 +124,18 @@ export function _cssVariableConverter<T>(view: ViewBase, cssName: string, value:
     }
 
     return res.join(", ");
+}
+
+export function _cssCalcConverter<T>(value: string | T) {
+    if (!value || value === unsetValue || typeof value !== "string") {
+        return value;
+    }
+
+    if (cssCalcRegexp.test(value)) {
+        return reduceCSSCalc(value);
+    } else {
+        return value;
+    }
 }
 
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
