@@ -18,7 +18,7 @@
   </BottomNavigation> -->
 
   <!-- w/ TabStrip -->
-  <BottomNavigation id="bottomNav">
+  <BottomNavigation id="bottomNav"  automationText="tabNavigation" >
     <TabStrip>
       <TabStripItem title="First Tab 11" iconSource="res://icon"></TabStripItem>
       <TabStripItem>
@@ -31,36 +31,43 @@
         <Label text="Places" />
       </TabStripItem>
       <TabStripItem title="Music" iconSource="res://icon"></TabStripItem>
+            <TabStripItem title="Music" iconSource="res://icon"></TabStripItem>
     </TabStrip>
 
     <TabContentItem>
       <StackLayout>
         <Label text="First View"/>
-        <Button tap="goToSecond" text="go to second" />
+        <Button tap="goToSecond" text="go to second" automationText="goToSecond" />
       </StackLayout>
     </TabContentItem>
     <TabContentItem>
       <StackLayout>
         <Label text="Second View"/>
-        <Button tap="goToFirst" text="go to first" />
+        <Button tap="goToFirst" text="go to first" automationText="goToFirst" />
       </StackLayout>
     </TabContentItem>
     <TabContentItem>
       <StackLayout>
         <Label text="First View"/>
-        <Button tap="goToSecond" text="go to second" />
+        <Button tap="goToSecond" text="go to second" automationText="goToSecond" />
       </StackLayout>
     </TabContentItem>
     <TabContentItem>
       <StackLayout>
         <Label text="Second View"/>
-        <Button tap="goToFirst" text="go to first" />
+        <Button tap="goToFirst" text="go to first" automationText="goToFirst" />
       </StackLayout>
     </TabContentItem>
     <TabContentItem>
       <StackLayout>
         <Label text="First View"/>
-        <Button tap="goToSecond" text="go to second" />
+        <Button tap="goToSecond" text="go to second" automationText="goToSecond" />
+      </StackLayout>
+    </TabContentItem>
+        <TabContentItem>
+      <StackLayout>
+        <Label text="First View"/>
+        <Button tap="goToSecond" text="go to second" automationText="goToSecond" />
       </StackLayout>
     </TabContentItem>
   </BottomNavigation>

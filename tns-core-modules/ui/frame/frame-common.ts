@@ -9,7 +9,7 @@ import { createViewFromEntry } from "../builder";
 import { profile } from "../../profiling";
 
 import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from "./frame-stack";
-import { getModuleName } from "../../utils/utils";
+import { sanitizeModuleName } from "../builder/module-name-sanitizer";
 export * from "../core/view";
 
 export enum NavigationType {
@@ -608,7 +608,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
             traceWrite(`Change Handled: Replacing page ${context.path}`, traceCategories.Livesync);
 
-            this.replacePage(context);
+            this.replacePage(context.path);
 
             return true;
         }
@@ -653,9 +653,9 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         return true;
     }
 
-    protected replacePage(context: ModuleContext): void {
+    protected replacePage(pagePath: string): void {
         const currentBackstackEntry = this._currentEntry;
-        const contextModuleName = getModuleName(context.path);
+        const contextModuleName = sanitizeModuleName(pagePath);
 
         const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
         const newBackstackEntry: BackstackEntry = {

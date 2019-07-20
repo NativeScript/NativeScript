@@ -59,7 +59,7 @@ export const createViewFromEntry = profile("createViewFromEntry", (entry: ViewEn
     } else if (entry.moduleName) {
         const moduleName = sanitizeModuleName(entry.moduleName);
         const resolvedCodeModuleName = resolveModuleName(moduleName, ""); //`${moduleName}.xml`;
-        let moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName) : null;
+        let moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName, true) : null;
 
         if (moduleExports && moduleExports.createPage) {
             // Exports has a createPage() method
@@ -87,7 +87,7 @@ function loadInternal(moduleName: string, moduleExports: any): ComponentModule {
     const resolvedXmlModule = resolveModuleName(moduleName, "xml");
 
     if (resolvedXmlModule) {
-        const text = global.loadModule(resolvedXmlModule);
+        const text = global.loadModule(resolvedXmlModule, true);
         componentModule = parseInternal(text, moduleExports, resolvedXmlModule, moduleName);
     }
 
@@ -129,7 +129,7 @@ function loadCustomComponent(componentNamespace: string, componentName?: string,
         let subExports = context;
         if (resolvedCodeModuleName) {
             // Component has registered code module.
-            subExports = global.loadModule(resolvedCodeModuleName);
+            subExports = global.loadModule(resolvedCodeModuleName, true);
         }
 
         // Pass the parent page down the chain in case of custom components nested on many levels. Use the context for piggybacking.

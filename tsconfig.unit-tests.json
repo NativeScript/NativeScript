@@ -15,6 +15,7 @@
         "**/*.ios.d.ts",
         "tns-platform-declarations",
         "tns-core-modules/node-modules",
-        "tns-core-modules/references.d.ts"
+        "tns-core-modules/references.d.ts",
+        "tns-core-modules/platforms"
     ]
 }

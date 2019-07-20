@@ -2,10 +2,12 @@
 import { ImageSource as ImageSourceDefinition } from ".";
 import { ImageAsset } from "../image-asset";
 import * as httpModule from "../http";
+import { Font } from "../ui/styling/font";
+import { Color } from "../color";
 
 // Types.
 import { path as fsPath, knownFolders } from "../file-system";
-import { isFileOrResourcePath, RESOURCE_PREFIX } from "../utils/utils";
+import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from "../utils/utils";
 
 export { isFileOrResourcePath };
 
@@ -121,6 +123,37 @@ export class ImageSource implements ImageSourceDefinition {
         });
     }
 
+    public loadFromFontIconCode(source: string, font: Font, color: Color): boolean {
+        let fontSize = layout.toDevicePixels(font.fontSize);
+        if (!fontSize) {
+            // TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
+            fontSize = UIFont.labelFontSize;
+        }
+
+        const density = layout.getDisplayDensity();
+        const scaledFontSize = fontSize * density;
+
+        const attributes = {
+            [NSFontAttributeName]: font.getUIFont(UIFont.systemFontOfSize(scaledFontSize))
+        };
+
+        if (color) {
+            attributes[NSForegroundColorAttributeName] = color.ios;
+        }
+
+        const attributedString = NSAttributedString.alloc().initWithStringAttributes(source, <NSDictionary<string, any>>attributes);
+
+        UIGraphicsBeginImageContextWithOptions(attributedString.size(), false, 0.0);
+        attributedString.drawAtPoint(CGPointMake(0, 0));
+
+        const iconImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+
+        this.ios = iconImage;
+    
+        return this.ios != null;
+    }
+
     public setNativeSource(source: any): void {
         if (source && !(source instanceof UIImage)) {
             throw new Error("The method setNativeSource() expects UIImage instance.");
@@ -229,6 +262,12 @@ export function fromFile(path: string): ImageSource {
     const image = new ImageSource();
 
     return image.loadFromFile(path) ? image : null;
+}
+
+export function fromFontIconCode(source: string, font: Font, color: Color): ImageSource {
+    const image = new ImageSource();
+
+    return image.loadFromFontIconCode(source, font, color) ? image : null;
 }
 
 export function fromData(data: any): ImageSource {

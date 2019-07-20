@@ -1,0 +1,27 @@
+<BottomNavigation>
+    <TabStrip>
+        <TabStripItem title="Players"></TabStripItem>
+        <!-- this tab serves as dummy so the actual teams tab is not loaded by default  -->
+        <TabStripItem title="Dummy"></TabStripItem>
+        <TabStripItem title="Teams"></TabStripItem>
+    </TabStrip>
+
+    <TabContentItem>
+        <GridLayout rows="auto, auto, *">
+            <Label text="tabs root top home" />
+            <Button row="1" text="reset app" tap="onReset" />
+            <GridLayout row="2">
+                <Frame defaultPage="players/players-items-page" />
+            </GridLayout>
+        </GridLayout>
+    </TabContentItem>
+    <TabContentItem>
+        <Label text="this is a tab" />
+    </TabContentItem>
+    <TabContentItem>
+        <GridLayout rows="auto, *">
+            <Button text="reset app" tap="onReset" />
+            <Frame row="1" defaultPage="teams/teams-items-page" />
+        </GridLayout>
+    </TabContentItem>
+</BottomNavigation>

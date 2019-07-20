@@ -5,8 +5,10 @@ import * as httpModule from "../http";
 
 // Types.
 import { path as fsPath, knownFolders } from "../file-system";
-import { isFileOrResourcePath, RESOURCE_PREFIX } from "../utils/utils";
+import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from "../utils/utils";
 import { getNativeApplication } from "../application";
+import { Font } from "../ui/styling/font";
+import { Color } from "../color";
 
 export { isFileOrResourcePath };
 
@@ -140,6 +142,43 @@ export class ImageSource implements ImageSourceDefinition {
         });
     }
 
+    public loadFromFontIconCode(source: string, font: Font, color: Color): boolean {
+        const paint = new android.graphics.Paint();
+        paint.setTypeface(font.getAndroidTypeface());
+        paint.setAntiAlias(true);
+
+        if (color) {
+            paint.setColor(color.android);
+        }
+
+        let fontSize = layout.toDevicePixels(font.fontSize);
+        if (!fontSize) {
+            // TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
+            fontSize = paint.getTextSize();
+        }
+
+        const density = layout.getDisplayDensity();
+        const scaledFontSize = fontSize * density;
+        paint.setTextSize(scaledFontSize);
+
+        const textBounds = new android.graphics.Rect();
+        paint.getTextBounds(source, 0, source.length, textBounds);
+
+        const bitmap = android.graphics.Bitmap
+            .createBitmap(
+                textBounds.width(),
+                textBounds.height(),
+                android.graphics.Bitmap.Config.ARGB_8888
+            );
+
+        const canvas = new android.graphics.Canvas(bitmap);
+        canvas.drawText(source, -textBounds.left, -textBounds.top, paint);
+
+        this.android = bitmap;
+    
+        return this.android != null;
+    }
+
     public setNativeSource(source: any): void {
         if (source && !(source instanceof android.graphics.Bitmap)) {
             throw new Error("The method setNativeSource() expects android.graphics.Bitmap instance.");
@@ -239,6 +278,12 @@ export function fromData(data: any): ImageSource {
     const image = new ImageSource();
 
     return image.loadFromData(data) ? image : null;
+}
+
+export function fromFontIconCode(source: string, font: Font, color: Color): ImageSource {
+    const image = new ImageSource();
+
+    return image.loadFromFontIconCode(source, font, color) ? image : null;
 }
 
 export function fromBase64(source: string): ImageSource {

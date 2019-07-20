@@ -211,7 +211,7 @@ export var test_XmlParser_NamespacesTest = function () {
 };
 
 export function test_MultiParserTemplate() {
-    const xml = global.loadModule("xml-parser-tests/itemTemplates.xml");
+    const xml = global.loadModule("xml-parser-tests/itemTemplates.xml", true);
 
     const view: any = builder.parse(xml);
     TKUnit.assertNotNull(view.items);

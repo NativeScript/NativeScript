@@ -136,6 +136,14 @@ export const test_SettingImageSrcToDataURI_async = function (done) {
     runImageTestAsync(image, image.src, done);
 };
 
+export const test_SettingImageSrcToFontIconCode_sync = function () {
+    const image = new ImageModule.Image();
+    image.style.fontFamily = "FontAwesome";
+    image.src = "font://&#xF10B";
+
+    runImageTestSync(image, image.src);
+};
+
 export function test_imageSourceNotResetAfterCreateUI() {
     let image = new ImageModule.Image();
     let imageSource = ImageSourceModule.fromResource("splashscreen");
