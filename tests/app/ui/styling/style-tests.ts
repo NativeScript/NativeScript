@@ -1540,14 +1540,14 @@ export function test_css_calc_and_variables() {
     stack["use-css-vars"] = true;
     stack.addChild(label);
 
-    stack.className = ""
-    TKUnit.assertDeepEqual(stack.width, { unit: '%', value: 1 }, "Stack - width === 100%");
+    stack.className = "";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1 }, "Stack - width === 100%");
 
     stack.className = "slim";
-    TKUnit.assertDeepEqual(stack.width, { unit: '%', value: 0.1 }, "Stack - width === 10%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.1 }, "Stack - width === 10%");
 
     stack.className = "wide";
-    TKUnit.assertDeepEqual(stack.width, { unit: '%', value: 1.25 }, "Stack - width === 125%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1.25 }, "Stack - width === 125%");
 
     // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
     (stack as any).style = `${cssVarName}: 0.5`;
