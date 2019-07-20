@@ -3,7 +3,7 @@
   <ActionBar title="Tabs text-transform" icon="" class="action-bar">
   </ActionBar>
 
-  <Tabs>
+  <Tabs automationText="tabNavigation"  >
     <TabStrip>
         <TabStripItem title="first" class="special"></TabStripItem>
         <TabStripItem title="second"></TabStripItem>

@@ -21,6 +21,8 @@ export function loadExamples() {
     examples.set("icon-change", "bottom-navigation/icon-change-page");
     examples.set("binding", "bottom-navigation/binding-page");
     examples.set("font-icons", "bottom-navigation/font-icons-page");
-    
+    examples.set("fancy-fonts", "bottom-navigation/fancy-fonts-page");
+    examples.set("css-text-transform", "bottom-navigation/bottom-navigation-css-page");
+
     return examples;
 }

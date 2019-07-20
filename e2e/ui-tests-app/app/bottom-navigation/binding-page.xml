@@ -1,12 +1,16 @@
-<Page class="page">
+<Page class="page" navigatingTo="navigatingTo">
 
-  <ActionBar title="BottomNavigation background-color" icon="" class="action-bar">
+  <ActionBar title="BottomNavigation binding" icon="" class="action-bar">
   </ActionBar>
 
     <GridLayout rows="auto,*">
-        <Button row="0" text="Add Tab" tap="addTabs"/>
+    <StackLayout row="0" >
+        <Button automationText="add-tab" text="add-tab" tap="{{ createItems }}"/>
+        <Button automationText="remove-last-tab" text="remove-last-tab" tap="{{ removeLastItem }}"/>
+      
+    </StackLayout>
         <GridLayout row="1">
-            <BottomNavigation loaded="bottomNavigaitonLoaded" items="{{ tabContentItems }}">
+            <BottomNavigation automationText="tabNavigation"  loaded="bottomNavigaitonLoaded" items="{{ tabContentItems }}">
                 <TabStrip items="{{ tabStripItems }}">
                 </TabStrip>
             </BottomNavigation> 
