@@ -1,9 +1,9 @@
 <Page class="page">
 
-  <ActionBar title="BottomNavigation color" icon="" class="action-bar">
+  <ActionBar title="BottomNavigation Text Transform" icon="" class="action-bar">
   </ActionBar>
 
-  <BottomNavigation>
+  <BottomNavigation automationText="tabNavigation"  >
     <TabStrip>
         <TabStripItem title="first" class="special"></TabStripItem>
         <TabStripItem title="second"></TabStripItem>

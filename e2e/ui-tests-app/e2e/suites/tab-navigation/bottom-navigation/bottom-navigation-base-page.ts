@@ -1,15 +1,21 @@
 import { AppiumDriver } from "nativescript-dev-appium";
-import { PageObjectBaseModel } from "../../../page-object-base-model";
 import { ElementCacheStrategy } from "../../../helpers/navigation-helper";
+import { TabNavigationBasePage } from "../tab-navigation-base-page";
 
-export class BottomNavigationBasePage extends PageObjectBaseModel {
-
-    constructor(_driver: AppiumDriver, elementCacheStrategy?: ElementCacheStrategy) {
-        super(_driver, ["bottom-navigation"], elementCacheStrategy);
+export class BottomNavigationBasePage extends TabNavigationBasePage {
+    private readonly mainWidgetXPath: string;
+    constructor(_driver: AppiumDriver) {
+        super(_driver, ["bottom-navigation"]);
+        this.mainWidgetXPath = this._driver.isIOS ?
+        `//XCUIElementTypeOther[@name="tabNavigation"]/XCUIElementTypeTabBar`
+        : `//android.view.ViewGroup[@content-desc="tabNavigation"]/android.widget.LinearLayout/android.widget.LinearLayout`;
+    }
+    //android.view.ViewGroup[@content-desc="tabNavigation"]/android.widget.LinearLayout/android.widget.LinearLayout/*
+    async getItems() {
+        return await this._driver.findElementsByXPath(`${this.mainWidgetXPath}/*`);
     }
 
-    async init(subSuiteName: string) {
-        this._naviagtionLinks.push(subSuiteName);
-        await super.initSuite();
+    async mainWidget() {
+        return await this._driver.findElementByXPath(this.mainWidgetXPath);
     }
 }

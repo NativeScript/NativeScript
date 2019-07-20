@@ -2,7 +2,6 @@
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import { Label } from "tns-core-modules/ui/label";
 import { Observable } from "tns-core-modules/data/observable";
-import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { TabStripItem } from "tns-core-modules/ui/tab-navigation-base/tab-strip-item";
 import { TabContentItem } from "tns-core-modules/ui/tab-navigation-base/tab-content-item";
 
@@ -17,7 +16,9 @@ export class BottomNavigationViewModel extends Observable {
         this.createItems();
     }
 
-    createItems() {
+    public createItems() {
+        console.log("Create item");
+
         const _tabStripItems = new Array<TabStripItem>();
         const _tabContentItems = new Array<TabContentItem>();
 
@@ -29,6 +30,12 @@ export class BottomNavigationViewModel extends Observable {
         this.tabStripItems = _tabStripItems;
         this.tabContentItems = _tabContentItems;
         this.itemsCount++;
+    }
+
+    public removeLastItem() {
+        console.log("Remove item");
+        this.tabStripItems.pop();
+        this.tabContentItems.pop();
     }
 
     private createTabStripItem(index: number): TabStripItem {
@@ -50,4 +57,3 @@ export class BottomNavigationViewModel extends Observable {
         return contentItem;
     }
 }
-export var bottomNavigationViewModel = new BottomNavigationViewModel();

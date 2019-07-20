@@ -5,9 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch on iOS",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}",
+            "sourceMaps": true,
+            "watch": true,
+            "tnsArgs": [
+                "--debug-brk"
+            ]
+        },
+        {
             "type": "node",
             "request": "launch",
-            "name": "Mocha Tests",
+            "name": "debug-tests",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
                 "-u",
@@ -15,9 +27,28 @@
                 "--colors",
                 "--opts",
                 "../config/mocha.opts",
-                "--grep=tab-view",
+                "--grep=bottom-navigation",
                 "-a",
-
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            // "preLaunchTask": "e2e-tsc"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "run-tests",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "args": [
+                "-u",
+                "tdd",
+                "--colors",
+                "--opts",
+                "../config/mocha.opts",
+                "--grep=bottom-navigation",
+                "android",
+                "--grep=bottom-navigation",
+                "--port",
+                "8889",
             ],
             "internalConsoleOptions": "openOnSessionStart"
         }
