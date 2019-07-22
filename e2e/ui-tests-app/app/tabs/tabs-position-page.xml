@@ -3,7 +3,7 @@
   <ActionBar title="Tabs Position Bottom" icon="" class="action-bar">
   </ActionBar>
 
-  <Tabs id="tabs" tabsPosition="bottom">
+  <Tabs id="tabs" tabsPosition="bottom" automationText="tabNavigation"  >
     <TabStrip>
       <TabStripItem title="First Tab 11" iconSource="res://icon"></TabStripItem>
       <TabStripItem>

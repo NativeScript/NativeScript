@@ -4,9 +4,12 @@
   </ActionBar>
 
  <GridLayout rows="auto,*">
-    <Button row="0" text="Add Tab" tap="addTabs"/>
+     <StackLayout row="0" >
+        <Button automationText="add-tab" text="add-tab" tap="{{ createItems }}"/>
+        <Button automationText="remove-last-tab" text="remove-last-tab" tap="{{ removeLastItem }}"/>
+    </StackLayout>
     <GridLayout row="1">
-        <Tabs loaded="tabsLoaded" items="{{ tabContentItems }}">
+        <Tabs loaded="tabsLoaded" items="{{ tabContentItems }}" automationText="tabNavigation"  >
             <TabStrip items="{{ tabStripItems }}"></TabStrip>
         </Tabs>
     </GridLayout>

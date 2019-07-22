@@ -216,8 +216,9 @@ public class BottomNavigationBar extends LinearLayout {
         lp.weight = 1;
     }
 
-    public void onTap(int position) {
+    public boolean onTap(int position) {
         // to be overridden in JS
+        return true;
     }
 
     public void onSelectedPositionChange(int position, int prevPosition) {
@@ -269,8 +270,9 @@ public class BottomNavigationBar extends LinearLayout {
         public void onClick(View v) {
              for (int i = 0; i < mTabStrip.getChildCount(); i++) {
                  if (v == mTabStrip.getChildAt(i)) {
-                     onTap(i);
-                     setSelectedPosition(i);
+                     if (onTap(i)) {
+                         setSelectedPosition(i);
+                     }
                      return;
                  }
              }

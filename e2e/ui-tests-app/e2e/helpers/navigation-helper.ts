@@ -1,4 +1,4 @@
-import { AppiumDriver, IRectangle, logInfo } from "nativescript-dev-appium";
+import { AppiumDriver, IRectangle, logInfo, logWarn, Point } from "nativescript-dev-appium";
 
 export enum ElementCacheStrategy {
     allAtOnce,
@@ -57,22 +57,23 @@ export class NavigationHelper {
 
     async navigateToSample(sample: string) {
         logInfo(`Navigate to ${sample}`);
-        sample = sample.toLowerCase();
+        const sampleName = sample.toLowerCase();
+
         if (this._elemtsCacheStrategy === ElementCacheStrategy.allAtOnce) {
-            if (!this._currentSuite.children.has(sample)) {
+            if (!this._currentSuite.children.has(sampleName)) {
                 await this.cacheAllElements(this._currentSuite);
             }
-            if (!this._currentSuite.children.has(sample)) {
+            if (!this._currentSuite.children.has(sampleName)) {
                 throw new Error(`Could not find ${sample}`);
             }
-            const sampleElement = this._currentSuite.children.get(sample).rect;
+            const sampleElement = this._currentSuite.children.get(sampleName).rect;
             await this._driver.clickPoint(sampleElement.x + (sampleElement.width / 2), sampleElement.y + (sampleElement.height / 2));
-            this._currentSuite = this._currentSuite.children.get(sample);
+            this._currentSuite = this._currentSuite.children.get(sampleName);
         } else if (this._elemtsCacheStrategy === ElementCacheStrategy.onload) {
-            if (this._currentSuite.children.has(sample)) {
-                const sampleElement = this._currentSuite.children.get(sample).rect;
+            if (this._currentSuite.children.has(sampleName)) {
+                const sampleElement = this._currentSuite.children.get(sampleName).rect;
                 await this._driver.clickPoint(sampleElement.x + (sampleElement.width / 2), sampleElement.y + (sampleElement.height / 2));
-                this._currentSuite = this._currentSuite.children.get(sample);
+                this._currentSuite = this._currentSuite.children.get(sampleName);
             } else {
                 const sampleElement = await this._driver.waitForElement(sample);
                 if (!sampleElement) {
@@ -81,7 +82,7 @@ export class NavigationHelper {
                 const rect = await sampleElement.getRectangle();
                 const text = (await sampleElement.text()).toLowerCase();
                 const newSuite: ICachedElement = { name: text, rect: rect, children: new Map(), parent: this._currentSuite };
-                this._currentSuite.children.set(sample, newSuite);
+                this._currentSuite.children.set(sampleName, newSuite);
                 this._currentSuite = newSuite;
                 await this._driver.clickPoint(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
             }
@@ -102,7 +103,19 @@ export class NavigationHelper {
 
     async swipeBackToSuitMainPage() {
         logInfo(`Swipe to back`);
-        throw new Error("Not implemented!");
+        const startPoint = <Point>{};
+        const endPoint = <Point>{};
+
+        if (this._driver.isIOS) {
+            startPoint.x = 5;
+            startPoint.y = this._driver.nsCapabilities.device.viewportRect.y / this._driver.nsCapabilities.device.config.density;
+            endPoint.x = (this._driver.nsCapabilities.device.viewportRect.width / this._driver.nsCapabilities.device.config.density) - 5;
+            endPoint.y = startPoint.y;
+
+            await this._driver.swipe(startPoint, endPoint);
+        } else {
+            logWarn("Swipe back is not supported from android!");
+        }
     }
 
     private async cacheAllElements(cachedElements: ICachedElement) {

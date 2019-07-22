@@ -21,7 +21,7 @@ export function loadExamples() {
     examples.set("highlight-color", "tabs/highlight-color-page");
     examples.set("icon-title-placement", "tabs/icon-title-placement-page");
     examples.set("icon-change", "tabs/icon-change-page");
-    examples.set("swipe-enabled", "tabs/swipe-enabled-page");
+    examples.set("swipe-disabled", "tabs/swipe-disabled-page");
     examples.set("strip-item", "tabs/tab-strip-item-page");
     examples.set("strip-items", "tabs/tab-strip-items-page");
     examples.set("tabs-position", "tabs/tabs-position-page");

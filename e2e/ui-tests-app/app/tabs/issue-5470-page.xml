@@ -3,7 +3,7 @@
     <ActionBar title="Tabs issue 5470" icon="" class="action-bar">
     </ActionBar>
 
-    <Tabs>
+    <Tabs automationText="tabNavigation"  >
         <TabStrip>
             <TabStripItem title="Tab1"></TabStripItem>
             <TabStripItem title="Tab2"></TabStripItem>
