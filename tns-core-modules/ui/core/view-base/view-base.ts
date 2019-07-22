@@ -37,7 +37,7 @@ function ensuredomNodeModule(): void {
 let styleScopeModule: typeof ssm;
 function ensureStyleScopeModule() {
     if (!styleScopeModule) {
-        styleScopeModule = require("ui/styling/style-scope");
+        styleScopeModule = require("../../styling/style-scope");
     }
 }
 
