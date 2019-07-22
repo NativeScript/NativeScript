@@ -16,8 +16,8 @@
     "tns-core-modules": "file:../../tns-core-modules"
   },
   "devDependencies": {
-    "nativescript-dev-webpack": "rc",
-    "tns-platform-declarations": "6.0.1",
+    "nativescript-dev-webpack": "next",
+    "tns-platform-declarations": "next",
     "typescript": "3.4.1"
   }
 }
