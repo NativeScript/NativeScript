@@ -590,6 +590,11 @@ export class Tabs extends TabsBase {
 
         this._ios.dataSource = this._dataSource;
         this._ios.delegate = this._delegate;
+
+        if (!this.tabBarItems) {
+            const tabStripItems = this.tabStrip ? this.tabStrip.items : null;
+            this.setTabStripItems(tabStripItems);
+        }
     }
 
     public onUnloaded() {
@@ -836,6 +841,10 @@ export class Tabs extends TabsBase {
     }
 
     public setTabStripItems(items: Array<TabStripItem>) {
+        if (!this.tabStrip || !items) {
+            return;
+        }
+
         const tabBarItems = [];
 
         items.forEach((item: TabStripItem, i) => {
