@@ -410,7 +410,7 @@
                 setTabTextFontSize(fontSize: number): void;
                 getTabTextFontSize(): number;
 
-                onTap(position: number): void;
+                onTap(position: number): boolean;
                 onSelectedPositionChange(position: number, prevPosition: number): void ;
                 setSelectedPosition(position: number): void;
                 setItems(items: Array<TabItemSpec>): void;
