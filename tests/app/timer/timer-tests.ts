@@ -72,6 +72,22 @@ export function test_setTimeout_callbackCalledAfterSpecifiedTime() {
     TKUnit.assert(completed, "Callback should be called after the specified time!");
 }
 
+export function test_setTimeout_callbackCalledWithBooleanPeriod() {
+    let completed = false;
+
+    // >> timer-set-false
+    const id = timer.setTimeout(() => {
+        // >> (hide)
+        completed = true;
+        // << (hide)
+    }, false);
+    // << timer-set-false
+
+    TKUnit.waitUntilReady(() => completed, 1);
+    timer.clearTimeout(id);
+    TKUnit.assert(completed, "Callback should be called in 0 seconds!");
+}
+
 export function test_setTimeout_callbackNotCalled() {
     let completed = false;
 
