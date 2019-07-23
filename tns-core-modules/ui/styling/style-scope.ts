@@ -344,8 +344,10 @@ applicationCommon.on("cssChanged", onCssChanged);
 applicationCommon.on("livesync", onLiveSync);
 
 export const loadAppCSS = profile("\"style-scope\".loadAppCSS", (args: applicationCommon.LoadAppCSSEventData) => {
-    loadCss(args.cssFile);
-    applicationCommon.off("loadAppCss", loadAppCSS);
+    if (applicationCommon.hasLaunched()) {
+        loadCss(args.cssFile);
+        applicationCommon.off("loadAppCss", loadAppCSS);
+    }
 });
 
 if (applicationCommon.hasLaunched()) {
