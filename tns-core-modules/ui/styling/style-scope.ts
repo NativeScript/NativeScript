@@ -831,13 +831,25 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
     // Reset unscoped css-variables
     view.style.clearCssVariable(false);
 
+    // Set all the css-variables first, so we can be sure they are up-to-date
+    inlineRuleSet[0].declarations.forEach(d => {
+        // Use the actual property name so that a local value is set.
+        let property = d.property;
+        if (cssVariableNameRegexp.test(property)) {
+            view.style.setCssVariable(property, d.value, false);
+        }
+    });
+
     inlineRuleSet[0].declarations.forEach(d => {
         // Use the actual property name so that a local value is set.
         let property = d.property;
         try {
             if (cssVariableNameRegexp.test(property)) {
-                view.style.setCssVariable(property, d.value, false);
-            } else if (property in view.style) {
+                // Skip css-variables, they have been handled
+                return;
+            }
+
+            if (property in view.style) {
                 view.style[property] = d.value;
             } else {
                 view[property] = d.value;
