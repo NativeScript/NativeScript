@@ -516,7 +516,9 @@ export class CssState {
         const oldProperties = this._appliedPropertyValues;
         for (const property in oldProperties) {
             if (!(property in newPropertyValues)) {
-                if (cssVariableNameRegexp.test(property) || property in view.style) {
+                if (cssVariableNameRegexp.test(property)) {
+                    view.style.unsetCssVariable(property, true);
+                } else if (property in view.style) {
                     view.style[`css:${property}`] = unsetValue;
                 } else {
                     // TRICKY: How do we unset local value?
@@ -529,7 +531,7 @@ export class CssState {
             let value = newPropertyValues[property];
 
             if (cssVariableNameRegexp.test(property)) {
-                view.style[`css:${property}`] = value;
+                view.style.setCssVariable(property, value, true);
             }
         }
 
@@ -552,7 +554,7 @@ export class CssState {
                     view[camelCasedProperty] = value;
                 }
             } catch (e) {
-                traceWrite(`Failed to apply property ${property} [${property}] with value [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
+                traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
             }
         }
 
@@ -824,18 +826,19 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
     let localStyle = `local { ${styleStr} }`;
     let inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
-    const style = view.style;
+
+    view.style.clearCssVariable(false);
 
     inlineRuleSet[0].declarations.forEach(d => {
         // Use the actual property name so that a local value is set.
-        let name = d.property;
+        let property = d.property;
         try {
-            if (cssVariableNameRegexp.test(name)) {
-                style[`style:${name}`] = d.value;
-            } else if (name in style) {
-                style[name] = d.value;
+            if (cssVariableNameRegexp.test(property)) {
+                view.style.setCssVariable(property, d.value, false);
+            } else if (property in view.style) {
+                view.style[property] = d.value;
             } else {
-                view[name] = d.value;
+                view[property] = d.value;
             }
         } catch (e) {
             traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);

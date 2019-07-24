@@ -17,7 +17,17 @@ import {
 } from "../../../trace";
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
 
+function makeCssVariableName(varname: string, scoped: boolean) {
+    if (scoped) {
+        return `scoped:${varname}`;
+    }
+
+    return varname;
+}
+
 export class Style extends Observable implements StyleDefinition {
+    private cssVariables = new Map<string, string>();
+
     constructor(ownerView: ViewBase | WeakRef<ViewBase>) {
         super();
 
@@ -26,6 +36,49 @@ export class Style extends Observable implements StyleDefinition {
             this.viewRef = <WeakRef<ViewBase>>ownerView;
         } else  {
             this.viewRef = new WeakRef(<ViewBase>ownerView);
+        }
+    }
+
+    public setCssVariable(varname: string, value: string, scoped: boolean): void {
+        this.cssVariables.set(makeCssVariableName(varname, scoped), value);
+    }
+
+    public unsetCssVariable(varname: string, scoped: boolean): void {
+        this.cssVariables.delete(makeCssVariableName(varname, scoped));
+    }
+
+    public getCssVariable(varname: string): string {
+        const view = this.view;
+        if (!view) {
+            return null;
+        }
+
+        if (this.cssVariables.has(varname)) {
+            return this.cssVariables.get(varname);
+        }
+
+        const localVarName = makeCssVariableName(varname, true);
+        if (this.cssVariables.has(localVarName)) {
+            return this.cssVariables.get(localVarName);
+        }
+
+        if (!view.parent || !view.parent.style) {
+            return null;
+        }
+
+        return view.parent.style.getCssVariable(varname);
+    }
+
+    public clearCssVariable(scoped?: boolean): void {
+        if (typeof scoped === 'undefined') {
+            this.cssVariables.clear();
+            return;
+        }
+
+        for (const varname of Array.from(this.cssVariables.keys())) {
+            if (varname.startsWith('scoped:') === scoped) {
+                this.cssVariables.delete(varname);
+            }
         }
     }
 

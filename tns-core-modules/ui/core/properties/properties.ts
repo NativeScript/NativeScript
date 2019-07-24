@@ -87,20 +87,7 @@ export function _cssVariableConverter<T>(view: ViewBase, cssName: string, value:
             const cssVariableName = m[1];
             const matchIndex = m.index;
 
-            // css-variable set on the style-attribute takes president over one set via css
-            const stylePropName = `style:${cssVariableName}`; // prop-name set from applyInlineStyle
-            const cssPropName = `css:${cssVariableName}`; // prop-name set by StyleScope
-
-            let cssVariableValue: string | T;
-
-            for (let parent = view; !cssVariableValue && parent; parent = parent.parent) {
-                for (const propName of [stylePropName, cssPropName]) {
-                    if (propName in parent.style && parent.style[propName] !== unsetValue) {
-                        cssVariableValue = parent.style[propName];
-                        break;
-                    }
-                }
-            }
+            const cssVariableValue = view.style.getCssVariable(cssVariableName);
 
             if (!cssVariableValue) {
                 traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Error, traceMessageType.error);

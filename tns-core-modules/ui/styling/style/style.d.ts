@@ -168,6 +168,34 @@ export class Style extends Observable {
      * The shorthand properties are defined as non-enumerable so it should be safe to for-in the keys that are set in the bag.
      */
     public readonly PropertyBag: PropertyBagClass;
+
+    /**
+     * Assign value to a css-variable
+     * 
+     * @param varname 
+     * @param value 
+     * @param scoped if false value is set from style-attribute, if true set from the style-scope.
+     */
+    public setCssVariable(varname: string, value: string, scoped: boolean): void;
+
+    /**
+     * Unassign value for a css-value
+     */
+    public unsetCssVariable(varname: string, scoped: boolean): void;
+
+    /**
+     * Get value of the css-variable.
+     * If the value is not set on this style-object, try the parent view. 
+     */
+    public getCssVariable(varname: string): string;
+
+    /**
+     * Clear css-variables.
+     * If scoped is undefined, all are removed
+     * If true only scoped variables are removed
+     * If false only unscoped variables are removed
+     */
+    public clearCssVariable(scoped?: boolean): void;
 }
 
 interface PropertyBagClass {

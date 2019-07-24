@@ -1485,10 +1485,10 @@ export function test_css_variables() {
 
     const label = new labelModule.Label();
     page.content = stack;
-    stack["use-css-vars"] = true;
     stack.addChild(label);
 
     // This should log an error about not finding the css-variable but not cause a crash
+    stack["use-css-vars"] = true;
     label.className = "lab1";
 
     stack.className = "make-red";
@@ -1506,12 +1506,21 @@ export function test_css_variables() {
     TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, redColor, "Stack - background-color is red");
     TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, redColor, "Label - background-color is red");
 
-    // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
-    stack.className = "";
     (stack as any).style = `${cssVarName}: ${greenColor}`;
+    stack.className = "";
     TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
     TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, greenColor, "Stack - background-color is green");
     TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, greenColor, "Label - background-color is green");
+
+    stack.className = "make-red";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, greenColor, "Stack - background-color is green");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, greenColor, "Label - background-color is green");
+
+    (stack as any).style = "";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, redColor, "Stack - background-color is red");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, redColor, "Label - background-color is red");
 }
 
 export function test_css_calc_and_variables() {
