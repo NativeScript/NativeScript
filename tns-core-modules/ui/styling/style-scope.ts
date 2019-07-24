@@ -528,21 +528,22 @@ export class CssState {
 
         // Set all the css-variables first, so we can be sure they are up-to-date
         for (const property in newPropertyValues) {
-            let value = newPropertyValues[property];
-
             if (cssVariableNameRegexp.test(property)) {
+                const value = newPropertyValues[property];
+
                 view.style.setCssVariable(property, value, true);
             }
         }
 
         for (const property in newPropertyValues) {
-            let value = newPropertyValues[property];
-
             if (cssVariableNameRegexp.test(property)) {
+                // Skip css-variables, they have been handled
                 continue;
             }
 
+            const value = newPropertyValues[property];
             if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property] && !cssVarValueRegexp.test(value)) {
+                // Skip unchanged values unless they use css-variables
                 continue;
             }
 
@@ -827,6 +828,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
     let localStyle = `local { ${styleStr} }`;
     let inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
 
+    // Reset unscoped css-variables
     view.style.clearCssVariable(false);
 
     inlineRuleSet[0].declarations.forEach(d => {
