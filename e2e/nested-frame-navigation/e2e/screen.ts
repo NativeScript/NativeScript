@@ -41,6 +41,9 @@ const navigateToOtherPageSlide = "navigate to other page (slide transition)";
 const navigateToOtherPageFlip = "navigate to other page (flip transition)";
 const players = "Players";
 const teams = "Teams";
+const playersTab = "playersTabNavigation";
+const teamsTab = "teamsTabNavigation";
+const dummyTab = "dummyTabNavigation";
 const playerBack = "playerBack";
 const stillOtherPageBack = "stillOtherPageBack";
 const somePageBack = "somePageBack";
@@ -316,13 +319,13 @@ export class Screen {
     }
 
     togglePlayersTab = async () => {
-        const lblPlayers = await this._driver.waitForElement(players);
+        const lblPlayers = await this._driver.waitForElement(playersTab);
         logInfo(`====== Navigate to "${players}"`);
         await lblPlayers.tap();
     }
 
     toggleTeamsTab = async () => {
-        const lblTeams = await this._driver.waitForElement(teams);
+        const lblTeams = await this._driver.waitForElement(teamsTab);
         logInfo(`====== Navigate to "${teams}"`);
         await lblTeams.tap();
     }
