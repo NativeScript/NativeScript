@@ -58,9 +58,22 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
     return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
 }
 
-export const cssCalcRegexp = /^calc\((.*)\)/;
-export const cssVariableNameRegexp = /^--[^,\s]+?$/;
-export const cssVarValueRegexp = /var\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
+const cssCalcRegexp = /^calc\((.*)\)/;
+const cssVariableNameRegexp = /^--[^,\s]+?$/;
+const cssVarValueRegexp = /var\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
+
+export function isCssVariableName(property: string) {
+    return cssVariableNameRegexp.test(property)
+}
+
+export function isCssCalcValue(value: string) {
+    return cssCalcRegexp.test(value);
+}
+
+export function isCssValueUsingCssVariable(value: string) {
+    return cssVarValueRegexp.test(value);
+}
+
 export function _cssVariableConverter<T>(view: ViewBase, cssName: string, value: string | T): string | T {
     let res = [] as string[];
 
@@ -68,17 +81,24 @@ export function _cssVariableConverter<T>(view: ViewBase, cssName: string, value:
         return value;
     }
 
+    if (!isCssValueUsingCssVariable(value)) {
+        // Value is not using css-variable(s)
+        return value;
+    }
+
+    // Split value into sub-sections
     for (let part of value.split(",").map((part) =>  part.trim())) {
         if (!part) {
             continue;
         }
 
-        const match = cssVarValueRegexp.exec(part);
-        if (!match) {
+        if (!isCssValueUsingCssVariable(part)) {
+            // part is not using css-variable, use as is.
             res.push(part);
             continue;
         }
 
+        // Each sub-section can use more than one css-variable, each must be processed
         for (let m = cssVarValueRegexp.exec(part), lastValue: string; lastValue !== part && m; m = cssVarValueRegexp.exec(part)) {
             lastValue = part;
 
@@ -118,7 +138,7 @@ export function _cssCalcConverter<T>(value: string | T) {
         return value;
     }
 
-    if (cssCalcRegexp.test(value)) {
+    if (isCssCalcValue(value)) {
         return reduceCSSCalc(value);
     } else {
         return value;

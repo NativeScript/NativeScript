@@ -40,7 +40,7 @@ function ensureKeyframeAnimationModule() {
 }
 
 import * as capm from "./css-animation-parser";
-import { cssVariableNameRegexp, cssVarValueRegexp } from "../core/properties/properties";
+import { isCssVariableName, isCssValueUsingCssVariable } from "../core/properties/properties";
 let cssAnimationParserModule: typeof capm;
 function ensureCssAnimationParserModule() {
     if (!cssAnimationParserModule) {
@@ -516,7 +516,7 @@ export class CssState {
         const oldProperties = this._appliedPropertyValues;
         for (const property in oldProperties) {
             if (!(property in newPropertyValues)) {
-                if (cssVariableNameRegexp.test(property)) {
+                if (isCssVariableName(property)) {
                     view.style.unsetCssVariable(property, true);
                 } else if (property in view.style) {
                     view.style[`css:${property}`] = unsetValue;
@@ -528,7 +528,7 @@ export class CssState {
 
         // Set all the css-variables first, so we can be sure they are up-to-date
         for (const property in newPropertyValues) {
-            if (cssVariableNameRegexp.test(property)) {
+            if (isCssVariableName(property)) {
                 const value = newPropertyValues[property];
 
                 view.style.setCssVariable(property, value, true);
@@ -536,13 +536,13 @@ export class CssState {
         }
 
         for (const property in newPropertyValues) {
-            if (cssVariableNameRegexp.test(property)) {
+            if (isCssVariableName(property)) {
                 // Skip css-variables, they have been handled
                 continue;
             }
 
             const value = newPropertyValues[property];
-            if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property] && !cssVarValueRegexp.test(value)) {
+            if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property] && !isCssValueUsingCssVariable(value)) {
                 // Skip unchanged values unless they use css-variables
                 continue;
             }
@@ -835,7 +835,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
     inlineRuleSet[0].declarations.forEach(d => {
         // Use the actual property name so that a local value is set.
         let property = d.property;
-        if (cssVariableNameRegexp.test(property)) {
+        if (isCssVariableName(property)) {
             view.style.setCssVariable(property, d.value, false);
         }
     });
@@ -844,7 +844,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
         // Use the actual property name so that a local value is set.
         let property = d.property;
         try {
-            if (cssVariableNameRegexp.test(property)) {
+            if (isCssVariableName(property)) {
                 // Skip css-variables, they have been handled
                 return;
             }
