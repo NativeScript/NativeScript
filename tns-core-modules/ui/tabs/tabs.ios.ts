@@ -269,7 +269,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
         //     prevViewController = owner.getViewController(prevItem);
         // }
 
-        (<TabContentItem>prevItem).canBeLoaded = true;
+        owner._setCanBeLoaded(selectedIndex);
         owner._loadUnloadTabItems(selectedIndex);
 
         return prevViewController;
@@ -296,7 +296,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
         //     nextViewController = owner.getViewController(nextItem);
         // }
 
-        (<TabContentItem>nextItem).canBeLoaded = true;
+        owner._setCanBeLoaded(selectedIndex);
         owner._loadUnloadTabItems(selectedIndex);
         // nextItem.loadView(nextItem.view);
 
@@ -776,6 +776,18 @@ export class Tabs extends TabsBase {
         return newController;
     }
 
+    public _setCanBeLoaded(index: number) {
+        const items = this.items;
+        const lastIndex = items.length - 1;
+        const offsideItems = this.offscreenTabLimit;
+
+        iterateIndexRange(index, offsideItems, lastIndex, (i) => {
+            if (items[i]) {
+                (<TabContentItem>items[i]).canBeLoaded = true;
+            }
+        });
+    }
+
     private setViewControllers(items: TabContentItem[]) {
         const length = items ? items.length : 0;
         if (length === 0) {
@@ -1057,7 +1069,7 @@ export class Tabs extends TabsBase {
             this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, (finished: boolean) => {
                 if (finished) {
                     this._canSelectItem = true;
-                    item.canBeLoaded = true;
+                    this._setCanBeLoaded(value);
                     this._loadUnloadTabItems(value);
                 }
             });
