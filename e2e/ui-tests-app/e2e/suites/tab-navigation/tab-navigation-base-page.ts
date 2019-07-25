@@ -21,7 +21,6 @@ export abstract class TabNavigationBasePage extends PageObjectBaseModel {
 
     async navigateToSample(sample: string) {
         await super.navigateToSample(sample);
-        await this.refreshTabItems();
     }
 
     async refreshTabItems() {

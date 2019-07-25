@@ -281,18 +281,20 @@ export class BottomNavigation extends TabNavigationBase {
         (<any>nativeView).contentView = contentView;
 
         // TABSTRIP
-        const bottomNavigationBar = new BottomNavigationBar(context, this);
-        const bottomNavigationBarLayoutParams = new org.nativescript.widgets.CommonLayoutParams();
-        bottomNavigationBarLayoutParams.row = 1;
-        bottomNavigationBar.setLayoutParams(bottomNavigationBarLayoutParams);
-        nativeView.addView(bottomNavigationBar);
-        (<any>nativeView).bottomNavigationBar = bottomNavigationBar;
+        if (this.tabStrip) {
+            const bottomNavigationBar = new BottomNavigationBar(context, this);
+            const bottomNavigationBarLayoutParams = new org.nativescript.widgets.CommonLayoutParams();
+            bottomNavigationBarLayoutParams.row = 1;
+            bottomNavigationBar.setLayoutParams(bottomNavigationBarLayoutParams);
+            nativeView.addView(bottomNavigationBar);
+            (<any>nativeView).bottomNavigationBar = bottomNavigationBar;
 
-        setElevation(nativeView, bottomNavigationBar);
+            setElevation(nativeView, bottomNavigationBar);
 
-        const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
-        if (primaryColor) {
-            bottomNavigationBar.setBackgroundColor(primaryColor);
+            const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
+            if (primaryColor) {
+                bottomNavigationBar.setBackgroundColor(primaryColor);
+            }
         }
 
         return nativeView;
@@ -313,10 +315,9 @@ export class BottomNavigation extends TabNavigationBase {
         this._contentView = (<any>nativeView).contentView;
         this._contentView.setId(this._contentViewId);
 
-        this._bottomNavigationBar = (<any>nativeView).bottomNavigationBar;
-        (<any>this._bottomNavigationBar).owner = this;
-
         if (this.tabStrip) {
+            this._bottomNavigationBar = (<any>nativeView).bottomNavigationBar;
+            (<any>this._bottomNavigationBar).owner = this;
             this.tabStrip.setNativeView(this._bottomNavigationBar);
         }
     }
@@ -363,7 +364,9 @@ export class BottomNavigation extends TabNavigationBase {
         super.onLoaded();
 
         const items = this.tabStrip ? this.tabStrip.items : null;
-        this.setTabStripItems(items);
+        if (this.tabStrip) {
+            this.setTabStripItems(items);
+        }
 
         if (this._attachedToWindow) {
             this.changeTab(this.selectedIndex);
@@ -386,7 +389,9 @@ export class BottomNavigation extends TabNavigationBase {
     public onUnloaded(): void {
         super.onUnloaded();
 
-        this.setTabStripItems(null);
+        if (this.tabStrip) {
+            this.setTabStripItems(null);
+        }
 
         const fragmentToDetach = this._currentFragment;
         if (fragmentToDetach) {
@@ -396,8 +401,10 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public disposeNativeView() {
-        this._bottomNavigationBar.setItems(null);
-        this._bottomNavigationBar = null;
+        if (this.tabStrip) {
+            this._bottomNavigationBar.setItems(null);
+            this._bottomNavigationBar = null;
+        }
 
         this.nativeViewProtected.removeOnAttachStateChangeListener(AttachStateChangeListener);
         this.nativeViewProtected[ownerSymbol] = null;
@@ -637,7 +644,11 @@ export class BottomNavigation extends TabNavigationBase {
         //     traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
         // }
 
-        this._bottomNavigationBar.setSelectedPosition(value);
+        if (this.tabStrip) {
+            this._bottomNavigationBar.setSelectedPosition(value);
+        } else {
+            this.changeTab(value);
+        }
     }
 
     [itemsProperty.getDefault](): TabContentItem[] {

@@ -493,7 +493,10 @@ export class Tabs extends TabsBase {
         super.onLoaded();
 
         this.setItems((<any>this.items));
-        this.setTabStripItems(this.tabStrip.items);
+
+        if (this.tabStrip) {
+            this.setTabStripItems(this.tabStrip.items);
+        }
 
         // this.setAdapterItems(this.items);
     }
