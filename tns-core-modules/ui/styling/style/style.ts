@@ -70,13 +70,14 @@ export class Style extends Observable implements StyleDefinition {
     }
 
     public clearCssVariable(scoped?: boolean): void {
-        if (typeof scoped === 'undefined') {
+        if (typeof scoped === "undefined") {
             this.cssVariables.clear();
+
             return;
         }
 
         for (const varname of Array.from(this.cssVariables.keys())) {
-            if (varname.startsWith('scoped:') === scoped) {
+            if (varname.startsWith("scoped:") === scoped) {
                 this.cssVariables.delete(varname);
             }
         }

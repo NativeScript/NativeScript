@@ -63,7 +63,7 @@ const cssVariableNameRegexp = /^--[^,\s]+?$/;
 const cssVarValueRegexp = /var\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
 
 export function isCssVariableName(property: string) {
-    return cssVariableNameRegexp.test(property)
+    return cssVariableNameRegexp.test(property);
 }
 
 export function isCssCalcValue(value: string) {
