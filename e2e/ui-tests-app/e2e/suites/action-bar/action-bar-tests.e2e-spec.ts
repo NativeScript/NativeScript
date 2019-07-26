@@ -38,29 +38,17 @@ describe(`${suite}-suite`, async function () {
         }
     });
 
-    // const cleanImage = async (result, name) => {
-    //     if (result) {
-    //         if (existsSync(driver.imageHelper.getExpectedImagePathByDevice(`${name}.png`))) {
-    //             let result1 = await driver.compareElement(await actionBarBasePage.actionBar, name);
-    //             if (result) {
-    //                 unlinkSync(driver.imageHelper.getExpectedImagePathByDevice(`${name}.png`));
-    //             }
-    //         }
-    //     }
-    // }
-
-
     const btnGoToClearPageTap = async () => {
         await clickOnElement("go to cleared page");
-    }
+    };
 
     const btnGoToPrevPageTap = async () => {
         await clickOnElement("go to previous page");
-    }
+    };
 
     const btnTap = async () => {
         await clickOnElement("Tap");
-    }
+    };
 
     const clickOnElement = async (automationText: string) => {
         const el = await driver.waitForElement(automationText);

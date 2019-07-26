@@ -7,7 +7,7 @@ export class ActionBarBasePage extends PageObjectBaseModel {
         super(_driver, ["action-bar"]);
     }
 
-    get actionBar(){
+    get actionBar() {
         return this._driver.waitForElement(this.automationText);
     }
 }
