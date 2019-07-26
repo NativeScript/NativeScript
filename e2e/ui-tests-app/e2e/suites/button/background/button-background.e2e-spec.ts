@@ -17,7 +17,6 @@ describe(`${imagePrefix}-suite`, () => {
         await driver.restartApp();
         backgroundPage = new ButtonBackgroundPage(driver);
         await backgroundPage.initSuite();
-        driver.imageHelper.options.donNotAppendActualSuffixOnIntialImageCapture = true;
     });
 
     after(async function () {
