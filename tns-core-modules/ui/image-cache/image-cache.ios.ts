@@ -8,7 +8,7 @@ import * as utils from "../../utils/utils";
 let httpRequest: typeof httpRequestModule;
 function ensureHttpRequest() {
     if (!httpRequest) {
-        httpRequest = require("http/http-request");
+        httpRequest = require("../../http/http-request");
     }
 }
 

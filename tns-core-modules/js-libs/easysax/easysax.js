@@ -188,10 +188,10 @@ function rpEntities(s, d, x, z) {
     };
 
     if (d) {
-        return String.fromCharCode(d);
+        return String.fromCodePoint(d);
     };
 
-    return String.fromCharCode(parseInt(x, 16));
+    return String.fromCodePoint(parseInt(x, 16));
 };
 
 function unEntities(s, i) {
