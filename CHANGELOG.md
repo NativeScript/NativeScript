@@ -4,7 +4,6 @@
 
 ### Bug Fixes
 
-* tslint error ([f36528f](https://github.com/NativeScript/NativeScript/commit/f36528f))
 * **android:** remove wait for doubletap if no gesture recognizer ([#7584](https://github.com/NativeScript/NativeScript/issues/7584)) ([9fd5ddc](https://github.com/NativeScript/NativeScript/commit/9fd5ddc))
 * **bottom-navigation:** crash when tab selected with no item ([#7527](https://github.com/NativeScript/NativeScript/issues/7527)) ([46c17ca](https://github.com/NativeScript/NativeScript/commit/46c17ca))
 * **tabs:** tab bar not visible when nested in layout ([#7544](https://github.com/NativeScript/NativeScript/issues/7544)) ([f00b370](https://github.com/NativeScript/NativeScript/commit/f00b370))
