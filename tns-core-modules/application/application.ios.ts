@@ -215,11 +215,13 @@ class IOSApplication implements IOSApplicationDefinition {
                     newValue = "landscape";
                     break;
                 case UIDeviceOrientation.Portrait:
-                case UIDeviceOrientation.PortraitUpsideDown:
                     newValue = "portrait";
                     break;
                 default:
-                    newValue = "unknown";
+                    // UIDeviceOrientation.PortraitUpsideDown
+                    // UIDeviceOrientation.FaceUp
+                    // UIDeviceOrientation.FaceDown
+                    newValue = this.getStatusBarOrientation();
                     break;
             }
 
@@ -231,6 +233,30 @@ class IOSApplication implements IOSApplicationDefinition {
                 newValue: newValue,
                 object: this
             });
+        }
+    }
+
+    // In iOS, there are concepts for
+    // device orientation (UIDeviceOrientation) and
+    // interface orientation (UIInterfaceOrientation).
+
+    // This methods handles the scenarios when:
+    // - the device rotates from Portrait through Landscape to PortraitUpsideDown
+    // - the application launches on device PortraitUpsideDown orientation
+
+    // In these scenarios, the device is in PortraitUpsideDown orientation,
+    // however, the application is not.
+    // Therefore, get the orientation of the status bar.
+    private getStatusBarOrientation(): "portrait" | "landscape" | "unknown" {
+        switch (UIApplication.sharedApplication.statusBarOrientation) {
+            case UIInterfaceOrientation.LandscapeRight:
+            case UIInterfaceOrientation.LandscapeLeft:
+                return "landscape";
+            case UIInterfaceOrientation.PortraitUpsideDown:
+            case UIInterfaceOrientation.Portrait:
+                return "portrait";
+            case UIInterfaceOrientation.Unknown:
+                return "unknown";
         }
     }
 
