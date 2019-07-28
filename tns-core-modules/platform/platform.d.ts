@@ -40,10 +40,9 @@ export interface Device {
     model: string;
 
     /**
-     * Gets the orientation of the device.
+     * Gets or sets the orientation of the device.
      * Available values: "portrait", "landscape", "unknown".
      */
-    // TODO: import enum?
     orientation: "portrait" | "landscape" | "unknown";
 
     /**

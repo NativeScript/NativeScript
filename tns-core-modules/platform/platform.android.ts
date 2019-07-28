@@ -30,7 +30,6 @@ class Device implements DeviceDefinition {
 
     get orientation(): "portrait" | "landscape" | "unknown" {
         if (!this._orientation) {
-            // TODO: import from utils.android.ts
             const nativeApp = <android.app.Application>appModule.android.nativeApp;
             const appContext = <android.content.Context>nativeApp.getApplicationContext();
             const resources = <android.content.res.Resources>appContext.getResources();
@@ -38,27 +37,23 @@ class Device implements DeviceDefinition {
             const orientation = configuration.orientation;
 
             switch (orientation) {
-                default:
-                    this._orientation = "unknown";
+                case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
+                    this._orientation = "landscape";
                     break;
                 case android.content.res.Configuration.ORIENTATION_PORTRAIT:
                     this._orientation = "portrait";
                     break;
-                case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
-                    this._orientation = "landscape";
+                default:
+                    this._orientation = "unknown";
                     break;
             }
         }
 
-        // // If for some reason the orientation code above doesn't figure it out; we use sizes
-        // var metrics = new android.util.DisplayMetrics();
-        // context.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(metrics);
-        // if (metrics.widthPixels > metrics.heightPixels) {
-        //     return enums.DeviceOrientation.landscape;
-        // }
-        // return enums.DeviceOrientation.portrait;
-
         return this._orientation;
+    }
+
+    set orientation(value: "portrait" | "landscape" | "unknown") {
+        this._orientation = value;
     }
 
     get os(): string {
