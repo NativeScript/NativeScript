@@ -1,0 +1,24 @@
+{
+  "nativescript": {
+    "id": "org.nativescript.cssclasess",
+    "tns-android": {
+      "version": "next"
+    },
+    "tns-ios": {
+      "version": "next"
+    }
+  },
+  "main": "app.js",
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
+  "dependencies": {
+    "tns-core-modules": "file:../../tns-core-modules"
+  },
+  "devDependencies": {
+    "nativescript-dev-webpack": "next",
+    "typescript": "~3.4.0"
+  },
+  "gitHead": "f28dbc60d74dd2cef4b645afd8fdd63bbb12c73e",
+  "readme": "NativeScript Application"
+}
