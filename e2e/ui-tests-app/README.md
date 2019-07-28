@@ -1,17 +1,21 @@
 ***e2e tests execution***
 
 1. Local setup
-    - install appium and all requirments related to how to use `nativescript-dev-appium` plugin
+    - install appium and all requirments related to `nativescript-dev-appium` plugin usage
     - download images: 
     
-        ```npm run load-images Emulator-Api23-Default```
+        ```npm run load-images Emulator-Api23-Default "iPhone X 12"```
 
         or load multiple folders:
 
-        ``` npm run load-images Emulator-Api23-Default Emulator-Google-Api28```
+        ``` npm run load-images Emulator-Api23-Default Emulator-Google-Api28 "iPhone X 12"```
 
-        This command will download https://github.com/NativeScript/functional-tests-images/tree/master/uitestsapp and sparse all passed directories [emulator-name|simulator-name] [emulator-name|simulator-name] [emulator-name|simulator-name]
-    - name your device so that it matches folder name, respectively api level and density of emulators. 
+        or load all folders:
+
+        ``` npm run load-images all```
+
+        This command will download https://github.com/NativeScript/functional-tests-images/tree/master/uitestsapp and sparse all passed directories [emulator-name|simulator-name]
+    - rename/ create your device so that it matches folder name, respectively api level and density of emulators. 
     
         You can also use scripts:
     
@@ -19,7 +23,7 @@
     
         If you need to download system image and create emulator use:
 
-        `npm run update-emulators -u`
+        `npm run update-emulators -- --update-system-images`
 2. Test execution
     - Run test compilation in separate terminal and don't kill it.
     
@@ -31,8 +35,8 @@
 3. Debug test.
     - Run:
 
-        `npm run test-debug [android|ios]`
-in separate console and don't kill it. This command will start appium server and driver and use the installed app on the device but it will not execute tests.
+        `npm run e2e-debug [android|ios]`
+run in separate console and don't kill it. This command will start appium server and driver and use the installed app on the device but it will not execute tests.
     - Go to vs code debugging and use a config like:
 
     ```
@@ -48,13 +52,15 @@ in separate console and don't kill it. This command will start appium server and
                 "--opts",
                 "../config/mocha.opts",
                 "--attachToDebug",
+                "--grpe",
+                "button"
             ],
             "internalConsoleOptions": "openOnSessionStart"
         }
 
 ***mocha options***
 
-mocha opt file is plased in "../config/mocha.opts".
+mocha opt file is located at "../config/mocha.opts".
 
        --timeout 999999
        --recursive e2e
@@ -63,4 +69,8 @@ mocha opt file is plased in "../config/mocha.opts".
        --exit
 
 
-- grep particular suites: "--grep=tabs-tab(s-\\w+)-suite"
+***grep particular suit or test***
+
+` npm run e2e ios -- --grep=tabs-tab(s-\\w+)-suite`
+
+

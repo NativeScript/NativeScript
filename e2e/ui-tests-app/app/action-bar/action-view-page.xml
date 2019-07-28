@@ -1,6 +1,6 @@
 <Page>
   <Page.actionBar>
-    <ActionBar>
+    <ActionBar automationText="actionBar">
       <ActionBar.actionItems>
         <ActionItem tap="navigate">
           <ActionItem.actionView>

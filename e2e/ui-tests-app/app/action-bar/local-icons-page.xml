@@ -1,6 +1,6 @@
 <Page>
   <Page.actionBar>
-    <ActionBar>
+    <ActionBar automationText="actionBar">
       <ActionBar.actionItems>
         <ActionItem icon="~/resources/images/icon.png" tap="navigate"/>
         <ActionItem icon="~/resources/images/add_to_fav@3x.png" tap="navigate"/>
