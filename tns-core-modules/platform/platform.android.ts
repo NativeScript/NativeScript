@@ -12,6 +12,7 @@ export module platformNames {
 class Device implements DeviceDefinition {
     private _manufacturer: string;
     private _model: string;
+    private _orientation: "portrait" | "landscape" | "unknown";
     private _osVersion: string;
     private _sdkVersion: string;
     private _deviceType: "Phone" | "Tablet";
@@ -29,6 +30,39 @@ class Device implements DeviceDefinition {
         }
 
         return this._manufacturer;
+    }
+
+    get orientation(): "portrait" | "landscape" | "unknown" {
+        if (!this._orientation) {
+            // TODO: import from utils.android.ts
+            const nativeApp = <android.app.Application>appModule.android.nativeApp;
+            const appContext = <android.content.Context>nativeApp.getApplicationContext();
+            const resources = <android.content.res.Resources>appContext.getResources();
+            const configuration = <android.content.res.Configuration>resources.getConfiguration();
+            const orientation = configuration.orientation;
+
+            switch (orientation) {
+                default:
+                    this._orientation = "unknown";
+                    break;
+                case android.content.res.Configuration.ORIENTATION_PORTRAIT:
+                    this._orientation = "portrait";
+                    break;
+                case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
+                    this._orientation = "landscape";
+                    break;
+            }
+        }
+
+        // // If for some reason the orientation code above doesn't figure it out; we use sizes
+        // var metrics = new android.util.DisplayMetrics();
+        // context.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(metrics);
+        // if (metrics.widthPixels > metrics.heightPixels) {
+        //     return enums.DeviceOrientation.landscape;
+        // }
+        // return enums.DeviceOrientation.portrait;
+
+        return this._orientation;
     }
 
     get osVersion(): string {

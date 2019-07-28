@@ -1,46 +1,42 @@
 import * as TKUnit from "../tk-unit";
 import * as app from "tns-core-modules/application";
-import { isIOS, isAndroid } from "tns-core-modules/platform";
-
-// >> platform-require
 import * as platformModule from "tns-core-modules/platform";
-// << platform-require
 
-export function test_setTimeout_isDefined() {
-    var expected;
+export function test_platform() {
+    let expectedPlatform;
     if (app.android) {
-        expected = "Android";
+        expectedPlatform = "Android";
+    } else {
+        expectedPlatform = "iOS";
     }
-    else {
-        expected = "iOS";
-    }
-    TKUnit.assertEqual(platformModule.device.os, expected, "device.os");
+    TKUnit.assertEqual(platformModule.device.os, expectedPlatform);
 }
 
-export function snippet_print_all() {
-    // >> platform-current
+export function test_device_screen() {
     console.log("Device model: " + platformModule.device.model);
-    console.log("Device type: " + platformModule.device.deviceType);
     console.log("Device manufacturer: " + platformModule.device.manufacturer);
+    console.log("Device orientation: " + platformModule.device.orientation);
+    console.log("Device type: " + platformModule.device.deviceType);
+    console.log("Device UUID: " + platformModule.device.uuid);
+
     console.log("Preferred language: " + platformModule.device.language);
     console.log("Preferred region: " + platformModule.device.region);
+
     console.log("OS: " + platformModule.device.os);
     console.log("OS version: " + platformModule.device.osVersion);
     console.log("SDK version: " + platformModule.device.sdkVersion);
-    console.log("Device UUID: " + platformModule.device.uuid);
 
     console.log("Screen width (px): " + platformModule.screen.mainScreen.widthPixels);
     console.log("Screen height (px): " + platformModule.screen.mainScreen.heightPixels);
     console.log("Screen width (DIPs): " + platformModule.screen.mainScreen.widthDIPs);
     console.log("Screen height (DIPs): " + platformModule.screen.mainScreen.heightDIPs);
     console.log("Screen scale: " + platformModule.screen.mainScreen.scale);
-    // << platform-current
 }
 
-export function testIsIOSandIsAndroid() {
-    if (isIOS) {
+export function test_IsAndroid_IsIOS() {
+    if (platformModule.isIOS) {
         TKUnit.assertTrue(!!NSObject, "isIOS is true-ish but common iOS APIs are not available.");
-    } else if (isAndroid) {
-        TKUnit.assertTrue(!!android, "isAndroid is true but common 'android' package is not available.");
+    } else if (platformModule.isAndroid) {
+        TKUnit.assertTrue(!!android, "isAndroid is true-ish but common 'android' package is not available.");
     }
 }

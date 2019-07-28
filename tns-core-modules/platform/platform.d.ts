@@ -40,6 +40,13 @@ export interface Device {
     model: string;
 
     /**
+     * Gets the orientation of the device.
+     * Available values: "portrait", "landscape", "unknown".
+     */
+    // TODO: import enum?
+    orientation: "portrait" | "landscape" | "unknown";
+
+    /**
      * Gets the OS of the device.
      * For example: "Android" or "iOS".
      */
@@ -125,4 +132,4 @@ export module screen {
 /**
  * Gets the current device information.
  */
-export const device: Device;    
+export const device: Device;
