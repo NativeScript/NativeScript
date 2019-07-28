@@ -20,10 +20,6 @@ class Device implements DeviceDefinition {
     private _language: string;
     private _region: string;
 
-    get os(): string {
-        return platformNames.android;
-    }
-
     get manufacturer(): string {
         if (!this._manufacturer) {
             this._manufacturer = android.os.Build.MANUFACTURER;
@@ -63,6 +59,10 @@ class Device implements DeviceDefinition {
         // return enums.DeviceOrientation.portrait;
 
         return this._orientation;
+    }
+
+    get os(): string {
+        return platformNames.android;
     }
 
     get osVersion(): string {

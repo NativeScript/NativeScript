@@ -20,6 +20,7 @@ import { createViewFromEntry } from "../ui/builder";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
 import { ios } from "../utils/utils";
+import { device } from "../platform";
 import { profile } from "../profiling";
 
 const getVisibleViewController = ios.getVisibleViewController;
@@ -221,6 +222,8 @@ class IOSApplication implements IOSApplicationDefinition {
                     newValue = "unknown";
                     break;
             }
+
+            device.orientation = newValue;
 
             notify(<OrientationChangedEventData>{
                 eventName: orientationChangedEvent,
