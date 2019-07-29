@@ -240,7 +240,7 @@ class IOSApplication implements IOSApplicationDefinition {
     // device orientation (UIDeviceOrientation) and
     // interface orientation (UIInterfaceOrientation).
 
-    // This methods handles the scenarios when:
+    // This method handles the scenarios when:
     // - the device rotates from Portrait through Landscape to PortraitUpsideDown
     // - the application launches on device PortraitUpsideDown orientation
 
