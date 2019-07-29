@@ -1,3 +1,13 @@
+<a name="6.0.3"></a>
+## [6.0.3](https://github.com/NativeScript/NativeScript/compare/6.0.2...6.0.3) (2019-07-29)
+
+
+### Bug Fixes
+
+* **ios:** move material design dependency to podfile ([#7592](https://github.com/NativeScript/NativeScript/issues/7592)) ([291e3b4](https://github.com/NativeScript/NativeScript/commit/291e3b4))
+
+
+
 <a name="6.0.2"></a>
 ## [6.0.2](https://github.com/NativeScript/NativeScript/compare/6.0.0...6.0.2) (2019-07-26)
 
