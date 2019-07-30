@@ -1,0 +1,24 @@
+<Page class="page">
+
+  <ActionBar title="Tabs highlight-color" icon="" class="action-bar">
+  </ActionBar>
+
+  <Tabs automationText="tabNavigation"  >
+    <TabStrip>
+        <TabStripItem title="First" class="special"></TabStripItem>
+        <TabStripItem title="Second"></TabStripItem>
+    </TabStrip>
+
+    <TabContentItem class="special">
+        <GridLayout>
+          <Label text="First View" />
+        </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+        <GridLayout>
+          <Label text="Second View" />
+        </GridLayout>
+    </TabContentItem>
+  </Tabs>
+</Page>

@@ -34,11 +34,11 @@
   "gitHead": "8ab7726d1ee9991706069c1359c552e67ee0d1a4",
   "readme": "NativeScript Application",
   "scripts": {
-    "test": "mocha --opts ../config/mocha.opts",
-    "test-debug": "./node_modules/.bin/ns-dev-appium --startSession",
-    "test-watch": "tsc -p e2e --watch",
+    "e2e": "tsc -p e2e && mocha --opts ../config/mocha.opts --recursive e2e --appiumCapsLocation ../config/appium.capabilities.json",
+    "e2e-debug": "./node_modules/.bin/ns-dev-appium --startSession",
+    "e2e-watch": "tsc -p e2e --watch",
+    "e2e-tsc": "tsc -p e2e",
     "pretest": "tsc -p e2e",
-    "watch": "testdeck-watch",
     "load-images": "./e2e/scripts/sparse-checkout.sh uitestsapp https://github.com/NativeScript/functional-tests-images.git $PWD/../../../functional-tests-images",
     "update-emulators": "cd $PWD/../../../functional-tests-images  && . ./scripts/update-emulators.sh --appName uitestsapp"
   }

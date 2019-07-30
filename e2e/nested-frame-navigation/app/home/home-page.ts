@@ -20,22 +20,49 @@ export function onNavigateToPageMultiFrame(args: EventData) {
     button.page.frame.navigate("frame-root/frame-multi-home-page");
 }
 
+export function onNavigateToTabViewTopPage(args: EventData) {
+    const button = <Button>args.object;
+    button.page.frame.navigate("tab-page/tab-top-page");
+}
+
+export function onNavigateToTabViewBottomPage(args: EventData) {
+    const button = <Button>args.object;
+    button.page.frame.navigate("tab-page/tab-bottom-page");
+}
+
+export function onNavigateToTabViewTopRoot(args: EventData) {
+    application._resetRootView({ moduleName: "tab-root/tab-top-root" });
+}
+
+export function onNavigateToTabViewBottomRoot(args: EventData) {
+    application._resetRootView({ moduleName: "tab-root/tab-bottom-root" });
+}
+
+export function onNavigateToBottomNavigationPage(args: EventData) {
+    const button = <Button>args.object;
+    button.page.frame.navigate("bottom-navigation-page/bottom-navigation-page");
+}
+
+export function onNavigateToBottomNavigationRoot(args: EventData) {
+    application._resetRootView({ moduleName: "bottom-navigation-root/bottom-navigation-root" });
+}
+
 export function onNavigateToTabsTopPage(args: EventData) {
     const button = <Button>args.object;
-    button.page.frame.navigate("tab-page/tabs-top-page");
+    button.page.frame.navigate("tabs-page/tabs-top-page");
 }
 
 export function onNavigateToTabsBottomPage(args: EventData) {
     const button = <Button>args.object;
-    button.page.frame.navigate("tab-page/tabs-bottom-page");
+    button.page.frame.navigate("tabs-page/tabs-bottom-page");
 }
 
 export function onNavigateToTabsTopRoot(args: EventData) {
-    application._resetRootView({ moduleName: "tab-root/tab-top-root" });
+    application._resetRootView({ moduleName: "tabs-root/tabs-top-root" });
 }
 
 export function onNavigateToTabsBottomRoot(args: EventData) {
-    application._resetRootView({ moduleName: "tab-root/tab-bottom-root" });
+    application._resetRootView({ moduleName: "tabs-root/tabs-bottom-root" });
 }
 
 export function onNavigateToSomePage(args: EventData) {

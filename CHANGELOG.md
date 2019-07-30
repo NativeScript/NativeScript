@@ -1,3 +1,116 @@
+<a name="6.0.0"></a>
+# [6.0.0](https://github.com/NativeScript/NativeScript/compare/5.4.2...6.0.0) (2019-06-28)
+
+
+### Bug Fixes
+
+* **bundle:** support for file qualifiers with webpack ([#7386](https://github.com/NativeScript/NativeScript/issues/7386)) ([9fcc1dd](https://github.com/NativeScript/NativeScript/commit/9fcc1dd))
+* **bundle:** code-only typescript custom components with webpack ([#7321](https://github.com/NativeScript/NativeScript/issues/7321)) ([9fcc1dd](https://github.com/NativeScript/NativeScript/commit/9fcc1dd))
+* **bundle:** component builder support for codeFile / cssFile / import with webpack ([#7324](https://github.com/NativeScript/NativeScript/issues/7324)) ([9fcc1dd](https://github.com/NativeScript/NativeScript/commit/9fcc1dd))
+* **bundle:** different event order ([NativeScript/nativescript-cli#4633](https://github.com/NativeScript/nativescript-cli/issues/4633)) ([8851835](https://github.com/NativeScript/NativeScript/commit/8851835))
+* restore TextField.textChange and Switch.checkedChange event syntax in xml ([#7403](https://github.com/NativeScript/NativeScript/issues/7403)) ([76b5089](https://github.com/NativeScript/NativeScript/commit/76b5089))
+* **android:** ignore gzip content-encoding for status code 204 ([#7417](https://github.com/NativeScript/NativeScript/issues/7417)) ([4437cd6](https://github.com/NativeScript/NativeScript/commit/4437cd6))
+* **android-transition:** exit transition not executed after app suspend resume ([#7402](https://github.com/NativeScript/NativeScript/issues/7402)) ([f08b491](https://github.com/NativeScript/NativeScript/commit/f08b491))
+* **css-state:** _appliedSelectorsVersion assignment ([#7405](https://github.com/NativeScript/NativeScript/issues/7405)) ([9ecf07f](https://github.com/NativeScript/NativeScript/commit/9ecf07f))
+* **observable-array**: splice to notify correct amount of added items ([#7426](https://github.com/NativeScript/NativeScript/pull/7426)) ([5e14de6](https://github.com/NativeScript/NativeScript/commit/5e14de6))
+* cancel contradictory gesture events ([#7296](https://github.com/NativeScript/NativeScript/issues/7296)) ([b8a82f2](https://github.com/NativeScript/NativeScript/commit/b8a82f2))
+* allow span descendants in FormattedString ([#7369](https://github.com/NativeScript/NativeScript/issues/7369)) ([01c4b8c](https://github.com/NativeScript/NativeScript/commit/01c4b8c))
+
+
+### Features
+
+* **bundle:** bundle workflow support ([#7320](https://github.com/NativeScript/NativeScript/issues/7320)) ([ecd9fc3](https://github.com/NativeScript/NativeScript/commit/ecd9fc3))
+* **android:** androidX support ([#7039](https://github.com/NativeScript/NativeScript/issues/7039)) ([c5db112](https://github.com/NativeScript/NativeScript/commit/c5db112))
+* **BETA/EXPERIMENTAL:** bottom navigation and tabs components ([#6967](https://github.com/NativeScript/NativeScript/issues/6967)) ([0c2c1cc](https://github.com/NativeScript/NativeScript/commit/0c2c1cc))
+* add support for :focus pseudo class in TextField / TextView ([#7396](https://github.com/NativeScript/NativeScript/pull/7396)) ([0bfddab](https://github.com/NativeScript/NativeScript/commit/0bfddab))
+* **animation:** support animating width/height properties ([#5147](https://github.com/NativeScript/NativeScript/pull/5147)) ([e7c575](https://github.com/NativeScript/NativeScript/commit/e7c575))
+
+### BREAKING CHANGES
+
+* `AndroidApplication.currentContext` in `tns-core-modules/application` module is now removed.
+
+Use `AndroidApplication.startActivity`, `AndroidApplication.foregroundActivity`, or `AndroidApplication.context` properties instead.
+
+
+* `start(...)` method in `tns-core-modules/application` module is now removed.
+
+Use `application.run(...)` method instead.
+
+
+* `loadPage(...)` method in `tns-core-modules/ui/builder` module is now removed.
+
+Use `createViewFromEntry(entry: NavigationEntry)` method in `tns-core-modules/ui/builder` module instead.
+
+
+* `tns-core-modules/ui/core/dependency-observable` module is now removed.
+
+Use `tns-core-modules/ui/core/properties` module instead.
+
+
+* `ViewBase.showModal()`, `ViewBase.showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): ViewBase`, and `ViewBase.showModal(view: ViewBase, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): ViewBase` method overloads are now removed.
+
+Use `ViewBase.showModal(moduleName: string, modalOptions: ShowModalOptions): ViewBase` or `ViewBase.showModal(view: ViewBase, modalOptions: ShowModalOptions): ViewBase` instead.
+
+
+* `Frame.androidOptionSelectedEvent` and `AndroidOptionEventData` interfrace in `tns-core-modules/ui/frame` module are now removed.
+
+Event not raised by NativeScript core framework anymore.
+
+
+* `AndroidFrame.cachePagesOnNavigate` in `tns-core-modules/ui/frame` module is now removed.
+
+Not used internally in NativeScript core framework anymore.
+
+
+* `stack()` method in `tns-core-modules/ui/frame` module is now removed.
+
+Use `getFrameById(...)` method if you want to retrieve a frame different than the topmost one instead.
+
+
+* `AndroidActivityCallbacks.onCreate(activity: any, savedInstanceState: any, superFunc: Function)` method overload in `tns-core-modules/ui/frame` module is now removed.
+
+Use `AndroidActivityCallbacks.onCreate(activity: any, savedInstanceState: any, intent: any, superFunc: Function)` instead.
+
+
+* `WebView.url` property in `tns-core-modules/ui/web-view` module is now removed.
+
+Use `WebView.src` property instead.
+
+
+* `ios.getter(...)` function in `tns-core-modules/utils` module is now removed.
+
+Use the respective native property directly instead.
+
+
+* `View.observe(...)` method in `tns-core-modules/ui/core/view` module is now removed.
+
+Use `View.on(...)` method instead.
+
+* The addedCount variable from ObservableArray.splice(...) change event is always the amount of added items.
+
+Migration steps:
+The old addedCount can be obtained by `const addedCount = event.addedCount - event.removed.length`
+
+* Fix to cancel contradictory gesture events (e.g. tap and double tap) introduces the following behavior breaking change
+
+Before:
+* **iOS / Android**:
+    * double tap: child tap -> parent tap -> child double tap -> parent double tap
+    * tap: child tap -> parent tap
+
+After: 
+* **iOS**:
+    * double tap: child double tap
+    * tap: child tap
+* **Android**:
+    * double tap: child double tap -> parent double tap
+    * tap: child tap -> parent tap
+
+Migration steps:
+Move event handlers accordingly.
+
+
+
 ## [5.4.3](https://github.com/NativeScript/NativeScript/compare/5.4.2...5.4.3) (2019-06-21)
 
 

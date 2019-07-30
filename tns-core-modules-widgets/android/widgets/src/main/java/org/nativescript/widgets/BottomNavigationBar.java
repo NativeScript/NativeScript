@@ -205,6 +205,10 @@ public class BottomNavigationBar extends LinearLayout {
             textView.setVisibility(GONE);
         }
 
+        if (tabItem.backgroundColor != 0) {
+            ll.setBackgroundColor(tabItem.backgroundColor);
+        }
+
         ll.setMinimumHeight((int) (BOTTOM_NAV_HEIGHT * density));
 
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) ll.getLayoutParams();
@@ -212,7 +216,12 @@ public class BottomNavigationBar extends LinearLayout {
         lp.weight = 1;
     }
 
-    public void onSelectedPositionChange(int position) {
+    public boolean onTap(int position) {
+        // to be overridden in JS
+        return true;
+    }
+
+    public void onSelectedPositionChange(int position, int prevPosition) {
         // to be overridden in JS
     }
 
@@ -239,13 +248,17 @@ public class BottomNavigationBar extends LinearLayout {
             int tabTextColor = mTabStrip.getTabTextColor();
             mTabStrip.setTabTextColor(Color.argb(100, Color.red(tabTextColor), Color.green(tabTextColor), Color.blue(tabTextColor)));
             mTabStrip.setSelectedTabTextColor(Color.argb(255, Color.red(tabTextColor), Color.green(tabTextColor), Color.blue(tabTextColor)));
-            mTabStrip.setSelectedPosition(0);
         }
     }
 
     public void setSelectedPosition(int position) {
+        int prevPosition = mTabStrip.getSelectedPosition();
+        if (prevPosition == position) {
+            return;
+        }
+
         mTabStrip.setSelectedPosition(position);
-        onSelectedPositionChange(position);
+        onSelectedPositionChange(position, prevPosition);
     }
 
     public void setContentDescription(int i, String desc) {
@@ -257,7 +270,9 @@ public class BottomNavigationBar extends LinearLayout {
         public void onClick(View v) {
              for (int i = 0; i < mTabStrip.getChildCount(); i++) {
                  if (v == mTabStrip.getChildAt(i)) {
-                     setSelectedPosition(i);
+                     if (onTap(i)) {
+                         setSelectedPosition(i);
+                     }
                      return;
                  }
              }

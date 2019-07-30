@@ -1,0 +1,16 @@
+<Page>
+  <Tabs id="tabs" automationText="tabNavigation"  >
+
+    <TabStrip>
+
+      <TabStripItem title="TabStripItem 1" iconSource="res://icon">
+      </TabStripItem>
+
+    </TabStrip>
+
+    <TabContentItem>
+      <Label text="TabContentItem 1"></Label>
+    </TabContentItem>
+
+  </Tabs>
+</Page>
