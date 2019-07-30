@@ -1,3 +1,12 @@
+<a name="6.0.4"></a>
+## [6.0.4](https://github.com/NativeScript/NativeScript/compare/6.0.3...6.0.4) (2019-07-30)
+
+
+### Bug Fixes
+
+* **ios:** 'ui/tabs' not found for element 'Tabs'
+
+
 <a name="6.0.3"></a>
 ## [6.0.3](https://github.com/NativeScript/NativeScript/compare/6.0.2...6.0.3) (2019-07-29)
 
