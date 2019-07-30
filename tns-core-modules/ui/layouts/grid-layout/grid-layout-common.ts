@@ -134,7 +134,10 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
     private _cols: Array<ItemSpec> = new Array<ItemSpec>();
 
     public static getColumn(element: View): number {
-        return validateArgs(element).col;
+        validateArgs(element);
+        
+        // "column" treated as a synonym for "col" (not in d.ts to avoid confusion)
+        return Math.max(element.col, (<any>element).column);
     }
 
     public static setColumn(element: View, value: number): void {
@@ -142,7 +145,10 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
     }
 
     public static getColumnSpan(element: View): number {
-        return validateArgs(element).colSpan;
+        validateArgs(element);
+
+        // "columnSpan" treated as a synonym for "colSpan" (not in d.ts to avoid confusion)
+        return Math.min(element.colSpan, (<any>element).columnSpan);
     }
 
     public static setColumnSpan(element: View, value: number): void {
@@ -310,51 +316,57 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
 
 GridLayoutBase.prototype.recycleNativeView = "auto";
 
+const columnDefaultValue = 0;
+
+function columnPropertyValueChanged (target: View, oldValue: number, newValue: number) {
+    const grid = target.parent;
+    if (grid instanceof GridLayoutBase) {
+        grid.onColumnChanged(target, oldValue, newValue);
+    }
+}
+
+function columnPropertyValueConverter(value: string) {
+    return Math.max(columnDefaultValue, parseInt(value));
+}
+
 export const colProperty = new Property<View, number>({
-    name: "col", defaultValue: 0,
-    valueChanged: (target, oldValue, newValue) => {
-        const grid = target.parent;
-        if (grid instanceof GridLayoutBase) {
-            grid.onColumnChanged(target, oldValue, newValue);
-        }
-    },
-    valueConverter: (v) => Math.max(0, parseInt(v))
+    name: "col", defaultValue: columnDefaultValue,
+    valueChanged: columnPropertyValueChanged,
+    valueConverter: columnPropertyValueConverter 
 });
 colProperty.register(View);
 
 export const columnProperty = new Property<View, number>({
-    name: "column", defaultValue: 0,
-    valueChanged: (target, oldValue, newValue) => {
-        const grid = target.parent;
-        if (grid instanceof GridLayoutBase) {
-            grid.onColumnChanged(target, oldValue, newValue);
-        }
-    },
-    valueConverter: (v) => Math.max(0, parseInt(v))
+    name: "column", defaultValue: columnDefaultValue,
+    valueChanged: columnPropertyValueChanged,
+    valueConverter: columnPropertyValueConverter
 });
 columnProperty.register(View);
 
+const columnSpanDefaultValue = 1;
+
+function columnSpanPropertyValueChanged(target: View, oldValue: number, newValue: number) {
+    const grid = target.parent;
+    if (grid instanceof GridLayoutBase) {
+        grid.onColumnSpanChanged(target, oldValue, newValue);
+    }
+}
+
+function columnSpanPropertyValueConverter(value: string) {
+    return Math.max(columnSpanDefaultValue, parseInt(value));
+}
+
 export const colSpanProperty = new Property<View, number>({
-    name: "colSpan", defaultValue: 1,
-    valueChanged: (target, oldValue, newValue) => {
-        const grid = target.parent;
-        if (grid instanceof GridLayoutBase) {
-            grid.onColumnSpanChanged(target, oldValue, newValue);
-        }
-    },
-    valueConverter: (v) => Math.max(1, parseInt(v))
+    name: "colSpan", defaultValue: columnSpanDefaultValue,
+    valueChanged: columnSpanPropertyValueChanged,
+    valueConverter: columnSpanPropertyValueConverter 
 });
 colSpanProperty.register(View);
 
 export const columnSpanProperty = new Property<View, number>({
-    name: "columnSpan", defaultValue: 1,
-    valueChanged: (target, oldValue, newValue) => {
-        const grid = target.parent;
-        if (grid instanceof GridLayoutBase) {
-            grid.onColumnSpanChanged(target, oldValue, newValue);
-        }
-    },
-    valueConverter: (v) => Math.max(1, parseInt(v))
+    name: "columnSpan", defaultValue: columnSpanDefaultValue,
+    valueChanged: columnSpanPropertyValueChanged,
+    valueConverter: columnSpanPropertyValueConverter
 });
 columnSpanProperty.register(View);
 
