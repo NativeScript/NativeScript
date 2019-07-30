@@ -40,12 +40,6 @@ export interface Device {
     model: string;
 
     /**
-     * Gets or sets the orientation of the device.
-     * Available values: "portrait", "landscape", "unknown".
-     */
-    orientation: "portrait" | "landscape" | "unknown";
-
-    /**
      * Gets the OS of the device.
      * For example: "Android" or "iOS".
      */

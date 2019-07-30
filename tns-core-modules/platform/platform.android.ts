@@ -12,7 +12,6 @@ export module platformNames {
 class Device implements DeviceDefinition {
     private _manufacturer: string;
     private _model: string;
-    private _orientation: "portrait" | "landscape" | "unknown";
     private _osVersion: string;
     private _sdkVersion: string;
     private _deviceType: "Phone" | "Tablet";
@@ -26,34 +25,6 @@ class Device implements DeviceDefinition {
         }
 
         return this._manufacturer;
-    }
-
-    get orientation(): "portrait" | "landscape" | "unknown" {
-        if (!this._orientation) {
-            const nativeApp = <android.app.Application>appModule.android.nativeApp;
-            const appContext = <android.content.Context>nativeApp.getApplicationContext();
-            const resources = <android.content.res.Resources>appContext.getResources();
-            const configuration = <android.content.res.Configuration>resources.getConfiguration();
-            const orientation = configuration.orientation;
-
-            switch (orientation) {
-                case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
-                    this._orientation = "landscape";
-                    break;
-                case android.content.res.Configuration.ORIENTATION_PORTRAIT:
-                    this._orientation = "portrait";
-                    break;
-                default:
-                    this._orientation = "unknown";
-                    break;
-            }
-        }
-
-        return this._orientation;
-    }
-
-    set orientation(value: "portrait" | "landscape" | "unknown") {
-        this._orientation = value;
     }
 
     get os(): string {

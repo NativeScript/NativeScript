@@ -20,7 +20,6 @@ import { createViewFromEntry } from "../ui/builder";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
 import { ios } from "../utils/utils";
-import { device } from "../platform";
 import { profile } from "../profiling";
 
 const getVisibleViewController = ios.getVisibleViewController;
@@ -79,9 +78,9 @@ class CADisplayLinkTarget extends NSObject {
 
 class IOSApplication implements IOSApplicationDefinition {
     private _delegate: typeof UIApplicationDelegate;
-    private _currentOrientation = UIDevice.currentDevice.orientation;
     private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
+    private _orientation: "portrait" | "landscape" | "unknown";
     private _rootView: View;
 
     constructor() {
@@ -91,7 +90,20 @@ class IOSApplication implements IOSApplicationDefinition {
         this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground.bind(this));
         this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate.bind(this));
         this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning.bind(this));
-        this.addNotificationObserver(UIDeviceOrientationDidChangeNotification, this.orientationDidChange.bind(this));
+        this.addNotificationObserver(UIApplicationDidChangeStatusBarOrientationNotification, this.didChangeStatusBarOrientation.bind(this));
+    }
+
+    get orientation(): "portrait" | "landscape" | "unknown" {
+        if (!this._orientation) {
+            const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+            this._orientation = this.getOrientationValue(statusBarOrientation);
+        }
+
+        return this._orientation;
+    }
+
+    set orientation(value: "portrait" | "landscape" | "unknown") {
+        this._orientation = value;
     }
 
     get rootController(): UIViewController {
@@ -198,57 +210,28 @@ class IOSApplication implements IOSApplicationDefinition {
         }
     }
 
-    private didReceiveMemoryWarning(notification: NSNotification) {
-        notify(<ApplicationEventData>{ eventName: lowMemoryEvent, object: this, ios: UIApplication.sharedApplication });
-    }
+    private didChangeStatusBarOrientation(notification: NSNotification) {
+        const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+        const newOrientation = this.getOrientationValue(statusBarOrientation);
 
-    private orientationDidChange(notification: NSNotification) {
-        const orientation = UIDevice.currentDevice.orientation;
-
-        if (this._currentOrientation !== orientation) {
-            this._currentOrientation = orientation;
-
-            let newValue: "portrait" | "landscape" | "unknown";
-            switch (orientation) {
-                case UIDeviceOrientation.LandscapeRight:
-                case UIDeviceOrientation.LandscapeLeft:
-                    newValue = "landscape";
-                    break;
-                case UIDeviceOrientation.Portrait:
-                    newValue = "portrait";
-                    break;
-                default:
-                    // UIDeviceOrientation.PortraitUpsideDown
-                    // UIDeviceOrientation.FaceUp
-                    // UIDeviceOrientation.FaceDown
-                    newValue = this.getStatusBarOrientation();
-                    break;
-            }
-
-            device.orientation = newValue;
+        if (this._orientation !== newOrientation) {
+            this._orientation = newOrientation;
 
             notify(<OrientationChangedEventData>{
                 eventName: orientationChangedEvent,
                 ios: this,
-                newValue: newValue,
+                newValue: this._orientation,
                 object: this
             });
         }
     }
 
-    // In iOS, there are concepts for
-    // device orientation (UIDeviceOrientation) and
-    // interface orientation (UIInterfaceOrientation).
+    private didReceiveMemoryWarning(notification: NSNotification) {
+        notify(<ApplicationEventData>{ eventName: lowMemoryEvent, object: this, ios: UIApplication.sharedApplication });
+    }
 
-    // This method handles the scenarios when:
-    // - the device rotates from Portrait through Landscape to PortraitUpsideDown
-    // - the application launches on device PortraitUpsideDown orientation
-
-    // In these scenarios, the device is in PortraitUpsideDown orientation,
-    // however, the application is not.
-    // Therefore, get the orientation of the status bar.
-    private getStatusBarOrientation(): "portrait" | "landscape" | "unknown" {
-        switch (UIApplication.sharedApplication.statusBarOrientation) {
+    private getOrientationValue(orientation: number): "portrait" | "landscape" | "unknown" {
+        switch (orientation) {
             case UIInterfaceOrientation.LandscapeRight:
             case UIInterfaceOrientation.LandscapeLeft:
                 return "landscape";

@@ -215,7 +215,7 @@ export module ios {
     }
 
     /**
-     * @deprecated use device.orientation instead
+     * @deprecated use application.orientation instead
      *
      * Gets an information about if current mode is Landscape.
      */

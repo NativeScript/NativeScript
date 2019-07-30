@@ -8,7 +8,6 @@ export module platformNames {
 
 class Device implements DeviceDefinition {
     private _model: string;
-    private _orientation: "portrait" | "landscape" | "unknown";
     private _osVersion: string;
     private _sdkVersion: string;
     private _deviceType: "Phone" | "Tablet";
@@ -17,14 +16,6 @@ class Device implements DeviceDefinition {
 
     get manufacturer(): string {
         return "Apple";
-    }
-
-    get orientation(): "portrait" | "landscape" | "unknown" {
-        return this._orientation;
-    }
-
-    set orientation(value: "portrait" | "landscape" | "unknown") {
-        this._orientation = value;
     }
 
     get os(): string {
