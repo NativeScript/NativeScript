@@ -237,7 +237,7 @@ module.exports = function (grunt) {
             },
             platformsFiles: {
                 expand: true,
-                src: "tns-core-modules/platforms/**/*.*",
+                src: "tns-core-modules/platforms/**/*",
                 dest: localCfg.outDir + "/"
             },
             apps: {
