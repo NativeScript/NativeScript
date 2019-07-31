@@ -28,7 +28,7 @@ interface PagerAdapter {
 const TABID = "_tabId";
 const INDEX = "_index";
 let PagerAdapter: PagerAdapter;
-let TabLayout: any;
+let TabsBar: any;
 
 function makeFragmentName(viewId: number, id: number): string {
     return "android:viewpager:" + viewId + ":" + id;
@@ -234,7 +234,7 @@ function initializeNativeClasses() {
         }
     }
 
-    class TabLayoutImplementation extends org.nativescript.widgets.TabLayout {
+    class TabsBarImplementation extends org.nativescript.widgets.TabsBar {
 
         constructor(context: android.content.Context, public owner: Tabs) {
             super(context);
@@ -280,7 +280,7 @@ function initializeNativeClasses() {
     }
 
     PagerAdapter = FragmentPagerAdapter;
-    TabLayout = TabLayoutImplementation;
+    TabsBar = TabsBarImplementation;
 }
 
 function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
@@ -337,12 +337,12 @@ function getDefaultAccentColor(context: android.content.Context): number {
     return defaultAccentColor;
 }
 
-function setElevation(grid: org.nativescript.widgets.GridLayout, tabLayout: org.nativescript.widgets.TabLayout) {
+function setElevation(grid: org.nativescript.widgets.GridLayout, tabsBar: org.nativescript.widgets.TabsBar) {
     const compat = <any>androidx.core.view.ViewCompat;
     if (compat.setElevation) {
         const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
         compat.setElevation(grid, val);
-        compat.setElevation(tabLayout, val);
+        compat.setElevation(tabsBar, val);
     }
 }
 
@@ -357,7 +357,7 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
 }
 
 export class Tabs extends TabsBase {
-    private _tabLayout: org.nativescript.widgets.TabLayout;
+    private _tabsBar: org.nativescript.widgets.TabsBar;
     private _viewPager: androidx.viewpager.widget.ViewPager;
     private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
     private _androidViewId: number = -1;
@@ -393,7 +393,7 @@ export class Tabs extends TabsBase {
         const context: android.content.Context = this._context;
         const nativeView = new org.nativescript.widgets.GridLayout(context);
         const viewPager = new org.nativescript.widgets.TabViewPager(context);
-        const tabLayout = new TabLayout(context, this);
+        const tabsBar = new TabsBar(context, this);
         const lp = new org.nativescript.widgets.CommonLayoutParams();
         const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
         let accentColor = getDefaultAccentColor(context);
@@ -409,7 +409,7 @@ export class Tabs extends TabsBase {
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
             nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
 
-            tabLayout.setLayoutParams(lp);
+            tabsBar.setLayoutParams(lp);
         }
 
         nativeView.addView(viewPager);
@@ -419,17 +419,17 @@ export class Tabs extends TabsBase {
         viewPager.setAdapter(adapter);
         (<any>viewPager).adapter = adapter;
 
-        nativeView.addView(tabLayout);
-        (<any>nativeView).tabLayout = tabLayout;
+        nativeView.addView(tabsBar);
+        (<any>nativeView).tabsBar = tabsBar;
 
-        setElevation(nativeView, tabLayout);
+        setElevation(nativeView, tabsBar);
 
         if (accentColor) {
-            tabLayout.setSelectedIndicatorColors([accentColor]);
+            tabsBar.setSelectedIndicatorColors([accentColor]);
         }
 
         if (primaryColor) {
-            tabLayout.setBackgroundColor(primaryColor);
+            tabsBar.setBackgroundColor(primaryColor);
         }
 
         return nativeView;
@@ -442,7 +442,7 @@ export class Tabs extends TabsBase {
         }
 
         const nativeView: any = this.nativeViewProtected;
-        this._tabLayout = (<any>nativeView).tabLayout;
+        this._tabsBar = (<any>nativeView).tabsBar;
 
         const viewPager = (<any>nativeView).viewPager;
         viewPager.setId(this._androidViewId);
@@ -508,11 +508,11 @@ export class Tabs extends TabsBase {
     }
 
     public disposeNativeView() {
-        this._tabLayout.setItems(null, null);
+        this._tabsBar.setItems(null, null);
         (<any>this._pagerAdapter).owner = null;
         this._pagerAdapter = null;
 
-        this._tabLayout = null;
+        this._tabsBar = null;
         this._viewPager = null;
         super.disposeNativeView();
     }
@@ -590,7 +590,7 @@ export class Tabs extends TabsBase {
     private setTabStripItems(items: Array<TabStripItem>) {
         const length = items ? items.length : 0;
         if (length === 0) {
-            this._tabLayout.setItems(null, null);
+            this._tabsBar.setItems(null, null);
 
             return;
         }
@@ -603,11 +603,11 @@ export class Tabs extends TabsBase {
             tabItems.push(tabItemSpec);
         });
 
-        const tabLayout = this._tabLayout;
-        tabLayout.setItems(tabItems, this._viewPager);
-        this.tabStrip.setNativeView(tabLayout);
+        const tabsBar = this._tabsBar;
+        tabsBar.setItems(tabItems, this._viewPager);
+        this.tabStrip.setNativeView(tabsBar);
         items.forEach((item, i, arr) => {
-            const tv = tabLayout.getTextViewForItemAt(i);
+            const tv = tabsBar.getTextViewForItemAt(i);
             item.setNativeView(tv);
         });
     }
@@ -643,32 +643,32 @@ export class Tabs extends TabsBase {
     // }
 
     public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
-        this._tabLayout.updateItemAt(index, spec);
+        this._tabsBar.updateItemAt(index, spec);
     }
 
     public getTabBarBackgroundColor(): android.graphics.drawable.Drawable {
-        return this._tabLayout.getBackground();
+        return this._tabsBar.getBackground();
     }
 
     public setTabBarBackgroundColor(value: android.graphics.drawable.Drawable | Color): void {
         if (value instanceof Color) {
-            this._tabLayout.setBackgroundColor(value.android);
+            this._tabsBar.setBackgroundColor(value.android);
         } else {
-            this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
+            this._tabsBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
         }
     }
 
     public getTabBarColor(): number {
-        return this._tabLayout.getTabTextColor();
+         return this._tabsBar.getTabTextColor();
     }
 
     public setTabBarColor(value: number | Color): void {
         if (value instanceof Color) {
-            this._tabLayout.setTabTextColor(value.android);
-            this._tabLayout.setSelectedTabTextColor(value.android);
+            this._tabsBar.setTabTextColor(value.android);
+            this._tabsBar.setSelectedTabTextColor(value.android);
         } else {
-            this._tabLayout.setTabTextColor(value);
-            this._tabLayout.setSelectedTabTextColor(value);
+            this._tabsBar.setTabTextColor(value);
+            this._tabsBar.setSelectedTabTextColor(value);
         }
     }
 
@@ -678,7 +678,7 @@ export class Tabs extends TabsBase {
 
     public setTabBarHighlightColor(value: number | Color) {
         const color = value instanceof Color ? value.android : value;
-        this._tabLayout.setSelectedIndicatorColors([color]);
+        this._tabsBar.setSelectedIndicatorColors([color]);
     }
 
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
