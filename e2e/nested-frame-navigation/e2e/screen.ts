@@ -6,18 +6,30 @@ const layoutWithMultiFrame = "Layout w/ multi frame";
 const pageWithFrame = "Page w/ frame";
 const pageWithFrameNonDefaultTransition = "Frame to NestedFrame (non-default transition)";
 const pageWithMultiFrame = "Page w/ multi frame";
-const pageTabTopWithFrames = "Page w/ tabview (top)";
-const pageTabBottomWithFrames = "Page w/ tabview (bottom)";
+const pageTabViewTopWithFrames = "Page w/ tabview (top)";
+const pageTabViewBottomWithFrames = "Page w/ tabview (bottom)";
 const tabTopRootWithFrames = "Root tabview (top)";
 const tabBottomRootWithFrames = "Root tabview (bottom)";
+const pageTabsTopWithFrames = "Page w/ tabs (top)";
+const pageTabsBottomWithFrames = "Page w/ tabs (bottom)";
+const pageBottomNavigationWithFrames = "Page w/ bottom navigation";
+const tabsTopRootWithFrames = "Root tabs (top)";
+const tabsBottomRootWithFrames = "Root tabs (bottom)";
+const bottomNavigationRootWithFrames = "Root bottom navigation";
 const layoutHome = "layout home page";
 const layoutHomeSecondary = "layout home secondary page";
 const frameHome = "frame home page";
 const frameHomeSecondary = "multi frame home page";
 const tabViewTopHome = "tabview top page";
 const tabViewBottomHome = "tabview bottom page";
-const tabViewRootTopHome = "tabview root top home";
-const tabViewRootBottomHome = "tabview root bottom home";
+const tabViewTopRootHome = "tabview root top home";
+const tabViewBottomRootHome = "tabview root bottom home";
+const tabsTopHome = "tabs top page";
+const tabsBottomHome = "tabs bottom page";
+const tabsTopRootHome = "tabs root top home";
+const tabsBottomRootHome = "tabs root bottom home";
+const bottomNavigationHome = "bottom navigation page";
+const bottomNavigationRootHome = "bottom navigation root home";
 const navigateToStillOtherPageSlide = "navigate to still other page (slide transition)";
 const navigateToSomePageDefault = "navigate to some page (default transition)";
 const navigateToSomePageNone = "navigate to some page (no transition)";
@@ -29,14 +41,20 @@ const navigateToOtherPageSlide = "navigate to other page (slide transition)";
 const navigateToOtherPageFlip = "navigate to other page (flip transition)";
 const players = "Players";
 const teams = "Teams";
+const playersTab = "playersTabNavigation";
+const teamsTab = "teamsTabNavigation";
+const dummyTab = "dummyTabNavigation";
 const playerBack = "playerBack";
 const stillOtherPageBack = "stillOtherPageBack";
 const somePageBack = "somePageBack";
 const otherPageBack = "otherPageBack";
 const teamBack = "teamBack";
 const frameHomeBack = "frameHomeBack";
-const tabTopBack = "tabTopBack";
-const tabBottomBack = "tabBottomBack";
+const tabViewTopBack = "tabViewTopBack";
+const tabViewBottomBack = "tabViewBottomBack";
+const tabsTopBack = "tabsTopBack";
+const tabsBottomBack = "tabsBottomBack";
+const bottomNavigationBack = "bottomNavigationBack";
 const resetApp = "reset app";
 
 export const driverDefaultWaitTime = 10000;
@@ -165,20 +183,44 @@ export class Screen {
         await this.navigateToPage(pageWithMultiFrame);
     }
 
-    navigateToPageTabTopWithFrames = async () => {
-        await this.navigateToPage(pageTabTopWithFrames);
+    navigateToPageTabViewTopWithFrames = async () => {
+        await this.navigateToPage(pageTabViewTopWithFrames);
     }
 
-    navigateToPageTabBottomWithFrames = async () => {
-        await this.navigateToPage(pageTabBottomWithFrames);
+    navigateToPageTabViewBottomWithFrames = async () => {
+        await this.navigateToPage(pageTabViewBottomWithFrames);
     }
 
-    navigateToTabTopRootWithFrames = async () => {
+    navigateToTabViewTopRootWithFrames = async () => {
         await this.navigateToPage(tabTopRootWithFrames);
     }
 
-    navigateToTabBottomRootWithFrames = async () => {
+    navigateToTabViewBottomRootWithFrames = async () => {
         await this.navigateToPage(tabBottomRootWithFrames);
+    }
+
+    navigateToPageTabsTopWithFrames = async () => {
+        await this.navigateToPage(pageTabsTopWithFrames);
+    }
+
+    navigateToPageTabsBottomWithFrames = async () => {
+        await this.navigateToPage(pageTabsBottomWithFrames);
+    }
+
+    navigateToPageBottomNavigationWithFrames = async () => {
+        await this.navigateToPage(pageBottomNavigationWithFrames);
+    }
+
+    navigateToTabsTopRootWithFrames = async () => {
+        await this.navigateToPage(tabsTopRootWithFrames);
+    }
+
+    navigateToTabsBottomRootWithFrames = async () => {
+        await this.navigateToPage(tabsBottomRootWithFrames);
+    }
+
+    navigateToBottomNavigationRootWithFrames = async () => {
+        await this.navigateToPage(bottomNavigationRootWithFrames);
     }
 
     navigateToStillOtherPageSlide = async () => {
@@ -256,22 +298,34 @@ export class Screen {
         await this.goBack(frameHomeBack);
     }
 
-    goBackFromTabTopPage = async () => {
-        await this.goBack(tabTopBack);
+    goBackFromTabViewTopPage = async () => {
+        await this.goBack(tabViewTopBack);
     }
 
-    goBackFromTabBottomPage = async () => {
-        await this.goBack(tabBottomBack);
+    goBackFromTabViewBottomPage = async () => {
+        await this.goBack(tabViewBottomBack);
+    }
+
+    goBackFromTabsTopPage = async () => {
+        await this.goBack(tabsTopBack);
+    }
+
+    goBackFromTabsBottomPage = async () => {
+        await this.goBack(tabsBottomBack);
+    }
+
+    goBackFromBottomNavigationPage = async () => {
+        await this.goBack(bottomNavigationBack);
     }
 
     togglePlayersTab = async () => {
-        const lblPlayers = await this._driver.waitForElement(players);
+        const lblPlayers = await this._driver.waitForElement(playersTab);
         logInfo(`====== Navigate to "${players}"`);
         await lblPlayers.tap();
     }
 
     toggleTeamsTab = async () => {
-        const lblTeams = await this._driver.waitForElement(teams);
+        const lblTeams = await this._driver.waitForElement(teamsTab);
         logInfo(`====== Navigate to "${teams}"`);
         await lblTeams.tap();
     }
@@ -299,20 +353,44 @@ export class Screen {
         await this.loadedPage(frameHomeSecondary);
     }
 
-    loadedPageTabTopWithFrames = async () => {
+    loadedPageTabViewTopWithFrames = async () => {
         await this.loadedPage(tabViewTopHome);
     }
 
-    loadedPageTabBottomWithFrames = async () => {
+    loadedPageTabViewBottomWithFrames = async () => {
         await this.loadedPage(tabViewBottomHome);
     }
 
-    loadedTabTopRootWithFrames = async () => {
-        await this.loadedPage(tabViewRootTopHome);
+    loadedTabViewTopRootWithFrames = async () => {
+        await this.loadedPage(tabViewTopRootHome);
     }
 
-    loadedTabBottomRootWithFrames = async () => {
-        await this.loadedPage(tabViewRootBottomHome);
+    loadedTabViewBottomRootWithFrames = async () => {
+        await this.loadedPage(tabViewBottomRootHome);
+    }
+
+    loadedPageTabsTopWithFrames = async () => {
+        await this.loadedPage(tabsTopHome);
+    }
+
+    loadedPageTabsBottomWithFrames = async () => {
+        await this.loadedPage(tabsBottomHome);
+    }
+
+    loadedPageBottomNavigationWithFrames = async () => {
+        await this.loadedPage(bottomNavigationHome);
+    }
+
+    loadedTabsTopRootWithFrames = async () => {
+        await this.loadedPage(tabsTopRootHome);
+    }
+
+    loadedTabsBottomRootWithFrames = async () => {
+        await this.loadedPage(tabsBottomRootHome);
+    }
+
+    loadedBottomNavigationRootWithFrames = async () => {
+        await this.loadedPage(bottomNavigationRootHome);
     }
     
     loadedStillOtherPage = async () => {
