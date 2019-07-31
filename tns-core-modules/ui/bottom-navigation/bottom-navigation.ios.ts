@@ -21,6 +21,7 @@ export * from "../tab-navigation-base/tab-navigation-base";
 export * from "../tab-navigation-base/tab-strip";
 export * from "../tab-navigation-base/tab-strip-item";
 
+const maxTabsCount = 5;
 const majorVersion = iosUtils.MajorVersion;
 const isPhone = device.deviceType === "Phone";
 
@@ -489,6 +490,9 @@ export class BottomNavigation extends TabNavigationBase {
 
             return;
         }
+
+        // Limit both tabContentItems and tabStripItems to 5 in order to prevent iOS 'more' button
+        items = items.slice(0, maxTabsCount);
 
         const controllers = NSMutableArray.alloc<UIViewController>().initWithCapacity(length);
         const states = getTitleAttributesForStates(this);
