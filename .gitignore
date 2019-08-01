@@ -32,6 +32,7 @@ package-lock.json
 # Appium files
 e2e/**/*.trace/
 e2e/**/test-results.xml
+e2e/**/e2e/resources/
 
 # Webpack configuration files
 webpack.config.js

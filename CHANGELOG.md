@@ -1,3 +1,37 @@
+<a name="6.0.4"></a>
+## [6.0.4](https://github.com/NativeScript/NativeScript/compare/6.0.3...6.0.4) (2019-07-30)
+
+
+### Bug Fixes
+
+* **ios:** 'ui/tabs' not found for element 'Tabs'
+
+
+<a name="6.0.3"></a>
+## [6.0.3](https://github.com/NativeScript/NativeScript/compare/6.0.2...6.0.3) (2019-07-29)
+
+
+### Bug Fixes
+
+* **ios:** move material design dependency to podfile ([#7592](https://github.com/NativeScript/NativeScript/issues/7592)) ([291e3b4](https://github.com/NativeScript/NativeScript/commit/291e3b4))
+
+
+
+<a name="6.0.2"></a>
+## [6.0.2](https://github.com/NativeScript/NativeScript/compare/6.0.0...6.0.2) (2019-07-26)
+
+
+### Bug Fixes
+
+* **android:** remove wait for doubletap if no gesture recognizer ([#7584](https://github.com/NativeScript/NativeScript/issues/7584)) ([9fd5ddc](https://github.com/NativeScript/NativeScript/commit/9fd5ddc))
+* **bottom-navigation:** crash when tab selected with no item ([#7527](https://github.com/NativeScript/NativeScript/issues/7527)) ([46c17ca](https://github.com/NativeScript/NativeScript/commit/46c17ca))
+* **tabs:** tab bar not visible when nested in layout ([#7544](https://github.com/NativeScript/NativeScript/issues/7544)) ([f00b370](https://github.com/NativeScript/NativeScript/commit/f00b370))
+* **tabs-android:** wrong tabStripItem selected ([#7522](https://github.com/NativeScript/NativeScript/issues/7522)) ([ca22ba9](https://github.com/NativeScript/NativeScript/commit/ca22ba9))
+* **tabs-ios:** crash when setting tabStripItems through items property ([#7548](https://github.com/NativeScript/NativeScript/issues/7548)) ([4511c76](https://github.com/NativeScript/NativeScript/commit/4511c76))
+* **tabs-ios:** unable to return to tab after tab with nested frame visited ([#7574](https://github.com/NativeScript/NativeScript/issues/7574)) ([490cab0](https://github.com/NativeScript/NativeScript/commit/490cab0))
+
+
+
 <a name="6.0.0"></a>
 # [6.0.0](https://github.com/NativeScript/NativeScript/compare/5.4.2...6.0.0) (2019-06-28)
 

@@ -111,14 +111,23 @@ class UIPageViewControllerImpl extends UIPageViewController {
 
     public viewDidLayoutSubviews(): void {
         super.viewDidLayoutSubviews();
-
         const owner = this._owner.get();
+        if (!owner) {
+            return;
+        }
+
         const tabsPosition = owner.tabsPosition;
+        const parent = owner.parent;
 
         let tabBarTop = this.view.safeAreaInsets.top;
         let tabBarHeight = this.tabBar.frame.size.height;
         let scrollViewTop = this.tabBar.frame.size.height;
-        let scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + this.view.safeAreaInsets.bottom;
+        let scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height;
+
+        if (parent) {
+            // TODO: Figure out a better way to handle ViewController nesting/Safe Area nesting
+            tabBarTop = Math.max(this.view.safeAreaInsets.top, owner.parent.nativeView.safeAreaInsets.top);
+        }
 
         if (tabsPosition === "bottom") {
             tabBarTop = this.view.frame.size.height - this.tabBar.frame.size.height - this.view.safeAreaInsets.bottom;
@@ -126,45 +135,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
             scrollViewHeight = this.view.frame.size.height - this.view.safeAreaInsets.bottom;
         }
 
-        this.tabBar.frame = CGRectMake(this.view.safeAreaInsets.left, tabBarTop, this.tabBar.frame.size.width, tabBarHeight); //this.view.safeAreaLayoutGuide.layoutFrame;
-        // this.additionalSafeAreaInsets = new UIEdgeInsets({ top: this.tabBar.frame.size.height, left: 0, bottom: 0, right: 0 });
-        // const tabBar = MDCTabBar.alloc().initWithFrame(this.view.safeAreaLayoutGuide.layoutFrame);
-
-        // tabBar.items = <NSArray<UITabBarItem>>NSArray.alloc().initWithArray([
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        // ]);
-
-        // tabBar.itemAppearance = MDCTabBarItemAppearance.Titles;
-        // tabBar.tintColor = UIColor.greenColor;
-        // tabBar.barTintColor = UIColor.yellowColor;
-        // tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
-        // tabBar.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleBottomMargin;
-        // tabBar.sizeToFit();
-        // this.view.addSubview(tabBar);
-
-        // this.view.bringSubviewToFront(tabBar);
-
-        // const tabBar = MDCTabBar.alloc().initWithFrame(this.view.bounds);
-        // tabBar.items = <NSArray<UITabBarItem>>NSArray.alloc().initWithArray([
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0),
-        //     UITabBarItem.alloc().initWithTitleImageTag("Test", null, 0)
-        // ]);
-
-        // tabBar.itemAppearance = MDCTabBarItemAppearance.Titles;
-        // tabBar.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleBottomMargin;
-        // tabBar.sizeToFit();
-        // this.view.addSubview(tabBar);
+        this.tabBar.frame = CGRectMake(this.view.safeAreaInsets.left, tabBarTop, this.tabBar.frame.size.width, tabBarHeight);
 
         const subViews: NSArray<UIView> = this.view.subviews;
         let scrollView: UIScrollView = null;
@@ -192,47 +163,6 @@ class UIPageViewControllerImpl extends UIPageViewController {
 
             scrollView.frame = CGRectMake(this.view.safeAreaInsets.left, scrollViewTop, this.view.bounds.size.width, scrollViewHeight); //this.view.bounds;
         }
-
-        // if (mdcBar) {
-        //     mdcBar.frame = this.view.bounds;
-        // }
-
-        // const owner = this.owner.get();
-        // if (owner) {
-        //     if (majorVersion >= 11) {
-        //         // Handle nested UILayoutViewController safe area application.
-        //         // Currently, UILayoutViewController can be nested only in a TabView.
-        //         // The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
-        //         const tabViewItem = owner.parent;
-        //         const tabView = tabViewItem && tabViewItem.parent;
-        //         let parent = tabView && tabView.parent;
-
-        //         // Handle Angular scenario where TabView is in a ProxyViewContainer
-        //         // It is possible to wrap components in ProxyViewContainers indefinitely
-        //         // Not using instanceof ProxyViewContainer to avoid circular dependency
-        //         // TODO: Try moving UILayoutViewController out of view module
-        //         while (parent && !parent.nativeViewProtected) {
-        //             parent = parent.parent;
-        //         }
-
-        //         if (parent) {
-        //             const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
-        //             const currentInsetsTop = this.view.safeAreaInsets.top;
-        //             const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-
-        //             const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
-        //             const currentInsetsBottom = this.view.safeAreaInsets.bottom;
-        //             const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
-
-        //             if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
-        //                 const additionalInsets = new UIEdgeInsets({ top: additionalInsetsTop, left: 0, bottom: additionalInsetsBottom, right: 0 });
-        //                 this.additionalSafeAreaInsets = additionalInsets;
-        //             }
-        //         }
-        //     }
-
-        //     layoutView(this, owner);
-        // }
     }
 }
 
@@ -269,7 +199,8 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
         //     prevViewController = owner.getViewController(prevItem);
         // }
 
-        (<TabContentItem>prevItem).canBeLoaded = true;
+        owner._setCanBeLoaded(selectedIndex);
+        owner._loadUnloadTabItems(selectedIndex);
 
         return prevViewController;
     }
@@ -295,7 +226,8 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
         //     nextViewController = owner.getViewController(nextItem);
         // }
 
-        (<TabContentItem>nextItem).canBeLoaded = true;
+        owner._setCanBeLoaded(selectedIndex);
+        owner._loadUnloadTabItems(selectedIndex);
         // nextItem.loadView(nextItem.view);
 
         return nextViewController;
@@ -590,6 +522,11 @@ export class Tabs extends TabsBase {
 
         this._ios.dataSource = this._dataSource;
         this._ios.delegate = this._delegate;
+
+        if (!this.tabBarItems) {
+            const tabStripItems = this.tabStrip ? this.tabStrip.items : null;
+            this.setTabStripItems(tabStripItems);
+        }
     }
 
     public onUnloaded() {
@@ -670,7 +607,6 @@ export class Tabs extends TabsBase {
         toLoad.forEach(index => {
             const item = items[index];
             if (this.isLoaded && items[index]) {
-                (<any>item).canBeLoaded = true;
                 item.loadView(item.view);
             }
         });
@@ -770,6 +706,18 @@ export class Tabs extends TabsBase {
         return newController;
     }
 
+    public _setCanBeLoaded(index: number) {
+        const items = this.items;
+        const lastIndex = items.length - 1;
+        const offsideItems = this.offscreenTabLimit;
+
+        iterateIndexRange(index, offsideItems, lastIndex, (i) => {
+            if (items[i]) {
+                (<TabContentItem>items[i]).canBeLoaded = true;
+            }
+        });
+    }
+
     private setViewControllers(items: TabContentItem[]) {
         const length = items ? items.length : 0;
         if (length === 0) {
@@ -836,6 +784,10 @@ export class Tabs extends TabsBase {
     }
 
     public setTabStripItems(items: Array<TabStripItem>) {
+        if (!this.tabStrip || !items) {
+            return;
+        }
+
         const tabBarItems = [];
 
         items.forEach((item: TabStripItem, i) => {
@@ -1024,7 +976,6 @@ export class Tabs extends TabsBase {
         // if (traceEnabled()) {
         //     traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);
         // }
-        const that = this;
 
         if (value > -1) {
             const item = this.items[value];
@@ -1047,7 +998,9 @@ export class Tabs extends TabsBase {
             this._currentNativeSelectedIndex = value;
             this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, (finished: boolean) => {
                 if (finished) {
-                    that._canSelectItem = true;
+                    this._canSelectItem = true;
+                    this._setCanBeLoaded(value);
+                    this._loadUnloadTabItems(value);
                 }
             });
 
