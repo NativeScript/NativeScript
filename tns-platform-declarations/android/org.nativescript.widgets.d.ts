@@ -122,7 +122,7 @@
 
             export class LinearGradientDefinition {
                 constructor(startX: number, endX: number, startY: number,
-                            endY: number, colors: number[], stops?: number[]);
+                    endY: number, colors: number[], stops?: number[]);
 
                 public getStartX(): number;
                 public getStartY(): number;
@@ -398,6 +398,28 @@
                 getItemCount(): number;
             }
 
+            export class TabsBar extends android.widget.HorizontalScrollView {
+                constructor(context: android.content.Context);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet, defStyle: number);
+
+                setSelectedIndicatorColors(color: Array<number>): void;
+                getSelectedIndicatorColors(): Array<number>;
+                setTabTextColor(color: number): void;
+                getTabTextColor(): number;
+                setSelectedTabTextColor(color: number): void;
+                getSelectedTabTextColor(): number;
+                setTabTextFontSize(fontSize: number): void;
+                getTabTextFontSize(): number;
+
+                setItems(items: Array<TabItemSpec>, viewPager: androidx.viewpager.widget.ViewPager): void;
+                updateItemAt(position: number, itemSpec: TabItemSpec): void;
+
+                getTextViewForItemAt(index: number): android.widget.TextView;
+                getViewForItemAt(index: number): android.widget.LinearLayout;
+                getItemCount(): number;
+            }
+
             export class BottomNavigationBar extends android.widget.LinearLayout {
                 constructor(context: android.content.Context);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet);
@@ -411,7 +433,7 @@
                 getTabTextFontSize(): number;
 
                 onTap(position: number): boolean;
-                onSelectedPositionChange(position: number, prevPosition: number): void ;
+                onSelectedPositionChange(position: number, prevPosition: number): void;
                 setSelectedPosition(position: number): void;
                 setItems(items: Array<TabItemSpec>): void;
                 updateItemAt(position: number, itemSpec: TabItemSpec): void;

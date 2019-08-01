@@ -152,11 +152,19 @@ class TabStrip extends LinearLayout {
         }
     }
 
+    // Used by TabLayout (the 'old' tab-view control)
     void onViewPagerPageChanged(int position, float positionOffset) {
         mSelectedPosition = position;
         mSelectionOffset = positionOffset;
         invalidate();
         updateTabsTextColor();
+    }
+
+    // Used by TabsBar
+    void onTabsViewPagerPageChanged(int position, float positionOffset) {
+        mSelectedPosition = position;
+        mSelectionOffset = positionOffset;
+        invalidate();
     }
 
     int getSelectedPosition(){
@@ -170,7 +178,9 @@ class TabStrip extends LinearLayout {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
+
         final int height = getHeight();
         final int childCount = getChildCount();
         final TabLayout.TabColorizer tabColorizer = mCustomTabColorizer != null
