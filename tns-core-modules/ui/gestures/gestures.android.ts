@@ -68,13 +68,20 @@ function initializeTapAndDoubleTapGestureListener() {
         }
 
         private _handleSingleTap(motionEvent: android.view.MotionEvent): void {
-            this._tapTimeoutId = timer.setTimeout(() => {
+            if (this._target.getGestureObservers(GestureTypes.doubleTap)) {
+                this._tapTimeoutId = timer.setTimeout(() => {
+                    if (this._type & GestureTypes.tap) {
+                        const args = _getArgs(GestureTypes.tap, this._target, motionEvent);
+                        _executeCallback(this._observer, args);
+                    }
+                    timer.clearTimeout(this._tapTimeoutId);
+                }, TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout);
+            } else {
                 if (this._type & GestureTypes.tap) {
                     const args = _getArgs(GestureTypes.tap, this._target, motionEvent);
                     _executeCallback(this._observer, args);
                 }
-                timer.clearTimeout(this._tapTimeoutId);
-            }, TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout);
+            }
         }
 
         private _handleDoubleTap(motionEvent: android.view.MotionEvent): void {

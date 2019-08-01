@@ -1,9 +1,9 @@
-<Tabs tabsPosition="top">
+<Tabs tabsPosition="top" automationText="tabNavigation">
     <TabStrip>
-        <TabStripItem title="Players"></TabStripItem>
+        <TabStripItem title="Players" automationText="playersTabNavigation"></TabStripItem>
         <!-- this tab serves as dummy so the actual teams tab is not loaded by default  -->
-        <TabStripItem title="Dummy"></TabStripItem>
-        <TabStripItem title="Teams"></TabStripItem>
+        <TabStripItem title="Dummy" automationText="dummyTabNavigation"></TabStripItem>
+        <TabStripItem title="Teams" automationText="teamsTabNavigation"></TabStripItem>
     </TabStrip>
 
     <TabContentItem>

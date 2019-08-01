@@ -107,9 +107,10 @@ export class NavigationHelper {
         const endPoint = <Point>{};
 
         if (this._driver.isIOS) {
+            const rect = this._driver.getScreenActualViewPort();
             startPoint.x = 5;
-            startPoint.y = this._driver.nsCapabilities.device.viewportRect.y / this._driver.nsCapabilities.device.config.density;
-            endPoint.x = (this._driver.nsCapabilities.device.viewportRect.width / this._driver.nsCapabilities.device.config.density) - 5;
+            startPoint.y = rect.y;
+            endPoint.x = (rect.width / this._driver.nsCapabilities.device.deviceScreenDensity) - 5;
             endPoint.y = startPoint.y;
 
             await this._driver.swipe(startPoint, endPoint);
