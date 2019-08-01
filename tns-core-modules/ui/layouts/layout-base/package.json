@@ -1,0 +1,5 @@
+{
+  "name" : "layout-base",
+  "main" : "layout-base",
+  "types" : "layout-base.d.ts"
+}
