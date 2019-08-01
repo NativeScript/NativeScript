@@ -10,7 +10,7 @@ import { Button } from "tns-core-modules/ui/button";
 
 var ASYNC = 2;
 
-function _createBottomNavigation(): Tabs {
+function _createTabsNavigation(): Tabs {
     var tabView = new Tabs();
     tabView.id = "BottomNavigation";
 
@@ -97,7 +97,7 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
     let tabView: Tabs;
 
     const pageFactory = function (): Page {
-        tabView = _createBottomNavigation();
+        tabView = _createTabsNavigation();
         let items = Array<TabContentItem>();
         let tabViewitem = new TabContentItem();
         // tabViewitem.title = "Item1";
@@ -141,7 +141,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
     let tabView: Tabs;
 
     let pageFactory = function (): Page {
-        tabView = _createBottomNavigation();
+        tabView = _createTabsNavigation();
         let items = Array<TabContentItem>();
         let tabViewitem = new TabContentItem();
         // tabViewitem.title = "List";
@@ -215,7 +215,7 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     let loadedEventsCount = [0, 0];
     let unloadedEventsCount = [0, 0];
 
-    const tabView = _createBottomNavigation();
+    const tabView = _createTabsNavigation();
     tabView.items = _createContentItems(itemCount);
     tabView.tabStrip = _createTabStrip(itemCount);
 

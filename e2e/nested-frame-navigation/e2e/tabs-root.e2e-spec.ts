@@ -4,10 +4,9 @@ import { Screen, playersData, teamsData } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 
-// NOTE: TabViewTop is Android only scenario (for iOS we will essentially execute 2x TabViewBottom)
-const roots = ["TabViewTop", "TabViewBottom"];
+const roots = ["TabsTop", "TabsBottom"];
 
-const rootType = "tab-root";
+const rootType = "tabs-root";
 describe(rootType, async function () {
     let driver: AppiumDriver;
     let screen: Screen;

@@ -8,7 +8,6 @@ export class ButtonBackgroundPage extends PageObjectBaseModel {
 
     constructor(_driver: AppiumDriver) {
         super(_driver, ["button", "background"], ElementCacheStrategy.none);
-        this._driver.imageHelper.options.toleranceType = ImageOptions.percent;
     }
 
     public viewGroupLocator() {
