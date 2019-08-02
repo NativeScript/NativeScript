@@ -17,7 +17,7 @@ function registerOnGlobalContext(moduleName: string, exportName: string): void {
 }
 
 export function installPolyfills(moduleName: string, exportNames: string[]) {
-    if ((<any>global).__snapshot || (<any>global).__snapshotEnabled) {
+    if (global.__snapshot) {
         const loadedModule = global.loadModule(moduleName);
         exportNames.forEach(exportName => global[exportName] = loadedModule[exportName]);
     } else {
