@@ -164,6 +164,7 @@ export class Frame extends FrameBase {
         // In this case call _navigateCore in order to recreate the current fragment.
         // Don't call navigate because it will fire navigation events.
         // As JS instances are alive it is already done for the current page.
+        // This requires explicitly to add the frame to the stack.
         if (!this.isLoaded || this._executingContext || !this._attachedToWindow) {
             return;
         }
@@ -191,6 +192,7 @@ export class Frame extends FrameBase {
             // NOTE: we are restoring the animation settings in Frame.setCurrent(...) as navigation completes asynchronously
             this._cachedAnimatorState = getAnimatorState(this._currentEntry);
 
+            this._pushInFrameStack();
             this._currentEntry = null;
             // NavigateCore will eventually call _processNextNavigationEntry again.
             this._navigateCore(entry);
