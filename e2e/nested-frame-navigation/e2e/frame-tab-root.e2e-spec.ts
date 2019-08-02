@@ -4,8 +4,8 @@ import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item }
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
 
-// NOTE: TabTop is Android only scenario (for iOS we will essentially execute 2x TabBottom)
-const roots = ["TabTop", "TabBottom"];
+// NOTE: TabViewTop is Android only scenario (for iOS we will essentially execute 2x TabViewBottom)
+const roots = ["TabViewTop", "TabViewBottom"];
 
 const rootType = "frame-tab-root";
 describe(rootType, async function () {

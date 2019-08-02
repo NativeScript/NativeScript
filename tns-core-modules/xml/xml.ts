@@ -88,7 +88,7 @@ function _generateAmpMap(): any {
 }
 
 // android-specific implementation, which pre-populates the map to get it saved into the heap blob
-if ((<any>global).__snapshot) {
+if (global.__snapshot) {
     _ampCodes = _generateAmpMap();
 }
 
