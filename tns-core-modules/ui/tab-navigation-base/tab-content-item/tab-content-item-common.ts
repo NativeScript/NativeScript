@@ -9,7 +9,7 @@ import { View, ViewBase, CSSType } from "../../core/view";
 export const traceCategory = "TabView";
 
 @CSSType("TabContentItem")
-export abstract class TabContentItemBase extends ViewBase implements TabContentItemDefinition, AddChildFromBuilder {
+export abstract class TabContentItemBase extends View implements TabContentItemDefinition, AddChildFromBuilder {
     private _view: View;
 
     public _addChildFromBuilder(name: string, value: any): void {
