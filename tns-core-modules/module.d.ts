@@ -82,6 +82,7 @@ declare namespace NodeJS {
         __onUncaughtError: (error: NativeScriptError) => void;
         __onDiscardedError: (error: NativeScriptError) => void;
         TNS_WEBPACK?: boolean;
+        __snapshot?: boolean;
         __requireOverride?: (name: string, dir: string) => any;
     }
 }
