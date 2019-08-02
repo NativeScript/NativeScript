@@ -16,6 +16,9 @@ function createHandlerAndGetId(): number {
 }
 
 export function setTimeout(callback: Function, milliseconds = 0, ...args): number {
+    // Cast to Number
+    milliseconds += 0;
+
     const id = createHandlerAndGetId();
     const invoke = () => callback(...args);
     const zoneBound = zonedCallback(invoke);
@@ -48,6 +51,9 @@ export function clearTimeout(id: number): void {
 }
 
 export function setInterval(callback: Function, milliseconds = 0, ...args): number {
+    // Cast to Number
+    milliseconds += 0;
+
     const id = createHandlerAndGetId();
     const handler = timeoutHandler;
     const invoke = () => callback(...args);
