@@ -9,7 +9,7 @@ import { AddChildFromBuilder } from "../../core/view";
 
 // Requires
 import { 
-    View, CSSType, backgroundColorProperty, backgroundInternalProperty, colorProperty, 
+    View, ViewBase, CSSType, backgroundColorProperty, backgroundInternalProperty, colorProperty, 
     fontSizeProperty, fontInternalProperty, PseudoClassHandler
 } from "../../core/view";
 import { textTransformProperty, TextTransform } from "../../text-base";
@@ -30,6 +30,16 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
 
     private _highlightedHandler: () => void;
     private _normalHandler: () => void;
+
+    public eachChild(callback: (child: ViewBase) => boolean) {
+        if (this.label) {
+            callback(this.label);
+        }
+
+        if (this.image) {
+            callback(this.image);
+        }
+    }
 
     public _addChildFromBuilder(name: string, value: any): void {
         if (name === "Image") {

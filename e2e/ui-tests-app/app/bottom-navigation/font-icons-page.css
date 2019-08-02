@@ -6,6 +6,18 @@
   font-size: 36;
 }
 
-.color {
-  color: blue;
-} 
+TabStripItem.special Image {
+  color: teal;
+}
+
+TabStripItem.special:active Image {
+  color: purple;
+}
+
+TabStripItem.special Label {
+  color: gold;
+}
+
+TabStripItem.special:active Label {
+  color: olive;
+}

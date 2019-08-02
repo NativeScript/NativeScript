@@ -259,6 +259,8 @@ export class BottomNavigation extends TabNavigationBase {
     public onLoaded() {
         super.onLoaded();
 
+        this.setViewControllers(this.items);
+
         const selectedIndex = this.selectedIndex;
         const selectedView = this.items && this.items[selectedIndex] && this.items[selectedIndex].content;
         if (selectedView instanceof Frame) {
@@ -554,13 +556,16 @@ export class BottomNavigation extends TabNavigationBase {
             return null;
         }
 
-        let image: UIImage = this._iconsCache[iconSource];
+        const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
+        const font = target.style.fontInternal;
+        const color = target.style.color;
+        const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
+
+        let image: UIImage = this._iconsCache[iconTag];
         if (!image) {
             let is = new ImageSource;
             if (isFontIconURI(iconSource)) {
                 const fontIconCode = iconSource.split("//")[1];
-                const font = tabStripItem.style.fontInternal;
-                const color = tabStripItem.style.color;
                 is = fromFontIconCode(fontIconCode, font, color);
             } else {
                 is = fromFileOrResource(iconSource);
@@ -615,6 +620,12 @@ export class BottomNavigation extends TabNavigationBase {
         return null;
     }
     [itemsProperty.setNative](value: TabContentItem[]) {
+        if (value) {
+            value.forEach((item: TabContentItem, i) => {
+                (<any>item).index = i;
+            });
+        }
+
         this.setViewControllers(value);
         selectedIndexProperty.coerce(this);
     }

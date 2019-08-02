@@ -188,13 +188,14 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
             }
         } else {
             let is = new ImageSource();
-            if (isFontIconURI(tabStripItem.iconSource)) {
-                const fontIconCode = tabStripItem.iconSource.split("//")[1];
-                const font = tabStripItem.style.fontInternal;
-                const color = tabStripItem.style.color;
+            if (isFontIconURI(iconSource)) {
+                const fontIconCode = iconSource.split("//")[1];
+                const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
+                const font = target.style.fontInternal;
+                const color = target.style.color;
                 is = fromFontIconCode(fontIconCode, font, color);
             } else {
-                is = fromFileOrResource(tabStripItem.iconSource);
+                is = fromFileOrResource(iconSource);
             }
 
             if (is) {

@@ -3,10 +3,20 @@
   <ActionBar title="BottomNavigation font icons" icon="" class="action-bar">
   </ActionBar>
 
-  <BottomNavigation class="font-awesome" automationText="tabNavigation"  > <!-- TODO: The font-awesome class here should be removed -->
+  <BottomNavigation automationText="tabNavigation" >
     <TabStrip>
         <!-- font family + font size + color -->
-        <TabStripItem title="First" iconSource="font://&#xF10B;" class="special font-awesome font-size color"></TabStripItem>
+        
+        <!-- <TabStripItem title="First" iconSource="font://&#xF10B;" class="special font-awesome font-size color">
+        </TabStripItem> -->
+        
+        <TabStripItem title="First" class="special">
+            <Label text="First" />
+            <Image src="font://&#xF10B;" class="font-awesome font-size" />
+        </TabStripItem>
+
+
+
         <!-- default font + valid char code -->
         <TabStripItem title="Second" iconSource="font://&#xF10B;"></TabStripItem>
         <!-- font family + invalid char code -->
