@@ -1,6 +1,5 @@
 // Require globals first so that snapshot takes __extends function.
-require("../globals");
-
+import "../globals";
 import { Observable, EventData } from "../data/observable";
 import { View } from "../ui/core/view";
 import {

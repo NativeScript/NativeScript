@@ -48,6 +48,9 @@ class TimerTargetImpl extends NSObject {
 }
 
 function createTimerAndGetId(callback: Function, milliseconds: number, shouldRepeat: boolean): number {
+    // Cast to Number
+    milliseconds += 0;
+
     timerId++;
     let id = timerId;
     let timerTarget = TimerTargetImpl.initWithCallback(callback, id, shouldRepeat);
