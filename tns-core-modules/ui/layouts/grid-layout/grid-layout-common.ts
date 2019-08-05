@@ -16,6 +16,20 @@ View.prototype.col = 0;
 View.prototype.rowSpan = 1;
 View.prototype.colSpan = 1;
 
+Object.defineProperty(View.prototype, "column", {
+    get(this: View): number { return this.col; },
+    set(this: View, value: number) { this.col = value; },
+    enumerable: true,
+    configurable: true
+});
+
+Object.defineProperty(View.prototype, "columnSpan", {
+    get(this: View): number { return this.colSpan; },
+    set(this: View, value: number) { this.colSpan = value; },
+    enumerable: true,
+    configurable: true
+});
+
 function validateItemSpec(itemSpec: ItemSpec): void {
     if (!itemSpec) {
         throw new Error("Value cannot be undefined.");
