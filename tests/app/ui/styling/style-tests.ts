@@ -1454,6 +1454,35 @@ export function test_css_calc() {
     TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
 }
 
+export function test_nested_css_calc() {
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout.slim {
+        width: calc(calc(10 * 10) * .1);
+    }
+
+    StackLayout.wide {
+        width: calc(calc(10 * 10) * 1.25);
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    stack.className = "slim";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10");
+
+    stack.className = "wide";
+    TKUnit.assertEqual(stack.width as any, 125, "Stack - width === 125");
+
+    (stack as any).style = `width: calc(100% * calc(1 / 2)`;
+
+    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+}
+
 export function test_css_variables() {
     const blackColor = "#000000";
     const redColor = "#FF0000";
@@ -1561,6 +1590,65 @@ export function test_css_calc_and_variables() {
     // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
     (stack as any).style = `${cssVarName}: 0.5`;
     TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+}
+
+export function test_nested_css_calc_and_variables() {
+    const page = helper.getClearCurrentPage();
+
+    const cssVarName = `--my-width-factor-base-${Date.now()}`;
+    const cssVarName2 = `--my-width-factor-${Date.now()}`;
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout[use-css-vars] {
+        ${cssVarName}: 0.5;
+        ${cssVarName2}: var(${cssVarName});
+        width: calc(100% * calc(var(${cssVarName2}) * 2));
+    }
+
+    StackLayout.slim {
+        ${cssVarName}: 0.05;
+    }
+
+    StackLayout.wide {
+        ${cssVarName}: 0.625
+    }
+
+    StackLayout.nested {
+        ${cssVarName2}: calc(var(${cssVarName}) * 2);
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack["use-css-vars"] = true;
+    stack.addChild(label);
+
+    stack.className = "";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1 }, "Stack - width === 100%");
+
+    stack.className = "nested";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 2 }, "Stack - width === 200%");
+
+    stack.className = "slim";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.1 }, "Stack - width === 10%");
+
+    stack.className = "slim nested";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.2 }, "Stack - width === 20%");
+
+    stack.className = "wide";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1.25 }, "Stack - width === 125%");
+
+    stack.className = "wide nested";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 2.5 }, "Stack - width === 250%");
+
+    // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
+    stack.className = "wide";
+    (stack as any).style = `${cssVarName}: 0.25`;
+    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+
+    stack.className = "nested";
+    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 1 }, "Stack - width === 100%");
 }
 
 export function test_resolveFileNameFromUrl_local_file_tilda() {
