@@ -139,7 +139,8 @@ export function _cssCalcConverter<T>(value: string | T) {
     }
 
     if (isCssCalcValue(value)) {
-        return reduceCSSCalc(value);
+        // WORKAROUND: reduce-css-calc can't handle the dip-unit.
+        return reduceCSSCalc(value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1'));
     } else {
         return value;
     }

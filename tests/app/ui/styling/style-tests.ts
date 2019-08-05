@@ -1454,6 +1454,45 @@ export function test_css_calc() {
     TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
 }
 
+export function test_css_calc_units() {
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout.no_unit {
+        width: calc(100 * .1);
+    }
+
+    StackLayout.dip_unit {
+        width: calc(100dip * .1);
+    }
+
+    StackLayout.pct_unit {
+        width: calc(100% * .1);
+    }
+
+    StackLayout.px_unit {
+        width: calc(100px * .1);
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    stack.className = "no_unit";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10");
+
+    stack.className = "dip_unit";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10dip");
+
+    stack.className = "pct_unit";
+    TKUnit.assertDeepEqual(stack.width as any, { unit: '%', value: 0.1 }, "Stack - width === 10%");
+
+    stack.className = "px_unit";
+    TKUnit.assertDeepEqual(stack.width as any, { unit: 'px', value: 10 }, "Stack - width === 10px");
+}
+
 export function test_nested_css_calc() {
     const page = helper.getClearCurrentPage();
 
