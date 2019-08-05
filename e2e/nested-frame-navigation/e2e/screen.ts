@@ -43,7 +43,6 @@ const players = "Players";
 const teams = "Teams";
 const playersTab = "playersTabNavigation";
 const teamsTab = "teamsTabNavigation";
-const dummyTab = "dummyTabNavigation";
 const playerBack = "playerBack";
 const stillOtherPageBack = "stillOtherPageBack";
 const somePageBack = "somePageBack";
@@ -392,7 +391,7 @@ export class Screen {
     loadedBottomNavigationRootWithFrames = async () => {
         await this.loadedPage(bottomNavigationRootHome);
     }
-    
+
     loadedStillOtherPage = async () => {
         await this.loadedPage(stillOtherPage);
     }

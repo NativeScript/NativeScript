@@ -1,6 +1,7 @@
 import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
-import { Screen } from "./screen";
+
 import { suspendTime, dontKeepActivities } from "./config";
+import { Screen, somePage } from "./screen";
 
 describe("issues", async function () {
     let driver: AppiumDriver;
@@ -30,27 +31,27 @@ describe("issues", async function () {
         }
     });
 
-    it("issue-6488", async function () {
-        await screen.loadedHome();
-        const showSomePage = async function () {
-            const somePageBtn = await driver.waitForElement("somePageOnRoot");
+    it("issues: 6488, 7594", async function () {
+        const navigateToSomePage = async function () {
+            const somePageBtn = await driver.waitForElement(somePage);
             await somePageBtn.tap();
             await screen.loadedSomePage();
         };
 
-        await showSomePage();
+        await screen.loadedHome();
+        await navigateToSomePage();
 
         await driver.navBack();
         await screen.loadedHome();
 
         await driver.backgroundApp(suspendTime);
 
-        await showSomePage();
+        await navigateToSomePage();
         await driver.navBack();
+        await screen.loadedHome();
 
-        await showSomePage();
+        await navigateToSomePage();
         await driver.navBack();
-
         await screen.loadedHome();
     });
 });

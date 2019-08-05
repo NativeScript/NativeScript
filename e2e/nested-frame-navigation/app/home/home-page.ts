@@ -1,6 +1,7 @@
 import * as application from "tns-core-modules/application";
-import { EventData } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
+import { EventData } from "tns-core-modules/ui/core/view";
+import { topmost } from "tns-core-modules/ui/frame/frame";
 
 export function onNavigateToLayoutFrame(args: EventData) {
     application._resetRootView({ moduleName: "layout-root/layout-frame-root" });
@@ -66,8 +67,9 @@ export function onNavigateToTabsBottomRoot(args: EventData) {
 }
 
 export function onNavigateToSomePage(args: EventData) {
-    const button = <Button>args.object;
-    button.page.frame.navigate("some-page/some-page");
+    // Use `topmost()` in order to verify:
+    // https://github.com/NativeScript/NativeScript/issues/7594
+    topmost().navigate("some-page/some-page");
 }
 
 export function onFrameToNestedFrame(args: EventData) {
