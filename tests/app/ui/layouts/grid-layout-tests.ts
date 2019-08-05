@@ -250,17 +250,17 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         TKUnit.assertEqual(
             this.row(btn),
             row,
-            "'row' property not applied For GridLayout addChildAtCell without rowspan."
+            "'row' property not applied For GridLayout addChildAtCell without rowSpan."
         );
         TKUnit.assertEqual(
             this.col(btn),
             column,
-            "'column' property not applied For GridLayout addChildAtCell without rowspan."
+            "'column' property not applied For GridLayout addChildAtCell without rowSpan."
         );
         TKUnit.assertEqual(
             this.rowSpan(btn),
             defaultSpanValue,
-            "'rowSpan' property not applied For GridLayout addChildAtCell without rowspan."
+            "'rowSpan' property not applied For GridLayout addChildAtCell without rowSpan."
         );
         TKUnit.assertEqual(
             this.colSpan(btn),

@@ -1,6 +1,6 @@
 import {
     GridLayoutBase, ItemSpec as ItemSpecBase, View, layout,
-    rowProperty, columnProperty, colProperty, rowSpanProperty, columnSpanProperty, colSpanProperty, GridUnitType
+    rowProperty, columnProperty, rowSpanProperty, columnSpanProperty, GridUnitType
 } from "./grid-layout-common";
 
 export * from "./grid-layout-common";
@@ -16,15 +16,10 @@ function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.CommonLayoutP
     };
 }
 
-const columnPropertyNativeSetter = makeNativeSetter<number>((lp, value) => lp.column = value);
-const columnSpanPropertyNativeSetter = makeNativeSetter<number>((lp, value) => lp.columnSpan = value);
-
 View.prototype[rowProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.row = value);
-View.prototype[columnProperty.setNative] = columnPropertyNativeSetter;
-View.prototype[colProperty.setNative] = columnPropertyNativeSetter;
+View.prototype[columnProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.column = value);
 View.prototype[rowSpanProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.rowSpan = value);
-View.prototype[columnSpanProperty.setNative] = columnSpanPropertyNativeSetter;
-View.prototype[colSpanProperty.setNative] = columnSpanPropertyNativeSetter;
+View.prototype[columnSpanProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.columnSpan = value);
 
 function createNativeSpec(itemSpec: ItemSpec): org.nativescript.widgets.ItemSpec {
     switch (itemSpec.gridUnitType) {
