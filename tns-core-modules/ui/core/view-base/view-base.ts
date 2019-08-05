@@ -210,8 +210,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     dock: "left" | "top" | "right" | "bottom";
     row: number;
     col: number;
+    column: number; // synonym for "col"
     rowSpan: number;
     colSpan: number;
+    columnSpan: number; // synonym for "columnSpan"
 
     order: Order;
     flexGrow: FlexGrow;
