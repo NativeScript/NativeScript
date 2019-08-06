@@ -1,5 +1,6 @@
 ﻿// Types
 import { TabStripItem as TabStripItemDefinition } from ".";
+import { PropertyChangeData } from "../../../data/observable";
 import { TabNavigationBase } from "../tab-navigation-base";
 import { TabStrip } from "../tab-strip";
 import { Image } from "../../image/image";
@@ -30,6 +31,38 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
 
     private _highlightedHandler: () => void;
     private _normalHandler: () => void;
+
+    public onLoaded() {
+        if (!this.image) {
+            const image = new Image();
+            image.src = this.iconSource;
+            this.image = image;
+            this._addView(this.image);
+        }
+
+        if (!this.label) {
+            const label = new Label();
+            label.text = this.title;
+            this.label = label;
+            this._addView(this.label);
+        }
+
+        super.onLoaded();
+
+        this.label.style.addEventListener("colorChange", (args: PropertyChangeData) => {
+            const parent = <TabStrip>this.parent;
+            const tabStripParent = parent && <TabNavigationBase>parent.parent;
+            
+            return tabStripParent && tabStripParent.setTabBarItemColor(this, args.value);
+        });
+
+        this.image.style.addEventListener("colorChange", (args: PropertyChangeData) => {
+            const parent = <TabStrip>this.parent;
+            const tabStripParent = parent && <TabNavigationBase>parent.parent;
+            
+            return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
+        });
+    }
 
     public eachChild(callback: (child: ViewBase) => boolean) {
         if (this.label) {
@@ -108,19 +141,6 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
     }
     [backgroundInternalProperty.setNative](value: any) {
         // disable the background CSS properties
-    }
-
-    [colorProperty.getDefault](): Color {
-        const parent = <TabStrip>this.parent;
-        const tabStripParent = parent && <TabNavigationBase>parent.parent;
-
-        return tabStripParent && tabStripParent.getTabBarItemColor(this);
-    }
-    [colorProperty.setNative](value: Color) {
-        const parent = <TabStrip>this.parent;
-        const tabStripParent = parent && <TabNavigationBase>parent.parent;
-        
-        return tabStripParent && tabStripParent.setTabBarItemColor(this, value);
     }
 
     [fontSizeProperty.getDefault](): { nativeSize: number } {

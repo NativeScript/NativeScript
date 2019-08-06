@@ -6,12 +6,20 @@
   font-size: 36;
 }
 
+TabStripItem {
+  color: skyblue;
+}
+
+TabStripItem:active {
+  color: darkblue;
+}
+
 TabStripItem.special Image {
-  color: teal;
+  color: lightgreen;
 }
 
 TabStripItem.special:active Image {
-  color: purple;
+  color: darkgreen;
 }
 
 TabStripItem.special Label {
@@ -19,5 +27,5 @@ TabStripItem.special Label {
 }
 
 TabStripItem.special:active Label {
-  color: olive;
+  color: darkgoldenrod;
 }
