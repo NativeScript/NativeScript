@@ -1487,10 +1487,10 @@ export function test_css_calc_units() {
     TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10dip");
 
     stack.className = "pct_unit";
-    TKUnit.assertDeepEqual(stack.width as any, { unit: '%', value: 0.1 }, "Stack - width === 10%");
+    TKUnit.assertDeepEqual(stack.width as any, { unit: "%", value: 0.1 }, "Stack - width === 10%");
 
     stack.className = "px_unit";
-    TKUnit.assertDeepEqual(stack.width as any, { unit: 'px', value: 10 }, "Stack - width === 10px");
+    TKUnit.assertDeepEqual(stack.width as any, { unit: "px", value: 10 }, "Stack - width === 10px");
 }
 
 export function test_nested_css_calc() {
