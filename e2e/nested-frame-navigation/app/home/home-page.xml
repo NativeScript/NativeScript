@@ -20,7 +20,7 @@
             <Button text="Page w/ tabs (bottom)" tap="onNavigateToTabsBottomPage" />
             <Button text="Root tabs (top)" tap="onNavigateToTabsTopRoot" />
             <Button text="Root tabs (bottom)" tap="onNavigateToTabsBottomRoot" />
-            <Button text="Some page" automationText="somePage" tap="onNavigateToSomePage" />
+            <Button text="Some page" tap="onNavigateToSomePage" />
             <Button text="Frame to NestedFrame (non-default transition)" tap="onFrameToNestedFrame" />
         </StackLayout>
     </GridLayout>
