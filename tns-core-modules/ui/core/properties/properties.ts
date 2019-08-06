@@ -58,9 +58,9 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
     return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
 }
 
-const cssCalcRegexp = /^calc\((.*)\)/;
+const cssCalcRegexp = /\bcalc\(/;
 const cssVariableNameRegexp = /^--[^,\s]+?$/;
-const cssVarValueRegexp = /var\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
+const cssVarValueRegexp = /\bvar\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
 
 export function isCssVariableName(property: string) {
     return cssVariableNameRegexp.test(property);
