@@ -81,8 +81,8 @@ function initializeNativeClasses() {
 
         public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
             const tabItem = this.tab.items[this.index];
-
-            return tabItem.view.nativeViewProtected;
+            
+            return tabItem.nativeViewProtected;
         }
     }
 
@@ -471,12 +471,12 @@ export class Tabs extends TabsBase {
         toUnload.forEach(index => {
             const item = items[index];
             if (items[index]) {
-                item.unloadView(item.view);
+                item.unloadView(item.content);
             }
         });
 
         const newItem = items[newIndex];
-        const selectedView = newItem && newItem.view;
+        const selectedView = newItem && newItem.content;
         if (selectedView instanceof Frame) {
             (<Frame>selectedView)._pushInFrameStackRecursive();
         }
@@ -484,7 +484,7 @@ export class Tabs extends TabsBase {
         toLoad.forEach(index => {
             const item = items[index];
             if (this.isLoaded && items[index]) {
-                item.loadView(item.view);
+                item.loadView(item.content);
             }
         });
     }
