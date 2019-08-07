@@ -56,15 +56,21 @@ function processFile(file: fs.File) {
     }
 }
 
-function processFolder(path: string) {
+/**
+ * Processes folder and returns true if folder was not empty.
+ * @param Folder path 
+ */
+function processFolder(path: string): boolean {
     if (cache.has(path)) {
-        return;
+        return true;
     }
     cache.add(path);
 
     if (traceEnabled()) {
         traceWrite(`[Compat] Processing folder: ${path}`, traceCategories.ModuleNameResolver);
     }
+    
+    let folderEmpty = true;
 
     if (fs.Folder.exists(path)) {
         const folder = fs.Folder.fromPath(path);
@@ -72,11 +78,14 @@ function processFolder(path: string) {
         folder.eachEntity((file) => {
             if (file instanceof fs.File) {
                 processFile(file);
+                folderEmpty = false;
             }
 
             return true;
         });
     }
+
+    return !folderEmpty;
 }
 
 /**
@@ -87,23 +96,25 @@ function processFolder(path: string) {
 export function registerModulesFromFileSystem(moduleName: string) {
     initialize();
 
-    let folderFound = false;
+    let folderProcessed = false;
+    let parentFolderProcessed = false;
     // moduleName is a folder with package.json
     const path = fs.path.join(fs.knownFolders.currentApp().path, moduleName);
     if (fs.Folder.exists(path)) {
-        processFolder(path);
-        folderFound = true;
+        folderProcessed = processFolder(path);
     }
 
     // moduleName is file - load all files in its parent folder
     const parentName = moduleName.substr(0, moduleName.lastIndexOf(fs.path.separator));
     const parentFolderPath = fs.path.join(fs.knownFolders.currentApp().path, parentName);
     if (fs.Folder.exists(parentFolderPath)) {
-        processFolder(parentFolderPath);
-        folderFound = true;
+        parentFolderProcessed = processFolder(parentFolderPath);
     }
 
-    if (folderFound) {
+    // Return only if we processed the actual folder or its parent folder.
+    // If the parent folder is empty we should still check tns_modules
+    // as this might be just a name of a plugin (ex. "nativescript-ui-autocomplete")
+    if (folderProcessed || (parentFolderProcessed && parentName)) {
         return;
     }
 
