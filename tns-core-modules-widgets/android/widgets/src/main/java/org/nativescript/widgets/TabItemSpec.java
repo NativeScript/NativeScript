@@ -7,4 +7,5 @@ public class TabItemSpec {
     public int iconId;
     public Drawable iconDrawable;
     public int backgroundColor;
+    public int color;
 }

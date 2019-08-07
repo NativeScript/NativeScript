@@ -170,15 +170,17 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
     let iconSource;
     const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
 
-    // Image and Label children of TabStripItem
-    // take priority over its `iconSource` and `title` properties
-    iconSource = tabStripItem.image ? tabStripItem.image.src : tabStripItem.iconSource;
-    tabItemSpec.title = tabStripItem.label ? tabStripItem.label.text : tabStripItem.title;
-
+    tabItemSpec.title = tabStripItem.label && tabStripItem.label.text;
+    
     if (tabStripItem.backgroundColor instanceof Color) {
         tabItemSpec.backgroundColor = tabStripItem.backgroundColor.android;
     }
-
+    
+    if (tabStripItem.label && tabStripItem.label.style.color instanceof Color) {
+        tabItemSpec.color = tabStripItem.label.style.color.android;
+    }
+    
+    iconSource = tabStripItem.image && tabStripItem.image.src;
     if (iconSource) {
         if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
             tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
@@ -187,21 +189,12 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
                 // traceMissingIcon(iconSource);
             }
         } else {
-            let is = new ImageSource();
-            if (isFontIconURI(iconSource)) {
-                const fontIconCode = iconSource.split("//")[1];
-                const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
-                const font = target.style.fontInternal;
-                const color = target.style.color;
-                is = fromFontIconCode(fontIconCode, font, color);
-            } else {
-                is = fromFileOrResource(iconSource);
-            }
+            const icon = _getIcon(tabStripItem);
 
-            if (is) {
+            if (icon) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                 // tslint:disable-next-line:deprecation
-                tabItemSpec.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
+                tabItemSpec.iconDrawable = icon;
             } else {
                 // TODO:
                 // traceMissingIcon(iconSource);
@@ -210,6 +203,25 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
     }
 
     return tabItemSpec;
+}
+
+function _getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
+    const iconSource = tabStripItem.image && tabStripItem.image.src;
+
+    let is = new ImageSource();
+    if (isFontIconURI(iconSource)) {
+        const fontIconCode = iconSource.split("//")[1];
+        const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
+        const font = target.style.fontInternal;
+        const color = target.style.color;
+        is = fromFontIconCode(fontIconCode, font, color);
+    } else {
+        is = fromFileOrResource(iconSource);
+    }
+
+    const image = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
+    
+    return image;
 }
 
 function setElevation(bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar) {
@@ -562,20 +574,6 @@ export class BottomNavigation extends TabNavigationBase {
         }
     }
 
-    public getTabBarColor(): number {
-        return this._bottomNavigationBar.getTabTextColor();
-    }
-
-    public setTabBarColor(value: number | Color): void {
-        if (value instanceof Color) {
-            this._bottomNavigationBar.setTabTextColor(value.android);
-            this._bottomNavigationBar.setSelectedTabTextColor(value.android);
-        } else {
-            this._bottomNavigationBar.setTabTextColor(value);
-            this._bottomNavigationBar.setSelectedTabTextColor(value);
-        }
-    }
-
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
@@ -593,6 +591,15 @@ export class BottomNavigation extends TabNavigationBase {
         } else {
             tabStripItem.nativeViewProtected.setTextColor(value.android);
         }
+    }
+
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
+        const index = (<any>tabStripItem).index;
+        const tabBarItem = this._bottomNavigationBar.getViewForItemAt(index);
+        const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
+        const drawable = _getIcon(tabStripItem);
+
+        imgView.setImageDrawable(drawable);
     }
 
     public getTabBarItemFontSize(tabStripItem: TabStripItem): { nativeSize: number } {

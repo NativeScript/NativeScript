@@ -205,6 +205,10 @@ public class BottomNavigationBar extends LinearLayout {
             textView.setVisibility(GONE);
         }
 
+        if (tabItem.color != 0) {
+            textView.setTextColor(tabItem.color);            
+        }
+
         if (tabItem.backgroundColor != 0) {
             ll.setBackgroundColor(tabItem.backgroundColor);
         }

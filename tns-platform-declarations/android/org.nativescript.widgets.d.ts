@@ -455,6 +455,7 @@
                 iconId: number;
                 iconDrawable: android.graphics.drawable.Drawable;
                 backgroundColor: number;
+                color: number;
             }
 
             export namespace image {

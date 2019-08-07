@@ -528,10 +528,8 @@ export class Tabs extends TabsBase {
         this._ios.dataSource = this._dataSource;
         this._ios.delegate = this._delegate;
 
-        if (!this.tabBarItems) {
-            const tabStripItems = this.tabStrip ? this.tabStrip.items : null;
-            this.setTabStripItems(tabStripItems);
-        }
+        const tabStripItems = this.tabStrip ? this.tabStrip.items : null;
+        this.setTabStripItems(tabStripItems);
     }
 
     public onUnloaded() {
@@ -838,8 +836,8 @@ export class Tabs extends TabsBase {
         let image: UIImage;
         let title: string;
 
-        image = this._getIcon(item);
-        title = item.label ? item.label.text : item.title;
+        image = item.isLoaded && this._getIcon(item);
+        title = item.label && item.label.text;
 
         if (!this.tabStrip._hasImage) {
             this.tabStrip._hasImage = !!image;
@@ -872,20 +870,21 @@ export class Tabs extends TabsBase {
     }
 
     public _getIcon(tabStripItem: TabStripItem): UIImage {
-        // Image and Label children of TabStripItem
-        // take priority over its `iconSource` and `title` properties
-        const iconSource = tabStripItem.image ? tabStripItem.image.src : tabStripItem.iconSource;
+        const iconSource = tabStripItem.image && tabStripItem.image.src;
         if (!iconSource) {
             return null;
         }
 
-        let image: UIImage = this._iconsCache[iconSource];
+        const target = tabStripItem.image;
+        const font = target.style.fontInternal;
+        const color = target.style.color;
+        const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
+
+        let image: UIImage = this._iconsCache[iconTag];
         if (!image) {
             let is = new ImageSource;
             if (isFontIconURI(iconSource)) {
                 const fontIconCode = iconSource.split("//")[1];
-                const font = tabStripItem.style.fontInternal;
-                const color = tabStripItem.style.color;
                 is = fromFontIconCode(fontIconCode, font, color);
             } else {
                 is = fromFileOrResource(iconSource);
@@ -893,7 +892,7 @@ export class Tabs extends TabsBase {
 
             if (is && is.ios) {
                 const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
-                this._iconsCache[iconSource] = originalRenderedImage;
+                this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
                 // TODO

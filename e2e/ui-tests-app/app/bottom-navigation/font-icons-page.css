@@ -6,6 +6,10 @@
   font-size: 36;
 }
 
+TabStrip {
+  color: mediumvioletred;
+}
+
 TabStripItem {
   color: skyblue;
 }
