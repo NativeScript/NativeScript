@@ -152,11 +152,19 @@ class TabStrip extends LinearLayout {
         }
     }
 
+    // Used by TabLayout (the 'old' tab-view control)
     void onViewPagerPageChanged(int position, float positionOffset) {
         mSelectedPosition = position;
         mSelectionOffset = positionOffset;
         invalidate();
         updateTabsTextColor();
+    }
+
+    // Used by TabsBar
+    void onTabsViewPagerPageChanged(int position, float positionOffset) {
+        mSelectedPosition = position;
+        mSelectionOffset = positionOffset;
+        invalidate();
     }
 
     int getSelectedPosition(){
