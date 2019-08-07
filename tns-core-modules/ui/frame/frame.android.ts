@@ -46,7 +46,7 @@ let fragmentId = -1;
 export let moduleLoaded: boolean;
 
 if (global && global.__inspector) {
-    const devtools = require("tns-core-modules/debugger/devtools-elements");
+    const devtools = require("../../debugger/devtools-elements");
     devtools.attachDOMInspectorEventCallbacks(global.__inspector);
     devtools.attachDOMInspectorCommandCallbacks(global.__inspector);
 }
@@ -754,7 +754,7 @@ function ensureFragmentClass() {
     }
 
     // this require will apply the FragmentClass implementation
-    require("ui/frame/fragment");
+    require("./fragment");
 
     if (!fragmentClass) {
         throw new Error("Failed to initialize the extended androidx.fragment.app.Fragment class");

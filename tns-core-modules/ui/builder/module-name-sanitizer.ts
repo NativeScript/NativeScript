@@ -3,6 +3,8 @@ export function sanitizeModuleName(moduleName: string, removeExtension: boolean 
 
     if (moduleName.startsWith("~/")) {
         moduleName = moduleName.substring(2);
+    } else if (moduleName.startsWith("~")) {
+        moduleName = moduleName.substring(1);
     } else if (moduleName.startsWith("/")) {
         moduleName = moduleName.substring(1);
     }

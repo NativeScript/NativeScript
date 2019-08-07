@@ -1,0 +1,5 @@
+{
+  "name" : "core",
+  "main" : "globals-core",
+  "nativescript": {}
+}
