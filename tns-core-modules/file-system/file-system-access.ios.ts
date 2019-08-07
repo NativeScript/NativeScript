@@ -257,7 +257,29 @@ export class FileSystemAccess {
         return ios.getCurrentAppPath();
     }
 
-    public readText(path: string, onError?: (error: any) => any, encoding?: any) {
+    public readText(path: string, encoding?: any) {
+        const actualEncoding = encoding || textEncoding.UTF_8;
+
+        return new Promise<string>((resolve, reject) => {
+            try {
+                (NSString as any).stringWithContentsOfFileEncodingCompletion(
+                    path,
+                    actualEncoding,
+                    (result, error) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(result.toString());
+                        }
+                    },
+                );
+            } catch (ex) {
+                reject(new Error("Failed to read file at path '" + path + "': " + ex));
+            }
+        });
+    }
+
+    public readTextSync(path: string, onError?: (error: any) => any, encoding?: any) {
         const actualEncoding = encoding || textEncoding.UTF_8;
 
         try {
@@ -271,7 +293,17 @@ export class FileSystemAccess {
         }
     }
 
-    public read(path: string, onError?: (error: any) => any): NSData {
+    public read(path: string): Promise<NSData> {
+        return new Promise<NSData>((resolve, reject) => {
+            try {
+                (NSData as any).dataWithContentsOfFileCompletion(path, resolve);
+            } catch (ex) {
+                reject(new Error("Failed to read file at path '" + path + "': " + ex));
+            }
+        });
+    }
+
+    public readSync(path: string, onError?: (error: any) => any): NSData {
         try {
             return NSData.dataWithContentsOfFile(path);
         } catch (ex) {
@@ -281,7 +313,31 @@ export class FileSystemAccess {
         }
     }
 
-    public writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
+    public writeText(path: string, content: string, encoding?: any): Promise<void> {
+        const nsString = NSString.stringWithString(content);
+        const actualEncoding = encoding || textEncoding.UTF_8;
+
+        return new Promise<void>((resolve, reject) => {
+            try {
+                (nsString as any).writeToFileAtomicallyEncodingCompletion(
+                    path,
+                    true,
+                    actualEncoding,
+                    (error) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve();
+                        }
+                    },
+                );
+            } catch (ex) {
+                reject(new Error("Failed to write file at path '" + path + "': " + ex));
+            }
+        });
+    }
+
+    public writeTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
         const nsString = NSString.stringWithString(content);
 
         const actualEncoding = encoding || textEncoding.UTF_8;
@@ -296,7 +352,21 @@ export class FileSystemAccess {
         }
     }
 
-    public write(path: string, content: NSData, onError?: (error: any) => any) {
+    public write(path: string, content: NSData): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            try {
+                (content as any).writeToFileAtomicallyCompletion(
+                    path,
+                    true,
+                    () => { resolve(); },
+                );
+            } catch (ex) {
+                reject(new Error("Failed to write file at path '" + path + "': " + ex));
+            }
+        });
+    }
+
+    public writeSync(path: string, content: NSData, onError?: (error: any) => any) {
         try {
             content.writeToFileAtomically(path, true);
         } catch (ex) {
@@ -404,6 +474,6 @@ export class FileSystemAccess {
     }
 
     public joinPaths(paths: string[]): string {
-       return ios.joinPaths(...paths);
+        return ios.joinPaths(...paths);
     }
 }

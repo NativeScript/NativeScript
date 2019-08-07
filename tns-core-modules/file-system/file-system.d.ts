@@ -97,6 +97,11 @@ export class File extends FileSystemEntity {
     readTextSync(onError?: (error: any) => any, encoding?: string): string;
 
     /**
+     * Reads the binary content of the file asynchronously.
+     */
+    read(): Promise<any>;
+
+    /**
      * Reads the binary content of the file synchronously.
      * @param onError An optional function to be called if some IO-error occurs.
      */
@@ -116,6 +121,12 @@ export class File extends FileSystemEntity {
      * @param encoding An optional value specifying the preferred encoding (defaults to UTF-8).
      */
     writeTextSync(content: string, onError?: (error: any) => any, encoding?: string): void;
+
+    /**
+     * Writes the provided binary content to the file.
+     * @param content The binary content to be saved to the file.
+     */
+    write(content: any): Promise<void>;
 
     /**
      * Writes the provided binary content to the file synchronously.

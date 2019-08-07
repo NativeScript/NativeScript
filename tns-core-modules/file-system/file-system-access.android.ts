@@ -218,7 +218,28 @@ export class FileSystemAccess {
         return this.getLogicalRootPath() + "/app";
     }
 
-    public read(path: string, onError?: (error: any) => any) {
+    public read(path: string): Promise<number[]> {
+        return new Promise<number[]>((resolve, reject) => {
+            try {
+                org.nativescript.widgets.Async.File.read(
+                    path,
+                    new org.nativescript.widgets.Async.CompleteCallback({
+                        onComplete: (result: number[]) => {
+                            resolve(result);
+                        },
+                        onError: (err) => {
+                            reject(new Error(err));
+                        }
+                    }),
+                    null,
+                );
+            } catch (ex) {
+                reject(ex);
+            }
+        });
+    }
+
+    public readSync(path: string, onError?: (error: any) => any) {
         try {
             const javaFile = new java.io.File(path);
             const stream = new java.io.FileInputStream(javaFile);
@@ -234,7 +255,29 @@ export class FileSystemAccess {
         }
     }
 
-    public write(path: string, bytes: native.Array<number>, onError?: (error: any) => any) {
+    public write(path: string, bytes: native.Array<number>): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            try {
+                org.nativescript.widgets.Async.File.write(
+                    path,
+                    bytes,
+                    new org.nativescript.widgets.Async.CompleteCallback({
+                        onComplete: () => {
+                            resolve();
+                        },
+                        onError: (err) => {
+                            reject(new Error(err));
+                        }
+                    }),
+                    null,
+                );
+            } catch (ex) {
+                reject(ex);
+            }
+        });
+    }
+
+    public writeSync(path: string, bytes: native.Array<number>, onError?: (error: any) => any) {
         try {
             const javaFile = new java.io.File(path);
             const stream = new java.io.FileOutputStream(javaFile);
@@ -247,7 +290,38 @@ export class FileSystemAccess {
         }
     }
 
-    public readText(path: string, onError?: (error: any) => any, encoding?: any) {
+    public readText(path: string, encoding?: any): Promise<string> {
+        let actualEncoding = encoding;
+        if (!actualEncoding) {
+            actualEncoding = textModule.encoding.UTF_8;
+        }
+
+        return new Promise<string>((resolve, reject) => {
+            try {
+                org.nativescript.widgets.Async.File.readText(
+                    path,
+                    actualEncoding,
+                    new org.nativescript.widgets.Async.CompleteCallback({
+                        onComplete: (result: string) => {
+                            if (actualEncoding === textModule.encoding.UTF_8) {
+                                // Remove UTF8 BOM if present. http://www.rgagnon.com/javadetails/java-handle-utf8-file-with-bom.html
+                                result = FileSystemAccess._removeUtf8Bom(result);
+                            }
+                            resolve(result);
+                        },
+                        onError: (err) => {
+                            reject(new Error(err));
+                        }
+                    }),
+                    null,
+                );
+            } catch (ex) {
+                reject(ex);
+            }
+        });
+    }
+
+    public readTextSync(path: string, onError?: (error: any) => any, encoding?: any) {
         try {
             const javaFile = new java.io.File(path);
             const stream = new java.io.FileInputStream(javaFile);
@@ -302,7 +376,35 @@ export class FileSystemAccess {
         return s;
     }
 
-    public writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
+    public writeText(path: string, content: string, encoding?: any): Promise<void> {
+        let actualEncoding = encoding;
+        if (!actualEncoding) {
+            actualEncoding = textModule.encoding.UTF_8;
+        }
+
+        return new Promise<void>((resolve, reject) => {
+            try {
+                org.nativescript.widgets.Async.File.writeText(
+                    path,
+                    content,
+                    actualEncoding,
+                    new org.nativescript.widgets.Async.CompleteCallback({
+                        onComplete: () => {
+                            resolve();
+                        },
+                        onError: (err) => {
+                            reject(new Error(err));
+                        }
+                    }),
+                    null,
+                );
+            } catch (ex) {
+                reject(ex);
+            }
+        });
+    }
+
+    public writeTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
         try {
             const javaFile = new java.io.File(path);
             const stream = new java.io.FileOutputStream(javaFile);

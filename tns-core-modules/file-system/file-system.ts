@@ -207,6 +207,31 @@ export class File extends FileSystemEntity {
         return getFileAccess().getFileSize(this.path);
     }
 
+    public read(): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                this.checkAccess();
+            } catch (ex) {
+                reject(ex);
+
+                return;
+            }
+
+            this._locked = true;
+
+            getFileAccess().read(this.path).then(
+                (result) => {
+                    resolve(result);
+                    this._locked = false;
+                },
+                (error) => {
+                    reject(error);
+                    this._locked = false;
+                },
+            );
+        });
+    }
+
     public readSync(onError?: (error: any) => any): any {
         this.checkAccess();
 
@@ -220,12 +245,37 @@ export class File extends FileSystemEntity {
             }
         };
 
-        const content = getFileAccess().read(this.path, localError);
+        const content = getFileAccess().readSync(this.path, localError);
 
         this._locked = false;
 
         return content;
 
+    }
+
+    public write(content: any): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            try {
+                this.checkAccess();
+            } catch (ex) {
+                reject(ex);
+
+                return;
+            }
+
+            this._locked = true;
+
+            getFileAccess().write(this.path, content).then(
+                () => {
+                    resolve();
+                    this._locked = false;
+                },
+                (error) => {
+                    reject(error);
+                    this._locked = false;
+                },
+            );
+        });
     }
 
     public writeSync(content: any, onError?: (error: any) => any): void {
@@ -242,7 +292,7 @@ export class File extends FileSystemEntity {
                 }
             };
 
-            getFileAccess().write(this.path, content, localError);
+            getFileAccess().writeSync(this.path, content, localError);
         } finally {
             this._locked = false;
         }
@@ -250,15 +300,30 @@ export class File extends FileSystemEntity {
 
     public readText(encoding?: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            let hasError = false;
-            const localError = (error) => {
-                hasError = true;
-                reject(error);
-            };
+            try {
+                this.checkAccess();
+            } catch (ex) {
+                reject(ex);
 
-            const content = this.readTextSync(localError, encoding);
-            if (!hasError) {
-                resolve(content);
+                return;
+            }
+
+            try {
+                this._locked = true;
+
+                getFileAccess().readText(this.path, encoding).then(
+                    (result) => {
+                        resolve(result);
+                        this._locked = false;
+                    },
+                    (error) => {
+                        reject(error);
+                        this._locked = false;
+                    },
+                );
+            } catch (ex) {
+                reject(ex);
+                this._locked = false;
             }
         });
     }
@@ -277,7 +342,7 @@ export class File extends FileSystemEntity {
             }
         };
 
-        const content = getFileAccess().readText(this.path, localError, encoding);
+        const content = getFileAccess().readTextSync(this.path, localError, encoding);
         this._locked = false;
 
         return content;
@@ -285,15 +350,30 @@ export class File extends FileSystemEntity {
 
     public writeText(content: string, encoding?: string): Promise<any> {
         return new Promise((resolve, reject) => {
-            let hasError = false;
-            const localError = function (error) {
-                hasError = true;
-                reject(error);
-            };
+            try {
+                this.checkAccess();
+            } catch (ex) {
+                reject(ex);
 
-            this.writeTextSync(content, localError, encoding);
-            if (!hasError) {
-                resolve();
+                return;
+            }
+
+            try {
+                this._locked = true;
+
+                getFileAccess().writeText(this.path, content, encoding).then(
+                    () => {
+                        resolve();
+                        this._locked = false;
+                    },
+                    (error) => {
+                        reject(error);
+                        this._locked = false;
+                    },
+                );
+            } catch (ex) {
+                reject(ex);
+                this._locked = false;
             }
         });
     }
@@ -312,8 +392,7 @@ export class File extends FileSystemEntity {
                 }
             };
 
-            // TODO: Asyncronous
-            getFileAccess().writeText(this.path, content, localError, encoding);
+            getFileAccess().writeTextSync(this.path, content, localError, encoding);
         } finally {
             this._locked = false;
         }
@@ -549,7 +628,7 @@ export module knownFolders {
         export function desktop(): Folder {
             _checkPlatform("desktop");
             if (!_desktop) {
-                 let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DesktopDirectory);
+                let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DesktopDirectory);
 
                 if (existingFolderInfo) {
                     _desktop = existingFolderInfo.folder;
@@ -581,7 +660,7 @@ export module knownFolders {
         export function movies(): Folder {
             _checkPlatform("movies");
             if (!_movies) {
-                 let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MoviesDirectory);
+                let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MoviesDirectory);
 
                 if (existingFolderInfo) {
                     _movies = existingFolderInfo.folder;
@@ -613,7 +692,7 @@ export module knownFolders {
         export function pictures(): Folder {
             _checkPlatform("pictures");
             if (!_pictures) {
-                  let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.PicturesDirectory);
+                let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.PicturesDirectory);
 
                 if (existingFolderInfo) {
                     _pictures = existingFolderInfo.folder;

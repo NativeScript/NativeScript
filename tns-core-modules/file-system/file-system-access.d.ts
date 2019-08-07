@@ -124,11 +124,26 @@ export class FileSystemAccess {
     /**
      * Reads a text from a file with a given path.
      * @param path The path to the source file.
+     * @param encoding (optional) If set reads the text with the specified encoding (default UTF-8).
+     * Returns Promise of the text read.
+     */
+    readText(path: string, encoding?: any): Promise<string>;
+
+    /**
+     * Reads a text from a file with a given path.
+     * @param path The path to the source file.
      * @param onError (optional) A callback function to use if any error occurs.
      * @param encoding (optional) If set reads the text with the specified encoding (default UTF-8).
      * Returns the text read.
      */
-    readText(path: string, onError?: (error: any) => any, encoding?: any): string;
+    readTextSync(path: string, onError?: (error: any) => any, encoding?: any): string;
+
+    /**
+     * Reads a binary content from a file with a given path.
+     * @param path The path to the source file.
+     * Returns a Promise with the binary content read.
+     */
+    read(path: string): Promise<any>;
 
     /**
      * Reads a binary content from a file with a given path.
@@ -136,7 +151,15 @@ export class FileSystemAccess {
      * @param onError (optional) A callback function to use if any error occurs.
      * Returns the binary content read.
      */
-    read(path: string, onError?: (error: any) => any): any;
+    readSync(path: string, onError?: (error: any) => any): any;
+
+    /**
+     * Writes a text to a file with a given path.
+     * @param path The path to the source file.
+     * @param content The content which will be written to the file.
+     * @param encoding (optional) If set writes the text with the specified encoding (default UTF-8).
+     */
+    writeText(path: string, content: string, encoding?: any): Promise<void>;
 
     /**
      * Writes a text to a file with a given path.
@@ -145,7 +168,14 @@ export class FileSystemAccess {
      * @param onError (optional) A callback function to use if any error occurs.
      * @param encoding (optional) If set writes the text with the specified encoding (default UTF-8).
      */
-    writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any);
+    writeTextSync(path: string, content: string, onError?: (error: any) => any, encoding?: any);
+
+    /**
+     * Writes a binary to a file with a given path.
+     * @param path The path to the source file.
+     * @param content The content which will be written to the file.
+     */
+    write(path: string, content: any): Promise<void>;
 
     /**
      * Writes a binary to a file with a given path.
@@ -153,7 +183,7 @@ export class FileSystemAccess {
      * @param content The content which will be written to the file.
      * @param onError (optional) A callback function to use if any error occurs.
      */
-    write(path: string, content: any, onError?: (error: any) => any);
+    writeSync(path: string, content: any, onError?: (error: any) => any);
 
     /**
      * Gets extension of the file with a given path.
