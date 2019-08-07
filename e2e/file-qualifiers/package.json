@@ -6,18 +6,19 @@
   "nativescript": {
     "id": "org.nativescript.filequalifiers",
     "tns-ios": {
-      "version": "6.0.0-2019-06-19-084246-01"
+      "version": "next"
     },
     "tns-android": {
-      "version": "6.0.0-2019-06-24-113546-01"
+      "version": "next"
     }
   },
   "dependencies": {
+    "nativescript-theme-core": "^1.0.6",
     "tns-core-modules": "file:../../tns-core-modules"
   },
   "devDependencies": {
     "nativescript-dev-webpack": "next",
     "tns-platform-declarations": "next",
-    "typescript": "3.4.1"
+    "typescript": "3.4.5"
   }
 }
