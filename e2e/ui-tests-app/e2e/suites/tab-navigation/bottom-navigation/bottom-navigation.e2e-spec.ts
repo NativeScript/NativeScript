@@ -1,4 +1,4 @@
-import { nsCapabilities, createDriver, AppiumDriver, DeviceOrientaion, logInfo } from "nativescript-dev-appium";
+import { nsCapabilities, createDriver, AppiumDriver, DeviceOrientation, logInfo } from "nativescript-dev-appium";
 import { BottomNavigationBasePage } from "./bottom-navigation-base-page";
 import { assert } from "chai";
 import { setImageName } from "../../../helpers/image-helper";
@@ -28,8 +28,8 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     afterEach(async function () {
         const orientation = await driver.getOrientation();
-        if (orientation === DeviceOrientaion.LANDSCAPE) {
-            await driver.setOrientation(DeviceOrientaion.PORTRAIT);
+        if (orientation === DeviceOrientation.LANDSCAPE) {
+            await driver.setOrientation(DeviceOrientation.PORTRAIT);
         }
         if (this.currentTest.state === "failed") {
             await driver.logTestArtifacts(this.currentTest.title);
@@ -186,13 +186,13 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-fancy-fonts-change-orientation`, async function () {
         await bottomNavigationBasePage.navigateToSample("fancy-fonts");
-        await driver.setOrientation(DeviceOrientaion.LANDSCAPE);
+        await driver.setOrientation(DeviceOrientation.LANDSCAPE);
         await driver.imageHelper.compareScreen();
 
         await driver.backgroundApp(1);
         await driver.imageHelper.compareScreen();
 
-        // await driver.setOrientation(DeviceOrientaion.PORTRAIT);
+        // await driver.setOrientation(DeviceOrientation.PORTRAIT);
         await driver.imageHelper.compareScreen();
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
