@@ -723,7 +723,7 @@ export class Tabs extends TabsBase {
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
         const index = (<any>tabStripItem).index;
-        const tabBarItem = this._tabLayout.getViewForItemAt(index);
+        const tabBarItem = this._tabsBar.getViewForItemAt(index);
         const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
         const drawable = _getIcon(tabStripItem);
 
