@@ -74,10 +74,8 @@ export function isCssValueUsingCssVariable(value: string) {
     return cssVarValueRegexp.test(value);
 }
 
-export function _cssVariableConverter<T>(view: ViewBase, cssName: string, value: string | T): string | T {
-    let res = [] as string[];
-
-    if (typeof value !== "string") {
+export function _evaluateCssVariable<T>(view: ViewBase, cssName: string, value: string | T): string | T {
+    if (typeof value !== "string" || !value) {
         return value;
     }
 
@@ -86,51 +84,42 @@ export function _cssVariableConverter<T>(view: ViewBase, cssName: string, value:
         return value;
     }
 
-    // Split value into sub-sections
-    for (let part of value.split(",").map((part) =>  part.trim())) {
-        if (!part) {
-            continue;
+    let output = `${value}`.trim();
+
+    // Evaluate every css-variable in the value.
+    let lastValue: string;
+    while (lastValue !== output) {
+        lastValue = output;
+
+        let m = cssVarValueRegexp.exec(output);
+        if (!m) {
+            // No more css-variables, break.
+            break;
         }
 
-        if (!isCssValueUsingCssVariable(part)) {
-            // part is not using css-variable, use as is.
-            res.push(part);
-            continue;
+        const matchStr = m[0];
+        const matchLength = matchStr.length;
+        const cssVariableName = m[1];
+        const matchIndex = m.index;
+
+        const cssVariableValue = view.style.getCssVariable(cssVariableName);
+        if (!cssVariableValue) {
+            traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Style, traceMessageType.error);
         }
 
-        // Each sub-section can use more than one css-variable, each must be processed
-        for (let m = cssVarValueRegexp.exec(part), lastValue: string; lastValue !== part && m; m = cssVarValueRegexp.exec(part)) {
-            lastValue = part;
-
-            const matchStr = m[0];
-            const matchLength = matchStr.length;
-            const cssVariableName = m[1];
-            const matchIndex = m.index;
-
-            const cssVariableValue = view.style.getCssVariable(cssVariableName);
-
-            if (!cssVariableValue) {
-                traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Error, traceMessageType.error);
-                part = null;
-                break;
-            }
-
-            const newValue = `${part.substr(0, matchIndex)}${cssVariableValue}${part.substr(matchIndex + matchLength)}`;
-            if (newValue === part) {
-                break;
-            }
-
-            part = newValue;
+        const newValue = `${output.substr(0, matchIndex)}${cssVariableValue}${output.substr(matchIndex + matchLength)}`;
+        if (newValue === output) {
+            break;
         }
 
-        res.push(part);
+        output = newValue.trim();
     }
 
-    if (res.length === 1) {
-        return res[0];
+    if (output === "null") {
+        return null;
     }
 
-    return res.join(", ");
+    return output;
 }
 
 export function _cssCalcConverter<T>(value: string | T) {
@@ -571,7 +560,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 return;
             }
 
-            newValue = _cssVariableConverter(view, options.cssName, newValue);
+            newValue = _evaluateCssVariable(view, options.cssName, newValue);
             const reset = newValue === unsetValue || newValue === "";
             let value: U;
             if (reset) {
@@ -646,7 +635,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 return;
             }
 
-            newValue = _cssVariableConverter(view, options.cssName, newValue);
+            newValue = _evaluateCssVariable(view, options.cssName, newValue);
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
             // We have localValueSource - NOOP.
@@ -837,7 +826,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                         return;
                     }
 
-                    let boxedValue = _cssVariableConverter(view, cssName, inputBoxedValue);
+                    let boxedValue = _evaluateCssVariable(view, cssName, inputBoxedValue);
 
                     const oldValue = this[computedValue];
                     const oldSource = this[computedSource];
@@ -994,7 +983,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 return;
             }
 
-            const boxedValue = _cssVariableConverter(view, options.cssName, inputBoxedValue);
+            const boxedValue = _evaluateCssVariable(view, options.cssName, inputBoxedValue);
 
             const reset = boxedValue === unsetValue || boxedValue === "";
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
