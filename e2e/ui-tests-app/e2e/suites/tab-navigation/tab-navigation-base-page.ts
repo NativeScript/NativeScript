@@ -15,7 +15,7 @@ export abstract class TabNavigationBasePage extends PageObjectBaseModel {
     abstract async getItems();
 
     async init(subSuiteName: string) {
-        this._naviagtionLinks.push(subSuiteName);
+        this._navigationLinks.push(subSuiteName);
         await super.initSuite();
     }
 

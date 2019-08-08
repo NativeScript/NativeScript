@@ -1,10 +1,11 @@
 ﻿// Types
+import { TabStrip } from "../tab-navigation-base/tab-strip";
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TextTransform } from "../text-base";
 
 //Requires
-import { TabNavigationBase, itemsProperty, selectedIndexProperty } from "../tab-navigation-base/tab-navigation-base";
+import { TabNavigationBase, itemsProperty, selectedIndexProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
 import { Font } from "../styling/font";
 import { getTransformedText } from "../text-base";
 import { Frame } from "../frame";
@@ -138,7 +139,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
                         if (tabStripItems[position]) {
                             tabStripItems[position]._emit(TabStripItem.selectEvent);
                         }
-    
+
                         if (tabStripItems[prevPosition]) {
                             tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
                         }
@@ -612,6 +613,15 @@ export class BottomNavigation extends TabNavigationBase {
     }
     [itemsProperty.setNative](value: TabContentItem[]) {
         this.setViewControllers(value);
+        selectedIndexProperty.coerce(this);
+    }
+
+    [tabStripProperty.getDefault](): TabStrip {
+        return null;
+    }
+
+    [tabStripProperty.setNative](value: TabStrip) {
+        this.setViewControllers(this.items);
         selectedIndexProperty.coerce(this);
     }
 }

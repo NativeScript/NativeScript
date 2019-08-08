@@ -61,10 +61,10 @@ describe(`${imagePrefix}-suite`, async function () {
             await tabTwo.click();
             await driver.imageHelper.compareScreen({ imageName: imageName });
 
-            const imageComparissonresult = driver.imageHelper.hasImageComparisonPassed();
-            assert.isTrue(imageComparissonresult);
+            const imageComparisonResult = driver.imageHelper.hasImageComparisonPassed();
+            assert.isTrue(imageComparisonResult);
 
-            if (imageComparissonresult) {
+            if (imageComparisonResult) {
                 const tabOne = await driver.waitForElement(sample.tab1);
                 await tabOne.click();
             }

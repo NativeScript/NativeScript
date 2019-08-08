@@ -1,3 +1,5 @@
+@import '~nativescript-theme-core/css/core.light.css';
+
 .root-footer {
     color: black;
     background-color: lightgreen
