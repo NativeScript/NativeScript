@@ -172,22 +172,22 @@ export class Style extends Observable {
     /**
      * Assign value to a css-variable
      * 
-     * @param varname 
+     * @param varName 
      * @param value 
      * @param scoped if false value is set from style-attribute, if true set from the style-scope.
      */
-    public setCssVariable(varname: string, value: string, scoped: boolean): void;
+    public setCssVariable(varName: string, value: string, scoped: boolean): void;
 
     /**
      * Unassign value for a css-value
      */
-    public unsetCssVariable(varname: string, scoped: boolean): void;
+    public unsetCssVariable(varName: string, scoped: boolean): void;
 
     /**
      * Get value of the css-variable.
      * If the value is not set on this style-object, try the parent view. 
      */
-    public getCssVariable(varname: string): string;
+    public getCssVariable(varName: string): string | null;
 
     /**
      * Clear css-variables.
