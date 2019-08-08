@@ -37,8 +37,8 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
             this._addView(value);
             // selectedIndexProperty.coerce(this);
         } else if (name === "TabStrip") {
+            // Setting tabStrip will trigger onTabStripChanged
             this.tabStrip = value;
-            this._addView(value);
         }
     }
 
@@ -94,14 +94,12 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     }
 
     public onTabStripChanged(oldTabStrip: TabStrip, newTabStrip: TabStrip) {
-        if (oldTabStrip && oldTabStrip.items && oldTabStrip.items.length) {
-            oldTabStrip.items.forEach(item => this._removeView(item));
+        if (oldTabStrip && oldTabStrip.parent) {
+            this._removeView(oldTabStrip);
         }
 
-        if (newTabStrip && newTabStrip.items && newTabStrip.items.length) {
-            newTabStrip.items.forEach(item => {
-                this._addView(item);
-            });
+        if (newTabStrip) {
+            this._addView(newTabStrip);
         }
     }
 

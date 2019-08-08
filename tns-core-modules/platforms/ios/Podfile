@@ -1,1 +1,4 @@
+platform :ios, '9.0'
+use_frameworks!
+
 pod 'MaterialComponents/Tabs', '~> 84.4'
