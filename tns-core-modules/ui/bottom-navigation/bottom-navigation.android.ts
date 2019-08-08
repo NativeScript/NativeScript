@@ -211,11 +211,10 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
     return tabItemSpec;
 }
 
-function setElevation(grid: org.nativescript.widgets.GridLayout, bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar) {
+function setElevation(bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar) {
     const compat = <any>androidx.core.view.ViewCompat;
     if (compat.setElevation) {
         const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
-        compat.setElevation(grid, val);
         compat.setElevation(bottomNavigationBar, val);
     }
 }
@@ -288,7 +287,7 @@ export class BottomNavigation extends TabNavigationBase {
         nativeView.addView(bottomNavigationBar);
         (<any>nativeView).bottomNavigationBar = bottomNavigationBar;
 
-        setElevation(nativeView, bottomNavigationBar);
+        setElevation(bottomNavigationBar);
 
         const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
         if (primaryColor) {
