@@ -81,7 +81,7 @@ function initializeNativeClasses() {
 
         public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
             const tabItem = this.tab.items[this.index];
-            
+
             return tabItem.nativeViewProtected;
         }
     }
@@ -337,11 +337,15 @@ function getDefaultAccentColor(context: android.content.Context): number {
     return defaultAccentColor;
 }
 
-function setElevation(grid: org.nativescript.widgets.GridLayout, tabsBar: org.nativescript.widgets.TabsBar) {
+function setElevation(grid: org.nativescript.widgets.GridLayout, tabsBar: org.nativescript.widgets.TabsBar, tabsPosition: string) {
     const compat = <any>androidx.core.view.ViewCompat;
     if (compat.setElevation) {
         const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
-        compat.setElevation(grid, val);
+
+        if (tabsPosition === "top") {
+            compat.setElevation(grid, val);
+        }
+
         compat.setElevation(tabsBar, val);
     }
 }
@@ -422,7 +426,7 @@ export class Tabs extends TabsBase {
         nativeView.addView(tabsBar);
         (<any>nativeView).tabsBar = tabsBar;
 
-        setElevation(nativeView, tabsBar);
+        setElevation(nativeView, tabsBar, this.tabsPosition);
 
         if (accentColor) {
             tabsBar.setSelectedIndicatorColors([accentColor]);
@@ -659,7 +663,7 @@ export class Tabs extends TabsBase {
     }
 
     public getTabBarColor(): number {
-         return this._tabsBar.getTabTextColor();
+        return this._tabsBar.getTabTextColor();
     }
 
     public setTabBarColor(value: number | Color): void {
