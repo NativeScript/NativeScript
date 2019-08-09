@@ -1,0 +1,16 @@
+BottomNavigation {
+    color: gold;
+  }
+  
+  TabStrip {
+    color: skyblue;
+  }
+  
+  TabStripItem.special {
+    color: red;
+  }
+  
+  TabStripItem.special:active {
+    color: yellowgreen;
+  }
+  
