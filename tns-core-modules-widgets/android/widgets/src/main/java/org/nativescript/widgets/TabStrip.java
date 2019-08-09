@@ -43,6 +43,7 @@ class TabStrip extends LinearLayout {
     private final int mDefaultBottomBorderColor;
 
     private int mSelectedPosition;
+    private int mPreviousSelectedPosition;
     private float mSelectionOffset;
 
     private TabLayout.TabColorizer mCustomTabColorizer;
@@ -121,14 +122,14 @@ class TabStrip extends LinearLayout {
     }
 
     private void updateTabsTextColor(){
-        final int childCount = getChildCount();
-        for (int i = 0; i < childCount; i++){
-            LinearLayout linearLayout = (LinearLayout)getChildAt(i);
+        if (getChildCount() > 0) {
+            LinearLayout linearLayout = (LinearLayout)getChildAt(mSelectedPosition);
             TextView textView = (TextView)linearLayout.getChildAt(1);
-            if (i == mSelectedPosition){
-                textView.setTextColor(mSelectedTabTextColor);
-            }
-            else {
+            textView.setTextColor(mSelectedTabTextColor);
+
+            if (mSelectedPosition != mPreviousSelectedPosition) {
+                linearLayout = (LinearLayout)getChildAt(mPreviousSelectedPosition);
+                textView = (TextView)linearLayout.getChildAt(1);
                 textView.setTextColor(mTabTextColor);
             }
         }
@@ -154,6 +155,7 @@ class TabStrip extends LinearLayout {
 
     // Used by TabLayout (the 'old' tab-view control)
     void onViewPagerPageChanged(int position, float positionOffset) {
+        mPreviousSelectedPosition = mSelectedPosition;
         mSelectedPosition = position;
         mSelectionOffset = positionOffset;
         invalidate();
@@ -162,19 +164,22 @@ class TabStrip extends LinearLayout {
 
     // Used by TabsBar
     void onTabsViewPagerPageChanged(int position, float positionOffset) {
+        mPreviousSelectedPosition = mSelectedPosition;
         mSelectedPosition = position;
         mSelectionOffset = positionOffset;
         invalidate();
     }
 
-    int getSelectedPosition(){
-        return mSelectedPosition;
-    }
-
+    // Used by BottomNavigation
     void setSelectedPosition(int position) {
+        mPreviousSelectedPosition = mSelectedPosition;
         mSelectedPosition = position;
         invalidate();
         updateTabsTextColor();
+    }
+
+    int getSelectedPosition(){
+        return mSelectedPosition;
     }
 
     @Override
