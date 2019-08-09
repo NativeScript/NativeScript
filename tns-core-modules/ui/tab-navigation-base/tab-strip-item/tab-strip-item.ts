@@ -32,6 +32,12 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
     private _highlightedHandler: () => void;
     private _normalHandler: () => void;
 
+    private _labelColorHandler: (args: PropertyChangeData) => void;
+    private _labelFontHandler: (args: PropertyChangeData) => void;
+    private _labelTextTransformHandler: (args: PropertyChangeData) => void;
+    
+    private _imageColorHandler: (args: PropertyChangeData) => void;
+
     public onLoaded() {
         if (!this.image) {
             const image = new Image();
@@ -49,19 +55,47 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
 
         super.onLoaded();
 
-        this.label.style.addEventListener("colorChange", (args: PropertyChangeData) => {
+        this._labelColorHandler = this._labelColorHandler || ((args: PropertyChangeData) => {
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
             
             return tabStripParent && tabStripParent.setTabBarItemColor(this, args.value);
         });
+        this.label.style.on("colorChange", this._labelColorHandler);
 
-        this.image.style.addEventListener("colorChange", (args: PropertyChangeData) => {
+        this._labelFontHandler = this._labelFontHandler || ((args: PropertyChangeData) => {
+            const parent = <TabStrip>this.parent;
+            const tabStripParent = parent && <TabNavigationBase>parent.parent;
+            
+            return tabStripParent && tabStripParent.setTabBarItemFontInternal(this, args.value);
+        });
+        this.label.style.on("fontInternalChange", this._labelFontHandler);
+
+        this._labelTextTransformHandler = this._labelTextTransformHandler || ((args: PropertyChangeData) => {
+            const parent = <TabStrip>this.parent;
+            const tabStripParent = parent && <TabNavigationBase>parent.parent;
+            
+            return tabStripParent && tabStripParent.setTabBarItemTextTransform(this, args.value);
+        });
+        this.label.style.on("textTransformChange", this._labelTextTransformHandler);
+
+        this._imageColorHandler = this._imageColorHandler || ((args: PropertyChangeData) => {
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
             
             return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
         });
+        this.image.style.on("colorChange", this._imageColorHandler);
+    }
+
+    public onUnloaded() {
+        super.onUnloaded();
+
+        this.label.style.off("colorChange", this._labelColorHandler);
+        this.label.style.off("fontInternalChange", this._labelFontHandler);
+        this.label.style.off("textTransformChange", this._labelTextTransformHandler);
+        
+        this.image.style.off("colorChange", this._imageColorHandler);
     }
 
     public eachChild(callback: (child: ViewBase) => boolean) {
@@ -141,44 +175,5 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
     }
     [backgroundInternalProperty.setNative](value: any) {
         // disable the background CSS properties
-    }
-
-    [fontSizeProperty.getDefault](): { nativeSize: number } {
-        const parent = <TabStrip>this.parent;
-        const tabStripParent = parent && <TabNavigationBase>parent.parent;
-
-        return tabStripParent && tabStripParent.getTabBarItemFontSize(this);
-    }
-    [fontSizeProperty.setNative](value: number | { nativeSize: number }) {
-        const parent = <TabStrip>this.parent;
-        const tabStripParent = parent && <TabNavigationBase>parent.parent;
-        
-        return tabStripParent && tabStripParent.setTabBarItemFontSize(this, value);
-    }
-
-    [fontInternalProperty.getDefault](): any {
-        const parent = <TabStrip>this.parent;
-        const tabStripParent = parent && <TabNavigationBase>parent.parent;
-
-        return tabStripParent && tabStripParent.getTabBarItemFontInternal(this);
-    }
-    [fontInternalProperty.setNative](value: any) {
-        const parent = <TabStrip>this.parent;
-        const tabStripParent = parent && <TabNavigationBase>parent.parent;
-        
-        return tabStripParent && tabStripParent.setTabBarItemFontInternal(this, value);
-    }
-
-    [textTransformProperty.getDefault](): any {
-        const parent = <TabStrip>this.parent;
-        const tabStripParent = parent && <TabNavigationBase>parent.parent;
-
-        return tabStripParent && tabStripParent.getTabBarItemTextTransform(this);
-    }
-    [textTransformProperty.setNative](value: any) {
-        const parent = <TabStrip>this.parent;
-        const tabStripParent = parent && <TabNavigationBase>parent.parent;
-        
-        return tabStripParent && tabStripParent.setTabBarItemTextTransform(this, value);
     }
 }

@@ -284,37 +284,58 @@ function initializeNativeClasses() {
 }
 
 function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
-    let iconSource;
     const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
 
-    tabItemSpec.title = tabStripItem.label && tabStripItem.label.text;
-    
-    if (tabStripItem.backgroundColor instanceof Color) {
-        tabItemSpec.backgroundColor = tabStripItem.backgroundColor.android;
-    }
-    
-    if (tabStripItem.label && tabStripItem.label.style.color instanceof Color) {
-        tabItemSpec.color = tabStripItem.label.style.color.android;
-    }
-    
-    iconSource = tabStripItem.image && tabStripItem.image.src;
-    if (iconSource) {
-        if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-            tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
-            if (tabItemSpec.iconId === 0) {
-                // TODO:
-                // traceMissingIcon(iconSource);
-            }
-        } else {
-            const icon = _getIcon(tabStripItem);
+    if (tabStripItem.isLoaded) {
+        const nestedLabel = tabStripItem.label;
+        let title = nestedLabel.text;
 
-            if (icon) {
-                // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-                // tslint:disable-next-line:deprecation
-                tabItemSpec.iconDrawable = icon;
+        // TEXT-TRANSFORM
+        const textTransform = nestedLabel.style.textTransform;
+        if (textTransform) {
+            title = getTransformedText(title, textTransform);
+        }
+        tabItemSpec.title = title;
+
+        // BACKGROUND-COLOR
+        const backgroundColor = tabStripItem.style.backgroundColor;
+        if (backgroundColor) {
+            tabItemSpec.backgroundColor = backgroundColor.android;
+        }
+
+        // COLOR
+        const color = nestedLabel.style.color;
+        if (color) {
+            tabItemSpec.color = color.android;
+        }
+
+        // FONT
+        const fontInternal = nestedLabel.style.fontInternal;
+        if (fontInternal) {
+            tabItemSpec.fontSize = fontInternal.fontSize;
+            tabItemSpec.typeFace = fontInternal.getAndroidTypeface();
+        }
+
+        // ICON
+        const iconSource = tabStripItem.image && tabStripItem.image.src;
+        if (iconSource) {
+            if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+                tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
+                if (tabItemSpec.iconId === 0) {
+                    // TODO:
+                    // traceMissingIcon(iconSource);
+                }
             } else {
-                // TODO:
-                // traceMissingIcon(iconSource);
+                const icon = _getIcon(tabStripItem);
+
+                if (icon) {
+                    // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
+                    // tslint:disable-next-line:deprecation
+                    tabItemSpec.iconDrawable = icon;
+                } else {
+                    // TODO:
+                    // traceMissingIcon(iconSource);
+                }
             }
         }
     }
@@ -679,20 +700,6 @@ export class Tabs extends TabsBase {
         }
     }
 
-    public getTabBarColor(): number {
-        return this._tabsBar.getTabTextColor();
-    }
-
-    public setTabBarColor(value: number | Color): void {
-        if (value instanceof Color) {
-            this._tabsBar.setTabTextColor(value.android);
-            this._tabsBar.setSelectedTabTextColor(value.android);
-        } else {
-            this._tabsBar.setTabTextColor(value);
-            this._tabsBar.setSelectedTabTextColor(value);
-        }
-    }
-
     public getTabBarHighlightColor(): number {
         return getDefaultAccentColor(this._context);
     }
@@ -707,10 +714,6 @@ export class Tabs extends TabsBase {
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
         const tabItemSpec = createTabItemSpec(tabStripItem);
         this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
-    }
-
-    public getTabBarItemColor(tabStripItem: TabStripItem): number {
-        return tabStripItem.nativeViewProtected.getCurrentTextColor();
     }
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: number | Color): void {
@@ -730,45 +733,15 @@ export class Tabs extends TabsBase {
         imgView.setImageDrawable(drawable);
     }
 
-    public getTabBarItemFontSize(tabStripItem: TabStripItem): { nativeSize: number } {
-        return { nativeSize: tabStripItem.nativeViewProtected.getTextSize() };
+    public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
+        tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        tabStripItem.nativeViewProtected.setTypeface(value.getAndroidTypeface());
     }
 
-    public setTabBarItemFontSize(tabStripItem: TabStripItem, value: number | { nativeSize: number }): void {
-        if (typeof value === "number") {
-            tabStripItem.nativeViewProtected.setTextSize(value);
-        } else {
-            tabStripItem.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
-        }
-    }
-
-    public getTabBarItemFontInternal(tabStripItem: TabStripItem): android.graphics.Typeface {
-        return tabStripItem.nativeViewProtected.getTypeface();
-    }
-
-    public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font | android.graphics.Typeface): void {
-        tabStripItem.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
-    }
-
-    private _defaultTransformationMethod: android.text.method.TransformationMethod;
-
-    public getTabBarItemTextTransform(tabStripItem: TabStripItem): "default" {
-        return "default";
-    }
-
-    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform | "default"): void {
-        const tv = tabStripItem.nativeViewProtected;
-
-        this._defaultTransformationMethod = this._defaultTransformationMethod || tv.getTransformationMethod();
-
-        if (value === "default") {
-            tv.setTransformationMethod(this._defaultTransformationMethod);
-            tv.setText(tabStripItem.title);
-        } else {
-            const result = getTransformedText(tabStripItem.title, value);
-            tv.setText(result);
-            tv.setTransformationMethod(null);
-        }
+    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
+        const nestedLabel = tabStripItem.label;    
+        const title = getTransformedText(nestedLabel.text, value);
+        tabStripItem.nativeViewProtected.setText(title);
     }
 
     [selectedIndexProperty.setNative](value: number) {

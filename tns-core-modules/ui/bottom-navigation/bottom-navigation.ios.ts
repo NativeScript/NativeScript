@@ -340,10 +340,6 @@ export class BottomNavigation extends TabNavigationBase {
         bgView.backgroundColor = value instanceof Color ? value.ios : value;
     }
 
-    public getTabBarItemColor(tabStripItem: TabStripItem): UIColor {
-        return this._ios.tabBar.tintColor;
-    }
-
     public setTabBarItemColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
         const states = getTitleAttributesForStates(tabStripItem.label);
         applyStatesToItem(tabStripItem.nativeView, states);
@@ -356,30 +352,13 @@ export class BottomNavigation extends TabNavigationBase {
         tabStripItem.nativeView.selectedImage = image;
     }
 
-    public getTabBarItemFontSize(tabStripItem: TabStripItem): number {
-        return null;
-    }
-
-    public setTabBarItemFontSize(tabStripItem: TabStripItem, value: number | { nativeSize: number }): void {
-        const states = getTitleAttributesForStates(tabStripItem);
-        applyStatesToItem(tabStripItem.nativeView, states);
-    }
-
-    public getTabBarItemFontInternal(tabStripItem: TabStripItem): Font {
-        return null;
-    }
-
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        const states = getTitleAttributesForStates(tabStripItem);
+        const states = getTitleAttributesForStates(tabStripItem.label);
         applyStatesToItem(tabStripItem.nativeView, states);
-    }
-
-    public getTabBarItemTextTransform(tabStripItem: TabStripItem): TextTransform {
-        return null;
     }
 
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
-        const title = getTransformedText(tabStripItem.title, value);
+        const title = getTransformedText(tabStripItem.label.text, value);
         tabStripItem.nativeView.title = title;
     }
 
@@ -526,8 +505,15 @@ export class BottomNavigation extends TabNavigationBase {
         let image: UIImage;
         let title: string;
 
-        image = item.isLoaded && this._getIcon(item);
-        title = item.label && item.label.text;
+        if (item.isLoaded) {
+            image = this._getIcon(item);
+            title = item.label.text;
+
+            const textTransform = item.label.style.textTransform;
+            if (textTransform) {
+                title = getTransformedText(title, textTransform);
+            }
+        }
 
         const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, image, index);
 

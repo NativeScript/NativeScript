@@ -452,6 +452,8 @@
 
             export class TabItemSpec {
                 title: string;
+                fontSize: number;
+                typeFace: android.graphics.Typeface;
                 iconId: number;
                 iconDrawable: android.graphics.drawable.Drawable;
                 backgroundColor: number;
