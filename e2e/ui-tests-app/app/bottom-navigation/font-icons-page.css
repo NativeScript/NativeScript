@@ -33,3 +33,7 @@ TabStripItem.special Label {
 TabStripItem.special:active Label {
   color: darkgoldenrod;
 }
+
+TabStripItem:active .font-size {
+  font-size: 10;
+}

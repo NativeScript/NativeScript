@@ -595,6 +595,13 @@ export class BottomNavigation extends TabNavigationBase {
         }
     }
 
+    public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
+        // TODO: Should figure out a way to do it directly with the the nativeView
+        const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
+        const tabItemSpec = createTabItemSpec(tabStripItem);
+        this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
+    }
+
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);

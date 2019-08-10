@@ -24,10 +24,11 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
     public static selectEvent = "select";
     public static unselectEvent = "unselect";
 
-    public title: string;
-    public iconSource: string;
     public image: Image;
     public label: Label;
+
+    private _title: string;
+    private _iconSource: string;
 
     private _highlightedHandler: () => void;
     private _normalHandler: () => void;
@@ -35,8 +36,43 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
     private _labelColorHandler: (args: PropertyChangeData) => void;
     private _labelFontHandler: (args: PropertyChangeData) => void;
     private _labelTextTransformHandler: (args: PropertyChangeData) => void;
+    private _labelTextHandler: (args: PropertyChangeData) => void;
     
     private _imageColorHandler: (args: PropertyChangeData) => void;
+    private _imageFontHandler: (args: PropertyChangeData) => void;
+    private _imageSrcHandler: (args: PropertyChangeData) => void;
+
+    get title(): string {
+        if (this.isLoaded) {
+            return this.label.text;
+        }
+
+        return this._title;
+    }
+
+    set title(value: string) {
+        this._title = value;
+        
+        if (this.isLoaded) {
+            this.label.text = value;
+        }
+    }
+
+    get iconSource(): string {
+        if (this.isLoaded) {
+            return this.image.src;
+        }
+
+        return this._iconSource;
+    }
+
+    set iconSource(value: string) {
+        this._iconSource = value;
+        
+        if (this.isLoaded) {
+            this.image.src = value;
+        }
+    }
 
     public onLoaded() {
         if (!this.image) {
@@ -79,6 +115,14 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         });
         this.label.style.on("textTransformChange", this._labelTextTransformHandler);
 
+        this._labelTextHandler = this._labelTextHandler || ((args: PropertyChangeData) => {
+            const parent = <TabStrip>this.parent;
+            const tabStripParent = parent && <TabNavigationBase>parent.parent;
+            
+            return tabStripParent && tabStripParent.setTabBarItemTitle(this, args.value);
+        });
+        this.label.on("textChange", this._labelTextHandler);
+
         this._imageColorHandler = this._imageColorHandler || ((args: PropertyChangeData) => {
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
@@ -86,6 +130,22 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
             return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
         });
         this.image.style.on("colorChange", this._imageColorHandler);
+
+        this._imageFontHandler = this._imageFontHandler || ((args: PropertyChangeData) => {
+            const parent = <TabStrip>this.parent;
+            const tabStripParent = parent && <TabNavigationBase>parent.parent;
+            
+            return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
+        });
+        this.image.style.on("fontInternalChange", this._imageFontHandler);
+
+        this._imageSrcHandler = this._imageSrcHandler || ((args: PropertyChangeData) => {
+            const parent = <TabStrip>this.parent;
+            const tabStripParent = parent && <TabNavigationBase>parent.parent;
+            
+            return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
+        });
+        this.image.on("srcChange", this._imageSrcHandler);
     }
 
     public onUnloaded() {

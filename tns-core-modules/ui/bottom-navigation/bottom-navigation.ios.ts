@@ -322,6 +322,10 @@ export class BottomNavigation extends TabNavigationBase {
         this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
     }
 
+    public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
+        tabStripItem.nativeView.title = value;
+    }
+
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
         if (!this.tabStrip) {
             return;
