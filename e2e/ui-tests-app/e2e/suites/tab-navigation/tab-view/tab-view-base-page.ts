@@ -10,7 +10,7 @@ export class TabViewBasePage extends PageObjectBaseModel {
     }
 
     async init(subSuiteName: string) {
-        this._naviagtionLinks.push(subSuiteName);
+        this._navigationLinks.push(subSuiteName);
         await super.initSuite();
     }
 }

@@ -98,8 +98,16 @@ export abstract class ViewBase extends Observable {
     dock: "left" | "top" | "right" | "bottom";
     row: number;
     col: number;
+    /**
+     * Setting `column` property is the same as `col`
+     */
+    column: number;
     rowSpan: number;
     colSpan: number;
+    /**
+     * Setting `columnSpan` property is the same as `colSpan`
+     */
+    columnSpan: number;
     domNode: DOMNode;
 
     order: Order;

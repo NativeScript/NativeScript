@@ -1,3 +1,14 @@
+## [6.0.5](https://github.com/NativeScript/NativeScript/compare/6.0.4...6.0.5) (2019-08-02)
+
+
+### Bug Fixes
+
+* **bottom-navigation:** codebehind creation ([#7624](https://github.com/NativeScript/NativeScript/issues/7624)) ([056d0bf](https://github.com/NativeScript/NativeScript/commit/056d0bf))
+* **tabs-android:** tabStripItem color not applied ([#7617](https://github.com/NativeScript/NativeScript/issues/7617)) ([2518655](https://github.com/NativeScript/NativeScript/commit/2518655))
+* prevent plugin podfile platform version clash ([#7626](https://github.com/NativeScript/NativeScript/issues/7626)) ([49b3571](https://github.com/NativeScript/NativeScript/commit/49b3571))
+
+
+
 <a name="6.0.4"></a>
 ## [6.0.4](https://github.com/NativeScript/NativeScript/compare/6.0.3...6.0.4) (2019-07-30)
 

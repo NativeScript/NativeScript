@@ -3,6 +3,11 @@ import { screen, device } from "../platform/platform";
 import * as appCommonModule from "../application/application-common";
 import { PlatformContext, findMatch } from "./qualifier-matcher";
 import { registerModulesFromFileSystem } from "./non-bundle-workflow-compat";
+import {
+    isEnabled as traceEnabled,
+    write as traceWrite,
+    categories as traceCategories
+} from "../trace";
 
 export class ModuleNameResolver implements ModuleNameResolverDefinition {
     private _cache = {};
@@ -16,6 +21,10 @@ export class ModuleNameResolver implements ModuleNameResolverDefinition {
         if (result === undefined) {
             result = this.resolveModuleNameImpl(path, ext);
             this._cache[key] = result;
+        }
+
+        if (traceEnabled()) {
+            traceWrite(`path: '${path}' with ext: '${ext}' resolved: '${result}'`, traceCategories.ModuleNameResolver);
         }
 
         return result;
@@ -52,6 +61,10 @@ export class ModuleNameResolver implements ModuleNameResolverDefinition {
 let resolverInstance: ModuleNameResolver;
 
 export function resolveModuleName(path: string, ext: string): string {
+    if (global.__snapshot) {
+        return resolveModuleSnapshot(path, ext);
+    }
+
     if (!resolverInstance) {
         resolverInstance = new ModuleNameResolver({
             width: screen.mainScreen.widthDIPs,
@@ -62,6 +75,20 @@ export function resolveModuleName(path: string, ext: string): string {
     }
 
     return resolverInstance.resolveModuleName(path, ext);
+}
+
+function resolveModuleSnapshot(path, ext) {
+    traceWrite(`Resolving module in SNAPSHOT context - path: '${path}' with ext: '${ext}'`, traceCategories.ModuleNameResolver);
+
+    // Platform module when in snapshot. So resolve modules with default android phone.
+    // NB: The only module name that should ever be resolved while in snapshot is app.css, because it is 
+    // applied explicitly in the snapshot by [NativeScriptSnapshotPlugin](https://github.com/NativeScript/nativescript-dev-webpack/blob/48b26f412fd70c19dc0b9c7763e08e9505a0ae11/plugins/NativeScriptSnapshotPlugin/index.js#L48-L56)
+    return new ModuleNameResolver({
+        width: 400,
+        height: 800,
+        os: "Android",
+        deviceType: "Phone"
+    }).resolveModuleName(path, ext);
 }
 
 export function clearCache() {
