@@ -131,21 +131,16 @@ export module categories {
     export const Animation = "Animation";
     export const Transition = "Transition";
     export const Livesync = "Livesync";
+    export const ModuleNameResolver = "ModuleNameResolver";
 
     export const separator = ",";
-    export const All = VisualTreeEvents + separator
-        + Layout + separator
-        + Style + separator
-        + ViewHierarchy + separator
-        + NativeLifecycle + separator
-        + Debug + separator
-        + Navigation + separator
-        + Test + separator
-        + Binding + separator
-        + Error + separator
-        + Animation + separator
-        + Transition + separator
-        + Livesync;
+    export const All = [
+        VisualTreeEvents, Layout, Style,
+        ViewHierarchy, NativeLifecycle,
+        Debug, Navigation, Test, Binding,
+        Error, Animation, Transition, Livesync,
+        ModuleNameResolver]
+        .join(separator);
 
     export function concat(): string {
         let result: string;

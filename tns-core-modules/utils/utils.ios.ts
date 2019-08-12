@@ -89,20 +89,9 @@ export module ios {
     export const MajorVersion = NSString.stringWithString(UIDevice.currentDevice.systemVersion).intValue;
 
     export function openFile(filePath: string): boolean {
-        try {
-            const appPath = getCurrentAppPath();
-            const path = filePath.replace("~", appPath);
+        console.log("utils.ios.openFile() is deprecated; use utils.openFile() instead");
 
-            const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
-            controller.delegate = new UIDocumentInteractionControllerDelegateImpl();
-
-            return controller.presentPreviewAnimated(true);
-        }
-        catch (e) {
-            traceWrite("Error in openFile", traceCategories.Error, traceMessageType.error);
-        }
-
-        return false;
+        return openFileAtRootModule(filePath);
     }
 
     export function getCurrentAppPath(): string {
@@ -145,6 +134,26 @@ export module ios {
     }
 
 }
+
+export function openFile(filePath: string): boolean {
+    try {
+        const appPath = ios.getCurrentAppPath();
+        const path = filePath.replace("~", appPath);
+
+        const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
+        controller.delegate = new UIDocumentInteractionControllerDelegateImpl();
+
+        return controller.presentPreviewAnimated(true);
+    }
+    catch (e) {
+        traceWrite("Error in openFile", traceCategories.Error, traceMessageType.error);
+    }
+
+    return false;
+}
+
+// Need this so that we can use this function inside the ios module (avoid name clashing).
+const openFileAtRootModule =  openFile;
 
 export function GC() {
     __collect();

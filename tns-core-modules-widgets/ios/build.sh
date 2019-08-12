@@ -3,17 +3,11 @@
 echo "Set exit on simple errors"
 set -e
 
-(
-    echo "update pods"
-    cd TNSWidgets
-    pod install
-)
-
 echo "Build for iphonesimulator"
-xcodebuild -workspace TNSWidgets/TNSWidgets.xcworkspace -scheme TNSWidgets -sdk iphonesimulator -configuration Release clean build BUILD_DIR=$(PWD)/TNSWidgets/build -quiet
+xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -scheme TNSWidgets -sdk iphonesimulator -configuration Release clean build BUILD_DIR=$(PWD)/TNSWidgets/build -quiet
 
 echo "Build for iphoneos"
-xcodebuild -workspace TNSWidgets/TNSWidgets.xcworkspace -scheme TNSWidgets -sdk iphoneos -configuration Release clean build BUILD_DIR=$(PWD)/TNSWidgets/build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -quiet
+xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -scheme TNSWidgets -sdk iphoneos -configuration Release clean build BUILD_DIR=$(PWD)/TNSWidgets/build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -quiet
 
 function buildFatFramework() {
     FRAMEWORK_NAME=$1
@@ -50,6 +44,3 @@ function buildFatFramework() {
 }
 
 buildFatFramework TNSWidgets .
-buildFatFramework Pods_TNSWidgets .
-buildFatFramework MDFInternationalization MDFInternationalization
-buildFatFramework MaterialComponents MaterialComponents

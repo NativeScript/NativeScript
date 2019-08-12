@@ -1,7 +1,6 @@
 import { nsCapabilities, createDriver, AppiumDriver, Direction } from "nativescript-dev-appium";
 import { BottomNavigationBasePage } from "./bottom-navigation-base-page";
 import { Platform } from "mobile-devices-controller";
-import { ElementCacheStrategy } from "../../../helpers/navigation-helper";
 import { setImageName } from "../../../helpers/image-helper";
 import { assert } from "chai";
 
@@ -22,6 +21,7 @@ describe(`${imagePrefix}-suite`, async function () {
     ];
 
     before(async function () {
+        this.skip();
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
         await driver.restartApp();
@@ -30,10 +30,12 @@ describe(`${imagePrefix}-suite`, async function () {
     });
 
     after(async function () {
+        this.skip();
         await bottomNavigationBasePage.endSuite();
     });
 
     afterEach(async function () {
+        this.skip();
         if (this.currentTest.state === "failed") {
             await driver.logTestArtifacts(this.currentTest.title);
             await driver.restartApp();
@@ -59,10 +61,10 @@ describe(`${imagePrefix}-suite`, async function () {
             await tabTwo.click();
             await driver.imageHelper.compareScreen({ imageName: imageName });
 
-            const imageComparissonresult = driver.imageHelper.hasImageComparisonPassed();
-            assert.isTrue(imageComparissonresult);
+            const imageComparisonResult = driver.imageHelper.hasImageComparisonPassed();
+            assert.isTrue(imageComparisonResult);
 
-            if (imageComparissonresult) {
+            if (imageComparisonResult) {
                 const tabOne = await driver.waitForElement(sample.tab1);
                 await tabOne.click();
             }

@@ -101,6 +101,7 @@ export module categories {
     export const Animation: string;
     export const Transition: string;
     export const Livesync: string;
+    export const ModuleNameResolver: string;
 
     export const separator: string;
     export const All: string;
