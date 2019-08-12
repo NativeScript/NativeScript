@@ -153,16 +153,16 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public _onLivesync(context?: ModuleContext): boolean {
+        if (traceEnabled()) {
+            traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
+        }
+
         if (_rootModalViews) {
             _rootModalViews.forEach(v => {
                 v.closeModal();
             });
 
             return true;
-        }
-
-        if (traceEnabled()) {
-            traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
         }
 
         if (this._handleLivesync(context)) {
