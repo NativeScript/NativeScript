@@ -194,7 +194,7 @@ describe(`${suite}-${spec}-suite`, async function () {
     it(`${spec}-fancy-fonts-change-orientation`, async function () {
         await bottomNavigationBasePage.navigateToSample("fancy-fonts");
         await bottomNavigationBasePage.refreshTabItems();
-        await driver.setOrientation(DeviceOrientaion.LANDSCAPE);
+        await driver.setOrientation(DeviceOrientation.LANDSCAPE);
         await driver.imageHelper.compareScreen();
 
         await driver.backgroundApp(1);
