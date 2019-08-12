@@ -152,12 +152,20 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
     }
 
-    public _onLivesync(context?: ModuleContext): boolean {
+    public _closeAllModalViewsInternal(): boolean {
         if (_rootModalViews) {
             _rootModalViews.forEach(v => {
                 v.closeModal();
             });
 
+            return true;
+        }
+
+        return false;
+    }
+
+    public _onLivesync(context?: ModuleContext): boolean {
+        if (this._closeAllModalViewsInternal()) {
             return true;
         }
 

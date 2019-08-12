@@ -610,6 +610,8 @@ export abstract class View extends ViewBase {
     // Lifecycle events
     _getNativeViewsCount(): number;
 
+    _closeAllModalViewsInternal(): boolean;
+
     _eachLayoutView(callback: (View) => void): void;
 
     /**
