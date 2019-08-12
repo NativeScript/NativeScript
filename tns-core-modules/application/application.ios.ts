@@ -102,10 +102,6 @@ class IOSApplication implements IOSApplicationDefinition {
         return this._orientation;
     }
 
-    set orientation(value: "portrait" | "landscape" | "unknown") {
-        this._orientation = value;
-    }
-
     get rootController(): UIViewController {
         return this._window.rootViewController;
     }

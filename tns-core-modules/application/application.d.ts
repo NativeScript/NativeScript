@@ -414,7 +414,7 @@ export class AndroidApplication extends Observable {
     startActivity: any /* androidx.appcompat.app.AppCompatActivity */;
 
     /**
-     * Gets or sets the orientation of the application.
+     * Gets the orientation of the application.
      * Available values: "portrait", "landscape", "unknown".
      */
     orientation: "portrait" | "landscape" | "unknown";

@@ -2,7 +2,6 @@
 import "../globals";
 import { Observable, EventData } from "../data/observable";
 import { View } from "../ui/core/view";
-import { device } from "../platform";
 import {
     trace as profilingTrace,
     time,
@@ -39,7 +38,6 @@ import {
     DiscardedErrorEventData,
     iOSApplication,
     LoadAppCSSEventData,
-    OrientationChangedEventData,
     UnhandledErrorEventData
 } from "./application";
 
