@@ -26,7 +26,6 @@
         "**/*"
     ],
     "exclude": [
-        "../tns-core-modules/node_modules",
         "node_modules",
         "platforms",
         "e2e"
