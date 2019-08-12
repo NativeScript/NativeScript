@@ -154,8 +154,11 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         this.label.style.off("colorChange", this._labelColorHandler);
         this.label.style.off("fontInternalChange", this._labelFontHandler);
         this.label.style.off("textTransformChange", this._labelTextTransformHandler);
+        this.label.style.off("textChange", this._labelTextHandler);
         
         this.image.style.off("colorChange", this._imageColorHandler);
+        this.image.style.off("fontInternalChange", this._imageFontHandler);
+        this.image.style.off("srcChange", this._imageSrcHandler);
     }
 
     public eachChild(callback: (child: ViewBase) => boolean) {
