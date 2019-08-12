@@ -610,6 +610,10 @@ export abstract class View extends ViewBase {
     // Lifecycle events
     _getNativeViewsCount(): number;
 
+    /**
+     * Internal method:
+     * Closes all modal views. Should be used by plugins like `nativescript-angular` which implement their own `modal views` service.
+     */
     _closeAllModalViewsInternal(): boolean;
 
     _eachLayoutView(callback: (View) => void): void;
