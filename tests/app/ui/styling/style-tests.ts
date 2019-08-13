@@ -13,7 +13,7 @@ import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalC
 import { unsetValue } from "tns-core-modules/ui/core/view";
 import * as color from "tns-core-modules/color";
 import * as fs from "tns-core-modules/file-system";
-import { _cssCalcConverter } from "tns-core-modules/ui/core/properties/properties";
+import { _evaluateCssCalcExpression } from "tns-core-modules/ui/core/properties/properties";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     const stack = new stackModule.StackLayout();
@@ -1428,21 +1428,21 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
 }
 
 export function test_cssVariableConverter() {
-    TKUnit.assertEqual(_cssCalcConverter("calc(1px + 1px)"), "2px", "Simple calc (1)");
-    TKUnit.assertEqual(_cssCalcConverter("calc(50px - (20px - 30px))"), "60px", "Simple calc (2)");
-    TKUnit.assertEqual(_cssCalcConverter("calc(100px - (100px - 100%))"), "100%", "Simple calc (3)");
-    TKUnit.assertEqual(_cssCalcConverter("calc(100px + (100px - 100%))"), "calc(200px - 100%)", "Simple calc (4)");
-    TKUnit.assertEqual(_cssCalcConverter("calc(100% - 10px + 20px)"), "calc(100% + 10px)", "Simple calc (5)");
-    TKUnit.assertEqual(_cssCalcConverter("calc(100% + 10px - 20px)"), "calc(100% - 10px)", "Simple calc (6)");
-    TKUnit.assertEqual(_cssCalcConverter("calc(10.px + .0px)"), "10px", "Simple calc (8)");
-    TKUnit.assertEqual(_cssCalcConverter("a calc(1px + 1px)"), "a 2px", "Ignore value surrounding calc function (1)");
-    TKUnit.assertEqual(_cssCalcConverter("calc(1px + 1px) a"), "2px a", "Ignore value surrounding calc function (2)");
-    TKUnit.assertEqual(_cssCalcConverter("a calc(1px + 1px) b"), "a 2px b", "Ignore value surrounding calc function (3)");
-    TKUnit.assertEqual(_cssCalcConverter("a calc(1px + 1px) b calc(1em + 2em) c"), "a 2px b 3em c", "Ignore value surrounding calc function (4)");
-    TKUnit.assertEqual(_cssCalcConverter(`calc(\n1px \n* 2 \n* 1.5)`), "3px", "Handle new lines");
-    TKUnit.assertEqual(_cssCalcConverter("calc(1/100)"), "0.01", "Handle precision correctly (1)");
-    TKUnit.assertEqual(_cssCalcConverter("calc(5/1000000)"), "0.00001", "Handle precision correctly (2)");
-    TKUnit.assertEqual(_cssCalcConverter("calc(5/100000)"), "0.00005", "Handle precision correctly (3)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(1px + 1px)"), "2px", "Simple calc (1)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(50px - (20px - 30px))"), "60px", "Simple calc (2)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100px - (100px - 100%))"), "100%", "Simple calc (3)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100px + (100px - 100%))"), "calc(200px - 100%)", "Simple calc (4)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100% - 10px + 20px)"), "calc(100% + 10px)", "Simple calc (5)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100% + 10px - 20px)"), "calc(100% - 10px)", "Simple calc (6)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(10.px + .0px)"), "10px", "Simple calc (8)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("a calc(1px + 1px)"), "a 2px", "Ignore value surrounding calc function (1)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(1px + 1px) a"), "2px a", "Ignore value surrounding calc function (2)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("a calc(1px + 1px) b"), "a 2px b", "Ignore value surrounding calc function (3)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("a calc(1px + 1px) b calc(1em + 2em) c"), "a 2px b 3em c", "Ignore value surrounding calc function (4)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression(`calc(\n1px \n* 2 \n* 1.5)`), "3px", "Handle new lines");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(1/100)"), "0.01", "Handle precision correctly (1)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(5/1000000)"), "0.00001", "Handle precision correctly (2)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(5/100000)"), "0.00005", "Handle precision correctly (3)");
 }
 
 export function test_css_calc() {

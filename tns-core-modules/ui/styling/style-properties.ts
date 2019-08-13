@@ -33,7 +33,7 @@ import {
 
 import * as parser from "../../css/parser";
 import { LinearGradient } from "./linear-gradient";
-import { isCssCalcValue, _cssCalcConverter } from "../core/properties/properties";
+import { isCssCalcExpression, _evaluateCssCalcExpression } from "../core/properties/properties";
 
 export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
 export type LengthPxUnit = { readonly unit: "px", readonly value: px };
@@ -117,8 +117,8 @@ export namespace PercentLength {
         }
         if (typeof fromValue === "string") {
             let stringValue = fromValue.trim();
-            if (isCssCalcValue(stringValue)) {
-                stringValue = _cssCalcConverter(stringValue);
+            if (isCssCalcExpression(stringValue)) {
+                stringValue = _evaluateCssCalcExpression(stringValue);
             }
 
             let percentIndex = stringValue.indexOf("%");
@@ -170,8 +170,8 @@ export namespace Length {
         }
         if (typeof fromValue === "string") {
             let stringValue = fromValue.trim();
-            if (isCssCalcValue(stringValue)) {
-                stringValue = _cssCalcConverter(stringValue);
+            if (isCssCalcExpression(stringValue)) {
+                stringValue = _evaluateCssCalcExpression(stringValue);
             }
 
             if (stringValue.indexOf("px") !== -1) {

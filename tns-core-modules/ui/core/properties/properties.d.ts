@@ -145,7 +145,7 @@ export function getSetProperties(view: ViewBase): [string, any][];
 export function getComputedCssValues(view: ViewBase): [string, any][];
 
 export function isCssVariableName(property: string): boolean;
-export function isCssCalcValue(value: string): boolean;
+export function isCssCalcExpression(value: string): boolean;
 export function isCssValueUsingCssVariable(value: string): boolean;
 
 //@private
@@ -161,5 +161,5 @@ export function _getStyleProperties(): CssProperty<any, any>[];
 
 export function _evaluateCssVariable<T>(view: ViewBase, cssName: string, value: string | T): string | T;
 
-export function _cssCalcConverter<T>(value: string | T): string;
+export function _evaluateCssCalcExpression<T>(value: string | T): string;
 //@endprivate

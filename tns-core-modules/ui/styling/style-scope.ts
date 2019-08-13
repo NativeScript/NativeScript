@@ -1,7 +1,7 @@
 import { Keyframes } from "../animation/keyframe-animation";
 import { ViewBase } from "../core/view-base";
 import { View } from "../core/view";
-import { unsetValue, _evaluateCssVariable, _cssCalcConverter } from "../core/properties";
+import { unsetValue, _evaluateCssVariable, _evaluateCssCalcExpression } from "../core/properties";
 import {
     SyntaxTree,
     Keyframes as KeyframesDefinition,
@@ -566,7 +566,7 @@ export class CssState {
                     view.style[`css:${property}`] = value;
                 } else {
                     const camelCasedProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
-                    view[camelCasedProperty] = _cssCalcConverter(_evaluateCssVariable(view, camelCasedProperty, value));
+                    view[camelCasedProperty] = _evaluateCssCalcExpression(_evaluateCssVariable(view, camelCasedProperty, value));
                 }
             } catch (e) {
                 traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
