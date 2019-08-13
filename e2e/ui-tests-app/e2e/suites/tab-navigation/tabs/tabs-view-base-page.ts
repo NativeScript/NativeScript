@@ -1,13 +1,12 @@
 import { AppiumDriver } from "nativescript-dev-appium";
 import { TabNavigationBasePage } from "../tab-navigation-base-page";
+import { NsCapabilities } from "nativescript-dev-appium/lib/ns-capabilities";
 
 export class TabsViewBasePage extends TabNavigationBasePage {
-    private readonly mainWidgetXPath: string;
+    private mainWidgetXPath: string;
     constructor(_driver: AppiumDriver) {
         super(_driver, ["tabs"]);
-        this.mainWidgetXPath = this._driver.isIOS ?
-            `//XCUIElementTypeOther[@name="tabNavigation"]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeCollectionView`
-            : `//android.view.ViewGroup[@content-desc="tabNavigation"]/android.widget.HorizontalScrollView/android.widget.LinearLayout`;
+        this.loadMainWidgetXpath();
     }
 
     async getItems() {
@@ -21,5 +20,17 @@ export class TabsViewBasePage extends TabNavigationBasePage {
 
     async mainWidget() {
         return await this._driver.findElementByXPath(this.mainWidgetXPath);
+    }
+
+    private loadMainWidgetXpath() {
+        if (this._driver.isAndroid && (<NsCapabilities>this._driver.nsCapabilities).tryGetApiLevel() < 6) {
+            this.mainWidgetXPath = `//android.view.View[@content-desc="tabNavigation"]/android.widget.HorizontalScrollView/android.widget.LinearLayout`;
+        } else if (this._driver.isAndroid && (<NsCapabilities>this._driver.nsCapabilities).tryGetApiLevel() >= 6) {
+            this.mainWidgetXPath = `//android.view.ViewGroup[@content-desc="tabNavigation"]/android.widget.HorizontalScrollView/android.widget.LinearLayout`;
+        } else if (this._driver.isIOS) {
+            this.mainWidgetXPath = `//XCUIElementTypeOther[@name="tabNavigation"]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeCollectionView`;
+        } else {
+            throw new Error("Run type is missing! Please, check appium settings and run test again!");
+        }
     }
 }

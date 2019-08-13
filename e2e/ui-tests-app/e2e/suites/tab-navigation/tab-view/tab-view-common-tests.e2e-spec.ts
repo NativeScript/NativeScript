@@ -72,12 +72,12 @@ describe(`${suite}-${spec}-suite`, async function () {
 
         await driver.swipe(
             {
-                x: driver.nsCapabilities.device.viewportRect.width + driver.nsCapabilities.device.viewportRect.x - 10,
-                y: driver.nsCapabilities.device.viewportRect.height / 2
+                x: driver.imageHelper.options.cropRectangle.width + driver.imageHelper.options.cropRectangle.x - 10,
+                y: driver.imageHelper.options.cropRectangle.height / 2
             },
             {
                 y: 0,
-                x: driver.nsCapabilities.device.viewportRect.x + 10
+                x: driver.imageHelper.options.cropRectangle.x + 10
             }
             , 100);
         await driver.imageHelper.compareScreen({ timeOutSeconds: 5, tolerance: 0.01 });
