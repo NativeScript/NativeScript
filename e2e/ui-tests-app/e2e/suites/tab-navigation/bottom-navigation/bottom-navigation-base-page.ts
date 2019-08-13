@@ -11,7 +11,6 @@ export class BottomNavigationBasePage extends TabNavigationBasePage {
     }
 
     async getItems() {
-        const items = await this._driver.findElementsByXPath(`${this.mainWidgetXPath}/*`);
         return await this._driver.findElementsByXPath(`${this.mainWidgetXPath}/*`);
     }
 
