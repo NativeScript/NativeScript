@@ -2,6 +2,7 @@
 dist
 hooks
 libs
+mochawesome-report
 node_modules
 package
 platforms
