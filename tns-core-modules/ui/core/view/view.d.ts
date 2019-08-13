@@ -616,6 +616,12 @@ export abstract class View extends ViewBase {
      */
     _closeAllModalViewsInternal(): boolean;
 
+    /**
+     * Internal method:
+     * Gets all modal views of the current view.
+     */
+    _getRootModalViews(): Array<ViewBase>
+
     _eachLayoutView(callback: (View) => void): void;
 
     /**
