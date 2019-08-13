@@ -61,6 +61,7 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
 const cssCalcRegexp = /\bcalc\(/;
 const cssVariableNameRegexp = /^--[^,\s]+?$/;
 const cssVarValueRegexp = /\bvar\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
+const cssVarAllValuesRegexp = /\bvar\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/g;
 
 export function isCssVariableName(property: string) {
     return cssVariableNameRegexp.test(property);
@@ -75,7 +76,7 @@ export function isCssValueUsingCssVariable(value: string) {
 }
 
 export function _evaluateCssVariable<T>(view: ViewBase, cssName: string, value: string | T): string | T {
-    if (typeof value !== "string" || !value) {
+    if (typeof value !== "string") {
         return value;
     }
 
@@ -84,39 +85,22 @@ export function _evaluateCssVariable<T>(view: ViewBase, cssName: string, value: 
         return value;
     }
 
-    let output = `${value}`.trim();
+    let output = value.trim();
 
-    // Evaluate every css-variable in the value.
+    // Evaluate every (and nested) css-variables in the value.
     let lastValue: string;
     while (lastValue !== output) {
         lastValue = output;
 
-        let m = cssVarValueRegexp.exec(output);
-        if (!m) {
-            // No more css-variables, break.
-            break;
-        }
+        output = output.replace(cssVarAllValuesRegexp, (matchStr, cssVariableName: string) => {
+            const cssVariableValue = view.style.getCssVariable(cssVariableName);
+            if (cssVariableValue === null) {
+                traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Style, traceMessageType.error);
+                return matchStr;
+            }
 
-        const matchStr = m[0];
-        const matchLength = matchStr.length;
-        const cssVariableName = m[1];
-        const matchIndex = m.index;
-
-        const cssVariableValue = view.style.getCssVariable(cssVariableName);
-        if (!cssVariableValue) {
-            traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Style, traceMessageType.error);
-        }
-
-        const newValue = `${output.substr(0, matchIndex)}${cssVariableValue}${output.substr(matchIndex + matchLength)}`;
-        if (newValue === output) {
-            break;
-        }
-
-        output = newValue.trim();
-    }
-
-    if (output === "null") {
-        return null;
+            return cssVariableValue;
+        });
     }
 
     return output;
