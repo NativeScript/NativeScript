@@ -168,6 +168,10 @@ export function getCssFileName(): string;
  */
 export function loadAppCss();
 
+/**
+* Adds new values to the application styles.
+* @param cssText - A valid styles which will be added to the current application styles.
+*/
 export function addCss(cssText: string): void;
 
 /**

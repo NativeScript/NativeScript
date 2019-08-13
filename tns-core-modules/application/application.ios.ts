@@ -1,9 +1,10 @@
 import {
     iOSApplication as IOSApplicationDefinition,
-    LaunchEventData,
     ApplicationEventData,
-    OrientationChangedEventData,
-    LoadAppCSSEventData
+    CssChangedEventData,
+    LaunchEventData,
+    LoadAppCSSEventData,
+    OrientationChangedEventData
 } from ".";
 
 import {
@@ -347,6 +348,14 @@ export function _start(entry?: string | NavigationEntry) {
 export function run(entry?: string | NavigationEntry) {
     createRootFrame.value = false;
     _start(entry);
+}
+
+export function addCss(cssText: string): void {
+    notify(<CssChangedEventData>{ eventName: "cssChanged", object: <any>iosApp, cssText: cssText });
+    const rootView = getRootView();
+    if (rootView) {
+        rootView._onCssStateChange();
+    }
 }
 
 export function _resetRootView(entry?: NavigationEntry | string) {
