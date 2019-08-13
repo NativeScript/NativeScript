@@ -80,6 +80,8 @@ export module ios {
     }
 
     export function isLandscape(): boolean {
+        console.log("utils.ios.isLandscape() is deprecated; use application.orientation instead");
+
         const deviceOrientation = UIDevice.currentDevice.orientation;
         const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
 
@@ -156,7 +158,7 @@ export function openFile(filePath: string): boolean {
 }
 
 // Need this so that we can use this function inside the ios module (avoid name clashing).
-const openFileAtRootModule =  openFile;
+const openFileAtRootModule = openFile;
 
 export function GC() {
     __collect();
