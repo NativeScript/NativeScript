@@ -1,6 +1,7 @@
 import { AppiumDriver } from "nativescript-dev-appium";
 import { TabNavigationBasePage } from "../tab-navigation-base-page";
 import { NsCapabilities } from "nativescript-dev-appium/lib/ns-capabilities";
+import { AutomationName } from "nativescript-dev-appium/lib/automation-name";
 
 export class TabsViewBasePage extends TabNavigationBasePage {
     private mainWidgetXPath: string;
@@ -14,7 +15,7 @@ export class TabsViewBasePage extends TabNavigationBasePage {
         if (this._driver.isIOS) {
             items.shift();
         }
-        
+
         return items;
     }
 
@@ -23,9 +24,11 @@ export class TabsViewBasePage extends TabNavigationBasePage {
     }
 
     private loadMainWidgetXpath() {
-        if (this._driver.isAndroid && (<NsCapabilities>this._driver.nsCapabilities).tryGetApiLevel() < 6) {
+        const automationName = (<NsCapabilities>this._driver.nsCapabilities).automationName;
+        if (this._driver.isAndroid
+            && automationName === AutomationName.UiAutomator1 || automationName === AutomationName.Appium) {
             this.mainWidgetXPath = `//android.view.View[@content-desc="tabNavigation"]/android.widget.HorizontalScrollView/android.widget.LinearLayout`;
-        } else if (this._driver.isAndroid && (<NsCapabilities>this._driver.nsCapabilities).tryGetApiLevel() >= 6) {
+        } else if (this._driver.isAndroid && automationName === AutomationName.UiAutomator2) {
             this.mainWidgetXPath = `//android.view.ViewGroup[@content-desc="tabNavigation"]/android.widget.HorizontalScrollView/android.widget.LinearLayout`;
         } else if (this._driver.isIOS) {
             this.mainWidgetXPath = `//XCUIElementTypeOther[@name="tabNavigation"]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeCollectionView`;
