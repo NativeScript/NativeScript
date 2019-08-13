@@ -96,6 +96,7 @@ export function _evaluateCssVariable<T>(view: ViewBase, cssName: string, value: 
             const cssVariableValue = view.style.getCssVariable(cssVariableName);
             if (cssVariableValue === null) {
                 traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Style, traceMessageType.error);
+                
                 return matchStr;
             }
 
