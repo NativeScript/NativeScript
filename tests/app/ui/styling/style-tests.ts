@@ -1709,6 +1709,38 @@ export function test_nested_css_calc_and_variables() {
     TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 1 }, "Stack - width === 100%");
 }
 
+export function test_css_variable_is_applied_to_normal_properties() {
+    const stack = new stackModule.StackLayout();
+
+    const cssVarName = `--my-custom-variable-${Date.now()}`;
+
+    helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
+        const page = <pageModule.Page>views[1];
+        const expected = "horizontal";
+        page.css = `StackLayout {
+            ${cssVarName}: ${expected};
+            orientation: var(${cssVarName});
+        }`;
+        TKUnit.assertEqual(stack.orientation, expected);
+    });
+}
+
+export function test_css_variable_is_applied_to_special_properties() {
+    const stack = new stackModule.StackLayout();
+
+    const cssVarName = `--my-custom-variable-${Date.now()}`;
+
+    helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
+        const page = <pageModule.Page>views[1];
+        const expected = "test";
+        page.css = `StackLayout {
+            ${cssVarName}: ${expected};
+            class: var(${cssVarName});
+        }`;
+        TKUnit.assertEqual(stack.className, expected);
+    });
+}
+
 export function test_resolveFileNameFromUrl_local_file_tilda() {
     const localFileExistsMock = (fileName: string) => true;
     const url = "~/theme/core.css";
