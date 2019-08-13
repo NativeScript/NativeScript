@@ -230,6 +230,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
     public test_when_selecting_tab_natively_selectedIndex_is_updated_properly = function () {
         var tabView = this.testView;
         tabView.items = this._createContentItems(2);
+        tabView.tabStrip = this._createTabStrip(2);
         this.waitUntilTestElementIsLoaded();
 
         var expectedValue = 1;
@@ -245,6 +246,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
     public test_when_selecting_tab_natively_selectedIndexChangedEvent_is_raised = function () {
         var tabView = this.testView;
         tabView.items = this._createContentItems(5);
+        tabView.tabStrip = this._createTabStrip(5);
         this.waitUntilTestElementIsLoaded();
 
         var expectedOldIndex = 3;

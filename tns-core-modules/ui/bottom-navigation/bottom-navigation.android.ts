@@ -281,20 +281,18 @@ export class BottomNavigation extends TabNavigationBase {
         (<any>nativeView).contentView = contentView;
 
         // TABSTRIP
-        if (this.tabStrip) {
-            const bottomNavigationBar = new BottomNavigationBar(context, this);
-            const bottomNavigationBarLayoutParams = new org.nativescript.widgets.CommonLayoutParams();
-            bottomNavigationBarLayoutParams.row = 1;
-            bottomNavigationBar.setLayoutParams(bottomNavigationBarLayoutParams);
-            nativeView.addView(bottomNavigationBar);
-            (<any>nativeView).bottomNavigationBar = bottomNavigationBar;
+        const bottomNavigationBar = new BottomNavigationBar(context, this);
+        const bottomNavigationBarLayoutParams = new org.nativescript.widgets.CommonLayoutParams();
+        bottomNavigationBarLayoutParams.row = 1;
+        bottomNavigationBar.setLayoutParams(bottomNavigationBarLayoutParams);
+        nativeView.addView(bottomNavigationBar);
+        (<any>nativeView).bottomNavigationBar = bottomNavigationBar;
 
-            setElevation(nativeView, bottomNavigationBar);
+        setElevation(nativeView, bottomNavigationBar);
 
-            const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
-            if (primaryColor) {
-                bottomNavigationBar.setBackgroundColor(primaryColor);
-            }
+        const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
+        if (primaryColor) {
+            bottomNavigationBar.setBackgroundColor(primaryColor);
         }
 
         return nativeView;
@@ -315,9 +313,10 @@ export class BottomNavigation extends TabNavigationBase {
         this._contentView = (<any>nativeView).contentView;
         this._contentView.setId(this._contentViewId);
 
+        this._bottomNavigationBar = (<any>nativeView).bottomNavigationBar;
+        (<any>this._bottomNavigationBar).owner = this;
+        
         if (this.tabStrip) {
-            this._bottomNavigationBar = (<any>nativeView).bottomNavigationBar;
-            (<any>this._bottomNavigationBar).owner = this;
             this.tabStrip.setNativeView(this._bottomNavigationBar);
         }
     }
@@ -363,9 +362,11 @@ export class BottomNavigation extends TabNavigationBase {
     public onLoaded(): void {
         super.onLoaded();
 
-        const items = this.tabStrip ? this.tabStrip.items : null;
         if (this.tabStrip) {
-            this.setTabStripItems(items);
+            this.setTabStripItems(this.tabStrip.items);
+        } else {
+            // manually set the visibility, so that the grid layout remeasures
+            this._bottomNavigationBar.setVisibility(android.view.View.GONE);
         }
 
         if (this._attachedToWindow) {
@@ -401,10 +402,8 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public disposeNativeView() {
-        if (this.tabStrip) {
-            this._bottomNavigationBar.setItems(null);
-            this._bottomNavigationBar = null;
-        }
+        this._bottomNavigationBar.setItems(null);
+        this._bottomNavigationBar = null;
 
         this.nativeViewProtected.removeOnAttachStateChangeListener(AttachStateChangeListener);
         this.nativeViewProtected[ownerSymbol] = null;
