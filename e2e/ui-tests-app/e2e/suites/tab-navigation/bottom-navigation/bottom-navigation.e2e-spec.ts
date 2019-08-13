@@ -100,8 +100,8 @@ describe(`${suite}-${spec}-suite`, async function () {
 
         // add items
         const addTabBtn = await driver.waitForElement("add-tab");
-        await addTabBtn.tap();
-        await addTabBtn.tap();
+        await addTabBtn.click();
+        await addTabBtn.click();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.refreshTabItems();
@@ -118,7 +118,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         await driver.imageHelper.compareScreen();
 
         const goToSecondBtn = await driver.waitForElement("goToSecond");
-        await goToSecondBtn.tap();
+        await goToSecondBtn.click();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);
@@ -157,7 +157,7 @@ describe(`${suite}-${spec}-suite`, async function () {
 
         let selectSecondTabFromCodeBehind = await driver.waitForElement("selectSecondTab");
         logInfo(`Click on "select second tab button"`);
-        await selectSecondTabFromCodeBehind.tap();
+        await selectSecondTabFromCodeBehind.click();
         await driver.imageHelper.compareScreen();
 
         await driver.backgroundApp(1);
@@ -168,7 +168,7 @@ describe(`${suite}-${spec}-suite`, async function () {
 
         selectSecondTabFromCodeBehind = await driver.waitForElement("selectSecondTab");
         logInfo(`Click on "select second tab button"`);
-        await selectSecondTabFromCodeBehind.tap();
+        await selectSecondTabFromCodeBehind.click();
         await driver.imageHelper.compareScreen();
 
         await driver.backgroundApp(1);
