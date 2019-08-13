@@ -170,8 +170,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
 
         if (this._closeAllModalViewsInternal()) {
-            console.log(">>> HIT");
-
             return true;
         }
 
