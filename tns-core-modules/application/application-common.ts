@@ -117,10 +117,6 @@ export function loadAppCss(): void {
     }
 }
 
-export function addCss(cssText: string): void {
-    events.notify(<CssChangedEventData>{ eventName: "cssChanged", object: app, cssText: cssText });
-}
-
 global.__onUncaughtError = function (error: NativeScriptError) {
     events.notify(<UnhandledErrorEventData>{ eventName: uncaughtErrorEvent, object: app, android: error, ios: error, error: error });
 };

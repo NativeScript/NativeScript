@@ -1,7 +1,8 @@
 import {
     AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData, OrientationChangedEventData,
     AndroidApplication as AndroidApplicationDefinition, AndroidActivityNewIntentEventData,
-    AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityRequestPermissionsEventData
+    AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityRequestPermissionsEventData,
+    CssChangedEventData
 } from ".";
 
 import {
@@ -149,6 +150,14 @@ export function _shouldCreateRootFrame(): boolean {
 export function run(entry?: NavigationEntry | string) {
     createRootFrame.value = false;
     _start(entry);
+}
+
+export function addCss(cssText: string): void {
+    notify(<CssChangedEventData>{ eventName: "cssChanged", object: androidApp, cssText: cssText });
+    const rootView = getRootView();
+    if (rootView) {
+        rootView._onCssStateChange();
+    }
 }
 
 const CALLBACKS = "_callbacks";
