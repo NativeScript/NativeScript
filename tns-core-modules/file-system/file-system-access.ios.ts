@@ -257,7 +257,9 @@ export class FileSystemAccess {
         return ios.getCurrentAppPath();
     }
 
-    public readText(path: string, encoding?: any) {
+    public readText = this.readTextSync.bind(this);
+
+    public readTextAsync(path: string, encoding?: any) {
         const actualEncoding = encoding || textEncoding.UTF_8;
 
         return new Promise<string>((resolve, reject) => {
@@ -293,7 +295,9 @@ export class FileSystemAccess {
         }
     }
 
-    public read(path: string): Promise<NSData> {
+    public read = this.readSync.bind(this);
+
+    public readAsync(path: string): Promise<NSData> {
         return new Promise<NSData>((resolve, reject) => {
             try {
                 (NSData as any).dataWithContentsOfFileCompletion(path, resolve);
@@ -313,7 +317,9 @@ export class FileSystemAccess {
         }
     }
 
-    public writeText(path: string, content: string, encoding?: any): Promise<void> {
+    public writeText = this.writeTextSync.bind(this);
+
+    public writeTextAsync(path: string, content: string, encoding?: any): Promise<void> {
         const nsString = NSString.stringWithString(content);
         const actualEncoding = encoding || textEncoding.UTF_8;
 
@@ -352,7 +358,9 @@ export class FileSystemAccess {
         }
     }
 
-    public write(path: string, content: NSData): Promise<void> {
+    public write = this.writeSync.bind(this);
+    
+    public writeAsync(path: string, content: NSData): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {
                 (content as any).writeToFileAtomicallyCompletion(

@@ -218,7 +218,9 @@ export class FileSystemAccess {
         return this.getLogicalRootPath() + "/app";
     }
 
-    public read(path: string): Promise<number[]> {
+    public read = this.readSync.bind(this);
+    
+    public readAsync(path: string): Promise<number[]> {
         return new Promise<number[]>((resolve, reject) => {
             try {
                 org.nativescript.widgets.Async.File.read(
@@ -255,7 +257,9 @@ export class FileSystemAccess {
         }
     }
 
-    public write(path: string, bytes: native.Array<number>): Promise<void> {
+    public write = this.writeSync.bind(this);
+
+    public writeAsync(path: string, bytes: native.Array<number>): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             try {
                 org.nativescript.widgets.Async.File.write(
@@ -290,7 +294,9 @@ export class FileSystemAccess {
         }
     }
 
-    public readText(path: string, encoding?: any): Promise<string> {
+    public readText = this.readTextSync.bind(this);
+
+    public readTextAsync(path: string, encoding?: any): Promise<string> {
         let actualEncoding = encoding;
         if (!actualEncoding) {
             actualEncoding = textModule.encoding.UTF_8;
@@ -376,7 +382,9 @@ export class FileSystemAccess {
         return s;
     }
 
-    public writeText(path: string, content: string, encoding?: any): Promise<void> {
+    public writeText = this.writeTextSync.bind(this);
+
+    public writeTextAsync(path: string, content: string, encoding?: any): Promise<void> {
         let actualEncoding = encoding;
         if (!actualEncoding) {
             actualEncoding = textModule.encoding.UTF_8;

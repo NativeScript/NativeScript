@@ -219,7 +219,7 @@ export class File extends FileSystemEntity {
 
             this._locked = true;
 
-            getFileAccess().read(this.path).then(
+            getFileAccess().readAsync(this.path).then(
                 (result) => {
                     resolve(result);
                     this._locked = false;
@@ -265,7 +265,7 @@ export class File extends FileSystemEntity {
 
             this._locked = true;
 
-            getFileAccess().write(this.path, content).then(
+            getFileAccess().writeAsync(this.path, content).then(
                 () => {
                     resolve();
                     this._locked = false;
@@ -311,7 +311,7 @@ export class File extends FileSystemEntity {
             try {
                 this._locked = true;
 
-                getFileAccess().readText(this.path, encoding).then(
+                getFileAccess().readTextAsync(this.path, encoding).then(
                     (result) => {
                         resolve(result);
                         this._locked = false;
@@ -361,7 +361,7 @@ export class File extends FileSystemEntity {
             try {
                 this._locked = true;
 
-                getFileAccess().writeText(this.path, content, encoding).then(
+                getFileAccess().writeTextAsync(this.path, content, encoding).then(
                     () => {
                         resolve();
                         this._locked = false;
