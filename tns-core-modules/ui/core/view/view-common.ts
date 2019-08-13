@@ -153,7 +153,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public _closeAllModalViewsInternal(): boolean {
-        if (_rootModalViews) {
+        if (_rootModalViews && _rootModalViews.length > 0) {
             _rootModalViews.forEach(v => {
                 v.closeModal();
             });
@@ -170,6 +170,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
 
         if (this._closeAllModalViewsInternal()) {
+            console.log(">>> HIT");
+
             return true;
         }
 
