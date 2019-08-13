@@ -97,7 +97,7 @@ export function _evaluateCssVariable<T>(view: ViewBase, cssName: string, value: 
             if (cssVariableValue === null) {
                 traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Style, traceMessageType.error);
                 
-                return matchStr;
+                return 'unset';
             }
 
             return cssVariableValue;
