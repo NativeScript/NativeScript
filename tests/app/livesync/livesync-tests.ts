@@ -237,13 +237,13 @@ function _test_onLiveSync_ModuleReplace_Multiple(context: ModuleContext[]) {
 }
 
 function _test_onLiveSync_ModalViewClosed(context: ModuleContext) {
-    const buttonPage = <Page>createViewFromEntry(({ moduleName: modalViewPageModuleName }));
-    helper.navigateWithHistory(() => buttonPage);
+    const modalViewPage = <Page>createViewFromEntry(({ moduleName: modalViewPageModuleName }));
+    helper.navigateWithHistory(() => modalViewPage);
     livesync({ type: context.type, path: context.path });
 
     TKUnit.waitUntilReady(() => !!frame.topmost());
     const topmostFrame = frame.topmost();
-    TKUnit.waitUntilReady(() => topmostFrame.currentPage && topmostFrame.currentPage.isLoaded);
+    TKUnit.waitUntilReady(() => topmostFrame.currentPage && topmostFrame.currentPage.isLoaded && topmostFrame.canGoBack());
 
     TKUnit.assertTrue(topmostFrame._getRootModalViews().length === 0);
 }
