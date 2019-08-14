@@ -61,6 +61,9 @@ try {
     //
 }
 
+/**
+ * Evaluate css-variable and css-calc expressions
+ */
 function evaluateCssExpressions(view: ViewBase, property: string, value: string) {
     if (isCssVariableExpression(value)) {
         const newValue = _evaluateCssVariableExpression(view, property, value);
@@ -72,7 +75,13 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
     }
 
     if (isCssCalcExpression(value)) {
-        value = _evaluateCssCalcExpression(value);
+        try {
+            value = _evaluateCssCalcExpression(value);
+        } catch (e) {
+            traceWrite(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
+
+            return unsetValue;
+        }
     }
 
     return value;
@@ -587,12 +596,11 @@ export class CssState {
 
         for (const property in newPropertyValues) {
             if (isCssVariable(property)) {
-                // Skip css-variables, they have been handled
+                // Skip css-variables
                 continue;
             }
 
             if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
-                // Skip unchanged values unless they use css-variables
                 continue;
             }
 

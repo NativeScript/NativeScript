@@ -1457,6 +1457,10 @@ export function test_css_calc() {
     StackLayout.wide {
         width: calc(100 * 1.25);
     }
+
+    StackLayout.invalid-css-calc {
+        width: calc(asd3 * 1.25);
+    }
     `;
 
     const label = new labelModule.Label();
@@ -1471,6 +1475,9 @@ export function test_css_calc() {
 
     (stack as any).style = `width: calc(100% / 2)`;
     TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+
+    // This should log an error for the invalid css-calc expression, but not cause a crash
+    stack.className = "invalid-css-calc";
 }
 
 export function test_css_calc_units() {
@@ -1722,8 +1729,6 @@ export function test_css_variable_fallback() {
     stack.addChild(label);
 
     for (const { className, expectedColor } of classToValue) {
-        label.className = "reset-me";
-
         label.className = className;
         TKUnit.assertEqual(label.color && label.color.hex, expectedColor, className);
     }
