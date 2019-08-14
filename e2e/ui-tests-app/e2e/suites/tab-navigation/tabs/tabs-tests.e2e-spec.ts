@@ -2,6 +2,8 @@ import { nsCapabilities, createDriver, AppiumDriver } from "nativescript-dev-app
 import { TabsViewBasePage } from "./tabs-view-base-page";
 import { assert } from "chai";
 import { setImageName } from "../../../helpers/image-helper";
+import { NsCapabilities } from "nativescript-dev-appium/lib/ns-capabilities";
+import { AutomationName } from "nativescript-dev-appium/lib/automation-name";
 
 const suite = "tab-navigation";
 const spec = "tabs";
@@ -81,7 +83,12 @@ describe(`${imagePrefix}-suite`, async function () {
         await tabsViewBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 
-        await tabsViewBasePage.tabOnItem(2);
+        if (driver.isAndroid && (<NsCapabilities>driver.nsCapabilities).automationName === AutomationName.UiAutomator1
+            || driver.isAndroid && (<NsCapabilities>driver.nsCapabilities).automationName === AutomationName.Appium) {
+            await tabsViewBasePage.tabOnItem(1);
+        } else {
+            await tabsViewBasePage.tabOnItem(2);
+        }
         await driver.imageHelper.compareScreen();
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
@@ -226,8 +233,8 @@ describe(`${imagePrefix}-suite`, async function () {
 
         // add items
         const addTabBtn = await driver.waitForElement("add-tab");
-        await addTabBtn.tap();
-        await addTabBtn.tap();
+        await addTabBtn.click();
+        await addTabBtn.click();
         await driver.imageHelper.compareScreen();
 
         await tabsViewBasePage.refreshTabItems();
