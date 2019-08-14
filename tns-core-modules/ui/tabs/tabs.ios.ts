@@ -76,24 +76,27 @@ class UIPageViewControllerImpl extends UIPageViewController {
 
     public viewDidLoad(): void {
         const owner = this._owner.get();
-        const tabBarItems = owner.tabBarItems;
-        const tabBar = MDCTabBar.alloc().initWithFrame(this.view.bounds);
 
-        if (tabBarItems && tabBarItems.length) {
-            tabBar.items = NSArray.arrayWithArray(tabBarItems);
+        if (owner.tabStrip) {
+            const tabBarItems = owner.tabBarItems;
+            const tabBar = MDCTabBar.alloc().initWithFrame(this.view.bounds);
+
+            if (tabBarItems && tabBarItems.length) {
+                tabBar.items = NSArray.arrayWithArray(tabBarItems);
+            }
+
+            tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
+            tabBar.tintColor = UIColor.blueColor;
+            tabBar.barTintColor = UIColor.whiteColor;
+            tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
+            tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Selected);
+            tabBar.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleBottomMargin;
+            tabBar.alignment = MDCTabBarAlignment.Leading;
+            tabBar.sizeToFit();
+
+            this.tabBar = tabBar;
+            this.view.addSubview(tabBar);
         }
-
-        tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
-        tabBar.tintColor = UIColor.blueColor;
-        tabBar.barTintColor = UIColor.whiteColor;
-        tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
-        tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Selected);
-        tabBar.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleBottomMargin;
-        tabBar.alignment = MDCTabBarAlignment.Leading;
-        tabBar.sizeToFit();
-
-        this.tabBar = tabBar;
-        this.view.addSubview(tabBar);
     }
 
     public viewWillAppear(animated: boolean): void {
@@ -116,39 +119,38 @@ class UIPageViewControllerImpl extends UIPageViewController {
             return;
         }
 
-        const tabsPosition = owner.tabsPosition;
-        const parent = owner.parent;
+        let scrollViewTop = 0;
+        let scrollViewHeight = this.view.bounds.size.height + this.view.safeAreaInsets.bottom;
 
-        let tabBarTop = this.view.safeAreaInsets.top;
-        let tabBarHeight = this.tabBar.frame.size.height;
-        let scrollViewTop = this.tabBar.frame.size.height;
-        let scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height;
+        if (owner.tabStrip) {
+            scrollViewTop = this.tabBar.frame.size.height;
+            scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + this.view.safeAreaInsets.bottom;
+            let tabBarTop = this.view.safeAreaInsets.top;
+            let tabBarHeight = this.tabBar.frame.size.height;
 
-        if (parent) {
-            // TODO: Figure out a better way to handle ViewController nesting/Safe Area nesting
-            tabBarTop = Math.max(this.view.safeAreaInsets.top, owner.parent.nativeView.safeAreaInsets.top);
+            const tabsPosition = owner.tabsPosition;
+            if (tabsPosition === "bottom") {
+                tabBarTop = this.view.frame.size.height - this.tabBar.frame.size.height - this.view.safeAreaInsets.bottom;
+                scrollViewTop = this.view.frame.origin.y;
+                scrollViewHeight = this.view.frame.size.height - this.view.safeAreaInsets.bottom;
+            }
+
+            const parent = owner.parent;
+            if (parent) {
+                // TODO: Figure out a better way to handle ViewController nesting/Safe Area nesting
+                tabBarTop = Math.max(tabBarTop, owner.parent.nativeView.safeAreaInsets.top);
+            }
+
+            this.tabBar.frame = CGRectMake(this.view.safeAreaInsets.left, tabBarTop, this.tabBar.frame.size.width, tabBarHeight);
         }
-
-        if (tabsPosition === "bottom") {
-            tabBarTop = this.view.frame.size.height - this.tabBar.frame.size.height - this.view.safeAreaInsets.bottom;
-            scrollViewTop = this.view.frame.origin.y;
-            scrollViewHeight = this.view.frame.size.height - this.view.safeAreaInsets.bottom;
-        }
-
-        this.tabBar.frame = CGRectMake(this.view.safeAreaInsets.left, tabBarTop, this.tabBar.frame.size.width, tabBarHeight);
 
         const subViews: NSArray<UIView> = this.view.subviews;
         let scrollView: UIScrollView = null;
-        let mdcBar: MDCTabBar = null;
 
         for (let i = 0; i < subViews.count; i++) {
             const view: UIView = subViews[i];
             if (view instanceof UIScrollView) {
                 scrollView = <UIScrollView>view;
-            }
-
-            if (view instanceof MDCTabBar) {
-                mdcBar = <MDCTabBar>view;
             }
         }
 
@@ -489,7 +491,10 @@ export class Tabs extends TabsBase {
 
         // this.viewController = this._ios = <UIPageViewControllerImpl>UIPageViewControllerImpl.initWithOwner(new WeakRef(this)); // .alloc().initWithTransitionStyleNavigationOrientationOptions(UIPageViewControllerTransitionStyle.Scroll, UIPageViewControllerNavigationOrientation.Horizontal, null); // UITabBarControllerImpl.initWithOwner(new WeakRef(this));
         this.viewController = this._ios = <UIPageViewControllerImpl>UIPageViewControllerImpl.initWithOwner(new WeakRef(this)); //alloc().initWithTransitionStyleNavigationOrientationOptions(UIPageViewControllerTransitionStyle.Scroll, UIPageViewControllerNavigationOrientation.Horizontal, null);;
-        this.nativeViewProtected = this._ios.view;
+    }
+
+    createNativeView() {
+        return this._ios.view;
     }
 
     initNativeView() {

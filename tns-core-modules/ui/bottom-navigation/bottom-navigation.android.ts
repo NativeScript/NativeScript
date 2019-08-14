@@ -315,7 +315,7 @@ export class BottomNavigation extends TabNavigationBase {
 
         this._bottomNavigationBar = (<any>nativeView).bottomNavigationBar;
         (<any>this._bottomNavigationBar).owner = this;
-
+        
         if (this.tabStrip) {
             this.tabStrip.setNativeView(this._bottomNavigationBar);
         }
@@ -362,8 +362,12 @@ export class BottomNavigation extends TabNavigationBase {
     public onLoaded(): void {
         super.onLoaded();
 
-        const items = this.tabStrip ? this.tabStrip.items : null;
-        this.setTabStripItems(items);
+        if (this.tabStrip) {
+            this.setTabStripItems(this.tabStrip.items);
+        } else {
+            // manually set the visibility, so that the grid layout remeasures
+            this._bottomNavigationBar.setVisibility(android.view.View.GONE);
+        }
 
         if (this._attachedToWindow) {
             this.changeTab(this.selectedIndex);
@@ -386,7 +390,9 @@ export class BottomNavigation extends TabNavigationBase {
     public onUnloaded(): void {
         super.onUnloaded();
 
-        this.setTabStripItems(null);
+        if (this.tabStrip) {
+            this.setTabStripItems(null);
+        }
 
         const fragmentToDetach = this._currentFragment;
         if (fragmentToDetach) {
@@ -637,7 +643,11 @@ export class BottomNavigation extends TabNavigationBase {
         //     traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
         // }
 
-        this._bottomNavigationBar.setSelectedPosition(value);
+        if (this.tabStrip) {
+            this._bottomNavigationBar.setSelectedPosition(value);
+        } else {
+            this.changeTab(value);
+        }
     }
 
     [itemsProperty.getDefault](): TabContentItem[] {
