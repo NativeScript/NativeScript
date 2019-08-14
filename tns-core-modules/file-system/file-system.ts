@@ -17,7 +17,7 @@ function getFileAccess(): FileSystemAccess {
 let platform: typeof platformModule;
 function ensurePlatform() {
     if (!platform) {
-        platform = require("platform");
+        platform = require("../platform");
     }
 }
 
