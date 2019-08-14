@@ -215,6 +215,8 @@ export module ios {
     }
 
     /**
+     * @deprecated use application.orientation instead
+     *
      * Gets an information about if current mode is Landscape.
      */
     export function isLandscape(): boolean;

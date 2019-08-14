@@ -67,19 +67,19 @@ describe(`${suite}-${spec}-suite`, async function () {
 
             }
             const scenarioBtn = await driver.waitForElement(sample.sample);
-            await scenarioBtn.tap();
+            await scenarioBtn.click();
             imageName = setImageName(suite, spec, imageName);
             await driver.imageHelper.compareScreen({ imageName: imageName, timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
             const tabTwo = await driver.waitForElement(sample.tab2);
             await tabTwo.click();
             await driver.imageHelper.compareScreen({ imageName: imageName, timeOutSeconds: 5 });
 
-            const imageComparissonresult = driver.imageHelper.hasImageComparisonPassed();
-            assert.isTrue(imageComparissonresult);
+            const imageComparisonResult = driver.imageHelper.hasImageComparisonPassed();
+            assert.isTrue(imageComparisonResult);
 
-            if (imageComparissonresult) {
+            if (imageComparisonResult) {
                 const tabOne = await driver.waitForElement(sample.tab1);
-                await tabOne.tap();
+                await tabOne.click();
             }
         });
     }
