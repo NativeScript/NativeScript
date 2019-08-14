@@ -1725,7 +1725,7 @@ export function test_css_variable_fallback() {
         label.className = "reset-me";
 
         label.className = className;
-        TKUnit.assertEqual(label.color && label.color.hex, expectedColor, `text color is ${expectedColor}`);
+        TKUnit.assertEqual(label.color && label.color.hex, expectedColor, className);
     }
 }
 

@@ -117,9 +117,6 @@ export namespace PercentLength {
         }
         if (typeof fromValue === "string") {
             let stringValue = fromValue.trim();
-            if (isCssCalcExpression(stringValue)) {
-                stringValue = _evaluateCssCalcExpression(stringValue);
-            }
 
             let percentIndex = stringValue.indexOf("%");
             if (percentIndex !== -1) {
@@ -170,9 +167,6 @@ export namespace Length {
         }
         if (typeof fromValue === "string") {
             let stringValue = fromValue.trim();
-            if (isCssCalcExpression(stringValue)) {
-                stringValue = _evaluateCssCalcExpression(stringValue);
-            }
 
             if (stringValue.indexOf("px") !== -1) {
                 stringValue = stringValue.replace("px", "").trim();

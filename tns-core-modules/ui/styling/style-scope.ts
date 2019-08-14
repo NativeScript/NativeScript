@@ -40,7 +40,7 @@ function ensureKeyframeAnimationModule() {
 }
 
 import * as capm from "./css-animation-parser";
-import { isCssVariableName, isCssValueUsingCssVariable } from "../core/properties/properties";
+import { isCssVariableName, isCssValueUsingCssVariable, isCssCalcExpression } from "../core/properties/properties";
 import { sanitizeModuleName } from "../builder/module-name-sanitizer";
 import { resolveModuleName } from "../../module-name-resolver";
 
@@ -525,20 +525,7 @@ export class CssState {
             selector.ruleset.declarations.forEach(declaration =>
                 newPropertyValues[declaration.property] = declaration.value));
 
-        Object.freeze(newPropertyValues);
-
         const oldProperties = this._appliedPropertyValues;
-        for (const property in oldProperties) {
-            if (!(property in newPropertyValues)) {
-                if (isCssVariableName(property)) {
-                    view.style.unsetCssVariable(property, true);
-                } else if (property in view.style) {
-                    view.style[`css:${property}`] = unsetValue;
-                } else {
-                    // TRICKY: How do we unset local value?
-                }
-            }
-        }
 
         // Set all the css-variables first, so we can be sure they are up-to-date
         for (const property in newPropertyValues) {
@@ -549,29 +536,63 @@ export class CssState {
             }
         }
 
+        // Clear up all removed css-variables
+        for (const property in oldProperties) {
+            if (!(property in newPropertyValues)) {
+                if (isCssVariableName(property)) {
+                    view.style.unsetCssVariable(property, true);
+                }
+            }
+        }
+
+        // Resolve css-variable and css-calc expressions
+        for (const property in newPropertyValues) {
+            if (isCssValueUsingCssVariable(newPropertyValues[property])) {
+                const newValue = _evaluateCssVariable(view, property, newPropertyValues[property]);
+                if (newValue === "unset") {
+                    delete newPropertyValues[property];
+                    continue;
+                }
+
+                newPropertyValues[property] = newValue;
+            }
+
+            console.log(view + '', property, newPropertyValues[property], isCssCalcExpression(newPropertyValues[property]));
+            if (isCssCalcExpression(newPropertyValues[property])) {
+                newPropertyValues[property] = _evaluateCssCalcExpression(newPropertyValues[property]);
+            }
+        }
+
+        Object.freeze(newPropertyValues);
+
+        for (const property in oldProperties) {
+            if (!(property in newPropertyValues)) {
+                if (property in view.style) {
+                    view.style[`css:${property}`] = unsetValue;
+                } else {
+                    // TRICKY: How do we unset local value?
+                }
+            }
+        }
+
         for (const property in newPropertyValues) {
             if (isCssVariableName(property)) {
                 // Skip css-variables, they have been handled
                 continue;
             }
 
-            const value = newPropertyValues[property];
-            if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property] && !isCssValueUsingCssVariable(value)) {
+            if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
                 // Skip unchanged values unless they use css-variables
                 continue;
             }
 
+            const value = newPropertyValues[property];
             try {
-                let newValue =  _evaluateCssCalcExpression(_evaluateCssVariable(view, property, value));
-                if (newValue === "unset") {
-                    newValue = unsetValue;
-                }
-
                 if (property in view.style) {
-                    view.style[`css:${property}`] = newValue;
+                    view.style[`css:${property}`] = value;
                 } else {
                     const camelCasedProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
-                    view[camelCasedProperty] = newValue;
+                    view[camelCasedProperty] = value;
                 }
             } catch (e) {
                 traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
@@ -868,10 +889,19 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
                 return;
             }
 
+            let value = d.value;
+            if (isCssValueUsingCssVariable(value)) {
+                value = _evaluateCssVariable(view, property, value);
+            }
+
+            if (isCssCalcExpression(value)) {
+                value = _evaluateCssCalcExpression(value);
+            }
+
             if (property in view.style) {
-                view.style[property] = d.value;
+                view.style[property] = value;
             } else {
-                view[property] = d.value;
+                view[property] = value;
             }
         } catch (e) {
             traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);

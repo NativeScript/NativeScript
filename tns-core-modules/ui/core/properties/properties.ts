@@ -552,7 +552,6 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 return;
             }
 
-            newValue = _evaluateCssVariable(view, options.cssName, newValue);
             const reset = newValue === unsetValue || newValue === "";
             let value: U;
             if (reset) {
@@ -627,7 +626,6 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 return;
             }
 
-            newValue = _evaluateCssVariable(view, options.cssName, newValue);
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
             // We have localValueSource - NOOP.
@@ -810,15 +808,13 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
             return {
                 enumerable, configurable,
                 get: getsComputed ? function (this: T) { return this[computedValue]; } : function (this: T) { return this[symbol]; },
-                set(this: T, inputBoxedValue: U | string) {
+                set(this: T, boxedValue: U | string) {
                     const view = this.viewRef.get();
                     if (!view) {
-                        traceWrite(`${inputBoxedValue} not set to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+                        traceWrite(`${boxedValue} not set to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
 
                         return;
                     }
-
-                    let boxedValue = _evaluateCssVariable(view, cssName, inputBoxedValue);
 
                     const oldValue = this[computedValue];
                     const oldSource = this[computedSource];
@@ -967,15 +963,13 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
         const property = this;
 
-        const setFunc = (valueSource: ValueSource) => function (this: T, inputBoxedValue: any): void {
+        const setFunc = (valueSource: ValueSource) => function (this: T, boxedValue: any): void {
             const view = this.viewRef.get();
             if (!view) {
-                traceWrite(`${inputBoxedValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+                traceWrite(`${boxedValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
     
                 return;
             }
-
-            const boxedValue = _evaluateCssVariable(view, options.cssName, inputBoxedValue);
 
             const reset = boxedValue === unsetValue || boxedValue === "";
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
