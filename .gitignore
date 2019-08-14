@@ -2,7 +2,6 @@
 dist
 hooks
 libs
-mochawesome-report
 node_modules
 package
 platforms
@@ -31,6 +30,7 @@ package-lock.json
 !.vscode/extensions.json
 
 # Appium files
+mochawesome-report
 e2e/**/*.trace/
 e2e/**/test-results.xml
 e2e/**/e2e/resources/
