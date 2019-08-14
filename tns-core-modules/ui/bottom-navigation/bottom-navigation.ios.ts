@@ -243,6 +243,9 @@ export class BottomNavigation extends TabNavigationBase {
         super.initNativeView();
         this._delegate = UITabBarControllerDelegateImpl.initWithOwner(new WeakRef(this));
         this._moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.initWithOwner(new WeakRef(this));
+        if (!this.tabStrip) {
+            this.viewController.tabBar.hidden = true;
+        }
     }
 
     disposeNativeView() {

@@ -2,6 +2,8 @@ import { nsCapabilities, createDriver, AppiumDriver } from "nativescript-dev-app
 import { TabsViewBasePage } from "./tabs-view-base-page";
 import { assert } from "chai";
 import { setImageName } from "../../../helpers/image-helper";
+import { NsCapabilities } from "nativescript-dev-appium/lib/ns-capabilities";
+import { AutomationName } from "nativescript-dev-appium/lib/automation-name";
 
 const suite = "tab-navigation";
 const spec = "tabs";
@@ -37,6 +39,7 @@ describe(`${imagePrefix}-suite`, async function () {
 
     it(`${imagePrefix}-background-color`, async function () {
         await tabsViewBasePage.navigateToSample("background-color");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await tabsViewBasePage.tabOnItem(1);
@@ -50,6 +53,7 @@ describe(`${imagePrefix}-suite`, async function () {
     // not all css is applied.
     it(`${imagePrefix}-color`, async function () {
         await tabsViewBasePage.navigateToSample("color");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await tabsViewBasePage.tabOnItem(1);
@@ -61,6 +65,7 @@ describe(`${imagePrefix}-suite`, async function () {
 
     it(`${imagePrefix}-font`, async function () {
         await tabsViewBasePage.navigateToSample("font");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await tabsViewBasePage.tabOnItem(1);
@@ -76,12 +81,18 @@ describe(`${imagePrefix}-suite`, async function () {
 
     it(`${imagePrefix}-font-icons`, async function () {
         await tabsViewBasePage.navigateToSample("font-icons");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await tabsViewBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 
-        await tabsViewBasePage.tabOnItem(2);
+        if (driver.isAndroid && (<NsCapabilities>driver.nsCapabilities).automationName === AutomationName.UiAutomator1
+            || driver.isAndroid && (<NsCapabilities>driver.nsCapabilities).automationName === AutomationName.Appium) {
+            await tabsViewBasePage.tabOnItem(1);
+        } else {
+            await tabsViewBasePage.tabOnItem(2);
+        }
         await driver.imageHelper.compareScreen();
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
@@ -91,6 +102,7 @@ describe(`${imagePrefix}-suite`, async function () {
 
     it(`${imagePrefix}-highlight-color`, async function () {
         await tabsViewBasePage.navigateToSample("highlight-color");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await tabsViewBasePage.tabOnItem(1);
@@ -103,6 +115,7 @@ describe(`${imagePrefix}-suite`, async function () {
 
     it(`${imagePrefix}-icon-change`, async function () {
         await tabsViewBasePage.navigateToSample("icon-change");
+        await tabsViewBasePage.refreshTabItems();
 
         await driver.imageHelper.compareScreen();
 
@@ -119,6 +132,7 @@ describe(`${imagePrefix}-suite`, async function () {
 
     it(`${imagePrefix}-icon-title-placment`, async function () {
         await tabsViewBasePage.navigateToSample("icon-title-placement");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await tabsViewBasePage.navigateBackToSuitMainPage();
@@ -126,6 +140,7 @@ describe(`${imagePrefix}-suite`, async function () {
 
     it(`${imagePrefix}-issue-5470`, async function () {
         await tabsViewBasePage.navigateToSample("issue-5470");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await tabsViewBasePage.tabOnItem(1);
@@ -137,6 +152,7 @@ describe(`${imagePrefix}-suite`, async function () {
 
     it(`${imagePrefix}-strip-item`, async function () {
         await tabsViewBasePage.navigateToSample("strip-item");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
@@ -148,6 +164,7 @@ describe(`${imagePrefix}-suite`, async function () {
             this.skip();
         }
         await tabsViewBasePage.navigateToSample("swipe-disabled");
+        await tabsViewBasePage.refreshTabItems();
 
         await tabsViewBasePage.swipeRightToLeft();
         await driver.imageHelper.compareScreen();
@@ -159,6 +176,7 @@ describe(`${imagePrefix}-suite`, async function () {
 
     it(`${imagePrefix}-swipe`, async function () {
         await tabsViewBasePage.navigateToSample("tabs");
+        await tabsViewBasePage.refreshTabItems();
         await tabsViewBasePage.swipeRightToLeft();
 
         await driver.imageHelper.compareScreen();
@@ -178,6 +196,7 @@ describe(`${imagePrefix}-suite`, async function () {
             this.skip();
         }
         await tabsViewBasePage.navigateToSample("tabs-binding");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         const addTabBtn = await driver.waitForElement("add-tab");
@@ -209,6 +228,7 @@ describe(`${imagePrefix}-suite`, async function () {
             this.skip();
         }
         await tabsViewBasePage.navigateToSample("tabs-binding");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         const removeTabBtn = await driver.waitForElement("remove-last-tab");
@@ -226,8 +246,8 @@ describe(`${imagePrefix}-suite`, async function () {
 
         // add items
         const addTabBtn = await driver.waitForElement("add-tab");
-        await addTabBtn.tap();
-        await addTabBtn.tap();
+        await addTabBtn.click();
+        await addTabBtn.click();
         await driver.imageHelper.compareScreen();
 
         await tabsViewBasePage.refreshTabItems();
@@ -241,10 +261,23 @@ describe(`${imagePrefix}-suite`, async function () {
 
     it(`${imagePrefix}-text-transform`, async function () {
         await tabsViewBasePage.navigateToSample("text-transform");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await tabsViewBasePage.refreshTabItems();
         await tabsViewBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await tabsViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${imagePrefix}-custom-tabstrip`, async function () {
+        await tabsViewBasePage.navigateToSample("custom-tabstrip");
+        await driver.imageHelper.compareScreen();
+
+        const secondTab = await driver.waitForElement("second-tab");
+        await secondTab.tap();
         await driver.imageHelper.compareScreen();
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());

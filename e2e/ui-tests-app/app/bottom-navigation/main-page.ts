@@ -23,6 +23,7 @@ export function loadExamples() {
     examples.set("font-icons", "bottom-navigation/font-icons-page");
     examples.set("fancy-fonts", "bottom-navigation/fancy-fonts-page");
     examples.set("css-text-transform", "bottom-navigation/bottom-navigation-css-page");
+    examples.set("custom-tabstrip", "bottom-navigation/custom-tabstrip-page");
 
     return examples;
 }

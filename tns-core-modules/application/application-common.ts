@@ -35,10 +35,10 @@ export { Observable };
 import {
     AndroidApplication,
     CssChangedEventData,
+    DiscardedErrorEventData,
     iOSApplication,
     LoadAppCSSEventData,
-    UnhandledErrorEventData,
-    DiscardedErrorEventData,
+    UnhandledErrorEventData
 } from "./application";
 
 export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
@@ -115,10 +115,6 @@ export function loadAppCss(): void {
         throw new Error(`The file ${getCssFileName()} couldn't be loaded! ` +
             `You may need to register it inside ./app/vendor.ts.`);
     }
-}
-
-export function addCss(cssText: string): void {
-    events.notify(<CssChangedEventData>{ eventName: "cssChanged", object: app, cssText: cssText });
 }
 
 global.__onUncaughtError = function (error: NativeScriptError) {
