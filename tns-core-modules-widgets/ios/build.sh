@@ -4,7 +4,7 @@ echo "Set exit on simple errors"
 set -e
 
 OUTPUT_DIR="$PWD/TNSWidgets/build"
-rm -rf $OUTPUT_DIR"
+rm -rf "$OUTPUT_DIR"
 
 echo "Build for iphonesimulator"
 xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -scheme TNSWidgets -sdk iphonesimulator -configuration Release clean build BUILD_DIR="$OUTPUT_DIR" -quiet
@@ -12,7 +12,7 @@ xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -scheme TNSWidgets -sdk ipho
 echo "Build for iphoneos"
 xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -scheme TNSWidgets -sdk iphoneos -configuration Release clean build BUILD_DIR="$OUTPUT_DIR" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -quiet
 
-echo "Build for uikitformac"
+echo "Build for Mac Catalyst"
 xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -scheme TNSWidgets -destination 'variant=Mac Catalyst,arch=x86_64' -configuration Release clean build BUILD_DIR="$OUTPUT_DIR" CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -quiet
 
 function buildFatFramework_iOS() {
@@ -57,7 +57,7 @@ function buildXCFramework() {
 
     SRC_IPHONEOS=TNSWidgets/build/Release-iphoneos/$RELATIVE_DIR/$FRAMEWORK_NAME.framework
     SRC_SIMULATOR=TNSWidgets/build/Release-iphonesimulator/$RELATIVE_DIR/$FRAMEWORK_NAME.framework
-    SRC_MACOS=TNSWidgets/build/Release-uikitformac/$RELATIVE_DIR/$FRAMEWORK_NAME.framework
+    SRC_MACOS=TNSWidgets/build/Release-maccatalyst/$RELATIVE_DIR/$FRAMEWORK_NAME.framework
     OUTPUT_DIR=TNSWidgets/build
     XCFRAMEWORK_PATH=$OUTPUT_DIR/$FRAMEWORK_NAME.xcframework
     IOS_DSYM=$OUTPUT_DIR/$FRAMEWORK_NAME.ios.framework.dSYM
