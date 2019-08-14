@@ -1,3 +1,13 @@
+<a name="6.0.6"></a>
+## [6.0.6](https://github.com/NativeScript/NativeScript/compare/6.0.5...6.0.6) (2019-08-08)
+
+
+### Bug Fixes
+
+* **tns-core-modules-widgets:** use correct version (6.0.6).
+
+
+
 ## [6.0.5](https://github.com/NativeScript/NativeScript/compare/6.0.4...6.0.5) (2019-08-02)
 
 

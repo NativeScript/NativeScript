@@ -78,7 +78,7 @@ class Device implements DeviceDefinition {
             const languages = NSLocale.preferredLanguages;
             this._language = languages[0];
         }
-        
+
         return this._language;
     }
 
@@ -93,7 +93,7 @@ class Device implements DeviceDefinition {
 
 class MainScreen implements ScreenMetricsDefinition {
     private _screen: UIScreen;
-    
+
     private get screen(): UIScreen {
         if (!this._screen) {
             this._screen = UIScreen.mainScreen;

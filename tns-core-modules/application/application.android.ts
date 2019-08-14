@@ -42,6 +42,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
     public static activityNewIntentEvent = ActivityNewIntent;
     public static activityRequestPermissionsEvent = ActivityRequestPermissions;
 
+    private _orientation: "portrait" | "landscape" | "unknown";
     public paused: boolean;
     public nativeApp: android.app.Application;
     public context: android.content.Context;
@@ -78,6 +79,22 @@ export class AndroidApplication extends Observable implements AndroidApplication
     private _registerPendingReceivers() {
         this._pendingReceiverRegistrations.forEach(func => func(this.context));
         this._pendingReceiverRegistrations.length = 0;
+    }
+
+    get orientation(): "portrait" | "landscape" | "unknown" {
+        if (!this._orientation) {
+            const resources = this.context.getResources();
+            const configuration = <android.content.res.Configuration>resources.getConfiguration();
+            const orientation = configuration.orientation;
+
+            this._orientation = getOrientationValue(orientation);
+        }
+
+        return this._orientation;
+    }
+
+    set orientation(value: "portrait" | "landscape" | "unknown") {
+        this._orientation = value;
     }
 
     public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
@@ -232,6 +249,17 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     livesync(rootView, context);
 };
 
+function getOrientationValue(orientation: number): "portrait" | "landscape" | "unknown" {
+    switch (orientation) {
+        case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
+            return "landscape";
+        case android.content.res.Configuration.ORIENTATION_PORTRAIT:
+            return "portrait";
+        default:
+            return "unknown";
+    }
+}
+
 function initLifecycleCallbacks() {
     const setThemeOnLaunch = profile("setThemeOnLaunch", (activity: androidx.appcompat.app.AppCompatActivity) => {
         // Set app theme after launch screen was used during startup
@@ -321,7 +349,6 @@ function initLifecycleCallbacks() {
     return lifecycleCallbacks;
 }
 
-let currentOrientation: number;
 function initComponentCallbacks() {
     let componentCallbacks = new android.content.ComponentCallbacks2({
         onLowMemory: profile("onLowMemory", function () {
@@ -335,32 +362,19 @@ function initComponentCallbacks() {
         }),
 
         onConfigurationChanged: profile("onConfigurationChanged", function (newConfig: android.content.res.Configuration) {
-            const newOrientation = newConfig.orientation;
-            if (newOrientation === currentOrientation) {
-                return;
+            const newConfigOrientation = newConfig.orientation;
+            const newOrientation = getOrientationValue(newConfigOrientation);
+
+            if (androidApp.orientation !== newOrientation) {
+                androidApp.orientation = newOrientation;
+
+                notify(<OrientationChangedEventData>{
+                    eventName: orientationChangedEvent,
+                    android: androidApp.nativeApp,
+                    newValue: androidApp.orientation,
+                    object: androidApp
+                });
             }
-
-            currentOrientation = newOrientation;
-            let newValue;
-
-            switch (newOrientation) {
-                case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
-                    newValue = "landscape";
-                    break;
-                case android.content.res.Configuration.ORIENTATION_PORTRAIT:
-                    newValue = "portrait";
-                    break;
-                default:
-                    newValue = "unknown";
-                    break;
-            }
-
-            notify(<OrientationChangedEventData>{
-                eventName: orientationChangedEvent,
-                android: androidApp.nativeApp,
-                newValue: newValue,
-                object: androidApp
-            });
         })
     });
 

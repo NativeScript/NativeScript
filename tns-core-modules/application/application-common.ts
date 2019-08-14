@@ -35,10 +35,10 @@ export { Observable };
 import {
     AndroidApplication,
     CssChangedEventData,
+    DiscardedErrorEventData,
     iOSApplication,
     LoadAppCSSEventData,
-    UnhandledErrorEventData,
-    DiscardedErrorEventData,
+    UnhandledErrorEventData
 } from "./application";
 
 export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };

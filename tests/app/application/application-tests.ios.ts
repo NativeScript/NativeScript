@@ -1,5 +1,6 @@
 ﻿/* tslint:disable:no-unused-variable */
 import * as app from "tns-core-modules/application";
+import * as TKUnit from "../tk-unit";
 
 export * from "./application-tests-common";
 
@@ -39,3 +40,12 @@ if (app.ios) {
 }
 
 // << application-ios-delegate
+
+export function testIOSApplicationInitialized() {
+    TKUnit.assert(app.ios, "iOS application not initialized.");
+    TKUnit.assert(app.ios.delegate, "iOS delegate not initialized.");
+    TKUnit.assert(app.ios.nativeApp, "iOS nativeApp not initialized.");
+    TKUnit.assert(app.ios.orientation, "iOS orientation not initialized.");
+    TKUnit.assert(app.ios.window, "iOS window not initialized.");
+    TKUnit.assert(app.ios.rootController, "iOS root controller not initialized.");
+}

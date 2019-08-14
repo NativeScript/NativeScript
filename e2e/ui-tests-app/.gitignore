@@ -35,3 +35,4 @@ typings/
 # tests
 mochawesome-report
 e2e/resources/images/uitestsapp/*
+testapp
