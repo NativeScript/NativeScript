@@ -1653,8 +1653,8 @@ export function test_css_calc_and_variables() {
 export function test_css_variable_fallback() {
     const redColor = "#FF0000";
     const blueColor = "#0000FF";
-    const limeColor = new color.Color('lime').hex;
-    const yellowColor = new color.Color('yellow').hex;
+    const limeColor = new color.Color("lime").hex;
+    const yellowColor = new color.Color("yellow").hex;
 
     const classToValue = [
         {

@@ -562,11 +562,16 @@ export class CssState {
             }
 
             try {
+                let newValue =  _evaluateCssCalcExpression(_evaluateCssVariable(view, property, value));
+                if (newValue === "unset") {
+                    newValue = unsetValue;
+                }
+
                 if (property in view.style) {
-                    view.style[`css:${property}`] = value;
+                    view.style[`css:${property}`] = newValue;
                 } else {
                     const camelCasedProperty = property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); });
-                    view[camelCasedProperty] = _evaluateCssCalcExpression(_evaluateCssVariable(view, camelCasedProperty, value));
+                    view[camelCasedProperty] = newValue;
                 }
             } catch (e) {
                 traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
