@@ -1,18 +1,20 @@
 // Types
+import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
-import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TextTransform } from "../text-base";
 
 // Requires
-import { TabNavigationBase, itemsProperty, selectedIndexProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
-import { Font } from "../styling/font";
-import { getTransformedText } from "../text-base";
-import { CSSType, Color } from "../core/view";
-import { Frame, View } from "../frame";
-import { RESOURCE_PREFIX, ad, layout, isFontIconURI } from "../../utils/utils";
-import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
 import * as application from "../../application";
+import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
+import { ad, isFontIconURI, layout, RESOURCE_PREFIX } from "../../utils/utils";
+import { Color, CSSType } from "../core/view";
+import { Frame, View } from "../frame";
+import { Font } from "../styling/font";
+import {
+    itemsProperty, selectedIndexProperty, TabNavigationBase, tabStripProperty
+} from "../tab-navigation-base/tab-navigation-base";
+import { getTransformedText } from "../text-base";
 
 // TODO: Impl trace
 // import { isEnabled as traceEnabled, write as traceWrite } from "../../../trace";
@@ -124,10 +126,12 @@ function initializeNativeClasses() {
                 return false;
             }
 
-            const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+            const tabStrip = owner.tabStrip;
+            const tabStripItems = tabStrip && tabStrip.items;
 
             if (position >= 0 && tabStripItems[position]) {
                 tabStripItems[position]._emit(TabStripItem.tapEvent);
+                tabStrip.notify({ eventName: TabStrip.itemTapEvent, object: tabStrip, index: position });
             }
 
             if (!owner.items[position]) {
@@ -241,7 +245,7 @@ function _getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapD
     }
 
     const image = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
-    
+
     return image;
 }
 
@@ -348,7 +352,7 @@ export class BottomNavigation extends TabNavigationBase {
 
         this._bottomNavigationBar = (<any>nativeView).bottomNavigationBar;
         (<any>this._bottomNavigationBar).owner = this;
-        
+
         if (this.tabStrip) {
             this.tabStrip.setNativeView(this._bottomNavigationBar);
         }
@@ -632,7 +636,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
-        const titleLabel = tabStripItem.label;    
+        const titleLabel = tabStripItem.label;
         const title = getTransformedText(titleLabel.text, value);
         tabStripItem.nativeViewProtected.setText(title);
     }

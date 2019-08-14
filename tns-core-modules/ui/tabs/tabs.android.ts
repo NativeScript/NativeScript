@@ -5,15 +5,17 @@ import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TextTransform } from "../text-base";
 
 // Requires
-import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
-import { TabsBase, swipeEnabledProperty, offscreenTabLimitProperty } from "./tabs-common";
-import { Font } from "../styling/font";
-import { getTransformedText } from "../text-base";
-import { Frame } from "../frame";
-import { Color } from "../core/view";
-import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
-import { RESOURCE_PREFIX, ad, layout, isFontIconURI } from "../../utils/utils";
 import * as application from "../../application";
+import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
+import { ad, isFontIconURI, layout, RESOURCE_PREFIX } from "../../utils/utils";
+import { Color } from "../core/view";
+import { Frame } from "../frame";
+import { Font } from "../styling/font";
+import {
+    itemsProperty, selectedIndexProperty, tabStripProperty
+} from "../tab-navigation-base/tab-navigation-base";
+import { getTransformedText } from "../text-base";
+import { offscreenTabLimitProperty, swipeEnabledProperty, TabsBase } from "./tabs-common";
 
 export * from "./tabs-common";
 
@@ -265,10 +267,12 @@ function initializeNativeClasses() {
                 return false;
             }
 
-            const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+            const tabStrip = owner.tabStrip;
+            const tabStripItems = tabStrip && tabStrip.items;
 
             if (position >= 0 && tabStripItems[position]) {
                 tabStripItems[position]._emit(TabStripItem.tapEvent);
+                tabStrip.notify({ eventName: TabStrip.itemTapEvent, object: tabStrip, index: position });
             }
 
             if (!owner.items[position]) {
@@ -358,7 +362,7 @@ function _getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapD
     }
 
     const image = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
-    
+
     return image;
 }
 
@@ -746,7 +750,7 @@ export class Tabs extends TabsBase {
     }
 
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
-        const nestedLabel = tabStripItem.label;    
+        const nestedLabel = tabStripItem.label;
         const title = getTransformedText(nestedLabel.text, value);
         tabStripItem.nativeViewProtected.setText(title);
     }

@@ -1,19 +1,20 @@
 ﻿// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
-import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
+import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TextTransform } from "../text-base";
 
 // Requires
-import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
-import { TabsBase, swipeEnabledProperty } from "./tabs-common";
-import { Font } from "../styling/font";
-import { Frame } from "../frame";
-import { ios as iosView, View } from "../core/view";
 import { Color } from "../../color";
-import { ios as iosUtils, layout, isFontIconURI } from "../../utils/utils";
-// import { device } from "../../platform";
 import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
+import { ios as iosUtils, isFontIconURI, layout } from "../../utils/utils";
+import { ios as iosView, View } from "../core/view";
+import { Frame } from "../frame";
+import { Font } from "../styling/font";
+import {
+    itemsProperty, selectedIndexProperty, tabStripProperty
+} from "../tab-navigation-base/tab-navigation-base";
+import { swipeEnabledProperty, TabsBase } from "./tabs-common";
 
 // TODO
 // import { profile } from "../../profiling";
@@ -44,9 +45,12 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
             owner._canSelectItem = false;
         }
 
-        const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+        const tabStrip = owner.tabStrip;
+        const tabStripItems = tabStrip && tabStrip.items;
+
         if (tabStripItems && tabStripItems[selectedIndex]) {
             tabStripItems[selectedIndex]._emit(TabStripItem.tapEvent);
+            tabStrip.notify({ eventName: TabStrip.itemTapEvent, object: tabStrip, index: selectedIndex });
         }
 
         return shouldSelectItem;
