@@ -5,15 +5,17 @@ import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TextTransform } from "../text-base";
 
 // Requires
-import { getIconSpecSize, selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
-import { TabsBase, swipeEnabledProperty, offscreenTabLimitProperty } from "./tabs-common";
-import { Font } from "../styling/font";
-import { getTransformedText } from "../text-base";
-import { Frame } from "../frame";
-import { Color } from "../core/view";
-import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
-import { RESOURCE_PREFIX, ad, layout, isFontIconURI } from "../../utils/utils";
 import * as application from "../../application";
+import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
+import { ad, isFontIconURI, layout, RESOURCE_PREFIX } from "../../utils/utils";
+import { Color } from "../core/view";
+import { Frame } from "../frame";
+import { Font } from "../styling/font";
+import {
+    getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty
+} from "../tab-navigation-base/tab-navigation-base";
+import { getTransformedText } from "../text-base";
+import { offscreenTabLimitProperty, swipeEnabledProperty, TabsBase } from "./tabs-common";
 
 export * from "./tabs-common";
 
@@ -265,10 +267,12 @@ function initializeNativeClasses() {
                 return false;
             }
 
-            const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+            const tabStrip = owner.tabStrip;
+            const tabStripItems = tabStrip && tabStrip.items;
 
             if (position >= 0 && tabStripItems[position]) {
                 tabStripItems[position]._emit(TabStripItem.tapEvent);
+                tabStrip.notify({ eventName: TabStrip.itemTapEvent, object: tabStrip, index: position });
             }
 
             if (!owner.items[position]) {
@@ -577,37 +581,37 @@ export class Tabs extends TabsBase {
 
     private createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
         const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
-    
+
         if (tabStripItem.isLoaded) {
             const nestedLabel = tabStripItem.label;
             let title = nestedLabel.text;
-    
+
             // TEXT-TRANSFORM
             const textTransform = nestedLabel.style.textTransform;
             if (textTransform) {
                 title = getTransformedText(title, textTransform);
             }
             tabItemSpec.title = title;
-    
+
             // BACKGROUND-COLOR
             const backgroundColor = tabStripItem.style.backgroundColor;
             if (backgroundColor) {
                 tabItemSpec.backgroundColor = backgroundColor.android;
             }
-    
+
             // COLOR
             const color = nestedLabel.style.color;
             if (color) {
                 tabItemSpec.color = color.android;
             }
-    
+
             // FONT
             const fontInternal = nestedLabel.style.fontInternal;
             if (fontInternal) {
                 tabItemSpec.fontSize = fontInternal.fontSize;
                 tabItemSpec.typeFace = fontInternal.getAndroidTypeface();
             }
-    
+
             // ICON
             const iconSource = tabStripItem.image && tabStripItem.image.src;
             if (iconSource) {
@@ -619,7 +623,7 @@ export class Tabs extends TabsBase {
                     }
                 } else {
                     const icon = this.getIcon(tabStripItem);
-    
+
                     if (icon) {
                         // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                         // tslint:disable-next-line:deprecation
@@ -631,13 +635,13 @@ export class Tabs extends TabsBase {
                 }
             }
         }
-    
+
         return tabItemSpec;
     }
-    
+
     private getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
-    
+
         let is: ImageSource;
         if (isFontIconURI(iconSource)) {
             const fontIconCode = iconSource.split("//")[1];
@@ -648,35 +652,35 @@ export class Tabs extends TabsBase {
         } else {
             is = fromFileOrResource(iconSource);
         }
-    
+
         let imageDrawable: android.graphics.drawable.BitmapDrawable;
         if (is && is.android) {
             let image = is.android;
-    
+
             if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
                 image = this.getFixedSizeIcon(image);
             }
-    
+
             imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
         } else {
             // TODO
             // traceMissingIcon(iconSource);
         }
-    
+
         return imageDrawable;
     }
-    
+
     private getFixedSizeIcon(image: android.graphics.Bitmap): android.graphics.Bitmap {
         const inWidth = image.getWidth();
         const inHeight = image.getHeight();
-        
+
         const iconSpecSize = getIconSpecSize({ width: inWidth, height: inHeight });
 
         const widthPixels = iconSpecSize.width * layout.getDisplayDensity();
         const heightPixels = iconSpecSize.height * layout.getDisplayDensity();
-    
+
         const scaledImage = android.graphics.Bitmap.createScaledBitmap(image, widthPixels, heightPixels, true);
-    
+
         return scaledImage;
     }
 
@@ -772,7 +776,7 @@ export class Tabs extends TabsBase {
     }
 
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
-        const nestedLabel = tabStripItem.label;    
+        const nestedLabel = tabStripItem.label;
         const title = getTransformedText(nestedLabel.text, value);
         tabStripItem.nativeViewProtected.setText(title);
     }

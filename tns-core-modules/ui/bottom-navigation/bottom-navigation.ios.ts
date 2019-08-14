@@ -1,21 +1,22 @@
 ﻿// Types
-import { TabStrip } from "../tab-navigation-base/tab-strip";
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
+import { TabStrip } from "../tab-navigation-base/tab-strip";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TextTransform } from "../text-base";
 
-//Requires
-import { 
-    TabNavigationBase, getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty
-} from "../tab-navigation-base/tab-navigation-base";
-import { Font } from "../styling/font";
-import { getTransformedText } from "../text-base";
-import { Frame } from "../frame";
-import { ios as iosView, View, CSSType } from "../core/view";
-import { ios as iosUtils, layout, isFontIconURI } from "../../utils/utils";
-import { device } from "../../platform";
+// Requires
 import { Color } from "../../color";
 import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
+import { device } from "../../platform";
+import { ios as iosUtils, isFontIconURI, layout } from "../../utils/utils";
+import { CSSType, ios as iosView, View } from "../core/view";
+import { Frame } from "../frame";
+import { Font } from "../styling/font";
+import {
+    getIconSpecSize, itemsProperty, selectedIndexProperty, TabNavigationBase, tabStripProperty
+} from "../tab-navigation-base/tab-navigation-base";
+import { getTransformedText } from "../text-base";
+
 // TODO:
 // import { profile } from "../../profiling";
 
@@ -107,9 +108,12 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
             if (tabBarController.viewControllers) {
                 const position = tabBarController.viewControllers.indexOfObject(viewController);
                 if (position !== NSNotFound) {
-                    const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+                    const tabStrip = owner.tabStrip;
+                    const tabStripItems = tabStrip && tabStrip.items;
+
                     if (tabStripItems && tabStripItems[position]) {
                         tabStripItems[position]._emit(TabStripItem.tapEvent);
+                        tabStrip.notify({ eventName: TabStrip.itemTapEvent, object: tabStrip, index: position });
                     }
                 }
             }
@@ -555,7 +559,7 @@ export class BottomNavigation extends TabNavigationBase {
 
             if (is && is.ios) {
                 image = is.ios;
-                
+
                 if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
                     image = this.getFixedSizeIcon(image);
                 }
@@ -575,7 +579,7 @@ export class BottomNavigation extends TabNavigationBase {
     private getFixedSizeIcon(image: UIImage): UIImage {
         const inWidth = image.size.width;
         const inHeight = image.size.height;
-        
+
         const iconSpecSize = getIconSpecSize({ width: inWidth, height: inHeight });
 
         const widthPts = iconSpecSize.width;

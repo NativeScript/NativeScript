@@ -1,0 +1,37 @@
+<Page>
+
+  <BottomNavigation id="bottomNav" selectedIndexChanged="onSelectedIndexChanged">
+
+    <TabStrip itemTap="onItemTap">
+      <TabStripItem title="First" tap="onFirstTabStripItemTap"></TabStripItem>
+      <TabStripItem tap="onSecondTabStripItemTap">
+        <Label text="Second" />
+      </TabStripItem>
+      <TabStripItem title="First" tap="onThirdTabStripItemTap">
+        <Label text="Third" />
+      </TabStripItem>
+    </TabStrip>
+
+    <TabContentItem>
+      <StackLayout>
+        <Label text="First View" backgroundColor="red" id="label" />
+        <Button tap="goToSecond" text="go to second item" id="button" />
+        <Frame defaultPage="bottom-navigation/first-page" id="frame" />
+      </StackLayout>
+    </TabContentItem>
+    <TabContentItem>
+      <StackLayout>
+        <Label text="Second Content Item" backgroundColor="lightgreen" />
+        <Button tap="goToThird" text="go to thrid item" />
+      </StackLayout>
+    </TabContentItem>
+    <TabContentItem>
+      <StackLayout>
+        <Label text="First Content Item" backgroundColor="lightblue" />
+        <Button tap="goToFirst" text="go to first item" />
+      </StackLayout>
+    </TabContentItem>
+
+  </BottomNavigation>
+
+</Page>

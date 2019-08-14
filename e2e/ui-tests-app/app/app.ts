@@ -24,7 +24,7 @@ application.on("uncaughtError", args => {
     }
 });
 
-application.on(application.launchEvent, function(args: application.LaunchEventData) {
+application.on(application.launchEvent, function (args: application.LaunchEventData) {
     if (args.android) {
         // For Android applications, args.android is an android.content.Intent class.
         console.log("### Launched application with: " + args.android + ".");
@@ -34,7 +34,7 @@ application.on(application.launchEvent, function(args: application.LaunchEventDa
     }
 });
 
-application.on(application.suspendEvent, function(args: application.ApplicationEventData) {
+application.on(application.suspendEvent, function (args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("#" + ++countSuspend + "# SuspendEvent Activity: " + args.android);
@@ -44,7 +44,7 @@ application.on(application.suspendEvent, function(args: application.ApplicationE
     }
 });
 
-application.on(application.resumeEvent, function(args: application.ApplicationEventData) {
+application.on(application.resumeEvent, function (args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("#" + ++countResume + "# ResumeEvent Activity: " + args.android);
@@ -54,7 +54,7 @@ application.on(application.resumeEvent, function(args: application.ApplicationEv
     }
 });
 
-application.on(application.exitEvent, function(args: application.ApplicationEventData) {
+application.on(application.exitEvent, function (args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("### ExitEvent Activity: " + args.android);
@@ -64,7 +64,7 @@ application.on(application.exitEvent, function(args: application.ApplicationEven
     }
 });
 
-application.on(application.lowMemoryEvent, function(args: application.ApplicationEventData) {
+application.on(application.lowMemoryEvent, function (args: application.ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("### LowMemoryEvent Activity: " + args.android);
@@ -74,14 +74,14 @@ application.on(application.lowMemoryEvent, function(args: application.Applicatio
     }
 });
 
-application.on(application.uncaughtErrorEvent, function(args: application.UnhandledErrorEventData) {
+application.on(application.uncaughtErrorEvent, function (args: application.UnhandledErrorEventData) {
     console.log("### NativeScriptError: " + args.error);
     console.log("### nativeException: " + (<any>args.error).nativeException);
     console.log("### stackTrace: " + (<any>args.error).stackTrace);
     console.log("### stack: " + args.error.stack);
 });
 
-application.on(application.discardedErrorEvent, function(args: application.DiscardedErrorEventData) {
+application.on(application.discardedErrorEvent, function (args: application.DiscardedErrorEventData) {
     console.log("### [Discarded] NativeScriptError: " + args.error);
     console.log("### [Discarded] nativeException: " + (<any>args.error).nativeException);
     console.log("### [Discarded] stackTrace: " + (<any>args.error).stackTrace);
@@ -89,6 +89,4 @@ application.on(application.discardedErrorEvent, function(args: application.Disca
 });
 
 application.setCssFileName("app.css");
-
-application._start({ moduleName: "main-page" });
-// application.run({ moduleName: "app-root" });
+application.run({ moduleName: "app-root" });
