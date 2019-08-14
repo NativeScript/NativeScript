@@ -553,7 +553,7 @@ export class CssState {
 
         const oldProperties = this._appliedPropertyValues;
 
-        // Set all the css-variables first, so we can be sure they are up-to-date
+        // Update values for the scope's css-variables
         for (const property in newPropertyValues) {
             if (isCssVariable(property)) {
                 const value = newPropertyValues[property];
@@ -562,7 +562,7 @@ export class CssState {
             }
         }
 
-        // Clear up all removed css-variables
+        // Unset removed css-variables for the scope
         for (const property in oldProperties) {
             if (!(property in newPropertyValues)) {
                 if (isCssVariable(property)) {
@@ -571,7 +571,7 @@ export class CssState {
             }
         }
 
-        // Resolve css-variable and css-calc expressions
+        // Now the css-variables are up-to-date, evalute css-expressions to get the latest values.
         for (const property in newPropertyValues) {
             const value = evaluateCssExpressions(view, property, newPropertyValues[property]);
             if (value === unsetValue) {
@@ -582,8 +582,10 @@ export class CssState {
             newPropertyValues[property] = value;
         }
 
+        // Property values are fully updated, freeze the object to be used for next update.
         Object.freeze(newPropertyValues);
 
+        // Unset removed values
         for (const property in oldProperties) {
             if (!(property in newPropertyValues)) {
                 if (property in view.style) {
@@ -594,6 +596,7 @@ export class CssState {
             }
         }
 
+        // Set new values to the style
         for (const property in newPropertyValues) {
             if (isCssVariable(property)) {
                 // Skip css-variables
@@ -601,6 +604,7 @@ export class CssState {
             }
 
             if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
+                // Skip unchanged values
                 continue;
             }
 
