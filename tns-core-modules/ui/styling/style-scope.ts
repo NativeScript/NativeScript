@@ -558,7 +558,7 @@ export class CssState {
             if (isCssVariable(property)) {
                 const value = newPropertyValues[property];
 
-                view.style.setCssVariable(property, value, true);
+                view.style.setScopedCssVariable(property, value);
             }
         }
 
@@ -566,7 +566,7 @@ export class CssState {
         for (const property in oldProperties) {
             if (!(property in newPropertyValues)) {
                 if (isCssVariable(property)) {
-                    view.style.unsetCssVariable(property, true);
+                    view.style.unsetScopedCssVariable(property);
                 }
             }
         }
@@ -587,6 +587,10 @@ export class CssState {
 
         // Unset removed values
         for (const property in oldProperties) {
+            if (isCssVariable(property)) {
+                continue;
+            }
+
             if (!(property in newPropertyValues)) {
                 if (property in view.style) {
                     view.style[`css:${property}`] = unsetValue;
@@ -891,14 +895,14 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
     let inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
 
     // Reset unscoped css-variables
-    view.style.clearCssVariable(false);
+    view.style.resetUnscopedCssVariables();
 
     // Set all the css-variables first, so we can be sure they are up-to-date
     inlineRuleSet[0].declarations.forEach(d => {
         // Use the actual property name so that a local value is set.
         let property = d.property;
         if (isCssVariable(property)) {
-            view.style.setCssVariable(property, d.value, false);
+            view.style.setUnscopedCssVariable(property, d.value);
         }
     });
 

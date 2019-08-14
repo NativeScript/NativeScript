@@ -170,18 +170,19 @@ export class Style extends Observable {
     public readonly PropertyBag: PropertyBagClass;
 
     /**
-     * Assign value to a css-variable
-     * 
-     * @param varName 
-     * @param value 
-     * @param scoped if false value is set from style-attribute, if true set from the style-scope.
+     * Set a scoped css-value. These are css-variables set from CssState
      */
-    public setCssVariable(varName: string, value: string, scoped: boolean): void;
+    public setScopedCssVariable(varName: string, value: string): void;
 
     /**
-     * Unassign value for a css-value
+     * Set a unscoped css-value. These are css-variables set on view.style
      */
-    public unsetCssVariable(varName: string, scoped: boolean): void;
+    public setUnscopedCssVariable(varName: string, value: string): void;
+
+    /**
+     * Remove a scoped css-variable.
+     */
+    public unsetScopedCssVariable(varName: string): void;
 
     /**
      * Get value of the css-variable.
@@ -190,12 +191,9 @@ export class Style extends Observable {
     public getCssVariable(varName: string): string | null;
 
     /**
-     * Clear css-variables.
-     * If scoped is undefined, all are removed
-     * If true only scoped variables are removed
-     * If false only unscoped variables are removed
+     * Remove all unscoped css-variables
      */
-    public clearCssVariable(scoped?: boolean): void;
+    public resetUnscopedCssVariables(): void;
 }
 
 interface PropertyBagClass {

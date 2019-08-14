@@ -39,12 +39,20 @@ export class Style extends Observable implements StyleDefinition {
         }
     }
 
-    public setCssVariable(varName: string, value: string, scoped: boolean): void {
+    private setCssVariable(varName: string, value: string, scoped: boolean): void {
         this.cssVariables.set(makeCssVariableName(varName, scoped), value);
     }
 
-    public unsetCssVariable(varName: string, scoped: boolean): void {
-        this.cssVariables.delete(makeCssVariableName(varName, scoped));
+    public setScopedCssVariable(varName: string, value: string): void {
+        this.setCssVariable(varName, value, true);
+    }
+
+    public setUnscopedCssVariable(varName: string, value: string): void {
+        this.setCssVariable(varName, value, false);
+    }
+
+    public unsetScopedCssVariable(varName: string): void {
+        this.cssVariables.delete(makeCssVariableName(varName, true));
     }
 
     public getCssVariable(varName: string): string | null {
@@ -69,15 +77,9 @@ export class Style extends Observable implements StyleDefinition {
         return view.parent.style.getCssVariable(varName);
     }
 
-    public clearCssVariable(scoped?: boolean): void {
-        if (typeof scoped === "undefined") {
-            this.cssVariables.clear();
-
-            return;
-        }
-
+    public resetUnscopedCssVariables(): void {
         for (const varName of Array.from(this.cssVariables.keys())) {
-            if (varName.startsWith("scoped:") === scoped) {
+            if (!varName.startsWith("scoped:")) {
                 this.cssVariables.delete(varName);
             }
         }
