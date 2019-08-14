@@ -138,7 +138,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
             const parent = owner.parent;
             if (parent) {
                 // TODO: Figure out a better way to handle ViewController nesting/Safe Area nesting
-                tabBarTop = Math.max(this.view.safeAreaInsets.top, owner.parent.nativeView.safeAreaInsets.top);
+                tabBarTop = Math.max(tabBarTop, owner.parent.nativeView.safeAreaInsets.top);
             }
 
             this.tabBar.frame = CGRectMake(this.view.safeAreaInsets.left, tabBarTop, this.tabBar.frame.size.width, tabBarHeight);
