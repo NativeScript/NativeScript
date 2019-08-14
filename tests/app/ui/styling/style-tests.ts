@@ -1650,6 +1650,85 @@ export function test_css_calc_and_variables() {
     TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
 }
 
+export function test_css_variable_fallback() {
+    const redColor = "#FF0000";
+    const blueColor = "#0000FF";
+    const limeColor = new color.Color('lime').hex;
+    const yellowColor = new color.Color('yellow').hex;
+
+    const classToValue = [
+        {
+            className: "defined-css-variable",
+            expectedColor: blueColor,
+        }, {
+            className: "defined-css-variable-with-fallback",
+            expectedColor: blueColor,
+        }, {
+            className: "undefined-css-variable-without-fallback",
+            expectedColor: undefined,
+        }, {
+            className: "undefined-css-variable-with-fallback",
+            expectedColor: redColor,
+        }, {
+            className: "undefined-css-variable-with-defined-fallback",
+            expectedColor: limeColor,
+        }, {
+            className: "undefined-css-variable-with-missing-fallback-value",
+            expectedColor: undefined,
+        }, {
+            className: "undefined-css-variable-with-nested-fallback",
+            expectedColor: yellowColor,
+        },
+    ];
+
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    .defined-css-variable {
+        --my-var: blue;
+        color: var(--my-var); /* resolved as color: blue; */
+    }
+
+    .defined-css-variable-with-fallback {
+        --my-var: blue;
+        color: var(--my-var, red); /* resolved as color: blue; */
+    }
+
+    .undefined-css-variable-without-fallback {
+        color: var(--my-var); /* resolved as color: unset; */
+    }
+
+    .undefined-css-variable-with-fallback {
+        color: var(--my-var, red); /* resolved as color: red; */
+    }
+
+    .undefined-css-variable-with-defined-fallback {
+        --my-fallback-var: lime;
+        color: var(--my-var, var(--my-fallback-var)); /* resolved as color: lime; */
+    }
+
+    .undefined-css-variable-with-missing-fallback-value {
+        color: var(--my-var, var(--my-fallback-var)); /* resolved as color: unset; */
+    }
+
+    .undefined-css-variable-with-nested-fallback {
+        color: var(--my-var, var(--my-fallback-var, yellow)); /* resolved as color: yellow; */
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    for (const { className, expectedColor } of classToValue) {
+        label.className = "reset-me";
+
+        label.className = className;
+        TKUnit.assertEqual(label.color && label.color.hex, expectedColor, `text color is ${expectedColor}`);
+    }
+}
+
 export function test_nested_css_calc_and_variables() {
     const page = helper.getClearCurrentPage();
 

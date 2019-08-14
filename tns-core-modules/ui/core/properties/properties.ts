@@ -92,15 +92,22 @@ export function _evaluateCssVariable<T>(view: ViewBase, cssName: string, value: 
     while (lastValue !== output) {
         lastValue = output;
 
-        output = output.replace(cssVarAllValuesRegexp, (matchStr, cssVariableName: string) => {
+        output = output.replace(cssVarAllValuesRegexp, (matchStr, cssVariableName: string, fallbackStr: string) => {
             const cssVariableValue = view.style.getCssVariable(cssVariableName);
-            if (cssVariableValue === null) {
-                traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Style, traceMessageType.error);
-                
-                return "unset";
+            if (cssVariableValue !== null) {
+                return cssVariableValue;
             }
 
-            return cssVariableValue;
+            if (fallbackStr) {
+                const fallbackMatch = _evaluateCssVariable<T>(view, cssName, fallbackStr);
+                if (typeof fallbackMatch === "string") {
+                    return fallbackMatch.split(",")[0];
+                }
+            }
+
+            traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Style, traceMessageType.error);
+
+            return "unset";
         });
     }
 
