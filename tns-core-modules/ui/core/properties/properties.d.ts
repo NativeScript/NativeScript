@@ -144,9 +144,9 @@ export function makeParser<T>(isValid: (value: any) => boolean): (value: any) =>
 export function getSetProperties(view: ViewBase): [string, any][];
 export function getComputedCssValues(view: ViewBase): [string, any][];
 
-export function isCssVariableName(property: string): boolean;
+export function isCssVariable(property: string): boolean;
 export function isCssCalcExpression(value: string): boolean;
-export function isCssValueUsingCssVariable(value: string): boolean;
+export function isCssVariableExpression(value: string): boolean;
 
 //@private
 /**
@@ -159,7 +159,7 @@ export function _getProperties(): Property<any, any>[];
  */
 export function _getStyleProperties(): CssProperty<any, any>[];
 
-export function _evaluateCssVariable<T>(view: ViewBase, cssName: string, value: string | T): string | T;
+export function _evaluateCssVariableExpression<T>(view: ViewBase, cssName: string, value: string | T): string | T;
 
 export function _evaluateCssCalcExpression<T>(value: string | T): string;
 //@endprivate

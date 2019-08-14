@@ -1,7 +1,7 @@
 import { Keyframes } from "../animation/keyframe-animation";
 import { ViewBase } from "../core/view-base";
 import { View } from "../core/view";
-import { unsetValue, _evaluateCssVariable, _evaluateCssCalcExpression } from "../core/properties";
+import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression } from "../core/properties";
 import {
     SyntaxTree,
     Keyframes as KeyframesDefinition,
@@ -40,7 +40,7 @@ function ensureKeyframeAnimationModule() {
 }
 
 import * as capm from "./css-animation-parser";
-import { isCssVariableName, isCssValueUsingCssVariable, isCssCalcExpression } from "../core/properties/properties";
+import { isCssVariable, isCssVariableExpression, isCssCalcExpression } from "../core/properties/properties";
 import { sanitizeModuleName } from "../builder/module-name-sanitizer";
 import { resolveModuleName } from "../../module-name-resolver";
 
@@ -59,6 +59,23 @@ try {
     }
 } catch (e) {
     //
+}
+
+function evaluateCssExpressions(view: ViewBase, property: string, value: string) {
+    if (isCssVariableExpression(value)) {
+        const newValue = _evaluateCssVariableExpression(view, property, value);
+        if (newValue === "unset") {
+            return unsetValue;
+        }
+
+        value = newValue;
+    }
+
+    if (isCssCalcExpression(value)) {
+        value = _evaluateCssCalcExpression(value);
+    }
+
+    return value;
 }
 
 export function mergeCssSelectors(): void {
@@ -529,7 +546,7 @@ export class CssState {
 
         // Set all the css-variables first, so we can be sure they are up-to-date
         for (const property in newPropertyValues) {
-            if (isCssVariableName(property)) {
+            if (isCssVariable(property)) {
                 const value = newPropertyValues[property];
 
                 view.style.setCssVariable(property, value, true);
@@ -539,7 +556,7 @@ export class CssState {
         // Clear up all removed css-variables
         for (const property in oldProperties) {
             if (!(property in newPropertyValues)) {
-                if (isCssVariableName(property)) {
+                if (isCssVariable(property)) {
                     view.style.unsetCssVariable(property, true);
                 }
             }
@@ -547,20 +564,13 @@ export class CssState {
 
         // Resolve css-variable and css-calc expressions
         for (const property in newPropertyValues) {
-            if (isCssValueUsingCssVariable(newPropertyValues[property])) {
-                const newValue = _evaluateCssVariable(view, property, newPropertyValues[property]);
-                if (newValue === "unset") {
-                    delete newPropertyValues[property];
-                    continue;
-                }
-
-                newPropertyValues[property] = newValue;
+            const value = evaluateCssExpressions(view, property, newPropertyValues[property]);
+            if (value === unsetValue) {
+                delete newPropertyValues[property];
+                continue;
             }
 
-            console.log(view + '', property, newPropertyValues[property], isCssCalcExpression(newPropertyValues[property]));
-            if (isCssCalcExpression(newPropertyValues[property])) {
-                newPropertyValues[property] = _evaluateCssCalcExpression(newPropertyValues[property]);
-            }
+            newPropertyValues[property] = value;
         }
 
         Object.freeze(newPropertyValues);
@@ -576,7 +586,7 @@ export class CssState {
         }
 
         for (const property in newPropertyValues) {
-            if (isCssVariableName(property)) {
+            if (isCssVariable(property)) {
                 // Skip css-variables, they have been handled
                 continue;
             }
@@ -875,7 +885,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
     inlineRuleSet[0].declarations.forEach(d => {
         // Use the actual property name so that a local value is set.
         let property = d.property;
-        if (isCssVariableName(property)) {
+        if (isCssVariable(property)) {
             view.style.setCssVariable(property, d.value, false);
         }
     });
@@ -884,20 +894,12 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
         // Use the actual property name so that a local value is set.
         let property = d.property;
         try {
-            if (isCssVariableName(property)) {
+            if (isCssVariable(property)) {
                 // Skip css-variables, they have been handled
                 return;
             }
 
-            let value = d.value;
-            if (isCssValueUsingCssVariable(value)) {
-                value = _evaluateCssVariable(view, property, value);
-            }
-
-            if (isCssCalcExpression(value)) {
-                value = _evaluateCssCalcExpression(value);
-            }
-
+            const value = evaluateCssExpressions(view, property, d.value);
             if (property in view.style) {
                 view.style[property] = value;
             } else {

@@ -58,29 +58,27 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
     return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
 }
 
-const cssCalcRegexp = /\bcalc\(/;
-const cssVariableNameRegexp = /^--[^,\s]+?$/;
-const cssVarValueRegexp = /\bvar\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
-const cssVarAllValuesRegexp = /\bvar\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/g;
+const cssVariableExpressionRegexp = /\bvar\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
+const cssVariableAllExpressionsRegexp = /\bvar\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/g;
 
-export function isCssVariableName(property: string) {
-    return cssVariableNameRegexp.test(property);
+export function isCssVariable(property: string) {
+    return /^--[^,\s]+?$/.test(property);
 }
 
 export function isCssCalcExpression(value: string) {
-    return cssCalcRegexp.test(value);
+    return /\bcalc\(/.test(value);
 }
 
-export function isCssValueUsingCssVariable(value: string) {
-    return cssVarValueRegexp.test(value);
+export function isCssVariableExpression(value: string) {
+    return cssVariableExpressionRegexp.test(value);
 }
 
-export function _evaluateCssVariable<T>(view: ViewBase, cssName: string, value: string | T): string | T {
+export function _evaluateCssVariableExpression<T>(view: ViewBase, cssName: string, value: string | T): string | T {
     if (typeof value !== "string") {
         return value;
     }
 
-    if (!isCssValueUsingCssVariable(value)) {
+    if (!isCssVariableExpression(value)) {
         // Value is not using css-variable(s)
         return value;
     }
@@ -92,14 +90,14 @@ export function _evaluateCssVariable<T>(view: ViewBase, cssName: string, value: 
     while (lastValue !== output) {
         lastValue = output;
 
-        output = output.replace(cssVarAllValuesRegexp, (matchStr, cssVariableName: string, fallbackStr: string) => {
+        output = output.replace(cssVariableAllExpressionsRegexp, (matchStr, cssVariableName: string, fallbackStr: string) => {
             const cssVariableValue = view.style.getCssVariable(cssVariableName);
             if (cssVariableValue !== null) {
                 return cssVariableValue;
             }
 
             if (fallbackStr) {
-                const fallbackMatch = _evaluateCssVariable<T>(view, cssName, fallbackStr);
+                const fallbackMatch = _evaluateCssVariableExpression<T>(view, cssName, fallbackStr);
                 if (typeof fallbackMatch === "string") {
                     return fallbackMatch.split(",")[0];
                 }
