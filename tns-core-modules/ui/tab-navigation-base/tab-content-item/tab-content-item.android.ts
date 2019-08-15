@@ -27,7 +27,6 @@ export class TabContentItem extends TabContentItemBase {
 
     public initNativeView(): void {
         super.initNativeView();
-        this.nativeViewProtected.setBackgroundColor(-1); // White color.
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
