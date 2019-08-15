@@ -17,3 +17,11 @@ TabStripItem.special {
 TabStripItem.special:active {
   color: yellowgreen;
 }
+
+TabStripItem.nested Label {
+  color: teal;
+}
+
+TabStripItem.nested:active Label {
+  color: yellowgreen;
+}
