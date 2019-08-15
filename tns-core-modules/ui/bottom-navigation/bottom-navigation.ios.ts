@@ -561,7 +561,41 @@ export class BottomNavigation extends TabNavigationBase {
             }
         }
 
-        return image;
+        const minSide = 24;
+        const maxWidth = 31;
+        const maxHeight = 28;
+
+        const bitmap = image;
+        const inWidth = bitmap.size.width;
+        const inHeight = bitmap.size.height;
+        let outWidth = 0;
+        let outHeight = 0;
+
+        if (inWidth < inHeight) {
+            outWidth = minSide;
+            outHeight = (inHeight * minSide) / inWidth;
+            if (outHeight > maxHeight) {
+                outHeight = maxHeight;
+                outWidth = (inWidth * maxHeight) / inHeight;
+            }
+        } else {
+            outHeight = minSide;
+            outWidth = (inWidth * minSide) / inHeight;
+            if (outWidth > maxWidth) {
+                outWidth = maxWidth;
+                outHeight = (inHeight * maxWidth) / inWidth;
+            }
+        }
+
+        const widthPts = outWidth;
+        const heightPts = outHeight;
+
+        UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
+        image.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
+        let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+
+        return resultImage;
     }
 
     // private _updateIOSTabBarColorsAndFonts(): void {

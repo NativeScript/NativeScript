@@ -357,7 +357,37 @@ function _getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapD
         is = fromFileOrResource(iconSource);
     }
 
-    const image = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
+    const minSide = 24;
+    const maxWidth = 31;
+    const maxHeight = 28;
+
+    const bitmap = is.android;
+    const inWidth = bitmap.getWidth();
+    const inHeight = bitmap.getHeight();
+    let outWidth = 0;
+    let outHeight = 0;
+
+    if (inWidth < inHeight) {
+        outWidth = minSide;
+        outHeight = (inHeight * minSide) / inWidth;
+        if (outHeight > maxHeight) {
+            outHeight = maxHeight;
+            outWidth = (inWidth * maxHeight) / inHeight;
+        }
+    } else {
+        outHeight = minSide;
+        outWidth = (inWidth * minSide) / inHeight;
+        if (outWidth > maxWidth) {
+            outWidth = maxWidth;
+            outHeight = (inHeight * maxWidth) / inWidth;
+        }
+    }
+
+    const widthPixels = outWidth * layout.getDisplayDensity();
+    const heightPixels = outHeight * layout.getDisplayDensity();
+
+    const scaledImage = android.graphics.Bitmap.createScaledBitmap(is.android, widthPixels, heightPixels, true);
+    const image = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), scaledImage);
     
     return image;
 }
