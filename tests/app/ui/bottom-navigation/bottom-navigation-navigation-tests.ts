@@ -23,7 +23,7 @@ function _createContentItems(count: number): Array<TabContentItem> {
         const label = new Label();
         label.text = "Tab " + i;
         const tabEntry = new TabContentItem();
-        tabEntry.view = label;
+        tabEntry.content = label;
         items.push(tabEntry);
     }
 
@@ -101,12 +101,12 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
         let items = Array<TabContentItem>();
         let tabViewitem = new TabContentItem();
         // tabViewitem.title = "Item1";
-        tabViewitem.view = _createFrameView();
+        tabViewitem.content = _createFrameView();
         items.push(tabViewitem);
 
         let tabViewitem2 = new TabContentItem();
         // tabViewitem2.title = "Item2";
-        tabViewitem2.view = _createFrameView();
+        tabViewitem2.content = _createFrameView();
         items.push(tabViewitem2);
 
         tabView.items = items;
@@ -145,7 +145,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
         let items = Array<TabContentItem>();
         let tabViewitem = new TabContentItem();
         // tabViewitem.title = "List";
-        tabViewitem.view = _createListView();
+        tabViewitem.content = _createListView();
         items.push(tabViewitem);
 
         let label = new Label();
@@ -155,7 +155,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
         aboutLayout.addChild(label);
         tabViewitem = new TabContentItem();
         // tabViewitem.title = "About";
-        tabViewitem.view = aboutLayout;
+        tabViewitem.content = aboutLayout;
         items.push(tabViewitem);
 
         tabView.items = items;
@@ -184,7 +184,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
 
     TKUnit.waitUntilReady(() => topFrame.currentPage === rootPage);
 
-    TKUnit.assert(tabView.items[0].view instanceof ListView, "ListView should be created when navigating back to the main page.");
+    TKUnit.assert(tabView.items[0].content instanceof ListView, "ListView should be created when navigating back to the main page.");
 }
 
 function tabViewIsFullyLoaded(tabView: BottomNavigation): boolean {
@@ -232,8 +232,8 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     }
 
     tabView.items.forEach((item, i) => {
-        item.view.on("loaded", createLoadedFor(i));
-        item.view.on("unloaded", createUnloadedFor(i));
+        item.content.on("loaded", createLoadedFor(i));
+        item.content.on("unloaded", createUnloadedFor(i));
     });
 
     const tabViewPage = new Page();
@@ -252,8 +252,8 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     TKUnit.assertEqual(topFrame.currentPage, tabViewPage);
 
     for (let i = 0; i < itemCount; i++) {
-        tabView.items[i].view.off("loaded");
-        tabView.items[i].view.off("unloaded");
+        tabView.items[i].content.off("loaded");
+        tabView.items[i].content.off("unloaded");
     }
 
     helper.goBack();
@@ -267,7 +267,7 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
 
 function _clickTheFirstButtonInTheListViewNatively(tabView: BottomNavigation) {
     if (tabView.android) {
-        const androidListView = <android.widget.ListView>tabView.items[0].view.nativeView;
+        const androidListView = <android.widget.ListView>tabView.items[0].content.nativeView;
         // var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
         // var androidListView = <android.widget.ListView>viewPager.getChildAt(0);
         var stackLayout = <org.nativescript.widgets.StackLayout>androidListView.getChildAt(0);

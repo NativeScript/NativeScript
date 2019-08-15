@@ -27,7 +27,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
             const label = new Label();
             label.text = "Tab " + i;
             const tabEntry = new TabContentItem();
-            tabEntry.view = label;
+            tabEntry.content = label;
             items.push(tabEntry);
         }
 
@@ -208,7 +208,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
         TKUnit.assertThrows(() => {
             let item = new TabContentItem();
             // item.title = "Tab 0";
-            item.view = undefined;
+            item.content = undefined;
             tabView.items = [item];
 
         }, "Binding TabNavigation to a TabItem with undefined view should throw.");
@@ -221,7 +221,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
         TKUnit.assertThrows(() => {
             let item = new TabContentItem();
             // item.title = "Tab 0";
-            item.view = null;
+            item.content = null;
             tabView.items = [item];
 
         }, "Binding TabNavigation to a TabItem with null view should throw.");

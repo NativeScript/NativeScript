@@ -260,7 +260,7 @@ export class BottomNavigation extends TabNavigationBase {
         super.onLoaded();
 
         const selectedIndex = this.selectedIndex;
-        const selectedView = this.items && this.items[selectedIndex] && this.items[selectedIndex].view;
+        const selectedView = this.items && this.items[selectedIndex] && this.items[selectedIndex].content;
         if (selectedView instanceof Frame) {
             selectedView._pushInFrameStackRecursive();
         }
@@ -295,18 +295,18 @@ export class BottomNavigation extends TabNavigationBase {
         const oldItem = items[oldIndex];
         if (oldItem) {
             oldItem.canBeLoaded = false;
-            oldItem.unloadView(oldItem.view);
+            oldItem.unloadView(oldItem.content);
         }
 
         const newItem = items[newIndex];
         if (newItem && this.isLoaded) {
-            const selectedView = items[newIndex].view;
+            const selectedView = items[newIndex].content;
             if (selectedView instanceof Frame) {
                 selectedView._pushInFrameStackRecursive();
             }
 
             newItem.canBeLoaded = true;
-            newItem.loadView(newItem.view);
+            newItem.loadView(newItem.content);
         }
 
         super.onSelectedIndexChanged(oldIndex, newIndex);
@@ -463,7 +463,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     private getViewController(item: TabContentItem): UIViewController {
-        let newController: UIViewController = item.view ? item.view.viewController : null;
+        let newController: UIViewController = item.content ? item.content.viewController : null;
 
         if (newController) {
             (<any>item).setViewController(newController, newController.view);
@@ -471,17 +471,17 @@ export class BottomNavigation extends TabNavigationBase {
             return newController;
         }
 
-        if (item.view.ios instanceof UIViewController) {
-            newController = item.view.ios;
+        if (item.content.ios instanceof UIViewController) {
+            newController = item.content.ios;
             (<any>item).setViewController(newController, newController.view);
-        } else if (item.view.ios && item.view.ios.controller instanceof UIViewController) {
-            newController = item.view.ios.controller;
+        } else if (item.content.ios && item.content.ios.controller instanceof UIViewController) {
+            newController = item.content.ios.controller;
             (<any>item).setViewController(newController, newController.view);
         } else {
-            newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.view)) as UIViewController;
-            newController.view.addSubview(item.view.nativeViewProtected);
-            item.view.viewController = newController;
-            (<any>item).setViewController(newController, item.view.nativeViewProtected);
+            newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.content)) as UIViewController;
+            newController.view.addSubview(item.content.nativeViewProtected);
+            item.content.viewController = newController;
+            (<any>item).setViewController(newController, item.content.nativeViewProtected);
         }
 
         return newController;

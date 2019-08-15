@@ -45,7 +45,7 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     get _selectedView(): View {
         let selectedIndex = this.selectedIndex;
 
-        return selectedIndex > -1 ? this.items[selectedIndex].view : null;
+        return selectedIndex > -1 ? this.items[selectedIndex].content : null;
     }
 
     get _childrenCount(): number {
@@ -72,7 +72,7 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         const items = this.items;
         if (items) {
             items.forEach((item, i) => {
-                callback(item.view);
+                callback(item.content);
             });
         }
     }
@@ -84,8 +84,8 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
 
         if (newItems) {
             newItems.forEach(item => {
-                if (!item.view) {
-                    throw new Error(`TabContentItem must have a view.`);
+                if (!item.content) {
+                    throw new Error(`TabContentItem must have a content (view).`);
                 }
 
                 this._addView(item);

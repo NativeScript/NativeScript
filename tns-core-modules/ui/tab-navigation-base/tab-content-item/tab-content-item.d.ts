@@ -4,16 +4,12 @@
  */ /** */
 
 import { View, ViewBase } from "../../core/view";
+import { ContentView } from "../../content-view";
 
 /**
  * Represents a tab navigation content entry.
  */
-export class TabContentItem extends ViewBase {
-    /**
-     * Gets or sets the view of the TabViewItem.
-     */
-    public view: View;
-
+export class TabContentItem extends ContentView {
     /**
      * @private
      */
