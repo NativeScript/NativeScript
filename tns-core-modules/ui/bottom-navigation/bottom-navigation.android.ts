@@ -85,7 +85,7 @@ function initializeNativeClasses() {
         public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
             const tabItem = this.tab.items[this.index];
 
-            return tabItem.view.nativeViewProtected;
+            return tabItem.nativeViewProtected;
         }
     }
 
@@ -211,11 +211,10 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
     return tabItemSpec;
 }
 
-function setElevation(grid: org.nativescript.widgets.GridLayout, bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar) {
+function setElevation(bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar) {
     const compat = <any>androidx.core.view.ViewCompat;
     if (compat.setElevation) {
         const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
-        compat.setElevation(grid, val);
         compat.setElevation(bottomNavigationBar, val);
     }
 }
@@ -288,7 +287,7 @@ export class BottomNavigation extends TabNavigationBase {
         nativeView.addView(bottomNavigationBar);
         (<any>nativeView).bottomNavigationBar = bottomNavigationBar;
 
-        setElevation(nativeView, bottomNavigationBar);
+        setElevation(bottomNavigationBar);
 
         const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
         if (primaryColor) {
@@ -341,12 +340,12 @@ export class BottomNavigation extends TabNavigationBase {
         toUnload.forEach(index => {
             const item = items[index];
             if (items[index]) {
-                item.unloadView(item.view);
+                item.unloadView(item.content);
             }
         });
 
         const newItem = items[newIndex];
-        const selectedView = newItem && newItem.view;
+        const selectedView = newItem && newItem.content;
         if (selectedView instanceof Frame) {
             selectedView._pushInFrameStackRecursive();
         }
@@ -354,7 +353,7 @@ export class BottomNavigation extends TabNavigationBase {
         toLoad.forEach(index => {
             const item = items[index];
             if (this.isLoaded && items[index]) {
-                item.loadView(item.view);
+                item.loadView(item.content);
             }
         });
     }
