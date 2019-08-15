@@ -201,21 +201,21 @@ public class BottomNavigationBar extends LinearLayout {
         if (tabItem.title != null && !tabItem.title.isEmpty()) {
             textView.setText(tabItem.title);
             textView.setVisibility(VISIBLE);
+
+            if (tabItem.typeFace != null) {
+                textView.setTypeface(tabItem.typeFace);
+            }
+    
+            if (tabItem.fontSize != 0) {
+                textView.setTextSize(tabItem.fontSize);
+            }
+    
+            if (tabItem.color != 0) {
+                textView.setTextColor(tabItem.color);
+                mTabStrip.setShouldUpdateTabsTextColor(false);          
+            }
         } else {
             textView.setVisibility(GONE);
-        }
-
-        if (tabItem.typeFace != null) {
-            textView.setTypeface(tabItem.typeFace);
-        }
-
-        if (tabItem.fontSize != 0) {
-            textView.setTextSize(tabItem.fontSize);
-        }
-
-        if (tabItem.color != 0) {
-            textView.setTextColor(tabItem.color);
-            mTabStrip.setShouldUpdateTabsTextColor(false);          
         }
 
         if (tabItem.backgroundColor != 0) {

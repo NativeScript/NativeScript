@@ -170,11 +170,11 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
     const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
 
     if (tabStripItem.isLoaded) {
-        const nestedLabel = tabStripItem.label;
-        let title = nestedLabel.text;
+        const titleLabel = tabStripItem.label;
+        let title = titleLabel.text;
 
         // TEXT-TRANSFORM
-        const textTransform = nestedLabel.style.textTransform;
+        const textTransform = titleLabel.style.textTransform;
         if (textTransform) {
             title = getTransformedText(title, textTransform);
         }
@@ -187,13 +187,13 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
         }
 
         // COLOR
-        const color = nestedLabel.style.color;
+        const color = titleLabel.style.color;
         if (color) {
             tabItemSpec.color = color.android;
         }
 
         // FONT
-        const fontInternal = nestedLabel.style.fontInternal;
+        const fontInternal = titleLabel.style.fontInternal;
         if (fontInternal) {
             tabItemSpec.fontSize = fontInternal.fontSize;
             tabItemSpec.typeFace = fontInternal.getAndroidTypeface();
@@ -229,7 +229,7 @@ function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets
 function _getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
     const iconSource = tabStripItem.image && tabStripItem.image.src;
 
-    let is = new ImageSource();
+    let is: ImageSource;
     if (isFontIconURI(iconSource)) {
         const fontIconCode = iconSource.split("//")[1];
         const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
@@ -632,8 +632,8 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
-        const nestedLabel = tabStripItem.label;    
-        const title = getTransformedText(nestedLabel.text, value);
+        const titleLabel = tabStripItem.label;    
+        const title = getTransformedText(titleLabel.text, value);
         tabStripItem.nativeViewProtected.setText(title);
     }
 

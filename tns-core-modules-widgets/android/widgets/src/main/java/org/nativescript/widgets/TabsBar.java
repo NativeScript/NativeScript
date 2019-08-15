@@ -279,25 +279,25 @@ public class TabsBar extends HorizontalScrollView {
         if (tabItem.title != null && !tabItem.title.isEmpty()) {
             textView.setText(tabItem.title);
             textView.setVisibility(VISIBLE);
+
+            if (tabItem.typeFace != null) {
+                textView.setTypeface(tabItem.typeFace);
+            }
+    
+            if (tabItem.fontSize != 0) {
+                textView.setTextSize(tabItem.fontSize);
+            }
+    
+            if (tabItem.color != 0) {
+                textView.setTextColor(tabItem.color);
+                mTabStrip.setShouldUpdateTabsTextColor(false);          
+            }
         } else {
             textView.setVisibility(GONE);
         }
 
         if (tabItem.backgroundColor != 0) {
             ll.setBackgroundColor(tabItem.backgroundColor);
-        }
-
-        if (tabItem.typeFace != null) {
-            textView.setTypeface(tabItem.typeFace);
-        }
-
-        if (tabItem.fontSize != 0) {
-            textView.setTextSize(tabItem.fontSize);
-        }
-
-        if (tabItem.color != 0) {
-            textView.setTextColor(tabItem.color);
-            mTabStrip.setShouldUpdateTabsTextColor(false);          
         }
 
         if (imgView.getVisibility() == VISIBLE && textView.getVisibility() == VISIBLE) {

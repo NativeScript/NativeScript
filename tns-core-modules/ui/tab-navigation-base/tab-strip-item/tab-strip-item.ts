@@ -10,10 +10,8 @@ import { AddChildFromBuilder } from "../../core/view";
 
 // Requires
 import { 
-    View, ViewBase, CSSType, backgroundColorProperty, backgroundInternalProperty, colorProperty, 
-    fontSizeProperty, fontInternalProperty, PseudoClassHandler
+    View, ViewBase, CSSType, backgroundColorProperty, backgroundInternalProperty, PseudoClassHandler
 } from "../../core/view";
-import { textTransformProperty, TextTransform } from "../../text-base";
 
 export * from "../../core/view";
 export const traceCategory = "TabView";
