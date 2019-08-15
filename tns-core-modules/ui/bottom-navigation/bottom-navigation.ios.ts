@@ -259,6 +259,8 @@ export class BottomNavigation extends TabNavigationBase {
     public onLoaded() {
         super.onLoaded();
 
+        this.setViewControllers(this.items);
+
         const selectedIndex = this.selectedIndex;
         const selectedView = this.items && this.items[selectedIndex] && this.items[selectedIndex].content;
         if (selectedView instanceof Frame) {
@@ -320,21 +322,8 @@ export class BottomNavigation extends TabNavigationBase {
         this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
     }
 
-    public getTabBarColor(): UIColor {
-        return this._ios.tabBar.tintColor;
-    }
-
-    public setTabBarColor(value: UIColor | Color): void {
-        this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
-
-        if (!this.tabStrip) {
-            return;
-        }
-
-        const states = getTitleAttributesForStates(this.tabStrip);
-        this.tabStrip.items.forEach((tabStripItem) => {
-            applyStatesToItem(tabStripItem.nativeView, states);
-        });
+    public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
+        tabStripItem.nativeView.title = value;
     }
 
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
@@ -355,39 +344,25 @@ export class BottomNavigation extends TabNavigationBase {
         bgView.backgroundColor = value instanceof Color ? value.ios : value;
     }
 
-    public getTabBarItemColor(tabStripItem: TabStripItem): UIColor {
-        return this._ios.tabBar.tintColor;
-    }
-
     public setTabBarItemColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        const states = getTitleAttributesForStates(tabStripItem);
+        const states = getTitleAttributesForStates(tabStripItem.label);
         applyStatesToItem(tabStripItem.nativeView, states);
     }
 
-    public getTabBarItemFontSize(tabStripItem: TabStripItem): number {
-        return null;
-    }
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
+        const image = this._getIcon(tabStripItem);
 
-    public setTabBarItemFontSize(tabStripItem: TabStripItem, value: number | { nativeSize: number }): void {
-        const states = getTitleAttributesForStates(tabStripItem);
-        applyStatesToItem(tabStripItem.nativeView, states);
-    }
-
-    public getTabBarItemFontInternal(tabStripItem: TabStripItem): Font {
-        return null;
+        tabStripItem.nativeView.image = image;
+        tabStripItem.nativeView.selectedImage = image;
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        const states = getTitleAttributesForStates(tabStripItem);
+        const states = getTitleAttributesForStates(tabStripItem.label);
         applyStatesToItem(tabStripItem.nativeView, states);
     }
 
-    public getTabBarItemTextTransform(tabStripItem: TabStripItem): TextTransform {
-        return null;
-    }
-
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
-        const title = getTransformedText(tabStripItem.title, value);
+        const title = getTransformedText(tabStripItem.label.text, value);
         tabStripItem.nativeView.title = title;
     }
 
@@ -499,7 +474,6 @@ export class BottomNavigation extends TabNavigationBase {
         items = items.slice(0, maxTabsCount);
 
         const controllers = NSMutableArray.alloc<UIViewController>().initWithCapacity(length);
-        const states = getTitleAttributesForStates(this);
 
         if (this.tabStrip) {
             this.tabStrip.setNativeView(this._ios.tabBar);
@@ -513,6 +487,7 @@ export class BottomNavigation extends TabNavigationBase {
                 const tabBarItem = this.createTabBarItem(tabStripItem, i);
                 updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
 
+                const states = getTitleAttributesForStates(tabStripItem.label);
                 applyStatesToItem(tabBarItem, states);
 
                 controller.tabBarItem = tabBarItem;
@@ -534,8 +509,15 @@ export class BottomNavigation extends TabNavigationBase {
         let image: UIImage;
         let title: string;
 
-        image = this._getIcon(item);
-        title = item.label ? item.label.text : item.title;
+        if (item.isLoaded) {
+            image = this._getIcon(item);
+            title = item.label.text;
+
+            const textTransform = item.label.style.textTransform;
+            if (textTransform) {
+                title = getTransformedText(title, textTransform);
+            }
+        }
 
         const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, image, index);
 
@@ -549,18 +531,21 @@ export class BottomNavigation extends TabNavigationBase {
     public _getIcon(tabStripItem: TabStripItem): UIImage {
         // Image and Label children of TabStripItem
         // take priority over its `iconSource` and `title` properties
-        const iconSource = tabStripItem.image ? tabStripItem.image.src : tabStripItem.iconSource;
+        const iconSource = tabStripItem.image && tabStripItem.image.src;
         if (!iconSource) {
             return null;
         }
 
-        let image: UIImage = this._iconsCache[iconSource];
+        const target = tabStripItem.image;
+        const font = target.style.fontInternal;
+        const color = target.style.color;
+        const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
+
+        let image: UIImage = this._iconsCache[iconTag];
         if (!image) {
             let is = new ImageSource;
             if (isFontIconURI(iconSource)) {
                 const fontIconCode = iconSource.split("//")[1];
-                const font = tabStripItem.style.fontInternal;
-                const color = tabStripItem.style.color;
                 is = fromFontIconCode(fontIconCode, font, color);
             } else {
                 is = fromFileOrResource(iconSource);
@@ -568,7 +553,7 @@ export class BottomNavigation extends TabNavigationBase {
 
             if (is && is.ios) {
                 const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
-                this._iconsCache[iconSource] = originalRenderedImage;
+                this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
                 // TODO
@@ -615,6 +600,12 @@ export class BottomNavigation extends TabNavigationBase {
         return null;
     }
     [itemsProperty.setNative](value: TabContentItem[]) {
+        if (value) {
+            value.forEach((item: TabContentItem, i) => {
+                (<any>item).index = i;
+            });
+        }
+
         this.setViewControllers(value);
         selectedIndexProperty.coerce(this);
     }

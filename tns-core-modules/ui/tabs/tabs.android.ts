@@ -284,47 +284,82 @@ function initializeNativeClasses() {
 }
 
 function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
-    let iconSource;
     const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
 
-    if (tabStripItem.backgroundColor instanceof Color) {
-        tabItemSpec.backgroundColor = tabStripItem.backgroundColor.android;
-    }
+    if (tabStripItem.isLoaded) {
+        const nestedLabel = tabStripItem.label;
+        let title = nestedLabel.text;
 
-    // Image and Label children of TabStripItem
-    // take priority over its `iconSource` and `title` properties
-    iconSource = tabStripItem.image ? tabStripItem.image.src : tabStripItem.iconSource;
-    tabItemSpec.title = tabStripItem.label ? tabStripItem.label.text : tabStripItem.title;
+        // TEXT-TRANSFORM
+        const textTransform = nestedLabel.style.textTransform;
+        if (textTransform) {
+            title = getTransformedText(title, textTransform);
+        }
+        tabItemSpec.title = title;
 
-    if (iconSource) {
-        if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-            tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
-            if (tabItemSpec.iconId === 0) {
-                // TODO
-                // traceMissingIcon(iconSource);
-            }
-        } else {
-            let is = new ImageSource();
-            if (isFontIconURI(tabStripItem.iconSource)) {
-                const fontIconCode = tabStripItem.iconSource.split("//")[1];
-                const font = tabStripItem.style.fontInternal;
-                const color = tabStripItem.style.color;
-                is = fromFontIconCode(fontIconCode, font, color);
+        // BACKGROUND-COLOR
+        const backgroundColor = tabStripItem.style.backgroundColor;
+        if (backgroundColor) {
+            tabItemSpec.backgroundColor = backgroundColor.android;
+        }
+
+        // COLOR
+        const color = nestedLabel.style.color;
+        if (color) {
+            tabItemSpec.color = color.android;
+        }
+
+        // FONT
+        const fontInternal = nestedLabel.style.fontInternal;
+        if (fontInternal) {
+            tabItemSpec.fontSize = fontInternal.fontSize;
+            tabItemSpec.typeFace = fontInternal.getAndroidTypeface();
+        }
+
+        // ICON
+        const iconSource = tabStripItem.image && tabStripItem.image.src;
+        if (iconSource) {
+            if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+                tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
+                if (tabItemSpec.iconId === 0) {
+                    // TODO:
+                    // traceMissingIcon(iconSource);
+                }
             } else {
-                is = fromFileOrResource(tabStripItem.iconSource);
-            }
+                const icon = _getIcon(tabStripItem);
 
-            if (is) {
-                // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-                tabItemSpec.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
-            } else {
-                // TODO
-                // traceMissingIcon(iconSource);
+                if (icon) {
+                    // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
+                    // tslint:disable-next-line:deprecation
+                    tabItemSpec.iconDrawable = icon;
+                } else {
+                    // TODO:
+                    // traceMissingIcon(iconSource);
+                }
             }
         }
     }
 
     return tabItemSpec;
+}
+
+function _getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
+    const iconSource = tabStripItem.image && tabStripItem.image.src;
+
+    let is = new ImageSource();
+    if (isFontIconURI(iconSource)) {
+        const fontIconCode = iconSource.split("//")[1];
+        const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
+        const font = target.style.fontInternal;
+        const color = target.style.color;
+        is = fromFontIconCode(fontIconCode, font, color);
+    } else {
+        is = fromFileOrResource(iconSource);
+    }
+
+    const image = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
+    
+    return image;
 }
 
 let defaultAccentColor: number = undefined;
@@ -665,20 +700,6 @@ export class Tabs extends TabsBase {
         }
     }
 
-    public getTabBarColor(): number {
-        return this._tabsBar.getTabTextColor();
-    }
-
-    public setTabBarColor(value: number | Color): void {
-        if (value instanceof Color) {
-            this._tabsBar.setTabTextColor(value.android);
-            this._tabsBar.setSelectedTabTextColor(value.android);
-        } else {
-            this._tabsBar.setTabTextColor(value);
-            this._tabsBar.setSelectedTabTextColor(value);
-        }
-    }
-
     public getTabBarHighlightColor(): number {
         return getDefaultAccentColor(this._context);
     }
@@ -688,15 +709,18 @@ export class Tabs extends TabsBase {
         this._tabsBar.setSelectedIndicatorColors([color]);
     }
 
-    public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
+    public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
         const tabItemSpec = createTabItemSpec(tabStripItem);
         this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
-    public getTabBarItemColor(tabStripItem: TabStripItem): number {
-        return tabStripItem.nativeViewProtected.getCurrentTextColor();
+    public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
+        // TODO: Should figure out a way to do it directly with the the nativeView
+        const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
+        const tabItemSpec = createTabItemSpec(tabStripItem);
+        this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: number | Color): void {
@@ -707,45 +731,24 @@ export class Tabs extends TabsBase {
         }
     }
 
-    public getTabBarItemFontSize(tabStripItem: TabStripItem): { nativeSize: number } {
-        return { nativeSize: tabStripItem.nativeViewProtected.getTextSize() };
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
+        const index = (<any>tabStripItem).index;
+        const tabBarItem = this._tabsBar.getViewForItemAt(index);
+        const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
+        const drawable = _getIcon(tabStripItem);
+
+        imgView.setImageDrawable(drawable);
     }
 
-    public setTabBarItemFontSize(tabStripItem: TabStripItem, value: number | { nativeSize: number }): void {
-        if (typeof value === "number") {
-            tabStripItem.nativeViewProtected.setTextSize(value);
-        } else {
-            tabStripItem.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
-        }
+    public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
+        tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        tabStripItem.nativeViewProtected.setTypeface(value.getAndroidTypeface());
     }
 
-    public getTabBarItemFontInternal(tabStripItem: TabStripItem): android.graphics.Typeface {
-        return tabStripItem.nativeViewProtected.getTypeface();
-    }
-
-    public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font | android.graphics.Typeface): void {
-        tabStripItem.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
-    }
-
-    private _defaultTransformationMethod: android.text.method.TransformationMethod;
-
-    public getTabBarItemTextTransform(tabStripItem: TabStripItem): "default" {
-        return "default";
-    }
-
-    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform | "default"): void {
-        const tv = tabStripItem.nativeViewProtected;
-
-        this._defaultTransformationMethod = this._defaultTransformationMethod || tv.getTransformationMethod();
-
-        if (value === "default") {
-            tv.setTransformationMethod(this._defaultTransformationMethod);
-            tv.setText(tabStripItem.title);
-        } else {
-            const result = getTransformedText(tabStripItem.title, value);
-            tv.setText(result);
-            tv.setTransformationMethod(null);
-        }
+    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
+        const nestedLabel = tabStripItem.label;    
+        const title = getTransformedText(nestedLabel.text, value);
+        tabStripItem.nativeViewProtected.setText(title);
     }
 
     [selectedIndexProperty.setNative](value: number) {

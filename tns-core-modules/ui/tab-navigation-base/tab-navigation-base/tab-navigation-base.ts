@@ -152,6 +152,10 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         // overridden by inheritors
     }
 
+    public setTabBarItemTitle(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors        
+    }
+
     public getTabBarItemBackgroundColor(tabStripItem: TabStripItem): any {
         // overridden by inheritors
         return null;
@@ -167,6 +171,10 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     }
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: any): void {
         // overridden by inheritors
     }
 
