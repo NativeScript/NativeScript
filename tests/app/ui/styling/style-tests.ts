@@ -1680,6 +1680,9 @@ export function test_css_variable_fallback() {
             className: "undefined-css-variable-with-defined-fallback",
             expectedColor: limeColor,
         }, {
+            className: "undefined-css-variable-with-multiple-fallbacks",
+            expectedColor: limeColor,
+        }, {
             className: "undefined-css-variable-with-missing-fallback-value",
             expectedColor: undefined,
         }, {
@@ -1703,24 +1706,29 @@ export function test_css_variable_fallback() {
     }
 
     .undefined-css-variable-without-fallback {
-        color: var(--my-var); /* resolved as color: unset; */
+        color: var(--undefined-var); /* resolved as color: unset; */
     }
 
     .undefined-css-variable-with-fallback {
-        color: var(--my-var, red); /* resolved as color: red; */
+        color: var(--undefined-var, red); /* resolved as color: red; */
     }
 
     .undefined-css-variable-with-defined-fallback {
         --my-fallback-var: lime;
-        color: var(--my-var, var(--my-fallback-var)); /* resolved as color: lime; */
+        color: var(--undefined-var, var(--my-fallback-var)); /* resolved as color: lime; */
+    }
+
+    .undefined-css-variable-with-multiple-fallbacks {
+        --my-fallback-var: lime;
+        color: var(--undefined-var, var(--my-fallback-var), yellow); /* resolved as color: lime; */
     }
 
     .undefined-css-variable-with-missing-fallback-value {
-        color: var(--my-var, var(--my-fallback-var)); /* resolved as color: unset; */
+        color: var(--undefined-var, var(--undefined-fallback-var)); /* resolved as color: unset; */
     }
 
     .undefined-css-variable-with-nested-fallback {
-        color: var(--my-var, var(--my-fallback-var, yellow)); /* resolved as color: yellow; */
+        color: var(--undefined-var, var(--undefined-fallback-var, yellow)); /* resolved as color: yellow; */
     }
     `;
 

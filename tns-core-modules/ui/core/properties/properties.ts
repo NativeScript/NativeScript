@@ -73,7 +73,7 @@ export function isCssVariableExpression(value: string) {
     return cssVariableExpressionRegexp.test(value);
 }
 
-export function _evaluateCssVariableExpression<T>(view: ViewBase, cssName: string, value: string | T): string | T {
+export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
     if (typeof value !== "string") {
         return value;
     }
@@ -97,12 +97,15 @@ export function _evaluateCssVariableExpression<T>(view: ViewBase, cssName: strin
             }
 
             if (fallbackStr) {
-                const fallbackMatch = _evaluateCssVariableExpression<T>(view, cssName, fallbackStr);
-                if (typeof fallbackMatch === "string") {
-                    return fallbackMatch.split(",")[0];
+                // css-variable not found, using fallback-string.
+                const fallbackOutput = _evaluateCssVariableExpression(view, cssName, fallbackStr);
+                if (fallbackOutput) {
+                    // If the fallback have multiple values, return the first of them.
+                    return fallbackOutput.split(",")[0];
                 }
             }
 
+            // Couldn't find a value for the css-variable or the fallback, return "unset"
             traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Style, traceMessageType.error);
 
             return "unset";
@@ -112,8 +115,8 @@ export function _evaluateCssVariableExpression<T>(view: ViewBase, cssName: strin
     return output;
 }
 
-export function _evaluateCssCalcExpression<T>(value: string | T) {
-    if (!value || value === unsetValue || typeof value !== "string") {
+export function _evaluateCssCalcExpression(value: string) {
+    if (typeof value !== "string") {
         return value;
     }
 

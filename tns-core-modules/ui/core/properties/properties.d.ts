@@ -159,7 +159,7 @@ export function _getProperties(): Property<any, any>[];
  */
 export function _getStyleProperties(): CssProperty<any, any>[];
 
-export function _evaluateCssVariableExpression<T>(view: ViewBase, cssName: string, value: string | T): string | T;
+export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string;
 
-export function _evaluateCssCalcExpression<T>(value: string | T): string;
+export function _evaluateCssCalcExpression(value: string): string;
 //@endprivate
