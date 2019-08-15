@@ -17,16 +17,9 @@ import {
 } from "../../../trace";
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
 
-function makeCssVariableName(varName: string, scoped: boolean) {
-    if (scoped) {
-        return `scoped:${varName}`;
-    }
-
-    return varName;
-}
-
 export class Style extends Observable implements StyleDefinition {
-    private cssVariables = new Map<string, string>();
+    private unscopedCssVariables = new Map<string, string>();
+    private scopedCssVariables = new Map<string, string>();
 
     constructor(ownerView: ViewBase | WeakRef<ViewBase>) {
         super();
@@ -39,20 +32,12 @@ export class Style extends Observable implements StyleDefinition {
         }
     }
 
-    private setCssVariable(varName: string, value: string, scoped: boolean): void {
-        this.cssVariables.set(makeCssVariableName(varName, scoped), value);
-    }
-
     public setScopedCssVariable(varName: string, value: string): void {
-        this.setCssVariable(varName, value, true);
+        this.scopedCssVariables.set(varName, value);
     }
 
     public setUnscopedCssVariable(varName: string, value: string): void {
-        this.setCssVariable(varName, value, false);
-    }
-
-    public unsetScopedCssVariable(varName: string): void {
-        this.cssVariables.delete(makeCssVariableName(varName, true));
+        this.unscopedCssVariables.set(varName, value);
     }
 
     public getCssVariable(varName: string): string | null {
@@ -61,13 +46,12 @@ export class Style extends Observable implements StyleDefinition {
             return null;
         }
 
-        if (this.cssVariables.has(varName)) {
-            return this.cssVariables.get(varName);
+        if (this.unscopedCssVariables.has(varName)) {
+            return this.unscopedCssVariables.get(varName);
         }
 
-        const localVarName = makeCssVariableName(varName, true);
-        if (this.cssVariables.has(localVarName)) {
-            return this.cssVariables.get(localVarName);
+        if (this.scopedCssVariables.has(varName)) {
+            return this.scopedCssVariables.get(varName);
         }
 
         if (!view.parent || !view.parent.style) {
@@ -77,12 +61,12 @@ export class Style extends Observable implements StyleDefinition {
         return view.parent.style.getCssVariable(varName);
     }
 
-    public resetUnscopedCssVariables(): void {
-        for (const varName of Array.from(this.cssVariables.keys())) {
-            if (!varName.startsWith("scoped:")) {
-                this.cssVariables.delete(varName);
-            }
-        }
+    public resetScopedCssVariables() {
+        this.scopedCssVariables.clear();
+    }
+
+    public resetUnscopedCssVariables() {
+        this.unscopedCssVariables.clear();
     }
 
     toString() {

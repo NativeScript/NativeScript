@@ -1,7 +1,7 @@
 import { Keyframes } from "../animation/keyframe-animation";
 import { ViewBase } from "../core/view-base";
 import { View } from "../core/view";
-import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression } from "../core/properties";
+import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from "../core/properties";
 import {
     SyntaxTree,
     Keyframes as KeyframesDefinition,
@@ -40,7 +40,6 @@ function ensureKeyframeAnimationModule() {
 }
 
 import * as capm from "./css-animation-parser";
-import { isCssVariable, isCssVariableExpression, isCssCalcExpression } from "../core/properties/properties";
 import { sanitizeModuleName } from "../builder/module-name-sanitizer";
 import { resolveModuleName } from "../../module-name-resolver";
 
@@ -65,23 +64,19 @@ try {
  * Evaluate css-variable and css-calc expressions
  */
 function evaluateCssExpressions(view: ViewBase, property: string, value: string) {
-    if (isCssVariableExpression(value)) {
-        const newValue = _evaluateCssVariableExpression(view, property, value);
-        if (newValue === "unset") {
-            return unsetValue;
-        }
-
-        value = newValue;
+    const newValue = _evaluateCssVariableExpression(view, property, value);
+    if (newValue === "unset") {
+        return unsetValue;
     }
 
-    if (isCssCalcExpression(value)) {
-        try {
-            value = _evaluateCssCalcExpression(value);
-        } catch (e) {
-            traceWrite(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
+    value = newValue;
 
-            return unsetValue;
-        }
+    try {
+        value = _evaluateCssCalcExpression(value);
+    } catch (e) {
+        traceWrite(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
+
+        return unsetValue;
     }
 
     return value;
@@ -553,33 +548,40 @@ export class CssState {
 
         const oldProperties = this._appliedPropertyValues;
 
+        let isCssExpressionInUse = false;
+
         // Update values for the scope's css-variables
+        view.style.resetScopedCssVariables();
+
         for (const property in newPropertyValues) {
+            const value = newPropertyValues[property];
             if (isCssVariable(property)) {
-                const value = newPropertyValues[property];
-
                 view.style.setScopedCssVariable(property, value);
-            }
-        }
 
-        // Unset removed css-variables for the scope
-        for (const property in oldProperties) {
-            if (!(property in newPropertyValues)) {
-                if (isCssVariable(property)) {
-                    view.style.unsetScopedCssVariable(property);
-                }
-            }
-        }
-
-        // Now the css-variables are up-to-date, evalute css-expressions to get the latest values.
-        for (const property in newPropertyValues) {
-            const value = evaluateCssExpressions(view, property, newPropertyValues[property]);
-            if (value === unsetValue) {
                 delete newPropertyValues[property];
                 continue;
             }
 
-            newPropertyValues[property] = value;
+            if (isCssExpressionInUse) {
+                continue;
+            }
+
+            if (isCssVariableExpression(value) || isCssCalcExpression(value)) {
+                isCssExpressionInUse = true;
+            }
+        }
+
+        if (isCssExpressionInUse) {
+            // Evalute css-expressions to get the latest values.
+            for (const property in newPropertyValues) {
+                const value = evaluateCssExpressions(view, property, newPropertyValues[property]);
+                if (value === unsetValue) {
+                    delete newPropertyValues[property];
+                    continue;
+                }
+
+                newPropertyValues[property] = value;
+            }
         }
 
         // Property values are fully updated, freeze the object to be used for next update.
@@ -587,10 +589,6 @@ export class CssState {
 
         // Unset removed values
         for (const property in oldProperties) {
-            if (isCssVariable(property)) {
-                continue;
-            }
-
             if (!(property in newPropertyValues)) {
                 if (property in view.style) {
                     view.style[`css:${property}`] = unsetValue;
@@ -602,11 +600,6 @@ export class CssState {
 
         // Set new values to the style
         for (const property in newPropertyValues) {
-            if (isCssVariable(property)) {
-                // Skip css-variables
-                continue;
-            }
-
             if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
                 // Skip unchanged values
                 continue;
@@ -925,6 +918,8 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
             traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
         }
     });
+
+    view._onCssStateChange();
 });
 
 function isCurrentDirectory(uriPart: string): boolean {

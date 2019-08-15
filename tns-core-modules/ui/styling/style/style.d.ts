@@ -180,15 +180,15 @@ export class Style extends Observable {
     public setUnscopedCssVariable(varName: string, value: string): void;
 
     /**
-     * Remove a scoped css-variable.
-     */
-    public unsetScopedCssVariable(varName: string): void;
-
-    /**
      * Get value of the css-variable.
      * If the value is not set on this style-object, try the parent view. 
      */
     public getCssVariable(varName: string): string | null;
+
+    /**
+     * Remove all scoped css-variables
+     */
+    public resetScopedCssVariables(): void;
 
     /**
      * Remove all unscoped css-variables
