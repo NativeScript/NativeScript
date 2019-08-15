@@ -11,7 +11,7 @@ import { Font } from "../styling/font";
 import { Frame } from "../frame";
 import { ios as iosView, View } from "../core/view";
 import { Color } from "../../color";
-import { /*ios as iosUtils,*/ layout, isFontIconURI } from "../../utils/utils";
+import { ios as iosUtils, layout, isFontIconURI } from "../../utils/utils";
 // import { device } from "../../platform";
 import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
 
@@ -20,7 +20,7 @@ import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-s
 
 export * from "./tabs-common";
 
-// const majorVersion = iosUtils.MajorVersion;
+const majorVersion = iosUtils.MajorVersion;
 // const isPhone = device.deviceType === "Phone";
 
 class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
@@ -106,6 +106,8 @@ class UIPageViewControllerImpl extends UIPageViewController {
             return;
         }
 
+        iosView.updateAutoAdjustScrollInsets(this, owner);
+
         // Tabs can be reset as a root view. Call loaded here in this scenario.
         if (!owner.isLoaded) {
             owner.callLoaded();
@@ -119,29 +121,39 @@ class UIPageViewControllerImpl extends UIPageViewController {
             return;
         }
 
+        let safeAreaInsetsBottom = 0;
+        let safeAreaInsetsTop = 0;
+        
+        if (majorVersion > 10) {
+            safeAreaInsetsBottom = this.view.safeAreaInsets.bottom;
+            safeAreaInsetsTop = this.view.safeAreaInsets.top;
+        } else {
+            safeAreaInsetsTop = this.topLayoutGuide.length;
+        }
+
         let scrollViewTop = 0;
-        let scrollViewHeight = this.view.bounds.size.height + this.view.safeAreaInsets.bottom;
+        let scrollViewHeight = this.view.bounds.size.height + safeAreaInsetsBottom;
 
         if (owner.tabStrip) {
             scrollViewTop = this.tabBar.frame.size.height;
-            scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + this.view.safeAreaInsets.bottom;
-            let tabBarTop = this.view.safeAreaInsets.top;
+            scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + safeAreaInsetsBottom;
+            let tabBarTop = safeAreaInsetsTop;
             let tabBarHeight = this.tabBar.frame.size.height;
 
             const tabsPosition = owner.tabsPosition;
             if (tabsPosition === "bottom") {
-                tabBarTop = this.view.frame.size.height - this.tabBar.frame.size.height - this.view.safeAreaInsets.bottom;
+                tabBarTop = this.view.frame.size.height - this.tabBar.frame.size.height - safeAreaInsetsBottom;
                 scrollViewTop = this.view.frame.origin.y;
-                scrollViewHeight = this.view.frame.size.height - this.view.safeAreaInsets.bottom;
+                scrollViewHeight = this.view.frame.size.height - safeAreaInsetsBottom;
             }
 
             const parent = owner.parent;
-            if (parent) {
+            if (parent && majorVersion > 10) {
                 // TODO: Figure out a better way to handle ViewController nesting/Safe Area nesting
                 tabBarTop = Math.max(tabBarTop, owner.parent.nativeView.safeAreaInsets.top);
             }
 
-            this.tabBar.frame = CGRectMake(this.view.safeAreaInsets.left, tabBarTop, this.tabBar.frame.size.width, tabBarHeight);
+            this.tabBar.frame = CGRectMake(0, tabBarTop, this.tabBar.frame.size.width, tabBarHeight);
         }
 
         const subViews: NSArray<UIView> = this.view.subviews;
@@ -163,7 +175,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
                 scrollView.scrollEnabled = false;
             }
 
-            scrollView.frame = CGRectMake(this.view.safeAreaInsets.left, scrollViewTop, this.view.bounds.size.width, scrollViewHeight); //this.view.bounds;
+            scrollView.frame = CGRectMake(0, scrollViewTop, this.view.bounds.size.width, scrollViewHeight); //this.view.bounds;
         }
     }
 }
