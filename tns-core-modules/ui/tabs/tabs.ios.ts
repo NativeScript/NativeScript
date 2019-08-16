@@ -532,7 +532,7 @@ export class Tabs extends TabsBase {
         super.onLoaded();
 
         const selectedIndex = this.selectedIndex;
-        const selectedView = this.items && this.items[selectedIndex] && this.items[selectedIndex].view;
+        const selectedView = this.items && this.items[selectedIndex] && this.items[selectedIndex].content;
         if (selectedView instanceof Frame) {
             (<Frame>selectedView)._pushInFrameStackRecursive();
         }
@@ -540,10 +540,8 @@ export class Tabs extends TabsBase {
         this._ios.dataSource = this._dataSource;
         this._ios.delegate = this._delegate;
 
-        if (!this.tabBarItems) {
-            const tabStripItems = this.tabStrip ? this.tabStrip.items : null;
-            this.setTabStripItems(tabStripItems);
-        }
+        const tabStripItems = this.tabStrip ? this.tabStrip.items : null;
+        this.setTabStripItems(tabStripItems);
     }
 
     public onUnloaded() {
@@ -611,12 +609,12 @@ export class Tabs extends TabsBase {
         toUnload.forEach(index => {
             const item = items[index];
             if (items[index]) {
-                item.unloadView(item.view);
+                item.unloadView(item.content);
             }
         });
 
         const newItem = items[newIndex];
-        const selectedView = newItem && newItem.view;
+        const selectedView = newItem && newItem.content;
         if (selectedView instanceof Frame) {
             selectedView._pushInFrameStackRecursive();
         }
@@ -624,7 +622,7 @@ export class Tabs extends TabsBase {
         toLoad.forEach(index => {
             const item = items[index];
             if (this.isLoaded && items[index]) {
-                item.loadView(item.view);
+                item.loadView(item.content);
             }
         });
     }
@@ -699,7 +697,7 @@ export class Tabs extends TabsBase {
     // }
 
     public getViewController(item: TabContentItem): UIViewController {
-        let newController: UIViewController = item.view ? item.view.viewController : null;
+        let newController: UIViewController = item.content ? item.content.viewController : null;
 
         if (newController) {
             (<any>item).setViewController(newController, newController.view);
@@ -707,17 +705,17 @@ export class Tabs extends TabsBase {
             return newController;
         }
 
-        if (item.view.ios instanceof UIViewController) {
-            newController = item.view.ios;
+        if (item.content.ios instanceof UIViewController) {
+            newController = item.content.ios;
             (<any>item).setViewController(newController, newController.view);
-        } else if (item.view.ios && item.view.ios.controller instanceof UIViewController) {
-            newController = item.view.ios.controller;
+        } else if (item.content.ios && item.content.ios.controller instanceof UIViewController) {
+            newController = item.content.ios.controller;
             (<any>item).setViewController(newController, newController.view);
         } else {
-            newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.view)) as UIViewController;
-            newController.view.addSubview(item.view.nativeViewProtected);
-            item.view.viewController = newController;
-            (<any>item).setViewController(newController, item.view.nativeViewProtected);
+            newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.content)) as UIViewController;
+            newController.view.addSubview(item.content.nativeViewProtected);
+            item.content.viewController = newController;
+            (<any>item).setViewController(newController, item.content.nativeViewProtected);
         }
 
         return newController;
@@ -850,8 +848,8 @@ export class Tabs extends TabsBase {
         let image: UIImage;
         let title: string;
 
-        image = this._getIcon(item);
-        title = item.label ? item.label.text : item.title;
+        image = item.isLoaded && this._getIcon(item);
+        title = item.label && item.label.text;
 
         if (!this.tabStrip._hasImage) {
             this.tabStrip._hasImage = !!image;
@@ -884,20 +882,21 @@ export class Tabs extends TabsBase {
     }
 
     public _getIcon(tabStripItem: TabStripItem): UIImage {
-        // Image and Label children of TabStripItem
-        // take priority over its `iconSource` and `title` properties
-        const iconSource = tabStripItem.image ? tabStripItem.image.src : tabStripItem.iconSource;
+        const iconSource = tabStripItem.image && tabStripItem.image.src;
         if (!iconSource) {
             return null;
         }
 
-        let image: UIImage = this._iconsCache[iconSource];
+        const target = tabStripItem.image;
+        const font = target.style.fontInternal;
+        const color = target.style.color;
+        const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
+
+        let image: UIImage = this._iconsCache[iconTag];
         if (!image) {
             let is = new ImageSource;
             if (isFontIconURI(iconSource)) {
                 const fontIconCode = iconSource.split("//")[1];
-                const font = tabStripItem.style.fontInternal;
-                const color = tabStripItem.style.color;
                 is = fromFontIconCode(fontIconCode, font, color);
             } else {
                 is = fromFileOrResource(iconSource);
@@ -905,7 +904,7 @@ export class Tabs extends TabsBase {
 
             if (is && is.ios) {
                 const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
-                this._iconsCache[iconSource] = originalRenderedImage;
+                this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
                 // TODO
