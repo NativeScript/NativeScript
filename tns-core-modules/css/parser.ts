@@ -743,7 +743,7 @@ export function parseSimpleIdentifierSelector(text: string, start: number = 0): 
     }
     const end = simpleIdentifierSelectorRegEx.lastIndex;
     const type = <"#" | "." | ":" | "">result[1];
-    const identifier: string = result[2].replace(/\\/g, '');
+    const identifier: string = result[2].replace(/\\/g, "");
     const value = <TypeSelector | ClassSelector | IdSelector | PseudoClassSelector>{ type, identifier };
 
     return { start, end, value };
