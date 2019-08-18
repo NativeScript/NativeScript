@@ -18,7 +18,6 @@
   },
   "devDependencies": {
     "nativescript-dev-webpack": "next",
-    "tns-platform-declarations": "next",
     "typescript": "3.4.5"
   }
 }
