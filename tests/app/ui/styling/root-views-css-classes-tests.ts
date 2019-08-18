@@ -1,7 +1,11 @@
 import * as helper from "../../ui-helper";
 import * as TKUnit from "../../tk-unit";
 
-import { getRootView } from "tns-core-modules/application";
+import {
+    android,
+    getRootView,
+    ios
+} from "tns-core-modules/application";
 import {
     isAndroid,
     device
@@ -11,48 +15,134 @@ import { Page } from "tns-core-modules/ui/page";
 import {
     ShownModallyData,
     ShowModalOptions,
-    topmost,
     View
 } from "tns-core-modules/ui/frame";
 import {
-    _rootModalViews,
-    isIOS
+    _rootModalViews
 } from "tns-core-modules/ui/core/view/view-common";
+import { DeviceType } from "tns-core-modules/ui/enums/enums";
 
 const ROOT_CSS_CLASS = "ns-root";
 const MODAL_CSS_CLASS = "ns-modal";
-const PLATFORM_CSS_CLASS = isAndroid ? "ns-android" : "ns-ios";
-const DEVICE_TYPE_CSS_CLASS =
-    device.deviceType.toLowerCase() === "phone" ? "ns-phone" : "ns-tablet";
+const ANDROID_PLATFORM_CSS_CLASS = "ns-android";
+const IOS_PLATFORM_CSS_CLASS = "ns-ios";
+const PHONE_DEVICE_TYPE_CSS_CLASS = "ns-phone";
+const TABLET_DEVICE_TYPE_CSS_CLASS = "ns-tablet";
 const PORTRAIT_ORIENTATION_CSS_CLASS = "ns-portrait";
 const LANDSCAPE_ORIENTATION_CSS_CLASS = "ns-landscape";
 const UNKNOWN_ORIENTATION_CSS_CLASS = "ns-unknown";
 
-export function test_root_view_css_classes() {
-    const rootView = getRootView();
-    const rootViewCssClasses = rootView.cssClasses;
+export function test_root_view_root_css_class() {
+    const rootViewCssClasses = getRootView().cssClasses;
 
     TKUnit.assertTrue(rootViewCssClasses.has(
         ROOT_CSS_CLASS),
         `${ROOT_CSS_CLASS} CSS class is missing`
     );
-    TKUnit.assertTrue(rootViewCssClasses.has(
-        PLATFORM_CSS_CLASS),
-        `${PLATFORM_CSS_CLASS} CSS class is missing`
-    );
-    TKUnit.assertTrue(rootViewCssClasses.has(
-        DEVICE_TYPE_CSS_CLASS),
-        `${DEVICE_TYPE_CSS_CLASS} CSS class is missing`
-    );
-    TKUnit.assertTrue(
-        rootViewCssClasses.has(PORTRAIT_ORIENTATION_CSS_CLASS) ||
-        rootViewCssClasses.has(LANDSCAPE_ORIENTATION_CSS_CLASS) ||
-        rootViewCssClasses.has(UNKNOWN_ORIENTATION_CSS_CLASS),
-        "Orientation CSS class is missing"
-    );
 }
 
-export function test_modal_root_view_css_class() {
+export function test_root_view_platform_css_class() {
+    const rootViewCssClasses = getRootView().cssClasses;
+
+    if (isAndroid) {
+        TKUnit.assertTrue(rootViewCssClasses.has(
+            ANDROID_PLATFORM_CSS_CLASS),
+            `${ANDROID_PLATFORM_CSS_CLASS} CSS class is missing`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            IOS_PLATFORM_CSS_CLASS),
+            `${IOS_PLATFORM_CSS_CLASS} CSS class is present`
+        );
+    } else {
+        TKUnit.assertTrue(rootViewCssClasses.has(
+            IOS_PLATFORM_CSS_CLASS),
+            `${IOS_PLATFORM_CSS_CLASS} CSS class is missing`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            ANDROID_PLATFORM_CSS_CLASS),
+            `${ANDROID_PLATFORM_CSS_CLASS} CSS class is present`
+        );
+    }
+}
+
+export function test_root_view_device_type_css_class() {
+    const rootViewCssClasses = getRootView().cssClasses;
+    const deviceType = device.deviceType;
+
+    if (deviceType === DeviceType.Phone) {
+        TKUnit.assertTrue(rootViewCssClasses.has(
+            PHONE_DEVICE_TYPE_CSS_CLASS),
+            `${PHONE_DEVICE_TYPE_CSS_CLASS} CSS class is missing`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            TABLET_DEVICE_TYPE_CSS_CLASS),
+            `${TABLET_DEVICE_TYPE_CSS_CLASS} CSS class is present`
+        );
+    } else {
+        TKUnit.assertTrue(rootViewCssClasses.has(
+            TABLET_DEVICE_TYPE_CSS_CLASS),
+            `${TABLET_DEVICE_TYPE_CSS_CLASS} CSS class is missing`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            PHONE_DEVICE_TYPE_CSS_CLASS),
+            `${PHONE_DEVICE_TYPE_CSS_CLASS} CSS class is present`
+        );
+    }
+}
+
+export function test_root_view_orientation_css_class() {
+    const rootViewCssClasses = getRootView().cssClasses;
+    let appOrientation;
+
+    if (isAndroid) {
+        appOrientation = android.orientation;
+    } else {
+        appOrientation = ios.orientation;
+    }
+
+    if (appOrientation === "portrait") {
+        TKUnit.assertTrue(rootViewCssClasses.has(
+            PORTRAIT_ORIENTATION_CSS_CLASS),
+            `${PORTRAIT_ORIENTATION_CSS_CLASS} CSS class is missing`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            LANDSCAPE_ORIENTATION_CSS_CLASS),
+            `${LANDSCAPE_ORIENTATION_CSS_CLASS} CSS class is present`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            UNKNOWN_ORIENTATION_CSS_CLASS),
+            `${UNKNOWN_ORIENTATION_CSS_CLASS} CSS class is present`
+        );
+    } else if (appOrientation === "landscape") {
+        TKUnit.assertTrue(rootViewCssClasses.has(
+            LANDSCAPE_ORIENTATION_CSS_CLASS),
+            `${LANDSCAPE_ORIENTATION_CSS_CLASS} CSS class is missing`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            PORTRAIT_ORIENTATION_CSS_CLASS),
+            `${PORTRAIT_ORIENTATION_CSS_CLASS} CSS class is present`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            UNKNOWN_ORIENTATION_CSS_CLASS),
+            `${UNKNOWN_ORIENTATION_CSS_CLASS} CSS class is present`
+        );
+    } else if (appOrientation === "landscape") {
+        TKUnit.assertTrue(rootViewCssClasses.has(
+            UNKNOWN_ORIENTATION_CSS_CLASS),
+            `${UNKNOWN_ORIENTATION_CSS_CLASS} CSS class is missing`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            LANDSCAPE_ORIENTATION_CSS_CLASS),
+            `${LANDSCAPE_ORIENTATION_CSS_CLASS} CSS class is present`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            PORTRAIT_ORIENTATION_CSS_CLASS),
+            `${PORTRAIT_ORIENTATION_CSS_CLASS} CSS class is present`
+        );
+    }
+}
+
+export function test_modal_root_view_modal_css_class() {
     let modalClosed = false;
 
     const modalCloseCallback = function () {
