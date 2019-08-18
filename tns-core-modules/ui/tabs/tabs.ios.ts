@@ -893,41 +893,13 @@ export class Tabs extends TabsBase {
             }
 
             if (is && is.ios) {
-                const minSide = 24;
-                const maxWidth = 31;
-                const maxHeight = 28;
-
-                const bitmap = is.ios;
-                const inWidth = bitmap.size.width;
-                const inHeight = bitmap.size.height;
-                let outWidth = 0;
-                let outHeight = 0;
-
-                if (inWidth < inHeight) {
-                    outWidth = minSide;
-                    outHeight = (inHeight * minSide) / inWidth;
-                    if (outHeight > maxHeight) {
-                        outHeight = maxHeight;
-                        outWidth = (inWidth * maxHeight) / inHeight;
-                    }
-                } else {
-                    outHeight = minSide;
-                    outWidth = (inWidth * minSide) / inHeight;
-                    if (outWidth > maxWidth) {
-                        outWidth = maxWidth;
-                        outHeight = (inHeight * maxWidth) / inWidth;
-                    }
+                image = is.ios;
+                
+                if (this.fixedIcons) {
+                    image = this.fixIconSize(image);
                 }
 
-                const widthPts = outWidth;
-                const heightPts = outHeight;
-
-                UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
-                bitmap.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
-                let resultImage = UIGraphicsGetImageFromCurrentImageContext();
-                UIGraphicsEndImageContext();
-
-                const originalRenderedImage = resultImage.imageWithRenderingMode(this._getIconRenderingMode());
+                const originalRenderedImage = image.imageWithRenderingMode(this._getIconRenderingMode());
                 this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
@@ -937,6 +909,43 @@ export class Tabs extends TabsBase {
         }
 
         return image;
+    }
+
+    private fixIconSize(image: UIImage): UIImage {
+        const minSide = 24;
+        const maxWidth = 31;
+        const maxHeight = 28;
+
+        const inWidth = image.size.width;
+        const inHeight = image.size.height;
+        let outWidth = 0;
+        let outHeight = 0;
+
+        if (inWidth < inHeight) {
+            outWidth = minSide;
+            outHeight = (inHeight * minSide) / inWidth;
+            if (outHeight > maxHeight) {
+                outHeight = maxHeight;
+                outWidth = (inWidth * maxHeight) / inHeight;
+            }
+        } else {
+            outHeight = minSide;
+            outWidth = (inWidth * minSide) / inHeight;
+            if (outWidth > maxWidth) {
+                outWidth = maxWidth;
+                outHeight = (inHeight * maxWidth) / inWidth;
+            }
+        }
+
+        const widthPts = outWidth;
+        const heightPts = outHeight;
+
+        UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
+        image.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
+        let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+
+        return resultImage;
     }
 
     // private _updateIOSTabBarColorsAndFonts(): void {

@@ -45,6 +45,11 @@ export class TabNavigationBase extends View {
     selectedIndex: number;
 
     /**
+     * Gets or sets whether the icons in the tab navigation tab strip are fixed based on specs or are actual size. Defaults to true.
+     */
+    fixedIcons: boolean;
+
+    /**
      * Gets the native android widget that represents the user interface for this component. Valid only when running on Android OS.
      */
     android: any /* android.view.View */; //android.support.v4.view.ViewPager;

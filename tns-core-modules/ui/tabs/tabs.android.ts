@@ -283,115 +283,6 @@ function initializeNativeClasses() {
     TabsBar = TabsBarImplementation;
 }
 
-function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
-    const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
-
-    if (tabStripItem.isLoaded) {
-        const nestedLabel = tabStripItem.label;
-        let title = nestedLabel.text;
-
-        // TEXT-TRANSFORM
-        const textTransform = nestedLabel.style.textTransform;
-        if (textTransform) {
-            title = getTransformedText(title, textTransform);
-        }
-        tabItemSpec.title = title;
-
-        // BACKGROUND-COLOR
-        const backgroundColor = tabStripItem.style.backgroundColor;
-        if (backgroundColor) {
-            tabItemSpec.backgroundColor = backgroundColor.android;
-        }
-
-        // COLOR
-        const color = nestedLabel.style.color;
-        if (color) {
-            tabItemSpec.color = color.android;
-        }
-
-        // FONT
-        const fontInternal = nestedLabel.style.fontInternal;
-        if (fontInternal) {
-            tabItemSpec.fontSize = fontInternal.fontSize;
-            tabItemSpec.typeFace = fontInternal.getAndroidTypeface();
-        }
-
-        // ICON
-        const iconSource = tabStripItem.image && tabStripItem.image.src;
-        if (iconSource) {
-            if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-                tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
-                if (tabItemSpec.iconId === 0) {
-                    // TODO:
-                    // traceMissingIcon(iconSource);
-                }
-            } else {
-                const icon = _getIcon(tabStripItem);
-
-                if (icon) {
-                    // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-                    // tslint:disable-next-line:deprecation
-                    tabItemSpec.iconDrawable = icon;
-                } else {
-                    // TODO:
-                    // traceMissingIcon(iconSource);
-                }
-            }
-        }
-    }
-
-    return tabItemSpec;
-}
-
-function _getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
-    const iconSource = tabStripItem.image && tabStripItem.image.src;
-
-    let is = new ImageSource();
-    if (isFontIconURI(iconSource)) {
-        const fontIconCode = iconSource.split("//")[1];
-        const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
-        const font = target.style.fontInternal;
-        const color = target.style.color;
-        is = fromFontIconCode(fontIconCode, font, color);
-    } else {
-        is = fromFileOrResource(iconSource);
-    }
-
-    const minSide = 24;
-    const maxWidth = 31;
-    const maxHeight = 28;
-
-    const bitmap = is.android;
-    const inWidth = bitmap.getWidth();
-    const inHeight = bitmap.getHeight();
-    let outWidth = 0;
-    let outHeight = 0;
-
-    if (inWidth < inHeight) {
-        outWidth = minSide;
-        outHeight = (inHeight * minSide) / inWidth;
-        if (outHeight > maxHeight) {
-            outHeight = maxHeight;
-            outWidth = (inWidth * maxHeight) / inHeight;
-        }
-    } else {
-        outHeight = minSide;
-        outWidth = (inWidth * minSide) / inHeight;
-        if (outWidth > maxWidth) {
-            outWidth = maxWidth;
-            outHeight = (inHeight * maxWidth) / inWidth;
-        }
-    }
-
-    const widthPixels = outWidth * layout.getDisplayDensity();
-    const heightPixels = outHeight * layout.getDisplayDensity();
-
-    const scaledImage = android.graphics.Bitmap.createScaledBitmap(is.android, widthPixels, heightPixels, true);
-    const image = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), scaledImage);
-    
-    return image;
-}
-
 let defaultAccentColor: number = undefined;
 function getDefaultAccentColor(context: android.content.Context): number {
     if (defaultAccentColor === undefined) {
@@ -670,7 +561,7 @@ export class Tabs extends TabsBase {
         const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
         items.forEach((item: TabStripItem, i, arr) => {
             (<any>item).index = i;
-            const tabItemSpec = createTabItemSpec(item);
+            const tabItemSpec = this.createTabItemSpec(item);
             (<any>item).tabItemSpec = tabItemSpec;
             tabItems.push(tabItemSpec);
         });
@@ -682,6 +573,131 @@ export class Tabs extends TabsBase {
             const tv = tabsBar.getTextViewForItemAt(i);
             item.setNativeView(tv);
         });
+    }
+
+    private createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
+        const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
+    
+        if (tabStripItem.isLoaded) {
+            const nestedLabel = tabStripItem.label;
+            let title = nestedLabel.text;
+    
+            // TEXT-TRANSFORM
+            const textTransform = nestedLabel.style.textTransform;
+            if (textTransform) {
+                title = getTransformedText(title, textTransform);
+            }
+            tabItemSpec.title = title;
+    
+            // BACKGROUND-COLOR
+            const backgroundColor = tabStripItem.style.backgroundColor;
+            if (backgroundColor) {
+                tabItemSpec.backgroundColor = backgroundColor.android;
+            }
+    
+            // COLOR
+            const color = nestedLabel.style.color;
+            if (color) {
+                tabItemSpec.color = color.android;
+            }
+    
+            // FONT
+            const fontInternal = nestedLabel.style.fontInternal;
+            if (fontInternal) {
+                tabItemSpec.fontSize = fontInternal.fontSize;
+                tabItemSpec.typeFace = fontInternal.getAndroidTypeface();
+            }
+    
+            // ICON
+            const iconSource = tabStripItem.image && tabStripItem.image.src;
+            if (iconSource) {
+                if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+                    tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
+                    if (tabItemSpec.iconId === 0) {
+                        // TODO:
+                        // traceMissingIcon(iconSource);
+                    }
+                } else {
+                    const icon = this._getIcon(tabStripItem);
+    
+                    if (icon) {
+                        // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
+                        // tslint:disable-next-line:deprecation
+                        tabItemSpec.iconDrawable = icon;
+                    } else {
+                        // TODO:
+                        // traceMissingIcon(iconSource);
+                    }
+                }
+            }
+        }
+    
+        return tabItemSpec;
+    }
+    
+    public _getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
+        const iconSource = tabStripItem.image && tabStripItem.image.src;
+    
+        let is: ImageSource;
+        if (isFontIconURI(iconSource)) {
+            const fontIconCode = iconSource.split("//")[1];
+            const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
+            const font = target.style.fontInternal;
+            const color = target.style.color;
+            is = fromFontIconCode(fontIconCode, font, color);
+        } else {
+            is = fromFileOrResource(iconSource);
+        }
+    
+        let imageDrawable: android.graphics.drawable.BitmapDrawable;
+        if (is && is.android) {
+            let image = is.android;
+    
+            if (this.fixedIcons) {
+                image = this.fixIconSize(image);
+            }
+    
+            imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
+        } else {
+            // TODO
+            // traceMissingIcon(iconSource);
+        }
+    
+        return imageDrawable;
+    }
+    
+    private fixIconSize(image: android.graphics.Bitmap): android.graphics.Bitmap {
+        const minSide = 24;
+        const maxWidth = 31;
+        const maxHeight = 28;
+    
+        const inWidth = image.getWidth();
+        const inHeight = image.getHeight();
+        let outWidth = 0;
+        let outHeight = 0;
+    
+        if (inWidth < inHeight) {
+            outWidth = minSide;
+            outHeight = (inHeight * minSide) / inWidth;
+            if (outHeight > maxHeight) {
+                outHeight = maxHeight;
+                outWidth = (inWidth * maxHeight) / inHeight;
+            }
+        } else {
+            outHeight = minSide;
+            outWidth = (inWidth * minSide) / inHeight;
+            if (outWidth > maxWidth) {
+                outWidth = maxWidth;
+                outHeight = (inHeight * maxWidth) / inWidth;
+            }
+        }
+    
+        const widthPixels = outWidth * layout.getDisplayDensity();
+        const heightPixels = outHeight * layout.getDisplayDensity();
+    
+        const scaledImage = android.graphics.Bitmap.createScaledBitmap(image, widthPixels, heightPixels, true);
+    
+        return scaledImage;
     }
 
     // private setAdapterItems(items: Array<TabStripItem>) {
@@ -742,14 +758,14 @@ export class Tabs extends TabsBase {
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
-        const tabItemSpec = createTabItemSpec(tabStripItem);
+        const tabItemSpec = this.createTabItemSpec(tabStripItem);
         this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
-        const tabItemSpec = createTabItemSpec(tabStripItem);
+        const tabItemSpec = this.createTabItemSpec(tabStripItem);
         this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
@@ -765,7 +781,7 @@ export class Tabs extends TabsBase {
         const index = (<any>tabStripItem).index;
         const tabBarItem = this._tabsBar.getViewForItemAt(index);
         const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
-        const drawable = _getIcon(tabStripItem);
+        const drawable = this._getIcon(tabStripItem);
 
         imgView.setImageDrawable(drawable);
     }

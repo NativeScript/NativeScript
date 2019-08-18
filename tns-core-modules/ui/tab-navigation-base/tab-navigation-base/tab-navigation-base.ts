@@ -21,6 +21,7 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     public items: TabContentItem[];
     public tabStrip: TabStrip;
     public selectedIndex: number;
+    public fixedIcons: boolean;
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === "items") {
@@ -249,3 +250,8 @@ export const tabStripProperty = new Property<TabNavigationBase, TabStrip>({
     }
 });
 tabStripProperty.register(TabNavigationBase);
+
+export const fixedIconsProperty = new Property<TabNavigationBase, boolean>({
+    name: "fixedIcons", defaultValue: true
+});
+fixedIconsProperty.register(TabNavigationBase);
