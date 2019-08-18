@@ -30,6 +30,7 @@ package-lock.json
 !.vscode/extensions.json
 
 # Appium files
+mochawesome-report
 e2e/**/*.trace/
 e2e/**/test-results.xml
 e2e/**/e2e/resources/

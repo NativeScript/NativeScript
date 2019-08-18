@@ -28,7 +28,7 @@
     "mochawesome": "~3.1.2",
     "nativescript-dev-appium": "next",
     "nativescript-dev-webpack": "next",
-    "tns-platform-declarations": "next",
+    "tns-platform-declarations": "file:../../tns-platform-declarations",
     "typescript": "~3.4.1"
   },
   "gitHead": "8ab7726d1ee9991706069c1359c552e67ee0d1a4",
