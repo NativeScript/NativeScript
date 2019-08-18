@@ -552,7 +552,41 @@ export class BottomNavigation extends TabNavigationBase {
             }
 
             if (is && is.ios) {
-                const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
+                const minSide = 24;
+                const maxWidth = 31;
+                const maxHeight = 28;
+
+                const bitmap = is.ios;
+                const inWidth = bitmap.size.width;
+                const inHeight = bitmap.size.height;
+                let outWidth = 0;
+                let outHeight = 0;
+
+                if (inWidth < inHeight) {
+                    outWidth = minSide;
+                    outHeight = (inHeight * minSide) / inWidth;
+                    if (outHeight > maxHeight) {
+                        outHeight = maxHeight;
+                        outWidth = (inWidth * maxHeight) / inHeight;
+                    }
+                } else {
+                    outHeight = minSide;
+                    outWidth = (inWidth * minSide) / inHeight;
+                    if (outWidth > maxWidth) {
+                        outWidth = maxWidth;
+                        outHeight = (inHeight * maxWidth) / inWidth;
+                    }
+                }
+
+                const widthPts = outWidth;
+                const heightPts = outHeight;
+
+                UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
+                bitmap.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
+                let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+
+                const originalRenderedImage = resultImage.imageWithRenderingMode(this._getIconRenderingMode());
                 this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
@@ -561,41 +595,7 @@ export class BottomNavigation extends TabNavigationBase {
             }
         }
 
-        const minSide = 24;
-        const maxWidth = 31;
-        const maxHeight = 28;
-
-        const bitmap = image;
-        const inWidth = bitmap.size.width;
-        const inHeight = bitmap.size.height;
-        let outWidth = 0;
-        let outHeight = 0;
-
-        if (inWidth < inHeight) {
-            outWidth = minSide;
-            outHeight = (inHeight * minSide) / inWidth;
-            if (outHeight > maxHeight) {
-                outHeight = maxHeight;
-                outWidth = (inWidth * maxHeight) / inHeight;
-            }
-        } else {
-            outHeight = minSide;
-            outWidth = (inWidth * minSide) / inHeight;
-            if (outWidth > maxWidth) {
-                outWidth = maxWidth;
-                outHeight = (inHeight * maxWidth) / inWidth;
-            }
-        }
-
-        const widthPts = outWidth;
-        const heightPts = outHeight;
-
-        UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
-        image.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
-        let resultImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-
-        return resultImage;
+        return image;
     }
 
     // private _updateIOSTabBarColorsAndFonts(): void {

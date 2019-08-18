@@ -836,15 +836,17 @@ export class Tabs extends TabsBase {
         let image: UIImage;
         let title: string;
 
-        image = item.isLoaded && this._getIcon(item);
-        title = item.label && item.label.text;
+        if (item.isLoaded) {
+            image = this._getIcon(item);
+            title = item.label.text;
 
-        if (!this.tabStrip._hasImage) {
-            this.tabStrip._hasImage = !!image;
-        }
-
-        if (!this.tabStrip._hasTitle) {
-            this.tabStrip._hasTitle = !!title;
+            if (!this.tabStrip._hasImage) {
+                this.tabStrip._hasImage = !!image;
+            }
+    
+            if (!this.tabStrip._hasTitle) {
+                this.tabStrip._hasTitle = !!title;
+            }
         }
 
         const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, image, index);
@@ -877,7 +879,7 @@ export class Tabs extends TabsBase {
 
         const target = tabStripItem.image;
         const font = target.style.fontInternal;
-        const color = target.style.color;
+        const color = tabStripItem.parent.style.color;
         const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
 
         let image: UIImage = this._iconsCache[iconTag];
@@ -891,7 +893,41 @@ export class Tabs extends TabsBase {
             }
 
             if (is && is.ios) {
-                const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
+                const minSide = 24;
+                const maxWidth = 31;
+                const maxHeight = 28;
+
+                const bitmap = is.ios;
+                const inWidth = bitmap.size.width;
+                const inHeight = bitmap.size.height;
+                let outWidth = 0;
+                let outHeight = 0;
+
+                if (inWidth < inHeight) {
+                    outWidth = minSide;
+                    outHeight = (inHeight * minSide) / inWidth;
+                    if (outHeight > maxHeight) {
+                        outHeight = maxHeight;
+                        outWidth = (inWidth * maxHeight) / inHeight;
+                    }
+                } else {
+                    outHeight = minSide;
+                    outWidth = (inWidth * minSide) / inHeight;
+                    if (outWidth > maxWidth) {
+                        outWidth = maxWidth;
+                        outHeight = (inHeight * maxWidth) / inWidth;
+                    }
+                }
+
+                const widthPts = outWidth;
+                const heightPts = outHeight;
+
+                UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
+                bitmap.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
+                let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+
+                const originalRenderedImage = resultImage.imageWithRenderingMode(this._getIconRenderingMode());
                 this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
