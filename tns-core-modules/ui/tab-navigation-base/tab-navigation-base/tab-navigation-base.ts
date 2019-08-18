@@ -6,7 +6,7 @@ import { TabStripItem } from "../tab-strip-item";
 import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder, EventData } from "../../core/view";
 
 // Requires
-import { View, Property, CoercibleProperty, isIOS } from "../../core/view";
+import { View, Property, CoercibleProperty, isIOS, booleanConverter } from "../../core/view";
 
 // TODO: Impl trace
 // export const traceCategory = "TabView";
@@ -252,6 +252,6 @@ export const tabStripProperty = new Property<TabNavigationBase, TabStrip>({
 tabStripProperty.register(TabNavigationBase);
 
 export const fixedIconsProperty = new Property<TabNavigationBase, boolean>({
-    name: "fixedIcons", defaultValue: true
+    name: "fixedIcons", defaultValue: true, valueConverter: booleanConverter
 });
 fixedIconsProperty.register(TabNavigationBase);
