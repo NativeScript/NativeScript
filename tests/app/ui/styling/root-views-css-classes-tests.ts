@@ -95,9 +95,4 @@ export function test_modal_root_view_css_class() {
 
     helper.navigate(hostPageFactory);
     TKUnit.waitUntilReady(() => modalClosed);
-
-    if (isIOS) {
-        // Remove this line when we have a good way to detect actual modal close on iOS
-        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
-    }
 }
