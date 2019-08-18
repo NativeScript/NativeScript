@@ -562,13 +562,7 @@ export class CssState {
                 continue;
             }
 
-            if (isCssExpressionInUse) {
-                continue;
-            }
-
-            if (isCssVariableExpression(value) || isCssCalcExpression(value)) {
-                isCssExpressionInUse = true;
-            }
+            isCssExpressionInUse = isCssExpressionInUse || isCssVariableExpression(value) || isCssCalcExpression(value);
         }
 
         if (isCssExpressionInUse) {
@@ -919,6 +913,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
         }
     });
 
+    // This is needed in case of changes to css-variable or css-calc expressions.
     view._onCssStateChange();
 });
 

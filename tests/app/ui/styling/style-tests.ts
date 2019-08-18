@@ -1427,7 +1427,7 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
     });
 }
 
-export function test_cssVariableConverter() {
+export function test_evaluateCssCalcExpression() {
     TKUnit.assertEqual(_evaluateCssCalcExpression("calc(1px + 1px)"), "2px", "Simple calc (1)");
     TKUnit.assertEqual(_evaluateCssCalcExpression("calc(50px - (20px - 30px))"), "60px", "Simple calc (2)");
     TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100px - (100px - 100%))"), "100%", "Simple calc (3)");
@@ -1600,6 +1600,7 @@ export function test_css_variables() {
     TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, redColor, "Stack - background-color is red");
     TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, redColor, "Label - background-color is red");
 
+    // view.style takes priority over css-classes.
     (stack as any).style = `${cssVarName}: ${greenColor}`;
     stack.className = "";
     TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
