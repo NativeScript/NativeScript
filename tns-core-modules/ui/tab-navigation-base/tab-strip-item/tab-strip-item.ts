@@ -12,8 +12,8 @@ import { AddChildFromBuilder } from "../../core/view";
 import { 
     View, ViewBase, CSSType, backgroundColorProperty, backgroundInternalProperty, PseudoClassHandler
 } from "../../core/view";
-import { Tabs } from "tns-core-modules/ui/tabs";
-import { isIOS } from "tns-core-modules/platform";
+import { Tabs } from "../../tabs";
+import { isIOS } from "../../../platform";
 
 export * from "../../core/view";
 export const traceCategory = "TabView";
