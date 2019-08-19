@@ -1,4 +1,5 @@
 script:
+- cd tns-core-modules && npm i && cd ..
 - npm install
 - npm run tsc
 - npm run tslint
