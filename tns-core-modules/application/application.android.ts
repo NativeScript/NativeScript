@@ -1,20 +1,28 @@
+// Definitions.
 import {
-    AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData, OrientationChangedEventData,
-    AndroidApplication as AndroidApplicationDefinition, AndroidActivityNewIntentEventData,
-    AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityRequestPermissionsEventData,
-    CssChangedEventData
+    AndroidActivityBackPressedEventData,
+    AndroidActivityBundleEventData,
+    AndroidActivityEventData,
+    AndroidActivityNewIntentEventData,
+    AndroidActivityRequestPermissionsEventData,
+    AndroidActivityResultEventData,
+    AndroidApplication as AndroidApplicationDefinition,
+    ApplicationEventData,
+    CssChangedEventData,
+    OrientationChangedEventData
 } from ".";
 
 import {
-    notify, hasListeners, lowMemoryEvent, orientationChangedEvent, suspendEvent, displayedEvent,
-    setApplication, livesync, Observable
+    displayedEvent, hasListeners, livesync, lowMemoryEvent, notify, Observable, on,
+    orientationChanged, orientationChangedEvent, setApplication, suspendEvent
 } from "./application-common";
+
 import { profile } from "../profiling";
 
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
-// types
+// Types.
 import { NavigationEntry, View, AndroidActivityCallbacks } from "../ui/frame";
 
 const ActivityCreated = "activityCreated";
@@ -239,6 +247,13 @@ export function getNativeApplication(): android.app.Application {
 
     return nativeApp;
 }
+
+on(orientationChangedEvent, (args: OrientationChangedEventData) => {
+    const rootView = getRootView();
+    if (rootView) {
+        orientationChanged(rootView, args.newValue);
+    }
+});
 
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     if (androidApp && androidApp.paused) {
