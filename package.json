@@ -34,6 +34,7 @@
     "nativescript-typedoc-theme": "git://github.com/NativeScript/nativescript-typedoc-theme.git#master",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
+    "reduce-css-calc": "^2.1.6",
     "shady-css-parser": "^0.1.0",
     "shelljs": "^0.7.0",
     "source-map-support": "^0.4.17",
