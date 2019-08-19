@@ -31,6 +31,10 @@ export * from "../view-base";
 export { LinearGradient };
 
 import * as am from "../../animation";
+import { CSS_CLASS_PREFIX } from "../../../application";
+
+const MODAL = "modal";
+
 let animationModule: typeof am;
 function ensureAnimationModule() {
     if (!animationModule) {
@@ -347,8 +351,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return this._modal;
     }
 
-    protected _showNativeModalView(parent: ViewCommon, options: ShowModalOptions) { //context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any) {
+    protected _showNativeModalView(parent: ViewCommon, options: ShowModalOptions) {
         _rootModalViews.push(this);
+        this.cssClasses.add(`${CSS_CLASS_PREFIX}${MODAL}`);
 
         parent._modal = this;
         this._modalParent = parent;
