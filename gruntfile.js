@@ -285,7 +285,6 @@ module.exports = function (grunt) {
                 }
             },
             compileAll: "npm run compile-all",
-            setupLinks: "npm run setup",
             runUnitTests: "npm run unit-test",
             tslint: "npm run tslint",
         },
@@ -333,7 +332,6 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask("compile-ts", [
-        "shell:setupLinks",
         "shell:compileAll",
         "clean:typeScriptLeftovers",
         "copy:childPackageFiles"
