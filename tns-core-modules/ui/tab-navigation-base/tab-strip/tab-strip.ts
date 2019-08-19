@@ -51,6 +51,18 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
         }
     }
 
+    public onItemsChanged(oldItems: TabStripItem[], newItems: TabStripItem[]): void {
+        if (oldItems) {
+            oldItems.forEach(item => this._removeView(item));
+        }
+
+        if (newItems) {
+            newItems.forEach(item => {
+                this._addView(item);
+            });
+        }
+    }
+
     [backgroundColorProperty.getDefault](): Color {
         const parent = <TabNavigationBase>this.parent;
 
@@ -112,7 +124,14 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
         
         return parent && parent.setTabBarHighlightColor(value);
     }
-} 
+}
+
+export const itemsProperty = new Property<TabStrip, TabStripItem[]>({
+    name: "items", valueChanged: (target, oldValue, newValue) => {
+        target.onItemsChanged(oldValue, newValue);
+    }
+});
+itemsProperty.register(TabStrip);
 
 export const iosIconRenderingModeProperty = new Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
 iosIconRenderingModeProperty.register(TabStrip);

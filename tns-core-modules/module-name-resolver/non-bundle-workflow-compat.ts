@@ -1,11 +1,27 @@
 import * as fs from "../file-system/file-system";
 import * as appCommonModule from "../application/application-common";
+import {
+    isEnabled as traceEnabled,
+    write as traceWrite,
+    categories as traceCategories
+} from "../trace";
 
 const cache = new Set<string>();
 let initialized = false;
 
-function register(name, loader) {
+function register(name: string, loader: (name?: string) => void) {
+    if (traceEnabled()) {
+        traceWrite(`[Compat] Register module: ${name}`, traceCategories.ModuleNameResolver);
+    }
     global.registerModule(name, loader);
+
+    if (name.startsWith("tns_modules")) {
+        const nonTnsModulesName = name.substr("tns_modules".length + 1);
+        if (traceEnabled()) {
+            traceWrite(`[Compat] Register module: ${nonTnsModulesName}`, traceCategories.ModuleNameResolver);
+        }
+        global.registerModule(nonTnsModulesName, loader);
+    }
 }
 
 function processFile(file: fs.File) {
@@ -35,27 +51,41 @@ function processFile(file: fs.File) {
             let name = filePathRelativeToApp.substr(0, filePathRelativeToApp.length - "package.json".length - 1);
             let requirePath = fs.path.join(file.parent.path, json.main);
 
-            if (name.startsWith("tns_modules")) {
-                name = name.substr("tns_modules".length + 1);
-            }
-
             register(name, () => global.require(requirePath));
         }
     }
 }
 
-function processFolder(path: string) {
+/**
+ * Processes folder and returns true if folder was not empty.
+ * @param Folder path 
+ */
+function processFolder(path: string): boolean {
+    if (cache.has(path)) {
+        return true;
+    }
+    cache.add(path);
+
+    if (traceEnabled()) {
+        traceWrite(`[Compat] Processing folder: ${path}`, traceCategories.ModuleNameResolver);
+    }
+    
+    let folderEmpty = true;
+
     if (fs.Folder.exists(path)) {
         const folder = fs.Folder.fromPath(path);
 
         folder.eachEntity((file) => {
             if (file instanceof fs.File) {
                 processFile(file);
+                folderEmpty = false;
             }
 
             return true;
         });
     }
+
+    return !folderEmpty;
 }
 
 /**
@@ -66,25 +96,25 @@ function processFolder(path: string) {
 export function registerModulesFromFileSystem(moduleName: string) {
     initialize();
 
-    if (cache.has(moduleName)) {
-        return;
-    }
-    cache.add(moduleName);
-
+    let folderProcessed = false;
+    let parentFolderProcessed = false;
     // moduleName is a folder with package.json
     const path = fs.path.join(fs.knownFolders.currentApp().path, moduleName);
     if (fs.Folder.exists(path)) {
-        processFolder(path);
-
-        return;
+        folderProcessed = processFolder(path);
     }
 
-    // moduleName is file - load all files in it's folder
+    // moduleName is file - load all files in its parent folder
     const parentName = moduleName.substr(0, moduleName.lastIndexOf(fs.path.separator));
     const parentFolderPath = fs.path.join(fs.knownFolders.currentApp().path, parentName);
     if (fs.Folder.exists(parentFolderPath)) {
-        processFolder(parentFolderPath);
+        parentFolderProcessed = processFolder(parentFolderPath);
+    }
 
+    // Return only if we processed the actual folder or its parent folder.
+    // If the parent folder is empty we should still check tns_modules
+    // as this might be just a name of a plugin (ex. "nativescript-ui-autocomplete")
+    if (folderProcessed || (parentFolderProcessed && parentName)) {
         return;
     }
 
@@ -92,8 +122,6 @@ export function registerModulesFromFileSystem(moduleName: string) {
     const tnsModulesPath = fs.path.join(fs.knownFolders.currentApp().path, "tns_modules", moduleName);
     if (fs.Folder.exists(tnsModulesPath)) {
         processFolder(tnsModulesPath);
-
-        return;
     }
 
     // moduleName a file in tns_modules/plugin. Avoid traversing the whole tns_modules folder if parentName is empty
@@ -101,8 +129,6 @@ export function registerModulesFromFileSystem(moduleName: string) {
         const tnsParentFolderPath = fs.path.join(fs.knownFolders.currentApp().path, "tns_modules", parentName);
         if (fs.Folder.exists(tnsParentFolderPath)) {
             processFolder(tnsParentFolderPath);
-
-            return;
         }
     }
 }
