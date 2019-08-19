@@ -44,11 +44,12 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
             owner._canSelectItem = false;
         }
 
-        return shouldSelectItem;
-    }
+        const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+        if (tabStripItems && tabStripItems[selectedIndex]) {
+            tabStripItems[selectedIndex]._emit(TabStripItem.tapEvent);
+        }
 
-    public tabBarWillSelectItem(tabBar: MDCTabBar, item: UITabBarItem): void {
-        //
+        return shouldSelectItem;
     }
 
     public tabBarDidSelectItem(tabBar: MDCTabBar, selectedItem: UITabBarItem): void {
@@ -123,7 +124,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
 
         let safeAreaInsetsBottom = 0;
         let safeAreaInsetsTop = 0;
-        
+
         if (majorVersion > 10) {
             safeAreaInsetsBottom = this.view.safeAreaInsets.bottom;
             safeAreaInsetsTop = this.view.safeAreaInsets.top;
