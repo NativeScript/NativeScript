@@ -3,6 +3,7 @@ import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescrip
 import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
+import { TabNavigationScreen } from "./tab-navigation-screen";
 
 const roots = ["BottomNavigation"];
 
@@ -11,11 +12,11 @@ describe(rootType, async function () {
     let driver: AppiumDriver;
     let screen: Screen;
 
-    before(async () => {
+    before(async function () {
         nsCapabilities.testReporter.context = this;
         logWarn(`====== ${rootType} ========`);
         driver = await createDriver();
-        screen = new Screen(driver);
+        screen = new TabNavigationScreen(driver);
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
         }
@@ -23,7 +24,7 @@ describe(rootType, async function () {
         driver.defaultWaitTime = driverDefaultWaitTime;
     });
 
-    after(async () => {
+    after(async function () {
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(false);
         }
@@ -63,20 +64,20 @@ describe(rootType, async function () {
                         }
                     });
 
-                    it("loaded home page", async () => {
+                    it("loaded home page", async function () {
                         await screen.loadedHome();
                     });
 
-                    it(`loaded frame ${root} root with nested frames`, async () => {
+                    it(`loaded frame ${root} root with nested frames`, async function () {
                         await screen[`navigateToPage${root}WithFrames`]();
                         await screen[`loadedPage${root}WithFrames`]();
                     });
 
-                    it("loaded players list", async () => {
+                    it("loaded players list", async function () {
                         await screen.loadedPlayersList();
                     });
 
-                    it("loaded player details and go back twice", async () => {
+                    it("loaded player details and go back twice", async function () {
                         await shared.testPlayerNavigated(playerTwo, screen);
 
                         if (appSuspendResume) {
@@ -95,7 +96,7 @@ describe(rootType, async function () {
                         await shared.testPlayerNavigatedBack(screen, driver);
                     });
 
-                    it("navigate parent frame and go back", async () => {
+                    it("navigate parent frame and go back", async function () {
                         await shared[`testSomePageNavigated${transition}`](screen);
 
                         if (appSuspendResume) {
@@ -112,7 +113,7 @@ describe(rootType, async function () {
                         await screen.loadedPlayersList();
                     });
 
-                    it("loaded player details and navigate parent frame and go back", async () => {
+                    it("loaded player details and navigate parent frame and go back", async function () {
                         await shared.testPlayerNavigated(playerTwo, screen);
 
                         if (appSuspendResume) {
@@ -139,7 +140,7 @@ describe(rootType, async function () {
                         await screen.loadedPlayersList();
                     });
 
-                    it("toggle teams tab", async () => {
+                    it("toggle teams tab", async function () {
                         await screen.toggleTeamsTab();
 
                         if (appSuspendResume) {
@@ -148,11 +149,11 @@ describe(rootType, async function () {
                         }
                     });
 
-                    it("loaded teams list", async () => {
+                    it("loaded teams list", async function () {
                         await screen.loadedTeamsList();
                     });
 
-                    it("mix player and team list actions and go back", async () => {
+                    it("mix player and team list actions and go back", async function () {
                         await screen.togglePlayersTab();
 
                         if (appSuspendResume) {
@@ -253,7 +254,7 @@ describe(rootType, async function () {
                         await screen.loadedPlayersList();
                     });
 
-                    it("loaded home page again", async () => {
+                    it("loaded home page again", async function () {
                         await screen[`goBackFrom${root}Page`]();
                         await screen.loadedHome();
                     });
