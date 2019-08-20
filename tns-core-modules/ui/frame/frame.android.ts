@@ -17,10 +17,10 @@ import {
     _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, AnimationType
 } from "./fragment.transitions";
 
-import { profile } from "../../profiling";
-
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../builder";
+import { device } from "../../platform/platform";
+import { profile } from "../../profiling";
 
 export * from "./frame-common";
 
@@ -31,6 +31,13 @@ interface AnimatorState {
     popExitAnimator: any;
     transitionName: string;
 }
+
+const ROOT = "root";
+const ANDROID_PLATFORM = "android";
+const ROOT_VIEW_CSS_CLASSES = [
+    `${application.CSS_CLASS_PREFIX}${ROOT}`,
+    `${application.CSS_CLASS_PREFIX}${ANDROID_PLATFORM}`
+];
 
 const INTENT_EXTRA = "com.tns.activity";
 const ROOT_VIEW_ID_EXTRA = "com.tns.activity.rootViewId";
@@ -1280,6 +1287,11 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
             this._rootView = rootView;
             activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
+
+            const deviceType = device.deviceType.toLowerCase();
+            ROOT_VIEW_CSS_CLASSES.push(`${application.CSS_CLASS_PREFIX}${deviceType}`);
+            ROOT_VIEW_CSS_CLASSES.push(`${application.CSS_CLASS_PREFIX}${application.android.orientation}`);
+            ROOT_VIEW_CSS_CLASSES.forEach(c => this._rootView.cssClasses.add(c));
         }
 
         // Initialize native visual tree;

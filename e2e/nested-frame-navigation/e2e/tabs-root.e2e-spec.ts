@@ -3,6 +3,7 @@ import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescrip
 import { Screen, playersData, teamsData } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
+import { TabNavigationScreen } from "./tab-navigation-screen";
 
 const roots = ["TabsTop", "TabsBottom"];
 
@@ -15,7 +16,7 @@ describe(rootType, async function () {
         nsCapabilities.testReporter.context = this;
         logWarn(`====== ${rootType} ========`);
         driver = await createDriver();
-        screen = new Screen(driver);
+        screen = new TabNavigationScreen(driver);
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
         }

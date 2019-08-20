@@ -125,4 +125,4 @@ export module screen {
 /**
  * Gets the current device information.
  */
-export const device: Device;    
+export const device: Device;

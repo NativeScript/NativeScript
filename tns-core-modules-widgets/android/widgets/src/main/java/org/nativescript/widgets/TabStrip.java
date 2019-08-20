@@ -52,6 +52,8 @@ class TabStrip extends LinearLayout {
     private int mSelectedTabTextColor;
     private float mTabTextFontSize;
 
+    private boolean mShouldUpdateTabsTextColor;
+
     TabStrip(Context context) {
         this(context, null);
     }
@@ -87,6 +89,8 @@ class TabStrip extends LinearLayout {
         // Default selected color is the same as mTabTextColor
         mSelectedTabTextColor = mTabTextColor;
 
+        mShouldUpdateTabsTextColor = true;
+
         setMeasureWithLargestChildEnabled(true);
     }
 
@@ -120,16 +124,22 @@ class TabStrip extends LinearLayout {
         return mSelectedTabTextColor;
     }
 
+    void setShouldUpdateTabsTextColor(boolean value) {
+        mShouldUpdateTabsTextColor = value;
+    }
+
     private void updateTabsTextColor(){
-        final int childCount = getChildCount();
-        for (int i = 0; i < childCount; i++){
-            LinearLayout linearLayout = (LinearLayout)getChildAt(i);
-            TextView textView = (TextView)linearLayout.getChildAt(1);
-            if (i == mSelectedPosition){
-                textView.setTextColor(mSelectedTabTextColor);
-            }
-            else {
-                textView.setTextColor(mTabTextColor);
+        if (mShouldUpdateTabsTextColor) {
+            final int childCount = getChildCount();
+            for (int i = 0; i < childCount; i++){
+                LinearLayout linearLayout = (LinearLayout)getChildAt(i);
+                TextView textView = (TextView)linearLayout.getChildAt(1);
+                if (i == mSelectedPosition){
+                    textView.setTextColor(mSelectedTabTextColor);
+                }
+                else {
+                    textView.setTextColor(mTabTextColor);
+                }
             }
         }
     }

@@ -30,6 +30,13 @@ const buttonTsPageFileName = `${LIVESYNC_FOLDER}livesync-button-page.ts`;
 const buttonScssPageFileName = `${LIVESYNC_FOLDER}livesync-button-page.scss`;
 const labelPageModuleName = `${LIVESYNC_FOLDER}livesync-label-page`;
 
+const modalViewPageModuleName = `${LIVESYNC_FOLDER}livesync-modal-view-page`;
+const modalViewXmlPageFileName = `${LIVESYNC_FOLDER}livesync-modal-view-page.xml`;
+const modalViewJsPageFileName = `${LIVESYNC_FOLDER}livesync-modal-view-page.js`;
+const modalViewTsPageFileName = `${LIVESYNC_FOLDER}livesync-modal-view-page.ts`;
+const modalViewScssPageFileName = `${LIVESYNC_FOLDER}livesync-modal-view-page.scss`;
+const modalViewCssFileName = `${LIVESYNC_FOLDER}livesync-modal-view-page.css`;
+
 const green = new Color("green");
 
 export function setUp() {
@@ -109,6 +116,26 @@ export function test_onLiveSync_ModuleContext_MarkupHtml_ScriptTs_StyleScss_File
         { type: "markup", path: buttonHtmlPageFileName },
         { type: "style", path: buttonScssPageFileName }
     ]);
+}
+
+export function test_onLiveSync_ModalViewClosed_MarkupXml() {
+    _test_onLiveSync_ModalViewClosed({ type: "markup", path: modalViewXmlPageFileName });
+}
+
+export function test_onLiveSync_ModalViewClosed_ScriptTs() {
+    _test_onLiveSync_ModalViewClosed({ type: "script", path: modalViewTsPageFileName });
+}
+
+export function test_onLiveSync_ModalViewClosed_ScriptJs() {
+    _test_onLiveSync_ModalViewClosed({ type: "script", path: modalViewJsPageFileName });
+}
+
+export function test_onLiveSync_ModalViewClosed_StyleCss() {
+    _test_onLiveSync_ModalViewClosed({ type: "style", path: modalViewCssFileName });
+}
+
+export function test_onLiveSync_ModalViewClosed_StyleScss() {
+    _test_onLiveSync_ModalViewClosed({ type: "style", path: modalViewScssPageFileName });
 }
 
 function _test_onLiveSync_ModuleContext_AppStyle(appStyleFileName: string, livesyncStyleFileName: string) {
@@ -207,6 +234,18 @@ function _test_onLiveSync_ModuleReplace_Multiple(context: ModuleContext[]) {
     TKUnit.assertTrue(topmostFrame.currentPage.getViewById("label").isLoaded, "Label page is NOT loaded!");
     TKUnit.assertEqual(topmostFrame.backStack.length, 0, "Backstack is NOT clean!");
     TKUnit.assertEqual(pageBeforeNavigation, pageAfterBackNavigation, "Pages are different!");
+}
+
+function _test_onLiveSync_ModalViewClosed(context: ModuleContext) {
+    const modalViewPage = <Page>createViewFromEntry(({ moduleName: modalViewPageModuleName }));
+    helper.navigateWithHistory(() => modalViewPage);
+    livesync({ type: context.type, path: context.path });
+
+    TKUnit.waitUntilReady(() => !!frame.topmost());
+    const topmostFrame = frame.topmost();
+    TKUnit.waitUntilReady(() => topmostFrame.currentPage && topmostFrame.currentPage.isLoaded && topmostFrame.canGoBack());
+
+    TKUnit.assertTrue(topmostFrame._getRootModalViews().length === 0);
 }
 
 function livesync(context: ModuleContext) {

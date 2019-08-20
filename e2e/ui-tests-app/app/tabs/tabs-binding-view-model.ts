@@ -53,7 +53,7 @@ export class TabsBindingNavigationViewModel extends Observable {
         const gridlayout = new GridLayout();
         label.text = "Content Item " + index;
         gridlayout.addChild(label);
-        contentItem.view = gridlayout;
+        contentItem.content = gridlayout;
 
         return contentItem;
     }

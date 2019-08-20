@@ -26,6 +26,7 @@
   "license": "Apache-2.0",
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
+    "reduce-css-calc": "^2.1.6",
     "tns-core-modules-widgets": "next",
     "tslib": "^1.9.3"
   },

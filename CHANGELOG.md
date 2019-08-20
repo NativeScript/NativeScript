@@ -1,3 +1,13 @@
+<a name="6.0.6"></a>
+## [6.0.6](https://github.com/NativeScript/NativeScript/compare/6.0.5...6.0.6) (2019-08-08)
+
+
+### Bug Fixes
+
+* **tns-core-modules-widgets:** use correct version (6.0.6).
+
+
+
 ## [6.0.5](https://github.com/NativeScript/NativeScript/compare/6.0.4...6.0.5) (2019-08-02)
 
 
@@ -79,7 +89,7 @@ Use `AndroidApplication.startActivity`, `AndroidApplication.foregroundActivity`,
 
 * `start(...)` method in `tns-core-modules/application` module is now removed.
 
-Use `application.run(...)` method instead.
+Use `application.run(...)` method instead. Check the "Flexible Frame Composition" section in [this document](https://docs.google.com/document/d/1Iia0yEr5seq4H9qk4oMuJs4-M8dgmne98fymCO5IczA/edit) that explains the full migration path from `application.start(...)` to `application.run(...)` and the implications from this change
 
 
 * `loadPage(...)` method in `tns-core-modules/ui/builder` module is now removed.

@@ -148,6 +148,12 @@ export class TabNavigationBase extends View {
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
+    setTabBarItemTitle(tabStripItem: TabStripItem, value: any): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
     getTabBarItemBackgroundColor(tabStripItem: TabStripItem): any
 
     /**
@@ -167,6 +173,12 @@ export class TabNavigationBase extends View {
      * Method is intended to be overridden by inheritors and used as "protected"
      */
     setTabBarItemColor(tabStripItem: TabStripItem, value: any): void
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarIconColor(tabStripItem: TabStripItem, value: any): void
 
     /**
      * @private

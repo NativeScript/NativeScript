@@ -3,7 +3,7 @@ import { PageObjectBaseModel } from "../../page-object-base-model";
 import { ElementCacheStrategy } from "../../helpers/navigation-helper";
 
 export abstract class TabNavigationBasePage extends PageObjectBaseModel {
-    protected bottomNavigatioinTabRect: IRectangle;
+    protected bottomNavigationTabRect: IRectangle;
     protected bottomNavigationItems: Array<UIElement>;
     protected bottomNavigationItemsRects: Map<number, Point> = new Map();
 
@@ -21,7 +21,6 @@ export abstract class TabNavigationBasePage extends PageObjectBaseModel {
 
     async navigateToSample(sample: string) {
         await super.navigateToSample(sample);
-        await this.refreshTabItems();
     }
 
     async refreshTabItems() {
@@ -34,8 +33,8 @@ export abstract class TabNavigationBasePage extends PageObjectBaseModel {
     }
 
     async refreshTabWidget() {
-        const bottomNavigatioinTab = await this.mainWidget();
-        this.bottomNavigatioinTabRect = await bottomNavigatioinTab.getRectangle();
+        const bottomNavigationTab = await this.mainWidget();
+        this.bottomNavigationTabRect = await bottomNavigationTab.getRectangle();
     }
 
     async tabOnItem(index: number) {
@@ -52,18 +51,26 @@ export abstract class TabNavigationBasePage extends PageObjectBaseModel {
         const endPoint = <Point>{};
 
         if (this._driver.isIOS) {
-            startPoint.x = (this._driver.nsCapabilities.device.viewportRect.x / this._driver.nsCapabilities.device.config.density 
+            startPoint.x = (this._driver.nsCapabilities.device.viewportRect.x / this._driver.nsCapabilities.device.config.density
                 + this._driver.nsCapabilities.device.viewportRect.width / this._driver.nsCapabilities.device.config.density);
             startPoint.y = this._driver.nsCapabilities.device.viewportRect.y / this._driver.nsCapabilities.device.config.density
                 + (this._driver.nsCapabilities.device.viewportRect.height / this._driver.nsCapabilities.device.config.density) / 2;
             endPoint.x = this._driver.nsCapabilities.device.viewportRect.x / this._driver.nsCapabilities.device.config.density;
             endPoint.y = startPoint.y;
         } else {
-            startPoint.x = this._driver.nsCapabilities.device.viewportRect.width - 5;
-            startPoint.y = this._driver.nsCapabilities.device.viewportRect.y
-                + this._driver.nsCapabilities.device.viewportRect.height / 2;
-            endPoint.x = this._driver.nsCapabilities.device.viewportRect.x + 5;
-            endPoint.y = startPoint.y;
+            if (this._driver.nsCapabilities.device.viewportRect) {
+                startPoint.x = this._driver.nsCapabilities.device.viewportRect.width - 5;
+                startPoint.y = this._driver.nsCapabilities.device.viewportRect.y
+                    + this._driver.nsCapabilities.device.viewportRect.height / 2;
+                endPoint.x = this._driver.nsCapabilities.device.viewportRect.x + 5;
+                endPoint.y = startPoint.y;
+            } else {
+                startPoint.x = this._driver.imageHelper.options.cropRectangle.width - 5;
+                startPoint.y = this._driver.imageHelper.options.cropRectangle.y
+                    + this._driver.imageHelper.options.cropRectangle.height / 2;
+                endPoint.x = this._driver.imageHelper.options.cropRectangle.x + 5;
+                endPoint.y = startPoint.y;
+            }
         }
 
         await this._driver.swipe(startPoint, endPoint);

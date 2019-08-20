@@ -207,6 +207,10 @@ function showUIAlertController(alertController: UIAlertController) {
 
         let viewController: UIViewController = currentView.ios;
 
+        if (viewController.presentedViewController) {
+            viewController = viewController.presentedViewController;
+        }
+
         if (!(currentView.ios instanceof UIViewController)) {
             const parentWithController = iosView.getParentWithViewController(currentView);
             viewController = parentWithController ? parentWithController.viewController : undefined;

@@ -13,6 +13,7 @@ import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalC
 import { unsetValue } from "tns-core-modules/ui/core/view";
 import * as color from "tns-core-modules/color";
 import * as fs from "tns-core-modules/file-system";
+import { _evaluateCssCalcExpression } from "tns-core-modules/ui/core/properties/properties";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     const stack = new stackModule.StackLayout();
@@ -1423,6 +1424,413 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
         stack.className = "added";
         helper.assertViewBackgroundColor(label, "#0000FF");
         helper.assertViewBackgroundColor(stack, "#FF0000");
+    });
+}
+
+export function test_evaluateCssCalcExpression() {
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(1px + 1px)"), "2px", "Simple calc (1)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(50px - (20px - 30px))"), "60px", "Simple calc (2)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100px - (100px - 100%))"), "100%", "Simple calc (3)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100px + (100px - 100%))"), "calc(200px - 100%)", "Simple calc (4)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100% - 10px + 20px)"), "calc(100% + 10px)", "Simple calc (5)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100% + 10px - 20px)"), "calc(100% - 10px)", "Simple calc (6)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(10.px + .0px)"), "10px", "Simple calc (8)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("a calc(1px + 1px)"), "a 2px", "Ignore value surrounding calc function (1)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(1px + 1px) a"), "2px a", "Ignore value surrounding calc function (2)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("a calc(1px + 1px) b"), "a 2px b", "Ignore value surrounding calc function (3)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("a calc(1px + 1px) b calc(1em + 2em) c"), "a 2px b 3em c", "Ignore value surrounding calc function (4)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression(`calc(\n1px \n* 2 \n* 1.5)`), "3px", "Handle new lines");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(1/100)"), "0.01", "Handle precision correctly (1)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(5/1000000)"), "0.00001", "Handle precision correctly (2)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(5/100000)"), "0.00005", "Handle precision correctly (3)");
+}
+
+export function test_css_calc() {
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout.slim {
+        width: calc(100 * .1);
+    }
+
+    StackLayout.wide {
+        width: calc(100 * 1.25);
+    }
+
+    StackLayout.invalid-css-calc {
+        width: calc(asd3 * 1.25);
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    stack.className = "slim";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10");
+
+    stack.className = "wide";
+    TKUnit.assertEqual(stack.width as any, 125, "Stack - width === 125");
+
+    (stack as any).style = `width: calc(100% / 2)`;
+    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+
+    // This should log an error for the invalid css-calc expression, but not cause a crash
+    stack.className = "invalid-css-calc";
+}
+
+export function test_css_calc_units() {
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout.no_unit {
+        width: calc(100 * .1);
+    }
+
+    StackLayout.dip_unit {
+        width: calc(100dip * .1);
+    }
+
+    StackLayout.pct_unit {
+        width: calc(100% * .1);
+    }
+
+    StackLayout.px_unit {
+        width: calc(100px * .1);
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    stack.className = "no_unit";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10");
+
+    stack.className = "dip_unit";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10dip");
+
+    stack.className = "pct_unit";
+    TKUnit.assertDeepEqual(stack.width as any, { unit: "%", value: 0.1 }, "Stack - width === 10%");
+
+    stack.className = "px_unit";
+    TKUnit.assertDeepEqual(stack.width as any, { unit: "px", value: 10 }, "Stack - width === 10px");
+}
+
+export function test_nested_css_calc() {
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout.slim {
+        width: calc(calc(10 * 10) * .1);
+    }
+
+    StackLayout.wide {
+        width: calc(calc(10 * 10) * 1.25);
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    stack.className = "slim";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10");
+
+    stack.className = "wide";
+    TKUnit.assertEqual(stack.width as any, 125, "Stack - width === 125");
+
+    (stack as any).style = `width: calc(100% * calc(1 / 2)`;
+
+    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+}
+
+export function test_css_variables() {
+    const blackColor = "#000000";
+    const redColor = "#FF0000";
+    const greenColor = "#00FF00";
+    const blueColor = "#0000FF";
+
+    const page = helper.getClearCurrentPage();
+
+    const cssVarName = `--my-background-color-${Date.now()}`;
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout[use-css-vars] {
+        background-color: var(${cssVarName});
+    }
+
+    StackLayout.make-red {
+        ${cssVarName}: red;
+    }
+
+    StackLayout.make-blue {
+        ${cssVarName}: blue;
+    }
+
+    Label.lab1 {
+        background-color: var(${cssVarName});
+        color: black;
+    }`;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    // This should log an error about not finding the css-variable but not cause a crash
+    stack["use-css-vars"] = true;
+    label.className = "lab1";
+
+    stack.className = "make-red";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, redColor, "Stack - background-color is red");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, redColor, "Label - background-color is red");
+
+    stack.className = "make-blue";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, blueColor, "Stack - background-color is blue");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, blueColor, "Label - background-color is blue");
+
+    stack.className = "make-red";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, redColor, "Stack - background-color is red");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, redColor, "Label - background-color is red");
+
+    // view.style takes priority over css-classes.
+    (stack as any).style = `${cssVarName}: ${greenColor}`;
+    stack.className = "";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, greenColor, "Stack - background-color is green");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, greenColor, "Label - background-color is green");
+
+    stack.className = "make-red";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, greenColor, "Stack - background-color is green");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, greenColor, "Label - background-color is green");
+
+    (stack as any).style = "";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, redColor, "Stack - background-color is red");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, redColor, "Label - background-color is red");
+}
+
+export function test_css_calc_and_variables() {
+    const page = helper.getClearCurrentPage();
+
+    const cssVarName = `--my-width-factor-${Date.now()}`;
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout[use-css-vars] {
+        ${cssVarName}: 1;
+        width: calc(100% * var(${cssVarName}));
+    }
+
+    StackLayout.slim {
+        ${cssVarName}: 0.1;
+    }
+
+    StackLayout.wide {
+        ${cssVarName}: 1.25;
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack["use-css-vars"] = true;
+    stack.addChild(label);
+
+    stack.className = "";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1 }, "Stack - width === 100%");
+
+    stack.className = "slim";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.1 }, "Stack - width === 10%");
+
+    stack.className = "wide";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1.25 }, "Stack - width === 125%");
+
+    // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
+    (stack as any).style = `${cssVarName}: 0.5`;
+    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+}
+
+export function test_css_variable_fallback() {
+    const redColor = "#FF0000";
+    const blueColor = "#0000FF";
+    const limeColor = new color.Color("lime").hex;
+    const yellowColor = new color.Color("yellow").hex;
+
+    const classToValue = [
+        {
+            className: "defined-css-variable",
+            expectedColor: blueColor,
+        }, {
+            className: "defined-css-variable-with-fallback",
+            expectedColor: blueColor,
+        }, {
+            className: "undefined-css-variable-without-fallback",
+            expectedColor: undefined,
+        }, {
+            className: "undefined-css-variable-with-fallback",
+            expectedColor: redColor,
+        }, {
+            className: "undefined-css-variable-with-defined-fallback",
+            expectedColor: limeColor,
+        }, {
+            className: "undefined-css-variable-with-multiple-fallbacks",
+            expectedColor: limeColor,
+        }, {
+            className: "undefined-css-variable-with-missing-fallback-value",
+            expectedColor: undefined,
+        }, {
+            className: "undefined-css-variable-with-nested-fallback",
+            expectedColor: yellowColor,
+        },
+    ];
+
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    .defined-css-variable {
+        --my-var: blue;
+        color: var(--my-var); /* resolved as color: blue; */
+    }
+
+    .defined-css-variable-with-fallback {
+        --my-var: blue;
+        color: var(--my-var, red); /* resolved as color: blue; */
+    }
+
+    .undefined-css-variable-without-fallback {
+        color: var(--undefined-var); /* resolved as color: unset; */
+    }
+
+    .undefined-css-variable-with-fallback {
+        color: var(--undefined-var, red); /* resolved as color: red; */
+    }
+
+    .undefined-css-variable-with-defined-fallback {
+        --my-fallback-var: lime;
+        color: var(--undefined-var, var(--my-fallback-var)); /* resolved as color: lime; */
+    }
+
+    .undefined-css-variable-with-multiple-fallbacks {
+        --my-fallback-var: lime;
+        color: var(--undefined-var, var(--my-fallback-var), yellow); /* resolved as color: lime; */
+    }
+
+    .undefined-css-variable-with-missing-fallback-value {
+        color: var(--undefined-var, var(--undefined-fallback-var)); /* resolved as color: unset; */
+    }
+
+    .undefined-css-variable-with-nested-fallback {
+        color: var(--undefined-var, var(--undefined-fallback-var, yellow)); /* resolved as color: yellow; */
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    for (const { className, expectedColor } of classToValue) {
+        label.className = className;
+        TKUnit.assertEqual(label.color && label.color.hex, expectedColor, className);
+    }
+}
+
+export function test_nested_css_calc_and_variables() {
+    const page = helper.getClearCurrentPage();
+
+    const cssVarName = `--my-width-factor-base-${Date.now()}`;
+    const cssVarName2 = `--my-width-factor-${Date.now()}`;
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout[use-css-vars] {
+        ${cssVarName}: 0.5;
+        ${cssVarName2}: var(${cssVarName});
+        width: calc(100% * calc(var(${cssVarName2}) * 2));
+    }
+
+    StackLayout.slim {
+        ${cssVarName}: 0.05;
+    }
+
+    StackLayout.wide {
+        ${cssVarName}: 0.625
+    }
+
+    StackLayout.nested {
+        ${cssVarName2}: calc(var(${cssVarName}) * 2);
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack["use-css-vars"] = true;
+    stack.addChild(label);
+
+    stack.className = "";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1 }, "Stack - width === 100%");
+
+    stack.className = "nested";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 2 }, "Stack - width === 200%");
+
+    stack.className = "slim";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.1 }, "Stack - width === 10%");
+
+    stack.className = "slim nested";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.2 }, "Stack - width === 20%");
+
+    stack.className = "wide";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1.25 }, "Stack - width === 125%");
+
+    stack.className = "wide nested";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 2.5 }, "Stack - width === 250%");
+
+    // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
+    stack.className = "wide";
+    (stack as any).style = `${cssVarName}: 0.25`;
+    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+
+    stack.className = "nested";
+    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 1 }, "Stack - width === 100%");
+}
+
+export function test_css_variable_is_applied_to_normal_properties() {
+    const stack = new stackModule.StackLayout();
+
+    const cssVarName = `--my-custom-variable-${Date.now()}`;
+
+    helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
+        const page = <pageModule.Page>views[1];
+        const expected = "horizontal";
+        page.css = `StackLayout {
+            ${cssVarName}: ${expected};
+            orientation: var(${cssVarName});
+        }`;
+        TKUnit.assertEqual(stack.orientation, expected);
+    });
+}
+
+export function test_css_variable_is_applied_to_special_properties() {
+    const stack = new stackModule.StackLayout();
+
+    const cssVarName = `--my-custom-variable-${Date.now()}`;
+
+    helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
+        const page = <pageModule.Page>views[1];
+        const expected = "test";
+        page.css = `StackLayout {
+            ${cssVarName}: ${expected};
+            class: var(${cssVarName});
+        }`;
+        TKUnit.assertEqual(stack.className, expected);
     });
 }
 

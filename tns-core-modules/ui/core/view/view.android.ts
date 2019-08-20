@@ -619,10 +619,6 @@ export class View extends ViewCommon {
     }
     protected _showNativeModalView(parent: View, options: ShowModalOptions) {
         super._showNativeModalView(parent, options);
-        if (!this.backgroundColor) {
-            this.backgroundColor = new Color("White");
-        }
-
         initializeDialogFragment();
 
         const df = new DialogFragment();
@@ -767,7 +763,7 @@ export class View extends ViewCommon {
         const AnimatorSet = android.animation.AnimatorSet;
 
         const duration = nativeView.getContext().getResources().getInteger(shortAnimTime) / 2;
-        
+
         let elevation = this.androidElevation;
         if (typeof elevation === "undefined" || elevation === null) {
             elevation = this.getDefaultElevation();
@@ -1049,7 +1045,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
     const { getter, setter, auto = 0 } = options;
     let setPixels, getPixels, setPercent;
     if (getter) {
-        View.prototype[getter] = function(this: View): PercentLength {
+        View.prototype[getter] = function (this: View): PercentLength {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
@@ -1065,7 +1061,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
         };
     }
     if (setter) {
-        View.prototype[setter] = function(this: View, length: PercentLength) {
+        View.prototype[setter] = function (this: View, length: PercentLength) {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
