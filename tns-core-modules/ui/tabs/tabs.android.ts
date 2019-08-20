@@ -618,7 +618,7 @@ export class Tabs extends TabsBase {
                         // traceMissingIcon(iconSource);
                     }
                 } else {
-                    const icon = this._getIcon(tabStripItem);
+                    const icon = this.getIcon(tabStripItem);
     
                     if (icon) {
                         // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
@@ -635,7 +635,7 @@ export class Tabs extends TabsBase {
         return tabItemSpec;
     }
     
-    public _getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
+    private getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
     
         let is: ImageSource;
@@ -761,7 +761,7 @@ export class Tabs extends TabsBase {
         const index = (<any>tabStripItem).index;
         const tabBarItem = this._tabsBar.getViewForItemAt(index);
         const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
-        const drawable = this._getIcon(tabStripItem);
+        const drawable = this.getIcon(tabStripItem);
 
         imgView.setImageDrawable(drawable);
     }

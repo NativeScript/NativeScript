@@ -352,7 +352,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        const image = this._getIcon(tabStripItem);
+        const image = this.getIcon(tabStripItem);
 
         tabStripItem.nativeView.image = image;
         tabStripItem.nativeView.selectedImage = image;
@@ -512,7 +512,7 @@ export class BottomNavigation extends TabNavigationBase {
         let title: string;
 
         if (item.isLoaded) {
-            image = this._getIcon(item);
+            image = this.getIcon(item);
             title = item.label.text;
 
             const textTransform = item.label.style.textTransform;
@@ -526,11 +526,11 @@ export class BottomNavigation extends TabNavigationBase {
         return tabBarItem;
     }
 
-    private _getIconRenderingMode(): UIImageRenderingMode {
+    private getIconRenderingMode(): UIImageRenderingMode {
         return UIImageRenderingMode.AlwaysOriginal;
     }
 
-    public _getIcon(tabStripItem: TabStripItem): UIImage {
+    private getIcon(tabStripItem: TabStripItem): UIImage {
         // Image and Label children of TabStripItem
         // take priority over its `iconSource` and `title` properties
         const iconSource = tabStripItem.image && tabStripItem.image.src;
@@ -560,7 +560,7 @@ export class BottomNavigation extends TabNavigationBase {
                     image = this.getFixedSizeIcon(image);
                 }
 
-                const originalRenderedImage = image.imageWithRenderingMode(this._getIconRenderingMode());
+                const originalRenderedImage = image.imageWithRenderingMode(this.getIconRenderingMode());
                 this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {

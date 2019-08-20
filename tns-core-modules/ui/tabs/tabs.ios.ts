@@ -684,7 +684,7 @@ export class Tabs extends TabsBase {
     //     }
     // }
 
-    public getViewController(item: TabContentItem): UIViewController {
+    private getViewController(item: TabContentItem): UIViewController {
         let newController: UIViewController = item.content ? item.content.viewController : null;
 
         if (newController) {
@@ -786,7 +786,7 @@ export class Tabs extends TabsBase {
         // this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
     }
 
-    public setTabStripItems(items: Array<TabStripItem>) {
+    private setTabStripItems(items: Array<TabStripItem>) {
         if (!this.tabStrip || !items) {
             return;
         }
@@ -803,7 +803,7 @@ export class Tabs extends TabsBase {
         this.tabBarItems = tabBarItems;
 
         if (this.viewController && this.viewController.tabBar) {
-            this.viewController.tabBar.itemAppearance = this._getTabBarItemAppearance();
+            this.viewController.tabBar.itemAppearance = this.getTabBarItemAppearance();
             this.viewController.tabBar.items = NSArray.arrayWithArray(tabBarItems);
             // TODO: investigate why this call is necessary to actually toggle item appearance
             this.viewController.tabBar.sizeToFit();
@@ -837,7 +837,7 @@ export class Tabs extends TabsBase {
         let title: string;
 
         if (item.isLoaded) {
-            image = this._getIcon(item);
+            image = this.getIcon(item);
             title = item.label.text;
 
             if (!this.tabStrip._hasImage) {
@@ -854,7 +854,7 @@ export class Tabs extends TabsBase {
         return tabBarItem;
     }
 
-    private _getTabBarItemAppearance(): MDCTabBarItemAppearance {
+    private getTabBarItemAppearance(): MDCTabBarItemAppearance {
         let itemAppearance;
         if (this.tabStrip._hasImage && this.tabStrip._hasTitle) {
             itemAppearance = MDCTabBarItemAppearance.TitledImages;
@@ -867,11 +867,11 @@ export class Tabs extends TabsBase {
         return itemAppearance;
     }
 
-    private _getIconRenderingMode(): UIImageRenderingMode {
+    private getIconRenderingMode(): UIImageRenderingMode {
         return UIImageRenderingMode.AlwaysOriginal;
     }
 
-    public _getIcon(tabStripItem: TabStripItem): UIImage {
+    private getIcon(tabStripItem: TabStripItem): UIImage {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
         if (!iconSource) {
             return null;
@@ -899,7 +899,7 @@ export class Tabs extends TabsBase {
                     image = this.getFixedSizeIcon(image);
                 }
 
-                const originalRenderedImage = image.imageWithRenderingMode(this._getIconRenderingMode());
+                const originalRenderedImage = image.imageWithRenderingMode(this.getIconRenderingMode());
                 this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
