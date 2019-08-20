@@ -6,7 +6,7 @@ import { TabStripItem } from "../tab-strip-item";
 import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder, EventData } from "../../core/view";
 
 // Requires
-import { View, Property, CoercibleProperty, isIOS, booleanConverter } from "../../core/view";
+import { View, Property, CoercibleProperty, isIOS } from "../../core/view";
 
 // TODO: Impl trace
 // export const traceCategory = "TabView";
@@ -21,7 +21,6 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     public items: TabContentItem[];
     public tabStrip: TabStrip;
     public selectedIndex: number;
-    public isIconSizeFixed: boolean;
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === "items") {
@@ -279,8 +278,3 @@ export const tabStripProperty = new Property<TabNavigationBase, TabStrip>({
     }
 });
 tabStripProperty.register(TabNavigationBase);
-
-export const isIconSizeFixedProperty = new Property<TabNavigationBase, boolean>({
-    name: "isIconSizeFixed", defaultValue: true, valueConverter: booleanConverter
-});
-isIconSizeFixedProperty.register(TabNavigationBase);

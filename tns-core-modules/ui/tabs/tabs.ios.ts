@@ -895,7 +895,7 @@ export class Tabs extends TabsBase {
             if (is && is.ios) {
                 image = is.ios;
                 
-                if (this.isIconSizeFixed) {
+                if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
                     image = this.getFixedSizeIcon(image);
                 }
 
