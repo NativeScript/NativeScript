@@ -30,6 +30,8 @@
   "scripts": {
     "e2e": "npm run clean-e2e && tsc -p e2e && mocha --opts ../config/mocha.opts --recursive e2e --appiumCapsLocation ../config/appium.capabilities.json",
     "e2e-watch": "tsc -p e2e --watch",
+    "e2e-debug": "./node_modules/.bin/ns-dev-appium --startSession",
+    "e2e-tsc": "tsc -p e2e",
     "clean-e2e": "rimraf 'e2e/**/*.js' 'e2e/**/*.js.map' 'e2e/**/*.map'"
   }
 }
