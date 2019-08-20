@@ -1,4 +1,6 @@
 import { createViewFromEntry } from "tns-core-modules/ui/builder";
+import { sanitizeModuleName } from "tns-core-modules/ui/builder/module-name-sanitizer";
+
 import { assertEqual, assertNull, assertThrows, assertNotNull } from "../../tk-unit";
 
 const COMPONENT_MODULE = "ui/builder/component-module";
@@ -35,4 +37,14 @@ export function test_create_view_from_entry_with_path_with_slash() {
 export function test_create_view_from_entry_with_path_with_tilde() {
     const view = getViewComponent("~/" + COMPONENT_MODULE);
     assertNotNull(view, `Module starting with "~/" could not be loaded`);
+}
+
+export function test_sanitize_module_name_with_removable_extension() {
+    const moduleName = sanitizeModuleName("./xml-declaration/mainPage.xml");
+    assertEqual(moduleName, "./xml-declaration/mainPage");
+}
+
+export function test_sanitize_module_name_with_non_removable_extension() {
+    const moduleName = sanitizeModuleName("app/views/main.page");
+    assertEqual(moduleName, "app/views/main.page");
 }

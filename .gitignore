@@ -21,6 +21,7 @@ package-lock.json
 .c9/
 *.launch
 .settings/
+.atom
 
 # IDE - VSCode
 .vscode/*
