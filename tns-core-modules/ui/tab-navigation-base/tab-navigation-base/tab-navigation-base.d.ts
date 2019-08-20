@@ -47,7 +47,7 @@ export class TabNavigationBase extends View {
     /**
      * Gets or sets whether the icons in the tab navigation tab strip are fixed based on specs or are actual size. Defaults to true.
      */
-    fixedIcons: boolean;
+    isIconSizeFixed: boolean;
 
     /**
      * Gets the native android widget that represents the user interface for this component. Valid only when running on Android OS.
@@ -222,6 +222,9 @@ export class TabNavigationBase extends View {
     setTabBarItemTextTransform(tabStripItem: TabStripItem, value: any): void
 }
 
+export function getIconSpecSize(size: { width: number, height: number }): { width: number, height: number }
+
 export const itemsProperty: Property<TabNavigationBase, TabContentItem[]>;
 export const tabStripProperty: Property<TabNavigationBase, TabStrip>
 export const selectedIndexProperty: CoercibleProperty<TabNavigationBase, number>;
+export const isIconSizeFixedProperty: Property<TabNavigationBase, boolean>;

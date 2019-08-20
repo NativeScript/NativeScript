@@ -5,7 +5,7 @@ import { TabStrip } from "../tab-navigation-base/tab-strip";
 import { TextTransform } from "../text-base";
 
 // Requires
-import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
+import { getIconSpecSize, selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
 import { TabsBase, swipeEnabledProperty } from "./tabs-common";
 import { Font } from "../styling/font";
 import { Frame } from "../frame";
@@ -895,8 +895,8 @@ export class Tabs extends TabsBase {
             if (is && is.ios) {
                 image = is.ios;
                 
-                if (this.fixedIcons) {
-                    image = this.fixIconSize(image);
+                if (this.isIconSizeFixed) {
+                    image = this.getFixedSizeIcon(image);
                 }
 
                 const originalRenderedImage = image.imageWithRenderingMode(this._getIconRenderingMode());
@@ -911,34 +911,14 @@ export class Tabs extends TabsBase {
         return image;
     }
 
-    private fixIconSize(image: UIImage): UIImage {
-        const minSide = 24;
-        const maxWidth = 31;
-        const maxHeight = 28;
-
+    private getFixedSizeIcon(image: UIImage): UIImage {
         const inWidth = image.size.width;
         const inHeight = image.size.height;
-        let outWidth = 0;
-        let outHeight = 0;
+        
+        const iconSpecSize = getIconSpecSize({ width: inWidth, height: inHeight });
 
-        if (inWidth < inHeight) {
-            outWidth = minSide;
-            outHeight = (inHeight * minSide) / inWidth;
-            if (outHeight > maxHeight) {
-                outHeight = maxHeight;
-                outWidth = (inWidth * maxHeight) / inHeight;
-            }
-        } else {
-            outHeight = minSide;
-            outWidth = (inWidth * minSide) / inHeight;
-            if (outWidth > maxWidth) {
-                outWidth = maxWidth;
-                outHeight = (inHeight * maxWidth) / inWidth;
-            }
-        }
-
-        const widthPts = outWidth;
-        const heightPts = outHeight;
+        const widthPts = iconSpecSize.width;
+        const heightPts = iconSpecSize.height;
 
         UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
         image.drawInRect(CGRectMake(0, 0, widthPts, heightPts));

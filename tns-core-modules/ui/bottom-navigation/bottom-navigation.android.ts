@@ -5,7 +5,9 @@ import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TextTransform } from "../text-base";
 
 // Requires
-import { TabNavigationBase, itemsProperty, selectedIndexProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
+import { 
+    TabNavigationBase, getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty
+} from "../tab-navigation-base/tab-navigation-base";
 import { Font } from "../styling/font";
 import { getTransformedText } from "../text-base";
 import { CSSType, Color } from "../core/view";
@@ -578,8 +580,8 @@ export class BottomNavigation extends TabNavigationBase {
         if (is && is.android) {
             let image = is.android;
     
-            if (this.fixedIcons) {
-                image = this.fixIconSize(image);
+            if (this.isIconSizeFixed) {
+                image = this.getFixedSizeIcon(image);
             }
     
             imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
@@ -591,34 +593,14 @@ export class BottomNavigation extends TabNavigationBase {
         return imageDrawable;
     }
     
-    private fixIconSize(image: android.graphics.Bitmap): android.graphics.Bitmap {
-        const minSide = 24;
-        const maxWidth = 31;
-        const maxHeight = 28;
-    
+    private getFixedSizeIcon(image: android.graphics.Bitmap): android.graphics.Bitmap {
         const inWidth = image.getWidth();
         const inHeight = image.getHeight();
-        let outWidth = 0;
-        let outHeight = 0;
+        
+        const iconSpecSize = getIconSpecSize({ width: inWidth, height: inHeight });
     
-        if (inWidth < inHeight) {
-            outWidth = minSide;
-            outHeight = (inHeight * minSide) / inWidth;
-            if (outHeight > maxHeight) {
-                outHeight = maxHeight;
-                outWidth = (inWidth * maxHeight) / inHeight;
-            }
-        } else {
-            outHeight = minSide;
-            outWidth = (inWidth * minSide) / inHeight;
-            if (outWidth > maxWidth) {
-                outWidth = maxWidth;
-                outHeight = (inHeight * maxWidth) / inWidth;
-            }
-        }
-    
-        const widthPixels = outWidth * layout.getDisplayDensity();
-        const heightPixels = outHeight * layout.getDisplayDensity();
+        const widthPixels = iconSpecSize.width * layout.getDisplayDensity();
+        const heightPixels = iconSpecSize.height * layout.getDisplayDensity();
     
         const scaledImage = android.graphics.Bitmap.createScaledBitmap(image, widthPixels, heightPixels, true);
     
