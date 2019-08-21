@@ -44,6 +44,7 @@ let DialogFragment: DialogFragment;
 interface DialogOptions {
     owner: View;
     fullscreen: boolean;
+    animated: boolean;
     stretched: boolean;
     cancelable: boolean;
     shownCallback: () => void;
@@ -137,6 +138,7 @@ function initializeDialogFragment() {
     class DialogFragmentImpl extends androidx.fragment.app.DialogFragment {
         public owner: View;
         private _fullscreen: boolean;
+        private _animated: boolean;
         private _stretched: boolean;
         private _cancelable: boolean;
         private _shownCallback: () => void;
@@ -153,6 +155,7 @@ function initializeDialogFragment() {
             const options = getModalOptions(ownerId);
             this.owner = options.owner;
             this._fullscreen = options.fullscreen;
+            this._animated = options.animated;
             this._cancelable = options.cancelable;
             this._stretched = options.stretched;
             this._dismissCallback = options.dismissCallback;
@@ -176,6 +179,16 @@ function initializeDialogFragment() {
             } else {
                 this.owner.horizontalAlignment = "stretch";
                 this.owner.verticalAlignment = "stretch";
+            }
+
+            // set the modal window animation
+            // https://github.com/NativeScript/NativeScript/issues/5989
+            if (this._animated) {
+              dialog
+                .getWindow()
+                .setWindowAnimations(
+                  android.R.style.Animation_Dialog
+                );
             }
 
             dialog.setCanceledOnTouchOutside(this._cancelable);
@@ -629,6 +642,7 @@ export class View extends ViewCommon {
         const dialogOptions: DialogOptions = {
             owner: this,
             fullscreen: !!options.fullscreen,
+            animated: !!options.animated,
             stretched: !!options.stretched,
             cancelable: options.android ? !!options.android.cancelable : true,
             shownCallback: () => this._raiseShownModallyEvent(),
