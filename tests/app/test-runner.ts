@@ -154,6 +154,9 @@ if (platform.isIOS && ios.MajorVersion > 10) {
     allTests["SAFEAREA-WEBVIEW"] = webViewSafeAreaTests;
 }
 
+import * as rootViewsCssClassesTests from "./ui/styling/root-views-css-classes-tests";
+allTests["ROOT-VIEWS-CSS-CLASSES"] = rootViewsCssClassesTests;
+
 import * as stylePropertiesTests from "./ui/styling/style-properties-tests";
 allTests["STYLE-PROPERTIES"] = stylePropertiesTests;
 

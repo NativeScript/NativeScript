@@ -39,10 +39,6 @@ const navigateToOtherPageDefault = "navigate to other page (default transition)"
 const navigateToOtherPageNone = "navigate to other page (no transition)";
 const navigateToOtherPageSlide = "navigate to other page (slide transition)";
 const navigateToOtherPageFlip = "navigate to other page (flip transition)";
-const players = "Players";
-const teams = "Teams";
-const playersTab = "playersTabNavigation";
-const teamsTab = "teamsTabNavigation";
 const dummyTab = "dummyTabNavigation";
 const playerBack = "playerBack";
 const stillOtherPageBack = "stillOtherPageBack";
@@ -153,9 +149,14 @@ export interface Item {
     description: string;
 }
 
-export class Screen {
+export abstract class Screen {
 
-    private _driver: AppiumDriver;
+    protected _driver: AppiumDriver;
+
+    protected abstract players;
+    protected abstract teams;
+    protected abstract playersTab;
+    protected abstract teamsTab;
 
     public currentAnimation: string;
 
@@ -319,14 +320,14 @@ export class Screen {
     }
 
     togglePlayersTab = async () => {
-        const lblPlayers = await this._driver.waitForElement(playersTab);
-        logInfo(`====== Navigate to "${players}"`);
+        const lblPlayers = await this._driver.waitForElement(this.playersTab);
+        logInfo(`====== Navigate to "${this.players}"`);
         await lblPlayers.tap();
     }
 
     toggleTeamsTab = async () => {
-        const lblTeams = await this._driver.waitForElement(teamsTab);
-        logInfo(`====== Navigate to "${teams}"`);
+        const lblTeams = await this._driver.waitForElement(this.teamsTab);
+        logInfo(`====== Navigate to "${this.teams}"`);
         await lblTeams.tap();
     }
 
@@ -392,7 +393,7 @@ export class Screen {
     loadedBottomNavigationRootWithFrames = async () => {
         await this.loadedPage(bottomNavigationRootHome);
     }
-    
+
     loadedStillOtherPage = async () => {
         await this.loadedPage(stillOtherPage);
     }
@@ -408,7 +409,7 @@ export class Screen {
     loadedPlayersList = async () => {
         const lblPlayerOne = await this._driver.waitForElement(playersData["playerOneDefault"].name);
         assert.isDefined(lblPlayerOne);
-        console.log(players + " loaded!");
+        console.log(this.players + " loaded!");
     }
 
     loadedPlayerDetails = async (player: Item) => {
@@ -418,7 +419,7 @@ export class Screen {
     loadedTeamsList = async () => {
         const lblTeamOne = await this._driver.waitForElement(teamsData["teamOneDefault"].name);
         assert.isDefined(lblTeamOne);
-        console.log(teams + " loaded!");
+        console.log(this.teams + " loaded!");
     }
 
     loadedTeamDetails = async (team: Item) => {
