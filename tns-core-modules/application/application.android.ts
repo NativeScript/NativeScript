@@ -181,7 +181,7 @@ export function getRootView(): View {
     }
     const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
 
-    return callbacks ? callbacks.getRootView() : undefined;
+    return callbacks ? callbacks.getRootView() : (activity.getWindow().getDecorView().getRootView() || undefined);
 }
 
 export function getNativeApplication(): android.app.Application {
