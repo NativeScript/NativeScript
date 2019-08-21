@@ -23,3 +23,15 @@ global.zonedCallback = function (callback: Function): Function {
         return callback;
     }
 };
+
+(<any>global).System = {	
+    import(path) {	
+        return new Promise((resolve, reject) => {	
+            try {	
+                resolve(global.require(path));	
+            } catch (e) {	
+                reject(e);	
+            }	
+        });	
+    }	
+};

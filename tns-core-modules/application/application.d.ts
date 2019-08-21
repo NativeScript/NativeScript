@@ -54,6 +54,11 @@ export const lowMemoryEvent: string;
 export const orientationChangedEvent: string;
 
 /**
+ * String value "ns-" used for CSS class prefix.
+ */
+export const CSS_CLASS_PREFIX: string;
+
+/**
  * Event data containing information for the application events.
  */
 export interface ApplicationEventData extends EventData {

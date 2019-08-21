@@ -6,24 +6,24 @@
         "emitDecoratorMetadata": true,
         "noEmitHelpers": true,
         "noEmitOnError": true,
+        "skipLibCheck": true,
         "lib": [
             "es6",
             "dom"
         ],
         "baseUrl": ".",
         "paths": {
-            "*": [
-                "./node_modules/tns-core-modules/*",
-                "./node_modules/*"
-            ],
             "~/*": [
                 "app/*"
+            ],
+            "*": [
+                "./node_modules/*"
             ]
         }
     },
     "exclude": [
+        "e2e",
         "node_modules",
-        "platforms",
-        "e2e"
+        "platforms"
     ]
 }

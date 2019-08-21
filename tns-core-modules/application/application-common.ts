@@ -40,6 +40,7 @@ import {
     LoadAppCSSEventData,
     UnhandledErrorEventData
 } from "./application";
+import { DeviceOrientation } from "../ui/enums/enums";
 
 export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
 
@@ -52,6 +53,13 @@ export const lowMemoryEvent = "lowMemory";
 export const uncaughtErrorEvent = "uncaughtError";
 export const discardedErrorEvent = "discardedError";
 export const orientationChangedEvent = "orientationChanged";
+
+export const CSS_CLASS_PREFIX = "ns-";
+const ORIENTATION_CSS_CLASSES = [
+    `${CSS_CLASS_PREFIX}${DeviceOrientation.portrait}`,
+    `${CSS_CLASS_PREFIX}${DeviceOrientation.landscape}`,
+    `${CSS_CLASS_PREFIX}${DeviceOrientation.unknown}`
+];
 
 let cssFile: string = "./app.css";
 
@@ -92,7 +100,7 @@ export function livesync(rootView: View, context?: ModuleContext) {
     }
 
     // Handle application styles
-    if (reapplyAppStyles && rootView) {
+    if (rootView && reapplyAppStyles) {
         rootView._onCssStateChange();
     } else if (liveSyncCore) {
         liveSyncCore(context);
@@ -114,6 +122,15 @@ export function loadAppCss(): void {
     } catch (e) {
         throw new Error(`The file ${getCssFileName()} couldn't be loaded! ` +
             `You may need to register it inside ./app/vendor.ts.`);
+    }
+}
+
+export function orientationChanged(rootView: View, newOrientation: "portrait" | "landscape" | "unknown"): void {
+    const newOrientationCssClass = `${CSS_CLASS_PREFIX}${newOrientation}`;
+    if (!rootView.cssClasses.has(newOrientationCssClass)) {
+        ORIENTATION_CSS_CLASSES.forEach(c => rootView.cssClasses.delete(c));
+        rootView.cssClasses.add(newOrientationCssClass);
+        rootView._onCssStateChange();
     }
 }
 

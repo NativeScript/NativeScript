@@ -1,15 +1,17 @@
+
 import {
-    iOSApplication as IOSApplicationDefinition,
     ApplicationEventData,
     CssChangedEventData,
+    iOSApplication as IOSApplicationDefinition,
     LaunchEventData,
     LoadAppCSSEventData,
     OrientationChangedEventData
 } from ".";
 
 import {
-    notify, launchEvent, resumeEvent, suspendEvent, exitEvent, lowMemoryEvent,
-    orientationChangedEvent, setApplication, livesync, displayedEvent, getCssFileName
+    CSS_CLASS_PREFIX, displayedEvent, exitEvent, getCssFileName, launchEvent, livesync,
+    lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent,
+    setApplication, suspendEvent
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -19,9 +21,16 @@ export * from "./application-common";
 import { createViewFromEntry } from "../ui/builder";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
-import { ios } from "../utils/utils";
+import { device } from "../platform/platform";
 import { profile } from "../profiling";
+import { ios } from "../utils/utils";
 
+const ROOT = "root";
+const IOS_PLATFORM = "ios";
+const ROOT_VIEW_CSS_CLASSES = [
+    `${CSS_CLASS_PREFIX}${ROOT}`,
+    `${CSS_CLASS_PREFIX}${IOS_PLATFORM}`
+];
 const getVisibleViewController = ios.getVisibleViewController;
 
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
@@ -307,6 +316,11 @@ function createRootView(v?: View) {
         }
     }
 
+    const deviceType = device.deviceType.toLowerCase();
+    ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${deviceType}`);
+    ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${iosApp.orientation}`);
+    ROOT_VIEW_CSS_CLASSES.forEach(c => rootView.cssClasses.add(c));
+
     return rootView;
 }
 
@@ -402,6 +416,13 @@ function setViewControllerView(view: View): void {
         viewController.view.addSubview(nativeView);
     }
 }
+
+on(orientationChangedEvent, (args: OrientationChangedEventData) => {
+    const rootView = getRootView();
+    if (rootView) {
+        orientationChanged(rootView, args.newValue);
+    }
+});
 
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     if (!started) {
