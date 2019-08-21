@@ -28,7 +28,7 @@
                         public url: string;
                         public method: string;
                         public headers: java.util.ArrayList<KeyValuePair>;
-                        public content: string;
+                        public content: java.nio.ByteBuffer;
                         public timeout: number;
                         public screenWidth: number;
                         public screenHeight: number;

@@ -79,6 +79,8 @@ export class XMLHttpRequest {
                 this._options.content = data;
             } else if (data instanceof FormData) {
                 this._options.content = (<FormData>data).toString();
+            } else if (data instanceof ArrayBuffer) {
+                this._options.content = data;
             }
 
             http.request(this._options).then(r => {

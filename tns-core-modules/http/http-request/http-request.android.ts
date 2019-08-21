@@ -180,7 +180,14 @@ function buildJavaOptions(options: httpModule.HttpRequestOptions) {
         javaOptions.method = options.method;
     }
     if (typeof options.content === "string" || options.content instanceof FormData) {
-        javaOptions.content = options.content.toString();
+        const nativeString = new java.lang.String(options.content.toString());
+        const nativeBytes = nativeString.getBytes("UTF-8");
+        const nativeBuffer = java.nio.ByteBuffer.wrap(nativeBytes);
+        javaOptions.content = nativeBuffer;
+    } else if (options.content instanceof ArrayBuffer) {
+        const typedArray = new Uint8Array(options.content as ArrayBuffer);
+        const nativeBuffer = java.nio.ByteBuffer.wrap(Array.from(typedArray));
+        javaOptions.content = nativeBuffer;
     }
     if (typeof options.timeout === "number") {
         javaOptions.timeout = options.timeout;

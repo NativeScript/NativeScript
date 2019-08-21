@@ -84,7 +84,7 @@ export interface HttpRequestOptions {
   /**
    * Gets or sets the request body.
    */
-  content?: string | FormData;
+  content?: string | FormData | ArrayBuffer;
 
   /**
    * Gets or sets the request timeout in milliseconds.
