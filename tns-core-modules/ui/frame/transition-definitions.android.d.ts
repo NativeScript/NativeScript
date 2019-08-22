@@ -1,4 +1,5 @@
 /**
+ * @module "ui/frame/transition-definitions.android
  * @private
  */ /** */
 
