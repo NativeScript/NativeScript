@@ -2,6 +2,7 @@
     from {
         transform: none;
     }
+
     to {
         transform: translate(150, 0) scale(1.5, 1.5) rotate(45);
     }

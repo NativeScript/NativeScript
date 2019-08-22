@@ -10,7 +10,7 @@ export function pageLoaded(args: EventData) {
 
 export function onAnimate(args: EventData) {
     view.animate({
-        scale: { x: 2, y: 2},
+        scale: { x: 2, y: 2 },
         duration: 3000
     });
 }

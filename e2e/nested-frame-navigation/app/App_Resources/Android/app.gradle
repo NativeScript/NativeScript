@@ -5,12 +5,12 @@
 //	compile 'com.android.support:recyclerview-v7:+'
 //}
 
-android {  
-  defaultConfig {  
+android {
+  defaultConfig {
     generatedDensities = []
     applicationId = "org.nativescript.nestedframenavigation"
-  }  
-  aaptOptions {  
-    additionalParameters "--no-version-vectors"  
-  }  
-} 
+  }
+  aaptOptions {
+    additionalParameters "--no-version-vectors"
+  }
+}

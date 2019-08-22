@@ -10,7 +10,7 @@ export function pageLoaded(args: EventData) {
 
 export function onAnimate(args: EventData) {
     view.animate({
-        translate: { x: 100, y: 100},
+        translate: { x: 100, y: 100 },
         duration: 3000
     });
 }

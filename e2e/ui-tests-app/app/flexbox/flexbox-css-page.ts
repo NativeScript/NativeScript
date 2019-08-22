@@ -5,8 +5,8 @@ export function resetStyles(args) {
 export const flexFlow = applyCss();
 
 function applyCss() {
-    return function(args) {
-        let boxCss = " #container { " + args.object.tag + " }" ;
+    return function (args) {
+        let boxCss = " #container { " + args.object.tag + " }";
         // console.log(boxCss);
         args.object.page.addCss(boxCss);
         // console.log(args.object.page.css);

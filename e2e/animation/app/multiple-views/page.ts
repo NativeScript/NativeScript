@@ -45,9 +45,9 @@ export function onAnimate(args: EventData) {
     animationSet.play().then(() => {
         console.log("Animation finished");
     })
-    .catch((e) => {
-        console.log(e.message);
-    });
+        .catch((e) => {
+            console.log(e.message);
+        });
 }
 
 export function onReset(args: EventData) {

@@ -9,9 +9,23 @@
 }
 
 @keyframes transformed {
-    from { transform: none; }
-    30%  { transform: translate(100, 100); }
-    55%  { transform: translate(0, 0) scale(3, 3); }
-    75%  { transform: scale(1, 1) rotate(180); }
-    to  { transform: rotate(0); }
+    from {
+        transform: none;
+    }
+
+    30% {
+        transform: translate(100, 100);
+    }
+
+    55% {
+        transform: translate(0, 0) scale(3, 3);
+    }
+
+    75% {
+        transform: scale(1, 1) rotate(180);
+    }
+
+    to {
+        transform: rotate(0);
+    }
 }

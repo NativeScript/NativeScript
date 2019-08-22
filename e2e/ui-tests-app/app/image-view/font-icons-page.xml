@@ -13,4 +13,4 @@
         <!-- font family + invalid char code -->
         <Image row="2" col="1" src="font://&#xF556;" class="font-awesome"/>
     </GridLayout>
-</Page> 
+</Page>

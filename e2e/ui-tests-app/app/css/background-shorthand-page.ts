@@ -10,7 +10,7 @@ const tests = [
     { name: "blue color only", background: "blue" },
 
     { name: "repeat image only", background: "url(\"~/resources/images/icon.png\")" },
-    { name: "linear gradient red-blue only", background: "linear-gradient(to bottom, red, blue)"},
+    { name: "linear gradient red-blue only", background: "linear-gradient(to bottom, red, blue)" },
 
     { name: "[straight] image only, no-repeat ", background: "url(\"~/resources/images/icon.png\") no-repeat" },
     { name: "[straight] green color, image, no-repeat", background: "green url(\"~/resources/images/icon.png\") no-repeat" },

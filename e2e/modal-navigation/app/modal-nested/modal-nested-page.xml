@@ -1,9 +1,9 @@
 <Page backgroundColor="blue"
-    navigatingTo="onNavigatingTo" 
+    navigatingTo="onNavigatingTo"
     navigatingFrom="onNavigatingFrom"
     navigatedTo="onNavigatedTo"
     navigatedFrom="onNavigatedFrom">
-    
+
     <ActionBar class="action-bar">
         <Label class="action-bar-title" text="Modal Nested"></Label>
     </ActionBar>

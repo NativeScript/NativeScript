@@ -1,7 +1,7 @@
 <Page navigatedTo="onNavigatedTo" xmlns:cc="components">
     <StackLayout class="page-content">
         <Label text="This is LANDSACPE other page" />
-        
+
         <Button text="tap" tap="tap" class="btn btn-primary"/>
 
         <Button text="navigate" tap="navigate" />

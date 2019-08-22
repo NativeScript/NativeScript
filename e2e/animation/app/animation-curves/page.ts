@@ -11,7 +11,7 @@ export function pageLoaded(args: EventData) {
 
 export function onAnimateLinear(args: EventData) {
     view.animate({
-        translate: { x: 0, y: 100},
+        translate: { x: 0, y: 100 },
         duration: 1000,
         curve: AnimationCurve.linear
     });
@@ -19,7 +19,7 @@ export function onAnimateLinear(args: EventData) {
 
 export function onAnimateEaseIn(args: EventData) {
     view.animate({
-        translate: { x: 0, y: 100},
+        translate: { x: 0, y: 100 },
         duration: 1000,
         curve: AnimationCurve.easeIn
     });
@@ -27,7 +27,7 @@ export function onAnimateEaseIn(args: EventData) {
 
 export function onAnimateEaseOut(args: EventData) {
     view.animate({
-        translate: { x: 0, y: 100},
+        translate: { x: 0, y: 100 },
         duration: 1000,
         curve: AnimationCurve.easeOut
     });
@@ -35,7 +35,7 @@ export function onAnimateEaseOut(args: EventData) {
 
 export function onAnimateEaseInEaseOut(args: EventData) {
     view.animate({
-        translate: { x: 0, y: 100},
+        translate: { x: 0, y: 100 },
         duration: 1000,
         curve: AnimationCurve.easeInOut
     });
@@ -43,7 +43,7 @@ export function onAnimateEaseInEaseOut(args: EventData) {
 
 export function onAnimateSpring(args: EventData) {
     view.animate({
-        translate: { x: 0, y: 100},
+        translate: { x: 0, y: 100 },
         duration: 1000,
         curve: AnimationCurve.spring
     });
@@ -51,7 +51,7 @@ export function onAnimateSpring(args: EventData) {
 
 export function onAnimateCustom(args: EventData) {
     view.animate({
-        translate: { x: 0, y: 100},
+        translate: { x: 0, y: 100 },
         duration: 1000,
         curve: AnimationCurve.cubicBezier(0.1, 0.1, 0.1, 1)
     });

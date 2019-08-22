@@ -11,8 +11,8 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-     examples.set("activity-indicator", "progress-bar/activity-indicator-page");
-     examples.set("progress-bar", "progress-bar/progress-page");
+    examples.set("activity-indicator", "progress-bar/activity-indicator-page");
+    examples.set("progress-bar", "progress-bar/progress-page");
 
-     return examples;
+    return examples;
 }

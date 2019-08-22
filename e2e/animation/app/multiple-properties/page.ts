@@ -13,7 +13,7 @@ export function onAnimate(args: EventData) {
     view.animate({
         backgroundColor: new Color("#3D5AFE"),
         opacity: 0.5,
-        translate: {x: 100, y: 100},
+        translate: { x: 100, y: 100 },
         rotate: 180,
         duration: 3000
     });

@@ -19,5 +19,5 @@
 
     <style name="NativeScriptToolbarStyle" parent="NativeScriptToolbarStyleBase">
         <item name="android:elevation">4dp</item>
-    </style>    
+    </style>
 </resources>

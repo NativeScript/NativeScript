@@ -48,7 +48,7 @@ function animate(playSequentially: boolean) {
         view4.text = "{{N4}}";
         console.log("Animation finished");
     })
-    .catch((e) => {
-        console.log(e.message);
-    });
+        .catch((e) => {
+            console.log(e.message);
+        });
 }

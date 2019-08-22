@@ -497,7 +497,7 @@ describe(rootType, async function () {
         before(async function () {
             nsCapabilities.testReporter.context = this;
         });
-        
+
         it("loaded layout root with nested frames", async function () {
             await screen.navigateToLayoutWithFrame();
             await screen.loadedLayoutWithFrame();

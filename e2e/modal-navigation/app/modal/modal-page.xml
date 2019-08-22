@@ -1,5 +1,5 @@
 <Page backgroundColor="green" showingModally="onShowingModally" loaded="onLoaded"
-    navigatingTo="onNavigatingTo" 
+    navigatingTo="onNavigatingTo"
     navigatingFrom="onNavigatingFrom"
     navigatedTo="onNavigatedTo"
     navigatedFrom="onNavigatedFrom">

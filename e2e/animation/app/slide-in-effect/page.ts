@@ -19,7 +19,7 @@ export function onAddItem(args: EventData) {
     item.translateX = -300;
     item.opacity = 0;
     item.on("loaded", (args: EventData) => {
-        (<View>args.object).animate({translate: { x: 0, y: 0 }, opacity: 1});
+        (<View>args.object).animate({ translate: { x: 0, y: 0 }, opacity: 1 });
     });
     wrapLayout.addChild(item);
 }

@@ -18,7 +18,7 @@
             <Button text="slide-in-effect" tap="onButtonTap" />
             <Button text="infinite" tap="onButtonTap" />
             <Button text="animation-curves" tap="onButtonTap" />
-            <Button text="css-animations" tap="onButtonTap" /> 
+            <Button text="css-animations" tap="onButtonTap" />
         </StackLayout>
     </ScrollView>
 

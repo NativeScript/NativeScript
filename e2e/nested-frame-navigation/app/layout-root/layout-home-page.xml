@@ -11,7 +11,7 @@
             <Button text="navigate to some page (slide transition)" tap="onNavigateSlide" />
             <Button text="navigate to some page (flip transition)" tap="onNavigateFlip" />
         </StackLayout>
-        
+
         <GridLayout row="1">
             <Frame defaultPage="players/players-items-page" />
         </GridLayout>

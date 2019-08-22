@@ -9,6 +9,11 @@
 }
 
 @keyframes button_selected {
-    from { background-color: yellow; }
-    to { background-color: red; }
+    from {
+        background-color: yellow;
+    }
+
+    to {
+        background-color: red;
+    }
 }
