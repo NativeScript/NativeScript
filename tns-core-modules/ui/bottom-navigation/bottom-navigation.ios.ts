@@ -1,4 +1,4 @@
-﻿// Types
+// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
@@ -356,7 +356,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        const image = this._getIcon(tabStripItem);
+        const image = this.getIcon(tabStripItem);
 
         tabStripItem.nativeView.image = image;
         tabStripItem.nativeView.selectedImage = image;
@@ -516,7 +516,7 @@ export class BottomNavigation extends TabNavigationBase {
         let title: string;
 
         if (item.isLoaded) {
-            image = this._getIcon(item);
+            image = this.getIcon(item);
             title = item.label.text;
 
             const textTransform = item.label.style.textTransform;
@@ -530,11 +530,11 @@ export class BottomNavigation extends TabNavigationBase {
         return tabBarItem;
     }
 
-    private _getIconRenderingMode(): UIImageRenderingMode {
+    private getIconRenderingMode(): UIImageRenderingMode {
         return UIImageRenderingMode.AlwaysOriginal;
     }
 
-    public _getIcon(tabStripItem: TabStripItem): UIImage {
+    private getIcon(tabStripItem: TabStripItem): UIImage {
         // Image and Label children of TabStripItem
         // take priority over its `iconSource` and `title` properties
         const iconSource = tabStripItem.image && tabStripItem.image.src;
@@ -558,7 +558,13 @@ export class BottomNavigation extends TabNavigationBase {
             }
 
             if (is && is.ios) {
-                const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
+                image = is.ios;
+                
+                if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
+                    image = this.getFixedSizeIcon(image);
+                }
+
+                const originalRenderedImage = image.imageWithRenderingMode(this.getIconRenderingMode());
                 this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
@@ -568,6 +574,23 @@ export class BottomNavigation extends TabNavigationBase {
         }
 
         return image;
+    }
+
+    private getFixedSizeIcon(image: UIImage): UIImage {
+        const inWidth = image.size.width;
+        const inHeight = image.size.height;
+        
+        const iconSpecSize = getIconSpecSize({ width: inWidth, height: inHeight });
+
+        const widthPts = iconSpecSize.width;
+        const heightPts = iconSpecSize.height;
+
+        UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
+        image.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
+        let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+
+        return resultImage;
     }
 
     // private _updateIOSTabBarColorsAndFonts(): void {

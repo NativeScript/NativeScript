@@ -22,6 +22,7 @@ export const highlightColorProperty = new Property<TabStrip, Color>({ name: "hig
 export class TabStrip extends View implements TabStripDefinition, AddChildFromBuilder, AddArrayFromBuilder {
     public static itemTapEvent = "itemTap";
     public items: TabStripItem[];
+    public isIconSizeFixed: boolean;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
     public _hasImage: boolean;
     public _hasTitle: boolean;
@@ -141,5 +142,10 @@ itemsProperty.register(TabStrip);
 
 export const iosIconRenderingModeProperty = new Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
 iosIconRenderingModeProperty.register(TabStrip);
+
+export const isIconSizeFixedProperty = new Property<TabStrip, boolean>({
+    name: "isIconSizeFixed", defaultValue: true, valueConverter: booleanConverter
+});
+isIconSizeFixedProperty.register(TabStrip);
 
 highlightColorProperty.register(TabStrip);
