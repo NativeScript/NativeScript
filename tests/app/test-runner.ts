@@ -31,6 +31,9 @@ export function isRunningOnEmulator(): boolean {
 
 export const allTests = {};
 
+import * as globalsTests from "./globals/globals-tests";
+allTests["GLOBALS"] = globalsTests;
+
 import * as domNodeTest from "./debugger/dom-node-tests";
 allTests["DOM-NODE"] = domNodeTest;
 

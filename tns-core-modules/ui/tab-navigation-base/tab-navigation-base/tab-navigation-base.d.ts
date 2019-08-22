@@ -217,6 +217,8 @@ export class TabNavigationBase extends View {
     setTabBarItemTextTransform(tabStripItem: TabStripItem, value: any): void
 }
 
+export function getIconSpecSize(size: { width: number, height: number }): { width: number, height: number }
+
 export const itemsProperty: Property<TabNavigationBase, TabContentItem[]>;
 export const tabStripProperty: Property<TabNavigationBase, TabStrip>
 export const selectedIndexProperty: CoercibleProperty<TabNavigationBase, number>;
