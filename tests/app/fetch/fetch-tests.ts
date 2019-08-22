@@ -54,6 +54,30 @@ export var test_fetch_formData = function (done: (err: Error, res?: string) => v
     // << fetch-formdata
 };
 
+export var test_fetch_blob = function (done: (err: Error, res?: string) => void) {
+    // >> fetch-blob
+    fetch("https://httpbin.org/get").then(response => response.blob()).then(function (r) {
+        // Argument (r) is Blob object!
+        // >> (hide)
+        TKUnit.assertNotNull(r, "Result from blob() should be Blob object!");
+        done(null);
+        // << (hide)
+    }).catch(failOnError(done));
+    // << fetch-blob
+};
+
+export var test_fetch_arraybuffer = function (done: (err: Error, res?: string) => void) {
+    // >> fetch-arraybuffer
+    fetch("https://httpbin.org/get").then(response => response.arrayBuffer()).then(function (r) {
+        // Argument (r) is ArrayBuffer object!
+        // >> (hide)
+        TKUnit.assertNotNull(r, "Result from arrayBuffer() should be ArrayBuffer object!");
+        done(null);
+        // << (hide)
+    }).catch(failOnError(done));
+    // << fetch-arraybuffer
+};
+
 export var test_fetch_fail_invalid_url = function (done) {
     var completed: boolean;
     var isReady = function () { return completed; };
@@ -64,12 +88,13 @@ export var test_fetch_fail_invalid_url = function (done) {
     }).catch(failOnError(done));
 };
 
-export var test_fetch_invalid_url_fail_message = function (done) {
-    fetch("hgfttp://httpbin.org/get").catch(function (e: TypeError) {
-        TKUnit.assert(e.message.match(/Network request failed:.{2,}/), "Failure message should contain details on the failure. Actual message was: " + e.message);
-        done(null);
-    }).catch(failOnError(done));
-};
+// Note: fetch is unable to do url validation
+// export var test_fetch_invalid_url_fail_message = function (done) {
+//     fetch("hgfttp://httpbin.org/get").catch(function (e: TypeError) {
+//         TKUnit.assert(e.message.match(/Network request failed:.{2,}/), "Failure message should contain details on the failure. Actual message was: " + e.message);
+//         done(null);
+//     }).catch(failOnError(done));
+// };
 
 export var test_fetch_response_status = function (done) {
 

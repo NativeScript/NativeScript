@@ -92,6 +92,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
     callbacks.resolveCallback({
         content: {
             raw: result.raw,
+            toArrayBuffer: () => Uint8Array.from(result.raw.toByteArray()).buffer,
             toString: (encoding?: HttpResponseEncoding) => {
                 let str: string;
                 if (encoding) {

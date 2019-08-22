@@ -3,6 +3,8 @@
  * @module "text"
  */ /** */
 
+export * from "./text-common";
+
 /**
  * Defines the supported character encodings.
  */

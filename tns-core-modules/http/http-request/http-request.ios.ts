@@ -145,7 +145,15 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
                         resolve({
                             content: {
                                 raw: data,
-                                toString: (encoding?: any) => NSDataToString(data, encoding),
+                                toArrayBuffer: () => interop.bufferFromData(data),
+                                toString: (encoding?: any) => {
+                                    const str = NSDataToString(data, encoding);
+                                    if (typeof str === "string") {
+                                        return str;
+                                    } else {
+                                        throw new Error("Response content may not be converted to string");
+                                    }
+                                },
                                 toJSON: (encoding?: any) => parseJSON(NSDataToString(data, encoding)),
                                 toImage: () => {
                                     ensureImageSource();
@@ -171,7 +179,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
                                         const file = fs.File.fromPath(destinationFilePath);
 
                                         data.writeToFileAtomically(destinationFilePath, true);
-                                        
+
                                         return file;
                                     } else {
                                         reject(new Error(`Cannot save file with path: ${destinationFilePath}.`));
