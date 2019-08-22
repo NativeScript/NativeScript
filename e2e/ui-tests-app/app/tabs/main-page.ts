@@ -29,6 +29,7 @@ export function loadExamples() {
     examples.set("font-icons", "tabs/font-icons-page");
     examples.set("nested-layout", "tabs/nested-layout-page");
     examples.set("nested-bottom-navigation", "tabs/nested-bottom-navigation-page");
+    examples.set("custom-tabstrip", "tabs/custom-tabstrip-page");
 
     return examples;
 }

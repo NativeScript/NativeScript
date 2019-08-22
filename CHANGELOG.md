@@ -102,7 +102,7 @@ Use `AndroidApplication.startActivity`, `AndroidApplication.foregroundActivity`,
 
 * `start(...)` method in `tns-core-modules/application` module is now removed.
 
-Use `application.run(...)` method instead.
+Use `application.run(...)` method instead. Check the "Flexible Frame Composition" section in [this document](https://docs.google.com/document/d/1Iia0yEr5seq4H9qk4oMuJs4-M8dgmne98fymCO5IczA/edit) that explains the full migration path from `application.start(...)` to `application.run(...)` and the implications from this change
 
 
 * `loadPage(...)` method in `tns-core-modules/ui/builder` module is now removed.

@@ -556,16 +556,15 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
     }
 
-    // TODO: fix this, broken with https://github.com/NativeScript/NativeScript/pull/7499
-    // public testErrorMessageWhenWrongCssIsAddedWithFile() {
-    //     const view = this.testView;
-    //     const page = this.testPage;
-    //     this.waitUntilTestElementIsLoaded();
+    public testErrorMessageWhenWrongCssIsAddedWithFile() {
+        const view = this.testView;
+        const page = this.testPage;
+        this.waitUntilTestElementIsLoaded();
 
-    //     view.id = "testLabel";
-    //     page.addCssFile(fs.path.join(testDir, "label-tests-wrong-page.css"));
-    //     TKUnit.assertNotEqual(this.errorMessage, undefined);
-    // }
+        view.id = "testLabel";
+        page.addCssFile(fs.path.join(testDir, "label-tests-wrong-page.css"));
+        TKUnit.assertNotEqual(this.errorMessage, undefined);
+    }
 
     public testErrorMessageWhenWrongCssIsAdded() {
         const view = this.testView;

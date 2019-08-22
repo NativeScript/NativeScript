@@ -27,7 +27,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
             const label = new Label();
             label.text = "Tab " + i;
             const tabEntry = new TabContentItem();
-            tabEntry.view = label;
+            tabEntry.content = label;
             items.push(tabEntry);
         }
 
@@ -208,7 +208,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
         TKUnit.assertThrows(() => {
             let item = new TabContentItem();
             // item.title = "Tab 0";
-            item.view = undefined;
+            item.content = undefined;
             tabView.items = [item];
 
         }, "Binding TabNavigation to a TabItem with undefined view should throw.");
@@ -221,7 +221,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
         TKUnit.assertThrows(() => {
             let item = new TabContentItem();
             // item.title = "Tab 0";
-            item.view = null;
+            item.content = null;
             tabView.items = [item];
 
         }, "Binding TabNavigation to a TabItem with null view should throw.");
@@ -230,6 +230,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
     public test_when_selecting_tab_natively_selectedIndex_is_updated_properly = function () {
         var tabView = this.testView;
         tabView.items = this._createContentItems(2);
+        tabView.tabStrip = this._createTabStrip(2);
         this.waitUntilTestElementIsLoaded();
 
         var expectedValue = 1;
@@ -245,6 +246,7 @@ export class BottomNavigationTest extends UITest<BottomNavigation> {
     public test_when_selecting_tab_natively_selectedIndexChangedEvent_is_raised = function () {
         var tabView = this.testView;
         tabView.items = this._createContentItems(5);
+        tabView.tabStrip = this._createTabStrip(5);
         this.waitUntilTestElementIsLoaded();
 
         var expectedOldIndex = 3;

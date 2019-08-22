@@ -1,7 +1,7 @@
 import { Keyframes } from "../animation/keyframe-animation";
 import { ViewBase } from "../core/view-base";
 import { View } from "../core/view";
-import { unsetValue } from "../core/properties";
+import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from "../core/properties";
 import {
     SyntaxTree,
     Keyframes as KeyframesDefinition,
@@ -35,11 +35,14 @@ import * as kam from "../animation/keyframe-animation";
 let keyframeAnimationModule: typeof kam;
 function ensureKeyframeAnimationModule() {
     if (!keyframeAnimationModule) {
-        keyframeAnimationModule = require("ui/animation/keyframe-animation");
+        keyframeAnimationModule = require("../animation/keyframe-animation");
     }
 }
 
 import * as capm from "./css-animation-parser";
+import { sanitizeModuleName } from "../builder/module-name-sanitizer";
+import { resolveModuleName } from "../../module-name-resolver";
+
 let cssAnimationParserModule: typeof capm;
 function ensureCssAnimationParserModule() {
     if (!cssAnimationParserModule) {
@@ -55,6 +58,28 @@ try {
     }
 } catch (e) {
     //
+}
+
+/**
+ * Evaluate css-variable and css-calc expressions
+ */
+function evaluateCssExpressions(view: ViewBase, property: string, value: string) {
+    const newValue = _evaluateCssVariableExpression(view, property, value);
+    if (newValue === "unset") {
+        return unsetValue;
+    }
+
+    value = newValue;
+
+    try {
+        value = _evaluateCssCalcExpression(value);
+    } catch (e) {
+        traceWrite(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
+
+        return unsetValue;
+    }
+
+    return value;
 }
 
 export function mergeCssSelectors(): void {
@@ -80,25 +105,26 @@ class CSSSource {
 
     public static fromURI(uri: string, keyframes: KeyframesMap): CSSSource {
         // webpack modules require all file paths to be relative to /app folder
-        let appRelativeUri = CSSSource.pathRelativeToApp(uri);
+        const appRelativeUri = CSSSource.pathRelativeToApp(uri);
+        const sanitizedModuleName = sanitizeModuleName(appRelativeUri);
+        const resolvedModuleName = resolveModuleName(sanitizedModuleName, "css");
 
         try {
-            const cssOrAst = global.loadModule(appRelativeUri, true);
+            const cssOrAst = global.loadModule(resolvedModuleName, true);
             if (cssOrAst) {
                 if (typeof cssOrAst === "string") {
                     // raw-loader
-                    return CSSSource.fromSource(cssOrAst, keyframes, appRelativeUri);
+                    return CSSSource.fromSource(cssOrAst, keyframes, resolvedModuleName);
                 } else if (typeof cssOrAst === "object" && cssOrAst.type === "stylesheet" && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
                     // css-loader
-                    return CSSSource.fromAST(cssOrAst, keyframes, appRelativeUri);
+                    return CSSSource.fromAST(cssOrAst, keyframes, resolvedModuleName);
                 } else {
                     // css2json-loader
-                    return CSSSource.fromSource(cssOrAst.toString(), keyframes, appRelativeUri);
+                    return CSSSource.fromSource(cssOrAst.toString(), keyframes, resolvedModuleName);
                 }
             }
         } catch (e) {
-            // TODO: Commented as this prints error in playground: https://github.com/NativeScript/NativeScript/issues/7497
-            // traceWrite(`Could not load CSS from ${uri}: ${e}`, traceCategories.Error, traceMessageType.error);
+            traceWrite(`Could not load CSS from ${uri}: ${e}`, traceCategories.Error, traceMessageType.error);
         }
 
         return CSSSource.fromFile(appRelativeUri, keyframes);
@@ -320,12 +346,17 @@ function onLiveSync(args: applicationCommon.CssChangedEventData): void {
     loadCss(applicationCommon.getCssFileName());
 }
 
-const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
-    if (!cssFile) {
+const loadCss = profile(`"style-scope".loadCss`, (cssModule: string) => {
+    if (!cssModule) {
         return undefined;
     }
 
-    const result = CSSSource.fromURI(cssFile, applicationKeyframes).selectors;
+    // safely remove "./" as global CSS should be resolved relative to app folder
+    if (cssModule.startsWith("./")) {
+        cssModule = cssModule.substr(2);
+    }
+
+    const result = CSSSource.fromURI(cssModule, applicationKeyframes).selectors;
     if (result.length > 0) {
         applicationSelectors = result;
         mergeCssSelectors();
@@ -335,6 +366,11 @@ const loadCss = profile(`"style-scope".loadCss`, (cssFile: string) => {
 applicationCommon.on("cssChanged", onCssChanged);
 applicationCommon.on("livesync", onLiveSync);
 
+// Call to this method is injected in the application in:
+//  - no-snapshot - code injected in app.ts by [bundle-config-loader](https://github.com/NativeScript/nativescript-dev-webpack/blob/9b1e34d8ef838006c9b575285c42d2304f5f02b5/bundle-config-loader.ts#L85-L92)
+//  - with-snapshot - code injected in snapshot bundle by [NativeScriptSnapshotPlugin](https://github.com/NativeScript/nativescript-dev-webpack/blob/48b26f412fd70c19dc0b9c7763e08e9505a0ae11/plugins/NativeScriptSnapshotPlugin/index.js#L48-L56)
+// Having the app.css loaded in snapshot provides significant boost in startup (when using the ns-theme ~150 ms). However, because app.css is resolved at build-time,
+// when the snapshot is created - there is no way to use file qualifiers or change the name of on app.css
 export const loadAppCSS = profile("\"style-scope\".loadAppCSS", (args: applicationCommon.LoadAppCSSEventData) => {
     loadCss(args.cssFile);
     applicationCommon.off("loadAppCss", loadAppCSS);
@@ -509,22 +545,60 @@ export class CssState {
         matchingSelectors.forEach(selector =>
             selector.ruleset.declarations.forEach(declaration =>
                 newPropertyValues[declaration.property] = declaration.value));
-        Object.freeze(newPropertyValues);
 
         const oldProperties = this._appliedPropertyValues;
-        for (const key in oldProperties) {
-            if (!(key in newPropertyValues)) {
-                if (key in view.style) {
-                    view.style[`css:${key}`] = unsetValue;
+
+        let isCssExpressionInUse = false;
+
+        // Update values for the scope's css-variables
+        view.style.resetScopedCssVariables();
+
+        for (const property in newPropertyValues) {
+            const value = newPropertyValues[property];
+            if (isCssVariable(property)) {
+                view.style.setScopedCssVariable(property, value);
+
+                delete newPropertyValues[property];
+                continue;
+            }
+
+            isCssExpressionInUse = isCssExpressionInUse || isCssVariableExpression(value) || isCssCalcExpression(value);
+        }
+
+        if (isCssExpressionInUse) {
+            // Evalute css-expressions to get the latest values.
+            for (const property in newPropertyValues) {
+                const value = evaluateCssExpressions(view, property, newPropertyValues[property]);
+                if (value === unsetValue) {
+                    delete newPropertyValues[property];
+                    continue;
+                }
+
+                newPropertyValues[property] = value;
+            }
+        }
+
+        // Property values are fully updated, freeze the object to be used for next update.
+        Object.freeze(newPropertyValues);
+
+        // Unset removed values
+        for (const property in oldProperties) {
+            if (!(property in newPropertyValues)) {
+                if (property in view.style) {
+                    view.style[`css:${property}`] = unsetValue;
                 } else {
                     // TRICKY: How do we unset local value?
                 }
             }
         }
+
+        // Set new values to the style
         for (const property in newPropertyValues) {
             if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
+                // Skip unchanged values
                 continue;
             }
+
             const value = newPropertyValues[property];
             try {
                 if (property in view.style) {
@@ -534,7 +608,7 @@ export class CssState {
                     view[camelCasedProperty] = value;
                 }
             } catch (e) {
-                traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
+                traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
             }
         }
 
@@ -806,21 +880,41 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
     let localStyle = `local { ${styleStr} }`;
     let inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
-    const style = view.style;
+
+    // Reset unscoped css-variables
+    view.style.resetUnscopedCssVariables();
+
+    // Set all the css-variables first, so we can be sure they are up-to-date
+    inlineRuleSet[0].declarations.forEach(d => {
+        // Use the actual property name so that a local value is set.
+        let property = d.property;
+        if (isCssVariable(property)) {
+            view.style.setUnscopedCssVariable(property, d.value);
+        }
+    });
 
     inlineRuleSet[0].declarations.forEach(d => {
         // Use the actual property name so that a local value is set.
-        let name = d.property;
+        let property = d.property;
         try {
-            if (name in style) {
-                style[name] = d.value;
+            if (isCssVariable(property)) {
+                // Skip css-variables, they have been handled
+                return;
+            }
+
+            const value = evaluateCssExpressions(view, property, d.value);
+            if (property in view.style) {
+                view.style[property] = value;
             } else {
-                view[name] = d.value;
+                view[property] = value;
             }
         } catch (e) {
             traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
         }
     });
+
+    // This is needed in case of changes to css-variable or css-calc expressions.
+    view._onCssStateChange();
 });
 
 function isCurrentDirectory(uriPart: string): boolean {

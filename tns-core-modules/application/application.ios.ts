@@ -1,14 +1,17 @@
+
 import {
+    ApplicationEventData,
+    CssChangedEventData,
     iOSApplication as IOSApplicationDefinition,
     LaunchEventData,
-    ApplicationEventData,
-    OrientationChangedEventData,
-    LoadAppCSSEventData
+    LoadAppCSSEventData,
+    OrientationChangedEventData
 } from ".";
 
 import {
-    notify, launchEvent, resumeEvent, suspendEvent, exitEvent, lowMemoryEvent,
-    orientationChangedEvent, setApplication, livesync, displayedEvent, getCssFileName
+    CSS_CLASS_PREFIX, displayedEvent, exitEvent, getCssFileName, launchEvent, livesync,
+    lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent,
+    setApplication, suspendEvent
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -18,9 +21,16 @@ export * from "./application-common";
 import { createViewFromEntry } from "../ui/builder";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
-import { ios } from "../utils/utils";
+import { device } from "../platform/platform";
 import { profile } from "../profiling";
+import { ios } from "../utils/utils";
 
+const ROOT = "root";
+const IOS_PLATFORM = "ios";
+const ROOT_VIEW_CSS_CLASSES = [
+    `${CSS_CLASS_PREFIX}${ROOT}`,
+    `${CSS_CLASS_PREFIX}${IOS_PLATFORM}`
+];
 const getVisibleViewController = ios.getVisibleViewController;
 
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
@@ -77,9 +87,9 @@ class CADisplayLinkTarget extends NSObject {
 
 class IOSApplication implements IOSApplicationDefinition {
     private _delegate: typeof UIApplicationDelegate;
-    private _currentOrientation = UIDevice.currentDevice.orientation;
     private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
+    private _orientation: "portrait" | "landscape" | "unknown";
     private _rootView: View;
 
     constructor() {
@@ -89,7 +99,16 @@ class IOSApplication implements IOSApplicationDefinition {
         this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground.bind(this));
         this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate.bind(this));
         this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning.bind(this));
-        this.addNotificationObserver(UIDeviceOrientationDidChangeNotification, this.orientationDidChange.bind(this));
+        this.addNotificationObserver(UIApplicationDidChangeStatusBarOrientationNotification, this.didChangeStatusBarOrientation.bind(this));
+    }
+
+    get orientation(): "portrait" | "landscape" | "unknown" {
+        if (!this._orientation) {
+            const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+            this._orientation = this.getOrientationValue(statusBarOrientation);
+        }
+
+        return this._orientation;
     }
 
     get rootController(): UIViewController {
@@ -196,37 +215,36 @@ class IOSApplication implements IOSApplicationDefinition {
         }
     }
 
-    private didReceiveMemoryWarning(notification: NSNotification) {
-        notify(<ApplicationEventData>{ eventName: lowMemoryEvent, object: this, ios: UIApplication.sharedApplication });
-    }
+    private didChangeStatusBarOrientation(notification: NSNotification) {
+        const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+        const newOrientation = this.getOrientationValue(statusBarOrientation);
 
-    private orientationDidChange(notification: NSNotification) {
-        const orientation = UIDevice.currentDevice.orientation;
-
-        if (this._currentOrientation !== orientation) {
-            this._currentOrientation = orientation;
-
-            let newValue: "portrait" | "landscape" | "unknown";
-            switch (orientation) {
-                case UIDeviceOrientation.LandscapeRight:
-                case UIDeviceOrientation.LandscapeLeft:
-                    newValue = "landscape";
-                    break;
-                case UIDeviceOrientation.Portrait:
-                case UIDeviceOrientation.PortraitUpsideDown:
-                    newValue = "portrait";
-                    break;
-                default:
-                    newValue = "unknown";
-                    break;
-            }
+        if (this._orientation !== newOrientation) {
+            this._orientation = newOrientation;
 
             notify(<OrientationChangedEventData>{
                 eventName: orientationChangedEvent,
                 ios: this,
-                newValue: newValue,
+                newValue: this._orientation,
                 object: this
             });
+        }
+    }
+
+    private didReceiveMemoryWarning(notification: NSNotification) {
+        notify(<ApplicationEventData>{ eventName: lowMemoryEvent, object: this, ios: UIApplication.sharedApplication });
+    }
+
+    private getOrientationValue(orientation: number): "portrait" | "landscape" | "unknown" {
+        switch (orientation) {
+            case UIInterfaceOrientation.LandscapeRight:
+            case UIInterfaceOrientation.LandscapeLeft:
+                return "landscape";
+            case UIInterfaceOrientation.PortraitUpsideDown:
+            case UIInterfaceOrientation.Portrait:
+                return "portrait";
+            case UIInterfaceOrientation.Unknown:
+                return "unknown";
         }
     }
 
@@ -298,6 +316,11 @@ function createRootView(v?: View) {
         }
     }
 
+    const deviceType = device.deviceType.toLowerCase();
+    ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${deviceType}`);
+    ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${iosApp.orientation}`);
+    ROOT_VIEW_CSS_CLASSES.forEach(c => rootView.cssClasses.add(c));
+
     return rootView;
 }
 
@@ -349,6 +372,14 @@ export function run(entry?: string | NavigationEntry) {
     _start(entry);
 }
 
+export function addCss(cssText: string): void {
+    notify(<CssChangedEventData>{ eventName: "cssChanged", object: <any>iosApp, cssText: cssText });
+    const rootView = getRootView();
+    if (rootView) {
+        rootView._onCssStateChange();
+    }
+}
+
 export function _resetRootView(entry?: NavigationEntry | string) {
     createRootFrame.value = false;
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
@@ -385,6 +416,13 @@ function setViewControllerView(view: View): void {
         viewController.view.addSubview(nativeView);
     }
 }
+
+on(orientationChangedEvent, (args: OrientationChangedEventData) => {
+    const rootView = getRootView();
+    if (rootView) {
+        orientationChanged(rootView, args.newValue);
+    }
+});
 
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     if (!started) {

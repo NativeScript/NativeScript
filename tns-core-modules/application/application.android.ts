@@ -1,19 +1,28 @@
+// Definitions.
 import {
-    AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData, OrientationChangedEventData,
-    AndroidApplication as AndroidApplicationDefinition, AndroidActivityNewIntentEventData,
-    AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityRequestPermissionsEventData
+    AndroidActivityBackPressedEventData,
+    AndroidActivityBundleEventData,
+    AndroidActivityEventData,
+    AndroidActivityNewIntentEventData,
+    AndroidActivityRequestPermissionsEventData,
+    AndroidActivityResultEventData,
+    AndroidApplication as AndroidApplicationDefinition,
+    ApplicationEventData,
+    CssChangedEventData,
+    OrientationChangedEventData
 } from ".";
 
 import {
-    notify, hasListeners, lowMemoryEvent, orientationChangedEvent, suspendEvent, displayedEvent,
-    setApplication, livesync, Observable
+    displayedEvent, hasListeners, livesync, lowMemoryEvent, notify, Observable, on,
+    orientationChanged, orientationChangedEvent, setApplication, suspendEvent
 } from "./application-common";
+
 import { profile } from "../profiling";
 
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
-// types
+// Types.
 import { NavigationEntry, View, AndroidActivityCallbacks } from "../ui/frame";
 
 const ActivityCreated = "activityCreated";
@@ -41,6 +50,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
     public static activityNewIntentEvent = ActivityNewIntent;
     public static activityRequestPermissionsEvent = ActivityRequestPermissions;
 
+    private _orientation: "portrait" | "landscape" | "unknown";
     public paused: boolean;
     public nativeApp: android.app.Application;
     public context: android.content.Context;
@@ -77,6 +87,22 @@ export class AndroidApplication extends Observable implements AndroidApplication
     private _registerPendingReceivers() {
         this._pendingReceiverRegistrations.forEach(func => func(this.context));
         this._pendingReceiverRegistrations.length = 0;
+    }
+
+    get orientation(): "portrait" | "landscape" | "unknown" {
+        if (!this._orientation) {
+            const resources = this.context.getResources();
+            const configuration = <android.content.res.Configuration>resources.getConfiguration();
+            const orientation = configuration.orientation;
+
+            this._orientation = getOrientationValue(orientation);
+        }
+
+        return this._orientation;
+    }
+
+    set orientation(value: "portrait" | "landscape" | "unknown") {
+        this._orientation = value;
     }
 
     public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
@@ -151,6 +177,14 @@ export function run(entry?: NavigationEntry | string) {
     _start(entry);
 }
 
+export function addCss(cssText: string): void {
+    notify(<CssChangedEventData>{ eventName: "cssChanged", object: androidApp, cssText: cssText });
+    const rootView = getRootView();
+    if (rootView) {
+        rootView._onCssStateChange();
+    }
+}
+
 const CALLBACKS = "_callbacks";
 
 export function _resetRootView(entry?: NavigationEntry | string) {
@@ -214,6 +248,13 @@ export function getNativeApplication(): android.app.Application {
     return nativeApp;
 }
 
+on(orientationChangedEvent, (args: OrientationChangedEventData) => {
+    const rootView = getRootView();
+    if (rootView) {
+        orientationChanged(rootView, args.newValue);
+    }
+});
+
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     if (androidApp && androidApp.paused) {
         return;
@@ -222,6 +263,17 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     const rootView = getRootView();
     livesync(rootView, context);
 };
+
+function getOrientationValue(orientation: number): "portrait" | "landscape" | "unknown" {
+    switch (orientation) {
+        case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
+            return "landscape";
+        case android.content.res.Configuration.ORIENTATION_PORTRAIT:
+            return "portrait";
+        default:
+            return "unknown";
+    }
+}
 
 function initLifecycleCallbacks() {
     const setThemeOnLaunch = profile("setThemeOnLaunch", (activity: androidx.appcompat.app.AppCompatActivity) => {
@@ -312,7 +364,6 @@ function initLifecycleCallbacks() {
     return lifecycleCallbacks;
 }
 
-let currentOrientation: number;
 function initComponentCallbacks() {
     let componentCallbacks = new android.content.ComponentCallbacks2({
         onLowMemory: profile("onLowMemory", function () {
@@ -326,32 +377,19 @@ function initComponentCallbacks() {
         }),
 
         onConfigurationChanged: profile("onConfigurationChanged", function (newConfig: android.content.res.Configuration) {
-            const newOrientation = newConfig.orientation;
-            if (newOrientation === currentOrientation) {
-                return;
+            const newConfigOrientation = newConfig.orientation;
+            const newOrientation = getOrientationValue(newConfigOrientation);
+
+            if (androidApp.orientation !== newOrientation) {
+                androidApp.orientation = newOrientation;
+
+                notify(<OrientationChangedEventData>{
+                    eventName: orientationChangedEvent,
+                    android: androidApp.nativeApp,
+                    newValue: androidApp.orientation,
+                    object: androidApp
+                });
             }
-
-            currentOrientation = newOrientation;
-            let newValue;
-
-            switch (newOrientation) {
-                case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
-                    newValue = "landscape";
-                    break;
-                case android.content.res.Configuration.ORIENTATION_PORTRAIT:
-                    newValue = "portrait";
-                    break;
-                default:
-                    newValue = "unknown";
-                    break;
-            }
-
-            notify(<OrientationChangedEventData>{
-                eventName: orientationChangedEvent,
-                android: androidApp.nativeApp,
-                newValue: newValue,
-                object: androidApp
-            });
         })
     });
 

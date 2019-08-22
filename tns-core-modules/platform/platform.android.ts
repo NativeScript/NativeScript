@@ -19,16 +19,16 @@ class Device implements DeviceDefinition {
     private _language: string;
     private _region: string;
 
-    get os(): string {
-        return platformNames.android;
-    }
-
     get manufacturer(): string {
         if (!this._manufacturer) {
             this._manufacturer = android.os.Build.MANUFACTURER;
         }
 
         return this._manufacturer;
+    }
+
+    get os(): string {
+        return platformNames.android;
     }
 
     get osVersion(): string {

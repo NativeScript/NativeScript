@@ -119,6 +119,60 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         TKUnit.assertEqual(this.colSpan(test), 1, "'columnSpan' property default value should be 1.");
     }
 
+    public test_synonym_property_setting_column_changes_col() {
+        const test = new Button();
+        
+        test.column = 3;
+
+        TKUnit.assertEqual(test.column, 3, "Setting column should work.");
+        TKUnit.assertEqual(test.col, 3, "Setting column property should affect col property.");
+    }
+
+    public test_synonym_property_setting_col_changes_column() {
+        const test = new Button();
+        
+        test.col = 3;
+
+        TKUnit.assertEqual(test.col, 3, "Setting col should work.");
+        TKUnit.assertEqual(test.column, 3, "Setting col property should affect column property.");
+    }
+
+    public test_synonym_property_setColumn_should_set_col_and_column() {
+        const test = new Button();
+        
+        GridLayout.setColumn(test, 3);
+
+        TKUnit.assertEqual(test.col, 3, "setColumn should set col");
+        TKUnit.assertEqual(test.column, 3, "setColumn should set column");
+    }
+
+    public test_synonym_property_setting_columnSpan_changes_colSpan() {
+        const test = new Button();
+        
+        test.columnSpan = 3;
+
+        TKUnit.assertEqual(test.columnSpan, 3, "Setting columnSpan should work.");
+        TKUnit.assertEqual(test.colSpan, 3, "Setting columnSpan property should affect colSpan property.");
+    }
+
+    public test_synonym_property_setting_colSpan_changes_columnSpan() {
+        const test = new Button();
+        
+        test.colSpan = 3;
+
+        TKUnit.assertEqual(test.colSpan, 3, "Setting colSpan should work.");
+        TKUnit.assertEqual(test.columnSpan, 3, "Setting colSpan property should affect columnSpan property.");
+    }
+
+    public test_synonym_property_setColumnSpan_should_set_colSpan_and_columnSpan() {
+        const test = new Button();
+        
+        GridLayout.setColumnSpan(test, 3);
+
+        TKUnit.assertEqual(test.colSpan, 3, "setColumnSpan should set colSpan");
+        TKUnit.assertEqual(test.columnSpan, 3, "setColumnSpan should set columnSpan");
+    }
+
     public test_getRow_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
             GridLayout.getRow(null);
@@ -250,17 +304,17 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         TKUnit.assertEqual(
             this.row(btn),
             row,
-            "'row' property not applied For GridLayout addChildAtCell without rowspan."
+            "'row' property not applied For GridLayout addChildAtCell without rowSpan."
         );
         TKUnit.assertEqual(
             this.col(btn),
             column,
-            "'column' property not applied For GridLayout addChildAtCell without rowspan."
+            "'column' property not applied For GridLayout addChildAtCell without rowSpan."
         );
         TKUnit.assertEqual(
             this.rowSpan(btn),
             defaultSpanValue,
-            "'rowSpan' property not applied For GridLayout addChildAtCell without rowspan."
+            "'rowSpan' property not applied For GridLayout addChildAtCell without rowSpan."
         );
         TKUnit.assertEqual(
             this.colSpan(btn),

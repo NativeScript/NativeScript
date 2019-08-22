@@ -23,6 +23,7 @@ export function loadExamples() {
     examples.set("pwrap", "layouts-percent/wrap-page");
     examples.set("passThroughParent", "layouts/passThroughParent-page");
     examples.set("stacklayout-6059", "layouts/stacklayout-6059-page");
+    examples.set("grid-7295", "layouts/grid-7295-page");
     examples.set("safe-area", "layouts/safe-area-page");
 
     return examples;

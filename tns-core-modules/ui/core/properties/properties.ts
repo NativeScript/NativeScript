@@ -1,3 +1,5 @@
+import reduceCSSCalc from "reduce-css-calc";
+
 // Definitions.
 import * as definitions from "../view-base";
 import { ViewBase } from "../view-base";
@@ -54,6 +56,76 @@ export function _getProperties(): Property<any, any>[] {
 
 export function _getStyleProperties(): CssProperty<any, any>[] {
     return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
+}
+
+const cssVariableExpressionRegexp = /\bvar\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
+const cssVariableAllExpressionsRegexp = /\bvar\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/g;
+
+export function isCssVariable(property: string) {
+    return /^--[^,\s]+?$/.test(property);
+}
+
+export function isCssCalcExpression(value: string) {
+    return /\bcalc\(/.test(value);
+}
+
+export function isCssVariableExpression(value: string) {
+    return cssVariableExpressionRegexp.test(value);
+}
+
+export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
+    if (typeof value !== "string") {
+        return value;
+    }
+
+    if (!isCssVariableExpression(value)) {
+        // Value is not using css-variable(s)
+        return value;
+    }
+
+    let output = value.trim();
+
+    // Evaluate every (and nested) css-variables in the value.
+    let lastValue: string;
+    while (lastValue !== output) {
+        lastValue = output;
+
+        output = output.replace(cssVariableAllExpressionsRegexp, (matchStr, cssVariableName: string, fallbackStr: string) => {
+            const cssVariableValue = view.style.getCssVariable(cssVariableName);
+            if (cssVariableValue !== null) {
+                return cssVariableValue;
+            }
+
+            if (fallbackStr) {
+                // css-variable not found, using fallback-string.
+                const fallbackOutput = _evaluateCssVariableExpression(view, cssName, fallbackStr);
+                if (fallbackOutput) {
+                    // If the fallback have multiple values, return the first of them.
+                    return fallbackOutput.split(",")[0];
+                }
+            }
+
+            // Couldn't find a value for the css-variable or the fallback, return "unset"
+            traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Style, traceMessageType.error);
+
+            return "unset";
+        });
+    }
+
+    return output;
+}
+
+export function _evaluateCssCalcExpression(value: string) {
+    if (typeof value !== "string") {
+        return value;
+    }
+
+    if (isCssCalcExpression(value)) {
+        // WORKAROUND: reduce-css-calc can't handle the dip-unit.
+        return reduceCSSCalc(value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, "$1"));
+    } else {
+        return value;
+    }
 }
 
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {

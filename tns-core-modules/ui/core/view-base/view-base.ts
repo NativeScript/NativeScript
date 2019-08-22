@@ -37,7 +37,7 @@ function ensuredomNodeModule(): void {
 let styleScopeModule: typeof ssm;
 function ensureStyleScopeModule() {
     if (!styleScopeModule) {
-        styleScopeModule = require("ui/styling/style-scope");
+        styleScopeModule = require("../../styling/style-scope");
     }
 }
 
@@ -210,8 +210,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     dock: "left" | "top" | "right" | "bottom";
     row: number;
     col: number;
+    column: number; // synonym for "col"
     rowSpan: number;
     colSpan: number;
+    columnSpan: number; // synonym for "columnSpan"
 
     order: Order;
     flexGrow: FlexGrow;

@@ -8,7 +8,7 @@ import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "../../core/v
 // Requires
 import { 
     View, Property, CSSType, backgroundColorProperty, backgroundInternalProperty, 
-    colorProperty, fontInternalProperty
+    colorProperty, fontInternalProperty, booleanConverter
 } from "../../core/view";
 import { textTransformProperty } from "../../text-base";
 
@@ -21,6 +21,7 @@ export const highlightColorProperty = new Property<TabStrip, Color>({ name: "hig
 @CSSType("TabStrip")
 export class TabStrip extends View implements TabStripDefinition, AddChildFromBuilder, AddArrayFromBuilder {
     public items: TabStripItem[];
+    public isIconSizeFixed: boolean;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
     public _hasImage: boolean;
     public _hasTitle: boolean;
@@ -48,6 +49,18 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
             this.items.push(<TabStripItem>value);
             this._addView(value);
             // selectedIndexProperty.coerce(this);
+        }
+    }
+
+    public onItemsChanged(oldItems: TabStripItem[], newItems: TabStripItem[]): void {
+        if (oldItems) {
+            oldItems.forEach(item => this._removeView(item));
+        }
+
+        if (newItems) {
+            newItems.forEach(item => {
+                this._addView(item);
+            });
         }
     }
 
@@ -112,9 +125,21 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
         
         return parent && parent.setTabBarHighlightColor(value);
     }
-} 
+}
+
+export const itemsProperty = new Property<TabStrip, TabStripItem[]>({
+    name: "items", valueChanged: (target, oldValue, newValue) => {
+        target.onItemsChanged(oldValue, newValue);
+    }
+});
+itemsProperty.register(TabStrip);
 
 export const iosIconRenderingModeProperty = new Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
 iosIconRenderingModeProperty.register(TabStrip);
+
+export const isIconSizeFixedProperty = new Property<TabStrip, boolean>({
+    name: "isIconSizeFixed", defaultValue: true, valueConverter: booleanConverter
+});
+isIconSizeFixedProperty.register(TabStrip);
 
 highlightColorProperty.register(TabStrip);
