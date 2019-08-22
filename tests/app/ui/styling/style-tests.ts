@@ -1474,7 +1474,7 @@ export function test_css_calc() {
     TKUnit.assertEqual(stack.width as any, 125, "Stack - width === 125");
 
     (stack as any).style = `width: calc(100% / 2)`;
-    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
 
     // This should log an error for the invalid css-calc expression, but not cause a crash
     stack.className = "invalid-css-calc";
@@ -1545,7 +1545,7 @@ export function test_nested_css_calc() {
 
     (stack as any).style = `width: calc(100% * calc(1 / 2)`;
 
-    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
 }
 
 export function test_css_variables() {
@@ -1655,7 +1655,7 @@ export function test_css_calc_and_variables() {
 
     // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
     (stack as any).style = `${cssVarName}: 0.5`;
-    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
 }
 
 export function test_css_variable_fallback() {
@@ -1796,10 +1796,10 @@ export function test_nested_css_calc_and_variables() {
     // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
     stack.className = "wide";
     (stack as any).style = `${cssVarName}: 0.25`;
-    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
 
     stack.className = "nested";
-    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 1 }, "Stack - width === 100%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1 }, "Stack - width === 100%");
 }
 
 export function test_css_variable_is_applied_to_normal_properties() {

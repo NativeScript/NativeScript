@@ -41,7 +41,7 @@ export function createPage() {
     lv.height = 200;
     lv.items = data;
     lv.on(list.ListView.itemLoadingEvent, (args: list.ItemEventData) => {
-        var btn = <button.Button> args.view;
+        var btn = <button.Button>args.view;
         if (!btn) {
             btn = new button.Button();
             args.view = btn;
