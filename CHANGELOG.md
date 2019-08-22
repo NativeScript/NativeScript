@@ -1,3 +1,16 @@
+<a name="6.0.7"></a>
+## [6.0.7](https://github.com/NativeScript/NativeScript/compare/6.0.4...6.0.7) (2019-08-22)
+
+
+### Bug Fixes
+
+* **bottom-navigation:** codebehind creation ([#7624](https://github.com/NativeScript/NativeScript/issues/7624)) ([056d0bf](https://github.com/NativeScript/NativeScript/commit/056d0bf))
+* prevent plugin podfile platform version clash ([#7626](https://github.com/NativeScript/NativeScript/issues/7626)) ([49b3571](https://github.com/NativeScript/NativeScript/commit/49b3571))
+* **hmr:** close modal views during livesync [#7668](https://github.com/NativeScript/NativeScript/issues/7668) ([#7679](https://github.com/NativeScript/NativeScript/issues/7679)) ([9877b20](https://github.com/NativeScript/NativeScript/commit/9877b20))
+* **tabs-android:** tabStripItem color not applied ([#7617](https://github.com/NativeScript/NativeScript/issues/7617)) ([2518655](https://github.com/NativeScript/NativeScript/commit/2518655))
+
+
+
 <a name="6.0.6"></a>
 ## [6.0.6](https://github.com/NativeScript/NativeScript/compare/6.0.5...6.0.6) (2019-08-08)
 
