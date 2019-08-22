@@ -51,17 +51,17 @@ export class TabStrip extends View {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     /**
-     * Raised when an item inside the TabStrip is tapped.
+     * Raised when an TabStripItem is tapped.
      */
-    on(event: "itemTap", callback: (args: ItemEventData) => void, thisArg?: any);
+    on(event: "itemTap", callback: (args: TabStripItemEventData) => void, thisArg?: any);
 }
 
 /**
- * Event data containing information for the index associated with a tab strip item.
+ * Event data containing information for the TabStripItem's index.
  */
-export interface ItemEventData extends EventData {
+export interface TabStripItemEventData extends EventData {
     /**
-     * The index of the item, for which the event is raised.
+     * The index of the TabStripItem.
      */
     index: number;
 }

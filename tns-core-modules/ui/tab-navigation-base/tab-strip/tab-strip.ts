@@ -3,7 +3,7 @@ import { Color } from "../../../color";
 import { AddArrayFromBuilder, AddChildFromBuilder, EventData, ViewBase } from "../../core/view";
 import { TabNavigationBase } from "../tab-navigation-base";
 import { TabStripItem } from "../tab-strip-item";
-import { ItemEventData, TabStrip as TabStripDefinition } from "./";
+import { TabStripItemEventData, TabStrip as TabStripDefinition } from "./";
 
 // Requires
 import {
@@ -130,7 +130,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
 
 export interface TabStrip {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
-    on(event: "itemTap", callback: (args: ItemEventData) => void, thisArg?: any);
+    on(event: "itemTap", callback: (args: TabStripItemEventData) => void, thisArg?: any);
 }
 
 export const itemsProperty = new Property<TabStrip, TabStripItem[]>({

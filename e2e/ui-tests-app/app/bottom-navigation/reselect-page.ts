@@ -2,7 +2,7 @@ import { EventData } from "tns-core-modules/data/observable";
 import { Frame } from "tns-core-modules/ui/frame/frame";
 import { Page } from "tns-core-modules/ui/page";
 import {
-  ItemEventData, SelectedIndexChangedEventData, BottomNavigation, TabStrip,
+  TabStripItemEventData, SelectedIndexChangedEventData, BottomNavigation, TabStrip,
 } from "tns-core-modules/ui/bottom-navigation";
 
 export function goToFirst(args: EventData) {
@@ -32,7 +32,7 @@ export function onSelectedIndexChanged(args: SelectedIndexChangedEventData) {
   console.log("---> newIndex", args.newIndex);
 }
 
-export function onItemTap(args: ItemEventData) {
+export function onItemTap(args: TabStripItemEventData) {
   console.log("---> onItemTap", args.eventName);
   console.log("---> onItemTap", args.index);
   console.log("---> onItemTap", args.object);
