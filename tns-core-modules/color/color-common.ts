@@ -39,9 +39,9 @@ export class Color implements definition.Color {
             }
         } else if (arguments.length === 4) {
             this._argb = (arguments[0] & 0xFF) * 0x01000000
-                       + (arguments[1] & 0xFF) * 0x00010000
-                       + (arguments[2] & 0xFF) * 0x00000100
-                       + (arguments[3] & 0xFF) * 0x00000001;
+                + (arguments[1] & 0xFF) * 0x00010000
+                + (arguments[2] & 0xFF) * 0x00000100
+                + (arguments[3] & 0xFF) * 0x00000001;
         } else {
             throw new Error("Expected 1 or 4 constructor parameters.");
         }
@@ -188,7 +188,7 @@ function argbFromRgbOrRgba(value: string): number {
     }
 
     return (a & 0xFF) * 0x01000000
-         + (r & 0xFF) * 0x00010000
-         + (g & 0xFF) * 0x00000100
-         + (b & 0xFF) * 0x00000001;
+        + (r & 0xFF) * 0x00010000
+        + (g & 0xFF) * 0x00000100
+        + (b & 0xFF) * 0x00000001;
 }

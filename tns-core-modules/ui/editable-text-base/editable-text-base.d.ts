@@ -23,7 +23,7 @@ export class EditableTextBase extends TextBase {
     returnKeyType: ReturnKeyType;
 
     /**
-     * Gets or sets a value indicating when the text property will be updated. 
+     * Gets or sets a value indicating when the text property will be updated.
      */
     updateTextTrigger: UpdateTextTrigger;
 

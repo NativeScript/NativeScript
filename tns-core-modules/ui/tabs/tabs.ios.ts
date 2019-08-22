@@ -856,7 +856,7 @@ export class Tabs extends TabsBase {
             if (!this.tabStrip._hasImage) {
                 this.tabStrip._hasImage = !!image;
             }
-    
+
             if (!this.tabStrip._hasTitle) {
                 this.tabStrip._hasTitle = !!title;
             }
@@ -907,7 +907,7 @@ export class Tabs extends TabsBase {
 
             if (is && is.ios) {
                 image = is.ios;
-                
+
                 if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
                     image = this.getFixedSizeIcon(image);
                 }
@@ -927,7 +927,7 @@ export class Tabs extends TabsBase {
     private getFixedSizeIcon(image: UIImage): UIImage {
         const inWidth = image.size.width;
         const inHeight = image.size.height;
-        
+
         const iconSpecSize = getIconSpecSize({ width: inWidth, height: inHeight });
 
         const widthPts = iconSpecSize.width;

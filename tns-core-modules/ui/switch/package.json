@@ -1,5 +1,5 @@
 {
-  "name" : "switch",
-  "main" : "switch",
-  "types" : "switch.d.ts"
+  "name": "switch",
+  "main": "switch",
+  "types": "switch.d.ts"
 }

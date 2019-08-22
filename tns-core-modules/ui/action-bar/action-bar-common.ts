@@ -89,7 +89,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
             this.update();
         }
     }
-    
+
     get ios(): any {
         return undefined;
     }

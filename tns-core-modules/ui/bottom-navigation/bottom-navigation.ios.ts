@@ -5,7 +5,7 @@ import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TextTransform } from "../text-base";
 
 //Requires
-import { 
+import {
     TabNavigationBase, getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty
 } from "../tab-navigation-base/tab-navigation-base";
 import { Font } from "../styling/font";
@@ -555,7 +555,7 @@ export class BottomNavigation extends TabNavigationBase {
 
             if (is && is.ios) {
                 image = is.ios;
-                
+
                 if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
                     image = this.getFixedSizeIcon(image);
                 }
@@ -575,7 +575,7 @@ export class BottomNavigation extends TabNavigationBase {
     private getFixedSizeIcon(image: UIImage): UIImage {
         const inWidth = image.size.width;
         const inHeight = image.size.height;
-        
+
         const iconSpecSize = getIconSpecSize({ width: inWidth, height: inHeight });
 
         const widthPts = iconSpecSize.width;

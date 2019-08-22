@@ -179,7 +179,7 @@ export module AnimationCurve {
     export function cubicBezier(x1: number, y1: number, x2: number, y2: number): Object {
         animation = animation || require("../animation");
 
-        return new animation.CubicBezierAnimationCurve(x1, y1 , x2, y2);
+        return new animation.CubicBezierAnimationCurve(x1, y1, x2, y2);
     }
 }
 

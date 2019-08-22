@@ -6,8 +6,8 @@ import { Color } from "../../../color";
 import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "../../core/view";
 
 // Requires
-import { 
-    View, Property, CSSType, backgroundColorProperty, backgroundInternalProperty, 
+import {
+    View, Property, CSSType, backgroundColorProperty, backgroundInternalProperty,
     colorProperty, fontInternalProperty, booleanConverter
 } from "../../core/view";
 import { textTransformProperty } from "../../text-base";
@@ -89,7 +89,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [colorProperty.setNative](value: Color) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarColor(value);
     }
 
@@ -100,7 +100,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [fontInternalProperty.setNative](value: any) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarFontInternal(value);
     }
 
@@ -111,7 +111,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [textTransformProperty.setNative](value: any) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarTextTransform(value);
     }
 
@@ -122,7 +122,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [highlightColorProperty.setNative](value: number | Color) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarHighlightColor(value);
     }
 }

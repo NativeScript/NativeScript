@@ -50,13 +50,13 @@ Custom dialogs:
 	require("globals");
 	var dialogs = require("ui/dialogs");
 
-	/// Splash 
+	/// Splash
 	var d = new dialogs.Dialog("Loading...");
 	d.show();
 	setTimeout(function(){ d.hide(); }, 2000);
 
 	//or cancelable loading dialog
-	var d = new dialogs.Dialog("Loading...", 
+	var d = new dialogs.Dialog("Loading...",
 		function(r){ dialogs.alert("You just canceled loading!"); }, { cancelButtonText: "Cancel" });
 	d.show();
 	setTimeout(function(){ d.hide(); }, 10000);

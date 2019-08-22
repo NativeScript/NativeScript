@@ -4,11 +4,11 @@ import { ItemsSource } from ".";
 export * from "./list-picker-common";
 
 interface Formatter {
-    new (owner: ListPicker): android.widget.NumberPicker.Formatter;
+    new(owner: ListPicker): android.widget.NumberPicker.Formatter;
 }
 
 interface ValueChangeListener {
-    new (owner: ListPicker): android.widget.NumberPicker.OnValueChangeListener;
+    new(owner: ListPicker): android.widget.NumberPicker.OnValueChangeListener;
 }
 
 let Formatter: Formatter;
@@ -154,9 +154,9 @@ export class ListPicker extends ListPickerBase {
     }
 
     [colorProperty.getDefault](): { wheelColor: number, textColor: number } {
-    const editText = (<any>this.nativeViewProtected).editText;
+        const editText = (<any>this.nativeViewProtected).editText;
 
-    return {
+        return {
             wheelColor: this._selectorWheelPaint.getColor(),
             textColor: editText ? editText.getTextColors().getDefaultColor() : -1
         };
