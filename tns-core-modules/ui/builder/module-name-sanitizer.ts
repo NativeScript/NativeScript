@@ -3,15 +3,16 @@ export function sanitizeModuleName(moduleName: string, removeExtension: boolean 
 
     if (moduleName.startsWith("~/")) {
         moduleName = moduleName.substring(2);
+    } else if (moduleName.startsWith("~")) {
+        moduleName = moduleName.substring(1);
     } else if (moduleName.startsWith("/")) {
         moduleName = moduleName.substring(1);
     }
 
     if (removeExtension) {
-        const lastDot = moduleName.lastIndexOf(".");
-        if (lastDot > 0) {
-            moduleName = moduleName.substr(0, lastDot);
-        }
+        const extToRemove = ["js", "ts", "xml", "html", "css", "scss"];
+        const extensionRegEx = new RegExp(`(.*)\\.(?:${extToRemove.join("|")})`, "i");
+        moduleName = moduleName.replace(extensionRegEx, "$1");
     }
 
     return moduleName;

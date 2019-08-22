@@ -14,17 +14,18 @@
   },
   "dependencies": {
     "nativescript-theme-core": "~1.0.6",
-    "tns-core-modules": "next"
+    "tns-core-modules": "file:../../tns-core-modules"
   },
   "devDependencies": {
     "@types/chai": "~4.1.7",
     "@types/mocha": "~5.2.5",
+    "@types/node": "~10.12.18",
     "mocha": "~5.2.0",
     "mochawesome": "~3.1.2",
     "nativescript-dev-appium": "next",
     "nativescript-dev-webpack": "next",
     "rimraf": "^2.6.2",
-    "tns-platform-declarations": "next",
+    "tns-platform-declarations": "file:../../tns-platform-declarations",
     "typescript": "~3.4.1"
   },
   "scripts": {

@@ -1,7 +1,7 @@
 import * as fsModule from "../../file-system";
 
 export function getFilenameFromUrl(url: string) {
-    const fs: typeof fsModule = require("file-system");
+    const fs: typeof fsModule = require("../../file-system");
     const slashPos = url.lastIndexOf("/") + 1;
     const questionMarkPos = url.lastIndexOf("?");
 

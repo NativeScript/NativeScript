@@ -5,7 +5,7 @@ import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TextTransform } from "../text-base";
 
 // Requires
-import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
+import { getIconSpecSize, selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
 import { TabsBase, swipeEnabledProperty, offscreenTabLimitProperty } from "./tabs-common";
 import { Font } from "../styling/font";
 import { getTransformedText } from "../text-base";
@@ -82,7 +82,7 @@ function initializeNativeClasses() {
         public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
             const tabItem = this.tab.items[this.index];
 
-            return tabItem.view.nativeViewProtected;
+            return tabItem.nativeViewProtected;
         }
     }
 
@@ -283,50 +283,6 @@ function initializeNativeClasses() {
     TabsBar = TabsBarImplementation;
 }
 
-function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
-    let iconSource;
-    const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
-
-    if (tabStripItem.backgroundColor instanceof Color) {
-        tabItemSpec.backgroundColor = tabStripItem.backgroundColor.android;
-    }
-
-    // Image and Label children of TabStripItem
-    // take priority over its `iconSource` and `title` properties
-    iconSource = tabStripItem.image ? tabStripItem.image.src : tabStripItem.iconSource;
-    tabItemSpec.title = tabStripItem.label ? tabStripItem.label.text : tabStripItem.title;
-
-    if (iconSource) {
-        if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-            tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
-            if (tabItemSpec.iconId === 0) {
-                // TODO
-                // traceMissingIcon(iconSource);
-            }
-        } else {
-            let is = new ImageSource();
-            if (isFontIconURI(tabStripItem.iconSource)) {
-                const fontIconCode = tabStripItem.iconSource.split("//")[1];
-                const font = tabStripItem.style.fontInternal;
-                const color = tabStripItem.style.color;
-                is = fromFontIconCode(fontIconCode, font, color);
-            } else {
-                is = fromFileOrResource(tabStripItem.iconSource);
-            }
-
-            if (is) {
-                // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-                tabItemSpec.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
-            } else {
-                // TODO
-                // traceMissingIcon(iconSource);
-            }
-        }
-    }
-
-    return tabItemSpec;
-}
-
 let defaultAccentColor: number = undefined;
 function getDefaultAccentColor(context: android.content.Context): number {
     if (defaultAccentColor === undefined) {
@@ -337,11 +293,15 @@ function getDefaultAccentColor(context: android.content.Context): number {
     return defaultAccentColor;
 }
 
-function setElevation(grid: org.nativescript.widgets.GridLayout, tabsBar: org.nativescript.widgets.TabsBar) {
+function setElevation(grid: org.nativescript.widgets.GridLayout, tabsBar: org.nativescript.widgets.TabsBar, tabsPosition: string) {
     const compat = <any>androidx.core.view.ViewCompat;
     if (compat.setElevation) {
         const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
-        compat.setElevation(grid, val);
+
+        if (tabsPosition === "top") {
+            compat.setElevation(grid, val);
+        }
+
         compat.setElevation(tabsBar, val);
     }
 }
@@ -422,7 +382,7 @@ export class Tabs extends TabsBase {
         nativeView.addView(tabsBar);
         (<any>nativeView).tabsBar = tabsBar;
 
-        setElevation(nativeView, tabsBar);
+        setElevation(nativeView, tabsBar, this.tabsPosition);
 
         if (accentColor) {
             tabsBar.setSelectedIndicatorColors([accentColor]);
@@ -471,12 +431,12 @@ export class Tabs extends TabsBase {
         toUnload.forEach(index => {
             const item = items[index];
             if (items[index]) {
-                item.unloadView(item.view);
+                item.unloadView(item.content);
             }
         });
 
         const newItem = items[newIndex];
-        const selectedView = newItem && newItem.view;
+        const selectedView = newItem && newItem.content;
         if (selectedView instanceof Frame) {
             (<Frame>selectedView)._pushInFrameStackRecursive();
         }
@@ -484,7 +444,7 @@ export class Tabs extends TabsBase {
         toLoad.forEach(index => {
             const item = items[index];
             if (this.isLoaded && items[index]) {
-                item.loadView(item.view);
+                item.loadView(item.content);
             }
         });
     }
@@ -493,7 +453,10 @@ export class Tabs extends TabsBase {
         super.onLoaded();
 
         this.setItems((<any>this.items));
-        this.setTabStripItems(this.tabStrip.items);
+
+        if (this.tabStrip) {
+            this.setTabStripItems(this.tabStrip.items);
+        }
 
         // this.setAdapterItems(this.items);
     }
@@ -598,7 +561,7 @@ export class Tabs extends TabsBase {
         const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
         items.forEach((item: TabStripItem, i, arr) => {
             (<any>item).index = i;
-            const tabItemSpec = createTabItemSpec(item);
+            const tabItemSpec = this.createTabItemSpec(item);
             (<any>item).tabItemSpec = tabItemSpec;
             tabItems.push(tabItemSpec);
         });
@@ -610,6 +573,111 @@ export class Tabs extends TabsBase {
             const tv = tabsBar.getTextViewForItemAt(i);
             item.setNativeView(tv);
         });
+    }
+
+    private createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
+        const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
+    
+        if (tabStripItem.isLoaded) {
+            const nestedLabel = tabStripItem.label;
+            let title = nestedLabel.text;
+    
+            // TEXT-TRANSFORM
+            const textTransform = nestedLabel.style.textTransform;
+            if (textTransform) {
+                title = getTransformedText(title, textTransform);
+            }
+            tabItemSpec.title = title;
+    
+            // BACKGROUND-COLOR
+            const backgroundColor = tabStripItem.style.backgroundColor;
+            if (backgroundColor) {
+                tabItemSpec.backgroundColor = backgroundColor.android;
+            }
+    
+            // COLOR
+            const color = nestedLabel.style.color;
+            if (color) {
+                tabItemSpec.color = color.android;
+            }
+    
+            // FONT
+            const fontInternal = nestedLabel.style.fontInternal;
+            if (fontInternal) {
+                tabItemSpec.fontSize = fontInternal.fontSize;
+                tabItemSpec.typeFace = fontInternal.getAndroidTypeface();
+            }
+    
+            // ICON
+            const iconSource = tabStripItem.image && tabStripItem.image.src;
+            if (iconSource) {
+                if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+                    tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
+                    if (tabItemSpec.iconId === 0) {
+                        // TODO:
+                        // traceMissingIcon(iconSource);
+                    }
+                } else {
+                    const icon = this.getIcon(tabStripItem);
+    
+                    if (icon) {
+                        // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
+                        // tslint:disable-next-line:deprecation
+                        tabItemSpec.iconDrawable = icon;
+                    } else {
+                        // TODO:
+                        // traceMissingIcon(iconSource);
+                    }
+                }
+            }
+        }
+    
+        return tabItemSpec;
+    }
+    
+    private getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
+        const iconSource = tabStripItem.image && tabStripItem.image.src;
+    
+        let is: ImageSource;
+        if (isFontIconURI(iconSource)) {
+            const fontIconCode = iconSource.split("//")[1];
+            const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
+            const font = target.style.fontInternal;
+            const color = target.style.color;
+            is = fromFontIconCode(fontIconCode, font, color);
+        } else {
+            is = fromFileOrResource(iconSource);
+        }
+    
+        let imageDrawable: android.graphics.drawable.BitmapDrawable;
+        if (is && is.android) {
+            let image = is.android;
+    
+            if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
+                image = this.getFixedSizeIcon(image);
+            }
+    
+            imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
+        } else {
+            // TODO
+            // traceMissingIcon(iconSource);
+        }
+    
+        return imageDrawable;
+    }
+    
+    private getFixedSizeIcon(image: android.graphics.Bitmap): android.graphics.Bitmap {
+        const inWidth = image.getWidth();
+        const inHeight = image.getHeight();
+        
+        const iconSpecSize = getIconSpecSize({ width: inWidth, height: inHeight });
+
+        const widthPixels = iconSpecSize.width * layout.getDisplayDensity();
+        const heightPixels = iconSpecSize.height * layout.getDisplayDensity();
+    
+        const scaledImage = android.graphics.Bitmap.createScaledBitmap(image, widthPixels, heightPixels, true);
+    
+        return scaledImage;
     }
 
     // private setAdapterItems(items: Array<TabStripItem>) {
@@ -658,20 +726,6 @@ export class Tabs extends TabsBase {
         }
     }
 
-    public getTabBarColor(): number {
-         return this._tabsBar.getTabTextColor();
-    }
-
-    public setTabBarColor(value: number | Color): void {
-        if (value instanceof Color) {
-            this._tabsBar.setTabTextColor(value.android);
-            this._tabsBar.setSelectedTabTextColor(value.android);
-        } else {
-            this._tabsBar.setTabTextColor(value);
-            this._tabsBar.setSelectedTabTextColor(value);
-        }
-    }
-
     public getTabBarHighlightColor(): number {
         return getDefaultAccentColor(this._context);
     }
@@ -681,15 +735,18 @@ export class Tabs extends TabsBase {
         this._tabsBar.setSelectedIndicatorColors([color]);
     }
 
-    public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
+    public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
-        const tabItemSpec = createTabItemSpec(tabStripItem);
+        const tabItemSpec = this.createTabItemSpec(tabStripItem);
         this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
-    public getTabBarItemColor(tabStripItem: TabStripItem): number {
-        return tabStripItem.nativeViewProtected.getCurrentTextColor();
+    public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
+        // TODO: Should figure out a way to do it directly with the the nativeView
+        const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
+        const tabItemSpec = this.createTabItemSpec(tabStripItem);
+        this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: number | Color): void {
@@ -700,45 +757,24 @@ export class Tabs extends TabsBase {
         }
     }
 
-    public getTabBarItemFontSize(tabStripItem: TabStripItem): { nativeSize: number } {
-        return { nativeSize: tabStripItem.nativeViewProtected.getTextSize() };
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
+        const index = (<any>tabStripItem).index;
+        const tabBarItem = this._tabsBar.getViewForItemAt(index);
+        const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
+        const drawable = this.getIcon(tabStripItem);
+
+        imgView.setImageDrawable(drawable);
     }
 
-    public setTabBarItemFontSize(tabStripItem: TabStripItem, value: number | { nativeSize: number }): void {
-        if (typeof value === "number") {
-            tabStripItem.nativeViewProtected.setTextSize(value);
-        } else {
-            tabStripItem.nativeViewProtected.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
-        }
+    public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
+        tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        tabStripItem.nativeViewProtected.setTypeface(value.getAndroidTypeface());
     }
 
-    public getTabBarItemFontInternal(tabStripItem: TabStripItem): android.graphics.Typeface {
-        return tabStripItem.nativeViewProtected.getTypeface();
-    }
-
-    public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font | android.graphics.Typeface): void {
-        tabStripItem.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
-    }
-
-    private _defaultTransformationMethod: android.text.method.TransformationMethod;
-
-    public getTabBarItemTextTransform(tabStripItem: TabStripItem): "default" {
-        return "default";
-    }
-
-    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform | "default"): void {
-        const tv = tabStripItem.nativeViewProtected;
-
-        this._defaultTransformationMethod = this._defaultTransformationMethod || tv.getTransformationMethod();
-
-        if (value === "default") {
-            tv.setTransformationMethod(this._defaultTransformationMethod);
-            tv.setText(tabStripItem.title);
-        } else {
-            const result = getTransformedText(tabStripItem.title, value);
-            tv.setText(result);
-            tv.setTransformationMethod(null);
-        }
+    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
+        const nestedLabel = tabStripItem.label;    
+        const title = getTransformedText(nestedLabel.text, value);
+        tabStripItem.nativeViewProtected.setText(title);
     }
 
     [selectedIndexProperty.setNative](value: number) {

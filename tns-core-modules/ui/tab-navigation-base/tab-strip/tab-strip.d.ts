@@ -18,6 +18,11 @@ export class TabStrip extends View {
     items: Array<TabStripItem>;
 
     /**
+     * Gets or sets whether icon size should be fixed based on specs or use the actual size. Defaults to true(fixed).
+     */
+    isIconSizeFixed: boolean;
+
+    /**
      * Gets or sets the icon rendering mode on iOS
      */
     iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
@@ -34,3 +39,4 @@ export class TabStrip extends View {
 }
 
 export const iosIconRenderingModeProperty: Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">;
+export const isIconSizeFixedProperty: Property<TabStrip, boolean>;

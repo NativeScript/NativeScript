@@ -45,7 +45,7 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     get _selectedView(): View {
         let selectedIndex = this.selectedIndex;
 
-        return selectedIndex > -1 ? this.items[selectedIndex].view : null;
+        return selectedIndex > -1 ? this.items[selectedIndex].content : null;
     }
 
     get _childrenCount(): number {
@@ -72,7 +72,7 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         const items = this.items;
         if (items) {
             items.forEach((item, i) => {
-                callback(item.view);
+                callback(item.content);
             });
         }
     }
@@ -84,8 +84,8 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
 
         if (newItems) {
             newItems.forEach(item => {
-                if (!item.view) {
-                    throw new Error(`TabContentItem must have a view.`);
+                if (!item.content) {
+                    throw new Error(`TabContentItem must have a content (view).`);
                 }
 
                 this._addView(item);
@@ -152,6 +152,10 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         // overridden by inheritors
     }
 
+    public setTabBarItemTitle(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors        
+    }
+
     public getTabBarItemBackgroundColor(tabStripItem: TabStripItem): any {
         // overridden by inheritors
         return null;
@@ -167,6 +171,10 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     }
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: any): void {
         // overridden by inheritors
     }
 
@@ -201,6 +209,35 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
 export interface TabNavigationBase {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
     on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
+}
+
+const MIN_ICON_SIZE = 24;
+const MAX_ICON_WIDTH = 31;
+const MAX_ICON_HEIGHT = 28;
+
+export function getIconSpecSize(size: { width: number, height: number }): { width: number, height: number } {
+    const inWidth = size.width;
+    const inHeight = size.height;
+    let outWidth = 0;
+    let outHeight = 0;
+
+    if (inWidth < inHeight) {
+        outWidth = MIN_ICON_SIZE;
+        outHeight = (inHeight * MIN_ICON_SIZE) / inWidth;
+        if (outHeight > MAX_ICON_HEIGHT) {
+            outHeight = MAX_ICON_HEIGHT;
+            outWidth = (inWidth * MAX_ICON_HEIGHT) / inHeight;
+        }
+    } else {
+        outHeight = MIN_ICON_SIZE;
+        outWidth = (inWidth * MIN_ICON_SIZE) / inHeight;
+        if (outWidth > MAX_ICON_WIDTH) {
+            outWidth = MAX_ICON_WIDTH;
+            outHeight = (inHeight * MAX_ICON_WIDTH) / inWidth;
+        }
+    }
+
+    return { width: outWidth, height: outHeight };
 }
 
 export const selectedIndexProperty = new CoercibleProperty<TabNavigationBase, number>({
