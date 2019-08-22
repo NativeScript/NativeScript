@@ -117,7 +117,7 @@ export var test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) 
     let xhr = new XMLHttpRequest();
     xhr.open("POST", "https://httpbin.org/post");
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.responseType = 'json';
+    xhr.responseType = "json";
     xhr.onreadystatechange = function () {
         if (xhr.readyState > 3) {
             // <hide>
@@ -412,7 +412,7 @@ export var test_XMLHttpRequest_contentReceivedArrayBufferProperly = function (do
     // ``` JavaScript
     let xhr = new XMLHttpRequest();
     xhr.open("GET", "https://httpbin.org/image/jpeg");
-    xhr.responseType = 'arraybuffer';
+    xhr.responseType = "arraybuffer";
     xhr.onreadystatechange = function () {
         if (xhr.readyState > 3) {
             // <hide>
@@ -439,7 +439,7 @@ export var test_XMLHttpRequest_contentReceivedBlobProperly = function (done) {
     // ``` JavaScript
     let xhr = new XMLHttpRequest();
     xhr.open("GET", "https://httpbin.org/image/jpeg");
-    xhr.responseType = 'blob';
+    xhr.responseType = "blob";
     xhr.onreadystatechange = function () {
         if (xhr.readyState > 3) {
             // <hide>
