@@ -5,7 +5,7 @@ import { TabStrip } from "../tab-navigation-base/tab-strip";
 import { TextTransform } from "../text-base";
 
 // Requires
-import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
+import { getIconSpecSize, selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
 import { TabsBase, swipeEnabledProperty } from "./tabs-common";
 import { Font } from "../styling/font";
 import { Frame } from "../frame";
@@ -697,7 +697,7 @@ export class Tabs extends TabsBase {
     //     }
     // }
 
-    public getViewController(item: TabContentItem): UIViewController {
+    private getViewController(item: TabContentItem): UIViewController {
         let newController: UIViewController = item.content ? item.content.viewController : null;
 
         if (newController) {
@@ -799,7 +799,7 @@ export class Tabs extends TabsBase {
         // this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
     }
 
-    public setTabStripItems(items: Array<TabStripItem>) {
+    private setTabStripItems(items: Array<TabStripItem>) {
         if (!this.tabStrip || !items) {
             return;
         }
@@ -816,7 +816,7 @@ export class Tabs extends TabsBase {
         this.tabBarItems = tabBarItems;
 
         if (this.viewController && this.viewController.tabBar) {
-            this.viewController.tabBar.itemAppearance = this._getTabBarItemAppearance();
+            this.viewController.tabBar.itemAppearance = this.getTabBarItemAppearance();
             this.viewController.tabBar.items = NSArray.arrayWithArray(tabBarItems);
             // TODO: investigate why this call is necessary to actually toggle item appearance
             this.viewController.tabBar.sizeToFit();
@@ -849,15 +849,17 @@ export class Tabs extends TabsBase {
         let image: UIImage;
         let title: string;
 
-        image = item.isLoaded && this._getIcon(item);
-        title = item.label && item.label.text;
+        if (item.isLoaded) {
+            image = this.getIcon(item);
+            title = item.label.text;
 
-        if (!this.tabStrip._hasImage) {
-            this.tabStrip._hasImage = !!image;
-        }
-
-        if (!this.tabStrip._hasTitle) {
-            this.tabStrip._hasTitle = !!title;
+            if (!this.tabStrip._hasImage) {
+                this.tabStrip._hasImage = !!image;
+            }
+    
+            if (!this.tabStrip._hasTitle) {
+                this.tabStrip._hasTitle = !!title;
+            }
         }
 
         const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, image, index);
@@ -865,7 +867,7 @@ export class Tabs extends TabsBase {
         return tabBarItem;
     }
 
-    private _getTabBarItemAppearance(): MDCTabBarItemAppearance {
+    private getTabBarItemAppearance(): MDCTabBarItemAppearance {
         let itemAppearance;
         if (this.tabStrip._hasImage && this.tabStrip._hasTitle) {
             itemAppearance = MDCTabBarItemAppearance.TitledImages;
@@ -878,11 +880,11 @@ export class Tabs extends TabsBase {
         return itemAppearance;
     }
 
-    private _getIconRenderingMode(): UIImageRenderingMode {
+    private getIconRenderingMode(): UIImageRenderingMode {
         return UIImageRenderingMode.AlwaysOriginal;
     }
 
-    public _getIcon(tabStripItem: TabStripItem): UIImage {
+    private getIcon(tabStripItem: TabStripItem): UIImage {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
         if (!iconSource) {
             return null;
@@ -890,7 +892,7 @@ export class Tabs extends TabsBase {
 
         const target = tabStripItem.image;
         const font = target.style.fontInternal;
-        const color = target.style.color;
+        const color = tabStripItem.parent.style.color;
         const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
 
         let image: UIImage = this._iconsCache[iconTag];
@@ -904,7 +906,13 @@ export class Tabs extends TabsBase {
             }
 
             if (is && is.ios) {
-                const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
+                image = is.ios;
+                
+                if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
+                    image = this.getFixedSizeIcon(image);
+                }
+
+                const originalRenderedImage = image.imageWithRenderingMode(this.getIconRenderingMode());
                 this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
@@ -914,6 +922,23 @@ export class Tabs extends TabsBase {
         }
 
         return image;
+    }
+
+    private getFixedSizeIcon(image: UIImage): UIImage {
+        const inWidth = image.size.width;
+        const inHeight = image.size.height;
+        
+        const iconSpecSize = getIconSpecSize({ width: inWidth, height: inHeight });
+
+        const widthPts = iconSpecSize.width;
+        const heightPts = iconSpecSize.height;
+
+        UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
+        image.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
+        let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+
+        return resultImage;
     }
 
     // private _updateIOSTabBarColorsAndFonts(): void {

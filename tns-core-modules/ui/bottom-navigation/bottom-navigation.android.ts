@@ -5,7 +5,9 @@ import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TextTransform } from "../text-base";
 
 // Requires
-import { TabNavigationBase, itemsProperty, selectedIndexProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
+import { 
+    TabNavigationBase, getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty
+} from "../tab-navigation-base/tab-navigation-base";
 import { Font } from "../styling/font";
 import { getTransformedText } from "../text-base";
 import { CSSType, Color } from "../core/view";
@@ -164,85 +166,6 @@ function initializeNativeClasses() {
     TabFragment = TabFragmentImplementation;
     BottomNavigationBar = BottomNavigationBarImplementation;
     AttachStateChangeListener = new AttachListener();
-}
-
-function createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
-    const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
-
-    if (tabStripItem.isLoaded) {
-        const titleLabel = tabStripItem.label;
-        let title = titleLabel.text;
-
-        // TEXT-TRANSFORM
-        const textTransform = titleLabel.style.textTransform;
-        if (textTransform) {
-            title = getTransformedText(title, textTransform);
-        }
-        tabItemSpec.title = title;
-
-        // BACKGROUND-COLOR
-        const backgroundColor = tabStripItem.style.backgroundColor;
-        if (backgroundColor) {
-            tabItemSpec.backgroundColor = backgroundColor.android;
-        }
-
-        // COLOR
-        const color = titleLabel.style.color;
-        if (color) {
-            tabItemSpec.color = color.android;
-        }
-
-        // FONT
-        const fontInternal = titleLabel.style.fontInternal;
-        if (fontInternal) {
-            tabItemSpec.fontSize = fontInternal.fontSize;
-            tabItemSpec.typeFace = fontInternal.getAndroidTypeface();
-        }
-
-        // ICON
-        const iconSource = tabStripItem.image && tabStripItem.image.src;
-        if (iconSource) {
-            if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-                tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
-                if (tabItemSpec.iconId === 0) {
-                    // TODO:
-                    // traceMissingIcon(iconSource);
-                }
-            } else {
-                const icon = _getIcon(tabStripItem);
-
-                if (icon) {
-                    // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-                    // tslint:disable-next-line:deprecation
-                    tabItemSpec.iconDrawable = icon;
-                } else {
-                    // TODO:
-                    // traceMissingIcon(iconSource);
-                }
-            }
-        }
-    }
-
-    return tabItemSpec;
-}
-
-function _getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
-    const iconSource = tabStripItem.image && tabStripItem.image.src;
-
-    let is: ImageSource;
-    if (isFontIconURI(iconSource)) {
-        const fontIconCode = iconSource.split("//")[1];
-        const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
-        const font = target.style.fontInternal;
-        const color = target.style.color;
-        is = fromFontIconCode(fontIconCode, font, color);
-    } else {
-        is = fromFileOrResource(iconSource);
-    }
-
-    const image = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
-    
-    return image;
 }
 
 function setElevation(bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar) {
@@ -566,7 +489,7 @@ export class BottomNavigation extends TabNavigationBase {
         items.forEach((item, i, arr) => {
             (<any>item).index = i;
             if (items[i]) {
-                const tabItemSpec = createTabItemSpec(items[i]);
+                const tabItemSpec = this.createTabItemSpec(items[i]);
                 tabItems.push(tabItemSpec);
             }
         });
@@ -577,6 +500,111 @@ export class BottomNavigation extends TabNavigationBase {
             const textView = this._bottomNavigationBar.getTextViewForItemAt(i);
             item.setNativeView(textView);
         });
+    }
+
+    private createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
+        const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
+    
+        if (tabStripItem.isLoaded) {
+            const titleLabel = tabStripItem.label;
+            let title = titleLabel.text;
+    
+            // TEXT-TRANSFORM
+            const textTransform = titleLabel.style.textTransform;
+            if (textTransform) {
+                title = getTransformedText(title, textTransform);
+            }
+            tabItemSpec.title = title;
+    
+            // BACKGROUND-COLOR
+            const backgroundColor = tabStripItem.style.backgroundColor;
+            if (backgroundColor) {
+                tabItemSpec.backgroundColor = backgroundColor.android;
+            }
+    
+            // COLOR
+            const color = titleLabel.style.color;
+            if (color) {
+                tabItemSpec.color = color.android;
+            }
+    
+            // FONT
+            const fontInternal = titleLabel.style.fontInternal;
+            if (fontInternal) {
+                tabItemSpec.fontSize = fontInternal.fontSize;
+                tabItemSpec.typeFace = fontInternal.getAndroidTypeface();
+            }
+    
+            // ICON
+            const iconSource = tabStripItem.image && tabStripItem.image.src;
+            if (iconSource) {
+                if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+                    tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
+                    if (tabItemSpec.iconId === 0) {
+                        // TODO:
+                        // traceMissingIcon(iconSource);
+                    }
+                } else {
+                    const icon = this.getIcon(tabStripItem);
+    
+                    if (icon) {
+                        // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
+                        // tslint:disable-next-line:deprecation
+                        tabItemSpec.iconDrawable = icon;
+                    } else {
+                        // TODO:
+                        // traceMissingIcon(iconSource);
+                    }
+                }
+            }
+        }
+    
+        return tabItemSpec;
+    }
+
+    private getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
+        const iconSource = tabStripItem.image && tabStripItem.image.src;
+    
+        let is: ImageSource;
+        if (isFontIconURI(iconSource)) {
+            const fontIconCode = iconSource.split("//")[1];
+            const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
+            const font = target.style.fontInternal;
+            const color = target.style.color;
+            is = fromFontIconCode(fontIconCode, font, color);
+        } else {
+            is = fromFileOrResource(iconSource);
+        }
+    
+        let imageDrawable: android.graphics.drawable.BitmapDrawable;
+        if (is && is.android) {
+            let image = is.android;
+    
+            if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
+                image = this.getFixedSizeIcon(image);
+            }
+    
+            imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
+        } else {
+            // TODO
+            // traceMissingIcon(iconSource);
+        }
+    
+        return imageDrawable;
+    }
+    
+    private getFixedSizeIcon(image: android.graphics.Bitmap): android.graphics.Bitmap {
+        const inWidth = image.getWidth();
+        const inHeight = image.getHeight();
+        
+        const iconSpecSize = getIconSpecSize({ width: inWidth, height: inHeight });
+    
+        const widthPixels = iconSpecSize.width * layout.getDisplayDensity();
+        const heightPixels = iconSpecSize.height * layout.getDisplayDensity();
+    
+        const scaledImage = android.graphics.Bitmap.createScaledBitmap(image, widthPixels, heightPixels, true);
+    
+        return scaledImage;
     }
 
     public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
@@ -598,14 +626,14 @@ export class BottomNavigation extends TabNavigationBase {
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
-        const tabItemSpec = createTabItemSpec(tabStripItem);
+        const tabItemSpec = this.createTabItemSpec(tabStripItem);
         this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
-        const tabItemSpec = createTabItemSpec(tabStripItem);
+        const tabItemSpec = this.createTabItemSpec(tabStripItem);
         this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
@@ -621,7 +649,7 @@ export class BottomNavigation extends TabNavigationBase {
         const index = (<any>tabStripItem).index;
         const tabBarItem = this._bottomNavigationBar.getViewForItemAt(index);
         const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
-        const drawable = _getIcon(tabStripItem);
+        const drawable = this.getIcon(tabStripItem);
 
         imgView.setImageDrawable(drawable);
     }
