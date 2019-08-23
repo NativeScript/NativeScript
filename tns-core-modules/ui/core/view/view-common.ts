@@ -5,11 +5,11 @@ import {
 } from ".";
 
 import {
-    ViewBase, Property, booleanConverter, EventData, layout,
-    getEventOrGestureName, traceEnabled, traceWrite, traceCategories,
-    InheritedProperty, ShowModalOptions
+    booleanConverter, EventData, getEventOrGestureName, InheritedProperty, layout,
+    Property, ShowModalOptions, traceCategories, traceEnabled, traceWrite, ViewBase
 } from "../view-base";
 
+import { MODAL_ROOT_VIEW_CSS_CLASS } from "../../../application";
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 
 import {
@@ -31,9 +31,6 @@ export * from "../view-base";
 export { LinearGradient };
 
 import * as am from "../../animation";
-import { CSS_CLASS_PREFIX } from "../../../application";
-
-const MODAL = "modal";
 
 let animationModule: typeof am;
 function ensureAnimationModule() {
@@ -373,7 +370,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     protected _showNativeModalView(parent: ViewCommon, options: ShowModalOptions) {
         _rootModalViews.push(this);
-        this.cssClasses.add(`${CSS_CLASS_PREFIX}${MODAL}`);
+        this.cssClasses.add(`${MODAL_ROOT_VIEW_CSS_CLASS}`);
 
         parent._modal = this;
         this._modalParent = parent;

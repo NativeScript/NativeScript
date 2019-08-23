@@ -1,7 +1,10 @@
 // Definitions.
 import { ViewBase as ViewBaseDefinition } from ".";
+import { MODAL_ROOT_VIEW_CSS_CLASS, ROOT_VIEW_CSS_CLASSES } from "../../../application";
+import {
+    AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order
+} from "../../layouts/flexbox-layout";
 import { Page } from "../../page";
-import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
 
 // Types.
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from "../properties";
@@ -22,10 +25,9 @@ export { isIOS, isAndroid, layout, Color };
 export * from "../bindable";
 export * from "../properties";
 
+import * as dnm from "../../../debugger/dom-node";
 import * as ssm from "../../styling/style-scope";
 
-// import { DOMNode } from "../../../debugger/dom-node";
-import * as dnm from "../../../debugger/dom-node";
 let domNodeModule: typeof dnm;
 
 function ensuredomNodeModule(): void {
@@ -1036,11 +1038,23 @@ bindingContextProperty.register(ViewBase);
 export const classNameProperty = new Property<ViewBase, string>({
     name: "className",
     valueChanged(view: ViewBase, oldValue: string, newValue: string) {
-        let classes = view.cssClasses;
-        classes.clear();
-        if (typeof newValue === "string" && newValue !== "") {
-            newValue.split(" ").forEach(c => classes.add(c));
+        const cssClasses = view.cssClasses;
+
+        const shouldAddModalRootViewCssClass = cssClasses.has(MODAL_ROOT_VIEW_CSS_CLASS);
+        const shouldAddRootViewCssClasses = cssClasses.has(ROOT_VIEW_CSS_CLASSES[0]);
+
+        cssClasses.clear();
+
+        if (shouldAddModalRootViewCssClass) {
+            cssClasses.add(MODAL_ROOT_VIEW_CSS_CLASS);
+        } else if (shouldAddRootViewCssClasses) {
+            ROOT_VIEW_CSS_CLASSES.forEach(c => cssClasses.add(c));
         }
+
+        if (typeof newValue === "string" && newValue !== "") {
+            newValue.split(" ").forEach(c => cssClasses.add(c));
+        }
+
         view._onCssStateChange();
     }
 });
