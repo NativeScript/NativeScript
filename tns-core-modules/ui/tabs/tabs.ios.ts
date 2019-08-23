@@ -1,26 +1,27 @@
 ﻿// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
-import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
+import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TextTransform } from "../text-base";
 
 // Requires
-import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
-import { TabsBase, swipeEnabledProperty } from "./tabs-common";
-import { Font } from "../styling/font";
-import { Frame } from "../frame";
-import { ios as iosView, View } from "../core/view";
 import { Color } from "../../color";
-import { /*ios as iosUtils,*/ layout, isFontIconURI } from "../../utils/utils";
-// import { device } from "../../platform";
 import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
+import { ios as iosUtils, isFontIconURI, layout } from "../../utils/utils";
+import { ios as iosView, View } from "../core/view";
+import { Frame } from "../frame";
+import { Font } from "../styling/font";
+import {
+    getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty
+} from "../tab-navigation-base/tab-navigation-base";
+import { swipeEnabledProperty, TabsBase } from "./tabs-common";
 
 // TODO
 // import { profile } from "../../profiling";
 
 export * from "./tabs-common";
 
-// const majorVersion = iosUtils.MajorVersion;
+const majorVersion = iosUtils.MajorVersion;
 // const isPhone = device.deviceType === "Phone";
 
 class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
@@ -44,11 +45,15 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
             owner._canSelectItem = false;
         }
 
-        return shouldSelectItem;
-    }
+        const tabStrip = owner.tabStrip;
+        const tabStripItems = tabStrip && tabStrip.items;
 
-    public tabBarWillSelectItem(tabBar: MDCTabBar, item: UITabBarItem): void {
-        //
+        if (tabStripItems && tabStripItems[selectedIndex]) {
+            tabStripItems[selectedIndex]._emit(TabStripItem.tapEvent);
+            tabStrip.notify({ eventName: TabStrip.itemTapEvent, object: tabStrip, index: selectedIndex });
+        }
+
+        return shouldSelectItem;
     }
 
     public tabBarDidSelectItem(tabBar: MDCTabBar, selectedItem: UITabBarItem): void {
@@ -106,6 +111,8 @@ class UIPageViewControllerImpl extends UIPageViewController {
             return;
         }
 
+        iosView.updateAutoAdjustScrollInsets(this, owner);
+
         // Tabs can be reset as a root view. Call loaded here in this scenario.
         if (!owner.isLoaded) {
             owner.callLoaded();
@@ -119,29 +126,39 @@ class UIPageViewControllerImpl extends UIPageViewController {
             return;
         }
 
+        let safeAreaInsetsBottom = 0;
+        let safeAreaInsetsTop = 0;
+
+        if (majorVersion > 10) {
+            safeAreaInsetsBottom = this.view.safeAreaInsets.bottom;
+            safeAreaInsetsTop = this.view.safeAreaInsets.top;
+        } else {
+            safeAreaInsetsTop = this.topLayoutGuide.length;
+        }
+
         let scrollViewTop = 0;
-        let scrollViewHeight = this.view.bounds.size.height + this.view.safeAreaInsets.bottom;
+        let scrollViewHeight = this.view.bounds.size.height + safeAreaInsetsBottom;
 
         if (owner.tabStrip) {
             scrollViewTop = this.tabBar.frame.size.height;
-            scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + this.view.safeAreaInsets.bottom;
-            let tabBarTop = this.view.safeAreaInsets.top;
+            scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + safeAreaInsetsBottom;
+            let tabBarTop = safeAreaInsetsTop;
             let tabBarHeight = this.tabBar.frame.size.height;
 
             const tabsPosition = owner.tabsPosition;
             if (tabsPosition === "bottom") {
-                tabBarTop = this.view.frame.size.height - this.tabBar.frame.size.height - this.view.safeAreaInsets.bottom;
+                tabBarTop = this.view.frame.size.height - this.tabBar.frame.size.height - safeAreaInsetsBottom;
                 scrollViewTop = this.view.frame.origin.y;
-                scrollViewHeight = this.view.frame.size.height - this.view.safeAreaInsets.bottom;
+                scrollViewHeight = this.view.frame.size.height - safeAreaInsetsBottom;
             }
 
             const parent = owner.parent;
-            if (parent) {
+            if (parent && majorVersion > 10) {
                 // TODO: Figure out a better way to handle ViewController nesting/Safe Area nesting
                 tabBarTop = Math.max(tabBarTop, owner.parent.nativeView.safeAreaInsets.top);
             }
 
-            this.tabBar.frame = CGRectMake(this.view.safeAreaInsets.left, tabBarTop, this.tabBar.frame.size.width, tabBarHeight);
+            this.tabBar.frame = CGRectMake(0, tabBarTop, this.tabBar.frame.size.width, tabBarHeight);
         }
 
         const subViews: NSArray<UIView> = this.view.subviews;
@@ -163,7 +180,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
                 scrollView.scrollEnabled = false;
             }
 
-            scrollView.frame = CGRectMake(this.view.safeAreaInsets.left, scrollViewTop, this.view.bounds.size.width, scrollViewHeight); //this.view.bounds;
+            scrollView.frame = CGRectMake(0, scrollViewTop, this.view.bounds.size.width, scrollViewHeight); //this.view.bounds;
         }
     }
 }
@@ -684,7 +701,7 @@ export class Tabs extends TabsBase {
     //     }
     // }
 
-    public getViewController(item: TabContentItem): UIViewController {
+    private getViewController(item: TabContentItem): UIViewController {
         let newController: UIViewController = item.content ? item.content.viewController : null;
 
         if (newController) {
@@ -786,7 +803,7 @@ export class Tabs extends TabsBase {
         // this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
     }
 
-    public setTabStripItems(items: Array<TabStripItem>) {
+    private setTabStripItems(items: Array<TabStripItem>) {
         if (!this.tabStrip || !items) {
             return;
         }
@@ -803,7 +820,7 @@ export class Tabs extends TabsBase {
         this.tabBarItems = tabBarItems;
 
         if (this.viewController && this.viewController.tabBar) {
-            this.viewController.tabBar.itemAppearance = this._getTabBarItemAppearance();
+            this.viewController.tabBar.itemAppearance = this.getTabBarItemAppearance();
             this.viewController.tabBar.items = NSArray.arrayWithArray(tabBarItems);
             // TODO: investigate why this call is necessary to actually toggle item appearance
             this.viewController.tabBar.sizeToFit();
@@ -836,15 +853,17 @@ export class Tabs extends TabsBase {
         let image: UIImage;
         let title: string;
 
-        image = item.isLoaded && this._getIcon(item);
-        title = item.label && item.label.text;
+        if (item.isLoaded) {
+            image = this.getIcon(item);
+            title = item.label.text;
 
-        if (!this.tabStrip._hasImage) {
-            this.tabStrip._hasImage = !!image;
-        }
+            if (!this.tabStrip._hasImage) {
+                this.tabStrip._hasImage = !!image;
+            }
 
-        if (!this.tabStrip._hasTitle) {
-            this.tabStrip._hasTitle = !!title;
+            if (!this.tabStrip._hasTitle) {
+                this.tabStrip._hasTitle = !!title;
+            }
         }
 
         const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, image, index);
@@ -852,7 +871,7 @@ export class Tabs extends TabsBase {
         return tabBarItem;
     }
 
-    private _getTabBarItemAppearance(): MDCTabBarItemAppearance {
+    private getTabBarItemAppearance(): MDCTabBarItemAppearance {
         let itemAppearance;
         if (this.tabStrip._hasImage && this.tabStrip._hasTitle) {
             itemAppearance = MDCTabBarItemAppearance.TitledImages;
@@ -865,11 +884,11 @@ export class Tabs extends TabsBase {
         return itemAppearance;
     }
 
-    private _getIconRenderingMode(): UIImageRenderingMode {
+    private getIconRenderingMode(): UIImageRenderingMode {
         return UIImageRenderingMode.AlwaysOriginal;
     }
 
-    public _getIcon(tabStripItem: TabStripItem): UIImage {
+    private getIcon(tabStripItem: TabStripItem): UIImage {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
         if (!iconSource) {
             return null;
@@ -877,7 +896,7 @@ export class Tabs extends TabsBase {
 
         const target = tabStripItem.image;
         const font = target.style.fontInternal;
-        const color = target.style.color;
+        const color = tabStripItem.parent.style.color;
         const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
 
         let image: UIImage = this._iconsCache[iconTag];
@@ -891,7 +910,13 @@ export class Tabs extends TabsBase {
             }
 
             if (is && is.ios) {
-                const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
+                image = is.ios;
+
+                if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
+                    image = this.getFixedSizeIcon(image);
+                }
+
+                const originalRenderedImage = image.imageWithRenderingMode(this.getIconRenderingMode());
                 this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
@@ -901,6 +926,23 @@ export class Tabs extends TabsBase {
         }
 
         return image;
+    }
+
+    private getFixedSizeIcon(image: UIImage): UIImage {
+        const inWidth = image.size.width;
+        const inHeight = image.size.height;
+
+        const iconSpecSize = getIconSpecSize({ width: inWidth, height: inHeight });
+
+        const widthPts = iconSpecSize.width;
+        const heightPts = iconSpecSize.height;
+
+        UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
+        image.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
+        let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+
+        return resultImage;
     }
 
     // private _updateIOSTabBarColorsAndFonts(): void {

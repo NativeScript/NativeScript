@@ -18,6 +18,9 @@ import {
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
 
 export class Style extends Observable implements StyleDefinition {
+    private unscopedCssVariables = new Map<string, string>();
+    private scopedCssVariables = new Map<string, string>();
+
     constructor(ownerView: ViewBase | WeakRef<ViewBase>) {
         super();
 
@@ -27,6 +30,43 @@ export class Style extends Observable implements StyleDefinition {
         } else  {
             this.viewRef = new WeakRef(<ViewBase>ownerView);
         }
+    }
+
+    public setScopedCssVariable(varName: string, value: string): void {
+        this.scopedCssVariables.set(varName, value);
+    }
+
+    public setUnscopedCssVariable(varName: string, value: string): void {
+        this.unscopedCssVariables.set(varName, value);
+    }
+
+    public getCssVariable(varName: string): string | null {
+        const view = this.view;
+        if (!view) {
+            return null;
+        }
+
+        if (this.unscopedCssVariables.has(varName)) {
+            return this.unscopedCssVariables.get(varName);
+        }
+
+        if (this.scopedCssVariables.has(varName)) {
+            return this.scopedCssVariables.get(varName);
+        }
+
+        if (!view.parent || !view.parent.style) {
+            return null;
+        }
+
+        return view.parent.style.getCssVariable(varName);
+    }
+
+    public resetScopedCssVariables() {
+        this.scopedCssVariables.clear();
+    }
+
+    public resetUnscopedCssVariables() {
+        this.unscopedCssVariables.clear();
     }
 
     toString() {

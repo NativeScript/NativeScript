@@ -163,19 +163,23 @@ export class ImageSource implements ImageSourceDefinition {
 
         const textBounds = new android.graphics.Rect();
         paint.getTextBounds(source, 0, source.length, textBounds);
+        
+        const textWidth = textBounds.width();
+        const textHeight = textBounds.height();
+        if (textWidth > 0 && textHeight > 0) {
+            const bitmap = android.graphics.Bitmap
+                .createBitmap(
+                    textWidth,
+                    textHeight,
+                    android.graphics.Bitmap.Config.ARGB_8888
+                );
 
-        const bitmap = android.graphics.Bitmap
-            .createBitmap(
-                textBounds.width(),
-                textBounds.height(),
-                android.graphics.Bitmap.Config.ARGB_8888
-            );
+            const canvas = new android.graphics.Canvas(bitmap);
+            canvas.drawText(source, -textBounds.left, -textBounds.top, paint);
 
-        const canvas = new android.graphics.Canvas(bitmap);
-        canvas.drawText(source, -textBounds.left, -textBounds.top, paint);
+            this.android = bitmap;
+        }
 
-        this.android = bitmap;
-    
         return this.android != null;
     }
 
