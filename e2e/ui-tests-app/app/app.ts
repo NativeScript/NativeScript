@@ -89,4 +89,8 @@ application.on(application.discardedErrorEvent, function (args: application.Disc
 });
 
 application.setCssFileName("app.css");
-application.run({ moduleName: "app-root" });
+application._start({ moduleName: "main-page" });
+
+// TODO: investigate tab-view -> tabviewcss test crash
+// TODO: investigate css -> layouts border overlap failure
+// application.run({ moduleName: "app-root" });
