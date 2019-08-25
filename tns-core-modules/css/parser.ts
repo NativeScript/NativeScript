@@ -121,7 +121,7 @@ export function HSL2RGB(h, s, l) {
 
     let c = (1 - Math.abs(2 * l - 1)) * s,
         x = c * (1 - Math.abs((h / 60) % 2 - 1)),
-        m = l - c/2,
+        m = l - c / 2,
         r = m, g = m, b = m;
 
     if (0 <= h && h < 60) { r += c; g += x; }
@@ -135,7 +135,7 @@ export function HSL2RGB(h, s, l) {
         r: Math.round(r * 0xFF),
         g: Math.round(g * 0xFF),
         b: Math.round(b * 0xFF)
-    }
+    };
 }
 
 function hslaToArgbNumber(h: number, s: number, l: number, a: number = 1): number | undefined {
