@@ -116,20 +116,23 @@ export function parseRGBAColor(text: string, start: number = 0): Parsed<ARGB> {
     return { start, end, value };
 }
 
-export function HSL2RGB(h, s, l) {
-    s /= 100; l /= 100;
+export function HSL2RGB(hue: number, saturation: number, lightness: number): { r: number; g: number; b: number; } {
+    // Per formula it will be easier if hue is divided to 60° and saturation to 100 beforehand
+    // https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB
+    hue /= 60;
+    lightness /= 100;
 
-    let c = (1 - Math.abs(2 * l - 1)) * s,
-        x = c * (1 - Math.abs((h / 60) % 2 - 1)),
-        m = l - c / 2,
-        r = m, g = m, b = m;
+    let chroma = (1 - Math.abs(2 * lightness - 1)) * saturation / 100,
+        X = chroma * (1 - Math.abs(hue % 2 - 1)),
+        // Add lightness match to all RGB components beforehand
+        { m: r, m: g, m: b } = { m: lightness - chroma / 2 };
 
-    if (0 <= h && h < 60) { r += c; g += x; }
-        else if (h < 120) { r += x; g += c; }
-        else if (h < 180) { g += c; b += x; }
-        else if (h < 240) { g += x; b += c; }
-        else if (h < 300) { r += x; b += c; }
-        else if (h < 360) { r += c; b += x; }
+    if (0 <= hue && hue < 1) { r += chroma; g += X; }
+           else if (hue < 2) { r += X; g += chroma; }
+           else if (hue < 3) { g += chroma; b += X; }
+           else if (hue < 4) { g += X; b += chroma; }
+           else if (hue < 5) { r += X; b += chroma; }
+           else if (hue < 6) { r += chroma; b += X; }
 
     return {
         r: Math.round(r * 0xFF),
