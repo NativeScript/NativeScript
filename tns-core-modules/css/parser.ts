@@ -151,7 +151,7 @@ function hslaToArgbNumber(h: number, s: number, l: number, a: number = 1): numbe
     }
 }
 
-const hslColorRegEx = /\s*(hsl\(\s*(\d*)\s*,\s*(\d*)%\s*,\s*(\d*)%\s*\))/gy;
+const hslColorRegEx = /\s*(hsl\(\s*([\d.]*)\s*,\s*([\d.]*)%\s*,\s*([\d.]*)%\s*\))/gy;
 export function parseHSLColor(text: string, start: number = 0): Parsed<ARGB> {
     hslColorRegEx.lastIndex = start;
     const result = hslColorRegEx.exec(text);
@@ -159,12 +159,12 @@ export function parseHSLColor(text: string, start: number = 0): Parsed<ARGB> {
         return null;
     }
     const end = hslColorRegEx.lastIndex;
-    const value = result[1] && hslaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]));
+    const value = result[1] && hslaToArgbNumber(parseFloat(result[2]), parseFloat(result[3]), parseFloat(result[4]));
 
     return { start, end, value };
 }
 
-const hslaColorRegEx = /\s*(hsla\(\s*(\d*)\s*,\s*(\d*)%\s*,\s*(\d*)%\s*,\s*([01]?\.?\d*)\s*\))/gy;
+const hslaColorRegEx = /\s*(hsla\(\s*([\d.]*)\s*,\s*([\d.]*)%\s*,\s*([\d.]*)%\s*,\s*([01]?\.?\d*)\s*\))/gy;
 export function parseHSLAColor(text: string, start: number = 0): Parsed<ARGB> {
     hslaColorRegEx.lastIndex = start;
     const result = hslaColorRegEx.exec(text);
@@ -172,7 +172,7 @@ export function parseHSLAColor(text: string, start: number = 0): Parsed<ARGB> {
         return null;
     }
     const end = hslaColorRegEx.lastIndex;
-    const value = hslaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]), parseFloat(result[5]));
+    const value = hslaToArgbNumber(parseFloat(result[2]), parseFloat(result[3]), parseFloat(result[4]), parseFloat(result[5]));
 
     return { start, end, value };
 }
