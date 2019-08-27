@@ -1,14 +1,14 @@
-﻿// Types
-import { TabStrip as TabStripDefinition } from ".";
-import { TabStripItem } from "../tab-strip-item";
-import { TabNavigationBase } from "../tab-navigation-base";
+// Types
 import { Color } from "../../../color";
-import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "../../core/view";
+import { AddArrayFromBuilder, AddChildFromBuilder, EventData, ViewBase } from "../../core/view";
+import { TabNavigationBase } from "../tab-navigation-base";
+import { TabStripItem } from "../tab-strip-item";
+import { TabStripItemEventData, TabStrip as TabStripDefinition } from "./";
 
 // Requires
-import { 
-    View, Property, CSSType, backgroundColorProperty, backgroundInternalProperty, 
-    colorProperty, fontInternalProperty, booleanConverter
+import {
+    backgroundColorProperty, backgroundInternalProperty, booleanConverter,
+    colorProperty, CSSType, fontInternalProperty, Property, View
 } from "../../core/view";
 import { textTransformProperty } from "../../text-base";
 
@@ -20,6 +20,7 @@ export const highlightColorProperty = new Property<TabStrip, Color>({ name: "hig
 
 @CSSType("TabStrip")
 export class TabStrip extends View implements TabStripDefinition, AddChildFromBuilder, AddArrayFromBuilder {
+    public static itemTapEvent = "itemTap";
     public items: TabStripItem[];
     public isIconSizeFixed: boolean;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
@@ -89,7 +90,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [colorProperty.setNative](value: Color) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarColor(value);
     }
 
@@ -100,7 +101,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [fontInternalProperty.setNative](value: any) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarFontInternal(value);
     }
 
@@ -111,7 +112,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [textTransformProperty.setNative](value: any) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarTextTransform(value);
     }
 
@@ -122,9 +123,14 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [highlightColorProperty.setNative](value: number | Color) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarHighlightColor(value);
     }
+}
+
+export interface TabStrip {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "itemTap", callback: (args: TabStripItemEventData) => void, thisArg?: any);
 }
 
 export const itemsProperty = new Property<TabStrip, TabStripItem[]>({
