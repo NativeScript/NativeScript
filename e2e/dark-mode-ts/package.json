@@ -1,0 +1,25 @@
+{
+  "nativescript": {
+    "id": "org.nativescript.darkmodets",
+    "tns-android": {
+      "version": "6.0.2"
+    },
+    "tns-ios": {
+      "version": "6.0.2"
+    }
+  },
+  "main": "app.js",
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
+  "dependencies": {
+    "nativescript-theme-core": "~1.0.6",
+    "tns-core-modules": "~6.0.0"
+  },
+  "devDependencies": {
+    "nativescript-dev-webpack": "~1.1.0",
+    "typescript": "~3.5.3"
+  },
+  "gitHead": "42f2a6a9c94eaf9c68d2a41e0daaa1a2544bc28f",
+  "readme": "NativeScript Application"
+}
