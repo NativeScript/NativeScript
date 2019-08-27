@@ -14,7 +14,7 @@
   "repository": "<fill-your-repository-here>",
   "dependencies": {
     "nativescript-theme-core": "~1.0.6",
-    "tns-core-modules": "~6.0.0"
+    "tns-core-modules": "file:../../tns-core-modules"
   },
   "devDependencies": {
     "nativescript-dev-webpack": "~1.1.0",
