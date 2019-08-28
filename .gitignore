@@ -6,6 +6,7 @@ libs
 node_modules
 package
 platforms
+!nativescript-core/platforms
 !tns-core-modules/platforms
 reports
 tags
@@ -23,6 +24,7 @@ package-lock.json
 *.launch
 .settings/
 .atom
+.ctags-exclude
 
 # IDE - VSCode
 .vscode/*
@@ -53,21 +55,11 @@ tscommand*.tmp.txt
 *.js
 # https://github.com/NativeScript/nativescript-dev-webpack/issues/932
 !tns-core-modules/xml/xml.js
+!nativescript-core/xml/xml.js
 !tests/hooks/**/*.*
 !js-libs/**/*.*
 !css/**/*.*
 !css-value/**/*.*
 !fetch/**/*.*
-!apps/TelerikNEXT/lib/**/*.*
 !build/**/*.*
 .vs/
-
-.baseDir.ts
-.ctags-exclude
-
-TestRunResult.txt
-.testsapprun
-
-tns-core-modules.base.d.ts
-tns-core-modules.d.ts
-tns-core-modules.es6.d.ts

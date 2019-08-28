@@ -7,7 +7,7 @@ script:
 - node_modules/.bin/webpack --env.android
 - node_modules/.bin/webpack --env.ios
 # modules transpilation
-- cd ../tns-core-modules && npm i && cd ..
+- cd ../nativescript-core && npm i && cd ..
 - npm install
 - npm run tsc
 - npm run tslint
