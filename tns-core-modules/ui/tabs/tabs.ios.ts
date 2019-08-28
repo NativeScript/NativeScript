@@ -82,26 +82,24 @@ class UIPageViewControllerImpl extends UIPageViewController {
     public viewDidLoad(): void {
         const owner = this._owner.get();
 
-        if (owner.tabStrip) {
-            const tabBarItems = owner.tabBarItems;
-            const tabBar = MDCTabBar.alloc().initWithFrame(this.view.bounds);
+        const tabBarItems = owner.tabBarItems;
+        const tabBar = MDCTabBar.alloc().initWithFrame(this.view.bounds);
 
-            if (tabBarItems && tabBarItems.length) {
-                tabBar.items = NSArray.arrayWithArray(tabBarItems);
-            }
-
-            tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
-            tabBar.tintColor = UIColor.blueColor;
-            tabBar.barTintColor = UIColor.whiteColor;
-            tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
-            tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Selected);
-            tabBar.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleBottomMargin;
-            tabBar.alignment = MDCTabBarAlignment.Leading;
-            tabBar.sizeToFit();
-
-            this.tabBar = tabBar;
-            this.view.addSubview(tabBar);
+        if (tabBarItems && tabBarItems.length) {
+            tabBar.items = NSArray.arrayWithArray(tabBarItems);
         }
+
+        tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
+        tabBar.tintColor = UIColor.blueColor;
+        tabBar.barTintColor = UIColor.whiteColor;
+        tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
+        tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Selected);
+        tabBar.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleBottomMargin;
+        tabBar.alignment = MDCTabBarAlignment.Leading;
+        tabBar.sizeToFit();
+
+        this.tabBar = tabBar;
+        this.view.addSubview(tabBar);
     }
 
     public viewWillAppear(animated: boolean): void {
@@ -159,6 +157,8 @@ class UIPageViewControllerImpl extends UIPageViewController {
             }
 
             this.tabBar.frame = CGRectMake(0, tabBarTop, this.tabBar.frame.size.width, tabBarHeight);
+        } else {
+            this.tabBar.hidden = true;
         }
 
         const subViews: NSArray<UIView> = this.view.subviews;
