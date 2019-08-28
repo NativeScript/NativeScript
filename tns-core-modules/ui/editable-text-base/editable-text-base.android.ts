@@ -23,7 +23,6 @@ interface EditTextListenersClass {
 
 let EditTextListeners: EditTextListenersClass;
 
-
 interface EditTextKeyListeners extends android.view.View.OnKeyListener {
 }
 
@@ -165,10 +164,11 @@ function initializeEditTextKeyListeners(): void {
 
         public onKey(view: android.view.View, keyCode: number, keyevent: android.view.KeyEvent): boolean {
             const owner = this.owner;
-            if (keyCode == android.view.KeyEvent.KEYCODE_DEL &&
-                keyevent.getAction() == android.view.KeyEvent.ACTION_DOWN) {
+            if (keyCode === android.view.KeyEvent.KEYCODE_DEL &&
+                keyevent.getAction() === android.view.KeyEvent.ACTION_DOWN) {
                 owner.notify({ eventName: EditableTextBase.deleteTapEvent, object: owner });
             }
+
             return false;
         }  
     }
@@ -205,7 +205,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         const keyListeners = new EditTextKeyListeners(this);
         editText.addTextChangedListener(listeners);
         editText.setOnFocusChangeListener(listeners);
-        editText.setOnKeyListener(keyListeners)
+        editText.setOnKeyListener(keyListeners);
         editText.setOnEditorActionListener(listeners);
         (<any>editText).listener = listeners;
         this._inputType = editText.getInputType();

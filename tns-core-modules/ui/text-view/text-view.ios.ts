@@ -113,11 +113,11 @@ class NoScrollAnimationUITextView extends UITextView {
         super.setContentOffsetAnimated(contentOffset, false);
     }
 
-    public deleteBackward(){
+    public deleteBackward(): void {
         super.deleteBackward();
         const owner = this._owner.get();
-        if(owner){
-        let owner = this._owner.get();
+        if (owner) {
+            let owner = this._owner.get();
             owner.notify({ eventName: EditableTextBase.deleteTapEvent, object: owner });
         }
     }

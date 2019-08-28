@@ -142,11 +142,11 @@ class UITextFieldImpl extends UITextField {
     public editingRectForBounds(bounds: CGRect): CGRect {
         return this._getTextRectForBounds(bounds);
     }
-    public deleteBackward(){
+    public deleteBackward(): void {
         super.deleteBackward();
         const owner = this._owner.get();
-        if(owner){
-        let owner = this._owner.get();
+        if (owner) {
+            let owner = this._owner.get();
             owner.notify({ eventName: TextFieldBase.deleteTapEvent, object: owner });
         }
     }
