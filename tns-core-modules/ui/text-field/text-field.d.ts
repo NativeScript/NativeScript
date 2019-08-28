@@ -12,7 +12,6 @@ export const secureProperty: Property<TextField, boolean>;
  */
 export class TextField extends EditableTextBase {
     public static returnPressEvent: string;
-
     /**
      * Gets the native [android widget](http://developer.android.com/reference/android/widget/EditText.html) that represents the user interface for this component. Valid only when running on Android OS.
      */

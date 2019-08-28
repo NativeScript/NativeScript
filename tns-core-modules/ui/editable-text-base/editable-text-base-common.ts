@@ -1,5 +1,5 @@
 ﻿import { EditableTextBase as EditableTextBaseDefinition, KeyboardType, ReturnKeyType, UpdateTextTrigger, AutocapitalizationType } from ".";
-import { TextBase, Property, CssProperty, Style, Color, booleanConverter, makeValidator, makeParser, PseudoClassHandler } from "../text-base";
+import { TextBase, Property, CssProperty, Style, Color, booleanConverter, makeValidator, makeParser, PseudoClassHandler, EventData } from "../text-base";
 
 export * from "../text-base";
 
@@ -7,6 +7,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
     public static blurEvent = "blur";
     public static focusEvent = "focus";
     public static textChangeEvent = "textChange";
+    public static deleteTapEvent = "deleteTap";
 
     public keyboardType: KeyboardType;
     public returnKeyType: ReturnKeyType;
@@ -18,6 +19,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
     public maxLength: number;
 
     public abstract dismissSoftInput();
+    public abstract on();
     public abstract _setInputType(inputType: number): void;
 
     private _focusHandler = () => this._goToVisualState("focus");
