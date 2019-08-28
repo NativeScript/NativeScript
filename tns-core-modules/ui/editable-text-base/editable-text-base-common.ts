@@ -7,6 +7,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
     public static blurEvent = "blur";
     public static focusEvent = "focus";
     public static textChangeEvent = "textChange";
+    public static deleteTapEvent = "deleteTap";
 
     public keyboardType: KeyboardType;
     public returnKeyType: ReturnKeyType;
