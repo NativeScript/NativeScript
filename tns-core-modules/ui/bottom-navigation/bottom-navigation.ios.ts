@@ -531,7 +531,15 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     private getIconRenderingMode(): UIImageRenderingMode {
-        return UIImageRenderingMode.AlwaysOriginal;
+        switch (this.tabStrip && this.tabStrip.iosIconRenderingMode) {
+            case "alwaysOriginal":
+                return UIImageRenderingMode.AlwaysOriginal;
+            case "alwaysTemplate":
+                return UIImageRenderingMode.AlwaysTemplate;
+            case "automatic":
+            default:
+                return UIImageRenderingMode.Automatic;
+        }
     }
 
     private getIcon(tabStripItem: TabStripItem): UIImage {
@@ -547,10 +555,12 @@ export class BottomNavigation extends TabNavigationBase {
         const color = target.style.color;
         const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
 
+        let isFontIcon = false;
         let image: UIImage = this._iconsCache[iconTag];
         if (!image) {
             let is = new ImageSource;
             if (isFontIconURI(iconSource)) {
+                isFontIcon = true;
                 const fontIconCode = iconSource.split("//")[1];
                 is = fromFontIconCode(fontIconCode, font, color);
             } else {
@@ -564,7 +574,11 @@ export class BottomNavigation extends TabNavigationBase {
                     image = this.getFixedSizeIcon(image);
                 }
 
-                const originalRenderedImage = image.imageWithRenderingMode(this.getIconRenderingMode());
+                let renderingMode: UIImageRenderingMode = UIImageRenderingMode.AlwaysOriginal;
+                if (!isFontIcon) {
+                    renderingMode = this.getIconRenderingMode();
+                }
+                const originalRenderedImage = image.imageWithRenderingMode(renderingMode);
                 this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
