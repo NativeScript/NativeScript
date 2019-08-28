@@ -885,6 +885,7 @@ export class Tabs extends TabsBase {
     }
 
     private getIconRenderingMode(): UIImageRenderingMode {
+        // MDCTabBar doesn't work with rendering mode AlwaysTemplate
         return UIImageRenderingMode.AlwaysOriginal;
     }
 
