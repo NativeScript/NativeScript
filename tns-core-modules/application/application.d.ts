@@ -54,25 +54,6 @@ export const lowMemoryEvent: string;
 export const orientationChangedEvent: string;
 
 /**
- * String value "ns-" used for CSS class prefix.
- */
-export const CSS_CLASS_PREFIX: string;
-
-/**
- * String value "ns-modal" used for default CSS class of a modal root view.
- */
-export const MODAL_ROOT_VIEW_CSS_CLASS: string;
-
-/**
- * Array of string values used for CSS classes of a root view.
- * Default value - "ns-root".
- * Platform values: "ns-android" and "ns-ios".
- * Device type values: "ns-phone" and "ns-tablet".
- * Orientation values: "ns-portrait", "ns-landscape" and "ns-unknown".
- */
-export const ROOT_VIEW_CSS_CLASSES: string[];
-
-/**
  * Event data containing information for the application events.
  */
 export interface ApplicationEventData extends EventData {

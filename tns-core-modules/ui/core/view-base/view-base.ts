@@ -1,6 +1,5 @@
 // Definitions.
 import { ViewBase as ViewBaseDefinition } from ".";
-import { MODAL_ROOT_VIEW_CSS_CLASS, ROOT_VIEW_CSS_CLASSES } from "../../../application";
 import {
     AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order
 } from "../../layouts/flexbox-layout";
@@ -13,6 +12,7 @@ import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, 
 import { isIOS, isAndroid } from "../../../platform";
 import { layout } from "../../../utils/utils";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
+import { MODAL_ROOT_VIEW_CSS_CLASS, ROOT_VIEW_CSS_CLASSES } from "../../utils";
 
 // TODO: Remove this import!
 import * as types from "../../../utils/types";

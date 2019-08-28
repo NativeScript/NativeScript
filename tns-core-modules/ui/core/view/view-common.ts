@@ -9,7 +9,6 @@ import {
     Property, ShowModalOptions, traceCategories, traceEnabled, traceWrite, ViewBase
 } from "../view-base";
 
-import { MODAL_ROOT_VIEW_CSS_CLASS } from "../../../application";
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 
 import {
@@ -25,6 +24,7 @@ import { sanitizeModuleName } from "../../builder/module-name-sanitizer";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
 import { BackgroundRepeat } from "../../styling/style-properties";
+import { MODAL_ROOT_VIEW_CSS_CLASS } from "../../utils";
 
 export * from "../../styling/style-properties";
 export * from "../view-base";

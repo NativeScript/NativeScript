@@ -1,4 +1,6 @@
-﻿import * as utils from "../utils/utils";
+﻿export { CSS_CLASS_PREFIX, MODAL_ROOT_VIEW_CSS_CLASS, ROOT_VIEW_CSS_CLASSES } from "./utils-common";
+
+import * as utils from "../utils/utils";
 
 export module ios {
     export function getActualHeight(view: UIView): number {

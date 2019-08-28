@@ -8,8 +8,8 @@ import {
 } from ".";
 
 import {
-    CSS_CLASS_PREFIX, displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on,
-    orientationChanged, orientationChangedEvent, resumeEvent, ROOT_VIEW_CSS_CLASSES, setApplication, suspendEvent
+    displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on,
+    orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -19,6 +19,7 @@ export * from "./application-common";
 import { createViewFromEntry } from "../ui/builder";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
+import { CSS_CLASS_PREFIX, ROOT_VIEW_CSS_CLASSES } from "../ui/utils";
 import { device } from "../platform/platform";
 import { profile } from "../profiling";
 import { ios } from "../utils/utils";
