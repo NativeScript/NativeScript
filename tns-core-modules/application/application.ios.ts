@@ -17,9 +17,9 @@ export * from "./application-common";
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../ui/builder";
+import { CLASS_PREFIX, getRootViewCssClasses, pushToRootViewCssClasses } from "../css/system-classes";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
-import { CSS_CLASS_PREFIX, ROOT_VIEW_CSS_CLASSES } from "../ui/utils";
 import { device } from "../platform/platform";
 import { profile } from "../profiling";
 import { ios } from "../utils/utils";
@@ -312,10 +312,12 @@ function createRootView(v?: View) {
     }
 
     const deviceType = device.deviceType.toLowerCase();
-    ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${IOS_PLATFORM}`);
-    ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${deviceType}`);
-    ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${iosApp.orientation}`);
-    ROOT_VIEW_CSS_CLASSES.forEach(c => rootView.cssClasses.add(c));
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
+
+    const rootViewCssClasses = getRootViewCssClasses();
+    rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
 
     return rootView;
 }

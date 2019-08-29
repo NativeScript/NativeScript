@@ -7,12 +7,12 @@ import { Page } from "../../page";
 
 // Types.
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from "../properties";
+import { getModalRootViewCssClass, getRootViewCssClasses } from "../../../css/system-classes";
 import { Source } from "../../../utils/debug";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories } from "../bindable";
 import { isIOS, isAndroid } from "../../../platform";
 import { layout } from "../../../utils/utils";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
-import { MODAL_ROOT_VIEW_CSS_CLASS, ROOT_VIEW_CSS_CLASSES } from "../../utils";
 
 // TODO: Remove this import!
 import * as types from "../../../utils/types";
@@ -1040,15 +1040,18 @@ export const classNameProperty = new Property<ViewBase, string>({
     valueChanged(view: ViewBase, oldValue: string, newValue: string) {
         const cssClasses = view.cssClasses;
 
-        const shouldAddModalRootViewCssClass = cssClasses.has(MODAL_ROOT_VIEW_CSS_CLASS);
-        const shouldAddRootViewCssClasses = cssClasses.has(ROOT_VIEW_CSS_CLASSES[0]);
+        const modalViewCssClass = getModalRootViewCssClass();
+        const rootViewCssClasses = getRootViewCssClasses();
+
+        const shouldAddModalRootViewCssClass = cssClasses.has(modalViewCssClass);
+        const shouldAddRootViewCssClasses = cssClasses.has(rootViewCssClasses[0]);
 
         cssClasses.clear();
 
         if (shouldAddModalRootViewCssClass) {
-            cssClasses.add(MODAL_ROOT_VIEW_CSS_CLASS);
+            cssClasses.add(modalViewCssClass);
         } else if (shouldAddRootViewCssClasses) {
-            ROOT_VIEW_CSS_CLASSES.forEach(c => cssClasses.add(c));
+            rootViewCssClasses.forEach(c => cssClasses.add(c));
         }
 
         if (typeof newValue === "string" && newValue !== "") {

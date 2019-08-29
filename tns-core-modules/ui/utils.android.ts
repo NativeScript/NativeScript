@@ -1,6 +1,4 @@
-﻿export { CSS_CLASS_PREFIX, MODAL_ROOT_VIEW_CSS_CLASS, ROOT_VIEW_CSS_CLASSES } from "./utils-common";
-
-export module ios {
+﻿export module ios {
     export function getActualHeight(view: any): number {
         throw new Error("Not implemented for Android");
     }

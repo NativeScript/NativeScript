@@ -20,7 +20,7 @@ import {
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../builder";
-import { CSS_CLASS_PREFIX, ROOT_VIEW_CSS_CLASSES } from "../utils";
+import { CLASS_PREFIX, getRootViewCssClasses, pushToRootViewCssClasses } from "../../css/system-classes";
 import { device } from "../../platform/platform";
 import { profile } from "../../profiling";
 
@@ -1286,10 +1286,12 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
 
             const deviceType = device.deviceType.toLowerCase();
-            ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${ANDROID_PLATFORM}`);
-            ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${deviceType}`);
-            ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${application.android.orientation}`);
-            ROOT_VIEW_CSS_CLASSES.forEach(c => this._rootView.cssClasses.add(c));
+            pushToRootViewCssClasses(`${CLASS_PREFIX}${ANDROID_PLATFORM}`);
+            pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
+            pushToRootViewCssClasses(`${CLASS_PREFIX}${application.android.orientation}`);
+
+            const rootViewCssClasses = getRootViewCssClasses();
+            rootViewCssClasses.forEach(c => this._rootView.cssClasses.add(c));
         }
 
         // Initialize native visual tree;
