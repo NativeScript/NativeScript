@@ -13,7 +13,7 @@ cd "$ROOT_DIR"
 )
 
 (
-    cd "$DIST/tns-core-modules"
+    cd "$DIST/nativescript-core"
     TGZ="$(npm pack)"
     mv "$TGZ" "../$TGZ"
 )

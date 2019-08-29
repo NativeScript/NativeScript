@@ -40,7 +40,7 @@ mkdir -p "$DIST"
 
 ## Prepare Core Modules
 (
-    PACKAGE=tns-core-modules;
+    PACKAGE=nativescript-core;
 
     echo "Clearing $DIST/$PACKAGE"
     npx rimraf "$DIST/$PACKAGE"
@@ -66,4 +66,31 @@ mkdir -p "$DIST"
 
     echo "Clearing typescript definitions from private APIs..."
     node build/clear-private-definitions "$DIST/$PACKAGE"
+)
+
+## Prepare tns-core-modules
+(
+    PACKAGE_SOURCE=tns-core-modules-package;
+    PACKAGE=tns-core-modules;
+
+    echo "Clearing $DIST/$PACKAGE"
+    npx rimraf "$DIST/$PACKAGE"
+    npx rimraf "$DIST/$PACKAGE*.tgz"
+
+    echo "Generating compat package"
+    npx ts-node build/generate-tns-compat
+
+    echo "Copying $PACKAGE_SOURCE $DIST/$PACKAGE..."
+    npx ncp "$PACKAGE_SOURCE" "$DIST/$PACKAGE"
+
+    echo "Copying README and LICENSE to $DIST/$PACKAGE"
+    npx ncp LICENSE "$DIST"/"$PACKAGE"/LICENSE
+      
+    # (
+    #     echo 'TypeScript transpile...'
+    #     cd "$DIST/$PACKAGE"
+
+    #     npm install
+    #     npx tsc
+    # )
 )

@@ -1,5 +1,5 @@
 {
-  "name": "tns-core-modules",
+  "name": "@nativescript/core",
   "description": "Telerik NativeScript Core Modules",
   "version": "6.2.0",
   "homepage": "https://www.nativescript.org",
@@ -12,14 +12,6 @@
     "**/*.js",
     "**/platforms/ios/**",
     "**/package.json",
-    "!android17.d.ts",
-    "!ios.d.ts",
-    "!bin/",
-    "!apps/",
-    "!build/",
-    "!node-tests/",
-    "!declarations.android.d.ts",
-    "!declarations.ios.d.ts",
     "!org.nativescript.widgets.d.ts"
   ],
   "license": "Apache-2.0",
