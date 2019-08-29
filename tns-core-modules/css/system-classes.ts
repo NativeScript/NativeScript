@@ -19,3 +19,14 @@ export function pushToRootViewCssClasses(value: string): number {
 
     return rootViewCssClasses.length;
 }
+
+export function removeFromRootViewCssClasses(value: string): string {
+    const index = rootViewCssClasses.indexOf(value);
+    let removedElement;
+
+    if (index > -1) {
+        removedElement = rootViewCssClasses.splice(index, 1);
+    }
+
+    return removedElement;
+}
