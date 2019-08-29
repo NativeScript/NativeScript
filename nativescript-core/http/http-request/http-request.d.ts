@@ -1,9 +1,6 @@
 ﻿/**
  * @module "http/http-request"
- * @private
  */ /** */
-
-//@private
 
 import * as http from "..";
 export const request: (options: http.HttpRequestOptions) => Promise<http.HttpResponse>;
