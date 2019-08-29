@@ -198,6 +198,29 @@ export function test_class_selector() {
     TKUnit.assert(btnWithNoClass.style.color === undefined, "Color should not have a value");
 }
 
+export function test_class_selector_with_escape_characters() {
+    let page = helper.getClearCurrentPage();
+    let btnWithClass1: buttonModule.Button;
+    let btnWithClass2: buttonModule.Button;
+
+    page.css = ".test-1 { color: red; } .test-1\\/2 { color: blue }";
+
+    //// Will be styled
+    btnWithClass1 = new buttonModule.Button();
+    btnWithClass1.className = "test-1";
+
+    btnWithClass2 = new buttonModule.Button();
+    btnWithClass2.className = "test-1/2";
+
+    const stack = new stackModule.StackLayout();
+    page.content = stack;
+    stack.addChild(btnWithClass1);
+    stack.addChild(btnWithClass2);
+
+    helper.assertViewColor(btnWithClass1, "#FF0000");
+    helper.assertViewColor(btnWithClass2, "#0000FF");
+}
+
 export function test_multiple_class_selector() {
     let page = helper.getClearCurrentPage();
     let btnWithClasses: buttonModule.Button;
