@@ -150,10 +150,17 @@ class UIPageViewControllerImpl extends UIPageViewController {
                 scrollViewHeight = this.view.frame.size.height - safeAreaInsetsBottom;
             }
 
-            const parent = owner.parent;
+            let parent = owner.parent;
+
+            // Handle Angular scenario where Tabs is in a ProxyViewContainer
+            // It is possible to wrap components in ProxyViewContainers indefinitely
+            while (parent && !parent.nativeViewProtected) {
+                parent = parent.parent;
+            }
+
             if (parent && majorVersion > 10) {
                 // TODO: Figure out a better way to handle ViewController nesting/Safe Area nesting
-                tabBarTop = Math.max(tabBarTop, owner.parent.nativeView.safeAreaInsets.top);
+                tabBarTop = Math.max(tabBarTop, parent.nativeView.safeAreaInsets.top);
             }
 
             this.tabBar.frame = CGRectMake(0, tabBarTop, this.tabBar.frame.size.width, tabBarHeight);
