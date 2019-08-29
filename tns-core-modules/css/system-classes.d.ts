@@ -5,7 +5,7 @@
 /**
  * String value "ns-" used for CSS system class prefix.
  */
-export const CSS_CLASS_PREFIX: string;
+export const CLASS_PREFIX: string;
 
 /**
  * Gets CSS system class for modal root view.
