@@ -16,6 +16,11 @@ const dtsBlacklist = [
     "tns-core-modules.d.ts"
 ];
 
+// List of modules that should be re-exported despite they are private
+const privateModulesWhitelist = [
+    "ui/styling/style-scope" //Reason: nativescript-dev-webpack generates code that imports this module
+]
+
 // There are few module using the "export default" syntax
 // They should be handled differently when re-exporting
 const modulesWithDefaultExports = [
@@ -111,7 +116,7 @@ function addTestImport(moduleName: string) {
 }
 
 function generateTestFile() {
-    const uniqueImports = Array.from(new Set(testImports));
+    const uniqueImports = Array.from(new Set(testImports)).sort();
 
     const output: string[] = [];
 
@@ -147,6 +152,13 @@ if(!!${modName}){ throw new Error("Nothing imported form module: ${modName}"); }
         , "utf8");
 }
 
+function generateExportsForPrivateModules() {
+    privateModulesWhitelist.forEach(pathNoExt => {
+        createReExportFile(pathNoExt, ".ts");
+        addTestImport(pathNoExt);
+    })
+}
+
 (async () => {
     console.log(" ------> GENERATING FILES FORM PACKAGE.JSON");
     // Traverse all package.json files and create:
@@ -159,6 +171,8 @@ if(!!${modName}){ throw new Error("Nothing imported form module: ${modName}"); }
     //  * .d.ts file with re-exports for definitions for the .d.ts
     //  * .ts file with re-exports for the corresponding ts/js file (is such exists)
     await traverseInputDir(["*.d.ts"], processDefinitionFile);
+
+    generateExportsForPrivateModules();
 
     // Generate tests in 
     generateTestFile()
