@@ -17,3 +17,9 @@ cd "$ROOT_DIR"
     TGZ="$(npm pack)"
     mv "$TGZ" "../$TGZ"
 )
+
+# (
+#     cd "$DIST/tns-core-modules"
+#     TGZ="$(npm pack)"
+#     mv "$TGZ" "../$TGZ"
+# )
