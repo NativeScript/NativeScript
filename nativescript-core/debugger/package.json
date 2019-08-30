@@ -1,6 +1,5 @@
 {
   "name": "debugger",
   "main": "debugger",
-  "types": "debugger.d.ts",
   "nativescript": {}
 }

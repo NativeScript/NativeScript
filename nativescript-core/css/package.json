@@ -2,7 +2,8 @@
   "name": "css",
   "version": "2.2.1",
   "description": "CSS parser / stringifier",
-  "main": "index",
+  "main": "reworkcss",
+  "types": "reworkcss.d.ts",
   "dependencies": {
     "source-map": "^0.1.38",
     "source-map-resolve": "^0.3.0",
@@ -31,6 +32,5 @@
     "stringifier",
     "stylesheet"
   ],
-  "types": "reworkcss.d.ts",
   "nativescript": {}
 }

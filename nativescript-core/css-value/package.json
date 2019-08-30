@@ -17,7 +17,7 @@
     "mocha": "~1.9.0",
     "should": "~1.2.2"
   },
-  "main": "index",
+  "main": "reworkcss-value",
   "types": "reworkcss-value.d.ts",
   "nativescript": {}
 }
