@@ -1,5 +1,5 @@
-﻿import * as frame from "tns-core-modules/ui/frame";
-import * as observable from "tns-core-modules/data/observable";
+﻿import * as frame from "@nativescript/core/ui/frame";
+import * as observable from "@nativescript/core/data/observable";
 
 declare function __startCPUProfiler(name: string);
 

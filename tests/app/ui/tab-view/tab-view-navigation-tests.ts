@@ -1,13 +1,13 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { isIOS, isAndroid } from "tns-core-modules/platform";
-import { Label } from "tns-core-modules/ui/label";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import * as frameModule from "tns-core-modules/ui/frame";
-import { Page } from "tns-core-modules/ui/page";
-import { ListView, ItemEventData } from "tns-core-modules/ui/list-view";
-import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
-import { Button } from "tns-core-modules/ui/button";
+import { isIOS, isAndroid } from "@nativescript/core/platform";
+import { Label } from "@nativescript/core/ui/label";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import * as frameModule from "@nativescript/core/ui/frame";
+import { Page } from "@nativescript/core/ui/page";
+import { ListView, ItemEventData } from "@nativescript/core/ui/list-view";
+import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view";
+import { Button } from "@nativescript/core/ui/button";
 
 var ASYNC = 2;
 

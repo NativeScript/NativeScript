@@ -1,10 +1,10 @@
 import { UITest } from "../../ui-test";
-import { Label } from "tns-core-modules/ui/label";
+import { Label } from "@nativescript/core/ui/label";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as tabViewTestsNative from "./bottom-navigation-tests-native";
 
-import { BottomNavigation, TabContentItem, TabStrip, TabStripItem, SelectedIndexChangedEventData } from "tns-core-modules/ui/bottom-navigation";
+import { BottomNavigation, TabContentItem, TabStrip, TabStripItem, SelectedIndexChangedEventData } from "@nativescript/core/ui/bottom-navigation";
 
 export class BottomNavigationTest extends UITest<BottomNavigation> {
 

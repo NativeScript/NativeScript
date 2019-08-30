@@ -19,8 +19,8 @@ let numCyclesDetected = 0;
 module.exports = env => {
     // Add your custom Activities, Services and other Android app components here.
     const appComponents = [
-        "tns-core-modules/ui/frame",
-        "tns-core-modules/ui/frame/activity",
+        "@nativescript/core/ui/frame",
+        "@nativescript/core/ui/frame/activity",
     ];
 
     const platform = env && (env.android && "android" || env.ios && "ios");
@@ -63,9 +63,9 @@ module.exports = env => {
 
     const tsConfigPath = resolve(projectRoot, "tsconfig.tns.json");
 
-    const areCoreModulesExternal = Array.isArray(env.externals) && env.externals.some(e => e.indexOf("tns-core-modules") > -1);
+    const areCoreModulesExternal = Array.isArray(env.externals) && env.externals.some(e => e.indexOf("@nativescript/core") > -1);
     if (platform === "ios" && !areCoreModulesExternal) {
-        entries["tns_modules/tns-core-modules/inspector_modules"] = "inspector_modules";
+        entries["tns_modules/@nativescript/core/inspector_modules"] = "inspector_modules";
     };
 
     let sourceMapFilename = nsWebpack.getSourceMapFilename(hiddenSourceMap, __dirname, dist);
@@ -101,11 +101,11 @@ module.exports = env => {
         },
         resolve: {
             extensions: [".ts", ".js", ".scss", ".css"],
-            // Resolve {N} system modules from tns-core-modules
+            // Resolve {N} system modules from @nativescript/core
             modules: [
-                resolve(__dirname, "node_modules/tns-core-modules"),
+                resolve(__dirname, "node_modules/@nativescript/core"),
                 resolve(__dirname, "node_modules"),
-                "node_modules/tns-core-modules",
+                "node_modules/@nativescript/core",
                 "node_modules",
             ],
             alias: {
@@ -308,7 +308,7 @@ module.exports = env => {
         config.plugins.push(new nsWebpack.NativeScriptSnapshotPlugin({
             chunk: "vendor",
             requireModules: [
-                "tns-core-modules/bundle-entry-points",
+                "@nativescript/core/bundle-entry-points",
             ],
             projectRoot,
             webpackConfig: config,

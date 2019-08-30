@@ -1,14 +1,13 @@
 // >> xml-module-snippet
-//var xmlModule = require("tns-core-modules/xml");
+//var xmlModule = require("@nativescript/core/xml");
 // << xml-module-snippet
 
 import * as TKUnit from "../tk-unit";
-import * as xmlModule from "tns-core-modules/xml";
-import * as fs from "tns-core-modules/file-system";
-import * as builder from "tns-core-modules/ui/builder";
-import { isIOS } from "tns-core-modules/platform";
-import { device } from "tns-core-modules/platform";
-import lazy from "tns-core-modules/utils/lazy";
+import * as xmlModule from "@nativescript/core/xml";
+import * as fs from "@nativescript/core/file-system";
+import * as builder from "@nativescript/core/ui/builder";
+import { isIOS, device } from "@nativescript/core/platform";
+import lazy from "@nativescript/core/utils/lazy";
 
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 

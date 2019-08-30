@@ -1,5 +1,5 @@
-import * as frameModule from "tns-core-modules/ui/frame";
-import * as textFieldModule from "tns-core-modules/ui/text-field";
+import * as frameModule from "@nativescript/core/ui/frame";
+import * as textFieldModule from "@nativescript/core/ui/text-field";
 import * as helper from "../../../ui-helper";
 
 export var test_BindingExpressions_ArrayAccess = function () {

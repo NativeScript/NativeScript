@@ -1,15 +1,15 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import * as builder from "tns-core-modules/ui/builder";
-import { Label } from "tns-core-modules/ui/label";
-import { Button } from "tns-core-modules/ui/button";
-import { Page } from "tns-core-modules/ui/page";
-import { View, isIOS } from "tns-core-modules/ui/core/view";
-import { fromObject } from "tns-core-modules/data/observable";
-import { topmost } from "tns-core-modules/ui/frame";
+import * as builder from "@nativescript/core/ui/builder";
+import { Label } from "@nativescript/core/ui/label";
+import { Button } from "@nativescript/core/ui/button";
+import { Page } from "@nativescript/core/ui/page";
+import { View, isIOS } from "@nativescript/core/ui/core/view";
+import { fromObject } from "@nativescript/core/data/observable";
+import { topmost } from "@nativescript/core/ui/frame";
 
 // >> actionbar-common-require
-import * as actionBarModule from "tns-core-modules/ui/action-bar";
+import * as actionBarModule from "@nativescript/core/ui/action-bar";
 // << actionbar-common-require
 
 export function test_actionItem_inherit_bindingContext() {

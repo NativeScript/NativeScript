@@ -1,9 +1,9 @@
 // >> frame-require
-import { Frame, getFrameById, topmost, NavigationEntry } from "tns-core-modules/ui/frame";
+import { Frame, getFrameById, topmost, NavigationEntry } from "@nativescript/core/ui/frame";
 // << frame-require
 
-import { Label } from "tns-core-modules/ui/label";
-import { Page } from "tns-core-modules/ui/page";
+import { Label } from "@nativescript/core/ui/label";
+import { Page } from "@nativescript/core/ui/page";
 import * as TKUnit from "../../tk-unit";
 
 const NAV_WAIT = 15;

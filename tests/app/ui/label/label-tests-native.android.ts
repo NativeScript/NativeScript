@@ -1,6 +1,6 @@
-import * as labelModule from "tns-core-modules/ui/label";
-import * as enums from "tns-core-modules/ui/enums";
-import * as colorModule from "tns-core-modules/color";
+import * as labelModule from "@nativescript/core/ui/label";
+import * as enums from "@nativescript/core/ui/enums";
+import * as colorModule from "@nativescript/core/color";
 
 export function getNativeTextAlignment(label: labelModule.Label): string {
     var gravity = label.android.getGravity();

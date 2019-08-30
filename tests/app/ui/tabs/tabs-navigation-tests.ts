@@ -1,12 +1,12 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { Label } from "tns-core-modules/ui/label";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import * as frameModule from "tns-core-modules/ui/frame";
-import { Page } from "tns-core-modules/ui/page";
-import { ListView, ItemEventData } from "tns-core-modules/ui/list-view";
-import { Tabs, TabContentItem, TabStrip, TabStripItem } from "tns-core-modules/ui/tabs";
-import { Button } from "tns-core-modules/ui/button";
+import { Label } from "@nativescript/core/ui/label";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import * as frameModule from "@nativescript/core/ui/frame";
+import { Page } from "@nativescript/core/ui/page";
+import { ListView, ItemEventData } from "@nativescript/core/ui/list-view";
+import { Tabs, TabContentItem, TabStrip, TabStripItem } from "@nativescript/core/ui/tabs";
+import { Button } from "@nativescript/core/ui/button";
 
 var ASYNC = 2;
 

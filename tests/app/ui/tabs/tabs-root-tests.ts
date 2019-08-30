@@ -1,8 +1,8 @@
 import * as TKUnit from "../../tk-unit";
-import { _resetRootView } from "tns-core-modules/application/";
-import { Frame, NavigationEntry, topmost } from "tns-core-modules/ui/frame";
-import { Page } from "tns-core-modules/ui/page";
-import { Tabs, TabContentItem, TabStrip, TabStripItem } from "tns-core-modules/ui/tabs";
+import { _resetRootView } from "@nativescript/core/application/";
+import { Frame, NavigationEntry, topmost } from "@nativescript/core/ui/frame";
+import { Page } from "@nativescript/core/ui/page";
+import { Tabs, TabContentItem, TabStrip, TabStripItem } from "@nativescript/core/ui/tabs";
 
 function waitUntilNavigatedToMaxTimeout(pages: Page[], action: Function) {
     const maxTimeout = 8;

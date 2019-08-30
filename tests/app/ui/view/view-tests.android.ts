@@ -1,12 +1,12 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { View, isIOS, unsetValue } from "tns-core-modules/ui/core/view";
-import { Button } from "tns-core-modules/ui/button";
-import * as types from "tns-core-modules/utils/types";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { Label } from "tns-core-modules/ui/label";
-import * as trace from "tns-core-modules/trace";
-import { Color } from "tns-core-modules/color";
+import { View, isIOS, unsetValue } from "@nativescript/core/ui/core/view";
+import { Button } from "@nativescript/core/ui/button";
+import * as types from "@nativescript/core/utils/types";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { Label } from "@nativescript/core/ui/label";
+import * as trace from "@nativescript/core/trace";
+import { Color } from "@nativescript/core/color";
 // enable the trace, it is disabled by default
 trace.enable();
 

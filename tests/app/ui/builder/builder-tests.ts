@@ -1,5 +1,5 @@
-import { createViewFromEntry } from "tns-core-modules/ui/builder";
-import { sanitizeModuleName } from "tns-core-modules/ui/builder/module-name-sanitizer";
+import { createViewFromEntry } from "@nativescript/core/ui/builder";
+import { sanitizeModuleName } from "@nativescript/core/ui/builder/module-name-sanitizer";
 
 import { assertEqual, assertNull, assertThrows, assertNotNull } from "../../tk-unit";
 

@@ -1,8 +1,8 @@
 ﻿import * as TKUnit from "../../tk-unit";
 import { createPageAndNavigate } from "./action-bar-tests-common";
-import { ActionItem } from "tns-core-modules/ui/action-bar";
-import { Visibility } from "tns-core-modules/ui/enums";
-import { Button } from "tns-core-modules/ui/button";
+import { ActionItem } from "@nativescript/core/ui/action-bar";
+import { Visibility } from "@nativescript/core/ui/enums";
+import { Button } from "@nativescript/core/ui/button";
 
 export * from "./action-bar-tests-common";
 

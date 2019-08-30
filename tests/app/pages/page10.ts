@@ -1,10 +1,10 @@
-import * as pages from "tns-core-modules/ui/page";
-import * as imageSource from "tns-core-modules/image-source";
-import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
-import * as enums from "tns-core-modules/ui/enums";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { Label } from "tns-core-modules/ui/label";
-import { Image } from "tns-core-modules/ui/image";
+import * as pages from "@nativescript/core/ui/page";
+import * as imageSource from "@nativescript/core/image-source";
+import * as gridModule from "@nativescript/core/ui/layouts/grid-layout";
+import * as enums from "@nativescript/core/ui/enums";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { Label } from "@nativescript/core/ui/label";
+import { Image } from "@nativescript/core/ui/image";
 
 export function createPage() {
     var stack = new StackLayout();

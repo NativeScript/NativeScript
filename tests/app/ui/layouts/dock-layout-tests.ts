@@ -1,5 +1,5 @@
-import * as button from "tns-core-modules/ui/button";
-import { DockLayout } from "tns-core-modules/ui/layouts/dock-layout";
+import * as button from "@nativescript/core/ui/button";
+import { DockLayout } from "@nativescript/core/ui/layouts/dock-layout";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "./layout-helper";
 import * as testModule from "../../ui-test";
@@ -7,11 +7,11 @@ import * as commonTests from "./common-layout-tests";
 import * as testHelper from "../../ui-helper";
 
 // >> dock-layout-require
-import * as dockModule from "tns-core-modules/ui/layouts/dock-layout";
+import * as dockModule from "@nativescript/core/ui/layouts/dock-layout";
 // << dock-layout-require
 
 // >> dock-layout-others
-import * as enums from "tns-core-modules/ui/enums";
+import * as enums from "@nativescript/core/ui/enums";
 // << dock-layout-others
 
 export class DockLayoutTest extends testModule.UITest<DockLayout> {

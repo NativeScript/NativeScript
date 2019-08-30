@@ -1,10 +1,10 @@
-﻿import * as imageSource from "tns-core-modules/image-source";
-import * as imageAssetModule from "tns-core-modules/image-asset";
-import * as fs from "tns-core-modules/file-system";
-import * as app from "tns-core-modules/application";
+﻿import * as imageSource from "@nativescript/core/image-source";
+import * as imageAssetModule from "@nativescript/core/image-asset";
+import * as fs from "@nativescript/core/file-system";
+import * as app from "@nativescript/core/application";
 import * as TKUnit from "../tk-unit";
-import { Font } from "tns-core-modules/ui/styling/font";
-import { Color } from "tns-core-modules/color";
+import { Font } from "@nativescript/core/ui/styling/font";
+import { Color } from "@nativescript/core/color";
 
 const imagePath = "~/assets/logo.png";
 const splashscreenPath = "~/assets/splashscreen.png";

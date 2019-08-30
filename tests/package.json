@@ -2,10 +2,10 @@
   "nativescript": {
     "id": "org.nativescript.UnitTestApp",
     "tns-android": {
-      "version": "next"
+      "version": "6.1.0-2019-08-29-221425-04"
     },
     "tns-ios": {
-      "version": "next"
+      "version": "6.1.0-2019-08-30-150001-03"
     }
   },
   "main": "app.js",
@@ -13,7 +13,8 @@
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",
   "dependencies": {
-    "tns-core-modules": "file:../tns-core-modules"
+    "@nativescript/core": "file:../nativescript-core",
+    "tns-core-modules": "file:../dist/tns-core-modules"
   },
   "devDependencies": {
     "circular-dependency-plugin": "5.2.0",

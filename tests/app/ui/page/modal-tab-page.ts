@@ -1,8 +1,8 @@
-import { NavigatedData } from "tns-core-modules/ui/page";
-import { View } from "tns-core-modules/ui/core/view";
+import { NavigatedData } from "@nativescript/core/ui/page";
+import { View } from "@nativescript/core/ui/core/view";
 import * as TKUnit from "../../tk-unit";
-import { _stack } from "tns-core-modules/ui/frame";
-import { isAndroid } from "tns-core-modules/platform";
+import { _stack } from "@nativescript/core/ui/frame";
+import { isAndroid } from "@nativescript/core/platform";
 
 export function onNavigatedTo(args: NavigatedData) {
     TKUnit.assertEqual(_stack().length, 2, "Host and tab modal frame should be instantiated at this point!");

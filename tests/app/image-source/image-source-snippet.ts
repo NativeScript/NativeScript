@@ -1,5 +1,5 @@
-import * as imageSource from "tns-core-modules/image-source";
-import * as fs from "tns-core-modules/file-system";
+import * as imageSource from "@nativescript/core/image-source";
+import * as fs from "@nativescript/core/file-system";
 // >> imagesource-from-imageasset-save-to
 
 export function imageSourceFromAsset(imageAsset) {

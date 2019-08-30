@@ -1,10 +1,10 @@
 import * as TKUnit from "../tk-unit";
-import { EventData, Page, NavigatedData } from "tns-core-modules/ui/page";
-import { topmost as topmostFrame, NavigationTransition } from "tns-core-modules/ui/frame";
-import { StackLayout, } from "tns-core-modules/ui/layouts/stack-layout";
-import { Color } from "tns-core-modules/color";
+import { EventData, Page, NavigatedData } from "@nativescript/core/ui/page";
+import { topmost as topmostFrame, NavigationTransition } from "@nativescript/core/ui/frame";
+import { StackLayout, } from "@nativescript/core/ui/layouts/stack-layout";
+import { Color } from "@nativescript/core/color";
 import * as helper from "../ui-helper";
-import * as frame from "tns-core-modules/ui/frame";
+import * as frame from "@nativescript/core/ui/frame";
 // Creates a random colorful page full of meaningless stuff.
 let id = 0;
 let pageFactory = function (): Page {

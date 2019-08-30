@@ -1,12 +1,12 @@
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
 import * as TKUnit from "../../tk-unit";
-import * as view from "tns-core-modules/ui/core/view";
+import * as view from "@nativescript/core/ui/core/view";
 import * as testModule from "../../ui-test";
-import * as platform from "tns-core-modules/platform";
+import * as platform from "@nativescript/core/platform";
 import * as helper from "../../ui-helper";
-import { parse } from "tns-core-modules/ui/builder";
-import { Page } from "tns-core-modules/ui/page";
-import { Label } from "tns-core-modules/ui/label";
+import { parse } from "@nativescript/core/ui/builder";
+import { Page } from "@nativescript/core/ui/page";
+import { Label } from "@nativescript/core/ui/label";
 import {
     dipToDp, left, top, right, bottom, height, width,
     equal, closeEnough, lessOrCloseEnough, greaterOrCloseEnough,

@@ -1,4 +1,4 @@
-import { BottomNavigation } from "tns-core-modules/ui/bottom-navigation";
+import { BottomNavigation } from "@nativescript/core/ui/bottom-navigation";
 
 export function getNativeTabCount(tabView: BottomNavigation): number {
     // there is no native tab content view implementation for Android Bottom Navigation

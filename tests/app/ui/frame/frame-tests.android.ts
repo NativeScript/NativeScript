@@ -1,6 +1,6 @@
-import * as frameModule from "tns-core-modules/ui/frame";
+import * as frameModule from "@nativescript/core/ui/frame";
 import * as TKUnit from "../../tk-unit";
-import { unsetValue, PercentLength } from "tns-core-modules/ui/core/view";
+import { unsetValue, PercentLength } from "@nativescript/core/ui/core/view";
 
 export * from "./frame-tests-common";
 

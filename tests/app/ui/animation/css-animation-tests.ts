@@ -1,13 +1,13 @@
 import * as TKUnit from "../../tk-unit";
-import * as styleScope from "tns-core-modules/ui/styling/style-scope";
-import * as keyframeAnimation from "tns-core-modules/ui/animation/keyframe-animation";
-import * as enums from "tns-core-modules/ui/enums";
+import * as styleScope from "@nativescript/core/ui/styling/style-scope";
+import * as keyframeAnimation from "@nativescript/core/ui/animation/keyframe-animation";
+import * as enums from "@nativescript/core/ui/enums";
 import * as helper from "../../ui-helper";
-import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
-import * as labelModule from "tns-core-modules/ui/label";
-import * as color from "tns-core-modules/color";
+import * as stackModule from "@nativescript/core/ui/layouts/stack-layout";
+import * as labelModule from "@nativescript/core/ui/label";
+import * as color from "@nativescript/core/color";
 
-import { SelectorCore } from "tns-core-modules/ui/styling/css-selector";
+import { SelectorCore } from "@nativescript/core/ui/styling/css-selector";
 
 const DELTA = 1;
 const SCALE_DELTA = 0.001;

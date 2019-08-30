@@ -1,11 +1,11 @@
 // >> article-require-page-module
-import { Page, ShownModallyData, NavigatedData } from "tns-core-modules/ui/page";
+import { Page, ShownModallyData, NavigatedData } from "@nativescript/core/ui/page";
 // FrameModule is needed in order to have an option to navigate to the new page.
-import { topmost, NavigationEntry } from "tns-core-modules/ui/frame";
+import { topmost, NavigationEntry } from "@nativescript/core/ui/frame";
 // << article-require-page-module
 
 // TODO: Remove this and get it from global to decouple builder for angular
-import { createViewFromEntry } from "tns-core-modules/ui/builder";
+import { createViewFromEntry } from "@nativescript/core/ui/builder";
 
 // >> article-set-bindingcontext
 function pageLoaded(args) {
@@ -16,15 +16,16 @@ exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { View, PercentLength, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
-import { Frame, _stack } from "tns-core-modules/ui/frame";
-import { Label } from "tns-core-modules/ui/label";
-import { Color } from "tns-core-modules/color";
-import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view/tab-view";
-import { _resetRootView } from "tns-core-modules/application";
-import { Button } from "tns-core-modules/ui/button/button";
-import { ios } from "tns-core-modules/utils/utils";
+
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { View, PercentLength, unsetValue, EventData, isIOS } from "@nativescript/core/ui/core/view";
+import { Frame, _stack } from "@nativescript/core/ui/frame";
+import { Label } from "@nativescript/core/ui/label";
+import { Color } from "@nativescript/core/color";
+import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view/tab-view";
+import { _resetRootView } from "@nativescript/core/application";
+import { Button } from "@nativescript/core/ui/button/button";
+import { ios } from "@nativescript/core/utils/utils";
 
 export function addLabelToPage(page: Page, text?: string) {
     const label = new Label();

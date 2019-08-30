@@ -1,16 +1,16 @@
-import { Color } from "tns-core-modules/color";
-import { FormattedString, Span } from "tns-core-modules/text/formatted-string";
-import { ActionBar } from "tns-core-modules/ui/action-bar";
+import { Color } from "@nativescript/core/color";
+import { FormattedString, Span } from "@nativescript/core/text/formatted-string";
+import { ActionBar } from "@nativescript/core/ui/action-bar";
 // TODO: Remove this and get it from global to decouple builder for angular
-import { createViewFromEntry } from "tns-core-modules/ui/builder";
-import { Button } from "tns-core-modules/ui/button";
-import { isIOS, unsetValue, View, ViewBase } from "tns-core-modules/ui/core/view";
-import * as frame from "tns-core-modules/ui/frame";
-import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { Page } from "tns-core-modules/ui/page";
-import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
-import * as utils from "tns-core-modules/utils/utils";
+import { createViewFromEntry } from "@nativescript/core/ui/builder";
+import { Button } from "@nativescript/core/ui/button";
+import { isIOS, unsetValue, View, ViewBase } from "@nativescript/core/ui/core/view";
+import * as frame from "@nativescript/core/ui/frame";
+import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { Page } from "@nativescript/core/ui/page";
+import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view";
+import * as utils from "@nativescript/core/utils/utils";
 
 import * as TKUnit from "./tk-unit";
 

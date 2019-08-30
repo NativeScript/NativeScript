@@ -1,4 +1,4 @@
-import { TabView } from "tns-core-modules/ui/tab-view";
+import { TabView } from "@nativescript/core/ui/tab-view";
 
 export function getNativeTabCount(tabView: TabView): number {
     const pagerAdapter: androidx.viewpager.widget.PagerAdapter = (<any>tabView)._pagerAdapter;

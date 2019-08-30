@@ -1,19 +1,19 @@
 import * as helper from "../ui-helper";
 import * as TKUnit from "../tk-unit";
 
-import * as app from "tns-core-modules/application/application";
-import * as frame from "tns-core-modules/ui/frame";
-import { Color } from "tns-core-modules/color";
-import { createViewFromEntry } from "tns-core-modules/ui/builder";
-import { Page } from "tns-core-modules/ui/page";
-import { Frame } from "tns-core-modules/ui/frame";
+import * as app from "@nativescript/core/application/application";
+import * as frame from "@nativescript/core/ui/frame";
+import { Color } from "@nativescript/core/color";
+import { createViewFromEntry } from "@nativescript/core/ui/builder";
+import { Page } from "@nativescript/core/ui/page";
+import { Frame } from "@nativescript/core/ui/frame";
 
 const LIVESYNC_FOLDER = "livesync/";
 
 const appCssFileName = `${LIVESYNC_FOLDER}application-page.css`;
 const appNewCssFileName = `${LIVESYNC_FOLDER}app-new-page.css`;
 // `.scss` module registers in webpack as `.css`
-// https://github.com/NativeScript/NativeScript/blob/5.4.2/tns-core-modules/globals/globals.ts#L32-L33
+// https://github.com/NativeScript/NativeScript/blob/5.4.2/@nativescript/core/globals/globals.ts#L32-L33
 const appNewScssFileNameAsCss = `${LIVESYNC_FOLDER}app-new-scss-page.css`;
 const appNewScssFileName = `${LIVESYNC_FOLDER}app-new-scss-page.scss`;
 

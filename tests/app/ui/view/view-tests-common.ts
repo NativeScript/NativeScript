@@ -1,19 +1,19 @@
 import * as TKUnit from "../../tk-unit";
-import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style } from "tns-core-modules/ui/core/view";
-import { topmost } from "tns-core-modules/ui/frame";
-import { Page } from "tns-core-modules/ui/page";
-import { Button } from "tns-core-modules/ui/button";
-import { Label } from "tns-core-modules/ui/label";
-import { Color } from "tns-core-modules/color";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { AbsoluteLayout } from "tns-core-modules/ui/layouts/absolute-layout";
-import * as types from "tns-core-modules/utils/types";
+import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style } from "@nativescript/core/ui/core/view";
+import { topmost } from "@nativescript/core/ui/frame";
+import { Page } from "@nativescript/core/ui/page";
+import { Button } from "@nativescript/core/ui/button";
+import { Label } from "@nativescript/core/ui/label";
+import { Color } from "@nativescript/core/color";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { AbsoluteLayout } from "@nativescript/core/ui/layouts/absolute-layout";
+import * as types from "@nativescript/core/utils/types";
 import * as helper from "../../ui-helper";
-import * as observable from "tns-core-modules/data/observable";
-import * as bindable from "tns-core-modules/ui/core/bindable";
+import * as observable from "@nativescript/core/data/observable";
+import * as bindable from "@nativescript/core/ui/core/bindable";
 import * as definition from "./view-tests";
-import { isAndroid } from "tns-core-modules/platform";
-import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
+import { isAndroid } from "@nativescript/core/platform";
+import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
 
 export function test_eachDescendant() {
     const test = function (views: Array<View>) {

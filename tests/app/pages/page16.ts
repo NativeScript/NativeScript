@@ -1,7 +1,7 @@
-import * as pageModule from "tns-core-modules/ui/page";
-import * as buttonModule from "tns-core-modules/ui/button";
-import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
-import * as frame from "tns-core-modules/ui/frame";
+import * as pageModule from "@nativescript/core/ui/page";
+import * as buttonModule from "@nativescript/core/ui/button";
+import * as stackModule from "@nativescript/core/ui/layouts/stack-layout";
+import * as frame from "@nativescript/core/ui/frame";
 
 export function createPage() {
     var page = new pageModule.Page();

@@ -1,6 +1,6 @@
-import { Page, View, EventData } from "tns-core-modules/ui/page";
-import { Label } from "tns-core-modules/ui/label";
-import { topmost } from "tns-core-modules/ui/frame";
+import { Page, View, EventData } from "@nativescript/core/ui/page";
+import { Label } from "@nativescript/core/ui/label";
+import { topmost } from "@nativescript/core/ui/frame";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { addLabelToPage } from "./page-tests-common";

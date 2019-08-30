@@ -1,15 +1,15 @@
 import { assert, assertEqual } from "../tk-unit";
-import { DOMNode } from "tns-core-modules/debugger/dom-node";
-import { attachDOMInspectorCommandCallbacks, attachCSSInspectorCommandCallbacks, attachDOMInspectorEventCallbacks } from "tns-core-modules/debugger/devtools-elements";
-import { InspectorCommands, InspectorEvents } from "tns-core-modules/debugger/devtools-elements";
-import { unsetValue } from "tns-core-modules/ui/core/properties";
-import { Button } from "tns-core-modules/ui/button";
-import { Slider } from "tns-core-modules/ui/slider";
-import { Label } from "tns-core-modules/ui/label";
-import { textProperty } from "tns-core-modules/ui/text-base";
-import { TextView } from "tns-core-modules/ui/text-view";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { isAndroid } from "tns-core-modules/platform/platform";
+import { DOMNode } from "@nativescript/core/debugger/dom-node";
+import { attachDOMInspectorCommandCallbacks, attachCSSInspectorCommandCallbacks, attachDOMInspectorEventCallbacks } from "@nativescript/core/debugger/devtools-elements";
+import { InspectorCommands, InspectorEvents } from "@nativescript/core/debugger/devtools-elements";
+import { unsetValue } from "@nativescript/core/ui/core/properties";
+import { Button } from "@nativescript/core/ui/button";
+import { Slider } from "@nativescript/core/ui/slider";
+import { Label } from "@nativescript/core/ui/label";
+import { textProperty } from "@nativescript/core/ui/text-base";
+import { TextView } from "@nativescript/core/ui/text-view";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { isAndroid } from "@nativescript/core/platform/platform";
 
 let originalInspectorGlobal: InspectorCommands & InspectorEvents;
 

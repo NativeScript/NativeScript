@@ -1,4 +1,4 @@
-﻿import * as listPickerModule from "tns-core-modules/ui/list-picker";
+﻿import * as listPickerModule from "@nativescript/core/ui/list-picker";
 
 export function getNativeItemsCount(listPicker: listPickerModule.ListPicker): number {
     var maxValue = listPicker.nativeViewProtected.getMaxValue();

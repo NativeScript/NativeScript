@@ -1,4 +1,4 @@
-import "tns-core-modules/globals";
+import "@nativescript/core/globals";
 import * as TKUnit from "../tk-unit";
 
 declare var System: any;

@@ -1,9 +1,9 @@
 import * as helper from "../../ui-helper";
 import * as TKUnit from "../../tk-unit";
-import { parse } from "tns-core-modules/ui/builder";
-import * as view from "tns-core-modules/ui/core/view";
-import * as platform from "tns-core-modules/platform";
-import { Repeater } from "tns-core-modules/ui/repeater";
+import { parse } from "@nativescript/core/ui/builder";
+import * as view from "@nativescript/core/ui/core/view";
+import * as platform from "@nativescript/core/platform";
+import { Repeater } from "@nativescript/core/ui/repeater";
 import { UITest } from "../../ui-test";
 import { left, top, right, bottom, equal } from "../layouts/layout-tests-helper";
 

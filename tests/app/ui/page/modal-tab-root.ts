@@ -1,8 +1,8 @@
-import { ShownModallyData } from "tns-core-modules/ui/core/view";
-import { TabView } from "tns-core-modules/ui/tab-view/tab-view";
+import { ShownModallyData } from "@nativescript/core/ui/core/view";
+import { TabView } from "@nativescript/core/ui/tab-view/tab-view";
 import * as TKUnit from "../../tk-unit";
-import { _stack } from "tns-core-modules/ui/frame";
-import { isIOS } from "tns-core-modules/platform";
+import { _stack } from "@nativescript/core/ui/frame";
+import { isIOS } from "@nativescript/core/platform";
 
 export function onShownModally(args: ShownModallyData) {
     const tabView = <TabView>args.object;

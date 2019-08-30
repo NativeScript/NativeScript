@@ -1,9 +1,8 @@
-import * as imageCacheModule from "tns-core-modules/ui/image-cache";
-import * as imageSource from "tns-core-modules/image-source";
-import * as types from "tns-core-modules/utils/types";
-import { isAndroid } from "tns-core-modules/platform";
-import { device } from "tns-core-modules/platform";
-import lazy from "tns-core-modules/utils/lazy";
+import * as imageCacheModule from "@nativescript/core/ui/image-cache";
+import * as imageSource from "@nativescript/core/image-source";
+import * as types from "@nativescript/core/utils/types";
+import { isAndroid, device } from "@nativescript/core/platform";
+import lazy from "@nativescript/core/utils/lazy";
 
 import * as TKUnit from "../../tk-unit";
 

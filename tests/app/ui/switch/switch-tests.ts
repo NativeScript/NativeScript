@@ -1,12 +1,12 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import * as viewModule from "tns-core-modules/ui/core/view";
-import * as bindable from "tns-core-modules/ui/core/bindable";
-import * as observable from "tns-core-modules/data/observable";
-import * as color from "tns-core-modules/color";
-import * as platform from "tns-core-modules/platform";
+import * as viewModule from "@nativescript/core/ui/core/view";
+import * as bindable from "@nativescript/core/ui/core/bindable";
+import * as observable from "@nativescript/core/data/observable";
+import * as color from "@nativescript/core/color";
+import * as platform from "@nativescript/core/platform";
 // >> article-require-switch
-import * as switchModule from "tns-core-modules/ui/switch";
+import * as switchModule from "@nativescript/core/ui/switch";
 // << article-require-switch
 
 // ### Binding the Switch checked property and Button isEanbled property to a observable view-model property.

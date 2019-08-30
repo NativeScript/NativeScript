@@ -1,10 +1,10 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { Page } from "tns-core-modules/ui/page";
-import { isAndroid } from "tns-core-modules/platform";
-import { Frame, NavigationEntry, _stack } from "tns-core-modules/ui/frame";
-import { _resetRootView, getRootView } from "tns-core-modules/application";
-import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
+import { Page } from "@nativescript/core/ui/page";
+import { isAndroid } from "@nativescript/core/platform";
+import { Frame, NavigationEntry, _stack } from "@nativescript/core/ui/frame";
+import { _resetRootView, getRootView } from "@nativescript/core/application";
+import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view";
 
 function waitUntilTabViewReady(page: Page, action: Function) {
     helper.waitUntilNavigatedTo(page, action);
