@@ -16,7 +16,7 @@ cd "$ROOT_DIR"
     npx rimraf "$DIST/$PACKAGE*.tgz"
 
     echo "Generating compat package"
-    npx ts-node build/generate-tns-compat
+    npx ts-node --project ./build/tsconfig.json ./build/generate-tns-compat 
 
     echo "Copying $PACKAGE_SOURCE $DIST/$PACKAGE..."
     npx ncp "$PACKAGE_SOURCE" "$DIST/$PACKAGE"
@@ -31,5 +31,13 @@ cd "$ROOT_DIR"
         npm install ../nativescript-core*.tgz -s
         npm install ../tns-platform-declarations*.tgz -s
         npx tsc
+    )
+
+    (
+        echo 'NPM packing ...'
+        cd "$DIST/$PACKAGE"
+
+        TGZ="$(npm pack)"
+        mv "$TGZ" "../$TGZ"
     )
 )

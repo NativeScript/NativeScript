@@ -1,22 +1,14 @@
 import * as path from "path";
 import * as fs from "fs";
-import * as rimraf from "rimraf";
 
-import * as readdirp from "readdirp";
-import { EntryInfo } from "readdirp";
+import readdirp from "readdirp";
+type EntryInfo = typeof readdirp.EntryInfo;
 
 const inputFolder = path.resolve("dist/nativescript-core");
 const outputFolder = path.resolve("dist/tns-core-modules");
+const testImports: string[] = [];
 
-// rimraf.sync(outputFolder);
-// console.log(`OUTPUT folder purged: ${outputFolder}`);
-
-interface TestImport {
-    module: string;
-    origin: "pck" | "dts";
-}
-const testImports = [];
-
+// List of definition files that don't need to be exported.
 const dtsBlacklist = [
     "module.d.ts",
     "nativescript-error.d.ts",
@@ -24,93 +16,84 @@ const dtsBlacklist = [
     "tns-core-modules.d.ts"
 ];
 
-readdirp(inputFolder, {
-    fileFilter: ["*.ts", "*.js", "package.json"],
-    directoryFilter: (di) => {
-        return !di.path.startsWith("node_modules") &&
-            !di.path.startsWith("platforms");
-    }
-}).on("data", (entry: typeof EntryInfo) => {
-    const basename = entry.basename;
-    const relativePath = entry.path;
+// There are few module using the "export default" syntax
+// They should be handled differently when re-exporting
+const modulesWithDefaultExports = [
+    "utils/lazy"
+];
 
-    if (basename.endsWith(".d.ts")) {
-        processDefinitionFile(entry);
-    } else if (basename.endsWith(".ts")) {
-        // processTypeScriptFile(entry);
-    } else if (basename.endsWith(".js")) {
-        // processJavaScriptFile(entry);
-    } else if (basename === "package.json" && relativePath !== "package.json") {
-        processPackageJsonFile(entry);
-    }
-})
-    .on("warn", error => console.error("non-fatal error", error))
-    .on("error", error => console.error("fatal error", error))
-    .on("end", checkJsonFiles);
-
-function processDefinitionFile(entry: typeof EntryInfo) {
-    if (dtsBlacklist.includes(entry.path)) {
-        console.log(`SKIP: ${entry.path}`);
-
-        return;
-    }
-
-    let relativeFilePathNoExt = entry.path.replace(/\.d\.ts$/, "");
-    let outputDefinitionFilePath = path.join(outputFolder, relativeFilePathNoExt + ".d.ts");
-    let outputTypescriptFilePath = path.join(outputFolder, relativeFilePathNoExt + ".ts");
-
-    ensureDirectoryExistence(outputDefinitionFilePath);
-
-    fs.writeFileSync(outputDefinitionFilePath, `export * from "@nativescript/core/${relativeFilePathNoExt}";`);
-    logFileCreated(outputDefinitionFilePath, "d.ts");
-
-    fs.writeFileSync(outputTypescriptFilePath, `export * from "@nativescript/core/${relativeFilePathNoExt}";`);
-    logFileCreated(outputDefinitionFilePath, "ts");
-
-    addTestImport(relativeFilePathNoExt, "dts");
+function traverseInputDir(fileFilter: string[], callback: (entry: EntryInfo) => void) {
+    return new Promise((resolve, reject) => {
+        readdirp(inputFolder, {
+            fileFilter,
+            directoryFilter: (di: EntryInfo) => {
+                return !di.path.startsWith("node_modules") &&
+                    !di.path.startsWith("platforms");
+            }
+        })
+            .on("data", callback)
+            .on("error", reject)
+            .on("end", resolve);
+    });
 }
 
-function processTypeScriptFile(entry: typeof EntryInfo) {
-    let relativeFilePathNoPlat = entry.path.replace(/(\.android|\.ios)?\.ts$/, "");
-    let outputFilePath = path.join(outputFolder, relativeFilePathNoPlat + ".ts");
+function processPackageJsonFile(entry: EntryInfo) {
+    const dirPath = path.dirname(entry.path);
+    const outputFilePath = path.join(outputFolder, entry.path);
 
     ensureDirectoryExistence(outputFilePath);
-    fs.writeFileSync(outputFilePath, `export * from "@nativescript/core/${relativeFilePathNoPlat}";`);
-
-    logFileCreated(outputFilePath, "ts");
-}
-
-function processPackageJsonFile(entry: typeof EntryInfo) {
-    let outputFilePath = path.join(outputFolder, entry.path);
-
-    ensureDirectoryExistence(outputFilePath);
-
-    (<any>fs).copyFileSync(entry.fullPath, outputFilePath);
-    logFileCreated(outputFilePath, "package.json");
 
     const json = require(entry.fullPath);
     if (json.main) {
-        addTestImport(path.dirname(entry.path), "pck");
+        (<any>fs).copyFileSync(entry.fullPath, outputFilePath);
+        logFileCreated(outputFilePath);
+        addTestImport(dirPath);
+
+        const mainFile = path.join(dirPath, json.main);
+        createReExportFile(mainFile, ".ts");
+        addTestImport(mainFile);
     }
 }
 
-function processJavaScriptFile(entry: typeof EntryInfo) {
-    const tsFile = entry.fullPath.replace(/\.js$/, ".ts");
-    if (fs.existsSync(tsFile)) {
+function processDefinitionFile(entry: EntryInfo) {
+    if (dtsBlacklist.includes(entry.path)) {
         return;
     }
 
-    let relativeFilePathNoExt = entry.path.replace(/\.js$/, "");
-    let outputFilePath = path.join(outputFolder, relativeFilePathNoExt + ".ts");
+    const relativeFilePathNoExt = entry.path.replace(/\.d\.ts$/, "");
 
-    // crate a TS file re-exporting everything from the js
-    ensureDirectoryExistence(outputFilePath);
-    fs.writeFileSync(outputFilePath, `export * from "@nativescript/core/${relativeFilePathNoExt}";`);
+    // Re-export everything from d.ts file
+    createReExportFile(relativeFilePathNoExt, ".d.ts");
 
-    logFileCreated(outputFilePath, "ts-from-js");
+    // This might be only a definitions file. 
+    // So check if there is ts/js files before creating TS file with re-exports
+    const baseFile = path.join(inputFolder, relativeFilePathNoExt);
+    if (fs.existsSync(baseFile + ".ts") ||
+        fs.existsSync(baseFile + ".js") ||
+        (fs.existsSync(baseFile + ".android.ts") && fs.existsSync(baseFile + ".ios.ts")) ||
+        (fs.existsSync(baseFile + ".android.js") && fs.existsSync(baseFile + ".ios.js"))) {
+
+        createReExportFile(relativeFilePathNoExt, ".ts");
+        addTestImport(relativeFilePathNoExt);
+    }
 }
 
-function ensureDirectoryExistence(filePath) {
+function createReExportFile(pathNoExt: string, ext: ".ts" | ".d.ts") {
+    const outputFile = path.join(outputFolder, pathNoExt + ext);
+    if (!fs.existsSync(outputFile)) {
+        ensureDirectoryExistence(outputFile);
+        let content = `export * from "@nativescript/core/${pathNoExt}";`
+        if (modulesWithDefaultExports.includes(pathNoExt)) {
+            content = `import defExport from "@nativescript/core/${pathNoExt}";\n`;
+            content += `export default defExport;`
+        }
+
+        fs.writeFileSync(outputFile, content);
+        logFileCreated(outputFile);
+    }
+}
+
+function ensureDirectoryExistence(filePath: string) {
     const dirname = path.dirname(filePath);
     if (fs.existsSync(dirname)) {
         return true;
@@ -119,45 +102,66 @@ function ensureDirectoryExistence(filePath) {
     fs.mkdirSync(dirname);
 }
 
-
-function logFileCreated(file: string, type: string) {
-    console.log(`CREATED[${type}]: ${file}`);
+function logFileCreated(file: string) {
+    console.log(`CREATED: ${file}`);
 }
 
-// Check JSON files
-function checkJsonFiles() {
-
-    readdirp(outputFolder, {
-        fileFilter: ["package.json"],
-        directoryFilter: (di) => !di.path.includes("node_modules")
-    }).on("data", (entry: typeof EntryInfo) => {
-        const jsonDir = path.dirname(entry.fullPath);
-        const json = require(entry.fullPath);
-        if (json.main) {
-            let mainPath = path.join(jsonDir, json.main + ".ts");
-            if (!fs.existsSync(mainPath)) {
-                console.log(`-------> ${entry.path} -> main: ${mainPath} not found`);
-            }
-        }
-        if (json.types) {
-            let typesPath = path.join(jsonDir, json.types);
-            if (!fs.existsSync(typesPath)) {
-                console.log(`-------> ${entry.path} -> types: ${typesPath} not found`);
-            }
-        }
-    })
-        .on("warn", error => console.error("non-fatal error", error))
-        .on("error", error => console.error("fatal error", error))
-        .on("end", generateTestFile);
-}
-
-function addTestImport(module: string, origin: "pck" | "dts") {
-    const importStatement = `import * as module_${origin}_${testImports.length} from "tns-core-modules/${module}";`;
-    testImports.push(importStatement);
+function addTestImport(moduleName: string) {
+    testImports.push(moduleName);
 }
 
 function generateTestFile() {
-    console.log("--------- tests imports start ---------");
-    console.log(testImports.join("\n"));
-    console.log("--------- tests imports end ---------");
+    const uniqueImports = Array.from(new Set(testImports));
+
+    const output: string[] = [];
+
+    output.push(`import { compare, report } from "./module-compare";\n\n`);
+
+    uniqueImports.forEach((name, i) => {
+        const compatName = `module_${i}_compat`;
+        const coreName = `module_${i}_core`;
+        output.push(`import * as ${coreName} from "@nativescript/core/${name}";`);
+        output.push(`import * as ${compatName} from "tns-core-modules/${name}";`);
+        output.push(`compare("${name}", ${coreName}, ${compatName});\n`);
+    });
+
+    output.push(`\n`);
+    output.push(`report()`);
+
+    const testFilePath = path.resolve("dist/generated-tests/tests.ts");
+    ensureDirectoryExistence(testFilePath);
+
+    fs.writeFileSync(testFilePath, output.join("\n"), "utf8");
+    (<any>fs).copyFileSync(path.resolve("build/generated-compat-checks/module-compare.ts"), path.resolve("dist/generated-tests/module-compare.ts"));
+
+    console.log(`Compat tests generated: ${testFilePath}`);
+
+    fs.writeFileSync(path.resolve("dist/generated-tests/legacy-project-test.ts"),
+        uniqueImports.map((name, i) => {
+            const modName = `module_${i}`;
+            return `
+import * as ${modName} from "tns-core-modules/${name}";
+if(!!${modName}){ throw new Error("Nothing imported form module: ${modName}"); };
+            `;
+        }).join("\n")
+        , "utf8");
 }
+
+(async () => {
+    console.log(" ------> GENERATING FILES FORM PACKAGE.JSON");
+    // Traverse all package.json files and create:
+    //  * .ts file with re-exports for the package.json/main
+    //  * .d.ts file with re-exports for the package.json/types
+    await traverseInputDir(["package.json"], processPackageJsonFile);
+
+    console.log(" ------> GENERATING FILES FORM DEFINITIONS");
+    // Traverse all d.ts files and create
+    //  * .d.ts file with re-exports for definitions for the .d.ts
+    //  * .ts file with re-exports for the corresponding ts/js file (is such exists)
+    await traverseInputDir(["*.d.ts"], processDefinitionFile);
+
+    // Generate tests in 
+    generateTestFile()
+})().catch(e => {
+    console.log("Error generating tns-core-modules files: " + e);
+});

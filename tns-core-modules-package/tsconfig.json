@@ -10,7 +10,7 @@
         "removeComments": true,
         "experimentalDecorators": true,
         "diagnostics": true,
-        "sourceMap": true,
+        "sourceMap": false,
         "lib": [
             "es6", "dom"
         ],
