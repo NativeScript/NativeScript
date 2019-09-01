@@ -4,3 +4,10 @@
 		"recursive-static-bindings": true
 	}
 }
+
+{
+  "name" : "enums",
+  "main" : "enums",
+  "types" : "enums.d.ts"
+}
+
