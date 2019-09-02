@@ -23,6 +23,16 @@ interface EditTextListenersClass {
 
 let EditTextListeners: EditTextListenersClass;
 
+interface EditTextKeyListeners extends android.view.View.OnKeyListener {
+}
+
+ interface EditTextKeyListenersClass {
+    prototype: EditTextKeyListeners;
+    new(owner: EditableTextBase): EditTextKeyListeners;
+}
+
+let EditTextKeyListeners: EditTextKeyListenersClass;
+
 function clearDismissTimer(): void {
     dismissKeyboardOwner = null;
     if (dismissKeyboardTimeoutId) {
@@ -139,6 +149,32 @@ function initializeEditTextListeners(): void {
     EditTextListeners = EditTextListenersImpl;
 }
 
+function initializeEditTextKeyListeners(): void {
+    if (EditTextKeyListeners) {
+        return;
+    }
+
+     @Interfaces([android.view.View.OnKeyListener])
+    class EditTextKeyListenersImpl extends java.lang.Object implements android.view.View.OnKeyListener {
+        constructor(private owner: EditableTextBase) {
+            super();
+
+             return global.__native(this);
+        }
+
+         public onKey(view: android.view.View, keyCode: number, keyevent: android.view.KeyEvent): boolean {
+            const owner = this.owner;
+            if (keyCode === android.view.KeyEvent.KEYCODE_DEL &&
+                keyevent.getAction() === android.view.KeyEvent.ACTION_DOWN) {
+                owner.notify({ eventName: EditableTextBase.deleteTapEvent, object: owner });
+            }
+
+             return false;
+        }  
+    }
+    EditTextKeyListeners = EditTextKeyListenersImpl;
+}
+
 export abstract class EditableTextBase extends EditableTextBaseCommon {
     /* tslint:disable */
     _dirtyTextAccumulator: string;
@@ -165,9 +201,12 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         const editText = this.nativeTextViewProtected;
         this._configureEditText(editText);
         initializeEditTextListeners();
+        initializeEditTextKeyListeners();
         const listeners = new EditTextListeners(this);
+        const keyListeners = new EditTextKeyListeners(this);
         editText.addTextChangedListener(listeners);
         editText.setOnFocusChangeListener(listeners);
+        editText.setOnKeyListener(keyListeners);
         editText.setOnEditorActionListener(listeners);
         (<any>editText).listener = listeners;
         this._inputType = editText.getInputType();

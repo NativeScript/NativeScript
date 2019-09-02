@@ -97,12 +97,29 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 }
 
 class NoScrollAnimationUITextView extends UITextView {
+    private _owner: WeakRef<TextView>;
+
+     public static initWithOwner(owner: WeakRef<TextView>): NoScrollAnimationUITextView {
+        const handler = <NoScrollAnimationUITextView>NoScrollAnimationUITextView.new();
+        handler._owner = owner;
+
+         return handler;
+    }
     // see https://github.com/NativeScript/NativeScript/issues/6863
     // UITextView internally scrolls the text you are currently typing to visible when newline character
     // is typed but the scroll animation is not needed because at the same time we are expanding
     // the textview (setting its frame)
     public setContentOffsetAnimated(contentOffset: CGPoint, animated: boolean): void {
         super.setContentOffsetAnimated(contentOffset, false);
+    }
+
+    public deleteBackward(): void {
+        super.deleteBackward();
+        const owner = this._owner.get();
+        if (owner) {
+            let owner = this._owner.get();
+            owner.notify({ eventName: EditableTextBase.deleteTapEvent, object: owner });
+        }
     }
 }
 
@@ -114,7 +131,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     public _isEditing: boolean;
 
     createNativeView() {
-        const textView = NoScrollAnimationUITextView.new();
+        const textView = NoScrollAnimationUITextView.initWithOwner(new WeakRef(this));
         if (!textView.font) {
             textView.font = UIFont.systemFontOfSize(12);
         }

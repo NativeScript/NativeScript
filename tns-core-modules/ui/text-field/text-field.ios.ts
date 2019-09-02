@@ -3,6 +3,7 @@ import {
     Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color, layout
 } from "./text-field-common";
 import { profile } from "../../profiling";
+import { EditableTextBase } from "../editable-text-base/editable-text-base.ios";
 
 export * from "./text-field-common";
 
@@ -140,6 +141,15 @@ class UITextFieldImpl extends UITextField {
 
     public editingRectForBounds(bounds: CGRect): CGRect {
         return this._getTextRectForBounds(bounds);
+    }
+    
+    public deleteBackward(): void {
+        super.deleteBackward();
+        const owner = this._owner.get();
+        if (owner) {
+            let owner = this._owner.get();
+            owner.notify({ eventName: TextFieldBase.deleteTapEvent, object: owner });
+        }
     }
 }
 

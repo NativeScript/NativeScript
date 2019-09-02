@@ -2,7 +2,7 @@
  * @module "ui/editor-text-base"
  */ /** */
 
-import { TextBase, Property, CssProperty, Style, Color, FormattedString } from "../text-base";
+import { TextBase, Property, CssProperty, Style, Color, FormattedString, EventData } from "../text-base";
 
 /**
  * Represents the base class for all editable text views.
@@ -11,6 +11,7 @@ export class EditableTextBase extends TextBase {
     public static blurEvent: string;
     public static focusEvent: string;
     public static textChangeEvent: string;
+    public static deleteTapEvent: string;
 
     /**
      * Gets or sets the soft keyboard type.
@@ -63,6 +64,20 @@ export class EditableTextBase extends TextBase {
      */
     public _setInputType(inputType: number): void;
     //@endprivate
+
+    /**
+     * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+     * @param callback - Callback function which will be executed when event is raised.
+     * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+     */
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+
+    /**
+     * Raised when the keyboard's backspace is clicked.
+     */
+    on(event: "deleteTap", callback: (args: TextBase) => void, thisArg?: any);
+
 }
 
 export type KeyboardType = "datetime" | "phone" | "number" | "url" | "email";
