@@ -7,7 +7,7 @@
 * dots can now be used in module names ([#7655](https://github.com/NativeScript/NativeScript/issues/7655)) ([b6ff4d3](https://github.com/NativeScript/NativeScript/commit/b6ff4d3))
 * handle empty folders in non-bundle-compat ([#7649](https://github.com/NativeScript/NativeScript/issues/7649)) ([5fd7913](https://github.com/NativeScript/NativeScript/commit/5fd7913))
 * **css:** parse css selectors with escape sequences ([#7689](https://github.com/NativeScript/NativeScript/issues/7689)) ([#7732](https://github.com/NativeScript/NativeScript/issues/7732)) ([e3ed028](https://github.com/NativeScript/NativeScript/commit/e3ed028))
-* **ios:** handle tabs extended layout for ios 10 ([f7f0612](https://github.com/NativeScript/NativeScript/commit/f7f0612))
+* **ios-tabs:** handle tabs extended layout for ios 10 ([f7f0612](https://github.com/NativeScript/NativeScript/commit/f7f0612))
 * **ios-tabs:** crash when add tabstrip in loaded event ([#7743](https://github.com/NativeScript/NativeScript/issues/7743)) ([a66f2f2](https://github.com/NativeScript/NativeScript/commit/a66f2f2))
 * **ios-tabs:** handle nesting proxy view container ([#7755](https://github.com/NativeScript/NativeScript/issues/7755)) ([92c3338](https://github.com/NativeScript/NativeScript/commit/92c3338))
 
@@ -17,16 +17,16 @@
 * **android:** fix tab resource icon size based on spec ([#7737](https://github.com/NativeScript/NativeScript/issues/7737)) ([f436b6f](https://github.com/NativeScript/NativeScript/commit/f436b6f))
 * add CSS classes to app/modal root views to target platform/device/orientation/type ([#7606](https://github.com/NativeScript/NativeScript/issues/7606)) ([3adba68](https://github.com/NativeScript/NativeScript/commit/3adba68))
 * **GridLayout:** Add synonym property column[Span] for col[Span] in GridLayout ([#7641](https://github.com/NativeScript/NativeScript/issues/7641)) ([d3c39c1](https://github.com/NativeScript/NativeScript/commit/d3c39c1))
-* **ios:** add icon rendering mode for bottom navigation ([#7738](https://github.com/NativeScript/NativeScript/issues/7738)) ([ff6d89f](https://github.com/NativeScript/NativeScript/commit/ff6d89f))
+* **ios-bottom-navigation:** add icon rendering mode ([#7738](https://github.com/NativeScript/NativeScript/issues/7738)) ([ff6d89f](https://github.com/NativeScript/NativeScript/commit/ff6d89f))
 * apply styles when adding them to the application scope ([#7652](https://github.com/NativeScript/NativeScript/issues/7652)) ([1d12136](https://github.com/NativeScript/NativeScript/commit/1d12136))
 * expose application orientation ([#7602](https://github.com/NativeScript/NativeScript/issues/7602)) ([e2c3c8c](https://github.com/NativeScript/NativeScript/commit/e2c3c8c))
-* **tab:** add support for custom tabstrip ([#7580](https://github.com/NativeScript/NativeScript/issues/7580)) ([acc3436](https://github.com/NativeScript/NativeScript/commit/acc3436))
-* **tab-content-view:** change tabContentItem to View ([#7629](https://github.com/NativeScript/NativeScript/issues/7629)) ([72ca461](https://github.com/NativeScript/NativeScript/commit/72ca461))
-* flexbile font icon usage in tab navigation ([#7672](https://github.com/NativeScript/NativeScript/issues/7672)) ([c0b8db4](https://github.com/NativeScript/NativeScript/commit/c0b8db4))
+* **tabs/bottom-navigation:** add support for custom tabstrip ([#7580](https://github.com/NativeScript/NativeScript/issues/7580)) ([acc3436](https://github.com/NativeScript/NativeScript/commit/acc3436))
+* **tabs/bottom-navigation:** inherit TabContentItem from ContentView ([#7629](https://github.com/NativeScript/NativeScript/issues/7629)) ([72ca461](https://github.com/NativeScript/NativeScript/commit/72ca461))
+* **tabs/bottom-navigation:** flexible font icon usage ([#7672](https://github.com/NativeScript/NativeScript/issues/7672)) ([c0b8db4](https://github.com/NativeScript/NativeScript/commit/c0b8db4))
 * implement css-variables and css-calc ([#7553](https://github.com/NativeScript/NativeScript/issues/7553)) ([673c808](https://github.com/NativeScript/NativeScript/commit/673c808))
 * **tabs:** emit tabStripItem tap event ([#7693](https://github.com/NativeScript/NativeScript/issues/7693)) ([b0d1c91](https://github.com/NativeScript/NativeScript/commit/b0d1c91))
-* **TabStrip:** add itemTap event ([#7711](https://github.com/NativeScript/NativeScript/issues/7711)) ([55c9cc9](https://github.com/NativeScript/NativeScript/commit/55c9cc9))
-* introduce fixed font icons to tab navigation ([#7691](https://github.com/NativeScript/NativeScript/issues/7691)) ([8039c2c](https://github.com/NativeScript/NativeScript/commit/8039c2c))
+* **tabs/bottom-navigation:** add TabStrip.itemTap event ([#7711](https://github.com/NativeScript/NativeScript/issues/7711)) ([55c9cc9](https://github.com/NativeScript/NativeScript/commit/55c9cc9))
+* **tabs/bottom-navigation:** introduce TabStrip.isIconSizeFixed property ([#7691](https://github.com/NativeScript/NativeScript/issues/7691)) ([8039c2c](https://github.com/NativeScript/NativeScript/commit/8039c2c))
 
 
 
