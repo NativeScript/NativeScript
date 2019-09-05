@@ -44,6 +44,9 @@ function convertGridLength(value: string): ItemSpec {
     if (value === GridUnitType.AUTO) {
         return ItemSpec.create(1, GridUnitType.AUTO);
     }
+    else if (value === GridUnitType.STAR) {
+        return ItemSpec.create(1, GridUnitType.STAR);
+    }
     else if (value.indexOf("*") !== -1) {
         const starCount = parseInt(value.replace("*", "") || "1");
 
@@ -119,6 +122,22 @@ export class ItemSpec extends Observable implements ItemSpecDefinition {
 
     public static equals(value1: ItemSpec, value2: ItemSpec): boolean {
         return (value1.gridUnitType === value2.gridUnitType) && (value1.value === value2.value) && (value1.owner === value2.owner) && (value1.index === value2.index);
+    }
+
+    public toString() {
+        if (this.isAuto) {
+            return GridUnitType.AUTO;
+        }
+
+        if (this.isStar) {
+            return "*";
+        }
+
+        if (this.isAbsolute) {
+            return this.value;
+        }
+
+        return "";
     }
 
     get gridUnitType(): GridUnitType {
@@ -316,9 +335,17 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
         parseAndAddItemSpecs(value, (spec: ItemSpec) => this.addRow(spec));
     }
 
+    get rows() {
+        return this._rows.join(", ");
+    }
+
     set columns(value: string) {
         this.removeColumns();
         parseAndAddItemSpecs(value, (spec: ItemSpec) => this.addColumn(spec));
+    }
+
+    get columns() {
+        return this._cols.join(", ");
     }
 }
 

@@ -4,6 +4,7 @@ import * as buttonModule from "tns-core-modules/ui/button";
 import * as labelModule from "tns-core-modules/ui/label";
 import * as pageModule from "tns-core-modules/ui/page";
 import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
+import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
 import * as wrapModule from "tns-core-modules/ui/layouts/wrap-layout";
 import * as tabViewModule from "tns-core-modules/ui/tab-view";
 import * as helper from "../../ui-helper";
@@ -37,6 +38,23 @@ export function test_css_is_applied_to_normal_properties() {
         const expected = "horizontal";
         page.css = `StackLayout { orientation: ${expected}; }`;
         TKUnit.assertEqual(stack.orientation, expected);
+    });
+}
+
+export function test_css_is_applied_to_gridlayout_properties() {
+    const gridLayout = new gridModule.GridLayout();
+
+    helper.buildUIAndRunTest(gridLayout, function (views: Array<viewModule.View>) {
+        const page = <pageModule.Page>views[1];
+        const expectedRows = "*, auto, 10";
+        const expectedColumns = "*, auto, 10";
+        page.css = `GridLayout {
+            rows: star, auto, 10;
+            columns: star, auto, 10;
+        }`;
+
+        TKUnit.assertEqual(gridLayout["rows"], expectedRows);
+        TKUnit.assertEqual(gridLayout["columns"], expectedColumns);
     });
 }
 
