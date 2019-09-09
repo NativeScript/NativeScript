@@ -13,11 +13,10 @@
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",
   "dependencies": {
-    "nativescript-theme-core": "~1.0.6",
     "tns-core-modules": "file:../../tns-core-modules"
   },
   "devDependencies": {
-    "nativescript-dev-webpack": "~1.1.0",
+    "nativescript-dev-webpack": "~1.2.0",
     "typescript": "~3.5.3"
   },
   "gitHead": "42f2a6a9c94eaf9c68d2a41e0daaa1a2544bc28f",
