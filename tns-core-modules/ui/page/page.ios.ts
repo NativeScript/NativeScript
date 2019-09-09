@@ -148,7 +148,7 @@ class UIViewControllerImpl extends UIViewController {
             const isReplace = navigationContext.navigationType === NavigationType.replace;
 
             frame.setCurrent(newEntry, navigationContext.navigationType);
-            
+
             if (isReplace) {
                 let controller = newEntry.resolvedPage.ios;
                 if (controller) {
@@ -282,7 +282,6 @@ class UIViewControllerImpl extends UIViewController {
     }
 }
 
-const whiteColor = new Color("white").ios;
 export class Page extends PageBase {
     nativeViewProtected: UIView;
     viewController: UIViewControllerImpl;
@@ -294,7 +293,17 @@ export class Page extends PageBase {
         super();
         const controller = UIViewControllerImpl.initWithOwner(new WeakRef(this));
         this.viewController = this._ios = controller;
-        controller.view.backgroundColor = whiteColor;
+
+        // Make transitions look good
+        let backgroundColor;
+        if (majorVersion <= 12) {
+            backgroundColor = UIColor.whiteColor;
+        } else {
+            backgroundColor = UIColor.systemBackgroundColor;
+        }
+
+        // TODO: add CompatibilityColor.backgroundColor;
+        controller.view.backgroundColor = backgroundColor;
     }
 
     createNativeView() {
