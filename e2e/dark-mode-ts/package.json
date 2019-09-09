@@ -1,11 +1,11 @@
 {
   "nativescript": {
     "id": "org.nativescript.darkmodets",
-    "tns-android": {
-      "version": "6.0.2"
-    },
     "tns-ios": {
-      "version": "6.0.2"
+      "version": "next"
+    },
+    "tns-android": {
+      "version": "next"
     }
   },
   "main": "app.js",
@@ -16,7 +16,7 @@
     "tns-core-modules": "file:../../tns-core-modules"
   },
   "devDependencies": {
-    "nativescript-dev-webpack": "~1.2.0",
+    "nativescript-dev-webpack": "next",
     "typescript": "~3.5.3"
   },
   "gitHead": "42f2a6a9c94eaf9c68d2a41e0daaa1a2544bc28f",
