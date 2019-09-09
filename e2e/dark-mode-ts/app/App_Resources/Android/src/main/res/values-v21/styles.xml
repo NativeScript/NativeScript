@@ -3,6 +3,7 @@
 
     <!-- Application theme -->
     <style name="AppTheme" parent="AppThemeBase">
+        <item name="android:forceDarkAllowed">true</item>
         <item name="android:datePickerStyle">@style/SpinnerDatePicker</item>
         <item name="android:timePickerStyle">@style/SpinnerTimePicker</item>
     </style>
@@ -19,5 +20,5 @@
 
     <style name="NativeScriptToolbarStyle" parent="NativeScriptToolbarStyleBase">
         <item name="android:elevation">4dp</item>
-    </style>    
+    </style>
 </resources>
