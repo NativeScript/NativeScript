@@ -1,4 +1,5 @@
-import { Observable } from "tns-core-modules/data/observable";
+import { EventData, Observable } from "tns-core-modules/data/observable";
+import { Button } from "tns-core-modules/ui/button";
 
 export class HelloWorldModel extends Observable {
 
@@ -24,9 +25,13 @@ export class HelloWorldModel extends Observable {
         }
     }
 
-    onTap() {
-        this._counter--;
-        this.updateMessage();
+    onTap(args: EventData) {
+        // this._counter--;
+        // this.updateMessage();
+
+        const button = args.object as Button;
+        const frame = button.page.frame;
+        frame.navigate("main-page");
     }
 
     private updateMessage() {
