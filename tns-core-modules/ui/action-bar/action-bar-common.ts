@@ -89,7 +89,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
             this.update();
         }
     }
-    
+
     get ios(): any {
         return undefined;
     }
@@ -365,3 +365,6 @@ visibilityProperty.register(ActionItemBase);
 
 export const flatProperty = new Property<ActionBarBase, boolean>({ name: "flat", defaultValue: false, valueConverter: booleanConverter });
 flatProperty.register(ActionBarBase);
+
+export const insetProperty = new Property<ActionBarBase, boolean>({ name: "inset", defaultValue: false });
+insetProperty.register(ActionBarBase);

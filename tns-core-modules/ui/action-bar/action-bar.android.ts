@@ -1,7 +1,7 @@
 import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from ".";
 import {
     ActionItemBase, ActionBarBase, isVisible,
-    View, layout, colorProperty, flatProperty,
+    View, layout, colorProperty, flatProperty, insetProperty,
     Color, traceMissingIcon
 } from "./action-bar-common";
 import { RESOURCE_PREFIX, isFontIconURI } from "../../utils/utils";
@@ -420,6 +420,12 @@ export class ActionBar extends ActionBarBase {
                 compat.setElevation(this.nativeViewProtected, val);
             }
         }
+    }
+
+    [insetProperty.setNative](value: string) {
+        const { 0: left, 1: right } = value.split(" ");
+
+        this.nativeViewProtected.setContentInsetsAbsolute(parseInt(left), parseInt(right));
     }
 }
 

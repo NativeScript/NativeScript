@@ -3,7 +3,8 @@ import {
     ActionItemBase, ActionBarBase, isVisible, View,
     colorProperty, backgroundColorProperty,
     backgroundInternalProperty, flatProperty, iosIconRenderingModeProperty,
-    layout, Color, traceMissingIcon } from "./action-bar-common";
+    layout, Color, traceMissingIcon, insetProperty
+} from "./action-bar-common";
 import { fromFileOrResource, fromFontIconCode } from "../../image-source";
 import { ios as iosUtils, isFontIconURI } from "../../utils/utils";
 
@@ -271,7 +272,7 @@ export class ActionBar extends ActionBarBase {
             } else {
                 img = loadActionIconFromFileOrResource(item.icon);
             }
-            
+
             const image = img.imageWithRenderingMode(this._getIconRenderingMode());
             barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, tapHandler, "tap");
         } else {
@@ -424,6 +425,8 @@ export class ActionBar extends ActionBarBase {
             this.updateFlatness(navBar);
         }
     }
+
+    [insetProperty.setNative](value: string) {}
 
     [iosIconRenderingModeProperty.getDefault](): "automatic" | "alwaysOriginal" | "alwaysTemplate" {
         return "alwaysOriginal";
