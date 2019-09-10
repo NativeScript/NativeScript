@@ -1,4 +1,9 @@
 #!/bin/bash
+
+##
+# Prepares the tns-platform-declarations and @nativescript/core packages inside dist folder
+##
+
 set -x
 set -e
 
@@ -65,33 +70,5 @@ mkdir -p "$DIST"
     )
 
     echo "Clearing typescript definitions from private APIs..."
-    node build/clear-private-definitions "$DIST/$PACKAGE"
+    npx ts-node --project ./build/tsconfig.json build/clear-private-definitions "$DIST/$PACKAGE"
 )
-
-## Prepare tns-core-modules
-# (
-#     PACKAGE_SOURCE=tns-core-modules-package;
-#     PACKAGE=tns-core-modules;
-
-#     echo "Clearing $DIST/$PACKAGE"
-#     npx rimraf "$DIST/$PACKAGE"
-#     npx rimraf "$DIST/$PACKAGE*.tgz"
-
-#     echo "Generating compat package"
-#     npx ts-node --project ./build/tsconfig.json ./build/generate-tns-compat 
-
-#     echo "Copying $PACKAGE_SOURCE $DIST/$PACKAGE..."
-#     npx ncp "$PACKAGE_SOURCE" "$DIST/$PACKAGE"
-
-#     echo "Copying README and LICENSE to $DIST/$PACKAGE"
-#     npx ncp LICENSE "$DIST"/"$PACKAGE"/LICENSE
-      
-#     (
-#         echo 'TypeScript transpile...'
-#         cd "$DIST/$PACKAGE"
-
-#         npm install ../nativescript-core*.tgz -s
-#         npm install ../tns-platform-declarations*.tgz -s
-#         npx tsc
-#     )
-# )

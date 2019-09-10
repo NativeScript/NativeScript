@@ -1,6 +1,5 @@
 import * as path from "path";
 import * as fs from "fs";
-
 import readdirp from "readdirp";
 type EntryInfo = typeof readdirp.EntryInfo;
 
@@ -140,16 +139,6 @@ function generateTestFile() {
     (<any>fs).copyFileSync(path.resolve("build/generated-compat-checks/module-compare.ts"), path.resolve("dist/generated-tests/module-compare.ts"));
 
     console.log(`Compat tests generated: ${testFilePath}`);
-
-    fs.writeFileSync(path.resolve("dist/generated-tests/legacy-project-test.ts"),
-        uniqueImports.map((name, i) => {
-            const modName = `module_${i}`;
-            return `
-import * as ${modName} from "tns-core-modules/${name}";
-if(!!${modName}){ throw new Error("Nothing imported form module: ${modName}"); };
-            `;
-        }).join("\n")
-        , "utf8");
 }
 
 function generateExportsForPrivateModules() {

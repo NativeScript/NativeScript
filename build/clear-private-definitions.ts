@@ -1,12 +1,13 @@
-const path = require("path");
-const fs = require("fs");
-const readdirp = require("readdirp");
+import * as path from "path";
+import * as fs from "fs";
+import readdirp from "readdirp";
+type EntryInfo = typeof readdirp.EntryInfo;
 
 const inputFolder = path.resolve(process.argv[2]);
 
 console.log(`Clearing private definitions in ${inputFolder}`);
 
-function filterTypeScriptFiles(content) {
+function filterTypeScriptFiles(content: string) {
     var leadingPrivate = /^.*@private/ig;
     if (leadingPrivate.test(content)) {
         return { shouldDelete: true };
@@ -25,27 +26,32 @@ function filterTypeScriptFiles(content) {
     }
 
     return { shouldReplace: false, shouldDelete: false };
-};
+}
 
 readdirp(inputFolder, {
     fileFilter: ["*.d.ts"],
     directoryFilter: function (di) { return !di.path.includes("node_modules"); }
-}).on("data", (entry) => {
+}).on("data", (entry: EntryInfo) => {
     const { fullPath } = entry;
     const content = fs.readFileSync(fullPath, "utf8");
     const { shouldDelete, shouldReplace, newContent } = filterTypeScriptFiles(content);
 
     if (shouldDelete) {
-        console.log("[Delete]", fullPath)
+        console.log("[Delete]", fullPath);
         fs.unlinkSync(fullPath);
     } else if (shouldReplace) {
-        console.log("[Cleared]", fullPath)
-        fs.writeFileSync(fullPath, newContent, "utf8", (err) => {
+        console.log("[Cleared]", fullPath);
+        try {
+            fs.writeFileSync(fullPath, newContent, "utf8");
+        } catch (error) {
             console.log("ERROR writing file: " + fullPath, error);
-        })
+            process.exit(1);
+        }
     }
 })
-    .on("warn", error => console.error("non-fatal error", error))
-    .on("error", error => console.error("fatal error", error))
+    .on("warn", (error: Error) => console.error("non-fatal error", error))
+    .on("error", (error: Error) => {
+        console.error("fatal error", error);
+        process.exit(1);
+    })
     .on("end", () => console.log("done"));
-

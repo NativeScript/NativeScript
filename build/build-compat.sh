@@ -1,4 +1,11 @@
 #!/bin/bash
+
+##
+# Prepares and packs:
+#  - tns-core-modules
+# inside dist folder
+##
+
 set -x
 set -e
 

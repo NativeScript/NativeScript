@@ -1,4 +1,9 @@
 #!/bin/bash
+
+##
+# Prepares the tns-platform-declarations and @nativescript/core packages inside dist folder
+##
+
 set -x
 set -e
 
@@ -17,9 +22,3 @@ cd "$ROOT_DIR"
     TGZ="$(npm pack)"
     mv "$TGZ" "../$TGZ"
 )
-
-# (
-#     cd "$DIST/tns-core-modules"
-#     TGZ="$(npm pack)"
-#     mv "$TGZ" "../$TGZ"
-# )

@@ -51,7 +51,7 @@
     "dev-declarations": "rm -rf tns-platform-declarations/ios/objc* && TNS_TYPESCRIPT_DECLARATIONS_PATH=$PWD/tns-platform-declarations/ios/objc tns build ios --path tests",
     "typedoc": "typedoc --tsconfig tsconfig.typedoc.json --out bin/dist/apiref --includeDeclarations --name NativeScript --theme ./node_modules/nativescript-typedoc-theme --excludeExternals --externalPattern \"**/+(tns-core-modules|module).d.ts\"",
     "dev-typedoc": "npm run typedoc && cd bin/dist/apiref && npx http-server",
-    "prepare-dist": "bash ./build/prepare-dist.sh",
-    "pack-dist": "bash ./build/pack-dist.sh"
+    "build-core": "sh ./build/build-core.sh",
+    "build-compat": "sh ./build/build-compat.sh"
   }
 }
