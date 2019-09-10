@@ -1,4 +1,4 @@
-import reduceCSSCalc from "reduce-css-calc";
+import * as reduceCSSCalc from "reduce-css-calc";
 
 // Definitions.
 import * as definitions from "../view-base";
