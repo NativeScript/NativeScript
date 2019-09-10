@@ -1,4 +1,4 @@
-const results = { errors: [], modules: 0, exports: 0 };
+const results = { errors: new Array<string>(), modules: 0, exports: 0 };
 
 export function compare(name: string, core: any, compat: any) {
     results.modules++;
