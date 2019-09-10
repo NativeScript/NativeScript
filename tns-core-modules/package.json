@@ -28,7 +28,7 @@
   "dependencies": {
     "reduce-css-calc": "^2.1.6",
     "tns-core-modules-widgets": "next",
-    "tslib": "^1.9.3"
+    "tslib": "1.10.0"
   },
   "devDependencies": {
     "@types/node": "~7.0.5",
