@@ -5,6 +5,7 @@ import android.graphics.Rect;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 /**
  * Created by hhristov on 8/23/16.
@@ -22,6 +23,10 @@ public class ViewHelper {
     }
 
     public static void setMinWidth(android.view.View view, int value) {
+        if (view instanceof TextView) {
+            ((android.widget.TextView) view).setMinWidth(value);
+        }
+
         view.setMinimumWidth(value);
     }
 
@@ -30,6 +35,10 @@ public class ViewHelper {
     }
 
     public static void setMinHeight(android.view.View view, int value) {
+        if (view instanceof TextView) {
+            ((android.widget.TextView) view).setMinHeight(value);
+        }
+
         view.setMinimumHeight(value);
     }
 
@@ -47,7 +56,7 @@ public class ViewHelper {
         if (params == null) {
             params = new CommonLayoutParams();
         }
-        
+
         params.width = value;
         if (params instanceof CommonLayoutParams) {
             ((CommonLayoutParams)params).widthPercent = -1;
@@ -84,7 +93,7 @@ public class ViewHelper {
         if (params == null) {
             params = new CommonLayoutParams();
         }
-        
+
         params.height = value;
         if (params instanceof CommonLayoutParams) {
             ((CommonLayoutParams)params).heightPercent = -1;
@@ -480,7 +489,7 @@ public class ViewHelper {
     public static void setRotateY(android.view.View view, float value) {
         view.setRotationY(value);
     }
-    
+
     public static void setPerspective(android.view.View view, float value) {
         view.setCameraDistance(value);
     }
@@ -549,4 +558,4 @@ public class ViewHelper {
         }
     }
 }
-    
+
