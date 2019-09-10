@@ -95,13 +95,14 @@ tns run android --path apps
 
 ## Running Another App
 
-The [initial setup](#initial-setup) will `npm-link` the `tns-core-modules` globally. You can use it in any local project:
-
+1. Open the app, where you will use the module from the repository in the console.
+2. Add the `tns-core-modules` in the application via:
 ```bash
-# Run once: Link tns-core-modules in your project
-npm link tns-core-modules
-
-# Run the app
+npm install --save <path to tns-core-modules>
+# Example: npm install --save ../NativeScript/tns-core-modules
+```
+3. Run the app
+```bash
 tns run ios
 tns run android
 ```
