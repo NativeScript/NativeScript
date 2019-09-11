@@ -121,9 +121,10 @@ function generateTestFile() {
 
     output.push(`import { compare, report } from "./module-compare";\n\n`);
 
-    uniqueImports.forEach((name, i) => {
-        const compatName = `module_${i}_compat`;
-        const coreName = `module_${i}_core`;
+    uniqueImports.forEach((name) => {
+        const moduleName = name.replace(/[\.\/\-]/g,"_");
+        const compatName = `module_${moduleName}_compat`;
+        const coreName = `module_${moduleName}_core`;
         output.push(`import * as ${coreName} from "@nativescript/core/${name}";`);
         output.push(`import * as ${compatName} from "tns-core-modules/${name}";`);
         output.push(`compare("${name}", ${coreName}, ${compatName});\n`);
