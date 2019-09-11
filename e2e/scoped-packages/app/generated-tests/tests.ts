@@ -1,6 +1,10 @@
 import { compare, report } from "./module-compare";
 
 
+import * as module___core from "@nativescript/core/.";
+import * as module___compat from "tns-core-modules/.";
+compare(".", module___core, module___compat);
+
 import * as module_application_core from "@nativescript/core/application";
 import * as module_application_compat from "tns-core-modules/application";
 compare("application", module_application_core, module_application_compat);
@@ -229,6 +233,10 @@ import * as module_image_source_image_source_core from "@nativescript/core/image
 import * as module_image_source_image_source_compat from "tns-core-modules/image-source/image-source";
 compare("image-source/image-source", module_image_source_image_source_core, module_image_source_image_source_compat);
 
+import * as module_index_core from "@nativescript/core/index";
+import * as module_index_compat from "tns-core-modules/index";
+compare("index", module_index_core, module_index_compat);
+
 import * as module_js_libs_easysax_core from "@nativescript/core/js-libs/easysax";
 import * as module_js_libs_easysax_compat from "tns-core-modules/js-libs/easysax";
 compare("js-libs/easysax", module_js_libs_easysax_core, module_js_libs_easysax_compat);
@@ -324,6 +332,10 @@ compare("trace", module_trace_core, module_trace_compat);
 import * as module_trace_trace_core from "@nativescript/core/trace/trace";
 import * as module_trace_trace_compat from "tns-core-modules/trace/trace";
 compare("trace/trace", module_trace_trace_core, module_trace_trace_compat);
+
+import * as module_ui_core from "@nativescript/core/ui";
+import * as module_ui_compat from "tns-core-modules/ui";
+compare("ui", module_ui_core, module_ui_compat);
 
 import * as module_ui_action_bar_core from "@nativescript/core/ui/action-bar";
 import * as module_ui_action_bar_compat from "tns-core-modules/ui/action-bar";
@@ -529,6 +541,10 @@ import * as module_ui_image_image_core from "@nativescript/core/ui/image/image";
 import * as module_ui_image_image_compat from "tns-core-modules/ui/image/image";
 compare("ui/image/image", module_ui_image_image_core, module_ui_image_image_compat);
 
+import * as module_ui_index_core from "@nativescript/core/ui/index";
+import * as module_ui_index_compat from "tns-core-modules/ui/index";
+compare("ui/index", module_ui_index_core, module_ui_index_compat);
+
 import * as module_ui_label_core from "@nativescript/core/ui/label";
 import * as module_ui_label_compat from "tns-core-modules/ui/label";
 compare("ui/label", module_ui_label_core, module_ui_label_compat);
@@ -536,6 +552,10 @@ compare("ui/label", module_ui_label_core, module_ui_label_compat);
 import * as module_ui_label_label_core from "@nativescript/core/ui/label/label";
 import * as module_ui_label_label_compat from "tns-core-modules/ui/label/label";
 compare("ui/label/label", module_ui_label_label_core, module_ui_label_label_compat);
+
+import * as module_ui_layouts_core from "@nativescript/core/ui/layouts";
+import * as module_ui_layouts_compat from "tns-core-modules/ui/layouts";
+compare("ui/layouts", module_ui_layouts_core, module_ui_layouts_compat);
 
 import * as module_ui_layouts_absolute_layout_core from "@nativescript/core/ui/layouts/absolute-layout";
 import * as module_ui_layouts_absolute_layout_compat from "tns-core-modules/ui/layouts/absolute-layout";
@@ -568,6 +588,10 @@ compare("ui/layouts/grid-layout", module_ui_layouts_grid_layout_core, module_ui_
 import * as module_ui_layouts_grid_layout_grid_layout_core from "@nativescript/core/ui/layouts/grid-layout/grid-layout";
 import * as module_ui_layouts_grid_layout_grid_layout_compat from "tns-core-modules/ui/layouts/grid-layout/grid-layout";
 compare("ui/layouts/grid-layout/grid-layout", module_ui_layouts_grid_layout_grid_layout_core, module_ui_layouts_grid_layout_grid_layout_compat);
+
+import * as module_ui_layouts_index_core from "@nativescript/core/ui/layouts/index";
+import * as module_ui_layouts_index_compat from "tns-core-modules/ui/layouts/index";
+compare("ui/layouts/index", module_ui_layouts_index_core, module_ui_layouts_index_compat);
 
 import * as module_ui_layouts_layout_base_core from "@nativescript/core/ui/layouts/layout-base";
 import * as module_ui_layouts_layout_base_compat from "tns-core-modules/ui/layouts/layout-base";
