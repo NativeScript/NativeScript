@@ -8,6 +8,7 @@ import {
     PageBase, View, layout, actionBarHiddenProperty, statusBarStyleProperty, Color
 } from "./page-common";
 
+import { backgroundColor } from "../../color/compatibility-colors.ios";
 import { profile } from "../../profiling";
 import { ios as iosUtils } from "../../utils/utils";
 
@@ -295,15 +296,7 @@ export class Page extends PageBase {
         this.viewController = this._ios = controller;
 
         // Make transitions look good
-        let backgroundColor;
-        if (majorVersion <= 12) {
-            backgroundColor = UIColor.whiteColor;
-        } else {
-            backgroundColor = UIColor.systemBackgroundColor;
-        }
-
-        // TODO: add CompatibilityColor.backgroundColor;
-        controller.view.backgroundColor = backgroundColor;
+        controller.view.backgroundColor = backgroundColor();
     }
 
     createNativeView() {

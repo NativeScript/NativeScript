@@ -20,6 +20,7 @@ import { createViewFromEntry } from "../ui/builder";
 import { CLASS_PREFIX, getRootViewCssClasses, pushToRootViewCssClasses } from "../css/system-classes";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
+import { backgroundColor } from "../color/compatibility-colors.ios";
 import { device } from "../platform/platform";
 import { profile } from "../profiling";
 import { ios } from "../utils/utils";
@@ -27,7 +28,6 @@ import { ios } from "../utils/utils";
 const IOS_PLATFORM = "ios";
 
 const getVisibleViewController = ios.getVisibleViewController;
-const majorVersion = ios.MajorVersion;
 
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
 // TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
@@ -159,17 +159,8 @@ class IOSApplication implements IOSApplicationDefinition {
         }
 
         this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
-
-        // TODO: add CompatibilityColor.backgroundColor;
-        let backgroundColor;
-        if (majorVersion <= 12) {
-            backgroundColor = UIColor.whiteColor;
-        } else {
-            backgroundColor = UIColor.systemBackgroundColor;
-        }
-
         // TODO: Expose Window module so that it can we styled from XML & CSS
-        this._window.backgroundColor = backgroundColor;
+        this._window.backgroundColor = backgroundColor();
 
         this.notifyAppStarted(notification);
     }
