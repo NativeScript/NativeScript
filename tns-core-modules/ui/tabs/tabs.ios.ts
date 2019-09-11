@@ -6,6 +6,7 @@ import { TextTransform } from "../text-base";
 
 // Requires
 import { Color } from "../../color";
+import { backgroundColor, blueColor, labelColor } from "../../color/compatibility-colors.ios";
 import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
 import { ios as iosUtils, isFontIconURI, layout } from "../../utils/utils";
 import { ios as iosView, View } from "../core/view";
@@ -90,10 +91,15 @@ class UIPageViewControllerImpl extends UIPageViewController {
         }
 
         tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
-        tabBar.tintColor = UIColor.blueColor;
-        tabBar.barTintColor = UIColor.whiteColor;
-        tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
-        tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Selected);
+        tabBar.tintColor = blueColor();
+        tabBar.barTintColor = backgroundColor();
+        tabBar.setTitleColorForState(labelColor(), MDCTabBarItemState.Normal);
+        tabBar.setTitleColorForState(labelColor(), MDCTabBarItemState.Selected);
+
+        if (majorVersion >= 13) {
+            tabBar.inkColor = UIColor.clearColor;
+        }
+
         tabBar.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleBottomMargin;
         tabBar.alignment = MDCTabBarAlignment.Leading;
         tabBar.sizeToFit();
