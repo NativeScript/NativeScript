@@ -35,8 +35,7 @@ cd "$ROOT_DIR"
         echo 'TypeScript transpile...'
         cd "$DIST/$PACKAGE"
 
-        npm install ../nativescript-core*.tgz -s
-        npm install ../tns-platform-declarations*.tgz -s
+        npm install ../nativescript-core*.tgz --no-save
         npx tsc
     )
 

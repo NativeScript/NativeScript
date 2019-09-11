@@ -10,7 +10,10 @@
   "license": "Apache-2.0",
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
-    "@nativescript/core": "next"
+    "@nativescript/core": "*"
+  },
+  "devDependencies": {
+    "tns-platform-declarations": "*"
   },
   "nativescript": {
     "platforms": {
