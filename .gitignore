@@ -7,7 +7,6 @@ node_modules
 package
 platforms
 !nativescript-core/platforms
-!tns-core-modules/platforms
 reports
 tags
 
@@ -53,8 +52,8 @@ tscommand*.tmp.txt
 
 # Other
 *.js
+!tns-core-modules-package/**/*.js
 # https://github.com/NativeScript/nativescript-dev-webpack/issues/932
-!tns-core-modules/xml/xml.js
 !nativescript-core/xml/xml.js
 !tests/hooks/**/*.*
 !nativescript-core/js-libs/**/*.*
