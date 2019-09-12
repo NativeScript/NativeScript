@@ -116,7 +116,7 @@ export function parseRGBAColor(text: string, start: number = 0): Parsed<ARGB> {
     return { start, end, value };
 }
 
-export function HSL2RGB(hue: number, saturation: number, lightness: number): { r: number; g: number; b: number; } {
+export function convertHSLToRGB(hue: number, saturation: number, lightness: number): { r: number; g: number; b: number; } {
     // Per formula it will be easier if hue is divided to 60° and saturation to 100 beforehand
     // https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB
     hue /= 60;
@@ -142,7 +142,7 @@ export function HSL2RGB(hue: number, saturation: number, lightness: number): { r
 }
 
 function hslaToArgbNumber(h: number, s: number, l: number, a: number = 1): number | undefined {
-    let { r, g, b } = HSL2RGB(h, s, l);
+    let { r, g, b } = convertHSLToRGB(h, s, l);
 
     if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1) {
         return (Math.round(a * 0xFF) * 0x01000000) + (r * 0x010000) + (g * 0x000100) + b;
