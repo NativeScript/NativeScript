@@ -65,6 +65,10 @@ import * as module_css_reworkcss_core from "@nativescript/core/css/reworkcss";
 import * as module_css_reworkcss_compat from "tns-core-modules/css/reworkcss";
 compare("css/reworkcss", module_css_reworkcss_core, module_css_reworkcss_compat);
 
+import * as module_css_system_classes_core from "@nativescript/core/css/system-classes";
+import * as module_css_system_classes_compat from "tns-core-modules/css/system-classes";
+compare("css/system-classes", module_css_system_classes_core, module_css_system_classes_compat);
+
 import * as module_data_observable_core from "@nativescript/core/data/observable";
 import * as module_data_observable_compat from "tns-core-modules/data/observable";
 compare("data/observable", module_data_observable_core, module_data_observable_compat);

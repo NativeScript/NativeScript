@@ -4,8 +4,8 @@ set -e
 
 DIST=../../dist;
 
-npm i $DIST/tns-core-modules*.tgz --save
 npm i $DIST/nativescript-core*.tgz --save
+npm i $DIST/tns-core-modules*.tgz --save
 
 rm -rf ./app/generated-tests
 mkdir -p ./app/generated-tests

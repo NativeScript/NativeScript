@@ -2,6 +2,8 @@
  * @module "@nativescript/core"
  */ /** */
 
+/// <reference path="./tns-core-modules.d.ts" />
+
 export * from "./application";
 import { on, off } from "./application";
 export declare const nsApp: {
