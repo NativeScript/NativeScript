@@ -7,9 +7,10 @@ import { Page } from "../page";
 
 // Types.
 import * as application from "../../application";
+
 import {
-    FrameBase, goBack, _stack, NavigationType,
-    Observable, View, traceCategories, traceEnabled, traceError, traceWrite
+    _stack, FrameBase, goBack, NavigationType, Observable,
+    traceCategories, traceEnabled, traceError, traceWrite, View
 } from "./frame-common";
 
 import {
@@ -19,6 +20,7 @@ import {
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../builder";
+import { CLASS_PREFIX, getRootViewCssClasses, pushToRootViewCssClasses } from "../../css/system-classes";
 import { device } from "../../platform/platform";
 import { profile } from "../../profiling";
 
@@ -32,12 +34,7 @@ interface AnimatorState {
     transitionName: string;
 }
 
-const ROOT = "root";
 const ANDROID_PLATFORM = "android";
-const ROOT_VIEW_CSS_CLASSES = [
-    `${application.CSS_CLASS_PREFIX}${ROOT}`,
-    `${application.CSS_CLASS_PREFIX}${ANDROID_PLATFORM}`
-];
 
 const INTENT_EXTRA = "com.tns.activity";
 const ROOT_VIEW_ID_EXTRA = "com.tns.activity.rootViewId";
@@ -1289,9 +1286,12 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
 
             const deviceType = device.deviceType.toLowerCase();
-            ROOT_VIEW_CSS_CLASSES.push(`${application.CSS_CLASS_PREFIX}${deviceType}`);
-            ROOT_VIEW_CSS_CLASSES.push(`${application.CSS_CLASS_PREFIX}${application.android.orientation}`);
-            ROOT_VIEW_CSS_CLASSES.forEach(c => this._rootView.cssClasses.add(c));
+            pushToRootViewCssClasses(`${CLASS_PREFIX}${ANDROID_PLATFORM}`);
+            pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
+            pushToRootViewCssClasses(`${CLASS_PREFIX}${application.android.orientation}`);
+
+            const rootViewCssClasses = getRootViewCssClasses();
+            rootViewCssClasses.forEach(c => this._rootView.cssClasses.add(c));
         }
 
         // Initialize native visual tree;

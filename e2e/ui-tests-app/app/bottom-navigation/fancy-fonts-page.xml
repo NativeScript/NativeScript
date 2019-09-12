@@ -2,7 +2,7 @@
   <ActionBar title="BottomNavigation" icon="" class="action-bar">
   </ActionBar>
   <BottomNavigation id="bottomNavigation" automationText="tabNavigation"  class="font-awesome">
-    <TabStrip>
+    <TabStrip iosIconRenderingMode="alwaysOriginal">
       <TabStripItem title="motorcycle-res" iconSource="res://baseline_motorcycle_black_24"></TabStripItem>
       <TabStripItem iconSource="font://&#xf206;" title="icon">
       </TabStripItem>
