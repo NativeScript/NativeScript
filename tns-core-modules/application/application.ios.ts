@@ -1,4 +1,3 @@
-
 import {
     ApplicationEventData,
     CssChangedEventData,
@@ -9,9 +8,8 @@ import {
 } from ".";
 
 import {
-    CSS_CLASS_PREFIX, displayedEvent, exitEvent, getCssFileName, launchEvent, livesync,
-    lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent,
-    setApplication, suspendEvent
+    displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on,
+    orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -19,18 +17,15 @@ export * from "./application-common";
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../ui/builder";
+import { CLASS_PREFIX, getRootViewCssClasses, pushToRootViewCssClasses } from "../css/system-classes";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
 import { device } from "../platform/platform";
 import { profile } from "../profiling";
 import { ios } from "../utils/utils";
 
-const ROOT = "root";
 const IOS_PLATFORM = "ios";
-const ROOT_VIEW_CSS_CLASSES = [
-    `${CSS_CLASS_PREFIX}${ROOT}`,
-    `${CSS_CLASS_PREFIX}${IOS_PLATFORM}`
-];
+
 const getVisibleViewController = ios.getVisibleViewController;
 
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
@@ -317,9 +312,12 @@ function createRootView(v?: View) {
     }
 
     const deviceType = device.deviceType.toLowerCase();
-    ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${deviceType}`);
-    ROOT_VIEW_CSS_CLASSES.push(`${CSS_CLASS_PREFIX}${iosApp.orientation}`);
-    ROOT_VIEW_CSS_CLASSES.forEach(c => rootView.cssClasses.add(c));
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
+
+    const rootViewCssClasses = getRootViewCssClasses();
+    rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
 
     return rootView;
 }
