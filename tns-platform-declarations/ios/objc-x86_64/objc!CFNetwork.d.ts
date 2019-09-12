@@ -600,9 +600,13 @@ declare const kCFStreamErrorSOCKSUnknownClientVersion: number;
 
 declare var kCFStreamNetworkServiceType: string;
 
+declare var kCFStreamNetworkServiceTypeAVStreaming: string;
+
 declare var kCFStreamNetworkServiceTypeBackground: string;
 
 declare var kCFStreamNetworkServiceTypeCallSignaling: string;
+
+declare var kCFStreamNetworkServiceTypeResponsiveAV: string;
 
 declare var kCFStreamNetworkServiceTypeResponsiveData: string;
 
@@ -612,7 +616,13 @@ declare var kCFStreamNetworkServiceTypeVoIP: string;
 
 declare var kCFStreamNetworkServiceTypeVoice: string;
 
+declare var kCFStreamPropertyAllowConstrainedNetworkAccess: string;
+
+declare var kCFStreamPropertyAllowExpensiveNetworkAccess: string;
+
 declare var kCFStreamPropertyConnectionIsCellular: string;
+
+declare var kCFStreamPropertyConnectionIsExpensive: string;
 
 declare var kCFStreamPropertyFTPAttemptPersistentConnection: string;
 

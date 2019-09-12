@@ -111,6 +111,8 @@ declare class SKDownload extends NSObject {
 
 	readonly error: NSError;
 
+	readonly expectedContentLength: number;
+
 	readonly progress: number;
 
 	readonly state: SKDownloadState;
@@ -155,7 +157,19 @@ declare const enum SKErrorCode {
 
 	CloudServiceNetworkConnectionFailed = 7,
 
-	CloudServiceRevoked = 8
+	CloudServiceRevoked = 8,
+
+	PrivacyAcknowledgementRequired = 9,
+
+	UnauthorizedRequestData = 10,
+
+	InvalidOfferIdentifier = 11,
+
+	InvalidSignature = 12,
+
+	MissingOfferParams = 13,
+
+	InvalidOfferPrice = 14
 }
 
 declare var SKErrorDomain: string;
@@ -169,6 +183,8 @@ declare class SKMutablePayment extends SKPayment {
 	static paymentWithProduct(product: SKProduct): SKMutablePayment; // inherited from SKPayment
 
 	applicationUsername: string;
+
+	paymentDiscount: SKPaymentDiscount;
 
 	productIdentifier: string;
 
@@ -191,6 +207,8 @@ declare class SKPayment extends NSObject implements NSCopying, NSMutableCopying 
 
 	readonly applicationUsername: string;
 
+	readonly paymentDiscount: SKPaymentDiscount;
+
 	readonly productIdentifier: string;
 
 	readonly quantity: number;
@@ -204,6 +222,27 @@ declare class SKPayment extends NSObject implements NSCopying, NSMutableCopying 
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+declare class SKPaymentDiscount extends NSObject {
+
+	static alloc(): SKPaymentDiscount; // inherited from NSObject
+
+	static new(): SKPaymentDiscount; // inherited from NSObject
+
+	readonly identifier: string;
+
+	readonly keyIdentifier: string;
+
+	readonly nonce: NSUUID;
+
+	readonly signature: string;
+
+	readonly timestamp: number;
+
+	constructor(o: { identifier: string; keyIdentifier: string; nonce: NSUUID; signature: string; timestamp: number; });
+
+	initWithIdentifierKeyIdentifierNonceSignatureTimestamp(identifier: string, keyIdentifier: string, nonce: NSUUID, signature: string, timestamp: number): this;
+}
+
 declare class SKPaymentQueue extends NSObject {
 
 	static alloc(): SKPaymentQueue; // inherited from NSObject
@@ -213,6 +252,10 @@ declare class SKPaymentQueue extends NSObject {
 	static defaultQueue(): SKPaymentQueue;
 
 	static new(): SKPaymentQueue; // inherited from NSObject
+
+	delegate: SKPaymentQueueDelegate;
+
+	readonly storefront: SKStorefront;
 
 	readonly transactions: NSArray<SKPaymentTransaction>;
 
@@ -236,6 +279,15 @@ declare class SKPaymentQueue extends NSObject {
 
 	startDownloads(downloads: NSArray<SKDownload> | SKDownload[]): void;
 }
+
+interface SKPaymentQueueDelegate extends NSObjectProtocol {
+
+	paymentQueueShouldContinueTransactionInStorefront?(paymentQueue: SKPaymentQueue, transaction: SKPaymentTransaction, newStorefront: SKStorefront): boolean;
+}
+declare var SKPaymentQueueDelegate: {
+
+	prototype: SKPaymentQueueDelegate;
+};
 
 declare class SKPaymentTransaction extends NSObject {
 
@@ -261,6 +313,8 @@ declare class SKPaymentTransaction extends NSObject {
 }
 
 interface SKPaymentTransactionObserver extends NSObjectProtocol {
+
+	paymentQueueDidChangeStorefront?(queue: SKPaymentQueue): void;
 
 	paymentQueueRemovedTransactions?(queue: SKPaymentQueue, transactions: NSArray<SKPaymentTransaction> | SKPaymentTransaction[]): void;
 
@@ -298,13 +352,17 @@ declare class SKProduct extends NSObject {
 
 	static new(): SKProduct; // inherited from NSObject
 
+	readonly contentVersion: string;
+
+	readonly discounts: NSArray<SKProductDiscount>;
+
 	readonly downloadContentLengths: NSArray<number>;
 
 	readonly downloadContentVersion: string;
 
-	readonly downloadable: boolean;
-
 	readonly introductoryPrice: SKProductDiscount;
+
+	readonly isDownloadable: boolean;
 
 	readonly localizedDescription: string;
 
@@ -327,6 +385,8 @@ declare class SKProductDiscount extends NSObject {
 
 	static new(): SKProductDiscount; // inherited from NSObject
 
+	readonly identifier: string;
+
 	readonly numberOfPeriods: number;
 
 	readonly paymentMode: SKProductDiscountPaymentMode;
@@ -336,6 +396,8 @@ declare class SKProductDiscount extends NSObject {
 	readonly priceLocale: NSLocale;
 
 	readonly subscriptionPeriod: SKProductSubscriptionPeriod;
+
+	readonly type: SKProductDiscountType;
 }
 
 declare const enum SKProductDiscountPaymentMode {
@@ -345,6 +407,13 @@ declare const enum SKProductDiscountPaymentMode {
 	PayUpFront = 1,
 
 	FreeTrial = 2
+}
+
+declare const enum SKProductDiscountType {
+
+	Introductory = 0,
+
+	Subscription = 1
 }
 
 declare const enum SKProductPeriodUnit {
@@ -520,6 +589,17 @@ declare class SKStoreReviewController extends NSObject {
 	static new(): SKStoreReviewController; // inherited from NSObject
 
 	static requestReview(): void;
+}
+
+declare class SKStorefront extends NSObject {
+
+	static alloc(): SKStorefront; // inherited from NSObject
+
+	static new(): SKStorefront; // inherited from NSObject
+
+	readonly countryCode: string;
+
+	readonly identifier: string;
 }
 
 declare var SKStorefrontCountryCodeDidChangeNotification: string;

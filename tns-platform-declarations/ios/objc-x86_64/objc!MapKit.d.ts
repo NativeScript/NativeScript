@@ -440,7 +440,9 @@ declare const enum MKErrorCode {
 
 	PlacemarkNotFound = 4,
 
-	DirectionsNotFound = 5
+	DirectionsNotFound = 5,
+
+	DecodingFailed = 6
 }
 
 declare var MKErrorDomain: string;
@@ -459,6 +461,69 @@ declare const enum MKFeatureVisibility {
 
 	Visible = 2
 }
+
+declare class MKGeoJSONDecoder extends NSObject {
+
+	static alloc(): MKGeoJSONDecoder; // inherited from NSObject
+
+	static new(): MKGeoJSONDecoder; // inherited from NSObject
+
+	geoJSONObjectsWithDataError(data: NSData): NSArray<MKGeoJSONObject>;
+}
+
+declare class MKGeoJSONFeature extends NSObject implements MKGeoJSONObject {
+
+	static alloc(): MKGeoJSONFeature; // inherited from NSObject
+
+	static new(): MKGeoJSONFeature; // inherited from NSObject
+
+	readonly geometry: NSArray<MKShape>;
+
+	readonly identifier: string;
+
+	readonly properties: NSData;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+interface MKGeoJSONObject extends NSObjectProtocol {
+}
+declare var MKGeoJSONObject: {
+
+	prototype: MKGeoJSONObject;
+};
 
 declare class MKGeodesicPolyline extends MKPolyline {
 
@@ -518,9 +583,13 @@ declare class MKLocalSearchCompleter extends NSObject {
 
 	filterType: MKSearchCompletionFilterType;
 
+	pointOfInterestFilter: MKPointOfInterestFilter;
+
 	queryFragment: string;
 
 	region: MKCoordinateRegion;
+
+	resultTypes: MKLocalSearchCompleterResultType;
 
 	readonly results: NSArray<MKLocalSearchCompletion>;
 
@@ -539,6 +608,15 @@ declare var MKLocalSearchCompleterDelegate: {
 
 	prototype: MKLocalSearchCompleterDelegate;
 };
+
+declare const enum MKLocalSearchCompleterResultType {
+
+	Address = 1,
+
+	PointOfInterest = 2,
+
+	Query = 4
+}
 
 declare class MKLocalSearchCompletion extends NSObject {
 
@@ -563,13 +641,25 @@ declare class MKLocalSearchRequest extends NSObject implements NSCopying {
 
 	naturalLanguageQuery: string;
 
+	pointOfInterestFilter: MKPointOfInterestFilter;
+
 	region: MKCoordinateRegion;
 
+	resultTypes: MKLocalSearchResultType;
+
 	constructor(o: { completion: MKLocalSearchCompletion; });
+
+	constructor(o: { naturalLanguageQuery: string; });
+
+	constructor(o: { naturalLanguageQuery: string; region: MKCoordinateRegion; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	initWithCompletion(completion: MKLocalSearchCompletion): this;
+
+	initWithNaturalLanguageQuery(naturalLanguageQuery: string): this;
+
+	initWithNaturalLanguageQueryRegion(naturalLanguageQuery: string, region: MKCoordinateRegion): this;
 }
 
 declare class MKLocalSearchResponse extends NSObject {
@@ -581,6 +671,13 @@ declare class MKLocalSearchResponse extends NSObject {
 	readonly boundingRegion: MKCoordinateRegion;
 
 	readonly mapItems: NSArray<MKMapItem>;
+}
+
+declare const enum MKLocalSearchResultType {
+
+	Address = 1,
+
+	PointOfInterest = 2
 }
 
 declare class MKMapCamera extends NSObject implements NSCopying, NSSecureCoding {
@@ -599,6 +696,8 @@ declare class MKMapCamera extends NSObject implements NSCopying, NSSecureCoding 
 
 	centerCoordinate: CLLocationCoordinate2D;
 
+	centerCoordinateDistance: number;
+
 	heading: number;
 
 	pitch: number;
@@ -609,9 +708,73 @@ declare class MKMapCamera extends NSObject implements NSCopying, NSSecureCoding 
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class MKMapCameraBoundary extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): MKMapCameraBoundary; // inherited from NSObject
+
+	static new(): MKMapCameraBoundary; // inherited from NSObject
+
+	readonly mapRect: MKMapRect;
+
+	readonly region: MKCoordinateRegion;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { coordinateRegion: MKCoordinateRegion; });
+
+	constructor(o: { mapRect: MKMapRect; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithCoordinateRegion(region: MKCoordinateRegion): this;
+
+	initWithMapRect(mapRect: MKMapRect): this;
+}
+
+declare var MKMapCameraZoomDefault: number;
+
+declare class MKMapCameraZoomRange extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): MKMapCameraZoomRange; // inherited from NSObject
+
+	static new(): MKMapCameraZoomRange; // inherited from NSObject
+
+	readonly maxCenterCoordinateDistance: number;
+
+	readonly minCenterCoordinateDistance: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { maxCenterCoordinateDistance: number; });
+
+	constructor(o: { minCenterCoordinateDistance: number; });
+
+	constructor(o: { minCenterCoordinateDistance: number; maxCenterCoordinateDistance: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithMaxCenterCoordinateDistance(maxDistance: number): this;
+
+	initWithMinCenterCoordinateDistance(minDistance: number): this;
+
+	initWithMinCenterCoordinateDistanceMaxCenterCoordinateDistance(minDistance: number, maxDistance: number): this;
 }
 
 declare class MKMapItem extends NSObject implements NSItemProviderReading, NSItemProviderWriting, NSSecureCoding {
@@ -635,6 +798,8 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 	phoneNumber: string;
 
 	readonly placemark: MKPlacemark;
+
+	pointOfInterestCategory: string;
 
 	timeZone: NSTimeZone;
 
@@ -668,9 +833,9 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithPlacemark(placemark: MKPlacemark): this;
 
@@ -757,6 +922,8 @@ declare class MKMapSnapshot extends NSObject {
 
 	readonly image: UIImage;
 
+	readonly traitCollection: UITraitCollection;
+
 	pointForCoordinate(coordinate: CLLocationCoordinate2D): CGPoint;
 }
 
@@ -772,6 +939,8 @@ declare class MKMapSnapshotOptions extends NSObject implements NSCopying {
 
 	mapType: MKMapType;
 
+	pointOfInterestFilter: MKPointOfInterestFilter;
+
 	region: MKCoordinateRegion;
 
 	scale: number;
@@ -781,6 +950,8 @@ declare class MKMapSnapshotOptions extends NSObject implements NSCopying {
 	showsPointsOfInterest: boolean;
 
 	size: CGSize;
+
+	traitCollection: UITraitCollection;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -843,6 +1014,10 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	camera: MKMapCamera;
 
+	cameraBoundary: MKMapCameraBoundary;
+
+	cameraZoomRange: MKMapCameraZoomRange;
+
 	centerCoordinate: CLLocationCoordinate2D;
 
 	delegate: MKMapViewDelegate;
@@ -852,6 +1027,8 @@ declare class MKMapView extends UIView implements NSCoding {
 	readonly overlays: NSArray<MKOverlay>;
 
 	pitchEnabled: boolean;
+
+	pointOfInterestFilter: MKPointOfInterestFilter;
 
 	region: MKCoordinateRegion;
 
@@ -913,13 +1090,13 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	deselectAnnotationAnimated(annotation: MKAnnotation, animated: boolean): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	exchangeOverlayAtIndexWithOverlayAtIndex(index1: number, index2: number): void;
 
 	exchangeOverlayWithOverlay(overlay1: MKOverlay, overlay2: MKOverlay): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	insertOverlayAboveOverlay(overlay: MKOverlay, sibling: MKOverlay): void;
 
@@ -952,6 +1129,10 @@ declare class MKMapView extends UIView implements NSCoding {
 	selectAnnotationAnimated(annotation: MKAnnotation, animated: boolean): void;
 
 	setCameraAnimated(camera: MKMapCamera, animated: boolean): void;
+
+	setCameraBoundaryAnimated(cameraBoundary: MKMapCameraBoundary, animated: boolean): void;
+
+	setCameraZoomRangeAnimated(cameraZoomRange: MKMapCameraZoomRange, animated: boolean): void;
 
 	setCenterCoordinateAnimated(coordinate: CLLocationCoordinate2D, animated: boolean): void;
 
@@ -1068,7 +1249,7 @@ declare function MKMetersBetweenMapPoints(a: MKMapPoint, b: MKMapPoint): number;
 
 declare function MKMetersPerMapPointAtLatitude(latitude: number): number;
 
-declare class MKMultiPoint extends MKShape {
+declare class MKMultiPoint extends MKShape implements MKGeoJSONObject {
 
 	static alloc(): MKMultiPoint; // inherited from NSObject
 
@@ -1076,9 +1257,191 @@ declare class MKMultiPoint extends MKShape {
 
 	readonly pointCount: number;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	getCoordinatesRange(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D>, range: NSRange): void;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
 	points(): interop.Pointer | interop.Reference<MKMapPoint>;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class MKMultiPolygon extends MKShape implements MKGeoJSONObject, MKOverlay {
+
+	static alloc(): MKMultiPolygon; // inherited from NSObject
+
+	static new(): MKMultiPolygon; // inherited from NSObject
+
+	readonly polygons: NSArray<MKPolygon>;
+
+	readonly boundingMapRect: MKMapRect; // inherited from MKOverlay
+
+	readonly canReplaceMapContent: boolean; // inherited from MKOverlay
+
+	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly subtitle: string; // inherited from MKAnnotation
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly title: string; // inherited from MKAnnotation
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { polygons: NSArray<MKPolygon> | MKPolygon[]; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithPolygons(polygons: NSArray<MKPolygon> | MKPolygon[]): this;
+
+	intersectsMapRect(mapRect: MKMapRect): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	setCoordinate(newCoordinate: CLLocationCoordinate2D): void;
+}
+
+declare class MKMultiPolygonRenderer extends MKOverlayPathRenderer {
+
+	static alloc(): MKMultiPolygonRenderer; // inherited from NSObject
+
+	static new(): MKMultiPolygonRenderer; // inherited from NSObject
+
+	readonly multiPolygon: MKMultiPolygon;
+
+	constructor(o: { multiPolygon: MKMultiPolygon; });
+
+	initWithMultiPolygon(multiPolygon: MKMultiPolygon): this;
+}
+
+declare class MKMultiPolyline extends MKShape implements MKGeoJSONObject, MKOverlay {
+
+	static alloc(): MKMultiPolyline; // inherited from NSObject
+
+	static new(): MKMultiPolyline; // inherited from NSObject
+
+	readonly polylines: NSArray<MKPolyline>;
+
+	readonly boundingMapRect: MKMapRect; // inherited from MKOverlay
+
+	readonly canReplaceMapContent: boolean; // inherited from MKOverlay
+
+	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly subtitle: string; // inherited from MKAnnotation
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly title: string; // inherited from MKAnnotation
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { polylines: NSArray<MKPolyline> | MKPolyline[]; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithPolylines(polylines: NSArray<MKPolyline> | MKPolyline[]): this;
+
+	intersectsMapRect(mapRect: MKMapRect): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	setCoordinate(newCoordinate: CLLocationCoordinate2D): void;
+}
+
+declare class MKMultiPolylineRenderer extends MKOverlayPathRenderer {
+
+	static alloc(): MKMultiPolylineRenderer; // inherited from NSObject
+
+	static new(): MKMultiPolylineRenderer; // inherited from NSObject
+
+	readonly multiPolyline: MKMultiPolyline;
+
+	constructor(o: { multiPolyline: MKMultiPolyline; });
+
+	initWithMultiPolyline(multiPolyline: MKMultiPolyline): this;
 }
 
 interface MKOverlay extends MKAnnotation {
@@ -1122,6 +1485,8 @@ declare class MKOverlayPathRenderer extends MKOverlayRenderer {
 	miterLimit: number;
 
 	path: any;
+
+	shouldRasterize: boolean;
 
 	strokeColor: UIColor;
 
@@ -1368,16 +1733,171 @@ declare class MKPlacemark extends CLPlacemark implements MKAnnotation {
 	setCoordinate(newCoordinate: CLLocationCoordinate2D): void;
 }
 
-declare class MKPointAnnotation extends MKShape {
+declare class MKPointAnnotation extends MKShape implements MKGeoJSONObject {
 
 	static alloc(): MKPointAnnotation; // inherited from NSObject
 
 	static new(): MKPointAnnotation; // inherited from NSObject
 
 	coordinate: CLLocationCoordinate2D;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { coordinate: CLLocationCoordinate2D; });
+
+	constructor(o: { coordinate: CLLocationCoordinate2D; title: string; subtitle: string; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithCoordinate(coordinate: CLLocationCoordinate2D): this;
+
+	initWithCoordinateTitleSubtitle(coordinate: CLLocationCoordinate2D, title: string, subtitle: string): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
-declare class MKPolygon extends MKMultiPoint implements MKOverlay {
+declare var MKPointOfInterestCategoryATM: string;
+
+declare var MKPointOfInterestCategoryAirport: string;
+
+declare var MKPointOfInterestCategoryAmusementPark: string;
+
+declare var MKPointOfInterestCategoryAquarium: string;
+
+declare var MKPointOfInterestCategoryBakery: string;
+
+declare var MKPointOfInterestCategoryBank: string;
+
+declare var MKPointOfInterestCategoryBeach: string;
+
+declare var MKPointOfInterestCategoryBrewery: string;
+
+declare var MKPointOfInterestCategoryCafe: string;
+
+declare var MKPointOfInterestCategoryCampground: string;
+
+declare var MKPointOfInterestCategoryCarRental: string;
+
+declare var MKPointOfInterestCategoryEVCharger: string;
+
+declare var MKPointOfInterestCategoryFireStation: string;
+
+declare var MKPointOfInterestCategoryFitnessCenter: string;
+
+declare var MKPointOfInterestCategoryFoodMarket: string;
+
+declare var MKPointOfInterestCategoryGasStation: string;
+
+declare var MKPointOfInterestCategoryHospital: string;
+
+declare var MKPointOfInterestCategoryHotel: string;
+
+declare var MKPointOfInterestCategoryLaundry: string;
+
+declare var MKPointOfInterestCategoryLibrary: string;
+
+declare var MKPointOfInterestCategoryMarina: string;
+
+declare var MKPointOfInterestCategoryMovieTheater: string;
+
+declare var MKPointOfInterestCategoryMuseum: string;
+
+declare var MKPointOfInterestCategoryNationalPark: string;
+
+declare var MKPointOfInterestCategoryNightlife: string;
+
+declare var MKPointOfInterestCategoryPark: string;
+
+declare var MKPointOfInterestCategoryParking: string;
+
+declare var MKPointOfInterestCategoryPharmacy: string;
+
+declare var MKPointOfInterestCategoryPolice: string;
+
+declare var MKPointOfInterestCategoryPostOffice: string;
+
+declare var MKPointOfInterestCategoryPublicTransport: string;
+
+declare var MKPointOfInterestCategoryRestaurant: string;
+
+declare var MKPointOfInterestCategoryRestroom: string;
+
+declare var MKPointOfInterestCategorySchool: string;
+
+declare var MKPointOfInterestCategoryStadium: string;
+
+declare var MKPointOfInterestCategoryStore: string;
+
+declare var MKPointOfInterestCategoryTheater: string;
+
+declare var MKPointOfInterestCategoryUniversity: string;
+
+declare var MKPointOfInterestCategoryWinery: string;
+
+declare var MKPointOfInterestCategoryZoo: string;
+
+declare class MKPointOfInterestFilter extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): MKPointOfInterestFilter; // inherited from NSObject
+
+	static new(): MKPointOfInterestFilter; // inherited from NSObject
+
+	static readonly filterExcludingAllCategories: MKPointOfInterestFilter;
+
+	static readonly filterIncludingAllCategories: MKPointOfInterestFilter;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { excludingCategories: NSArray<string> | string[]; });
+
+	constructor(o: { includingCategories: NSArray<string> | string[]; });
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	excludesCategory(category: string): boolean;
+
+	includesCategory(category: string): boolean;
+
+	initExcludingCategories(categories: NSArray<string> | string[]): this;
+
+	initIncludingCategories(categories: NSArray<string> | string[]): this;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class MKPolygon extends MKMultiPoint implements MKGeoJSONObject, MKOverlay {
 
 	static alloc(): MKPolygon; // inherited from NSObject
 
@@ -1480,7 +2000,7 @@ declare class MKPolygonView extends MKOverlayPathView {
 	initWithPolygon(polygon: MKPolygon): this;
 }
 
-declare class MKPolyline extends MKMultiPoint implements MKOverlay {
+declare class MKPolyline extends MKMultiPoint implements MKGeoJSONObject, MKOverlay {
 
 	static alloc(): MKPolyline; // inherited from NSObject
 
