@@ -177,7 +177,11 @@ declare var OSLogEntryWithPayload: {
 
 declare class OSLogEnumerator extends NSEnumerator<NSObject> {
 
+	static alloc(): NSObject;
+
 	static alloc(): OSLogEnumerator; // inherited from NSObject
+
+	static new(): NSObject;
 
 	static new(): OSLogEnumerator; // inherited from NSObject
 }
