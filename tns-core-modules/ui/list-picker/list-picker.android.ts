@@ -1,7 +1,11 @@
 import { ListPickerBase, selectedIndexProperty, itemsProperty, colorProperty, Color } from "./list-picker-common";
 import { ItemsSource } from ".";
+import { device } from "../../platform";
+import lazy from "../../utils/lazy";
 
 export * from "./list-picker-common";
+
+const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
 interface Formatter {
     new (owner: ListPicker): android.widget.NumberPicker.Formatter;
@@ -90,7 +94,14 @@ export class ListPicker extends ListPickerBase {
         super.initNativeView();
         initializeNativeClasses();
         const nativeView = this.nativeViewProtected;
-        this._selectorWheelPaint = getSelectorWheelPaint(nativeView);
+
+        // api28 and lower uses reflection to retrieve and manipulate 
+        // android.graphics.Paint object; this is no longer allowed on newer api levels but
+        // equivalent public methods are exposed on api29+ directly on the native widget
+        if (sdkVersion() < 29) {
+            this._selectorWheelPaint = getSelectorWheelPaint(nativeView);
+        }
+
         const formatter = new Formatter(this);
         nativeView.setFormatter(formatter);
         (<any>nativeView).formatter = formatter;
@@ -153,28 +164,33 @@ export class ListPicker extends ListPickerBase {
         selectedIndexProperty.coerce(this);
     }
 
-    [colorProperty.getDefault](): { wheelColor: number, textColor: number } {
-    const editText = (<any>this.nativeViewProtected).editText;
-
-    return {
-            wheelColor: this._selectorWheelPaint.getColor(),
-            textColor: editText ? editText.getTextColors().getDefaultColor() : -1
-        };
-    }
-    [colorProperty.setNative](value: { wheelColor: number, textColor: number } | Color) {
-        let color: number;
-        let wheelColor: number;
-        if (value instanceof Color) {
-            color = wheelColor = value.android;
-        } else {
-            color = value.textColor;
-            wheelColor = value.wheelColor;
+    [colorProperty.getDefault](): number {
+        // api28 and lower uses reflection to retrieve and manipulate 
+        // android.graphics.Paint object; this is no longer allowed on newer api levels but
+        // equivalent public methods are exposed on api29+ directly on the native widget
+        if (this._selectorWheelPaint) {
+            return this._selectorWheelPaint.getColor();
         }
 
-        this._selectorWheelPaint.setColor(wheelColor);
-        const editText = (<any>this.nativeViewProtected).editText;
-        if (editText) {
-            editText.setTextColor(color);
+        return this.nativeView.getTextColor();
+    }
+    [colorProperty.setNative](value: number | Color) {
+        const color = value instanceof Color ? value.android : value;
+
+        // api28 and lower uses reflection to retrieve and manipulate 
+        // android.graphics.Paint object; this is no longer allowed on newer api levels but
+        // equivalent public methods are exposed on api29+ directly on the native widget
+        if (this._selectorWheelPaint) {
+            this._selectorWheelPaint.setColor(color);
+
+            const editText = (<any>this.nativeViewProtected).editText;
+            if (editText) {
+                editText.setTextColor(color);
+            }
+        } else {
+            // api29 and higher native implementation sets
+            // both wheel color and input text color with single call
+            this.nativeView.setTextColor(color);
         }
     }
 }
