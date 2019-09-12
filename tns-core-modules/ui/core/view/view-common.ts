@@ -5,9 +5,8 @@ import {
 } from ".";
 
 import {
-    ViewBase, Property, booleanConverter, EventData, layout,
-    getEventOrGestureName, traceEnabled, traceWrite, traceCategories,
-    InheritedProperty, ShowModalOptions
+    booleanConverter, EventData, getEventOrGestureName, InheritedProperty, layout,
+    Property, ShowModalOptions, traceCategories, traceEnabled, traceWrite, ViewBase
 } from "../view-base";
 
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
@@ -20,6 +19,7 @@ import {
     fromString as gestureFromString
 } from "../../gestures";
 
+import { getModalRootViewCssClass } from "../../../css/system-classes";
 import { createViewFromEntry } from "../../builder";
 import { sanitizeModuleName } from "../../builder/module-name-sanitizer";
 import { StyleScope } from "../../styling/style-scope";
@@ -31,9 +31,6 @@ export * from "../view-base";
 export { LinearGradient };
 
 import * as am from "../../animation";
-import { CSS_CLASS_PREFIX } from "../../../application";
-
-const MODAL = "modal";
 
 let animationModule: typeof am;
 function ensureAnimationModule() {
@@ -373,7 +370,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     protected _showNativeModalView(parent: ViewCommon, options: ShowModalOptions) {
         _rootModalViews.push(this);
-        this.cssClasses.add(`${CSS_CLASS_PREFIX}${MODAL}`);
+
+        const modalRootViewCssClass = getModalRootViewCssClass();
+        this.cssClasses.add(modalRootViewCssClass);
 
         parent._modal = this;
         this._modalParent = parent;

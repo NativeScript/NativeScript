@@ -540,23 +540,15 @@ export class BottomNavigation extends TabNavigationBase {
             // ICON
             const iconSource = tabStripItem.image && tabStripItem.image.src;
             if (iconSource) {
-                if (iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-                    tabItemSpec.iconId = ad.resources.getDrawableId(iconSource.substr(RESOURCE_PREFIX.length));
-                    if (tabItemSpec.iconId === 0) {
-                        // TODO:
-                        // traceMissingIcon(iconSource);
-                    }
-                } else {
-                    const icon = this.getIcon(tabStripItem);
+                const icon = this.getIcon(tabStripItem);
 
-                    if (icon) {
-                        // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-                        // tslint:disable-next-line:deprecation
-                        tabItemSpec.iconDrawable = icon;
-                    } else {
-                        // TODO:
-                        // traceMissingIcon(iconSource);
-                    }
+                if (icon) {
+                    // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
+                    // tslint:disable-next-line:deprecation
+                    tabItemSpec.iconDrawable = icon;
+                } else {
+                    // TODO:
+                    // traceMissingIcon(iconSource);
                 }
             }
         }

@@ -1,3 +1,34 @@
+<a name="6.1.0"></a>
+# [6.1.0](https://github.com/NativeScript/NativeScript/compare/6.0.7...6.1.0) (2019-09-02)
+
+
+### Bug Fixes
+
+* dots can now be used in module names ([#7655](https://github.com/NativeScript/NativeScript/issues/7655)) ([b6ff4d3](https://github.com/NativeScript/NativeScript/commit/b6ff4d3))
+* **css:** parse css selectors with escape sequences ([#7689](https://github.com/NativeScript/NativeScript/issues/7689)) ([#7732](https://github.com/NativeScript/NativeScript/issues/7732)) ([e3ed028](https://github.com/NativeScript/NativeScript/commit/e3ed028))
+* **ios-tabs:** handle tabs extended layout for ios 10 ([f7f0612](https://github.com/NativeScript/NativeScript/commit/f7f0612))
+* **ios-tabs:** crash when add tabstrip in loaded event ([#7743](https://github.com/NativeScript/NativeScript/issues/7743)) ([a66f2f2](https://github.com/NativeScript/NativeScript/commit/a66f2f2))
+* **ios-tabs:** handle nesting proxy view container ([#7755](https://github.com/NativeScript/NativeScript/issues/7755)) ([92c3338](https://github.com/NativeScript/NativeScript/commit/92c3338))
+* handle empty folders in non-bundle-compat ([#7649](https://github.com/NativeScript/NativeScript/issues/7649)) ([5fd7913](https://github.com/NativeScript/NativeScript/commit/5fd7913))
+
+
+### Features
+
+* implement css-variables and css-calc ([#7553](https://github.com/NativeScript/NativeScript/issues/7553)) ([673c808](https://github.com/NativeScript/NativeScript/commit/673c808))
+* add CSS classes to app/modal root views to target platform/device/orientation/type ([#7606](https://github.com/NativeScript/NativeScript/issues/7606)) ([3adba68](https://github.com/NativeScript/NativeScript/commit/3adba68))
+* **GridLayout:** Add synonym property column[Span] for col[Span] in GridLayout ([#7641](https://github.com/NativeScript/NativeScript/issues/7641)) ([d3c39c1](https://github.com/NativeScript/NativeScript/commit/d3c39c1))
+* apply styles when adding them to the application scope ([#7652](https://github.com/NativeScript/NativeScript/issues/7652)) ([1d12136](https://github.com/NativeScript/NativeScript/commit/1d12136))
+* expose application orientation ([#7602](https://github.com/NativeScript/NativeScript/issues/7602)) ([e2c3c8c](https://github.com/NativeScript/NativeScript/commit/e2c3c8c))
+* **ios-bottom-navigation:** add icon rendering mode ([#7738](https://github.com/NativeScript/NativeScript/issues/7738)) ([ff6d89f](https://github.com/NativeScript/NativeScript/commit/ff6d89f))
+* **android-tabs/bottom-navigation:** fix tab resource icon size based on specification ([#7737](https://github.com/NativeScript/NativeScript/issues/7737)) ([f436b6f](https://github.com/NativeScript/NativeScript/commit/f436b6f))
+* **tabs/bottom-navigation:** introduce TabStrip.isIconSizeFixed property ([#7691](https://github.com/NativeScript/NativeScript/issues/7691)) ([8039c2c](https://github.com/NativeScript/NativeScript/commit/8039c2c))
+* **tabs/bottom-navigation:** add support for custom tabstrip ([#7580](https://github.com/NativeScript/NativeScript/issues/7580)) ([acc3436](https://github.com/NativeScript/NativeScript/commit/acc3436))
+* **tabs/bottom-navigation:** inherit TabContentItem from ContentView ([#7629](https://github.com/NativeScript/NativeScript/issues/7629)) ([72ca461](https://github.com/NativeScript/NativeScript/commit/72ca461))
+* **tabs/bottom-navigation:** flexible font icon usage ([#7672](https://github.com/NativeScript/NativeScript/issues/7672)) ([c0b8db4](https://github.com/NativeScript/NativeScript/commit/c0b8db4))
+* **tabs:** emit tabStripItem tap event ([#7693](https://github.com/NativeScript/NativeScript/issues/7693)) ([b0d1c91](https://github.com/NativeScript/NativeScript/commit/b0d1c91))
+* **tabs/bottom-navigation:** add TabStrip.itemTap event ([#7711](https://github.com/NativeScript/NativeScript/issues/7711)) ([55c9cc9](https://github.com/NativeScript/NativeScript/commit/55c9cc9))
+
+
 <a name="6.0.7"></a>
 ## [6.0.7](https://github.com/NativeScript/NativeScript/compare/6.0.4...6.0.7) (2019-08-22)
 
@@ -29,6 +60,25 @@
 * **bottom-navigation:** codebehind creation ([#7624](https://github.com/NativeScript/NativeScript/issues/7624)) ([056d0bf](https://github.com/NativeScript/NativeScript/commit/056d0bf))
 * **tabs-android:** tabStripItem color not applied ([#7617](https://github.com/NativeScript/NativeScript/issues/7617)) ([2518655](https://github.com/NativeScript/NativeScript/commit/2518655))
 * prevent plugin podfile platform version clash ([#7626](https://github.com/NativeScript/NativeScript/issues/7626)) ([49b3571](https://github.com/NativeScript/NativeScript/commit/49b3571))
+
+
+
+<a name="6.0.5"></a>
+## [6.0.5](https://github.com/NativeScript/NativeScript/compare/6.0.4...6.0.5) (2019-08-02)
+
+
+### Bug Fixes
+
+* **observable-array:** splice to notify correct amount of added items ([#7426](https://github.com/NativeScript/NativeScript/issues/7426)) ([5e14de6](https://github.com/NativeScript/NativeScript/commit/5e14de6))
+* added missing openFile method in ios utils ([#7431](https://github.com/NativeScript/NativeScript/issues/7431)) ([cb58cab](https://github.com/NativeScript/NativeScript/commit/cb58cab))
+* full Unicode support in xml ([#7428](https://github.com/NativeScript/NativeScript/issues/7428)) ([b8659e6](https://github.com/NativeScript/NativeScript/commit/b8659e6))
+* **timer:** setTimeout/setInterval support for boolean period ([#7569](https://github.com/NativeScript/NativeScript/issues/7569)) ([a569bb2](https://github.com/NativeScript/NativeScript/commit/a569bb2))
+
+
+### Features
+
+* **bottom-navigation-ios:** limit to 5 items ([5815246](https://github.com/NativeScript/NativeScript/commit/5815246))
+* split globals to support smaller worker chunks ([0ee0b67](https://github.com/NativeScript/NativeScript/commit/0ee0b67))
 
 
 
