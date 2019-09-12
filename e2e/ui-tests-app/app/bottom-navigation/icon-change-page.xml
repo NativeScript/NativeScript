@@ -3,7 +3,7 @@
     </ActionBar>
 
     <BottomNavigation id="tab-view" selectedIndexChanged="onSelectedIndexChanged" automationText="tabNavigation"  >
-        <TabStrip>
+        <TabStrip iosIconRenderingMode="alwaysOriginal">
             <TabStripItem iconSource="res://icon" title="selected"></TabStripItem>
             <TabStripItem iconSource="res://testlogo" title="unselected"></TabStripItem>
         </TabStrip>

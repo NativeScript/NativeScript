@@ -40,6 +40,8 @@ import {
     LoadAppCSSEventData,
     UnhandledErrorEventData
 } from "./application";
+
+import { CLASS_PREFIX, pushToRootViewCssClasses, removeFromRootViewCssClasses } from "../css/system-classes";
 import { DeviceOrientation } from "../ui/enums/enums";
 
 export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
@@ -54,11 +56,10 @@ export const uncaughtErrorEvent = "uncaughtError";
 export const discardedErrorEvent = "discardedError";
 export const orientationChangedEvent = "orientationChanged";
 
-export const CSS_CLASS_PREFIX = "ns-";
 const ORIENTATION_CSS_CLASSES = [
-    `${CSS_CLASS_PREFIX}${DeviceOrientation.portrait}`,
-    `${CSS_CLASS_PREFIX}${DeviceOrientation.landscape}`,
-    `${CSS_CLASS_PREFIX}${DeviceOrientation.unknown}`
+    `${CLASS_PREFIX}${DeviceOrientation.portrait}`,
+    `${CLASS_PREFIX}${DeviceOrientation.landscape}`,
+    `${CLASS_PREFIX}${DeviceOrientation.unknown}`
 ];
 
 let cssFile: string = "./app.css";
@@ -126,9 +127,15 @@ export function loadAppCss(): void {
 }
 
 export function orientationChanged(rootView: View, newOrientation: "portrait" | "landscape" | "unknown"): void {
-    const newOrientationCssClass = `${CSS_CLASS_PREFIX}${newOrientation}`;
+    const newOrientationCssClass = `${CLASS_PREFIX}${newOrientation}`;
     if (!rootView.cssClasses.has(newOrientationCssClass)) {
-        ORIENTATION_CSS_CLASSES.forEach(c => rootView.cssClasses.delete(c));
+        const removeCssClass = (c: string) => {
+            removeFromRootViewCssClasses(c);
+            rootView.cssClasses.delete(c);
+        };
+
+        ORIENTATION_CSS_CLASSES.forEach(c => removeCssClass(c));
+        pushToRootViewCssClasses(newOrientationCssClass);
         rootView.cssClasses.add(newOrientationCssClass);
         rootView._onCssStateChange();
     }
