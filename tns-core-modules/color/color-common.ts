@@ -1,7 +1,7 @@
 ﻿import * as definition from ".";
 import * as types from "../utils/types";
 import * as knownColors from "./known-colors";
-import { convertHSLToRGB } from "tns-core-modules/css/parser";
+import { convertHSLToRGBColor } from "tns-core-modules/css/parser";
 
 const SHARP = "#";
 const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
@@ -213,7 +213,7 @@ function argbFromRgbOrRgba(value: string): number {
 function argbFromHslOrHsla(value: string): number {
     const { f: h, s: s, t: l, a } = parseColorWithAlpha(value);
 
-    const { r, g, b } = convertHSLToRGB(h, s, l);
+    const { r, g, b } = convertHSLToRGBColor(h, s, l);
 
     return (a & 0xFF) * 0x01000000
          + (r & 0xFF) * 0x00010000
