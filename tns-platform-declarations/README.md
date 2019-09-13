@@ -46,3 +46,5 @@ The `.d.ts` files for iOS are generated using iOS Runtime's metadata generator. 
 ./typings-gen.sh rc [<path-to-medatadata-generator-binary>]
 ```
 Where `rc` can be an NPM tag/version of `tns-ios` that will be used for generating the typings. If the metadata generator to be used has not been released in NPM, you can optionally specify its path as a 2nd argument.
+
+> Note: Apply [this](https://github.com/NativeScript/NativeScript/commit/45b4b061e470c19cdc582f220ee86fd3169269a0) commit on hand, due to a TypeScript error.
