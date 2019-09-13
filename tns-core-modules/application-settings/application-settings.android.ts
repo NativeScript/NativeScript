@@ -86,6 +86,7 @@ export function clear(): void {
 
 export function flush(): boolean {
     ensureSharedPreferences();
+
     return sharedPreferences.edit().commit();
 }
 
