@@ -6,7 +6,6 @@ import { TextTransform } from "../text-base";
 
 // Requires
 import { Color } from "../../color";
-import { backgroundColor, blueColor, labelColor } from "../../color/compatibility-colors.ios";
 import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
 import { ios as iosUtils, isFontIconURI, layout } from "../../utils/utils";
 import { ios as iosView, View } from "../core/view";
@@ -24,6 +23,10 @@ export * from "./tabs-common";
 
 const majorVersion = iosUtils.MajorVersion;
 // const isPhone = device.deviceType === "Phone";
+
+const getBackgroundColor = () => majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+const getBlueColor = () => majorVersion <= 12 ? UIColor.blueColor : UIColor.systemBlueColor;
+const getLabelColor = () => majorVersion <= 12 ? UIColor.blackColor : UIColor.labelColor;
 
 class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
     public static ObjCProtocols = [MDCTabBarDelegate];
@@ -91,10 +94,10 @@ class UIPageViewControllerImpl extends UIPageViewController {
         }
 
         tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
-        tabBar.tintColor = blueColor();
-        tabBar.barTintColor = backgroundColor();
-        tabBar.setTitleColorForState(labelColor(), MDCTabBarItemState.Normal);
-        tabBar.setTitleColorForState(labelColor(), MDCTabBarItemState.Selected);
+        tabBar.tintColor = getBlueColor();
+        tabBar.barTintColor = getBackgroundColor();
+        tabBar.setTitleColorForState(getLabelColor(), MDCTabBarItemState.Normal);
+        tabBar.setTitleColorForState(getLabelColor(), MDCTabBarItemState.Selected);
 
         if (majorVersion >= 13) {
             tabBar.inkColor = UIColor.clearColor;
