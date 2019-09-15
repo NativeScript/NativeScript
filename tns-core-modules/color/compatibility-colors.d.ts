@@ -1,3 +1,0 @@
-/**
- * @module "color/compatibility-colors"
- */ /** */
