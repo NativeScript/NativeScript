@@ -114,6 +114,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     public _isEditing: boolean;
 
     createNativeView() {
+        debugger;
         const textView = NoScrollAnimationUITextView.new();
         if (!textView.font) {
             textView.font = UIFont.systemFontOfSize(12);
@@ -163,6 +164,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
 
     private _refreshColor() {
+        debugger;
         if (this._isShowingHint) {
             const placeholderColor = this.style.placeholderColor;
             const color = this.style.color;
@@ -173,7 +175,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
                 // Use semi-transparent version of color for back-compatibility
                 this.nativeTextViewProtected.textColor = color.ios.colorWithAlphaComponent(0.22);
             } else {
-                this.nativeTextViewProtected.textColor = UIColor.blackColor.colorWithAlphaComponent(0.22);
+                this.nativeTextViewProtected.textColor = UIColor.labelColor;
             }
         } else {
             const color = this.style.color;
@@ -182,8 +184,8 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
                 this.nativeTextViewProtected.textColor = color.ios;
                 this.nativeTextViewProtected.tintColor = color.ios;
             } else {
-                this.nativeTextViewProtected.textColor = null;
-                this.nativeTextViewProtected.tintColor = null;
+                this.nativeTextViewProtected.textColor = UIColor.labelColor;
+                this.nativeTextViewProtected.tintColor = UIColor.tintColor;
             }
         }
     }

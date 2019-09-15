@@ -205,6 +205,7 @@ export class TextBase extends TextBaseCommon {
             if (isTextView) {
                 // UITextView's font seems to change inside.
                 dict.set(NSFontAttributeName, this.nativeTextViewProtected.font);
+                dict.set(NSForegroundColorAttributeName, this.nativeTextViewProtected.textColor);
             }
 
             const result = NSMutableAttributedString.alloc().initWithString(source);
