@@ -138,8 +138,8 @@ class UIPageViewControllerImpl extends UIPageViewController {
         let scrollViewHeight = this.view.bounds.size.height + safeAreaInsetsBottom;
 
         if (owner.tabStrip) {
-            scrollViewTop = this.tabBar.frame.size.height;
-            scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + safeAreaInsetsBottom;
+            scrollViewTop = this.tabBar.frame.size.height + scrollViewTop;
+            scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height - scrollViewTop + safeAreaInsetsBottom;
             let tabBarTop = safeAreaInsetsTop;
             let tabBarHeight = this.tabBar.frame.size.height;
 
