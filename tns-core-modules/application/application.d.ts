@@ -286,6 +286,12 @@ export function on(event: "discardedError", callback: (args: DiscardedErrorEvent
 export function on(event: "orientationChanged", callback: (args: OrientationChangedEventData) => void, thisArg?: any);
 
 /**
+ * Gets the orientation of the application.
+ * Available values: "portrait", "landscape", "unknown".
+ */
+export function orientation(): "portrait" | "landscape" | "unknown";
+
+/**
  * This is the Android-specific application object instance.
  * Encapsulates methods and properties specific to the Android platform.
  * Will be undefined when TargetOS is iOS.
