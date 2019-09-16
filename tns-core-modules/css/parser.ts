@@ -84,7 +84,7 @@ export function parseHexColor(text: string, start: number = 0): Parsed<ARGB> {
 
 function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): number | undefined {
     if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1) {
-        return (Math.round(a * 0xFF) * 0x01000000) + (r * 0x010000) + (g * 0x000100) + (b * 0x000001);
+        return (Math.round(a * 0xFF) * 0x01000000) + (r * 0x010000) + (g * 0x000100) + b;
     } else {
         return null;
     }
@@ -112,6 +112,67 @@ export function parseRGBAColor(text: string, start: number = 0): Parsed<ARGB> {
     }
     const end = rgbaColorRegEx.lastIndex;
     const value = rgbaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]), parseFloat(result[5]));
+
+    return { start, end, value };
+}
+
+export function convertHSLToRGBColor(hue: number, saturation: number, lightness: number): { r: number; g: number; b: number; } {
+    // Per formula it will be easier if hue is divided to 60° and saturation to 100 beforehand
+    // https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB
+    hue /= 60;
+    lightness /= 100;
+
+    let chroma = (1 - Math.abs(2 * lightness - 1)) * saturation / 100,
+        X = chroma * (1 - Math.abs(hue % 2 - 1)),
+        // Add lightness match to all RGB components beforehand
+        { m: r, m: g, m: b } = { m: lightness - chroma / 2 };
+
+    if (0 <= hue && hue < 1) { r += chroma; g += X; }
+           else if (hue < 2) { r += X; g += chroma; }
+           else if (hue < 3) { g += chroma; b += X; }
+           else if (hue < 4) { g += X; b += chroma; }
+           else if (hue < 5) { r += X; b += chroma; }
+           else if (hue < 6) { r += chroma; b += X; }
+
+    return {
+        r: Math.round(r * 0xFF),
+        g: Math.round(g * 0xFF),
+        b: Math.round(b * 0xFF)
+    };
+}
+
+function hslaToArgbNumber(h: number, s: number, l: number, a: number = 1): number | undefined {
+    let { r, g, b } = convertHSLToRGBColor(h, s, l);
+
+    if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1) {
+        return (Math.round(a * 0xFF) * 0x01000000) + (r * 0x010000) + (g * 0x000100) + b;
+    } else {
+        return null;
+    }
+}
+
+const hslColorRegEx = /\s*(hsl\(\s*([\d.]*)\s*,\s*([\d.]*)%\s*,\s*([\d.]*)%\s*\))/gy;
+export function parseHSLColor(text: string, start: number = 0): Parsed<ARGB> {
+    hslColorRegEx.lastIndex = start;
+    const result = hslColorRegEx.exec(text);
+    if (!result) {
+        return null;
+    }
+    const end = hslColorRegEx.lastIndex;
+    const value = result[1] && hslaToArgbNumber(parseFloat(result[2]), parseFloat(result[3]), parseFloat(result[4]));
+
+    return { start, end, value };
+}
+
+const hslaColorRegEx = /\s*(hsla\(\s*([\d.]*)\s*,\s*([\d.]*)%\s*,\s*([\d.]*)%\s*,\s*([01]?\.?\d*)\s*\))/gy;
+export function parseHSLAColor(text: string, start: number = 0): Parsed<ARGB> {
+    hslaColorRegEx.lastIndex = start;
+    const result = hslaColorRegEx.exec(text);
+    if (!result) {
+        return null;
+    }
+    const end = hslaColorRegEx.lastIndex;
+    const value = hslaToArgbNumber(parseFloat(result[2]), parseFloat(result[3]), parseFloat(result[4]), parseFloat(result[5]));
 
     return { start, end, value };
 }
@@ -280,7 +341,12 @@ export function parseColorKeyword(value, start: number, keyword = parseKeyword(v
 }
 
 export function parseColor(value: string, start: number = 0, keyword = parseKeyword(value, start)): Parsed<ARGB> {
-    return parseHexColor(value, start) || parseColorKeyword(value, start, keyword) || parseRGBColor(value, start) || parseRGBAColor(value, start);
+    return parseHexColor(value, start) ||
+        parseColorKeyword(value, start, keyword) ||
+        parseRGBColor(value, start) ||
+        parseRGBAColor(value, start) ||
+        parseHSLColor(value, start) ||
+        parseHSLAColor(value, start);
 }
 
 const keywordRegEx = /\s*([a-z][\w\-]*)\s*/giy;

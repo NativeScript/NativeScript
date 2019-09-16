@@ -4,11 +4,12 @@ Development Workflow
 ## Project Structure
 
 The repository contains several packages and apps:
- - `tns-core-modules` - The core NativeScript TypeScript modules used to develop NativeScript apps.
- - `apps` - UI app used for manual testing and automation.
- - `e2e` - applications and *e2e* tests.
- - `tests` - Unit tests app for the `tns-core-modules`.
- - `tns-platform-declarations` - TypeScript definitions for Android and iOS native APIs.
+ - `tns-core-modules` - The core NativeScript TypeScript modules used to develop NativeScript apps
+ - `tns-core-modules-widgets` - The native widgets (Java and Objective-C) used by the core NativeScript modules
+ - `e2e/ui-tests-app` - UI app used for manual testing and automation
+ - `e2e` - applications and *e2e* tests
+ - `tests` - Unit tests app for the `tns-core-modules`
+ - `tns-platform-declarations` - TypeScript definitions for Android and iOS native APIs
 
 Working with the repo is organized with npm scripts,
 go and read through the `scripts` section in the [package.json](./package.json).
@@ -16,7 +17,7 @@ go and read through the `scripts` section in the [package.json](./package.json).
 Managing dependencies:
  - `tns-core-modules` depends on:
     - `tns-platform-declarations`
- - `apps` depends on:
+ - `e2e/ui-tests-app` depends on:
     - `tns-platform-declarations`
     - `tns-core-modules`
  - `e2e` depends on:
@@ -26,71 +27,44 @@ Managing dependencies:
     - `tns-core-modules`
 
 > NOTE: `tns-core-modules` depends on `tns-core-modules-widgets`,
-this dependency contains native code and is rarely modified so for now it remains outside this repo.
 
 ## Initial Setup
 
 Clone (or fork/clone) the repo:
 
-```bash
+``` bash
 git clone https://github.com/NativeScript/NativeScript.git
 ```
 
-Install devDependencies:
+Install dependencies:
 
-```bash
+``` bash
 npm install
 ```
 
-<!---
-## TypeScript
-
-The following commands are commonly used to compile the `tns-core-modules`:
-```bash
-# Full tsc with type checking ~22.2s.
-tsc
-
-# Fast tsc ~11.2s.
-tsc --skipLibCheck
-
-# Fast watcher, ~4s. on save
-tsc --skipLibCheck -w
-```
-
-NOTE: transpile `tns-core-modules` only.
-
-The modules have `typescript` as a devDependency so you should also be able to use the locally installed TypeScript compiler from node_modules:
-
-```bash
-./node_modules/.bin/tsc
-```
-
-You can compile the TypeScript files in the `tns-core-modules` and `tns-platform-declarations` at once at the root of the repo:
-
-```bash
-npm run tsc
-```
---->
-
 ## Running Unit Tests
 
-```
-cd ./tests
-tns run android| ios
+``` bash
+cd tests
+tns run android | ios
 ```
 
-## Running the Test App
+## Running the UI Test App
 
-The test app is an ordinary NativeScript app that logs the test results as it go.
+The UI test app is an ordinary NativeScript app that logs the test results on the go.
 After the [initial setup](#initial-setup) you can run the tests with:
 
-```
-# Make sure TypeScript is transpiled
-tsc
+``` bash
+cd e2e/ui-tests-app
 
-# Run the app
-tns run ios --path apps
-tns run android --path apps
+# Run the Android app
+tns platform add android@next # NOTE: do not commit this change to package.json
+tns run android
+
+# Run the iOS app
+tns platform add ios@next # NOTE: do not commit this change to package.json
+tns run ios
+
 ```
 
 ## Running Another App
@@ -106,9 +80,6 @@ npm install --save <path to tns-core-modules>
 tns run ios
 tns run android
 ```
-
-> Note: You still have to rebuild the TypeScript if you have made changes in the code of the core-modules.
-
 
 ## Platform declarations
 To update the platform declarations (the ios.d.ts-es) you can run:
