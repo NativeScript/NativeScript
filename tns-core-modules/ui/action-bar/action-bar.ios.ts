@@ -3,7 +3,7 @@ import {
     ActionItemBase, ActionBarBase, isVisible, View,
     colorProperty, backgroundColorProperty,
     backgroundInternalProperty, flatProperty, iosIconRenderingModeProperty,
-    layout, Color, traceMissingIcon, insetProperty
+    layout, Color, traceMissingIcon
 } from "./action-bar-common";
 import { fromFileOrResource, fromFontIconCode } from "../../image-source";
 import { ios as iosUtils, isFontIconURI } from "../../utils/utils";
@@ -425,8 +425,6 @@ export class ActionBar extends ActionBarBase {
             this.updateFlatness(navBar);
         }
     }
-
-    [insetProperty.setNative](value: string) {}
 
     [iosIconRenderingModeProperty.getDefault](): "automatic" | "alwaysOriginal" | "alwaysTemplate" {
         return "alwaysOriginal";

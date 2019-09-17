@@ -132,12 +132,17 @@ export class Style extends Observable {
     // ListView-specific props
     public separatorColor: Color;
 
-    //SegmentedBar-specific props
+    // SegmentedBar-specific props
     public selectedBackgroundColor: Color;
 
     // Page-specific props
     public statusBarStyle: "light" | "dark";
     public androidStatusBarBackground: Color;
+
+    // Android ActionBar specific props
+    public androidContentInset: string | Length;
+    public androidContentInsetLeft: Length;
+    public androidContentInsetRight: Length;
 
     constructor(ownerView: ViewBase | WeakRef<ViewBase>);
     public viewRef: WeakRef<ViewBase>;
@@ -181,7 +186,7 @@ export class Style extends Observable {
 
     /**
      * Get value of the css-variable.
-     * If the value is not set on this style-object, try the parent view. 
+     * If the value is not set on this style-object, try the parent view.
      */
     public getCssVariable(varName: string): string | null;
 
