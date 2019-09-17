@@ -78,7 +78,7 @@
     "typedoc": "typedoc --tsconfig tsconfig.typedoc.json --out bin/dist/apiref --includeDeclarations --name NativeScript --theme ./node_modules/nativescript-typedoc-theme --excludeExternals --externalPattern \"**/+(tns-core-modules|module).d.ts\"",
     "dev-typedoc": "npm run typedoc && cd bin/dist/apiref && npx http-server",
     "tslint": "tslint --project tsconfig.tslint.json --config build/tslint.json",
-    "prepare-dist": "sh ./build/prepare-dist.sh",
-    "pack-dist": "npm run prepare-dist && sh ./build/pack-dist.sh"
+    "prepare-dist": "bash ./build/prepare-dist.sh",
+    "pack-dist": "bash ./build/pack-dist.sh"
   }
 }
