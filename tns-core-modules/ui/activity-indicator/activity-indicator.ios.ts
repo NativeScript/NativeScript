@@ -9,10 +9,10 @@ const majorVersion = ios.MajorVersion;
 export class ActivityIndicator extends ActivityIndicatorBase {
     nativeViewProtected: UIActivityIndicatorView;
 
-    private getActivityIndicatorViewStyle = () => majorVersion <= 12 ? UIActivityIndicatorViewStyle.Gray : UIActivityIndicatorViewStyle.Medium;
+    private _activityIndicatorViewStyle = majorVersion <= 12 ? UIActivityIndicatorViewStyle.Gray : UIActivityIndicatorViewStyle.Medium;
 
     createNativeView() {
-        const viewStyle = this.getActivityIndicatorViewStyle();
+        const viewStyle = this._activityIndicatorViewStyle;
         const view = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(viewStyle);
         view.hidesWhenStopped = true;
 

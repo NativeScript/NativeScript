@@ -82,13 +82,12 @@ class CADisplayLinkTarget extends NSObject {
 }
 
 class IOSApplication implements IOSApplicationDefinition {
+    private _backgroundColor = majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
     private _delegate: typeof UIApplicationDelegate;
     private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
     private _orientation: "portrait" | "landscape" | "unknown";
     private _rootView: View;
-
-    private getBackgroundColor = () => majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 
     constructor() {
         this._observers = new Array<NotificationObserver>();
@@ -162,7 +161,7 @@ class IOSApplication implements IOSApplicationDefinition {
 
         this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
         // TODO: Expose Window module so that it can we styled from XML & CSS
-        this._window.backgroundColor = this.getBackgroundColor();
+        this._window.backgroundColor = this._backgroundColor;
 
         this.notifyAppStarted(notification);
     }

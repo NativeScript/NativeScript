@@ -24,10 +24,6 @@ export * from "./tabs-common";
 const majorVersion = iosUtils.MajorVersion;
 // const isPhone = device.deviceType === "Phone";
 
-const getBackgroundColor = () => majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
-const getBlueColor = () => majorVersion <= 12 ? UIColor.blueColor : UIColor.systemBlueColor;
-const getLabelColor = () => majorVersion <= 12 ? UIColor.blackColor : UIColor.labelColor;
-
 class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
     public static ObjCProtocols = [MDCTabBarDelegate];
 
@@ -74,6 +70,9 @@ class UIPageViewControllerImpl extends UIPageViewController {
     scrollView: UIScrollView;
     tabBarDelegate: MDCTabBarDelegateImpl;
 
+    private _backgroundColor = majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+    private _blueColor = majorVersion <= 12 ? UIColor.blueColor : UIColor.systemBlueColor;
+    private _labelColor = majorVersion <= 12 ? UIColor.blackColor : UIColor.labelColor;
     private _owner: WeakRef<Tabs>;
 
     public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerImpl {
@@ -94,10 +93,10 @@ class UIPageViewControllerImpl extends UIPageViewController {
         }
 
         tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
-        tabBar.tintColor = getBlueColor();
-        tabBar.barTintColor = getBackgroundColor();
-        tabBar.setTitleColorForState(getLabelColor(), MDCTabBarItemState.Normal);
-        tabBar.setTitleColorForState(getLabelColor(), MDCTabBarItemState.Selected);
+        tabBar.tintColor = this._blueColor;
+        tabBar.barTintColor = this._backgroundColor;
+        tabBar.setTitleColorForState(this._labelColor, MDCTabBarItemState.Normal);
+        tabBar.setTitleColorForState(this._labelColor, MDCTabBarItemState.Selected);
 
         if (majorVersion >= 13) {
             tabBar.inkColor = UIColor.clearColor;
