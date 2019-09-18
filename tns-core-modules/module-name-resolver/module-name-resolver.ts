@@ -81,7 +81,7 @@ function resolveModuleSnapshot(path, ext) {
     traceWrite(`Resolving module in SNAPSHOT context - path: '${path}' with ext: '${ext}'`, traceCategories.ModuleNameResolver);
 
     // Platform module when in snapshot. So resolve modules with default android phone.
-    // NB: The only module name that should ever be resolved while in snapshot is app.css, because it is 
+    // NB: The only module name that should ever be resolved while in snapshot is app.css, because it is
     // applied explicitly in the snapshot by [NativeScriptSnapshotPlugin](https://github.com/NativeScript/nativescript-dev-webpack/blob/48b26f412fd70c19dc0b9c7763e08e9505a0ae11/plugins/NativeScriptSnapshotPlugin/index.js#L48-L56)
     return new ModuleNameResolver({
         width: 400,

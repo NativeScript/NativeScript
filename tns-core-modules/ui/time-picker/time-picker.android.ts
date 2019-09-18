@@ -3,7 +3,7 @@ import { TimePickerBase, getValidTime, timeProperty, hourProperty, minutePropert
 export * from "./time-picker-common";
 
 interface TimeChangedListener {
-    new (owner: TimePicker): android.widget.TimePicker.OnTimeChangedListener;
+    new(owner: TimePicker): android.widget.TimePicker.OnTimeChangedListener;
 }
 
 let TimeChangedListener: TimeChangedListener;
