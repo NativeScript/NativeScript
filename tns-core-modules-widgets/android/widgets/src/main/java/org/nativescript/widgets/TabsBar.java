@@ -252,7 +252,6 @@ public class TabsBar extends HorizontalScrollView {
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, TAB_VIEW_TEXT_SIZE_SP);
         textView.setTypeface(Typeface.DEFAULT_BOLD);
         textView.setEllipsize(TextUtils.TruncateAt.END);
-        textView.setAllCaps(true);
         textView.setMaxLines(2);
         textView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         textView.setPadding(padding, 0, padding, 0);
@@ -280,6 +279,19 @@ public class TabsBar extends HorizontalScrollView {
         if (tabItem.title != null && !tabItem.title.isEmpty()) {
             textView.setText(tabItem.title);
             textView.setVisibility(VISIBLE);
+
+            if (tabItem.typeFace != null) {
+                textView.setTypeface(tabItem.typeFace);
+            }
+    
+            if (tabItem.fontSize != 0) {
+                textView.setTextSize(tabItem.fontSize);
+            }
+    
+            if (tabItem.color != 0) {
+                textView.setTextColor(tabItem.color);
+                mTabStrip.setShouldUpdateTabsTextColor(false);          
+            }
         } else {
             textView.setVisibility(GONE);
         }

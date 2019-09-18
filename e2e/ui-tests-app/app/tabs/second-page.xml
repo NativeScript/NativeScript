@@ -1,0 +1,7 @@
+<Page backgroundColor="lightblue" actionBarHidden="true">
+  <StackLayout>
+    <Label text="Second Page"  />
+    <Button tap="goToFirst" text="go to first page" />
+    <Button tap="goBack" text="go back" />
+  </StackLayout>
+</Page>

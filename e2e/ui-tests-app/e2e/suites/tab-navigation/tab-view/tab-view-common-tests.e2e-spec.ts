@@ -72,12 +72,12 @@ describe(`${suite}-${spec}-suite`, async function () {
 
         await driver.swipe(
             {
-                x: driver.nsCapabilities.device.viewportRect.width + driver.nsCapabilities.device.viewportRect.x - 10,
-                y: driver.nsCapabilities.device.viewportRect.height / 2
+                x: driver.imageHelper.options.cropRectangle.width + driver.imageHelper.options.cropRectangle.x - 10,
+                y: driver.imageHelper.options.cropRectangle.height / 2
             },
             {
                 y: 0,
-                x: driver.nsCapabilities.device.viewportRect.x + 10
+                x: driver.imageHelper.options.cropRectangle.x + 10
             }
             , 100);
         await driver.imageHelper.compareScreen({ timeOutSeconds: 5, tolerance: 0.01 });
@@ -101,11 +101,11 @@ describe(`${suite}-${spec}-suite`, async function () {
 
         const tabItemLocator = driver.isAndroid ? driver.locators.image :  driver.locators.getElementByName("imagebutton");
         let btns = await driver.findElementsByClassName(tabItemLocator, 5000);
-        await btns[index].tap();
+        await btns[index].click();
         await driver.imageHelper.compareScreen();
 
         btns = await driver.findElementsByClassName(tabItemLocator, 5000);
-        await btns[index - 1].tap();
+        await btns[index - 1].click();
         await driver.imageHelper.compareScreen();
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
@@ -235,10 +235,10 @@ describe(`${suite}-${spec}-suite`, async function () {
         await tabViewBasePage.navigateToSample("text-transform");
         await driver.imageHelper.compareScreen();
 
-        await (await driver.waitForElement("apply")).tap();
+        await (await driver.waitForElement("apply")).click();
         await driver.imageHelper.compareScreen();
 
-        await (await driver.waitForElement("reset")).tap();
+        await (await driver.waitForElement("reset")).click();
         await driver.imageHelper.compareScreen();
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 

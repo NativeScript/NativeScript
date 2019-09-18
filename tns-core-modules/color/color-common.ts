@@ -1,6 +1,7 @@
-import * as definition from ".";
+﻿import * as definition from ".";
 import * as types from "../utils/types";
 import * as knownColors from "./known-colors";
+import { convertHSLToRGBColor } from "tns-core-modules/css/parser";
 
 const SHARP = "#";
 const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
@@ -18,6 +19,8 @@ export class Color implements definition.Color {
             if (types.isString(arg)) {
                 if (isRgbOrRgba(arg)) {
                     this._argb = argbFromRgbOrRgba(arg);
+                } else if (isHslOrHsla(arg)) {
+                    this._argb = argbFromHslOrHsla(arg);
                 } else if (knownColors.isKnownName(arg)) {
                     // The parameter is a known color name
                     const hex = knownColors.getKnownColor(arg);
@@ -127,7 +130,7 @@ export class Color implements definition.Color {
             return true;
         }
 
-        return HEX_REGEX.test(value) || isRgbOrRgba(value);
+        return HEX_REGEX.test(value) || isRgbOrRgba(value) || isHslOrHsla(value);
     }
 
     private _componentToHex(component: number): string {
@@ -162,33 +165,58 @@ function isRgbOrRgba(value: string): boolean {
     return (toLower.indexOf("rgb(") === 0 || toLower.indexOf("rgba(") === 0) && toLower.indexOf(")") === (toLower.length - 1);
 }
 
-function argbFromRgbOrRgba(value: string): number {
+function isHslOrHsla(value: string): boolean {
     const toLower = value.toLowerCase();
-    const parts = toLower.replace("rgba(", "").replace("rgb(", "").replace(")", "").trim().split(",");
 
-    let r = 255;
-    let g = 255;
-    let b = 255;
+    return (toLower.indexOf("hsl(") === 0 || toLower.indexOf("hsla(") === 0) && toLower.indexOf(")") === (toLower.length - 1);
+}
+
+function parseColorWithAlpha(value: string): any {
+    const toLower = value.toLowerCase();
+    const parts = toLower.replace(/(rgb|hsl)a?\(/, "")
+                    .replace(")", "")
+                    .trim().split(",");
+
+    let f = 255;
+    let s = 255;
+    let t = 255;
     let a = 255;
 
     if (parts[0]) {
-        r = parseInt(parts[0].trim());
+        f = parseInt(parts[0].trim());
     }
 
     if (parts[1]) {
-        g = parseInt(parts[1].trim());
+        s = parseInt(parts[1].trim());
     }
 
     if (parts[2]) {
-        b = parseInt(parts[2].trim());
+        t = parseInt(parts[2].trim());
     }
 
     if (parts[3]) {
         a = Math.round(parseFloat(parts[3].trim()) * 255);
     }
 
+    return { f, s, t, a };
+}
+
+function argbFromRgbOrRgba(value: string): number {
+    const { f: r, s: g, t: b, a } = parseColorWithAlpha(value);
+
     return (a & 0xFF) * 0x01000000
          + (r & 0xFF) * 0x00010000
          + (g & 0xFF) * 0x00000100
-         + (b & 0xFF) * 0x00000001;
+         + (b & 0xFF);
+}
+
+function argbFromHslOrHsla(value: string): number {
+    const { f: h, s: s, t: l, a } = parseColorWithAlpha(value);
+
+    const { r, g, b } = convertHSLToRGBColor(h, s, l);
+
+    return (a & 0xFF) * 0x01000000
+         + (r & 0xFF) * 0x00010000
+         + (g & 0xFF) * 0x00000100
+         + (b & 0xFF);
 }

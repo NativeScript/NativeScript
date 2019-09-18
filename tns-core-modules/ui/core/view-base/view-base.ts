@@ -1,10 +1,13 @@
 // Definitions.
 import { ViewBase as ViewBaseDefinition } from ".";
+import {
+    AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order
+} from "../../layouts/flexbox-layout";
 import { Page } from "../../page";
-import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
 
 // Types.
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from "../properties";
+import { getModalRootViewCssClass, getRootViewCssClasses } from "../../../css/system-classes";
 import { Source } from "../../../utils/debug";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories } from "../bindable";
 import { isIOS, isAndroid } from "../../../platform";
@@ -22,10 +25,9 @@ export { isIOS, isAndroid, layout, Color };
 export * from "../bindable";
 export * from "../properties";
 
+import * as dnm from "../../../debugger/dom-node";
 import * as ssm from "../../styling/style-scope";
 
-// import { DOMNode } from "../../../debugger/dom-node";
-import * as dnm from "../../../debugger/dom-node";
 let domNodeModule: typeof dnm;
 
 function ensuredomNodeModule(): void {
@@ -1036,11 +1038,26 @@ bindingContextProperty.register(ViewBase);
 export const classNameProperty = new Property<ViewBase, string>({
     name: "className",
     valueChanged(view: ViewBase, oldValue: string, newValue: string) {
-        let classes = view.cssClasses;
-        classes.clear();
-        if (typeof newValue === "string" && newValue !== "") {
-            newValue.split(" ").forEach(c => classes.add(c));
+        const cssClasses = view.cssClasses;
+
+        const modalViewCssClass = getModalRootViewCssClass();
+        const rootViewCssClasses = getRootViewCssClasses();
+
+        const shouldAddModalRootViewCssClass = cssClasses.has(modalViewCssClass);
+        const shouldAddRootViewCssClasses = cssClasses.has(rootViewCssClasses[0]);
+
+        cssClasses.clear();
+
+        if (shouldAddModalRootViewCssClass) {
+            cssClasses.add(modalViewCssClass);
+        } else if (shouldAddRootViewCssClasses) {
+            rootViewCssClasses.forEach(c => cssClasses.add(c));
         }
+
+        if (typeof newValue === "string" && newValue !== "") {
+            newValue.split(" ").forEach(c => cssClasses.add(c));
+        }
+
         view._onCssStateChange();
     }
 });

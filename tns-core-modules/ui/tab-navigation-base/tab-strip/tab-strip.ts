@@ -1,14 +1,14 @@
-﻿// Types
-import { TabStrip as TabStripDefinition } from ".";
-import { TabStripItem } from "../tab-strip-item";
-import { TabNavigationBase } from "../tab-navigation-base";
+// Types
 import { Color } from "../../../color";
-import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "../../core/view";
+import { AddArrayFromBuilder, AddChildFromBuilder, EventData, ViewBase } from "../../core/view";
+import { TabNavigationBase } from "../tab-navigation-base";
+import { TabStripItem } from "../tab-strip-item";
+import { TabStripItemEventData, TabStrip as TabStripDefinition } from "./";
 
 // Requires
-import { 
-    View, Property, CSSType, backgroundColorProperty, backgroundInternalProperty, 
-    colorProperty, fontInternalProperty
+import {
+    backgroundColorProperty, backgroundInternalProperty, booleanConverter,
+    colorProperty, CSSType, fontInternalProperty, Property, View
 } from "../../core/view";
 import { textTransformProperty } from "../../text-base";
 
@@ -20,7 +20,9 @@ export const highlightColorProperty = new Property<TabStrip, Color>({ name: "hig
 
 @CSSType("TabStrip")
 export class TabStrip extends View implements TabStripDefinition, AddChildFromBuilder, AddArrayFromBuilder {
+    public static itemTapEvent = "itemTap";
     public items: TabStripItem[];
+    public isIconSizeFixed: boolean;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
     public _hasImage: boolean;
     public _hasTitle: boolean;
@@ -51,6 +53,18 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
         }
     }
 
+    public onItemsChanged(oldItems: TabStripItem[], newItems: TabStripItem[]): void {
+        if (oldItems) {
+            oldItems.forEach(item => this._removeView(item));
+        }
+
+        if (newItems) {
+            newItems.forEach(item => {
+                this._addView(item);
+            });
+        }
+    }
+
     [backgroundColorProperty.getDefault](): Color {
         const parent = <TabNavigationBase>this.parent;
 
@@ -76,7 +90,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [colorProperty.setNative](value: Color) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarColor(value);
     }
 
@@ -87,7 +101,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [fontInternalProperty.setNative](value: any) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarFontInternal(value);
     }
 
@@ -98,7 +112,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [textTransformProperty.setNative](value: any) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarTextTransform(value);
     }
 
@@ -109,12 +123,29 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
     [highlightColorProperty.setNative](value: number | Color) {
         const parent = <TabNavigationBase>this.parent;
-        
+
         return parent && parent.setTabBarHighlightColor(value);
     }
-} 
+}
+
+export interface TabStrip {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "itemTap", callback: (args: TabStripItemEventData) => void, thisArg?: any);
+}
+
+export const itemsProperty = new Property<TabStrip, TabStripItem[]>({
+    name: "items", valueChanged: (target, oldValue, newValue) => {
+        target.onItemsChanged(oldValue, newValue);
+    }
+});
+itemsProperty.register(TabStrip);
 
 export const iosIconRenderingModeProperty = new Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
 iosIconRenderingModeProperty.register(TabStrip);
+
+export const isIconSizeFixedProperty = new Property<TabStrip, boolean>({
+    name: "isIconSizeFixed", defaultValue: true, valueConverter: booleanConverter
+});
+isIconSizeFixedProperty.register(TabStrip);
 
 highlightColorProperty.register(TabStrip);

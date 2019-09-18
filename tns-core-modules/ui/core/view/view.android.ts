@@ -44,6 +44,7 @@ let DialogFragment: DialogFragment;
 interface DialogOptions {
     owner: View;
     fullscreen: boolean;
+    animated: boolean;
     stretched: boolean;
     cancelable: boolean;
     shownCallback: () => void;
@@ -137,6 +138,7 @@ function initializeDialogFragment() {
     class DialogFragmentImpl extends androidx.fragment.app.DialogFragment {
         public owner: View;
         private _fullscreen: boolean;
+        private _animated: boolean;
         private _stretched: boolean;
         private _cancelable: boolean;
         private _shownCallback: () => void;
@@ -153,6 +155,7 @@ function initializeDialogFragment() {
             const options = getModalOptions(ownerId);
             this.owner = options.owner;
             this._fullscreen = options.fullscreen;
+            this._animated = options.animated;
             this._cancelable = options.cancelable;
             this._stretched = options.stretched;
             this._dismissCallback = options.dismissCallback;
@@ -176,6 +179,16 @@ function initializeDialogFragment() {
             } else {
                 this.owner.horizontalAlignment = "stretch";
                 this.owner.verticalAlignment = "stretch";
+            }
+
+            // set the modal window animation
+            // https://github.com/NativeScript/NativeScript/issues/5989
+            if (this._animated) {
+              dialog
+                .getWindow()
+                .setWindowAnimations(
+                  android.R.style.Animation_Dialog
+                );
             }
 
             dialog.setCanceledOnTouchOutside(this._cancelable);
@@ -619,10 +632,6 @@ export class View extends ViewCommon {
     }
     protected _showNativeModalView(parent: View, options: ShowModalOptions) {
         super._showNativeModalView(parent, options);
-        if (!this.backgroundColor) {
-            this.backgroundColor = new Color("White");
-        }
-
         initializeDialogFragment();
 
         const df = new DialogFragment();
@@ -633,6 +642,7 @@ export class View extends ViewCommon {
         const dialogOptions: DialogOptions = {
             owner: this,
             fullscreen: !!options.fullscreen,
+            animated: !!options.animated,
             stretched: !!options.stretched,
             cancelable: options.android ? !!options.android.cancelable : true,
             shownCallback: () => this._raiseShownModallyEvent(),
@@ -767,7 +777,7 @@ export class View extends ViewCommon {
         const AnimatorSet = android.animation.AnimatorSet;
 
         const duration = nativeView.getContext().getResources().getInteger(shortAnimTime) / 2;
-        
+
         let elevation = this.androidElevation;
         if (typeof elevation === "undefined" || elevation === null) {
             elevation = this.getDefaultElevation();
@@ -1049,7 +1059,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
     const { getter, setter, auto = 0 } = options;
     let setPixels, getPixels, setPercent;
     if (getter) {
-        View.prototype[getter] = function(this: View): PercentLength {
+        View.prototype[getter] = function (this: View): PercentLength {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
@@ -1065,7 +1075,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
         };
     }
     if (setter) {
-        View.prototype[setter] = function(this: View, length: PercentLength) {
+        View.prototype[setter] = function (this: View, length: PercentLength) {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;

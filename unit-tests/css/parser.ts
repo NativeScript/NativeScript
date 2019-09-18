@@ -56,6 +56,8 @@ describe("css", () => {
                 test(parseColor, "  #85456789 ", { start: 0, end: 12, value: 0x85456789 });
                 test(parseColor, "  rgb(255, 8, 128) ", { start: 0, end: 18, value: 0xFFFF0880 });
                 test(parseColor, "  rgba(255, 8, 128, 0.5) ", { start: 0, end: 24, value: 0x80FF0880 });
+                test(parseColor, "  hsl(330.9, 100%, 51.6%) ", { start: 0, end: 25, value: 0xFFFF0880 });
+                test(parseColor, "  hsla(330.9, 100%, 51.6%, 0.5) ", { start: 0, end: 31, value: 0x80FF0880 });
                 test(parseColor, "#FF0000 url(lucky.gif)", 8, null);
                 test(parseColor, "url(lucky.gif) #FF0000 repeat", 15, { start: 15, end: 23, value: 0xFFFF0000 });
             });
@@ -175,11 +177,11 @@ describe("css", () => {
                 test(parseSelector, `[src ${attributeTest} "val"]`, { start: 0, end: 12 + attributeTest.length, value: [[[{ type: "[]", property: "src", test: attributeTest, value: "val"}], undefined]]});
             });
             test(parseSelector, "listview > .image", { start: 0, end: 17, value: [
-                [[{ type: "", identifier: "listview"}], ">"], 
+                [[{ type: "", identifier: "listview"}], ">"],
                 [[{ type: ".", identifier: "image"}], undefined]
             ]});
             test(parseSelector, "listview  .image", { start: 0, end: 16, value: [
-                [[{ type: "", identifier: "listview"}], " "], 
+                [[{ type: "", identifier: "listview"}], " "],
                 [[{ type: ".", identifier: "image"}], undefined]
             ]});
             test(parseSelector, "button:hover", { start: 0, end: 12, value: [[[{ type: "", identifier: "button" }, { type: ":", identifier: "hover"}], undefined]]});

@@ -17,3 +17,11 @@ TabStripItem.special {
 TabStripItem.special:active {
   font: 16 monospace;
 }
+
+TabStripItem.nested Label {
+  font: 12 monospace;
+}
+
+TabStripItem.nested:active Label {
+  font: 16 monospace;
+}

@@ -40,11 +40,12 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-background-color`, async function () {
         await bottomNavigationBasePage.navigateToSample("background-color");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
- 
+
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
 
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
@@ -55,6 +56,7 @@ describe(`${suite}-${spec}-suite`, async function () {
     */
     it(`${spec}-binding-add-items`, async function () {
         await bottomNavigationBasePage.navigateToSample("binding");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         const addTabBtn = await driver.waitForElement("add-tab");
@@ -83,6 +85,7 @@ describe(`${suite}-${spec}-suite`, async function () {
     */
     it(`${spec}-binding-remove-items`, async function () {
         await bottomNavigationBasePage.navigateToSample("binding");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         const removeTabBtn = await driver.waitForElement("remove-last-tab");
@@ -100,8 +103,8 @@ describe(`${suite}-${spec}-suite`, async function () {
 
         // add items
         const addTabBtn = await driver.waitForElement("add-tab");
-        await addTabBtn.tap();
-        await addTabBtn.tap();
+        await addTabBtn.click();
+        await addTabBtn.click();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.refreshTabItems();
@@ -115,10 +118,11 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-bottom-navigation`, async function () {
         await bottomNavigationBasePage.navigateToSample("bottom-navigation");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         const goToSecondBtn = await driver.waitForElement("goToSecond");
-        await goToSecondBtn.tap();
+        await goToSecondBtn.click();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);
@@ -130,6 +134,7 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-color`, async function () {
         await bottomNavigationBasePage.navigateToSample("color");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);
@@ -141,6 +146,7 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-fancy-fonts-select-tabs`, async function () {
         await bottomNavigationBasePage.navigateToSample("fancy-fonts");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         for (let index = 1; index < 4; index++) {
@@ -154,10 +160,11 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-fancy-fonts-selected-index`, async function () {
         await bottomNavigationBasePage.navigateToSample("fancy-fonts");
+        await bottomNavigationBasePage.refreshTabItems();
 
         let selectSecondTabFromCodeBehind = await driver.waitForElement("selectSecondTab");
         logInfo(`Click on "select second tab button"`);
-        await selectSecondTabFromCodeBehind.tap();
+        await selectSecondTabFromCodeBehind.click();
         await driver.imageHelper.compareScreen();
 
         await driver.backgroundApp(1);
@@ -168,7 +175,7 @@ describe(`${suite}-${spec}-suite`, async function () {
 
         selectSecondTabFromCodeBehind = await driver.waitForElement("selectSecondTab");
         logInfo(`Click on "select second tab button"`);
-        await selectSecondTabFromCodeBehind.tap();
+        await selectSecondTabFromCodeBehind.click();
         await driver.imageHelper.compareScreen();
 
         await driver.backgroundApp(1);
@@ -186,14 +193,26 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-fancy-fonts-change-orientation`, async function () {
         await bottomNavigationBasePage.navigateToSample("fancy-fonts");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.setOrientation(DeviceOrientation.LANDSCAPE);
         await driver.imageHelper.compareScreen();
 
         await driver.backgroundApp(1);
+        if (driver.isAndroid) {
+            driver.imageHelper.resetDefaultOptions();
+        }
         await driver.imageHelper.compareScreen();
 
-        // await driver.setOrientation(DeviceOrientation.PORTRAIT);
-        await driver.imageHelper.compareScreen();
+        await driver.setOrientation(DeviceOrientation.PORTRAIT);
+        if (driver.isAndroid) {
+            await driver.imageHelper.compareScreen(
+                {
+                    imageName: "tab-navigation-bottom-navigation-fancy-fonts-change-orientation_2.png",
+                    keepOriginalImageName: true
+                });
+        } else {
+            await driver.imageHelper.compareScreen();
+        }
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
@@ -201,6 +220,7 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-font-icons`, async function () {
         await bottomNavigationBasePage.navigateToSample("font-icons");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);
@@ -216,6 +236,7 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-icon-change`, async function () {
         await bottomNavigationBasePage.navigateToSample("icon-change");
+        await bottomNavigationBasePage.refreshTabItems();
         await bottomNavigationBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 
@@ -229,6 +250,7 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-icon-title-placment`, async function () {
         await bottomNavigationBasePage.navigateToSample("icon-title-placement");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
@@ -236,6 +258,7 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-5470-issue`, async function () {
         await bottomNavigationBasePage.navigateToSample("issue-5470");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);
@@ -247,6 +270,7 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-text-transform`, async function () {
         await bottomNavigationBasePage.navigateToSample("text-transform");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);
@@ -258,9 +282,22 @@ describe(`${suite}-${spec}-suite`, async function () {
 
     it(`${spec}-fonts`, async function () {
         await bottomNavigationBasePage.navigateToSample("text-transform");
+        await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         await bottomNavigationBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await bottomNavigationBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-custom-tabstrip`, async function () {
+        await bottomNavigationBasePage.navigateToSample("custom-tabstrip");
+        await driver.imageHelper.compareScreen();
+
+        const secondTab = await driver.waitForElement("second-tab");
+        await secondTab.tap();
         await driver.imageHelper.compareScreen();
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());

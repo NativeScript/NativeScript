@@ -1,12 +1,15 @@
 <Page class="page">
 
-  <ActionBar title="Tabs color" icon="" class="action-bar">
+  <ActionBar title="Tabs color" class="action-bar">
   </ActionBar>
 
-  <Tabs automationText="tabNavigation"  >
+  <Tabs automationText="tabNavigation">
     <TabStrip>
-        <TabStripItem title="First" class="special"></TabStripItem>
-        <TabStripItem title="Second"></TabStripItem>
+        <TabStripItem title="first" class="special"></TabStripItem>
+        <TabStripItem title="second"></TabStripItem>
+        <TabStripItem class="nested">
+            <Label text="third" />
+        </TabStripItem>
     </TabStrip>
 
     <TabContentItem class="special">
@@ -18,6 +21,12 @@
     <TabContentItem>
         <GridLayout>
           <Label text="Second View" />
+        </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+        <GridLayout>
+          <Label text="Third View" />
         </GridLayout>
     </TabContentItem>
   </Tabs>

@@ -144,6 +144,10 @@ export function makeParser<T>(isValid: (value: any) => boolean): (value: any) =>
 export function getSetProperties(view: ViewBase): [string, any][];
 export function getComputedCssValues(view: ViewBase): [string, any][];
 
+export function isCssVariable(property: string): boolean;
+export function isCssCalcExpression(value: string): boolean;
+export function isCssVariableExpression(value: string): boolean;
+
 //@private
 /**
  * @private get all properties defined on ViewBase
@@ -154,4 +158,8 @@ export function _getProperties(): Property<any, any>[];
  * @private get all properties defined on Style
  */
 export function _getStyleProperties(): CssProperty<any, any>[];
+
+export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string;
+
+export function _evaluateCssCalcExpression(value: string): string;
 //@endprivate

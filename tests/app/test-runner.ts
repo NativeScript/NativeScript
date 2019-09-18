@@ -31,6 +31,9 @@ export function isRunningOnEmulator(): boolean {
 
 export const allTests = {};
 
+import * as globalsTests from "./globals/globals-tests";
+allTests["GLOBALS"] = globalsTests;
+
 import * as domNodeTest from "./debugger/dom-node-tests";
 allTests["DOM-NODE"] = domNodeTest;
 
@@ -153,6 +156,9 @@ if (platform.isIOS && ios.MajorVersion > 10) {
     allTests["SAFEAREA-REPEATER"] = repeaterSafeAreaTests;
     allTests["SAFEAREA-WEBVIEW"] = webViewSafeAreaTests;
 }
+
+import * as rootViewsCssClassesTests from "./ui/styling/root-views-css-classes-tests";
+allTests["ROOT-VIEWS-CSS-CLASSES"] = rootViewsCssClassesTests;
 
 import * as stylePropertiesTests from "./ui/styling/style-properties-tests";
 allTests["STYLE-PROPERTIES"] = stylePropertiesTests;

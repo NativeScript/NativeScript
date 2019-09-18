@@ -3,6 +3,7 @@ import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescrip
 import { Screen, playersData, home, somePage, otherPage, teamsData, driverDefaultWaitTime } from "./screen";
 import * as shared from "./shared.e2e-spec";
 import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
+import { TabNavigationScreen } from "./tab-navigation-screen";
 
 const rootType = "layout-root";
 describe(rootType, async function () {
@@ -12,7 +13,7 @@ describe(rootType, async function () {
     before(async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
-        screen = new Screen(driver);
+        screen = new TabNavigationScreen(driver);
         logWarn("====== layout-root ========");
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
