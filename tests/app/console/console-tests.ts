@@ -24,7 +24,7 @@ export var test_DummyTestForSnippetOnly2 = function () {
 
 export var test_DummyTestForSnippetOnly3 = function () {
     // >> console-dir
-    var obj = {name: "John", age: 34};
+    var obj = { name: "John", age: 34 };
     console.dir(obj);
     // << console-dir
 };
