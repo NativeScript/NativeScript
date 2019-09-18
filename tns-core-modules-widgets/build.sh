@@ -15,7 +15,9 @@ export SKIP_PACK=true
 ./build.ios.sh
 
 echo "Copy NPM artefacts"
-cp .npmignore LICENSE README.md package.json dist/package
+cp .npmignore README.md package.json dist/package
+cp ../LICENSE dist/package
+
 
 if [ "$1" ]
 then

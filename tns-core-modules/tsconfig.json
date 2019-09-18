@@ -14,17 +14,20 @@
         "lib": [
             "es6", "dom"
         ],
+        "types": [
+            "node",
+            "chai",
+            "mocha"
+        ],
         "baseUrl": ".",
         "paths": {
-            "tns-core-modules/*": ["tns-core-modules/*"]
+            "tns-core-modules/*": ["*"]
         }
     },
+    "include": [
+        "**/*.ts"
+    ],
     "exclude": [
-        "android-*.d.ts",
-        "android/android-*.d.ts",
-        "android/androidx-*.d.ts",
-        "ios/objc-x86_64",
-        "node_modules",
-        "package"
+        "tns-core-modules/node_modules/"
     ]
 }
