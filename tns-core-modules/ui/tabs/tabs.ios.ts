@@ -25,7 +25,7 @@ const majorVersion = iosUtils.MajorVersion;
 
 // Equivalent to dispatch_async(dispatch_get_main_queue(...)) call
 const invokeOnRunLoop = (function() {
-    var runloop = CFRunLoopGetMain();
+    const runloop = CFRunLoopGetMain();
 
     return (action: () => any) => {
         CFRunLoopPerformBlock(runloop, kCFRunLoopDefaultMode, action);
