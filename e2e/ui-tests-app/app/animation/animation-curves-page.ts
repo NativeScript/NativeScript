@@ -50,8 +50,8 @@ export function easeAnimate(args) {
         case "scale":
             animateKey = "scale";
             target.originX = target.originY = 0.5;
-            animateValueTo = {x: 1.5, y: 1.5};
-            animateValueFrom = {x: 1, y: 1};
+            animateValueTo = { x: 1.5, y: 1.5 };
+            animateValueFrom = { x: 1, y: 1 };
             break;
     }
     target
