@@ -308,23 +308,18 @@ export class File extends FileSystemEntity {
                 return;
             }
 
-            try {
-                this._locked = true;
+            this._locked = true;
 
-                getFileAccess().readTextAsync(this.path, encoding).then(
-                    (result) => {
-                        resolve(result);
-                        this._locked = false;
-                    },
-                    (error) => {
-                        reject(error);
-                        this._locked = false;
-                    },
-                );
-            } catch (ex) {
-                reject(ex);
-                this._locked = false;
-            }
+            getFileAccess().readTextAsync(this.path, encoding).then(
+                (result) => {
+                    resolve(result);
+                    this._locked = false;
+                },
+                (error) => {
+                    reject(error);
+                    this._locked = false;
+                },
+            );
         });
     }
 
@@ -358,23 +353,18 @@ export class File extends FileSystemEntity {
                 return;
             }
 
-            try {
-                this._locked = true;
+            this._locked = true;
 
-                getFileAccess().writeTextAsync(this.path, content, encoding).then(
-                    () => {
-                        resolve();
-                        this._locked = false;
-                    },
-                    (error) => {
-                        reject(error);
-                        this._locked = false;
-                    },
-                );
-            } catch (ex) {
-                reject(ex);
-                this._locked = false;
-            }
+            getFileAccess().writeTextAsync(this.path, content, encoding).then(
+                () => {
+                    resolve();
+                    this._locked = false;
+                },
+                (error) => {
+                    reject(error);
+                    this._locked = false;
+                },
+            );
         });
     }
 
