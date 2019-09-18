@@ -31,7 +31,7 @@
     "tslib": "1.10.0"
   },
   "devDependencies": {
-    "@types/node": "~7.0.5",
+    "@types/node": "~10.12.18",
     "tns-platform-declarations": "next"
   },
   "scripts": {
