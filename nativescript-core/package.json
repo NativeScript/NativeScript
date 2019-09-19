@@ -1,7 +1,7 @@
 {
   "name": "@nativescript/core",
-  "main" : "index",
-  "types" : "index.d.ts",
+  "main": "index",
+  "types": "index.d.ts",
   "description": "Telerik NativeScript Core Modules",
   "version": "6.2.0",
   "homepage": "https://www.nativescript.org",
