@@ -21,6 +21,8 @@ declare class PKAddPassButton extends UIButton {
 
 	static new(): PKAddPassButton; // inherited from NSObject
 
+	static systemButtonWithImageTargetAction(image: UIImage, target: any, action: string): PKAddPassButton; // inherited from UIButton
+
 	addPassButtonStyle: PKAddPassButtonStyle;
 
 	constructor(o: { addPassButtonStyle: PKAddPassButtonStyle; });
@@ -106,6 +108,8 @@ declare class PKAddPaymentPassRequestConfiguration extends NSObject {
 	primaryAccountIdentifier: string;
 
 	primaryAccountSuffix: string;
+
+	productIdentifiers: NSSet<string>;
 
 	requiresFelicaSecureElement: boolean;
 
@@ -203,6 +207,69 @@ declare var PKContactFieldPhoneNumber: string;
 declare var PKContactFieldPhoneticName: string;
 
 declare var PKContactFieldPostalAddress: string;
+
+declare class PKDisbursementAuthorizationController extends NSObject {
+
+	static alloc(): PKDisbursementAuthorizationController; // inherited from NSObject
+
+	static new(): PKDisbursementAuthorizationController; // inherited from NSObject
+
+	static supportsDisbursements(): boolean;
+
+	readonly delegate: PKDisbursementAuthorizationControllerDelegate;
+
+	constructor(o: { disbursementRequest: PKDisbursementRequest; delegate: PKDisbursementAuthorizationControllerDelegate; });
+
+	authorizeDisbursementWithCompletion(completion: (p1: boolean, p2: NSError) => void): void;
+
+	initWithDisbursementRequestDelegate(disbursementRequest: PKDisbursementRequest, delegate: PKDisbursementAuthorizationControllerDelegate): this;
+}
+
+interface PKDisbursementAuthorizationControllerDelegate extends NSObjectProtocol {
+
+	disbursementAuthorizationControllerDidAuthorizeWithDisbursementVoucher(controller: PKDisbursementAuthorizationController, disbursementVoucher: PKDisbursementVoucher): void;
+
+	disbursementAuthorizationControllerDidFinish(controller: PKDisbursementAuthorizationController): void;
+}
+declare var PKDisbursementAuthorizationControllerDelegate: {
+
+	prototype: PKDisbursementAuthorizationControllerDelegate;
+};
+
+declare class PKDisbursementRequest extends NSObject {
+
+	static alloc(): PKDisbursementRequest; // inherited from NSObject
+
+	static new(): PKDisbursementRequest; // inherited from NSObject
+
+	amount: NSDecimalNumber;
+
+	countryCode: string;
+
+	currencyCode: string;
+
+	requestSchedule: PKDisbursementRequestSchedule;
+
+	summaryItems: NSArray<PKPaymentSummaryItem>;
+}
+
+declare const enum PKDisbursementRequestSchedule {
+
+	OneTime = 0,
+
+	Future = 1
+}
+
+declare class PKDisbursementVoucher extends NSObject {
+
+	static alloc(): PKDisbursementVoucher; // inherited from NSObject
+
+	static new(): PKDisbursementVoucher; // inherited from NSObject
+
+	readonly data: NSData;
+
+	readonly redemptionURL: NSURL;
+}
 
 declare var PKEncryptionSchemeECC_V2: string;
 
@@ -551,6 +618,8 @@ declare class PKPaymentButton extends UIButton {
 
 	static new(): PKPaymentButton; // inherited from NSObject
 
+	static systemButtonWithImageTargetAction(image: UIImage, target: any, action: string): PKPaymentButton; // inherited from UIButton
+
 	cornerRadius: number;
 
 	constructor(o: { paymentButtonType: PKPaymentButtonType; paymentButtonStyle: PKPaymentButtonStyle; });
@@ -609,6 +678,8 @@ declare class PKPaymentMethod extends NSObject {
 
 	static new(): PKPaymentMethod; // inherited from NSObject
 
+	readonly billingAddress: CNContact;
+
 	readonly displayName: string;
 
 	readonly network: string;
@@ -647,11 +718,15 @@ declare var PKPaymentNetworkEftpos: string;
 
 declare var PKPaymentNetworkElectron: string;
 
+declare var PKPaymentNetworkElo: string;
+
 declare var PKPaymentNetworkIDCredit: string;
 
 declare var PKPaymentNetworkInterac: string;
 
 declare var PKPaymentNetworkJCB: string;
+
+declare var PKPaymentNetworkMada: string;
 
 declare var PKPaymentNetworkMaestro: string;
 
@@ -755,6 +830,12 @@ declare class PKPaymentRequestPaymentMethodUpdate extends PKPaymentRequestUpdate
 	static alloc(): PKPaymentRequestPaymentMethodUpdate; // inherited from NSObject
 
 	static new(): PKPaymentRequestPaymentMethodUpdate; // inherited from NSObject
+
+	errors: NSArray<NSError>;
+
+	constructor(o: { errors: NSArray<NSError> | NSError[]; paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; });
+
+	initWithErrorsPaymentSummaryItems(errors: NSArray<NSError> | NSError[], paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]): this;
 }
 
 declare class PKPaymentRequestShippingContactUpdate extends PKPaymentRequestUpdate {

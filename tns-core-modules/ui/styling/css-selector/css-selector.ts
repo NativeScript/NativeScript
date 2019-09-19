@@ -6,14 +6,14 @@ import * as cssParser from "../../../css";
 import * as parser from "../../../css/parser";
 
 const enum Specificity {
-    Inline =        0x01000000,
-    Id =            0x00010000,
-    Attribute =     0x00000100,
-    Class =         0x00000100,
-    PseudoClass =   0x00000100,
-    Type =          0x00000001,
-    Universal =     0x00000000,
-    Invalid =       0x00000000
+    Inline = 0x01000000,
+    Id = 0x00010000,
+    Attribute = 0x00000100,
+    Class = 0x00000100,
+    PseudoClass = 0x00000100,
+    Type = 0x00000001,
+    Universal = 0x00000000,
+    Invalid = 0x00000000
 }
 
 const enum Rarity {
@@ -452,7 +452,7 @@ function createSelectorFromAst(ast: parser.Selector): SimpleSelector | SimpleSel
         let simpleSelectorSequences = [];
         let simpleSelectorSequence: SimpleSelectorSequence | SimpleSelector;
         let combinator: parser.Combinator;
-        for (let i = 0; i < ast.length; i ++) {
+        for (let i = 0; i < ast.length; i++) {
             simpleSelectorSequence = createSimpleSelectorSequenceFromAst(<parser.SimpleSelectorSequence>ast[i][0]);
             combinator = <parser.Combinator>ast[i][1];
             if (combinator) {
@@ -516,7 +516,7 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
         let selectors = selectorClasses
             .filter(arr => !!arr)
             .reduce((cur, next) => cur.concat(next), []);
-        
+
         let selectorsMatch = new SelectorsMatch<T>();
 
         selectorsMatch.selectors = selectors

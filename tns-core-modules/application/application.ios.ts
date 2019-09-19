@@ -39,8 +39,8 @@ const Responder = (<any>UIResponder).extend({
         // NOOP
     }
 }, {
-        protocols: [UIApplicationDelegate]
-    }
+    protocols: [UIApplicationDelegate]
+}
 );
 
 class NotificationObserver extends NSObject {

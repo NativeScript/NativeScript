@@ -3,10 +3,10 @@
  * @module "file-system/file-name-resolver"
  */ /** */
 
- import { PlatformContext } from "../../module-name-resolver/qualifier-matcher";
- export { PlatformContext } from "../../module-name-resolver/qualifier-matcher";
+import { PlatformContext } from "../../module-name-resolver/qualifier-matcher";
+export { PlatformContext } from "../../module-name-resolver/qualifier-matcher";
 
- export class FileNameResolver {
+export class FileNameResolver {
     constructor(context: PlatformContext);
     resolveFileName(path: string, ext: string): string;
     clearCache(): void;

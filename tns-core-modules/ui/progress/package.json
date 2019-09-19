@@ -1,5 +1,5 @@
 {
-  "name" : "progress",
-  "main" : "progress",
-  "types" : "progress.d.ts"
+  "name": "progress",
+  "main": "progress",
+  "types": "progress.d.ts"
 }

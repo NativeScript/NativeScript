@@ -404,6 +404,6 @@ export class FileSystemAccess {
     }
 
     public joinPaths(paths: string[]): string {
-       return ios.joinPaths(...paths);
+        return ios.joinPaths(...paths);
     }
 }

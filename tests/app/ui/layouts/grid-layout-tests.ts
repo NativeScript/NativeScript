@@ -121,7 +121,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_synonym_property_setting_column_changes_col() {
         const test = new Button();
-        
+
         test.column = 3;
 
         TKUnit.assertEqual(test.column, 3, "Setting column should work.");
@@ -130,7 +130,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_synonym_property_setting_col_changes_column() {
         const test = new Button();
-        
+
         test.col = 3;
 
         TKUnit.assertEqual(test.col, 3, "Setting col should work.");
@@ -139,7 +139,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_synonym_property_setColumn_should_set_col_and_column() {
         const test = new Button();
-        
+
         GridLayout.setColumn(test, 3);
 
         TKUnit.assertEqual(test.col, 3, "setColumn should set col");
@@ -148,7 +148,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_synonym_property_setting_columnSpan_changes_colSpan() {
         const test = new Button();
-        
+
         test.columnSpan = 3;
 
         TKUnit.assertEqual(test.columnSpan, 3, "Setting columnSpan should work.");
@@ -157,7 +157,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_synonym_property_setting_colSpan_changes_columnSpan() {
         const test = new Button();
-        
+
         test.colSpan = 3;
 
         TKUnit.assertEqual(test.colSpan, 3, "Setting colSpan should work.");
@@ -166,7 +166,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_synonym_property_setColumnSpan_should_set_colSpan_and_columnSpan() {
         const test = new Button();
-        
+
         GridLayout.setColumnSpan(test, 3);
 
         TKUnit.assertEqual(test.colSpan, 3, "setColumnSpan should set colSpan");

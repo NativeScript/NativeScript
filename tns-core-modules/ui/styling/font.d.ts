@@ -39,10 +39,10 @@ export namespace FontWeight {
     export const THIN: "100";
     export const EXTRA_LIGHT: "200";
     export const LIGHT: "300";
-    export const NORMAL: "normal"; 
+    export const NORMAL: "normal";
     export const MEDIUM: "500";
     export const SEMI_BOLD: "600";
-    export const BOLD: "bold"; 
+    export const BOLD: "bold";
     export const EXTRA_BOLD: "800";
     export const BLACK: "900";
     export function isValid(value: any): boolean;

@@ -11,9 +11,9 @@ declare class ILCallClassificationRequest extends ILClassificationRequest implem
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ILCallCommunication extends ILCommunication {
@@ -46,9 +46,9 @@ declare class ILClassificationRequest extends NSObject implements NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ILClassificationResponse extends NSObject implements NSSecureCoding {
@@ -69,11 +69,11 @@ declare class ILClassificationResponse extends NSObject implements NSSecureCodin
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	initWithClassificationAction(action: ILClassificationAction): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ILCommunication extends NSObject implements NSSecureCoding {
@@ -90,9 +90,9 @@ declare class ILCommunication extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	isEqualToCommunication(communication: ILCommunication): boolean;
 }
@@ -109,9 +109,9 @@ declare class ILMessageClassificationRequest extends ILClassificationRequest imp
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ILMessageCommunication extends ILCommunication {
@@ -188,9 +188,9 @@ declare class ILMessageFilterQueryRequest extends NSObject implements NSSecureCo
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ILMessageFilterQueryResponse extends NSObject implements NSSecureCoding {
@@ -205,9 +205,9 @@ declare class ILMessageFilterQueryResponse extends NSObject implements NSSecureC
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ILNetworkResponse extends NSObject implements NSSecureCoding {
@@ -224,7 +224,7 @@ declare class ILNetworkResponse extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }

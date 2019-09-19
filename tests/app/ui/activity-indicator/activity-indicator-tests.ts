@@ -66,7 +66,7 @@ if (platform.device.os === platform.platformNames.ios) {
 /* tslint:disable:no-unused-variable */
 function binding_busy_to_image() {
     /* tslint:enable:no-unused-variable */
-    
+
     // >> activity-indicator-loading
     var image = new imageModule.Image();
     var indicator = new activityIndicatorModule.ActivityIndicator();

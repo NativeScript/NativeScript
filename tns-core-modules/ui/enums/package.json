@@ -1,5 +1,5 @@
 {
-  "name" : "enums",
-  "main" : "enums",
-  "types" : "enums.d.ts"
+  "name": "enums",
+  "main": "enums",
+  "types": "enums.d.ts"
 }

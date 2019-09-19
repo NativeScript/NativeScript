@@ -1,2 +1,4 @@
-{ "name" : "testsapp",
-  "main" : "app.js" }
+{
+    "name": "testsapp",
+    "main": "app.js"
+}

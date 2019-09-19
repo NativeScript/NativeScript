@@ -1,5 +1,5 @@
 {
-	"name" : "ui",
+	"name": "ui",
 	"nativescript": {
 		"recursive-static-bindings": true
 	}

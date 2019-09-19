@@ -5,7 +5,7 @@ export function loaded(args) {
 
     for (let i = 0; i < 100; i++) {
         items.push(fromObject({
-            text:  "<" + i + ">",
+            text: "<" + i + ">",
             selected: !!!(i % 5)
         }));
     }

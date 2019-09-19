@@ -6,7 +6,7 @@ export class StackLayout extends StackLayoutBase {
     nativeViewProtected: org.nativescript.widgets.StackLayout;
 
     public createNativeView() {
-         return new org.nativescript.widgets.StackLayout(this._context);
+        return new org.nativescript.widgets.StackLayout(this._context);
     }
 
     [orientationProperty.setNative](value: "horizontal" | "vertical") {

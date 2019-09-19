@@ -58,7 +58,7 @@ function processFile(file: fs.File) {
 
 /**
  * Processes folder and returns true if folder was not empty.
- * @param Folder path 
+ * @param Folder path
  */
 function processFolder(path: string): boolean {
     if (cache.has(path)) {
@@ -69,7 +69,7 @@ function processFolder(path: string): boolean {
     if (traceEnabled()) {
         traceWrite(`[Compat] Processing folder: ${path}`, traceCategories.ModuleNameResolver);
     }
-    
+
     let folderEmpty = true;
 
     if (fs.Folder.exists(path)) {
@@ -90,8 +90,8 @@ function processFolder(path: string): boolean {
 
 /**
  * Registers loaders for all files from the containing folder with global.registerModule().
- * Compatibility method for non-webpack workflow (like in playground). 
- * @param moduleName 
+ * Compatibility method for non-webpack workflow (like in playground).
+ * @param moduleName
  */
 export function registerModulesFromFileSystem(moduleName: string) {
     initialize();

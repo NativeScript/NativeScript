@@ -25,9 +25,9 @@ declare class CSCustomAttributeKey extends NSObject implements NSCopying, NSSecu
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithKeyName(keyName: string): this;
 
@@ -175,9 +175,9 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithDisplayNameHandlesHandleIdentifier(displayName: string, handles: NSArray<string> | string[], handleIdentifier: string): this;
 }
@@ -300,9 +300,9 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithUniqueIdentifierDomainIdentifierAttributeSet(uniqueIdentifier: string, domainIdentifier: string, attributeSet: CSSearchableItemAttributeSet): this;
 }
@@ -693,9 +693,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithItemContentType(itemContentType: string): this;
 
