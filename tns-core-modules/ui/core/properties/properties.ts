@@ -968,7 +968,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
             const view = this.viewRef.get();
             if (!view) {
                 traceWrite(`${boxedValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
-    
+
                 return;
             }
 
@@ -1109,7 +1109,7 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
             const view = this.viewRef.get();
             if (!view) {
                 traceWrite(`setLocalValue not executed to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
-    
+
                 return;
             }
 
@@ -1124,7 +1124,7 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
             const view = this.viewRef.get();
             if (!view) {
                 traceWrite(`setCssValue not executed to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
-    
+
                 return;
             }
 

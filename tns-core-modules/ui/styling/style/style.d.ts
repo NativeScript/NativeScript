@@ -181,7 +181,7 @@ export class Style extends Observable {
 
     /**
      * Get value of the css-variable.
-     * If the value is not set on this style-object, try the parent view. 
+     * If the value is not set on this style-object, try the parent view.
      */
     public getCssVariable(varName: string): string | null;
 

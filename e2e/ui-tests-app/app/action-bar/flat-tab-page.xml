@@ -7,7 +7,7 @@
     <TabView selectedTabTextColor="green">
         <TabViewItem title="First">
             <GridLayout backgroundColor="green">
-                <Button text="test" backgroundColor="red"></Button> 
+                <Button text="test" backgroundColor="red"></Button>
             </GridLayout>
         </TabViewItem>
     </TabView>

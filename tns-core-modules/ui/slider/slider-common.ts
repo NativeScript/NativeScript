@@ -31,8 +31,8 @@ valueProperty.register(SliderBase);
  */
 export const minValueProperty = new Property<SliderBase, number>({
     name: "minValue", defaultValue: 0, valueChanged: (target, oldValue, newValue) => {
-         maxValueProperty.coerce(target);
-         valueProperty.coerce(target);
+        maxValueProperty.coerce(target);
+        valueProperty.coerce(target);
     }, valueConverter: (v) => isIOS ? parseFloat(v) : parseInt(v)
 });
 minValueProperty.register(SliderBase);

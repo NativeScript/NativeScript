@@ -163,7 +163,7 @@ export class ImageSource implements ImageSourceDefinition {
 
         const textBounds = new android.graphics.Rect();
         paint.getTextBounds(source, 0, source.length, textBounds);
-        
+
         const textWidth = textBounds.width();
         const textHeight = textBounds.height();
         if (textWidth > 0 && textHeight > 0) {

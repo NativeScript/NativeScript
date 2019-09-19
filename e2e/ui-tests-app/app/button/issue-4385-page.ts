@@ -16,7 +16,7 @@ export class TestPage extends Observable {
         super();
     }
 
-// new line of span can be set with \n from code behind
+    // new line of span can be set with \n from code behind
     get test(): string {
         return "\ntest";
     }

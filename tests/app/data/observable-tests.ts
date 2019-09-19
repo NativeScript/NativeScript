@@ -563,7 +563,7 @@ export function test_get_set_on_observables_fromObject_without_property_in_json(
 
 export function test_get_set_on_observables_fromObject_with_property_in_json() {
     const array = new ObservableArray<any>();
-    const vm = fromObject({ p: null});
+    const vm = fromObject({ p: null });
     vm.set("p", array);
     const value1 = vm.get("p");
     const value2 = (<any>vm).p;

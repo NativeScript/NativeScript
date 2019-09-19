@@ -16,4 +16,4 @@
     <Button text="go to cleared page" tap="navigate"/>
     <Button text="undefined" tap="onChangeRenderingMode"/>
   </StackLayout>
-</Page> 
+</Page>

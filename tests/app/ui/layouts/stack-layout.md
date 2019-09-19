@@ -20,7 +20,7 @@ Using a StackLayout requires the StackLayout module.
 
 ## Create StackLayout
 {%snippet stack-layout-new%}
- 
+
 ## Add child view to layout
 {%snippet stack-layout-addchild%}
 

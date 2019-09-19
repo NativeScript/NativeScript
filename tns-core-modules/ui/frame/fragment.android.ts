@@ -4,7 +4,7 @@ import { AndroidFragmentCallbacks, setFragmentCallbacks, setFragmentClass } from
 class FragmentClass extends org.nativescript.widgets.FragmentBase {
     // This field is updated in the frame module upon `new` (although hacky this eases the Fragment->callbacks association a lot)
     private _callbacks: AndroidFragmentCallbacks;
-    
+
     constructor() {
         super();
 

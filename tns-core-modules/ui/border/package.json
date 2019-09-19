@@ -1,5 +1,5 @@
 {
-  "name" : "border",
-  "main" : "border",
-  "types" : "border.d.ts"
+  "name": "border",
+  "main": "border",
+  "types": "border.d.ts"
 }

@@ -4,7 +4,7 @@ export * from "./activity-indicator-common";
 
 export class ActivityIndicator extends ActivityIndicatorBase {
     nativeViewProtected: UIActivityIndicatorView;
-    
+
     createNativeView() {
         const view = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
         view.hidesWhenStopped = true;

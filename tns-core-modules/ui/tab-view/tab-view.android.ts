@@ -231,7 +231,7 @@ function initializeNativeClasses() {
             }
         }
     }
-    
+
     PagerAdapter = FragmentPagerAdapter;
 }
 
@@ -555,7 +555,7 @@ export class TabView extends TabViewBase {
 
     public _onRootViewReset(): void {
         super._onRootViewReset();
-        
+
         // call this AFTER the super call to ensure descendants apply their rootview-reset logic first
         // i.e. in a scenario with tab frames let the frames cleanup their fragments first, and then
         // cleanup the tab fragments to avoid

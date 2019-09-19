@@ -3,8 +3,8 @@ import * as pages from "tns-core-modules/ui/page";
 
 export function loaded(args) {
     var page = <pages.Page>(<view.View>args.object).page;
-   const view = page.getViewById("test-element");
-   (<any>view).textTransform = "capitalize";
+    const view = page.getViewById("test-element");
+    (<any>view).textTransform = "capitalize";
 }
 
 export function applyTap(args) {

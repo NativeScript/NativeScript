@@ -1,7 +1,7 @@
 <Page>
   <GridLayout rows="*, *, *" >
     <StackLayout horizontalAlignment="left" orientation="horizontal" backgroundColor="yellow" id="target" margin="20" layoutChanged="onLayoutChanged"/>
-    
+
     <StackLayout row="1">
         <Button text="clear" tap="clear"/>
         <Button text="add child" tap="addChild"/>

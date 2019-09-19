@@ -6,7 +6,7 @@ import {
 export * from "./date-picker-common";
 
 interface DateChangedListener {
-    new (owner: DatePicker): android.widget.DatePicker.OnDateChangedListener;
+    new(owner: DatePicker): android.widget.DatePicker.OnDateChangedListener;
 }
 
 let DateChangedListener: DateChangedListener;

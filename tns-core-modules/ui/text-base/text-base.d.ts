@@ -85,7 +85,7 @@ export class TextBase extends View implements AddChildFromBuilder {
      * Specify the top padding of this layout.
      */
     paddingTop: Length;
-    
+
     /**
      * Called for every child element declared in xml.
      * This method will add a child element (value) to current element.

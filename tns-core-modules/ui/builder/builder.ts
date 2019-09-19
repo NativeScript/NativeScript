@@ -153,8 +153,8 @@ function loadCustomComponent(componentNamespace: string, componentName?: string,
         result = getComponentModule(componentName, componentNamespace, attributes, context, moduleNamePath, isRootComponent);
 
         // The namespace is the JS module and the (componentName is the name of the class in the module)
-        // So if there is no componentNamespace/componentName.{qualifiers}.css we should also look for 
-        // componentNamespace.{qualifiers}.css 
+        // So if there is no componentNamespace/componentName.{qualifiers}.css we should also look for
+        // componentNamespace.{qualifiers}.css
         if (!resolvedCssModuleName) {
             resolvedCssModuleName = resolveModuleName(componentNamespace, "css");
         }
