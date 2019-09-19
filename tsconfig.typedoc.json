@@ -13,12 +13,12 @@
         ]
     },
     "include": [
-        "tns-core-modules/**/*.d.ts"
+        "nativescript-core/**/*.d.ts"
     ],
     "exclude": [
-        "tns-core-modules/references.d.ts",
-        "tns-core-modules/node_modules",
-        "tns-core-modules/ui/frame/transition-definitions.android.d.ts",
-        "tns-core-modules/platforms/*"
+        "nativescript-core/references.d.ts",
+        "nativescript-core/node_modules",
+        "nativescript-core/ui/frame/transition-definitions.android.d.ts",
+        "nativescript-core/platforms/*"
     ]
 }
