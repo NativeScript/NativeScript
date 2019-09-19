@@ -1,9 +1,31 @@
 {
     "compilerOptions": {
+        "noEmitOnError": false,
+        "noEmitHelpers": true,
+        "target": "es5",
+        "module": "commonjs",
+        "noImplicitUseStrict": true,
+        "removeComments": true,
+        "experimentalDecorators": true,
+        "diagnostics": true,
         "sourceMap": true,
-        "inlineSourceMap": false
+        "inlineSourceMap": false,
+        "lib": [
+            "es6",
+            "dom"
+        ],
+        "types": [
+            "node",
+            "chai",
+            "mocha"
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "tns-core-modules/*": [
+                "tns-core-modules/*"
+            ]
+        }
     },
-    "extends": "./tsconfig.shared",
     "include": [
         "tns-core-modules/**/*.ts",
         "unit-tests/**/*.ts"
