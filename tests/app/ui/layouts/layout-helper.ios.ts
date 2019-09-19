@@ -173,7 +173,7 @@ export class MyButton extends Button implements def.MyButton {
 
         return bounds.bottom - bounds.top;
     }
-    
+
     get layoutLeft(): number {
         let bounds = this._getCurrentLayoutBounds();
 

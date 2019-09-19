@@ -18,7 +18,7 @@ export class Label extends TextBase implements LabelDefinition {
         if (typeof value === "string") {
             value = booleanConverter(value);
         }
-        
+
         this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 

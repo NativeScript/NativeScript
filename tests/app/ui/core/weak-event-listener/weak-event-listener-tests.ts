@@ -103,7 +103,7 @@ export function test_listenerDoesNotRetainTarget(done) {
 
     // with the v8 6.5 the GC does not release WeakRefs so fast if you pass them to a method
     // that's why we are making the call to the addWeakEventListener in a closure so that the WeakRef will be easier released
-    (function() {
+    (function () {
         addWeakEventListener(sourceRef.get(), Observable.propertyChangeEvent, emptyHandler, targetRef.get());
     })();
     forceGC();
@@ -123,7 +123,7 @@ export function test_listenerDoesNotRetainSource(done) {
 
     // with the v8 6.5 the GC does not release WeakRefs so fast if you pass them to a method
     // that's why we are making the call to the addWeakEventListener in a closure so that the WeakRef will be easier released
-    (function() {
+    (function () {
         addWeakEventListener(sourceRef.get(), Observable.propertyChangeEvent, targetRef.get().onEvent, targetRef.get());
     })();
     forceGC();

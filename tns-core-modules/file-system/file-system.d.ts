@@ -219,7 +219,7 @@ export module knownFolders {
      */
     module ios {
         /**
-         * Gets the NSLibraryDirectory. Note that the folder will not be created if it did not exist. 
+         * Gets the NSLibraryDirectory. Note that the folder will not be created if it did not exist.
          */
         export function library(): Folder;
 

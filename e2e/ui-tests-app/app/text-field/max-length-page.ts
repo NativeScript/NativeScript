@@ -3,7 +3,7 @@ import { TextField } from "tns-core-modules/ui/text-field";
 
 export function setText(args) {
     let page = args;
-    
+
     if (page.constructor.name !== "Page") {
         page = args.object.page;
         setTextFieldText(page, "inXml", "in xml");
@@ -21,7 +21,7 @@ export function pageLoaded(args) {
 
 function setTextFieldText(page: Page, name: string, text: string) {
     const textField = <TextField>page.getViewById(name);
-    
+
     if (name === "maxLenghtFromCodeBehind" || name === "maxLenghtFromCodeBehindWithText") {
         textField.maxLength = 3;
     }

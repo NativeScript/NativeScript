@@ -11,22 +11,22 @@ export let debug: boolean;
  * A class encapsulating information for source code origin.
  */
 export class Source {
-    
+
     /**
      * Creates a new Source instance by given uri, line and column.
      */
     constructor(uri: string, line: number, column: number);
-    
+
     /**
      * Gets the URI of the source document;
      */
     uri: string;
-    
+
     /**
      * Gets the line in the source document.
      */
     line: number;
-    
+
     /**
      * Gets the position in the source document.
      */
@@ -36,7 +36,7 @@ export class Source {
      * Get the source of an object.
      */
     public static get(object: any): Source;
-    
+
     /**
      * Set the source of an object.
      */

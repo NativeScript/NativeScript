@@ -10,4 +10,4 @@
         <Button row="2" text="This a test of a wrapping button [LEFT]" textWrap="true" style="text-align:left;width:100" />
         <Button row="3" text="&#xf8ff; This a test of a wrapping button [CENTER ICON]" textWrap="true" style="text-align:center;width:100" />
     </GridLayout>
-</Page> 
+</Page>

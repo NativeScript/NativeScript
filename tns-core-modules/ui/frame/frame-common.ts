@@ -154,7 +154,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         } else {
             page._tearDownUI(true);
         }
-        
+
         removed.resolvedPage = null;
     }
 

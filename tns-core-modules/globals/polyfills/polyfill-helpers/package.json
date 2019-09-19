@@ -1,5 +1,5 @@
 {
-  "name" : "polyfill-helpers",
-  "main" : "polyfill-helpers",
+  "name": "polyfill-helpers",
+  "main": "polyfill-helpers",
   "nativescript": {}
 }

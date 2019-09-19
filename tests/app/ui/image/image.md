@@ -8,7 +8,7 @@ previous_url: /ApiReference/ui/image/HOW-TO
 
 # Image
 
-The purpose of this article is to show the basic functionality of the Image view. The snippets demonstrates some scenarios and the usage of the ImageView specifics properties  
+The purpose of this article is to show the basic functionality of the Image view. The snippets demonstrates some scenarios and the usage of the ImageView specifics properties
 
 * [Binding image source property](#binding-image-source-property)
 * [Loading an image from app resources](#loading-an-image-from-app-resources)
@@ -62,7 +62,7 @@ The example demonstrates how we could load an image, which is available in the A
 ``` XML
 <Page>
   <StackLayout>
-     {%raw%}<Image src="http://www.google.com/images/errors/logo_sm_2.png" stretch ="none" />{%endraw%}  
+     {%raw%}<Image src="http://www.google.com/images/errors/logo_sm_2.png" stretch ="none" />{%endraw%}
   </StackLayout>
 </Page>
 ```
@@ -83,13 +83,13 @@ The sample above, demonstrates, how to load an image source while providing URL 
 
 {%snippet img-create-local%}
 
-The Image source could be load also from a local file. The path to the image should start with a tilde(`~`) as it is shown in the example above. Using `~/` prefix, we can load images relative to the project `app` folder 
+The Image source could be load also from a local file. The path to the image should start with a tilde(`~`) as it is shown in the example above. Using `~/` prefix, we can load images relative to the project `app` folder
 
 ### Loading an image from Data URI
 
 {%snippet img-create-datauri%}
 
-In the sample code is shown, how to load an image source data, while using data URI. 
+In the sample code is shown, how to load an image source data, while using data URI.
 
 ### Setting image stretching
 

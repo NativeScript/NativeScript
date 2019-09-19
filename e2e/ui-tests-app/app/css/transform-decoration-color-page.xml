@@ -14,7 +14,7 @@
     <Button text="Button underline line-through blue" style="text-decoration: underline line-through; color: blue;"/>
     <TextField autocorrect="false" text="TextField underline line-through blue" style="text-decoration: underline line-through; color: blue;"/>
     <TextView autocorrect="false" text="TextView underline line-through blue" style="text-decoration: underline line-through; color: blue;"/>
-    
+
     <Label text="Label uppercase underline line-through green" style="text-transform: uppercase; text-decoration: underline line-through; color: green;"/>
     <Button text="Button uppercase underline line-through green" style="text-transform: uppercase; text-decoration: underline line-through; color: green;"/>
     <TextField autocorrect="false" text="TextField uppercase underline line-through green" style="text-transform: uppercase; text-decoration: underline line-through; color: green;"/>

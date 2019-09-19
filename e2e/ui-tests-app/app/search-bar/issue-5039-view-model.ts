@@ -19,7 +19,7 @@ export class Issue5039ViewModel extends Observable {
     clearSearch() {
         this.filter();
     }
-    
+
     filter(value: string = "") {
         this.items.splice(0, this.items.length); // remove all items
         this.items.push(this._items.filter(i => -1 !== i.indexOf(value)));

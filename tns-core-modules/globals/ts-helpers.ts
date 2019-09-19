@@ -1,13 +1,13 @@
 // Required by V8 snapshot generator
 if (!global.__extends) {
   global.__extends = function (d, b) {
-      for (let p in b) {
-          if (b.hasOwnProperty(p)) {
-              d[p] = b[p];
-          }
+    for (let p in b) {
+      if (b.hasOwnProperty(p)) {
+        d[p] = b[p];
       }
-      function __() { this.constructor = d; }
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    }
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   };
 }
 
