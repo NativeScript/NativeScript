@@ -1,4 +1,5 @@
-export * from "./application";
+// TODO: Revise this. Don't use star exports 
+export * from "./application"; 
 import { ios, android, on, off } from "./application";
 export const nsApp = { ios, android, on, off };
 
@@ -20,9 +21,9 @@ export const nsHttp = { getFile, getImage, getJSON, getString: httpGetString, re
 
 export { ImageAsset, ImageAssetOptions } from "./image-asset";
 
-export { ImageSource } from "./image-source";
-import { fromAsset, fromBase64, fromData, fromFile, fromFileOrResource, fromFontIconCode, fromNativeSource, fromResource, fromUrl } from "./image-source";
-export const nsImageSource = { fromAsset, fromBase64, fromData, fromFile, fromFileOrResource, fromFontIconCode, fromNativeSource, fromResource, fromUrl };
+// TODO: Should the ImageSource be inside nsImageSource. Probably "yes" but still give it a thought.
+import { ImageSource, fromAsset, fromBase64, fromData, fromFile, fromFileOrResource, fromFontIconCode, fromNativeSource, fromResource, fromUrl } from "./image-source";
+export const nsImageSource = { ImageSource, fromAsset, fromBase64, fromData, fromFile, fromFileOrResource, fromFontIconCode, fromNativeSource, fromResource, fromUrl };
 
 export { isAndroid, isIOS, screen } from "./platform";
 

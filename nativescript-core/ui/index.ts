@@ -54,6 +54,11 @@ export { ScrollView, ScrollEventData } from "./scroll-view";
 export { SearchBar } from "./search-bar";
 export { SegmentedBar, SegmentedBarItem } from "./segmented-bar";
 export { Slider } from "./slider";
+
+// TODO: consider adding APIs from style
+// export { addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from "./styling/style-scope";
+// export { Style } from "./styling/style";
+
 export { Switch } from "./switch";
 export { TabContentItem } from "./tab-navigation-base/tab-content-item";
 export { TabNavigationBase } from "./tab-navigation-base/tab-navigation-base";

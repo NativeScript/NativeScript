@@ -47,9 +47,10 @@ export declare const nsHttp: {
     request: typeof request;
 };
 export { ImageAsset, ImageAssetOptions } from "./image-asset";
-export { ImageSource } from "./image-source";
-import { fromAsset, fromBase64, fromData, fromFile, fromFileOrResource, fromFontIconCode, fromNativeSource, fromResource, fromUrl } from "./image-source";
+// export { ImageSource } from "./image-source";
+import { ImageSource, fromAsset, fromBase64, fromData, fromFile, fromFileOrResource, fromFontIconCode, fromNativeSource, fromResource, fromUrl } from "./image-source";
 export declare const nsImageSource: {
+    ImageSource: typeof ImageSource;
     fromAsset: typeof fromAsset;
     fromBase64: typeof fromBase64;
     fromData: typeof fromData;
