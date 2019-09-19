@@ -22,6 +22,8 @@ declare function MACaptionAppearanceCopySelectedLanguages(domain: MACaptionAppea
 
 declare function MACaptionAppearanceCopyWindowColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
 
+declare function MACaptionAppearanceDidDisplayCaptions(strings: NSArray<any>): void;
+
 declare const enum MACaptionAppearanceDisplayType {
 
 	kMACaptionAppearanceDisplayTypeForcedOnly = 0,
@@ -87,6 +89,12 @@ declare const enum MACaptionAppearanceTextEdgeStyle {
 
 	kMACaptionAppearanceTextEdgeStyleDropShadow = 5
 }
+
+declare function MAImageCaptioningCopyCaption(url: NSURL, error: interop.Pointer | interop.Reference<NSError>): string;
+
+declare function MAImageCaptioningCopyMetadataTagPath(): string;
+
+declare function MAImageCaptioningSetCaption(url: NSURL, string: string, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare var MAMediaCharacteristicDescribesMusicAndSoundForAccessibility: string;
 

@@ -51,6 +51,22 @@ declare function CVImageBufferGetEncodedSize(imageBuffer: any): CGSize;
 
 declare function CVImageBufferIsFlipped(imageBuffer: any): boolean;
 
+declare function CVMetalTextureCacheCreate(allocator: any, cacheAttributes: NSDictionary<any, any>, metalDevice: MTLDevice, textureAttributes: NSDictionary<any, any>, cacheOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CVMetalTextureCacheCreateTextureFromImage(allocator: any, textureCache: any, sourceImage: any, textureAttributes: NSDictionary<any, any>, pixelFormat: MTLPixelFormat, width: number, height: number, planeIndex: number, textureOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CVMetalTextureCacheFlush(textureCache: any, options: number): void;
+
+declare function CVMetalTextureCacheGetTypeID(): number;
+
+declare function CVMetalTextureGetCleanTexCoords(image: any, lowerLeft: interop.Reference<number>, lowerRight: interop.Reference<number>, upperRight: interop.Reference<number>, upperLeft: interop.Reference<number>): void;
+
+declare function CVMetalTextureGetTexture(image: any): MTLTexture;
+
+declare function CVMetalTextureGetTypeID(): number;
+
+declare function CVMetalTextureIsFlipped(image: any): boolean;
+
 declare function CVOpenGLESTextureCacheCreate(allocator: any, cacheAttributes: NSDictionary<any, any>, eaglContext: EAGLContext, textureAttributes: NSDictionary<any, any>, cacheOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CVOpenGLESTextureCacheCreateTextureFromImage(allocator: any, textureCache: any, sourceImage: any, textureAttributes: NSDictionary<any, any>, target: number, internalFormat: number, width: number, height: number, format: number, type: number, planeIndex: number, textureOut: interop.Pointer | interop.Reference<any>): number;
@@ -75,6 +91,8 @@ declare function CVPixelBufferCreateResolvedAttributesDictionary(allocator: any,
 
 declare function CVPixelBufferCreateWithBytes(allocator: any, width: number, height: number, pixelFormatType: number, baseAddress: interop.Pointer | interop.Reference<any>, bytesPerRow: number, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, releaseRefCon: interop.Pointer | interop.Reference<any>, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
 
+declare function CVPixelBufferCreateWithIOSurface(allocator: any, surface: any, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
+
 declare function CVPixelBufferCreateWithPlanarBytes(allocator: any, width: number, height: number, pixelFormatType: number, dataPtr: interop.Pointer | interop.Reference<any>, dataSize: number, numberOfPlanes: number, planeBaseAddress: interop.Reference<interop.Pointer | interop.Reference<any>>, planeWidth: interop.Reference<number>, planeHeight: interop.Reference<number>, planeBytesPerRow: interop.Reference<number>, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: number, p5: interop.Reference<interop.Pointer | interop.Reference<any>>) => void>, releaseRefCon: interop.Pointer | interop.Reference<any>, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CVPixelBufferFillExtendedPixels(pixelBuffer: any): number;
@@ -94,6 +112,8 @@ declare function CVPixelBufferGetExtendedPixels(pixelBuffer: any, extraColumnsOn
 declare function CVPixelBufferGetHeight(pixelBuffer: any): number;
 
 declare function CVPixelBufferGetHeightOfPlane(pixelBuffer: any, planeIndex: number): number;
+
+declare function CVPixelBufferGetIOSurface(pixelBuffer: any): interop.Unmanaged<any>;
 
 declare function CVPixelBufferGetPixelFormatType(pixelBuffer: any): number;
 
@@ -278,6 +298,12 @@ declare var kCVBufferTimeValueKey: string;
 
 declare var kCVImageBufferAlphaChannelIsOpaque: string;
 
+declare var kCVImageBufferAlphaChannelModeKey: string;
+
+declare var kCVImageBufferAlphaChannelMode_PremultipliedAlpha: string;
+
+declare var kCVImageBufferAlphaChannelMode_StraightAlpha: string;
+
 declare var kCVImageBufferCGColorSpaceKey: string;
 
 declare var kCVImageBufferChromaLocationBottomFieldKey: string;
@@ -404,6 +430,10 @@ declare var kCVIndefiniteTime: CVTime;
 
 declare var kCVMetalTextureCacheMaximumTextureAgeKey: string;
 
+declare var kCVMetalTextureStorageMode: string;
+
+declare var kCVMetalTextureUsage: string;
+
 declare var kCVOpenGLESTextureCacheMaximumTextureAgeKey: string;
 
 declare var kCVPixelBufferBytesPerRowAlignmentKey: string;
@@ -421,6 +451,12 @@ declare var kCVPixelBufferExtendedPixelsRightKey: string;
 declare var kCVPixelBufferExtendedPixelsTopKey: string;
 
 declare var kCVPixelBufferHeightKey: string;
+
+declare var kCVPixelBufferIOSurfaceCoreAnimationCompatibilityKey: string;
+
+declare var kCVPixelBufferIOSurfaceOpenGLESFBOCompatibilityKey: string;
+
+declare var kCVPixelBufferIOSurfaceOpenGLESTextureCompatibilityKey: string;
 
 declare var kCVPixelBufferIOSurfacePropertiesKey: string;
 
@@ -567,6 +603,8 @@ declare const kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange: number;
 declare const kCVPixelFormatType_420YpCbCr8Planar: number;
 
 declare const kCVPixelFormatType_420YpCbCr8PlanarFullRange: number;
+
+declare const kCVPixelFormatType_420YpCbCr8VideoRange_8A_TriPlanar: number;
 
 declare const kCVPixelFormatType_422YpCbCr10: number;
 

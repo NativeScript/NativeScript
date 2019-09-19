@@ -68,6 +68,8 @@ declare class VSAccountMetadataRequest extends NSObject {
 
 	static new(): VSAccountMetadataRequest; // inherited from NSObject
 
+	accountProviderAuthenticationToken: string;
+
 	attributeNames: NSArray<string>;
 
 	channelIdentifier: string;
@@ -90,6 +92,8 @@ declare class VSAccountMetadataRequest extends NSObject {
 
 	verificationToken: string;
 }
+
+declare var VSAccountProviderAuthenticationSchemeAPI: string;
 
 declare var VSAccountProviderAuthenticationSchemeSAML: string;
 
@@ -120,7 +124,9 @@ declare const enum VSErrorCode {
 
 	ProviderRejected = 4,
 
-	InvalidVerificationToken = 5
+	InvalidVerificationToken = 5,
+
+	Rejected = 6
 }
 
 declare var VSErrorDomain: string;
@@ -132,6 +138,8 @@ declare var VSErrorInfoKeySAMLResponse: string;
 declare var VSErrorInfoKeySAMLResponseStatus: string;
 
 declare var VSErrorInfoKeyUnsupportedProviderIdentifier: string;
+
+declare var VSOpenTVProviderSettingsURLString: string;
 
 declare class VSSubscription extends NSObject {
 

@@ -91,6 +91,8 @@ declare class NSAttributeDescription extends NSPropertyDescription {
 
 	defaultValue: any;
 
+	preservesValueInHistoryOnDeletion: boolean;
+
 	valueTransformerName: string;
 }
 
@@ -164,6 +166,51 @@ declare class NSBatchDeleteResult extends NSPersistentStoreResult {
 	readonly result: any;
 
 	readonly resultType: NSBatchDeleteRequestResultType;
+}
+
+declare class NSBatchInsertRequest extends NSPersistentStoreRequest {
+
+	static alloc(): NSBatchInsertRequest; // inherited from NSObject
+
+	static batchInsertRequestWithEntityNameObjects(entityName: string, dictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): NSBatchInsertRequest;
+
+	static new(): NSBatchInsertRequest; // inherited from NSObject
+
+	readonly entity: NSEntityDescription;
+
+	readonly entityName: string;
+
+	objectsToInsert: NSArray<NSDictionary<string, any>>;
+
+	resultType: NSBatchInsertRequestResultType;
+
+	constructor(o: { entityName: string; objects: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]; });
+
+	constructor(o: { entity: NSEntityDescription; objects: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]; });
+
+	initWithEntityNameObjects(entityName: string, dictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): this;
+
+	initWithEntityObjects(entity: NSEntityDescription, dictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): this;
+}
+
+declare const enum NSBatchInsertRequestResultType {
+
+	StatusOnly = 0,
+
+	ObjectIDs = 1,
+
+	Count = 2
+}
+
+declare class NSBatchInsertResult extends NSPersistentStoreResult {
+
+	static alloc(): NSBatchInsertResult; // inherited from NSObject
+
+	static new(): NSBatchInsertResult; // inherited from NSObject
+
+	readonly result: any;
+
+	readonly resultType: NSBatchInsertRequestResultType;
 }
 
 declare class NSBatchUpdateRequest extends NSPersistentStoreRequest {
@@ -284,6 +331,15 @@ declare const enum NSDeleteRule {
 
 declare var NSDeletedObjectsKey: string;
 
+declare class NSDerivedAttributeDescription extends NSAttributeDescription {
+
+	static alloc(): NSDerivedAttributeDescription; // inherited from NSObject
+
+	static new(): NSDerivedAttributeDescription; // inherited from NSObject
+
+	derivationExpression: NSExpression;
+}
+
 declare var NSDetailedErrorsKey: string;
 
 declare class NSEntityDescription extends NSObject implements NSCoding, NSCopying, NSFastEnumeration {
@@ -339,9 +395,9 @@ declare class NSEntityDescription extends NSObject implements NSCoding, NSCopyin
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	isKindOfEntity(entity: NSEntityDescription): boolean;
 
@@ -450,9 +506,9 @@ declare class NSFetchIndexDescription extends NSObject implements NSCoding {
 
 	constructor(o: { name: string; elements: NSArray<NSFetchIndexElementDescription> | NSFetchIndexElementDescription[]; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithNameElements(name: string, elements: NSArray<NSFetchIndexElementDescription> | NSFetchIndexElementDescription[]): this;
 }
@@ -477,9 +533,9 @@ declare class NSFetchIndexElementDescription extends NSObject implements NSCodin
 
 	constructor(o: { property: NSPropertyDescription; collationType: NSFetchIndexElementType; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithPropertyCollationType(property: NSPropertyDescription, collationType: NSFetchIndexElementType): this;
 }
@@ -539,11 +595,11 @@ declare class NSFetchRequest<ResultType> extends NSPersistentStoreRequest implem
 
 	constructor(o: { entityName: string; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	execute(): NSArray<ResultType>;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithEntityName(entityName: string): this;
 }
@@ -645,6 +701,10 @@ declare class NSFetchedResultsController<ResultType> extends NSObject {
 interface NSFetchedResultsControllerDelegate extends NSObjectProtocol {
 
 	controllerDidChangeContent?(controller: NSFetchedResultsController<any>): void;
+
+	controllerDidChangeContentWithDifference?(controller: NSFetchedResultsController<any>, diff: NSOrderedCollectionDifference<NSManagedObjectID>): void;
+
+	controllerDidChangeContentWithSnapshot?(controller: NSFetchedResultsController<any>, snapshot: NSDiffableDataSourceSnapshot<string, NSManagedObjectID>): void;
 
 	controllerDidChangeObjectAtIndexPathForChangeTypeNewIndexPath?(controller: NSFetchedResultsController<any>, anObject: any, indexPath: NSIndexPath, type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath): void;
 
@@ -909,7 +969,7 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 
 	detectConflictsForObject(object: NSManagedObject): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	executeFetchRequestError(request: NSFetchRequest<any>): NSArray<any>;
 
@@ -917,7 +977,7 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 
 	existingObjectWithIDError(objectID: NSManagedObjectID): NSManagedObject;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithConcurrencyType(ct: NSManagedObjectContextConcurrencyType): this;
 
@@ -1071,7 +1131,7 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	entitiesForConfiguration(configuration: string): NSArray<NSEntityDescription>;
 
@@ -1079,7 +1139,7 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 
 	fetchRequestTemplateForName(name: string): NSFetchRequest<any>;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithContentsOfURL(url: NSURL): this;
 
@@ -1263,6 +1323,49 @@ declare var NSOverwriteMergePolicy: any;
 
 declare var NSOverwriteMergePolicyVar: any;
 
+declare class NSPersistentCloudKitContainer extends NSPersistentContainer {
+
+	static alloc(): NSPersistentCloudKitContainer; // inherited from NSObject
+
+	static new(): NSPersistentCloudKitContainer; // inherited from NSObject
+
+	static persistentContainerWithName(name: string): NSPersistentCloudKitContainer; // inherited from NSPersistentContainer
+
+	static persistentContainerWithNameManagedObjectModel(name: string, model: NSManagedObjectModel): NSPersistentCloudKitContainer; // inherited from NSPersistentContainer
+
+	initializeCloudKitSchemaWithOptionsError(options: NSPersistentCloudKitContainerSchemaInitializationOptions): boolean;
+
+	recordForManagedObjectID(managedObjectID: NSManagedObjectID): CKRecord;
+
+	recordIDForManagedObjectID(managedObjectID: NSManagedObjectID): CKRecordID;
+
+	recordIDsForManagedObjectIDs(managedObjectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[]): NSDictionary<NSManagedObjectID, CKRecordID>;
+
+	recordsForManagedObjectIDs(managedObjectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[]): NSDictionary<NSManagedObjectID, CKRecord>;
+}
+
+declare class NSPersistentCloudKitContainerOptions extends NSObject {
+
+	static alloc(): NSPersistentCloudKitContainerOptions; // inherited from NSObject
+
+	static new(): NSPersistentCloudKitContainerOptions; // inherited from NSObject
+
+	readonly containerIdentifier: string;
+
+	constructor(o: { containerIdentifier: string; });
+
+	initWithContainerIdentifier(containerIdentifier: string): this;
+}
+
+declare const enum NSPersistentCloudKitContainerSchemaInitializationOptions {
+
+	None = 0,
+
+	DryRun = 2,
+
+	PrintSchema = 4
+}
+
 declare class NSPersistentContainer extends NSObject {
 
 	static alloc(): NSPersistentContainer; // inherited from NSObject
@@ -1304,6 +1407,8 @@ declare class NSPersistentHistoryChange extends NSObject implements NSCopying {
 
 	static alloc(): NSPersistentHistoryChange; // inherited from NSObject
 
+	static entityDescriptionWithContext(context: NSManagedObjectContext): NSEntityDescription;
+
 	static new(): NSPersistentHistoryChange; // inherited from NSObject
 
 	readonly changeID: number;
@@ -1317,6 +1422,10 @@ declare class NSPersistentHistoryChange extends NSObject implements NSCopying {
 	readonly transaction: NSPersistentHistoryTransaction;
 
 	readonly updatedProperties: NSSet<NSPropertyDescription>;
+
+	static readonly entityDescription: NSEntityDescription;
+
+	static readonly fetchRequest: NSFetchRequest<any>;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -1337,7 +1446,11 @@ declare class NSPersistentHistoryChangeRequest extends NSPersistentStoreRequest 
 
 	static fetchHistoryAfterTransaction(transaction: NSPersistentHistoryTransaction): NSPersistentHistoryChangeRequest;
 
+	static fetchHistoryWithFetchRequest(fetchRequest: NSFetchRequest<any>): NSPersistentHistoryChangeRequest;
+
 	static new(): NSPersistentHistoryChangeRequest; // inherited from NSObject
+
+	fetchRequest: NSFetchRequest<any>;
 
 	resultType: NSPersistentHistoryResultType;
 
@@ -1391,18 +1504,22 @@ declare class NSPersistentHistoryToken extends NSObject implements NSCopying, NS
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const NSPersistentHistoryTokenExpiredError: number;
+
+declare var NSPersistentHistoryTokenKey: string;
 
 declare var NSPersistentHistoryTrackingKey: string;
 
 declare class NSPersistentHistoryTransaction extends NSObject implements NSCopying {
 
 	static alloc(): NSPersistentHistoryTransaction; // inherited from NSObject
+
+	static entityDescriptionWithContext(context: NSManagedObjectContext): NSEntityDescription;
 
 	static new(): NSPersistentHistoryTransaction; // inherited from NSObject
 
@@ -1423,6 +1540,10 @@ declare class NSPersistentHistoryTransaction extends NSObject implements NSCopyi
 	readonly token: NSPersistentHistoryToken;
 
 	readonly transactionNumber: number;
+
+	static readonly entityDescription: NSEntityDescription;
+
+	static readonly fetchRequest: NSFetchRequest<any>;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -1521,6 +1642,8 @@ declare class NSPersistentStoreCoordinator extends NSObject implements NSLocking
 
 	addPersistentStoreWithTypeConfigurationURLOptionsError(storeType: string, configuration: string, storeURL: NSURL, options: NSDictionary<any, any>): NSPersistentStore;
 
+	currentPersistentHistoryTokenFromStores(stores: NSArray<any> | any[]): NSPersistentHistoryToken;
+
 	destroyPersistentStoreAtURLWithTypeOptionsError(url: NSURL, storeType: string, options: NSDictionary<any, any>): boolean;
 
 	executeRequestWithContextError(request: NSPersistentStoreRequest, context: NSManagedObjectContext): any;
@@ -1571,6 +1694,8 @@ declare class NSPersistentStoreDescription extends NSObject implements NSCopying
 	static persistentStoreDescriptionWithURL(URL: NSURL): NSPersistentStoreDescription;
 
 	URL: NSURL;
+
+	cloudKitContainerOptions: NSPersistentCloudKitContainerOptions;
 
 	configuration: string;
 
@@ -1623,6 +1748,10 @@ declare const NSPersistentStoreOperationError: number;
 
 declare var NSPersistentStoreRebuildFromUbiquitousContentOption: string;
 
+declare var NSPersistentStoreRemoteChangeNotification: string;
+
+declare var NSPersistentStoreRemoteChangeNotificationPostOptionKey: string;
+
 declare var NSPersistentStoreRemoveUbiquitousMetadataOption: string;
 
 declare class NSPersistentStoreRequest extends NSObject implements NSCopying {
@@ -1643,6 +1772,8 @@ declare const enum NSPersistentStoreRequestType {
 	FetchRequestType = 1,
 
 	SaveRequestType = 2,
+
+	BatchInsertRequestType = 5,
 
 	BatchUpdateRequestType = 6,
 
@@ -1667,6 +1798,8 @@ declare const NSPersistentStoreTimeoutError: number;
 declare var NSPersistentStoreTimeoutOption: string;
 
 declare const NSPersistentStoreTypeMismatchError: number;
+
+declare var NSPersistentStoreURLKey: string;
 
 declare var NSPersistentStoreUbiquitousContainerIdentifierKey: string;
 
@@ -1727,9 +1860,9 @@ declare class NSPropertyDescription extends NSObject implements NSCoding, NSCopy
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	setValidationPredicatesWithValidationWarnings(validationPredicates: NSArray<NSPredicate> | NSPredicate[], validationWarnings: NSArray<string> | string[]): void;
 }
@@ -1761,9 +1894,9 @@ declare class NSQueryGenerationToken extends NSObject implements NSCopying, NSSe
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var NSReadOnlyPersistentStoreOption: string;
