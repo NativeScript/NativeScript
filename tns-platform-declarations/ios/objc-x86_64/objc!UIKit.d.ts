@@ -7714,10 +7714,6 @@ declare class UIFont extends NSObject implements NSCopying {
 
 	static italicSystemFontOfSize(fontSize: number): UIFont;
 
-	static mdc_preferredFontForMaterialTextStyle(style: MDCFontTextStyle): UIFont;
-
-	static mdc_standardFontForMaterialTextStyle(style: MDCFontTextStyle): UIFont;
-
 	static monospacedDigitSystemFontOfSizeWeight(fontSize: number, weight: number): UIFont;
 
 	static monospacedSystemFontOfSizeWeight(fontSize: number, weight: number): UIFont;
@@ -7768,8 +7764,6 @@ declare class UIFont extends NSObject implements NSCopying {
 
 	fontWithSize(fontSize: number): UIFont;
 
-	mdc_fontSizedForMaterialTextStyleScaledForDynamicType(style: MDCFontTextStyle, scaled: boolean): UIFont;
-
 	mdc_isSimplyEqual(font: UIFont): boolean;
 
 	mdc_scaledFontAtDefaultSize(): UIFont;
@@ -7790,10 +7784,6 @@ declare class UIFontDescriptor extends NSObject implements NSCopying, NSSecureCo
 	static fontDescriptorWithNameMatrix(fontName: string, matrix: CGAffineTransform): UIFontDescriptor;
 
 	static fontDescriptorWithNameSize(fontName: string, size: number): UIFontDescriptor;
-
-	static mdc_preferredFontDescriptorForMaterialTextStyle(style: MDCFontTextStyle): UIFontDescriptor;
-
-	static mdc_standardFontDescriptorForMaterialTextStyle(style: MDCFontTextStyle): UIFontDescriptor;
 
 	static new(): UIFontDescriptor; // inherited from NSObject
 
