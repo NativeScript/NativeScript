@@ -40,6 +40,7 @@
         "tns-platform-declarations/android/androidx-*.d.ts",
         "tests/",
         "apps/",
+        "dist/",
         "e2e/",
         "node_modules/",
         "package/",
