@@ -7,9 +7,10 @@ import { Page } from "../page";
 
 // Types.
 import * as application from "../../application";
+
 import {
-    FrameBase, goBack, _stack, NavigationType,
-    Observable, View, traceCategories, traceEnabled, traceError, traceWrite
+    _stack, FrameBase, goBack, NavigationType, Observable,
+    traceCategories, traceEnabled, traceError, traceWrite, View
 } from "./frame-common";
 
 import {
@@ -17,10 +18,11 @@ import {
     _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, AnimationType
 } from "./fragment.transitions";
 
-import { profile } from "../../profiling";
-
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../builder";
+import { CLASS_PREFIX, getRootViewCssClasses, pushToRootViewCssClasses } from "../../css/system-classes";
+import { device } from "../../platform/platform";
+import { profile } from "../../profiling";
 
 export * from "./frame-common";
 
@@ -31,6 +33,8 @@ interface AnimatorState {
     popExitAnimator: any;
     transitionName: string;
 }
+
+const ANDROID_PLATFORM = "android";
 
 const INTENT_EXTRA = "com.tns.activity";
 const ROOT_VIEW_ID_EXTRA = "com.tns.activity.rootViewId";
@@ -1280,6 +1284,14 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
             this._rootView = rootView;
             activityRootViewsMap.set(rootView._domId, new WeakRef(rootView));
+
+            const deviceType = device.deviceType.toLowerCase();
+            pushToRootViewCssClasses(`${CLASS_PREFIX}${ANDROID_PLATFORM}`);
+            pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
+            pushToRootViewCssClasses(`${CLASS_PREFIX}${application.android.orientation}`);
+
+            const rootViewCssClasses = getRootViewCssClasses();
+            rootViewCssClasses.forEach(c => this._rootView.cssClasses.add(c));
         }
 
         // Initialize native visual tree;

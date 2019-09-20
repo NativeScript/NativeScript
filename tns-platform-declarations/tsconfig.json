@@ -1,5 +1,24 @@
 {
-    "extends": "../tsconfig.shared",
+    "compilerOptions": {
+        "noEmitOnError": false,
+        "noEmitHelpers": true,
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "noImplicitUseStrict": true,
+        "removeComments": true,
+        "experimentalDecorators": true,
+        "diagnostics": true,
+        "sourceMap": true,
+        "lib": [
+            "es6", "dom"
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "tns-core-modules/*": ["tns-core-modules/*"]
+        }
+    },
     "exclude": [
         "android-*.d.ts",
         "android/android-*.d.ts",

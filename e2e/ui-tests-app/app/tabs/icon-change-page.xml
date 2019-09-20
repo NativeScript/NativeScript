@@ -4,8 +4,8 @@
 
     <Tabs id="tab-view" selectedIndexChanged="onSelectedIndexChanged" automationText="tabNavigation"  >
         <TabStrip>
-            <TabStripItem iconSource="res://icon"></TabStripItem>
-            <TabStripItem iconSource="res://testlogo"></TabStripItem>
+            <TabStripItem iconSource="res://icon" title="selected"></TabStripItem>
+            <TabStripItem iconSource="res://testlogo" title="unselected"></TabStripItem>
         </TabStrip>
 
         <TabContentItem>

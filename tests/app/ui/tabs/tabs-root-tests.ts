@@ -35,7 +35,7 @@ function createFrame(i: number, page: Page) {
 function createTabItem(i: number, frame: Frame) {
     const tabEntry = new TabContentItem();
     // tabEntry.title = "Tab " + i;
-    tabEntry.view = frame;
+    tabEntry.content = frame;
     tabEntry["index"] = i;
 
     return tabEntry;

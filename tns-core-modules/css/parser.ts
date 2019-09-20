@@ -546,7 +546,7 @@ function parseArgumentsList<T>(text: string, start: number, argument: (value: st
         }
         end = arg.end;
         value.push(arg);
-        
+
         closingBracketOrCommaRegEx.lastIndex = end;
         const closingBracketOrComma = closingBracketOrCommaRegEx.exec(text);
         if (closingBracketOrComma) {
@@ -734,7 +734,7 @@ export function parseUniversalSelector(text: string, start: number = 0): Parsed<
     return { start, end, value: { type: "*" }};
 }
 
-const simpleIdentifierSelectorRegEx = /(#|\.|:|\b)([_-\w][_-\w\d]*)/gy;
+const simpleIdentifierSelectorRegEx = /(#|\.|:|\b)([_-\w][_-\w\d\\/]*)/gy;
 export function parseSimpleIdentifierSelector(text: string, start: number = 0): Parsed<TypeSelector | ClassSelector | IdSelector | PseudoClassSelector> {
     simpleIdentifierSelectorRegEx.lastIndex = start;
     const result = simpleIdentifierSelectorRegEx.exec(text);
@@ -743,7 +743,7 @@ export function parseSimpleIdentifierSelector(text: string, start: number = 0): 
     }
     const end = simpleIdentifierSelectorRegEx.lastIndex;
     const type = <"#" | "." | ":" | "">result[1];
-    const identifier: string = result[2];
+    const identifier: string = result[2].replace(/\\/g, "");
     const value = <TypeSelector | ClassSelector | IdSelector | PseudoClassSelector>{ type, identifier };
 
     return { start, end, value };

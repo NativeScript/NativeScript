@@ -1,46 +1,41 @@
 import * as TKUnit from "../tk-unit";
 import * as app from "tns-core-modules/application";
-import { isIOS, isAndroid } from "tns-core-modules/platform";
-
-// >> platform-require
 import * as platformModule from "tns-core-modules/platform";
-// << platform-require
 
-export function test_setTimeout_isDefined() {
-    var expected;
+export function test_platform() {
+    let expectedPlatform;
     if (app.android) {
-        expected = "Android";
+        expectedPlatform = "Android";
+    } else {
+        expectedPlatform = "iOS";
     }
-    else {
-        expected = "iOS";
-    }
-    TKUnit.assertEqual(platformModule.device.os, expected, "device.os");
+    TKUnit.assertEqual(platformModule.device.os, expectedPlatform);
 }
 
-export function snippet_print_all() {
-    // >> platform-current
-    console.log("Device model: " + platformModule.device.model);
-    console.log("Device type: " + platformModule.device.deviceType);
-    console.log("Device manufacturer: " + platformModule.device.manufacturer);
-    console.log("Preferred language: " + platformModule.device.language);
-    console.log("Preferred region: " + platformModule.device.region);
-    console.log("OS: " + platformModule.device.os);
-    console.log("OS version: " + platformModule.device.osVersion);
-    console.log("SDK version: " + platformModule.device.sdkVersion);
-    console.log("Device UUID: " + platformModule.device.uuid);
+export function test_device_screen() {
+    TKUnit.assert(platformModule.device.model, "Device model not initialized.");
+    TKUnit.assert(platformModule.device.manufacturer, "Device manufacturer not initialized.");
+    TKUnit.assert(platformModule.device.deviceType, "Device type not initialized.");
+    TKUnit.assert(platformModule.device.uuid, "Device UUID not initialized.");
 
-    console.log("Screen width (px): " + platformModule.screen.mainScreen.widthPixels);
-    console.log("Screen height (px): " + platformModule.screen.mainScreen.heightPixels);
-    console.log("Screen width (DIPs): " + platformModule.screen.mainScreen.widthDIPs);
-    console.log("Screen height (DIPs): " + platformModule.screen.mainScreen.heightDIPs);
-    console.log("Screen scale: " + platformModule.screen.mainScreen.scale);
-    // << platform-current
+    TKUnit.assert(platformModule.device.language, "Preferred language not initialized.");
+    TKUnit.assert(platformModule.device.region, "Preferred region not initialized.");
+
+    TKUnit.assert(platformModule.device.os, "OS not initialized.");
+    TKUnit.assert(platformModule.device.osVersion, "OS version not initialized.");
+    TKUnit.assert(platformModule.device.sdkVersion, "SDK version not initialized.");
+
+    TKUnit.assert(platformModule.screen.mainScreen.widthPixels, "Screen width (px) not initialized.");
+    TKUnit.assert(platformModule.screen.mainScreen.heightPixels, "Screen height (px) not initialized.");
+    TKUnit.assert(platformModule.screen.mainScreen.widthDIPs, "Screen width (DIPs) not initialized.");
+    TKUnit.assert(platformModule.screen.mainScreen.heightDIPs, "Screen height (DIPs) not initialized.");
+    TKUnit.assert(platformModule.screen.mainScreen.scale, "Screen scale not initialized.");
 }
 
-export function testIsIOSandIsAndroid() {
-    if (isIOS) {
+export function test_IsAndroid_IsIOS() {
+    if (platformModule.isIOS) {
         TKUnit.assertTrue(!!NSObject, "isIOS is true-ish but common iOS APIs are not available.");
-    } else if (isAndroid) {
-        TKUnit.assertTrue(!!android, "isAndroid is true but common 'android' package is not available.");
+    } else if (platformModule.isAndroid) {
+        TKUnit.assertTrue(!!android, "isAndroid is true-ish but common 'android' package is not available.");
     }
 }

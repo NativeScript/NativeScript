@@ -1,7 +1,7 @@
 {
   "name": "tns-core-modules",
   "description": "Telerik NativeScript Core Modules",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "homepage": "https://www.nativescript.org",
   "repository": {
     "type": "git",
@@ -26,11 +26,12 @@
   "license": "Apache-2.0",
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
-    "tns-core-modules-widgets": "file:../tns-core-modules-widgets-6.1.0.tgz",
-    "tslib": "^1.9.3"
+    "reduce-css-calc": "^2.1.6",
+    "tns-core-modules-widgets": "file:../tns-core-modules-widgets-6.1.1.tgz",
+    "tslib": "1.10.0"
   },
   "devDependencies": {
-    "@types/node": "~7.0.5",
+    "@types/node": "~10.12.18",
     "tns-platform-declarations": "next"
   },
   "scripts": {

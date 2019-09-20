@@ -11,7 +11,7 @@
     </StackLayout>
         <GridLayout row="1">
             <BottomNavigation automationText="tabNavigation"  loaded="bottomNavigaitonLoaded" items="{{ tabContentItems }}">
-                <TabStrip items="{{ tabStripItems }}">
+                <TabStrip items="{{ tabStripItems }}" iosIconRenderingMode="alwaysOriginal">
                 </TabStrip>
             </BottomNavigation> 
         </GridLayout>

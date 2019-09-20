@@ -35,11 +35,14 @@ export { Observable };
 import {
     AndroidApplication,
     CssChangedEventData,
+    DiscardedErrorEventData,
     iOSApplication,
     LoadAppCSSEventData,
-    UnhandledErrorEventData,
-    DiscardedErrorEventData,
+    UnhandledErrorEventData
 } from "./application";
+
+import { CLASS_PREFIX, pushToRootViewCssClasses, removeFromRootViewCssClasses } from "../css/system-classes";
+import { DeviceOrientation } from "../ui/enums/enums";
 
 export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
 
@@ -52,6 +55,12 @@ export const lowMemoryEvent = "lowMemory";
 export const uncaughtErrorEvent = "uncaughtError";
 export const discardedErrorEvent = "discardedError";
 export const orientationChangedEvent = "orientationChanged";
+
+const ORIENTATION_CSS_CLASSES = [
+    `${CLASS_PREFIX}${DeviceOrientation.portrait}`,
+    `${CLASS_PREFIX}${DeviceOrientation.landscape}`,
+    `${CLASS_PREFIX}${DeviceOrientation.unknown}`
+];
 
 let cssFile: string = "./app.css";
 
@@ -92,7 +101,7 @@ export function livesync(rootView: View, context?: ModuleContext) {
     }
 
     // Handle application styles
-    if (reapplyAppStyles && rootView) {
+    if (rootView && reapplyAppStyles) {
         rootView._onCssStateChange();
     } else if (liveSyncCore) {
         liveSyncCore(context);
@@ -114,6 +123,21 @@ export function loadAppCss(): void {
     } catch (e) {
         throw new Error(`The file ${getCssFileName()} couldn't be loaded! ` +
             `You may need to register it inside ./app/vendor.ts.`);
+    }
+}
+
+export function orientationChanged(rootView: View, newOrientation: "portrait" | "landscape" | "unknown"): void {
+    const newOrientationCssClass = `${CLASS_PREFIX}${newOrientation}`;
+    if (!rootView.cssClasses.has(newOrientationCssClass)) {
+        const removeCssClass = (c: string) => {
+            removeFromRootViewCssClasses(c);
+            rootView.cssClasses.delete(c);
+        };
+
+        ORIENTATION_CSS_CLASSES.forEach(c => removeCssClass(c));
+        pushToRootViewCssClasses(newOrientationCssClass);
+        rootView.cssClasses.add(newOrientationCssClass);
+        rootView._onCssStateChange();
     }
 }
 

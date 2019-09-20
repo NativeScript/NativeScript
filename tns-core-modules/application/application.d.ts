@@ -286,6 +286,12 @@ export function on(event: "discardedError", callback: (args: DiscardedErrorEvent
 export function on(event: "orientationChanged", callback: (args: OrientationChangedEventData) => void, thisArg?: any);
 
 /**
+ * Gets the orientation of the application.
+ * Available values: "portrait", "landscape", "unknown".
+ */
+export function orientation(): "portrait" | "landscape" | "unknown";
+
+/**
  * This is the Android-specific application object instance.
  * Encapsulates methods and properties specific to the Android platform.
  * Will be undefined when TargetOS is iOS.
@@ -412,6 +418,12 @@ export class AndroidApplication extends Observable {
      * The main (start) Activity for the application.
      */
     startActivity: any /* androidx.appcompat.app.AppCompatActivity */;
+
+    /**
+     * Gets the orientation of the application.
+     * Available values: "portrait", "landscape", "unknown".
+     */
+    orientation: "portrait" | "landscape" | "unknown";
 
     /**
      * The name of the application package.
@@ -582,14 +594,20 @@ export interface iOSApplication {
     window: any /* UIWindow */;
 
     /**
-     * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html).
-     */
-    nativeApp: any /* UIApplication */;
-
-    /**
      * The [UIApplicationDelegate](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplicationDelegate_Protocol/index.html) class.
      */
     delegate: any /* typeof UIApplicationDelegate */;
+
+    /**
+     * Gets or sets the orientation of the application.
+     * Available values: "portrait", "landscape", "unknown".
+     */
+    orientation: "portrait" | "landscape" | "unknown";
+
+    /**
+     * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html).
+     */
+    nativeApp: any /* UIApplication */;
 
     /**
      * Adds an observer to the default notification center for the specified notification.

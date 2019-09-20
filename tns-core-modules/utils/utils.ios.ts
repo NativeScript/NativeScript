@@ -8,7 +8,8 @@ export * from "./utils-common";
 let mainScreenScale;
 
 function isOrientationLandscape(orientation: number) {
-    return orientation === UIDeviceOrientation.LandscapeLeft || orientation === UIDeviceOrientation.LandscapeRight;
+    return orientation === UIDeviceOrientation.LandscapeLeft /* 3 */ ||
+        orientation === UIDeviceOrientation.LandscapeRight /* 4 */;
 }
 
 export module layout {
@@ -79,11 +80,15 @@ export module ios {
     }
 
     export function isLandscape(): boolean {
-        const device = UIDevice.currentDevice;
+        console.log("utils.ios.isLandscape() is deprecated; use application.orientation instead");
+
+        const deviceOrientation = UIDevice.currentDevice.orientation;
         const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+
+        const isDeviceOrientationLandscape = isOrientationLandscape(deviceOrientation);
         const isStatusBarOrientationLandscape = isOrientationLandscape(statusBarOrientation);
 
-        return isOrientationLandscape(device.orientation) || isStatusBarOrientationLandscape;
+        return isDeviceOrientationLandscape || isStatusBarOrientationLandscape;
     }
 
     export const MajorVersion = NSString.stringWithString(UIDevice.currentDevice.systemVersion).intValue;
@@ -153,7 +158,7 @@ export function openFile(filePath: string): boolean {
 }
 
 // Need this so that we can use this function inside the ios module (avoid name clashing).
-const openFileAtRootModule =  openFile;
+const openFileAtRootModule = openFile;
 
 export function GC() {
     __collect();

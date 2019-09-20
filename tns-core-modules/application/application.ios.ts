@@ -1,15 +1,15 @@
 import {
-    iOSApplication as IOSApplicationDefinition,
     ApplicationEventData,
     CssChangedEventData,
+    iOSApplication as IOSApplicationDefinition,
     LaunchEventData,
     LoadAppCSSEventData,
     OrientationChangedEventData
 } from ".";
 
 import {
-    notify, launchEvent, resumeEvent, suspendEvent, exitEvent, lowMemoryEvent,
-    orientationChangedEvent, setApplication, livesync, displayedEvent, getCssFileName
+    displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on,
+    orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -17,10 +17,14 @@ export * from "./application-common";
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../ui/builder";
+import { CLASS_PREFIX, getRootViewCssClasses, pushToRootViewCssClasses } from "../css/system-classes";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
-import { ios } from "../utils/utils";
+import { device } from "../platform/platform";
 import { profile } from "../profiling";
+import { ios } from "../utils/utils";
+
+const IOS_PLATFORM = "ios";
 
 const getVisibleViewController = ios.getVisibleViewController;
 
@@ -35,8 +39,8 @@ const Responder = (<any>UIResponder).extend({
         // NOOP
     }
 }, {
-        protocols: [UIApplicationDelegate]
-    }
+    protocols: [UIApplicationDelegate]
+}
 );
 
 class NotificationObserver extends NSObject {
@@ -78,9 +82,9 @@ class CADisplayLinkTarget extends NSObject {
 
 class IOSApplication implements IOSApplicationDefinition {
     private _delegate: typeof UIApplicationDelegate;
-    private _currentOrientation = UIDevice.currentDevice.orientation;
     private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
+    private _orientation: "portrait" | "landscape" | "unknown";
     private _rootView: View;
 
     constructor() {
@@ -90,7 +94,16 @@ class IOSApplication implements IOSApplicationDefinition {
         this.addNotificationObserver(UIApplicationDidEnterBackgroundNotification, this.didEnterBackground.bind(this));
         this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate.bind(this));
         this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning.bind(this));
-        this.addNotificationObserver(UIDeviceOrientationDidChangeNotification, this.orientationDidChange.bind(this));
+        this.addNotificationObserver(UIApplicationDidChangeStatusBarOrientationNotification, this.didChangeStatusBarOrientation.bind(this));
+    }
+
+    get orientation(): "portrait" | "landscape" | "unknown" {
+        if (!this._orientation) {
+            const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+            this._orientation = this.getOrientationValue(statusBarOrientation);
+        }
+
+        return this._orientation;
     }
 
     get rootController(): UIViewController {
@@ -197,37 +210,36 @@ class IOSApplication implements IOSApplicationDefinition {
         }
     }
 
-    private didReceiveMemoryWarning(notification: NSNotification) {
-        notify(<ApplicationEventData>{ eventName: lowMemoryEvent, object: this, ios: UIApplication.sharedApplication });
-    }
+    private didChangeStatusBarOrientation(notification: NSNotification) {
+        const statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+        const newOrientation = this.getOrientationValue(statusBarOrientation);
 
-    private orientationDidChange(notification: NSNotification) {
-        const orientation = UIDevice.currentDevice.orientation;
-
-        if (this._currentOrientation !== orientation) {
-            this._currentOrientation = orientation;
-
-            let newValue: "portrait" | "landscape" | "unknown";
-            switch (orientation) {
-                case UIDeviceOrientation.LandscapeRight:
-                case UIDeviceOrientation.LandscapeLeft:
-                    newValue = "landscape";
-                    break;
-                case UIDeviceOrientation.Portrait:
-                case UIDeviceOrientation.PortraitUpsideDown:
-                    newValue = "portrait";
-                    break;
-                default:
-                    newValue = "unknown";
-                    break;
-            }
+        if (this._orientation !== newOrientation) {
+            this._orientation = newOrientation;
 
             notify(<OrientationChangedEventData>{
                 eventName: orientationChangedEvent,
                 ios: this,
-                newValue: newValue,
+                newValue: this._orientation,
                 object: this
             });
+        }
+    }
+
+    private didReceiveMemoryWarning(notification: NSNotification) {
+        notify(<ApplicationEventData>{ eventName: lowMemoryEvent, object: this, ios: UIApplication.sharedApplication });
+    }
+
+    private getOrientationValue(orientation: number): "portrait" | "landscape" | "unknown" {
+        switch (orientation) {
+            case UIInterfaceOrientation.LandscapeRight:
+            case UIInterfaceOrientation.LandscapeLeft:
+                return "landscape";
+            case UIInterfaceOrientation.PortraitUpsideDown:
+            case UIInterfaceOrientation.Portrait:
+                return "portrait";
+            case UIInterfaceOrientation.Unknown:
+                return "unknown";
         }
     }
 
@@ -298,6 +310,14 @@ function createRootView(v?: View) {
             }
         }
     }
+
+    const deviceType = device.deviceType.toLowerCase();
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
+
+    const rootViewCssClasses = getRootViewCssClasses();
+    rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
 
     return rootView;
 }
@@ -394,6 +414,17 @@ function setViewControllerView(view: View): void {
         viewController.view.addSubview(nativeView);
     }
 }
+
+export function orientation(): "portrait" | "landscape" | "unknown" {
+    return iosApp.orientation;
+}
+
+on(orientationChangedEvent, (args: OrientationChangedEventData) => {
+    const rootView = getRootView();
+    if (rootView) {
+        orientationChanged(rootView, args.newValue);
+    }
+});
 
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     if (!started) {

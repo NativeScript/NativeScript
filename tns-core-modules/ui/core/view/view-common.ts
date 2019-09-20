@@ -5,9 +5,8 @@ import {
 } from ".";
 
 import {
-    ViewBase, Property, booleanConverter, EventData, layout,
-    getEventOrGestureName, traceEnabled, traceWrite, traceCategories,
-    InheritedProperty, ShowModalOptions
+    booleanConverter, EventData, getEventOrGestureName, InheritedProperty, layout,
+    Property, ShowModalOptions, traceCategories, traceEnabled, traceWrite, ViewBase
 } from "../view-base";
 
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
@@ -20,6 +19,7 @@ import {
     fromString as gestureFromString
 } from "../../gestures";
 
+import { getModalRootViewCssClass } from "../../../css/system-classes";
 import { createViewFromEntry } from "../../builder";
 import { sanitizeModuleName } from "../../builder/module-name-sanitizer";
 import { StyleScope } from "../../styling/style-scope";
@@ -31,6 +31,7 @@ export * from "../view-base";
 export { LinearGradient };
 
 import * as am from "../../animation";
+
 let animationModule: typeof am;
 function ensureAnimationModule() {
     if (!animationModule) {
@@ -152,9 +153,29 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
     }
 
+    public _closeAllModalViewsInternal(): boolean {
+        if (_rootModalViews && _rootModalViews.length > 0) {
+            _rootModalViews.forEach(v => {
+                v.closeModal();
+            });
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public _getRootModalViews(): Array<ViewBase> {
+        return _rootModalViews;
+    }
+
     public _onLivesync(context?: ModuleContext): boolean {
         if (traceEnabled()) {
             traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
+        }
+
+        if (this._closeAllModalViewsInternal()) {
+            return true;
         }
 
         if (this._handleLivesync(context)) {
@@ -347,8 +368,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return this._modal;
     }
 
-    protected _showNativeModalView(parent: ViewCommon, options: ShowModalOptions) { //context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean, iosOpts?: any) {
+    protected _showNativeModalView(parent: ViewCommon, options: ShowModalOptions) {
         _rootModalViews.push(this);
+
+        const modalRootViewCssClass = getModalRootViewCssClass();
+        this.cssClasses.add(modalRootViewCssClass);
 
         parent._modal = this;
         this._modalParent = parent;
