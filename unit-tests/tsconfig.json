@@ -19,7 +19,7 @@
             "chai",
             "mocha"
         ],
-        "baseUrl": ".",
+        "baseUrl": "..",
         "paths": {
             "tns-core-modules/*": [
                 "tns-core-modules/*"
@@ -27,17 +27,16 @@
         }
     },
     "include": [
-        "tns-core-modules/**/*.ts",
-        "unit-tests/**/*.ts"
+        "../tns-core-modules/**/*.ts",
+        "./**/*.ts"
     ],
     "exclude": [
-        "**/*.android.ts",
-        "**/*.android.d.ts",
-        "**/*.ios.ts",
-        "**/*.ios.d.ts",
-        "tns-platform-declarations",
-        "tns-core-modules/node-modules",
-        "tns-core-modules/references.d.ts",
-        "tns-core-modules/platforms"
+        "../tns-core-modules/**/*.android.ts",
+        "../tns-core-modules/**/*.android.d.ts",
+        "../tns-core-modules/**/*.ios.ts",
+        "../tns-core-modules/**/*.ios.d.ts",
+        "../tns-core-modules/node-modules",
+        "../tns-core-modules/references.d.ts",
+        "../tns-core-modules/platforms"
     ]
 }
