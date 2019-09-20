@@ -1,7 +1,7 @@
 ﻿import * as definition from ".";
 import * as types from "../utils/types";
 import * as knownColors from "./known-colors";
-import { convertHSLToRGBColor } from "tns-core-modules/css/parser";
+import { convertHSLToRGBColor } from "../css/parser";
 
 const SHARP = "#";
 const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
