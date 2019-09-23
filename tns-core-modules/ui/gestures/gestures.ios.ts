@@ -1,5 +1,5 @@
 // Definitions.
-import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
+import { GestureEventData, SwipeGestureEventData, PanGestureEventData, LongPressGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
 import { View, EventData } from "../core/view";
 
 // Types.
@@ -167,7 +167,9 @@ export class GesturesObserver extends GesturesObserverBase {
             }
 
             if (type & GestureTypes.longPress) {
-                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.longPress));
+                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.longPress, args => {
+                    this._executeCallback(_getLongPressData(args));
+                }));
             }
 
             if (type & GestureTypes.touch) {
@@ -341,6 +343,19 @@ function _getPanData(args: GestureEventData, view: UIView): PanGestureEventData 
         object: args.view,
         eventName: toString(args.type),
         state: getState(recognizer)
+    };
+}
+
+function _getLongPressData(args: GestureEventData): LongPressGestureEventData {
+    const recognizer = <UILongPressGestureRecognizer>args.ios;
+    return <LongPressGestureEventData>{
+        type: args.type,
+        view: args.view,
+        ios: args.ios,
+        android: undefined,
+        object: args.view,
+        eventName: toString(args.type),
+        state: recognizer.state,
     };
 }
 

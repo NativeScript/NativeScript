@@ -226,7 +226,12 @@ export interface PanGestureEventData extends GestureEventDataWithState {
     deltaX: number;
     deltaY: number;
 }
-
+/**
+ * Provides gesture event data for longPress gesture.
+ */
+export interface LongPressGestureEventData extends GestureEventDataWithState {
+    state: number;
+}
 /**
  * Provides gesture event data for rotation gesture.
  */

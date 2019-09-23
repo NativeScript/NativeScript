@@ -380,6 +380,7 @@ function _getArgs(type: GestureTypes, view: View, e: android.view.MotionEvent): 
         ios: undefined,
         object: view,
         eventName: toString(type),
+        state:undefined,
     };
 }
 
