@@ -39,8 +39,8 @@ const Responder = (<any>UIResponder).extend({
         // NOOP
     }
 }, {
-        protocols: [UIApplicationDelegate]
-    }
+    protocols: [UIApplicationDelegate]
+}
 );
 
 class NotificationObserver extends NSObject {
@@ -86,6 +86,7 @@ class IOSApplication implements IOSApplicationDefinition {
     private _observers: Array<NotificationObserver>;
     private _orientation: "portrait" | "landscape" | "unknown";
     private _rootView: View;
+    private _userInterfaceStyle: UIUserInterfaceStyle;
 
     constructor() {
         this._observers = new Array<NotificationObserver>();
@@ -95,6 +96,10 @@ class IOSApplication implements IOSApplicationDefinition {
         this.addNotificationObserver(UIApplicationWillTerminateNotification, this.willTerminate.bind(this));
         this.addNotificationObserver(UIApplicationDidReceiveMemoryWarningNotification, this.didReceiveMemoryWarning.bind(this));
         this.addNotificationObserver(UIApplicationDidChangeStatusBarOrientationNotification, this.didChangeStatusBarOrientation.bind(this));
+    }
+
+    private asdf(notification: NSNotification) {
+        console.log("---> Yeah!");
     }
 
     get orientation(): "portrait" | "landscape" | "unknown" {
@@ -130,6 +135,14 @@ class IOSApplication implements IOSApplicationDefinition {
 
     get rootView(): View {
         return this._rootView;
+    }
+
+    get userInterfaceStyle(): UIUserInterfaceStyle {
+        if (!this._userInterfaceStyle) {
+            this._userInterfaceStyle = this._rootView.viewController.traitCollection.userInterfaceStyle;
+        }
+
+        return this._userInterfaceStyle;
     }
 
     public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
@@ -389,6 +402,9 @@ export function getNativeApplication(): UIApplication {
 }
 
 function getViewController(view: View): UIViewController {
+
+    //
+
     let viewController: UIViewController = view.viewController || view.ios;
     if (viewController instanceof UIViewController) {
         return viewController;

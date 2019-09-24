@@ -86,6 +86,14 @@ class UIViewControllerImpl extends UIViewController {
         this.extendedLayoutIncludesOpaqueBars = true;
     }
 
+
+    public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+        super.traitCollectionDidChange(previousTraitCollection);
+
+        console.log("---> traitCollectionDidChange");
+    }
+
+
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
@@ -148,7 +156,7 @@ class UIViewControllerImpl extends UIViewController {
             const isReplace = navigationContext.navigationType === NavigationType.replace;
 
             frame.setCurrent(newEntry, navigationContext.navigationType);
-            
+
             if (isReplace) {
                 let controller = newEntry.resolvedPage.ios;
                 if (controller) {
