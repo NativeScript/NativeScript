@@ -17,7 +17,12 @@ export * from "./application-common";
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../ui/builder";
-import { CLASS_PREFIX, getRootViewCssClasses, pushToRootViewCssClasses } from "../css/system-classes";
+import {
+    CLASS_PREFIX,
+    getRootViewCssClasses,
+    pushToRootViewCssClasses,
+    resetRootViewCssClasses
+} from "../css/system-classes";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
 import { device } from "../platform/platform";
@@ -311,13 +316,12 @@ function createRootView(v?: View) {
         }
     }
 
+    resetRootViewCssClasses();
+
     const deviceType = device.deviceType.toLowerCase();
     pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
     pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
     pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
-
-    const rootViewCssClasses = getRootViewCssClasses();
-    rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
 
     return rootView;
 }
@@ -388,18 +392,36 @@ export function getNativeApplication(): UIApplication {
     return iosApp.nativeApp;
 }
 
-function getViewController(view: View): UIViewController {
-    let viewController: UIViewController = view.viewController || view.ios;
-    if (viewController instanceof UIViewController) {
-        return viewController;
-    } else {
+function getUserInterfaceStyleValue(userInterfaceStyle: number): "dark" | "light" | "unspecified" {
+    switch (userInterfaceStyle) {
+        case UIUserInterfaceStyle.Unspecified:
+        case UIUserInterfaceStyle.Light:
+            return "light";
+        case UIUserInterfaceStyle.Dark:
+            return "dark";
+    }
+}
+
+// TODO: Rename to getRootViewController
+function getViewController(rootView: View): UIViewController {
+    let viewController: UIViewController = rootView.viewController || rootView.ios;
+
+    if (!(viewController instanceof UIViewController)) {
         // We set UILayoutViewController dynamically to the root view if it doesn't have a view controller
         // At the moment the root view doesn't have its native view created. We set it in the setViewControllerView func
-        viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view)) as UIViewController;
-        view.viewController = viewController;
-
-        return viewController;
+        viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(rootView)) as UIViewController;
+        rootView.viewController = viewController;
     }
+
+    const userInterfaceStyle = viewController.traitCollection.userInterfaceStyle;
+    const userInterfaceStyleValue = getUserInterfaceStyleValue(userInterfaceStyle);
+
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${userInterfaceStyleValue}`);
+
+    const rootViewCssClasses = getRootViewCssClasses();
+    rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
+
+    return viewController;
 }
 
 function setViewControllerView(view: View): void {
