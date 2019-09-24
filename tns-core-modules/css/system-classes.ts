@@ -30,3 +30,7 @@ export function removeFromRootViewCssClasses(value: string): string {
 
     return removedElement;
 }
+
+export function resetRootViewCssClasses(): string[] {
+    return rootViewCssClasses.splice(1);
+}
