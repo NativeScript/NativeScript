@@ -108,9 +108,9 @@ declare class CTCellularPlanProvisioningRequest extends NSObject implements NSSe
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 interface CTError {
@@ -188,6 +188,10 @@ declare class CTTelephonyNetworkInfo extends NSObject {
 
 	readonly currentRadioAccessTechnology: string;
 
+	readonly dataServiceIdentifier: string;
+
+	delegate: CTTelephonyNetworkInfoDelegate;
+
 	readonly serviceCurrentRadioAccessTechnology: NSDictionary<string, string>;
 
 	readonly serviceSubscriberCellularProviders: NSDictionary<string, CTCarrier>;
@@ -198,6 +202,15 @@ declare class CTTelephonyNetworkInfo extends NSObject {
 
 	subscriberCellularProviderDidUpdateNotifier: (p1: CTCarrier) => void;
 }
+
+interface CTTelephonyNetworkInfoDelegate extends NSObjectProtocol {
+
+	dataServiceIdentifierDidChange?(identifier: string): void;
+}
+declare var CTTelephonyNetworkInfoDelegate: {
+
+	prototype: CTTelephonyNetworkInfoDelegate;
+};
 
 declare const kCTErrorDomainMach: number;
 

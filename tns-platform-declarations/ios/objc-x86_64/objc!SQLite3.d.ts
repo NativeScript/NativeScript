@@ -192,6 +192,8 @@ declare function sqlite3_create_module(db: interop.Pointer | interop.Reference<a
 
 declare function sqlite3_create_module_v2(db: interop.Pointer | interop.Reference<any>, zName: string, p: interop.Pointer | interop.Reference<sqlite3_module>, pClientData: interop.Pointer | interop.Reference<any>, xDestroy: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): number;
 
+declare function sqlite3_create_window_function(db: interop.Pointer | interop.Reference<any>, zFunctionName: string, nArg: number, eTextRep: number, pApp: interop.Pointer | interop.Reference<any>, xStep: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>, xFinal: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, xValue: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>, xInverse: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => void>, xDestroy: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): number;
+
 declare function sqlite3_data_count(pStmt: interop.Pointer | interop.Reference<any>): number;
 
 declare var sqlite3_data_directory: string;
@@ -379,6 +381,7 @@ interface sqlite3_module {
 	xSavepoint: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: number) => number>;
 	xRelease: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: number) => number>;
 	xRollbackTo: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<sqlite3_vtab>, p2: number) => number>;
+	xShadowName: interop.FunctionReference<(p1: string) => number>;
 }
 declare var sqlite3_module: interop.StructType<sqlite3_module>;
 
@@ -592,6 +595,8 @@ declare function sqlite3_step(p1: interop.Pointer | interop.Reference<any>): num
 
 declare function sqlite3_stmt_busy(p1: interop.Pointer | interop.Reference<any>): number;
 
+declare function sqlite3_stmt_isexplain(pStmt: interop.Pointer | interop.Reference<any>): number;
+
 declare function sqlite3_stmt_readonly(pStmt: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_stmt_status(p1: interop.Pointer | interop.Reference<any>, op: number, resetFlg: number): number;
@@ -661,6 +666,8 @@ declare function sqlite3_value_double(p1: interop.Pointer | interop.Reference<an
 declare function sqlite3_value_dup(p1: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function sqlite3_value_free(p1: interop.Pointer | interop.Reference<any>): void;
+
+declare function sqlite3_value_frombind(p1: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_value_int(p1: interop.Pointer | interop.Reference<any>): number;
 

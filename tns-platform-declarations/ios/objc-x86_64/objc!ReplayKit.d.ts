@@ -37,9 +37,9 @@ declare class RPBroadcastConfiguration extends NSObject implements NSCoding, NSS
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class RPBroadcastController extends NSObject {
@@ -233,7 +233,37 @@ declare const enum RPRecordingErrorCode {
 
 	FailedMediaServicesFailure = -5817,
 
-	VideoMixingFailure = -5818
+	VideoMixingFailure = -5818,
+
+	BroadcastSetupFailed = -5819,
+
+	FailedToObtainURL = -5820,
+
+	FailedIncorrectTimeStamps = -5821,
+
+	FailedToProcessFirstSample = -5822,
+
+	FailedAssetWriterFailedToSave = -5823,
+
+	FailedNoAssetWriter = -5824,
+
+	FailedAssetWriterInWrongState = -5825,
+
+	FailedAssetWriterExportFailed = -5826,
+
+	FailedToRemoveFile = -5827,
+
+	FailedAssetWriterExportCanceled = -5828,
+
+	AttemptToStopNonRecording = -5829,
+
+	AttemptToStartInRecordingState = -5830,
+
+	PhotoFailure = -5831,
+
+	RecordingInvalidSession = -5832,
+
+	CodeSuccessful = 0
 }
 
 declare var RPRecordingErrorDomain: string;
@@ -319,9 +349,9 @@ declare class RPSystemBroadcastPickerView extends UIView implements NSCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var RPVideoSampleOrientationKey: string;

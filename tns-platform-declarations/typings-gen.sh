@@ -37,6 +37,10 @@ TNS_TYPESCRIPT_DECLARATIONS_PATH=$(pwd)/ios-typings-prj/typings tns build ios --
 
 echo "Deleting old ios typings (ios/objc-x86_64)..."
 rm ios/objc-x86_64/*
+
+echo "Deleting Material Components typings..."
+rm ios-typings-prj/typings/x86_64/objc\!MaterialComponents.d.ts
+
 echo "Moving generated typings to ios/objc-x86_64..."
 mv ios-typings-prj/typings/x86_64/* ios/objc-x86_64/
 

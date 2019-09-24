@@ -64,7 +64,7 @@ interface __mm_storel_epi64_struct {
 }
 declare var __mm_storel_epi64_struct: interop.StructType<__mm_storel_epi64_struct>;
 
-declare function _mm_clflush(p1: interop.Pointer | interop.Reference<any>): void;
+declare function _mm_clflush(__p: interop.Pointer | interop.Reference<any>): void;
 
 declare function _mm_getcsr(): number;
 
@@ -74,7 +74,7 @@ declare function _mm_mfence(): void;
 
 declare function _mm_pause(): void;
 
-declare function _mm_setcsr(p1: number): void;
+declare function _mm_setcsr(__i: number): void;
 
 declare function _mm_sfence(): void;
 

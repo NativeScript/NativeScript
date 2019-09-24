@@ -269,8 +269,6 @@ declare function CFBooleanGetTypeID(): number;
 
 declare function CFBooleanGetValue(boolean: number): boolean;
 
-declare function CFBundleCloseBundleResourceMap(bundle: any, refNum: number): void;
-
 declare function CFBundleCopyAuxiliaryExecutableURL(bundle: any, executableName: string): NSURL;
 
 declare function CFBundleCopyBuiltInPlugInsURL(bundle: any): NSURL;
@@ -362,10 +360,6 @@ declare function CFBundleIsExecutableLoaded(bundle: any): boolean;
 declare function CFBundleLoadExecutable(bundle: any): boolean;
 
 declare function CFBundleLoadExecutableAndReturnError(bundle: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
-
-declare function CFBundleOpenBundleResourceFiles(bundle: any, refNum: interop.Pointer | interop.Reference<number>, localizedRefNum: interop.Pointer | interop.Reference<number>): number;
-
-declare function CFBundleOpenBundleResourceMap(bundle: any): number;
 
 declare function CFBundlePreflightExecutable(bundle: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
@@ -2483,7 +2477,9 @@ declare const enum CFURLEnumeratorOptions {
 
 	kCFURLEnumeratorIncludeDirectoriesPreOrder = 16,
 
-	kCFURLEnumeratorIncludeDirectoriesPostOrder = 32
+	kCFURLEnumeratorIncludeDirectoriesPostOrder = 32,
+
+	kCFURLEnumeratorGenerateRelativePathURLs = 64
 }
 
 declare const enum CFURLEnumeratorResult {

@@ -279,19 +279,11 @@ declare const kCCModeCTR: number;
 
 declare const kCCModeECB: number;
 
-declare const kCCModeF8: number;
-
-declare const kCCModeLRW: number;
-
 declare const kCCModeOFB: number;
 
 declare const kCCModeOptionCTR_BE: number;
 
-declare const kCCModeOptionCTR_LE: number;
-
 declare const kCCModeRC4: number;
-
-declare const kCCModeXTS: number;
 
 declare const kCCOptionECBMode: number;
 

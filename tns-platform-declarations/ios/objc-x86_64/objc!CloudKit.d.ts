@@ -233,9 +233,9 @@ declare class CKDatabaseSubscription extends CKSubscription implements NSCopying
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithSubscriptionID(subscriptionID: string): this;
 }
@@ -479,9 +479,9 @@ declare class CKFetchRecordZoneChangesConfiguration extends NSObject implements 
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class CKFetchRecordZoneChangesOperation extends CKDatabaseOperation {
@@ -535,9 +535,9 @@ declare class CKFetchRecordZoneChangesOptions extends NSObject implements NSCopy
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class CKFetchRecordZonesOperation extends CKDatabaseOperation {
@@ -670,9 +670,9 @@ declare class CKLocationSortDescriptor extends NSSortDescriptor implements NSSec
 
 	constructor(o: { key: string; relativeLocation: CLLocation; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithKeyRelativeLocation(key: string, relativeLocation: CLLocation): this;
 }
@@ -827,9 +827,9 @@ declare class CKNotificationID extends NSObject implements NSCopying, NSSecureCo
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class CKNotificationInfo extends NSObject implements NSCopying, NSSecureCoding {
@@ -880,9 +880,9 @@ declare class CKNotificationInfo extends NSObject implements NSCopying, NSSecure
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum CKNotificationType {
@@ -962,9 +962,9 @@ declare class CKOperationGroup extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum CKOperationGroupTransferSize {
@@ -1010,9 +1010,9 @@ declare class CKQuery extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithRecordTypePredicate(recordType: string, predicate: NSPredicate): this;
 }
@@ -1029,9 +1029,9 @@ declare class CKQueryCursor extends NSObject implements NSCopying, NSSecureCodin
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class CKQueryNotification extends CKNotification {
@@ -1107,9 +1107,9 @@ declare class CKQuerySubscription extends CKSubscription implements NSCopying, N
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum CKQuerySubscriptionOptions {
@@ -1183,9 +1183,9 @@ declare class CKRecord extends NSObject implements CKRecordKeyValueSetting, NSCo
 
 	encodeSystemFieldsWithCoder(coder: NSCoder): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithRecordType(recordType: string): this;
 
@@ -1250,9 +1250,9 @@ declare class CKRecordID extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithRecordName(recordName: string): this;
 
@@ -1324,9 +1324,9 @@ declare class CKRecordZone extends NSObject implements NSCopying, NSSecureCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithZoneID(zoneID: CKRecordZoneID): this;
 
@@ -1362,9 +1362,9 @@ declare class CKRecordZoneID extends NSObject implements NSCopying, NSSecureCodi
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithZoneNameOwnerName(zoneName: string, ownerName: string): this;
 }
@@ -1402,9 +1402,9 @@ declare class CKRecordZoneSubscription extends CKSubscription implements NSCopyi
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithZoneID(zoneID: CKRecordZoneID): this;
 
@@ -1447,9 +1447,9 @@ declare class CKReference extends NSObject implements CKRecordValue, NSCopying, 
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithRecordAction(record: CKRecord, action: CKReferenceAction): this;
 
@@ -1493,12 +1493,12 @@ declare class CKServerChangeToken extends NSObject implements NSCopying, NSSecur
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
-declare class CKShare extends CKRecord {
+declare class CKShare extends CKRecord implements NSSecureCoding {
 
 	static alloc(): CKShare; // inherited from NSObject
 
@@ -1514,11 +1514,19 @@ declare class CKShare extends CKRecord {
 
 	publicPermission: CKShareParticipantPermission;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	constructor(o: { rootRecord: CKRecord; });
 
 	constructor(o: { rootRecord: CKRecord; shareID: CKRecordID; });
 
 	addParticipant(participant: CKShareParticipant): void;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 
 	initWithRootRecord(rootRecord: CKRecord): this;
 
@@ -1557,9 +1565,9 @@ declare class CKShareMetadata extends NSObject implements NSCopying, NSSecureCod
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class CKShareParticipant extends NSObject implements NSCopying, NSSecureCoding {
@@ -1584,9 +1592,9 @@ declare class CKShareParticipant extends NSObject implements NSCopying, NSSecure
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum CKShareParticipantAcceptanceStatus {
@@ -1673,9 +1681,9 @@ declare class CKSubscription extends NSObject implements NSCopying, NSSecureCodi
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithRecordTypePredicateOptions(recordType: string, predicate: NSPredicate, subscriptionOptions: CKSubscriptionOptions): this;
 
@@ -1728,9 +1736,9 @@ declare class CKUserIdentity extends NSObject implements NSCopying, NSSecureCodi
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class CKUserIdentityLookupInfo extends NSObject implements NSCopying, NSSecureCoding {
@@ -1763,9 +1771,9 @@ declare class CKUserIdentityLookupInfo extends NSObject implements NSCopying, NS
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithEmailAddress(emailAddress: string): this;
 
