@@ -28,6 +28,11 @@ export class TabStrip extends View {
     iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
     /**
+     * Gets or sets the color that marks the selected tab of the tab strip. Works for Tabs component only.
+     */
+    highlightColor: Color;
+
+    /**
      * @private
      */
     _hasImage: boolean;
