@@ -81,6 +81,47 @@ tns run ios
 tns run android
 ```
 
+### Running Another Angular App
+
+When linking within a Angular/TS project, `tns run` will grab the linked TS files in core modules and try to compile them without the references needed.  To work around this, from the root of your `NativeScript` clone do the following:
+
+1. Create a copy of `tns-core-modules` folder via:
+```bash
+mkdir dist && cp -r tns-core-modules dist/
+# Should look like this:
+NativeScript
+     |
+     +--> dist
+            |
+            +--> tns-core-modules
+                        |
+                        +--> ...
+                        +--> ...
+                        +--> ...
+```
+2. Delete all `.ts` files, keeping `d.ts` ones via:
+```bash
+find dist/tns-core-modules -name "*.ts" -not -name "*.d.ts" -delete
+```
+3. Add `--outDir dist` to the `tsc-w` script in `package.json`
+```
+"scripts": {
+...
+"tsc-w": "npm run tsc -- --skipLibCheck -w --outDir dist",
+...
+```
+4. Run `npm run tsc-w`
+5. In another terminal, go to the root of your NS Angular project and link the `dist/tns-core-modules` via:
+```bash
+npm install --save <path to dist/tns-core-modules>
+# Example: npm install --save ../NativeScript/dist/tns-core-modules
+```
+6. Run the app
+```bash
+tns run ios
+tns run android
+```
+
 ## Platform declarations
 To update the platform declarations (the ios.d.ts-es) you can run:
 
