@@ -532,6 +532,18 @@ class UINavigationControllerImpl extends UINavigationController {
 
         return null;
     }
+
+    public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+        super.traitCollectionDidChange(previousTraitCollection);
+
+        const owner = this._owner.get();
+        owner.notify({ eventName: "traitCollectionChanged", object: owner });
+        console.log("---> UINavigationControllerImpl.traitCollectionDidChange()");
+
+        if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            owner.notify({ eventName: "traitCollectionColorAppearanceChanged", object: owner });
+        }
+    }
 }
 
 function _getTransitionId(nativeTransition: UIViewAnimationTransition, transitionType: string): string {
