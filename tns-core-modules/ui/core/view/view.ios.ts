@@ -1003,6 +1003,18 @@ export namespace ios {
                 owner.callUnloaded();
             }
         }
+
+        public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+            super.traitCollectionDidChange(previousTraitCollection);
+
+            const owner = this.owner.get();
+            owner.notify({ eventName: "traitCollectionChanged", object: owner });
+            console.log("---> UILayoutViewController.traitCollectionDidChange()");
+
+            if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+                owner.notify({ eventName: "traitCollectionColorAppearanceChanged", object: owner });
+            }
+        }
     }
 
     export class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
