@@ -1,6 +1,7 @@
 <Page>
   <Page.actionBar>
     <ActionBar automationText="actionBar">
+      <NavigationButton icon="font://&#xF137;" class="font-awesome font-size color"/>
       <ActionBar.actionItems>
         <!-- font family + font size + color -->
         <ActionItem icon="font://&#xF10B;" class="font-awesome font-size color" tap="navigate"/>
