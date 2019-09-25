@@ -627,7 +627,9 @@ export interface iOSApplication {
     removeNotificationObserver(observer: any, notificationName: string): void;
 }
 
-/* tslint:disable */
+/**
+* @deprecated
+*/
 export interface RootViewControllerImpl {
     contentController: any;
 }
