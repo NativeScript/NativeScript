@@ -280,6 +280,18 @@ class UIViewControllerImpl extends UIViewController {
             iosView.layoutView(this, owner);
         }
     }
+
+    public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+        super.traitCollectionDidChange(previousTraitCollection);
+
+        const owner = this._owner.get();
+        owner.notify({ eventName: "traitCollectionChanged", object: owner });
+        console.log("---> UIViewControllerImpl.traitCollectionDidChange()");
+
+        if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            owner.notify({ eventName: "traitCollectionColorAppearanceChanged", object: owner });
+        }
+    }
 }
 
 const whiteColor = new Color("white").ios;

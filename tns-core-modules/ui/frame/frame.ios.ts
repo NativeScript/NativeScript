@@ -393,10 +393,6 @@ class UINavigationControllerImpl extends UINavigationController {
         return controller;
     }
 
-    get owner(): Frame {
-        return this._owner.get();
-    }
-
     @profile
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
@@ -531,6 +527,18 @@ class UINavigationControllerImpl extends UINavigationController {
         });
 
         return null;
+    }
+
+    public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+        super.traitCollectionDidChange(previousTraitCollection);
+
+        const owner = this._owner.get();
+        owner.notify({ eventName: "traitCollectionChanged", object: owner });
+        console.log("---> UINavigationControllerImpl.traitCollectionDidChange()");
+
+        if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            owner.notify({ eventName: "traitCollectionColorAppearanceChanged", object: owner });
+        }
     }
 }
 
