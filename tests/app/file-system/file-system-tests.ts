@@ -226,18 +226,18 @@ export var testFileReadWriteBinaryAsync = function () {
                         destinationFile.removeSync();
                     }, function (error) {
                         TKUnit.assert(false, "Failed to read destination binary async");
-                    })
+                    });
             }, function (error) {
                 // Failed to write the file.
                 TKUnit.assert(false, "Failed to write binary async");
-            })
+            });
             // << (hide)
         }, function (error) {
             // Failed to read the file.
             // >> (hide)
             TKUnit.assert(false, "Failed to read binary async");
             // << (hide)
-        })
+        });
     // << file-system-read-binary-async
 };
 
