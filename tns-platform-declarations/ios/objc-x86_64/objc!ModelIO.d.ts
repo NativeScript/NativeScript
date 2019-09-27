@@ -22,6 +22,29 @@ declare class MDLAnimatedMatrix4x4 extends MDLAnimatedValue {
 	setFloat4x4AtTime(value: simd_float4x4, time: number): void;
 }
 
+declare class MDLAnimatedQuaternion extends MDLAnimatedValue {
+
+	static alloc(): MDLAnimatedQuaternion; // inherited from NSObject
+
+	static new(): MDLAnimatedQuaternion; // inherited from NSObject
+
+	doubleQuaternionAtTime(time: number): simd_quatd;
+
+	floatQuaternionAtTime(time: number): simd_quatf;
+
+	getDoubleQuaternionArrayMaxCount(valuesArray: interop.Pointer | interop.Reference<simd_quatd>, maxCount: number): number;
+
+	getFloatQuaternionArrayMaxCount(valuesArray: interop.Pointer | interop.Reference<simd_quatf>, maxCount: number): number;
+
+	resetWithDoubleQuaternionArrayAtTimesCount(valuesArray: interop.Pointer | interop.Reference<simd_quatd>, timesArray: interop.Pointer | interop.Reference<number>, count: number): void;
+
+	resetWithFloatQuaternionArrayAtTimesCount(valuesArray: interop.Pointer | interop.Reference<simd_quatf>, timesArray: interop.Pointer | interop.Reference<number>, count: number): void;
+
+	setDoubleQuaternionAtTime(value: simd_quatd, time: number): void;
+
+	setFloatQuaternionAtTime(value: simd_quatf, time: number): void;
+}
+
 declare class MDLAnimatedQuaternionArray extends MDLAnimatedValue {
 
 	static alloc(): MDLAnimatedQuaternionArray; // inherited from NSObject
@@ -2326,6 +2349,23 @@ declare const enum MDLTransformOpRotationOrder {
 	ZYX = 6
 }
 
+declare class MDLTransformOrientOp extends NSObject implements MDLTransformOp {
+
+	static alloc(): MDLTransformOrientOp; // inherited from NSObject
+
+	static new(): MDLTransformOrientOp; // inherited from NSObject
+
+	readonly animatedValue: MDLAnimatedQuaternion;
+
+	readonly name: string; // inherited from MDLTransformOp
+
+	IsInverseOp(): boolean;
+
+	double4x4AtTime(time: number): simd_double4x4;
+
+	float4x4AtTime(time: number): simd_float4x4;
+}
+
 declare class MDLTransformRotateOp extends NSObject implements MDLTransformOp {
 
 	static alloc(): MDLTransformRotateOp; // inherited from NSObject
@@ -2444,6 +2484,8 @@ declare class MDLTransformStack extends NSObject implements MDLTransformComponen
 	readonly  // inherited from NSObjectProtocol
 
 	addMatrixOpInverse(animatedValueName: string, inverse: boolean): MDLTransformMatrixOp;
+
+	addOrientOpInverse(animatedValueName: string, inverse: boolean): MDLTransformOrientOp;
 
 	addRotateOpOrderInverse(animatedValueName: string, order: MDLTransformOpRotationOrder, inverse: boolean): MDLTransformRotateOp;
 

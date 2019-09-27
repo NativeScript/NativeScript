@@ -56,7 +56,9 @@ declare const enum CLSBinaryValueType {
 
 	PassFail = 1,
 
-	YesNo = 2
+	YesNo = 2,
+
+	CorrectIncorrect = 3
 }
 
 declare class CLSContext extends CLSObject {
@@ -99,6 +101,15 @@ declare class CLSContext extends CLSObject {
 
 	resignActive(): void;
 }
+
+interface CLSContextProvider {
+
+	updateDescendantsOfContextCompletion(context: CLSContext, completion: (p1: NSError) => void): void;
+}
+declare var CLSContextProvider: {
+
+	prototype: CLSContextProvider;
+};
 
 declare var CLSContextTopicArtsAndMusic: string;
 
@@ -167,6 +178,8 @@ declare class CLSDataStore extends NSObject {
 
 	static readonly shared: CLSDataStore;
 
+	completeAllAssignedActivitiesMatching(contextPath: NSArray<string> | string[]): void;
+
 	contextsMatchingIdentifierPathCompletion(identifierPath: NSArray<string> | string[], completion: (p1: NSArray<CLSContext>, p2: NSError) => void): void;
 
 	contextsMatchingPredicateCompletion(predicate: NSPredicate, completion: (p1: NSArray<CLSContext>, p2: NSError) => void): void;
@@ -228,9 +241,9 @@ declare class CLSObject extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var CLSPredicateKeyPathDateCreated: string;

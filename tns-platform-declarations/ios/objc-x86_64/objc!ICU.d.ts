@@ -600,9 +600,36 @@ declare const enum UBlockCode {
 
 	LOCK_SOGDIAN = 291,
 
-	LOCK_COUNT = 292,
+	LOCK_EGYPTIAN_HIEROGLYPH_FORMAT_CONTROLS = 292,
+
+	LOCK_ELYMAIC = 293,
+
+	LOCK_NANDINAGARI = 294,
+
+	LOCK_NYIAKENG_PUACHUE_HMONG = 295,
+
+	LOCK_OTTOMAN_SIYAQ_NUMBERS = 296,
+
+	LOCK_SMALL_KANA_EXTENSION = 297,
+
+	LOCK_SYMBOLS_AND_PICTOGRAPHS_EXTENDED_A = 298,
+
+	LOCK_TAMIL_SUPPLEMENT = 299,
+
+	LOCK_WANCHO = 300,
+
+	LOCK_COUNT = 301,
 
 	LOCK_INVALID_CODE = -1
+}
+
+declare const enum UCPMapRangeOption {
+
+	AP_RANGE_NORMAL = 0,
+
+	AP_RANGE_FIXED_LEAD_SURROGATES = 1,
+
+	AP_RANGE_FIXED_ALL_SURROGATES = 2
 }
 
 declare const enum UCharCategory {
@@ -1214,6 +1241,114 @@ declare const enum UHangulSyllableType {
 
 declare const UITER_UNKNOWN_INDEX: number;
 
+declare const enum UIndicPositionalCategory {
+
+	U_INPC_NA = 0,
+
+	U_INPC_BOTTOM = 1,
+
+	U_INPC_BOTTOM_AND_LEFT = 2,
+
+	U_INPC_BOTTOM_AND_RIGHT = 3,
+
+	U_INPC_LEFT = 4,
+
+	U_INPC_LEFT_AND_RIGHT = 5,
+
+	U_INPC_OVERSTRUCK = 6,
+
+	U_INPC_RIGHT = 7,
+
+	U_INPC_TOP = 8,
+
+	U_INPC_TOP_AND_BOTTOM = 9,
+
+	U_INPC_TOP_AND_BOTTOM_AND_RIGHT = 10,
+
+	U_INPC_TOP_AND_LEFT = 11,
+
+	U_INPC_TOP_AND_LEFT_AND_RIGHT = 12,
+
+	U_INPC_TOP_AND_RIGHT = 13,
+
+	U_INPC_VISUAL_ORDER_LEFT = 14
+}
+
+declare const enum UIndicSyllabicCategory {
+
+	U_INSC_OTHER = 0,
+
+	U_INSC_AVAGRAHA = 1,
+
+	U_INSC_BINDU = 2,
+
+	U_INSC_BRAHMI_JOINING_NUMBER = 3,
+
+	U_INSC_CANTILLATION_MARK = 4,
+
+	U_INSC_CONSONANT = 5,
+
+	U_INSC_CONSONANT_DEAD = 6,
+
+	U_INSC_CONSONANT_FINAL = 7,
+
+	U_INSC_CONSONANT_HEAD_LETTER = 8,
+
+	U_INSC_CONSONANT_INITIAL_POSTFIXED = 9,
+
+	U_INSC_CONSONANT_KILLER = 10,
+
+	U_INSC_CONSONANT_MEDIAL = 11,
+
+	U_INSC_CONSONANT_PLACEHOLDER = 12,
+
+	U_INSC_CONSONANT_PRECEDING_REPHA = 13,
+
+	U_INSC_CONSONANT_PREFIXED = 14,
+
+	U_INSC_CONSONANT_SUBJOINED = 15,
+
+	U_INSC_CONSONANT_SUCCEEDING_REPHA = 16,
+
+	U_INSC_CONSONANT_WITH_STACKER = 17,
+
+	U_INSC_GEMINATION_MARK = 18,
+
+	U_INSC_INVISIBLE_STACKER = 19,
+
+	U_INSC_JOINER = 20,
+
+	U_INSC_MODIFYING_LETTER = 21,
+
+	U_INSC_NON_JOINER = 22,
+
+	U_INSC_NUKTA = 23,
+
+	U_INSC_NUMBER = 24,
+
+	U_INSC_NUMBER_JOINER = 25,
+
+	U_INSC_PURE_KILLER = 26,
+
+	U_INSC_REGISTER_SHIFTER = 27,
+
+	U_INSC_SYLLABLE_MODIFIER = 28,
+
+	U_INSC_TONE_LETTER = 29,
+
+	U_INSC_TONE_MARK = 30,
+
+	U_INSC_VIRAMA = 31,
+
+	U_INSC_VISARGA = 32,
+
+	U_INSC_VOWEL = 33,
+
+	U_INSC_VOWEL_DEPENDENT = 34,
+
+	U_INSC_VOWEL_INDEPENDENT = 35
+}
+
 declare const enum UJoiningGroup {
 
 	U_JG_NO_JOINING_GROUP = 0,
@@ -1738,7 +1873,13 @@ declare const enum UProperty {
 
 	CHAR_BIDI_PAIRED_BRACKET_TYPE = 4117,
 
-	CHAR_INT_LIMIT = 4118,
+	CHAR_INDIC_POSITIONAL_CATEGORY = 4118,
+
+	CHAR_INDIC_SYLLABIC_CATEGORY = 4119,
+
+	CHAR_VERTICAL_ORIENTATION = 4120,
+
+	CHAR_INT_LIMIT = 4121,
 
 	CHAR_GENERAL_CATEGORY_MASK = 8192,
 
@@ -1918,6 +2059,17 @@ interface UTextFuncs {
 }
 declare var UTextFuncs: interop.StructType<UTextFuncs>;
 
+declare const enum UVerticalOrientation {
+
+	U_VO_ROTATED = 0,
+
+	U_VO_TRANSFORMED_ROTATED = 1,
+
+	U_VO_TRANSFORMED_UPRIGHT = 2,
+
+	U_VO_UPRIGHT = 3
+}
+
 declare const enum UWordBreakValues {
 
 	U_WB_OTHER = 0,
@@ -2009,6 +2161,8 @@ declare function u_forDigit(digit: number, radix: number): number;
 
 declare function u_getBidiPairedBracket(c: number): number;
 
+declare function u_getBinaryPropertySet(property: UProperty, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
+
 declare function u_getCombiningClass(c: number): number;
 
 declare function u_getDataDirectory(): string;
@@ -2016,6 +2170,8 @@ declare function u_getDataDirectory(): string;
 declare function u_getFC_NFKC_Closure(c: number, dest: interop.Pointer | interop.Reference<number>, destCapacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
 
 declare function u_getISOComment(c: number, dest: string, destCapacity: number, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): number;
+
+declare function u_getIntPropertyMap(property: UProperty, pErrorCode: interop.Pointer | interop.Reference<UErrorCode>): interop.Pointer | interop.Reference<any>;
 
 declare function u_getIntPropertyMaxValue(which: UProperty): number;
 
@@ -2232,6 +2388,10 @@ declare function u_versionFromUString(versionArray: interop.Reference<number>, v
 declare function u_versionToString(versionArray: interop.Reference<number>, versionString: string): void;
 
 declare function ublock_getCode(c: number): UBlockCode;
+
+declare function ucpmap_get(map: interop.Pointer | interop.Reference<any>, c: number): number;
+
+declare function ucpmap_getRange(map: interop.Pointer | interop.Reference<any>, start: number, option: UCPMapRangeOption, surrogateValue: number, filter: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => number>>, context: interop.Pointer | interop.Reference<any>, pValue: interop.Pointer | interop.Reference<number>): number;
 
 declare function uiter_current32(iter: interop.Pointer | interop.Reference<UCharIterator>): number;
 

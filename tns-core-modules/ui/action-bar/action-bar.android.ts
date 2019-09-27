@@ -227,9 +227,21 @@ export class ActionBar extends ActionBarBase {
                 }
             }
             else if (navButton.icon) {
-                let drawableOrId = getDrawableOrResourceId(navButton.icon, appResources);
-                if (drawableOrId) {
-                    this.nativeViewProtected.setNavigationIcon(drawableOrId);
+                if (isFontIconURI(navButton.icon)) {
+                    const fontIconCode = navButton.icon.split("//")[1];
+                    const font = navButton.style.fontInternal;
+                    const color = navButton.style.color;
+                    const is = fromFontIconCode(fontIconCode, font, color);
+
+                    if (is && is.android) {
+                        const drawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
+                        this.nativeViewProtected.setNavigationIcon(drawable);
+                    }
+                } else {
+                    let drawableOrId = getDrawableOrResourceId(navButton.icon, appResources);
+                    if (drawableOrId) {
+                        this.nativeViewProtected.setNavigationIcon(drawableOrId);
+                    }
                 }
             }
 
