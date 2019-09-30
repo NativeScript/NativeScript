@@ -187,3 +187,8 @@ export module StatusBarStyle {
     export const light = "light";
     export const dark = "dark";
 }
+
+export module UserInterfaceStyle {
+    export const light = "light";
+    export const dark = "dark";
+}
