@@ -285,11 +285,12 @@ class UIViewControllerImpl extends UIViewController {
         super.traitCollectionDidChange(previousTraitCollection);
 
         const owner = this._owner.get();
-        owner.notify({ eventName: "traitCollectionChanged", object: owner });
+        // TODO:
+        // owner.notify({ eventName: "traitCollectionChanged", object: owner });
         console.log("---> UIViewControllerImpl.traitCollectionDidChange()");
 
         if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
-            owner.notify({ eventName: "traitCollectionColorAppearanceChanged", object: owner });
+            owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
         }
     }
 }

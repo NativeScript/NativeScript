@@ -2,6 +2,7 @@
 import {
     iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition
 } from ".";
+import { ios as iosView } from "../core/view";
 import { Page } from "../page";
 import { profile } from "../../profiling";
 
@@ -537,11 +538,12 @@ class UINavigationControllerImpl extends UINavigationController {
         super.traitCollectionDidChange(previousTraitCollection);
 
         const owner = this._owner.get();
-        owner.notify({ eventName: "traitCollectionChanged", object: owner });
+        // TODO:
+        // owner.notify({ eventName: "traitCollectionChanged", object: owner });
         console.log("---> UINavigationControllerImpl.traitCollectionDidChange()");
 
         if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
-            owner.notify({ eventName: "traitCollectionColorAppearanceChanged", object: owner });
+            owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
         }
     }
 }
