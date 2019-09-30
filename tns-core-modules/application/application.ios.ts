@@ -380,7 +380,9 @@ export function _start(entry?: string | NavigationEntry) {
                     }
 
                     setupRootViewCssClasses(controller, rootView);
-                    traitCollectionColorAppearanceChanged(controller, rootView);
+                    rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
+                        traitCollectionColorAppearanceChanged(controller, rootView);
+                    });
                     iosApp.notifyAppStarted();
                 }
             }
@@ -421,7 +423,6 @@ function getUserInterfaceStyleValue(userInterfaceStyle: number): "dark" | "light
     }
 }
 
-// TODO: Rename to getRootViewController
 function getViewController(rootView: View): UIViewController {
     let viewController: UIViewController = rootView.viewController || rootView.ios;
 
