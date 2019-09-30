@@ -286,6 +286,35 @@ class IOSApplication implements IOSApplicationDefinition {
         if (!haveController) {
             this._window.makeKeyAndVisible();
         }
+
+        this._rootView.on("traitCollectionColorAppearanceChanged",
+            (args) => {
+                if (this._rootView === args.object) {
+                    console.log("---> Oh!");
+                    this._rootView.notify({ eventName: "colorAppearanceChanged", object: this._rootView });
+
+                    const userInterfaceStyle = this._rootView.viewController.traitCollection.userInterfaceStyle;
+                    const userInterfaceStyleValue = getUserInterfaceStyleValue(userInterfaceStyle);
+                    console.log("---> userInterfaceStyleValue", userInterfaceStyleValue);
+                    this._rootView.cssClasses.delete("ns-dark");
+                    this._rootView.cssClasses.delete("ns-light");
+                    this._rootView.cssClasses.add("ns-" + userInterfaceStyleValue);
+
+                    this._rootView.cssClasses.forEach(console.log);
+                }
+            }
+        );
+
+        this._rootView.on("colorAppearanceChanged",
+            (args) => {
+                console.log("---> Yeah!");
+                // const userInterfaceStyle = (<any>args.object).traitCollection.userInterfaceStyle;
+                // console.log("---> userInterfaceStyle", userInterfaceStyle);
+                // const userInterfaceStyleValue = getUserInterfaceStyleValue(userInterfaceStyle);
+
+
+            }
+        );
     }
 }
 
@@ -419,7 +448,10 @@ function getViewController(rootView: View): UIViewController {
     pushToRootViewCssClasses(`${CLASS_PREFIX}${userInterfaceStyleValue}`);
 
     const rootViewCssClasses = getRootViewCssClasses();
+    rootView.cssClasses.forEach(console.log);
     rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
+    console.log("---> kur");
+    rootView.cssClasses.forEach(console.log);
 
     return viewController;
 }
@@ -436,6 +468,7 @@ function setViewControllerView(view: View): void {
         viewController.view.addSubview(nativeView);
     }
 }
+
 
 on(orientationChangedEvent, (args: OrientationChangedEventData) => {
     const rootView = getRootView();

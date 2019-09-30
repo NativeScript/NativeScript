@@ -541,6 +541,7 @@ class UINavigationControllerImpl extends UINavigationController {
         console.log("---> UINavigationControllerImpl.traitCollectionDidChange()");
 
         if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            console.log("---> UINavigationControllerImpl.traitCollectionColorAppearanceChanged()", owner);
             owner.notify({ eventName: "traitCollectionColorAppearanceChanged", object: owner });
         }
     }
