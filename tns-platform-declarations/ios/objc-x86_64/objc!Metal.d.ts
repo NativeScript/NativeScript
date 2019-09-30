@@ -99,9 +99,17 @@ interface MTLArgumentEncoder extends NSObjectProtocol {
 
 	setBuffersOffsetsWithRange(buffers: interop.Reference<MTLBuffer>, offsets: interop.Reference<number>, range: NSRange): void;
 
+	setComputePipelineStateAtIndex(pipeline: MTLComputePipelineState, index: number): void;
+
+	setComputePipelineStatesWithRange(pipelines: interop.Reference<MTLComputePipelineState>, range: NSRange): void;
+
 	setIndirectCommandBufferAtIndex(indirectCommandBuffer: MTLIndirectCommandBuffer, index: number): void;
 
 	setIndirectCommandBuffersWithRange(buffers: interop.Reference<MTLIndirectCommandBuffer>, range: NSRange): void;
+
+	setRenderPipelineStateAtIndex(pipeline: MTLRenderPipelineState, index: number): void;
+
+	setRenderPipelineStatesWithRange(pipelines: interop.Reference<MTLRenderPipelineState>, range: NSRange): void;
 
 	setSamplerStateAtIndex(sampler: MTLSamplerState, index: number): void;
 
@@ -384,11 +392,17 @@ interface MTLBlitCommandEncoder extends MTLCommandEncoder {
 
 	copyFromTextureSourceSliceSourceLevelSourceOriginSourceSizeToTextureDestinationSliceDestinationLevelDestinationOrigin(sourceTexture: MTLTexture, sourceSlice: number, sourceLevel: number, sourceOrigin: MTLOrigin, sourceSize: MTLSize, destinationTexture: MTLTexture, destinationSlice: number, destinationLevel: number, destinationOrigin: MTLOrigin): void;
 
+	copyFromTextureSourceSliceSourceLevelToTextureDestinationSliceDestinationLevelSliceCountLevelCount(sourceTexture: MTLTexture, sourceSlice: number, sourceLevel: number, destinationTexture: MTLTexture, destinationSlice: number, destinationLevel: number, sliceCount: number, levelCount: number): void;
+
+	copyFromTextureToTexture(sourceTexture: MTLTexture, destinationTexture: MTLTexture): void;
+
 	copyIndirectCommandBufferSourceRangeDestinationDestinationIndex(source: MTLIndirectCommandBuffer, sourceRange: NSRange, destination: MTLIndirectCommandBuffer, destinationIndex: number): void;
 
 	fillBufferRangeValue(buffer: MTLBuffer, range: NSRange, value: number): void;
 
 	generateMipmapsForTexture(texture: MTLTexture): void;
+
+	getTextureAccessCountersRegionMipLevelSliceResetCountersCountersBufferCountersBufferOffset(texture: MTLTexture, region: MTLRegion, mipLevel: number, slice: number, resetCounters: boolean, countersBuffer: MTLBuffer, countersBufferOffset: number): void;
 
 	optimizeContentsForCPUAccess(texture: MTLTexture): void;
 
@@ -401,6 +415,8 @@ interface MTLBlitCommandEncoder extends MTLCommandEncoder {
 	optimizeIndirectCommandBufferWithRange(indirectCommandBuffer: MTLIndirectCommandBuffer, range: NSRange): void;
 
 	resetCommandsInBufferWithRange(buffer: MTLIndirectCommandBuffer, range: NSRange): void;
+
+	resetTextureAccessCountersRegionMipLevelSlice(texture: MTLTexture, region: MTLRegion, mipLevel: number, slice: number): void;
 
 	updateFence(fence: MTLFence): void;
 
@@ -473,6 +489,39 @@ declare const enum MTLCPUCacheMode {
 	WriteCombined = 1
 }
 
+declare class MTLCaptureDescriptor extends NSObject implements NSCopying {
+
+	static alloc(): MTLCaptureDescriptor; // inherited from NSObject
+
+	static new(): MTLCaptureDescriptor; // inherited from NSObject
+
+	captureObject: any;
+
+	destination: MTLCaptureDestination;
+
+	outputURL: NSURL;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum MTLCaptureDestination {
+
+	DeveloperTools = 1,
+
+	GPUTraceDocument = 2
+}
+
+declare const enum MTLCaptureError {
+
+	NotSupported = 1,
+
+	AlreadyCapturing = 2,
+
+	InvalidDescriptor = 3
+}
+
+declare var MTLCaptureErrorDomain: string;
+
 declare class MTLCaptureManager extends NSObject {
 
 	static alloc(): MTLCaptureManager; // inherited from NSObject
@@ -491,11 +540,15 @@ declare class MTLCaptureManager extends NSObject {
 
 	startCaptureWithCommandQueue(commandQueue: MTLCommandQueue): void;
 
+	startCaptureWithDescriptorError(descriptor: MTLCaptureDescriptor): boolean;
+
 	startCaptureWithDevice(device: MTLDevice): void;
 
 	startCaptureWithScope(captureScope: MTLCaptureScope): void;
 
 	stopCapture(): void;
+
+	supportsDestination(destination: MTLCaptureDestination): boolean;
 }
 
 interface MTLCaptureScope extends NSObjectProtocol {
@@ -593,6 +646,8 @@ interface MTLCommandBuffer extends NSObjectProtocol {
 	pushDebugGroup(string: string): void;
 
 	renderCommandEncoderWithDescriptor(renderPassDescriptor: MTLRenderPassDescriptor): MTLRenderCommandEncoder;
+
+	resourceStateCommandEncoder(): MTLResourceStateCommandEncoder;
 
 	waitUntilCompleted(): void;
 
@@ -723,6 +778,10 @@ interface MTLComputeCommandEncoder extends MTLCommandEncoder {
 
 	dispatchThreadsThreadsPerThreadgroup(threadsPerGrid: MTLSize, threadsPerThreadgroup: MTLSize): void;
 
+	executeCommandsInBufferIndirectBufferIndirectBufferOffset(indirectCommandbuffer: MTLIndirectCommandBuffer, indirectRangeBuffer: MTLBuffer, indirectBufferOffset: number): void;
+
+	executeCommandsInBufferWithRange(indirectCommandBuffer: MTLIndirectCommandBuffer, executionRange: NSRange): void;
+
 	memoryBarrierWithResourcesCount(resources: interop.Reference<MTLResource>, count: number): void;
 
 	memoryBarrierWithScope(scope: MTLBarrierScope): void;
@@ -790,6 +849,8 @@ declare class MTLComputePipelineDescriptor extends NSObject implements NSCopying
 
 	stageInputDescriptor: MTLStageInputOutputDescriptor;
 
+	supportIndirectCommandBuffers: boolean;
+
 	threadGroupSizeIsMultipleOfThreadExecutionWidth: boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -815,6 +876,8 @@ interface MTLComputePipelineState extends NSObjectProtocol {
 	maxTotalThreadsPerThreadgroup: number;
 
 	staticThreadgroupMemoryLength: number;
+
+	supportIndirectCommandBuffers: boolean;
 
 	threadExecutionWidth: number;
 
@@ -992,6 +1055,8 @@ declare const enum MTLDataType {
 
 	RenderPipeline = 78,
 
+	ComputePipeline = 79,
+
 	IndirectCommandBuffer = 80
 }
 
@@ -1038,6 +1103,8 @@ interface MTLDevice extends NSObjectProtocol {
 
 	currentAllocatedSize: number;
 
+	hasUnifiedMemory: boolean;
+
 	maxArgumentBufferSamplerCount: number;
 
 	maxBufferLength: number;
@@ -1055,6 +1122,12 @@ interface MTLDevice extends NSObjectProtocol {
 	readWriteTextureSupport: MTLReadWriteTextureTier;
 
 	registryID: number;
+
+	sparseTileSizeInBytes: number;
+
+	convertSparsePixelRegionsToTileRegionsWithTileSizeAlignmentModeNumRegions?(pixelRegions: interop.Reference<MTLRegion>, tileRegions: interop.Reference<MTLRegion>, tileSize: MTLSize, mode: MTLSparseTextureRegionAlignmentMode, numRegions: number): void;
+
+	convertSparseTileRegionsToPixelRegionsWithTileSizeNumRegions?(tileRegions: interop.Reference<MTLRegion>, pixelRegions: interop.Reference<MTLRegion>, tileSize: MTLSize, numRegions: number): void;
 
 	getDefaultSamplePositionsCount(positions: interop.Pointer | interop.Reference<MTLSamplePosition>, count: number): void;
 
@@ -1114,6 +1187,8 @@ interface MTLDevice extends NSObjectProtocol {
 
 	newLibraryWithURLError(url: NSURL): MTLLibrary;
 
+	newRasterizationRateMapWithDescriptor(descriptor: MTLRasterizationRateMapDescriptor): MTLRasterizationRateMap;
+
 	newRenderPipelineStateWithDescriptorCompletionHandler(descriptor: MTLRenderPipelineDescriptor, completionHandler: (p1: MTLRenderPipelineState, p2: NSError) => void): void;
 
 	newRenderPipelineStateWithDescriptorError(descriptor: MTLRenderPipelineDescriptor): MTLRenderPipelineState;
@@ -1134,9 +1209,19 @@ interface MTLDevice extends NSObjectProtocol {
 
 	newTextureWithDescriptor(descriptor: MTLTextureDescriptor): MTLTexture;
 
+	newTextureWithDescriptorIosurfacePlane(descriptor: MTLTextureDescriptor, iosurface: any, plane: number): MTLTexture;
+
+	sparseTileSizeWithTextureTypePixelFormatSampleCount(textureType: MTLTextureType, pixelFormat: MTLPixelFormat, sampleCount: number): MTLSize;
+
+	supportsFamily(gpuFamily: MTLGPUFamily): boolean;
+
 	supportsFeatureSet(featureSet: MTLFeatureSet): boolean;
 
+	supportsRasterizationRateMapWithLayerCount(layerCount: number): boolean;
+
 	supportsTextureSampleCount(sampleCount: number): boolean;
+
+	supportsVertexAmplificationCount(count: number): boolean;
 }
 declare var MTLDevice: {
 
@@ -1356,6 +1441,44 @@ declare const enum MTLFunctionType {
 	Kernel = 3
 }
 
+declare const enum MTLGPUFamily {
+
+	Apple1 = 1001,
+
+	Apple2 = 1002,
+
+	Apple3 = 1003,
+
+	Apple4 = 1004,
+
+	Apple5 = 1005,
+
+	Apple6 = 1006,
+
+	Mac1 = 2001,
+
+	Mac2 = 2002,
+
+	Common1 = 3001,
+
+	Common2 = 3002,
+
+	Common3 = 3003,
+
+	iOSMac1 = 4001,
+
+	iOSMac2 = 4002
+}
+
+declare const enum MTLHazardTrackingMode {
+
+	Default = 0,
+
+	Untracked = 1,
+
+	Tracked = 2
+}
+
 interface MTLHeap extends NSObjectProtocol {
 
 	cpuCacheMode: MTLCPUCacheMode;
@@ -1364,11 +1487,17 @@ interface MTLHeap extends NSObjectProtocol {
 
 	device: MTLDevice;
 
+	hazardTrackingMode: MTLHazardTrackingMode;
+
 	label: string;
+
+	resourceOptions: MTLResourceOptions;
 
 	size: number;
 
 	storageMode: MTLStorageMode;
+
+	type: MTLHeapType;
 
 	usedSize: number;
 
@@ -1376,7 +1505,11 @@ interface MTLHeap extends NSObjectProtocol {
 
 	newBufferWithLengthOptions(length: number, options: MTLResourceOptions): MTLBuffer;
 
+	newBufferWithLengthOptionsOffset(length: number, options: MTLResourceOptions, offset: number): MTLBuffer;
+
 	newTextureWithDescriptor(desc: MTLTextureDescriptor): MTLTexture;
+
+	newTextureWithDescriptorOffset(descriptor: MTLTextureDescriptor, offset: number): MTLTexture;
 
 	setPurgeableState(state: MTLPurgeableState): MTLPurgeableState;
 }
@@ -1393,11 +1526,26 @@ declare class MTLHeapDescriptor extends NSObject implements NSCopying {
 
 	cpuCacheMode: MTLCPUCacheMode;
 
+	hazardTrackingMode: MTLHazardTrackingMode;
+
+	resourceOptions: MTLResourceOptions;
+
 	size: number;
 
 	storageMode: MTLStorageMode;
 
+	type: MTLHeapType;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare const enum MTLHeapType {
+
+	Automatic = 0,
+
+	Placement = 1,
+
+	Sparse = 2
 }
 
 declare const enum MTLIndexType {
@@ -1410,6 +1558,8 @@ declare const enum MTLIndexType {
 interface MTLIndirectCommandBuffer extends MTLResource {
 
 	size: number;
+
+	indirectComputeCommandAtIndex(commandIndex: number): MTLIndirectComputeCommand;
 
 	indirectRenderCommandAtIndex(commandIndex: number): MTLIndirectRenderCommand;
 
@@ -1430,10 +1580,20 @@ declare class MTLIndirectCommandBufferDescriptor extends NSObject {
 
 	inheritBuffers: boolean;
 
+	inheritPipelineState: boolean;
+
 	maxFragmentBufferBindCount: number;
+
+	maxKernelBufferBindCount: number;
 
 	maxVertexBufferBindCount: number;
 }
+
+interface MTLIndirectCommandBufferExecutionRange {
+	location: number;
+	length: number;
+}
+declare var MTLIndirectCommandBufferExecutionRange: interop.StructType<MTLIndirectCommandBufferExecutionRange>;
 
 declare const enum MTLIndirectCommandType {
 
@@ -1443,8 +1603,37 @@ declare const enum MTLIndirectCommandType {
 
 	DrawPatches = 4,
 
-	DrawIndexedPatches = 8
+	DrawIndexedPatches = 8,
+
+	ConcurrentDispatch = 32,
+
+	ConcurrentDispatchThreads = 64
 }
+
+interface MTLIndirectComputeCommand extends NSObjectProtocol {
+
+	clearBarrier(): void;
+
+	concurrentDispatchThreadgroupsThreadsPerThreadgroup(threadgroupsPerGrid: MTLSize, threadsPerThreadgroup: MTLSize): void;
+
+	concurrentDispatchThreadsThreadsPerThreadgroup(threadsPerGrid: MTLSize, threadsPerThreadgroup: MTLSize): void;
+
+	reset(): void;
+
+	setBarrier(): void;
+
+	setComputePipelineState(pipelineState: MTLComputePipelineState): void;
+
+	setKernelBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
+
+	setStageInRegion(region: MTLRegion): void;
+
+	setThreadgroupMemoryLengthAtIndex(length: number, index: number): void;
+}
+declare var MTLIndirectComputeCommand: {
+
+	prototype: MTLIndirectComputeCommand;
+};
 
 interface MTLIndirectRenderCommand extends NSObjectProtocol {
 
@@ -1459,6 +1648,8 @@ interface MTLIndirectRenderCommand extends NSObjectProtocol {
 	reset(): void;
 
 	setFragmentBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
+
+	setRenderPipelineState(pipelineState: MTLRenderPipelineState): void;
 
 	setVertexBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
 }
@@ -1477,7 +1668,9 @@ declare const enum MTLLanguageVersion {
 
 	Version2_0 = 131072,
 
-	Version2_1 = 131073
+	Version2_1 = 131073,
+
+	Version2_2 = 131074
 }
 
 interface MTLLibrary extends NSObjectProtocol {
@@ -1524,6 +1717,18 @@ declare const enum MTLLoadAction {
 
 	Clear = 2
 }
+
+interface MTLMapIndirectArguments {
+	regionOriginX: number;
+	regionOriginY: number;
+	regionOriginZ: number;
+	regionSizeWidth: number;
+	regionSizeHeight: number;
+	regionSizeDepth: number;
+	mipMapLevel: number;
+	sliceId: number;
+}
+declare var MTLMapIndirectArguments: interop.StructType<MTLMapIndirectArguments>;
 
 declare const enum MTLMultisampleDepthResolveFilter {
 
@@ -1853,6 +2058,34 @@ declare const enum MTLPixelFormat {
 
 	ASTC_12x12_LDR = 218,
 
+	ASTC_4x4_HDR = 222,
+
+	ASTC_5x4_HDR = 223,
+
+	ASTC_5x5_HDR = 224,
+
+	ASTC_6x5_HDR = 225,
+
+	ASTC_6x6_HDR = 226,
+
+	ASTC_8x5_HDR = 228,
+
+	ASTC_8x6_HDR = 229,
+
+	ASTC_8x8_HDR = 230,
+
+	ASTC_10x5_HDR = 231,
+
+	ASTC_10x6_HDR = 232,
+
+	ASTC_10x8_HDR = 233,
+
+	ASTC_10x10_HDR = 234,
+
+	ASTC_12x10_HDR = 235,
+
+	ASTC_12x12_HDR = 236,
+
 	GBGR422 = 240,
 
 	BGRG422 = 241,
@@ -1934,6 +2167,111 @@ interface MTLQuadTessellationFactorsHalf {
 }
 declare var MTLQuadTessellationFactorsHalf: interop.StructType<MTLQuadTessellationFactorsHalf>;
 
+declare class MTLRasterizationRateLayerArray extends NSObject {
+
+	static alloc(): MTLRasterizationRateLayerArray; // inherited from NSObject
+
+	static new(): MTLRasterizationRateLayerArray; // inherited from NSObject
+	[index: number]: MTLRasterizationRateLayerDescriptor;
+
+	objectAtIndexedSubscript(layerIndex: number): MTLRasterizationRateLayerDescriptor;
+
+	setObjectAtIndexedSubscript(layer: MTLRasterizationRateLayerDescriptor, layerIndex: number): void;
+}
+
+declare class MTLRasterizationRateLayerDescriptor extends NSObject implements NSCopying {
+
+	static alloc(): MTLRasterizationRateLayerDescriptor; // inherited from NSObject
+
+	static new(): MTLRasterizationRateLayerDescriptor; // inherited from NSObject
+
+	readonly horizontal: MTLRasterizationRateSampleArray;
+
+	readonly horizontalSampleStorage: interop.Pointer | interop.Reference<number>;
+
+	readonly sampleCount: MTLSize;
+
+	readonly vertical: MTLRasterizationRateSampleArray;
+
+	readonly verticalSampleStorage: interop.Pointer | interop.Reference<number>;
+
+	constructor(o: { sampleCount: MTLSize; });
+
+	constructor(o: { sampleCount: MTLSize; horizontal: interop.Pointer | interop.Reference<number>; vertical: interop.Pointer | interop.Reference<number>; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithSampleCount(sampleCount: MTLSize): this;
+
+	initWithSampleCountHorizontalVertical(sampleCount: MTLSize, horizontal: interop.Pointer | interop.Reference<number>, vertical: interop.Pointer | interop.Reference<number>): this;
+}
+
+interface MTLRasterizationRateMap extends NSObjectProtocol {
+
+	device: MTLDevice;
+
+	label: string;
+
+	layerCount: number;
+
+	parameterBufferSizeAndAlign: MTLSizeAndAlign;
+
+	physicalGranularity: MTLSize;
+
+	screenSize: MTLSize;
+
+	copyParameterDataToBufferOffset(buffer: MTLBuffer, offset: number): void;
+
+	mapPhysicalToScreenCoordinatesForLayer(physicalCoordinates: MTLSamplePosition, layerIndex: number): MTLSamplePosition;
+
+	mapScreenToPhysicalCoordinatesForLayer(screenCoordinates: MTLSamplePosition, layerIndex: number): MTLSamplePosition;
+
+	physicalSizeForLayer(layerIndex: number): MTLSize;
+}
+declare var MTLRasterizationRateMap: {
+
+	prototype: MTLRasterizationRateMap;
+};
+
+declare class MTLRasterizationRateMapDescriptor extends NSObject implements NSCopying {
+
+	static alloc(): MTLRasterizationRateMapDescriptor; // inherited from NSObject
+
+	static new(): MTLRasterizationRateMapDescriptor; // inherited from NSObject
+
+	static rasterizationRateMapDescriptorWithScreenSize(screenSize: MTLSize): MTLRasterizationRateMapDescriptor;
+
+	static rasterizationRateMapDescriptorWithScreenSizeLayer(screenSize: MTLSize, layer: MTLRasterizationRateLayerDescriptor): MTLRasterizationRateMapDescriptor;
+
+	static rasterizationRateMapDescriptorWithScreenSizeLayerCountLayers(screenSize: MTLSize, layerCount: number, layers: interop.Pointer | interop.Reference<MTLRasterizationRateLayerDescriptor>): MTLRasterizationRateMapDescriptor;
+
+	label: string;
+
+	readonly layerCount: number;
+
+	readonly layers: MTLRasterizationRateLayerArray;
+
+	screenSize: MTLSize;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	layerAtIndex(layerIndex: number): MTLRasterizationRateLayerDescriptor;
+
+	setLayerAtIndex(layer: MTLRasterizationRateLayerDescriptor, layerIndex: number): void;
+}
+
+declare class MTLRasterizationRateSampleArray extends NSObject {
+
+	static alloc(): MTLRasterizationRateSampleArray; // inherited from NSObject
+
+	static new(): MTLRasterizationRateSampleArray; // inherited from NSObject
+	[index: number]: number;
+
+	objectAtIndexedSubscript(index: number): number;
+
+	setObjectAtIndexedSubscript(value: number, index: number): void;
+}
+
 declare const enum MTLReadWriteTextureTier {
 
 	TierNone = 0,
@@ -1980,6 +2318,8 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 	drawPrimitivesVertexStartVertexCountInstanceCount(primitiveType: MTLPrimitiveType, vertexStart: number, vertexCount: number, instanceCount: number): void;
 
 	drawPrimitivesVertexStartVertexCountInstanceCountBaseInstance(primitiveType: MTLPrimitiveType, vertexStart: number, vertexCount: number, instanceCount: number, baseInstance: number): void;
+
+	executeCommandsInBufferIndirectBufferIndirectBufferOffset(indirectCommandbuffer: MTLIndirectCommandBuffer, indirectRangeBuffer: MTLBuffer, indirectBufferOffset: number): void;
 
 	executeCommandsInBufferWithRange(indirectCommandBuffer: MTLIndirectCommandBuffer, executionRange: NSRange): void;
 
@@ -2065,6 +2405,8 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 
 	setTriangleFillMode(fillMode: MTLTriangleFillMode): void;
 
+	setVertexAmplificationCountViewMappings(count: number, viewMappings: interop.Pointer | interop.Reference<MTLVertexAmplificationViewMapping>): void;
+
 	setVertexBufferOffsetAtIndex(offset: number, index: number): void;
 
 	setVertexBufferOffsetAtIndex(buffer: MTLBuffer, offset: number, index: number): void;
@@ -2095,11 +2437,19 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 
 	useHeap(heap: MTLHeap): void;
 
+	useHeapStages(heap: MTLHeap, stages: MTLRenderStages): void;
+
 	useHeapsCount(heaps: interop.Reference<MTLHeap>, count: number): void;
+
+	useHeapsCountStages(heaps: interop.Reference<MTLHeap>, count: number, stages: MTLRenderStages): void;
 
 	useResourceUsage(resource: MTLResource, usage: MTLResourceUsage): void;
 
+	useResourceUsageStages(resource: MTLResource, usage: MTLResourceUsage, stages: MTLRenderStages): void;
+
 	useResourcesCountUsage(resources: interop.Reference<MTLResource>, count: number, usage: MTLResourceUsage): void;
+
+	useResourcesCountUsageStages(resources: interop.Reference<MTLResource>, count: number, usage: MTLResourceUsage, stages: MTLRenderStages): void;
 
 	waitForFenceBeforeStages(fence: MTLFence, stages: MTLRenderStages): void;
 }
@@ -2186,6 +2536,8 @@ declare class MTLRenderPassDescriptor extends NSObject implements NSCopying {
 	depthAttachment: MTLRenderPassDepthAttachmentDescriptor;
 
 	imageblockSampleLength: number;
+
+	rasterizationRateMap: MTLRasterizationRateMap;
 
 	renderTargetArrayLength: number;
 
@@ -2284,6 +2636,8 @@ declare class MTLRenderPipelineDescriptor extends NSObject implements NSCopying 
 
 	maxTessellationFactor: number;
 
+	maxVertexAmplificationCount: number;
+
 	rasterSampleCount: number;
 
 	rasterizationEnabled: boolean;
@@ -2366,9 +2720,15 @@ interface MTLResource extends NSObjectProtocol {
 
 	device: MTLDevice;
 
+	hazardTrackingMode: MTLHazardTrackingMode;
+
 	heap: MTLHeap;
 
+	heapOffset: number;
+
 	label: string;
+
+	resourceOptions: MTLResourceOptions;
 
 	storageMode: MTLStorageMode;
 
@@ -2397,12 +2757,33 @@ declare const enum MTLResourceOptions {
 
 	StorageModeMemoryless = 48,
 
+	HazardTrackingModeDefault = 0,
+
 	HazardTrackingModeUntracked = 256,
+
+	HazardTrackingModeTracked = 512,
 
 	OptionCPUCacheModeDefault = 0,
 
 	OptionCPUCacheModeWriteCombined = 1
 }
+
+interface MTLResourceStateCommandEncoder extends MTLCommandEncoder {
+
+	updateFence(fence: MTLFence): void;
+
+	updateTextureMappingModeIndirectBufferIndirectBufferOffset(texture: MTLTexture, mode: MTLSparseTextureMappingMode, indirectBuffer: MTLBuffer, indirectBufferOffset: number): void;
+
+	updateTextureMappingModeRegionMipLevelSlice(texture: MTLTexture, mode: MTLSparseTextureMappingMode, region: MTLRegion, mipLevel: number, slice: number): void;
+
+	updateTextureMappingsModeRegionsMipLevelsSlicesNumRegions(texture: MTLTexture, mode: MTLSparseTextureMappingMode, regions: interop.Reference<MTLRegion>, mipLevels: interop.Reference<number>, slices: interop.Reference<number>, numRegions: number): void;
+
+	waitForFence(fence: MTLFence): void;
+}
+declare var MTLResourceStateCommandEncoder: {
+
+	prototype: MTLResourceStateCommandEncoder;
+};
 
 declare const enum MTLResourceUsage {
 
@@ -2531,9 +2912,9 @@ declare class MTLSharedEventHandle extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class MTLSharedEventListener extends NSObject {
@@ -2561,6 +2942,20 @@ interface MTLSizeAndAlign {
 	align: number;
 }
 declare var MTLSizeAndAlign: interop.StructType<MTLSizeAndAlign>;
+
+declare const enum MTLSparseTextureMappingMode {
+
+	Map = 0,
+
+	Unmap = 1
+}
+
+declare const enum MTLSparseTextureRegionAlignmentMode {
+
+	Outward = 0,
+
+	Inward = 1
+}
 
 interface MTLStageInRegionIndirectArguments {
 	stageInOrigin: interop.Reference<number>;
@@ -2767,9 +3162,17 @@ interface MTLTexture extends MTLResource {
 
 	depth: number;
 
+	firstMipmapInTail: number;
+
 	framebufferOnly: boolean;
 
 	height: number;
+
+	iosurface: any;
+
+	iosurfacePlane: number;
+
+	isSparse: boolean;
 
 	mipmapLevelCount: number;
 
@@ -2785,6 +3188,10 @@ interface MTLTexture extends MTLResource {
 
 	sampleCount: number;
 
+	swizzle: MTLTextureSwizzleChannels;
+
+	tailSizeInBytes: number;
+
 	textureType: MTLTextureType;
 
 	usage: MTLTextureUsage;
@@ -2798,6 +3205,8 @@ interface MTLTexture extends MTLResource {
 	newTextureViewWithPixelFormat(pixelFormat: MTLPixelFormat): MTLTexture;
 
 	newTextureViewWithPixelFormatTextureTypeLevelsSlices(pixelFormat: MTLPixelFormat, textureType: MTLTextureType, levelRange: NSRange, sliceRange: NSRange): MTLTexture;
+
+	newTextureViewWithPixelFormatTextureTypeLevelsSlicesSwizzle(pixelFormat: MTLPixelFormat, textureType: MTLTextureType, levelRange: NSRange, sliceRange: NSRange, swizzle: MTLTextureSwizzleChannels): MTLTexture;
 
 	replaceRegionMipmapLevelSliceWithBytesBytesPerRowBytesPerImage(region: MTLRegion, level: number, slice: number, pixelBytes: interop.Pointer | interop.Reference<any>, bytesPerRow: number, bytesPerImage: number): void;
 
@@ -2828,6 +3237,8 @@ declare class MTLTextureDescriptor extends NSObject implements NSCopying {
 
 	depth: number;
 
+	hazardTrackingMode: MTLHazardTrackingMode;
+
 	height: number;
 
 	mipmapLevelCount: number;
@@ -2839,6 +3250,8 @@ declare class MTLTextureDescriptor extends NSObject implements NSCopying {
 	sampleCount: number;
 
 	storageMode: MTLStorageMode;
+
+	swizzle: MTLTextureSwizzleChannels;
 
 	textureType: MTLTextureType;
 
@@ -2863,6 +3276,29 @@ declare class MTLTextureReferenceType extends MTLType {
 
 	readonly textureType: MTLTextureType;
 }
+
+declare const enum MTLTextureSwizzle {
+
+	Zero = 0,
+
+	One = 1,
+
+	Red = 2,
+
+	Green = 3,
+
+	Blue = 4,
+
+	Alpha = 5
+}
+
+interface MTLTextureSwizzleChannels {
+	red: MTLTextureSwizzle;
+	green: MTLTextureSwizzle;
+	blue: MTLTextureSwizzle;
+	alpha: MTLTextureSwizzle;
+}
+declare var MTLTextureSwizzleChannels: interop.StructType<MTLTextureSwizzleChannels>;
 
 declare const enum MTLTextureType {
 
@@ -2969,6 +3405,12 @@ declare class MTLType extends NSObject {
 
 	readonly dataType: MTLDataType;
 }
+
+interface MTLVertexAmplificationViewMapping {
+	viewportArrayIndexOffset: number;
+	renderTargetArrayIndexOffset: number;
+}
+declare var MTLVertexAmplificationViewMapping: interop.StructType<MTLVertexAmplificationViewMapping>;
 
 declare class MTLVertexAttribute extends NSObject {
 

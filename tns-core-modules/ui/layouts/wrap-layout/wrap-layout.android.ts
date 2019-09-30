@@ -6,7 +6,7 @@ export class WrapLayout extends WrapLayoutBase {
     nativeViewProtected: org.nativescript.widgets.WrapLayout;
 
     public createNativeView() {
-         return new org.nativescript.widgets.WrapLayout(this._context);
+        return new org.nativescript.widgets.WrapLayout(this._context);
     }
 
     [orientationProperty.setNative](value: "horizontal" | "vertical") {

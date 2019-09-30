@@ -144,7 +144,7 @@ export var test_XmlParser_IntegrationTest = function () {
 };
 
 export var test_XmlParser_DummyDocumentationTest = function () {
-    
+
     // >> xml-parser-snippet
     var onEventCallback = function (event: xmlModule.ParserEvent) {
         switch (event.eventType) {

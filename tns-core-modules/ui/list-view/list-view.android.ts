@@ -15,7 +15,7 @@ const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
 const ITEMTAP = ListViewBase.itemTapEvent;
 
 interface ItemClickListener {
-    new (owner: ListView): android.widget.AdapterView.OnItemClickListener;
+    new(owner: ListView): android.widget.AdapterView.OnItemClickListener;
 }
 
 let ItemClickListener: ItemClickListener;
@@ -175,9 +175,9 @@ export class ListView extends ListViewBase {
     public isItemAtIndexVisible(index: number): boolean {
         let nativeView = this.nativeViewProtected;
         const start = nativeView.getFirstVisiblePosition();
-        const end =  nativeView.getLastVisiblePosition();
+        const end = nativeView.getLastVisiblePosition();
 
-        return ( index >= start && index <= end );
+        return (index >= start && index <= end);
     }
 
     [separatorColorProperty.getDefault](): { dividerHeight: number, divider: android.graphics.drawable.Drawable } {

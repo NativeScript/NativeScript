@@ -36,7 +36,7 @@ export function onToggle(args: EventData) {
     }
     else if (button.text === "BGGradient") {
         const gradient = "linear-gradient(to right, purple, red)";
-        target.backgroundImage = typeof target.backgroundImage === "object" ? undefined :  gradient;
+        target.backgroundImage = typeof target.backgroundImage === "object" ? undefined : gradient;
         debugConsole.text += `> background-image: ${gradient} \n`;
     }
 

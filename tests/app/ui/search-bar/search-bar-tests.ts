@@ -107,7 +107,8 @@ export var testSearchBarPropertiesWithCSS = function () {
         TKUnit.assert(hintColorActualValue === expectedHintColor, "HintColor - Actual: " + hintColorActualValue + "; Expected: " + expectedHintColor);
         TKUnit.assert(expectedTextFieldBackgroundColor === textFieldBackgroundColorActualValue, "Text Background Color - Actual: " + textFieldBackgroundColorActualValue + "; Expected: " + expectedTextFieldBackgroundColor);
         TKUnit.assertAreClose(expectedFontSize, fontSizeActualValue, 0.2, "Font Size - Actual: " + fontSizeActualValue + "; Expected: " + expectedFontSize);
-    }, { pageCss: `
+    }, {
+        pageCss: `
         SearchBar {
             text-field-hint-color: blue;
             text-field-background-color: red;

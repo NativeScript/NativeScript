@@ -5,6 +5,7 @@
         "tns-core-modules/package/",
         "tns-core-modules/references.d.ts",
         "tns-platform-declarations/ios/objc-x86_64/",
+        "tns-platform-declarations/ios-typings-prj/",
         "tns-platform-declarations/node_modules/",
         "tns-platform-declarations/package/",
         "tns-platform-declarations/references.d.ts",

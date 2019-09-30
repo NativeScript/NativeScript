@@ -4,14 +4,15 @@
 
 import { ViewBase } from "../view-base";
 import { Observable, WrappedValue, PropertyChangeData, EventData } from "../../../data/observable";
-import { 
-    isEnabled as traceEnabled, 
-    write as traceWrite, 
+import {
+    isEnabled as traceEnabled,
+    write as traceWrite,
     error as traceError,
-    categories as traceCategories, 
-    notifyEvent as traceNotifyEvent, 
-    messageType as traceMessageType, 
-    isCategorySet } from "../../../trace";
+    categories as traceCategories,
+    notifyEvent as traceNotifyEvent,
+    messageType as traceMessageType,
+    isCategorySet
+} from "../../../trace";
 
 export {
     Observable, WrappedValue, PropertyChangeData, EventData,

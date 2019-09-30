@@ -9,7 +9,7 @@ export class ListPicker extends ListPickerBase {
     // tslint:disable-next-line
     private _dataSource: ListPickerDataSource;
     private _delegate: ListPickerDelegateImpl;
-    
+
     createNativeView() {
         return UIPickerView.new();
     }

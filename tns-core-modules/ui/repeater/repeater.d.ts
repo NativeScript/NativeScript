@@ -10,7 +10,7 @@ import { LayoutBase, CustomLayoutView, Template, Property } from "../layouts/lay
  */
 export class Repeater extends CustomLayoutView {
     /**
-     * Gets or set the items collection of the Repeater. 
+     * Gets or set the items collection of the Repeater.
      * The items property can be set to an array or an object defining length and getItem(index) method.
      */
     items: any[] | ItemsSource;

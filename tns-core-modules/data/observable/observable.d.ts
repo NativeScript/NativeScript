@@ -60,7 +60,7 @@ export class WrappedValue {
 
     /**
      * Returns an instance of WrappedValue. The actual instance is get from a WrappedValues pool.
-     * @param value - Value that should be wrapped. 
+     * @param value - Value that should be wrapped.
      */
     static wrap(value: any): WrappedValue
 
@@ -84,7 +84,7 @@ export class Observable {
 
     /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
@@ -157,7 +157,7 @@ export class Observable {
      * @private
      */
     _createPropertyChangeData(name: string, value: any, oldValue?: any): PropertyChangeData;
-    
+
     //@private
     /**
      * Filed to use instead of instanceof ViewBase.
@@ -174,7 +174,7 @@ export class Observable {
 
 /**
  * Creates an Observable instance and sets its properties according to the supplied JavaScript object.
- * param obj - A JavaScript object used to initialize nativescript Observable instance. 
+ * param obj - A JavaScript object used to initialize nativescript Observable instance.
  */
 export function fromObject(obj: any): Observable;
 

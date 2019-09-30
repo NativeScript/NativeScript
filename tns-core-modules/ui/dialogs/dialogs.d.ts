@@ -242,7 +242,7 @@ export interface LoginOptions extends ConfirmOptions {
      * Gets or sets the default text to display as hint in the user name input box.
      */
     userNameHint?: string;
-    
+
     /**
      * Gets or sets the default text to display as hint in the password input box.
      */

@@ -56,13 +56,15 @@ import { Label } from "tns-core-modules/ui/label";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { parse } from "tns-core-modules/ui/builder";
-import { dipToDp, left, top, right, bottom, height, width,
+import {
+    dipToDp, left, top, right, bottom, height, width,
     paddingLeft, paddingTop, paddingRight, paddingBottom,
     equal, closeEnough, notEqual, check,
     heightEqual, widthEqual,
     isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith, isBottomAlignedWith,
     isLeftOf, isRightOf, isBelow, isAbove,
-    isLeftWith, isAboveWith, isRightWith, isBelowWith } from "./layout-tests-helper";
+    isLeftWith, isAboveWith, isRightWith, isBelowWith
+} from "./layout-tests-helper";
 
 function waitUntilTestElementLayoutIsValid(view: View, timeoutSec?: number): void {
     TKUnit.waitUntilReady(() => {

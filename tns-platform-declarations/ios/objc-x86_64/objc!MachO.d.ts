@@ -281,6 +281,7 @@ interface dyld_all_image_infos {
 	reserved: interop.Reference<number>;
 	compact_dyld_image_info_addr: number;
 	compact_dyld_image_info_size: number;
+	platform: number;
 }
 declare var dyld_all_image_infos: interop.StructType<dyld_all_image_infos>;
 

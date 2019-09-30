@@ -129,6 +129,10 @@ declare function VTSessionSetProperty(session: any, propertyKey: string, propert
 
 declare const kVTAllocationFailedErr: number;
 
+declare var kVTAlphaChannelMode_PremultipliedAlpha: string;
+
+declare var kVTAlphaChannelMode_StraightAlpha: string;
+
 declare const kVTColorCorrectionImageRotationFailedErr: number;
 
 declare const kVTColorCorrectionPixelTransferFailedErr: number;
@@ -140,6 +144,8 @@ declare var kVTCompressionPropertyKey_AllowFrameReordering: string;
 declare var kVTCompressionPropertyKey_AllowOpenGOP: string;
 
 declare var kVTCompressionPropertyKey_AllowTemporalCompression: string;
+
+declare var kVTCompressionPropertyKey_AlphaChannelMode: string;
 
 declare var kVTCompressionPropertyKey_AspectRatio16x9: string;
 
@@ -166,6 +172,8 @@ declare var kVTCompressionPropertyKey_ExpectedFrameRate: string;
 declare var kVTCompressionPropertyKey_FieldCount: string;
 
 declare var kVTCompressionPropertyKey_FieldDetail: string;
+
+declare var kVTCompressionPropertyKey_GammaLevel: string;
 
 declare var kVTCompressionPropertyKey_H264EntropyMode: string;
 
@@ -207,7 +215,11 @@ declare var kVTCompressionPropertyKey_RealTime: string;
 
 declare var kVTCompressionPropertyKey_SourceFrameCount: string;
 
+declare var kVTCompressionPropertyKey_TargetQualityForAlpha: string;
+
 declare var kVTCompressionPropertyKey_TransferFunction: string;
+
+declare var kVTCompressionPropertyKey_UsingGPURegistryID: string;
 
 declare var kVTCompressionPropertyKey_VideoEncoderPixelBufferAttributes: string;
 
@@ -264,6 +276,8 @@ declare var kVTDecompressionPropertyKey_SupportedPixelFormatsOrderedByPerformanc
 declare var kVTDecompressionPropertyKey_SupportedPixelFormatsOrderedByQuality: string;
 
 declare var kVTDecompressionPropertyKey_ThreadCount: string;
+
+declare var kVTDecompressionPropertyKey_UsingGPURegistryID: string;
 
 declare var kVTDecompressionProperty_DeinterlaceMode_Temporal: string;
 
@@ -340,6 +354,8 @@ declare var kVTPixelTransferPropertyKey_DestinationTransferFunction: string;
 declare var kVTPixelTransferPropertyKey_DestinationYCbCrMatrix: string;
 
 declare var kVTPixelTransferPropertyKey_DownsamplingMode: string;
+
+declare var kVTPixelTransferPropertyKey_RealTime: string;
 
 declare var kVTPixelTransferPropertyKey_ScalingMode: string;
 
@@ -509,8 +525,24 @@ declare var kVTVideoEncoderList_EncoderID: string;
 
 declare var kVTVideoEncoderList_EncoderName: string;
 
+declare var kVTVideoEncoderList_GPURegistryID: string;
+
+declare var kVTVideoEncoderList_InstanceLimit: string;
+
+declare var kVTVideoEncoderList_IsHardwareAccelerated: string;
+
+declare var kVTVideoEncoderList_PerformanceRating: string;
+
+declare var kVTVideoEncoderList_QualityRating: string;
+
+declare var kVTVideoEncoderList_SupportedSelectionProperties: string;
+
 declare const kVTVideoEncoderMalfunctionErr: number;
 
 declare const kVTVideoEncoderNotAvailableNowErr: number;
 
 declare var kVTVideoEncoderSpecification_EncoderID: string;
+
+declare var kVTVideoEncoderSpecification_PreferredEncoderGPURegistryID: string;
+
+declare var kVTVideoEncoderSpecification_RequiredEncoderGPURegistryID: string;
