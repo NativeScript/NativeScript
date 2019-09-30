@@ -286,10 +286,25 @@ export function on(event: "discardedError", callback: (args: DiscardedErrorEvent
 export function on(event: "orientationChanged", callback: (args: OrientationChangedEventData) => void, thisArg?: any);
 
 /**
+<<<<<<< HEAD
  * Gets the orientation of the application.
  * Available values: "portrait", "landscape", "unknown".
  */
 export function orientation(): "portrait" | "landscape" | "unknown";
+=======
+ * Appends new CSS class to the system classes and applies it to the root view.
+ * @param rootView - The root view of the application.
+ * @param cssClass - The CSS class to apply.
+ */
+export function applyCssClass(rootView: View, cssClass: string);
+
+/**
+ * Removes CSS class from the system classes and deletes it from the root view.
+ * @param rootView - The root view of the application.
+ * @param cssClass - The CSS class to delete.
+ */
+export function removeCssClass(rootView: View, cssClass: string);
+>>>>>>> refactor(dark-mode): application module
 
 /**
  * This is the Android-specific application object instance.
