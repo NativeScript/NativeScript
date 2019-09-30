@@ -126,18 +126,22 @@ export function loadAppCss(): void {
     }
 }
 
+export function applyCssClass(rootView: View, cssClass: string) {
+    pushToRootViewCssClasses(cssClass);
+    rootView.cssClasses.add(cssClass);
+    rootView._onCssStateChange();
+}
+
+export function removeCssClass(rootView: View, cssClass: string) {
+    removeFromRootViewCssClasses(cssClass);
+    rootView.cssClasses.delete(cssClass);
+}
+
 export function orientationChanged(rootView: View, newOrientation: "portrait" | "landscape" | "unknown"): void {
     const newOrientationCssClass = `${CLASS_PREFIX}${newOrientation}`;
     if (!rootView.cssClasses.has(newOrientationCssClass)) {
-        const removeCssClass = (c: string) => {
-            removeFromRootViewCssClasses(c);
-            rootView.cssClasses.delete(c);
-        };
-
-        ORIENTATION_CSS_CLASSES.forEach(c => removeCssClass(c));
-        pushToRootViewCssClasses(newOrientationCssClass);
-        rootView.cssClasses.add(newOrientationCssClass);
-        rootView._onCssStateChange();
+        ORIENTATION_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
+        applyCssClass(rootView, newOrientationCssClass);
     }
 }
 

@@ -8,8 +8,8 @@ import {
 } from ".";
 
 import {
-    displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on,
-    orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent
+    applyCssClass, displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on,
+    orientationChanged, orientationChangedEvent, removeCssClass, resumeEvent, setApplication, suspendEvent
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -21,21 +21,20 @@ import {
     CLASS_PREFIX,
     getRootViewCssClasses,
     pushToRootViewCssClasses,
-    removeFromRootViewCssClasses,
     resetRootViewCssClasses
 } from "../css/system-classes";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
+import { UserInterfaceStyle } from "../ui/enums/enums";
 import { device } from "../platform/platform";
 import { profile } from "../profiling";
 import { ios } from "../utils/utils";
 
 const IOS_PLATFORM = "ios";
 
-// TODO:
 const UI_STYLE_CSS_CLASSES = [
-    `${CLASS_PREFIX}light`,
-    `${CLASS_PREFIX}dark`
+    `${CLASS_PREFIX}${UserInterfaceStyle.light}`,
+    `${CLASS_PREFIX}${UserInterfaceStyle.dark}`
 ];
 
 const getVisibleViewController = ios.getVisibleViewController;
@@ -295,25 +294,8 @@ class IOSApplication implements IOSApplicationDefinition {
         }
 
         setupRootViewCssClasses(controller, rootView);
-
         rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
-
-            const newUserInterfaceStyle = controller.traitCollection.userInterfaceStyle;
-            const newUserInterfaceStyleValue = getUserInterfaceStyleValue(newUserInterfaceStyle);
-            const newUserInterfaceStyleCssClass = `${CLASS_PREFIX}${newUserInterfaceStyleValue}`;
-
-            if (!rootView.cssClasses.has(newUserInterfaceStyleCssClass)) {
-                const removeCssClass = (c: string) => {
-                    removeFromRootViewCssClasses(c);
-                    rootView.cssClasses.delete(c);
-                };
-
-                // TODO:
-                UI_STYLE_CSS_CLASSES.forEach(c => removeCssClass(c));
-                pushToRootViewCssClasses(newUserInterfaceStyleCssClass);
-                rootView.cssClasses.add(newUserInterfaceStyleCssClass);
-                rootView._onCssStateChange();
-            }
+            traitCollectionColorAppearanceChanged(controller, rootView);
         });
     }
 }
@@ -329,6 +311,18 @@ setApplication(iosApp);
 };
 
 let mainEntry: NavigationEntry;
+
+function traitCollectionColorAppearanceChanged(controller: UIViewController, rootView: View) {
+    const newUserInterfaceStyle = controller.traitCollection.userInterfaceStyle;
+    const newUserInterfaceStyleValue = getUserInterfaceStyleValue(newUserInterfaceStyle);
+    const newUserInterfaceStyleCssClass = `${CLASS_PREFIX}${newUserInterfaceStyleValue}`;
+
+    if (!rootView.cssClasses.has(newUserInterfaceStyleCssClass)) {
+        UI_STYLE_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
+        applyCssClass(rootView, newUserInterfaceStyleCssClass);
+    }
+}
+
 function createRootView(v?: View) {
     let rootView = v;
     if (!rootView) {
@@ -386,7 +380,7 @@ export function _start(entry?: string | NavigationEntry) {
                     }
 
                     setupRootViewCssClasses(controller, rootView);
-                    // TODO:
+                    traitCollectionColorAppearanceChanged(controller, rootView);
                     iosApp.notifyAppStarted();
                 }
             }
