@@ -287,6 +287,8 @@ class IOSApplication implements IOSApplicationDefinition {
         if (!haveController) {
             this._window.makeKeyAndVisible();
         }
+
+        setupRootViewCssClasses(controller, rootView);
     }
 }
 
@@ -316,13 +318,6 @@ function createRootView(v?: View) {
             }
         }
     }
-
-    resetRootViewCssClasses();
-
-    const deviceType = device.deviceType.toLowerCase();
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
 
     return rootView;
 }
@@ -363,6 +358,8 @@ export function _start(entry?: string | NavigationEntry) {
                         let visibleVC = getVisibleViewController(rootController);
                         visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
                     }
+
+                    setupRootViewCssClasses(controller, rootView);
                     iosApp.notifyAppStarted();
                 }
             }
@@ -414,14 +411,6 @@ function getViewController(rootView: View): UIViewController {
         rootView.viewController = viewController;
     }
 
-    const userInterfaceStyle = viewController.traitCollection.userInterfaceStyle;
-    const userInterfaceStyleValue = getUserInterfaceStyleValue(userInterfaceStyle);
-
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${userInterfaceStyleValue}`);
-
-    const rootViewCssClasses = getRootViewCssClasses();
-    rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
-
     return viewController;
 }
 
@@ -436,6 +425,22 @@ function setViewControllerView(view: View): void {
     if (viewController instanceof iosView.UILayoutViewController) {
         viewController.view.addSubview(nativeView);
     }
+}
+
+function setupRootViewCssClasses(controller: UIViewController, rootView: View): void {
+    resetRootViewCssClasses();
+
+    const deviceType = device.deviceType.toLowerCase();
+    const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
+    const userInterfaceStyleValue = getUserInterfaceStyleValue(userInterfaceStyle);
+
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${userInterfaceStyleValue}`);
+
+    const rootViewCssClasses = getRootViewCssClasses();
+    rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
 }
 
 export function orientation(): "portrait" | "landscape" | "unknown" {
