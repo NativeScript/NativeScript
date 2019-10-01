@@ -1,5 +1,5 @@
 {
-  "name" : "activity-indicator",
-  "main" : "activity-indicator",
-  "types" : "activity-indicator.d.ts"
+  "name": "activity-indicator",
+  "main": "activity-indicator",
+  "types": "activity-indicator.d.ts"
 }

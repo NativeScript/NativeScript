@@ -20,6 +20,8 @@ declare function _os_activity_start(dso: interop.Pointer | interop.Reference<any
 
 declare function _os_log_create(dso: interop.Pointer | interop.Reference<any>, subsystem: string, category: string): NSObject;
 
+declare function _os_log_debug_impl(dso: interop.Pointer | interop.Reference<any>, log: NSObject, type: os_log_type_t, format: string, buf: string, size: number): void;
+
 declare var _os_log_default: void;
 
 declare function _os_log_error_impl(dso: interop.Pointer | interop.Reference<any>, log: NSObject, type: os_log_type_t, format: string, buf: string, size: number): void;

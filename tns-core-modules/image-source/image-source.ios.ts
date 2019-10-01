@@ -150,7 +150,7 @@ export class ImageSource implements ImageSourceDefinition {
         UIGraphicsEndImageContext();
 
         this.ios = iconImage;
-    
+
         return this.ios != null;
     }
 

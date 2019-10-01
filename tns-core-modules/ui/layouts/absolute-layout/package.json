@@ -1,5 +1,5 @@
 {
-  "name" : "absolute-layout",
-  "main" : "absolute-layout",
-  "types" : "absolute-layout.d.ts"
+  "name": "absolute-layout",
+  "main": "absolute-layout",
+  "types": "absolute-layout.d.ts"
 }

@@ -8,7 +8,7 @@
             </ActionBar.actionItems>
         </ActionBar>
     </Page.actionBar>
-    
+
     <StackLayout>
         <Label text="Issue 1657" class="title"/>
         <Button text="go to subPage" tap="onTap"/>

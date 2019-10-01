@@ -501,10 +501,10 @@ export function test_AnimateExtent_Should_ThrowIfCannotParsePercentLength() {
     const label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
-            label.animate({width: "-frog%"});
+            label.animate({ width: "-frog%" });
         }, "Invalid percent string should throw");
         TKUnit.assertThrows(() => {
-            label.animate({height: "-frog%"});
+            label.animate({ height: "-frog%" });
         }, "Invalid percent string should throw");
     });
 }

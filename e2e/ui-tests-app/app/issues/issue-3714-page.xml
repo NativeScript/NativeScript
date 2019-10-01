@@ -1,4 +1,4 @@
-<Page 
+<Page
     xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
     <StackLayout class="p-20">
         <Button text="disable" tap="toggle" id="toggleUserInteraction" automationText="toggleUserInteraction"/>

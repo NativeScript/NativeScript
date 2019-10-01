@@ -23,8 +23,9 @@ BottomNavigation {
     background-color: black;
 }
 
-TabStripItem:active, #lastStripItem:active {
-    background-color:coral;
+TabStripItem:active,
+#lastStripItem:active {
+    background-color: coral;
 }
 
 #second-tab-content-item {

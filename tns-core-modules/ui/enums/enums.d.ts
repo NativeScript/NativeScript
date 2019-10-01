@@ -3,7 +3,7 @@
  */ /** */
 
 import * as animationModule from "../animation";
-import { 
+import {
     KeyboardType as BaseKeyboardType,
     ReturnKeyType as BaseReturnKeyType,
     UpdateTextTrigger as BaseUpdateTrigger,
@@ -17,8 +17,8 @@ import {
     TextDecoration as BaseTextDecoration
 } from "../text-base";
 
-import { 
-    Orientation as BaseOrientation 
+import {
+    Orientation as BaseOrientation
 } from "../layouts/stack-layout";
 
 import {
@@ -532,12 +532,12 @@ export module FontWeight {
      * Thin font weight. CSS font-weight 100.
      */
     export const thin: BaseFontWeight;
-    
+
     /**
      * Extra-light / Ultra-light font weight. CSS font-weight 200.
      */
     export const extraLight: BaseFontWeight;
-    
+
     /**
      * Light font weight. CSS font-weight 300.
      */
@@ -557,7 +557,7 @@ export module FontWeight {
      * Semi-bold / Demi-bold font weight. CSS font-weight 600.
      */
     export const semiBold: BaseFontWeight;
-    
+
     /**
      * Bold font weight. CSS font-weight 700.
      */
@@ -608,7 +608,7 @@ export module AnimationCurve {
      * Default value. Specifies a transition effect with a slow start, then fast, then end slowly (equivalent to cubic-bezier(0.25,0.1,0.25,1))
      */
     export const ease: string;
-    
+
     /**
      * An ease-in curve causes the animation to begin slowly, and then speed up as it progresses.
      */
@@ -634,23 +634,23 @@ export module AnimationCurve {
      */
     export const spring: string;
 
-   /**
-    * A custom cubic bezier function defined by its two control points. Possible values are numeric values from 0 to 1
-    */
-   export function cubicBezier(x1: number, y1: number, x2: number, y2: number): animationModule.CubicBezierAnimationCurve;
+    /**
+     * A custom cubic bezier function defined by its two control points. Possible values are numeric values from 0 to 1
+     */
+    export function cubicBezier(x1: number, y1: number, x2: number, y2: number): animationModule.CubicBezierAnimationCurve;
 }
 
 /**
 * Specifies the types of the status bar style.
 */
 export module StatusBarStyle {
-   /**
-    * The light style of the status bar - light background with dark letters.
-    */
-   export const light: string;
+    /**
+     * The light style of the status bar - light background with dark letters.
+     */
+    export const light: string;
 
-   /**
-    * The dark style of the status bar - dark background with light letters.
-    */
-   export const dark: string;
+    /**
+     * The dark style of the status bar - dark background with light letters.
+     */
+    export const dark: string;
 }

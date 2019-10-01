@@ -24,14 +24,14 @@ global.zonedCallback = function (callback: Function): Function {
     }
 };
 
-(<any>global).System = {	
-    import(path) {	
-        return new Promise((resolve, reject) => {	
-            try {	
-                resolve(global.require(path));	
-            } catch (e) {	
-                reject(e);	
-            }	
-        });	
-    }	
+(<any>global).System = {
+    import(path) {
+        return new Promise((resolve, reject) => {
+            try {
+                resolve(global.require(path));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
 };

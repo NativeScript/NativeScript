@@ -1,4 +1,4 @@
-﻿ListView module. 
+﻿ListView module.
 ```js
     var lm  = require("ui/label");
     var lvm = require("ui/list-view");

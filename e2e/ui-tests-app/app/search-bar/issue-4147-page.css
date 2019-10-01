@@ -1,12 +1,12 @@
-#bg-color{
+#bg-color {
     background-color: red;
 }
 
-.color{
+.color {
     color: blue;
 }
 
-#border{
+#border {
     border-color: yellow;
     border-width: 5;
     border-style: solid;

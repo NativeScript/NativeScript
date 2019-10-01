@@ -33,7 +33,7 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 export function CSSType(type: string): ClassDecorator;
 
 /**
- * 
+ *
  * @param view The view
  * @param context The ModuleType
  * @param type Type of the ModuleType to be matched

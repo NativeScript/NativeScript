@@ -17,4 +17,4 @@ previous_url: ApiReference/ui/styling/HOW-TO
 {%snippet article-using-id-selector%}
 ### Using state selector
 {%snippet article-using-state-selector%}
-For information and example how to use style properties please refer to special [**Styling**](../../../styling.md) topic. 
+For information and example how to use style properties please refer to special [**Styling**](../../../styling.md) topic.

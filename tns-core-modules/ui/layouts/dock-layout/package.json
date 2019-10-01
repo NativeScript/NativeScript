@@ -1,5 +1,5 @@
 {
-  "name" : "dock-layout",
-  "main" : "dock-layout",
-  "types" : "dock-layout.d.ts"
+  "name": "dock-layout",
+  "main": "dock-layout",
+  "types": "dock-layout.d.ts"
 }

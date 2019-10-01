@@ -7,6 +7,6 @@
     <TextField id="TextField" backgroundColor="green" class="elementStyle" hint="" text="Sample textfield" />
     <TextView id="TextView" class="elementStyle" text="Sample text view" backgroundColor="yellow" editable="true" />
     <AbsoluteLayout id="AbsoluteLayout" class="container" iosOverflowSafeArea="false"></AbsoluteLayout>
-  </StackLayout> 
+  </StackLayout>
   </ScrollView>
 </Page>

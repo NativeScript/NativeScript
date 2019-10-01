@@ -549,7 +549,7 @@ export module knownFolders {
         export function desktop(): Folder {
             _checkPlatform("desktop");
             if (!_desktop) {
-                 let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DesktopDirectory);
+                let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DesktopDirectory);
 
                 if (existingFolderInfo) {
                     _desktop = existingFolderInfo.folder;
@@ -581,7 +581,7 @@ export module knownFolders {
         export function movies(): Folder {
             _checkPlatform("movies");
             if (!_movies) {
-                 let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MoviesDirectory);
+                let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MoviesDirectory);
 
                 if (existingFolderInfo) {
                     _movies = existingFolderInfo.folder;
@@ -613,7 +613,7 @@ export module knownFolders {
         export function pictures(): Folder {
             _checkPlatform("pictures");
             if (!_pictures) {
-                  let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.PicturesDirectory);
+                let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.PicturesDirectory);
 
                 if (existingFolderInfo) {
                     _pictures = existingFolderInfo.folder;

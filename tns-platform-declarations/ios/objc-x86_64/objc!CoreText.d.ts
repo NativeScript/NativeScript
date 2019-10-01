@@ -135,6 +135,8 @@ declare function CTFontCreateCopyWithSymbolicTraits(font: UIFont, size: number, 
 
 declare function CTFontCreateForString(currentFont: UIFont, string: string, range: CFRange): UIFont;
 
+declare function CTFontCreateForStringWithLanguage(currentFont: UIFont, string: string, range: CFRange, language: string): UIFont;
+
 declare function CTFontCreatePathForGlyph(font: UIFont, glyph: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>): any;
 
 declare function CTFontCreateUIFontForLanguage(uiType: CTFontUIFontType, size: number, language: string): UIFont;
@@ -215,13 +217,13 @@ declare const enum CTFontFormat {
 	kCTFontFormatBitmap = 5
 }
 
-declare function CTFontGetAdvancesForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, advances: interop.Pointer | interop.Reference<CGSize>, count: number): number;
+declare function CTFontGetAdvancesForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, advances: interop.Reference<CGSize>, count: number): number;
 
 declare function CTFontGetAscent(font: UIFont): number;
 
 declare function CTFontGetBoundingBox(font: UIFont): CGRect;
 
-declare function CTFontGetBoundingRectsForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, boundingRects: interop.Pointer | interop.Reference<CGRect>, count: number): CGRect;
+declare function CTFontGetBoundingRectsForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, boundingRects: interop.Reference<CGRect>, count: number): CGRect;
 
 declare function CTFontGetCapHeight(font: UIFont): number;
 
@@ -235,11 +237,11 @@ declare function CTFontGetGlyphsForCharacters(font: UIFont, characters: interop.
 
 declare function CTFontGetLeading(font: UIFont): number;
 
-declare function CTFontGetLigatureCaretPositions(font: UIFont, glyph: number, positions: interop.Pointer | interop.Reference<number>, maxPositions: number): number;
+declare function CTFontGetLigatureCaretPositions(font: UIFont, glyph: number, positions: interop.Reference<number>, maxPositions: number): number;
 
 declare function CTFontGetMatrix(font: UIFont): CGAffineTransform;
 
-declare function CTFontGetOpticalBoundsForGlyphs(font: UIFont, glyphs: interop.Reference<number>, boundingRects: interop.Pointer | interop.Reference<CGRect>, count: number, options: number): CGRect;
+declare function CTFontGetOpticalBoundsForGlyphs(font: UIFont, glyphs: interop.Reference<number>, boundingRects: interop.Reference<CGRect>, count: number, options: number): CGRect;
 
 declare function CTFontGetSize(font: UIFont): number;
 
@@ -276,7 +278,11 @@ declare function CTFontManagerCopyAvailableFontFamilyNames(): NSArray<any>;
 
 declare function CTFontManagerCopyAvailablePostScriptNames(): NSArray<any>;
 
+declare function CTFontManagerCopyRegisteredFontDescriptors(scope: CTFontManagerScope, enabled: boolean): NSArray<any>;
+
 declare function CTFontManagerCreateFontDescriptorFromData(data: NSData): UIFontDescriptor;
+
+declare function CTFontManagerCreateFontDescriptorsFromData(data: NSData): NSArray<any>;
 
 declare function CTFontManagerCreateFontDescriptorsFromURL(fileURL: NSURL): NSArray<any>;
 
@@ -296,14 +302,34 @@ declare const enum CTFontManagerError {
 
 	kCTFontManagerErrorInUse = 202,
 
-	kCTFontManagerErrorSystemRequired = 203
+	kCTFontManagerErrorSystemRequired = 203,
+
+	kCTFontManagerErrorRegistrationFailed = 301,
+
+	kCTFontManagerErrorMissingEntitlement = 302,
+
+	kCTFontManagerErrorInsufficientInfo = 303,
+
+	kCTFontManagerErrorCancelledByUser = 304,
+
+	kCTFontManagerErrorDuplicatedName = 305,
+
+	kCTFontManagerErrorInvalidFilePath = 306
 }
+
+declare function CTFontManagerRegisterFontDescriptors(fontDescriptors: NSArray<any>, scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+
+declare function CTFontManagerRegisterFontURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
 declare function CTFontManagerRegisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare function CTFontManagerRegisterFontsForURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
 
+declare function CTFontManagerRegisterFontsWithAssetNames(fontAssetNames: NSArray<any>, bundle: any, scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+
 declare function CTFontManagerRegisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+
+declare function CTFontManagerRequestFonts(fontDescriptors: NSArray<any>, completionHandler: (p1: NSArray<any>) => void): void;
 
 declare const enum CTFontManagerScope {
 
@@ -311,10 +337,16 @@ declare const enum CTFontManagerScope {
 
 	kCTFontManagerScopeProcess = 1,
 
-	kCTFontManagerScopeUser = 2,
+	kCTFontManagerScopePersistent = 2,
 
-	kCTFontManagerScopeSession = 3
+	kCTFontManagerScopeSession = 3,
+
+	kCTFontManagerScopeUser = 2
 }
+
+declare function CTFontManagerUnregisterFontDescriptors(fontDescriptors: NSArray<any>, scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+
+declare function CTFontManagerUnregisterFontURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
 declare function CTFontManagerUnregisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
@@ -614,6 +646,8 @@ declare function CTGlyphInfoGetCharacterCollection(glyphInfo: any): CTCharacterC
 
 declare function CTGlyphInfoGetCharacterIdentifier(glyphInfo: any): number;
 
+declare function CTGlyphInfoGetGlyph(glyphInfo: any): number;
+
 declare function CTGlyphInfoGetGlyphName(glyphInfo: any): string;
 
 declare function CTGlyphInfoGetTypeID(): number;
@@ -828,6 +862,8 @@ declare function CTRunGetAdvances(run: any, range: CFRange, buffer: interop.Refe
 declare function CTRunGetAdvancesPtr(run: any): interop.Pointer | interop.Reference<CGSize>;
 
 declare function CTRunGetAttributes(run: any): NSDictionary<any, any>;
+
+declare function CTRunGetBaseAdvancesAndOrigins(runRef: any, range: CFRange, advancesBuffer: interop.Reference<CGSize>, originsBuffer: interop.Reference<CGPoint>): void;
 
 declare function CTRunGetGlyphCount(run: any): number;
 
@@ -1656,6 +1692,8 @@ declare var kCTFontFamilyNameAttribute: string;
 
 declare var kCTFontFamilyNameKey: string;
 
+declare var kCTFontFeatureSampleTextKey: string;
+
 declare var kCTFontFeatureSelectorDefaultKey: string;
 
 declare var kCTFontFeatureSelectorIdentifierKey: string;
@@ -1665,6 +1703,8 @@ declare var kCTFontFeatureSelectorNameKey: string;
 declare var kCTFontFeatureSelectorSettingKey: string;
 
 declare var kCTFontFeatureSettingsAttribute: string;
+
+declare var kCTFontFeatureTooltipTextKey: string;
 
 declare var kCTFontFeatureTypeExclusiveKey: string;
 
@@ -1691,6 +1731,10 @@ declare var kCTFontLicenseURLNameKey: string;
 declare var kCTFontMacintoshEncodingsAttribute: string;
 
 declare var kCTFontManagerErrorDomain: string;
+
+declare var kCTFontManagerErrorFontAssetNameKey: string;
+
+declare var kCTFontManagerErrorFontDescriptorsKey: string;
 
 declare var kCTFontManagerErrorFontURLsKey: string;
 
@@ -1727,6 +1771,8 @@ declare const kCTFontPrioritySystem: number;
 declare const kCTFontPriorityUser: number;
 
 declare var kCTFontRegistrationScopeAttribute: string;
+
+declare var kCTFontRegistrationUserInfoAttribute: string;
 
 declare var kCTFontSampleTextNameKey: string;
 
@@ -1965,6 +2011,8 @@ declare var kCTStrokeWidthAttributeName: string;
 declare var kCTSuperscriptAttributeName: string;
 
 declare var kCTTabColumnTerminatorsAttributeName: string;
+
+declare var kCTTrackingAttributeName: string;
 
 declare var kCTTypesetterOptionAllowUnboundedLayout: string;
 

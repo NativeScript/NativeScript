@@ -684,11 +684,11 @@ function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
     let hasStops = false;
 
     gradient.colorStops.forEach(stop => {
-       iosColors.addObject(stop.color.ios.CGColor);
-       if (stop.offset) {
-           iosStops.addObject(stop.offset.value);
-           hasStops = true;
-       }
+        iosColors.addObject(stop.color.ios.CGColor);
+        if (stop.offset) {
+            iosStops.addObject(stop.offset.value);
+            hasStops = true;
+        }
     });
 
     gradientLayer.colors = iosColors;
@@ -699,23 +699,23 @@ function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
 
     const alpha = gradient.angle / (Math.PI * 2);
     const startX = Math.pow(
-      Math.sin(Math.PI * (alpha + 0.75)),
-      2
+        Math.sin(Math.PI * (alpha + 0.75)),
+        2
     );
     const startY = Math.pow(
-      Math.sin(Math.PI * (alpha + 0.5)),
-      2
+        Math.sin(Math.PI * (alpha + 0.5)),
+        2
     );
     const endX = Math.pow(
-      Math.sin(Math.PI * (alpha + 0.25)),
-      2
+        Math.sin(Math.PI * (alpha + 0.25)),
+        2
     );
     const endY = Math.pow(
-      Math.sin(Math.PI * alpha),
-      2
+        Math.sin(Math.PI * alpha),
+        2
     );
-    gradientLayer.startPoint = {x: startX, y: startY};
-    gradientLayer.endPoint = {x: endX, y: endY};
+    gradientLayer.startPoint = { x: startX, y: startY };
+    gradientLayer.endPoint = { x: endX, y: endY };
 
     nativeView.layer.insertSublayerAtIndex(gradientLayer, 0);
 

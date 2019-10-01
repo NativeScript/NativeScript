@@ -13,7 +13,7 @@ export function navigatingTo(args: EventData) {
 export function onPan(data: PanGestureEventData) {
     console.log(`data state:${data.state} [${data.deltaX}, ${data.deltaY}]`);
     var msg = `data state:${data.state} [${data.deltaX}, ${data.deltaY}]`;
-        (<TextView>view.page.getViewById("output")).text += msg + "\n";
+    (<TextView>view.page.getViewById("output")).text += msg + "\n";
     view.translateX = data.deltaX;
     view.translateY = data.deltaY;
 }

@@ -39,8 +39,8 @@ const Responder = (<any>UIResponder).extend({
         // NOOP
     }
 }, {
-        protocols: [UIApplicationDelegate]
-    }
+    protocols: [UIApplicationDelegate]
+}
 );
 
 class NotificationObserver extends NSObject {
@@ -413,6 +413,10 @@ function setViewControllerView(view: View): void {
     if (viewController instanceof iosView.UILayoutViewController) {
         viewController.view.addSubview(nativeView);
     }
+}
+
+export function orientation(): "portrait" | "landscape" | "unknown" {
+    return iosApp.orientation;
 }
 
 on(orientationChangedEvent, (args: OrientationChangedEventData) => {
