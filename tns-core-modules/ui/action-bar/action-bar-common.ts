@@ -385,11 +385,11 @@ export function traceMissingIcon(icon: string) {
 
 function convertToContentInset(this: void, value: string | Length): [CssProperty<any, any>, any][] {
     if (typeof value === "string" && value !== "auto") {
-        let thickness = value.split(/[ ,]+/);
+        let insets = value.split(/[ ,]+/);
 
         return [
-            [androidContentInsetLeftProperty, Length.parse(thickness[0])],
-            [androidContentInsetRightProperty, Length.parse(thickness[1] || thickness[0])]
+            [androidContentInsetLeftProperty, Length.parse(insets[0])],
+            [androidContentInsetRightProperty, Length.parse(insets[1] || insets[0])]
         ];
     }
     else {
@@ -432,9 +432,9 @@ export const androidContentInsetLeftProperty = new CssProperty<Style, Length>({
     name: "androidContentInsetLeft", cssName: "android-content-inset-left",
     defaultValue: "auto", equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        const view = target.viewRef.get();
+        const view = <ActionBarBase>target.viewRef.get();
         if (view) {
-            (<ActionBarBase>view).effectiveContentInsetLeft = Length.toDevicePixels(newValue);
+            view.effectiveContentInsetLeft = Length.toDevicePixels(newValue);
         } else {
             traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
         }
@@ -446,9 +446,9 @@ export const androidContentInsetRightProperty = new CssProperty<Style, Length>({
     name: "androidContentInsetRight", cssName: "android-content-inset-right",
     defaultValue: "auto", equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        const view = target.viewRef.get();
+        const view = <ActionBarBase>target.viewRef.get();
         if (view) {
-            (<ActionBarBase>view).effectiveContentInsetRight = Length.toDevicePixels(newValue);
+            view.effectiveContentInsetRight = Length.toDevicePixels(newValue);
         } else {
             traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
         }

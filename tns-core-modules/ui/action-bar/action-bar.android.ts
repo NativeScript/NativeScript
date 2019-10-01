@@ -34,6 +34,8 @@ function initializeMenuItemClickListener(): void {
         return;
     }
 
+    apiLevel = android.os.Build.VERSION.SDK_INT;
+
     AppCompatTextView = androidx.appcompat.widget.AppCompatTextView;
 
     @Interfaces([androidx.appcompat.widget.Toolbar.OnMenuItemClickListener])
@@ -54,6 +56,8 @@ function initializeMenuItemClickListener(): void {
     MenuItemClickListener = MenuItemClickListenerImpl;
     appResources = application.android.context.getResources();
 }
+
+let apiLevel: number;
 
 export class ActionItem extends ActionItemBase {
     private _androidPosition: AndroidActionItemSettings = {
@@ -423,11 +427,15 @@ export class ActionBar extends ActionBarBase {
     }
 
     [androidContentInsetLeftProperty.setNative]() {
-        this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
+        if (apiLevel >= 21) {
+            this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
+        }
     }
 
     [androidContentInsetRightProperty.setNative]() {
-        this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
+        if (apiLevel >= 21) {
+            this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
+        }
     }
 }
 
