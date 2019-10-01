@@ -1,4 +1,6 @@
-# NativeScript [![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
+# NativeScript [![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript) 
+
+[![Slack](https://img.shields.io/badge/chat!!!-slack-ff1493.svg?style=flat-square)](http://developer.telerik.com/wp-login.php?action=slack-invitation)
 
 ![NativeScript logo](https://i.imgur.com/YmNIMqS.png)
 
