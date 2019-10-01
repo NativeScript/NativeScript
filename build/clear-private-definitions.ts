@@ -1,7 +1,6 @@
 import * as path from "path";
 import * as fs from "fs";
-import readdirp from "readdirp";
-type EntryInfo = typeof readdirp.EntryInfo;
+import readdirp, { EntryInfo } from "readdirp";
 
 const inputFolder = path.resolve(process.argv[2]);
 

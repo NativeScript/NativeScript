@@ -1,7 +1,6 @@
 import * as path from "path";
 import * as fs from "fs";
-import readdirp from "readdirp";
-type EntryInfo = typeof readdirp.EntryInfo;
+import readdirp, { EntryInfo } from "readdirp";
 
 const inputFolder = path.resolve("dist/nativescript-core");
 const outputFolder = path.resolve("dist/tns-core-modules");
@@ -122,7 +121,7 @@ function generateTestFile() {
     output.push(`import { compare, report } from "./module-compare";\n\n`);
 
     uniqueImports.forEach((name) => {
-        const moduleName = name.replace(/[\.\/\-]/g,"_");
+        const moduleName = name.replace(/[\.\/\-]/g, "_");
         const compatName = `module_${moduleName}_compat`;
         const coreName = `module_${moduleName}_core`;
         output.push(`import * as ${coreName} from "@nativescript/core/${name}";`);
