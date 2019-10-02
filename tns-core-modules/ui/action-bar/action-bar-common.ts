@@ -10,12 +10,20 @@ import { profile } from "../../profiling";
 export * from "../core/view";
 
 import {
-    View, ViewBase, Property,
-    unsetValue, booleanConverter,
+    View,
+    ViewBase,
+    Property,
+    unsetValue,
+    booleanConverter,
     horizontalAlignmentProperty,
-    verticalAlignmentProperty, CSSType,
-    traceWrite, traceCategories, traceMessageType
+    verticalAlignmentProperty,
+    CSSType,
+    traceWrite,
+    traceCategories,
+    traceMessageType, Color
 } from "../core/view";
+import { ShorthandProperty, CssProperty, Style } from "../core/properties/properties";
+import { Length } from "../core/view";
 
 export module knownCollections {
     export const actionItems = "actionItems";
@@ -30,6 +38,9 @@ export class ActionBarBase extends View implements ActionBarDefinition {
     public title: string;
     public flat: boolean;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
+
+    public effectiveContentInsetLeft: number;
+    public effectiveContentInsetRight: number;
 
     get navigationButton(): NavigationButton {
         return this._navigationButton;
@@ -88,6 +99,27 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 
             this.update();
         }
+    }
+
+    public get androidContentInset(): string | Length {
+        return this.style.androidContentInset;
+    }
+    public set androidContentInset(value: string | Length) {
+        this.style.androidContentInset = value;
+    }
+
+    public get androidContentInsetLeft(): Length {
+        return this.style.androidContentInsetLeft;
+    }
+    public set androidContentInsetLeft(value: Length) {
+        this.style.androidContentInsetLeft = value;
+    }
+
+    public get androidContentInsetRight(): Length {
+        return this.style.androidContentInsetRight;
+    }
+    public set androidContentInsetRight(value: Length) {
+        this.style.androidContentInsetRight = value;
     }
 
     get ios(): any {
@@ -351,6 +383,23 @@ export function traceMissingIcon(icon: string) {
         traceMessageType.error);
 }
 
+function convertToContentInset(this: void, value: string | Length): [CssProperty<any, any>, any][] {
+    if (typeof value === "string" && value !== "auto") {
+        let insets = value.split(/[ ,]+/);
+
+        return [
+            [androidContentInsetLeftProperty, Length.parse(insets[0])],
+            [androidContentInsetRightProperty, Length.parse(insets[1] || insets[0])]
+        ];
+    }
+    else {
+        return [
+            [androidContentInsetLeftProperty, value],
+            [androidContentInsetRightProperty, value]
+        ];
+    }
+}
+
 export const iosIconRenderingModeProperty = new Property<ActionBarBase, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "alwaysOriginal" });
 iosIconRenderingModeProperty.register(ActionBarBase);
 
@@ -365,3 +414,44 @@ visibilityProperty.register(ActionItemBase);
 
 export const flatProperty = new Property<ActionBarBase, boolean>({ name: "flat", defaultValue: false, valueConverter: booleanConverter });
 flatProperty.register(ActionBarBase);
+
+const androidContentInsetProperty = new ShorthandProperty<Style, string | Length>({
+    name: "androidContentInset", cssName: "android-content-inset",
+    getter: function (this: Style) {
+        if (Length.equals(this.androidContentInsetLeft, this.androidContentInsetRight)) {
+            return this.androidContentInsetLeft;
+        }
+
+        return `${Length.convertToString(this.androidContentInsetLeft)} ${Length.convertToString(this.androidContentInsetRight)}`;
+    },
+    converter: convertToContentInset
+});
+androidContentInsetProperty.register(Style);
+
+export const androidContentInsetLeftProperty = new CssProperty<Style, Length>({
+    name: "androidContentInsetLeft", cssName: "android-content-inset-left",
+    defaultValue: "auto", equalityComparer: Length.equals,
+    valueChanged: (target, oldValue, newValue) => {
+        const view = <ActionBarBase>target.viewRef.get();
+        if (view) {
+            view.effectiveContentInsetLeft = Length.toDevicePixels(newValue);
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
+    }, valueConverter: Length.parse
+});
+androidContentInsetLeftProperty.register(Style);
+
+export const androidContentInsetRightProperty = new CssProperty<Style, Length>({
+    name: "androidContentInsetRight", cssName: "android-content-inset-right",
+    defaultValue: "auto", equalityComparer: Length.equals,
+    valueChanged: (target, oldValue, newValue) => {
+        const view = <ActionBarBase>target.viewRef.get();
+        if (view) {
+            view.effectiveContentInsetRight = Length.toDevicePixels(newValue);
+        } else {
+            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+        }
+    }, valueConverter: Length.parse
+});
+androidContentInsetRightProperty.register(Style);

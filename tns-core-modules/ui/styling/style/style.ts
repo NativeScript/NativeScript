@@ -172,6 +172,11 @@ export class Style extends Observable implements StyleDefinition {
     public statusBarStyle: "light" | "dark";
     public androidStatusBarBackground: Color;
 
+    // ActionBar-specific props
+    public androidContentInset: string | Length;
+    public androidContentInsetLeft: Length;
+    public androidContentInsetRight: Length;
+
     //flexbox layout properties
     public flexDirection: FlexDirection;
     public flexWrap: FlexWrap;
