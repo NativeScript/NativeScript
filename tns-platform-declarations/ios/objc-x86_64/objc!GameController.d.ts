@@ -10,6 +10,10 @@ declare class GCController extends NSObject {
 
 	static alloc(): GCController; // inherited from NSObject
 
+	static controllerWithExtendedGamepad(): GCController;
+
+	static controllerWithMicroGamepad(): GCController;
+
 	static controllers(): NSArray<GCController>;
 
 	static new(): GCController; // inherited from NSObject
@@ -34,7 +38,13 @@ declare class GCController extends NSObject {
 
 	playerIndex: GCControllerPlayerIndex;
 
+	readonly productCategory: string;
+
+	readonly snapshot: boolean;
+
 	readonly vendorName: string;
+
+	capture(): GCController;
 }
 
 declare class GCControllerAxisInput extends GCControllerElement {
@@ -46,6 +56,8 @@ declare class GCControllerAxisInput extends GCControllerElement {
 	readonly value: number;
 
 	valueChangedHandler: (p1: GCControllerAxisInput, p2: number) => void;
+
+	setValue(value: number): void;
 }
 
 declare class GCControllerButtonInput extends GCControllerElement {
@@ -61,6 +73,8 @@ declare class GCControllerButtonInput extends GCControllerElement {
 	readonly value: number;
 
 	valueChangedHandler: (p1: GCControllerButtonInput, p2: number, p3: boolean) => void;
+
+	setValue(value: number): void;
 }
 
 declare var GCControllerDidConnectNotification: string;
@@ -86,6 +100,8 @@ declare class GCControllerDirectionPad extends GCControllerElement {
 	readonly xAxis: GCControllerAxisInput;
 
 	readonly yAxis: GCControllerAxisInput;
+
+	setValueForXAxisYAxis(xAxis: number, yAxis: number): void;
 }
 
 declare class GCControllerElement extends NSObject {
@@ -112,6 +128,10 @@ declare const enum GCControllerPlayerIndex {
 	Index4 = 3
 }
 
+declare var GCCurrentExtendedGamepadSnapshotDataVersion: GCExtendedGamepadSnapshotDataVersion;
+
+declare var GCCurrentMicroGamepadSnapshotDataVersion: GCMicroGamepadSnapshotDataVersion;
+
 interface GCEulerAngles {
 	pitch: number;
 	yaw: number;
@@ -137,6 +157,10 @@ declare class GCExtendedGamepad extends NSObject {
 	readonly buttonA: GCControllerButtonInput;
 
 	readonly buttonB: GCControllerButtonInput;
+
+	readonly buttonMenu: GCControllerButtonInput;
+
+	readonly buttonOptions: GCControllerButtonInput;
 
 	readonly buttonX: GCControllerButtonInput;
 
@@ -165,6 +189,8 @@ declare class GCExtendedGamepad extends NSObject {
 	valueChangedHandler: (p1: GCExtendedGamepad, p2: GCControllerElement) => void;
 
 	saveSnapshot(): GCExtendedGamepadSnapshot;
+
+	setStateFromExtendedGamepad(extendedGamepad: GCExtendedGamepad): void;
 }
 
 interface GCExtendedGamepadSnapShotDataV100 {
@@ -204,6 +230,38 @@ declare class GCExtendedGamepadSnapshot extends GCExtendedGamepad {
 	initWithControllerSnapshotData(controller: GCController, data: NSData): this;
 
 	initWithSnapshotData(data: NSData): this;
+}
+
+interface GCExtendedGamepadSnapshotData {
+	version: number;
+	size: number;
+	dpadX: number;
+	dpadY: number;
+	buttonA: number;
+	buttonB: number;
+	buttonX: number;
+	buttonY: number;
+	leftShoulder: number;
+	rightShoulder: number;
+	leftThumbstickX: number;
+	leftThumbstickY: number;
+	rightThumbstickX: number;
+	rightThumbstickY: number;
+	leftTrigger: number;
+	rightTrigger: number;
+	supportsClickableThumbsticks: boolean;
+	leftThumbstickButton: boolean;
+	rightThumbstickButton: boolean;
+}
+declare var GCExtendedGamepadSnapshotData: interop.StructType<GCExtendedGamepadSnapshotData>;
+
+declare function GCExtendedGamepadSnapshotDataFromNSData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapshotData>, data: NSData): boolean;
+
+declare const enum GCExtendedGamepadSnapshotDataVersion {
+
+	Version1 = 256,
+
+	Version2 = 257
 }
 
 declare class GCGamepad extends NSObject {
@@ -276,6 +334,8 @@ declare class GCMicroGamepad extends NSObject {
 
 	readonly buttonA: GCControllerButtonInput;
 
+	readonly buttonMenu: GCControllerButtonInput;
+
 	readonly buttonX: GCControllerButtonInput;
 
 	readonly controller: GCController;
@@ -287,6 +347,8 @@ declare class GCMicroGamepad extends NSObject {
 	valueChangedHandler: (p1: GCMicroGamepad, p2: GCControllerElement) => void;
 
 	saveSnapshot(): GCMicroGamepadSnapshot;
+
+	setStateFromMicroGamepad(microGamepad: GCMicroGamepad): void;
 }
 
 interface GCMicroGamepadSnapShotDataV100 {
@@ -318,6 +380,23 @@ declare class GCMicroGamepadSnapshot extends GCMicroGamepad {
 	initWithSnapshotData(data: NSData): this;
 }
 
+interface GCMicroGamepadSnapshotData {
+	version: number;
+	size: number;
+	dpadX: number;
+	dpadY: number;
+	buttonA: number;
+	buttonX: number;
+}
+declare var GCMicroGamepadSnapshotData: interop.StructType<GCMicroGamepadSnapshotData>;
+
+declare function GCMicroGamepadSnapshotDataFromNSData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapshotData>, data: NSData): boolean;
+
+declare const enum GCMicroGamepadSnapshotDataVersion {
+
+	Version1 = 256
+}
+
 declare class GCMotion extends NSObject {
 
 	static alloc(): GCMotion; // inherited from NSObject
@@ -337,6 +416,16 @@ declare class GCMotion extends NSObject {
 	readonly userAcceleration: GCAcceleration;
 
 	valueChangedHandler: (p1: GCMotion) => void;
+
+	setAttitude(attitude: GCQuaternion): void;
+
+	setGravity(gravity: GCAcceleration): void;
+
+	setRotationRate(rotationRate: GCRotationRate): void;
+
+	setStateFromMotion(motion: GCMotion): void;
+
+	setUserAcceleration(userAcceleration: GCAcceleration): void;
 }
 
 interface GCQuaternion {
@@ -356,6 +445,10 @@ declare var GCRotationRate: interop.StructType<GCRotationRate>;
 
 declare function NSDataFromGCExtendedGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapShotDataV100>): NSData;
 
+declare function NSDataFromGCExtendedGamepadSnapshotData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapshotData>): NSData;
+
 declare function NSDataFromGCGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCGamepadSnapShotDataV100>): NSData;
 
 declare function NSDataFromGCMicroGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapShotDataV100>): NSData;
+
+declare function NSDataFromGCMicroGamepadSnapshotData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapshotData>): NSData;

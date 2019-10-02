@@ -1136,11 +1136,11 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 if (flexWrap !== FlexWrap.WRAP_REVERSE) {
                     view.layout(left, top + topFromCrossAxis + lp.effectiveMarginTop - lp.effectiveMarginBottom,
                         right, top + topFromCrossAxis + view.getMeasuredHeight() + lp.effectiveMarginTop
-                        - lp.effectiveMarginBottom);
+                    - lp.effectiveMarginBottom);
                 } else {
                     view.layout(left, top - topFromCrossAxis + lp.effectiveMarginTop - lp.effectiveMarginBottom,
                         right, top - topFromCrossAxis + view.getMeasuredHeight() + lp.effectiveMarginTop
-                        - lp.effectiveMarginBottom);
+                    - lp.effectiveMarginBottom);
                 }
                 break;
         }

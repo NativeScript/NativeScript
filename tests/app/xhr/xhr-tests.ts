@@ -273,7 +273,7 @@ export function test_xhr_responseType_rss() {
     const response = {
         statusCode: 200,
         content: {
-            toString: function() { return this.raw; },
+            toString: function () { return this.raw; },
             raw: rawRssFeed
         },
         headers: {
@@ -291,7 +291,7 @@ export function test_xhr_responseType_text() {
     const response = {
         statusCode: 200,
         content: {
-            toString: function() { return this.raw; },
+            toString: function () { return this.raw; },
             raw: "response body"
         },
         headers: {
@@ -310,7 +310,7 @@ export function test_xhr_responseType_switched_to_JSON_if_header_present() {
     const response = {
         statusCode: 200,
         content: {
-            toString: function() { return this.raw; },
+            toString: function () { return this.raw; },
             raw: "{\"data\": 42}"
         },
         headers: {
@@ -381,7 +381,7 @@ export function test_responseType(done) {
         () => xhr.responseType = "arraybuffer",
         "Didn't raise on unsupported type.",
         "Response type of 'arraybuffer' not supported."
-        );
+    );
     done(null);
 }
 
@@ -390,7 +390,7 @@ export function test_getResponseHeader() {
     const response = {
         statusCode: 200,
         content: {
-            toString: function() { return this.raw; },
+            toString: function () { return this.raw; },
             raw: "{\"data\": 42}"
         },
         headers: {

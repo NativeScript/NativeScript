@@ -47,13 +47,16 @@ export class ActionBar extends View {
     ios: any /* UITabBarController */;
 
     /**
-     * Gets or set the UIImageRenderingMode of the action bar icons in iOS. Defaults to "alwaysOriginal" 
+     * Gets or set the UIImageRenderingMode of the action bar icons in iOS. Defaults to "alwaysOriginal"
      * Valid values are:
      *  - automatic
      *  - alwaysOriginal
-     *  - alwaysTemplate  
+     *  - alwaysTemplate
      */
     iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
+
+    public effectiveContentInsetLeft: number;
+    public effectiveContentInsetRight: number;
 
     /**
      * Updates the action bar.
@@ -131,7 +134,7 @@ export class ActionItem extends ViewBase {
 
     /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */

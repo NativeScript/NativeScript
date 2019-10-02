@@ -33,7 +33,11 @@ declare const enum WCErrorCode {
 
 	SessionInactive = 7016,
 
-	TransferTimedOut = 7017
+	TransferTimedOut = 7017,
+
+	CompanionAppNotInstalled = 7018,
+
+	WatchOnlyApp = 7019
 }
 
 declare var WCErrorDomain: string;
@@ -177,7 +181,7 @@ declare class WCSessionUserInfoTransfer extends NSObject implements NSSecureCodi
 
 	cancel(): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }

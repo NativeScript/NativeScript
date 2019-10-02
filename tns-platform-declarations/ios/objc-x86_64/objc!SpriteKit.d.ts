@@ -246,9 +246,9 @@ declare class SKAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	reversedAction(): SKAction;
 }
@@ -282,9 +282,9 @@ declare class SKAttribute extends NSObject implements NSSecureCoding {
 
 	constructor(o: { name: string; type: SKAttributeType; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithNameType(name: string, type: SKAttributeType): this;
 }
@@ -336,9 +336,9 @@ declare class SKAttributeValue extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class SKAudioNode extends SKNode implements NSSecureCoding {
@@ -369,11 +369,11 @@ declare class SKAudioNode extends SKNode implements NSSecureCoding {
 
 	constructor(o: { URL: NSURL; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	initWithAVAudioNode(node: AVAudioNode): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithFileNamed(name: string): this;
 
@@ -394,7 +394,9 @@ declare const enum SKBlendMode {
 
 	Screen = 5,
 
-	Replace = 6
+	Replace = 6,
+
+	MultiplyAlpha = 7
 }
 
 declare class SKCameraNode extends SKNode {
@@ -450,9 +452,9 @@ declare class SKConstraint extends NSObject implements NSCopying, NSSecureCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class SKCropNode extends SKNode {
@@ -738,7 +740,7 @@ declare class SKKeyframeSequence extends NSObject implements NSCopying, NSSecure
 
 	count(): number;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	getKeyframeTimeForIndex(index: number): number;
 
@@ -746,7 +748,7 @@ declare class SKKeyframeSequence extends NSObject implements NSCopying, NSSecure
 
 	initWithCapacity(numItems: number): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithKeyframeValuesTimes(values: NSArray<any> | any[], times: NSArray<number> | number[]): this;
 
@@ -1008,7 +1010,7 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	didUpdateFocusInContextWithAnimationCoordinator(context: UIFocusUpdateContext, coordinator: UIFocusAnimationCoordinator): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	enumerateChildNodesWithNameUsingBlock(name: string, block: (p1: SKNode, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
 
@@ -1016,7 +1018,7 @@ declare class SKNode extends UIResponder implements NSCopying, NSSecureCoding, U
 
 	inParentHierarchy(parent: SKNode): boolean;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	insertChildAtIndex(node: SKNode, index: number): void;
 
@@ -1191,9 +1193,9 @@ declare class SKPhysicsBody extends NSObject implements NSCopying, NSSecureCodin
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class SKPhysicsContact extends NSObject {
@@ -1242,9 +1244,9 @@ declare class SKPhysicsJoint extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class SKPhysicsJointFixed extends SKPhysicsJoint {
@@ -1338,7 +1340,7 @@ declare class SKPhysicsWorld extends NSObject implements NSSecureCoding {
 
 	bodyInRect(rect: CGRect): SKPhysicsBody;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	enumerateBodiesAlongRayStartEndUsingBlock(start: CGPoint, end: CGPoint, block: (p1: SKPhysicsBody, p2: CGPoint, p3: CGVector, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
 
@@ -1346,7 +1348,7 @@ declare class SKPhysicsWorld extends NSObject implements NSSecureCoding {
 
 	enumerateBodiesInRectUsingBlock(rect: CGRect, block: (p1: SKPhysicsBody, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	removeAllJoints(): void;
 
@@ -1385,9 +1387,9 @@ declare class SKRange extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithLowerLimitUpperLimit(lower: number, upper: number): this;
 }
@@ -1408,9 +1410,9 @@ declare class SKReachConstraints extends NSObject implements NSSecureCoding {
 
 	constructor(o: { lowerAngleLimit: number; upperAngleLimit: number; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithLowerAngleLimitUpperAngleLimit(lowerAngleLimit: number, upperAngleLimit: number): this;
 }
@@ -1468,9 +1470,9 @@ declare class SKRegion extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithPath(path: any): this;
 
@@ -1485,6 +1487,37 @@ declare class SKRegion extends NSObject implements NSCopying, NSSecureCoding {
 	regionByIntersectionWithRegion(region: SKRegion): this;
 
 	regionByUnionWithRegion(region: SKRegion): this;
+}
+
+declare class SKRenderer extends NSObject {
+
+	static alloc(): SKRenderer; // inherited from NSObject
+
+	static new(): SKRenderer; // inherited from NSObject
+
+	static rendererWithDevice(device: MTLDevice): SKRenderer;
+
+	ignoresSiblingOrder: boolean;
+
+	scene: SKScene;
+
+	shouldCullNonVisibleNodes: boolean;
+
+	showsDrawCount: boolean;
+
+	showsFields: boolean;
+
+	showsNodeCount: boolean;
+
+	showsPhysics: boolean;
+
+	showsQuadCount: boolean;
+
+	renderWithViewportCommandBufferRenderPassDescriptor(viewport: CGRect, commandBuffer: MTLCommandBuffer, renderPassDescriptor: MTLRenderPassDescriptor): void;
+
+	renderWithViewportRenderCommandEncoderRenderPassDescriptorCommandQueue(viewport: CGRect, renderCommandEncoder: MTLRenderCommandEncoder, renderPassDescriptor: MTLRenderPassDescriptor, commandQueue: MTLCommandQueue): void;
+
+	updateAtTime(currentTime: number): void;
 }
 
 declare const enum SKRepeatMode {
@@ -1649,9 +1682,9 @@ declare class SKShader extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithSource(source: string): this;
 
@@ -1872,9 +1905,9 @@ declare class SKTexture extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	preloadWithCompletionHandler(completionHandler: () => void): void;
 
@@ -1909,9 +1942,9 @@ declare class SKTextureAtlas extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	preloadWithCompletionHandler(completionHandler: () => void): void;
 
@@ -2050,9 +2083,9 @@ declare class SKTileDefinition extends NSObject implements NSCopying, NSSecureCo
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithTexture(texture: SKTexture): this;
 
@@ -2102,9 +2135,9 @@ declare class SKTileGroup extends NSObject implements NSCopying, NSSecureCoding 
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithRules(rules: NSArray<SKTileGroupRule> | SKTileGroupRule[]): this;
 
@@ -2133,11 +2166,11 @@ declare class SKTileGroupRule extends NSObject implements NSCopying, NSSecureCod
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	initWithAdjacencyTileDefinitions(adjacency: SKTileAdjacencyMask, tileDefinitions: NSArray<SKTileDefinition> | SKTileDefinition[]): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class SKTileMapNode extends SKNode implements NSCopying, NSSecureCoding {
@@ -2198,11 +2231,11 @@ declare class SKTileMapNode extends SKNode implements NSCopying, NSSecureCoding 
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	fillWithTileGroup(tileGroup: SKTileGroup): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithTileSetColumnsRowsTileSize(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize): this;
 
@@ -2257,9 +2290,9 @@ declare class SKTileSet extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithTileGroups(tileGroups: NSArray<SKTileGroup> | SKTileGroup[]): this;
 
@@ -2426,9 +2459,9 @@ declare class SKUniform extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithName(name: string): this;
 
@@ -2605,9 +2638,9 @@ declare class SKWarpGeometry extends NSObject implements NSCopying, NSSecureCodi
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSSecureCoding {
@@ -2636,13 +2669,13 @@ declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSSecureCodin
 
 	destPositionAtIndex(index: number): interop.Reference<number>;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	gridByReplacingDestPositions(destPositions: interop.Pointer | interop.Reference<interop.Reference<number>>): this;
 
 	gridByReplacingSourcePositions(sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>>): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithColumnsRowsSourcePositionsDestPositions(cols: number, rows: number, sourcePositions: interop.Pointer | interop.Reference<interop.Reference<number>>, destPositions: interop.Pointer | interop.Reference<interop.Reference<number>>): this;
 

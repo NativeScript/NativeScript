@@ -85,10 +85,13 @@ export function clear(): void {
 }
 
 export function flush(): boolean {
+    ensureSharedPreferences();
+
     return sharedPreferences.edit().commit();
 }
 
 export function getAllKeys(): Array<string> {
+    ensureSharedPreferences();
     const mappedPreferences = sharedPreferences.getAll();
     const iterator = mappedPreferences.keySet().iterator();
     const result = [];

@@ -38,7 +38,7 @@ export class ScrollView extends ScrollViewBase {
     private _contentMeasuredWidth: number = 0;
     private _contentMeasuredHeight: number = 0;
     private _delegate: UIScrollViewDelegateImpl;
-    
+
     public createNativeView() {
         const view = UIScrollView.new();
 
@@ -85,7 +85,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     get scrollableWidth(): number {
-        if (!this.nativeViewProtected  || this.orientation !== "horizontal") {
+        if (!this.nativeViewProtected || this.orientation !== "horizontal") {
             return 0;
         }
 
@@ -93,7 +93,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     get scrollableHeight(): number {
-        if (!this.nativeViewProtected  || this.orientation !== "vertical") {
+        if (!this.nativeViewProtected || this.orientation !== "vertical") {
             return 0;
         }
 

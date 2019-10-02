@@ -122,20 +122,20 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
 
     const alpha = gradient.angle / (Math.PI * 2);
     const startX = Math.pow(
-      Math.sin(Math.PI * (alpha + 0.75)),
-      2
+        Math.sin(Math.PI * (alpha + 0.75)),
+        2
     );
     const startY = Math.pow(
-      Math.sin(Math.PI * (alpha + 0.5)),
-      2
+        Math.sin(Math.PI * (alpha + 0.5)),
+        2
     );
     const endX = Math.pow(
-      Math.sin(Math.PI * (alpha + 0.25)),
-      2
+        Math.sin(Math.PI * (alpha + 0.25)),
+        2
     );
     const endY = Math.pow(
-      Math.sin(Math.PI * alpha),
-      2
+        Math.sin(Math.PI * alpha),
+        2
     );
 
     return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);

@@ -19,6 +19,10 @@ declare class INUIAddVoiceShortcutButton extends UIButton {
 
 	static new(): INUIAddVoiceShortcutButton; // inherited from NSObject
 
+	static systemButtonWithImageTargetAction(image: UIImage, target: any, action: string): INUIAddVoiceShortcutButton; // inherited from UIButton
+
+	cornerRadius: number;
+
 	delegate: INUIAddVoiceShortcutButtonDelegate;
 
 	shortcut: INShortcut;
@@ -28,6 +32,8 @@ declare class INUIAddVoiceShortcutButton extends UIButton {
 	constructor(o: { style: INUIAddVoiceShortcutButtonStyle; });
 
 	initWithStyle(style: INUIAddVoiceShortcutButtonStyle): this;
+
+	setStyle(style: INUIAddVoiceShortcutButtonStyle): void;
 }
 
 interface INUIAddVoiceShortcutButtonDelegate extends NSObjectProtocol {
@@ -49,7 +55,11 @@ declare const enum INUIAddVoiceShortcutButtonStyle {
 
 	Black = 2,
 
-	BlackOutline = 3
+	BlackOutline = 3,
+
+	Automatic = 4,
+
+	AutomaticOutline = 5
 }
 
 declare class INUIAddVoiceShortcutViewController extends UIViewController {

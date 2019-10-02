@@ -1,4 +1,25 @@
 
+declare class SFAcousticFeature extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SFAcousticFeature; // inherited from NSObject
+
+	static new(): SFAcousticFeature; // inherited from NSObject
+
+	readonly acousticFeatureValuePerFrame: NSArray<number>;
+
+	readonly frameDuration: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare class SFSpeechAudioBufferRecognitionRequest extends SFSpeechRecognitionRequest {
 
 	static alloc(): SFSpeechAudioBufferRecognitionRequest; // inherited from NSObject
@@ -24,6 +45,8 @@ declare class SFSpeechRecognitionRequest extends NSObject {
 
 	interactionIdentifier: string;
 
+	requiresOnDeviceRecognition: boolean;
+
 	shouldReportPartialResults: boolean;
 
 	taskHint: SFSpeechRecognitionTaskHint;
@@ -47,9 +70,9 @@ declare class SFSpeechRecognitionResult extends NSObject implements NSCopying, N
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class SFSpeechRecognitionTask extends NSObject {
@@ -136,6 +159,8 @@ declare class SFSpeechRecognizer extends NSObject {
 
 	queue: NSOperationQueue;
 
+	supportsOnDeviceRecognition: boolean;
+
 	constructor(o: { locale: NSLocale; });
 
 	initWithLocale(locale: NSLocale): this;
@@ -184,9 +209,13 @@ declare class SFTranscription extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): SFTranscription; // inherited from NSObject
 
+	readonly averagePauseDuration: number;
+
 	readonly formattedString: string;
 
 	readonly segments: NSArray<SFTranscriptionSegment>;
+
+	readonly speakingRate: number;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -194,9 +223,9 @@ declare class SFTranscription extends NSObject implements NSCopying, NSSecureCod
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class SFTranscriptionSegment extends NSObject implements NSCopying, NSSecureCoding {
@@ -217,13 +246,40 @@ declare class SFTranscriptionSegment extends NSObject implements NSCopying, NSSe
 
 	readonly timestamp: number;
 
+	readonly voiceAnalytics: SFVoiceAnalytics;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class SFVoiceAnalytics extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SFVoiceAnalytics; // inherited from NSObject
+
+	static new(): SFVoiceAnalytics; // inherited from NSObject
+
+	readonly jitter: SFAcousticFeature;
+
+	readonly pitch: SFAcousticFeature;
+
+	readonly shimmer: SFAcousticFeature;
+
+	readonly voicing: SFAcousticFeature;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }

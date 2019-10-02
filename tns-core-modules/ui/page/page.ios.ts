@@ -148,7 +148,7 @@ class UIViewControllerImpl extends UIViewController {
             const isReplace = navigationContext.navigationType === NavigationType.replace;
 
             frame.setCurrent(newEntry, navigationContext.navigationType);
-            
+
             if (isReplace) {
                 let controller = newEntry.resolvedPage.ios;
                 if (controller) {

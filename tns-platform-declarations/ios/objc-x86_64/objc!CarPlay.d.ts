@@ -34,9 +34,9 @@ declare class CPAlertAction extends NSObject implements NSSecureCoding {
 
 	constructor(o: { title: string; style: CPAlertActionStyle; handler: (p1: CPAlertAction) => void; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithTitleStyleHandler(title: string, style: CPAlertActionStyle, handler: (p1: CPAlertAction) => void): this;
 }
@@ -100,14 +100,16 @@ declare class CPBarButton extends NSObject implements NSSecureCoding {
 
 	constructor(o: { type: CPBarButtonType; handler: (p1: CPBarButton) => void; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithTypeHandler(type: CPBarButtonType, handler: (p1: CPBarButton) => void): this;
 }
 
 interface CPBarButtonProviding extends NSObjectProtocol {
+
+	backButton: CPBarButton;
 
 	leadingNavigationBarButtons: NSArray<CPBarButton>;
 
@@ -123,6 +125,13 @@ declare const enum CPBarButtonType {
 	Text = 0,
 
 	Image = 1
+}
+
+declare const enum CPContentStyle {
+
+	Light = 1,
+
+	Dark = 2
 }
 
 declare class CPGridButton extends NSObject implements NSSecureCoding {
@@ -143,9 +152,9 @@ declare class CPGridButton extends NSObject implements NSSecureCoding {
 
 	constructor(o: { titleVariants: NSArray<string> | string[]; image: UIImage; handler: (p1: CPGridButton) => void; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithTitleVariantsImageHandler(titleVariants: NSArray<string> | string[], image: UIImage, handler: (p1: CPGridButton) => void): this;
 }
@@ -159,6 +168,8 @@ declare class CPGridTemplate extends CPTemplate implements CPBarButtonProviding 
 	readonly gridButtons: NSArray<CPGridButton>;
 
 	readonly title: string;
+
+	backButton: CPBarButton; // inherited from CPBarButtonProviding
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -219,9 +230,9 @@ declare class CPImageSet extends NSObject implements NSSecureCoding {
 
 	constructor(o: { lightContentImage: UIImage; darkContentImage: UIImage; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithLightContentImageDarkContentImage(lightImage: UIImage, darkImage: UIImage): this;
 }
@@ -233,6 +244,8 @@ declare class CPInterfaceController extends NSObject {
 	static new(): CPInterfaceController; // inherited from NSObject
 
 	delegate: CPInterfaceControllerDelegate;
+
+	prefersDarkUserInterfaceStyle: boolean;
 
 	readonly presentedTemplate: CPTemplate;
 
@@ -305,9 +318,9 @@ declare class CPListItem extends NSObject implements NSSecureCoding {
 
 	constructor(o: { text: string; detailText: string; image: UIImage; showsDisclosureIndicator: boolean; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithTextDetailText(text: string, detailText: string): this;
 
@@ -336,9 +349,9 @@ declare class CPListSection extends NSObject implements NSSecureCoding {
 
 	constructor(o: { items: NSArray<CPListItem> | CPListItem[]; header: string; sectionIndexTitle: string; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithItems(items: NSArray<CPListItem> | CPListItem[]): this;
 
@@ -356,6 +369,8 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	readonly sections: NSArray<CPListSection>;
 
 	readonly title: string;
+
+	backButton: CPBarButton; // inherited from CPBarButtonProviding
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -423,6 +438,10 @@ declare class CPManeuver extends NSObject implements NSCopying, NSSecureCoding {
 
 	instructionVariants: NSArray<string>;
 
+	junctionImage: UIImage;
+
+	symbolImage: UIImage;
+
 	symbolSet: CPImageSet;
 
 	userInfo: any;
@@ -433,9 +452,9 @@ declare class CPManeuver extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum CPManeuverDisplayStyle {
@@ -471,9 +490,9 @@ declare class CPMapButton extends NSObject implements NSSecureCoding {
 
 	constructor(o: { handler: (p1: CPMapButton) => void; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithHandler(handler: (p1: CPMapButton) => void): this;
 }
@@ -499,6 +518,8 @@ declare class CPMapTemplate extends CPTemplate implements CPBarButtonProviding {
 	readonly panningInterfaceVisible: boolean;
 
 	tripEstimateStyle: CPTripEstimateStyle;
+
+	backButton: CPBarButton; // inherited from CPBarButtonProviding
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
@@ -616,6 +637,8 @@ declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
 
 	readonly duration: number;
 
+	readonly image: UIImage;
+
 	readonly imageSet: CPImageSet;
 
 	readonly primaryAction: CPAlertAction;
@@ -630,11 +653,15 @@ declare class CPNavigationAlert extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[]; image: UIImage; primaryAction: CPAlertAction; secondaryAction: CPAlertAction; duration: number; });
+
 	constructor(o: { titleVariants: NSArray<string> | string[]; subtitleVariants: NSArray<string> | string[]; imageSet: CPImageSet; primaryAction: CPAlertAction; secondaryAction: CPAlertAction; duration: number; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
+
+	initWithTitleVariantsSubtitleVariantsImagePrimaryActionSecondaryActionDuration(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[], image: UIImage, primaryAction: CPAlertAction, secondaryAction: CPAlertAction, duration: number): this;
 
 	initWithTitleVariantsSubtitleVariantsImageSetPrimaryActionSecondaryActionDuration(titleVariants: NSArray<string> | string[], subtitleVariants: NSArray<string> | string[], imageSet: CPImageSet, primaryAction: CPAlertAction, secondaryAction: CPAlertAction, duration: number): this;
 
@@ -706,9 +733,9 @@ declare class CPRouteChoice extends NSObject implements NSCopying, NSSecureCodin
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithSummaryVariantsAdditionalInformationVariantsSelectionSummaryVariants(summaryVariants: NSArray<string> | string[], additionalInformationVariants: NSArray<string> | string[], selectionSummaryVariants: NSArray<string> | string[]): this;
 }
@@ -741,6 +768,8 @@ declare class CPSessionConfiguration extends NSObject {
 
 	static new(): CPSessionConfiguration; // inherited from NSObject
 
+	readonly contentStyle: CPContentStyle;
+
 	delegate: CPSessionConfigurationDelegate;
 
 	readonly limitedUserInterfaces: CPLimitableUserInterface;
@@ -752,7 +781,9 @@ declare class CPSessionConfiguration extends NSObject {
 
 interface CPSessionConfigurationDelegate extends NSObjectProtocol {
 
-	sessionConfigurationLimitedUserInterfacesChanged(sessionConfiguration: CPSessionConfiguration, limitedUserInterfaces: CPLimitableUserInterface): void;
+	sessionConfigurationContentStyleChanged?(sessionConfiguration: CPSessionConfiguration, contentStyle: CPContentStyle): void;
+
+	sessionConfigurationLimitedUserInterfacesChanged?(sessionConfiguration: CPSessionConfiguration, limitedUserInterfaces: CPLimitableUserInterface): void;
 }
 declare var CPSessionConfigurationDelegate: {
 
@@ -771,10 +802,40 @@ declare class CPTemplate extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
+
+declare class CPTemplateApplicationScene extends UIScene {
+
+	static alloc(): CPTemplateApplicationScene; // inherited from NSObject
+
+	static new(): CPTemplateApplicationScene; // inherited from NSObject
+
+	readonly carWindow: CPWindow;
+
+	delegate: CPTemplateApplicationSceneDelegate;
+
+	readonly interfaceController: CPInterfaceController;
+}
+
+interface CPTemplateApplicationSceneDelegate extends UISceneDelegate {
+
+	templateApplicationSceneDidConnectInterfaceControllerToWindow?(templateApplicationScene: CPTemplateApplicationScene, interfaceController: CPInterfaceController, window: CPWindow): void;
+
+	templateApplicationSceneDidDisconnectInterfaceControllerFromWindow?(templateApplicationScene: CPTemplateApplicationScene, interfaceController: CPInterfaceController, window: CPWindow): void;
+
+	templateApplicationSceneDidSelectManeuver?(templateApplicationScene: CPTemplateApplicationScene, maneuver: CPManeuver): void;
+
+	templateApplicationSceneDidSelectNavigationAlert?(templateApplicationScene: CPTemplateApplicationScene, navigationAlert: CPNavigationAlert): void;
+}
+declare var CPTemplateApplicationSceneDelegate: {
+
+	prototype: CPTemplateApplicationSceneDelegate;
+};
+
+declare var CPTemplateApplicationSceneSessionRoleApplication: string;
 
 declare const enum CPTimeRemainingColor {
 
@@ -803,9 +864,9 @@ declare class CPTravelEstimates extends NSObject implements NSSecureCoding {
 
 	constructor(o: { distanceRemaining: NSMeasurement<NSUnitLength>; timeRemaining: number; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithDistanceRemainingTimeRemaining(distance: NSMeasurement<NSUnitLength>, time: number): this;
 }
@@ -830,9 +891,9 @@ declare class CPTrip extends NSObject implements NSSecureCoding {
 
 	constructor(o: { origin: MKMapItem; destination: MKMapItem; routeChoices: NSArray<CPRouteChoice> | CPRouteChoice[]; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithOriginDestinationRouteChoices(origin: MKMapItem, destination: MKMapItem, routeChoices: NSArray<CPRouteChoice> | CPRouteChoice[]): this;
 }
@@ -875,9 +936,9 @@ declare class CPTripPreviewTextConfiguration extends NSObject implements NSSecur
 
 	constructor(o: { startButtonTitle: string; additionalRoutesButtonTitle: string; overviewButtonTitle: string; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithStartButtonTitleAdditionalRoutesButtonTitleOverviewButtonTitle(startButtonTitle: string, additionalRoutesButtonTitle: string, overviewButtonTitle: string): this;
 }
@@ -902,9 +963,9 @@ declare class CPVoiceControlState extends NSObject implements NSSecureCoding {
 
 	constructor(o: { identifier: string; titleVariants: NSArray<string> | string[]; image: UIImage; repeats: boolean; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithIdentifierTitleVariantsImageRepeats(identifier: string, titleVariants: NSArray<string> | string[], image: UIImage, repeats: boolean): this;
 }
@@ -945,4 +1006,6 @@ declare class CPWindow extends UIWindow {
 	static new(): CPWindow; // inherited from NSObject
 
 	readonly mapButtonSafeAreaLayoutGuide: UILayoutGuide;
+
+	templateApplicationScene: CPTemplateApplicationScene;
 }

@@ -25,13 +25,13 @@ export class ListPicker extends View {
     selectedIndex: number;
 
     /**
-     * Gets or set the items collection of the ListPicker. 
+     * Gets or set the items collection of the ListPicker.
      * The items property can be set to an array or an object defining length and getItem(index) method.
      */
     items: any;
 }
 
-export interface ItemsSource { 
+export interface ItemsSource {
     length: number;
     getItem(index: number): any;
 }

@@ -22,26 +22,26 @@ export class ItemSpec {
      */
     gridUnitType: GridUnitType;
 
-    /** 
+    /**
      * Returns true if this ItemSpec instance holds
-     * an absolute (pixel) value. 
+     * an absolute (pixel) value.
      */
     isAbsolute: boolean;
 
-    /** 
-     * Returns true if this GridLength instance is  
-     * automatic (not specified). 
+    /**
+     * Returns true if this GridLength instance is
+     * automatic (not specified).
      */
     isAuto: boolean;
 
-    /** 
+    /**
      * Returns true if this ItemSpec instance holds weighted proportion
-     * of available space. 
+     * of available space.
      */
     isStar: boolean;
 
-    /** 
-     * Returns value part of this ItemSpec instance. 
+    /**
+     * Returns value part of this ItemSpec instance.
      */
     value: number;
 }
@@ -57,7 +57,7 @@ export class GridLayout extends LayoutBase {
     static getColumn(view: View): number;
 
     /**
-     * Sets the value of the Column attached property to a given View. 
+     * Sets the value of the Column attached property to a given View.
      */
     static setColumn(view: View, value: number): void;
 
@@ -67,7 +67,7 @@ export class GridLayout extends LayoutBase {
     static getColumnSpan(view: View): number;
 
     /**
-     * Sets the value of the ColumnSpan attached property to a given View. 
+     * Sets the value of the ColumnSpan attached property to a given View.
      */
     static setColumnSpan(view: View, value: number): void;
 
@@ -77,7 +77,7 @@ export class GridLayout extends LayoutBase {
     static getRow(view: View): number;
 
     /**
-     * Sets the value of the Row attached property to a given View. 
+     * Sets the value of the Row attached property to a given View.
      */
     static setRow(view: View, value: number): void;
 
@@ -87,7 +87,7 @@ export class GridLayout extends LayoutBase {
     static getRowSpan(view: View): number;
 
     /**
-     * Sets the value of the RowSpan attached property to a given View. 
+     * Sets the value of the RowSpan attached property to a given View.
      */
     static setRowSpan(view: View, value: number): void;
 
@@ -127,7 +127,7 @@ export class GridLayout extends LayoutBase {
     public removeRows(): void;
 
     /**
-     * Gets array of column specifications defined on this instance of GridLayout. 
+     * Gets array of column specifications defined on this instance of GridLayout.
      */
     public getColumns(): Array<ItemSpec>;
 

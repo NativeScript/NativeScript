@@ -1,2 +1,4 @@
-{ "name" : "MyControl",
-  "main" : "MyControl.js" }
+{
+    "name": "MyControl",
+    "main": "MyControl.js"
+}

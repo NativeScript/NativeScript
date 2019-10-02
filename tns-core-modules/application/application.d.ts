@@ -54,11 +54,6 @@ export const lowMemoryEvent: string;
 export const orientationChangedEvent: string;
 
 /**
- * String value "ns-" used for CSS class prefix.
- */
-export const CSS_CLASS_PREFIX: string;
-
-/**
  * Event data containing information for the application events.
  */
 export interface ApplicationEventData extends EventData {
@@ -289,6 +284,12 @@ export function on(event: "discardedError", callback: (args: DiscardedErrorEvent
  * This event is raised the orientation of the current device has changed.
  */
 export function on(event: "orientationChanged", callback: (args: OrientationChangedEventData) => void, thisArg?: any);
+
+/**
+ * Gets the orientation of the application.
+ * Available values: "portrait", "landscape", "unknown".
+ */
+export function orientation(): "portrait" | "landscape" | "unknown";
 
 /**
  * This is the Android-specific application object instance.
