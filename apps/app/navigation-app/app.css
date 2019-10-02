@@ -1,13 +1,13 @@
 .btn1 {
     background-color: lightgreen;
     color: coral;
-    font-size: 20;
-    font-family: monospace;
+    font-size: 50;
+    font-family: sans-serif;
 }
 
 .btn2 {
-    background-color: coral;
-    color: lightgreen;
-    font-size: 24;
-    font-family: serif;
+    background-color: lightgreen;
+    color: lightblue;
+    font-size: 30;
+    font-family: monospace;
 }
