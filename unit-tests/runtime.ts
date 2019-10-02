@@ -3,19 +3,19 @@ import "tslib";
 import * as moduleAlias from "module-alias";
 import * as path from "path";
 
-const tnsCoreModules = path.resolve(__dirname, "..", "tns-core-modules");
+const tnsCoreModules = path.resolve(__dirname, "..", "nativescript-core");
 
 moduleAlias.addPath(tnsCoreModules);
 moduleAlias.addAliases({
-    // NOTE: require("tns-core-modules/platform") with these aliases will work in node but fail in Angular AoT
-    "tns-core-modules/platform": path.resolve(__dirname, "polyfills", "platform"),
-    "tns-core-modules/file-system/file-system-access": path.resolve(__dirname, "polyfills", "file-system-access"),
-    "tns-core-modules/utils/utils": path.resolve(tnsCoreModules, "utils/utils-common"),
+    // NOTE: require("@nativescript/core/platform") with these aliases will work in node but fail in Angular AoT
+    "@nativescript/core/platform": path.resolve(__dirname, "polyfills", "platform"),
+    "@nativescript/core/file-system/file-system-access": path.resolve(__dirname, "polyfills", "file-system-access"),
+    "@nativescript/core/utils/utils": path.resolve(tnsCoreModules, "utils/utils-common"),
     "./mainthread-helper": path.resolve(__dirname, "polyfills", "mainthread-helper"),
-    "tns-core-modules/color": path.resolve(tnsCoreModules, "color/color-common"),
-    "tns-core-modules/ui/styling/font": path.resolve(tnsCoreModules, "ui/styling/font-common"),
-    "tns-core-modules/ui/styling/background": path.resolve(tnsCoreModules, "ui/styling/background-common"),
+    "@nativescript/core/color": path.resolve(tnsCoreModules, "color/color-common"),
+    "@nativescript/core/ui/styling/font": path.resolve(tnsCoreModules, "ui/styling/font-common"),
+    "@nativescript/core/ui/styling/background": path.resolve(tnsCoreModules, "ui/styling/background-common"),
 
-    "tns-core-modules": tnsCoreModules,
+    "@nativescript/core": tnsCoreModules,
     "~": __dirname
 });

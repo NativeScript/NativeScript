@@ -12,7 +12,8 @@
         "diagnostics": true,
         "sourceMap": true,
         "lib": [
-            "es6", "dom"
+            "es6",
+            "dom"
         ],
         "types": [
             "node",
@@ -21,7 +22,9 @@
         ],
         "baseUrl": ".",
         "paths": {
-            "tns-core-modules/*": ["*"]
+            "@nativescript/core/*": [
+                "nativescript-core/*"
+            ]
         }
     },
     "include": [
