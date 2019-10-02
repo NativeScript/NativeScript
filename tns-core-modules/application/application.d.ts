@@ -102,6 +102,16 @@ export interface OrientationChangedEventData extends ApplicationEventData {
 }
 
 /**
+ * Event data containing information for system appearance changed event.
+ */
+export interface SystemAppearanceChangedEventData extends ApplicationEventData {
+    /**
+     * New system appearance value.
+     */
+    newValue: "light" | "dark";
+}
+
+/**
  * Event data containing information about unhandled application errors.
  */
 export interface UnhandledErrorEventData extends ApplicationEventData {
@@ -281,30 +291,20 @@ export function on(event: "uncaughtError", callback: (args: UnhandledErrorEventD
 export function on(event: "discardedError", callback: (args: DiscardedErrorEventData) => void, thisArg?: any);
 
 /**
- * This event is raised the orientation of the current device has changed.
+ * This event is raised when the orientation of the application changes.
  */
 export function on(event: "orientationChanged", callback: (args: OrientationChangedEventData) => void, thisArg?: any);
 
 /**
-<<<<<<< HEAD
+ * This event is raised when the system appearance changes.
+ */
+export function on(event: "systemAppearanceChanged", callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any);
+
+/**
  * Gets the orientation of the application.
  * Available values: "portrait", "landscape", "unknown".
  */
 export function orientation(): "portrait" | "landscape" | "unknown";
-=======
- * Appends new CSS class to the system classes and applies it to the root view.
- * @param rootView - The root view of the application.
- * @param cssClass - The CSS class to apply.
- */
-export function applyCssClass(rootView: View, cssClass: string);
-
-/**
- * Removes CSS class from the system classes and deletes it from the root view.
- * @param rootView - The root view of the application.
- * @param cssClass - The CSS class to delete.
- */
-export function removeCssClass(rootView: View, cssClass: string);
->>>>>>> refactor(dark-mode): application module
 
 /**
  * This is the Android-specific application object instance.
@@ -439,6 +439,12 @@ export class AndroidApplication extends Observable {
      * Available values: "portrait", "landscape", "unknown".
      */
     orientation: "portrait" | "landscape" | "unknown";
+
+    /**
+     * Gets the system appearance.
+     * Available values: "dark", "light".
+     */
+    systemAppearance: "dark" | "light";
 
     /**
      * The name of the application package.
@@ -618,6 +624,12 @@ export interface iOSApplication {
      * Available values: "portrait", "landscape", "unknown".
      */
     orientation: "portrait" | "landscape" | "unknown";
+
+    /**
+     * Gets the system appearance.
+     * Available values: "dark", "light".
+     */
+    systemAppearance: "dark" | "light";
 
     /**
      * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html).

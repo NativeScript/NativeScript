@@ -9,12 +9,14 @@ import {
     AndroidApplication as AndroidApplicationDefinition,
     ApplicationEventData,
     CssChangedEventData,
-    OrientationChangedEventData
+    OrientationChangedEventData,
+    SystemAppearanceChangedEventData
 } from ".";
 
 import {
     displayedEvent, hasListeners, livesync, lowMemoryEvent, notify, Observable, on,
-    orientationChanged, orientationChangedEvent, setApplication, suspendEvent
+    orientationChanged, orientationChangedEvent, setApplication, suspendEvent,
+    systemAppearanceChanged, systemAppearanceChangedEvent
 } from "./application-common";
 
 import { profile } from "../profiling";
@@ -51,6 +53,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
     public static activityRequestPermissionsEvent = ActivityRequestPermissions;
 
     private _orientation: "portrait" | "landscape" | "unknown";
+    private _systemAppearance: "light" | "dark";
     public paused: boolean;
     public nativeApp: android.app.Application;
     public context: android.content.Context;
@@ -105,6 +108,22 @@ export class AndroidApplication extends Observable implements AndroidApplication
         this._orientation = value;
     }
 
+    get systemAppearance(): "light" | "dark" {
+        if (!this._systemAppearance) {
+            const resources = this.context.getResources();
+            const configuration = <android.content.res.Configuration>resources.getConfiguration();
+            const systemAppearance = configuration.uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+
+            this._systemAppearance = getSystemAppearanceValue(systemAppearance);
+        }
+
+        return this._systemAppearance;
+    }
+
+    set systemAppearance(value: "light" | "dark") {
+        this._systemAppearance = value;
+    }
+
     public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
         ensureBroadCastReceiverClass();
         const that = this;
@@ -131,6 +150,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
         }
     }
 }
+
 export interface AndroidApplication {
     on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
     on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
@@ -259,6 +279,13 @@ on(orientationChangedEvent, (args: OrientationChangedEventData) => {
     }
 });
 
+on(systemAppearanceChangedEvent, (args: SystemAppearanceChangedEventData) => {
+    const rootView = getRootView();
+    if (rootView) {
+        systemAppearanceChanged(rootView, args.newValue);
+    }
+});
+
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     if (androidApp && androidApp.paused) {
         return;
@@ -276,6 +303,16 @@ function getOrientationValue(orientation: number): "portrait" | "landscape" | "u
             return "portrait";
         default:
             return "unknown";
+    }
+}
+
+function getSystemAppearanceValue(systemAppearance: number): "dark" | "light" {
+    switch (systemAppearance) {
+        case android.content.res.Configuration.UI_MODE_NIGHT_YES:
+            return "dark";
+        case android.content.res.Configuration.UI_MODE_NIGHT_NO:
+        case android.content.res.Configuration.UI_MODE_NIGHT_UNDEFINED:
+            return "light";
     }
 }
 
@@ -391,6 +428,20 @@ function initComponentCallbacks() {
                     eventName: orientationChangedEvent,
                     android: androidApp.nativeApp,
                     newValue: androidApp.orientation,
+                    object: androidApp
+                });
+            }
+
+            const newConfigSystemAppearance = newConfig.uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+            const newSystemAppearance = getSystemAppearanceValue(newConfigSystemAppearance);
+
+            if (androidApp.systemAppearance !== newSystemAppearance) {
+                androidApp.systemAppearance = newSystemAppearance;
+
+                notify(<SystemAppearanceChangedEventData>{
+                    eventName: systemAppearanceChangedEvent,
+                    android: androidApp.nativeApp,
+                    newValue: androidApp.systemAppearance,
                     object: androidApp
                 });
             }

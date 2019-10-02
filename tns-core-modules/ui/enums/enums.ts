@@ -188,7 +188,7 @@ export module StatusBarStyle {
     export const dark = "dark";
 }
 
-export module UserInterfaceStyle {
+export module SystemAppearance {
     export const light = "light";
     export const dark = "dark";
 }
