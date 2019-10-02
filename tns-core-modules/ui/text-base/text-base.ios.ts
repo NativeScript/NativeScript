@@ -210,8 +210,10 @@ export class TextBase extends TextBaseCommon {
         const string = (text === undefined || text === null) ? "" : text.toString();
         const source = getTransformedText(string, this.textTransform);
         if (dict.size > 0 || isTextView) {
-            // UITextView's font seems to change inside.
-            dict.set(NSFontAttributeName, this.nativeTextViewProtected.font);
+            if (isTextView) {
+                // UITextView's font seems to change inside.
+                dict.set(NSFontAttributeName, this.nativeTextViewProtected.font);
+            }
 
             const result = NSMutableAttributedString.alloc().initWithString(source);
             result.setAttributesRange(<any>dict, { location: 0, length: source.length });
