@@ -4,12 +4,14 @@ import {
     iOSApplication as IOSApplicationDefinition,
     LaunchEventData,
     LoadAppCSSEventData,
-    OrientationChangedEventData
+    OrientationChangedEventData,
+    SystemAppearanceChangedEventData
 } from ".";
 
 import {
-    applyCssClass, displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on,
-    orientationChanged, orientationChangedEvent, removeCssClass, resumeEvent, setApplication, suspendEvent
+    displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on,
+    orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent,
+    systemAppearanceChanged, systemAppearanceChangedEvent
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -25,17 +27,11 @@ import {
 } from "../css/system-classes";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
-import { UserInterfaceStyle } from "../ui/enums/enums";
 import { device } from "../platform/platform";
 import { profile } from "../profiling";
 import { ios } from "../utils/utils";
 
 const IOS_PLATFORM = "ios";
-
-const UI_STYLE_CSS_CLASSES = [
-    `${CLASS_PREFIX}${UserInterfaceStyle.light}`,
-    `${CLASS_PREFIX}${UserInterfaceStyle.dark}`
-];
 
 const getVisibleViewController = ios.getVisibleViewController;
 
@@ -97,6 +93,7 @@ class IOSApplication implements IOSApplicationDefinition {
     private _observers: Array<NotificationObserver>;
     private _orientation: "portrait" | "landscape" | "unknown";
     private _rootView: View;
+    private _systemAppearance: "light" | "dark";
 
     constructor() {
         this._observers = new Array<NotificationObserver>();
@@ -119,6 +116,15 @@ class IOSApplication implements IOSApplicationDefinition {
 
     get rootController(): UIViewController {
         return this._window.rootViewController;
+    }
+
+    get systemAppearance(): "light" | "dark" {
+        if (!this._systemAppearance) {
+            const userInterfaceStyle = this.rootController.traitCollection.userInterfaceStyle;
+            this._systemAppearance = getSystemAppearanceValue(userInterfaceStyle);
+        }
+
+        return this._systemAppearance;
     }
 
     get nativeApp(): UIApplication {
@@ -293,9 +299,21 @@ class IOSApplication implements IOSApplicationDefinition {
             this._window.makeKeyAndVisible();
         }
 
-        setupRootViewCssClasses(controller, rootView);
+        setupRootViewCssClasses(rootView);
         rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
-            traitCollectionColorAppearanceChanged(controller, rootView);
+            const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
+            const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
+
+            if (this._systemAppearance !== newSystemAppearance) {
+                this._systemAppearance = newSystemAppearance;
+
+                notify(<SystemAppearanceChangedEventData>{
+                    eventName: systemAppearanceChangedEvent,
+                    ios: this,
+                    newValue: this._systemAppearance,
+                    object: this
+                });
+            }
         });
     }
 }
@@ -311,17 +329,6 @@ setApplication(iosApp);
 };
 
 let mainEntry: NavigationEntry;
-
-function traitCollectionColorAppearanceChanged(controller: UIViewController, rootView: View) {
-    const newUserInterfaceStyle = controller.traitCollection.userInterfaceStyle;
-    const newUserInterfaceStyleValue = getUserInterfaceStyleValue(newUserInterfaceStyle);
-    const newUserInterfaceStyleCssClass = `${CLASS_PREFIX}${newUserInterfaceStyleValue}`;
-
-    if (!rootView.cssClasses.has(newUserInterfaceStyleCssClass)) {
-        UI_STYLE_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
-        applyCssClass(rootView, newUserInterfaceStyleCssClass);
-    }
-}
 
 function createRootView(v?: View) {
     let rootView = v;
@@ -379,9 +386,21 @@ export function _start(entry?: string | NavigationEntry) {
                         visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
                     }
 
-                    setupRootViewCssClasses(controller, rootView);
+                    setupRootViewCssClasses(rootView);
                     rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
-                        traitCollectionColorAppearanceChanged(controller, rootView);
+                        const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
+                        const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
+
+                        if (this._systemAppearance !== newSystemAppearance) {
+                            this._systemAppearance = newSystemAppearance;
+
+                            notify(<SystemAppearanceChangedEventData>{
+                                eventName: systemAppearanceChangedEvent,
+                                ios: this,
+                                newValue: this._systemAppearance,
+                                object: this
+                            });
+                        }
                     });
                     iosApp.notifyAppStarted();
                 }
@@ -413,7 +432,7 @@ export function getNativeApplication(): UIApplication {
     return iosApp.nativeApp;
 }
 
-function getUserInterfaceStyleValue(userInterfaceStyle: number): "dark" | "light" | "unspecified" {
+function getSystemAppearanceValue(userInterfaceStyle: number): "dark" | "light" {
     switch (userInterfaceStyle) {
         case UIUserInterfaceStyle.Unspecified:
         case UIUserInterfaceStyle.Light:
@@ -449,17 +468,14 @@ function setViewControllerView(view: View): void {
     }
 }
 
-function setupRootViewCssClasses(controller: UIViewController, rootView: View): void {
+function setupRootViewCssClasses(rootView: View): void {
     resetRootViewCssClasses();
 
     const deviceType = device.deviceType.toLowerCase();
-    const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
-    const userInterfaceStyleValue = getUserInterfaceStyleValue(userInterfaceStyle);
-
     pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
     pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
     pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${userInterfaceStyleValue}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.systemAppearance}`);
 
     const rootViewCssClasses = getRootViewCssClasses();
     rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
@@ -473,6 +489,13 @@ on(orientationChangedEvent, (args: OrientationChangedEventData) => {
     const rootView = getRootView();
     if (rootView) {
         orientationChanged(rootView, args.newValue);
+    }
+});
+
+on(systemAppearanceChangedEvent, (args: SystemAppearanceChangedEventData) => {
+    const rootView = getRootView();
+    if (rootView) {
+        systemAppearanceChanged(rootView, args.newValue);
     }
 });
 

@@ -1289,6 +1289,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             pushToRootViewCssClasses(`${CLASS_PREFIX}${ANDROID_PLATFORM}`);
             pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
             pushToRootViewCssClasses(`${CLASS_PREFIX}${application.android.orientation}`);
+            pushToRootViewCssClasses(`${CLASS_PREFIX}${application.android.systemAppearance}`);
 
             const rootViewCssClasses = getRootViewCssClasses();
             rootViewCssClasses.forEach(c => this._rootView.cssClasses.add(c));
