@@ -9,7 +9,7 @@
 		android:normalScreens="true"
 		android:largeScreens="true"
 		android:xlargeScreens="true"/>
-
+// ADD USER PERMISSIONS HERE: INTERNET ACCESSIBILITY , READ AND WRITE EXTERNAL STORAGE , ACCESS TO NETWORK STATE AND FINE LOCATION
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 	<uses-permission android:name="android.permission.INTERNET"/>
