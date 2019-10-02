@@ -1,8 +1,8 @@
 import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from ".";
 import {
     ActionItemBase, ActionBarBase, isVisible,
-    View, layout, colorProperty, flatProperty,
-    Color, traceMissingIcon
+    View, layout, colorProperty, flatProperty, Color,
+    traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty, Length
 } from "./action-bar-common";
 import { RESOURCE_PREFIX, isFontIconURI } from "../../utils/utils";
 import { fromFileOrResource, fromFontIconCode } from "../../image-source";
@@ -34,6 +34,8 @@ function initializeMenuItemClickListener(): void {
         return;
     }
 
+    apiLevel = android.os.Build.VERSION.SDK_INT;
+
     AppCompatTextView = androidx.appcompat.widget.AppCompatTextView;
 
     @Interfaces([androidx.appcompat.widget.Toolbar.OnMenuItemClickListener])
@@ -54,6 +56,8 @@ function initializeMenuItemClickListener(): void {
     MenuItemClickListener = MenuItemClickListenerImpl;
     appResources = application.android.context.getResources();
 }
+
+let apiLevel: number;
 
 export class ActionItem extends ActionItemBase {
     private _androidPosition: AndroidActionItemSettings = {
@@ -227,9 +231,21 @@ export class ActionBar extends ActionBarBase {
                 }
             }
             else if (navButton.icon) {
-                let drawableOrId = getDrawableOrResourceId(navButton.icon, appResources);
-                if (drawableOrId) {
-                    this.nativeViewProtected.setNavigationIcon(drawableOrId);
+                if (isFontIconURI(navButton.icon)) {
+                    const fontIconCode = navButton.icon.split("//")[1];
+                    const font = navButton.style.fontInternal;
+                    const color = navButton.style.color;
+                    const is = fromFontIconCode(fontIconCode, font, color);
+
+                    if (is && is.android) {
+                        const drawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
+                        this.nativeViewProtected.setNavigationIcon(drawable);
+                    }
+                } else {
+                    let drawableOrId = getDrawableOrResourceId(navButton.icon, appResources);
+                    if (drawableOrId) {
+                        this.nativeViewProtected.setNavigationIcon(drawableOrId);
+                    }
                 }
             }
 
@@ -419,6 +435,18 @@ export class ActionBar extends ActionBarBase {
                 const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
                 compat.setElevation(this.nativeViewProtected, val);
             }
+        }
+    }
+
+    [androidContentInsetLeftProperty.setNative]() {
+        if (apiLevel >= 21) {
+            this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
+        }
+    }
+
+    [androidContentInsetRightProperty.setNative]() {
+        if (apiLevel >= 21) {
+            this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
         }
     }
 }
