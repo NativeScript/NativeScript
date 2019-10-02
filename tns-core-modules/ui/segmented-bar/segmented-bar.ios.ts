@@ -3,7 +3,7 @@ import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
     colorProperty, fontInternalProperty, Color
 } from "./segmented-bar-common";
-
+import { ios as iosUtils } from "../../utils/utils";
 export * from "./segmented-bar-common";
 
 export class SegmentedBarItem extends SegmentedBarItemBase {
@@ -68,11 +68,19 @@ export class SegmentedBar extends SegmentedBarBase {
     }
 
     [selectedBackgroundColorProperty.getDefault](): UIColor {
-        return this.ios.tintColor;
+        const currentOsVersion = iosUtils.MajorVersion;
+
+        return currentOsVersion < 13 ? this.ios.tintColor : this.ios.selectedSegmentTintColor;
     }
     [selectedBackgroundColorProperty.setNative](value: UIColor | Color) {
+        const currentOsVersion = iosUtils.MajorVersion;
         let color = value instanceof Color ? value.ios : value;
-        this.ios.tintColor = color;
+        if (currentOsVersion < 13) {
+            this.ios.tintColor = color;
+        } else {
+            this.ios.selectedSegmentTintColor = color;
+        }
+        
     }
 
     [colorProperty.getDefault](): UIColor {
