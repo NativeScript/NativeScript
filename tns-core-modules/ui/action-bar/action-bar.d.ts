@@ -55,6 +55,9 @@ export class ActionBar extends View {
      */
     iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
+    public effectiveContentInsetLeft: number;
+    public effectiveContentInsetRight: number;
+
     /**
      * Updates the action bar.
      */

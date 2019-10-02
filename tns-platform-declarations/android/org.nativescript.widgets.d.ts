@@ -17,6 +17,13 @@
                     export function download(url: string, callback: CompleteCallback, context: any);
                 }
 
+                export module File {
+                    export function readText(path: string, encoding: string, callback: CompleteCallback, context: any);
+                    export function read(path: string, callback: CompleteCallback, context: any);
+                    export function writeText(path: string, content: string, encoding: string, callback: CompleteCallback, context: any);
+                    export function write(path: string, content: native.Array<number>, callback: CompleteCallback, context: any);
+                }
+
                 export module Http {
                     export class KeyValuePair {
                         public key: string;

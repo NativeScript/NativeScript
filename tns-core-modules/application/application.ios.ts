@@ -415,6 +415,10 @@ function setViewControllerView(view: View): void {
     }
 }
 
+export function orientation(): "portrait" | "landscape" | "unknown" {
+    return iosApp.orientation;
+}
+
 on(orientationChangedEvent, (args: OrientationChangedEventData) => {
     const rootView = getRootView();
     if (rootView) {

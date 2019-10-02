@@ -201,6 +201,46 @@ export var testFileReadWriteBinary = function () {
     // << file-system-read-binary
 };
 
+export var testFileReadWriteBinaryAsync = function () {
+    // >> file-system-read-binary-async
+    var fileName = "logo.png";
+
+    var sourceFile = fs.File.fromPath(__dirname + "/assets/" + fileName);
+    var destinationFile = fs.knownFolders.documents().getFile(fileName);
+
+    // Read the file
+    sourceFile.read()
+        .then(function (source) {
+            // Succeeded in reading the file
+            // >> (hide)
+            destinationFile.write(source).then(function () {
+                // Succeded in writing the file
+                destinationFile.read()
+                    .then(function (destination) {
+                        if (platform.device.os === platform.platformNames.ios) {
+                            TKUnit.assertTrue(source.isEqualToData(destination));
+                        } else {
+                            TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
+                        }
+
+                        destinationFile.removeSync();
+                    }, function (error) {
+                        TKUnit.assert(false, "Failed to read destination binary async");
+                    });
+            }, function (error) {
+                // Failed to write the file.
+                TKUnit.assert(false, "Failed to write binary async");
+            });
+            // << (hide)
+        }, function (error) {
+            // Failed to read the file.
+            // >> (hide)
+            TKUnit.assert(false, "Failed to read binary async");
+            // << (hide)
+        });
+    // << file-system-read-binary-async
+};
+
 export var testGetKnownFolders = function () {
     // >> file-system-known-folders
     // Getting the application's 'documents' folder.

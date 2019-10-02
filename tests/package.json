@@ -16,6 +16,7 @@
     "tns-core-modules": "file:../tns-core-modules"
   },
   "devDependencies": {
+    "circular-dependency-plugin": "5.2.0",
     "nativescript-dev-webpack": "next",
     "node-sass": "^4.12.0",
     "tns-platform-declarations": "file:../tns-platform-declarations",
