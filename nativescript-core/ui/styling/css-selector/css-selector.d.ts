@@ -2,7 +2,7 @@
  * @module "ui/styling/css-selector"
  */ /** */
 
-import * as parser from "../../../css";
+import { Node as ParserNode } from "../../../css";
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -78,6 +78,6 @@ export class SelectorsMatch<T extends Node> {
     changeMap: ChangeMap<T>;
 }
 
-export function fromAstNodes(astRules: parser.Node[]): RuleSet[];
+export function fromAstNodes(astRules: ParserNode[]): RuleSet[];
 
 export function createSelector(sel: string): SelectorCore;

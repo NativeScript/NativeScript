@@ -3,8 +3,8 @@
  * @module "http"
  */ /** */
 
-import * as image from "../image-source";
-import * as fs from "../file-system";
+import { ImageSource } from "../image-source";
+import { File } from "../file-system";
 
 /**
  * Downloads the content from the specified URL as a string.
@@ -34,27 +34,27 @@ export function getJSON<T>(options: HttpRequestOptions): Promise<T>;
  * Downloads the content from the specified URL and attempts to decode it as an image.
  * @param url The URL to request from.
  */
-export function getImage(url: string): Promise<image.ImageSource>;
+export function getImage(url: string): Promise<ImageSource>;
 
 /**
  * Downloads the content from the specified URL and attempts to decode it as an image.
  * @param options An object that specifies various request options.
  */
-export function getImage(options: HttpRequestOptions): Promise<image.ImageSource>;
+export function getImage(options: HttpRequestOptions): Promise<ImageSource>;
 
 /**
  * Downloads the content from the specified URL and attempts to save it as file.
  * @param url The URL to request from.
  * @param destinationFilePath Optional. The downloaded file path.
  */
-export function getFile(url: string, destinationFilePath?: string): Promise<fs.File>;
+export function getFile(url: string, destinationFilePath?: string): Promise<File>;
 
 /**
  * Downloads the content from the specified URL and attempts to save it as file.
  * @param options An object that specifies various request options.
  * @param destinationFilePath Optional. The downloaded file path.
  */
-export function getFile(options: HttpRequestOptions, destinationFilePath?: string): Promise<fs.File>;
+export function getFile(options: HttpRequestOptions, destinationFilePath?: string): Promise<File>;
 
 /**
  * Makes a generic http request using the provided options and returns a HttpResponse Object.
@@ -145,10 +145,10 @@ export interface HttpContent {
   /**
    * Gets the response body as ImageSource.
    */
-  toImage: () => Promise<image.ImageSource>;
+  toImage: () => Promise<ImageSource>;
 
   /**
    * Gets the response body as file.
    */
-  toFile: (destinationFilePath?: string) => fs.File;
+  toFile: (destinationFilePath?: string) => File;
 }

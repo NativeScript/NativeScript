@@ -1,5 +1,5 @@
 // TODO: Revise this. Don't use star exports 
-export * from "./application"; 
+export * from "./application";
 import { ios, android, on, off } from "./application";
 export const nsApp = { ios, android, on, off };
 
@@ -38,8 +38,8 @@ export { encoding } from "./text";
 import { clearInterval, clearTimeout, setInterval, setTimeout } from "./timer";
 export const nsTimer = { clearInterval, clearTimeout, setInterval, setTimeout };
 
-import * as trace from "./trace";
-export const nsTrace = trace;
+import { DefaultErrorHandler, addCategories, addEventListener, addWriter, categories, clearWriters, disable, enable, error, getErrorHandler, isCategorySet, isEnabled, messageType, notifyEvent, removeEventListener, removeWriter, setCategories, setErrorHandler, write } from "./trace";
+export const nsTrace = { DefaultErrorHandler, addCategories, addEventListener, addWriter, categories, clearWriters, disable, enable, error, getErrorHandler, isCategorySet, isEnabled, messageType, notifyEvent, removeEventListener, removeWriter, setCategories, setErrorHandler, write }
 
 export * from "./ui" // Barrel export
 

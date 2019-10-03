@@ -9,11 +9,13 @@ platforms
 !nativescript-core/platforms
 reports
 tags
+temp
 
 # Files
 package-lock.json
 .DS_Store
 .nsbuildinfo
+tsdoc-metadata.json
 
 # IDEs and editors
 /.idea

@@ -3,8 +3,8 @@
  * @module "ui/image-cache"
  */ /** */
 
-import * as observable from "../../data/observable";
-import * as imageSource from "../../image-source";
+import { Observable, EventData } from "../../data/observable";
+import { ImageSource } from "../../image-source";
 
 /**
  * Represents a single download request.
@@ -31,7 +31,7 @@ export interface DownloadRequest {
 /**
  * Represents a class that stores handles image download requests and caches the already downloaded images.
  */
-export class Cache extends observable.Observable {
+export class Cache extends Observable {
     /**
      * String value used when hooking to downloaded event.
      */
@@ -43,7 +43,7 @@ export class Cache extends observable.Observable {
     /**
      * The image to be used to notify for a pending download request - e.g. loading indicator.
      */
-    placeholder: imageSource.ImageSource;
+    placeholder: ImageSource;
     /**
      * The maximum number of simultaneous download requests. Defaults to 5.
      */
@@ -90,7 +90,7 @@ export class Cache extends observable.Observable {
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
-    on(eventNames: string, callback: (args: observable.EventData) => void, thisArg?: any);
+    on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
 
     /**
      * Raised when the image has been downloaded.
@@ -122,7 +122,7 @@ export class Cache extends observable.Observable {
 /**
  * Provides data for downloaded event.
  */
-export interface DownloadedData extends observable.EventData {
+export interface DownloadedData extends EventData {
     /**
      * A string indentifier of the cached image.
      */
@@ -130,13 +130,13 @@ export interface DownloadedData extends observable.EventData {
     /**
      * Gets the cached image.
      */
-    image: imageSource.ImageSource;
+    image: ImageSource;
 }
 
 /**
  * Provides data for download error.
  */
-export interface DownloadError extends observable.EventData {
+export interface DownloadError extends EventData {
     /**
      * A string indentifier of the cached image.
      */

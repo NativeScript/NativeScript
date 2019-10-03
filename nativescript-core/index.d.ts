@@ -71,8 +71,8 @@ export declare const nsTimer: {
     setInterval: typeof setInterval;
     setTimeout: typeof setTimeout;
 };
-import * as trace from "./trace";
-export declare const nsTrace: typeof trace;
+// TODO nsTrace
+
 export * from "./ui";
 import { GC, isDataURI, ad, convertString, eliminateDuplicates, escapeRegexSymbols, hasDuplicates, ios as tnsIOS, isFileOrResourcePath, mergeSort, openUrl, layout } from "./utils/utils";
 export declare const nsUtils: {

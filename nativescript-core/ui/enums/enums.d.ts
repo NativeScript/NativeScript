@@ -2,7 +2,7 @@
  * @module "ui/enums"
  */ /** */
 
-import * as animationModule from "../animation";
+import { CubicBezierAnimationCurve } from "../animation";
 import {
     KeyboardType as BaseKeyboardType,
     ReturnKeyType as BaseReturnKeyType,
@@ -637,7 +637,7 @@ export module AnimationCurve {
     /**
      * A custom cubic bezier function defined by its two control points. Possible values are numeric values from 0 to 1
      */
-    export function cubicBezier(x1: number, y1: number, x2: number, y2: number): animationModule.CubicBezierAnimationCurve;
+    export function cubicBezier(x1: number, y1: number, x2: number, y2: number): CubicBezierAnimationCurve;
 }
 
 /**

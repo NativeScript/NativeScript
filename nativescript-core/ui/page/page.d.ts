@@ -11,10 +11,6 @@ import { Frame } from "../frame";
 import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
 
-//@private
-import * as styleScope from "../styling/style-scope";
-//@endprivate
-
 export * from "../content-view";
 
 /**

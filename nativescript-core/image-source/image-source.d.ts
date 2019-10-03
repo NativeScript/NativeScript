@@ -3,7 +3,7 @@
  * @module "image-source"
  */ /** */
 
-import * as imageAssetModule from "../image-asset";
+import { ImageAsset } from "../image-asset";
 import { Font } from "../ui/styling/font";
 import { Color } from "../color";
 /**
@@ -39,7 +39,7 @@ export class ImageSource {
      * Loads this instance from the specified asset asynchronously.
      * @param asset The ImageAsset instance used to create ImageSource.
      */
-    fromAsset(asset: imageAssetModule.ImageAsset): Promise<ImageSource>;
+    fromAsset(asset: ImageAsset): Promise<ImageSource>;
 
     /**
      * Loads this instance from the specified resource name.
@@ -124,7 +124,7 @@ export class ImageSource {
  * Creates a new ImageSource instance and loads it from the specified image asset asynchronously.
  * @param asset The image asset.
  */
-export function fromAsset(asset: imageAssetModule.ImageAsset): Promise<ImageSource>;
+export function fromAsset(asset: ImageAsset): Promise<ImageSource>;
 
 /**
 * Creates a new ImageSource instance and loads it from the specified resource name.

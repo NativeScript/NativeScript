@@ -9,10 +9,12 @@
         "noImplicitUseStrict": true,
         "experimentalDecorators": true,
         "lib": [
-            "es6", "dom"
+            "es6",
+            "dom"
         ]
     },
     "include": [
+        // "dist/NativeScript.d.ts"
         "nativescript-core/**/*.d.ts"
     ],
     "exclude": [
@@ -20,5 +22,13 @@
         "nativescript-core/node_modules",
         "nativescript-core/ui/frame/transition-definitions.android.d.ts",
         "nativescript-core/platforms/*"
-    ]
+    ],
+    "typedocOptions": {
+        "out": "bin/dist/apiref",
+        "includeDeclarations": true,
+        "name": "NativeScript",
+        "theme": "./node_modules/nativescript-typedoc-theme",
+        "excludeExternals": true,
+        "externalPattern": "**/+(tns-core-modules|module).d.ts"
+    }
 }

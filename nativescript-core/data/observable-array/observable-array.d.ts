@@ -4,12 +4,12 @@
  */ /** */
 
 // Test: http://jsperf.com/array-vs-observable-array-vs-array-observe
-import * as observable from "../observable";
+import { Observable, EventData } from "../observable";
 
 /**
  * Event args for "changed" event.
  */
-export interface ChangedData<T> extends observable.EventData {
+export interface ChangedData<T> extends EventData {
     /**
      * Change type.
      */
@@ -44,7 +44,7 @@ export class ChangeType {
 /**
  * Advanced array like class used when you want to be notified when a change occurs.
  */
-export class ObservableArray<T> extends observable.Observable {
+export class ObservableArray<T> extends Observable {
     /**
      * String value used when hooking to change event.
      */
@@ -56,7 +56,7 @@ export class ObservableArray<T> extends observable.Observable {
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
-    on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     /**
      * Raised when a change occurs.

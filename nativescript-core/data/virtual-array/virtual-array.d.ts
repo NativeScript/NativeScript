@@ -3,27 +3,14 @@
  * @module "data/virtual-array"
  */ /** */
 
-import * as observable from "../observable";
-import * as observableArray from "../observable-array";
-
-/**
- * Provides event args for "changed" event.
- */
-export interface ChangedData<T> extends observableArray.ChangedData<T> {
-    //
-}
-
-/**
- * Change types (Add, Delete, Update, Splice).
- */
-export class ChangeType extends observableArray.ChangeType {
-    //
-}
+import { Observable, EventData } from "../observable";
+import { ObservableArray, ChangedData, ChangeType } from "../observable-array";
+export { ChangedData, ChangeType } from "../observable-array";
 
 /**
  * Advanced array like class that helps loading items on demand.
  */
-export class VirtualArray<T> extends observable.Observable {
+export class VirtualArray<T> extends Observable {
     /**
      * String value used when hooking to change event.
      */
@@ -67,7 +54,7 @@ export class VirtualArray<T> extends observable.Observable {
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
-    on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     /**
      * Raised when still not loaded items are requested.
@@ -83,7 +70,7 @@ export class VirtualArray<T> extends observable.Observable {
 /**
  * Event args for "itemsLoading" event.
  */
-export interface ItemsLoading extends observable.EventData {
+export interface ItemsLoading extends EventData {
     /**
      * Start index.
      */
