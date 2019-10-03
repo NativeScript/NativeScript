@@ -46,7 +46,6 @@ tsconfig.tns.json
 *.map
 *.tgz
 .baseDir.ts
-.sublime-grunt.cache
 tscommand*.tmp.txt
 .tscache
 
@@ -55,7 +54,6 @@ tscommand*.tmp.txt
 # https://github.com/NativeScript/nativescript-dev-webpack/issues/932
 !tns-core-modules/xml/xml.js
 !tests/hooks/**/*.*
-!gruntfile.js
 !js-libs/**/*.*
 !css/**/*.*
 !css-value/**/*.*
