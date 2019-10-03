@@ -296,7 +296,9 @@ export function on(event: "discardedError", callback: (args: DiscardedErrorEvent
 export function on(event: "orientationChanged", callback: (args: OrientationChangedEventData) => void, thisArg?: any);
 
 /**
- * This event is raised when the system appearance changes.
+ * This event is raised when the operating system appearance changes
+ * between light and dark theme (for Android);
+ * between light and dark mode (for iOS) and vice versa.
  */
 export function on(event: "systemAppearanceChanged", callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any);
 
@@ -307,7 +309,7 @@ export function on(event: "systemAppearanceChanged", callback: (args: SystemAppe
 export function orientation(): "portrait" | "landscape" | "unknown";
 
 /**
- * * Gets the system appearance.
+ * Gets the operating system appearance.
  * Available values: "dark", "light".
  */
 export function systemAppearance(): "dark" | "light";

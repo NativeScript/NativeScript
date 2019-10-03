@@ -435,11 +435,11 @@ export function getNativeApplication(): UIApplication {
 
 function getSystemAppearanceValue(userInterfaceStyle: number): "dark" | "light" {
     switch (userInterfaceStyle) {
-        case UIUserInterfaceStyle.Unspecified:
-        case UIUserInterfaceStyle.Light:
-            return "light";
         case UIUserInterfaceStyle.Dark:
             return "dark";
+        case UIUserInterfaceStyle.Light:
+        case UIUserInterfaceStyle.Unspecified:
+            return "light";
     }
 }
 

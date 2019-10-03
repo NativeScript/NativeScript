@@ -96,9 +96,8 @@ export class AndroidApplication extends Observable implements AndroidApplication
         if (!this._orientation) {
             const resources = this.context.getResources();
             const configuration = <android.content.res.Configuration>resources.getConfiguration();
-            const orientation = configuration.orientation;
 
-            this._orientation = getOrientationValue(orientation);
+            this._orientation = getOrientationValue(configuration);
         }
 
         return this._orientation;
@@ -112,9 +111,8 @@ export class AndroidApplication extends Observable implements AndroidApplication
         if (!this._systemAppearance) {
             const resources = this.context.getResources();
             const configuration = <android.content.res.Configuration>resources.getConfiguration();
-            const systemAppearance = configuration.uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
 
-            this._systemAppearance = getSystemAppearanceValue(systemAppearance);
+            this._systemAppearance = getSystemAppearanceValue(configuration);
         }
 
         return this._systemAppearance;
@@ -299,7 +297,9 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     livesync(rootView, context);
 };
 
-function getOrientationValue(orientation: number): "portrait" | "landscape" | "unknown" {
+function getOrientationValue(configuration: android.content.res.Configuration): "portrait" | "landscape" | "unknown" {
+    const orientation = configuration.orientation;
+
     switch (orientation) {
         case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
             return "landscape";
@@ -310,7 +310,10 @@ function getOrientationValue(orientation: number): "portrait" | "landscape" | "u
     }
 }
 
-function getSystemAppearanceValue(systemAppearance: number): "dark" | "light" {
+// https://developer.android.com/guide/topics/ui/look-and-feel/darktheme#configuration_changes
+function getSystemAppearanceValue(configuration: android.content.res.Configuration): "dark" | "light" {
+    const systemAppearance = configuration.uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+
     switch (systemAppearance) {
         case android.content.res.Configuration.UI_MODE_NIGHT_YES:
             return "dark";
@@ -421,9 +424,8 @@ function initComponentCallbacks() {
             // TODO: This is skipped for now, test carefully for OutOfMemory exceptions
         }),
 
-        onConfigurationChanged: profile("onConfigurationChanged", function (newConfig: android.content.res.Configuration) {
-            const newConfigOrientation = newConfig.orientation;
-            const newOrientation = getOrientationValue(newConfigOrientation);
+        onConfigurationChanged: profile("onConfigurationChanged", function (newConfiguration: android.content.res.Configuration) {
+            const newOrientation = getOrientationValue(newConfiguration);
 
             if (androidApp.orientation !== newOrientation) {
                 androidApp.orientation = newOrientation;
@@ -434,10 +436,11 @@ function initComponentCallbacks() {
                     newValue: androidApp.orientation,
                     object: androidApp
                 });
+
+                return;
             }
 
-            const newConfigSystemAppearance = newConfig.uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-            const newSystemAppearance = getSystemAppearanceValue(newConfigSystemAppearance);
+            const newSystemAppearance = getSystemAppearanceValue(newConfiguration);
 
             if (androidApp.systemAppearance !== newSystemAppearance) {
                 androidApp.systemAppearance = newSystemAppearance;

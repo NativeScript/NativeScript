@@ -135,7 +135,6 @@ export function loadAppCss(): void {
 function applyCssClass(rootView: View, cssClass: string) {
     pushToRootViewCssClasses(cssClass);
     rootView.cssClasses.add(cssClass);
-    rootView._onCssStateChange();
 }
 
 function removeCssClass(rootView: View, cssClass: string) {
@@ -148,6 +147,7 @@ export function orientationChanged(rootView: View, newOrientation: "portrait" | 
     if (!rootView.cssClasses.has(newOrientationCssClass)) {
         ORIENTATION_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
         applyCssClass(rootView, newOrientationCssClass);
+        rootView._onCssStateChange();
     }
 }
 
@@ -156,6 +156,7 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: "da
     if (!rootView.cssClasses.has(newSystemAppearanceCssClass)) {
         SYSTEM_APPEARANCE_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
         applyCssClass(rootView, newSystemAppearanceCssClass);
+        rootView._onCssStateChange();
     }
 }
 
