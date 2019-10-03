@@ -279,6 +279,10 @@ on(orientationChangedEvent, (args: OrientationChangedEventData) => {
     }
 });
 
+export function systemAppearance(): "dark" | "light" {
+    return androidApp.systemAppearance;
+}
+
 on(systemAppearanceChangedEvent, (args: SystemAppearanceChangedEventData) => {
     const rootView = getRootView();
     if (rootView) {

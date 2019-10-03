@@ -307,6 +307,12 @@ export function on(event: "systemAppearanceChanged", callback: (args: SystemAppe
 export function orientation(): "portrait" | "landscape" | "unknown";
 
 /**
+ * * Gets the system appearance.
+ * Available values: "dark", "light".
+ */
+export function systemAppearance(): "dark" | "light";
+
+/**
  * This is the Android-specific application object instance.
  * Encapsulates methods and properties specific to the Android platform.
  * Will be undefined when TargetOS is iOS.

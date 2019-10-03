@@ -493,6 +493,10 @@ on(orientationChangedEvent, (args: OrientationChangedEventData) => {
     }
 });
 
+export function systemAppearance(): "dark" | "light" {
+    return iosApp.systemAppearance;
+}
+
 on(systemAppearanceChangedEvent, (args: SystemAppearanceChangedEventData) => {
     const rootView = getRootView();
     if (rootView) {
