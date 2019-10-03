@@ -270,23 +270,9 @@ export function orientation(): "portrait" | "landscape" | "unknown" {
     return androidApp.orientation;
 }
 
-on(orientationChangedEvent, (args: OrientationChangedEventData) => {
-    const rootView = getRootView();
-    if (rootView) {
-        orientationChanged(rootView, args.newValue);
-    }
-});
-
 export function systemAppearance(): "dark" | "light" {
     return androidApp.systemAppearance;
 }
-
-on(systemAppearanceChangedEvent, (args: SystemAppearanceChangedEventData) => {
-    const rootView = getRootView();
-    if (rootView) {
-        systemAppearanceChanged(rootView, args.newValue);
-    }
-});
 
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     if (androidApp && androidApp.paused) {
@@ -429,6 +415,7 @@ function initComponentCallbacks() {
 
             if (androidApp.orientation !== newOrientation) {
                 androidApp.orientation = newOrientation;
+                orientationChanged(getRootView(), newOrientation);
 
                 notify(<OrientationChangedEventData>{
                     eventName: orientationChangedEvent,
@@ -444,6 +431,7 @@ function initComponentCallbacks() {
 
             if (androidApp.systemAppearance !== newSystemAppearance) {
                 androidApp.systemAppearance = newSystemAppearance;
+                systemAppearanceChanged(getRootView(), newSystemAppearance);
 
                 notify(<SystemAppearanceChangedEventData>{
                     eventName: systemAppearanceChangedEvent,

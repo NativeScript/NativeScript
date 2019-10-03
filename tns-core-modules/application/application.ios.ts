@@ -234,6 +234,7 @@ class IOSApplication implements IOSApplicationDefinition {
 
         if (this._orientation !== newOrientation) {
             this._orientation = newOrientation;
+            orientationChanged(getRootView(), newOrientation);
 
             notify(<OrientationChangedEventData>{
                 eventName: orientationChangedEvent,
@@ -307,6 +308,7 @@ class IOSApplication implements IOSApplicationDefinition {
 
             if (this._systemAppearance !== newSystemAppearance) {
                 this._systemAppearance = newSystemAppearance;
+                systemAppearanceChanged(rootView, newSystemAppearance);
 
                 notify(<SystemAppearanceChangedEventData>{
                     eventName: systemAppearanceChangedEvent,
@@ -486,23 +488,9 @@ export function orientation(): "portrait" | "landscape" | "unknown" {
     return iosApp.orientation;
 }
 
-on(orientationChangedEvent, (args: OrientationChangedEventData) => {
-    const rootView = getRootView();
-    if (rootView) {
-        orientationChanged(rootView, args.newValue);
-    }
-});
-
 export function systemAppearance(): "dark" | "light" {
     return iosApp.systemAppearance;
 }
-
-on(systemAppearanceChangedEvent, (args: SystemAppearanceChangedEventData) => {
-    const rootView = getRootView();
-    if (rootView) {
-        systemAppearanceChanged(rootView, args.newValue);
-    }
-});
 
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     if (!started) {
