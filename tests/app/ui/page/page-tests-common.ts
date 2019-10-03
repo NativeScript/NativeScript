@@ -26,8 +26,6 @@ import { _resetRootView } from "tns-core-modules/application";
 import { Button } from "tns-core-modules/ui/button/button";
 import { ios } from "tns-core-modules/utils/utils";
 
-const majorVersion = ios.MajorVersion;
-
 export function addLabelToPage(page: Page, text?: string) {
     const label = new Label();
     label.text = text || "The quick brown fox jumps over the lazy dog.";
@@ -387,7 +385,7 @@ export function test_page_backgroundColor() {
     helper.navigate(factory);
 
     if (isIOS) {
-        const backgroundColor = majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+        const backgroundColor = ios.MajorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
         TKUnit.assertEqual(page.nativeView.backgroundColor, backgroundColor, "page backgroundColor is wrong");
     } else {
         const whiteColor = new Color("white");
