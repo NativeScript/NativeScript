@@ -190,7 +190,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
         // if (page["isBiOrientational"] && entry.moduleName && !this._subscribedToOrientationChangedEvent){
         //     this._subscribedToOrientationChangedEvent = true;
-        //     let app = require("application");
+        //     let app = require("../../application");
         //     if (trace.enabled) {
         //         trace.write(`${this} subscribed to orientationChangedEvent.`, trace.categories.Navigation);
         //     }

@@ -11,15 +11,22 @@ import android.util.Log;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -584,5 +591,279 @@ public class Async {
                 }
             }
         }
+    }
+
+    public static class File {
+
+        public static void readText(final String path, final String encoding, final CompleteCallback callback, final Object context) {
+            final android.os.Handler mHandler = new android.os.Handler();
+            threadPoolExecutor().execute(new Runnable() {
+                @Override
+                public void run() {
+                    final ReadTextTask task = new ReadTextTask(callback, context);
+                    final String result = task.doInBackground(path, encoding);
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            task.onPostExecute(result);
+                        }
+                    });
+                }
+            });
+        }
+
+        public static void read(final String path, final CompleteCallback callback, final Object context) {
+            final android.os.Handler mHandler = new android.os.Handler();
+            threadPoolExecutor().execute(new Runnable() {
+                @Override
+                public void run() {
+                    final ReadTask task = new ReadTask(callback, context);
+                    final byte[] result = task.doInBackground(path);
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            task.onPostExecute(result);
+                        }
+                    });
+                }
+            });
+        }
+
+        public static void writeText(final String path, final String content, final String encoding, final CompleteCallback callback, final Object context) {
+            final android.os.Handler mHandler = new android.os.Handler();
+            threadPoolExecutor().execute(new Runnable() {
+                @Override
+                public void run() {
+                    final WriteTextTask task = new WriteTextTask(callback, context);
+                    final boolean result = task.doInBackground(path, content, encoding);
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            task.onPostExecute(result);
+                        }
+                    });
+                }
+            });
+        }
+
+        public static void write(final String path, final byte[] content, final CompleteCallback callback, final Object context) {
+            final android.os.Handler mHandler = new android.os.Handler();
+            threadPoolExecutor().execute(new Runnable() {
+                @Override
+                public void run() {
+                    final WriteTask task = new WriteTask(callback, context);
+                    final boolean result = task.doInBackground(path, content);
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            task.onPostExecute(result);
+                        }
+                    });
+                }
+            });
+        }
+
+        static class ReadTextTask {
+            private CompleteCallback callback;
+            private Object context;
+
+            public ReadTextTask(CompleteCallback callback, Object context) {
+                this.callback = callback;
+                this.context = context;
+            }
+
+            protected String doInBackground(String... params) {
+                java.io.File javaFile = new java.io.File(params[0]);
+                FileInputStream stream = null;
+
+                try {
+                    stream = new FileInputStream(javaFile);
+
+                    InputStreamReader reader = new InputStreamReader(stream, params[1]);
+
+                    CharBuffer buffer = CharBuffer.allocate(81920);
+                    StringBuilder sb = new StringBuilder();
+
+                    while (reader.read(buffer) != -1) {
+                        buffer.flip();
+                        sb.append(buffer);
+                        buffer.clear();
+                    }
+
+                    reader.close();
+
+                    return sb.toString();
+                } catch (FileNotFoundException e) {
+                    Log.e(TAG, "Failed to read file, FileNotFoundException: " + e.getMessage());
+                    return null;
+                } catch (UnsupportedEncodingException e) {
+                    Log.e(TAG, "Failed to read file, UnsupportedEncodingException: " + e.getMessage());
+                    return null;
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to read file, IOException: " + e.getMessage());
+                    return null;
+                } finally {
+                    if (stream != null) {
+                        try {
+                            stream.close();
+                        } catch (IOException e) {
+                            Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+                        }
+                    }
+                }
+            }
+
+            protected void onPostExecute(final String result) {
+                if (result != null) {
+                    this.callback.onComplete(result, this.context);
+                } else {
+                    this.callback.onError("ReadTextTask returns no result.", this.context);
+                }
+            }
+        }
+
+        static class ReadTask {
+            private CompleteCallback callback;
+            private Object context;
+
+            public ReadTask(CompleteCallback callback, Object context) {
+                this.callback = callback;
+                this.context = context;
+            }
+
+            protected byte[] doInBackground(String... params) {
+                java.io.File javaFile = new java.io.File(params[0]);
+                FileInputStream stream = null;
+
+                try {
+                    stream = new FileInputStream(javaFile);
+
+                    byte[] result = new byte[(int)javaFile.length()];
+
+                    DataInputStream dataInputStream = new DataInputStream(stream);
+                    dataInputStream.readFully(result);
+
+                    return result;
+                } catch (FileNotFoundException e) {
+                    Log.e(TAG, "Failed to read file, FileNotFoundException: " + e.getMessage());
+                    return null;
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to read file, IOException: " + e.getMessage());
+                    return null;
+                } finally {
+                    if (stream != null) {
+                        try {
+                            stream.close();
+                        } catch (IOException e) {
+                            Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+                        }
+                    }
+                }
+            }
+
+            protected void onPostExecute(final byte[] result) {
+                if (result != null) {
+                    this.callback.onComplete(result, this.context);
+                } else {
+                    this.callback.onError("ReadTask returns no result.", this.context);
+                }
+            }
+        }
+
+        static class WriteTextTask {
+            private CompleteCallback callback;
+            private Object context;
+
+            public WriteTextTask(CompleteCallback callback, Object context) {
+                this.callback = callback;
+                this.context = context;
+            }
+
+            protected boolean doInBackground(String... params) {
+                java.io.File javaFile = new java.io.File(params[0]);
+                FileOutputStream stream = null;
+                try {
+                    stream = new FileOutputStream(javaFile);
+
+                    OutputStreamWriter writer = new OutputStreamWriter(stream, params[2]);
+
+                    writer.write(params[1]);
+                    writer.close();
+
+                    return true;
+                } catch (FileNotFoundException e) {
+                    Log.e(TAG, "Failed to write file, FileNotFoundException: " + e.getMessage());
+                    return false;
+                } catch (UnsupportedEncodingException e) {
+                    Log.e(TAG, "Failed to write file, UnsupportedEncodingException: " + e.getMessage());
+                    return false;
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to write file, IOException: " + e.getMessage());
+                    return false;
+                } finally {
+                    if (stream != null) {
+                        try {
+                            stream.close();
+                        } catch (IOException e) {
+                            Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+                        }
+                    }
+                }
+            }
+
+            protected void onPostExecute(final boolean result) {
+                if (result) {
+                    this.callback.onComplete(null, this.context);
+                } else {
+                    this.callback.onError("WriteTextTask returns no result.", this.context);
+                }
+            }
+        }
+
+        static class WriteTask {
+            private CompleteCallback callback;
+            private Object context;
+
+            public WriteTask(CompleteCallback callback, Object context) {
+                this.callback = callback;
+                this.context = context;
+            }
+
+            protected boolean doInBackground(Object... params) {
+                java.io.File javaFile = new java.io.File((String)params[0]);
+                FileOutputStream stream = null;
+                byte[] content = (byte[])params[1];
+
+                try {
+                    stream = new FileOutputStream(javaFile);
+                    stream.write(content, 0, content.length);
+
+                    return true;
+                } catch (FileNotFoundException e) {
+                    Log.e(TAG, "Failed to write file, FileNotFoundException: " + e.getMessage());
+                    return false;
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to write file, IOException: " + e.getMessage());
+                    return false;
+                } finally {
+                    if (stream != null) {
+                        try {
+                            stream.close();
+                        } catch (IOException e) {
+                            Log.e(TAG, "Failed to close stream, IOException: " + e.getMessage());
+                        }
+                    }
+                }
+            }
+
+            protected void onPostExecute(final boolean result) {
+                if (result) {
+                    this.callback.onComplete(null, this.context);
+                } else {
+                    this.callback.onError("WriteTask returns no result.", this.context);
+                }
+            }
+        }
+
     }
 }

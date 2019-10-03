@@ -248,6 +248,10 @@ export function getNativeApplication(): android.app.Application {
     return nativeApp;
 }
 
+export function orientation(): "portrait" | "landscape" | "unknown" {
+    return androidApp.orientation;
+}
+
 on(orientationChangedEvent, (args: OrientationChangedEventData) => {
     const rootView = getRootView();
     if (rootView) {
