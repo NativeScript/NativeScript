@@ -1010,7 +1010,7 @@ export namespace ios {
             super.traitCollectionDidChange(previousTraitCollection);
             const owner = this.owner.get();
 
-            if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
                 owner.notify({ eventName: traitCollectionColorAppearanceChangedEvent, object: owner });
             }
         }

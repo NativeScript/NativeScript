@@ -205,7 +205,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
         super.traitCollectionDidChange(previousTraitCollection);
         const owner = this._owner.get();
 
-        if (this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+        if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
             owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
         }
     }
