@@ -167,6 +167,17 @@ declare var HMAccessoryDelegate: {
 	prototype: HMAccessoryDelegate;
 };
 
+declare class HMAccessoryOwnershipToken extends NSObject {
+
+	static alloc(): HMAccessoryOwnershipToken; // inherited from NSObject
+
+	static new(): HMAccessoryOwnershipToken; // inherited from NSObject
+
+	constructor(o: { data: NSData; });
+
+	initWithData(data: NSData): this;
+}
+
 declare class HMAccessoryProfile extends NSObject {
 
 	static alloc(): HMAccessoryProfile; // inherited from NSObject
@@ -188,7 +199,11 @@ declare class HMAccessorySetupPayload extends NSObject {
 
 	constructor(o: { URL: NSURL; });
 
+	constructor(o: { URL: NSURL; ownershipToken: HMAccessoryOwnershipToken; });
+
 	initWithURL(setupPayloadURL: NSURL): this;
+
+	initWithURLOwnershipToken(setupPayloadURL: NSURL, ownershipToken: HMAccessoryOwnershipToken): this;
 }
 
 declare class HMAction extends NSObject {
@@ -236,6 +251,27 @@ declare var HMActionSetTypeTriggerOwned: string;
 declare var HMActionSetTypeUserDefined: string;
 
 declare var HMActionSetTypeWakeUp: string;
+
+declare class HMAddAccessoryRequest extends NSObject {
+
+	static alloc(): HMAddAccessoryRequest; // inherited from NSObject
+
+	static new(): HMAddAccessoryRequest; // inherited from NSObject
+
+	readonly accessoryCategory: HMAccessoryCategory;
+
+	readonly accessoryName: string;
+
+	readonly home: HMHome;
+
+	readonly requiresOwnershipToken: boolean;
+
+	readonly requiresSetupPayloadURL: boolean;
+
+	payloadWithOwnershipToken(ownershipToken: HMAccessoryOwnershipToken): HMAccessorySetupPayload;
+
+	payloadWithURLOwnershipToken(setupPayloadURL: NSURL, ownershipToken: HMAccessoryOwnershipToken): HMAccessorySetupPayload;
+}
 
 declare class HMCalendarEvent extends HMTimeEvent implements NSCopying, NSMutableCopying {
 
@@ -1429,7 +1465,13 @@ declare const enum HMErrorCode {
 
 	IncompatibleHomeHub = 92,
 
-	ObjectWithSimilarNameExists = 95
+	ObjectWithSimilarNameExists = 95,
+
+	OwnershipFailure = 96,
+
+	MaximumAccessoriesOfTypeInHome = 97,
+
+	WiFiCredentialGenerationFailed = 98
 }
 
 declare var HMErrorDomain: string;
@@ -1697,6 +1739,8 @@ declare class HMHomeManager extends NSObject {
 
 	static new(): HMHomeManager; // inherited from NSObject
 
+	readonly authorizationStatus: HMHomeManagerAuthorizationStatus;
+
 	delegate: HMHomeManagerDelegate;
 
 	readonly homes: NSArray<HMHome>;
@@ -1710,11 +1754,24 @@ declare class HMHomeManager extends NSObject {
 	updatePrimaryHomeCompletionHandler(home: HMHome, completion: (p1: NSError) => void): void;
 }
 
+declare const enum HMHomeManagerAuthorizationStatus {
+
+	Determined = 1,
+
+	Restricted = 2,
+
+	Authorized = 4
+}
+
 interface HMHomeManagerDelegate extends NSObjectProtocol {
 
 	homeManagerDidAddHome?(manager: HMHomeManager, home: HMHome): void;
 
+	homeManagerDidReceiveAddAccessoryRequest?(manager: HMHomeManager, request: HMAddAccessoryRequest): void;
+
 	homeManagerDidRemoveHome?(manager: HMHomeManager, home: HMHome): void;
+
+	homeManagerDidUpdateAuthorizationStatus?(manager: HMHomeManager, status: HMHomeManagerAuthorizationStatus): void;
 
 	homeManagerDidUpdateHomes?(manager: HMHomeManager): void;
 
@@ -1814,6 +1871,26 @@ declare class HMMutableSignificantTimeEvent extends HMSignificantTimeEvent {
 
 	significantEvent: string;
 }
+
+declare class HMNetworkConfigurationProfile extends HMAccessoryProfile {
+
+	static alloc(): HMNetworkConfigurationProfile; // inherited from NSObject
+
+	static new(): HMNetworkConfigurationProfile; // inherited from NSObject
+
+	delegate: HMNetworkConfigurationProfileDelegate;
+
+	readonly networkAccessRestricted: boolean;
+}
+
+interface HMNetworkConfigurationProfileDelegate extends NSObjectProtocol {
+
+	profileDidUpdateNetworkAccessMode?(profile: HMNetworkConfigurationProfile): void;
+}
+declare var HMNetworkConfigurationProfileDelegate: {
+
+	prototype: HMNetworkConfigurationProfileDelegate;
+};
 
 declare class HMNumberRange extends NSObject {
 

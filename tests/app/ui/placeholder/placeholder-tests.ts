@@ -52,7 +52,7 @@ export function test_placeholder_creatingView() {
 }
 
 export function test_placeholder_will_not_crash_wihout_creatingView() {
-   const p = new placeholderModule.Placeholder();
+    const p = new placeholderModule.Placeholder();
 
     function testAction(views: Array<viewModule.View>) {
         if (isIOS) {

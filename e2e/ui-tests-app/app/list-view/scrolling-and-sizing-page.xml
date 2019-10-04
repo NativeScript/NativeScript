@@ -50,7 +50,7 @@
                 </ListView.itemTemplate>
             </ListView>
         </StackLayout>
- 
+
          <StackLayout class="p-10" row="3">
             <Label text="ios-estimated-row-height" class="body m-b-10" />
             <ListView items="{{ $value }}" iosEstimatedRowHeight="0">

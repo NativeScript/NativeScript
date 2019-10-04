@@ -36,16 +36,6 @@ extract_snippets() {
     archive_dist_dir "snippets"
 }
 
-extract_cookbook() {
-    COOKBOOK_DIR="$DIST_DIR/cookbook"
-    rm -rf "$COOKBOOK_DIR"
-    
-    npm_install
-    grunt articles
-    mv "$DIST_DIR/articles" "$COOKBOOK_DIR"
-    archive_dist_dir "cookbook"
-}
-
 extract_apiref() {
     APIREF_DIR="$DIST_DIR/api-reference"
     rm -rf "$APIREF_DIR"
@@ -62,6 +52,5 @@ mkdir -p "$TARGET_DIR"
 
 if [ "${BASH_SOURCE[0]}" == "$0" ] ; then
     extract_snippets
-    extract_cookbook
     extract_apiref
 fi

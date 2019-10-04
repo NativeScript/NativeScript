@@ -8,11 +8,11 @@ export * from "./list-picker-common";
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
 interface Formatter {
-    new (owner: ListPicker): android.widget.NumberPicker.Formatter;
+    new(owner: ListPicker): android.widget.NumberPicker.Formatter;
 }
 
 interface ValueChangeListener {
-    new (owner: ListPicker): android.widget.NumberPicker.OnValueChangeListener;
+    new(owner: ListPicker): android.widget.NumberPicker.OnValueChangeListener;
 }
 
 let Formatter: Formatter;
@@ -95,7 +95,7 @@ export class ListPicker extends ListPickerBase {
         initializeNativeClasses();
         const nativeView = this.nativeViewProtected;
 
-        // api28 and lower uses reflection to retrieve and manipulate 
+        // api28 and lower uses reflection to retrieve and manipulate
         // android.graphics.Paint object; this is no longer allowed on newer api levels but
         // equivalent public methods are exposed on api29+ directly on the native widget
         if (sdkVersion() < 29) {
@@ -165,7 +165,7 @@ export class ListPicker extends ListPickerBase {
     }
 
     [colorProperty.getDefault](): number {
-        // api28 and lower uses reflection to retrieve and manipulate 
+        // api28 and lower uses reflection to retrieve and manipulate
         // android.graphics.Paint object; this is no longer allowed on newer api levels but
         // equivalent public methods are exposed on api29+ directly on the native widget
         if (this._selectorWheelPaint) {
@@ -177,7 +177,7 @@ export class ListPicker extends ListPickerBase {
     [colorProperty.setNative](value: number | Color) {
         const color = value instanceof Color ? value.android : value;
 
-        // api28 and lower uses reflection to retrieve and manipulate 
+        // api28 and lower uses reflection to retrieve and manipulate
         // android.graphics.Paint object; this is no longer allowed on newer api levels but
         // equivalent public methods are exposed on api29+ directly on the native widget
         if (this._selectorWheelPaint) {

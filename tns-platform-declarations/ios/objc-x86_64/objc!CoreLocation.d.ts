@@ -33,6 +33,8 @@ declare class CLBeacon extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CLBeacon; // inherited from NSObject
 
+	readonly UUID: NSUUID;
+
 	readonly accuracy: number;
 
 	readonly major: number;
@@ -45,15 +47,52 @@ declare class CLBeacon extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly rssi: number;
 
+	readonly timestamp: Date;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class CLBeaconIdentityConstraint extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CLBeaconIdentityConstraint; // inherited from NSObject
+
+	static new(): CLBeaconIdentityConstraint; // inherited from NSObject
+
+	readonly UUID: NSUUID;
+
+	readonly major: number;
+
+	readonly minor: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { UUID: NSUUID; });
+
+	constructor(o: { UUID: NSUUID; major: number; });
+
+	constructor(o: { UUID: NSUUID; major: number; minor: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithUUID(uuid: NSUUID): this;
+
+	initWithUUIDMajor(uuid: NSUUID, major: number): this;
+
+	initWithUUIDMajorMinor(uuid: NSUUID, major: number, minor: number): this;
 }
 
 declare class CLBeaconRegion extends CLRegion {
@@ -61,6 +100,10 @@ declare class CLBeaconRegion extends CLRegion {
 	static alloc(): CLBeaconRegion; // inherited from NSObject
 
 	static new(): CLBeaconRegion; // inherited from NSObject
+
+	readonly UUID: NSUUID;
+
+	readonly beaconIdentityConstraint: CLBeaconIdentityConstraint;
 
 	readonly major: number;
 
@@ -70,17 +113,33 @@ declare class CLBeaconRegion extends CLRegion {
 
 	readonly proximityUUID: NSUUID;
 
+	constructor(o: { beaconIdentityConstraint: CLBeaconIdentityConstraint; identifier: string; });
+
 	constructor(o: { proximityUUID: NSUUID; identifier: string; });
 
 	constructor(o: { proximityUUID: NSUUID; major: number; identifier: string; });
 
 	constructor(o: { proximityUUID: NSUUID; major: number; minor: number; identifier: string; });
 
+	constructor(o: { UUID: NSUUID; identifier: string; });
+
+	constructor(o: { UUID: NSUUID; major: number; identifier: string; });
+
+	constructor(o: { UUID: NSUUID; major: number; minor: number; identifier: string; });
+
+	initWithBeaconIdentityConstraintIdentifier(beaconIdentityConstraint: CLBeaconIdentityConstraint, identifier: string): this;
+
 	initWithProximityUUIDIdentifier(proximityUUID: NSUUID, identifier: string): this;
 
 	initWithProximityUUIDMajorIdentifier(proximityUUID: NSUUID, major: number, identifier: string): this;
 
 	initWithProximityUUIDMajorMinorIdentifier(proximityUUID: NSUUID, major: number, minor: number, identifier: string): this;
+
+	initWithUUIDIdentifier(uuid: NSUUID, identifier: string): this;
+
+	initWithUUIDMajorIdentifier(uuid: NSUUID, major: number, identifier: string): this;
+
+	initWithUUIDMajorMinorIdentifier(uuid: NSUUID, major: number, minor: number, identifier: string): this;
 
 	peripheralDataWithMeasuredPower(measuredPower: number): NSMutableDictionary<string, any>;
 }
@@ -166,9 +225,9 @@ declare class CLFloor extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class CLGeocoder extends NSObject {
@@ -224,9 +283,9 @@ declare class CLHeading extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, NSSecureCoding {
@@ -281,11 +340,11 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 
 	distanceFromLocation(location: CLLocation): number;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	getDistanceFrom(location: CLLocation): number;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(coordinate: CLLocationCoordinate2D, altitude: number, hAccuracy: number, vAccuracy: number, course: number, speed: number, timestamp: Date): this;
 
@@ -378,6 +437,8 @@ declare class CLLocationManager extends NSObject {
 
 	purpose: string;
 
+	readonly rangedBeaconConstraints: NSSet<CLBeaconIdentityConstraint>;
+
 	readonly rangedRegions: NSSet<CLRegion>;
 
 	showsBackgroundLocationIndicator: boolean;
@@ -406,6 +467,8 @@ declare class CLLocationManager extends NSObject {
 
 	startRangingBeaconsInRegion(region: CLBeaconRegion): void;
 
+	startRangingBeaconsSatisfyingConstraint(constraint: CLBeaconIdentityConstraint): void;
+
 	startUpdatingHeading(): void;
 
 	startUpdatingLocation(): void;
@@ -417,6 +480,8 @@ declare class CLLocationManager extends NSObject {
 	stopMonitoringVisits(): void;
 
 	stopRangingBeaconsInRegion(region: CLBeaconRegion): void;
+
+	stopRangingBeaconsSatisfyingConstraint(constraint: CLBeaconIdentityConstraint): void;
 
 	stopUpdatingHeading(): void;
 
@@ -433,6 +498,8 @@ interface CLLocationManagerDelegate extends NSObjectProtocol {
 
 	locationManagerDidExitRegion?(manager: CLLocationManager, region: CLRegion): void;
 
+	locationManagerDidFailRangingBeaconsForConstraintError?(manager: CLLocationManager, beaconConstraint: CLBeaconIdentityConstraint, error: NSError): void;
+
 	locationManagerDidFailWithError?(manager: CLLocationManager, error: NSError): void;
 
 	locationManagerDidFinishDeferredUpdatesWithError?(manager: CLLocationManager, error: NSError): void;
@@ -440,6 +507,8 @@ interface CLLocationManagerDelegate extends NSObjectProtocol {
 	locationManagerDidPauseLocationUpdates?(manager: CLLocationManager): void;
 
 	locationManagerDidRangeBeaconsInRegion?(manager: CLLocationManager, beacons: NSArray<CLBeacon> | CLBeacon[], region: CLBeaconRegion): void;
+
+	locationManagerDidRangeBeaconsSatisfyingConstraint?(manager: CLLocationManager, beacons: NSArray<CLBeacon> | CLBeacon[], beaconConstraint: CLBeaconIdentityConstraint): void;
 
 	locationManagerDidResumeLocationUpdates?(manager: CLLocationManager): void;
 
@@ -516,9 +585,9 @@ declare class CLPlacemark extends NSObject implements NSCopying, NSSecureCoding 
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithPlacemark(placemark: CLPlacemark): this;
 }
@@ -560,11 +629,11 @@ declare class CLRegion extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	initCircularRegionWithCenterRadiusIdentifier(center: CLLocationCoordinate2D, radius: number, identifier: string): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum CLRegionState {
@@ -598,9 +667,9 @@ declare class CLVisit extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var kCLDistanceFilterNone: number;

@@ -20,7 +20,6 @@
     "!node-tests/",
     "!declarations.android.d.ts",
     "!declarations.ios.d.ts",
-    "!gruntfile.js",
     "!org.nativescript.widgets.d.ts"
   ],
   "license": "Apache-2.0",
@@ -31,7 +30,7 @@
     "tslib": "1.10.0"
   },
   "devDependencies": {
-    "@types/node": "~7.0.5",
+    "@types/node": "~10.12.18",
     "tns-platform-declarations": "next"
   },
   "scripts": {

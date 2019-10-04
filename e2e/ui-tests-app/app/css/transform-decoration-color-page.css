@@ -1,4 +1,7 @@
-Label, Button, TextField, TextView {
+Label,
+Button,
+TextField,
+TextView {
     font-size: 12;
     text-align: left;
 }

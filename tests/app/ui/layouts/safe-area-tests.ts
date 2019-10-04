@@ -1033,7 +1033,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
                 greaterOrCloseEnough(width(cells[1][0]), width(cells[1][1]), `cell10 width<${width(cells[1][0])}> not greater or close enough cell11 width<${width(cells[1][1])}>`);
                 lessOrCloseEnough(width(cells[1][1]), width(cells[1][2]), `cell11 width<${width(cells[1][1])}> not less or close enough cell12 width<${width(cells[1][2])}>`);
-                
+
                 const sumOfNestedGridWidths = width(cells[1][0]) + width(cells[1][1]) + width(cells[1][2]);
                 equal(width(grid), sumOfNestedGridWidths, `grid width<${width(grid)}> sum of nested grids width <${sumOfNestedGridWidths}>`);
             },

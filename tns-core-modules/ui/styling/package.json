@@ -1,2 +1,4 @@
-{ "name" : "style",
-  "main" : "style" }
+{
+    "name": "style",
+    "main": "style"
+}

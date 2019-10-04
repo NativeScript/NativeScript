@@ -5,7 +5,7 @@ import {
 export * from "./switch-common";
 
 interface CheckedChangeListener {
-    new (owner: Switch): android.widget.CompoundButton.OnCheckedChangeListener;
+    new(owner: Switch): android.widget.CompoundButton.OnCheckedChangeListener;
 }
 
 let CheckedChangeListener: CheckedChangeListener;

@@ -237,7 +237,17 @@ declare const enum EKErrorCode {
 
 	OSNotSupported = 30,
 
-	Last = 31
+	InvalidInviteReplyCalendar = 31,
+
+	NotificationsCollectionFlagNotSet = 32,
+
+	SourceMismatch = 33,
+
+	NotificationCollectionMismatch = 34,
+
+	NotificationSavedWithoutCollection = 35,
+
+	Last = 36
 }
 
 declare var EKErrorDomain: string;
@@ -312,6 +322,8 @@ declare class EKEventStore extends NSObject {
 	readonly calendars: NSArray<EKCalendar>;
 
 	readonly defaultCalendarForNewEvents: EKCalendar;
+
+	readonly delegateSources: NSArray<EKSource>;
 
 	readonly eventStoreIdentifier: string;
 
@@ -504,9 +516,9 @@ declare class EKRecurrenceDayOfWeek extends NSObject implements NSCopying, NSSec
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithDayOfTheWeekWeekNumber(dayOfTheWeek: EKWeekday, weekNumber: number): this;
 }
@@ -531,9 +543,9 @@ declare class EKRecurrenceEnd extends NSObject implements NSCopying, NSSecureCod
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum EKRecurrenceFrequency {

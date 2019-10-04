@@ -184,11 +184,11 @@ function initializeDialogFragment() {
             // set the modal window animation
             // https://github.com/NativeScript/NativeScript/issues/5989
             if (this._animated) {
-              dialog
-                .getWindow()
-                .setWindowAnimations(
-                  android.R.style.Animation_Dialog
-                );
+                dialog
+                    .getWindow()
+                    .setWindowAnimations(
+                        android.R.style.Animation_Dialog
+                    );
             }
 
             dialog.setCanceledOnTouchOutside(this._cancelable);

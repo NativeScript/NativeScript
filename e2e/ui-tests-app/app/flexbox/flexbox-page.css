@@ -3,11 +3,13 @@
     border-width: 1;
     margin: 5;
 }
+
 #container>Label {
     border-width: 2;
     border-color: black;
     border-radius: 5;
 }
+
 #container>Label[selected="yes"] {
     border-color: gray;
 }
@@ -15,10 +17,12 @@
 .control {
     font-size: 11;
 }
+
 .control FlexboxLayout {
     border-width: 0 0 1 1;
     border-color: gray;
 }
+
 .control Button {
     android-elevation: 0;
     border-width: 1 1 0 0;

@@ -27,6 +27,7 @@ import { ios } from "../utils/utils";
 const IOS_PLATFORM = "ios";
 
 const getVisibleViewController = ios.getVisibleViewController;
+const majorVersion = ios.MajorVersion;
 
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
 // TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
@@ -39,8 +40,8 @@ const Responder = (<any>UIResponder).extend({
         // NOOP
     }
 }, {
-        protocols: [UIApplicationDelegate]
-    }
+    protocols: [UIApplicationDelegate]
+}
 );
 
 class NotificationObserver extends NSObject {
@@ -81,6 +82,7 @@ class CADisplayLinkTarget extends NSObject {
 }
 
 class IOSApplication implements IOSApplicationDefinition {
+    private _backgroundColor = majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
     private _delegate: typeof UIApplicationDelegate;
     private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
@@ -159,10 +161,9 @@ class IOSApplication implements IOSApplicationDefinition {
 
         this._window = UIWindow.alloc().initWithFrame(UIScreen.mainScreen.bounds);
         // TODO: Expose Window module so that it can we styled from XML & CSS
-        this._window.backgroundColor = UIColor.whiteColor;
+        this._window.backgroundColor = this._backgroundColor;
 
         this.notifyAppStarted(notification);
-
     }
 
     public notifyAppStarted(notification?: NSNotification) {
@@ -413,6 +414,10 @@ function setViewControllerView(view: View): void {
     if (viewController instanceof iosView.UILayoutViewController) {
         viewController.view.addSubview(nativeView);
     }
+}
+
+export function orientation(): "portrait" | "landscape" | "unknown" {
+    return iosApp.orientation;
 }
 
 on(orientationChangedEvent, (args: OrientationChangedEventData) => {

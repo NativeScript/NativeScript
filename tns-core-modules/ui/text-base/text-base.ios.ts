@@ -5,9 +5,13 @@ import {
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, lineHeightProperty,
     FormattedString, Span, Color, isBold, resetSymbol
 } from "./text-base-common";
-import { isString } from "../../utils/types";
 
 export * from "./text-base-common";
+
+import { isString } from "../../utils/types";
+import { ios } from "../../utils/utils";
+
+const majorVersion = ios.MajorVersion;
 
 export class TextBase extends TextBaseCommon {
 
@@ -134,7 +138,7 @@ export class TextBase extends TextBaseCommon {
             paragraphStyle.lineSpacing = this.lineHeight;
             // make sure a possible previously set text alignment setting is not lost when line height is specified
             paragraphStyle.alignment = (<UITextField | UITextView | UILabel>this.nativeTextViewProtected).textAlignment;
-            if (this.nativeTextViewProtected instanceof  UILabel) {
+            if (this.nativeTextViewProtected instanceof UILabel) {
                 // make sure a possible previously set line break mode is not lost when line height is specified
                 paragraphStyle.lineBreakMode = this.nativeTextViewProtected.lineBreakMode;
             }
@@ -183,7 +187,7 @@ export class TextBase extends TextBaseCommon {
             paragraphStyle.lineSpacing = style.lineHeight;
             // make sure a possible previously set text alignment setting is not lost when line height is specified
             paragraphStyle.alignment = (<UITextField | UITextView | UILabel>this.nativeTextViewProtected).textAlignment;
-            if (this.nativeTextViewProtected instanceof  UILabel) {
+            if (this.nativeTextViewProtected instanceof UILabel) {
                 // make sure a possible previously set line break mode is not lost when line height is specified
                 paragraphStyle.lineBreakMode = this.nativeTextViewProtected.lineBreakMode;
             }
@@ -194,8 +198,12 @@ export class TextBase extends TextBaseCommon {
             dict.set(NSParagraphStyleAttributeName, paragraphStyle);
         }
 
-        if (style.color && (dict.size > 0 || isTextView)) {
-            dict.set(NSForegroundColorAttributeName, style.color.ios);
+        if (dict.size > 0 || isTextView) {
+            if (style.color) {
+                dict.set(NSForegroundColorAttributeName, style.color.ios);
+            } else if (majorVersion >= 13) {
+                dict.set(NSForegroundColorAttributeName, UIColor.labelColor);
+            }
         }
 
         const text = this.text;

@@ -1,3 +1,13 @@
+## [6.1.1](https://github.com/NativeScript/NativeScript/compare/6.1.0...6.1.1) (2019-09-11)
+
+
+### Bug Fixes
+
+* **android-list-picker:** NoSuchFieldException on api29 ([#7790](https://github.com/NativeScript/NativeScript/issues/7790)) ([997d6de](https://github.com/NativeScript/NativeScript/commit/997d6de))
+* **css-calc:** reduce_css_calc_1.default is not a function ([#7787](https://github.com/NativeScript/NativeScript/issues/7787)) ([#7801](https://github.com/NativeScript/NativeScript/issues/7801)) ([20c0773](https://github.com/NativeScript/NativeScript/commit/20c0773))
+
+
+
 <a name="6.1.0"></a>
 # [6.1.0](https://github.com/NativeScript/NativeScript/compare/6.0.7...6.1.0) (2019-09-02)
 

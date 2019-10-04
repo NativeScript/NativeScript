@@ -90,10 +90,20 @@ class UIPageViewControllerImpl extends UIPageViewController {
         }
 
         tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
-        tabBar.tintColor = UIColor.blueColor;
-        tabBar.barTintColor = UIColor.whiteColor;
-        tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
-        tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Selected);
+
+        if (majorVersion <= 12) {
+            tabBar.tintColor = UIColor.blueColor;
+            tabBar.barTintColor = UIColor.whiteColor;
+            tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
+            tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Selected);
+        } else {
+            tabBar.tintColor = UIColor.systemBlueColor;
+            tabBar.barTintColor = UIColor.systemBackgroundColor;
+            tabBar.setTitleColorForState(UIColor.labelColor, MDCTabBarItemState.Normal);
+            tabBar.setTitleColorForState(UIColor.labelColor, MDCTabBarItemState.Selected);
+            tabBar.inkColor = UIColor.clearColor;
+        }
+
         tabBar.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleBottomMargin;
         tabBar.alignment = MDCTabBarAlignment.Leading;
         tabBar.sizeToFit();

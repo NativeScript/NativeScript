@@ -5,8 +5,8 @@
 // Code distributed by Google as part of the polymer project is also
 // subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 
-var esprima = require("js-libs/esprima").esprima;
-var Path = require("js-libs/polymer-expressions/path-parser").Path;
+var esprima = require("../esprima").esprima;
+var Path = require("./path-parser").Path;
 
 (function (global) {
     'use strict';
