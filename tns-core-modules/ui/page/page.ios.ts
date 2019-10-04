@@ -281,6 +281,7 @@ class UIViewControllerImpl extends UIViewController {
         }
     }
 
+    // Mind implementation for other controllerss
     public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
         super.traitCollectionDidChange(previousTraitCollection);
         const owner = this._owner.get();

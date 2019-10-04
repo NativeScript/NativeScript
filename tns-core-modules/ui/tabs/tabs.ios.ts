@@ -201,6 +201,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
         }
     }
 
+    // Mind implementation for other controllers
     public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
         super.traitCollectionDidChange(previousTraitCollection);
         const owner = this._owner.get();

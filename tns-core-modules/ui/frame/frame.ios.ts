@@ -534,6 +534,7 @@ class UINavigationControllerImpl extends UINavigationController {
         return null;
     }
 
+    // Mind implementation for other controllers
     public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
         super.traitCollectionDidChange(previousTraitCollection);
         const owner = this._owner.get();
