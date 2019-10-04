@@ -217,10 +217,10 @@ const textDecorationConverter = makeParser<TextDecoration>(makeValidator<TextDec
 export const textDecorationProperty = new CssProperty<Style, TextDecoration>({ name: "textDecoration", cssName: "text-decoration", defaultValue: "none", valueConverter: textDecorationConverter });
 textDecorationProperty.register(Style);
 
-export const letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: 0, affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
+export const letterSpacingProperty = new InheritedCssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: 0, affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
 letterSpacingProperty.register(Style);
 
-export const lineHeightProperty = new CssProperty<Style, number>({ name: "lineHeight", cssName: "line-height", affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
+export const lineHeightProperty = new InheritedCssProperty<Style, number>({ name: "lineHeight", cssName: "line-height", affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
 lineHeightProperty.register(Style);
 
 export const resetSymbol = Symbol("textPropertyDefault");

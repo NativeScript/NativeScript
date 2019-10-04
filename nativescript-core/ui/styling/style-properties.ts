@@ -358,13 +358,18 @@ export namespace HorizontalAlignment {
 export const horizontalAlignmentProperty = new CssProperty<Style, HorizontalAlignment>({ name: "horizontalAlignment", cssName: "horizontal-align", defaultValue: HorizontalAlignment.STRETCH, affectsLayout: isIOS, valueConverter: HorizontalAlignment.parse });
 horizontalAlignmentProperty.register(Style);
 
-export type VerticalAlignment = "top" | "middle" | "bottom" | "stretch";
+export type VerticalAlignment = "top" | "middle" | "bottom" | "stretch" | "text-top" | "text-bottom" | "super" | "sub" | "baseline";
 export namespace VerticalAlignment {
     export const TOP: "top" = "top";
     export const MIDDLE: "middle" = "middle";
     export const BOTTOM: "bottom" = "bottom";
     export const STRETCH: "stretch" = "stretch";
-    export const isValid = makeValidator<VerticalAlignment>(TOP, MIDDLE, BOTTOM, STRETCH);
+    export const TEXTTOP: "text-top" = "text-top";
+    export const TEXTBOTTOM: "text-bottom" = "text-bottom";
+    export const SUPER: "super" = "super";
+    export const SUB: "sub" = "sub";
+    export const BASELINE: "baseline" = "baseline";
+    export const isValid = makeValidator<VerticalAlignment>(TOP, MIDDLE, BOTTOM, STRETCH, TEXTTOP, TEXTBOTTOM, SUPER, SUB, BASELINE);
     export const parse = (value: string) => value.toLowerCase() === "center" ? MIDDLE : parseStrict(value);
     const parseStrict = makeParser<VerticalAlignment>(isValid);
 }
