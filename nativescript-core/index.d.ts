@@ -3,14 +3,33 @@
  */ /** */
 
 /// <reference path="./tns-core-modules.d.ts" />
-
-export * from "./application";
-import { on, off } from "./application";
+import { getMainEntry, getRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, AndroidApplication, iOSApplication } from "./application";
+export { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, iOSApplication, AndroidApplication, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, } from "./application";
 export declare const nsApp: {
-    ios: import("./application/application").iOSApplication;
-    android: import("./application/application").AndroidApplication;
+    launchEvent: string;
+    displayedEvent: string;
+    uncaughtErrorEvent: string;
+    discardedErrorEvent: string;
+    suspendEvent: string;
+    resumeEvent: string;
+    exitEvent: string;
+    lowMemoryEvent: string;
+    orientationChangedEvent: string;
+    getMainEntry: typeof getMainEntry;
+    getRootView: typeof getRootView;
+    setResources: typeof setResources;
+    setCssFileName: typeof setCssFileName;
+    getCssFileName: typeof getCssFileName;
+    loadAppCss: typeof loadAppCss;
+    addCss: typeof addCss;
     on: typeof on;
     off: typeof off;
+    run: typeof run;
+    orientation: typeof orientation;
+    getNativeApplication: typeof getNativeApplication;
+    hasLaunched: typeof hasLaunched;
+    android: AndroidApplication;
+    ios: iOSApplication;
 };
 import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from "./application-settings";
 export declare const nsSettings: {
@@ -47,7 +66,6 @@ export declare const nsHttp: {
     request: typeof request;
 };
 export { ImageAsset, ImageAssetOptions } from "./image-asset";
-// export { ImageSource } from "./image-source";
 import { ImageSource, fromAsset, fromBase64, fromData, fromFile, fromFileOrResource, fromFontIconCode, fromNativeSource, fromResource, fromUrl } from "./image-source";
 export declare const nsImageSource: {
     ImageSource: typeof ImageSource;
@@ -71,8 +89,28 @@ export declare const nsTimer: {
     setInterval: typeof setInterval;
     setTimeout: typeof setTimeout;
 };
-// TODO nsTrace
-
+import { DefaultErrorHandler, addCategories, addEventListener, addWriter, categories, clearWriters, disable, enable, error, getErrorHandler, isCategorySet, isEnabled, messageType, notifyEvent, removeEventListener, removeWriter, setCategories, setErrorHandler, write } from "./trace";
+export declare const nsTrace: {
+    DefaultErrorHandler: typeof DefaultErrorHandler;
+    addCategories: typeof addCategories;
+    addEventListener: typeof addEventListener;
+    addWriter: typeof addWriter;
+    categories: typeof categories;
+    clearWriters: typeof clearWriters;
+    disable: typeof disable;
+    enable: typeof enable;
+    error: typeof error;
+    getErrorHandler: typeof getErrorHandler;
+    isCategorySet: typeof isCategorySet;
+    isEnabled: typeof isEnabled;
+    messageType: typeof messageType;
+    notifyEvent: typeof notifyEvent;
+    removeEventListener: typeof removeEventListener;
+    removeWriter: typeof removeWriter;
+    setCategories: typeof setCategories;
+    setErrorHandler: typeof setErrorHandler;
+    write: typeof write;
+};
 export * from "./ui";
 import { GC, isDataURI, ad, convertString, eliminateDuplicates, escapeRegexSymbols, hasDuplicates, ios as tnsIOS, isFileOrResourcePath, mergeSort, openUrl, layout } from "./utils/utils";
 export declare const nsUtils: {

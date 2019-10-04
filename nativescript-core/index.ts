@@ -1,7 +1,39 @@
-// TODO: Revise this. Don't use star exports 
-export * from "./application";
-import { ios, android, on, off } from "./application";
-export const nsApp = { ios, android, on, off };
+import {
+    launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent,
+    suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent,
+
+    ApplicationEventData, LaunchEventData, OrientationChangedEventData,
+    UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData,
+
+    getMainEntry, getRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss,
+    on, off, run, orientation, getNativeApplication, hasLaunched,
+
+    android, AndroidApplication, AndroidActivityEventData, AndroidActivityBundleEventData,
+
+    AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData,
+    ios, iOSApplication,
+} from "./application";
+
+export {
+    ApplicationEventData, LaunchEventData, OrientationChangedEventData,
+    UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData,
+    
+    iOSApplication, AndroidApplication, 
+    
+    AndroidActivityEventData, AndroidActivityBundleEventData,
+    AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, 
+    AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData,
+} from "./application"
+
+export const nsApp = {
+    launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent,
+    suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent,
+
+    getMainEntry, getRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss,
+    on, off, run, orientation, getNativeApplication, hasLaunched,
+
+    android, ios,
+};
 
 import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from "./application-settings";
 export const nsSettings = { clear, flush, hasKey, remove, setString, getString, getAllKeys, getBoolean, setBoolean, getNumber, setNumber };

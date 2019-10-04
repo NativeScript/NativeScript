@@ -153,12 +153,7 @@ export function getResources(): any;
 /**
  * Set application level static resources.
  */
-export function setResources(res: any): void;
-
-/**
- * Sets application level static resources.
- */
-export function setResources(resources: any);
+export function setResources(resources: any): void;
 
 /**
  * Sets css file name for the application.

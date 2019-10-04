@@ -477,8 +477,8 @@ export abstract class View extends ViewBase {
      * Utility to reconcile a desired size and state, with constraints imposed
      * by a MeasureSpec.  Will take the desired size, unless a different size
      * is imposed by the constraints.  The returned value is a compound integer,
-     * with the resolved size in the {@link #MEASURED_SIZE_MASK} bits and
-     * optionally the bit {@link #MEASURED_STATE_TOO_SMALL} set if the resulting
+     * with the resolved size in the MEASURED_SIZE_MASK bits and
+     * optionally the bit MEASURED_STATE_TOO_SMALL set if the resulting
      * size is smaller than the size the view wants to be.
      */
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number;

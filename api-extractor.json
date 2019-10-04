@@ -32,7 +32,7 @@
    * SUPPORTED TOKENS: <lookup>
    * DEFAULT VALUE: "<lookup>"
    */
-  // "projectFolder": "..",
+  "projectFolder": "nativescript-core",
 
   /**
    * (REQUIRED) Specifies the .d.ts file to be used as the starting point for analysis.  API Extractor
@@ -45,7 +45,7 @@
    *
    * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
    */
-  "mainEntryPointFilePath": "nativescript-core/index.d.ts",
+  "mainEntryPointFilePath": "<projectFolder>/index.d.ts",
 
   /**
    * Determines how the TypeScript compiler engine will be invoked by API Extractor.
@@ -62,7 +62,7 @@
      * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
      * DEFAULT VALUE: "<projectFolder>/tsconfig.json"
      */
-    // "tsconfigFilePath": "<projectFolder>/tsconfig.json",
+    "tsconfigFilePath": "<projectFolder>/tsconfig.json",
 
     /**
      * Provides a compiler configuration that will be used instead of reading the tsconfig.json file from disk.
@@ -107,7 +107,7 @@
      * SUPPORTED TOKENS: <packageName>, <unscopedPackageName>
      * DEFAULT VALUE: "<unscopedPackageName>.api.md"
      */
-    // "reportFileName": "<unscopedPackageName>.api.md",
+    "reportFileName": "<unscopedPackageName>.api.md",
 
     /**
      * Specifies the folder where the API report file is written.  The file name portion is determined by
@@ -122,7 +122,7 @@
      * SUPPORTED TOKENS: <projectFolder>, <packageName>, <unscopedPackageName>
      * DEFAULT VALUE: "<projectFolder>/etc/"
      */
-    // "reportFolder": "<projectFolder>/etc/",
+    "reportFolder": "api-reports/",
 
     /**
      * Specifies the folder where the temporary report file is written.  The file name portion is determined by
@@ -279,7 +279,7 @@
          *
          * DEFAULT VALUE: "warning"
          */
-        "logLevel": "warning",
+        "logLevel": "error", //"warning",
 
         /**
          * When addToApiReportFile is true:  If API Extractor is configured to write an API report file (.api.md),
@@ -311,7 +311,10 @@
         "logLevel": "warning",
         // "addToApiReportFile": false
       },
-
+      "ae-missing-release-tag": {
+        "logLevel": "none",
+        "addToApiReportFile": false
+      },
       // "ae-extra-release-tag": {
       //   "logLevel": "warning",
       //   "addToApiReportFile": true
@@ -331,7 +334,27 @@
       "default": {
         "logLevel": "warning",
         // "addToApiReportFile": false
-      }
+      },
+      "tsdoc-param-tag-missing-hyphen": {
+        "logLevel": "none",
+        "addToApiReportFile": false
+      },
+      "tsdoc-undefined-tag": {
+        "logLevel": "none",
+        "addToApiReportFile": false
+      },
+      "tsdoc-unsupported-tag": {
+        "logLevel": "none",
+        "addToApiReportFile": false
+      },
+      "tsdoc-escape-greater-than": {
+        "logLevel": "none",
+        "addToApiReportFile": false
+      },
+      "tsdoc-malformed-html-name": {
+        "logLevel": "none",
+        "addToApiReportFile": false
+      },
 
       // "tsdoc-link-tag-unescaped-text": {
       //   "logLevel": "warning",
