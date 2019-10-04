@@ -389,6 +389,8 @@ export function _start(entry?: string | NavigationEntry) {
                         visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
                     }
 
+                    // Mind root view CSS classes in future work
+                    // on embedding NativeScript applications
                     setupRootViewCssClasses(rootView);
                     rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
                         const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
