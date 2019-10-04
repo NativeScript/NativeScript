@@ -36,7 +36,7 @@ Clone (or fork/clone) the repo and run setup script:
 ``` bash
 git clone https://github.com/NativeScript/NativeScript.git
 cd NativeScript 
-npm run setup-dev-full
+npm run setup
 ```
 
 ## Running Unit Tests Application
@@ -69,6 +69,12 @@ tns run ios
 
 >Note: NOTE: do not commit changes in the runtime versions to `e2e/<app-name>/package.json`
 
+---
+**NOTE**
+
+Linking `tns-core-modules` in Angular app does not work at the moment. Check [#7905](https://github.com/NativeScript/NativeScript/issues/7905) for more details on the issue.
+
+---
 
 ## Building `tns-core-modules-widgets`
 You can the following npm script to build and link the `tns-core-modules-widgets` package.
@@ -90,13 +96,6 @@ or run tests in watch mode:
 ```
 npm run unit-test-watch
 ```
-
----
-**NOTE**
-
-Linking `tns-core-modules` in Angular app does not work at the moment. Check [#7905](https://github.com/NativeScript/NativeScript/issues/7905) for more details on the issue.
-
----
 
 ## Platform declarations
 To update the platform declarations (the ios.d.ts-es) you can run:
