@@ -177,11 +177,13 @@ export function run(entry?: NavigationEntry | string) {
     _start(entry);
 }
 
-export function addCss(cssText: string): void {
+export function addCss(cssText: string, scoped?: boolean): void {
     notify(<CssChangedEventData>{ eventName: "cssChanged", object: androidApp, cssText: cssText });
-    const rootView = getRootView();
-    if (rootView) {
-        rootView._onCssStateChange();
+    if(!scoped) {
+        const rootView = getRootView();
+        if (rootView) {
+            rootView._onCssStateChange();
+        }
     }
 }
 
