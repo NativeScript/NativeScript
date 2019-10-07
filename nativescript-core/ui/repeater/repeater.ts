@@ -4,7 +4,7 @@ import { LayoutBase, CustomLayoutView, View, Template, Property, layout, CSSType
 import { StackLayout } from "../layouts/stack-layout";
 import { ObservableArray, ChangedData } from "../../data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "../core/weak-event-listener";
-import { parse } from "../builder";
+import { Builder } from "../builder";
 import { profile } from "../../profiling";
 
 export * from "../layouts/layout-base";
@@ -56,7 +56,7 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
 
         const length = this.items.length;
         for (let i = 0; i < length; i++) {
-            const viewToAdd = this.itemTemplate ? parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
+            const viewToAdd = this.itemTemplate ? Builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
             const dataItem = this._getDataItem(i);
             viewToAdd.bindingContext = dataItem;
             this.itemsLayout.addChild(viewToAdd);

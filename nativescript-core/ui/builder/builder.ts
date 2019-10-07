@@ -15,71 +15,96 @@ import { resolveModuleName } from "../../module-name-resolver";
 
 const ios = platformNames.ios.toLowerCase();
 const android = platformNames.android.toLowerCase();
-
 const defaultNameSpaceMatcher = /tns\.xsd$/i;
 
-export function parse(value: string | Template, context: any): View {
-    if (typeof value === "function") {
-        return (<Template>value)();
-    } else {
-        const exports = context ? getExports(context) : undefined;
-        const componentModule = parseInternal(value, exports);
-
-        return componentModule && componentModule.component;
-    }
-}
-
-export function parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
-    const dummyComponent = `<ListView><ListView.itemTemplates>${value}</ListView.itemTemplates></ListView>`;
-
-    return parseInternal(dummyComponent, context).component["itemTemplates"];
-}
-
-export function load(pathOrOptions: string | LoadOptions, context?: any): View {
-    let componentModule: ComponentModule;
-
-    if (typeof pathOrOptions === "string") {
-        const moduleName = sanitizeModuleName(pathOrOptions);
-        componentModule = loadInternal(moduleName, context);
-    } else {
-        componentModule = loadCustomComponent(pathOrOptions.path, pathOrOptions.name, pathOrOptions.attributes, pathOrOptions.exports, pathOrOptions.page, true);
-    }
-
-    return componentModule && componentModule.component;
-}
-
-export const createViewFromEntry = profile("createViewFromEntry", (entry: ViewEntry): View => {
-    if (entry.create) {
-        const view = entry.create();
-        if (!view) {
-            throw new Error("Failed to create View with entry.create() function.");
-        }
-
-        return view;
-    } else if (entry.moduleName) {
-        const moduleName = sanitizeModuleName(entry.moduleName);
-        const resolvedCodeModuleName = resolveModuleName(moduleName, ""); //`${moduleName}.xml`;
-        let moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName, true) : null;
-
-        if (moduleExports && moduleExports.createPage) {
-            // Exports has a createPage() method
-            const view = moduleExports.createPage();
-            const resolvedCssModuleName = resolveModuleName(moduleName, "css"); //entry.moduleName + ".css";
-            if (resolvedCssModuleName) {
-                view.addCssFile(resolvedCssModuleName);
+export class Builder {
+    static createViewFromEntry(entry: ViewEntry): View {
+        if (entry.create) {
+            const view = entry.create();
+            if (!view) {
+                throw new Error("Failed to create View with entry.create() function.");
             }
 
             return view;
-        } else {
-            const componentModule = loadInternal(moduleName, moduleExports);
-            const componentView = componentModule && componentModule.component;
+        } else if (entry.moduleName) {
+            const moduleName = sanitizeModuleName(entry.moduleName);
+            const resolvedCodeModuleName = resolveModuleName(moduleName, ""); //`${moduleName}.xml`;
+            let moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName, true) : null;
 
-            return componentView;
+            if (moduleExports && moduleExports.createPage) {
+                // Exports has a createPage() method
+                const view = moduleExports.createPage();
+                const resolvedCssModuleName = resolveModuleName(moduleName, "css"); //entry.moduleName + ".css";
+                if (resolvedCssModuleName) {
+                    view.addCssFile(resolvedCssModuleName);
+                }
+
+                return view;
+            } else {
+                const componentModule = loadInternal(moduleName, moduleExports);
+                const componentView = componentModule && componentModule.component;
+
+                return componentView;
+            }
+        }
+
+        throw new Error("Failed to load page XML file for module: " + entry.moduleName);
+    }
+
+    static parse(value: string | Template, context: any): View {
+        if (typeof value === "function") {
+            return (<Template>value)();
+        } else {
+            const exports = context ? getExports(context) : undefined;
+            const componentModule = parseInternal(value, exports);
+    
+            return componentModule && componentModule.component;
         }
     }
 
-    throw new Error("Failed to load page XML file for module: " + entry.moduleName);
-});
+    static load(pathOrOptions: string | LoadOptions, context?: any): View {
+        let componentModule: ComponentModule;
+
+        if (typeof pathOrOptions === "string") {
+            const moduleName = sanitizeModuleName(pathOrOptions);
+            componentModule = loadInternal(moduleName, context);
+        } else {
+            componentModule = loadCustomComponent(pathOrOptions.path, pathOrOptions.name, pathOrOptions.attributes, pathOrOptions.exports, pathOrOptions.page, true);
+        }
+    
+        return componentModule && componentModule.component;
+    }
+     
+    static parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
+        const dummyComponent = `<ListView><ListView.itemTemplates>${value}</ListView.itemTemplates></ListView>`;
+
+        return parseInternal(dummyComponent, context).component["itemTemplates"];
+    }
+}
+
+export function parse(value: string | Template, context: any): View {
+    console.log("parse() is deprecated. Use Builder.parse() instead.")
+
+    return Builder.parse(value, context);
+}
+
+export function parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
+    console.log("parseMultipleTemplates() is deprecated. Use Builder.parseMultipleTemplates() instead.")
+
+    return Builder.parseMultipleTemplates(value, context);
+}
+
+export function load(pathOrOptions: string | LoadOptions, context?: any): View {
+    console.log("load() is deprecated. Use Builder.load() instead.")
+
+    return Builder.load(pathOrOptions, context);
+}
+
+export function createViewFromEntry(entry: ViewEntry): View {
+    console.log("createViewFromEntry() is deprecated. Use Builder.createViewFromEntry() instead.")
+
+    return Builder.createViewFromEntry(entry);
+};
 
 function loadInternal(moduleName: string, moduleExports: any): ComponentModule {
     let componentModule: ComponentModule;

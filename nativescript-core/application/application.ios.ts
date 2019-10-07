@@ -18,13 +18,14 @@ import {
 export * from "./application-common";
 
 // TODO: Remove this and get it from global to decouple builder for angular
-import { createViewFromEntry } from "../ui/builder";
+import { Builder } from "../ui/builder";
 import {
     CLASS_PREFIX,
     getRootViewCssClasses,
     pushToRootViewCssClasses,
     resetRootViewCssClasses
 } from "../css/system-classes";
+
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
 import { device } from "../platform/platform";
@@ -350,7 +351,7 @@ function createRootView(v?: View) {
                 const frame = rootView = new Frame();
                 frame.navigate(mainEntry);
             } else {
-                rootView = createViewFromEntry(mainEntry);
+                rootView = Builder.createViewFromEntry(mainEntry);
             }
         }
     }

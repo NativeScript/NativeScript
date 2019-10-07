@@ -5,7 +5,7 @@ import { Page } from "../page";
 // Types.
 import { getAncestor, viewMatchesModuleContext } from "../core/view/view-common";
 import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, Property, CSSType } from "../core/view";
-import { createViewFromEntry } from "../builder";
+import { Builder } from "../builder";
 import { profile } from "../../profiling";
 
 import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from "./frame-stack";
@@ -217,7 +217,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
 
         const entry = buildEntryFromArgs(param);
-        const page = createViewFromEntry(entry) as Page;
+        const page = Builder.createViewFromEntry(entry) as Page;
 
         this._pushInFrameStack();
 
@@ -679,7 +679,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         const currentBackstackEntry = this._currentEntry;
         const contextModuleName = sanitizeModuleName(pagePath);
 
-        const newPage = <Page>createViewFromEntry({ moduleName: contextModuleName });
+        const newPage = <Page>Builder.createViewFromEntry({ moduleName: contextModuleName });
         const newBackstackEntry: BackstackEntry = {
             entry: currentBackstackEntry.entry,
             resolvedPage: newPage,

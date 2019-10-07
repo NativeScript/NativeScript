@@ -1,6 +1,6 @@
 import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from ".";
 import { CoercibleProperty, CssProperty, Style, View, ContainerView, Template, KeyedTemplate, Length, Property, Color, Observable, EventData, CSSType } from "../core/view";
-import { parse, parseMultipleTemplates } from "../builder";
+import { Builder } from "../builder";
 import { Label } from "../label";
 import { ObservableArray, ChangedData } from "../../data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "../core/weak-event-listener";
@@ -33,7 +33,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
         key: "default",
         createView: () => {
             if (this.itemTemplate) {
-                return parse(this.itemTemplate, this);
+                return Builder.parse(this.itemTemplate, this);
             }
 
             return undefined;
@@ -199,7 +199,7 @@ itemTemplateProperty.register(ListViewBase);
 export const itemTemplatesProperty = new Property<ListViewBase, string | Array<KeyedTemplate>>({
     name: "itemTemplates", valueConverter: (value) => {
         if (typeof value === "string") {
-            return parseMultipleTemplates(value);
+            return Builder.parseMultipleTemplates(value);
         }
 
         return value;

@@ -20,7 +20,7 @@ import {
 } from "../../gestures";
 
 import { getModalRootViewCssClass } from "../../../css/system-classes";
-import { createViewFromEntry } from "../../builder";
+import { Builder } from "../../builder";
 import { sanitizeModuleName } from "../../builder/module-name-sanitizer";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
@@ -338,7 +338,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
             const firstArgument = args[0];
             const view = firstArgument instanceof ViewCommon
-                ? firstArgument : <ViewCommon>createViewFromEntry({ moduleName: firstArgument });
+                ? firstArgument : <ViewCommon>Builder.createViewFromEntry({ moduleName: firstArgument });
 
             return { view, options };
         }

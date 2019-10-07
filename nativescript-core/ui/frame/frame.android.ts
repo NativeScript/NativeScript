@@ -19,7 +19,7 @@ import {
 } from "./fragment.transitions";
 
 // TODO: Remove this and get it from global to decouple builder for angular
-import { createViewFromEntry } from "../builder";
+import { Builder } from "../builder";
 import { CLASS_PREFIX, getRootViewCssClasses, pushToRootViewCssClasses } from "../../css/system-classes";
 import { device } from "../../platform/platform";
 import { profile } from "../../profiling";
@@ -1331,7 +1331,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
                         throw new Error("A Frame must be used to navigate to a Page.");
                     }
                 } else {
-                    rootView = createViewFromEntry(mainEntry);
+                    rootView = Builder.createViewFromEntry(mainEntry);
                 }
             }
 
