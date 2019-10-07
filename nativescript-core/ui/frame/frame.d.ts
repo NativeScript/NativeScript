@@ -15,6 +15,32 @@ export * from "../page";
  */
 export class Frame extends View {
     /**
+     * Gets a frame by id.
+     */
+    static getFrameById(id: string): Frame;
+
+    /**
+     * Gets the topmost frame in the frames stack. An application will typically has one frame instance. Multiple frames handle nested (hierarchical) navigation scenarios.
+     */
+    static topmost(): Frame;
+
+    /**
+     * Navigates back using the navigation hierarchy (if any). Updates the Frame stack as needed.
+     * This method will start from the topmost Frame and will recursively search for an instance that has the canGoBack operation available.
+     */
+    static goBack();
+
+    /**
+     * @private
+     */
+    static reloadPage(context?: ModuleContext): void;
+
+    /**
+     * @private
+     */
+    static _stack(): Array<Frame>;
+
+    /**
      * Navigates to the previous entry (if any) in the back stack.
      * @param to The backstack entry to navigate back to.
      */
@@ -191,16 +217,22 @@ export class Frame extends View {
 export function setFragmentClass(clazz: any): void;
 
 /**
+ * @deprecated Use Frame.getFrameById() instead.
+ * 
  * Gets a frame by id.
  */
 export function getFrameById(id: string): Frame;
 
 /**
+ * @deprecated Use Frame.topmost() instead.
+ * 
  * Gets the topmost frame in the frames stack. An application will typically has one frame instance. Multiple frames handle nested (hierarchical) navigation scenarios.
  */
 export function topmost(): Frame;
 
 /**
+ * @deprecated Use Frame.goBack() instead.
+ * 
  * Navigates back using the navigation hierarchy (if any). Updates the Frame stack as needed.
  * This method will start from the topmost Frame and will recursively search for an instance that has the canGoBack operation available.
  */
@@ -208,6 +240,8 @@ export function goBack();
 
 //@private
 /**
+ * @deprecated Use Frame._stack() instead.
+ * 
  * @private
  */
 export function _stack(): Array<Frame>;
@@ -452,9 +486,11 @@ export interface iOSFrame {
 export function setActivityCallbacks(activity: any /*androidx.appcompat.app.AppCompatActivity*/): void;
 //@private
 /**
+ * @deprecated Use Frame.reloadPage() instead.
+ * 
  * @private
  */
-export function reloadPage(): void;
+export function reloadPage(context?: ModuleContext): void;
 /**
  * @private
  */

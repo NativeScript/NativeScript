@@ -699,6 +699,8 @@ export class Frame extends View {
     // (undocumented)
     _findEntryForTag(fragmentTag: string): BackstackEntry;
 
+    static getFrameById(id: string): Frame;
+
     // (undocumented)
     _getIsAnimatedNavigation(entry: NavigationEntry): boolean;
 
@@ -707,6 +709,8 @@ export class Frame extends View {
 
     // (undocumented)
     _getNavigationTransition(entry: NavigationEntry): NavigationTransition;
+
+    static goBack();
 
     goBack(to?: BackstackEntry);
 
@@ -718,9 +722,9 @@ export class Frame extends View {
 
     navigate(pageModuleName: string);
 
-    navigate(entry: NavigationEntry);
-
     navigate(create: () => Page);
+
+    navigate(entry: NavigationEntry);
 
     // (undocumented)
     navigationBarHeight: number;
@@ -743,12 +747,20 @@ export class Frame extends View {
     _pushInFrameStackRecursive();
 
     // (undocumented)
+    static reloadPage(context?: ModuleContext): void;
+
+    // (undocumented)
     _removeFromFrameStack();
 
     // Warning: (ae-forgotten-export) The symbol "NavigationType" needs to be exported by the entry point index.d.ts
     // 
     // (undocumented)
     setCurrent(entry: BackstackEntry, navigationType: NavigationType): void;
+
+    // (undocumented)
+    static _stack(): Array<Frame>;
+
+    static topmost(): Frame;
 
     transition: NavigationTransition;
 

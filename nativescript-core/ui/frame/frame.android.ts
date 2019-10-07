@@ -90,31 +90,6 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
     return attachStateChangeListener;
 }
 
-export function reloadPage(context?: ModuleContext): void {
-    const activity = application.android.foregroundActivity;
-    const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
-    if (callbacks) {
-        const rootView: View = callbacks.getRootView();
-        // Handle application root module
-        const isAppRootModuleChanged = context && context.path && context.path.includes(application.getMainEntry().moduleName) && context.type !== "style";
-
-        // Reset activity content when:
-        // + Application root module is changed
-        // + View did not handle the change
-        // Note:
-        // The case when neither app root module is changed, neighter livesync is handled on View,
-        // then changes will not apply until navigate forward to the module.
-        if (isAppRootModuleChanged || !rootView || !rootView._onLivesync(context)) {
-            callbacks.resetActivityContent(activity);
-        }
-    } else {
-        traceError(`${activity}[CALLBACKS] is null or undefined`);
-    }
-}
-
-// attach on global, so it can be overwritten in NativeScript Angular
-(<any>global).__onLiveSyncCore = reloadPage;
-
 export class Frame extends FrameBase {
     private _android: AndroidFrame;
     private _containerViewId: number = -1;
@@ -125,6 +100,28 @@ export class Frame extends FrameBase {
     constructor() {
         super();
         this._android = new AndroidFrame(this);
+    }
+
+    public static reloadPage(context?: ModuleContext): void {
+        const activity = application.android.foregroundActivity;
+        const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
+        if (callbacks) {
+            const rootView: View = callbacks.getRootView();
+            // Handle application root module
+            const isAppRootModuleChanged = context && context.path && context.path.includes(application.getMainEntry().moduleName) && context.type !== "style";
+
+            // Reset activity content when:
+            // + Application root module is changed
+            // + View did not handle the change
+            // Note:
+            // The case when neither app root module is changed, neighter livesync is handled on View,
+            // then changes will not apply until navigate forward to the module.
+            if (isAppRootModuleChanged || !rootView || !rootView._onLivesync(context)) {
+                callbacks.resetActivityContent(activity);
+            }
+        } else {
+            traceError(`${activity}[CALLBACKS] is null or undefined`);
+        }
     }
 
     public static get defaultAnimatedNavigation(): boolean {
@@ -556,6 +553,16 @@ export class Frame extends FrameBase {
         });
     }
 }
+
+export function reloadPage(context?: ModuleContext): void {
+    console.log("reloadPage() is deprecated. Use Frame.reloadPage() instead.");
+
+    return Frame.reloadPage(context);
+}
+
+// attach on global, so it can be overwritten in NativeScript Angular
+(<any>global).__onLiveSyncCore = Frame.reloadPage;
+
 function cloneExpandedTransitionListener(expandedTransitionListener: any) {
     if (!expandedTransitionListener) {
         return null;

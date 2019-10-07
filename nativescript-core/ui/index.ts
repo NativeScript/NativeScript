@@ -12,15 +12,13 @@ export { ViewBase, ShowModalOptions } from "./core/view-base";
 export { View } from "./core/view";
 export { DatePicker } from "./date-picker";
 
-import { action, alert, confirm, login, prompt } from "./dialogs";
-export const nsDialogs = { action, alert, confirm, login, prompt };
+// No need go export dialogs, they are already export exported globally
+// import { action, alert, confirm, login, prompt } from "./dialogs";
+// export const nsDialogs = { action, alert, confirm, login, prompt };
 
 export { EditableTextBase } from "./editable-text-base";
 export { AnimationCurve, Accuracy, DeviceOrientation } from "./enums/enums";
-
 export { Frame, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry } from "./frame";
-import { topmost, goBack } from "./frame"
-export const nsFrame = { topmost, goBack };
 
 export {
   GestureEventData,

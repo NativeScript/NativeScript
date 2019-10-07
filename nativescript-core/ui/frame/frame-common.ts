@@ -58,8 +58,61 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     public static defaultAnimatedNavigation = true;
     public static defaultTransition: NavigationTransition;
 
-    // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
+    static getFrameById(id: string): FrameBase {
+        return frameStack.find((frame) => frame.id && frame.id === id);
+    }
 
+    static topmost(): FrameBase {
+        return frameStackTopmost();
+    }
+
+    static goBack(): boolean {
+        const top = FrameBase.topmost();
+        if (top && top.canGoBack()) {
+            top.goBack();
+    
+            return true;
+        } else if (top) {
+            let parentFrameCanGoBack = false;
+            let parentFrame = <FrameBase>getAncestor(top, "Frame");
+    
+            while (parentFrame && !parentFrameCanGoBack) {
+                if (parentFrame && parentFrame.canGoBack()) {
+                    parentFrameCanGoBack = true;
+                } else {
+                    parentFrame = <FrameBase>getAncestor(parentFrame, "Frame");
+                }
+            }
+    
+            if (parentFrame && parentFrameCanGoBack) {
+                parentFrame.goBack();
+    
+                return true;
+            }
+        }
+    
+        if (frameStack.length > 1) {
+            top._popFromFrameStack();
+        }
+    
+        return false;
+    }
+
+    /**
+     * @private
+     */
+    static reloadPage(): void {
+        // Implemented in plat-specific file - only for android.
+    }
+
+    /**
+     * @private
+     */
+    static _stack(): Array<FrameBase> {
+        return frameStack;
+    }
+
+    // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
     public _addChildFromBuilder(name: string, value: any) {
         throw new Error(`Frame should not have a view. Use 'defaultPage' property instead.`);
     }
@@ -158,27 +211,6 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         removed.resolvedPage = null;
     }
 
-    // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
-    // private _subscribedToOrientationChangedEvent = false;
-    // private _onOrientationChanged(){
-    //     if (!this._currentEntry){
-    //         return;
-    //     }
-
-    //     let currentPage = this._currentEntry.resolvedPage;
-    //     let currentNavigationEntry = this._currentEntry.entry;
-    //     if (currentPage["isBiOrientational"] && currentNavigationEntry.moduleName) {
-    //         if (this.canGoBack()){
-    //             this.goBack();
-    //         }
-    //         else {
-    //             currentNavigationEntry.backstackVisible = false;
-    //         }
-    //         // Re-navigate to the same page so the other (.port or .land) xml is loaded.
-    //         this.navigate(currentNavigationEntry);
-    //     }
-    // }
-
     public navigate(param: any) {
         if (traceEnabled()) {
             traceWrite(`NAVIGATE`, traceCategories.Navigation);
@@ -186,16 +218,6 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         const entry = buildEntryFromArgs(param);
         const page = createViewFromEntry(entry) as Page;
-
-        // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
-        // if (page["isBiOrientational"] && entry.moduleName && !this._subscribedToOrientationChangedEvent){
-        //     this._subscribedToOrientationChangedEvent = true;
-        //     let app = require("../../application");
-        //     if (trace.enabled) {
-        //         trace.write(`${this} subscribed to orientationChangedEvent.`, trace.categories.Navigation);
-        //     }
-        //     app.on(app.orientationChangedEvent, (data) => this._onOrientationChanged());
-        // }
 
         this._pushInFrameStack();
 
@@ -678,47 +700,27 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 }
 
 export function getFrameById(id: string): FrameBase {
-    return frameStack.find((frame) => frame.id && frame.id === id);
+    console.log("getFrameById() is deprecated. Use Frame.getFrameById() instead.");
+
+    return FrameBase.getFrameById(id);
 }
 
 export function topmost(): FrameBase {
-    return frameStackTopmost();
+    console.log("topmost() is deprecated. Use Frame.topmost() instead.");
+
+    return FrameBase.topmost();
 }
 
 export function goBack(): boolean {
-    const top = topmost();
-    if (top && top.canGoBack()) {
-        top.goBack();
+    console.log("goBack() is deprecated. Use Frame.goBack() instead.");
 
-        return true;
-    } else if (top) {
-        let parentFrameCanGoBack = false;
-        let parentFrame = <FrameBase>getAncestor(top, "Frame");
-
-        while (parentFrame && !parentFrameCanGoBack) {
-            if (parentFrame && parentFrame.canGoBack()) {
-                parentFrameCanGoBack = true;
-            } else {
-                parentFrame = <FrameBase>getAncestor(parentFrame, "Frame");
-            }
-        }
-
-        if (parentFrame && parentFrameCanGoBack) {
-            parentFrame.goBack();
-
-            return true;
-        }
-    }
-
-    if (frameStack.length > 1) {
-        top._popFromFrameStack();
-    }
-
-    return false;
+    return FrameBase.goBack();
 }
 
 export function _stack(): Array<FrameBase> {
-    return frameStack;
+    console.log("_stack() is deprecated. Use Frame._stack() instead.");
+
+    return FrameBase._stack();
 }
 
 export const defaultPage = new Property<FrameBase, string>({

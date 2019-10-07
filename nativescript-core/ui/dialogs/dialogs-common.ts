@@ -3,7 +3,7 @@ import { View } from "../core/view";
 import { Color } from "../../color";
 import { Page } from "../page";
 import { isIOS } from "../../platform";
-import * as frameModule from "../frame";
+import { Frame as FrameType } from "../frame";
 import { LoginOptions } from "./dialogs";
 import { isObject, isString } from "../../utils/types";
 
@@ -75,13 +75,13 @@ export module capitalizationType {
     export const words: string = "words";
 }
 
-let frame: typeof frameModule;
+let Frame: typeof FrameType;
 export function getCurrentPage(): Page {
-    if (!frame) {
-        frame = require("../frame");
+    if (!Frame) {
+        Frame = require("../frame").Frame;
     }
 
-    let topmostFrame = frame.topmost();
+    let topmostFrame = Frame.topmost();
     if (topmostFrame) {
         return topmostFrame.currentPage;
     }
