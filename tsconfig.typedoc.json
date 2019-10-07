@@ -20,6 +20,7 @@
         "nativescript-core/index.d.ts",
         "nativescript-core/ui/index.d.ts",
         "nativescript-core/ui/layouts/index.d.ts",
+        
         "nativescript-core/references.d.ts",
         "nativescript-core/node_modules",
         "nativescript-core/ui/frame/transition-definitions.android.d.ts",

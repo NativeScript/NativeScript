@@ -8,6 +8,7 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.5.0",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.42",
     "@types/node": "~10.12.18",
@@ -44,7 +45,8 @@
     "unit-test": "tsc -p unit-tests/tsconfig.json && mocha --opts unit-tests/mocha.opts",
     "unit-test-watch": "mocha-typescript-watch -p unit-tests/tsconfig.json --opts unit-tests/mocha.opts",
     "dev-link-tns-core-modules-widgets": "(cd tns-core-modules-widgets/dist/package && npm link) && (cd nativescript-core && npm i ../tns-core-modules-widgets/dist/package --save)",
-    "typedoc": "typedoc --tsconfig tsconfig.typedoc.json",
+    "api-extractor": "api-extractor run --local --verbose && (cd nativescript-core && cat nativescript-core.header nativescript-core.d.ts > tmp_file && mv tmp_file nativescript-core.d.ts)",
+    "typedoc": "npm run api-extractor && typedoc --tsconfig tsconfig.typedoc.json",
     "typedoc-dev": "npm run typedoc && cd bin/dist/apiref && npx http-server",
     "build-core": "sh ./build/build-core.sh",
     "build-compat": "sh ./build/build-compat.sh"

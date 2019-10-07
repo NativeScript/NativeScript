@@ -51,6 +51,8 @@ mkdir -p "$DIST"
     npx rimraf "$DIST/$PACKAGE"
     npx rimraf "$DIST/$PACKAGE*.tgz"
 
+    npm run api-extractor
+
     echo "Copying $PACKAGE $DIST/$PACKAGE..."
     npx ncp "$PACKAGE" "$DIST/$PACKAGE"
 
