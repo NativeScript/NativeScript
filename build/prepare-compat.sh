@@ -13,7 +13,8 @@ DIST=dist;
 ROOT_DIR=$(cd `dirname $0` && pwd)/..;
 cd "$ROOT_DIR"
 
-NATIVESCRIPT_CORE_ARGS={$NATIVESCRIPT_CORE_ARGS:-'../nativescript-core*.tgz --no-save'}
+DEFAULT_NATIVESCRIPT_CORE_ARGS="../nativescript-core*.tgz --no-save"
+NATIVESCRIPT_CORE_ARGS=${NATIVESCRIPT_CORE_ARGS:-$DEFAULT_NATIVESCRIPT_CORE_ARGS}
 
 ## Prepare tns-core-modules
 (
