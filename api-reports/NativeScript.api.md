@@ -311,6 +311,18 @@ export interface BackstackEntry {
     //@endprivate
 }
 
+// @public (undocumented)
+export interface BorderColor {
+    // (undocumented)
+    bottom: Color;
+    // (undocumented)
+    left: Color;
+    // (undocumented)
+    right: Color;
+    // (undocumented)
+    top: Color;
+}
+
 // @public
 export class BottomNavigation extends TabNavigationBase {
     android: any /* android.view.View */;
@@ -337,7 +349,6 @@ export class Builder {
 
     static load(moduleName: string, exports?: any): View;
 
-    // Warning: (ae-forgotten-export) The symbol "LoadOptions" needs to be exported by the entry point index.d.ts
     static load(options: LoadOptions): View;
 
     // (undocumented)
@@ -432,6 +443,42 @@ export class Color {
     public static isValid(value: any): boolean;
     public name: string;
     public r: number;
+}
+
+// @public (undocumented)
+export interface CommonLayoutParams {
+    // (undocumented)
+    bottomMargin: number;
+    // (undocumented)
+    bottomMarginPercent: number;
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    heightPercent: number;
+    // Warning: (ae-forgotten-export) The symbol "HorizontalAlignment" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    horizontalAlignment: HorizontalAlignment;
+    // (undocumented)
+    leftMargin: number;
+    // (undocumented)
+    leftMarginPercent: number;
+    // (undocumented)
+    rightMargin: number;
+    // (undocumented)
+    rightMarginPercent: number;
+    // (undocumented)
+    topMargin: number;
+    // (undocumented)
+    topMarginPercent: number;
+    // Warning: (ae-forgotten-export) The symbol "VerticalAlignment" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    verticalAlignment: VerticalAlignment;
+    // (undocumented)
+    width: number;
+    // (undocumented)
+    widthPercent: number;
 }
 
 // Warning: (ae-forgotten-export) The symbol "AddChildFromBuilder" needs to be exported by the entry point index.d.ts
@@ -1214,6 +1261,20 @@ export interface LoadAppCSSEventData extends EventData {
     cssFile: string;
 }
 
+// @public (undocumented)
+export interface LoadOptions {
+    // (undocumented)
+    attributes?: any;
+    // (undocumented)
+    exports?: any;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    page?: Page;
+    // (undocumented)
+    path: string;
+}
+
 // @public
 export function log(message: string): void;
 
@@ -1849,6 +1910,223 @@ export function stop(name: string): TimerInfo;
 // @public
 export function stopCPUProfile(name: string): void;
 
+// @public (undocumented)
+export class Style extends Observable {
+    constructor(ownerView: ViewBase | WeakRef<ViewBase>);
+    // (undocumented)
+    public alignContent: AlignContent;
+    // (undocumented)
+    public alignItems: AlignItems;
+    // (undocumented)
+    public alignSelf: AlignSelf;
+    public androidContentInset: string | Length;
+    public androidContentInsetLeft: Length;
+    public androidContentInsetRight: Length;
+    // (undocumented)
+    public androidDynamicElevationOffset: number;
+    // (undocumented)
+    public androidElevation: number;
+    // (undocumented)
+    public androidSelectedTabHighlightColor: Color;
+    // (undocumented)
+    public androidStatusBarBackground: Color;
+    // (undocumented)
+    public background: string;
+    // (undocumented)
+    public backgroundColor: Color;
+    // Warning: (ae-forgotten-export) The symbol "LinearGradient" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public backgroundImage: string | LinearGradient;
+    // Warning: (ae-forgotten-export) The symbol "Background" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public backgroundInternal: Background;
+    // (undocumented)
+    public backgroundPosition: string;
+    // Warning: (ae-forgotten-export) The symbol "BackgroundRepeat" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public backgroundRepeat: BackgroundRepeat;
+    // (undocumented)
+    public backgroundSize: string;
+    // (undocumented)
+    public borderBottomColor: Color;
+    // (undocumented)
+    public borderBottomLeftRadius: Length;
+    // (undocumented)
+    public borderBottomRightRadius: Length;
+    // (undocumented)
+    public borderBottomWidth: Length;
+    // (undocumented)
+    public borderColor: string | Color;
+    // (undocumented)
+    public borderLeftColor: Color;
+    // (undocumented)
+    public borderLeftWidth: Length;
+    // (undocumented)
+    public borderRadius: string | Length;
+    // (undocumented)
+    public borderRightColor: Color;
+    // (undocumented)
+    public borderRightWidth: Length;
+    // (undocumented)
+    public borderTopColor: Color;
+    // (undocumented)
+    public borderTopLeftRadius: Length;
+    // (undocumented)
+    public borderTopRightRadius: Length;
+    // (undocumented)
+    public borderTopWidth: Length;
+    // (undocumented)
+    public borderWidth: string | Length;
+    // (undocumented)
+    public clipPath: string;
+    // (undocumented)
+    public color: Color;
+    // (undocumented)
+    public flexDirection: FlexDirection;
+    // Warning: (ae-forgotten-export) The symbol "FlexGrow" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public flexGrow: FlexGrow;
+    // Warning: (ae-forgotten-export) The symbol "FlexShrink" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public flexShrink: FlexShrink;
+    // (undocumented)
+    public flexWrap: FlexWrap;
+    // Warning: (ae-forgotten-export) The symbol "FlexWrapBefore" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public flexWrapBefore: FlexWrapBefore;
+    // (undocumented)
+    public font: string;
+    // (undocumented)
+    public fontFamily: string;
+    // Warning: (ae-forgotten-export) The symbol "Font" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public fontInternal: Font;
+    // (undocumented)
+    public fontSize: number;
+    // Warning: (ae-forgotten-export) The symbol "FontStyle" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public fontStyle: FontStyle;
+    // Warning: (ae-forgotten-export) The symbol "FontWeight" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public fontWeight: FontWeight;
+    public getCssVariable(varName: string): string | null;
+    // (undocumented)
+    public height: PercentLength;
+    // (undocumented)
+    public horizontalAlignment: HorizontalAlignment;
+    // (undocumented)
+    public justifyContent: JustifyContent;
+    // (undocumented)
+    public letterSpacing: number;
+    // (undocumented)
+    public lineHeight: number;
+    // (undocumented)
+    public margin: string | PercentLength;
+    // (undocumented)
+    public marginBottom: PercentLength;
+    // (undocumented)
+    public marginLeft: PercentLength;
+    // (undocumented)
+    public marginRight: PercentLength;
+    // (undocumented)
+    public marginTop: PercentLength;
+    // (undocumented)
+    public minHeight: Length;
+    // (undocumented)
+    public minWidth: Length;
+    // (undocumented)
+    public opacity: number;
+    // Warning: (ae-forgotten-export) The symbol "Order" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public order: Order;
+    // (undocumented)
+    public padding: string | Length;
+    // (undocumented)
+    public paddingBottom: Length;
+    // (undocumented)
+    public paddingLeft: Length;
+    // (undocumented)
+    public paddingRight: Length;
+    // (undocumented)
+    public paddingTop: Length;
+    // (undocumented)
+    public placeholderColor: Color;
+    // Warning: (ae-forgotten-export) The symbol "PropertyBagClass" needs to be exported by the entry point index.d.ts
+    public readonly PropertyBag: PropertyBagClass;
+    public resetScopedCssVariables(): void;
+    public resetUnscopedCssVariables(): void;
+    // (undocumented)
+    public rotate: number;
+    // (undocumented)
+    public scaleX: number;
+    // (undocumented)
+    public scaleY: number;
+    // (undocumented)
+    public selectedBackgroundColor: Color;
+    // (undocumented)
+    public selectedTabTextColor: Color;
+    // (undocumented)
+    public separatorColor: Color;
+    public setScopedCssVariable(varName: string, value: string): void;
+    public setUnscopedCssVariable(varName: string, value: string): void;
+    // (undocumented)
+    public statusBarStyle: "light" | "dark";
+    // (undocumented)
+    public tabBackgroundColor: Color;
+    // (undocumented)
+    public tabTextColor: Color;
+    // (undocumented)
+    public tabTextFontSize: number;
+    // Warning: (ae-forgotten-export) The symbol "TextAlignment" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public textAlignment: TextAlignment;
+    // Warning: (ae-forgotten-export) The symbol "TextDecoration" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public textDecoration: TextDecoration;
+    // Warning: (ae-forgotten-export) The symbol "TextTransform" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public textTransform: TextTransform;
+    // (undocumented)
+    public tintColor: Color;
+    // Warning: (ae-forgotten-export) The symbol "dip" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public translateX: dip;
+    // (undocumented)
+    public translateY: dip;
+    // (undocumented)
+    public verticalAlignment: VerticalAlignment;
+    // @deprecated (undocumented)
+    public view: ViewBase;
+    // (undocumented)
+    public viewRef: WeakRef<ViewBase>;
+    // Warning: (ae-forgotten-export) The symbol "Visibility" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public visibility: Visibility;
+    // Warning: (ae-forgotten-export) The symbol "WhiteSpace" needs to be exported by the entry point index.d.ts
+    // 
+    // (undocumented)
+    public whiteSpace: WhiteSpace;
+    // (undocumented)
+    public width: PercentLength;
+    // (undocumented)
+    public zIndex: number;
+}
+
 // @public
 export enum SwipeDirection {
     down,
@@ -2072,7 +2350,6 @@ export class TabViewItem extends ViewBase {
 
     public iconSource: string;
 
-    // Warning: (ae-forgotten-export) The symbol "TextTransform" needs to be exported by the entry point index.d.ts
     textTransform: TextTransform;
 
     public title: string;
@@ -2137,15 +2414,12 @@ export class TextBase extends View implements AddChildFromBuilder {
 
     text: string;
 
-    // Warning: (ae-forgotten-export) The symbol "TextAlignment" needs to be exported by the entry point index.d.ts
     textAlignment: TextAlignment;
 
-    // Warning: (ae-forgotten-export) The symbol "TextDecoration" needs to be exported by the entry point index.d.ts
     textDecoration: TextDecoration;
 
     textTransform: TextTransform;
 
-    // Warning: (ae-forgotten-export) The symbol "WhiteSpace" needs to be exported by the entry point index.d.ts
     whiteSpace: WhiteSpace;
     //@endprivate
 }
@@ -2167,6 +2441,18 @@ export class TextView extends EditableTextBase {
     android: any /* android.widget.EditText */;
 
     ios: any /* UITextView */;
+}
+
+// @public (undocumented)
+export interface Thickness {
+    // (undocumented)
+    bottom: number;
+    // (undocumented)
+    left: number;
+    // (undocumented)
+    right: number;
+    // (undocumented)
+    top: number;
 }
 
 // @public
@@ -2264,7 +2550,6 @@ export abstract class View extends ViewBase {
     automationText: string;
     background: string;
     backgroundColor: string | Color;
-    // Warning: (ae-forgotten-export) The symbol "LinearGradient" needs to be exported by the entry point index.d.ts
     backgroundImage: string | LinearGradient;
     bindingContext: any;
     borderBottomColor: Color;
@@ -2330,7 +2615,6 @@ export abstract class View extends ViewBase {
     _handleLivesync(context?: { type: string, path: string }): boolean;
     _hasAncestorView(ancestorView: View): boolean;
     height: PercentLength;
-    // Warning: (ae-forgotten-export) The symbol "HorizontalAlignment" needs to be exported by the entry point index.d.ts
     horizontalAlignment: HorizontalAlignment;
     public ios: any;
     iosOverflowSafeArea: boolean;
@@ -2396,7 +2680,6 @@ export abstract class View extends ViewBase {
     _setValue(property: any, value: any): never;
     public static showingModallyEvent: string;
     public static shownModallyEvent: string;
-    // Warning: (ae-forgotten-export) The symbol "dip" needs to be exported by the entry point index.d.ts
     translateX: dip;
     translateY: dip;
     // (undocumented)
@@ -2406,9 +2689,7 @@ export abstract class View extends ViewBase {
         parentHeightMeasureSize: number,
         parentHeightMeasureMode: number): void
     _updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void;
-    // Warning: (ae-forgotten-export) The symbol "VerticalAlignment" needs to be exported by the entry point index.d.ts
     verticalAlignment: VerticalAlignment;
-    // Warning: (ae-forgotten-export) The symbol "Visibility" needs to be exported by the entry point index.d.ts
     visibility: Visibility;
     width: PercentLength;
 }
@@ -2514,16 +2795,10 @@ export abstract class ViewBase extends Observable {
     // (undocumented)
     public effectiveWidth: number;
     public ensureDomNode();
-    // Warning: (ae-forgotten-export) The symbol "FlexGrow" needs to be exported by the entry point index.d.ts
-    // 
     // (undocumented)
     flexGrow: FlexGrow;
-    // Warning: (ae-forgotten-export) The symbol "FlexShrink" needs to be exported by the entry point index.d.ts
-    // 
     // (undocumented)
     flexShrink: FlexShrink;
-    // Warning: (ae-forgotten-export) The symbol "FlexWrapBefore" needs to be exported by the entry point index.d.ts
-    // 
     // (undocumented)
     flexWrapBefore: FlexWrapBefore;
     public getViewById<T extends ViewBase>(id: string): T;
@@ -2568,8 +2843,6 @@ export abstract class ViewBase extends Observable {
     public _onRootViewReset(): void;
     // (undocumented)
     public onUnloaded(): void;
-    // Warning: (ae-forgotten-export) The symbol "Order" needs to be exported by the entry point index.d.ts
-    // 
     // (undocumented)
     order: Order;
     public readonly page: Page;
@@ -2755,7 +3028,6 @@ export class XmlParser {
 // nativescript-core/index.d.ts:125:5 - (ae-forgotten-export) The symbol "layout" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:166:26 - (ae-forgotten-export) The symbol "Property" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:166:26 - (ae-forgotten-export) The symbol "CssProperty" needs to be exported by the entry point index.d.ts
-// nativescript-core/ui/core/view-base/view-base.d.ts:166:26 - (ae-forgotten-export) The symbol "Style" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:166:26 - (ae-forgotten-export) The symbol "CssAnimationProperty" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
