@@ -1,4 +1,4 @@
-﻿import * as frame from "@nativescript/core/ui/frame";
+﻿import { Frame } from "@nativescript/core/ui/frame";
 import * as observable from "@nativescript/core/data/observable";
 
 import * as trace from "@nativescript/core/trace";
@@ -8,7 +8,7 @@ trace.enable();
 export function itemTap(args) {
     console.log("----- Item tapped: " + args.view.tag);
 
-    frame.topmost().navigate({
+    Frame.topmost().navigate({
         moduleName: "./pages/page5",
     });
 }

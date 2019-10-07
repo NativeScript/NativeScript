@@ -1,6 +1,6 @@
 import * as TKUnit from "../../tk-unit";
 import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style } from "@nativescript/core/ui/core/view";
-import { topmost } from "@nativescript/core/ui/frame";
+import { Frame } from "@nativescript/core/ui/frame";
 import { Page } from "@nativescript/core/ui/page";
 import { Button } from "@nativescript/core/ui/button";
 import { Label } from "@nativescript/core/ui/label";
@@ -27,7 +27,7 @@ export function test_eachDescendant() {
             return true;
         };
 
-        eachDescendant(topmost(), callback);
+        eachDescendant(Frame.topmost(), callback);
         // Descendants: page, actionBar, button
         TKUnit.assertEqual(counter, 3, "descendants");
     };
@@ -40,7 +40,7 @@ export function test_getViewById_Static() {
         views[1].id = "myLayout";
 
         // traverse the visual tree and verify the hierarchy
-        const result = getViewById(topmost(), "myLayout");
+        const result = getViewById(Frame.topmost(), "myLayout");
 
         TKUnit.assert(result === views[1]);
     };
@@ -53,7 +53,7 @@ export function test_getViewById_Instance() {
         views[1].id = "myLayout";
 
         // traverse the visual tree and verify the hierarchy
-        const result = topmost().getViewById<View>("myLayout");
+        const result = Frame.topmost().getViewById<View>("myLayout");
 
         TKUnit.assert(result === views[1]);
     };
@@ -72,7 +72,7 @@ export function test_eachDescendant_Break_Iteration() {
             return false;
         };
 
-        eachDescendant(topmost(), callback);
+        eachDescendant(Frame.topmost(), callback);
         TKUnit.assert(counter === 1);
     };
 
@@ -83,7 +83,7 @@ export function test_parent_IsValid_WhenAttached_ToVisualTree() {
     const test = function (views: Array<View>) {
         // views[0] is a Page instance, its parent should be the topmost frame
         TKUnit.assert(types.isDefined(views[0].parent));
-        TKUnit.assert(views[0].parent === topmost());
+        TKUnit.assert(views[0].parent === Frame.topmost());
 
         // views[1] is a Button instance, its parent should be the Page (views[0])
         TKUnit.assert(types.isDefined(views[1].parent));
@@ -109,7 +109,7 @@ export function test_parent_IsReset_WhenDetached_FromVisualTree() {
 
 export function test_domId_IsUnique() {
     const btn = new Button();
-    const topframe = topmost();
+    const topframe = Frame.topmost();
     TKUnit.assert(btn._domId !== topframe._domId);
     TKUnit.assert(btn._domId !== topframe.currentPage._domId);
 }
@@ -165,7 +165,7 @@ export function test_bindingContext_IsInherited() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-    topmost().bindingContext = undefined;
+    Frame.topmost().bindingContext = undefined;
 }
 
 export function test_isAddedToNativeVisualTree_IsUpdated() {
@@ -242,7 +242,7 @@ export class TestButton extends Button {
 }
 
 export function test_InheritableStylePropertiesWhenUsedWithExtendedClass_AreInherited() {
-    let page = topmost().currentPage;
+    let page = Frame.topmost().currentPage;
     let redColor = new Color("red");
     page.style.color = redColor;
 

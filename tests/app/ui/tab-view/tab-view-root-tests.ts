@@ -1,7 +1,7 @@
 import * as TKUnit from "../../tk-unit";
 import { isAndroid } from "@nativescript/core/platform";
 import { _resetRootView } from "@nativescript/core/application/";
-import { Frame, NavigationEntry, topmost } from "@nativescript/core/ui/frame";
+import { Frame, NavigationEntry } from "@nativescript/core/ui/frame";
 import { Page } from "@nativescript/core/ui/page";
 import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view";
 
@@ -81,10 +81,10 @@ export function test_frame_topmost_matches_selectedIndex() {
     };
 
     waitUntilNavigatedToMaxTimeout([items[0].page], () => _resetRootView(entry));
-    TKUnit.assertEqual(topmost().id, "Tab0 Frame0");
+    TKUnit.assertEqual(Frame.topmost().id, "Tab0 Frame0");
 
     waitUntilNavigatedToMaxTimeout([items[1].page], () => tabView.selectedIndex = 1);
-    TKUnit.assertEqual(topmost().id, "Tab1 Frame1");
+    TKUnit.assertEqual(Frame.topmost().id, "Tab1 Frame1");
 }
 
 export function test_offset_zero_should_raise_same_events() {

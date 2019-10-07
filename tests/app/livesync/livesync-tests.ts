@@ -165,8 +165,8 @@ function _test_onLiveSync_ModuleContext(context: ModuleContext) {
     helper.navigateWithHistory(() => buttonPage);
     livesync({ type: context.type, path: context.path });
 
-    TKUnit.waitUntilReady(() => !!frame.topmost());
-    const topmostFrame = frame.topmost();
+    TKUnit.waitUntilReady(() => !!Frame.topmost());
+    const topmostFrame = Frame.topmost();
     TKUnit.waitUntilReady(() => topmostFrame.currentPage && topmostFrame.currentPage.isLoaded && !topmostFrame.canGoBack());
     TKUnit.assertTrue(topmostFrame.currentPage.getViewById("label").isLoaded);
 }
@@ -177,7 +177,7 @@ function _test_onLiveSync_ModuleReplace(context: ModuleContext) {
     helper.navigateWithHistory(() => buttonPage);
 
     livesync({ type: context.type, path: context.path });
-    const topmostFrame = frame.topmost();
+    const topmostFrame = Frame.topmost();
     waitUntilLivesyncComplete(topmostFrame);
     TKUnit.assertTrue(topmostFrame.currentPage.getViewById("button").isLoaded, "Button page is NOT loaded!");
     TKUnit.assertEqual(topmostFrame.backStack.length, 1, "Backstack is clean!");
@@ -199,7 +199,7 @@ function _test_onLiveSync_ModuleContext_TypeStyle(styleModuleName: string, lives
     pageBeforeLiveSync._moduleName = styleModuleName;
 
     livesync({ type: "style", path: livesyncStyleFileName });
-    const topmostFrame = frame.topmost();
+    const topmostFrame = Frame.topmost();
     waitUntilLivesyncComplete(topmostFrame);
 
     const pageAfterLiveSync = helper.getCurrentPage();
@@ -223,7 +223,7 @@ function _test_onLiveSync_ModuleReplace_Multiple(context: ModuleContext[]) {
         livesync(item);
     });
 
-    const topmostFrame = frame.topmost();
+    const topmostFrame = Frame.topmost();
     waitUntilLivesyncComplete(topmostFrame);
     TKUnit.assertTrue(topmostFrame.currentPage.getViewById("button").isLoaded, "Button page is NOT loaded!");
     TKUnit.assertEqual(topmostFrame.backStack.length, 1, "Backstack is clean!");
@@ -241,8 +241,8 @@ function _test_onLiveSync_ModalViewClosed(context: ModuleContext) {
     helper.navigateWithHistory(() => modalViewPage);
     livesync({ type: context.type, path: context.path });
 
-    TKUnit.waitUntilReady(() => !!frame.topmost());
-    const topmostFrame = frame.topmost();
+    TKUnit.waitUntilReady(() => !!Frame.topmost());
+    const topmostFrame = Frame.topmost();
     TKUnit.waitUntilReady(() => topmostFrame.currentPage && topmostFrame.currentPage.isLoaded && topmostFrame.canGoBack());
 
     TKUnit.assertTrue(topmostFrame._getRootModalViews().length === 0);

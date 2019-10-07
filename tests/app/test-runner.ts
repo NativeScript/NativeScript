@@ -6,7 +6,7 @@ import { _resetRootView } from '@nativescript/core/application';
 import * as platform from '@nativescript/core/platform';
 import { messageType } from '@nativescript/core/trace';
 import { Button } from '@nativescript/core/ui/button';
-import { Frame, topmost } from '@nativescript/core/ui/frame';
+import { Frame } from '@nativescript/core/ui/frame';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import { Page } from '@nativescript/core/ui/page';
 import { TextView } from '@nativescript/core/ui/text-view';
@@ -416,7 +416,7 @@ function showReportPage(finalMessage: string) {
     messageContainer.text = finalMessage;
     stack.addChild(messageContainer);
 
-    topmost().navigate({
+    Frame.topmost().navigate({
         create: () => {
             const page = new Page();
             page.content = stack;
@@ -444,7 +444,7 @@ function startLog(): void {
 function log(): void {
     let testsName: string = this.name;
     let duration = TKUnit.time() - this.start;
-    TKUnit.write(testsName + " COMPLETED for " + duration.toFixed(2) + " BACKSTACK DEPTH: " + topmost().backStack.length, messageType.info);
+    TKUnit.write(testsName + " COMPLETED for " + duration.toFixed(2) + " BACKSTACK DEPTH: " + Frame.topmost().backStack.length, messageType.info);
 }
 
 let testsSelector: string

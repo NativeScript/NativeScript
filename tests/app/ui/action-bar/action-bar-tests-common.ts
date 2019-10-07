@@ -6,7 +6,7 @@ import { Button } from "@nativescript/core/ui/button";
 import { Page } from "@nativescript/core/ui/page";
 import { View, isIOS } from "@nativescript/core/ui/core/view";
 import { fromObject } from "@nativescript/core/data/observable";
-import { topmost } from "@nativescript/core/ui/frame";
+import { Frame } from "@nativescript/core/ui/frame";
 
 // >> actionbar-common-require
 import * as actionBarModule from "@nativescript/core/ui/action-bar";
@@ -306,7 +306,7 @@ export function test_LoadedEventsOrder_WithoutPageContent() {
 }
 
 export function test_ActionBarVisibility_Never_ShouldNotShowDeclaredActionBar() {
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.actionBarVisibility = "never";
 
     const page = <Page>builder.parse(
@@ -333,7 +333,7 @@ export function test_ActionBarVisibility_Never_ShouldNotShowDeclaredActionBar() 
 }
 
 export function test_ActionBarVisibility_Always_ShouldShownHiddenActionBar() {
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.actionBarVisibility = "always";
 
     const page = <Page>builder.parse(
@@ -360,7 +360,7 @@ export function test_ActionBarVisibility_Always_ShouldShownHiddenActionBar() {
 }
 
 export function test_ActionBarVisibility_Auto_ShouldRespectPageActionBarHiddenProperty() {
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.actionBarVisibility = "auto";
 
     const page = <Page>builder.parse(

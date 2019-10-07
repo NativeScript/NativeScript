@@ -1,4 +1,4 @@
-import * as frameModule from "@nativescript/core/ui/frame";
+import { Frame } from "@nativescript/core/ui/frame";
 import * as textFieldModule from "@nativescript/core/ui/text-field";
 import * as helper from "../../../ui-helper";
 
@@ -69,14 +69,14 @@ export var test_BindingExpressions_GroupingParenthesis = function () {
 };
 
 export var assertElementString = function (elementId: string, value: any) {
-    var element: textFieldModule.TextField = <textFieldModule.TextField>(frameModule.topmost().currentPage.getViewById(elementId));
+    var element: textFieldModule.TextField = <textFieldModule.TextField>(Frame.topmost().currentPage.getViewById(elementId));
     if (element.text.toString() !== value) {
         throw new Error(" Actual: " + element.text.toString() + " Expected: " + value);
     }
 };
 
 export var assertElementValueIsNaN = function (elementId: string) {
-    var element: textFieldModule.TextField = <textFieldModule.TextField>(frameModule.topmost().currentPage.getViewById(elementId));
+    var element: textFieldModule.TextField = <textFieldModule.TextField>(Frame.topmost().currentPage.getViewById(elementId));
     var value: any = element.text;
     if (isNaN(value) !== true) {
         throw new Error(" Actual: " + value + " is not NaN");

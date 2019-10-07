@@ -1,6 +1,6 @@
 import * as TKUnit from "../tk-unit";
 import { EventData, Page, NavigatedData } from "@nativescript/core/ui/page";
-import { topmost as topmostFrame, NavigationTransition } from "@nativescript/core/ui/frame";
+import { Frame, NavigationTransition } from "@nativescript/core/ui/frame";
 import { StackLayout, } from "@nativescript/core/ui/layouts/stack-layout";
 import { Color } from "@nativescript/core/color";
 import * as helper from "../ui-helper";
@@ -28,7 +28,7 @@ function attachEventListeners(page: Page, events: Array<string>) {
 }
 
 function _test_backstackVisible(transition?: NavigationTransition) {
-    let topmost = topmostFrame();
+    let topmost = Frame.topmost();
     let mainTestPage = topmost.currentPage;
     topmost.navigate({ create: pageFactory, transition: transition, animated: !!transition });
     TKUnit.waitUntilReady(() => topmost.navigationQueueIsEmpty());
@@ -54,7 +54,7 @@ export function test_backstackVisible_WithTransition() {
 }
 
 export function test_backAndForwardParentPage_nestedFrames() {
-    const topmost = topmostFrame();
+    const topmost = Frame.topmost();
     const mainTestPage = topmost.currentPage;
     let innerFrame;
 
@@ -78,8 +78,8 @@ export function test_backAndForwardParentPage_nestedFrames() {
         return parentPage;
     };
 
-    const back = pages => topmostFrame().goBack(topmostFrame().backStack[topmostFrame().backStack.length - pages]);
-    const currentPageMustBe = tag => TKUnit.assertEqual(topmostFrame().currentPage["tag"], tag, "Expected current page to be " + tag + " it was " + topmostFrame().currentPage["tag"] + " instead.");
+    const back = pages => Frame.topmost().goBack(Frame.topmost().backStack[Frame.topmost().backStack.length - pages]);
+    const currentPageMustBe = tag => TKUnit.assertEqual(Frame.topmost().currentPage["tag"], tag, "Expected current page to be " + tag + " it was " + Frame.topmost().currentPage["tag"] + " instead.");
 
     let parentPage1, parentPage2, innerPage1, innerPage2;
     innerPage1 = page("InnerPage1");
@@ -109,15 +109,15 @@ export function test_backAndForwardParentPage_nestedFrames() {
     currentPageMustBe("ParentPage3");
 
     back(2);
-    TKUnit.waitUntilReady(() => topmostFrame().navigationQueueIsEmpty());
+    TKUnit.waitUntilReady(() => Frame.topmost().navigationQueueIsEmpty());
 
-    const frameStack = frame._stack();
+    const frameStack = Frame._stack();
     TKUnit.assertEqual(frameStack.length, 1, "There should be only one frame left in the stack");
-    TKUnit.assertEqual(topmostFrame().currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
+    TKUnit.assertEqual(Frame.topmost().currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
 
 function _test_backToEntry(transition?: NavigationTransition) {
-    const topmost = topmostFrame();
+    const topmost = Frame.topmost();
     const page = (tag) => () => {
         const p = new Page();
         p.actionBarHidden = true;
@@ -182,7 +182,7 @@ export function test_backToEntry_WithTransition() {
 }
 
 function _test_ClearHistory(transition?: NavigationTransition) {
-    let topmost = topmostFrame();
+    let topmost = Frame.topmost();
 
     helper.navigateWithEntry({ create: pageFactory, clearHistory: true, transition: transition, animated: !!transition });
     TKUnit.assertEqual(topmost.backStack.length, 0, "1.topmost.backStack.length");
@@ -211,7 +211,7 @@ export function test_ClearHistory_WithTransition() {
 
 // Test case for https://github.com/NativeScript/NativeScript/issues/1948
 export function test_ClearHistoryWithTransitionDoesNotBreakNavigation() {
-    let topmost = topmostFrame();
+    let topmost = Frame.topmost();
     let mainTestPage = new Page();
     let mainPageFactory = function (): Page {
         return mainTestPage;
@@ -239,7 +239,7 @@ export function test_ClearHistoryWithTransitionDoesNotBreakNavigation() {
 }
 
 export function test_ClearHistoryWithTransitionDoesNotBreakNavigation_WithLocalTransition() {
-    const topmost = topmostFrame();
+    const topmost = Frame.topmost();
 
     let mainTestPage = topmost.currentPage;
     let mainPageFactory = function (): Page {
@@ -263,7 +263,7 @@ export function test_ClearHistoryWithTransitionDoesNotBreakNavigation_WithLocalT
 }
 
 function _test_NavigationEvents(transition?: NavigationTransition) {
-    const topmost = topmostFrame();
+    const topmost = Frame.topmost();
     const mainTestPage = topmost.currentPage;
     const originalMainPageId = mainTestPage.id;
 
@@ -318,7 +318,7 @@ export function test_NavigationEvents_WithTransition() {
 }
 
 function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Back(transition?: NavigationTransition) {
-    const topmost = topmostFrame();
+    const topmost = Frame.topmost();
     const mainTestPage = topmost.currentPage;
 
     let actualSecondPageEvents = new Array<string>();
@@ -358,7 +358,7 @@ export function test_NavigationEvents_WithBackstackVisibile_False_Forward_Back_W
 }
 
 function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Forward(transition?: NavigationTransition) {
-    const topmost = topmostFrame();
+    const topmost = Frame.topmost();
     const mainTestPage = topmost.currentPage;
 
     let actualSecondPageEvents = new Array<string>();
@@ -401,7 +401,7 @@ export function test_NavigationEvents_WithBackstackVisibile_False_Forward_Forwar
 }
 
 function _test_NavigationEvents_WithClearHistory(transition?: NavigationTransition) {
-    const topmost = topmostFrame();
+    const topmost = Frame.topmost();
     const mainTestPage = topmost.currentPage;
 
     mainTestPage.id = "main-page";
