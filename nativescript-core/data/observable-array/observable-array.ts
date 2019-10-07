@@ -19,7 +19,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
     private _addArgs: observableArrayDef.ChangedData<T>;
     private _deleteArgs: observableArrayDef.ChangedData<T>;
 
-    constructor() {
+    constructor(_args?: any) {
         super();
 
         if (arguments.length === 1 && Array.isArray(arguments[0])) {
@@ -91,7 +91,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
      * Combines two or more arrays.
      * @param items Additional items to add to the end of array1.
      */
-    concat(): T[] {
+    concat(_args?: any): T[] {
         this._addArgs.index = this._array.length;
         const result = this._array.concat.apply(this._array, arguments);
 
@@ -126,7 +126,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
      * Appends new elements to an array, and returns the new length of the array.
      * @param item New element of the Array.
      */
-    push(): number {
+    push(_args?: any): number {
         this._addArgs.index = this._array.length;
 
         if (arguments.length === 1 && Array.isArray(arguments[0])) {

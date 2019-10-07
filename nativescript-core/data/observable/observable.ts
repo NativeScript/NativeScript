@@ -1,4 +1,10 @@
-import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition, EventData, PropertyChangeData } from ".";
+import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition, PropertyChangeData } from ".";
+
+// TODO: Remove this. It is the same export as in d.ts to fix failing build when modules are linked
+export interface EventData {
+    eventName: string;
+    object: ObservableDefinition;
+}
 
 interface ListenerEntry {
     callback: (data: EventData) => void;
