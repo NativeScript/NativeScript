@@ -5,7 +5,7 @@ export function compare(name: string, core: any, compat: any) {
     for (const key in core) {
         results.exports++;
         if (core[key] !== compat[key]) {
-            results.errors.push(`ERROR: Diff in module: ${name} key: ${key}`)
+            results.errors.push(`ERROR: Diff in module: ${name} key: ${key}`);
         }
     }
 }

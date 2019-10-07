@@ -4,7 +4,7 @@ import { Button } from "@nativescript/core/ui/button";
 import * as TKUnit from "../../tk-unit";
 import * as view from "@nativescript/core/ui/core/view";
 import { unsetValue } from "@nativescript/core/ui/core/view";
-import * as builder from "@nativescript/core/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 import * as testModule from "../../ui-test";
 import * as layoutHelper from "./layout-helper";
 import * as platform from "@nativescript/core/platform";
@@ -675,13 +675,13 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_set_columns_in_XML_comma_separator() {
-        var p = <Page>builder.parse("<Page><GridLayout columns=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
+        var p = <Page>Builder.parse("<Page><GridLayout columns=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
         var grid = <GridLayout>p.content;
         this.assertColumns(grid);
     }
 
     public test_set_columns_in_XML_space_separator() {
-        var p = <Page>builder.parse("<Page><GridLayout columns=\"auto * 10* 100 \"><Button/></GridLayout></Page>");
+        var p = <Page>Builder.parse("<Page><GridLayout columns=\"auto * 10* 100 \"><Button/></GridLayout></Page>");
         var grid = <GridLayout>p.content;
         this.assertColumns(grid);
     }
@@ -703,13 +703,13 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_set_rows_in_XML_comma_separator() {
-        var p = <Page>builder.parse("<Page><GridLayout rows=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
+        var p = <Page>Builder.parse("<Page><GridLayout rows=\"auto, *, 10*, 100 \"><Button/></GridLayout></Page>");
         var grid = <GridLayout>p.content;
         this.assertRows(grid);
     }
 
     public test_set_rows_in_XML_space_separator() {
-        var p = <Page>builder.parse("<Page><GridLayout rows=\"auto * 10* 100 \"><Button/></GridLayout></Page>");
+        var p = <Page>Builder.parse("<Page><GridLayout rows=\"auto * 10* 100 \"><Button/></GridLayout></Page>");
         var grid = <GridLayout>p.content;
         this.assertRows(grid);
     }
@@ -835,7 +835,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_parse_should_call_protected_methods() {
-        let grid = <GridLayout>builder.parse("<GridLayout rows='*, 100'/>");
+        let grid = <GridLayout>Builder.parse("<GridLayout rows='*, 100'/>");
         TKUnit.assertNotNull(grid);
 
         this.testView.addChild(grid);

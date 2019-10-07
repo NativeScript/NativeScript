@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
     <Page.actionBar>
         <ActionBar title="Scoped Packages Tests" icon="" class="action-bar">
         </ActionBar>

@@ -1,3 +1,4 @@
+/* tslint:disable */
 import { compare, report } from "./module-compare";
 
 
@@ -891,4 +892,4 @@ compare("xml/xml", module_xml_xml_core, module_xml_xml_compat);
 
 
 
-report()
+report();

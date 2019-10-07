@@ -96,10 +96,10 @@ export function test_backAndForwardParentPage_nestedFrames() {
     helper.waitUntilNavigatedTo(innerPage2, () => innerFrame.navigate({ create: () => innerPage2 }));
     currentPageMustBe("InnerPage2");
 
-    helper.waitUntilNavigatedTo(innerPage1, () => frame.goBack());
+    helper.waitUntilNavigatedTo(innerPage1, () => Frame.goBack());
     currentPageMustBe("InnerPage1");
 
-    helper.waitUntilNavigatedTo(parentPage1, () => frame.goBack());
+    helper.waitUntilNavigatedTo(parentPage1, () => Frame.goBack());
     currentPageMustBe("ParentPage1");
 
     const innerPage3 = page("InnerPage3");

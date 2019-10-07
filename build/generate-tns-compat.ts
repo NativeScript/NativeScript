@@ -118,6 +118,7 @@ function generateTestFile() {
 
     const output: string[] = [];
 
+    output.push(`/* tslint:disable */`);
     output.push(`import { compare, report } from "./module-compare";\n\n`);
 
     uniqueImports.forEach((name) => {
@@ -130,7 +131,7 @@ function generateTestFile() {
     });
 
     output.push(`\n`);
-    output.push(`report()`);
+    output.push(`report();`);
 
     const testFilePath = path.resolve("dist/generated-tests/tests.ts");
     ensureDirectoryExistence(testFilePath);

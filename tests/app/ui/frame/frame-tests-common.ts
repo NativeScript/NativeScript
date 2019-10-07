@@ -1,5 +1,5 @@
 // >> frame-require
-import { Frame, getFrameById, NavigationEntry } from "@nativescript/core/ui/frame";
+import { Frame, NavigationEntry } from "@nativescript/core/ui/frame";
 // << frame-require
 
 import { Label } from "@nativescript/core/ui/label";
@@ -240,7 +240,7 @@ export function test_frame_retrieval_API_when_navigating() {
     initialFrame.navigate(() => new Page());
 
     const initialTopmost = Frame.topmost();
-    const initialFrameById = getFrameById("initialFrame");
+    const initialFrameById = Frame.getFrameById("initialFrame");
 
     TKUnit.assertEqual(initialTopmost, initialFrame);
     TKUnit.assertEqual(initialFrameById, initialFrame);
@@ -250,7 +250,7 @@ export function test_frame_retrieval_API_when_navigating() {
     newFrame.navigate(() => new Page());
 
     const newTopmost = Frame.topmost();
-    const newFrameById = getFrameById("newFrame");
+    const newFrameById = Frame.getFrameById("newFrame");
 
     TKUnit.assertEqual(newTopmost, newFrame);
     TKUnit.assertEqual(newFrameById, newFrame);
@@ -258,7 +258,7 @@ export function test_frame_retrieval_API_when_navigating() {
     initialFrame.navigate(() => new Page());
 
     const previousTopmost = Frame.topmost();
-    const previousFrameById = getFrameById("initialFrame");
+    const previousFrameById = Frame.getFrameById("initialFrame");
 
     TKUnit.assertEqual(previousTopmost, initialFrame);
     TKUnit.assertEqual(previousFrameById, initialFrame);
