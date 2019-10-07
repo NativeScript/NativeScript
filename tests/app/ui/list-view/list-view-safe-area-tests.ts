@@ -1,6 +1,6 @@
 import * as helper from "../../ui-helper";
 import * as TKUnit from "../../tk-unit";
-import { parse } from "@nativescript/core/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 import * as view from "@nativescript/core/ui/core/view";
 import * as platform from "@nativescript/core/platform";
 import { ListView } from "@nativescript/core/ui/list-view";
@@ -33,7 +33,7 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
     }
 
     private getViews(template: string) {
-        let root = parse(template);
+        let root = Builder.parse(template);
 
         return {
             root,

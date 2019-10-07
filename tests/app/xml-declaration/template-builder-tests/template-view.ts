@@ -1,6 +1,6 @@
 import { Property } from "@nativescript/core/ui/core/properties";
 import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
-import { parse } from "@nativescript/core/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 
 export module knownTemplates {
     export var template = "template";
@@ -12,7 +12,7 @@ export class TemplateView extends LayoutBase {
     public static testEvent: string = "test";
 
     public parseTemplate() {
-        this.addChild(parse(this.template));
+        this.addChild(Builder.parse(this.template));
     }
 }
 

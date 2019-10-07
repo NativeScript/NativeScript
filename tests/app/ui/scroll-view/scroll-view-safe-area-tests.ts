@@ -6,7 +6,7 @@ import * as view from "@nativescript/core/ui/core/view";
 import * as platform from "@nativescript/core/platform";
 
 import * as helper from "../../ui-helper";
-import { parse } from "@nativescript/core/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 import {
     dipToDp, left, top, right, bottom, height, width,
     equal, lessOrCloseEnough, greaterOrCloseEnough,
@@ -35,7 +35,7 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
     }
 
     private getViews(template: string) {
-        let root = parse(template);
+        let root = Builder.parse(template);
 
         return {
             root,

@@ -1,6 +1,6 @@
 import * as helper from "../../ui-helper";
 import * as TKUnit from "../../tk-unit";
-import { parse } from "@nativescript/core/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 import * as view from "@nativescript/core/ui/core/view";
 import * as platform from "@nativescript/core/platform";
 import { WebView } from "@nativescript/core/ui/web-view";
@@ -28,7 +28,7 @@ export class WebViewSafeAreaTest extends UITest<WebView> {
     }
 
     private getViews(template: string) {
-        let root = parse(template);
+        let root = Builder.parse(template);
 
         return {
             root,

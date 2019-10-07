@@ -4,7 +4,7 @@ import * as TKUnit from "../tk-unit";
 import * as app from "@nativescript/core/application/application";
 import * as frame from "@nativescript/core/ui/frame";
 import { Color } from "@nativescript/core/color";
-import { createViewFromEntry } from "@nativescript/core/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 import { Page } from "@nativescript/core/ui/page";
 import { Frame } from "@nativescript/core/ui/frame";
 
@@ -40,7 +40,7 @@ const modalViewCssFileName = `${LIVESYNC_FOLDER}livesync-modal-view-page.css`;
 const green = new Color("green");
 
 export function setUp() {
-    const labelPage = <Page>createViewFromEntry(({ moduleName: labelPageModuleName }));
+    const labelPage = <Page>Builder.createViewFromEntry(({ moduleName: labelPageModuleName }));
     helper.navigate(() => labelPage);
 }
 
@@ -140,7 +140,7 @@ export function test_onLiveSync_ModalViewClosed_StyleScss() {
 
 function _test_onLiveSync_ModuleContext_AppStyle(appStyleFileName: string, livesyncStyleFileName: string) {
     const pageBeforeNavigation = helper.getCurrentPage();
-    const buttonPage = <Page>createViewFromEntry(({ moduleName: buttonPageModuleName }));
+    const buttonPage = <Page>Builder.createViewFromEntry(({ moduleName: buttonPageModuleName }));
     helper.navigateWithHistory(() => buttonPage);
 
     app.setCssFileName(appStyleFileName);
@@ -161,7 +161,7 @@ function _test_onLiveSync_ModuleContext_AppStyle(appStyleFileName: string, lives
 }
 
 function _test_onLiveSync_ModuleContext(context: ModuleContext) {
-    const buttonPage = <Page>createViewFromEntry(({ moduleName: buttonPageModuleName }));
+    const buttonPage = <Page>Builder.createViewFromEntry(({ moduleName: buttonPageModuleName }));
     helper.navigateWithHistory(() => buttonPage);
     livesync({ type: context.type, path: context.path });
 
@@ -173,7 +173,7 @@ function _test_onLiveSync_ModuleContext(context: ModuleContext) {
 
 function _test_onLiveSync_ModuleReplace(context: ModuleContext) {
     const pageBeforeNavigation = helper.getCurrentPage();
-    const buttonPage = <Page>createViewFromEntry(({ moduleName: buttonPageModuleName }));
+    const buttonPage = <Page>Builder.createViewFromEntry(({ moduleName: buttonPageModuleName }));
     helper.navigateWithHistory(() => buttonPage);
 
     livesync({ type: context.type, path: context.path });
@@ -192,7 +192,7 @@ function _test_onLiveSync_ModuleReplace(context: ModuleContext) {
 
 function _test_onLiveSync_ModuleContext_TypeStyle(styleModuleName: string, livesyncStyleFileName: string) {
     const pageBeforeNavigation = helper.getCurrentPage();
-    const buttonPage = <Page>createViewFromEntry(({ moduleName: buttonPageModuleName }));
+    const buttonPage = <Page>Builder.createViewFromEntry(({ moduleName: buttonPageModuleName }));
     helper.navigateWithHistory(() => buttonPage);
 
     const pageBeforeLiveSync = helper.getCurrentPage();
@@ -216,7 +216,7 @@ function _test_onLiveSync_ModuleContext_TypeStyle(styleModuleName: string, lives
 
 function _test_onLiveSync_ModuleReplace_Multiple(context: ModuleContext[]) {
     const pageBeforeNavigation = helper.getCurrentPage();
-    const buttonPage = <Page>createViewFromEntry(({ moduleName: buttonPageModuleName }));
+    const buttonPage = <Page>Builder.createViewFromEntry(({ moduleName: buttonPageModuleName }));
     helper.navigateWithHistory(() => buttonPage);
 
     context.forEach(item => {
@@ -237,7 +237,7 @@ function _test_onLiveSync_ModuleReplace_Multiple(context: ModuleContext[]) {
 }
 
 function _test_onLiveSync_ModalViewClosed(context: ModuleContext) {
-    const modalViewPage = <Page>createViewFromEntry(({ moduleName: modalViewPageModuleName }));
+    const modalViewPage = <Page>Builder.createViewFromEntry(({ moduleName: modalViewPageModuleName }));
     helper.navigateWithHistory(() => modalViewPage);
     livesync({ type: context.type, path: context.path });
 

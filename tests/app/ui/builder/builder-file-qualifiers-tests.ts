@@ -1,4 +1,4 @@
-import { createViewFromEntry } from "@nativescript/core/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 import { assertEqual, assertNull, assertThrows, assertNotNull, assert } from "../../tk-unit";
 import { _setResolver, ModuleNameResolver, PlatformContext } from "@nativescript/core/module-name-resolver";
 import { Button } from "@nativescript/core/ui/button";
@@ -28,7 +28,7 @@ export function tearDown() {
 }
 
 function createViewFromEntryAndNavigate(): Page {
-    const page = <Page>createViewFromEntry({
+    const page = <Page>Builder.createViewFromEntry({
         moduleName: `${testPrefix}/test`
     });
 

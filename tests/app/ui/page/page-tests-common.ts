@@ -5,7 +5,7 @@ import { Frame, NavigationEntry } from "@nativescript/core/ui/frame";
 // << article-require-page-module
 
 // TODO: Remove this and get it from global to decouple builder for angular
-import { createViewFromEntry } from "@nativescript/core/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 
 // >> article-set-bindingcontext
 function pageLoaded(args) {
@@ -840,7 +840,7 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
             moduleName: basePath + "modal-page"
         };
 
-        modalPage = createViewFromEntry(entry) as Page;
+        modalPage = Builder.createViewFromEntry(entry) as Page;
         modalPage.on(Page.shownModallyEvent, onShownModal);
         modalPage.on(Page.loadedEvent, onModalLoaded);
         modalPage.on(Page.unloadedEvent, onModalUnloaded);
@@ -920,7 +920,7 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
 
         TKUnit.assertEqual(Frame._stack().length, 1, "Single frame should be instantiated at this point!");
 
-        const modalPage = createViewFromEntry(entry) as Page;
+        const modalPage = Builder.createViewFromEntry(entry) as Page;
         modalPage.on(Frame.shownModallyEvent, modalPageShownModallyEventHandler);
 
         page.showModal(modalPage, {
@@ -995,7 +995,7 @@ export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
             moduleName: basePath + "modal-page"
         };
 
-        const modalPage = createViewFromEntry(entry) as Page;
+        const modalPage = Builder.createViewFromEntry(entry) as Page;
         modalPage.on(Page.navigatingToEvent, modalNavigatingToEventHandler);
         modalPage.on(Page.navigatedToEvent, modalNavigatedToEventHandler);
         modalPage.on(Page.navigatingFromEvent, modalNavigatingFromEventHandler);
@@ -1078,7 +1078,7 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
             moduleName: basePath + "modal-page"
         };
 
-        const modalPage = createViewFromEntry(entry) as Page;
+        const modalPage = Builder.createViewFromEntry(entry) as Page;
 
         TKUnit.assertEqual(Frame._stack().length, 1, "Single frame should be instantiated at this point!");
 
@@ -1147,7 +1147,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
             moduleName: basePath + "modal-page"
         };
 
-        const modalPage = createViewFromEntry(entry) as Page;
+        const modalPage = Builder.createViewFromEntry(entry) as Page;
         modalPage.on(Page.showingModallyEvent, modalPageShowingModallyEventHandler);
         modalPage.on(Page.shownModallyEvent, modalPageShownModallyEventHandler);
 
@@ -1208,7 +1208,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
 
         TKUnit.assertEqual(Frame._stack().length, 1, "Single host frame should be instantiated at this point!");
 
-        const modalTabView = createViewFromEntry(entry) as TabView;
+        const modalTabView = Builder.createViewFromEntry(entry) as TabView;
         modalTabView.on(TabView.showingModallyEvent, modalTabViewShowingModallyEventHandler);
         modalTabView.on(TabView.shownModallyEvent, modalTabViewShownModallyEventHandler);
 

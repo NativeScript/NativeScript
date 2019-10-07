@@ -55,7 +55,7 @@ import { View, unsetValue, Length, PercentLength } from "@nativescript/core/ui/c
 import { Label } from "@nativescript/core/ui/label";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { parse } from "@nativescript/core/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 import { dipToDp, left, top, right, bottom, height, width,
     paddingLeft, paddingTop, paddingRight, paddingBottom,
     equal, closeEnough, notEqual, check,
@@ -106,7 +106,7 @@ function test<U extends { root: View }>(ui: () => U, setup: (ui: U) => void, tes
 }
 
 let getViews = (template: string) => {
-    let root = parse(template);
+    let root = Builder.parse(template);
 
     return {
         root,

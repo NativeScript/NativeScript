@@ -2,7 +2,7 @@ import { Color } from "@nativescript/core/color";
 import { FormattedString, Span } from "@nativescript/core/text/formatted-string";
 import { ActionBar } from "@nativescript/core/ui/action-bar";
 // TODO: Remove this and get it from global to decouple builder for angular
-import { createViewFromEntry } from "@nativescript/core/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 import { Button } from "@nativescript/core/ui/button";
 import { isIOS, unsetValue, View, ViewBase } from "@nativescript/core/ui/core/view";
 import { Frame, NavigationEntry } from "@nativescript/core/ui/frame";
@@ -230,7 +230,7 @@ export function waitUntilLayoutReady(view: View): void {
 }
 
 export function navigateWithEntry(entry: NavigationEntry, topFrame?: Frame): Page {
-    const page = createViewFromEntry(entry) as Page;
+    const page = Builder.createViewFromEntry(entry) as Page;
     entry.moduleName = null;
     entry.create = function () {
         return page;
