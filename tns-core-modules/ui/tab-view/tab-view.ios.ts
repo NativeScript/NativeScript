@@ -75,10 +75,12 @@ class UITabBarControllerImpl extends UITabBarController {
     // Mind implementation for other controllers
     public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
         super.traitCollectionDidChange(previousTraitCollection);
-        const owner = this._owner.get();
 
-        if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
-            owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
+        if (majorVersion >= 13) {
+            const owner = this._owner.get();
+            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+                owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
+            }
         }
     }
 }
