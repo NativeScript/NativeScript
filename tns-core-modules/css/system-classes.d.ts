@@ -18,7 +18,7 @@ export function getModalRootViewCssClass(): string;
 export function getRootViewCssClasses(): string[];
 
 /**
- * * Appends new CSS class to the system classes and returns the new length of the array.
+ * Appends new CSS class to the system classes and returns the new length of the array.
  * @param value New CSS system class.
  */
 export function pushToRootViewCssClasses(value: string): number;
@@ -28,3 +28,8 @@ export function pushToRootViewCssClasses(value: string): number;
  * @param value
  */
 export function removeFromRootViewCssClasses(value: string): string;
+
+/**
+ * Resets CSS classes for root view.
+ */
+export function resetRootViewCssClasses(): string[];
