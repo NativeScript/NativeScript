@@ -646,6 +646,10 @@ export abstract class View extends ViewBase {
     /**
      * @private
      */
+    _manager: androidx.fragment.app.FragmentManager
+    /**
+     * @private
+     */
     _setNativeClipToBounds(): void;
     /**
      * Called by measure method to cache measureSpecs.
