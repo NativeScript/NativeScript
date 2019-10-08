@@ -252,9 +252,7 @@ namespace xml2ui {
 
             if (isString(value)) {
                 xmlParser.parse(<string>value);
-            }
-
-            if (isObject(value) && isString(value.default)) {
+            } else if (isObject(value) && isString(value.default)) {
                 xmlParser.parse(value.default);
             }
         }
