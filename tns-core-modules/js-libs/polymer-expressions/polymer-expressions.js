@@ -5,7 +5,10 @@
 // Code distributed by Google as part of the polymer project is also
 // subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 
-var esprima = require("../esprima").esprima;
+// Hack to resolve https://github.com/webpack/enhanced-resolve/issues/197 . 
+// This issue causes an require like this (`../esprima`) to be resolved to (`esprima`) by the Angular webpack plugin
+var esprima = require("../../js-libs/esprima").esprima;
+
 var Path = require("./path-parser").Path;
 
 (function (global) {
