@@ -42,7 +42,7 @@ import {
 } from "./application";
 
 import { CLASS_PREFIX, pushToRootViewCssClasses, removeFromRootViewCssClasses } from "../css/system-classes";
-import { DeviceOrientation } from "../ui/enums/enums";
+import { DeviceOrientation, SystemAppearance } from "../ui/enums/enums";
 
 export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
 
@@ -55,11 +55,17 @@ export const lowMemoryEvent = "lowMemory";
 export const uncaughtErrorEvent = "uncaughtError";
 export const discardedErrorEvent = "discardedError";
 export const orientationChangedEvent = "orientationChanged";
+export const systemAppearanceChangedEvent = "systemAppearanceChanged";
 
 const ORIENTATION_CSS_CLASSES = [
     `${CLASS_PREFIX}${DeviceOrientation.portrait}`,
     `${CLASS_PREFIX}${DeviceOrientation.landscape}`,
     `${CLASS_PREFIX}${DeviceOrientation.unknown}`
+];
+
+const SYSTEM_APPEARANCE_CSS_CLASSES = [
+    `${CLASS_PREFIX}${SystemAppearance.light}`,
+    `${CLASS_PREFIX}${SystemAppearance.dark}`
 ];
 
 let cssFile: string = "./app.css";
@@ -126,17 +132,30 @@ export function loadAppCss(): void {
     }
 }
 
+function applyCssClass(rootView: View, cssClass: string) {
+    pushToRootViewCssClasses(cssClass);
+    rootView.cssClasses.add(cssClass);
+}
+
+function removeCssClass(rootView: View, cssClass: string) {
+    removeFromRootViewCssClasses(cssClass);
+    rootView.cssClasses.delete(cssClass);
+}
+
 export function orientationChanged(rootView: View, newOrientation: "portrait" | "landscape" | "unknown"): void {
     const newOrientationCssClass = `${CLASS_PREFIX}${newOrientation}`;
     if (!rootView.cssClasses.has(newOrientationCssClass)) {
-        const removeCssClass = (c: string) => {
-            removeFromRootViewCssClasses(c);
-            rootView.cssClasses.delete(c);
-        };
+        ORIENTATION_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
+        applyCssClass(rootView, newOrientationCssClass);
+        rootView._onCssStateChange();
+    }
+}
 
-        ORIENTATION_CSS_CLASSES.forEach(c => removeCssClass(c));
-        pushToRootViewCssClasses(newOrientationCssClass);
-        rootView.cssClasses.add(newOrientationCssClass);
+export function systemAppearanceChanged(rootView: View, newSystemAppearance: "dark" | "light"): void {
+    const newSystemAppearanceCssClass = `${CLASS_PREFIX}${newSystemAppearance}`;
+    if (!rootView.cssClasses.has(newSystemAppearanceCssClass)) {
+        SYSTEM_APPEARANCE_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
+        applyCssClass(rootView, newSystemAppearanceCssClass);
         rootView._onCssStateChange();
     }
 }
