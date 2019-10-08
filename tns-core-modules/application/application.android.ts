@@ -177,9 +177,9 @@ export function run(entry?: NavigationEntry | string) {
     _start(entry);
 }
 
-export function addCss(cssText: string, scoped?: boolean): void {
+export function addCss(cssText: string, attributeScoped?: boolean): void {
     notify(<CssChangedEventData>{ eventName: "cssChanged", object: androidApp, cssText: cssText });
-    if(!scoped) {
+    if (!attributeScoped) {
         const rootView = getRootView();
         if (rootView) {
             rootView._onCssStateChange();

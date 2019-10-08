@@ -371,9 +371,9 @@ export function run(entry?: string | NavigationEntry) {
     _start(entry);
 }
 
-export function addCss(cssText: string, scoped?: boolean): void {
+export function addCss(cssText: string, attributeScoped?: boolean): void {
     notify(<CssChangedEventData>{ eventName: "cssChanged", object: <any>iosApp, cssText: cssText });
-    if (!scoped) {
+    if (!attributeScoped) {
         const rootView = getRootView();
         if (rootView) {
             rootView._onCssStateChange();
