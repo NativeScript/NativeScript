@@ -641,8 +641,10 @@ export module AnimationCurve {
 }
 
 /**
-* Specifies the types of the status bar style.
-*/
+ * @deprecated use `UserInterfaceStyle` instead.
+ *
+ * Specifies the types of the status bar style.
+ */
 export module StatusBarStyle {
     /**
      * The light style of the status bar - light background with dark letters.
@@ -651,6 +653,22 @@ export module StatusBarStyle {
 
     /**
      * The dark style of the status bar - dark background with light letters.
+     */
+    export const dark: string;
+}
+
+
+/**
+ * Specifies the types of the user interface style.
+ */
+export module UserInterfaceStyle {
+    /**
+     * The light style of the user interface.
+     */
+    export const light: string;
+
+    /**
+     * The dark style of the user interface.
      */
     export const dark: string;
 }

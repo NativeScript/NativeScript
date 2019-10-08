@@ -840,6 +840,11 @@ export const iosOverflowSafeAreaEnabledProperty: InheritedProperty<View, boolean
 
 export namespace ios {
     /**
+     * String value used when hooking to traitCollectionColorAppearanceChangedEvent event.
+     */
+    export const traitCollectionColorAppearanceChangedEvent: string;
+
+    /**
      * Returns a view with viewController or undefined if no such found along the view's parent chain.
      * @param view The view form which to start the search.
      */
