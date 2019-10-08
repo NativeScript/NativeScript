@@ -171,8 +171,9 @@ export function loadAppCss();
 /**
 * Adds new values to the application styles.
 * @param cssText - A valid styles which will be added to the current application styles.
+* @param attributeScoped - Whether the styles are attribute scoped. Adding attribute scoped styles will not perform a full application styling refresh.
 */
-export function addCss(cssText: string): void;
+export function addCss(cssText: string, attributeScoped?: boolean): void;
 
 /**
  * This event is raised when application css is changed.
