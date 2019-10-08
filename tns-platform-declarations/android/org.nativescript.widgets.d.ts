@@ -1,6 +1,11 @@
 ﻿declare module org {
     module nativescript {
         module widgets {
+            export class CustomTransition extends androidx.transition.Visibility {
+                constructor(animatorSet: android.animation.AnimatorSet, transitionName: string);
+                public setResetOnTransitionEnd(resetOnTransitionEnd: boolean): void;
+                public getTransitionName(): string;
+            }
             export module Async {
                 export class CompleteCallback {
                     constructor(implementation: ICompleteCallback);
@@ -164,12 +169,6 @@
 
                 public horizontalAlignment: HorizontalAlignment;
                 public verticalAlignment: VerticalAlignment;
-            }
-
-            export class FragmentBase extends androidx.fragment.app.Fragment {
-                constructor();
-
-                public getRemovingParentFragment(): androidx.fragment.app.Fragment;
             }
 
             export enum Stretch {

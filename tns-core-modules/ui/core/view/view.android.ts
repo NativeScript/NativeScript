@@ -272,12 +272,12 @@ export class View extends ViewCommon {
     public static androidBackPressedEvent = androidBackPressedEvent;
 
     public _dialogFragment: androidx.fragment.app.DialogFragment;
+    public _manager: androidx.fragment.app.FragmentManager;
     private _isClickable: boolean;
     private touchListenerIsSet: boolean;
     private touchListener: android.view.View.OnTouchListener;
     private layoutChangeListenerIsSet: boolean;
     private layoutChangeListener: android.view.View.OnLayoutChangeListener;
-    private _manager: androidx.fragment.app.FragmentManager;
     private _rootManager: androidx.fragment.app.FragmentManager;
 
     nativeViewProtected: android.view.View;
