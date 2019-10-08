@@ -26,6 +26,16 @@ export interface SelectedIndexChangedEventData extends EventData {
 }
 
 /**
+ * Serves as a base class for tab fragments.
+ */
+export class TabFragmentImplementation extends androidx.fragment.app.Fragment {
+    static newInstance(tabId: number, index: number): TabFragmentImplementation;
+    public onCreate(savedInstanceState: android.os.Bundle): void;
+    public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View;
+    public onPause(): void;
+}
+
+/**
  * Serves as a base class for tab navigation.
  */
 export class TabNavigationBase extends View {
@@ -219,6 +229,7 @@ export class TabNavigationBase extends View {
 
 export function getIconSpecSize(size: { width: number, height: number }): { width: number, height: number }
 
+export const _tabs: Array<WeakRef<TabNavigationBase>>;
 export const itemsProperty: Property<TabNavigationBase, TabContentItem[]>;
 export const tabStripProperty: Property<TabNavigationBase, TabStrip>
 export const selectedIndexProperty: CoercibleProperty<TabNavigationBase, number>;

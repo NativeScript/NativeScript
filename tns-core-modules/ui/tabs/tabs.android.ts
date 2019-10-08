@@ -12,7 +12,7 @@ import { Color } from "../core/view";
 import { Frame } from "../frame";
 import { Font } from "../styling/font";
 import {
-    getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty
+    getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty, _tabs, TabFragmentImplementation
 } from "../tab-navigation-base/tab-navigation-base";
 import { getTransformedText } from "../text-base";
 import { offscreenTabLimitProperty, swipeEnabledProperty, TabsBase } from "./tabs-common";
@@ -27,8 +27,6 @@ interface PagerAdapter {
     new(owner: Tabs): androidx.viewpager.widget.PagerAdapter;
 }
 
-const TABID = "_tabId";
-const INDEX = "_index";
 let PagerAdapter: PagerAdapter;
 let TabsBar: any;
 
@@ -36,56 +34,9 @@ function makeFragmentName(viewId: number, id: number): string {
     return "android:viewpager:" + viewId + ":" + id;
 }
 
-function getTabById(id: number): Tabs {
-    const ref = tabs.find(ref => {
-        const tab = ref.get();
-
-        return tab && tab._domId === id;
-    });
-
-    return ref && ref.get();
-}
-
 function initializeNativeClasses() {
     if (PagerAdapter) {
         return;
-    }
-
-    class TabFragmentImplementation extends org.nativescript.widgets.FragmentBase {
-        private tab: Tabs;
-        private index: number;
-
-        constructor() {
-            super();
-
-            return global.__native(this);
-        }
-
-        static newInstance(tabId: number, index: number): TabFragmentImplementation {
-            const args = new android.os.Bundle();
-            args.putInt(TABID, tabId);
-            args.putInt(INDEX, index);
-            const fragment = new TabFragmentImplementation();
-            fragment.setArguments(args);
-
-            return fragment;
-        }
-
-        public onCreate(savedInstanceState: android.os.Bundle): void {
-            super.onCreate(savedInstanceState);
-            const args = this.getArguments();
-            this.tab = getTabById(args.getInt(TABID));
-            this.index = args.getInt(INDEX);
-            if (!this.tab) {
-                throw new Error(`Cannot find TabView`);
-            }
-        }
-
-        public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-            const tabItem = this.tab.items[this.index];
-
-            return tabItem.nativeViewProtected;
-        }
     }
 
     const POSITION_UNCHANGED = -1;
@@ -310,8 +261,6 @@ function setElevation(grid: org.nativescript.widgets.GridLayout, tabsBar: org.na
     }
 }
 
-export const tabs = new Array<WeakRef<Tabs>>();
-
 function iterateIndexRange(index: number, eps: number, lastIndex: number, callback: (i) => void) {
     const rangeStart = Math.max(0, index - eps);
     const rangeEnd = Math.min(index + eps, lastIndex);
@@ -328,7 +277,7 @@ export class Tabs extends TabsBase {
 
     constructor() {
         super();
-        tabs.push(new WeakRef(this));
+        _tabs.push(new WeakRef(this));
     }
 
     get _hasFragments(): boolean {
