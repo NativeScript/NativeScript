@@ -280,6 +280,18 @@ class UIViewControllerImpl extends UIViewController {
             iosView.layoutView(this, owner);
         }
     }
+
+    // Mind implementation for other controllerss
+    public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+        super.traitCollectionDidChange(previousTraitCollection);
+
+        if (majorVersion >= 13) {
+            const owner = this._owner.get();
+            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+                owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
+            }
+        }
+    }
 }
 
 export class Page extends PageBase {

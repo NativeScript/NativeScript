@@ -4,12 +4,14 @@ import {
     iOSApplication as IOSApplicationDefinition,
     LaunchEventData,
     LoadAppCSSEventData,
-    OrientationChangedEventData
+    OrientationChangedEventData,
+    SystemAppearanceChangedEventData
 } from ".";
 
 import {
     displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on,
-    orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent
+    orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent,
+    systemAppearanceChanged, systemAppearanceChangedEvent
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -17,7 +19,12 @@ export * from "./application-common";
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { createViewFromEntry } from "../ui/builder";
-import { CLASS_PREFIX, getRootViewCssClasses, pushToRootViewCssClasses } from "../css/system-classes";
+import {
+    CLASS_PREFIX,
+    getRootViewCssClasses,
+    pushToRootViewCssClasses,
+    resetRootViewCssClasses
+} from "../css/system-classes";
 import { ios as iosView, View } from "../ui/core/view";
 import { Frame, NavigationEntry } from "../ui/frame";
 import { device } from "../platform/platform";
@@ -88,6 +95,7 @@ class IOSApplication implements IOSApplicationDefinition {
     private _observers: Array<NotificationObserver>;
     private _orientation: "portrait" | "landscape" | "unknown";
     private _rootView: View;
+    private _systemAppearance: "light" | "dark";
 
     constructor() {
         this._observers = new Array<NotificationObserver>();
@@ -110,6 +118,15 @@ class IOSApplication implements IOSApplicationDefinition {
 
     get rootController(): UIViewController {
         return this._window.rootViewController;
+    }
+
+    get systemAppearance(): "light" | "dark" {
+        if (!this._systemAppearance) {
+            const userInterfaceStyle = this.rootController.traitCollection.userInterfaceStyle;
+            this._systemAppearance = getSystemAppearanceValue(userInterfaceStyle);
+        }
+
+        return this._systemAppearance;
     }
 
     get nativeApp(): UIApplication {
@@ -217,6 +234,7 @@ class IOSApplication implements IOSApplicationDefinition {
 
         if (this._orientation !== newOrientation) {
             this._orientation = newOrientation;
+            orientationChanged(getRootView(), newOrientation);
 
             notify(<OrientationChangedEventData>{
                 eventName: orientationChangedEvent,
@@ -282,6 +300,24 @@ class IOSApplication implements IOSApplicationDefinition {
         if (!haveController) {
             this._window.makeKeyAndVisible();
         }
+
+        setupRootViewCssClasses(rootView);
+        rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
+            const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
+            const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
+
+            if (this._systemAppearance !== newSystemAppearance) {
+                this._systemAppearance = newSystemAppearance;
+                systemAppearanceChanged(rootView, newSystemAppearance);
+
+                notify(<SystemAppearanceChangedEventData>{
+                    eventName: systemAppearanceChangedEvent,
+                    ios: this,
+                    newValue: this._systemAppearance,
+                    object: this
+                });
+            }
+        });
     }
 }
 
@@ -296,6 +332,7 @@ setApplication(iosApp);
 };
 
 let mainEntry: NavigationEntry;
+
 function createRootView(v?: View) {
     let rootView = v;
     if (!rootView) {
@@ -311,14 +348,6 @@ function createRootView(v?: View) {
             }
         }
     }
-
-    const deviceType = device.deviceType.toLowerCase();
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
-
-    const rootViewCssClasses = getRootViewCssClasses();
-    rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
 
     return rootView;
 }
@@ -359,6 +388,25 @@ export function _start(entry?: string | NavigationEntry) {
                         let visibleVC = getVisibleViewController(rootController);
                         visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
                     }
+
+                    // Mind root view CSS classes in future work
+                    // on embedding NativeScript applications
+                    setupRootViewCssClasses(rootView);
+                    rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
+                        const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
+                        const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
+
+                        if (this._systemAppearance !== newSystemAppearance) {
+                            this._systemAppearance = newSystemAppearance;
+
+                            notify(<SystemAppearanceChangedEventData>{
+                                eventName: systemAppearanceChangedEvent,
+                                ios: this,
+                                newValue: this._systemAppearance,
+                                object: this
+                            });
+                        }
+                    });
                     iosApp.notifyAppStarted();
                 }
             }
@@ -389,18 +437,27 @@ export function getNativeApplication(): UIApplication {
     return iosApp.nativeApp;
 }
 
-function getViewController(view: View): UIViewController {
-    let viewController: UIViewController = view.viewController || view.ios;
-    if (viewController instanceof UIViewController) {
-        return viewController;
-    } else {
+function getSystemAppearanceValue(userInterfaceStyle: number): "dark" | "light" {
+    switch (userInterfaceStyle) {
+        case UIUserInterfaceStyle.Dark:
+            return "dark";
+        case UIUserInterfaceStyle.Light:
+        case UIUserInterfaceStyle.Unspecified:
+            return "light";
+    }
+}
+
+function getViewController(rootView: View): UIViewController {
+    let viewController: UIViewController = rootView.viewController || rootView.ios;
+
+    if (!(viewController instanceof UIViewController)) {
         // We set UILayoutViewController dynamically to the root view if it doesn't have a view controller
         // At the moment the root view doesn't have its native view created. We set it in the setViewControllerView func
-        viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(view)) as UIViewController;
-        view.viewController = viewController;
-
-        return viewController;
+        viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(rootView)) as UIViewController;
+        rootView.viewController = viewController;
     }
+
+    return viewController;
 }
 
 function setViewControllerView(view: View): void {
@@ -416,16 +473,26 @@ function setViewControllerView(view: View): void {
     }
 }
 
+function setupRootViewCssClasses(rootView: View): void {
+    resetRootViewCssClasses();
+
+    const deviceType = device.deviceType.toLowerCase();
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
+    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.systemAppearance}`);
+
+    const rootViewCssClasses = getRootViewCssClasses();
+    rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
+}
+
 export function orientation(): "portrait" | "landscape" | "unknown" {
     return iosApp.orientation;
 }
 
-on(orientationChangedEvent, (args: OrientationChangedEventData) => {
-    const rootView = getRootView();
-    if (rootView) {
-        orientationChanged(rootView, args.newValue);
-    }
-});
+export function systemAppearance(): "dark" | "light" {
+    return iosApp.systemAppearance;
+}
 
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     if (!started) {

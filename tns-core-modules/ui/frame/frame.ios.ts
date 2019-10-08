@@ -2,6 +2,7 @@
 import {
     iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition
 } from ".";
+import { ios as iosView } from "../core/view";
 import { Page } from "../page";
 import { profile } from "../../profiling";
 
@@ -531,6 +532,18 @@ class UINavigationControllerImpl extends UINavigationController {
         });
 
         return null;
+    }
+
+    // Mind implementation for other controllers
+    public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+        super.traitCollectionDidChange(previousTraitCollection);
+
+        if (majorVersion >= 13) {
+            const owner = this._owner.get();
+            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+                owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
+            }
+        }
     }
 }
 

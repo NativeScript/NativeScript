@@ -200,6 +200,18 @@ class UIPageViewControllerImpl extends UIPageViewController {
             scrollView.frame = CGRectMake(0, scrollViewTop, this.view.bounds.size.width, scrollViewHeight); //this.view.bounds;
         }
     }
+
+    // Mind implementation for other controllers
+    public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+        super.traitCollectionDidChange(previousTraitCollection);
+
+        if (majorVersion >= 13) {
+            const owner = this._owner.get();
+            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+                owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
+            }
+        }
+    }
 }
 
 class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewControllerDataSource {
