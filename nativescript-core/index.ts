@@ -57,33 +57,60 @@ export { ImageAsset, ImageAssetOptions } from "./image-asset";
 
 export { isAndroid, isIOS, screen } from "./platform";
 
-// TODO: eExport Profiling
-// export {
-//     InstrumentationMode, Level, TimerInfo, disable, dumpProfiles,
-//     enable, isRunning, level, log, profile, resetProfiles, start,
-//     startCPUProfile, stop, stopCPUProfile, time, timer, trace, uptime
-// } from "./profiling";
+// Export interfaces from "profiling" module
+export { InstrumentationMode, TimerInfo } from "./profiling";
+// Export methods from "profiling" module
+import {
+    enable as profilingEnable, disable as profilingDisable,
+    time, uptime,
+    start, stop, isRunning,
+    dumpProfiles, resetProfiles,
+    profile, startCPUProfile, stopCPUProfile,
+} from "./profiling";
+export const Profiling = {
+    enable: profilingEnable,
+    disable: profilingDisable,
+    time, uptime,
+    start, stop, isRunning,
+    dumpProfiles, resetProfiles,
+    profile, startCPUProfile, stopCPUProfile,
+}
 
 export { encoding } from "./text";
 
-// No need to export timer - they are registered in global as polyfills
-// import { clearInterval, clearTimeout, setInterval, setTimeout } from "./timer";
-// export const Timer = { clearInterval, clearTimeout, setInterval, setTimeout };
+export { DefaultErrorHandler, ErrorHandler, TraceWriter } from "./trace";
+import {
+    messageType, categories, setCategories, addCategories,
+    addWriter, removeWriter, clearWriters,
+    setErrorHandler,
+    write, error, enable, disable, isEnabled
+} from "./trace";
 
-import { DefaultErrorHandler, addCategories, addEventListener, addWriter, categories, clearWriters, disable, enable, error, getErrorHandler, isCategorySet, isEnabled, messageType, notifyEvent, removeEventListener, removeWriter, setCategories, setErrorHandler, write } from "./trace";
-export const nsTrace = { DefaultErrorHandler, addCategories, addEventListener, addWriter, categories, clearWriters, disable, enable, error, getErrorHandler, isCategorySet, isEnabled, messageType, notifyEvent, removeEventListener, removeWriter, setCategories, setErrorHandler, write }
+export const Trace = {
+    messageType, categories, setCategories, addCategories,
+    addWriter, removeWriter, clearWriters,
+    setErrorHandler,
+    write, error, enable, disable, isEnabled
+}
 
 export * from "./ui" // Barrel export
 
-// TODO: Export Utils
-// import {
-//     GC, isDataURI, ad, convertString, eliminateDuplicates, escapeRegexSymbols,
-//     hasDuplicates, ios as tnsIOS, isFileOrResourcePath, mergeSort, openUrl, layout
-// } from "./utils/utils";
+import {
+    GC, isFontIconURI, isDataURI, isFileOrResourcePath,
+    executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject,
+    mergeSort, getModuleName,
+    openFile, openUrl,
+    layout, ad as androidUtils, ios as iosUtils
+} from "./utils/utils";
 
-// export const nsUtils = {
-//     GC, isDataURI, ad, convertString, eliminateDuplicates, escapeRegexSymbols, 
-//     hasDuplicates, ios: tnsIOS, isFileOrResourcePath, mergeSort, openUrl, layout
-// };
+export const Utils = {
+    GC, isFontIconURI, isDataURI, isFileOrResourcePath,
+    executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject,
+
+    mergeSort, getModuleName,
+    openFile, openUrl,
+
+    layout, android: androidUtils, ios: iosUtils
+};
 
 export { XmlParser, ParserEventType, ParserEvent } from "./xml"

@@ -584,6 +584,12 @@ export class DatePicker extends View {
     year: number;
 }
 
+// @public (undocumented)
+export class DefaultErrorHandler implements ErrorHandler {
+    // (undocumented)
+    handlerError(error);
+}
+
 // @public
 export module DeviceOrientation {
     const portrait: string;
@@ -646,6 +652,12 @@ export module encoding {
     const UTF_16LE: any;
 
     const UTF_8: any;
+}
+
+// @public
+export interface ErrorHandler {
+    // (undocumented)
+    handlerError(error: Error);
 }
 
 // @public
@@ -1113,6 +1125,9 @@ export interface ImageAssetOptions {
 }
 
 // @public
+export type InstrumentationMode = "counters" | "timeline" | "lifecycle";
+
+// @public
 export interface iOSApplication {
     /* tslint:enable */
     addNotificationObserver(notificationName: string, onReceiveCallback: (notification: any /* NSNotification */) => void): any;
@@ -1362,29 +1377,6 @@ export interface NavigationTransition {
     name?: string;
 }
 
-// @public (undocumented)
-export const nsTrace: {
-    DefaultErrorHandler: typeof DefaultErrorHandler;
-    addCategories: typeof addCategories;
-    addEventListener: typeof addEventListener;
-    addWriter: typeof addWriter;
-    categories: typeof categories;
-    clearWriters: typeof clearWriters;
-    disable: typeof disable;
-    enable: typeof enable;
-    error: typeof error;
-    getErrorHandler: typeof getErrorHandler;
-    isCategorySet: typeof isCategorySet;
-    isEnabled: typeof isEnabled;
-    messageType: typeof messageType;
-    notifyEvent: typeof notifyEvent;
-    removeEventListener: typeof removeEventListener;
-    removeWriter: typeof removeWriter;
-    setCategories: typeof setCategories;
-    setErrorHandler: typeof setErrorHandler;
-    write: typeof write;
-};
-
 // @public
 export class Observable {
 
@@ -1629,6 +1621,22 @@ export class Placeholder extends View {
 
     on(event: "creatingView", callback: (args: CreateViewEventData) => void);
 }
+
+// @public (undocumented)
+export const Profiling: {
+    enable: typeof enable;
+    disable: typeof disable;
+    time: typeof time;
+    uptime: typeof uptime;
+    start: typeof start;
+    stop: typeof stop;
+    isRunning: typeof isRunning;
+    dumpProfiles: typeof dumpProfiles;
+    resetProfiles: typeof resetProfiles;
+    profile: typeof profile;
+    startCPUProfile: typeof startCPUProfile;
+    stopCPUProfile: typeof stopCPUProfile;
+};
 
 // @public
 export class Progress extends View {
@@ -2379,6 +2387,14 @@ export class TimePicker extends View {
     time: Date;
 }
 
+// @public (undocumented)
+export interface TimerInfo {
+    // (undocumented)
+    count: number;
+    // (undocumented)
+    totalTime: number;
+}
+
 // @public
 export interface TouchGestureEventData extends GestureEventData {
     action: "up" | "move" | "down" | "cancel";
@@ -2393,6 +2409,29 @@ export interface TouchGestureEventData extends GestureEventData {
     getX(): number;
 
     getY(): number;
+}
+
+// @public (undocumented)
+export const Trace: {
+    messageType: typeof messageType;
+    categories: typeof categories;
+    setCategories: typeof setCategories;
+    addCategories: typeof addCategories;
+    addWriter: typeof addWriter;
+    removeWriter: typeof removeWriter;
+    clearWriters: typeof clearWriters;
+    setErrorHandler: typeof setErrorHandler;
+    write: typeof write;
+    error: typeof error;
+    enable: typeof enable_2;
+    disable: typeof disable_2;
+    isEnabled: typeof isEnabled;
+};
+
+// @public
+export interface TraceWriter {
+    // (undocumented)
+    write(message: any, category: string, type?: number);
 }
 
 // @public (undocumented)
@@ -2419,6 +2458,26 @@ export interface UnhandledErrorEventData extends ApplicationEventData {
     // (undocumented)
     ios?: NativeScriptError;
 }
+
+// @public (undocumented)
+export const Utils: {
+    GC: typeof GC;
+    isFontIconURI: typeof isFontIconURI;
+    isDataURI: typeof isDataURI;
+    isFileOrResourcePath: typeof isFileOrResourcePath;
+    executeOnMainThread: typeof executeOnMainThread;
+    mainThreadify: typeof mainThreadify;
+    isMainThread: typeof isMainThread;
+    dispatchToMainThread: typeof dispatchToMainThread;
+    releaseNativeObject: typeof releaseNativeObject;
+    mergeSort: typeof mergeSort;
+    getModuleName: typeof getModuleName;
+    openFile: typeof openFile;
+    openUrl: typeof openUrl;
+    layout: typeof layout;
+    android: typeof ad;
+    ios: typeof ios;
+};
 
 // @public
 export abstract class View extends ViewBase {
@@ -2863,25 +2922,47 @@ export class XmlParser {
 // nativescript-core/index.d.ts:59:5 - (ae-forgotten-export) The symbol "getJSON" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:60:5 - (ae-forgotten-export) The symbol "getString" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:61:5 - (ae-forgotten-export) The symbol "request" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:68:5 - (ae-forgotten-export) The symbol "DefaultErrorHandler" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:69:5 - (ae-forgotten-export) The symbol "addCategories" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:70:5 - (ae-forgotten-export) The symbol "addEventListener" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:71:5 - (ae-forgotten-export) The symbol "addWriter" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:72:5 - (ae-forgotten-export) The symbol "categories" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:73:5 - (ae-forgotten-export) The symbol "clearWriters" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:74:5 - (ae-forgotten-export) The symbol "disable" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:75:5 - (ae-forgotten-export) The symbol "enable" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:76:5 - (ae-forgotten-export) The symbol "error" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:77:5 - (ae-forgotten-export) The symbol "getErrorHandler" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:78:5 - (ae-forgotten-export) The symbol "isCategorySet" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:79:5 - (ae-forgotten-export) The symbol "isEnabled" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:80:5 - (ae-forgotten-export) The symbol "messageType" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:81:5 - (ae-forgotten-export) The symbol "notifyEvent" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:82:5 - (ae-forgotten-export) The symbol "removeEventListener" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:83:5 - (ae-forgotten-export) The symbol "removeWriter" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:84:5 - (ae-forgotten-export) The symbol "setCategories" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:85:5 - (ae-forgotten-export) The symbol "setErrorHandler" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:86:5 - (ae-forgotten-export) The symbol "write" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:68:5 - (ae-forgotten-export) The symbol "enable" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:69:5 - (ae-forgotten-export) The symbol "disable" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:70:5 - (ae-forgotten-export) The symbol "time" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:71:5 - (ae-forgotten-export) The symbol "uptime" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:72:5 - (ae-forgotten-export) The symbol "start" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:73:5 - (ae-forgotten-export) The symbol "stop" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:74:5 - (ae-forgotten-export) The symbol "isRunning" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:75:5 - (ae-forgotten-export) The symbol "dumpProfiles" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:76:5 - (ae-forgotten-export) The symbol "resetProfiles" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:77:5 - (ae-forgotten-export) The symbol "profile" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:78:5 - (ae-forgotten-export) The symbol "startCPUProfile" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:79:5 - (ae-forgotten-export) The symbol "stopCPUProfile" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:85:5 - (ae-forgotten-export) The symbol "messageType" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:86:5 - (ae-forgotten-export) The symbol "categories" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:87:5 - (ae-forgotten-export) The symbol "setCategories" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:88:5 - (ae-forgotten-export) The symbol "addCategories" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:89:5 - (ae-forgotten-export) The symbol "addWriter" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:90:5 - (ae-forgotten-export) The symbol "removeWriter" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:91:5 - (ae-forgotten-export) The symbol "clearWriters" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:92:5 - (ae-forgotten-export) The symbol "setErrorHandler" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:93:5 - (ae-forgotten-export) The symbol "write" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:94:5 - (ae-forgotten-export) The symbol "error" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:95:5 - (ae-forgotten-export) The symbol "enable" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:96:5 - (ae-forgotten-export) The symbol "disable" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:97:5 - (ae-forgotten-export) The symbol "isEnabled" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:102:5 - (ae-forgotten-export) The symbol "GC" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:103:5 - (ae-forgotten-export) The symbol "isFontIconURI" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:104:5 - (ae-forgotten-export) The symbol "isDataURI" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:105:5 - (ae-forgotten-export) The symbol "isFileOrResourcePath" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:106:5 - (ae-forgotten-export) The symbol "executeOnMainThread" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:107:5 - (ae-forgotten-export) The symbol "mainThreadify" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:108:5 - (ae-forgotten-export) The symbol "isMainThread" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:109:5 - (ae-forgotten-export) The symbol "dispatchToMainThread" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:110:5 - (ae-forgotten-export) The symbol "releaseNativeObject" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:111:5 - (ae-forgotten-export) The symbol "mergeSort" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:112:5 - (ae-forgotten-export) The symbol "getModuleName" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:113:5 - (ae-forgotten-export) The symbol "openFile" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:114:5 - (ae-forgotten-export) The symbol "openUrl" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:115:5 - (ae-forgotten-export) The symbol "layout" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:116:5 - (ae-forgotten-export) The symbol "ad" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:117:5 - (ae-forgotten-export) The symbol "ios" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:166:26 - (ae-forgotten-export) The symbol "Property" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:166:26 - (ae-forgotten-export) The symbol "CssProperty" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:166:26 - (ae-forgotten-export) The symbol "CssAnimationProperty" needs to be exported by the entry point index.d.ts
