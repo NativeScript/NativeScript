@@ -69,7 +69,7 @@ describe(`${imagePrefix}-suite`, () => {
 
     it("gestures_04_swipe", async function () {
         const lblSwipe = await driver.waitForElement("Swipe here");
-        await lblSwipe.swipe("left");
+        await lblSwipe.swipe(Direction.left);
         const result = await driver.findElementByTextIfExists("Swipe Direction: 1, true", SearchOptions.contains);
         assert.isTrue(result != null && result !== undefined, `Gestures event 'Swipe Direction: 1, true' not detected!`);
     });
@@ -83,10 +83,10 @@ describe(`${imagePrefix}-suite`, () => {
             { x: rect.x + 160, y: rect.y + 120 }
         ], { x: 50, y: 50 });
 
-        const msg = driver.isAndroid ? "Pan deltaX:13; deltaY:0;, true, states: ended" : "Pan deltaX:65; deltaY:49;, true, states: ended";
-        const result = await driver.findElementByTextIfExists(msg, SearchOptions.contains);
-        assert.isTrue(result != null && result !== undefined, `Gestures event '${msg}' not detected!`);
-    }); 
+        const result = await driver.findElementByTextIfExists("Pan deltaX", SearchOptions.contains);
+        const text = await result.text();
+        assert.isTrue(/Pan deltaX:\d+; deltaY:\d+;, true, states: ended/.test(text), `Gestures event 'Pan deltaX: ...' not detected!`);
+    });
 
     it("gestures_06_pinch", async function () {
         const lblPan = await driver.waitForElement("Pinch here");
