@@ -321,8 +321,6 @@ export class ActionBar extends ActionBarBase {
         navigationItem.title = this.title;
     }
 
-
-
     private updateFlatness(navBar: UINavigationBar) {
         if (this.flat) {
             navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
