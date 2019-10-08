@@ -702,6 +702,8 @@ export class CustomLayoutView extends ContainerView {
 }
 
 export namespace ios {
+    export const traitCollectionColorAppearanceChangedEvent = "traitCollectionColorAppearanceChanged";
+
     export function getParentWithViewController(view: View): View {
         while (view && !view.viewController) {
             view = view.parent as View;
@@ -1001,6 +1003,18 @@ export namespace ios {
             const owner = this.owner.get();
             if (owner && !owner.parent) {
                 owner.callUnloaded();
+            }
+        }
+
+        // Mind implementation for other controllers
+        public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+            super.traitCollectionDidChange(previousTraitCollection);
+
+            if (majorVersion >= 13) {
+                const owner = this.owner.get();
+                if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+                    owner.notify({ eventName: traitCollectionColorAppearanceChangedEvent, object: owner });
+                }
             }
         }
     }
