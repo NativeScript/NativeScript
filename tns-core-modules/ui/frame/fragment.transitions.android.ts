@@ -186,7 +186,6 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 
             onAnimationStart(animator: ExpandedAnimator): void {
                 const entry = animator.entry;
-                console.log("Animation start " + animator.getDuration());
                 addToWaitingQueue(entry);
                 if (traceEnabled()) {
                     traceWrite(`START ${animator.transitionType} for ${entry.fragmentTag}`, traceCategories.Transition);
@@ -203,7 +202,6 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
                 if (traceEnabled()) {
                     traceWrite(`END ${animator.transitionType} for ${animator.entry.fragmentTag}`, traceCategories.Transition);
                 }
-                console.log("Animation end " + animator.getDuration());
                 transitionOrAnimationCompleted(animator.entry);
             }
 

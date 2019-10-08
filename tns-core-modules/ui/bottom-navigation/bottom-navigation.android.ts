@@ -12,7 +12,7 @@ import { Color, CSSType } from "../core/view";
 import { Frame, View } from "../frame";
 import { Font } from "../styling/font";
 import {
-    getIconSpecSize, itemsProperty, selectedIndexProperty, TabNavigationBase, tabStripProperty
+    getIconSpecSize, itemsProperty, selectedIndexProperty, TabNavigationBase, tabStripProperty, TabFragmentImplementation, _tabs
 } from "../tab-navigation-base/tab-navigation-base";
 import { getTransformedText } from "../text-base";
 
@@ -27,8 +27,6 @@ export * from "../tab-navigation-base/tab-strip-item";
 const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 8;
 
-const TABID = "_tabId";
-const INDEX = "_index";
 const ownerSymbol = Symbol("_owner");
 
 let TabFragment: any;
@@ -39,56 +37,9 @@ function makeFragmentName(viewId: number, id: number): string {
     return "android:bottomnavigation:" + viewId + ":" + id;
 }
 
-function getTabById(id: number): BottomNavigation {
-    const ref = tabs.find(ref => {
-        const tab = ref.get();
-
-        return tab && tab._domId === id;
-    });
-
-    return ref && ref.get();
-}
-
 function initializeNativeClasses() {
     if (BottomNavigationBar) {
         return;
-    }
-
-    class TabFragmentImplementation extends org.nativescript.widgets.FragmentBase {
-        private tab: BottomNavigation;
-        private index: number;
-
-        constructor() {
-            super();
-
-            return global.__native(this);
-        }
-
-        static newInstance(tabId: number, index: number): TabFragmentImplementation {
-            const args = new android.os.Bundle();
-            args.putInt(TABID, tabId);
-            args.putInt(INDEX, index);
-            const fragment = new TabFragmentImplementation();
-            fragment.setArguments(args);
-
-            return fragment;
-        }
-
-        public onCreate(savedInstanceState: android.os.Bundle): void {
-            super.onCreate(savedInstanceState);
-            const args = this.getArguments();
-            this.tab = getTabById(args.getInt(TABID));
-            this.index = args.getInt(INDEX);
-            if (!this.tab) {
-                throw new Error(`Cannot find BottomNavigation`);
-            }
-        }
-
-        public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-            const tabItem = this.tab.items[this.index];
-
-            return tabItem.nativeViewProtected;
-        }
     }
 
     class BottomNavigationBarImplementation extends org.nativescript.widgets.BottomNavigationBar {
@@ -178,8 +129,6 @@ function setElevation(bottomNavigationBar: org.nativescript.widgets.BottomNaviga
     }
 }
 
-export const tabs = new Array<WeakRef<BottomNavigation>>();
-
 function iterateIndexRange(index: number, eps: number, lastIndex: number, callback: (i) => void) {
     const rangeStart = Math.max(0, index - eps);
     const rangeEnd = Math.min(index + eps, lastIndex);
@@ -199,7 +148,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     constructor() {
         super();
-        tabs.push(new WeakRef(this));
+        _tabs.push(new WeakRef(this));
     }
 
     get _hasFragments(): boolean {
