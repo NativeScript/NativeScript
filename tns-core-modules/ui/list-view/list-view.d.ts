@@ -43,18 +43,18 @@ export class ListView extends View {
     ios: any /* UITableView */;
 
     /**
-     * Gets or set the items collection of the ListView. 
+     * Gets or set the items collection of the ListView.
      * The items property can be set to an array or an object defining length and getItem(index) method.
      */
     items: any[] | ItemsSource;
 
     /**
-     * Gets or set the item template of the ListView. 
+     * Gets or set the item template of the ListView.
      */
     itemTemplate: string | Template;
 
     /**
-     * Gets or set the list of item templates for the item template selector 
+     * Gets or set the list of item templates for the item template selector
      */
     itemTemplates: string | Array<KeyedTemplate>;
 
@@ -69,7 +69,7 @@ export class ListView extends View {
     itemIdGenerator: (item: any, index: number, items: any) => number;
 
     /**
-     * Gets or set the items separator line color of the ListView. 
+     * Gets or set the items separator line color of the ListView.
      */
     separatorColor: Color;
 
@@ -90,18 +90,18 @@ export class ListView extends View {
     refresh();
 
     /**
-     * Scrolls the specified item with index into view. 
+     * Scrolls the specified item with index into view.
      * [iOS](https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITableView_Class/#//apple_ref/occ/instm/UITableView/scrollToRowAtIndexPath:atScrollPosition:animated:)
      * [Android](http://developer.android.com/reference/android/widget/ListView.html#setSelection(int))
-     * @param index - Item index. 
+     * @param index - Item index.
      */
     scrollToIndex(index: number);
 
     /**
-     * Scrolls the specified item with index into view with animation. 
+     * Scrolls the specified item with index into view with animation.
      * [iOS](https://developer.apple.com/library/prerelease/ios/documentation/UIKit/Reference/UITableView_Class/#//apple_ref/occ/instm/UITableView/scrollToRowAtIndexPath:atScrollPosition:animated:)
      * [Android](https://developer.android.com/reference/android/widget/ListView.html#smoothScrollToPosition(int))
-     * @param index - Item index. 
+     * @param index - Item index.
      */
     scrollToIndexAnimated(index: number);
 
@@ -113,17 +113,17 @@ export class ListView extends View {
 
     /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
+     * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
      * @param callback - Callback function which will be executed when event is raised.
      * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
      */
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     /**
-     * Raised when a View for the data at the specified index should be created. 
+     * Raised when a View for the data at the specified index should be created.
      * The result should be returned trough the view property of the event data.
-     * Note, that the view property of the event data can be pre-initialized with 
-     * an old instance of a view, so that it can be reused. 
+     * Note, that the view property of the event data can be pre-initialized with
+     * an old instance of a view, so that it can be reused.
      */
     on(event: "itemLoading", callback: (args: ItemEventData) => void, thisArg?: any);
 
@@ -193,7 +193,7 @@ export const itemTemplateProperty: Property<ListView, string | Template>;
 export const itemTemplatesProperty: Property<ListView, string | Array<KeyedTemplate>>;
 
 /**
- * Represents the separator color backing property. 
+ * Represents the separator color backing property.
  */
 export const separatorColor: Property<ListView, Color>;
 

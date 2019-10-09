@@ -1,6 +1,18 @@
 {
-    "extends": "./tsconfig.shared",
     "compilerOptions": {
+        "noEmitOnError": false,
+        "noEmitHelpers": true,
+        "target": "es5",
+        "module": "commonjs",
+        "noImplicitUseStrict": true,
+        "removeComments": true,
+        "experimentalDecorators": true,
+        "diagnostics": true,
+        "sourceMap": true,
+        "lib": [
+            "es6",
+            "dom"
+        ],
         "noUnusedLocals": true,
         "noUnusedParameters": true
     },

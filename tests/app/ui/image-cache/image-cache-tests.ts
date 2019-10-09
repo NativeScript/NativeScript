@@ -8,7 +8,7 @@ import * as TKUnit from "../../tk-unit";
 
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
-export const test_ImageCache_ValidUrl = function() {
+export const test_ImageCache_ValidUrl = function () {
     // see https://github.com/NativeScript/NativeScript/issues/6643
     if (sdkVersion() < 20) {
         return;
@@ -46,7 +46,7 @@ export const test_ImageCache_ValidUrl = function() {
     TKUnit.assertEqual(validKey, url, "Key should equal the provided url");
 };
 
-export const test_ImageCache_NothingAtProvidedUrl = function() {
+export const test_ImageCache_NothingAtProvidedUrl = function () {
     const cache = new imageCacheModule.Cache();
     cache.maxRequests = 5;
 

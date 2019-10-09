@@ -2,7 +2,7 @@ import { DockLayoutBase, View, dockProperty, stretchLastChildProperty } from "./
 
 export * from "./dock-layout-common";
 
-View.prototype[dockProperty.setNative] = function(this: View, value: "left" | "top" | "right" | "bottom") {
+View.prototype[dockProperty.setNative] = function (this: View, value: "left" | "top" | "right" | "bottom") {
     const nativeView: android.view.View = this.nativeViewProtected;
     const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
     if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {

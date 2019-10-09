@@ -9,12 +9,14 @@ import {
     AndroidApplication as AndroidApplicationDefinition,
     ApplicationEventData,
     CssChangedEventData,
-    OrientationChangedEventData
+    OrientationChangedEventData,
+    SystemAppearanceChangedEventData
 } from ".";
 
 import {
     displayedEvent, hasListeners, livesync, lowMemoryEvent, notify, Observable, on,
-    orientationChanged, orientationChangedEvent, setApplication, suspendEvent
+    orientationChanged, orientationChangedEvent, setApplication, suspendEvent,
+    systemAppearanceChanged, systemAppearanceChangedEvent
 } from "./application-common";
 
 import { profile } from "../profiling";
@@ -51,6 +53,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
     public static activityRequestPermissionsEvent = ActivityRequestPermissions;
 
     private _orientation: "portrait" | "landscape" | "unknown";
+    private _systemAppearance: "light" | "dark";
     public paused: boolean;
     public nativeApp: android.app.Application;
     public context: android.content.Context;
@@ -93,9 +96,8 @@ export class AndroidApplication extends Observable implements AndroidApplication
         if (!this._orientation) {
             const resources = this.context.getResources();
             const configuration = <android.content.res.Configuration>resources.getConfiguration();
-            const orientation = configuration.orientation;
 
-            this._orientation = getOrientationValue(orientation);
+            this._orientation = getOrientationValue(configuration);
         }
 
         return this._orientation;
@@ -103,6 +105,21 @@ export class AndroidApplication extends Observable implements AndroidApplication
 
     set orientation(value: "portrait" | "landscape" | "unknown") {
         this._orientation = value;
+    }
+
+    get systemAppearance(): "light" | "dark" {
+        if (!this._systemAppearance) {
+            const resources = this.context.getResources();
+            const configuration = <android.content.res.Configuration>resources.getConfiguration();
+
+            this._systemAppearance = getSystemAppearanceValue(configuration);
+        }
+
+        return this._systemAppearance;
+    }
+
+    set systemAppearance(value: "light" | "dark") {
+        this._systemAppearance = value;
     }
 
     public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
@@ -131,6 +148,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
         }
     }
 }
+
 export interface AndroidApplication {
     on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
     on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
@@ -177,11 +195,13 @@ export function run(entry?: NavigationEntry | string) {
     _start(entry);
 }
 
-export function addCss(cssText: string): void {
+export function addCss(cssText: string, attributeScoped?: boolean): void {
     notify(<CssChangedEventData>{ eventName: "cssChanged", object: androidApp, cssText: cssText });
-    const rootView = getRootView();
-    if (rootView) {
-        rootView._onCssStateChange();
+    if (!attributeScoped) {
+        const rootView = getRootView();
+        if (rootView) {
+            rootView._onCssStateChange();
+        }
     }
 }
 
@@ -252,12 +272,9 @@ export function orientation(): "portrait" | "landscape" | "unknown" {
     return androidApp.orientation;
 }
 
-on(orientationChangedEvent, (args: OrientationChangedEventData) => {
-    const rootView = getRootView();
-    if (rootView) {
-        orientationChanged(rootView, args.newValue);
-    }
-});
+export function systemAppearance(): "dark" | "light" {
+    return androidApp.systemAppearance;
+}
 
 global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     if (androidApp && androidApp.paused) {
@@ -268,7 +285,9 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
     livesync(rootView, context);
 };
 
-function getOrientationValue(orientation: number): "portrait" | "landscape" | "unknown" {
+function getOrientationValue(configuration: android.content.res.Configuration): "portrait" | "landscape" | "unknown" {
+    const orientation = configuration.orientation;
+
     switch (orientation) {
         case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
             return "landscape";
@@ -276,6 +295,19 @@ function getOrientationValue(orientation: number): "portrait" | "landscape" | "u
             return "portrait";
         default:
             return "unknown";
+    }
+}
+
+// https://developer.android.com/guide/topics/ui/look-and-feel/darktheme#configuration_changes
+function getSystemAppearanceValue(configuration: android.content.res.Configuration): "dark" | "light" {
+    const systemAppearance = configuration.uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+
+    switch (systemAppearance) {
+        case android.content.res.Configuration.UI_MODE_NIGHT_YES:
+            return "dark";
+        case android.content.res.Configuration.UI_MODE_NIGHT_NO:
+        case android.content.res.Configuration.UI_MODE_NIGHT_UNDEFINED:
+            return "light";
     }
 }
 
@@ -380,17 +412,33 @@ function initComponentCallbacks() {
             // TODO: This is skipped for now, test carefully for OutOfMemory exceptions
         }),
 
-        onConfigurationChanged: profile("onConfigurationChanged", function (newConfig: android.content.res.Configuration) {
-            const newConfigOrientation = newConfig.orientation;
-            const newOrientation = getOrientationValue(newConfigOrientation);
+        onConfigurationChanged: profile("onConfigurationChanged", function (newConfiguration: android.content.res.Configuration) {
+            const newOrientation = getOrientationValue(newConfiguration);
 
             if (androidApp.orientation !== newOrientation) {
                 androidApp.orientation = newOrientation;
+                orientationChanged(getRootView(), newOrientation);
 
                 notify(<OrientationChangedEventData>{
                     eventName: orientationChangedEvent,
                     android: androidApp.nativeApp,
                     newValue: androidApp.orientation,
+                    object: androidApp
+                });
+
+                return;
+            }
+
+            const newSystemAppearance = getSystemAppearanceValue(newConfiguration);
+
+            if (androidApp.systemAppearance !== newSystemAppearance) {
+                androidApp.systemAppearance = newSystemAppearance;
+                systemAppearanceChanged(getRootView(), newSystemAppearance);
+
+                notify(<SystemAppearanceChangedEventData>{
+                    eventName: systemAppearanceChangedEvent,
+                    android: androidApp.nativeApp,
+                    newValue: androidApp.systemAppearance,
                     object: androidApp
                 });
             }

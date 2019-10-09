@@ -10,8 +10,8 @@ The TabView is a component, which allows to navigate between different views. Th
 
 > Note (iOS specific): `UITabBarController` is used in the implementation, which means that only one `TabViewItem` can be shown at a given time and only one needs to be loaded. When the user selects a new `TabViewItem`, we load the new item and unload the previous one.
 
-> Note (Android specific): In the Android implementation is used `ViewPager` controller, which allows using the `swipe` gesture to navigate to the next or previous tab. This means that only one `TabViewItem` can be shown, but multiple `TabViewItems` need to be loaded. Otherwise, after left or right swipe, you will not see the `TabViewItem`'s contents, after the swiping. By default, the ViewPager controller will pre-load one `TabViewItem` on the left and on on the right. Regarding that, if one of the items is already pre-loaded, it will not be loaded again. In the Android, we have exposed a property called `androidOffscreenTabLimit`, which allow specifying, how many components should be pre-load on the left and right (if you are setting up `androidOffscreenTabLimit` to 0, the Android TabView will match to the iOS TabView). 
- 
+> Note (Android specific): In the Android implementation is used `ViewPager` controller, which allows using the `swipe` gesture to navigate to the next or previous tab. This means that only one `TabViewItem` can be shown, but multiple `TabViewItems` need to be loaded. Otherwise, after left or right swipe, you will not see the `TabViewItem`'s contents, after the swiping. By default, the ViewPager controller will pre-load one `TabViewItem` on the left and on on the right. Regarding that, if one of the items is already pre-loaded, it will not be loaded again. In the Android, we have exposed a property called `androidOffscreenTabLimit`, which allow specifying, how many components should be pre-load on the left and right (if you are setting up `androidOffscreenTabLimit` to 0, the Android TabView will match to the iOS TabView).
+
 The iOS and Android UX guidelines regarding the Tab controls differ greatly. The difference is described in the below points:
 
 * The iOS tabs have their tab bar, which will be displayed always on the bottom and does not allow swipe gesture for changing tabs.
@@ -53,7 +53,7 @@ export function onSelectedIndexChanged(args) {...}
 
 ## Styling TabView
 
-For the TabView component could be set three different styling properties 
+For the TabView component could be set three different styling properties
 
 * `selectedTabTextColor` (coresponding CSS property `selected-tab-text-color `) - change the color of the text, while selecting some of the tabs.
 * `tabBackgroundColor` (coresponding CSS property `tab-background-color`) - changing the background of the tabs.

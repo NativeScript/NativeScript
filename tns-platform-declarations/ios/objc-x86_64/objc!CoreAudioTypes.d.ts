@@ -1,4 +1,39 @@
 
+declare const enum AVAudioSessionErrorCode {
+
+	None = 0,
+
+	MediaServicesFailed = 1836282486,
+
+	IsBusy = 560030580,
+
+	IncompatibleCategory = 560161140,
+
+	CannotInterruptOthers = 560557684,
+
+	MissingEntitlement = 1701737535,
+
+	SiriIsRecording = 1936290409,
+
+	CannotStartPlaying = 561015905,
+
+	CannotStartRecording = 561145187,
+
+	BadParam = -50,
+
+	InsufficientPriority = 561017449,
+
+	ResourceNotAvailable = 561145203,
+
+	Unspecified = 2003329396,
+
+	ExpiredSession = 561210739,
+
+	SessionNotActive = 1768841571
+}
+
+declare const AVAudioSessionErrorInsufficientPriority: number;
+
 interface _AudioBuffer {
 	mNumberChannels: number;
 	mDataByteSize: number;
@@ -48,7 +83,25 @@ declare const enum AudioChannelBitmap {
 
 	kAudioChannelBit_TopBackCenter = 65536,
 
-	kAudioChannelBit_TopBackRight = 131072
+	kAudioChannelBit_TopBackRight = 131072,
+
+	kAudioChannelBit_LeftTopFront = 262144,
+
+	kAudioChannelBit_CenterTopFront = 524288,
+
+	kAudioChannelBit_RightTopFront = 1048576,
+
+	kAudioChannelBit_LeftTopMiddle = 2097152,
+
+	kAudioChannelBit_CenterTopMiddle = 4194304,
+
+	kAudioChannelBit_RightTopMiddle = 8388608,
+
+	kAudioChannelBit_LeftTopRear = 16777216,
+
+	kAudioChannelBit_CenterTopRear = 33554432,
+
+	kAudioChannelBit_RightTopRear = 67108864
 }
 
 declare const enum AudioChannelCoordinateIndex {
@@ -98,6 +151,12 @@ interface AudioClassDescription {
 	mManufacturer: number;
 }
 declare var AudioClassDescription: interop.StructType<AudioClassDescription>;
+
+interface AudioFormatListItem {
+	mASBD: AudioStreamBasicDescription;
+	mChannelLayoutTag: number;
+}
+declare var AudioFormatListItem: interop.StructType<AudioFormatListItem>;
 
 interface AudioStreamBasicDescription {
 	mSampleRate: number;
@@ -259,6 +318,12 @@ declare const kAudioChannelLabel_CenterSurround: number;
 
 declare const kAudioChannelLabel_CenterSurroundDirect: number;
 
+declare const kAudioChannelLabel_CenterTopFront: number;
+
+declare const kAudioChannelLabel_CenterTopMiddle: number;
+
+declare const kAudioChannelLabel_CenterTopRear: number;
+
 declare const kAudioChannelLabel_ClickTrack: number;
 
 declare const kAudioChannelLabel_DialogCentricMix: number;
@@ -359,6 +424,12 @@ declare const kAudioChannelLabel_LeftSurround: number;
 
 declare const kAudioChannelLabel_LeftSurroundDirect: number;
 
+declare const kAudioChannelLabel_LeftTopFront: number;
+
+declare const kAudioChannelLabel_LeftTopMiddle: number;
+
+declare const kAudioChannelLabel_LeftTopRear: number;
+
 declare const kAudioChannelLabel_LeftTotal: number;
 
 declare const kAudioChannelLabel_LeftWide: number;
@@ -382,6 +453,12 @@ declare const kAudioChannelLabel_RightCenter: number;
 declare const kAudioChannelLabel_RightSurround: number;
 
 declare const kAudioChannelLabel_RightSurroundDirect: number;
+
+declare const kAudioChannelLabel_RightTopFront: number;
+
+declare const kAudioChannelLabel_RightTopMiddle: number;
+
+declare const kAudioChannelLabel_RightTopRear: number;
 
 declare const kAudioChannelLabel_RightTotal: number;
 
@@ -448,6 +525,12 @@ declare const kAudioChannelLayoutTag_AC3_3_1: number;
 declare const kAudioChannelLayoutTag_AC3_3_1_1: number;
 
 declare const kAudioChannelLayoutTag_Ambisonic_B_Format: number;
+
+declare const kAudioChannelLayoutTag_Atmos_5_1_2: number;
+
+declare const kAudioChannelLayoutTag_Atmos_7_1_4: number;
+
+declare const kAudioChannelLayoutTag_Atmos_9_1_6: number;
 
 declare const kAudioChannelLayoutTag_AudioUnit_4: number;
 
@@ -671,6 +754,26 @@ declare const kAudioChannelLayoutTag_UseChannelBitmap: number;
 
 declare const kAudioChannelLayoutTag_UseChannelDescriptions: number;
 
+declare const kAudioChannelLayoutTag_WAVE_2_1: number;
+
+declare const kAudioChannelLayoutTag_WAVE_3_0: number;
+
+declare const kAudioChannelLayoutTag_WAVE_4_0_A: number;
+
+declare const kAudioChannelLayoutTag_WAVE_4_0_B: number;
+
+declare const kAudioChannelLayoutTag_WAVE_5_0_A: number;
+
+declare const kAudioChannelLayoutTag_WAVE_5_0_B: number;
+
+declare const kAudioChannelLayoutTag_WAVE_5_1_A: number;
+
+declare const kAudioChannelLayoutTag_WAVE_5_1_B: number;
+
+declare const kAudioChannelLayoutTag_WAVE_6_1: number;
+
+declare const kAudioChannelLayoutTag_WAVE_7_1: number;
+
 declare const kAudioChannelLayoutTag_XY: number;
 
 declare const kAudioFormat60958AC3: number;
@@ -750,6 +853,8 @@ declare const kAudioFormatMPEG4CELP: number;
 declare const kAudioFormatMPEG4HVXC: number;
 
 declare const kAudioFormatMPEG4TwinVQ: number;
+
+declare const kAudioFormatMPEGD_USAC: number;
 
 declare const kAudioFormatMPEGLayer1: number;
 

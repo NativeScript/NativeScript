@@ -47,7 +47,7 @@ export function getNativeTextAlignment(textView: textViewModule.TextView): strin
 
 export function typeTextNatively(textView: textViewModule.TextView, text: string): void {
     textView.ios.text = text;
-    
+
     // Setting the text will not trigger the delegate method, so we have to do it by hand.
     textView.ios.delegate.textViewDidEndEditing(textView.ios);
 }

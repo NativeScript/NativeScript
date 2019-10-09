@@ -61,7 +61,7 @@ export function test_trace_error_should_pass_errors() {
         }
     });
     traceError(testError);
-    
+
     TKUnit.assert(called, "trace.error() should call handler;");
     TKUnit.assertDeepEqual(actualError, testError);
 }

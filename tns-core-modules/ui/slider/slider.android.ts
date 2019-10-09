@@ -14,7 +14,7 @@ let SeekBar: typeof android.widget.SeekBar;
 let SeekBarChangeListener: android.widget.SeekBar.OnSeekBarChangeListener;
 
 function initializeListenerClass(): void {
-    
+
     if (!SeekBarChangeListener) {
         @Interfaces([android.widget.SeekBar.OnSeekBarChangeListener])
         class SeekBarChangeListenerImpl extends java.lang.Object implements android.widget.SeekBar.OnSeekBarChangeListener {
@@ -104,7 +104,7 @@ export class Slider extends SliderBase {
     }
 
     [minValueProperty.setNative](value: number) {
-       this.setNativeValuesSilently();
+        this.setNativeValuesSilently();
     }
 
     [maxValueProperty.getDefault](): number {

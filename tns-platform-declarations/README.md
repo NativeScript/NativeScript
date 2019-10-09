@@ -46,3 +46,11 @@ The `.d.ts` files for iOS are generated using iOS Runtime's metadata generator. 
 ./typings-gen.sh rc [<path-to-medatadata-generator-binary>]
 ```
 Where `rc` can be an NPM tag/version of `tns-ios` that will be used for generating the typings. If the metadata generator to be used has not been released in NPM, you can optionally specify its path as a 2nd argument.
+
+> Note: Apply [this](https://github.com/NativeScript/NativeScript/commit/45b4b061e470c19cdc582f220ee86fd3169269a0) commit on hand, due to a TypeScript error.
+
+> The script expressly deletes the `objc!MaterialComponents.d.ts` file which [distributes](https://github.com/NativeScript/NativeScript/pull/7480) along with the `tns-core-modules` package to avoid plugins clashes.
+
+> However, the metadata generator for iOS includes metadata and typings for the whole SDK and all native libraries in use, including `MaterialComponents`. Therefore, there are typings which reference types from `objc!MaterialComponents.d.ts` file and fail on transpilation.
+
+> Currently, remove these by hand to avoid transpilation errors. A proposed Solution is to specify which entries to be generated metadata for and be accessible from JavaScript. These are the feature requests for [Android](https://github.com/NativeScript/android-runtime/issues/1485) and [iOS](https://github.com/NativeScript/ios-runtime/issues/1209)

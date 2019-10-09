@@ -2,16 +2,16 @@ import { TransformFunctionsInfo } from "../ui/animation/animation";
 
 import { radiansToDegrees, degreesToRadians } from "../utils/number-utils";
 
-export const getTransformMatrix = ({property, value}) =>
+export const getTransformMatrix = ({ property, value }) =>
     TRANSFORM_MATRIXES[property](value);
 
 const TRANSFORM_MATRIXES = {
-    "scale": ({x, y}) => [
+    "scale": ({ x, y }) => [
         x, 0, 0,
         0, y, 0,
         0, 0, 1,
     ],
-    "translate": ({x, y}) => [
+    "translate": ({ x, y }) => [
         1, 0, x,
         0, 1, y,
         0, 0, 1,
@@ -62,7 +62,7 @@ export function decompose2DTransformMatrix(matrix: number[])
     } else if (C || D) {
         const R = Math.sqrt(C * C + D * D);
         rotate = Math.PI / 2 - (D > 0 ? Math.acos(-C / R) : -Math.acos(C / R));
-        scale = { x: determinant / R, y: R  };
+        scale = { x: determinant / R, y: R };
     }
 
     rotate = radiansToDegrees(rotate);

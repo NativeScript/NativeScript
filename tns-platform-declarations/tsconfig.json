@@ -24,6 +24,7 @@
         "android/android-*.d.ts",
         "android/androidx-*.d.ts",
         "ios/objc-x86_64",
+        "ios-typings-prj",
         "node_modules",
         "package"
     ]

@@ -1,6 +1,5 @@
 {
-	"name" : "console",
-  	"main" : "console",
+	"name": "console",
+	"main": "console",
 	"nativescript": {}
 }
-

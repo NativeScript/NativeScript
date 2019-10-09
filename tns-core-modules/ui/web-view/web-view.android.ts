@@ -3,7 +3,7 @@ import { WebViewBase, knownFolders, traceEnabled, traceWrite, traceCategories } 
 export * from "./web-view-common";
 
 interface WebViewClient {
-    new (owner: WebView): android.webkit.WebViewClient;
+    new(owner: WebView): android.webkit.WebViewClient;
 }
 
 let WebViewClient: WebViewClient;

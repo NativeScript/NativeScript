@@ -1,5 +1,5 @@
 {
-  "name" : "transition",
-  "main" : "transition",
-  "types" : "transition.d.ts"
+  "name": "transition",
+  "main": "transition",
+  "types": "transition.d.ts"
 }

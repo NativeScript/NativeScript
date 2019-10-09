@@ -2,8 +2,8 @@
 
 1. Local setup
     - install appium and all requirments related to `nativescript-dev-appium` plugin usage
-    - download images: 
-    
+    - download images:
+
         ```npm run load-images Emulator-Api23-Default "iPhone X 12"```
 
         or load multiple folders:
@@ -15,21 +15,21 @@
         ``` npm run load-images all```
 
         This command will download https://github.com/NativeScript/functional-tests-images/tree/master/uitestsapp and sparse all passed directories [emulator-name|simulator-name]
-    - rename/ create your device so that it matches folder name, respectively api level and density of emulators. 
-    
+    - rename/ create your device so that it matches folder name, respectively api level and density of emulators.
+
         You can also use scripts:
-    
-        `npm run update-emulators` to update your emulator density. 
-    
+
+        `npm run update-emulators` to update your emulator density.
+
         If you need to download system image and create emulator use:
 
         `npm run update-emulators -- --update-system-images`
 2. Test execution
     - Run test compilation in separate terminal and don't kill it.
-    
+
         `npm run test-watch`
-    - It is highly recommended during the development to use 
-    
+    - It is highly recommended during the development to use
+
         `npm run test [android|ios]` along with `tns run [android|ios]`. This command will use already installed app on the device.
         For example: Open terminal1 and run: `tns run android` and open new terminal2 and run: `npm run test android`
 3. Debug test.
@@ -64,7 +64,7 @@ mocha opt file is located at "../config/mocha.opts".
 
        --timeout 999999
        --recursive e2e
-       --reporter mochawesome 
+       --reporter mochawesome
        --reporter-options quiet=true,html=true,inline=true,autoOpen=true
        --exit
 

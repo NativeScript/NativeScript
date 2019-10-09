@@ -27,7 +27,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	static initialize(): void;
 
-	static instanceMethodForSelector(aSelector: string): interop.FunctionReference<(p1: any, p2: string) => any>;
+	static instanceMethodForSelector(aSelector: string): interop.FunctionReference<() => void>;
 
 	static instanceMethodSignatureForSelector(aSelector: string): NSMethodSignature;
 
@@ -59,6 +59,8 @@ declare class NSObject implements NSObjectProtocol {
 
 	accessibilityAttributedLabel: NSAttributedString;
 
+	accessibilityAttributedUserInputLabels: NSArray<NSAttributedString>;
+
 	accessibilityAttributedValue: NSAttributedString;
 
 	accessibilityContainerType: UIAccessibilityContainerType;
@@ -87,7 +89,13 @@ declare class NSObject implements NSObjectProtocol {
 
 	accessibilityPath: UIBezierPath;
 
+	accessibilityRespondsToUserInteraction: boolean;
+
+	accessibilityTextualContext: string;
+
 	accessibilityTraits: number;
+
+	accessibilityUserInputLabels: NSArray<string>;
 
 	accessibilityValue: string;
 
@@ -151,7 +159,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	attemptRecoveryFromErrorOptionIndexDelegateDidRecoverSelectorContextInfo(error: NSError, recoveryOptionIndex: number, delegate: any, didRecoverSelector: string, contextInfo: interop.Pointer | interop.Reference<any>): void;
 
-	awakeAfterUsingCoder(aDecoder: NSCoder): any;
+	awakeAfterUsingCoder(coder: NSCoder): any;
 
 	awakeFromNib(): void;
 
@@ -193,7 +201,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	methodForSelector(aSelector: string): interop.FunctionReference<(p1: any, p2: string) => any>;
+	methodForSelector(aSelector: string): interop.FunctionReference<() => void>;
 
 	methodSignatureForSelector(aSelector: string): NSMethodSignature;
 
@@ -241,7 +249,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	removeObserverForKeyPathContext(observer: NSObject, keyPath: string, context: interop.Pointer | interop.Reference<any>): void;
 
-	replacementObjectForCoder(aCoder: NSCoder): any;
+	replacementObjectForCoder(coder: NSCoder): any;
 
 	replacementObjectForKeyedArchiver(archiver: NSKeyedArchiver): any;
 
@@ -337,18 +345,17 @@ declare const OBJC_SYNC_SUCCESS: number;
 
 declare const OBJC_WAIT_UNTIL_DONE: number;
 
-declare class Protocol extends NSObject {
-
-	static alloc(): Protocol; // inherited from NSObject
-
-	static new(): Protocol; // inherited from NSObject
-}
-
 declare function _objc_flush_caches(cls: typeof NSObject): void;
+
+declare function _objc_msgForward(): void;
+
+declare function _objc_msgForward_stret(): void;
+
+declare function _objc_realizeClassFromSwift(cls: typeof NSObject, previously: interop.Pointer | interop.Reference<any>): typeof NSObject;
 
 declare function class_addIvar(cls: typeof NSObject, name: string, size: number, alignment: number, types: string): boolean;
 
-declare function class_addMethod(cls: typeof NSObject, name: string, imp: interop.FunctionReference<(p1: any, p2: string) => any>, types: string): boolean;
+declare function class_addMethod(cls: typeof NSObject, name: string, imp: interop.FunctionReference<() => void>, types: string): boolean;
 
 declare function class_addProperty(cls: typeof NSObject, name: string, attributes: interop.Pointer | interop.Reference<objc_property_attribute_t>, attributeCount: number): boolean;
 
@@ -382,9 +389,9 @@ declare function class_getInstanceVariable(cls: typeof NSObject, name: string): 
 
 declare function class_getIvarLayout(cls: typeof NSObject): string;
 
-declare function class_getMethodImplementation(cls: typeof NSObject, name: string): interop.FunctionReference<(p1: any, p2: string) => any>;
+declare function class_getMethodImplementation(cls: typeof NSObject, name: string): interop.FunctionReference<() => void>;
 
-declare function class_getMethodImplementation_stret(cls: typeof NSObject, name: string): interop.FunctionReference<(p1: any, p2: string) => any>;
+declare function class_getMethodImplementation_stret(cls: typeof NSObject, name: string): interop.FunctionReference<() => void>;
 
 declare function class_getName(cls: typeof NSObject): string;
 
@@ -398,9 +405,9 @@ declare function class_getWeakIvarLayout(cls: typeof NSObject): string;
 
 declare function class_isMetaClass(cls: typeof NSObject): boolean;
 
-declare function class_lookupMethod(cls: typeof NSObject, sel: string): interop.FunctionReference<(p1: any, p2: string) => any>;
+declare function class_lookupMethod(cls: typeof NSObject, sel: string): interop.FunctionReference<() => void>;
 
-declare function class_replaceMethod(cls: typeof NSObject, name: string, imp: interop.FunctionReference<(p1: any, p2: string) => any>, types: string): interop.FunctionReference<(p1: any, p2: string) => any>;
+declare function class_replaceMethod(cls: typeof NSObject, name: string, imp: interop.FunctionReference<() => void>, types: string): interop.FunctionReference<() => void>;
 
 declare function class_replaceProperty(cls: typeof NSObject, name: string, attributes: interop.Pointer | interop.Reference<objc_property_attribute_t>, attributeCount: number): void;
 
@@ -416,11 +423,11 @@ declare function class_setVersion(cls: typeof NSObject, version: number): void;
 
 declare function class_setWeakIvarLayout(cls: typeof NSObject, layout: string): void;
 
-declare function imp_getBlock(anImp: interop.FunctionReference<(p1: any, p2: string) => any>): any;
+declare function imp_getBlock(anImp: interop.FunctionReference<() => void>): any;
 
-declare function imp_implementationWithBlock(block: any): interop.FunctionReference<(p1: any, p2: string) => any>;
+declare function imp_implementationWithBlock(block: any): interop.FunctionReference<() => void>;
 
-declare function imp_removeBlock(anImp: interop.FunctionReference<(p1: any, p2: string) => any>): boolean;
+declare function imp_removeBlock(anImp: interop.FunctionReference<() => void>): boolean;
 
 declare function ivar_getName(v: interop.Pointer | interop.Reference<any>): string;
 
@@ -438,7 +445,7 @@ declare function method_getArgumentType(m: interop.Pointer | interop.Reference<a
 
 declare function method_getDescription(m: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<objc_method_description>;
 
-declare function method_getImplementation(m: interop.Pointer | interop.Reference<any>): interop.FunctionReference<(p1: any, p2: string) => any>;
+declare function method_getImplementation(m: interop.Pointer | interop.Reference<any>): interop.FunctionReference<() => void>;
 
 declare function method_getName(m: interop.Pointer | interop.Reference<any>): string;
 
@@ -448,7 +455,11 @@ declare function method_getReturnType(m: interop.Pointer | interop.Reference<any
 
 declare function method_getTypeEncoding(m: interop.Pointer | interop.Reference<any>): string;
 
-declare function method_setImplementation(m: interop.Pointer | interop.Reference<any>, imp: interop.FunctionReference<(p1: any, p2: string) => any>): interop.FunctionReference<(p1: any, p2: string) => any>;
+declare function method_invoke(): void;
+
+declare function method_invoke_stret(): void;
+
+declare function method_setImplementation(m: interop.Pointer | interop.Reference<any>, imp: interop.FunctionReference<() => void>): interop.FunctionReference<() => void>;
 
 declare const enum objc_AssociationPolicy {
 
@@ -462,6 +473,8 @@ declare const enum objc_AssociationPolicy {
 
 	OBJC_ASSOCIATION_COPY = 771
 }
+
+declare function objc_addLoadImageFunc(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_header>) => void>): void;
 
 declare function objc_allocateClassPair(superclass: typeof NSObject, name: string, extraBytes: number): typeof NSObject;
 
@@ -517,6 +530,18 @@ interface objc_method_description {
 }
 declare var objc_method_description: interop.StructType<objc_method_description>;
 
+declare function objc_msgSend(): void;
+
+declare function objc_msgSendSuper(): void;
+
+declare function objc_msgSendSuper_stret(): void;
+
+declare function objc_msgSend_fp2ret(): void;
+
+declare function objc_msgSend_fpret(): void;
+
+declare function objc_msgSend_stret(): void;
+
 interface objc_object {
 	isa: typeof NSObject;
 }
@@ -544,7 +569,11 @@ declare function objc_setExceptionPreprocessor(fn: interop.FunctionReference<(p1
 
 declare function objc_setForwardHandler(fwd: interop.Pointer | interop.Reference<any>, fwd_stret: interop.Pointer | interop.Reference<any>): void;
 
+declare function objc_setHook_getClass(newValue: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<typeof NSObject>) => boolean>, outOldValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<typeof NSObject>) => boolean>>): void;
+
 declare function objc_setHook_getImageName(newValue: interop.FunctionReference<(p1: typeof NSObject, p2: interop.Pointer | interop.Reference<string>) => boolean>, outOldValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: typeof NSObject, p2: interop.Pointer | interop.Reference<string>) => boolean>>): void;
+
+declare function objc_setHook_setAssociatedObject(newValue: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>, p3: any, p4: objc_AssociationPolicy) => void>, outOldValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>, p3: any, p4: objc_AssociationPolicy) => void>>): void;
 
 declare function objc_setUncaughtExceptionHandler(fn: interop.FunctionReference<(p1: any) => void>): interop.FunctionReference<(p1: any) => void>;
 

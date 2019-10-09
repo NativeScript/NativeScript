@@ -71,9 +71,9 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
     return new Promise<httpModule.HttpResponse>((resolve, reject) => {
 
         if (!options.url) {
-          reject(new Error("Request url was empty."));
+            reject(new Error("Request url was empty."));
 
-          return;
+            return;
         }
 
         try {
@@ -168,7 +168,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
                                         const file = fs.File.fromPath(destinationFilePath);
 
                                         data.writeToFileAtomically(destinationFilePath, true);
-                                        
+
                                         return file;
                                     } else {
                                         reject(new Error(`Cannot save file with path: ${destinationFilePath}.`));

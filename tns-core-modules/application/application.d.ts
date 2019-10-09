@@ -102,6 +102,16 @@ export interface OrientationChangedEventData extends ApplicationEventData {
 }
 
 /**
+ * Event data containing information for system appearance changed event.
+ */
+export interface SystemAppearanceChangedEventData extends ApplicationEventData {
+    /**
+     * New system appearance value.
+     */
+    newValue: "light" | "dark";
+}
+
+/**
  * Event data containing information about unhandled application errors.
  */
 export interface UnhandledErrorEventData extends ApplicationEventData {
@@ -171,8 +181,9 @@ export function loadAppCss();
 /**
 * Adds new values to the application styles.
 * @param cssText - A valid styles which will be added to the current application styles.
+* @param attributeScoped - Whether the styles are attribute scoped. Adding attribute scoped styles will not perform a full application styling refresh.
 */
-export function addCss(cssText: string): void;
+export function addCss(cssText: string, attributeScoped?: boolean): void;
 
 /**
  * This event is raised when application css is changed.
@@ -281,15 +292,28 @@ export function on(event: "uncaughtError", callback: (args: UnhandledErrorEventD
 export function on(event: "discardedError", callback: (args: DiscardedErrorEventData) => void, thisArg?: any);
 
 /**
- * This event is raised the orientation of the current device has changed.
+ * This event is raised when the orientation of the application changes.
  */
 export function on(event: "orientationChanged", callback: (args: OrientationChangedEventData) => void, thisArg?: any);
+
+/**
+ * This event is raised when the operating system appearance changes
+ * between light and dark theme (for Android);
+ * between light and dark mode (for iOS) and vice versa.
+ */
+export function on(event: "systemAppearanceChanged", callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any);
 
 /**
  * Gets the orientation of the application.
  * Available values: "portrait", "landscape", "unknown".
  */
 export function orientation(): "portrait" | "landscape" | "unknown";
+
+/**
+ * Gets the operating system appearance.
+ * Available values: "dark", "light".
+ */
+export function systemAppearance(): "dark" | "light";
 
 /**
  * This is the Android-specific application object instance.
@@ -424,6 +448,12 @@ export class AndroidApplication extends Observable {
      * Available values: "portrait", "landscape", "unknown".
      */
     orientation: "portrait" | "landscape" | "unknown";
+
+    /**
+     * Gets the system appearance.
+     * Available values: "dark", "light".
+     */
+    systemAppearance: "dark" | "light";
 
     /**
      * The name of the application package.
@@ -605,6 +635,12 @@ export interface iOSApplication {
     orientation: "portrait" | "landscape" | "unknown";
 
     /**
+     * Gets the system appearance.
+     * Available values: "dark", "light".
+     */
+    systemAppearance: "dark" | "light";
+
+    /**
      * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html).
      */
     nativeApp: any /* UIApplication */;
@@ -627,7 +663,9 @@ export interface iOSApplication {
     removeNotificationObserver(observer: any, notificationName: string): void;
 }
 
-/* tslint:disable */
+/**
+* @deprecated
+*/
 export interface RootViewControllerImpl {
     contentController: any;
 }

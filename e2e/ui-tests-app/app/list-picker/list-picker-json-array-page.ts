@@ -27,7 +27,7 @@ export class ListPickerJsonArrayModel extends Observable {
     { id: 24, name: "Mathieu", role: "Defender" },
     { id: 25, name: "Masip", role: "Goalkeeper" },
   ];
-  
+
   public selectedItem = "";
 }
 

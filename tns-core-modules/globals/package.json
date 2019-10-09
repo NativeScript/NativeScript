@@ -1,6 +1,6 @@
 {
-  "name" : "globals",
-  "main" : "globals",
+  "name": "globals",
+  "main": "globals",
   "types": "globals.d.ts",
   "nativescript": {}
 }

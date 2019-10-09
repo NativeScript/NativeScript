@@ -89,7 +89,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             widgetLayoutParams = widgetFlexboxLayout.LayoutParams;
         }
     }
-    
+
     public createNativeView() {
         return new widgetFlexboxLayout(this._context);
     }

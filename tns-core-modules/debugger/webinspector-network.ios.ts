@@ -78,7 +78,7 @@ export class Request {
     }
 
     get hasTextContent(): boolean {
-        return [ "Document", "Stylesheet", "Script", "XHR" ].indexOf(this._resourceType) !== -1;
+        return ["Document", "Stylesheet", "Script", "XHR"].indexOf(this._resourceType) !== -1;
     }
 
     get data(): any {
@@ -97,7 +97,7 @@ export class Request {
 
     set resourceType(value: string) {
         if (this._resourceType !== value) {
-                this._resourceType = value;
+            this._resourceType = value;
         }
     }
 
@@ -172,13 +172,13 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
     getResponseBody(params: inspectorCommandTypes.NetworkDomain.GetResponseBodyMethodArguments): { body: string, base64Encoded: boolean } {
         const resource_data = resources_datas[params.requestId];
         const body = resource_data.hasTextContent ? NSString.alloc().initWithDataEncoding(resource_data.data, 4).toString() :
-                    resource_data.data.base64EncodedStringWithOptions(0);
+            resource_data.data.base64EncodedStringWithOptions(0);
 
         if (resource_data) {
-             return {
-                 body: body,
-                 base64Encoded: !resource_data.hasTextContent
-             };
+            return {
+                body: body,
+                base64Encoded: !resource_data.hasTextContent
+            };
         }
     }
 

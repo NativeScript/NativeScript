@@ -14,7 +14,7 @@ How to specify category(s):
 import * as trace from "trace";
 // only the Layout messages are traced
 trace.setCategories(traceCategories.Layout);
-``` 
+```
 
 ```js
 import * as trace from "trace";

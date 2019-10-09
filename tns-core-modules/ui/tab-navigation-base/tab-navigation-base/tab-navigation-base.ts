@@ -153,7 +153,7 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     }
 
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: any): void {
-        // overridden by inheritors        
+        // overridden by inheritors
     }
 
     public getTabBarItemBackgroundColor(tabStripItem: TabStripItem): any {

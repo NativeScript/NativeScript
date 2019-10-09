@@ -3,6 +3,7 @@ const { join, relative, resolve, sep } = require("path");
 const webpack = require("webpack");
 const nsWebpack = require("nativescript-dev-webpack");
 const nativescriptTarget = require("nativescript-dev-webpack/nativescript-target");
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
@@ -10,6 +11,10 @@ const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 const { NativeScriptWorkerPlugin } = require("nativescript-worker-loader/NativeScriptWorkerPlugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const hashSalt = Date.now().toString();
+
+const ANDROID_MAX_CYCLES = 68;
+const IOS_MAX_CYCLES = 39;
+let numCyclesDetected = 0;
 
 module.exports = env => {
     // Add your custom Activities, Services and other Android app components here.
@@ -229,6 +234,32 @@ module.exports = env => {
             new webpack.DefinePlugin({
                 "global.TNS_WEBPACK": "true",
                 "process": "global.process",
+            }),
+            new CircularDependencyPlugin({
+                onStart({ compilation }) {
+                    console.log('start detecting webpack modules cycles');
+                    numCyclesDetected = 0;
+                },
+                onDetected({ module: webpackModuleRecord, paths, compilation }) {
+                    numCyclesDetected++;
+                    compilation.warnings.push(new Error(paths.join(' -> ')))
+                },
+                onEnd({ compilation }) {
+                    console.log('end detecting webpack modules cycles');
+                    if (platform === "android" && numCyclesDetected !== ANDROID_MAX_CYCLES) {
+                        compilation.errors.push(new Error(
+                            `Detected ${numCyclesDetected} cycles which differs configured limit of ${ANDROID_MAX_CYCLES}.`
+                        ));
+                    } else if (platform === "ios" && numCyclesDetected !== IOS_MAX_CYCLES) {
+                        compilation.errors.push(new Error(
+                            `Detected ${numCyclesDetected} cycles which differs configured limit of ${IOS_MAX_CYCLES}.`
+                        ));
+                    } else {
+                        compilation.warnings.push(new Error(
+                            `${numCyclesDetected} cycles detected.`
+                        ));
+                    }
+                },
             }),
             // Remove all files from the out dir.
             new CleanWebpackPlugin(itemsToClean, { verbose: !!verbose }),

@@ -5,7 +5,7 @@
 import { LayoutBase, View, Property } from "../layout-base";
 
 /**
- * A Layout that arranges its children at its outer edges, and allows its last child to take up the remaining space. 
+ * A Layout that arranges its children at its outer edges, and allows its last child to take up the remaining space.
  */
 export class DockLayout extends LayoutBase {
     /**

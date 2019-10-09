@@ -2,8 +2,10 @@ import { Style as StyleDefinition } from ".";
 import { Color } from "../../../color";
 import { Font, FontStyle, FontWeight } from "../font";
 import { Background } from "../background";
-import { Length, PercentLength, ViewBase, BackgroundRepeat, Visibility,
-    HorizontalAlignment, VerticalAlignment, dip, LinearGradient } from "../../core/view";
+import {
+    Length, PercentLength, ViewBase, BackgroundRepeat, Visibility,
+    HorizontalAlignment, VerticalAlignment, dip, LinearGradient
+} from "../../core/view";
 import { Observable } from "../../../data/observable";
 
 import {
@@ -27,7 +29,7 @@ export class Style extends Observable implements StyleDefinition {
         // HACK: Could not find better way for cross platform WeakRef type checking.
         if (ownerView.constructor.toString().indexOf("[native code]") !== -1) {
             this.viewRef = <WeakRef<ViewBase>>ownerView;
-        } else  {
+        } else {
             this.viewRef = new WeakRef(<ViewBase>ownerView);
         }
     }
@@ -169,6 +171,11 @@ export class Style extends Observable implements StyleDefinition {
     // Page-specific props
     public statusBarStyle: "light" | "dark";
     public androidStatusBarBackground: Color;
+
+    // ActionBar-specific props
+    public androidContentInset: string | Length;
+    public androidContentInsetLeft: Length;
+    public androidContentInsetRight: Length;
 
     //flexbox layout properties
     public flexDirection: FlexDirection;

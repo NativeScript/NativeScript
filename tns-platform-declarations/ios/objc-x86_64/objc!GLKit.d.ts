@@ -527,14 +527,7 @@ declare const enum GLKVertexAttrib {
 	TexCoord1 = 4
 }
 
-interface GLKVertexAttributeParameters {
-	type: number;
-	size: number;
-	normalized: number;
-}
-declare var GLKVertexAttributeParameters: interop.StructType<GLKVertexAttributeParameters>;
-
-declare function GLKVertexAttributeParametersFromModelIO(vertexFormat: MDLVertexFormat): GLKVertexAttributeParameters;
+declare function GLKVertexAttributeParametersFromModelIO(vertexFormat: MDLVertexFormat): _GLKVertexAttributeParameters;
 
 declare class GLKView extends UIView implements NSCoding {
 
@@ -584,9 +577,9 @@ declare class GLKView extends UIView implements NSCoding {
 
 	display(): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithFrameContext(frame: CGRect, context: EAGLContext): this;
 }
@@ -637,11 +630,11 @@ declare class GLKViewController extends UIViewController implements GLKViewDeleg
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	glkViewDrawInRect(view: GLKView, rect: CGRect): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	isEqual(object: any): boolean;
 
@@ -713,6 +706,13 @@ declare const enum GLKViewDrawableStencilFormat {
 
 	Format8 = 1
 }
+
+interface _GLKVertexAttributeParameters {
+	type: number;
+	size: number;
+	normalized: number;
+}
+declare var _GLKVertexAttributeParameters: interop.StructType<_GLKVertexAttributeParameters>;
 
 declare var kGLKModelErrorDomain: string;
 

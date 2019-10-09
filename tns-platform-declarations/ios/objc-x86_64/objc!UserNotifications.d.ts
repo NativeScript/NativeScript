@@ -24,7 +24,9 @@ declare const enum UNAuthorizationOptions {
 
 	ProvidesAppNotificationSettings = 32,
 
-	Provisional = 64
+	Provisional = 64,
+
+	Announcement = 128
 }
 
 declare const enum UNAuthorizationStatus {
@@ -109,6 +111,8 @@ declare class UNMutableNotificationContent extends UNNotificationContent {
 
 	summaryArgumentCount: number;
 
+	targetContentIdentifier: string;
+
 	threadIdentifier: string;
 
 	title: string;
@@ -132,9 +136,9 @@ declare class UNNotification extends NSObject implements NSCopying, NSSecureCodi
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class UNNotificationAction extends NSObject implements NSCopying, NSSecureCoding {
@@ -157,9 +161,9 @@ declare class UNNotificationAction extends NSObject implements NSCopying, NSSecu
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var UNNotificationActionOptionNone: UNNotificationActionOptions;
@@ -193,9 +197,9 @@ declare class UNNotificationAttachment extends NSObject implements NSCopying, NS
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var UNNotificationAttachmentOptionsThumbnailClippingRectKey: string;
@@ -236,9 +240,9 @@ declare class UNNotificationCategory extends NSObject implements NSCopying, NSSe
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var UNNotificationCategoryOptionNone: UNNotificationCategoryOptions;
@@ -251,7 +255,9 @@ declare const enum UNNotificationCategoryOptions {
 
 	HiddenPreviewsShowTitle = 4,
 
-	HiddenPreviewsShowSubtitle = 8
+	HiddenPreviewsShowSubtitle = 8,
+
+	AllowAnnouncement = 16
 }
 
 declare class UNNotificationContent extends NSObject implements NSCopying, NSMutableCopying, NSSecureCoding {
@@ -278,6 +284,8 @@ declare class UNNotificationContent extends NSObject implements NSCopying, NSMut
 
 	readonly summaryArgumentCount: number;
 
+	readonly targetContentIdentifier: string;
+
 	readonly threadIdentifier: string;
 
 	readonly title: string;
@@ -290,9 +298,9 @@ declare class UNNotificationContent extends NSObject implements NSCopying, NSMut
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -332,9 +340,9 @@ declare class UNNotificationRequest extends NSObject implements NSCopying, NSSec
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class UNNotificationResponse extends NSObject implements NSCopying, NSSecureCoding {
@@ -347,15 +355,17 @@ declare class UNNotificationResponse extends NSObject implements NSCopying, NSSe
 
 	readonly notification: UNNotification;
 
+	readonly targetScene: UIScene;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class UNNotificationServiceExtension extends NSObject {
@@ -388,6 +398,8 @@ declare class UNNotificationSettings extends NSObject implements NSCopying, NSSe
 
 	readonly alertStyle: UNAlertStyle;
 
+	readonly announcementSetting: UNNotificationSetting;
+
 	readonly authorizationStatus: UNAuthorizationStatus;
 
 	readonly badgeSetting: UNNotificationSetting;
@@ -412,9 +424,9 @@ declare class UNNotificationSettings extends NSObject implements NSCopying, NSSe
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class UNNotificationSound extends NSObject implements NSCopying, NSSecureCoding {
@@ -441,9 +453,9 @@ declare class UNNotificationSound extends NSObject implements NSCopying, NSSecur
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class UNNotificationTrigger extends NSObject implements NSCopying, NSSecureCoding {
@@ -460,9 +472,9 @@ declare class UNNotificationTrigger extends NSObject implements NSCopying, NSSec
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class UNPushNotificationTrigger extends UNNotificationTrigger {

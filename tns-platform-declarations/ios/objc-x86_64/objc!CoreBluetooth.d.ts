@@ -106,6 +106,8 @@ declare class CBCentralManager extends CBManager {
 
 	static new(): CBCentralManager; // inherited from NSObject
 
+	static supportsFeatures(features: CBCentralManagerFeature): boolean;
+
 	delegate: CBCentralManagerDelegate;
 
 	readonly isScanning: boolean;
@@ -122,6 +124,8 @@ declare class CBCentralManager extends CBManager {
 
 	initWithDelegateQueueOptions(delegate: CBCentralManagerDelegate, queue: NSObject, options: NSDictionary<string, any>): this;
 
+	registerForConnectionEventsWithOptions(options: NSDictionary<string, any>): void;
+
 	retrieveConnectedPeripheralsWithServices(serviceUUIDs: NSArray<CBUUID> | CBUUID[]): NSArray<CBPeripheral>;
 
 	retrievePeripheralsWithIdentifiers(identifiers: NSArray<NSUUID> | NSUUID[]): NSArray<CBPeripheral>;
@@ -133,6 +137,8 @@ declare class CBCentralManager extends CBManager {
 
 interface CBCentralManagerDelegate extends NSObjectProtocol {
 
+	centralManagerConnectionEventDidOccurForPeripheral?(central: CBCentralManager, event: CBConnectionEvent, peripheral: CBPeripheral): void;
+
 	centralManagerDidConnectPeripheral?(central: CBCentralManager, peripheral: CBPeripheral): void;
 
 	centralManagerDidDisconnectPeripheralError?(central: CBCentralManager, peripheral: CBPeripheral, error: NSError): void;
@@ -140,6 +146,8 @@ interface CBCentralManagerDelegate extends NSObjectProtocol {
 	centralManagerDidDiscoverPeripheralAdvertisementDataRSSI?(central: CBCentralManager, peripheral: CBPeripheral, advertisementData: NSDictionary<string, any>, RSSI: number): void;
 
 	centralManagerDidFailToConnectPeripheralError?(central: CBCentralManager, peripheral: CBPeripheral, error: NSError): void;
+
+	centralManagerDidUpdateANCSAuthorizationForPeripheral?(central: CBCentralManager, peripheral: CBPeripheral): void;
 
 	centralManagerDidUpdateState(central: CBCentralManager): void;
 
@@ -149,6 +157,11 @@ declare var CBCentralManagerDelegate: {
 
 	prototype: CBCentralManagerDelegate;
 };
+
+declare const enum CBCentralManagerFeature {
+
+	ExtendedScanAndConnect = 1
+}
 
 declare var CBCentralManagerOptionRestoreIdentifierKey: string;
 
@@ -228,13 +241,28 @@ declare const enum CBCharacteristicWriteType {
 	WithoutResponse = 1
 }
 
+declare var CBConnectPeripheralOptionEnableTransportBridgingKey: string;
+
 declare var CBConnectPeripheralOptionNotifyOnConnectionKey: string;
 
 declare var CBConnectPeripheralOptionNotifyOnDisconnectionKey: string;
 
 declare var CBConnectPeripheralOptionNotifyOnNotificationKey: string;
 
+declare var CBConnectPeripheralOptionRequiresANCS: string;
+
 declare var CBConnectPeripheralOptionStartDelayKey: string;
+
+declare const enum CBConnectionEvent {
+
+	PeerDisconnected = 0,
+
+	PeerConnected = 1
+}
+
+declare var CBConnectionEventMatchingOptionPeripheralUUIDs: string;
+
+declare var CBConnectionEventMatchingOptionServiceUUIDs: string;
 
 declare class CBDescriptor extends CBAttribute {
 
@@ -303,7 +331,20 @@ declare class CBManager extends NSObject {
 
 	static new(): CBManager; // inherited from NSObject
 
+	readonly authorization: CBManagerAuthorization;
+
 	readonly state: CBManagerState;
+}
+
+declare const enum CBManagerAuthorization {
+
+	NotDetermined = 0,
+
+	Restricted = 1,
+
+	Denied = 2,
+
+	AllowedAlways = 3
 }
 
 declare const enum CBManagerState {
@@ -386,6 +427,8 @@ declare class CBPeripheral extends CBPeer {
 	static new(): CBPeripheral; // inherited from NSObject
 
 	readonly RSSI: number;
+
+	readonly ancsAuthorized: boolean;
 
 	readonly canSendWriteWithoutResponse: boolean;
 

@@ -43,9 +43,9 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 
 	challengeComposeControllerWithPlayersMessageCompletionHandler(playerIDs: NSArray<string> | string[], message: string, completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<string>) => void): UIViewController;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithIdentifier(identifier: string): this;
 
@@ -54,6 +54,8 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 	initWithIdentifierPlayer(identifier: string, player: GKPlayer): this;
 
 	issueChallengeToPlayersMessage(playerIDs: NSArray<string> | string[], message: string): void;
+
+	issueChallengeToPlayersMessageMethod(playerIDs: NSArray<string> | string[], message: string): void;
 
 	reportAchievementWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
@@ -105,9 +107,9 @@ declare class GKAchievementDescription extends NSObject implements NSCoding, NSS
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	loadImageWithCompletionHandler(completionHandler: (p1: UIImage, p2: NSError) => void): void;
 }
@@ -180,9 +182,9 @@ declare class GKChallenge extends NSObject implements NSCoding, NSSecureCoding {
 
 	decline(): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class GKChallengeEventHandler extends NSObject {
@@ -317,7 +319,11 @@ declare const enum GKErrorCode {
 
 	MatchNotConnected = 28,
 
-	GameSessionRequestInvalid = 29
+	GameSessionRequestInvalid = 29,
+
+	RestrictedToAutomatch = 30,
+
+	APINotAvailable = 31
 }
 
 declare var GKErrorDomain: string;
@@ -627,9 +633,9 @@ declare class GKLeaderboardSet extends NSObject implements NSCoding, NSSecureCod
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	loadImageWithCompletionHandler(completionHandler: (p1: UIImage, p2: NSError) => void): void;
 
@@ -681,7 +687,11 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	readonly friends: NSArray<string>;
 
+	readonly multiplayerGamingRestricted: boolean;
+
 	readonly underage: boolean;
+
+	static readonly local: GKLocalPlayer;
 
 	static readonly localPlayer: GKLocalPlayer;
 
@@ -714,6 +724,8 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 	isKindOfClass(aClass: typeof NSObject): boolean;
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	loadChallengableFriendsWithCompletionHandler(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
 	loadDefaultLeaderboardCategoryIDWithCompletionHandler(completionHandler: (p1: string, p2: NSError) => void): void;
 
@@ -844,6 +856,8 @@ declare class GKMatchRequest extends NSObject {
 	recipientResponseHandler: (p1: GKPlayer, p2: GKInviteRecipientResponse) => void;
 
 	recipients: NSArray<GKPlayer>;
+
+	restrictToAutomatch: boolean;
 }
 
 declare const enum GKMatchSendDataMode {
@@ -1035,11 +1049,17 @@ declare class GKPlayer extends GKBasePlayer {
 
 	readonly alias: string;
 
+	readonly gamePlayerID: string;
+
 	readonly guestIdentifier: string;
 
 	readonly isFriend: boolean;
 
+	readonly teamPlayerID: string;
+
 	loadPhotoForSizeWithCompletionHandler(size: GKPhotoSize, completionHandler: (p1: UIImage, p2: NSError) => void): void;
+
+	scopedIDsArePersistent(): boolean;
 }
 
 declare var GKPlayerAuthenticationDidChangeNotificationName: string;
@@ -1129,11 +1149,11 @@ declare class GKScore extends NSObject implements NSCoding, NSSecureCoding {
 
 	challengeComposeControllerWithPlayersMessageCompletionHandler(playerIDs: NSArray<string> | string[], message: string, completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<string>) => void): UIViewController;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCategory(category: string): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithLeaderboardIdentifier(identifier: string): this;
 
@@ -1142,6 +1162,8 @@ declare class GKScore extends NSObject implements NSCoding, NSSecureCoding {
 	initWithLeaderboardIdentifierPlayer(identifier: string, player: GKPlayer): this;
 
 	issueChallengeToPlayersMessage(playerIDs: NSArray<string> | string[], message: string): void;
+
+	issueChallengeToPlayersMessageMethod(playerIDs: NSArray<string> | string[], message: string): void;
 
 	reportScoreWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 }
