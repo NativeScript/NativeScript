@@ -452,6 +452,7 @@ export class AndroidApplication extends Observable {
     /**
      * Gets the system appearance.
      * Available values: "dark", "light".
+     * Undefined for iOS <= 11.
      */
     systemAppearance: "dark" | "light";
 

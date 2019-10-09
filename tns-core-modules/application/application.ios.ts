@@ -441,6 +441,9 @@ export function getNativeApplication(): UIApplication {
 
 function getSystemAppearanceValue(userInterfaceStyle: number): "dark" | "light" {
     switch (userInterfaceStyle) {
+        // UIUserInterfaceStyle is undefined for iOS <= 11.
+        case undefined:
+            return undefined;
         case UIUserInterfaceStyle.Dark:
             return "dark";
         case UIUserInterfaceStyle.Light:
@@ -482,7 +485,10 @@ function setupRootViewCssClasses(rootView: View): void {
     pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
     pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
     pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.systemAppearance}`);
+
+    if (majorVersion >= 13) {
+        pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.systemAppearance}`);
+    }
 
     const rootViewCssClasses = getRootViewCssClasses();
     rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
