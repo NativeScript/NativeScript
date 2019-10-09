@@ -6,7 +6,7 @@ import { ViewEntry } from "../frame";
 // Types.
 import { debug, ScopeError, SourceError, Source } from "../../utils/debug";
 import * as xml from "../../xml";
-import { isString, isDefined } from "../../utils/types";
+import { isString, isObject, isDefined } from "../../utils/types";
 import { ComponentModule, setPropertyValue, getComponentModule } from "./component-builder";
 import { platformNames, device } from "../../platform";
 import { profile } from "../../profiling";
@@ -215,6 +215,10 @@ namespace xml2ui {
         parse(args: xml.ParserEvent);
     }
 
+    interface ParseInputData extends String {
+        default?: string;
+    }
+
     export class XmlProducerBase implements XmlProducer {
         private _next: XmlConsumer;
         public pipe<Next extends XmlConsumer>(next: Next) {
@@ -235,7 +239,7 @@ namespace xml2ui {
             this.error = error || PositionErrorFormat;
         }
 
-        public parse(value: string) {
+        public parse(value: ParseInputData) {
             const xmlParser = new xml.XmlParser((args: xml.ParserEvent) => {
                 try {
                     this.next(args);
@@ -247,7 +251,9 @@ namespace xml2ui {
             }, true);
 
             if (isString(value)) {
-                xmlParser.parse(value);
+                xmlParser.parse(<string>value);
+            } else if (isObject(value) && isString(value.default)) {
+                xmlParser.parse(value.default);
             }
         }
     }
