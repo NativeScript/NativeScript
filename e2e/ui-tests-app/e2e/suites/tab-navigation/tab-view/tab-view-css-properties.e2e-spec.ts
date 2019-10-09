@@ -59,11 +59,11 @@ describe(`${suite}-${spec}-suite`, async function () {
             if (driver.isIOS && imageName.includes("android")) {
                 this.skip();
             }
-            if (driver.platformName === Platform.ANDROID
-                && (sample.sample.toLowerCase() === "all" || sample.sample.toLowerCase() === "reset")) {
+            let scenarioBtn = await driver.waitForElement(sample.sample);
+            if (!scenarioBtn) {
                 await driver.scroll(Direction.up, 400, 200, 300, 200);
+                scenarioBtn = await driver.waitForElement(sample.sample);
             }
-            const scenarioBtn = await driver.waitForElement(sample.sample);
             await scenarioBtn.click();
             imageName = setImageName(suite, spec, imageName);
             await driver.imageHelper.compareScreen({ imageName: imageName, timeOutSeconds: 5, tolerance: 0, toleranceType: ImageOptions.pixel });
