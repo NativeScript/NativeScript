@@ -14,8 +14,8 @@ import {
 } from "./frame-common";
 
 import {
-    _setAndroidFragmentTransitions, _getAnimatedEntries, ExpandedEntry,
-    _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, addNativeTransitionListener, ExpandedTransitionListener
+    _setAndroidFragmentTransitions, _getAnimatedEntries,
+    _updateTransitions, _reverseTransitions, _clearEntry, _clearFragment, addNativeTransitionListener
 } from "./fragment.transitions";
 
 // TODO: Remove this and get it from global to decouple builder for angular
@@ -553,7 +553,7 @@ export class Frame extends FrameBase {
         });
     }
 }
-function cloneExpandedTransitionListener(expandedTransitionListener: ExpandedTransitionListener) {
+function cloneExpandedTransitionListener(expandedTransitionListener: any) {
     if (!expandedTransitionListener) {
         return null;
     }
@@ -811,7 +811,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     @profile
     public onCreateAnimator(fragment: androidx.fragment.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
         let animator = null;
-        const entry = (<ExpandedEntry>this.entry);
+        const entry = <any>this.entry;
 
         // Return enterAnimator only when new (no current entry) nested transition.
         if (enter && entry.isNestedDefaultTransition) {
