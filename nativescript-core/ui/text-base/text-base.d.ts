@@ -3,10 +3,10 @@
  */ /** */
 
 import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, Length } from "../core/view";
-import { FormattedString } from "../../text/formatted-string";
+import { FormattedString } from "./formatted-string";
 
 export * from "../core/view";
-export { FormattedString } from "../../text/formatted-string";
+export { FormattedString };
 
 export class TextBase extends View implements AddChildFromBuilder {
 

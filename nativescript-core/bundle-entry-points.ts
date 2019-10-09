@@ -6,6 +6,8 @@ if (global.TNS_WEBPACK) {
 
     global.registerModule("text/formatted-string", () => require("./text/formatted-string"));
     global.registerModule("text/span", () => require("./text/span"));
+    global.registerModule("ui/text-base/formatted-string", () => require("./ui/text-base/formatted-string"));
+    global.registerModule("ui/text-base/span", () => require("./ui/text-base/span"));
     global.registerModule("ui/action-bar", () => require("./ui/action-bar"));
     global.registerModule("ui/activity-indicator", () => require("./ui/activity-indicator"));
     global.registerModule("ui/border", () => require("./ui/border"));

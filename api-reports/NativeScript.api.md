@@ -177,6 +177,8 @@ export class AndroidApplication extends Observable {
 
     nativeApp: any /* android.app.Application */;
 
+    on(event: "activityResumed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
     on(event: "activityStopped", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
 
     on(event: "saveActivityState", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
@@ -199,8 +201,6 @@ export class AndroidApplication extends Observable {
 
     on(event: "activityPaused", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
 
-    on(event: "activityResumed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-
     orientation: "portrait" | "landscape" | "unknown";
 
     packageName: string;
@@ -212,6 +212,8 @@ export class AndroidApplication extends Observable {
     public static saveActivityStateEvent: string;
 
     startActivity: any /* androidx.appcompat.app.AppCompatActivity */;
+
+    systemAppearance: "dark" | "light";
 
     unregisterBroadcastReceiver(intentFilter: string): void;
 }
@@ -786,6 +788,31 @@ export class Folder extends FileSystemEntity {
 }
 
 // @public
+export class FormattedString extends ViewBase {
+
+    public backgroundColor: Color;
+
+    public color: Color;
+
+    public fontFamily: string;
+
+    public fontSize: number;
+
+    // Warning: (ae-forgotten-export) The symbol "FontStyle" needs to be exported by the entry point index.d.ts
+    public fontStyle: FontStyle;
+
+    // Warning: (ae-forgotten-export) The symbol "FontWeight" needs to be exported by the entry point index.d.ts
+    public fontWeight: FontWeight;
+
+    public spans: ObservableArray<Span>;
+
+    // Warning: (ae-forgotten-export) The symbol "TextDecoration" needs to be exported by the entry point index.d.ts
+    public textDecoration: TextDecoration;
+
+    public toString(): string;
+}
+
+// @public
 export class Frame extends View {
     public actionBarVisibility: "auto" | "never" | "always";
 
@@ -1146,6 +1173,9 @@ export interface iOSApplication {
 
     /* tslint:enable */
     rootController: any /* UIViewController */;
+
+    /* tslint:enable */
+    systemAppearance: "dark" | "light";
 
     /* tslint:enable */
     window: any /* UIWindow */;
@@ -1814,6 +1844,29 @@ export class Slider extends View {
 }
 
 // @public
+export class Span extends ViewBase {
+    public backgroundColor: Color;
+
+    public color: Color;
+
+    public fontFamily: string;
+
+    public fontSize: number;
+
+    public fontStyle: FontStyle;
+
+    public fontWeight: FontWeight;
+
+    // (undocumented)
+    _setTextInternal(value: string): void;
+
+    public text: string;
+
+    public textDecoration: TextDecoration;
+    //@endprivate
+}
+
+// @public
 export class StackLayout extends LayoutBase {
     // Warning: (ae-forgotten-export) The symbol "Orientation" needs to be exported by the entry point index.d.ts
     orientation: Orientation_2;
@@ -1919,12 +1972,8 @@ export class Style extends Observable {
     public fontInternal: Font;
     // (undocumented)
     public fontSize: number;
-    // Warning: (ae-forgotten-export) The symbol "FontStyle" needs to be exported by the entry point index.d.ts
-    // 
     // (undocumented)
     public fontStyle: FontStyle;
-    // Warning: (ae-forgotten-export) The symbol "FontWeight" needs to be exported by the entry point index.d.ts
-    // 
     // (undocumented)
     public fontWeight: FontWeight;
     public getCssVariable(varName: string): string | null;
@@ -2000,8 +2049,6 @@ export class Style extends Observable {
     // 
     // (undocumented)
     public textAlignment: TextAlignment;
-    // Warning: (ae-forgotten-export) The symbol "TextDecoration" needs to be exported by the entry point index.d.ts
-    // 
     // (undocumented)
     public textDecoration: TextDecoration;
     // Warning: (ae-forgotten-export) The symbol "TextTransform" needs to be exported by the entry point index.d.ts
@@ -2294,7 +2341,6 @@ export class TextBase extends View implements AddChildFromBuilder {
 
     fontSize: number;
 
-    // Warning: (ae-forgotten-export) The symbol "FormattedString" needs to be exported by the entry point index.d.ts
     formattedText: FormattedString;
 
     // (undocumented)

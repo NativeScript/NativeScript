@@ -62,6 +62,8 @@ export { TabStripItem } from "./tab-navigation-base/tab-strip-item";
 export { TabView, TabViewItem } from "./tab-view";
 export { Tabs } from "./tabs";
 export { TextBase } from "./text-base";
+export { FormattedString } from "./text-base/formatted-string";
+export { Span } from "./text-base/span";
 export { TextField } from "./text-field";
 export { TextView } from "./text-view";
 export { TimePicker } from "./time-picker";
