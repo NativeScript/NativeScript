@@ -46,4 +46,9 @@ export function testAndroidApplicationInitialized() {
     TKUnit.assert(app.android.nativeApp, "Android nativeApp not initialized.");
     TKUnit.assert(app.android.orientation, "Android orientation not initialized.");
     TKUnit.assert(app.android.packageName, "Android packageName not initialized.");
+    TKUnit.assert(app.android.systemAppearance, "Android system appearance not initialized.");
+}
+
+export function testSystemAppearance() {
+    TKUnit.assert(app.systemAppearance(), "System appearance not initialized.");
 }
