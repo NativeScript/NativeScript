@@ -3,7 +3,6 @@
 // Definitions.
 import { NavigationType } from "./frame-common";
 import { NavigationTransition, BackstackEntry } from "../frame";
-import { ExpandedEntry, ExpandedTransitionListener, ExpandedAnimator } from "./fragment.transitions";
 
 // Types.
 import { Transition, AndroidTransitionType } from "../transition/transition";
@@ -23,6 +22,35 @@ export const completedEntries = new Map<number, ExpandedEntry>();
 
 let TransitionListener: TransitionListener;
 let AnimationListener: android.animation.Animator.AnimatorListener;
+
+interface ExpandedTransitionListener extends androidx.transition.Transition.TransitionListener {
+    entry: ExpandedEntry;
+    transition: androidx.transition.Transition;
+}
+
+interface ExpandedAnimator extends android.animation.Animator {
+    entry: ExpandedEntry;
+    transitionType?: string;
+}
+
+interface ExpandedEntry extends BackstackEntry {
+
+    enterTransitionListener: ExpandedTransitionListener;
+    exitTransitionListener: ExpandedTransitionListener;
+    reenterTransitionListener: ExpandedTransitionListener;
+    returnTransitionListener: ExpandedTransitionListener;
+
+    enterAnimator: ExpandedAnimator;
+    exitAnimator: ExpandedAnimator;
+    popEnterAnimator: ExpandedAnimator;
+    popExitAnimator: ExpandedAnimator;
+
+    transition: Transition;
+    transitionName: string;
+    frameId: number;
+
+    isNestedDefaultTransition: boolean;
+}
 
 export function _setAndroidFragmentTransitions(
     animated: boolean,

@@ -645,8 +645,9 @@ export abstract class View extends ViewBase {
     _gestureObservers: any;
     /**
      * @private
+     * androidx.fragment.app.FragmentManager
      */
-    _manager: androidx.fragment.app.FragmentManager
+    _manager: any;
     /**
      * @private
      */
