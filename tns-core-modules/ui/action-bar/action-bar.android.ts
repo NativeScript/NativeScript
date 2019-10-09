@@ -1,8 +1,8 @@
-import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from ".";
+import { AndroidActionItemSettings, AndroidActionBarSettings as AndroidActionBarSettingsDefinition, ActionItem as ActionItemDefinition } from ".";
 import {
     ActionItemBase, ActionBarBase, isVisible,
     View, layout, colorProperty, flatProperty, Color,
-    traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty, Length
+    traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty
 } from "./action-bar-common";
 import { RESOURCE_PREFIX, isFontIconURI } from "../../utils/utils";
 import { fromFileOrResource, fromFontIconCode } from "../../image-source";
@@ -20,6 +20,31 @@ function generateItemId(): number {
     actionItemIdGenerator++;
 
     return actionItemIdGenerator;
+}
+
+function loadActionIconDrawableOrResourceId(item: ActionItemDefinition): any {
+    const itemIcon = item.icon;
+    const itemStyle = item.style;
+    let drawableOrId = null;
+
+    if (isFontIconURI(itemIcon)) {
+        const fontIconCode = itemIcon.split("//")[1];
+        const font = itemStyle.fontInternal;
+        const color = itemStyle.color;
+        const is = fromFontIconCode(fontIconCode, font, color);
+
+        if (is && is.android) {
+            drawableOrId = new android.graphics.drawable.BitmapDrawable(appResources, is.android); 
+        }
+    } else {
+        drawableOrId = getDrawableOrResourceId(itemIcon, appResources);
+    }
+
+    if (!drawableOrId) {
+        traceMissingIcon(itemIcon);
+    }
+
+    return drawableOrId;
 }
 
 interface MenuItemClickListener {
@@ -231,21 +256,9 @@ export class ActionBar extends ActionBarBase {
                 }
             }
             else if (navButton.icon) {
-                if (isFontIconURI(navButton.icon)) {
-                    const fontIconCode = navButton.icon.split("//")[1];
-                    const font = navButton.style.fontInternal;
-                    const color = navButton.style.color;
-                    const is = fromFontIconCode(fontIconCode, font, color);
-
-                    if (is && is.android) {
-                        const drawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
-                        this.nativeViewProtected.setNavigationIcon(drawable);
-                    }
-                } else {
-                    let drawableOrId = getDrawableOrResourceId(navButton.icon, appResources);
-                    if (drawableOrId) {
-                        this.nativeViewProtected.setNavigationIcon(drawableOrId);
-                    }
+                const drawableOrId = loadActionIconDrawableOrResourceId(navButton);
+                if (drawableOrId) {
+                    this.nativeViewProtected.setNavigationIcon(drawableOrId);
                 }
             }
 
@@ -275,6 +288,8 @@ export class ActionBar extends ActionBarBase {
                 let drawableOrId = getDrawableOrResourceId(icon, appResources);
                 if (drawableOrId) {
                     this.nativeViewProtected.setLogo(drawableOrId);
+                } else {
+                    traceMissingIcon(icon);
                 }
             }
             else {
@@ -327,21 +342,9 @@ export class ActionBar extends ActionBarBase {
                 }
             }
             else if (item.icon) {
-                if (isFontIconURI(item.icon)) {
-                    const fontIconCode = item.icon.split("//")[1];
-                    const font = item.style.fontInternal;
-                    const color = item.style.color;
-                    const is = fromFontIconCode(fontIconCode, font, color);
-
-                    if (is && is.android) {
-                        const drawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
-                        menuItem.setIcon(drawable);
-                    }
-                } else {
-                    let drawableOrId = getDrawableOrResourceId(item.icon, appResources);
-                    if (drawableOrId) {
-                        menuItem.setIcon(drawableOrId);
-                    }
+                const drawableOrId = loadActionIconDrawableOrResourceId(item);
+                if (drawableOrId) {
+                    menuItem.setIcon(drawableOrId);
                 }
             }
 
@@ -468,10 +471,10 @@ let defaultTitleTextColor: number;
 
 function getDrawableOrResourceId(icon: string, resources: android.content.res.Resources): any {
     if (typeof icon !== "string") {
-        return undefined;
+        return null;
     }
 
-    let result = undefined;
+    let result = null;
     if (icon.indexOf(RESOURCE_PREFIX) === 0) {
         let resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), "drawable", application.android.packageName);
         if (resourceId > 0) {
@@ -480,17 +483,12 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
     }
     else {
         let drawable: android.graphics.drawable.BitmapDrawable;
-
         let is = fromFileOrResource(icon);
         if (is) {
             drawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
         }
 
         result = drawable;
-    }
-
-    if (!result) {
-        traceMissingIcon(icon);
     }
 
     return result;
