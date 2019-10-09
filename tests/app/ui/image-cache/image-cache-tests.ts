@@ -1,5 +1,5 @@
 import * as imageCacheModule from "@nativescript/core/ui/image-cache";
-import * as imageSource from "@nativescript/core/image-source";
+import { ImageSource } from "@nativescript/core/image-source";
 import * as types from "@nativescript/core/utils/types";
 import { isAndroid, device } from "@nativescript/core/platform";
 import lazy from "@nativescript/core/utils/lazy";
@@ -19,13 +19,13 @@ export const test_ImageCache_ValidUrl = function () {
 
     let validKey: string;
 
-    let imgSource: imageSource.ImageSource;
+    let imgSource: ImageSource;
     const url = "https://github.com/NativeScript.png";
     // Try to read the image from the cache
     const image = cache.get(url);
     if (image) {
         // If present -- use it.
-        imgSource = imageSource.fromNativeSource(image);
+        imgSource = new ImageSource(image);
     }
     else {
         // If not present -- request its download.
@@ -34,7 +34,7 @@ export const test_ImageCache_ValidUrl = function () {
             url: url,
             completed: (image: any, key: string) => {
                 if (url === key) {
-                    imgSource = imageSource.fromNativeSource(image);
+                    imgSource = new ImageSource(image);
                     validKey = key;
                     console.log("Valid url: ", key);
                 }
@@ -53,13 +53,13 @@ export const test_ImageCache_NothingAtProvidedUrl = function () {
     let errorCaught = false;
     let errorMessage: string;
 
-    let imgSource: imageSource.ImageSource;
+    let imgSource: ImageSource;
     const url = "https://github.com/NativeScript-NoImage.png";
     // Try to read the image from the cache
     const image = cache.get(url);
     if (image) {
         // If present -- use it.
-        imgSource = imageSource.fromNativeSource(image);
+        imgSource = new ImageSource(image);
     }
     else {
         // If not present -- request its download.
@@ -68,7 +68,7 @@ export const test_ImageCache_NothingAtProvidedUrl = function () {
             url: url,
             completed: (image: any, key: string) => {
                 if (url === key) {
-                    imgSource = imageSource.fromNativeSource(image);
+                    imgSource = new ImageSource(image);
                 }
             },
             error: (key: string) => {

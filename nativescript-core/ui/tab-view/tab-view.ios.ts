@@ -8,7 +8,7 @@ import {
     View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon
 } from "./tab-view-common";
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
-import { fromFileOrResource } from "../../image-source";
+import { ImageSource } from "../../image-source";
 import { profile } from "../../profiling";
 import { Frame } from "../frame";
 import { ios as iosUtils } from "../../utils/utils";
@@ -477,7 +477,7 @@ export class TabView extends TabViewBase {
 
         let image: UIImage = this._iconsCache[iconSource];
         if (!image) {
-            const is = fromFileOrResource(iconSource);
+            const is = ImageSource.fromFileOrResourceSync(iconSource);
             if (is && is.ios) {
                 const originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
                 this._iconsCache[iconSource] = originalRenderedImage;

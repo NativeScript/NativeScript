@@ -6,7 +6,7 @@ import { TextTransform } from "../text-base";
 
 // Requires
 import * as application from "../../application";
-import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
+import { ImageSource } from "../../image-source";
 import { ad, isFontIconURI, layout, RESOURCE_PREFIX } from "../../utils/utils";
 import { Color, CSSType } from "../core/view";
 import { Frame, View } from "../frame";
@@ -624,9 +624,9 @@ export class BottomNavigation extends TabNavigationBase {
             const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
             const font = target.style.fontInternal;
             const color = target.style.color;
-            is = fromFontIconCode(fontIconCode, font, color);
+            is = ImageSource.fromFontIconCodeSync(fontIconCode, font, color);
         } else {
-            is = fromFileOrResource(iconSource);
+            is = ImageSource.fromFileOrResourceSync(iconSource);
         }
 
         let imageDrawable: android.graphics.drawable.BitmapDrawable;

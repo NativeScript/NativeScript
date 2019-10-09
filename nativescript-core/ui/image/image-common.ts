@@ -1,10 +1,10 @@
 import { Image as ImageDefinition, Stretch } from ".";
 import { View, Property, InheritedCssProperty, Length, Style, Color, isIOS, booleanConverter, CSSType, traceEnabled, traceWrite, traceCategories } from "../core/view";
 import { ImageAsset } from "../../image-asset";
-import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "../../image-source";
+import { ImageSource } from "../../image-source";
 import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from "../../utils/utils";
 export * from "../core/view";
-export { ImageSource, ImageAsset, fromAsset, fromNativeSource, fromUrl, isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX };
+export { ImageSource, ImageAsset, isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX };
 
 @CSSType("Image")
 export abstract class ImageBase extends View implements ImageDefinition {
@@ -36,8 +36,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 
             this.isLoading = true;
 
-            const source = new ImageSource();
-            const imageLoaded = () => {
+            const imageLoaded = (source: ImageSource) => {
                 let currentValue = this.src;
                 if (currentValue !== originalValue) {
                     return;
@@ -52,41 +51,37 @@ export abstract class ImageBase extends View implements ImageDefinition {
                     // support sync mode only
                     const font = this.style.fontInternal;
                     const color = this.style.color;
-                    source.loadFromFontIconCode(fontIconCode, font, color);
-                    imageLoaded();
+                    imageLoaded(ImageSource.fromFontIconCodeSync(fontIconCode, font, color));
                 }
             } else if (isDataURI(value)) {
                 const base64Data = value.split(",")[1];
                 if (base64Data !== undefined) {
                     if (sync) {
-                        source.loadFromBase64(base64Data);
-                        imageLoaded();
+                        imageLoaded(ImageSource.fromBase64Sync(base64Data));
                     } else {
-                        source.fromBase64(base64Data).then(imageLoaded);
+                        ImageSource.fromBase64(base64Data).then(imageLoaded);
                     }
                 }
             } else if (isFileOrResourcePath(value)) {
                 if (value.indexOf(RESOURCE_PREFIX) === 0) {
                     const resPath = value.substr(RESOURCE_PREFIX.length);
                     if (sync) {
-                        source.loadFromResource(resPath);
-                        imageLoaded();
+                        imageLoaded(ImageSource.fromResourceSync(resPath));
                     } else {
                         this.imageSource = null;
-                        source.fromResource(resPath).then(imageLoaded);
+                        ImageSource.fromResource(resPath).then(imageLoaded);
                     }
                 } else {
                     if (sync) {
-                        source.loadFromFile(value);
-                        imageLoaded();
+                        imageLoaded(ImageSource.fromFileSync(value));
                     } else {
                         this.imageSource = null;
-                        source.fromFile(value).then(imageLoaded);
+                        ImageSource.fromFile(value).then(imageLoaded);
                     }
                 }
             } else {
                 this.imageSource = null;
-                fromUrl(value).then((r) => {
+                ImageSource.fromUrl(value).then((r) => {
                     if (this["_url"] === value) {
                         this.imageSource = r;
                         this.isLoading = false;
@@ -108,13 +103,13 @@ export abstract class ImageBase extends View implements ImageDefinition {
             this.isLoading = false;
         }
         else if (value instanceof ImageAsset) {
-            fromAsset(value).then((result) => {
+            ImageSource.fromAsset(value).then((result) => {
                 this.imageSource = result;
                 this.isLoading = false;
             });
         }
         else {
-            this.imageSource = fromNativeSource(value);
+            this.imageSource = new ImageSource(value);
             this.isLoading = false;
         }
     }

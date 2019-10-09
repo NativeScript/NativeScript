@@ -297,8 +297,6 @@ export class ImageSource implements ImageSourceDefinition {
     }
 
     public setNativeSource(source: any): void {
-        console.log("setNativeSource() is deprecated. Use ImageSource constructor instead.");
-
         if (source && !(source instanceof android.graphics.Bitmap)) {
             throw new Error("The method setNativeSource() expects android.graphics.Bitmap instance.");
         }

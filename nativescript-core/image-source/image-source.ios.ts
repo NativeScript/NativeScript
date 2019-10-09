@@ -56,7 +56,7 @@ export class ImageSource implements ImageSourceDefinition {
         return new Promise<ImageSource>((resolve, reject) => {
             asset.getImageAsync((image, err) => {
                 if (image) {
-                    resolve(fromNativeSource(image));
+                    resolve(new ImageSource(image));
                 } else {
                     reject(err);
                 }

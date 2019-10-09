@@ -150,7 +150,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
                                     return new Promise((resolve, reject) => {
                                         (<any>UIImage).tns_decodeImageWithDataCompletion(data, image => {
                                             if (image) {
-                                                resolve(imageSource.fromNativeSource(image));
+                                                resolve(new imageSource.ImageSource(image));
                                             } else {
                                                 reject(new Error("Response content may not be converted to an Image"));
                                             }

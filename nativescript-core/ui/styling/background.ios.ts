@@ -5,7 +5,7 @@ import { View, Point } from "../core/view";
 import { LinearGradient } from "./linear-gradient";
 import { Color } from "../../color";
 import { isDataURI, isFileOrResourcePath, layout } from "../../utils/utils";
-import { fromFileOrResource, fromBase64, fromUrl } from "../../image-source";
+import { ImageSource } from "../../image-source";
 import { CSSValue, parse as cssParse } from "../../css-value";
 
 export * from "./background-common";
@@ -171,15 +171,15 @@ function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor:
     if (isDataURI(imageUri)) {
         const base64Data = imageUri.split(",")[1];
         if (base64Data !== undefined) {
-            const imageSource = fromBase64(base64Data);
+            const imageSource = ImageSource.fromBase64Sync(base64Data);
             bitmap = imageSource && imageSource.ios;
         }
     } else if (isFileOrResourcePath(imageUri)) {
-        const imageSource = fromFileOrResource(imageUri);
+        const imageSource = ImageSource.fromFileOrResourceSync(imageUri);
         bitmap = imageSource && imageSource.ios;
     } else if (imageUri.indexOf("http") !== -1) {
         style[symbolUrl] = imageUri;
-        fromUrl(imageUri).then((r) => {
+        ImageSource.fromUrl(imageUri).then((r) => {
             if (style && style[symbolUrl] === imageUri) {
                 uiColorFromImage(r.ios, view, callback, flip);
             }

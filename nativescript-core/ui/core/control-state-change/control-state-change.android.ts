@@ -1,4 +1,5 @@
 ﻿/* tslint:disable:no-unused-variable */
+/* tslint:disable:no-empty */
 import { ControlStateChangeListener as ControlStateChangeListenerDefinition } from "./control-state-change";
 
 export class ControlStateChangeListener implements ControlStateChangeListenerDefinition {

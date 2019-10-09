@@ -5,7 +5,7 @@ import {
     traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty
 } from "./action-bar-common";
 import { RESOURCE_PREFIX, isFontIconURI } from "../../utils/utils";
-import { fromFileOrResource, fromFontIconCode } from "../../image-source";
+import { ImageSource } from "../../image-source";
 import * as application from "../../application";
 
 export * from "./action-bar-common";
@@ -31,7 +31,7 @@ function loadActionIconDrawableOrResourceId(item: ActionItemDefinition): any {
         const fontIconCode = itemIcon.split("//")[1];
         const font = itemStyle.fontInternal;
         const color = itemStyle.color;
-        const is = fromFontIconCode(fontIconCode, font, color);
+        const is = ImageSource.fromFontIconCodeSync(fontIconCode, font, color);
 
         if (is && is.android) {
             drawableOrId = new android.graphics.drawable.BitmapDrawable(appResources, is.android); 
@@ -262,7 +262,7 @@ export class ActionBar extends ActionBarBase {
                 }
             }
 
-            // Set navigation content descripion, used by screen readers for the vision-impaired users
+            // Set navigation content description, used by screen readers for the vision-impaired users
             this.nativeViewProtected.setNavigationContentDescription(navButton.text || null);
 
             let navBtn = new WeakRef(navButton);
@@ -483,7 +483,7 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
     }
     else {
         let drawable: android.graphics.drawable.BitmapDrawable;
-        let is = fromFileOrResource(icon);
+        let is = ImageSource.fromFileOrResourceSync(icon);
         if (is) {
             drawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
         }

@@ -5,7 +5,7 @@ import {
     backgroundInternalProperty, flatProperty, iosIconRenderingModeProperty,
     layout, Color, traceMissingIcon
 } from "./action-bar-common";
-import { fromFileOrResource, fromFontIconCode } from "../../image-source";
+import { ImageSource } from "../../image-source";
 import { ios as iosUtils, isFontIconURI } from "../../utils/utils";
 
 export * from "./action-bar-common";
@@ -23,9 +23,9 @@ function loadActionIcon(item: ActionItemDefinition): any /* UIImage */ {
         const fontIconCode = itemIcon.split("//")[1];
         const font = itemStyle.fontInternal;
         const color = itemStyle.color;
-        is = fromFontIconCode(fontIconCode, font, color);
+        is = ImageSource.fromFontIconCodeSync(fontIconCode, font, color);
     } else {
-        is = fromFileOrResource(itemIcon);
+        is = ImageSource.fromFileOrResourceSync(itemIcon);
     }
 
     if (is && is.ios) {

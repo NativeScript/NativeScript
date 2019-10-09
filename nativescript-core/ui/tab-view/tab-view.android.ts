@@ -9,7 +9,7 @@ import {
     traceWrite, Color, traceMissingIcon
 } from "./tab-view-common";
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
-import { fromFileOrResource } from "../../image-source";
+import { ImageSource } from "../../image-source";
 import { RESOURCE_PREFIX, ad } from "../../utils/utils";
 import { Frame } from "../frame";
 import * as application from "../../application";
@@ -292,7 +292,7 @@ function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemS
                 traceMissingIcon(item.iconSource);
             }
         } else {
-            const is = fromFileOrResource(item.iconSource);
+            const is = ImageSource.fromFileOrResourceSync(item.iconSource);
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                 result.iconDrawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);

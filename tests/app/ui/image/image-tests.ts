@@ -12,7 +12,7 @@ import * as ImageModule from "@nativescript/core/ui/image";
 // << img-require
 
 import * as types from "@nativescript/core/utils/types";
-import * as ImageSourceModule from "@nativescript/core/image-source";
+import { ImageSource } from "@nativescript/core/image-source";
 import * as ViewModule from "@nativescript/core/ui/core/view";
 import * as helper from "../../ui-helper";
 import * as ObservableModule from "@nativescript/core/data/observable";
@@ -146,7 +146,7 @@ export const test_SettingImageSrcToFontIconCode_sync = function () {
 
 export function test_imageSourceNotResetAfterCreateUI() {
     let image = new ImageModule.Image();
-    let imageSource = ImageSourceModule.fromResource("splashscreen");
+    let imageSource = ImageSource.fromResourceSync("splashscreen");
     TKUnit.assertNotEqual(null, imageSource);
     image.imageSource = imageSource;
     helper.buildUIAndRunTest(image, () => {

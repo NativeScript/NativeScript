@@ -6,7 +6,7 @@ import { TextTransform } from "../text-base";
 
 // Requires
 import { Color } from "../../color";
-import { fromFileOrResource, fromFontIconCode, ImageSource } from "../../image-source";
+import { ImageSource } from "../../image-source";
 import { device } from "../../platform";
 import { ios as iosUtils, isFontIconURI, layout } from "../../utils/utils";
 import { CSSType, ios as iosView, View } from "../core/view";
@@ -574,9 +574,9 @@ export class BottomNavigation extends TabNavigationBase {
             if (isFontIconURI(iconSource)) {
                 isFontIcon = true;
                 const fontIconCode = iconSource.split("//")[1];
-                is = fromFontIconCode(fontIconCode, font, color);
+                is = ImageSource.fromFontIconCodeSync(fontIconCode, font, color);
             } else {
-                is = fromFileOrResource(iconSource);
+                is = ImageSource.fromFileOrResourceSync(iconSource);
             }
 
             if (is && is.ios) {
