@@ -1,0 +1,42 @@
+{
+    "compilerOptions": {
+        "noEmitOnError": false,
+        "noEmitHelpers": true,
+        "target": "es5",
+        "module": "commonjs",
+        "noImplicitUseStrict": true,
+        "removeComments": true,
+        "experimentalDecorators": true,
+        "diagnostics": true,
+        "sourceMap": true,
+        "inlineSourceMap": false,
+        "lib": [
+            "es6",
+            "dom"
+        ],
+        "types": [
+            "node",
+            "chai",
+            "mocha"
+        ],
+        "baseUrl": "..",
+        "paths": {
+            "tns-core-modules/*": [
+                "tns-core-modules/*"
+            ]
+        }
+    },
+    "include": [
+        "../tns-core-modules/**/*.ts",
+        "./**/*.ts"
+    ],
+    "exclude": [
+        "../tns-core-modules/**/*.android.ts",
+        "../tns-core-modules/**/*.android.d.ts",
+        "../tns-core-modules/**/*.ios.ts",
+        "../tns-core-modules/**/*.ios.d.ts",
+        "../tns-core-modules/node-modules",
+        "../tns-core-modules/references.d.ts",
+        "../tns-core-modules/platforms"
+    ]
+}

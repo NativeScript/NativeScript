@@ -48,6 +48,7 @@ const activityRootViewsMap = new Map<number, WeakRef<View>>();
 
 let navDepth = -1;
 let fragmentId = -1;
+
 export let moduleLoaded: boolean;
 
 if (global && global.__inspector) {
@@ -932,7 +933,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         const parentFragment = <any>fragment.getParentFragment();
 
         if (parentFragment && (parentFragment.isRemoving())) {
-            const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(this.backgroundBitmap);
+            const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), this.backgroundBitmap);
             this.frame.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
             this.backgroundBitmap = null;
         }
@@ -1330,6 +1331,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             pushToRootViewCssClasses(`${CLASS_PREFIX}${ANDROID_PLATFORM}`);
             pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
             pushToRootViewCssClasses(`${CLASS_PREFIX}${application.android.orientation}`);
+            pushToRootViewCssClasses(`${CLASS_PREFIX}${application.android.systemAppearance}`);
 
             const rootViewCssClasses = getRootViewCssClasses();
             rootViewCssClasses.forEach(c => this._rootView.cssClasses.add(c));

@@ -24,6 +24,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     public items: TabStripItem[];
     public isIconSizeFixed: boolean;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
+    public highlightColor: Color;
     public _hasImage: boolean;
     public _hasTitle: boolean;
 

@@ -2,11 +2,18 @@ import { ActivityIndicatorBase, busyProperty, colorProperty, Color } from "./act
 
 export * from "./activity-indicator-common";
 
+import { ios } from "../../utils/utils";
+
+const majorVersion = ios.MajorVersion;
+
 export class ActivityIndicator extends ActivityIndicatorBase {
     nativeViewProtected: UIActivityIndicatorView;
 
+    private _activityIndicatorViewStyle = majorVersion <= 12 ? UIActivityIndicatorViewStyle.Gray : UIActivityIndicatorViewStyle.Medium;
+
     createNativeView() {
-        const view = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
+        const viewStyle = this._activityIndicatorViewStyle;
+        const view = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(viewStyle);
         view.hidesWhenStopped = true;
 
         return view;

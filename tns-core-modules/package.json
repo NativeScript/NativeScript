@@ -20,7 +20,6 @@
     "!node-tests/",
     "!declarations.android.d.ts",
     "!declarations.ios.d.ts",
-    "!gruntfile.js",
     "!org.nativescript.widgets.d.ts"
   ],
   "license": "Apache-2.0",

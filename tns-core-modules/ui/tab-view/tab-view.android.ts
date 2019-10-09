@@ -27,6 +27,7 @@ interface PagerAdapter {
 const TABID = "_tabId";
 const INDEX = "_index";
 let PagerAdapter: PagerAdapter;
+let appResources: android.content.res.Resources;
 
 function makeFragmentName(viewId: number, id: number): string {
     return "android:viewpager:" + viewId + ":" + id;
@@ -90,7 +91,7 @@ function initializeNativeClasses() {
             // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
             // TO DO: Consider removing it when update to androidx.fragment:1.2.0
             if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-                const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(this.backgroundBitmap);
+                const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
                 this.owner._originalBackground = this.owner.backgroundColor || new Color("White");
                 this.owner.nativeViewProtected.setBackground(bitmapDrawable);
                 this.backgroundBitmap = null;
@@ -277,6 +278,7 @@ function initializeNativeClasses() {
     }
 
     PagerAdapter = FragmentPagerAdapter;
+    appResources = application.android.context.getResources();
 }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
@@ -293,7 +295,7 @@ function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemS
             const is = fromFileOrResource(item.iconSource);
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-                result.iconDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), is.android);
+                result.iconDrawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
             } else {
                 traceMissingIcon(item.iconSource);
             }
@@ -577,13 +579,14 @@ export class TabView extends TabViewBase {
     }
 
     public onLoaded(): void {
+        super.onLoaded();
+
         if (this._originalBackground) {
             this.backgroundColor = null;
             this.backgroundColor = this._originalBackground;
             this._originalBackground = null;
         }
 
-        super.onLoaded();
         this.setAdapterItems(this.items);
     }
 

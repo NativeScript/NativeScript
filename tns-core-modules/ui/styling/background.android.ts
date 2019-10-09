@@ -40,7 +40,7 @@ export module ad {
         }
 
         const background = view.style.backgroundInternal;
-        const drawable = nativeView.getBackground();
+        let drawable = nativeView.getBackground();
         const androidView = <any>view as AndroidView;
         // use undefined as not set. getBackground will never return undefined only Drawable or null;
         if (androidView._cachedDrawable === undefined && drawable) {
@@ -50,12 +50,21 @@ export module ad {
 
         if (isSetColorFilterOnlyWidget(nativeView)
             && drawable
-            && !(drawable instanceof org.nativescript.widgets.BorderDrawable)
             && !background.hasBorderWidth()
             && !background.hasBorderRadius()
             && !background.clipPath
             && !background.image
             && background.color) {
+
+            if (drawable instanceof org.nativescript.widgets.BorderDrawable) {
+                if (!(androidView._cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState)) {
+                    return;
+                }
+
+                drawable = androidView._cachedDrawable.newDrawable(nativeView.getResources());
+                nativeView.setBackground(drawable);
+            }
+
             const backgroundColor = (<any>drawable).backgroundColor = background.color.android;
             drawable.mutate();
             drawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);

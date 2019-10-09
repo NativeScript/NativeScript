@@ -12,7 +12,7 @@ import { Color, CSSType } from "../core/view";
 import { Frame, View } from "../frame";
 import { Font } from "../styling/font";
 import {
-    getIconSpecSize, itemsProperty, selectedIndexProperty, TabNavigationBase, tabStripProperty, TabFragmentImplementation, _tabs
+    getIconSpecSize, itemsProperty, selectedIndexProperty, TabNavigationBase, tabStripProperty
 } from "../tab-navigation-base/tab-navigation-base";
 import { getTransformedText } from "../text-base";
 
@@ -27,19 +27,113 @@ export * from "../tab-navigation-base/tab-strip-item";
 const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 8;
 
+const TABID = "_tabId";
+const INDEX = "_index";
 const ownerSymbol = Symbol("_owner");
 
 let TabFragment: any;
 let BottomNavigationBar: any;
 let AttachStateChangeListener: any;
+let appResources: android.content.res.Resources;
 
 function makeFragmentName(viewId: number, id: number): string {
     return "android:bottomnavigation:" + viewId + ":" + id;
 }
 
+function getTabById(id: number): BottomNavigation {
+    const ref = tabs.find(ref => {
+        const tab = ref.get();
+
+        return tab && tab._domId === id;
+    });
+
+    return ref && ref.get();
+}
+
 function initializeNativeClasses() {
     if (BottomNavigationBar) {
         return;
+    }
+
+    class TabFragmentImplementation extends androidx.fragment.app.Fragment {
+        private owner: BottomNavigation;
+        private index: number;
+        private backgroundBitmap: android.graphics.Bitmap = null;
+
+        constructor() {
+            super();
+
+            return global.__native(this);
+        }
+
+        static newInstance(tabId: number, index: number): TabFragmentImplementation {
+            const args = new android.os.Bundle();
+            args.putInt(TABID, tabId);
+            args.putInt(INDEX, index);
+            const fragment = new TabFragmentImplementation();
+            fragment.setArguments(args);
+
+            return fragment;
+        }
+
+        public onCreate(savedInstanceState: android.os.Bundle): void {
+            super.onCreate(savedInstanceState);
+            const args = this.getArguments();
+            this.owner = getTabById(args.getInt(TABID));
+            this.index = args.getInt(INDEX);
+            if (!this.owner) {
+                throw new Error(`Cannot find TabView`);
+            }
+        }
+
+        public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
+            const tabItem = this.owner.items[this.index];
+
+            return tabItem.nativeViewProtected;
+        }
+
+        public onDestroyView() {
+            const hasRemovingParent = this.getParentFragment() && this.getParentFragment().isRemoving();
+
+            // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
+            // TO DO: Consider removing it when update to androidx.fragment:1.2.0
+            if (hasRemovingParent && this.owner.selectedIndex === this.index) {
+                const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
+                this.owner._originalBackground = this.owner.backgroundColor || new Color("White");
+                this.owner.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
+                this.backgroundBitmap = null;
+            }
+
+            super.onDestroyView();
+        }
+
+        public onPause(): void {
+            const hasRemovingParent = this.getParentFragment() && this.getParentFragment().isRemoving();
+
+            // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
+            // TO DO: Consider removing it when update to androidx.fragment:1.2.0
+            if (hasRemovingParent && this.owner.selectedIndex === this.index) {
+                this.backgroundBitmap = this.loadBitmapFromView(this.owner.nativeViewProtected);
+            }
+
+            super.onPause();
+        }
+
+        private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
+            // Another way to get view bitmap. Test performance vs setDrawingCacheEnabled
+            // const width = view.getWidth();
+            // const height = view.getHeight();
+            // const bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
+            // const canvas = new android.graphics.Canvas(bitmap);
+            // view.layout(0, 0, width, height);
+            // view.draw(canvas);
+
+            view.setDrawingCacheEnabled(true);
+            const bitmap = android.graphics.Bitmap.createBitmap(view.getDrawingCache());
+            view.setDrawingCacheEnabled(false);
+
+            return bitmap;
+        }
     }
 
     class BottomNavigationBarImplementation extends org.nativescript.widgets.BottomNavigationBar {
@@ -119,6 +213,7 @@ function initializeNativeClasses() {
     TabFragment = TabFragmentImplementation;
     BottomNavigationBar = BottomNavigationBarImplementation;
     AttachStateChangeListener = new AttachListener();
+    appResources = application.android.context.getResources();
 }
 
 function setElevation(bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar) {
@@ -128,6 +223,8 @@ function setElevation(bottomNavigationBar: org.nativescript.widgets.BottomNaviga
         compat.setElevation(bottomNavigationBar, val);
     }
 }
+
+export const tabs = new Array<WeakRef<BottomNavigation>>();
 
 function iterateIndexRange(index: number, eps: number, lastIndex: number, callback: (i) => void) {
     const rangeStart = Math.max(0, index - eps);
@@ -145,10 +242,11 @@ export class BottomNavigation extends TabNavigationBase {
     private _currentFragment: androidx.fragment.app.Fragment;
     private _currentTransaction: androidx.fragment.app.FragmentTransaction;
     private _attachedToWindow = false;
+    public _originalBackground: any;
 
     constructor() {
         super();
-        _tabs.push(new WeakRef(this));
+        tabs.push(new WeakRef(this));
     }
 
     get _hasFragments(): boolean {
@@ -268,6 +366,12 @@ export class BottomNavigation extends TabNavigationBase {
 
     public onLoaded(): void {
         super.onLoaded();
+
+        if (this._originalBackground) {
+            this.backgroundColor = null;
+            this.backgroundColor = this._originalBackground;
+            this._originalBackground = null;
+        }
 
         if (this.tabStrip) {
             this.setTabStripItems(this.tabStrip.items);

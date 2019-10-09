@@ -112,7 +112,6 @@ export function _setAndroidFragmentTransitions(
             setupCurrentFragmentExplodeTransition(navigationTransition, currentEntry);
         }
     } else if (name === "flip") {
-        console.log("USE NEW FLIP: New Fragment" + navigationTransition.duration);
         const direction = name.substr("flip".length) || "right"; //Extract the direction from the string
         const flipTransition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
 

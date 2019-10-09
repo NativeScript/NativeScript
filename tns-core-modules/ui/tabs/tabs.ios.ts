@@ -90,10 +90,20 @@ class UIPageViewControllerImpl extends UIPageViewController {
         }
 
         tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
-        tabBar.tintColor = UIColor.blueColor;
-        tabBar.barTintColor = UIColor.whiteColor;
-        tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
-        tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Selected);
+
+        if (majorVersion <= 12) {
+            tabBar.tintColor = UIColor.blueColor;
+            tabBar.barTintColor = UIColor.whiteColor;
+            tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
+            tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Selected);
+        } else {
+            tabBar.tintColor = UIColor.systemBlueColor;
+            tabBar.barTintColor = UIColor.systemBackgroundColor;
+            tabBar.setTitleColorForState(UIColor.labelColor, MDCTabBarItemState.Normal);
+            tabBar.setTitleColorForState(UIColor.labelColor, MDCTabBarItemState.Selected);
+            tabBar.inkColor = UIColor.clearColor;
+        }
+
         tabBar.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleBottomMargin;
         tabBar.alignment = MDCTabBarAlignment.Leading;
         tabBar.sizeToFit();
@@ -188,6 +198,18 @@ class UIPageViewControllerImpl extends UIPageViewController {
             }
 
             scrollView.frame = CGRectMake(0, scrollViewTop, this.view.bounds.size.width, scrollViewHeight); //this.view.bounds;
+        }
+    }
+
+    // Mind implementation for other controllers
+    public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+        super.traitCollectionDidChange(previousTraitCollection);
+
+        if (majorVersion >= 13) {
+            const owner = this._owner.get();
+            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+                owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
+            }
         }
     }
 }

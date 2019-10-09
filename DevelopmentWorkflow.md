@@ -81,6 +81,13 @@ tns run ios
 tns run android
 ```
 
+---
+**NOTE**
+
+Linking `tns-core-modules` in Angular app does not work at the moment. Check [#7905](https://github.com/NativeScript/NativeScript/issues/7905) for more details on the issue.
+
+---
+
 ## Platform declarations
 To update the platform declarations (the ios.d.ts-es) you can run:
 
