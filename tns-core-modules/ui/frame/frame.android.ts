@@ -910,7 +910,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
                     parentView.addViewInLayout(nativeView, -1, new org.nativescript.widgets.CommonLayoutParams());
                 }
 
-                parentView.removeView(nativeView);
+                parentView.removeAllViews();
             }
         }
 
