@@ -77,6 +77,7 @@ dependencies {
         def androidxVersion = computeAndroidXVersion()
         implementation 'androidx.viewpager:viewpager:' + androidxVersion
         implementation 'androidx.fragment:fragment:' + androidxVersion
+        implementation 'androidx.transition:transition:' + androidxVersion
     } else {
         println 'Using support library'
         implementation 'com.android.support:support-v4:' + computeSupportVersion()
