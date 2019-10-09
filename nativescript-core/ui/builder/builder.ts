@@ -83,28 +83,28 @@ export class Builder {
 }
 
 export function parse(value: string | Template, context: any): View {
-    console.log("parse() is deprecated. Use Builder.parse() instead.")
+    console.log("parse() is deprecated. Use Builder.parse() instead.");
 
     return Builder.parse(value, context);
 }
 
 export function parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
-    console.log("parseMultipleTemplates() is deprecated. Use Builder.parseMultipleTemplates() instead.")
+    console.log("parseMultipleTemplates() is deprecated. Use Builder.parseMultipleTemplates() instead.");
 
     return Builder.parseMultipleTemplates(value, context);
 }
 
 export function load(pathOrOptions: string | LoadOptions, context?: any): View {
-    console.log("load() is deprecated. Use Builder.load() instead.")
+    console.log("load() is deprecated. Use Builder.load() instead.");
 
     return Builder.load(pathOrOptions, context);
 }
 
 export function createViewFromEntry(entry: ViewEntry): View {
-    console.log("createViewFromEntry() is deprecated. Use Builder.createViewFromEntry() instead.")
+    console.log("createViewFromEntry() is deprecated. Use Builder.createViewFromEntry() instead.");
 
     return Builder.createViewFromEntry(entry);
-};
+}
 
 function loadInternal(moduleName: string, moduleExports: any): ComponentModule {
     let componentModule: ComponentModule;

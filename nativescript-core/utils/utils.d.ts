@@ -306,7 +306,7 @@ export function openUrl(url: string): boolean
 
 /**
  * Opens file.
- * @param {string} filePath The file.
+ * @param filePath The file.
  */
 export function openFile(filePath: string): boolean
 

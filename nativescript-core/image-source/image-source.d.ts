@@ -39,57 +39,148 @@ export class ImageSource {
      * Loads this instance from the specified asset asynchronously.
      * @param asset The ImageAsset instance used to create ImageSource.
      */
+    static fromAsset(asset: ImageAsset): Promise<ImageSource>;
+
+    /**
+     * Downloads the image from the provided Url and creates a new ImageSource instance from it.
+     * @param url The link to the remote image object. This operation will download and decode the image.
+     */
+    static fromUrl(url: string): Promise<ImageSource>;
+
+    /**
+     * Loads this instance from the specified resource name.
+     * @param name The name of the resource (without its extension).
+     */
+    static fromResourceSync(name: string): ImageSource;
+
+    /**
+     * Loads this instance from the specified resource name asynchronously.
+     * @param name The name of the resource (without its extension).
+     */
+    static fromResource(name: string): Promise<ImageSource>;
+
+    /**
+     * Loads this instance from the specified file.
+     * @param path The location of the file on the file system.
+     */
+    static fromFileSync(path: string): ImageSource;
+
+    /**
+     * Loads this instance from the specified file asynchronously.
+     * @param path The location of the file on the file system.
+     */
+    static fromFile(path: string): Promise<ImageSource>;
+
+    /**
+     * Creates a new ImageSource instance and loads it from the specified local file or resource (if specified with the "res://" prefix).
+     * @param path The location of the file on the file system.
+     */
+    static fromFileOrResourceSync(path: string): ImageSource;
+
+    /**
+     * Loads this instance from the specified native image data.
+     * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
+     */
+    static fromDataSync(data: any): ImageSource;
+
+    /**
+     * Loads this instance from the specified native image data asynchronously.
+     * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
+     */
+    static fromData(data: any): Promise<ImageSource>;
+
+    /**
+     * Loads this instance from the specified base64 encoded string.
+     * @param source The Base64 string to load the image from.
+     */
+    static fromBase64Sync(source: string): ImageSource;
+
+    /**
+     * Loads this instance from the specified base64 encoded string asynchronously.
+     * @param source The Base64 string to load the image from.
+     */
+    static fromBase64(source: string): Promise<ImageSource>;
+
+    /**
+     * Creates a new ImageSource instance and loads it from the specified font icon code.
+     * @param source The hex font icon code string
+     * @param font The font for the corresponding font icon code
+     * @param color The color of the generated icon image
+     */
+    static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource;
+
+    /**
+     * Creates a new ImageSource instance and sets the provided native source object (typically a Bitmap).
+     * The native source object will update either the android or ios properties, depending on the target os.
+     * @param nativeSource The native image object. Will be either a Bitmap for Android or a UIImage for iOS.
+     */
+    constructor(nativeSource?: any);
+
+    /**
+     * @deprecated Use ImageSource.fromAsset() instead.
+     * Loads this instance from the specified asset asynchronously.
+     * @param asset The ImageAsset instance used to create ImageSource.
+     */
     fromAsset(asset: ImageAsset): Promise<ImageSource>;
 
     /**
+     * @deprecated Use ImageSource.fromResourceSync() instead.
      * Loads this instance from the specified resource name.
      * @param name The name of the resource (without its extension).
      */
     loadFromResource(name: string): boolean;
 
     /**
+     * @deprecated Use ImageSource.fromResource() instead.
      * Loads this instance from the specified resource name asynchronously.
      * @param name The name of the resource (without its extension).
      */
     fromResource(name: string): Promise<boolean>;
 
     /**
+     * @deprecated Use ImageSource.fromFileSync() instead.
      * Loads this instance from the specified file.
      * @param path The location of the file on the file system.
      */
     loadFromFile(path: string): boolean;
 
     /**
+     * @deprecated Use ImageSource.fromFile() instead.
      * Loads this instance from the specified file asynchronously.
      * @param path The location of the file on the file system.
      */
     fromFile(path: string): Promise<boolean>;
 
     /**
+     * @deprecated Use ImageSource.fromDataSync() instead.
      * Loads this instance from the specified native image data.
      * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
      */
     loadFromData(data: any): boolean;
 
     /**
+     * @deprecated Use ImageSource.fromData() instead.
      * Loads this instance from the specified native image data asynchronously.
      * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
      */
     fromData(data: any): Promise<boolean>;
 
     /**
+     * @deprecated Use ImageSource.fromBase64Sync() instead.
      * Loads this instance from the specified base64 encoded string.
      * @param source The Base64 string to load the image from.
      */
     loadFromBase64(source: string): boolean;
 
     /**
+     * @deprecated Use ImageSource.fromBase64() instead.
      * Loads this instance from the specified base64 encoded string asynchronously.
      * @param source The Base64 string to load the image from.
      */
     fromBase64(source: string): Promise<boolean>;
 
     /**
+     * @deprecated Use ImageSource.fromFontIconCode() instead.
      * Loads this instance from the specified font icon code.
      * @param source The hex font icon code string
      * @param font The font for the corresponding font icon code
@@ -100,9 +191,9 @@ export class ImageSource {
     /**
      * Sets the provided native source object (typically a Bitmap or a UIImage).
      * This will update either the android or ios properties, depending on the target os.
-     * @param source The native image object. Will be either a Bitmap for Android or a UIImage for iOS.
+     * @param nativeSource The native image object. Will be either a Bitmap for Android or a UIImage for iOS.
      */
-    setNativeSource(source: any): void;
+    setNativeSource(nativeSource: any): void;
 
     /**
      * Saves this instance to the specified file, using the provided image format and quality.
@@ -121,43 +212,50 @@ export class ImageSource {
 }
 
 /**
+ * @deprecated Use ImageSource.fromAsset() instead.
  * Creates a new ImageSource instance and loads it from the specified image asset asynchronously.
  * @param asset The image asset.
  */
 export function fromAsset(asset: ImageAsset): Promise<ImageSource>;
 
 /**
-* Creates a new ImageSource instance and loads it from the specified resource name.
-* @param name The name of the resource (without its extension).
-*/
+ * @deprecated Use ImageSource.fromResourceSync() instead.
+ * Creates a new ImageSource instance and loads it from the specified resource name.
+ * @param name The name of the resource (without its extension).
+ */
 export function fromResource(name: string): ImageSource;
 
 /**
-* Creates a new ImageSource instance and loads it from the specified file.
-* @param path The location of the file on the file system.
-*/
+ * @deprecated Use ImageSource.fromFileSync() instead.
+ * Creates a new ImageSource instance and loads it from the specified file.
+ * @param path The location of the file on the file system.
+ */
 export function fromFile(path: string): ImageSource;
 
 /**
-* Creates a new ImageSource instance and loads it from the specified native image data.
-* @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
-*/
+ * @deprecated Use ImageSource.fromDataSync() instead.
+ * Creates a new ImageSource instance and loads it from the specified native image data.
+ * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
+ */
 export function fromData(data: any): ImageSource;
 
 /**
+ * @deprecated Use ImageSource.fromBase64Sync() instead.
  * Creates a new ImageSource instance and loads it from the specified base64 encoded string.
  * @param source The base64 encoded string to load the image from.
  */
 export function fromBase64(source: string): ImageSource;
 
 /**
-* Creates a new ImageSource instance and sets the provided native source object (typically a Bitmap).
-* The native source object will update either the android or ios properties, depending on the target os.
-* @param source The native image object. Will be either a Bitmap for Android or a UIImage for iOS.
-*/
+ * @deprecated Use ImageSource constructor instead.
+ * Creates a new ImageSource instance and sets the provided native source object (typically a Bitmap).
+ * The native source object will update either the android or ios properties, depending on the target os.
+ * @param source The native image object. Will be either a Bitmap for Android or a UIImage for iOS.
+ */
 export function fromNativeSource(source: any): ImageSource;
 
 /**
+ * @deprecated Use ImageSource.fromFontIconCodeSync() instead.
  * Creates a new ImageSource instance and loads it from the specified font icon code.
  * @param source The hex font icon code string
  * @param font The font for the corresponding font icon code
@@ -166,19 +264,22 @@ export function fromNativeSource(source: any): ImageSource;
 export function fromFontIconCode(source: string, font: Font, color: Color): ImageSource;
 
 /**
+ * @deprecated Use ImageSource.fromUrl() instead.
  * Downloads the image from the provided Url and creates a new ImageSource instance from it.
  * @param url The link to the remote image object. This operation will download and decode the image.
  */
 export function fromUrl(url: string): Promise<ImageSource>;
 
 /**
+ * @deprecated Use ImageSource.fromFileOrResourceSync() instead.
  * Creates a new ImageSource instance and loads it from the specified local file or resource (if specified with the "res://" prefix).
  * @param path The location of the file on the file system.
  */
 export function fromFileOrResource(path: string): ImageSource;
 
 /**
- * [Obsolete. Please use utils.isFileOrResourcePath instead!] Returns true if the specified path points to a resource or local file.
+ * @deprecated Please use utils.isFileOrResourcePath instead. 
+ * Returns true if the specified path points to a resource or local file.
  * @param path The path.
  */
 export function isFileOrResourcePath(path: string): boolean

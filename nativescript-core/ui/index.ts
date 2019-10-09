@@ -1,5 +1,5 @@
-export { ActionBar, ActionItem, ActionItems, NavigationButton } from "./action-bar"
-export { ActivityIndicator } from "./activity-indicator"
+export { ActionBar, ActionItem, ActionItems, NavigationButton } from "./action-bar";
+export { ActivityIndicator } from "./activity-indicator";
 export { Animation, AnimationDefinition } from "./animation";
 export { BottomNavigation } from "./bottom-navigation";
 export { Builder, LoadOptions } from "./builder";

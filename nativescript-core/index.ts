@@ -8,7 +8,7 @@ export {
     AndroidActivityEventData, AndroidActivityBundleEventData,
     AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData,
     AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData,
-} from "./application"
+} from "./application";
 
 // Export all methods and fields from "application" as Application
 import {
@@ -74,7 +74,7 @@ export const Profiling = {
     start, stop, isRunning,
     dumpProfiles, resetProfiles,
     profile, startCPUProfile, stopCPUProfile,
-}
+};
 
 export { encoding } from "./text";
 
@@ -91,9 +91,9 @@ export const Trace = {
     addWriter, removeWriter, clearWriters,
     setErrorHandler,
     write, error, enable, disable, isEnabled
-}
+};
 
-export * from "./ui" // Barrel export
+export * from "./ui"; // Barrel export
 
 import {
     GC, isFontIconURI, isDataURI, isFileOrResourcePath,
@@ -113,4 +113,4 @@ export const Utils = {
     layout, android: androidUtils, ios: iosUtils
 };
 
-export { XmlParser, ParserEventType, ParserEvent } from "./xml"
+export { XmlParser, ParserEventType, ParserEvent } from "./xml";

@@ -42,22 +42,56 @@ export class ImageSource implements ImageSourceDefinition {
     public android: android.graphics.Bitmap;
     public ios: UIImage;
 
-    public fromAsset(asset: ImageAsset): Promise<ImageSource> {
+    public get height(): number {
+        if (this.android) {
+            return this.android.getHeight();
+        }
+
+        return NaN;
+    }
+
+    public get width(): number {
+        if (this.android) {
+            return this.android.getWidth();
+        }
+
+        return NaN;
+    }
+
+    private _rotationAngle: number;
+    public get rotationAngle(): number {
+        return this._rotationAngle;
+    }
+
+    public set rotationAngle(value: number) {
+        this._rotationAngle = value;
+    }
+
+    constructor(nativeSource?: any) {
+        if (nativeSource) {
+            this.setNativeSource(nativeSource);
+        }
+    }
+
+    static fromAsset(asset: ImageAsset): Promise<ImageSource> {
         return new Promise<ImageSource>((resolve, reject) => {
             asset.getImageAsync((image, err) => {
                 if (image) {
-                    this.setNativeSource(image);
-                    resolve(this);
-                }
-                else {
+                    resolve(new ImageSource(image));
+                } else {
                     reject(err);
                 }
             });
         });
     }
 
-    public loadFromResource(name: string): boolean {
-        this.android = null;
+    static fromUrl(url: string): Promise<ImageSourceDefinition> {
+        ensureHttp();
+
+        return http.getImage(url);
+    }
+
+    static fromResourceSync(name: string): ImageSource {
         const res = getResources();
         if (res) {
             const identifier: number = res.getIdentifier(name, "drawable", getApplication().getPackageName());
@@ -65,84 +99,83 @@ export class ImageSource implements ImageSourceDefinition {
                 // Load BitmapDrawable with getDrawable to make use of Android internal caching
                 const bitmapDrawable = <android.graphics.drawable.BitmapDrawable>res.getDrawable(identifier);
                 if (bitmapDrawable && bitmapDrawable.getBitmap) {
-                    this.android = bitmapDrawable.getBitmap();
+                    return new ImageSource(bitmapDrawable.getBitmap());
                 }
             }
         }
 
-        return this.android != null;
+        return null;
     }
-
-    public fromResource(name: string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            resolve(this.loadFromResource(name));
+    static fromResource(name: string): Promise<ImageSource> {
+        return new Promise<ImageSource>((resolve, reject) => {
+            resolve(ImageSource.fromResourceSync(name));
         });
     }
 
-    private setRotationAngleFromFile(filename: string) {
-        this.rotationAngle = 0;
-        const ei = new android.media.ExifInterface(filename);
-        const orientation = ei.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
-
-        switch (orientation) {
-            case android.media.ExifInterface.ORIENTATION_ROTATE_90:
-                this.rotationAngle = 90;
-                break;
-            case android.media.ExifInterface.ORIENTATION_ROTATE_180:
-                this.rotationAngle = 180;
-                break;
-            case android.media.ExifInterface.ORIENTATION_ROTATE_270:
-                this.rotationAngle = 270;
-                break;
-        }
-    }
-
-    public loadFromFile(path: string): boolean {
+    static fromFileSync(path: string): ImageSource {
         let fileName = typeof path === "string" ? path.trim() : "";
         if (fileName.indexOf("~/") === 0) {
             fileName = fsPath.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
         }
 
-        this.setRotationAngleFromFile(fileName);
-        this.android = android.graphics.BitmapFactory.decodeFile(fileName, null);
+        const bitmap = android.graphics.BitmapFactory.decodeFile(fileName, null);
+        if (bitmap) {
+            const result = new ImageSource(bitmap);
+            result.rotationAngle = getRotationAngleFromFile(fileName);
 
-        return this.android != null;
+            return result;
+        } else {
+            return null;
+        }
     }
 
-    public fromFile(path: string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            resolve(this.loadFromFile(path));
+    static fromFile(path: string): Promise<ImageSource> {
+        return new Promise<ImageSource>((resolve, reject) => {
+            resolve(ImageSource.fromFileSync(path));
         });
     }
 
-    public loadFromData(data: any): boolean {
-        this.android = android.graphics.BitmapFactory.decodeStream(data);
-
-        return this.android != null;
-    }
-
-    public fromData(data: any): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            resolve(this.loadFromData(data));
-        });
-    }
-
-    public loadFromBase64(source: string): boolean {
-        if (typeof source === "string") {
-            const bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
-            this.android = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    static fromFileOrResourceSync(path: string): ImageSource {
+        if (!isFileOrResourcePath(path)) {
+            throw new Error(`${path} is not a valid file or resource.`);
         }
 
-        return this.android != null;
+        if (path.indexOf(RESOURCE_PREFIX) === 0) {
+            return ImageSource.fromResourceSync(path.substr(RESOURCE_PREFIX.length));
+        }
+
+        return ImageSource.fromFileSync(path);
     }
 
-    public fromBase64(data: any): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            resolve(this.loadFromBase64(data));
+    static fromDataSync(data: any): ImageSource {
+        const bitmap = android.graphics.BitmapFactory.decodeStream(data);
+
+        return bitmap ? new ImageSource(bitmap) : null;
+    }
+
+    static fromData(data: any): Promise<ImageSource> {
+        return new Promise<ImageSource>((resolve, reject) => {
+            resolve(ImageSource.fromDataSync(data));
         });
     }
 
-    public loadFromFontIconCode(source: string, font: Font, color: Color): boolean {
+    static fromBase64Sync(source: string): ImageSource {
+        let bitmap: android.graphics.Bitmap;
+
+        if (typeof source === "string") {
+            const bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
+            bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        }
+
+        return bitmap ? new ImageSource(bitmap) : null;
+    }
+    static fromBase64(source: string): Promise<ImageSource> {
+        return new Promise<ImageSource>((resolve, reject) => {
+            resolve(ImageSource.fromBase64Sync(source));
+        });
+    }
+
+    static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource {
         const paint = new android.graphics.Paint();
         paint.setTypeface(font.getAndroidTypeface());
         paint.setAntiAlias(true);
@@ -177,13 +210,95 @@ export class ImageSource implements ImageSourceDefinition {
             const canvas = new android.graphics.Canvas(bitmap);
             canvas.drawText(source, -textBounds.left, -textBounds.top, paint);
 
-            this.android = bitmap;
+            return new ImageSource(bitmap);
         }
 
-        return this.android != null;
+        return null;
+    }
+
+    public fromAsset(asset: ImageAsset): Promise<ImageSource> {
+        console.log("fromAsset() is deprecated. Use ImageSource.fromAsset() instead.");
+
+        return ImageSource.fromAsset(asset)
+            .then(imgSource => {
+                this.setNativeSource(imgSource.android);
+
+                return this;
+            });
+    }
+
+    public loadFromResource(name: string): boolean {
+        console.log("fromResource() and loadFromResource() are deprecated. Use ImageSource.fromResource[Sync]() instead.");
+
+        const imgSource = ImageSource.fromResourceSync(name);
+        this.android = imgSource ? imgSource.android : null;
+
+        return !!this.android;
+    }
+
+    public fromResource(name: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.loadFromResource(name));
+        });
+    }
+
+    public loadFromFile(path: string): boolean {
+        console.log("fromFile() and loadFromFile() are deprecated. Use ImageSource.fromFile[Sync]() instead.");
+
+        const imgSource = ImageSource.fromFileSync(path);
+        this.android = imgSource ? imgSource.android : null;
+
+        return !!this.android;
+    }
+
+    public fromFile(path: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.loadFromFile(path));
+        });
+    }
+
+    public loadFromData(data: any): boolean {
+        console.log("fromData() and loadFromData() are deprecated. Use ImageSource.fromData[Sync]() instead.");
+
+        const imgSource = ImageSource.fromDataSync(data);
+        this.android = imgSource ? imgSource.android : null;
+
+        return !!this.android;
+    }
+
+    public fromData(data: any): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.loadFromData(data));
+        });
+    }
+
+    public loadFromBase64(source: string): boolean {
+        console.log("fromBase64() and loadFromBase64() are deprecated. Use ImageSource.fromBase64[Sync]() instead.");
+
+        const imgSource = ImageSource.fromBase64Sync(source);
+        this.android = imgSource ? imgSource.android : null;
+
+        return !!this.android;
+    }
+
+    public fromBase64(data: any): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(this.loadFromBase64(data));
+        });
+    }
+
+    public loadFromFontIconCode(source: string, font: Font, color: Color): boolean {
+        console.log("loadFromFontIconCode() is deprecated. Use ImageSource.fromFontIconCodeSync() instead.");
+
+        const imgSource = ImageSource.fromFontIconCodeSync(source, font, color);
+        this.android = imgSource ? imgSource.android : null;
+
+        return !!this.android;
     }
 
     public setNativeSource(source: any): void {
+        console.log("setNativeSource() is deprecated. Use ImageSource constructor instead.");
+
         if (source && !(source instanceof android.graphics.Bitmap)) {
             throw new Error("The method setNativeSource() expects android.graphics.Bitmap instance.");
         }
@@ -223,31 +338,6 @@ export class ImageSource implements ImageSourceDefinition {
 
         return outputStream.toString();
     }
-
-    get height(): number {
-        if (this.android) {
-            return this.android.getHeight();
-        }
-
-        return NaN;
-    }
-
-    get width(): number {
-        if (this.android) {
-            return this.android.getWidth();
-        }
-
-        return NaN;
-    }
-
-    private _rotationAngle: number;
-    get rotationAngle(): number {
-        return this._rotationAngle;
-    }
-
-    set rotationAngle(value: number) {
-        this._rotationAngle = value;
-    }
 }
 
 function getTargetFormat(format: "png" | "jpeg" | "jpg"): android.graphics.Bitmap.CompressFormat {
@@ -260,63 +350,76 @@ function getTargetFormat(format: "png" | "jpeg" | "jpg"): android.graphics.Bitma
     }
 }
 
-export function fromAsset(asset: ImageAsset): Promise<ImageSource> {
-    const image = new ImageSource();
+function getRotationAngleFromFile(filename: string): number {
+    let result = 0;
+    const ei = new android.media.ExifInterface(filename);
+    const orientation = ei.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
 
-    return image.fromAsset(asset);
+    switch (orientation) {
+        case android.media.ExifInterface.ORIENTATION_ROTATE_90:
+            result = 90;
+            break;
+        case android.media.ExifInterface.ORIENTATION_ROTATE_180:
+            result = 180;
+            break;
+        case android.media.ExifInterface.ORIENTATION_ROTATE_270:
+            result = 270;
+            break;
+    }
+
+    return result;
+}
+
+export function fromAsset(asset: ImageAsset): Promise<ImageSource> {
+    console.log("fromAsset() is deprecated. Use ImageSource.fromAsset() instead.");
+
+    return ImageSource.fromAsset(asset);
 }
 
 export function fromResource(name: string): ImageSource {
-    const image = new ImageSource();
+    console.log("fromResource() is deprecated. Use ImageSource.fromResourceSync() instead.");
 
-    return image.loadFromResource(name) ? image : null;
+    return ImageSource.fromResourceSync(name);
 }
 
 export function fromFile(path: string): ImageSource {
-    const image = new ImageSource();
+    console.log("fromFile() is deprecated. Use ImageSource.fromFileSync() instead.");
 
-    return image.loadFromFile(path) ? image : null;
+    return ImageSource.fromFileSync(path);
 }
 
 export function fromData(data: any): ImageSource {
-    const image = new ImageSource();
+    console.log("fromData() is deprecated. Use ImageSource.fromDataSync() instead.");
 
-    return image.loadFromData(data) ? image : null;
+    return ImageSource.fromDataSync(data);
 }
 
 export function fromFontIconCode(source: string, font: Font, color: Color): ImageSource {
-    const image = new ImageSource();
+    console.log("fromFontIconCode() is deprecated. Use ImageSource.fromFontIconCodeSync() instead.");
 
-    return image.loadFromFontIconCode(source, font, color) ? image : null;
+    return ImageSource.fromFontIconCodeSync(source, font, color);
 }
 
 export function fromBase64(source: string): ImageSource {
-    const image = new ImageSource();
+    console.log("fromBase64() is deprecated. Use ImageSource.fromBase64Sync() instead.");
 
-    return image.loadFromBase64(source) ? image : null;
+    return ImageSource.fromBase64Sync(source);
 }
 
-export function fromNativeSource(source: any): ImageSource {
-    const imageSource = new ImageSource();
-    imageSource.setNativeSource(source);
+export function fromNativeSource(nativeSource: any): ImageSource {
+    console.log("fromNativeSource() is deprecated. Use ImageSource constructor instead.");
 
-    return imageSource;
+    return new ImageSource(nativeSource);
 }
 
 export function fromUrl(url: string): Promise<ImageSourceDefinition> {
-    ensureHttp();
+    console.log("fromUrl() is deprecated. Use ImageSource.fromUrl() instead.");
 
-    return http.getImage(url);
+    return ImageSource.fromUrl(url);
 }
 
 export function fromFileOrResource(path: string): ImageSource {
-    if (!isFileOrResourcePath(path)) {
-        throw new Error(`${path} is not a valid file or resource.`);
-    }
+    console.log("fromFileOrResource() is deprecated. Use ImageSource.fromFileOrResourceSync() instead.");
 
-    if (path.indexOf(RESOURCE_PREFIX) === 0) {
-        return fromResource(path.substr(RESOURCE_PREFIX.length));
-    }
-
-    return fromFile(path);
+    return ImageSource.fromFileOrResourceSync(path);
 }

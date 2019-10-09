@@ -22,36 +22,68 @@ export class ImageSource implements ImageSourceDefinition {
     public android: android.graphics.Bitmap;
     public ios: UIImage;
 
-    public fromAsset(asset: ImageAsset) {
+    get height(): number {
+        if (this.ios) {
+            return this.ios.size.height;
+        }
+
+        return NaN;
+    }
+
+    get width(): number {
+        if (this.ios) {
+            return this.ios.size.width;
+        }
+
+        return NaN;
+    }
+
+    get rotationAngle(): number {
+        return NaN;
+    }
+
+    set rotationAngle(_value: number) {
+        // compatibility with Android
+    }
+
+    constructor(nativeSource?: any) {
+        if (nativeSource) {
+            this.setNativeSource(nativeSource);
+        }
+    }
+
+    static fromAsset(asset: ImageAsset): Promise<ImageSource> {
         return new Promise<ImageSource>((resolve, reject) => {
             asset.getImageAsync((image, err) => {
                 if (image) {
                     resolve(fromNativeSource(image));
-                }
-                else {
+                } else {
                     reject(err);
                 }
             });
         });
     }
 
-    public loadFromResource(name: string): boolean {
-        this.ios = (<any>UIImage).tns_safeImageNamed(name) || (<any>UIImage).tns_safeImageNamed(`${name}.jpg`);
+    static fromUrl(url: string): Promise<ImageSource> {
+        ensureHttp();
 
-        return this.ios != null;
+        return http.getImage(url);
     }
 
-    public fromResource(name: string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
+    static fromResourceSync(name: string): ImageSource {
+        const nativeSource = (<any>UIImage).tns_safeImageNamed(name) || (<any>UIImage).tns_safeImageNamed(`${name}.jpg`);
+
+        return nativeSource ? new ImageSource(nativeSource) : null;
+    }
+    static fromResource(name: string): Promise<ImageSource> {
+        return new Promise<ImageSource>((resolve, reject) => {
             try {
                 (<any>UIImage).tns_safeDecodeImageNamedCompletion(name, image => {
                     if (image) {
-                        this.ios = image;
-                        resolve(true);
+                        resolve(new ImageSource(image));
                     } else {
                         (<any>UIImage).tns_safeDecodeImageNamedCompletion(`${name}.jpg`, image => {
-                            this.ios = image;
-                            resolve(true);
+                            resolve(new ImageSource(image));
                         });
                     }
                 });
@@ -61,69 +93,78 @@ export class ImageSource implements ImageSourceDefinition {
         });
     }
 
-    public loadFromFile(path: string): boolean {
-        this.ios = UIImage.imageWithContentsOfFile(getFileName(path));
+    static fromFileSync(path: string): ImageSource {
+        const uiImage = UIImage.imageWithContentsOfFile(getFileName(path));
 
-        return this.ios != null;
+        return uiImage ? new ImageSource(uiImage) : null;
     }
-
-    public fromFile(path: string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
+    static fromFile(path: string): Promise<ImageSource> {
+        return new Promise<ImageSource>((resolve, reject) => {
             try {
-                (<any>UIImage).tns_decodeImageWidthContentsOfFileCompletion(getFileName(path), image => {
-                    this.ios = image;
-                    resolve(true);
-                });
+                (<any>UIImage).tns_decodeImageWidthContentsOfFileCompletion(getFileName(path),
+                    uiImage => {
+                        resolve(new ImageSource(uiImage));
+                    });
             } catch (ex) {
                 reject(ex);
             }
         });
     }
 
-    public loadFromData(data: any): boolean {
-        this.ios = UIImage.imageWithData(data);
-
-        return this.ios != null;
-    }
-
-    public fromData(data: any): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            try {
-                (<any>UIImage).tns_decodeImageWithDataCompletion(data, image => {
-                    this.ios = image;
-                    resolve(true);
-                });
-            } catch (ex) {
-                reject(ex);
-            }
-        });
-    }
-
-    public loadFromBase64(source: string): boolean {
-        if (typeof source === "string") {
-            const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
-            this.ios = UIImage.imageWithData(data);
+    static fromFileOrResourceSync(path: string): ImageSource {
+        if (!isFileOrResourcePath(path)) {
+            throw new Error("Path \"" + "\" is not a valid file or resource.");
         }
 
-        return this.ios != null;
+        if (path.indexOf(RESOURCE_PREFIX) === 0) {
+            return ImageSource.fromResourceSync(path.substr(RESOURCE_PREFIX.length));
+        }
+
+        return ImageSource.fromFileSync(path);
     }
 
-    public fromBase64(source: string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            try {
-                const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
-                UIImage.imageWithData["async"](UIImage, [data]).then(image => {
-                    this.ios = image;
-                    resolve(true);
-                });
+    static fromDataSync(data: any): ImageSource {
+        const uiImage = UIImage.imageWithData(data);
 
+        return uiImage ? new ImageSource(uiImage) : null;
+    }
+    static fromData(data: any): Promise<ImageSource> {
+        return new Promise<ImageSource>((resolve, reject) => {
+            try {
+                (<any>UIImage).tns_decodeImageWithDataCompletion(data,
+                    uiImage => {
+                        resolve(new ImageSource(uiImage));
+                    });
             } catch (ex) {
                 reject(ex);
             }
         });
     }
 
-    public loadFromFontIconCode(source: string, font: Font, color: Color): boolean {
+    static fromBase64Sync(source: string): ImageSource {
+        let uiImage: UIImage;
+        if (typeof source === "string") {
+            const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
+            uiImage = UIImage.imageWithData(data);
+        }
+
+        return uiImage ? new ImageSource(uiImage) : null;
+    }
+    static fromBase64(source: string): Promise<ImageSource> {
+        return new Promise<ImageSource>((resolve, reject) => {
+            try {
+                const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
+                UIImage.imageWithData["async"](UIImage, [data]).then(
+                    uiImage => {
+                        resolve(new ImageSource(uiImage));
+                    });
+            } catch (ex) {
+                reject(ex);
+            }
+        });
+    }
+
+    static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource {
         let fontSize = layout.toDevicePixels(font.fontSize);
         if (!fontSize) {
             // TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
@@ -149,9 +190,107 @@ export class ImageSource implements ImageSourceDefinition {
         const iconImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
 
-        this.ios = iconImage;
+        return iconImage ? new ImageSource(iconImage) : null;
+    }
 
-        return this.ios != null;
+    public fromAsset(asset: ImageAsset) {
+        console.log("fromAsset() is deprecated. Use ImageSource.fromAsset() instead.");
+
+        return ImageSource.fromAsset(asset)
+            .then(imgSource => {
+                this.setNativeSource(imgSource.ios);
+
+                return this;
+            });
+    }
+
+    public loadFromResource(name: string): boolean {
+        console.log("loadFromResource() is deprecated. Use ImageSource.fromResourceSync() instead.");
+
+        const imgSource = ImageSource.fromResourceSync(name);
+        this.ios = imgSource ? imgSource.ios : null;
+
+        return !!this.ios;
+    }
+
+    public fromResource(name: string): Promise<boolean> {
+        console.log("fromResource() is deprecated. Use ImageSource.fromResource() instead.");
+
+        return ImageSource.fromResource(name)
+            .then(imgSource => {
+                this.ios = imgSource.ios;
+
+                return !!this.ios;
+            });
+    }
+
+    public loadFromFile(path: string): boolean {
+        console.log("loadFromFile() is deprecated. Use ImageSource.fromFileSync() instead.");
+
+        const imgSource = ImageSource.fromFileSync(path);
+        this.ios = imgSource ? imgSource.ios : null;
+
+        return !!this.ios;
+    }
+
+    public fromFile(path: string): Promise<boolean> {
+        console.log("fromFile() is deprecated. Use ImageSource.fromFile() instead.");
+
+        return ImageSource.fromFile(path)
+            .then(imgSource => {
+                this.ios = imgSource.ios;
+
+                return !!this.ios;
+            });
+    }
+
+    public loadFromData(data: any): boolean {
+        console.log("loadFromData() is deprecated. Use ImageSource.fromDataSync() instead.");
+
+        const imgSource = ImageSource.fromDataSync(data);
+        this.ios = imgSource ? imgSource.ios : null;
+
+        return !!this.ios;
+    }
+
+    public fromData(data: any): Promise<boolean> {
+        console.log("fromData() is deprecated. Use ImageSource.fromData() instead.");
+
+        return ImageSource.fromData(data)
+            .then(imgSource => {
+                this.ios = imgSource.ios;
+
+                return !!this.ios;
+            });
+    }
+
+    public loadFromBase64(source: string): boolean {
+        console.log("loadFromBase64() is deprecated. Use ImageSource.fromBase64Sync() instead.");
+
+        const imgSource = ImageSource.fromBase64Sync(source);
+        this.ios = imgSource ? imgSource.ios : null;
+
+        return !!this.ios;
+    }
+
+    public fromBase64(source: string): Promise<boolean> {
+        console.log("fromBase64() is deprecated. Use ImageSource.fromBase64() instead.");
+
+        return ImageSource.fromBase64(source)
+            .then(imgSource => {
+                this.ios = imgSource.ios;
+
+                return !!this.ios;
+            });
+    }
+
+    public loadFromFontIconCode(source: string, font: Font, color: Color): boolean {
+        console.log("loadFromFontIconCode() is deprecated. Use ImageSource.fromFontIconCodeSync() instead.");
+
+        const imgSource = ImageSource.fromFontIconCodeSync(source, font, color);
+        this.ios = imgSource ? imgSource.ios : null;
+
+        return !!this.ios;
     }
 
     public setNativeSource(source: any): void {
@@ -196,30 +335,6 @@ export class ImageSource implements ImageSourceDefinition {
         return res;
 
     }
-
-    get height(): number {
-        if (this.ios) {
-            return this.ios.size.height;
-        }
-
-        return NaN;
-    }
-
-    get width(): number {
-        if (this.ios) {
-            return this.ios.size.width;
-        }
-
-        return NaN;
-    }
-
-    get rotationAngle(): number {
-        return NaN;
-    }
-
-    set rotationAngle(_value: number) {
-        // compatibility with Android
-    }
 }
 
 function getFileName(path: string): string {
@@ -247,62 +362,55 @@ function getImageData(instance: UIImage, format: "png" | "jpeg" | "jpg", quality
 }
 
 export function fromAsset(asset: ImageAsset): Promise<ImageSource> {
-    const image = new ImageSource();
+    console.log("fromAsset() is deprecated. Use ImageSource.fromAsset() instead.");
 
-    return image.fromAsset(asset);
+    return ImageSource.fromAsset(asset);
 }
 
 export function fromResource(name: string): ImageSource {
-    const image = new ImageSource();
+    console.log("fromResource() is deprecated. Use ImageSource.fromResourceSync() instead.");
 
-    return image.loadFromResource(name) ? image : null;
+    return ImageSource.fromResourceSync(name);
 }
 
 export function fromFile(path: string): ImageSource {
-    const image = new ImageSource();
+    console.log("fromFile() is deprecated. Use ImageSource.fromFileSync() instead.");
 
-    return image.loadFromFile(path) ? image : null;
-}
-
-export function fromFontIconCode(source: string, font: Font, color: Color): ImageSource {
-    const image = new ImageSource();
-
-    return image.loadFromFontIconCode(source, font, color) ? image : null;
+    return ImageSource.fromFileSync(path);
 }
 
 export function fromData(data: any): ImageSource {
-    const image = new ImageSource();
+    console.log("fromData() is deprecated. Use ImageSource.fromDataSync() instead.");
 
-    return image.loadFromData(data) ? image : null;
+    return ImageSource.fromDataSync(data);
+}
+
+export function fromFontIconCode(source: string, font: Font, color: Color): ImageSource {
+    console.log("fromFontIconCode() is deprecated. Use ImageSource.fromFontIconCodeSync() instead.");
+
+    return ImageSource.fromFontIconCodeSync(source, font, color);
 }
 
 export function fromBase64(source: string): ImageSource {
-    const image = new ImageSource();
+    console.log("fromBase64() is deprecated. Use ImageSource.fromBase64Sync() instead.");
 
-    return image.loadFromBase64(source) ? image : null;
+    return ImageSource.fromBase64Sync(source);
 }
 
-export function fromNativeSource(source: any): ImageSource {
-    const imageSource = new ImageSource();
-    imageSource.setNativeSource(source);
+export function fromNativeSource(nativeSource: any): ImageSource {
+    console.log("fromNativeSource() is deprecated. Use ImageSource constructor instead.");
 
-    return imageSource;
+    return new ImageSource(nativeSource);
 }
 
-export function fromUrl(url: string): Promise<ImageSource> {
-    ensureHttp();
+export function fromUrl(url: string): Promise<ImageSourceDefinition> {
+    console.log("fromUrl() is deprecated. Use ImageSource.fromUrl() instead.");
 
-    return http.getImage(url);
+    return ImageSource.fromUrl(url);
 }
 
 export function fromFileOrResource(path: string): ImageSource {
-    if (!isFileOrResourcePath(path)) {
-        throw new Error("Path \"" + "\" is not a valid file or resource.");
-    }
+    console.log("fromFileOrResource() is deprecated. Use ImageSource.fromFileOrResourceSync() instead.");
 
-    if (path.indexOf(RESOURCE_PREFIX) === 0) {
-        return fromResource(path.substr(RESOURCE_PREFIX.length));
-    }
-
-    return fromFile(path);
+    return ImageSource.fromFileOrResourceSync(path);
 }
