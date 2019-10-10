@@ -53,6 +53,11 @@ export class EditableTextBase extends TextBase {
     maxLength: number;
 
     /**
+     * Limits input to a certain number of lines.
+     */
+    maxLines: number;
+
+    /**
      * Hides the soft input method, ususally a soft keyboard.
      */
     dismissSoftInput(): void;
@@ -79,6 +84,7 @@ export const autocorrectProperty: Property<EditableTextBase, boolean>;
 export const hintProperty: Property<EditableTextBase, string>;
 export const placeholderColorProperty: CssProperty<Style, Color>;
 export const maxLengthProperty: Property<EditableTextBase, number>;
+export const maxLinesProperty: Property<EditableTextBase, number>;
 
 //@private
 /**

@@ -2,7 +2,7 @@ import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty,
     autocapitalizationTypeProperty, autocorrectProperty, hintProperty, resetSymbol,
-    textProperty, placeholderColorProperty, Color, textTransformProperty, maxLengthProperty
+    textProperty, placeholderColorProperty, Color, textTransformProperty, maxLengthProperty, maxLinesProperty
 } from "./editable-text-base-common";
 
 import { ad } from "../../utils/utils";
@@ -460,5 +460,13 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
             newFilters.push(lengthFilter);
             this.nativeTextViewProtected.setFilters(newFilters);
         }
+    }
+
+    [maxLinesProperty.getDefault](): number {
+        return -1;
+    }
+
+    [maxLinesProperty.setNative](value: number) {
+      this.nativeTextViewProtected.setMaxLines(value);
     }
 }
