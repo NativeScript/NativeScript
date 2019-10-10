@@ -6,4 +6,4 @@
 
 ```
 
-Global functions/objects are: setTimeout, clearTimeout, setInterval, clearInterval and console. 
+Global functions/objects are: setTimeout, clearTimeout, setInterval, clearInterval and console.

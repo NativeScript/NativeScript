@@ -5,7 +5,7 @@ import * as view from "tns-core-modules/ui/core/view";
 import * as platform from "tns-core-modules/platform";
 import { Repeater } from "tns-core-modules/ui/repeater";
 import { UITest } from "../../ui-test";
-import { left, top, right, bottom,  equal } from "../layouts/layout-tests-helper";
+import { left, top, right, bottom, equal } from "../layouts/layout-tests-helper";
 
 export class RepeaterSafeAreaTest extends UITest<Repeater> {
 

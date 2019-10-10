@@ -25,9 +25,9 @@ declare class HKActivitySummary extends NSObject implements NSCopying, NSSecureC
 
 	dateComponentsForCalendar(calendar: NSCalendar): NSDateComponents;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class HKActivitySummaryQuery extends HKQuery {
@@ -65,6 +65,39 @@ declare class HKAnchoredObjectQuery extends HKQuery {
 	initWithTypePredicateAnchorLimitCompletionHandler(type: HKSampleType, predicate: NSPredicate, anchor: number, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: number, p4: NSError) => void): this;
 
 	initWithTypePredicateAnchorLimitResultsHandler(type: HKSampleType, predicate: NSPredicate, anchor: HKQueryAnchor, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void): this;
+}
+
+declare class HKAudiogramSample extends HKSample {
+
+	static alloc(): HKAudiogramSample; // inherited from NSObject
+
+	static audiogramSampleWithSensitivityPointsStartDateEndDateMetadata(sensitivityPoints: NSArray<HKAudiogramSensitivityPoint> | HKAudiogramSensitivityPoint[], startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKAudiogramSample;
+
+	static new(): HKAudiogramSample; // inherited from NSObject
+
+	readonly sensitivityPoints: NSArray<HKAudiogramSensitivityPoint>;
+}
+
+declare class HKAudiogramSampleType extends HKSampleType {
+
+	static alloc(): HKAudiogramSampleType; // inherited from NSObject
+
+	static new(): HKAudiogramSampleType; // inherited from NSObject
+}
+
+declare class HKAudiogramSensitivityPoint extends NSObject {
+
+	static alloc(): HKAudiogramSensitivityPoint; // inherited from NSObject
+
+	static new(): HKAudiogramSensitivityPoint; // inherited from NSObject
+
+	static sensitivityPointWithFrequencyLeftEarSensitivityRightEarSensitivityError(frequency: HKQuantity, leftEarSensitivity: HKQuantity, rightEarSensitivity: HKQuantity): HKAudiogramSensitivityPoint;
+
+	readonly frequency: HKQuantity;
+
+	readonly leftEarSensitivity: HKQuantity;
+
+	readonly rightEarSensitivity: HKQuantity;
 }
 
 declare const enum HKAuthorizationRequestStatus {
@@ -110,9 +143,9 @@ declare class HKBiologicalSexObject extends NSObject implements NSCopying, NSSec
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum HKBloodGlucoseMealTime {
@@ -157,9 +190,9 @@ declare class HKBloodTypeObject extends NSObject implements NSCopying, NSSecureC
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum HKBodyTemperatureSensorLocation {
@@ -243,9 +276,17 @@ declare class HKCategoryType extends HKSampleType {
 
 declare var HKCategoryTypeIdentifierAppleStandHour: string;
 
+declare var HKCategoryTypeIdentifierAudioExposureEvent: string;
+
 declare var HKCategoryTypeIdentifierCervicalMucusQuality: string;
 
+declare var HKCategoryTypeIdentifierHighHeartRateEvent: string;
+
 declare var HKCategoryTypeIdentifierIntermenstrualBleeding: string;
+
+declare var HKCategoryTypeIdentifierIrregularHeartRhythmEvent: string;
+
+declare var HKCategoryTypeIdentifierLowHeartRateEvent: string;
 
 declare var HKCategoryTypeIdentifierMenstrualFlow: string;
 
@@ -257,6 +298,8 @@ declare var HKCategoryTypeIdentifierSexualActivity: string;
 
 declare var HKCategoryTypeIdentifierSleepAnalysis: string;
 
+declare var HKCategoryTypeIdentifierToothbrushingEvent: string;
+
 declare const enum HKCategoryValue {
 
 	NotApplicable = 0
@@ -267,6 +310,11 @@ declare const enum HKCategoryValueAppleStandHour {
 	Stood = 0,
 
 	Idle = 1
+}
+
+declare const enum HKCategoryValueAudioExposureEvent {
+
+	LoudEnvironment = 1
 }
 
 declare const enum HKCategoryValueCervicalMucusQuality {
@@ -299,9 +347,13 @@ declare const enum HKCategoryValueOvulationTestResult {
 
 	Negative = 1,
 
+	LuteinizingHormoneSurge = 2,
+
 	Positive = 2,
 
-	Indeterminate = 3
+	Indeterminate = 3,
+
+	EstrogenSurge = 4
 }
 
 declare const enum HKCategoryValueSleepAnalysis {
@@ -348,9 +400,9 @@ declare class HKClinicalRecord extends HKSample implements NSCopying, NSSecureCo
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class HKClinicalType extends HKSampleType {
@@ -419,7 +471,22 @@ declare var HKCorrelationTypeIdentifierBloodPressure: string;
 
 declare var HKCorrelationTypeIdentifierFood: string;
 
-declare class HKCumulativeQuantitySeriesSample extends HKQuantitySample {
+declare class HKCumulativeQuantitySample extends HKQuantitySample {
+
+	static alloc(): HKCumulativeQuantitySample; // inherited from NSObject
+
+	static new(): HKCumulativeQuantitySample; // inherited from NSObject
+
+	static quantitySampleWithTypeQuantityStartDateEndDate(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date): HKCumulativeQuantitySample; // inherited from HKQuantitySample
+
+	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKCumulativeQuantitySample; // inherited from HKQuantitySample
+
+	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKCumulativeQuantitySample; // inherited from HKQuantitySample
+
+	readonly sumQuantity: HKQuantity;
+}
+
+declare class HKCumulativeQuantitySeriesSample extends HKCumulativeQuantitySample {
 
 	static alloc(): HKCumulativeQuantitySeriesSample; // inherited from NSObject
 
@@ -433,6 +500,8 @@ declare class HKCumulativeQuantitySeriesSample extends HKQuantitySample {
 
 	readonly sum: HKQuantity;
 }
+
+declare var HKDataTypeIdentifierHeartbeatSeries: string;
 
 declare class HKDeletedObject extends NSObject implements NSSecureCoding {
 
@@ -448,9 +517,9 @@ declare class HKDeletedObject extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var HKDetailedCDAValidationErrorKey: string;
@@ -487,9 +556,9 @@ declare class HKDevice extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithNameManufacturerModelHardwareVersionFirmwareVersionSoftwareVersionLocalIdentifierUDIDeviceIdentifier(name: string, manufacturer: string, model: string, hardwareVersion: string, firmwareVersion: string, softwareVersion: string, localIdentifier: string, UDIDeviceIdentifier: string): this;
 }
@@ -509,6 +578,29 @@ declare var HKDevicePropertyKeyName: string;
 declare var HKDevicePropertyKeySoftwareVersion: string;
 
 declare var HKDevicePropertyKeyUDIDeviceIdentifier: string;
+
+declare class HKDiscreteQuantitySample extends HKQuantitySample {
+
+	static alloc(): HKDiscreteQuantitySample; // inherited from NSObject
+
+	static new(): HKDiscreteQuantitySample; // inherited from NSObject
+
+	static quantitySampleWithTypeQuantityStartDateEndDate(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date): HKDiscreteQuantitySample; // inherited from HKQuantitySample
+
+	static quantitySampleWithTypeQuantityStartDateEndDateDeviceMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, device: HKDevice, metadata: NSDictionary<string, any>): HKDiscreteQuantitySample; // inherited from HKQuantitySample
+
+	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKDiscreteQuantitySample; // inherited from HKQuantitySample
+
+	readonly averageQuantity: HKQuantity;
+
+	readonly maximumQuantity: HKQuantity;
+
+	readonly minimumQuantity: HKQuantity;
+
+	readonly mostRecentQuantity: HKQuantity;
+
+	readonly mostRecentQuantityDateInterval: NSDateInterval;
+}
 
 declare class HKDocumentQuery extends HKQuery {
 
@@ -592,9 +684,9 @@ declare class HKFHIRResource extends NSObject implements NSCopying, NSSecureCodi
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var HKFHIRResourceTypeAllergyIntolerance: string;
@@ -644,9 +736,9 @@ declare class HKFitzpatrickSkinTypeObject extends NSObject implements NSCopying,
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class HKHealthStore extends NSObject {
@@ -736,6 +828,43 @@ declare const enum HKHeartRateSensorLocation {
 	Foot = 6
 }
 
+declare class HKHeartbeatSeriesBuilder extends HKSeriesBuilder {
+
+	static alloc(): HKHeartbeatSeriesBuilder; // inherited from NSObject
+
+	static new(): HKHeartbeatSeriesBuilder; // inherited from NSObject
+
+	static readonly maximumCount: number;
+
+	constructor(o: { healthStore: HKHealthStore; device: HKDevice; startDate: Date; });
+
+	addHeartbeatWithTimeIntervalSinceSeriesStartDatePrecededByGapCompletion(timeInterval: number, precededByGap: boolean, completion: (p1: boolean, p2: NSError) => void): void;
+
+	addMetadataCompletion(metadata: NSDictionary<string, any>, completion: (p1: boolean, p2: NSError) => void): void;
+
+	finishSeriesWithCompletion(completion: (p1: HKHeartbeatSeriesSample, p2: NSError) => void): void;
+
+	initWithHealthStoreDeviceStartDate(healthStore: HKHealthStore, device: HKDevice, startDate: Date): this;
+}
+
+declare class HKHeartbeatSeriesQuery extends HKQuery {
+
+	static alloc(): HKHeartbeatSeriesQuery; // inherited from NSObject
+
+	static new(): HKHeartbeatSeriesQuery; // inherited from NSObject
+
+	constructor(o: { heartbeatSeries: HKHeartbeatSeriesSample; dataHandler: (p1: HKHeartbeatSeriesQuery, p2: number, p3: boolean, p4: boolean, p5: NSError) => void; });
+
+	initWithHeartbeatSeriesDataHandler(heartbeatSeries: HKHeartbeatSeriesSample, dataHandler: (p1: HKHeartbeatSeriesQuery, p2: number, p3: boolean, p4: boolean, p5: NSError) => void): this;
+}
+
+declare class HKHeartbeatSeriesSample extends HKSeriesSample {
+
+	static alloc(): HKHeartbeatSeriesSample; // inherited from NSObject
+
+	static new(): HKHeartbeatSeriesSample; // inherited from NSObject
+}
+
 declare const enum HKInsulinDeliveryReason {
 
 	Basal = 1,
@@ -744,6 +873,10 @@ declare const enum HKInsulinDeliveryReason {
 }
 
 declare var HKMetadataKeyAlpineSlopeGrade: string;
+
+declare var HKMetadataKeyAudioExposureLevel: string;
+
+declare var HKMetadataKeyAverageMETs: string;
 
 declare var HKMetadataKeyAverageSpeed: string;
 
@@ -774,6 +907,8 @@ declare var HKMetadataKeyFitnessMachineDuration: string;
 declare var HKMetadataKeyFoodType: string;
 
 declare var HKMetadataKeyGroupFitness: string;
+
+declare var HKMetadataKeyHeartRateEventThreshold: string;
 
 declare var HKMetadataKeyHeartRateMotionContext: string;
 
@@ -829,6 +964,8 @@ declare const enum HKMetricPrefix {
 
 	None = 0,
 
+	Femto = 13,
+
 	Pico = 1,
 
 	Nano = 2,
@@ -874,9 +1011,9 @@ declare class HKObject extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var HKObjectQueryNoLimit: number;
@@ -886,6 +1023,8 @@ declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding
 	static activitySummaryType(): HKActivitySummaryType;
 
 	static alloc(): HKObjectType; // inherited from NSObject
+
+	static audiogramSampleType(): HKAudiogramSampleType;
 
 	static categoryTypeForIdentifier(identifier: string): HKCategoryType;
 
@@ -913,9 +1052,9 @@ declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class HKObserverQuery extends HKQuery {
@@ -928,6 +1067,8 @@ declare class HKObserverQuery extends HKQuery {
 
 	initWithSampleTypePredicateUpdateHandler(sampleType: HKSampleType, predicate: NSPredicate, updateHandler: (p1: HKObserverQuery, p2: () => void, p3: NSError) => void): this;
 }
+
+declare var HKPredicateKeyPathAverage: string;
 
 declare var HKPredicateKeyPathCDAAuthorName: string;
 
@@ -945,13 +1086,27 @@ declare var HKPredicateKeyPathClinicalRecordFHIRResourceType: string;
 
 declare var HKPredicateKeyPathCorrelation: string;
 
+declare var HKPredicateKeyPathCount: string;
+
 declare var HKPredicateKeyPathDateComponents: string;
 
 declare var HKPredicateKeyPathDevice: string;
 
 declare var HKPredicateKeyPathEndDate: string;
 
+declare var HKPredicateKeyPathMax: string;
+
 declare var HKPredicateKeyPathMetadata: string;
+
+declare var HKPredicateKeyPathMin: string;
+
+declare var HKPredicateKeyPathMostRecent: string;
+
+declare var HKPredicateKeyPathMostRecentDuration: string;
+
+declare var HKPredicateKeyPathMostRecentEndDate: string;
+
+declare var HKPredicateKeyPathMostRecentStartDate: string;
 
 declare var HKPredicateKeyPathQuantity: string;
 
@@ -997,9 +1152,9 @@ declare class HKQuantity extends NSObject implements NSCopying, NSSecureCoding {
 
 	doubleValueForUnit(unit: HKUnit): number;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	isCompatibleWithUnit(unit: HKUnit): boolean;
 }
@@ -1008,7 +1163,13 @@ declare const enum HKQuantityAggregationStyle {
 
 	Cumulative = 0,
 
-	Discrete = 1
+	DiscreteArithmetic = 1,
+
+	Discrete = 1,
+
+	DiscreteTemporallyWeighted = 2,
+
+	DiscreteEquivalentContinuousLevel = 3
 }
 
 declare class HKQuantitySample extends HKSample {
@@ -1048,9 +1209,13 @@ declare class HKQuantitySeriesSampleBuilder extends NSObject {
 
 	finishSeriesWithMetadataCompletion(metadata: NSDictionary<string, any>, completion: (p1: NSArray<HKQuantitySample>, p2: NSError) => void): void;
 
+	finishSeriesWithMetadataEndDateCompletion(metadata: NSDictionary<string, any>, endDate: Date, completion: (p1: NSArray<HKQuantitySample>, p2: NSError) => void): void;
+
 	initWithHealthStoreQuantityTypeStartDateDevice(healthStore: HKHealthStore, quantityType: HKQuantityType, startDate: Date, device: HKDevice): this;
 
 	insertQuantityDateError(quantity: HKQuantity, date: Date): boolean;
+
+	insertQuantityDateIntervalError(quantity: HKQuantity, dateInterval: NSDateInterval): boolean;
 }
 
 declare class HKQuantitySeriesSampleQuery extends HKQuery {
@@ -1059,7 +1224,15 @@ declare class HKQuantitySeriesSampleQuery extends HKQuery {
 
 	static new(): HKQuantitySeriesSampleQuery; // inherited from NSObject
 
+	includeSample: boolean;
+
+	orderByQuantitySampleStartDate: boolean;
+
+	constructor(o: { quantityType: HKQuantityType; predicate: NSPredicate; quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: NSDateInterval, p4: HKQuantitySample, p5: boolean, p6: NSError) => void; });
+
 	constructor(o: { sample: HKQuantitySample; quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: Date, p4: boolean, p5: NSError) => void; });
+
+	initWithQuantityTypePredicateQuantityHandler(quantityType: HKQuantityType, predicate: NSPredicate, quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: NSDateInterval, p4: HKQuantitySample, p5: boolean, p6: NSError) => void): this;
 
 	initWithSampleQuantityHandler(quantitySample: HKQuantitySample, quantityHandler: (p1: HKQuantitySeriesSampleQuery, p2: HKQuantity, p3: Date, p4: boolean, p5: NSError) => void): this;
 }
@@ -1078,6 +1251,8 @@ declare class HKQuantityType extends HKSampleType {
 declare var HKQuantityTypeIdentifierActiveEnergyBurned: string;
 
 declare var HKQuantityTypeIdentifierAppleExerciseTime: string;
+
+declare var HKQuantityTypeIdentifierAppleStandTime: string;
 
 declare var HKQuantityTypeIdentifierBasalBodyTemperature: string;
 
@@ -1189,11 +1364,15 @@ declare var HKQuantityTypeIdentifierDistanceWheelchair: string;
 
 declare var HKQuantityTypeIdentifierElectrodermalActivity: string;
 
+declare var HKQuantityTypeIdentifierEnvironmentalAudioExposure: string;
+
 declare var HKQuantityTypeIdentifierFlightsClimbed: string;
 
 declare var HKQuantityTypeIdentifierForcedExpiratoryVolume1: string;
 
 declare var HKQuantityTypeIdentifierForcedVitalCapacity: string;
+
+declare var HKQuantityTypeIdentifierHeadphoneAudioExposure: string;
 
 declare var HKQuantityTypeIdentifierHeartRate: string;
 
@@ -1312,9 +1491,9 @@ declare class HKQueryAnchor extends NSObject implements NSCopying, NSSecureCodin
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum HKQueryOptions {
@@ -1363,6 +1542,14 @@ declare class HKSampleType extends HKObjectType {
 	static alloc(): HKSampleType; // inherited from NSObject
 
 	static new(): HKSampleType; // inherited from NSObject
+
+	readonly isMaximumDurationRestricted: boolean;
+
+	readonly isMinimumDurationRestricted: boolean;
+
+	readonly maximumAllowedDuration: number;
+
+	readonly minimumAllowedDuration: number;
 }
 
 declare class HKSeriesBuilder extends NSObject {
@@ -1387,6 +1574,8 @@ declare class HKSeriesType extends HKSampleType {
 
 	static alloc(): HKSeriesType; // inherited from NSObject
 
+	static heartbeatSeriesType(): HKSeriesType;
+
 	static new(): HKSeriesType; // inherited from NSObject
 
 	static workoutRouteType(): HKSeriesType;
@@ -1410,9 +1599,9 @@ declare class HKSource extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class HKSourceQuery extends HKQuery {
@@ -1450,9 +1639,9 @@ declare class HKSourceRevision extends NSObject implements NSCopying, NSSecureCo
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithSourceVersion(source: HKSource, version: string): this;
 
@@ -1489,9 +1678,13 @@ declare class HKStatistics extends NSObject implements NSCopying, NSSecureCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	duration(): HKQuantity;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	durationForSource(source: HKSource): HKQuantity;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 
 	maximumQuantity(): HKQuantity;
 
@@ -1564,7 +1757,11 @@ declare const enum HKStatisticsOptions {
 
 	CumulativeSum = 16,
 
-	DiscreteMostRecent = 32
+	MostRecent = 32,
+
+	DiscreteMostRecent = 32,
+
+	Duration = 64
 }
 
 declare class HKStatisticsQuery extends HKQuery {
@@ -1611,6 +1808,10 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static dayUnit(): HKUnit;
 
+	static decibelAWeightedSoundPressureLevelUnit(): HKUnit;
+
+	static decibelHearingLevelUnit(): HKUnit;
+
 	static degreeCelsiusUnit(): HKUnit;
 
 	static degreeFahrenheitUnit(): HKUnit;
@@ -1626,6 +1827,10 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 	static gramUnit(): HKUnit;
 
 	static gramUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
+
+	static hertzUnit(): HKUnit;
+
+	static hertzUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
 
 	static hourUnit(): HKUnit;
 
@@ -1711,9 +1916,9 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	isNull(): boolean;
 
@@ -1830,9 +2035,9 @@ declare class HKWheelchairUseObject extends NSObject implements NSCopying, NSSec
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class HKWorkout extends HKSample {
@@ -2020,6 +2225,10 @@ declare const enum HKWorkoutActivityType {
 
 	HandCycling = 74,
 
+	DiscSports = 75,
+
+	FitnessGaming = 76,
+
 	Other = 3000
 }
 
@@ -2086,9 +2295,9 @@ declare class HKWorkoutConfiguration extends NSObject implements NSCopying, NSSe
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class HKWorkoutEvent extends NSObject implements NSCopying, NSSecureCoding {
@@ -2117,9 +2326,9 @@ declare class HKWorkoutEvent extends NSObject implements NSCopying, NSSecureCodi
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum HKWorkoutEventType {

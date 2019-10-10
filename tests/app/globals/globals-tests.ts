@@ -8,20 +8,20 @@ export function test_global_system_import() {
 
     TKUnit.assert((<any>global).System, "global.System not defined");
     TKUnit.assert(typeof (<any>global).System.import === "function", "global.System.import not a function");
-} 
+}
 
 export function test_global_zonedCallback() {
     TKUnit.assert(typeof zonedCallback === "function", "zonedCallback not defined");
     TKUnit.assert(typeof global.zonedCallback === "function", "global.zonedCallback not a function");
-} 
+}
 
 export function test_global_moduleMerge() {
     TKUnit.assert(typeof global.moduleMerge === "function", "global.moduleMerge not a function");
-} 
+}
 
 export function test_global_registerModule() {
     TKUnit.assert(typeof global.registerModule === "function", "global.registerModule not a function");
-} 
+}
 
 export function test_global_registerWebpackModules() {
     TKUnit.assert(typeof global.registerWebpackModules === "function", "global.registerWebpackModules not a function");

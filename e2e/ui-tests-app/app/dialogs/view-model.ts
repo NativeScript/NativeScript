@@ -139,63 +139,63 @@ export class SettingsViewModel extends observable.Observable {
     }
 
     public promptNumber(args: observable.EventData) {
-      dialogs.prompt({
-          title: "Name",
-          message: "Enter a number:",
-          cancelButtonText: "Cancel",
-          neutralButtonText: "Ignore",
-          okButtonText: "OK",
-          defaultText: "1234",
-          inputType: dialogs.inputType.number
-      }).then((promptResult) => {
-          console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
-          if (promptResult.result) {
-              this.set("name", promptResult.text);
-          }
-          else {
-              this.set("name", "1234");
-          }
-      });
+        dialogs.prompt({
+            title: "Name",
+            message: "Enter a number:",
+            cancelButtonText: "Cancel",
+            neutralButtonText: "Ignore",
+            okButtonText: "OK",
+            defaultText: "1234",
+            inputType: dialogs.inputType.number
+        }).then((promptResult) => {
+            console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+            if (promptResult.result) {
+                this.set("name", promptResult.text);
+            }
+            else {
+                this.set("name", "1234");
+            }
+        });
     }
 
     public promptDecimal(args: observable.EventData) {
-      dialogs.prompt({
-          title: "Name",
-          message: "Enter a decimal number:",
-          cancelButtonText: "Cancel",
-          neutralButtonText: "Ignore",
-          okButtonText: "OK",
-          defaultText: "13.50",
-          inputType: dialogs.inputType.decimal
-      }).then((promptResult) => {
-          console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
-          if (promptResult.result) {
-              this.set("name", promptResult.text);
-          }
-          else {
-              this.set("name", "13.50");
-          }
-      });
+        dialogs.prompt({
+            title: "Name",
+            message: "Enter a decimal number:",
+            cancelButtonText: "Cancel",
+            neutralButtonText: "Ignore",
+            okButtonText: "OK",
+            defaultText: "13.50",
+            inputType: dialogs.inputType.decimal
+        }).then((promptResult) => {
+            console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+            if (promptResult.result) {
+                this.set("name", promptResult.text);
+            }
+            else {
+                this.set("name", "13.50");
+            }
+        });
     }
 
     public promptPhone(args: observable.EventData) {
-      dialogs.prompt({
-          title: "Name",
-          message: "Enter a phone:",
-          cancelButtonText: "Cancel",
-          neutralButtonText: "Ignore",
-          okButtonText: "OK",
-          defaultText: "1234",
-          inputType: dialogs.inputType.phone
-      }).then((promptResult) => {
-          console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
-          if (promptResult.result) {
-              this.set("name", promptResult.text);
-          }
-          else {
-              this.set("name", "1234");
-          }
-      });
+        dialogs.prompt({
+            title: "Name",
+            message: "Enter a phone:",
+            cancelButtonText: "Cancel",
+            neutralButtonText: "Ignore",
+            okButtonText: "OK",
+            defaultText: "1234",
+            inputType: dialogs.inputType.phone
+        }).then((promptResult) => {
+            console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+            if (promptResult.result) {
+                this.set("name", promptResult.text);
+            }
+            else {
+                this.set("name", "1234");
+            }
+        });
     }
 
     public promptCapitalizationNone(args: observable.EventData) {

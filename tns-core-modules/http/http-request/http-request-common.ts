@@ -11,7 +11,7 @@ export function getFilenameFromUrl(url: string) {
     } else {
         actualFileName = url.substring(slashPos);
     }
-    
+
     const result = fs.path.join(fs.knownFolders.documents().path, actualFileName);
 
     return result;

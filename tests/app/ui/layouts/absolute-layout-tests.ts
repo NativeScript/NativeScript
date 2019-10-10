@@ -51,7 +51,7 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
         absoluteLayout.height = { value: 230, unit: "px" };
         absoluteLayout.style.backgroundColor = new colorModule.Color("LightGray");
         let label = new labelModule.Label();
-        
+
         absoluteLayoutModule.AbsoluteLayout.setLeft(label, layoutHelper.dp(10));
         absoluteLayoutModule.AbsoluteLayout.setTop(label, layoutHelper.dp(10));
         label.width = { value: 100, unit: "px" };

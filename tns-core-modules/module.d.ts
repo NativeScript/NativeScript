@@ -48,20 +48,20 @@ declare namespace NodeJS {
         readonly moduleResolvers: ModuleResolver[];
 
         /**
-         * 
+         *
          * @param name Name of the module to be loaded
          * @param loadForUI Is this UI module is being loaded for UI from tns-core-modules/builder.
          * Xml, css/scss and js/ts modules for pages and custom-components should load with loadForUI=true.
          * Passing "true" will enable the HMR mechanics this module. Default value is false.
          */
-        loadModule(name: string, loadForUI? : boolean): any;
+        loadModule(name: string, loadForUI?: boolean): any;
 
         /**
          * Checks if the module has been registered with `registerModule` or in `registerWebpackModules`
          * @param name Name of the module
          */
         moduleExists(name: string): boolean;
-        
+
         getRegisteredModules(): string[];
 
         _unregisterModule(name: string): void;

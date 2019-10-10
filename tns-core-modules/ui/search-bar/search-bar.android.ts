@@ -12,11 +12,11 @@ const SEARCHTEXT = Symbol("searchText");
 const QUERY = Symbol("query");
 
 interface QueryTextListener {
-    new (owner: SearchBar): androidx.appcompat.widget.SearchView.OnQueryTextListener;
+    new(owner: SearchBar): androidx.appcompat.widget.SearchView.OnQueryTextListener;
 }
 
 interface CloseListener {
-    new (owner: SearchBar): androidx.appcompat.widget.SearchView.OnCloseListener;
+    new(owner: SearchBar): androidx.appcompat.widget.SearchView.OnCloseListener;
 }
 
 let QueryTextListener: QueryTextListener;
@@ -102,7 +102,7 @@ function enableUserInteractionSearchView(nativeView: any, value: boolean) {
     if (!(nativeView instanceof android.view.ViewGroup)) {
         return;
     }
-    
+
     for (let i = 0; i < nativeView.getChildCount(); i++) {
         let child = nativeView.getChildAt(i);
         enableUserInteractionSearchView(child, value);

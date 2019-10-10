@@ -1,5 +1,5 @@
 {
-  "name" : "core",
-  "main" : "globals-core",
+  "name": "core",
+  "main": "globals-core",
   "nativescript": {}
 }

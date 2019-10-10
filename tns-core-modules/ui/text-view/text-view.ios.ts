@@ -8,9 +8,12 @@ import {
     CSSType
 } from "../editable-text-base";
 
-import { profile } from "../../profiling";
-
 export * from "../editable-text-base";
+
+import { profile } from "../../profiling";
+import { ios } from "../../utils/utils";
+
+const majorVersion = ios.MajorVersion;
 
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public static ObjCProtocols = [UITextViewDelegate];
@@ -113,6 +116,9 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     private _isShowingHint: boolean;
     public _isEditing: boolean;
 
+    private _hintColor = majorVersion <= 12 ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
+    private _textColor = majorVersion <= 12 ? null : UIColor.labelColor;
+
     createNativeView() {
         const textView = NoScrollAnimationUITextView.new();
         if (!textView.font) {
@@ -173,7 +179,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
                 // Use semi-transparent version of color for back-compatibility
                 this.nativeTextViewProtected.textColor = color.ios.colorWithAlphaComponent(0.22);
             } else {
-                this.nativeTextViewProtected.textColor = UIColor.blackColor.colorWithAlphaComponent(0.22);
+                this.nativeTextViewProtected.textColor = this._hintColor;
             }
         } else {
             const color = this.style.color;
@@ -182,8 +188,8 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
                 this.nativeTextViewProtected.textColor = color.ios;
                 this.nativeTextViewProtected.tintColor = color.ios;
             } else {
-                this.nativeTextViewProtected.textColor = null;
-                this.nativeTextViewProtected.tintColor = null;
+                this.nativeTextViewProtected.textColor = this._textColor;
+                this.nativeTextViewProtected.tintColor = this._textColor;
             }
         }
     }

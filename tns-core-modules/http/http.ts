@@ -31,18 +31,18 @@ export function getJSON<T>(arg: any): Promise<T> {
 }
 
 export function getImage(arg: any): Promise<ImageSource> {
-  return new Promise<any>((resolve, reject) => {
-    httpRequest.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
-        .then(r => {
-          try {
-            resolve(r.content.toImage());
-          } catch (err) {
-            reject(err);
-          }
-        }, err => {
-          reject(err);
-        });
-  });
+    return new Promise<any>((resolve, reject) => {
+        httpRequest.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
+            .then(r => {
+                try {
+                    resolve(r.content.toImage());
+                } catch (err) {
+                    reject(err);
+                }
+            }, err => {
+                reject(err);
+            });
+    });
 }
 
 export function getFile(arg: any, destinationFilePath?: string): Promise<any> {

@@ -34,7 +34,7 @@ class SliderChangeHandlerImpl extends NSObject {
 export class Slider extends SliderBase {
     nativeViewProtected: UISlider;
     private _changeHandler: NSObject;
-    
+
     public createNativeView() {
         return UISlider.new();
     }

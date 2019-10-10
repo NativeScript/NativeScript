@@ -37,7 +37,7 @@ export function getConnectionType(): number {
     if (type.indexOf(wifi) !== -1) {
         return connectionType.wifi;
     }
-    
+
     if (type.indexOf(mobile) !== -1) {
         return connectionType.mobile;
     }
@@ -49,7 +49,7 @@ export function getConnectionType(): number {
     if (type.indexOf(bluetooth) !== -1) {
         return connectionType.bluetooth;
     }
-        
+
     return connectionType.none;
 }
 

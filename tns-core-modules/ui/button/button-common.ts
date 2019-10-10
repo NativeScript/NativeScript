@@ -14,7 +14,7 @@ export abstract class ButtonBase extends TextBase implements ButtonDefinition {
         if (typeof value === "string") {
             value = booleanConverter(value);
         }
-            
+
         this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 }

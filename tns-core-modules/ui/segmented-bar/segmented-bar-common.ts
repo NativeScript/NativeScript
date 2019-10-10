@@ -34,7 +34,7 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
 
     public selectedIndex: number;
     public items: Array<SegmentedBarItemDefinition>;
-    
+
     public get selectedBackgroundColor(): Color {
         return this.style.selectedBackgroundColor;
     }

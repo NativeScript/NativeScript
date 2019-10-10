@@ -73,7 +73,11 @@ declare const enum NSFileProviderErrorCode {
 
 	ServerUnreachable = -1004,
 
-	NoSuchItem = -1005
+	NoSuchItem = -1005,
+
+	VersionOutOfDate = -1006,
+
+	DirectoryNotEmpty = -1007
 }
 
 declare var NSFileProviderErrorCollidingItemKey: string;
@@ -224,6 +228,30 @@ declare const enum NSFileProviderItemCapabilities {
 
 	AllowsAll = 63
 }
+
+interface NSFileProviderItemDecorating extends NSFileProviderItem {
+}
+declare var NSFileProviderItemDecorating: {
+
+	prototype: NSFileProviderItemDecorating;
+};
+
+interface NSFileProviderItemFlags extends NSObjectProtocol {
+
+	hidden: boolean;
+
+	pathExtensionHidden: boolean;
+
+	userExecutable: boolean;
+
+	userReadable: boolean;
+
+	userWritable: boolean;
+}
+declare var NSFileProviderItemFlags: {
+
+	prototype: NSFileProviderItemFlags;
+};
 
 declare class NSFileProviderManager extends NSObject {
 

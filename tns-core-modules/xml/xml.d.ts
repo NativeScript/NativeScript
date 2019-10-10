@@ -7,27 +7,27 @@
  * Specifies the type of parser event.
  */
 export class ParserEventType {
-    
+
     /**
      * Specifies the StartElement event type.
      */
     static StartElement: string;
-    
+
     /**
      * Specifies the EndElement event type.
      */
     static EndElement: string;
-    
+
     /**
      * Specifies the Text event type.
      */
     static Text: string;
-    
+
     /**
      * Specifies the CDATA event type.
      */
     static CDATA: string;
-    
+
     /**
      * Specifies the Comment event type.
      */
@@ -42,7 +42,7 @@ export interface Position {
      * The line number. The first line is at index 1.
      */
     line: number;
-    
+
     /**
      * The column number. The first character is at index 1.
      */
@@ -58,7 +58,7 @@ export interface ParserEvent {
      * Returns the type of the parser event. This is one of the ParserEventType static members.
      */
     eventType: string;
-    
+
     /**
      * Get the position in the xml string where the event was generated.
      */
@@ -107,7 +107,7 @@ export class XmlParser {
      * @param processNamespaces Specifies whether namespaces should be processed.
      */
     constructor(onEvent: (event: ParserEvent) => void, onError?: (error: Error, position: Position) => void, processNamespaces?: boolean, angularSyntax?: boolean);
-    
+
     /**
      * Parses the supplied xml string.
      * @param xmlString The string containing the xml to parse.

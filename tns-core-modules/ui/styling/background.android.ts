@@ -40,7 +40,7 @@ export module ad {
         }
 
         const background = view.style.backgroundInternal;
-        const drawable = nativeView.getBackground();
+        let drawable = nativeView.getBackground();
         const androidView = <any>view as AndroidView;
         // use undefined as not set. getBackground will never return undefined only Drawable or null;
         if (androidView._cachedDrawable === undefined && drawable) {
@@ -50,12 +50,21 @@ export module ad {
 
         if (isSetColorFilterOnlyWidget(nativeView)
             && drawable
-            && !(drawable instanceof org.nativescript.widgets.BorderDrawable)
             && !background.hasBorderWidth()
             && !background.hasBorderRadius()
             && !background.clipPath
             && !background.image
             && background.color) {
+
+            if (drawable instanceof org.nativescript.widgets.BorderDrawable) {
+                if (!(androidView._cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState)) {
+                    return;
+                }
+
+                drawable = androidView._cachedDrawable.newDrawable(nativeView.getResources());
+                nativeView.setBackground(drawable);
+            }
+
             const backgroundColor = (<any>drawable).backgroundColor = background.color.android;
             drawable.mutate();
             drawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
@@ -122,20 +131,20 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
 
     const alpha = gradient.angle / (Math.PI * 2);
     const startX = Math.pow(
-      Math.sin(Math.PI * (alpha + 0.75)),
-      2
+        Math.sin(Math.PI * (alpha + 0.75)),
+        2
     );
     const startY = Math.pow(
-      Math.sin(Math.PI * (alpha + 0.5)),
-      2
+        Math.sin(Math.PI * (alpha + 0.5)),
+        2
     );
     const endX = Math.pow(
-      Math.sin(Math.PI * (alpha + 0.25)),
-      2
+        Math.sin(Math.PI * (alpha + 0.25)),
+        2
     );
     const endY = Math.pow(
-      Math.sin(Math.PI * alpha),
-      2
+        Math.sin(Math.PI * alpha),
+        2
     );
 
     return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);

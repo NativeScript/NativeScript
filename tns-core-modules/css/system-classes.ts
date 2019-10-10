@@ -30,3 +30,8 @@ export function removeFromRootViewCssClasses(value: string): string {
 
     return removedElement;
 }
+
+export function resetRootViewCssClasses(): string[] {
+    // Preserve the default `ns-root` CSS class
+    return rootViewCssClasses.splice(1);
+}

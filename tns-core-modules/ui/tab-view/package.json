@@ -1,5 +1,5 @@
 {
-  "name" : "ui/tab-view",
-  "main" : "tab-view",
-  "types" : "tab-view.d.ts"
+  "name": "ui/tab-view",
+  "main": "tab-view",
+  "types": "tab-view.d.ts"
 }

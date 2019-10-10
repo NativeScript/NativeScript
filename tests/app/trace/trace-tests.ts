@@ -20,7 +20,7 @@ export var test_DummyTestForSnippetOnly1 = function () {
         , trace.categories.Style
         , trace.categories.ViewHierarchy
         , trace.categories.VisualTreeEvents
-        ));
+    ));
     trace.enable();
     // << trace-specific-categories
 };

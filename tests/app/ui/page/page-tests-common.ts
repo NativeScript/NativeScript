@@ -24,6 +24,7 @@ import { Color } from "tns-core-modules/color";
 import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view/tab-view";
 import { _resetRootView } from "tns-core-modules/application";
 import { Button } from "tns-core-modules/ui/button/button";
+import { ios } from "tns-core-modules/utils/utils";
 
 export function addLabelToPage(page: Page, text?: string) {
     const label = new Label();
@@ -376,15 +377,18 @@ export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
     TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#0000FF");
 }
 
-export function test_page_backgroundColor_is_white() {
+export function test_page_backgroundColor() {
     const page = new Page();
-    page.id = "page_test_page_backgroundColor_is_white";
+    page.id = "page_test_page_backgroundColor";
+
     const factory = () => page;
     helper.navigate(factory);
-    const whiteColor = new Color("white");
+
     if (isIOS) {
-        TKUnit.assertTrue(whiteColor.ios.CGColor.isEqual(page.nativeViewProtected.backgroundColor.CGColor), "page default backgroundColor should be white");
+        const backgroundColor = ios.MajorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+        TKUnit.assertEqual(page.nativeView.backgroundColor, backgroundColor, "page backgroundColor is wrong");
     } else {
+        const whiteColor = new Color("white");
         TKUnit.assertEqual(page.nativeViewProtected.getBackground().getColor(), whiteColor.android, "page default backgroundColor should be white");
     }
 }

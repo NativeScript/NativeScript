@@ -37,7 +37,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldDidBeginEditing(textField: UITextField): void {
         const owner = this._owner.get();
         if (owner) {
-          owner.notify({ eventName: TextField.focusEvent, object: owner });
+            owner.notify({ eventName: TextField.focusEvent, object: owner });
         }
     }
 
@@ -148,7 +148,7 @@ export class TextField extends TextFieldBase {
     private _delegate: UITextFieldDelegateImpl;
 
     createNativeView() {
-        return  UITextFieldImpl.initWithOwner(new WeakRef(this));
+        return UITextFieldImpl.initWithOwner(new WeakRef(this));
     }
 
     initNativeView() {

@@ -58,7 +58,7 @@ function ensureCompleteCallback() {
         },
         onError: function (error: string, context: any) {
             onRequestError(error, context);
-      },
+        },
     });
 }
 
