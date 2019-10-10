@@ -311,9 +311,9 @@ export function orientation(): "portrait" | "landscape" | "unknown";
 
 /**
  * Gets the operating system appearance.
- * Available values: "dark", "light".
+ * Available values: "dark", "light", null
  */
-export function systemAppearance(): "dark" | "light";
+export function systemAppearance(): "dark" | "light" | null;
 
 /**
  * This is the Android-specific application object instance.
@@ -452,7 +452,6 @@ export class AndroidApplication extends Observable {
     /**
      * Gets the system appearance.
      * Available values: "dark", "light".
-     * Undefined for iOS <= 11.
      */
     systemAppearance: "dark" | "light";
 
@@ -637,9 +636,9 @@ export interface iOSApplication {
 
     /**
      * Gets the system appearance.
-     * Available values: "dark", "light".
+     * Available values: "dark", "light", null.
      */
-    systemAppearance: "dark" | "light";
+    systemAppearance: "dark" | "light" | null;
 
     /**
      * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html).

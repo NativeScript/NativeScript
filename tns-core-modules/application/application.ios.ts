@@ -120,7 +120,13 @@ class IOSApplication implements IOSApplicationDefinition {
         return this._window.rootViewController;
     }
 
-    get systemAppearance(): "light" | "dark" {
+    get systemAppearance(): "light" | "dark" | null {
+
+        // userInterfaceStyle is available on UITraitCollection since iOS 12.
+        if (majorVersion <= 11) {
+            return null;
+        }
+
         if (!this._systemAppearance) {
             const userInterfaceStyle = this.rootController.traitCollection.userInterfaceStyle;
             this._systemAppearance = getSystemAppearanceValue(userInterfaceStyle);
@@ -441,9 +447,6 @@ export function getNativeApplication(): UIApplication {
 
 function getSystemAppearanceValue(userInterfaceStyle: number): "dark" | "light" {
     switch (userInterfaceStyle) {
-        // UIUserInterfaceStyle is undefined for iOS <= 11.
-        case undefined:
-            return undefined;
         case UIUserInterfaceStyle.Dark:
             return "dark";
         case UIUserInterfaceStyle.Light:
