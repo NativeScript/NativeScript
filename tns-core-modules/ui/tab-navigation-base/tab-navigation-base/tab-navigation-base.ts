@@ -11,19 +11,6 @@ import { View, Property, CoercibleProperty, isIOS, Color } from "../../core/view
 // TODO: Impl trace
 // export const traceCategory = "TabView";
 
-const TABID = "_tabId";
-const INDEX = "_index";
-
-function getTabById(id: number): any {
-    const ref = _tabs.find(ref => {
-        const tab = ref.get();
-
-        return tab && tab._domId === id;
-    });
-
-    return ref && ref.get();
-}
-
 export module knownCollections {
     export const items = "items";
 }
