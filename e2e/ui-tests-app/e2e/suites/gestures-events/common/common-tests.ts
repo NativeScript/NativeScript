@@ -45,7 +45,7 @@ describe(`${imagePrefix}-suite`, () => {
             return await (await driver.waitForElement("clean-result")).click();
         };
 
-        basePage.navigateToSample("handlers");
+        await basePage.navigateToSample("handlers");
 
         const handlersExport = await driver.findElementByText("Handlers as exports");
        
