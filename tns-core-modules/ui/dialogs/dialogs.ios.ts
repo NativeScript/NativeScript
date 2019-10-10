@@ -205,7 +205,7 @@ function showUIAlertController(alertController: UIAlertController) {
     if (currentView) {
         currentView = currentView.modal || currentView;
         
-        while(currentView && currentView.modal) {
+        while (currentView && currentView.modal) {
             currentView = currentView.modal;
         }
 
