@@ -51,10 +51,7 @@ export const Http = { getFile, getImage, getJSON, getString: httpGetString, requ
 
 export { ImageAsset, ImageAssetOptions } from "./image-asset";
 
-// TODO: Should the ImageSource be inside nsImageSource. Probably "yes" but still give it a thought.
-// import { ImageSource, fromAsset, fromBase64, fromData, fromFile, fromFileOrResource, fromFontIconCode, fromNativeSource, fromResource, fromUrl } from "./image-source";
-// export const nsImageSource = { ImageSource, fromAsset, fromBase64, fromData, fromFile, fromFileOrResource, fromFontIconCode, fromNativeSource, fromResource, fromUrl };
-
+export { ImageSource } from "./image-source";
 export { isAndroid, isIOS, screen } from "./platform";
 
 // Export interfaces from "profiling" module

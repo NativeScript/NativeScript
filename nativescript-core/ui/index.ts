@@ -1,12 +1,12 @@
 export { ActionBar, ActionItem, ActionItems, NavigationButton } from "./action-bar";
 export { ActivityIndicator } from "./activity-indicator";
 export { Animation, AnimationDefinition } from "./animation";
-export { BottomNavigation } from "./bottom-navigation";
+export { BottomNavigation, SelectedIndexChangedEventData } from "./bottom-navigation";
 export { Builder, LoadOptions } from "./builder";
 export { Button } from "./button";
 export { ContentView } from "./content-view";
-export { ViewBase, ShowModalOptions } from "./core/view-base";
-export { View, Template, KeyedTemplate } from "./core/view";
+export { ViewBase, ShowModalOptions, } from "./core/view-base";
+export { View, Template, KeyedTemplate, ShownModallyData, } from "./core/view";
 export { DatePicker } from "./date-picker";
 
 // No need go export dialogs, they are already export exported globally
@@ -33,7 +33,7 @@ export {
 
 export { HtmlView } from "./html-view";
 export { Image } from "./image";
-export { Cache } from "./image-cache";
+export { Cache, DownloadError, DownloadRequest, DownloadedData } from "./image-cache";
 export { Label } from "./label";
 
 export * from "./layouts"; // barrel export
