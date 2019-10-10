@@ -1,5 +1,4 @@
-import { AppiumDriver, createDriver, nsCapabilities, SearchOptions, Direction, LogType } from "nativescript-dev-appium";
-import { GesturesPage } from "../gestures/gestures-page";
+import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
 import { assert } from "chai";
 import { setImageName } from "../../../helpers/image-helper";
 import { EventsGesturesBasePage } from "../events-gestures-base-page";
@@ -45,7 +44,7 @@ describe(`${imagePrefix}-suite`, () => {
             return await (await driver.waitForElement("clean-result")).click();
         };
 
-        basePage.navigateToSample("handlers");
+        await basePage.navigateToSample("handlers");
 
         const handlersExport = await driver.findElementByText("Handlers as exports");
        
