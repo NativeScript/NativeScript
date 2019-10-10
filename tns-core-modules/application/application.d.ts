@@ -311,7 +311,8 @@ export function orientation(): "portrait" | "landscape" | "unknown";
 
 /**
  * Gets the operating system appearance.
- * Available values: "dark", "light", null
+ * Available values: "dark", "light", null.
+ * Null for iOS <= 11.
  */
 export function systemAppearance(): "dark" | "light" | null;
 
@@ -637,6 +638,7 @@ export interface iOSApplication {
     /**
      * Gets the system appearance.
      * Available values: "dark", "light", null.
+     * Null for iOS <= 11.
      */
     systemAppearance: "dark" | "light" | null;
 
