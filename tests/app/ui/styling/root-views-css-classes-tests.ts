@@ -22,7 +22,7 @@ import {
     _rootModalViews
 } from "tns-core-modules/ui/core/view/view-common";
 import { DeviceType } from "tns-core-modules/ui/enums/enums";
-import { ios as iosUtils } from 'tns-core-modules/utils/utils';
+import { ios as iosUtils } from "tns-core-modules/utils/utils";
 
 const CLASS_NAME = "class-name";
 const ROOT_CSS_CLASS = "ns-root";

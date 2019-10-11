@@ -49,7 +49,7 @@ export function testIOSApplicationInitialized() {
     TKUnit.assert(app.ios.orientation, "iOS orientation not initialized.");
 
     if (ios.MajorVersion <= 11) {
-        TKUnit.assertNull(app.ios.systemAppearance, "iOS system appearance should be `undefined` on iOS <= 11.");
+        TKUnit.assertNull(app.ios.systemAppearance, "iOS system appearance should be `null` on iOS <= 11.");
     } else {
         TKUnit.assert(app.ios.systemAppearance, "iOS system appearance not initialized.");
     }
@@ -60,7 +60,7 @@ export function testIOSApplicationInitialized() {
 
 export function testSystemAppearance() {
     if (ios.MajorVersion <= 11) {
-        TKUnit.assertNull(app.systemAppearance(), "System appearance should be `undefined` on iOS <= 11.");
+        TKUnit.assertNull(app.systemAppearance(), "System appearance should be `null` on iOS <= 11.");
     } else {
         TKUnit.assert(app.systemAppearance(), "System appearance not initialized.");
     }
