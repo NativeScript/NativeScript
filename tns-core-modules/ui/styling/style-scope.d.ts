@@ -35,6 +35,10 @@ export class StyleScope {
     public static createSelectorsFromImports(tree: SyntaxTree, keyframes: Object): RuleSet[];
     public ensureSelectors(): number;
 
+    /**
+     * Increase the application CSS selector version.
+     */
+    public increaseApplicationCssSelectorVersion(): number;
     public isApplicationCssSelectorsLatestVersionApplied(): boolean;
     public isLocalCssSelectorsLatestVersionApplied(): boolean;
 
