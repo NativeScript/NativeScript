@@ -413,11 +413,14 @@ function initComponentCallbacks() {
         }),
 
         onConfigurationChanged: profile("onConfigurationChanged", function (newConfiguration: android.content.res.Configuration) {
+            const rootView = getRootView();
             const newOrientation = getOrientationValue(newConfiguration);
 
             if (androidApp.orientation !== newOrientation) {
                 androidApp.orientation = newOrientation;
-                orientationChanged(getRootView(), newOrientation);
+                if (rootView) {
+                    orientationChanged(rootView, newOrientation);
+                }
 
                 notify(<OrientationChangedEventData>{
                     eventName: orientationChangedEvent,
@@ -433,7 +436,9 @@ function initComponentCallbacks() {
 
             if (androidApp.systemAppearance !== newSystemAppearance) {
                 androidApp.systemAppearance = newSystemAppearance;
-                systemAppearanceChanged(getRootView(), newSystemAppearance);
+                if (rootView) {
+                    systemAppearanceChanged(rootView, newSystemAppearance);
+                }
 
                 notify(<SystemAppearanceChangedEventData>{
                     eventName: systemAppearanceChangedEvent,
