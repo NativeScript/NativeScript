@@ -59,6 +59,7 @@ tscommand*.tmp.txt
 !nativescript-core/xml/xml.js
 !tests/hooks/**/*.*
 !nativescript-core/js-libs/**/*.*
+!nativescript-core/cli-hooks/**/*.*
 !nativescript-core/css/**/*.*
 nativescript-core/css/parser.js*
 nativescript-core/css/system-classes.js*
