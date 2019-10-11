@@ -20,7 +20,7 @@ import {
     CSSType,
     traceWrite,
     traceCategories,
-    traceMessageType, Color
+    traceMessageType
 } from "../core/view";
 import { ShorthandProperty, CssProperty, Style } from "../core/properties/properties";
 import { Length } from "../core/view";
