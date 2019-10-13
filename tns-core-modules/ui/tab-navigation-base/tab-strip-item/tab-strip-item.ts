@@ -172,14 +172,15 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === "Image") {
+        // ensure compat with .prettier formatters
+        if (name && name.toLowerCase() === "image") {
             this.image = <Image>value;
             this.iconSource = (<Image>value).src;
             this._addView(value);
             // selectedIndexProperty.coerce(this);
         }
 
-        if (name === "Label") {
+        if (name && name.toLowerCase() === "label") {
             this.label = <Label>value;
             this.title = (<Label>value).text;
             this._addView(value);
