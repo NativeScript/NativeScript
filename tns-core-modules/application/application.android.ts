@@ -418,9 +418,7 @@ function initComponentCallbacks() {
 
             if (androidApp.orientation !== newOrientation) {
                 androidApp.orientation = newOrientation;
-                if (rootView) {
-                    orientationChanged(rootView, newOrientation);
-                }
+                orientationChanged(rootView, newOrientation);
 
                 notify(<OrientationChangedEventData>{
                     eventName: orientationChangedEvent,
@@ -436,9 +434,7 @@ function initComponentCallbacks() {
 
             if (androidApp.systemAppearance !== newSystemAppearance) {
                 androidApp.systemAppearance = newSystemAppearance;
-                if (rootView) {
-                    systemAppearanceChanged(rootView, newSystemAppearance);
-                }
+                systemAppearanceChanged(rootView, newSystemAppearance);
 
                 notify(<SystemAppearanceChangedEventData>{
                     eventName: systemAppearanceChangedEvent,
