@@ -203,6 +203,10 @@ export var test_XmlParser_DummyDocumentationTest = function () {
 };
 
 export var test_XmlParser_NamespacesTest = function () {
+    if (isIOS && sdkVersion() < 10) {
+        return;
+    }
+
     var xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
         if (event.eventType !== xmlModule.ParserEventType.StartElement) {
             return;
