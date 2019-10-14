@@ -1,7 +1,6 @@
 const semver = require("semver");
 
 module.exports = function ($staticConfig, hookArgs) {
-    console.log("@nativescript/core HOOK");
     const cliVersion = semver.parse($staticConfig.version);
     const majorVersion = cliVersion && cliVersion.major;
     const minorVersion = cliVersion && cliVersion.minor;
