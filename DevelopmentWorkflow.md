@@ -69,6 +69,28 @@ tns run ios
 
 ## Running Another App
 
+The following 3 steps are required if your app is written in vanilla JS (not using TypeScript):
+
+1. Make sure you have Typescript installed:
+```bash
+npm install typescript -g
+```
+2. Go to `tns-core-modules` folder in NativeScript source
+```bash
+cd <path to tns-core-modules>
+# Example: cd ~/work/NativeScript/tns-core-modules
+```
+3. Compile `tns-core-modules` to JavaScript:
+```bash
+tsc
+```
+Alternatively, you can leave the compiler watching for changes in `tns-core-modules`:
+```bash
+tsc -w
+```
+
+For application written in TypeScript, the following steps will suffice:
+
 1. Open the app, where you will use the module from the repository in the console.
 2. Add the `tns-core-modules` in the application via:
 ```bash
