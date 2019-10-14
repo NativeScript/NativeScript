@@ -359,6 +359,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     @profile
     public onUnloaded() {
+        console.log("---> view-base");
         this.setFlag(Flags.superOnUnloadedCalled, true);
         if (!this._isLoaded) {
             return;

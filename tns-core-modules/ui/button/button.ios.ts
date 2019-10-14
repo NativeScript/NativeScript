@@ -15,7 +15,8 @@ export class Button extends ButtonBase {
     private _stateChangedHandler: ControlStateChangeListener;
 
     createNativeView() {
-        return UIButton.buttonWithType(UIButtonType.System);
+        // return UIButton.buttonWithType(UIButtonType.System);
+        UIVisualEffectView.initWithEffect(UIVisualEffect.);
     }
 
     public initNativeView(): void {

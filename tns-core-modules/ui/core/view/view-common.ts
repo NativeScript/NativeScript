@@ -306,6 +306,15 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return false;
     }
 
+    public onUnloaded() {
+        debugger;
+        super.onUnloaded();
+
+        if (this._modal) {
+            console.log("---> view-common", this);
+        }
+    }
+
     public _getFragmentManager(): any {
         return undefined;
     }
@@ -369,6 +378,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     protected _showNativeModalView(parent: ViewCommon, options: ShowModalOptions) {
+        debugger;
         _rootModalViews.push(this);
 
         const modalRootViewCssClass = getModalRootViewCssClass();
@@ -379,6 +389,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this._modalContext = options.context;
         const that = this;
         this._closeModalCallback = function (...originalArgs) {
+            debugger;
             if (that._closeModalCallback) {
                 const modalIndex = _rootModalViews.indexOf(that);
                 _rootModalViews.splice(modalIndex);
