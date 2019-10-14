@@ -13,15 +13,28 @@ export * from "./action-bar-common";
 const majorVersion = iosUtils.MajorVersion;
 const UNSPECIFIED = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 
-function loadActionIconFromFileOrResource(icon: string): UIImage {
-    const img = fromFileOrResource(icon);
-    if (img && img.ios) {
-        return img.ios;
-    } else {
-        traceMissingIcon(icon);
+function loadActionIcon(item: ActionItemDefinition): any /* UIImage */ {
+    let is = null;
+    let img = null;
 
-        return null;
+    const itemIcon = item.icon;
+    const itemStyle = item.style;
+    if (isFontIconURI(itemIcon)) {
+        const fontIconCode = itemIcon.split("//")[1];
+        const font = itemStyle.fontInternal;
+        const color = itemStyle.color;
+        is = fromFontIconCode(fontIconCode, font, color);
+    } else {
+        is = fromFileOrResource(itemIcon);
     }
+
+    if (is && is.ios) {
+        img = is.ios;
+    } else {
+        traceMissingIcon(itemIcon);
+    }
+
+    return img;
 }
 
 class TapBarItemHandlerImpl extends NSObject {
@@ -183,7 +196,7 @@ export class ActionBar extends ActionBarBase {
         // Set back button image
         let img: UIImage;
         if (this.navigationButton && isVisible(this.navigationButton) && this.navigationButton.icon) {
-            img = loadActionIconFromFileOrResource(this.navigationButton.icon);
+            img = loadActionIcon(this.navigationButton);
         }
 
         // TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to
@@ -256,25 +269,11 @@ export class ActionBar extends ActionBarBase {
 
             barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(id, tapHandler, "tap");
         } else if (item.icon) {
-            let img = null;
-
-            if (isFontIconURI(item.icon)) {
-                const fontIconCode = item.icon.split("//")[1];
-                const font = item.style.fontInternal;
-                const color = item.style.color;
-                const is = fromFontIconCode(fontIconCode, font, color);
-
-                if (is && is.ios) {
-                    img = is.ios;
-                } else {
-                    traceMissingIcon(item.icon);
-                }
-            } else {
-                img = loadActionIconFromFileOrResource(item.icon);
+            const img = loadActionIcon(item);
+            if (img) {
+                const image = img.imageWithRenderingMode(this._getIconRenderingMode());
+                barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, tapHandler, "tap");
             }
-
-            const image = img.imageWithRenderingMode(this._getIconRenderingMode());
-            barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, tapHandler, "tap");
         } else {
             barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
         }
