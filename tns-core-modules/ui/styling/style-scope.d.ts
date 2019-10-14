@@ -38,7 +38,7 @@ export class StyleScope {
     /**
      * Increase the application CSS selector version.
      */
-    public increaseApplicationCssSelectorVersion(): number;
+    public _increaseApplicationCssSelectorVersion(): number;
     public isApplicationCssSelectorsLatestVersionApplied(): boolean;
     public isLocalCssSelectorsLatestVersionApplied(): boolean;
 

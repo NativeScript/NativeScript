@@ -147,7 +147,7 @@ export function orientationChanged(rootView: View, newOrientation: "portrait" | 
     if (!rootView.cssClasses.has(newOrientationCssClass)) {
         ORIENTATION_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
         applyCssClass(rootView, newOrientationCssClass);
-        rootView._styleScope.increaseApplicationCssSelectorVersion();
+        rootView._styleScope._increaseApplicationCssSelectorVersion();
         rootView._onCssStateChange();
     }
 }
@@ -157,7 +157,7 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: "da
     if (!rootView.cssClasses.has(newSystemAppearanceCssClass)) {
         SYSTEM_APPEARANCE_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
         applyCssClass(rootView, newSystemAppearanceCssClass);
-        rootView._styleScope.increaseApplicationCssSelectorVersion();
+        rootView._styleScope._increaseApplicationCssSelectorVersion();
         rootView._onCssStateChange();
     }
 }
