@@ -6,6 +6,11 @@ import * as TKUnit from "../tk-unit";
 import * as xmlModule from "tns-core-modules/xml";
 import * as fs from "tns-core-modules/file-system";
 import * as builder from "tns-core-modules/ui/builder";
+import { isIOS } from "tns-core-modules/platform";
+import { device } from "tns-core-modules/platform";
+import lazy from "tns-core-modules/utils/lazy";
+
+const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
 export var test_XmlParser_IsDefined = function () {
     TKUnit.assertNotEqual(xmlModule.XmlParser, undefined, "Class XmlParser should be defined!");
@@ -94,6 +99,10 @@ export var test_XmlParser_OnErrorIsCalledWhenAnErrorOccurs = function () {
 };
 
 export var test_XmlParser_IntegrationTest = function () {
+    if (isIOS && sdkVersion() < 10) {
+        return;
+    }
+
     var actualResult = "";
     var xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
         if (event.eventType === xmlModule.ParserEventType.Text && event.data.trim() === "") {
