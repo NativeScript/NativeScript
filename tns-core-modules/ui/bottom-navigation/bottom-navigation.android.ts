@@ -34,6 +34,7 @@ const ownerSymbol = Symbol("_owner");
 let TabFragment: any;
 let BottomNavigationBar: any;
 let AttachStateChangeListener: any;
+let appResources: android.content.res.Resources;
 
 function makeFragmentName(viewId: number, id: number): string {
     return "android:bottomnavigation:" + viewId + ":" + id;
@@ -55,8 +56,9 @@ function initializeNativeClasses() {
     }
 
     class TabFragmentImplementation extends org.nativescript.widgets.FragmentBase {
-        private tab: BottomNavigation;
+        private owner: BottomNavigation;
         private index: number;
+        private backgroundBitmap: android.graphics.Bitmap = null;
 
         constructor() {
             super();
@@ -77,17 +79,60 @@ function initializeNativeClasses() {
         public onCreate(savedInstanceState: android.os.Bundle): void {
             super.onCreate(savedInstanceState);
             const args = this.getArguments();
-            this.tab = getTabById(args.getInt(TABID));
+            this.owner = getTabById(args.getInt(TABID));
             this.index = args.getInt(INDEX);
-            if (!this.tab) {
+            if (!this.owner) {
                 throw new Error(`Cannot find BottomNavigation`);
             }
         }
 
         public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-            const tabItem = this.tab.items[this.index];
+            const tabItem = this.owner.items[this.index];
 
             return tabItem.nativeViewProtected;
+        }
+
+        public onDestroyView() {
+            const hasRemovingParent = this.getRemovingParentFragment();
+
+            // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
+            // TODO: Consider removing it when update to androidx.fragment:1.2.0
+            if (hasRemovingParent && this.owner.selectedIndex === this.index) {
+                const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
+                this.owner._originalBackground = this.owner.backgroundColor || new Color("White");
+                this.owner.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
+                this.backgroundBitmap = null;
+            }
+
+            super.onDestroyView();
+        }
+
+        public onPause(): void {
+            const hasRemovingParent = this.getRemovingParentFragment();
+
+            // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
+            // TODO: Consider removing it when update to androidx.fragment:1.2.0
+            if (hasRemovingParent && this.owner.selectedIndex === this.index) {
+                this.backgroundBitmap = this.loadBitmapFromView(this.owner.nativeViewProtected);
+            }
+
+            super.onPause();
+        }
+
+        private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
+            // Another way to get view bitmap. Test performance vs setDrawingCacheEnabled
+            // const width = view.getWidth();
+            // const height = view.getHeight();
+            // const bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
+            // const canvas = new android.graphics.Canvas(bitmap);
+            // view.layout(0, 0, width, height);
+            // view.draw(canvas);
+
+            view.setDrawingCacheEnabled(true);
+            const bitmap = android.graphics.Bitmap.createBitmap(view.getDrawingCache());
+            view.setDrawingCacheEnabled(false);
+
+            return bitmap;
         }
     }
 
@@ -168,6 +213,7 @@ function initializeNativeClasses() {
     TabFragment = TabFragmentImplementation;
     BottomNavigationBar = BottomNavigationBarImplementation;
     AttachStateChangeListener = new AttachListener();
+    appResources = application.android.context.getResources();
 }
 
 function setElevation(bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar) {
@@ -196,6 +242,7 @@ export class BottomNavigation extends TabNavigationBase {
     private _currentFragment: androidx.fragment.app.Fragment;
     private _currentTransaction: androidx.fragment.app.FragmentTransaction;
     private _attachedToWindow = false;
+    public _originalBackground: any;
 
     constructor() {
         super();
@@ -320,6 +367,12 @@ export class BottomNavigation extends TabNavigationBase {
     public onLoaded(): void {
         super.onLoaded();
 
+        if (this._originalBackground) {
+            this.backgroundColor = null;
+            this.backgroundColor = this._originalBackground;
+            this._originalBackground = null;
+        }
+
         if (this.tabStrip) {
             this.setTabStripItems(this.tabStrip.items);
         } else {
@@ -334,8 +387,14 @@ export class BottomNavigation extends TabNavigationBase {
 
     _onAttachedToWindow(): void {
         super._onAttachedToWindow();
-
         this._attachedToWindow = true;
+
+        // _onAttachedToWindow called from OS again after it was detach
+        // TODO: Consider testing and removing it when update to androidx.fragment:1.2.0
+        if (this._manager && this._manager.isDestroyed()) {
+            return;
+        }
+
         this.changeTab(this.selectedIndex);
     }
 

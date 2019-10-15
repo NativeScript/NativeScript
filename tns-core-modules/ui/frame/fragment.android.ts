@@ -23,6 +23,10 @@ class FragmentClass extends org.nativescript.widgets.FragmentBase {
         this._callbacks.onStop(this, super.onStop);
     }
 
+    public onPause(): void {
+        this._callbacks.onPause(this, super.onStop);
+    }
+
     public onCreate(savedInstanceState: android.os.Bundle) {
         if (!this._callbacks) {
             setFragmentCallbacks(this);
