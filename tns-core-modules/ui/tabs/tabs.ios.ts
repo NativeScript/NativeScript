@@ -22,7 +22,16 @@ import { swipeEnabledProperty, TabsBase } from "./tabs-common";
 export * from "./tabs-common";
 
 const majorVersion = iosUtils.MajorVersion;
-// const isPhone = device.deviceType === "Phone";
+
+// Equivalent to dispatch_async(dispatch_get_main_queue(...)) call
+const invokeOnRunLoop = (function() {
+    const runloop = CFRunLoopGetMain();
+
+    return (action: () => any) => {
+        CFRunLoopPerformBlock(runloop, kCFRunLoopDefaultMode, action);
+        CFRunLoopWakeUp(runloop);
+    };
+}());
 
 class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
     public static ObjCProtocols = [MDCTabBarDelegate];
@@ -1052,6 +1061,11 @@ export class Tabs extends TabsBase {
             this._currentNativeSelectedIndex = value;
             this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, (finished: boolean) => {
                 if (finished) {
+                    if (majorVersion < 10) {
+                        // HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
+                        invokeOnRunLoop(() => this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, false, null));
+                    }
+                    
                     this._canSelectItem = true;
                     this._setCanBeLoaded(value);
                     this._loadUnloadTabItems(value);

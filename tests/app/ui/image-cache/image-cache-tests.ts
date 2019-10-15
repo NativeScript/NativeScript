@@ -1,6 +1,7 @@
 import * as imageCacheModule from "tns-core-modules/ui/image-cache";
 import * as imageSource from "tns-core-modules/image-source";
 import * as types from "tns-core-modules/utils/types";
+import { isAndroid } from "tns-core-modules/platform";
 import { device } from "tns-core-modules/platform";
 import lazy from "tns-core-modules/utils/lazy";
 
@@ -10,7 +11,7 @@ const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
 export const test_ImageCache_ValidUrl = function() {
     // see https://github.com/NativeScript/NativeScript/issues/6643
-    if (sdkVersion() < 20) {
+    if (isAndroid && sdkVersion() < 20) {
         return;
     }
 
