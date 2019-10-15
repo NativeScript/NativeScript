@@ -1,15 +1,15 @@
 ﻿.class-style {
-    font-size:55;
+    font-size: 55;
     color: red;
-  
+
 }
 
 #id-style {
-      background-color: blue;
+    background-color: blue;
 }
 
 Label {
- border-color:black;
- border-radius: 25;
- margin: 10px;
+    border-color: black;
+    border-radius: 25;
+    margin: 10px;
 }

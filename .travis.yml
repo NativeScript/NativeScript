@@ -1,5 +1,13 @@
+language: node_js
+node_js:
+  - "node"
 script:
-- cd tns-core-modules && npm i && cd ..
+# circular references check
+- cd tests && npm i
+- node_modules/.bin/webpack --env.android
+- node_modules/.bin/webpack --env.ios
+# modules transpilation
+- cd ../tns-core-modules && npm i && cd ..
 - npm install
 - npm run tsc
 - npm run tslint

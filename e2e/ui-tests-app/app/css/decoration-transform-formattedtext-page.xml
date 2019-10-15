@@ -1,6 +1,6 @@
 ﻿<Page>
     <StackLayout>
-    
+
       <Label autocorrect="false" text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through;" />
       <Label autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;">
         <Label.formattedText>

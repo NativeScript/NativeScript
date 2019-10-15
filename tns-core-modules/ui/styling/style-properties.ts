@@ -1,8 +1,10 @@
 // Types
-import { unsetValue, Style,
+import {
+    unsetValue, Style,
     CssProperty, CssAnimationProperty,
     ShorthandProperty, InheritedCssProperty,
-    makeValidator, makeParser } from "../core/properties";
+    makeValidator, makeParser
+} from "../core/properties";
 import {
     Transformation,
     TransformationValue,
@@ -229,7 +231,8 @@ export const widthProperty = new CssAnimationProperty<Style, PercentLength>({
                 view.requestLayout();
             }
         }
-    }, valueConverter: PercentLength.parse });
+    }, valueConverter: PercentLength.parse
+});
 widthProperty.register(Style);
 
 export const heightProperty = new CssAnimationProperty<Style, PercentLength>({

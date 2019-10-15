@@ -427,7 +427,7 @@ export function testCustomComponentWithCode_JsCssQualifiers() {
 }
 
 function loadRightComponentXmlWithCodeFileAndCssFile() {
-    return `<Button 
+    return `<Button
         codeFile="${testPrefix}/component/custom-code-component.js"
         cssFile="${testPrefix}/component/custom-code-component.css"
         id="test-id" class="test-class" text="right" tap="testEvent"/>`;

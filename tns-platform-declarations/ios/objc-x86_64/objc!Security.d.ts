@@ -99,7 +99,7 @@ declare function SSLCopyRequestedPeerNameLength(ctx: any, peerNameLen: interop.P
 
 declare function SSLCreateContext(alloc: any, protocolSide: SSLProtocolSide, connectionType: SSLConnectionType): any;
 
-declare function SSLGetBufferedReadSize(context: any, bufSize: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetBufferedReadSize(context: any, bufferSize: interop.Pointer | interop.Reference<number>): number;
 
 declare function SSLGetClientCertificateState(context: any, clientState: interop.Pointer | interop.Reference<SSLClientCertificateState>): number;
 
@@ -141,8 +141,6 @@ declare const enum SSLProtocol {
 
 	kSSLProtocolUnknown = 0,
 
-	kSSLProtocol3 = 2,
-
 	kTLSProtocol1 = 4,
 
 	kTLSProtocol11 = 7,
@@ -153,9 +151,13 @@ declare const enum SSLProtocol {
 
 	kTLSProtocol13 = 10,
 
+	kDTLSProtocol12 = 11,
+
 	kTLSProtocolMaxSupported = 999,
 
 	kSSLProtocol2 = 1,
+
+	kSSLProtocol3 = 2,
 
 	kSSLProtocol3Only = 3,
 
@@ -333,6 +335,8 @@ declare const enum SecAccessControlCreateFlags {
 
 	kSecAccessControlDevicePasscode = 16,
 
+	kSecAccessControlWatch = 32,
+
 	kSecAccessControlOr = 16384,
 
 	kSecAccessControlAnd = 32768,
@@ -500,6 +504,8 @@ declare function SecTrustEvaluate(trust: any, result: interop.Pointer | interop.
 
 declare function SecTrustEvaluateAsync(trust: any, queue: NSObject, result: (p1: any, p2: SecTrustResultType) => void): number;
 
+declare function SecTrustEvaluateAsyncWithError(trust: any, queue: NSObject, result: (p1: any, p2: boolean, p3: NSError) => void): number;
+
 declare function SecTrustEvaluateWithError(trust: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare function SecTrustGetCertificateAtIndex(trust: any, ix: number): any;
@@ -544,6 +550,8 @@ declare function SecTrustSetNetworkFetchAllowed(trust: any, allowFetch: boolean)
 declare function SecTrustSetOCSPResponse(trust: any, responseData: any): number;
 
 declare function SecTrustSetPolicies(trust: any, policies: any): number;
+
+declare function SecTrustSetSignedCertificateTimestamps(trust: any, sctArray: NSArray<any>): number;
 
 declare function SecTrustSetVerifyDate(trust: any, verifyDate: Date): number;
 
@@ -671,6 +679,10 @@ declare const TLS_ECDHE_ECDSA_WITH_NULL_SHA: number;
 
 declare const TLS_ECDHE_ECDSA_WITH_RC4_128_SHA: number;
 
+declare const TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA: number;
+
+declare const TLS_ECDHE_PSK_WITH_AES_256_CBC_SHA: number;
+
 declare const TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA: number;
 
 declare const TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA: number;
@@ -755,6 +767,8 @@ declare const TLS_PSK_WITH_AES_256_CBC_SHA384: number;
 
 declare const TLS_PSK_WITH_AES_256_GCM_SHA384: number;
 
+declare const TLS_PSK_WITH_CHACHA20_POLY1305_SHA256: number;
+
 declare const TLS_PSK_WITH_NULL_SHA: number;
 
 declare const TLS_PSK_WITH_NULL_SHA256: number;
@@ -808,6 +822,20 @@ declare const TLS_RSA_WITH_NULL_SHA256: number;
 declare const TLS_RSA_WITH_RC4_128_MD5: number;
 
 declare const TLS_RSA_WITH_RC4_128_SHA: number;
+
+declare const errSSLATSCertificateHashAlgorithmViolation: number;
+
+declare const errSSLATSCertificateTrustViolation: number;
+
+declare const errSSLATSCiphersuiteViolation: number;
+
+declare const errSSLATSLeafCertificateHashAlgorithmViolation: number;
+
+declare const errSSLATSMinimumKeySizeViolation: number;
+
+declare const errSSLATSMinimumVersionViolation: number;
+
+declare const errSSLATSViolation: number;
 
 declare const errSSLBadCert: number;
 
@@ -1007,11 +1035,17 @@ declare const errSecCertificateCannotOperate: number;
 
 declare const errSecCertificateExpired: number;
 
+declare const errSecCertificateNameNotAllowed: number;
+
 declare const errSecCertificateNotValidYet: number;
+
+declare const errSecCertificatePolicyNotAllowed: number;
 
 declare const errSecCertificateRevoked: number;
 
 declare const errSecCertificateSuspended: number;
+
+declare const errSecCertificateValidityPeriodTooLong: number;
 
 declare const errSecCodeSigningBadCertChainLength: number;
 
@@ -2219,6 +2253,10 @@ declare var kSecUseAuthenticationUIFail: string;
 
 declare var kSecUseAuthenticationUISkip: string;
 
+declare var kSecUseDataProtectionKeychain: string;
+
+declare var kSecUseItemList: string;
+
 declare var kSecUseNoAuthenticationUI: string;
 
 declare var kSecUseOperationPrompt: string;
@@ -2233,6 +2271,8 @@ declare function sec_certificate_copy_ref(certificate: NSObject): interop.Unmana
 
 declare function sec_certificate_create(certificate: any): NSObject;
 
+declare function sec_identity_access_certificates(identity: NSObject, handler: (p1: NSObject) => void): boolean;
+
 declare function sec_identity_copy_certificates_ref(identity: NSObject): interop.Unmanaged<NSArray<any>>;
 
 declare function sec_identity_copy_ref(identity: NSObject): interop.Unmanaged<any>;
@@ -2246,6 +2286,8 @@ declare function sec_protocol_metadata_access_distinguished_names(metadata: NSOb
 declare function sec_protocol_metadata_access_ocsp_response(metadata: NSObject, handler: (p1: NSObject) => void): boolean;
 
 declare function sec_protocol_metadata_access_peer_certificate_chain(metadata: NSObject, handler: (p1: NSObject) => void): boolean;
+
+declare function sec_protocol_metadata_access_pre_shared_keys(metadata: NSObject, handler: (p1: NSObject, p2: NSObject) => void): boolean;
 
 declare function sec_protocol_metadata_access_supported_signature_algorithms(metadata: NSObject, handler: (p1: number) => void): boolean;
 
@@ -2265,6 +2307,12 @@ declare function sec_protocol_metadata_get_negotiated_protocol(metadata: NSObjec
 
 declare function sec_protocol_metadata_get_negotiated_protocol_version(metadata: NSObject): SSLProtocol;
 
+declare function sec_protocol_metadata_get_negotiated_tls_ciphersuite(metadata: NSObject): tls_ciphersuite_t;
+
+declare function sec_protocol_metadata_get_negotiated_tls_protocol_version(metadata: NSObject): tls_protocol_version_t;
+
+declare function sec_protocol_metadata_get_server_name(metadata: NSObject): string;
+
 declare function sec_protocol_metadata_peers_are_equal(metadataA: NSObject, metadataB: NSObject): boolean;
 
 declare function sec_protocol_options_add_pre_shared_key(options: NSObject, psk: NSObject, psk_identity: NSObject): void;
@@ -2275,13 +2323,33 @@ declare function sec_protocol_options_add_tls_ciphersuite(options: NSObject, cip
 
 declare function sec_protocol_options_add_tls_ciphersuite_group(options: NSObject, group: SSLCiphersuiteGroup): void;
 
+declare function sec_protocol_options_append_tls_ciphersuite(options: NSObject, ciphersuite: tls_ciphersuite_t): void;
+
+declare function sec_protocol_options_append_tls_ciphersuite_group(options: NSObject, group: tls_ciphersuite_group_t): void;
+
+declare function sec_protocol_options_are_equal(optionsA: NSObject, optionsB: NSObject): boolean;
+
+declare function sec_protocol_options_get_default_max_dtls_protocol_version(): tls_protocol_version_t;
+
+declare function sec_protocol_options_get_default_max_tls_protocol_version(): tls_protocol_version_t;
+
+declare function sec_protocol_options_get_default_min_dtls_protocol_version(): tls_protocol_version_t;
+
+declare function sec_protocol_options_get_default_min_tls_protocol_version(): tls_protocol_version_t;
+
 declare function sec_protocol_options_set_challenge_block(options: NSObject, challenge_block: (p1: NSObject, p2: (p1: NSObject) => void) => void, challenge_queue: NSObject): void;
 
 declare function sec_protocol_options_set_key_update_block(options: NSObject, key_update_block: (p1: NSObject, p2: () => void) => void, key_update_queue: NSObject): void;
 
 declare function sec_protocol_options_set_local_identity(options: NSObject, identity: NSObject): void;
 
+declare function sec_protocol_options_set_max_tls_protocol_version(options: NSObject, version: tls_protocol_version_t): void;
+
+declare function sec_protocol_options_set_min_tls_protocol_version(options: NSObject, version: tls_protocol_version_t): void;
+
 declare function sec_protocol_options_set_peer_authentication_required(options: NSObject, peer_authentication_required: boolean): void;
+
+declare function sec_protocol_options_set_pre_shared_key_selection_block(options: NSObject, psk_selection_block: (p1: NSObject, p2: NSObject, p3: (p1: NSObject) => void) => void, psk_selection_queue: NSObject): void;
 
 declare function sec_protocol_options_set_tls_diffie_hellman_parameters(options: NSObject, params: NSObject): void;
 
@@ -2294,6 +2362,8 @@ declare function sec_protocol_options_set_tls_max_version(options: NSObject, ver
 declare function sec_protocol_options_set_tls_min_version(options: NSObject, version: SSLProtocol): void;
 
 declare function sec_protocol_options_set_tls_ocsp_enabled(options: NSObject, ocsp_enabled: boolean): void;
+
+declare function sec_protocol_options_set_tls_pre_shared_key_identity_hint(options: NSObject, psk_identity_hint: NSObject): void;
 
 declare function sec_protocol_options_set_tls_renegotiation_enabled(options: NSObject, renegotiation_enabled: boolean): void;
 
@@ -2314,3 +2384,86 @@ declare function sec_retain(obj: interop.Pointer | interop.Reference<any>): inte
 declare function sec_trust_copy_ref(trust: NSObject): interop.Unmanaged<any>;
 
 declare function sec_trust_create(trust: any): NSObject;
+
+declare const enum tls_ciphersuite_group_t {
+
+	tls_ciphersuite_group_default = 0,
+
+	tls_ciphersuite_group_compatibility = 1,
+
+	tls_ciphersuite_group_legacy = 2,
+
+	tls_ciphersuite_group_ats = 3,
+
+	tls_ciphersuite_group_ats_compatibility = 4
+}
+
+declare const enum tls_ciphersuite_t {
+
+	RSA_WITH_3DES_EDE_CBC_SHA = 10,
+
+	RSA_WITH_AES_128_CBC_SHA = 47,
+
+	RSA_WITH_AES_256_CBC_SHA = 53,
+
+	RSA_WITH_AES_128_GCM_SHA256 = 156,
+
+	RSA_WITH_AES_256_GCM_SHA384 = 157,
+
+	RSA_WITH_AES_128_CBC_SHA256 = 60,
+
+	RSA_WITH_AES_256_CBC_SHA256 = 61,
+
+	ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA = 49160,
+
+	ECDHE_ECDSA_WITH_AES_128_CBC_SHA = 49161,
+
+	ECDHE_ECDSA_WITH_AES_256_CBC_SHA = 49162,
+
+	ECDHE_RSA_WITH_3DES_EDE_CBC_SHA = 49170,
+
+	ECDHE_RSA_WITH_AES_128_CBC_SHA = 49171,
+
+	ECDHE_RSA_WITH_AES_256_CBC_SHA = 49172,
+
+	ECDHE_ECDSA_WITH_AES_128_CBC_SHA256 = 49187,
+
+	ECDHE_ECDSA_WITH_AES_256_CBC_SHA384 = 49188,
+
+	ECDHE_RSA_WITH_AES_128_CBC_SHA256 = 49191,
+
+	ECDHE_RSA_WITH_AES_256_CBC_SHA384 = 49192,
+
+	ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 = 49195,
+
+	ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 = 49196,
+
+	ECDHE_RSA_WITH_AES_128_GCM_SHA256 = 49199,
+
+	ECDHE_RSA_WITH_AES_256_GCM_SHA384 = 49200,
+
+	ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 = 52392,
+
+	ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 = 52393,
+
+	AES_128_GCM_SHA256 = 4865,
+
+	AES_256_GCM_SHA384 = 4866,
+
+	CHACHA20_POLY1305_SHA256 = 4867
+}
+
+declare const enum tls_protocol_version_t {
+
+	TLSv10 = 769,
+
+	TLSv11 = 770,
+
+	TLSv12 = 771,
+
+	TLSv13 = 772,
+
+	DTLSv10 = 65279,
+
+	DTLSv12 = 65277
+}

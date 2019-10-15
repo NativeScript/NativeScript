@@ -29,6 +29,8 @@ declare function CMAudioSampleBufferCreateReadyWithPacketDescriptions(allocator:
 
 declare function CMAudioSampleBufferCreateWithPacketDescriptions(allocator: any, dataBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, makeDataReadyRefcon: interop.Pointer | interop.Reference<any>, formatDescription: any, numSamples: number, presentationTimeStamp: CMTime, packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
 
+declare function CMAudioSampleBufferCreateWithPacketDescriptionsAndMakeDataReadyHandler(allocator: any, dataBuffer: any, dataReady: boolean, formatDescription: any, numSamples: number, presentationTimeStamp: CMTime, packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, sampleBufferOut: interop.Pointer | interop.Reference<any>, makeDataReadyHandler: (p1: any) => number): number;
+
 declare function CMBlockBufferAccessDataBytes(theBuffer: any, offset: number, length: number, temporaryBlock: interop.Pointer | interop.Reference<any>, returnedPointerOut: interop.Pointer | interop.Reference<string>): number;
 
 declare function CMBlockBufferAppendBufferReference(theBuffer: any, targetBBuf: any, offsetToData: number, dataLength: number, flags: number): number;
@@ -82,11 +84,25 @@ interface CMBufferCallbacks {
 }
 declare var CMBufferCallbacks: interop.StructType<CMBufferCallbacks>;
 
+interface CMBufferHandlers {
+	version: number;
+	getDecodeTimeStamp: (p1: any) => CMTime;
+	getPresentationTimeStamp: (p1: any) => CMTime;
+	getDuration: (p1: any) => CMTime;
+	isDataReady: (p1: any) => boolean;
+	compare: (p1: any, p2: any) => CFComparisonResult;
+	dataBecameReadyNotification: string;
+	getSize: (p1: any) => number;
+}
+declare var CMBufferHandlers: interop.StructType<CMBufferHandlers>;
+
 declare function CMBufferQueueCallForEachBuffer(queue: any, callback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, refcon: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMBufferQueueContainsEndOfData(queue: any): boolean;
 
 declare function CMBufferQueueCreate(allocator: any, capacity: number, callbacks: interop.Pointer | interop.Reference<CMBufferCallbacks>, queueOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMBufferQueueCreateWithHandlers(allocator: any, capacity: number, handlers: interop.Pointer | interop.Reference<CMBufferHandlers>, queueOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMBufferQueueDequeueAndRetain(queue: any): any;
 
@@ -122,6 +138,10 @@ declare function CMBufferQueueGetTypeID(): number;
 
 declare function CMBufferQueueInstallTrigger(queue: any, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, refcon: interop.Pointer | interop.Reference<any>, condition: number, time: CMTime, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+declare function CMBufferQueueInstallTriggerHandler(queue: any, condition: number, time: CMTime, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, handler: (p1: interop.Pointer | interop.Reference<any>) => void): number;
+
+declare function CMBufferQueueInstallTriggerHandlerWithIntegerThreshold(queue: any, condition: number, threshold: number, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, handler: (p1: interop.Pointer | interop.Reference<any>) => void): number;
+
 declare function CMBufferQueueInstallTriggerWithIntegerThreshold(queue: any, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, refcon: interop.Pointer | interop.Reference<any>, condition: number, threshold: number, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function CMBufferQueueIsAtEndOfData(queue: any): boolean;
@@ -137,6 +157,8 @@ declare function CMBufferQueueReset(queue: any): number;
 declare function CMBufferQueueResetWithCallback(queue: any, callback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => void>, refcon: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMBufferQueueSetValidationCallback(queue: any, callback: interop.FunctionReference<(p1: any, p2: any, p3: interop.Pointer | interop.Reference<any>) => number>, refcon: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMBufferQueueSetValidationHandler(queue: any, handler: (p1: any, p2: any) => number): number;
 
 declare function CMBufferQueueTestTrigger(queue: any, triggerToken: interop.Pointer | interop.Reference<any>): boolean;
 
@@ -260,9 +282,13 @@ declare function CMSampleBufferCreateCopyWithNewTiming(allocator: any, originalS
 
 declare function CMSampleBufferCreateForImageBuffer(allocator: any, imageBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, makeDataReadyRefcon: interop.Pointer | interop.Reference<any>, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
 
+declare function CMSampleBufferCreateForImageBufferWithMakeDataReadyHandler(allocator: any, imageBuffer: any, dataReady: boolean, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sampleBufferOut: interop.Pointer | interop.Reference<any>, makeDataReadyHandler: (p1: any) => number): number;
+
 declare function CMSampleBufferCreateReady(allocator: any, dataBuffer: any, formatDescription: any, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo>, numSampleSizeEntries: number, sampleSizeArray: interop.Pointer | interop.Reference<number>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMSampleBufferCreateReadyWithImageBuffer(allocator: any, imageBuffer: any, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sampleBufferOut: interop.Pointer | interop.Reference<any>): number;
+
+declare function CMSampleBufferCreateWithMakeDataReadyHandler(allocator: any, dataBuffer: any, dataReady: boolean, formatDescription: any, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo>, numSampleSizeEntries: number, sampleSizeArray: interop.Pointer | interop.Reference<number>, sampleBufferOut: interop.Pointer | interop.Reference<any>, makeDataReadyHandler: (p1: any) => number): number;
 
 declare function CMSampleBufferDataIsReady(sbuf: any): boolean;
 
@@ -270,7 +296,7 @@ declare function CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sbuf: a
 
 declare function CMSampleBufferGetAudioStreamPacketDescriptions(sbuf: any, packetDescriptionsSize: number, packetDescriptionsOut: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, packetDescriptionsSizeNeededOut: interop.Pointer | interop.Reference<number>): number;
 
-declare function CMSampleBufferGetAudioStreamPacketDescriptionsPtr(sbuf: any, packetDescriptionsPtrOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<AudioStreamPacketDescription>>, packetDescriptionsSizeOut: interop.Pointer | interop.Reference<number>): number;
+declare function CMSampleBufferGetAudioStreamPacketDescriptionsPtr(sbuf: any, packetDescriptionsPointerOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<AudioStreamPacketDescription>>, packetDescriptionsSizeOut: interop.Pointer | interop.Reference<number>): number;
 
 declare function CMSampleBufferGetDataBuffer(sbuf: any): any;
 
@@ -599,6 +625,10 @@ declare function CMTimebaseRemoveTimerDispatchSource(timebase: any, timerSource:
 
 declare function CMTimebaseSetAnchorTime(timebase: any, timebaseTime: CMTime, immediateMasterTime: CMTime): number;
 
+declare function CMTimebaseSetMasterClock(timebase: any, newMasterClock: any): number;
+
+declare function CMTimebaseSetMasterTimebase(timebase: any, newMasterTimebase: any): number;
+
 declare function CMTimebaseSetRate(timebase: any, rate: number): number;
 
 declare function CMTimebaseSetRateAndAnchorTime(timebase: any, rate: number, timebaseTime: CMTime, immediateMasterTime: CMTime): number;
@@ -753,6 +783,10 @@ declare const kCMClosedCaptionFormatType_CEA608: number;
 
 declare const kCMClosedCaptionFormatType_CEA708: number;
 
+declare var kCMFormatDescriptionAlphaChannelMode_PremultipliedAlpha: string;
+
+declare var kCMFormatDescriptionAlphaChannelMode_StraightAlpha: string;
+
 declare const kCMFormatDescriptionBridgeError_AllocationFailed: number;
 
 declare const kCMFormatDescriptionBridgeError_IncompatibleFormatDescription: number;
@@ -805,6 +839,12 @@ declare const kCMFormatDescriptionError_ValueNotAvailable: number;
 
 declare var kCMFormatDescriptionExtensionKey_MetadataKeyTable: string;
 
+declare var kCMFormatDescriptionExtension_AlphaChannelMode: string;
+
+declare var kCMFormatDescriptionExtension_AlternativeTransferCharacteristics: string;
+
+declare var kCMFormatDescriptionExtension_AuxiliaryTypeInfo: string;
+
 declare var kCMFormatDescriptionExtension_BytesPerRow: string;
 
 declare var kCMFormatDescriptionExtension_ChromaLocationBottomField: string;
@@ -814,6 +854,8 @@ declare var kCMFormatDescriptionExtension_ChromaLocationTopField: string;
 declare var kCMFormatDescriptionExtension_CleanAperture: string;
 
 declare var kCMFormatDescriptionExtension_ColorPrimaries: string;
+
+declare var kCMFormatDescriptionExtension_ContainsAlphaChannel: string;
 
 declare var kCMFormatDescriptionExtension_ContentLightLevelInfo: string;
 
@@ -902,6 +944,8 @@ declare var kCMFormatDescriptionTransferFunction_SMPTE_ST_2084_PQ: string;
 declare var kCMFormatDescriptionTransferFunction_SMPTE_ST_428_1: string;
 
 declare var kCMFormatDescriptionTransferFunction_UseGamma: string;
+
+declare var kCMFormatDescriptionTransferFunction_sRGB: string;
 
 declare var kCMFormatDescriptionVendor_Apple: string;
 
@@ -1045,6 +1089,8 @@ declare var kCMMetadataBaseDataType_JSON: string;
 
 declare var kCMMetadataBaseDataType_PNG: string;
 
+declare var kCMMetadataBaseDataType_PerspectiveTransformF64: string;
+
 declare var kCMMetadataBaseDataType_PointF32: string;
 
 declare var kCMMetadataBaseDataType_PolygonF32: string;
@@ -1123,6 +1169,8 @@ declare var kCMMetadataFormatDescription_StructuralDependencyKey_DependencyIsInv
 
 declare const kCMMetadataFormatType_Boxed: number;
 
+declare const kCMMetadataFormatType_EMSG: number;
+
 declare const kCMMetadataFormatType_ICY: number;
 
 declare const kCMMetadataFormatType_ID3: number;
@@ -1146,6 +1194,8 @@ declare const kCMMetadataIdentifierError_NoKeyValueAvailable: number;
 declare const kCMMetadataIdentifierError_RequiredParameterMissing: number;
 
 declare var kCMMetadataIdentifier_QuickTimeMetadataDirection_Facing: string;
+
+declare var kCMMetadataIdentifier_QuickTimeMetadataLivePhotoStillImageTransform: string;
 
 declare var kCMMetadataIdentifier_QuickTimeMetadataLocation_ISO6709: string;
 
@@ -1208,6 +1258,8 @@ declare const kCMPixelFormat_444YpCbCr10: number;
 declare const kCMPixelFormat_444YpCbCr8: number;
 
 declare const kCMPixelFormat_8IndexedGray_WhiteIsZero: number;
+
+declare var kCMSampleAttachmentKey_AudioIndependentSampleDecoderRefreshCount: string;
 
 declare var kCMSampleAttachmentKey_DependsOnOthers: string;
 
@@ -1664,6 +1716,8 @@ declare const kCMVideoCodecType_H263: number;
 declare const kCMVideoCodecType_H264: number;
 
 declare const kCMVideoCodecType_HEVC: number;
+
+declare const kCMVideoCodecType_HEVCWithAlpha: number;
 
 declare const kCMVideoCodecType_JPEG: number;
 

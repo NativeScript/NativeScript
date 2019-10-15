@@ -9,7 +9,7 @@
  * @param milliseconds The time to wait before the function is called. Defaults to 0.
  * @param args One or more parameter to use once the function is called. Defaults to no parameters.
  */
-export function setTimeout(callback: Function, milliseconds?: number,  ...args: any[]): number;
+export function setTimeout(callback: Function, milliseconds?: number, ...args: any[]): number;
 
 /**
  * Clears the delay set by a call to the setTimeout function.
@@ -23,7 +23,7 @@ export function clearTimeout(id: number): void;
  * @param milliseconds The delay between each function call.
  * @param args One or more parameter to use once the function is called. Defaults to no parameters.
  */
-export function setInterval(callback: Function, milliseconds?: number,  ...args: any[]): number;
+export function setInterval(callback: Function, milliseconds?: number, ...args: any[]): number;
 
 /**
  * Clears repeated function which was set up by calling setInterval().

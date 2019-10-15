@@ -100,12 +100,12 @@ export module TouchAction {
      * Up action.
      */
     export const up: string;
-    
+
     /**
      * Move action.
      */
     export const move: string;
-    
+
     /**
      * Cancel action.
      */
@@ -152,7 +152,7 @@ export interface TouchGestureEventData extends GestureEventData {
      * Gets the Y coordinate of this event inside the view that triggered the event.
      */
     getY(): number;
-    
+
     /**
      * Gets the number of pointers in the event.
      */

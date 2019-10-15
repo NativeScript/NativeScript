@@ -80,7 +80,7 @@ export function test_setTimeout_callbackCalledWithBooleanPeriod() {
         // >> (hide)
         completed = true;
         // << (hide)
-    // @ts-ignore
+        // @ts-ignore
     }, false);
     // << timer-set-false
 

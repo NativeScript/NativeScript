@@ -27,7 +27,7 @@ function createAnimationFromCSS(css: string, name: string): keyframeAnimation.Ke
 }
 
 function findSelectorInScope(scope: styleScope.StyleScope, cssClass: string): SelectorCore {
-    let selectors = scope.query({cssClasses: new Set([cssClass])});
+    let selectors = scope.query({ cssClasses: new Set([cssClass]) });
 
     return selectors[0];
 }
@@ -426,12 +426,12 @@ export function test_AnimationCurveInKeyframes() {
 function getTransformsValues(declarations) {
     return Object.assign({},
         ...(<any>Object).entries(getTransforms(declarations))
-        .map(([k, v]) => ({[k]: v.value}))
+            .map(([k, v]) => ({ [k]: v.value }))
     );
 }
 
 function getTransforms(declarations) {
-    const [ translate, rotate, scale  ] = [...declarations];
+    const [translate, rotate, scale] = [...declarations];
 
     return { translate, rotate, scale };
 }

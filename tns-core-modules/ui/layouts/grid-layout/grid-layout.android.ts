@@ -6,7 +6,7 @@ import {
 export * from "./grid-layout-common";
 
 function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.CommonLayoutParams, value: T) => void) {
-    return function(this: View, value: T) {
+    return function (this: View, value: T) {
         const nativeView: android.view.View = this.nativeViewProtected;
         const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
         if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {

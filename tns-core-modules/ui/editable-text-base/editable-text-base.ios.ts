@@ -179,7 +179,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         if (typeof value === "number") {
             newValue = UITextAutocorrectionType.Default;
         } else if (value) {
-             newValue = UITextAutocorrectionType.Yes;
+            newValue = UITextAutocorrectionType.Yes;
         } else {
             newValue = UITextAutocorrectionType.No;
         }

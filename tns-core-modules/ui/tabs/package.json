@@ -1,5 +1,5 @@
 {
-  "name" : "tabs",
-  "main" : "tabs",
-  "types" : "tabs.d.ts"
+  "name": "tabs",
+  "main": "tabs",
+  "types": "tabs.d.ts"
 }

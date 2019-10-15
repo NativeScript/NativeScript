@@ -4,7 +4,7 @@
 
 + (NativeScriptEmbedder *)sharedInstance {
     static NativeScriptEmbedder *sharedInstance = nil;
-    static dispatch_once_t onceToken; 
+    static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[NativeScriptEmbedder alloc] init];
     });

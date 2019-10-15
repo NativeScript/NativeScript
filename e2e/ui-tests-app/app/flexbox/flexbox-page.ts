@@ -1,8 +1,8 @@
 import { FlexboxLayout } from "tns-core-modules/ui/layouts/flexbox-layout";
 
 function set(what: string) {
-    return function(args) {
-        let containerCss = " #container { " + args.object.tag + " }" ;
+    return function (args) {
+        let containerCss = " #container { " + args.object.tag + " }";
         args.object.page.addCss(containerCss);
     };
 }
@@ -28,9 +28,9 @@ export function select(args) {
 
 let whenSelected = handler => args => lastSelection && handler(args);
 let setProperty = setter => value => setter(lastSelection, value);
-let intHandler = handler => ({object}) => handler(parseInt(object.text));
-let stringHandler = handler => ({object}) => handler(object.text);
-let booleanHandler = handler => ({object}) => handler(object.text === "true");
+let intHandler = handler => ({ object }) => handler(parseInt(object.text));
+let stringHandler = handler => ({ object }) => handler(object.text);
+let booleanHandler = handler => ({ object }) => handler(object.text === "true");
 
 export const order = whenSelected(intHandler(setProperty(FlexboxLayout.setOrder)));
 export const flexGrow = whenSelected(intHandler(setProperty(FlexboxLayout.setFlexGrow)));

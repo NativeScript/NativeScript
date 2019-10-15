@@ -189,6 +189,12 @@ declare var kCGImageAuxiliaryDataTypeDisparity: string;
 
 declare var kCGImageAuxiliaryDataTypePortraitEffectsMatte: string;
 
+declare var kCGImageAuxiliaryDataTypeSemanticSegmentationHairMatte: string;
+
+declare var kCGImageAuxiliaryDataTypeSemanticSegmentationSkinMatte: string;
+
+declare var kCGImageAuxiliaryDataTypeSemanticSegmentationTeethMatte: string;
+
 declare var kCGImageDestinationBackgroundColor: string;
 
 declare var kCGImageDestinationDateTime: string;
@@ -259,7 +265,13 @@ declare var kCGImageProperty8BIMLayerNames: string;
 
 declare var kCGImageProperty8BIMVersion: string;
 
+declare var kCGImagePropertyAPNGCanvasPixelHeight: string;
+
+declare var kCGImagePropertyAPNGCanvasPixelWidth: string;
+
 declare var kCGImagePropertyAPNGDelayTime: string;
+
+declare var kCGImagePropertyAPNGFrameInfoArray: string;
 
 declare var kCGImagePropertyAPNGLoopCount: string;
 
@@ -629,6 +641,12 @@ declare var kCGImagePropertyExifMeteringMode: string;
 
 declare var kCGImagePropertyExifOECF: string;
 
+declare var kCGImagePropertyExifOffsetTime: string;
+
+declare var kCGImagePropertyExifOffsetTimeDigitized: string;
+
+declare var kCGImagePropertyExifOffsetTimeOriginal: string;
+
 declare var kCGImagePropertyExifPixelXDimension: string;
 
 declare var kCGImagePropertyExifPixelYDimension: string;
@@ -683,9 +701,15 @@ declare var kCGImagePropertyFileContentsDictionary: string;
 
 declare var kCGImagePropertyFileSize: string;
 
+declare var kCGImagePropertyGIFCanvasPixelHeight: string;
+
+declare var kCGImagePropertyGIFCanvasPixelWidth: string;
+
 declare var kCGImagePropertyGIFDelayTime: string;
 
 declare var kCGImagePropertyGIFDictionary: string;
+
+declare var kCGImagePropertyGIFFrameInfoArray: string;
 
 declare var kCGImagePropertyGIFHasGlobalColorMap: string;
 
@@ -760,6 +784,20 @@ declare var kCGImagePropertyGPSTrack: string;
 declare var kCGImagePropertyGPSTrackRef: string;
 
 declare var kCGImagePropertyGPSVersion: string;
+
+declare var kCGImagePropertyHEICSCanvasPixelHeight: string;
+
+declare var kCGImagePropertyHEICSCanvasPixelWidth: string;
+
+declare var kCGImagePropertyHEICSDelayTime: string;
+
+declare var kCGImagePropertyHEICSDictionary: string;
+
+declare var kCGImagePropertyHEICSFrameInfoArray: string;
+
+declare var kCGImagePropertyHEICSLoopCount: string;
+
+declare var kCGImagePropertyHEICSUnclampedDelayTime: string;
 
 declare var kCGImagePropertyHasAlpha: string;
 

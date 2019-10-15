@@ -84,7 +84,7 @@ export function parseHexColor(text: string, start: number = 0): Parsed<ARGB> {
 
 function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): number | undefined {
     if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1) {
-        return (Math.round(a * 0xFF) * 0x01000000) + (r * 0x010000) + (g * 0x000100) + (b * 0x000001);
+        return (Math.round(a * 0xFF) * 0x01000000) + (r * 0x010000) + (g * 0x000100) + b;
     } else {
         return null;
     }
@@ -112,6 +112,67 @@ export function parseRGBAColor(text: string, start: number = 0): Parsed<ARGB> {
     }
     const end = rgbaColorRegEx.lastIndex;
     const value = rgbaToArgbNumber(parseInt(result[2]), parseInt(result[3]), parseInt(result[4]), parseFloat(result[5]));
+
+    return { start, end, value };
+}
+
+export function convertHSLToRGBColor(hue: number, saturation: number, lightness: number): { r: number; g: number; b: number; } {
+    // Per formula it will be easier if hue is divided to 60° and saturation to 100 beforehand
+    // https://en.wikipedia.org/wiki/HSL_and_HSV#HSL_to_RGB
+    hue /= 60;
+    lightness /= 100;
+
+    let chroma = (1 - Math.abs(2 * lightness - 1)) * saturation / 100,
+        X = chroma * (1 - Math.abs(hue % 2 - 1)),
+        // Add lightness match to all RGB components beforehand
+        { m: r, m: g, m: b } = { m: lightness - chroma / 2 };
+
+    if (0 <= hue && hue < 1) { r += chroma; g += X; }
+    else if (hue < 2) { r += X; g += chroma; }
+    else if (hue < 3) { g += chroma; b += X; }
+    else if (hue < 4) { g += X; b += chroma; }
+    else if (hue < 5) { r += X; b += chroma; }
+    else if (hue < 6) { r += chroma; b += X; }
+
+    return {
+        r: Math.round(r * 0xFF),
+        g: Math.round(g * 0xFF),
+        b: Math.round(b * 0xFF)
+    };
+}
+
+function hslaToArgbNumber(h: number, s: number, l: number, a: number = 1): number | undefined {
+    let { r, g, b } = convertHSLToRGBColor(h, s, l);
+
+    if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1) {
+        return (Math.round(a * 0xFF) * 0x01000000) + (r * 0x010000) + (g * 0x000100) + b;
+    } else {
+        return null;
+    }
+}
+
+const hslColorRegEx = /\s*(hsl\(\s*([\d.]*)\s*,\s*([\d.]*)%\s*,\s*([\d.]*)%\s*\))/gy;
+export function parseHSLColor(text: string, start: number = 0): Parsed<ARGB> {
+    hslColorRegEx.lastIndex = start;
+    const result = hslColorRegEx.exec(text);
+    if (!result) {
+        return null;
+    }
+    const end = hslColorRegEx.lastIndex;
+    const value = result[1] && hslaToArgbNumber(parseFloat(result[2]), parseFloat(result[3]), parseFloat(result[4]));
+
+    return { start, end, value };
+}
+
+const hslaColorRegEx = /\s*(hsla\(\s*([\d.]*)\s*,\s*([\d.]*)%\s*,\s*([\d.]*)%\s*,\s*([01]?\.?\d*)\s*\))/gy;
+export function parseHSLAColor(text: string, start: number = 0): Parsed<ARGB> {
+    hslaColorRegEx.lastIndex = start;
+    const result = hslaColorRegEx.exec(text);
+    if (!result) {
+        return null;
+    }
+    const end = hslaColorRegEx.lastIndex;
+    const value = hslaToArgbNumber(parseFloat(result[2]), parseFloat(result[3]), parseFloat(result[4]), parseFloat(result[5]));
 
     return { start, end, value };
 }
@@ -280,7 +341,12 @@ export function parseColorKeyword(value, start: number, keyword = parseKeyword(v
 }
 
 export function parseColor(value: string, start: number = 0, keyword = parseKeyword(value, start)): Parsed<ARGB> {
-    return parseHexColor(value, start) || parseColorKeyword(value, start, keyword) || parseRGBColor(value, start) || parseRGBAColor(value, start);
+    return parseHexColor(value, start) ||
+        parseColorKeyword(value, start, keyword) ||
+        parseRGBColor(value, start) ||
+        parseRGBAColor(value, start) ||
+        parseHSLColor(value, start) ||
+        parseHSLAColor(value, start);
 }
 
 const keywordRegEx = /\s*([a-z][\w\-]*)\s*/giy;
@@ -296,7 +362,7 @@ function parseKeyword(text: string, start: number = 0): Parsed<Keyword> {
     return { start, end, value };
 }
 
-const backgroundRepeatKeywords = new Set([ "repeat", "repeat-x", "repeat-y", "no-repeat" ]);
+const backgroundRepeatKeywords = new Set(["repeat", "repeat-x", "repeat-y", "no-repeat"]);
 export function parseRepeat(value: string, start: number = 0, keyword = parseKeyword(value, start)): Parsed<BackgroundRepeat> {
     if (keyword && backgroundRepeatKeywords.has(keyword.value)) {
         const end = keyword.end;
@@ -319,7 +385,7 @@ export function parseUnit(text: string, start: number = 0): Parsed<Unit<string>>
     const value = parseFloat(result[1]);
     const unit = <any>result[2] || "dip";
 
-    return { start, end, value: { value, unit }};
+    return { start, end, value: { value, unit } };
 }
 
 export function parsePercentageOrLength(text: string, start: number = 0): Parsed<LengthPercentage> {
@@ -378,17 +444,17 @@ export function parseBackgroundSize(value: string, start: number = 0, keyword = 
         if (secondLength) {
             end = secondLength.end;
 
-            return { start, end, value: { x: firstLength.value, y: secondLength.value }};
+            return { start, end, value: { x: firstLength.value, y: secondLength.value } };
         } else {
-            return { start, end, value: { x: firstLength.value, y: "auto" }};
+            return { start, end, value: { x: firstLength.value, y: "auto" } };
         }
     }
 
     return null;
 }
 
-const backgroundPositionKeywords = Object.freeze(new Set([ "left", "right", "top", "bottom", "center" ]));
-const backgroundPositionKeywordsDirection: {[align: string]: "x" | "center" | "y" } = {
+const backgroundPositionKeywords = Object.freeze(new Set(["left", "right", "top", "bottom", "center"]));
+const backgroundPositionKeywordsDirection: { [align: string]: "x" | "center" | "y" } = {
     "left": "x",
     "right": "x",
     "center": "center",
@@ -441,23 +507,27 @@ export function parseBackgroundPosition(text: string, start: number = 0, keyword
             }
 
             if ((firstDirection === secondDirection && secondDirection === "center") || (firstDirection === "x" || secondDirection === "y")) {
-                return { start, end, value: {
-                    x: formatH(<Parsed<HorizontalAlign>>keyword, firstLength),
-                    y: formatV(<Parsed<VerticalAlign>>secondKeyword, secondLength)
-                }};
+                return {
+                    start, end, value: {
+                        x: formatH(<Parsed<HorizontalAlign>>keyword, firstLength),
+                        y: formatV(<Parsed<VerticalAlign>>secondKeyword, secondLength)
+                    }
+                };
             } else {
-                return { start, end, value: {
-                    x: formatH(<Parsed<HorizontalAlign>>secondKeyword, secondLength),
-                    y: formatV(<Parsed<VerticalAlign>>keyword, firstLength),
-                }};
+                return {
+                    start, end, value: {
+                        x: formatH(<Parsed<HorizontalAlign>>secondKeyword, secondLength),
+                        y: formatV(<Parsed<VerticalAlign>>keyword, firstLength),
+                    }
+                };
             }
         } else {
             if (firstDirection === "center") {
-                return { start, end, value: { x: "center", y: "center" }};
+                return { start, end, value: { x: "center", y: "center" } };
             } else if (firstDirection === "x") {
-                return { start, end, value: { x: formatH(<Parsed<HorizontalAlign>>keyword, firstLength), y: "center" }};
+                return { start, end, value: { x: formatH(<Parsed<HorizontalAlign>>keyword, firstLength), y: "center" } };
             } else {
-                return { start, end, value: { x: "center", y: formatV(<Parsed<VerticalAlign>>keyword, firstLength) }};
+                return { start, end, value: { x: "center", y: formatV(<Parsed<VerticalAlign>>keyword, firstLength) } };
             }
         }
     } else {
@@ -468,9 +538,9 @@ export function parseBackgroundPosition(text: string, start: number = 0, keyword
             if (secondLength) {
                 end = secondLength.end;
 
-                return { start, end, value: { x: { align: "left", offset: firstLength.value }, y: { align: "top", offset: secondLength.value }}};
+                return { start, end, value: { x: { align: "left", offset: firstLength.value }, y: { align: "top", offset: secondLength.value } } };
             } else {
-                return { start, end, value: { x: { align: "left", offset: firstLength.value }, y: "center" }};
+                return { start, end, value: { x: { align: "left", offset: firstLength.value }, y: "center" } };
             }
         } else {
             return null;
@@ -572,10 +642,10 @@ export function parseColorStop(text: string, start: number = 0): Parsed<ColorSto
     if (offset) {
         end = offset.end;
 
-        return { start, end, value: { argb: color.value, offset: offset.value }};
+        return { start, end, value: { argb: color.value, offset: offset.value } };
     }
 
-    return { start, end, value: { argb: color.value }};
+    return { start, end, value: { argb: color.value } };
 }
 
 const linearGradientStartRegEx = /\s*linear-gradient\s*/gy;
@@ -615,7 +685,7 @@ export function parseLinearGradient(text: string, start: number = 0): Parsed<Lin
     }
     end = parsedArgs.end;
 
-    return { start, end, value: { angle, colors }};
+    return { start, end, value: { angle, colors } };
 }
 
 const slashRegEx = /\s*(\/)\s*/gy;
@@ -731,7 +801,7 @@ export function parseUniversalSelector(text: string, start: number = 0): Parsed<
     }
     const end = universalSelectorRegEx.lastIndex;
 
-    return { start, end, value: { type: "*" }};
+    return { start, end, value: { type: "*" } };
 }
 
 const simpleIdentifierSelectorRegEx = /(#|\.|:|\b)([_-\w][_-\w\d\\/]*)/gy;
@@ -762,10 +832,10 @@ export function parseAttributeSelector(text: string, start: number): Parsed<Attr
         const test = <AttributeSelectorTest>result[2];
         const value = result[3] || result[4] || result[5];
 
-        return { start, end, value: { type: "[]", property, test, value }};
+        return { start, end, value: { type: "[]", property, test, value } };
     }
 
-    return { start, end, value: { type: "[]", property }};
+    return { start, end, value: { type: "[]", property } };
 }
 
 export function parseSimpleSelector(text: string, start: number = 0): Parsed<SimpleSelector> {
@@ -951,7 +1021,7 @@ interface SimpleBlock extends InputTokenObject {
     values: InputToken[];
 }
 
-interface AtKeywordToken extends InputTokenObject {}
+interface AtKeywordToken extends InputTokenObject { }
 
 /**
  * CSS parser following relatively close:
@@ -963,7 +1033,7 @@ export class CSS3Parser {
     private reconsumedInputToken: InputToken;
     private topLevelFlag: boolean;
 
-    constructor(private text: string) {}
+    constructor(private text: string) { }
 
     /**
      * For testing purposes.
@@ -1500,7 +1570,7 @@ export class CSS3Parser {
                     if (component) {
                         funcToken.components.push(component);
                     }
-                    // TODO: Else we won't advance
+                // TODO: Else we won't advance
             }
         } while (true);
     }

@@ -42,7 +42,7 @@ export class ImageAsset extends ImageAssetBase {
             let error = null;
             // read as minimum bitmap as possible (slightly bigger than the requested size)
             bitmap = android.graphics.BitmapFactory.decodeFile(this.android, finalBitmapOptions);
-            
+
             if (bitmap) {
                 if (requestedSize.width !== bitmap.getWidth() || requestedSize.height !== bitmap.getHeight()) {
                     // scale to exact size

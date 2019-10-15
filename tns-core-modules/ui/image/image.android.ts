@@ -13,7 +13,7 @@ const ASYNC = "async";
 let AndroidImageView: typeof org.nativescript.widgets.ImageView;
 
 interface ImageLoadedListener {
-    new (owner: Image): org.nativescript.widgets.image.Worker.OnImageLoadedListener;
+    new(owner: Image): org.nativescript.widgets.image.Worker.OnImageLoadedListener;
 }
 
 let ImageLoadedListener: ImageLoadedListener;

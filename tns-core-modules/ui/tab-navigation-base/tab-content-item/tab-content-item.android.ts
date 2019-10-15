@@ -32,7 +32,7 @@ export class TabContentItem extends TabContentItemBase {
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
         // Set the row property for the child
         if (this.nativeViewProtected && child.nativeViewProtected) {
-                GridLayout.setRow(child, 0);
+            GridLayout.setRow(child, 0);
         }
 
         return super._addViewToNativeVisualTree(child, atIndex);

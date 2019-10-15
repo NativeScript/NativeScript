@@ -15,7 +15,7 @@ import * as timer from "../../timer";
 export * from "./gestures-common";
 
 interface TapAndDoubleTapGestureListener {
-    new (observer: GesturesObserver, target: View, type: number): android.view.GestureDetector.SimpleOnGestureListener;
+    new(observer: GesturesObserver, target: View, type: number): android.view.GestureDetector.SimpleOnGestureListener;
 }
 
 let TapAndDoubleTapGestureListener: TapAndDoubleTapGestureListener;
@@ -99,7 +99,7 @@ function initializeTapAndDoubleTapGestureListener() {
 }
 
 interface PinchGestureListener {
-    new (observer: GesturesObserver, target: View): android.view.ScaleGestureDetector.SimpleOnScaleGestureListener;
+    new(observer: GesturesObserver, target: View): android.view.ScaleGestureDetector.SimpleOnScaleGestureListener;
 }
 
 let PinchGestureListener: PinchGestureListener;
@@ -170,7 +170,7 @@ function initializePinchGestureListener() {
 }
 
 interface SwipeGestureListener {
-    new (observer: GesturesObserver, target: View): android.view.GestureDetector.SimpleOnGestureListener;
+    new(observer: GesturesObserver, target: View): android.view.GestureDetector.SimpleOnGestureListener;
 }
 
 let SwipeGestureListener: SwipeGestureListener;

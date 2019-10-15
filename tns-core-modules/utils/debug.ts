@@ -15,7 +15,7 @@ export class Source {
     private _uri: string;
     private _line: number;
     private _column: number;
-    
+
     private static _source: symbol = Symbol("source");
 
     constructor(uri: string, line: number, column: number) {
@@ -29,11 +29,11 @@ export class Source {
         this._line = line;
         this._column = column;
     }
-    
+
     get uri(): string { return this._uri; }
     get line(): number { return this._line; }
     get column(): number { return this._column; }
-    
+
     public toString() {
         return this._uri + ":" + this._line + ":" + this._column;
     }
@@ -41,7 +41,7 @@ export class Source {
     public static get(object: any): Source {
         return object[Source._source];
     }
-    
+
     public static set(object: any, src: Source) {
         object[Source._source] = src;
     }

@@ -11,7 +11,7 @@ import { TransformFunctionsInfo } from "../ui/animation/animation";
  * Returns the affine matrix representation of the transformation.
  * @param transformation Property and value of the transformation.
  */
-export declare const getTransformMatrix: ({property, value}) => number[];
+export declare const getTransformMatrix: ({ property, value }) => number[];
 
 /**
  * Returns the css matrix representation of

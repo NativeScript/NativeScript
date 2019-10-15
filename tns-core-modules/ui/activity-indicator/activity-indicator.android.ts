@@ -6,7 +6,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     nativeViewProtected: android.widget.ProgressBar;
 
     public createNativeView() {
-        const progressBar =  new android.widget.ProgressBar(this._context);
+        const progressBar = new android.widget.ProgressBar(this._context);
         progressBar.setVisibility(android.view.View.INVISIBLE);
         progressBar.setIndeterminate(true);
 

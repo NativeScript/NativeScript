@@ -33,11 +33,11 @@ export function level(): Level;
 
 /**
  * Enables profiling.
- * 
+ *
  * Upon loading of the module it will cache the package.json of the app and check if there is a "profiling" key set,
  * its value can be one of the options available for InstrumentationMode, and if set,
  * enable() will be called in pre app start with the value in the package.json.
- * 
+ *
  * An example for an `app/package.json` enabling the manual instrumentation profiling is:
  * ```
  * {
@@ -45,7 +45,7 @@ export function level(): Level;
  *     "profiling": "timeline"
  * }
  * ```
- * 
+ *
  * @param type Profiling mode to use.
  *  - "counters" - Accumulates method call counts and times until dumpProfiles is called and then prints aggregated statistic in the console. This is the default.
  *  - "timeline" - Outputs method names along start/end timestamps in the console on the go.

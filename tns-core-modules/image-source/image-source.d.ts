@@ -10,29 +10,29 @@ import { Color } from "../color";
  * Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
  */
 export class ImageSource {
-   /**
-    * Gets the height of this instance. This is a read-only property.
-    */
+    /**
+     * Gets the height of this instance. This is a read-only property.
+     */
     height: number;
 
-   /**
-    * Gets the width of this instance. This is a read-only property.
-    */
+    /**
+     * Gets the width of this instance. This is a read-only property.
+     */
     width: number;
 
-   /**
-    * Gets or sets the rotation angle that should be applied to the image. (Used in android)
-    */
+    /**
+     * Gets or sets the rotation angle that should be applied to the image. (Used in android)
+     */
     rotationAngle: number;
 
-   /**
-    * The iOS-specific [UIImage](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIImage_Class/) instance. Will be undefined when running on Android.
-    */
+    /**
+     * The iOS-specific [UIImage](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIImage_Class/) instance. Will be undefined when running on Android.
+     */
     ios: any /* UIImage */;
 
-   /**
-    * The Android-specific [image](http://developer.android.com/reference/android/graphics/Bitmap.html) instance. Will be undefined when running on iOS.
-    */
+    /**
+     * The Android-specific [image](http://developer.android.com/reference/android/graphics/Bitmap.html) instance. Will be undefined when running on iOS.
+     */
     android: any /* android.graphics.Bitmap */;
 
     /**
@@ -41,53 +41,53 @@ export class ImageSource {
      */
     fromAsset(asset: imageAssetModule.ImageAsset): Promise<ImageSource>;
 
-   /**
-    * Loads this instance from the specified resource name.
-    * @param name The name of the resource (without its extension).
-    */
+    /**
+     * Loads this instance from the specified resource name.
+     * @param name The name of the resource (without its extension).
+     */
     loadFromResource(name: string): boolean;
 
-   /**
-    * Loads this instance from the specified resource name asynchronously.
-    * @param name The name of the resource (without its extension).
-    */
+    /**
+     * Loads this instance from the specified resource name asynchronously.
+     * @param name The name of the resource (without its extension).
+     */
     fromResource(name: string): Promise<boolean>;
-    
-   /**
-    * Loads this instance from the specified file.
-    * @param path The location of the file on the file system.
-    */
+
+    /**
+     * Loads this instance from the specified file.
+     * @param path The location of the file on the file system.
+     */
     loadFromFile(path: string): boolean;
 
-   /**
-    * Loads this instance from the specified file asynchronously.
-    * @param path The location of the file on the file system.
-    */
+    /**
+     * Loads this instance from the specified file asynchronously.
+     * @param path The location of the file on the file system.
+     */
     fromFile(path: string): Promise<boolean>;
 
-   /**
-    * Loads this instance from the specified native image data.
-    * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
-    */
+    /**
+     * Loads this instance from the specified native image data.
+     * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
+     */
     loadFromData(data: any): boolean;
-    
-   /**
-    * Loads this instance from the specified native image data asynchronously.
-    * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
-    */
-    fromData(data: any): Promise<boolean>;        
+
+    /**
+     * Loads this instance from the specified native image data asynchronously.
+     * @param data The native data (byte array) to load the image from. This will be either Stream for Android or NSData for iOS.
+     */
+    fromData(data: any): Promise<boolean>;
 
     /**
      * Loads this instance from the specified base64 encoded string.
      * @param source The Base64 string to load the image from.
      */
     loadFromBase64(source: string): boolean;
-    
+
     /**
      * Loads this instance from the specified base64 encoded string asynchronously.
      * @param source The Base64 string to load the image from.
      */
-    fromBase64(source: string): Promise<boolean>;        
+    fromBase64(source: string): Promise<boolean>;
 
     /**
      * Loads this instance from the specified font icon code.
@@ -97,19 +97,19 @@ export class ImageSource {
      */
     loadFromFontIconCode(source: string, font: Font, color: Color): boolean;
 
-   /**
-    * Sets the provided native source object (typically a Bitmap or a UIImage).
-    * This will update either the android or ios properties, depending on the target os.
-    * @param source The native image object. Will be either a Bitmap for Android or a UIImage for iOS.
-    */
+    /**
+     * Sets the provided native source object (typically a Bitmap or a UIImage).
+     * This will update either the android or ios properties, depending on the target os.
+     * @param source The native image object. Will be either a Bitmap for Android or a UIImage for iOS.
+     */
     setNativeSource(source: any): void;
 
-   /**
-    * Saves this instance to the specified file, using the provided image format and quality.
-    * @param path The path of the file on the file system to save to.
-    * @param format The format (encoding) of the image.
-    * @param quality Optional parameter, specifying the quality of the encoding. Defaults to the maximum available quality. Quality varies on a scale of 0 to 100.
-    */
+    /**
+     * Saves this instance to the specified file, using the provided image format and quality.
+     * @param path The path of the file on the file system to save to.
+     * @param format The format (encoding) of the image.
+     * @param quality Optional parameter, specifying the quality of the encoding. Defaults to the maximum available quality. Quality varies on a scale of 0 to 100.
+     */
     saveToFile(path: string, format: "png" | "jpeg" | "jpg", quality?: number): boolean;
 
     /**

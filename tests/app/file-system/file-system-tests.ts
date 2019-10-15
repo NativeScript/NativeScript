@@ -201,6 +201,46 @@ export var testFileReadWriteBinary = function () {
     // << file-system-read-binary
 };
 
+export var testFileReadWriteBinaryAsync = function () {
+    // >> file-system-read-binary-async
+    var fileName = "logo.png";
+
+    var sourceFile = fs.File.fromPath(__dirname + "/assets/" + fileName);
+    var destinationFile = fs.knownFolders.documents().getFile(fileName);
+
+    // Read the file
+    sourceFile.read()
+        .then(function (source) {
+            // Succeeded in reading the file
+            // >> (hide)
+            destinationFile.write(source).then(function () {
+                // Succeded in writing the file
+                destinationFile.read()
+                    .then(function (destination) {
+                        if (platform.device.os === platform.platformNames.ios) {
+                            TKUnit.assertTrue(source.isEqualToData(destination));
+                        } else {
+                            TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
+                        }
+
+                        destinationFile.removeSync();
+                    }, function (error) {
+                        TKUnit.assert(false, "Failed to read destination binary async");
+                    });
+            }, function (error) {
+                // Failed to write the file.
+                TKUnit.assert(false, "Failed to write binary async");
+            });
+            // << (hide)
+        }, function (error) {
+            // Failed to read the file.
+            // >> (hide)
+            TKUnit.assert(false, "Failed to read binary async");
+            // << (hide)
+        });
+    // << file-system-read-binary-async
+};
+
 export var testGetKnownFolders = function () {
     // >> file-system-known-folders
     // Getting the application's 'documents' folder.
@@ -239,8 +279,8 @@ function _testIOSSpecificKnownFolder(knownFolderName: string) {
     }
     else {
         TKUnit.assertThrows(testFunc,
-        `Trying to retrieve the ${knownFolderName} known folder on a platform different from iOS should throw!`,
-        `The "${knownFolderName}" known folder is available on iOS only!`);
+            `Trying to retrieve the ${knownFolderName} known folder on a platform different from iOS should throw!`,
+            `The "${knownFolderName}" known folder is available on iOS only!`);
     }
 }
 
@@ -574,7 +614,7 @@ export function test_FileSize(done) {
 
         return file.remove();
     }).then(() => done())
-    .catch(done);
+        .catch(done);
 }
 
 export function test_UnlockAfterWrite(done) {
@@ -586,17 +626,17 @@ export function test_UnlockAfterWrite(done) {
 
         return file.remove();
     }).then(() => done())
-    .catch(done);
+        .catch(done);
 }
 
 export function test_CreateParentOnNewFile(done) {
     var documentsFolderName = fs.knownFolders.documents().path;
     var tempFileName = fs.path.join(documentsFolderName, "folder1", "folder2", "Test_File_Create_Parent.txt");
     var file = fs.File.fromPath(tempFileName);
-    file.writeText("Hello World!").then(() =>  {
+    file.writeText("Hello World!").then(() => {
         return fs.knownFolders.documents().getFolder("folder1").remove();
     }).then(() => done())
-    .catch(done);
+        .catch(done);
 }
 
 export function test_FolderClear_RemovesEmptySubfolders(done) {

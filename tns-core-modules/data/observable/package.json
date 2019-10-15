@@ -1,5 +1,5 @@
-{ 
-  "types": "observable.d.ts",
-  "name" : "observable",
-  "main" : "observable"
+{
+    "types": "observable.d.ts",
+    "name": "observable",
+    "main": "observable"
 }

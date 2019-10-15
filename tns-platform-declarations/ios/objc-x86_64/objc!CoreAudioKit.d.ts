@@ -17,9 +17,9 @@ declare class AUAudioUnitViewConfiguration extends NSObject implements NSSecureC
 
 	constructor(o: { width: number; height: number; hostHasController: boolean; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithWidthHeightHostHasController(width: number, height: number, hostHasController: boolean): this;
 }

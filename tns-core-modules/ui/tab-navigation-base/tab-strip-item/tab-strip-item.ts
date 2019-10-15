@@ -9,7 +9,7 @@ import { Color } from "../../../color";
 import { AddChildFromBuilder } from "../../core/view";
 
 // Requires
-import { 
+import {
     View, ViewBase, CSSType, backgroundColorProperty, backgroundInternalProperty, PseudoClassHandler
 } from "../../core/view";
 import { Tabs } from "../../tabs";
@@ -37,7 +37,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
     private _labelFontHandler: (args: PropertyChangeData) => void;
     private _labelTextTransformHandler: (args: PropertyChangeData) => void;
     private _labelTextHandler: (args: PropertyChangeData) => void;
-    
+
     private _imageColorHandler: (args: PropertyChangeData) => void;
     private _imageFontHandler: (args: PropertyChangeData) => void;
     private _imageSrcHandler: (args: PropertyChangeData) => void;
@@ -52,7 +52,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
 
     set title(value: string) {
         this._title = value;
-        
+
         if (this.isLoaded) {
             this.label.text = value;
         }
@@ -68,7 +68,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
 
     set iconSource(value: string) {
         this._iconSource = value;
-        
+
         if (this.isLoaded) {
             this.image.src = value;
         }
@@ -94,7 +94,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         this._labelColorHandler = this._labelColorHandler || ((args: PropertyChangeData) => {
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
-            
+
             return tabStripParent && tabStripParent.setTabBarItemColor(this, args.value);
         });
         this.label.style.on("colorChange", this._labelColorHandler);
@@ -102,7 +102,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         this._labelFontHandler = this._labelFontHandler || ((args: PropertyChangeData) => {
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
-            
+
             return tabStripParent && tabStripParent.setTabBarItemFontInternal(this, args.value);
         });
         this.label.style.on("fontInternalChange", this._labelFontHandler);
@@ -110,7 +110,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         this._labelTextTransformHandler = this._labelTextTransformHandler || ((args: PropertyChangeData) => {
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
-            
+
             return tabStripParent && tabStripParent.setTabBarItemTextTransform(this, args.value);
         });
         this.label.style.on("textTransformChange", this._labelTextTransformHandler);
@@ -118,7 +118,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         this._labelTextHandler = this._labelTextHandler || ((args: PropertyChangeData) => {
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
-            
+
             return tabStripParent && tabStripParent.setTabBarItemTitle(this, args.value);
         });
         this.label.on("textChange", this._labelTextHandler);
@@ -126,7 +126,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         this._imageColorHandler = this._imageColorHandler || ((args: PropertyChangeData) => {
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
-            
+
             return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
         });
         this.image.style.on("colorChange", this._imageColorHandler);
@@ -134,7 +134,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         this._imageFontHandler = this._imageFontHandler || ((args: PropertyChangeData) => {
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
-            
+
             return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
         });
         this.image.style.on("fontInternalChange", this._imageFontHandler);
@@ -142,7 +142,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         this._imageSrcHandler = this._imageSrcHandler || ((args: PropertyChangeData) => {
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
-            
+
             return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
         });
         this.image.on("srcChange", this._imageSrcHandler);
@@ -155,7 +155,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         this.label.style.off("fontInternalChange", this._labelFontHandler);
         this.label.style.off("textTransformChange", this._labelTextTransformHandler);
         this.label.style.off("textChange", this._labelTextHandler);
-        
+
         this.image.style.off("colorChange", this._imageColorHandler);
         this.image.style.off("fontInternalChange", this._imageFontHandler);
         this.image.style.off("srcChange", this._imageSrcHandler);
@@ -230,7 +230,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
     [backgroundColorProperty.setNative](value: Color) {
         const parent = <TabStrip>this.parent;
         const tabStripParent = parent && <TabNavigationBase>parent.parent;
-        
+
         return tabStripParent && tabStripParent.setTabBarItemBackgroundColor(this, value);
     }
 

@@ -206,7 +206,7 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
             GridLayoutBase.setColumnSpan(view, columnSpan);
         }
     }
-    
+
     public removeRow(itemSpec: ItemSpec): void {
         if (!itemSpec) {
             throw new Error("Value is null.");

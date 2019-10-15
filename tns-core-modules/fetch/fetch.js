@@ -5,7 +5,7 @@
     exports.FormData = global.FormData;
 
     if (!exports.XMLHttpRequest) {
-        var xhr = require("xhr");
+        var xhr = require("../xhr");
         exports.XMLHttpRequest = xhr.XMLHttpRequest;
         exports.FormData = xhr.FormData;
     }

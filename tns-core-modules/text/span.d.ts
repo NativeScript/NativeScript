@@ -20,7 +20,7 @@ export class Span extends ViewBase {
      * Gets or sets the font size of the span.
      */
     public fontSize: number;
-    
+
     /**
      * Gets or sets the font style of the span.
      */
@@ -50,7 +50,7 @@ export class Span extends ViewBase {
      * Gets or sets the text for the span.
      */
     public text: string;
-    
+
     //@private
     /**
      * @private

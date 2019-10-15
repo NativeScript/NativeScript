@@ -143,7 +143,7 @@ export module Syntax {
     }
     interface DebuggerStatement extends Statement {
     }
-    interface SomeStatement extends 
+    interface SomeStatement extends
         EmptyStatement, ExpressionStatement, BlockStatement, IfStatement,
         LabeledStatement, BreakStatement, ContinueStatement, WithStatement,
         SwitchStatement, ReturnStatement, ThrowStatement, TryStatement,
@@ -177,7 +177,7 @@ export module Syntax {
     // Expression
     interface Expression extends Node { // | Pattern
     }
-    interface SomeExpression extends 
+    interface SomeExpression extends
         ThisExpression, ArrayExpression, ObjectExpression, FunctionExpression,
         ArrowFunctionExpression, SequenceExpression, UnaryExpression, BinaryExpression,
         AssignmentExpression, UpdateExpression, LogicalExpression, ConditionalExpression,
@@ -252,8 +252,8 @@ export module Syntax {
     }
 
     // Pattern
-    // interface Pattern extends Node { 
-    // }                                
+    // interface Pattern extends Node {
+    // }
 
     // Clauses
     interface SwitchCase extends Node {

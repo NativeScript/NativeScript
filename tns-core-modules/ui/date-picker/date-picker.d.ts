@@ -40,7 +40,7 @@ export class DatePicker extends View {
      * Gets or sets the day. The days start from 1.
      */
     day: number;
-    
+
     /**
      * Gets or sets the entire date.
      */
@@ -50,7 +50,7 @@ export class DatePicker extends View {
      * Gets or sets the max date.
      */
     maxDate: Date;
-    
+
     /**
      * Gets or sets the min date.
      */

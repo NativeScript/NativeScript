@@ -1,5 +1,5 @@
 {
-  "name" : "date-picker",
-  "main" : "date-picker",
-  "types" : "date-picker.d.ts"
+  "name": "date-picker",
+  "main": "date-picker",
+  "types": "date-picker.d.ts"
 }
