@@ -645,6 +645,11 @@ export abstract class View extends ViewBase {
     _gestureObservers: any;
     /**
      * @private
+     * androidx.fragment.app.FragmentManager
+     */
+    _manager: any;
+    /**
+     * @private
      */
     _setNativeClipToBounds(): void;
     /**

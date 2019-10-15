@@ -9,10 +9,10 @@ export class FlipTransition extends Transition {
         this._direction = direction;
     }
 
-    public createAndroidAnimator(transitionType: string): android.animation.Animator {
+    public createAndroidAnimator(transitionType: string): android.animation.AnimatorSet {
         let objectAnimators;
         let values;
-        let animator: android.animation.ObjectAnimator;
+        let animator: android.animation.Animator; //android.animation.ObjectAnimator;
         const animatorSet = new android.animation.AnimatorSet();
         const fullDuration = this.getDuration() || 300;
         const interpolator = this.getCurve();
@@ -20,30 +20,23 @@ export class FlipTransition extends Transition {
 
         switch (transitionType) {
             case AndroidTransitionType.enter: // card_flip_right_in
-                objectAnimators = Array.create(android.animation.Animator, 3);
-
-                values = Array.create("float", 2);
-                values[0] = 1.0;
-                values[1] = 0.0;
-                animator = android.animation.ObjectAnimator.ofFloat(null, "alpha", values);
-                animator.setDuration(0);
-                objectAnimators[0] = animator;
+                objectAnimators = Array.create(android.animation.Animator, 2);
 
                 values = Array.create("float", 2);
                 values[0] = rotationY;
                 values[1] = 0.0;
-                animator = android.animation.ObjectAnimator.ofFloat(null, "rotationY", values);
+                animator = <android.animation.Animator>android.animation.ObjectAnimator.ofFloat(null, "rotationY", values);
                 animator.setInterpolator(interpolator);
                 animator.setDuration(fullDuration);
-                objectAnimators[1] = animator;
+                objectAnimators[0] = animator;
 
-                values = Array.create("float", 2);
+                values = Array.create("float", 3);
                 values[0] = 0.0;
-                values[1] = 1.0;
-                animator = android.animation.ObjectAnimator.ofFloat(null, "alpha", values);
-                animator.setStartDelay(fullDuration / 2);
-                animator.setDuration(1);
-                objectAnimators[2] = animator;
+                values[1] = 0.0;
+                values[2] = 255.0;
+                animator = <android.animation.Animator>android.animation.ObjectAnimator.ofFloat(null, "alpha", values);
+                animator.setDuration(fullDuration / 2);
+                objectAnimators[1] = animator;
                 break;
             case AndroidTransitionType.exit: // card_flip_right_out
                 objectAnimators = Array.create(android.animation.Animator, 2);
@@ -51,44 +44,37 @@ export class FlipTransition extends Transition {
                 values = Array.create("float", 2);
                 values[0] = 0.0;
                 values[1] = -rotationY;
-                animator = android.animation.ObjectAnimator.ofFloat(null, "rotationY", values);
+                animator = <android.animation.Animator>android.animation.ObjectAnimator.ofFloat(null, "rotationY", values);
                 animator.setInterpolator(interpolator);
                 animator.setDuration(fullDuration);
                 objectAnimators[0] = animator;
 
-                values = Array.create("float", 2);
-                values[0] = 1.0;
+                values = Array.create("float", 3);
+                values[0] = 255.0;
                 values[1] = 0.0;
-                animator = android.animation.ObjectAnimator.ofFloat(null, "alpha", values);
-                animator.setStartDelay(fullDuration / 2);
-                animator.setDuration(1);
+                values[2] = 0.0;
+                animator = <android.animation.Animator>android.animation.ObjectAnimator.ofFloat(null, "alpha", values);
+                animator.setDuration(fullDuration / 2);
                 objectAnimators[1] = animator;
                 break;
             case AndroidTransitionType.popEnter: // card_flip_left_in
-                objectAnimators = Array.create(android.animation.Animator, 3);
-
-                values = Array.create("float", 2);
-                values[0] = 1.0;
-                values[1] = 0.0;
-                animator = android.animation.ObjectAnimator.ofFloat(null, "alpha", values);
-                animator.setDuration(0);
-                objectAnimators[0] = animator;
+                objectAnimators = Array.create(android.animation.Animator, 2);
 
                 values = Array.create("float", 2);
                 values[0] = -rotationY;
                 values[1] = 0.0;
-                animator = android.animation.ObjectAnimator.ofFloat(null, "rotationY", values);
+                animator = <android.animation.Animator>android.animation.ObjectAnimator.ofFloat(null, "rotationY", values);
                 animator.setInterpolator(interpolator);
                 animator.setDuration(fullDuration);
-                objectAnimators[1] = animator;
+                objectAnimators[0] = animator;
 
-                values = Array.create("float", 2);
+                values = Array.create("float", 3);
                 values[0] = 0.0;
-                values[1] = 1.0;
-                animator = android.animation.ObjectAnimator.ofFloat(null, "alpha", values);
-                animator.setStartDelay(fullDuration / 2);
-                animator.setDuration(1);
-                objectAnimators[2] = animator;
+                values[1] = 0.0;
+                values[2] = 255.0;
+                animator = <android.animation.Animator>android.animation.ObjectAnimator.ofFloat(null, "alpha", values);
+                animator.setDuration(fullDuration / 2);
+                objectAnimators[1] = animator;
                 break;
             case AndroidTransitionType.popExit: // card_flip_left_out
                 objectAnimators = Array.create(android.animation.Animator, 2);
@@ -96,17 +82,17 @@ export class FlipTransition extends Transition {
                 values = Array.create("float", 2);
                 values[0] = 0.0;
                 values[1] = rotationY;
-                animator = android.animation.ObjectAnimator.ofFloat(null, "rotationY", values);
+                animator = <android.animation.Animator>android.animation.ObjectAnimator.ofFloat(null, "rotationY", values);
                 animator.setInterpolator(interpolator);
                 animator.setDuration(fullDuration);
                 objectAnimators[0] = animator;
 
-                values = Array.create("float", 2);
-                values[0] = 1.0;
+                values = Array.create("float", 3);
+                values[0] = 255.0;
                 values[1] = 0.0;
-                animator = android.animation.ObjectAnimator.ofFloat(null, "alpha", values);
-                animator.setStartDelay(fullDuration / 2);
-                animator.setDuration(1);
+                values[2] = 0.0;
+                animator = <android.animation.Animator>android.animation.ObjectAnimator.ofFloat(null, "alpha", values);
+                animator.setDuration(fullDuration / 2);
                 objectAnimators[1] = animator;
                 break;
         }

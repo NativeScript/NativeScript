@@ -3,11 +3,8 @@
  */ /** */
 
 import { NavigationTransition, BackstackEntry } from "../frame";
-
-/**
- * @private
- */
-export { AnimationType } from "./fragment.transitions.types";
+// Types.
+import { Transition, AndroidTransitionType } from "../transition/transition";
 
 /**
  * @private
@@ -17,12 +14,9 @@ export function _setAndroidFragmentTransitions(
     navigationTransition: NavigationTransition,
     currentEntry: BackstackEntry,
     newEntry: BackstackEntry,
+    frameId: number,
     fragmentTransaction: any,
-    frameId: number): void;
-/**
- * @private
- */
-export function _onFragmentCreateAnimator(entry: BackstackEntry, fragment: any, nextAnim: number, enter: boolean): any;
+    isNestedDefaultTransition?: boolean): void;
 /**
  * @private
  */
@@ -57,4 +51,10 @@ export function _clearFragment(entry: BackstackEntry): void;
  * @private
  */
 export function _createIOSAnimatedTransitioning(navigationTransition: NavigationTransition, nativeCurve: any, operation: number, fromVC: any, toVC: any): any;
-//@endprivate
+
+/**
+ * @private
+ * nativeTransition: androidx.transition.Transition
+ */
+export function addNativeTransitionListener(entry: any, nativeTransition: any): any;
+ //@endprivate
