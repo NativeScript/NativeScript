@@ -21,9 +21,8 @@ const ANIMATION_PROPERTY_HANDLERS = Object.freeze({
 });
 
 export class CssAnimationParser {
-    public static keyframeAnimationsFromCSSDeclarations(
-        declarations: Array<KeyframeDeclaration>)
-        : Array<KeyframeAnimationInfo> {
+    public static keyframeAnimationsFromCSSDeclarations(declarations: KeyframeDeclaration[])
+        : KeyframeAnimationInfo[] {
 
         if (declarations === null || declarations === undefined) {
             return undefined;
@@ -50,7 +49,7 @@ export class CssAnimationParser {
         return animations.length === 0 ? undefined : animations;
     }
 
-    public static keyframesArrayFromCSS(keyframes: Array<UnparsedKeyframe>): Array<KeyframeInfo> {
+    public static keyframesArrayFromCSS(keyframes: UnparsedKeyframe[]): KeyframeInfo[] {
         let parsedKeyframes = new Array<KeyframeInfo>();
         for (let keyframe of keyframes) {
             let declarations = parseKeyframeDeclarations(keyframe.declarations);
@@ -92,7 +91,7 @@ export class CssAnimationParser {
     }
 }
 
-function keyframeAnimationsFromCSSProperty(value: any, animations: Array<KeyframeAnimationInfo>) {
+function keyframeAnimationsFromCSSProperty(value: any, animations: KeyframeAnimationInfo[]) {
     if (typeof value === "string") {
         let values = value.split(/[,]+/);
         for (let parsedValue of values) {
@@ -128,8 +127,7 @@ function keyframeAnimationsFromCSSProperty(value: any, animations: Array<Keyfram
     }
 }
 
-export function parseKeyframeDeclarations(unparsedKeyframeDeclarations: Array<KeyframeDeclaration>)
-    : Array<KeyframeDeclaration> {
+export function parseKeyframeDeclarations(unparsedKeyframeDeclarations: KeyframeDeclaration[]): KeyframeDeclaration[] {
 
     const declarations = unparsedKeyframeDeclarations
         .reduce((declarations, { property: unparsedProperty, value: unparsedValue }) => {
