@@ -84,7 +84,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public static showingModallyEvent = "showingModally";
 
     protected _closeModalCallback: Function;
-
+    public _manager: any;
     public _modalParent: ViewCommon;
     private _modalContext: any;
     private _modal: ViewCommon;

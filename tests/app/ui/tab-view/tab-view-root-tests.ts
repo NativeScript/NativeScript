@@ -22,7 +22,7 @@ function waitUntilTabViewReady(page: Page, action: Function) {
     action();
 
     if (isAndroid) {
-        TKUnit.waitUntilReady(() => page.frame._currentEntry.fragment.isAdded());
+        TKUnit.waitUntilReady(() => page.frame._currentEntry.fragment && page.frame._currentEntry.fragment.isAdded());
     } else {
         TKUnit.waitUntilReady(() => page.isLoaded);
     }
