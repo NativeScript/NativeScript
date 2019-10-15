@@ -62,6 +62,12 @@
                 }
             }
 
+            export class FragmentBase extends androidx.fragment.app.Fragment {
+                constructor();
+
+                public getRemovingParentFragment(): androidx.fragment.app.Fragment;
+            }
+
             export class BorderDrawable extends android.graphics.drawable.ColorDrawable {
                 constructor(density: number);
                 constructor(density: number, id: string);

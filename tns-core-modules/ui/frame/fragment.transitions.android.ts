@@ -101,6 +101,9 @@ export function _setAndroidFragmentTransitions(
     if (name === "none") {
         const noTransition = new NoTransition(0, null);
 
+        // Setup empty/immediate animator when transitioning to nested frame for first time.
+        // Also setup empty/immediate transition to be executed when navigating back to this page.
+        // TODO: Consider removing empty/immediate animator when migrating to official androidx.fragment.app.Fragment:1.2.
         if (isNestedDefaultTransition) {
             fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
             setupAllAnimation(newEntry, noTransition);

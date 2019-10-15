@@ -158,7 +158,7 @@ export class Frame extends FrameBase {
         this._attachedToWindow = true;
 
         // _onAttachedToWindow called from OS again after it was detach
-        // TO DO: Consider testing and removing it when update to androidx.fragment:1.2.0
+        // TODO: Consider testing and removing it when update to androidx.fragment:1.2.0
         if (this._manager && this._manager.isDestroyed()) {
             return;
         }
@@ -265,6 +265,7 @@ export class Frame extends FrameBase {
         const fragment = this._currentEntry.fragment;
         const fragmentExitTransition = fragment.getExitTransition();
 
+        // Reset animation to its initial state to prevent mirrorered effect when restore current fragment transitions
         if (fragmentExitTransition && fragmentExitTransition instanceof org.nativescript.widgets.CustomTransition) {
             fragmentExitTransition.setResetOnTransitionEnd(true);
         }
@@ -432,7 +433,7 @@ export class Frame extends FrameBase {
         _setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, this._android.frameId, transaction, isNestedDefaultTransition);
 
         if (currentEntry && animated && !navigationTransition) {
-            //TO DO: Check whether or not this is still necessary. For Modal views?
+            //TODO: Check whether or not this is still necessary. For Modal views?
             //transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         }
 
@@ -928,13 +929,14 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     @profile
-    public onDestroyView(fragment: androidx.fragment.app.Fragment, superFunc: Function): void {
+    public onDestroyView(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onDestroyView()`, traceCategories.NativeLifecycle);
         }
-        const parentFragment = <any>fragment.getParentFragment();
 
-        if (parentFragment && (parentFragment.isRemoving())) {
+        const hasRemovingParent = fragment.getRemovingParentFragment();
+
+        if (hasRemovingParent) {
             const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), this.backgroundBitmap);
             this.frame.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
             this.backgroundBitmap = null;
@@ -972,12 +974,12 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     @profile
-    public onPause(fragment: androidx.fragment.app.Fragment, superFunc: Function): void {
+    public onPause(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
         // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-        // TO DO: Consider removing it when update to androidx.fragment:1.2.0
-        const parentFragment = <any>fragment.getParentFragment();
+        // TODO: Consider removing it when update to androidx.fragment:1.2.0
+        const hasRemovingParent = fragment.getRemovingParentFragment();
 
-        if (parentFragment && (parentFragment.isRemoving())) {
+        if (hasRemovingParent) {
             this.backgroundBitmap = this.loadBitmapFromView(this.frame.nativeViewProtected);
         }
         superFunc.call(fragment);

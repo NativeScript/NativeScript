@@ -55,7 +55,7 @@ function initializeNativeClasses() {
         return;
     }
 
-    class TabFragmentImplementation extends androidx.fragment.app.Fragment {
+    class TabFragmentImplementation extends org.nativescript.widgets.FragmentBase {
         private owner: BottomNavigation;
         private index: number;
         private backgroundBitmap: android.graphics.Bitmap = null;
@@ -82,7 +82,7 @@ function initializeNativeClasses() {
             this.owner = getTabById(args.getInt(TABID));
             this.index = args.getInt(INDEX);
             if (!this.owner) {
-                throw new Error(`Cannot find TabView`);
+                throw new Error(`Cannot find BottomNavigation`);
             }
         }
 
@@ -93,10 +93,10 @@ function initializeNativeClasses() {
         }
 
         public onDestroyView() {
-            const hasRemovingParent = this.getParentFragment() && this.getParentFragment().isRemoving();
+            const hasRemovingParent = this.getRemovingParentFragment();
 
             // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-            // TO DO: Consider removing it when update to androidx.fragment:1.2.0
+            // TODO: Consider removing it when update to androidx.fragment:1.2.0
             if (hasRemovingParent && this.owner.selectedIndex === this.index) {
                 const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
                 this.owner._originalBackground = this.owner.backgroundColor || new Color("White");
@@ -108,10 +108,10 @@ function initializeNativeClasses() {
         }
 
         public onPause(): void {
-            const hasRemovingParent = this.getParentFragment() && this.getParentFragment().isRemoving();
+            const hasRemovingParent = this.getRemovingParentFragment();
 
             // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-            // TO DO: Consider removing it when update to androidx.fragment:1.2.0
+            // TODO: Consider removing it when update to androidx.fragment:1.2.0
             if (hasRemovingParent && this.owner.selectedIndex === this.index) {
                 this.backgroundBitmap = this.loadBitmapFromView(this.owner.nativeViewProtected);
             }
@@ -390,7 +390,7 @@ export class BottomNavigation extends TabNavigationBase {
         this._attachedToWindow = true;
 
         // _onAttachedToWindow called from OS again after it was detach
-        // TO DO: Consider testing and removing it when update to androidx.fragment:1.2.0
+        // TODO: Consider testing and removing it when update to androidx.fragment:1.2.0
         if (this._manager && this._manager.isDestroyed()) {
             return;
         }

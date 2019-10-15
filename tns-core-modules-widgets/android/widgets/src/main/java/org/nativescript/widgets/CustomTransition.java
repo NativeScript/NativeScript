@@ -49,29 +49,31 @@ public class CustomTransition extends Visibility {
         return this.setAnimatorsTarget(this.animatorSet, view);
     }
 
-    public void setResetOnTransitionEnd(boolean resetOnTransitionEnd){
+    public void setResetOnTransitionEnd(boolean resetOnTransitionEnd) {
             this.resetOnTransitionEnd = resetOnTransitionEnd;
     }
 
     public String getTransitionName(){
-            return this.transitionName;
+        return this.transitionName;
     }
 
-    private Animator setAnimatorsTarget(AnimatorSet animatorSet, final View view){
+    private Animator setAnimatorsTarget(AnimatorSet animatorSet, final View view) {
         ArrayList<Animator> animatorsList = animatorSet.getChildAnimations();
         boolean resetOnTransitionEnd = this.resetOnTransitionEnd;
         
         for (int i = 0; i < animatorsList.size(); i++) {
-                animatorsList.get(i).setTarget(view);
+            animatorsList.get(i).setTarget(view);
         }
 
+        // Reset animation to its initial state to prevent mirrorered effect
         if (this.resetOnTransitionEnd) {
-                this.immediateAnimatorSet = this.animatorSet.clone();
+            this.immediateAnimatorSet = this.animatorSet.clone();
         }
 
+        // Switching to hardware layer during transition to improve animation performance
         CustomAnimatorListener listener = new CustomAnimatorListener(view);
         animatorSet.addListener(listener);
-        addListener(new CustomTransitionListenerAdapter(this));
+        this.addListener(new CustomTransitionListenerAdapter(this));
 
         return this.animatorSet;
     }
