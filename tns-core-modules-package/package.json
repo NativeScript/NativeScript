@@ -1,5 +1,7 @@
 {
   "name": "tns-core-modules",
+  "main": "index",
+  "types": "index.d.ts",
   "description": "Telerik NativeScript Core Modules",
   "version": "6.1.0",
   "homepage": "https://www.nativescript.org",
@@ -8,7 +10,6 @@
     "url": "https://github.com/NativeScript/NativeScript"
   },
   "license": "Apache-2.0",
-  "typings": "tns-core-modules.d.ts",
   "dependencies": {
     "@nativescript/core": "*"
   },

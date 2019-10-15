@@ -1,3 +1,5 @@
+/// <reference path="./tns-core-modules.d.ts" />
+
 // Export all interfaces from "application" module
 export {
     ApplicationEventData, LaunchEventData, OrientationChangedEventData,
