@@ -23,14 +23,16 @@ const ACCENT_COLOR = "colorAccent";
 const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 4;
 
+const TABID = "_tabId";
+const INDEX = "_index";
+
 interface PagerAdapter {
     new(owner: Tabs): androidx.viewpager.widget.PagerAdapter;
 }
 
-const TABID = "_tabId";
-const INDEX = "_index";
 let PagerAdapter: PagerAdapter;
 let TabsBar: any;
+let appResources: android.content.res.Resources;
 
 function makeFragmentName(viewId: number, id: number): string {
     return "android:viewpager:" + viewId + ":" + id;
@@ -52,8 +54,9 @@ function initializeNativeClasses() {
     }
 
     class TabFragmentImplementation extends org.nativescript.widgets.FragmentBase {
-        private tab: Tabs;
+        private owner: Tabs;
         private index: number;
+        private backgroundBitmap: android.graphics.Bitmap = null;
 
         constructor() {
             super();
@@ -74,17 +77,60 @@ function initializeNativeClasses() {
         public onCreate(savedInstanceState: android.os.Bundle): void {
             super.onCreate(savedInstanceState);
             const args = this.getArguments();
-            this.tab = getTabById(args.getInt(TABID));
+            this.owner = getTabById(args.getInt(TABID));
             this.index = args.getInt(INDEX);
-            if (!this.tab) {
+            if (!this.owner) {
                 throw new Error(`Cannot find TabView`);
             }
         }
 
         public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-            const tabItem = this.tab.items[this.index];
+            const tabItem = this.owner.items[this.index];
 
             return tabItem.nativeViewProtected;
+        }
+
+        public onDestroyView() {
+            const hasRemovingParent = this.getRemovingParentFragment();
+
+            // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
+            // TODO: Consider removing it when update to androidx.fragment:1.2.0
+            if (hasRemovingParent && this.owner.selectedIndex === this.index) {
+                const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
+                this.owner._originalBackground = this.owner.backgroundColor || new Color("White");
+                this.owner.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
+                this.backgroundBitmap = null;
+            }
+
+            super.onDestroyView();
+        }
+
+        public onPause(): void {
+            const hasRemovingParent = this.getRemovingParentFragment();
+
+            // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
+            // TODO: Consider removing it when update to androidx.fragment:1.2.0
+            if (hasRemovingParent && this.owner.selectedIndex === this.index) {
+                this.backgroundBitmap = this.loadBitmapFromView(this.owner.nativeViewProtected);
+            }
+
+            super.onPause();
+        }
+
+        private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
+            // Another way to get view bitmap. Test performance vs setDrawingCacheEnabled
+            // const width = view.getWidth();
+            // const height = view.getHeight();
+            // const bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
+            // const canvas = new android.graphics.Canvas(bitmap);
+            // view.layout(0, 0, width, height);
+            // view.draw(canvas);
+
+            view.setDrawingCacheEnabled(true);
+            const bitmap = android.graphics.Bitmap.createBitmap(view.getDrawingCache());
+            view.setDrawingCacheEnabled(false);
+
+            return bitmap;
         }
     }
 
@@ -285,6 +331,7 @@ function initializeNativeClasses() {
 
     PagerAdapter = FragmentPagerAdapter;
     TabsBar = TabsBarImplementation;
+    appResources = application.android.context.getResources();
 }
 
 let defaultAccentColor: number = undefined;
@@ -325,6 +372,7 @@ export class Tabs extends TabsBase {
     private _viewPager: androidx.viewpager.widget.ViewPager;
     private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
     private _androidViewId: number = -1;
+    public _originalBackground: any;
 
     constructor() {
         super();
@@ -455,6 +503,12 @@ export class Tabs extends TabsBase {
 
     public onLoaded(): void {
         super.onLoaded();
+
+        if (this._originalBackground) {
+            this.backgroundColor = null;
+            this.backgroundColor = this._originalBackground;
+            this._originalBackground = null;
+        }
 
         this.setItems((<any>this.items));
 
@@ -653,7 +707,7 @@ export class Tabs extends TabsBase {
                 image = this.getFixedSizeIcon(image);
             }
 
-            imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
+            imageDrawable = new android.graphics.drawable.BitmapDrawable(appResources, image);
         } else {
             // TODO
             // traceMissingIcon(iconSource);

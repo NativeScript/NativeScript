@@ -6,7 +6,7 @@ import { TabStripItem } from "../tab-strip-item";
 import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder, EventData } from "../../core/view";
 
 // Requires
-import { View, Property, CoercibleProperty, isIOS } from "../../core/view";
+import { View, Property, CoercibleProperty, isIOS, Color } from "../../core/view";
 
 // TODO: Impl trace
 // export const traceCategory = "TabView";
@@ -264,6 +264,8 @@ export const selectedIndexProperty = new CoercibleProperty<TabNavigationBase, nu
     valueConverter: (v) => parseInt(v)
 });
 selectedIndexProperty.register(TabNavigationBase);
+
+export const _tabs = new Array<WeakRef<TabNavigationBase>>();
 
 export const itemsProperty = new Property<TabNavigationBase, TabContentItem[]>({
     name: "items", valueChanged: (target, oldValue, newValue) => {

@@ -418,6 +418,7 @@ export interface AndroidFragmentCallbacks {
     onSaveInstanceState(fragment: any, outState: any, superFunc: Function): void;
     onDestroyView(fragment: any, superFunc: Function): void;
     onDestroy(fragment: any, superFunc: Function): void;
+    onPause(fragment: any, superFunc: Function): void;
     onStop(fragment: any, superFunc: Function): void;
     toStringOverride(fragment: any, superFunc: Function): string;
 }
