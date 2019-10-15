@@ -61,7 +61,8 @@ export declare const Http: {
     request: typeof request;
 };
 export { ImageAsset, ImageAssetOptions } from "./image-asset";
-export { isAndroid, isIOS, screen } from "./platform";
+export { ImageSource } from "./image-source";
+export { isAndroid, isIOS, screen as Screen, device as Device } from "./platform";
 export { InstrumentationMode, TimerInfo } from "./profiling";
 import { enable as profilingEnable, disable as profilingDisable, time, uptime, start, stop, isRunning, dumpProfiles, resetProfiles, profile, startCPUProfile, stopCPUProfile } from "./profiling";
 export declare const Profiling: {
@@ -97,7 +98,7 @@ export declare const Trace: {
     isEnabled: typeof isEnabled;
 };
 export * from "./ui";
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, mergeSort, getModuleName, openFile, openUrl, layout, ad as androidUtils, ios as iosUtils } from "./utils/utils";
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, layout, ad as androidUtils, ios as iosUtils } from "./utils/utils";
 export declare const Utils: {
     GC: typeof GC;
     isFontIconURI: typeof isFontIconURI;
@@ -108,7 +109,6 @@ export declare const Utils: {
     isMainThread: typeof isMainThread;
     dispatchToMainThread: typeof dispatchToMainThread;
     releaseNativeObject: typeof releaseNativeObject;
-    mergeSort: typeof mergeSort;
     getModuleName: typeof getModuleName;
     openFile: typeof openFile;
     openUrl: typeof openUrl;

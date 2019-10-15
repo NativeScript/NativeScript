@@ -52,7 +52,7 @@ export const Http = { getFile, getImage, getJSON, getString: httpGetString, requ
 export { ImageAsset, ImageAssetOptions } from "./image-asset";
 
 export { ImageSource } from "./image-source";
-export { isAndroid, isIOS, screen } from "./platform";
+export { isAndroid, isIOS, screen as Screen, device as Device } from "./platform";
 
 // Export interfaces from "profiling" module
 export { InstrumentationMode, TimerInfo } from "./profiling";
@@ -95,7 +95,7 @@ export * from "./ui"; // Barrel export
 import {
     GC, isFontIconURI, isDataURI, isFileOrResourcePath,
     executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject,
-    mergeSort, getModuleName,
+    getModuleName,
     openFile, openUrl,
     layout, ad as androidUtils, ios as iosUtils
 } from "./utils/utils";
@@ -104,7 +104,7 @@ export const Utils = {
     GC, isFontIconURI, isDataURI, isFileOrResourcePath,
     executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject,
 
-    mergeSort, getModuleName,
+    getModuleName,
     openFile, openUrl,
 
     layout, android: androidUtils, ios: iosUtils

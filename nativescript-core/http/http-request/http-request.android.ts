@@ -120,7 +120,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 
                 return new Promise<any>((resolveImage, rejectImage) => {
                     if (result.responseAsImage != null) {
-                        resolveImage(new imageSourceModule.ImageSource(result.responseAsImage));
+                        resolveImage(new imageSource.ImageSource(result.responseAsImage));
                     }
                     else {
                         rejectImage(new Error("Response content may not be converted to an Image"));

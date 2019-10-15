@@ -5,10 +5,10 @@ Development Workflow
 
 The repository contains several packages and apps:
  - `nativescript-core` - The core NativeScript TypeScript modules used to develop NativeScript apps. Produces `@nativescript/core` npm package
- - `tns-core-modules-package` - Base for generating the `tns-core-modules` package (compatibility package for projects that still improt code from `tns-core-modules`).
+ - `tns-core-modules-package` - Base for generating the `tns-core-modules` package (compatibility package for projects that still import code from `tns-core-modules`).
  - `tns-core-modules-widgets` - The native widgets (Java and Objective-C) used by the core NativeScript modules. Produces `tns-core-modules-widgets` npm package
  - `tns-platform-declarations` - TypeScript definitions for Android and iOS native APIs. Produces `tns-platform-declarations` npm package
- - `tests` - Unit tests app for the `@nativescript/core`. These test are executed as nativescript application on mobile device or emulator.
+ - `tests` - Unit tests app for the `@nativescript/core` package. These test are executed as nativescript application on mobile device or emulator.
  - `unit-test` - Node unit tests. These test validate parts of the framework that do not require the nativescript runtime and so can be executed in node environment 
  - `e2e` - applications and *e2e* tests
  - `e2e/ui-tests-app` - UI app used for manual testing and automation
