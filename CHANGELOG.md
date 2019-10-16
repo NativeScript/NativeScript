@@ -1,3 +1,20 @@
+<a name="6.1.2"></a>
+## [6.1.2](https://github.com/NativeScript/NativeScript/compare/6.1.1...6.1.2) (2019-10-15)
+
+
+### Bug Fixes
+
+* expose orientation to application module ([#7832](https://github.com/NativeScript/NativeScript/issues/7832)) ([4166e2d](https://github.com/NativeScript/NativeScript/commit/4166e2d))
+* **frame-android:** IllegalStateException: The specified child already has a parent ([#7948](https://github.com/NativeScript/NativeScript/issues/7948)) ([ff30c48](https://github.com/NativeScript/NativeScript/commit/ff30c48))
+* **tabs-ios9:** no view controller managing visible view error ([#7837](https://github.com/NativeScript/NativeScript/issues/7837)) ([7fe8d1c](https://github.com/NativeScript/NativeScript/commit/7fe8d1c))
+
+
+### Features
+
+* **css:** add attribute scoped css without global refresh ([#7907](https://github.com/NativeScript/NativeScript/issues/7907)) ([#7947](https://github.com/NativeScript/NativeScript/issues/7947)) ([b377eb6](https://github.com/NativeScript/NativeScript/commit/b377eb6))
+
+
+
 ## [6.1.1](https://github.com/NativeScript/NativeScript/compare/6.1.0...6.1.1) (2019-09-11)
 
 
