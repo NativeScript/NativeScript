@@ -74,7 +74,7 @@ tns run ios
 ## Running Another App
 
 ### TypeScript Applications
-Link both the `nativescript-core` folder and the generated compatibility package (`dist\tns-core-modules`):
+Link both the `nativescript-core` folders and the generated compatibility package (`dist\tns-core-modules`):
 ``` bash
 npm i <path-to-nativescript-repo>/nativescript-core --save
 npm i <path-to-nativescript-repo>/dist/tns-core-modules --save

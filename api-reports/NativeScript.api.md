@@ -2664,6 +2664,7 @@ export abstract class View extends ViewBase {
     public static layoutChangedEvent: string;
     public static layoutChild(parent: View, child: View, left: number, top: number, right: number, bottom: number): void;
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void;
+    _manager: any;
     margin: string | PercentLength;
     marginBottom: PercentLength;
     marginLeft: PercentLength;
@@ -2677,10 +2678,10 @@ export abstract class View extends ViewBase {
     // (undocumented)
     _modalParent?: View;
     off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
-    on(event: "loaded", callback: (args: EventData) => void, thisArg?: any);
-    on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
     on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
     on(event: "androidBackPressed", callback: (args: EventData) => void, thisArg?: any);
+    on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
+    on(event: "loaded", callback: (args: EventData) => void, thisArg?: any);
     on(event: "unloaded", callback: (args: EventData) => void, thisArg?: any);
     on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
     _onAttachedToWindow(): void;
