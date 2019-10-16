@@ -4,7 +4,7 @@ import { ControlStateChangeListener as ControlStateChangeListenerDefinition } fr
 
 export class ControlStateChangeListener implements ControlStateChangeListenerDefinition {
     constructor(control: any /* UIControl */, callback: (state: string) => void) {
-        throw new Error("ControlStateChangeListener is not implemented for Android");
+        console.log("ControlStateChangeListener is intended for IOS usage only.");
     }
     public start() { }
     public stop() { }

@@ -3,7 +3,7 @@ import { View } from "../core/view";
 import { Color } from "../../color";
 import { Page } from "../page";
 import { isIOS } from "../../platform";
-import { Frame as FrameType } from "../frame";
+import { Frame as FrameDef } from "../frame";
 import { LoginOptions } from "./dialogs";
 import { isObject, isString } from "../../utils/types";
 
@@ -75,7 +75,7 @@ export module capitalizationType {
     export const words: string = "words";
 }
 
-let Frame: typeof FrameType;
+let Frame: typeof FrameDef;
 export function getCurrentPage(): Page {
     if (!Frame) {
         Frame = require("../frame").Frame;

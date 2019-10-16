@@ -4,6 +4,7 @@
 
 /**
  * An utility class used for supporting styling infrastructure.
+ * WARNING: This class is intended for IOS only.
  */
 export class ControlStateChangeListener {
 
