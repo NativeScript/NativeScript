@@ -17,13 +17,6 @@ export class AbsoluteLayout extends LayoutBase {
 }
 
 // @public
-export module Accuracy {
-    const any: number;
-
-    const high: number;
-}
-
-// @public
 export class ActionBar extends View {
 
     actionItems: ActionItems;
@@ -234,25 +227,6 @@ export class Animation {
 }
 
 // @public
-export module AnimationCurve {
-
-    const ease: string;
-
-    const easeIn: string;
-
-    const easeOut: string;
-
-    const easeInOut: string;
-
-    const linear: string;
-
-    const spring: string;
-
-    // Warning: (ae-forgotten-export) The symbol "CubicBezierAnimationCurve" needs to be exported by the entry point index.d.ts
-    export function cubicBezier(x1: number, y1: number, x2: number, y2: number): CubicBezierAnimationCurve;
-}
-
-// @public
 export interface AnimationDefinition {
     backgroundColor?: Color;
 
@@ -356,18 +330,6 @@ export interface BackstackEntry {
     //@endprivate
 }
 
-// @public (undocumented)
-export interface BorderColor {
-    // (undocumented)
-    bottom: Color;
-    // (undocumented)
-    left: Color;
-    // (undocumented)
-    right: Color;
-    // (undocumented)
-    top: Color;
-}
-
 // @public
 export class BottomNavigation extends TabNavigationBase {
     android: any /* android.view.View */;
@@ -378,8 +340,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
-    // Warning: (ae-forgotten-export) The symbol "SelectedIndexChangedEventData" needs to be exported by the entry point index.d.ts
-    on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData_2) => void, thisArg?: any);
+    on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
 
     selectedIndex: number;
 
@@ -415,35 +376,6 @@ export class Button extends TextBase {
     public static tapEvent: string;
 
     textWrap: boolean;
-}
-
-// @public
-export class Cache extends Observable {
-    clear(): void;
-    disableDownload(): void;
-    // (undocumented)
-    _downloadCore(request: DownloadRequest);
-    public static downloadedEvent: string;
-    public static downloadErrorEvent: string;
-    enableDownload(): void;
-    enqueue(request: DownloadRequest);
-    get(key: string): any;
-    maxRequests: number;
-    // Warning: (ae-forgotten-export) The symbol "DownloadError" needs to be exported by the entry point index.d.ts
-    on(event: "downloadError", callback: (args: DownloadError) => void, thisArg?: any);
-    on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
-    // Warning: (ae-forgotten-export) The symbol "DownloadedData" needs to be exported by the entry point index.d.ts
-    on(event: "downloaded", callback: (args: DownloadedData) => void, thisArg?: any);
-    // (undocumented)
-    _onDownloadCompleted(key: string, image: any);
-    // (undocumented)
-    _onDownloadError(key: string, err: Error);
-    placeholder: ImageSource;
-    // Warning: (ae-forgotten-export) The symbol "DownloadRequest" needs to be exported by the entry point index.d.ts
-    push(request: DownloadRequest);
-    remove(key: string): void;
-    set(key: string, image: any): void;
-    //@endprivate
 }
 
 // @public
@@ -597,13 +529,6 @@ export class DefaultErrorHandler implements ErrorHandler {
 export const Device: Device_2;
 
 // @public
-export module DeviceOrientation {
-    const portrait: string;
-    const landscape: string;
-    const unknown: string;
-}
-
-// @public
 export interface DiscardedErrorEventData extends ApplicationEventData {
     // (undocumented)
     error: NativeScriptError;
@@ -617,6 +542,26 @@ export class DockLayout extends LayoutBase {
     static setDock(view: View, value: Dock): void;
 
     stretchLastChild: boolean;
+}
+
+// @public
+export interface DownloadedData extends EventData {
+    image: ImageSource;
+    key: string;
+}
+
+// @public
+export interface DownloadError extends EventData {
+    error: Error;
+    key: string;
+}
+
+// @public
+export interface DownloadRequest {
+    completed?: (image: any, key: string) => void;
+    error?: (key: string) => void;
+    key: string;
+    url: string;
 }
 
 // @public
@@ -1153,6 +1098,32 @@ export interface ImageAssetOptions {
     keepAspectRatio?: boolean;
     // (undocumented)
     width?: number;
+}
+
+// @public
+export class ImageCache extends Observable {
+    clear(): void;
+    disableDownload(): void;
+    // (undocumented)
+    _downloadCore(request: DownloadRequest);
+    public static downloadedEvent: string;
+    public static downloadErrorEvent: string;
+    enableDownload(): void;
+    enqueue(request: DownloadRequest);
+    get(key: string): any;
+    maxRequests: number;
+    on(event: "downloadError", callback: (args: DownloadError) => void, thisArg?: any);
+    on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
+    on(event: "downloaded", callback: (args: DownloadedData) => void, thisArg?: any);
+    // (undocumented)
+    _onDownloadCompleted(key: string, image: any);
+    // (undocumented)
+    _onDownloadError(key: string, err: Error);
+    placeholder: ImageSource;
+    push(request: DownloadRequest);
+    remove(key: string): void;
+    set(key: string, image: any): void;
+    //@endprivate
 }
 
 // @public
@@ -1888,6 +1859,13 @@ export class SegmentedBarItem extends ViewBase {
     public title: string;
 }
 
+// @public
+export interface SelectedIndexChangedEventData extends EventData {
+    newIndex: number;
+
+    oldIndex: number;
+}
+
 // @public (undocumented)
 export interface ShowModalOptions {
     // (undocumented)
@@ -1908,6 +1886,13 @@ export interface ShowModalOptions {
     }
 
     stretched?: boolean;
+}
+
+// @public
+export interface ShownModallyData extends EventData {
+    closeCallback?: Function;
+
+    context?: any;
 }
 
 // @public
@@ -2227,7 +2212,7 @@ export class TabNavigationBase extends View {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     // Warning: (ae-forgotten-export) The symbol "SelectedIndexChangedEventData" needs to be exported by the entry point index.d.ts
-    on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
+    on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData_2) => void, thisArg?: any);
 
     onItemsChanged(oldItems: TabContentItem[], newItems: TabContentItem[]): void;
 
@@ -2276,7 +2261,7 @@ export class Tabs extends TabNavigationBase {
 
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
-    on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
+    on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData_2) => void, thisArg?: any);
 
     selectedIndex: number;
 
@@ -2474,18 +2459,6 @@ export class TextView extends EditableTextBase {
     android: any /* android.widget.EditText */;
 
     ios: any /* UITextView */;
-}
-
-// @public (undocumented)
-export interface Thickness {
-    // (undocumented)
-    bottom: number;
-    // (undocumented)
-    left: number;
-    // (undocumented)
-    right: number;
-    // (undocumented)
-    top: number;
 }
 
 // @public
@@ -2706,7 +2679,6 @@ export abstract class View extends ViewBase {
     off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
     on(event: "loaded", callback: (args: EventData) => void, thisArg?: any);
     on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
-    // Warning: (ae-forgotten-export) The symbol "ShownModallyData" needs to be exported by the entry point index.d.ts
     on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
     on(event: "androidBackPressed", callback: (args: EventData) => void, thisArg?: any);
     on(event: "unloaded", callback: (args: EventData) => void, thisArg?: any);
