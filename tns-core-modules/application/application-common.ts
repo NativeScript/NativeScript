@@ -143,6 +143,10 @@ function removeCssClass(rootView: View, cssClass: string) {
 }
 
 export function orientationChanged(rootView: View, newOrientation: "portrait" | "landscape" | "unknown"): void {
+    if (!rootView) {
+        return;
+    }
+
     const newOrientationCssClass = `${CLASS_PREFIX}${newOrientation}`;
     if (!rootView.cssClasses.has(newOrientationCssClass)) {
         ORIENTATION_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
@@ -152,6 +156,10 @@ export function orientationChanged(rootView: View, newOrientation: "portrait" | 
 }
 
 export function systemAppearanceChanged(rootView: View, newSystemAppearance: "dark" | "light"): void {
+    if (!rootView) {
+        return;
+    }
+
     const newSystemAppearanceCssClass = `${CLASS_PREFIX}${newSystemAppearance}`;
     if (!rootView.cssClasses.has(newSystemAppearanceCssClass)) {
         SYSTEM_APPEARANCE_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
