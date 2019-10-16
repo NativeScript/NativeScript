@@ -233,20 +233,20 @@ export class ActionBar extends ActionBarBase {
 
     private populateMenuItems(navigationItem: UINavigationItem) {
         const items = this.actionItems.getVisibleItems();
-        const leftBarItems = [];
-        const rightBarItems = [];
+        const leftBarItems = NSMutableArray.new();
+        const rightBarItems = NSMutableArray.new();
         for (let i = 0; i < items.length; i++) {
             const barButtonItem = this.createBarButtonItem(items[i]);
             if (items[i].ios.position === "left") {
-                leftBarItems.push(barButtonItem);
+                leftBarItems.addObject(barButtonItem);
             } else {
-                rightBarItems.splice(0, 0, barButtonItem);
+                rightBarItems.insertObjectAtIndex(barButtonItem, 0);
             }
         }
 
         navigationItem.setLeftBarButtonItemsAnimated(<any>leftBarItems, false);
         navigationItem.setRightBarButtonItemsAnimated(<any>rightBarItems, false);
-        if (leftBarItems.length > 0) {
+        if (leftBarItems.count > 0) {
             navigationItem.leftItemsSupplementBackButton = true;
         }
     }
