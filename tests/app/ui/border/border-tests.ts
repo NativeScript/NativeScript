@@ -1,5 +1,5 @@
 ﻿// >> border-require
-import { Border } from "tns-core-modules/ui/border";
+import { Border } from "@nativescript/core/ui/border";
 // << border-require
 import * as helper from "../../ui-helper";
 

@@ -1,21 +1,21 @@
 import * as TKUnit from "../../tk-unit";
-import * as app from "tns-core-modules/application";
+import * as app from "@nativescript/core/application";
 import * as helper from "../../ui-helper";
-import * as viewModule from "tns-core-modules/ui/core/view";
-import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
-import * as wrapLayoutModule from "tns-core-modules/ui/layouts/wrap-layout";
-import * as layoutBaseModule from "tns-core-modules/ui/layouts/layout-base";
-import * as pageModule from "tns-core-modules/ui/page";
-import * as gestureModule from "tns-core-modules/ui/gestures";
-import { Label } from "tns-core-modules/ui/label";
+import * as viewModule from "@nativescript/core/ui/core/view";
+import * as stackLayoutModule from "@nativescript/core/ui/layouts/stack-layout";
+import * as wrapLayoutModule from "@nativescript/core/ui/layouts/wrap-layout";
+import * as layoutBaseModule from "@nativescript/core/ui/layouts/layout-base";
+import * as pageModule from "@nativescript/core/ui/page";
+import * as gestureModule from "@nativescript/core/ui/gestures";
+import { Label } from "@nativescript/core/ui/label";
 
 // >> article-require-repeater-module
-import * as repeaterModule from "tns-core-modules/ui/repeater";
+import * as repeaterModule from "@nativescript/core/ui/repeater";
 // << article-require-repeater-module
 
 // >> article-require-modules-repeater
-import * as observableArray from "tns-core-modules/data/observable-array";
-import * as labelModule from "tns-core-modules/ui/label";
+import * as observableArray from "@nativescript/core/data/observable-array";
+import * as labelModule from "@nativescript/core/ui/label";
 // << article-require-modules-repeater
 
 var FEW_ITEMS = [0, 1, 2];

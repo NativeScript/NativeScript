@@ -50,6 +50,7 @@
         "Deploy",
         "out",
         "obj",
-        "unit-tests/common-types.d.ts"
+        "unit-tests/common-types.d.ts",
+        "dist"
     ]
 }

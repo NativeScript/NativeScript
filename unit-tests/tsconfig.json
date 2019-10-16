@@ -19,24 +19,24 @@
             "chai",
             "mocha"
         ],
-        "baseUrl": "..",
+        "baseUrl": ".",
         "paths": {
-            "tns-core-modules/*": [
-                "tns-core-modules/*"
+            "@nativescript/core/*": [
+                "../nativescript-core/*"
             ]
         }
     },
     "include": [
-        "../tns-core-modules/**/*.ts",
+        "../nativescript-core/**/*.ts",
         "./**/*.ts"
     ],
     "exclude": [
-        "../tns-core-modules/**/*.android.ts",
-        "../tns-core-modules/**/*.android.d.ts",
-        "../tns-core-modules/**/*.ios.ts",
-        "../tns-core-modules/**/*.ios.d.ts",
-        "../tns-core-modules/node-modules",
-        "../tns-core-modules/references.d.ts",
-        "../tns-core-modules/platforms"
+        "../nativescript-core/**/*.android.ts",
+        "../nativescript-core/**/*.android.d.ts",
+        "../nativescript-core/**/*.ios.ts",
+        "../nativescript-core/**/*.ios.d.ts",
+        "../nativescript-core/node-modules",
+        "../nativescript-core/references.d.ts",
+        "../nativescript-core/platforms"
     ]
 }

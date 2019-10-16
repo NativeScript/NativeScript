@@ -1,4 +1,4 @@
-import * as segmentedBarModule from "tns-core-modules/ui/segmented-bar";
+import * as segmentedBarModule from "@nativescript/core/ui/segmented-bar";
 
 export function getNativeItemsCount(bar: segmentedBarModule.SegmentedBar): number {
     return (<UISegmentedControl>bar.nativeViewProtected).numberOfSegments;

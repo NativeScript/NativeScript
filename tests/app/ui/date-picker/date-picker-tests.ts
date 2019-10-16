@@ -1,11 +1,11 @@
 import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 import * as datePickerTestsNative from "./date-picker-tests-native";
-import * as color from "tns-core-modules/color";
-import * as platform from "tns-core-modules/platform";
+import * as color from "@nativescript/core/color";
+import * as platform from "@nativescript/core/platform";
 
 // >> date-picker-require
-import * as datePickerModule from "tns-core-modules/ui/date-picker";
+import * as datePickerModule from "@nativescript/core/ui/date-picker";
 // << date-picker-require
 
 import * as helper from "../../ui-helper";

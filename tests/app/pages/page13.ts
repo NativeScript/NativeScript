@@ -1,6 +1,6 @@
-import * as pages from "tns-core-modules/ui/page";
-import * as btns from "tns-core-modules/ui/button";
-import * as layout from "tns-core-modules/ui/layouts/stack-layout";
+import * as pages from "@nativescript/core/ui/page";
+import * as btns from "@nativescript/core/ui/button";
+import * as layout from "@nativescript/core/ui/layouts/stack-layout";
 
 export function createPage() {
     var page = new pages.Page();

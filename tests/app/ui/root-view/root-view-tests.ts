@@ -1,9 +1,9 @@
 import * as TKUnit from "../../tk-unit";
-import { Page, View } from "tns-core-modules/ui/page";
-import { Frame, NavigationEntry, _stack } from "tns-core-modules/ui/frame";
-import { _resetRootView, getRootView } from "tns-core-modules/application";
-import { TabView } from "tns-core-modules/ui/tab-view";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
+import { Page, View } from "@nativescript/core/ui/page";
+import { Frame, NavigationEntry, _stack } from "@nativescript/core/ui/frame";
+import { _resetRootView, getRootView } from "@nativescript/core/application";
+import { TabView } from "@nativescript/core/ui/tab-view";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
 import * as helper from "../../ui-helper";
 
 function createTestFrameRootEntry() {

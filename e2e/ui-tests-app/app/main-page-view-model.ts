@@ -105,7 +105,7 @@ export class MainPageViewModel extends TestPageMainViewModel {
             let requiredExample = value;
             if (MainPageViewModel.stringContains(value, "main")) {
                 try {
-                    let module = require("~/" + requiredExample);
+                    let module = global.loadModule(requiredExample);
                     if (module.loadExamples !== undefined) {
                         var currentExamples = new Map<string, string>();
                         currentExamples = module.loadExamples();

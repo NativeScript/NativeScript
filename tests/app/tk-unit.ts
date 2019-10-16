@@ -11,11 +11,11 @@
 
 */
 
-import * as application from "tns-core-modules/application";
-import * as platform from "tns-core-modules/platform";
-import * as timer from "tns-core-modules/timer";
-import * as trace from "tns-core-modules/trace";
-import * as types from "tns-core-modules/utils/types";
+import * as application from "@nativescript/core/application";
+import * as platform from "@nativescript/core/platform";
+import * as timer from "@nativescript/core/timer";
+import * as trace from "@nativescript/core/trace";
+import * as types from "@nativescript/core/utils/types";
 
 const sdkVersion = parseInt(platform.device.sdkVersion);
 

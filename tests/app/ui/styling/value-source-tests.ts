@@ -1,9 +1,9 @@
-import * as color from "tns-core-modules/color";
-import * as button from "tns-core-modules/ui/button";
-import * as stack from "tns-core-modules/ui/layouts/stack-layout";
+import * as color from "@nativescript/core/color";
+import * as button from "@nativescript/core/ui/button";
+import * as stack from "@nativescript/core/ui/layouts/stack-layout";
 import * as helper from "../../ui-helper";
 import * as TKUnit from "../../tk-unit";
-import { unsetValue } from "tns-core-modules/ui/core/view";
+import { unsetValue } from "@nativescript/core/ui/core/view";
 
 export var test_value_Inherited_after_unset = function () {
     let page = helper.getCurrentPage();

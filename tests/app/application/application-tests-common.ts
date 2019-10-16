@@ -1,5 +1,5 @@
-﻿import * as app from "tns-core-modules/application";
-import * as platform from "tns-core-modules/platform";
+﻿import * as app from "@nativescript/core/application";
+import * as platform from "@nativescript/core/platform";
 
 import * as TKUnit from "../tk-unit";
 

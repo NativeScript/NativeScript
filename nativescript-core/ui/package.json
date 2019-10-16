@@ -1,0 +1,8 @@
+{
+	"name": "ui",
+	"main": "index",
+	"types": "index.d.ts",
+	"nativescript": {
+		"recursive-static-bindings": true
+	}
+}

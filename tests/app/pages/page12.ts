@@ -1,7 +1,7 @@
-import * as pages from "tns-core-modules/ui/page";
-import * as btns from "tns-core-modules/ui/button";
-import * as tb from "tns-core-modules/ui/text-field";
-import * as gridLayoutModule from "tns-core-modules/ui/layouts/grid-layout";
+import * as pages from "@nativescript/core/ui/page";
+import * as btns from "@nativescript/core/ui/button";
+import * as tb from "@nativescript/core/ui/text-field";
+import * as gridLayoutModule from "@nativescript/core/ui/layouts/grid-layout";
 
 export function createPage() {
     var page = new pages.Page();

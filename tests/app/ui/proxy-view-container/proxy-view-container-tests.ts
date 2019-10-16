@@ -1,14 +1,14 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { View } from "tns-core-modules/ui/core/view";
-import { Button } from "tns-core-modules/ui/button";
-import { Page } from "tns-core-modules/ui/page";
-import { ScrollView } from "tns-core-modules/ui/scroll-view";
-import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
-import { ProxyViewContainer } from "tns-core-modules/ui/proxy-view-container";
-import { ListView } from "tns-core-modules/ui/list-view";
+import { View } from "@nativescript/core/ui/core/view";
+import { Button } from "@nativescript/core/ui/button";
+import { Page } from "@nativescript/core/ui/page";
+import { ScrollView } from "@nativescript/core/ui/scroll-view";
+import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
+import { ProxyViewContainer } from "@nativescript/core/ui/proxy-view-container";
+import { ListView } from "@nativescript/core/ui/list-view";
 
 export function test_add_children_to_attached_proxy() {
     const outer = new StackLayout();

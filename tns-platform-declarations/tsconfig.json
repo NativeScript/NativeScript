@@ -14,10 +14,7 @@
         "lib": [
             "es6", "dom"
         ],
-        "baseUrl": ".",
-        "paths": {
-            "tns-core-modules/*": ["tns-core-modules/*"]
-        }
+        "baseUrl": "."
     },
     "exclude": [
         "android-*.d.ts",

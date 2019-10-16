@@ -8,6 +8,7 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.5.0",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.42",
     "@types/node": "~10.12.18",
@@ -24,11 +25,12 @@
     "ncp": "^2.0.0",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
-    "readdirp": "^3.1.2",
+    "readdirp": "3.1.3",
     "reduce-css-calc": "^2.1.6",
     "rimraf": "^2.5.0",
     "shady-css-parser": "^0.1.0",
     "source-map-support": "^0.4.17",
+    "ts-node": "^8.3.0",
     "tslib": "1.10.0",
     "tslint": "^5.4.3",
     "typedoc": "^0.13.0",
@@ -36,21 +38,18 @@
     "typescript": "^3.1.6"
   },
   "scripts": {
-    "tsc": "node --max_old_space_size=4096 ./node_modules/typescript/bin/tsc",
-    "tsc-w": "npm run tsc -- --skipLibCheck -w",
+    "setup": "npm run build-core && npm run build-compat && npm run setup-link",
+    "setup-link": "(cd nativescript-core && npm link) && (cd dist/tns-core-modules && npm uninstall @nativescript/core -S)",
+    "setup-widgets": "(cd tns-core-modules-widgets && sh build.sh) && npm run dev-link-tns-core-modules-widgets",
+    "tsc-core-watch": "tsc -p nativescript-core/tsconfig.json -w",
     "tslint": "tslint --project tsconfig.tslint.json --config build/tslint.json",
-    "ci": "tsc && npm run tslint && npm run ci-apps && npm run ci-e2e && npm run ci-tests",
-    "ci-apps": "cd apps && npm i ../tns-core-modules ../tns-platform-declarations --save",
-    "ci-e2e": "cd e2e && cd modal-navigation && npm i ../../tns-core-modules ../../tns-platform-declarations --save",
-    "ci-tests": "cd tests && npm i ../tns-core-modules ../tns-platform-declarations --save",
     "unit-test": "tsc -p unit-tests/tsconfig.json && mocha --opts unit-tests/mocha.opts",
     "unit-test-watch": "mocha-typescript-watch -p unit-tests/tsconfig.json --opts unit-tests/mocha.opts",
-    "setup-widgets": "(cd tns-core-modules-widgets && sh build.sh) && npm run dev-link-tns-core-modules-widgets",
-    "dev-link-tns-core-modules-widgets": "(cd tns-core-modules-widgets/dist/package && npm link) && (cd tns-core-modules && npm i ../tns-core-modules-widgets/dist/package --save)",
-    "dev-declarations": "rm -rf tns-platform-declarations/ios/objc* && TNS_TYPESCRIPT_DECLARATIONS_PATH=$PWD/tns-platform-declarations/ios/objc tns build ios --path tests",
-    "typedoc": "typedoc --tsconfig tsconfig.typedoc.json --out bin/dist/apiref --includeDeclarations --name NativeScript --theme ./node_modules/nativescript-typedoc-theme --excludeExternals --externalPattern \"**/+(tns-core-modules|module).d.ts\"",
-    "dev-typedoc": "npm run typedoc && cd bin/dist/apiref && npx http-server",
-    "prepare-dist": "bash ./build/prepare-dist.sh",
-    "pack-dist": "bash ./build/pack-dist.sh"
+    "dev-link-tns-core-modules-widgets": "(cd tns-core-modules-widgets/dist/package && npm link) && (cd nativescript-core && npm i ../tns-core-modules-widgets/dist/package --save)",
+    "api-extractor": "api-extractor run --local --verbose && (cd nativescript-core && cat nativescript-core.header nativescript-core.d.ts > tmp_file && mv tmp_file nativescript-core.d.ts)",
+    "typedoc": "npm run api-extractor && typedoc --tsconfig tsconfig.typedoc.json",
+    "typedoc-dev": "npm run typedoc && cd bin/dist/apiref && npx http-server",
+    "build-core": "sh ./build/build-core.sh",
+    "build-compat": "sh ./build/build-compat.sh"
   }
 }

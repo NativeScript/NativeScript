@@ -1,14 +1,13 @@
 // >> xml-module-snippet
-//var xmlModule = require("tns-core-modules/xml");
+//var xmlModule = require("@nativescript/core/xml");
 // << xml-module-snippet
 
 import * as TKUnit from "../tk-unit";
-import * as xmlModule from "tns-core-modules/xml";
-import * as fs from "tns-core-modules/file-system";
-import * as builder from "tns-core-modules/ui/builder";
-import { isIOS } from "tns-core-modules/platform";
-import { device } from "tns-core-modules/platform";
-import lazy from "tns-core-modules/utils/lazy";
+import * as xmlModule from "@nativescript/core/xml";
+import * as fs from "@nativescript/core/file-system";
+import { Builder } from "@nativescript/core/ui/builder";
+import { isIOS, device } from "@nativescript/core/platform";
+import lazy from "@nativescript/core/utils/lazy";
 
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
@@ -226,7 +225,7 @@ export var test_XmlParser_NamespacesTest = function () {
 export function test_MultiParserTemplate() {
     const xml = global.loadModule("xml-parser-tests/itemTemplates.xml", true);
 
-    const view: any = builder.parse(xml);
+    const view: any = Builder.parse(xml);
     TKUnit.assertNotNull(view.items);
     TKUnit.assertEqual(view.items.length, 1);
 }

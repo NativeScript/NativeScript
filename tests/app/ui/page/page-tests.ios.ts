@@ -1,6 +1,6 @@
-import { Page, View, EventData } from "tns-core-modules/ui/page";
-import { Label } from "tns-core-modules/ui/label";
-import { topmost } from "tns-core-modules/ui/frame";
+import { Page, View, EventData } from "@nativescript/core/ui/page";
+import { Label } from "@nativescript/core/ui/label";
+import { Frame } from "@nativescript/core/ui/frame";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { addLabelToPage } from "./page-tests-common";
@@ -377,7 +377,7 @@ export function test_showing_native_viewcontroller_doesnt_throw_exception() {
     TKUnit.assertEqual(0, navigatedFrom, "navigatingTo");
 
     let page = new Page();
-    let navcontroller = <UINavigationController>topmost().ios.controller;
+    let navcontroller = <UINavigationController>Frame.topmost().ios.controller;
 
     let completed = false;
     navcontroller.presentViewControllerAnimatedCompletion(page.ios, false, () => completed = true);

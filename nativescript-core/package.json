@@ -1,0 +1,60 @@
+{
+  "name": "@nativescript/core",
+  "main": "index",
+  "types": "index.d.ts",
+  "description": "Telerik NativeScript Core Modules",
+  "version": "6.2.0",
+  "homepage": "https://www.nativescript.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NativeScript/NativeScript"
+  },
+  "files": [
+    "**/*.d.ts",
+    "**/*.js",
+    "**/platforms/ios/**",
+    "**/package.json",
+    "!org.nativescript.widgets.d.ts"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "nativescript-hook": "0.2.5",
+    "reduce-css-calc": "^2.1.6",
+    "semver": "6.3.0",
+    "tns-core-modules-widgets": "next",
+    "tslib": "1.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "~10.12.18",
+    "tns-platform-declarations": "next"
+  },
+  "scripts": {
+    "version": "conventional-changelog -p angular -i ../CHANGELOG.md -s && git add ../CHANGELOG.md",
+    "postinstall": "node cli-hooks/postinstall.js",
+    "preuninstall": "node cli-hooks/preuninstall.js"
+  },
+  "nativescript": {
+    "platforms": {
+      "ios": "6.0.0",
+      "android": "6.0.0"
+    },
+    "hooks": [
+      {
+        "name": "nativescript-core",
+        "type": "before-checkForChanges",
+        "script": "cli-hooks/before-checkForChanges.js",
+        "inject": true
+      }
+    ]
+  },
+  "snapshot": {
+    "android": {
+      "tns-java-classes": {
+        "modules": [
+          "ui/frame/activity",
+          "ui/frame/fragment"
+        ]
+      }
+    }
+  }
+}

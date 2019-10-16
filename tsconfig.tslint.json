@@ -17,7 +17,8 @@
         "noUnusedParameters": true
     },
     "include": [
-        "tns-core-modules",
+        "nativescript-core",
+        "tns-core-modules-package",
         "tests",
         "e2e"
     ],

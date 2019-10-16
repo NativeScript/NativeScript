@@ -1,0 +1,4 @@
+*.tgz
+**/*.ts
+!**/*.d.ts
+npm-debug.log

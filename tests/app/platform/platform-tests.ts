@@ -1,6 +1,6 @@
 import * as TKUnit from "../tk-unit";
-import * as app from "tns-core-modules/application";
-import * as platformModule from "tns-core-modules/platform";
+import * as app from "@nativescript/core/application";
+import * as platformModule from "@nativescript/core/platform";
 
 export function test_platform() {
     let expectedPlatform;

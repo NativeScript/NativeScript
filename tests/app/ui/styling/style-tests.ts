@@ -1,19 +1,19 @@
 import * as TKUnit from "../../tk-unit";
-import * as application from "tns-core-modules/application";
-import * as buttonModule from "tns-core-modules/ui/button";
-import * as labelModule from "tns-core-modules/ui/label";
-import * as pageModule from "tns-core-modules/ui/page";
-import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
-import * as wrapModule from "tns-core-modules/ui/layouts/wrap-layout";
-import * as tabViewModule from "tns-core-modules/ui/tab-view";
+import * as application from "@nativescript/core/application";
+import * as buttonModule from "@nativescript/core/ui/button";
+import * as labelModule from "@nativescript/core/ui/label";
+import * as pageModule from "@nativescript/core/ui/page";
+import * as stackModule from "@nativescript/core/ui/layouts/stack-layout";
+import * as wrapModule from "@nativescript/core/ui/layouts/wrap-layout";
+import * as tabViewModule from "@nativescript/core/ui/tab-view";
 import * as helper from "../../ui-helper";
-import * as types from "tns-core-modules/utils/types";
-import * as viewModule from "tns-core-modules/ui/core/view";
-import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS } from "tns-core-modules/ui/styling/style-scope";
-import { unsetValue } from "tns-core-modules/ui/core/view";
-import * as color from "tns-core-modules/color";
-import * as fs from "tns-core-modules/file-system";
-import { _evaluateCssCalcExpression } from "tns-core-modules/ui/core/properties/properties";
+import * as types from "@nativescript/core/utils/types";
+import * as viewModule from "@nativescript/core/ui/core/view";
+import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS } from "@nativescript/core/ui/styling/style-scope";
+import { unsetValue } from "@nativescript/core/ui/core/view";
+import * as color from "@nativescript/core/color";
+import * as fs from "@nativescript/core/file-system";
+import { _evaluateCssCalcExpression } from "@nativescript/core/ui/core/properties/properties";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     const stack = new stackModule.StackLayout();

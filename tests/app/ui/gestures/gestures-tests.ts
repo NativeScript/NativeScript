@@ -1,8 +1,8 @@
 /* tslint:disable:no-unused-variable */
 // >> gestures-require
-import * as gestures from "tns-core-modules/ui/gestures";
+import * as gestures from "@nativescript/core/ui/gestures";
 // << gestures-require
-import * as labelModule from "tns-core-modules/ui/label";
+import * as labelModule from "@nativescript/core/ui/label";
 
 export var test_DummyTestForSnippetOnly0 = function () {
     // >> gestures-double-tap

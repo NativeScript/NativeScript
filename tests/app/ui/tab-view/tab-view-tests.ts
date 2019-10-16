@@ -1,14 +1,14 @@
 import { UITest } from "../../ui-test";
-import { Label } from "tns-core-modules/ui/label";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { unsetValue } from "tns-core-modules/ui/core/view";
+import { Label } from "@nativescript/core/ui/label";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { unsetValue } from "@nativescript/core/ui/core/view";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as tabViewTestsNative from "./tab-view-tests-native";
 
 // Using a TabView requires the "ui/tab-view" module.
 // >> article-require-tabview-module
-import * as tabViewModule from "tns-core-modules/ui/tab-view";
+import * as tabViewModule from "@nativescript/core/ui/tab-view";
 // << article-require-tabview-module
 
 export class TabViewTest extends UITest<tabViewModule.TabView> {

@@ -1,5 +1,5 @@
 ﻿//@private
-import { BottomNavigation } from "tns-core-modules/ui/bottom-navigation";
+import { BottomNavigation } from "@nativescript/core/ui/bottom-navigation";
 
 export function getNativeTabCount(tabView: BottomNavigation): number;
 export function selectNativeTab(tabView: BottomNavigation, index: number): void;

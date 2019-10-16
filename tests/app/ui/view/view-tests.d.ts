@@ -1,5 +1,5 @@
 ﻿//@private
-import * as view from "tns-core-modules/ui/core/view";
+import * as view from "@nativescript/core/ui/core/view";
 
 export declare function getUniformNativeBorderWidth(v: view.View): number;
 
