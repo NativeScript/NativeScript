@@ -23,5 +23,5 @@ export function testDisplayedEvent() {
 }
 
 export function testOrientation() {
-    TKUnit.assert(app.orientation, "Orientation not initialized.");
+    TKUnit.assert(app.orientation(), "Orientation not initialized.");
 }

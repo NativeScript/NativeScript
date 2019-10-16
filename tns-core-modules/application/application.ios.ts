@@ -120,7 +120,13 @@ class IOSApplication implements IOSApplicationDefinition {
         return this._window.rootViewController;
     }
 
-    get systemAppearance(): "light" | "dark" {
+    get systemAppearance(): "light" | "dark" | null {
+
+        // userInterfaceStyle is available on UITraitCollection since iOS 12.
+        if (majorVersion <= 11) {
+            return null;
+        }
+
         if (!this._systemAppearance) {
             const userInterfaceStyle = this.rootController.traitCollection.userInterfaceStyle;
             this._systemAppearance = getSystemAppearanceValue(userInterfaceStyle);
@@ -482,7 +488,10 @@ function setupRootViewCssClasses(rootView: View): void {
     pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
     pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
     pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.systemAppearance}`);
+
+    if (majorVersion >= 13) {
+        pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.systemAppearance}`);
+    }
 
     const rootViewCssClasses = getRootViewCssClasses();
     rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
