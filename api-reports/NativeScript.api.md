@@ -1226,7 +1226,7 @@ export interface iOSApplication {
     rootController: any /* UIViewController */;
 
     /* tslint:enable */
-    systemAppearance: "dark" | "light";
+    systemAppearance: "dark" | "light" | null;
 
     /* tslint:enable */
     window: any /* UIWindow */;
