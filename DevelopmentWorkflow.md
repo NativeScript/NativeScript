@@ -70,11 +70,28 @@ tns run ios
 >Note: NOTE: do not commit changes in the runtime versions to `e2e/<app-name>/package.json`
 
 ---
-**NOTE**
 
-Linking `tns-core-modules` in Angular app does not work at the moment. Check [#7905](https://github.com/NativeScript/NativeScript/issues/7905) for more details on the issue.
+## Running Another App
 
----
+### TypeScript Applications
+Link both the `nativescript-core` folder and the generated compatibility package (`dist\tns-core-modules`):
+``` bash
+npm i <path-to-nativescript-repo>/nativescript-core --save
+npm i <path-to-nativescript-repo>/dist/tns-core-modules --save
+```
+
+You can do changes in the app code and `nativescript-core` and rely on HMR to refresh the app.
+
+### JavaScript Applications
+Use the same steps as with TS application. However, the configuration of JS application does not include loading and transpiling TS code. You need to transpile the TS code in `nativescript-core` yourself. The following npm script will run tsc in watch mode in `nativescript-core` (run it in a separate terminal so that you can do `tns run` in parallel):
+
+``` bash
+npm run tsc-core-watch 
+```
+
+### Angular Applications
+Linking `tns-core-modules` and `@nativescript/core` in **Angular applications** does not work at the moment. Check [#7905](https://github.com/NativeScript/NativeScript/issues/7905) for more details on the issue.
+
 
 ## Building `tns-core-modules-widgets`
 You can the following npm script to build and link the `tns-core-modules-widgets` package.
