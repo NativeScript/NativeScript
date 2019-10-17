@@ -1,15 +1,16 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform } from "./text-base-common";
+import { TextDecoration, TextAlignment, TextTransform, layout } from "./text-base-common";
 
 // Requires
 import { Font } from "../styling/font";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, lineHeightProperty,
-    FormattedString, Span, Color, isBold, resetSymbol
+    FormattedString, Span, Color, resetSymbol
 } from "./text-base-common";
 import { isString } from "../../utils/types";
 import { ios } from "../../utils/utils";
+import { Property } from "../core/properties/properties";
 
 export * from "./text-base-common";
 
@@ -229,7 +230,7 @@ export class TextBase extends TextBaseCommon {
 
         if (this.style.lineHeight) {
             const paragraphStyle = NSMutableParagraphStyle.alloc().init();
-            paragraphStyle.lineSpacing = this.lineHeight;
+            paragraphStyle.minimumLineHeight = this.lineHeight;
             // make sure a possible previously set text alignment setting is not lost when line height is specified
             if (this.nativeTextViewProtected instanceof UIButton) {
                 paragraphStyle.alignment = (<UIButton>this.nativeTextViewProtected).titleLabel.textAlignment;
@@ -370,21 +371,50 @@ export class TextBase extends TextBaseCommon {
         return mas;
     }
 
+    getBaselineOffset(font: UIFont, defaultFontSize: number, align?: string | number) : number {
+        console.log(font.pointSize, font.lineHeight, font.ascender, font.descender, font.leading);
+
+        if (align === "top") {
+            return defaultFontSize - font.descender - font.ascender + font.leading / 2;
+        }
+
+        if (align === "bottom") {
+            return -defaultFontSize / 2;
+        }
+
+        if (align === "text-top") {
+            return defaultFontSize - font.descender - font.ascender;
+        }
+
+        if (align === "text-bottom") {
+            return font.descender / font.pointSize * defaultFontSize;
+        }
+
+        if (align === "middle") {
+            return -font.lineHeight / 2 - font.descender;
+        }
+
+        if (align === "super") {
+            return defaultFontSize * .4;
+        }
+
+        if (align === "sub") {
+            return (font.descender - font.ascender) / font.pointSize * font.lineHeight * .4;
+        }
+
+        return 0;
+    }
+
     createMutableStringForSpan(span: Span, text: string): NSMutableAttributedString {
         const viewFont = this.nativeTextViewProtected.font;
         let attrDict = <{ key: string, value: any }>{};
         const style = span.style;
-        const bold = isBold(style.fontWeight);
-        const italic = style.fontStyle === "italic";
+        const align = style.verticalAlignment;
 
-        let fontFamily = span.fontFamily;
-        let fontSize = span.fontSize;
+        let font = new Font(style.fontFamily, style.fontSize || 12, style.fontStyle, style.fontWeight);
+        let iosFont = font.getUIFont(viewFont);
 
-        if (bold || italic || fontFamily || fontSize) {
-            let font = new Font(style.fontFamily, style.fontSize, style.fontStyle, style.fontWeight);
-            let iosFont = font.getUIFont(viewFont);
-            attrDict[NSFontAttributeName] = iosFont;
-        }
+        attrDict[NSFontAttributeName] = iosFont;
 
         const color = span.color;
         if (color) {
@@ -394,36 +424,47 @@ export class TextBase extends TextBaseCommon {
         // We don't use isSet function here because defaultValue for backgroundColor is null.
         const backgroundColor = <Color>(style.backgroundColor
             || (<FormattedString>span.parent).backgroundColor
-            || (<TextBase>(<FormattedString>span.parent).parent).backgroundColor);
+            || (<TextBase>span.parent.parent).backgroundColor);
         if (backgroundColor) {
             attrDict[NSBackgroundColorAttributeName] = backgroundColor.ios;
         }
 
-        let valueSource: typeof style;
-        if (textDecorationProperty.isSet(style)) {
-            valueSource = style;
-        } else if (textDecorationProperty.isSet(span.parent.style)) {
-            // span.parent is FormattedString
-            valueSource = span.parent.style;
-        } else if (textDecorationProperty.isSet(span.parent.parent.style)) {
-            // span.parent.parent is TextBase
-            valueSource = span.parent.parent.style;
-        }
+        let textDecoration: TextDecoration = getClosestPropertyValue(textDecorationProperty, span);
 
-        if (valueSource) {
-            const textDecorations = valueSource.textDecoration;
-            const underline = textDecorations.indexOf("underline") !== -1;
+        if (textDecoration) {
+            const underline = textDecoration.indexOf("underline") !== -1;
             if (underline) {
                 attrDict[NSUnderlineStyleAttributeName] = underline;
             }
 
-            const strikethrough = textDecorations.indexOf("line-through") !== -1;
+            const strikethrough = textDecoration.indexOf("line-through") !== -1;
             if (strikethrough) {
                 attrDict[NSStrikethroughStyleAttributeName] = strikethrough;
             }
         }
 
+        if (align) {
+            attrDict[NSBaselineOffsetAttributeName] =
+                this.getBaselineOffset(
+                    iosFont,
+                    (<TextBase>span.parent.parent).fontSize * layout.getDisplayDensity(),
+                    align
+                );
+        }
+
         return NSMutableAttributedString.alloc().initWithStringAttributes(text, <any>attrDict);
+    }
+}
+
+function getClosestPropertyValue(property: any, span: Span) {
+    if ((<Property<any, any>>property).isSet(span.style)) {
+        return span.style[property.name];
+    } else if ((<Property<any, any>>property).isSet(span.parent.style)) {
+        // parent is FormattedString
+        return span.parent.style[property.name];
+    } else if ((<Property<any, any>>property).isSet(span.parent.parent.style)) {
+        // parent.parent is TextBase
+        return span.parent.parent.style[property.name];
     }
 }
 
