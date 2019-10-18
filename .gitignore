@@ -16,6 +16,7 @@ package-lock.json
 .DS_Store
 .nsbuildinfo
 tsdoc-metadata.json
+thumbs.db
 
 # IDEs and editors
 /.idea
