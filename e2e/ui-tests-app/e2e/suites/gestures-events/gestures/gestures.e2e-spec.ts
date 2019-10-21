@@ -84,7 +84,7 @@ describe(`${imagePrefix}-suite`, () => {
 
         const result = await driver.findElementByTextIfExists("Pan deltaX", SearchOptions.contains);
         const text = await result.text();
-        assert.isTrue(/Pan deltaX:([-+\S])\d+; deltaY:([-+\S])\d+;, true, states: ended/ig.test(text), `Gestures event 'Pan deltaX: ...' not detected!`);
+        assert.isTrue(/Pan deltaX:([-+]?)\d+; deltaY:([-+]?)\d+;, true, states: ended/ig.test(text), `Gestures event 'Pan deltaX: ...' not detected!`);
     });
 
     it("gestures_06_pinch", async function () {
