@@ -11,15 +11,11 @@ describe("issues", async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
         screen = new TabViewNavigationScreen(driver);
-        if (dontKeepActivities) {
-            await driver.setDontKeepActivities(true);
-        }
+        await driver.setDontKeepActivities(dontKeepActivities);
     });
 
     after(async function () {
-        if (dontKeepActivities) {
-            await driver.setDontKeepActivities(false);
-        }
+        await driver.setDontKeepActivities(dontKeepActivities);
         await driver.quit();
         console.log("Quit driver!");
     });

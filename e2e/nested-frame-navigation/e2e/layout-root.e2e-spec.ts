@@ -15,17 +15,13 @@ describe(rootType, async function () {
         driver = await createDriver();
         screen = new TabNavigationScreen(driver);
         logWarn("====== layout-root ========");
-        if (dontKeepActivities) {
-            await driver.setDontKeepActivities(true);
-        }
+        await driver.setDontKeepActivities(dontKeepActivities);
 
         driver.defaultWaitTime = driverDefaultWaitTime;
     });
 
     after(async function () {
-        if (dontKeepActivities) {
-            await driver.setDontKeepActivities(false);
-        }
+        await driver.setDontKeepActivities(dontKeepActivities);
         await driver.quit();
         console.log("Quit driver!");
     });
@@ -497,7 +493,7 @@ describe(rootType, async function () {
         before(async function () {
             nsCapabilities.testReporter.context = this;
         });
-        
+
         it("loaded layout root with nested frames", async function () {
             await screen.navigateToLayoutWithFrame();
             await screen.loadedLayoutWithFrame();

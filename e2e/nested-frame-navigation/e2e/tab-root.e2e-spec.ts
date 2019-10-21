@@ -18,17 +18,13 @@ describe(rootType, async function () {
         logWarn(`====== ${rootType} ========`);
         driver = await createDriver();
         screen = new TabViewNavigationScreen(driver);
-        if (dontKeepActivities) {
-            await driver.setDontKeepActivities(true);
-        }
+        await driver.setDontKeepActivities(dontKeepActivities);
 
         driver.defaultWaitTime = 8000;
     });
 
     after(async function () {
-        if (dontKeepActivities) {
-            await driver.setDontKeepActivities(false);
-        }
+        await driver.setDontKeepActivities(dontKeepActivities);
         await driver.quit();
         console.log("Quit driver!");
     });
