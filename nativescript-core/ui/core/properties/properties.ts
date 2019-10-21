@@ -63,11 +63,11 @@ export function isCssVariable(property: string) {
 }
 
 export function isCssCalcExpression(value: string) {
-    return value.includes('calc(');
+    return value.includes("calc(");
 }
 
 export function isCssVariableExpression(value: string) {
-    return value.includes('var(--');
+    return value.includes("var(--");
 }
 
 export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
@@ -87,25 +87,25 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
     while (lastValue !== output) {
         lastValue = output;
 
-        const idx = output.lastIndexOf('var(');
+        const idx = output.lastIndexOf("var(");
         if (idx === -1) {
             continue;
         }
 
-        const endIdx = output.indexOf(')', idx);
+        const endIdx = output.indexOf(")", idx);
         if (endIdx === -1) {
             continue;
         }
 
-        const matched = output.substring(idx + 4, endIdx).split(',').map((v) => v.trim()).filter((v) => !!v);
+        const matched = output.substring(idx + 4, endIdx).split(",").map((v) => v.trim()).filter((v) => !!v);
         const cssVariableName = matched.shift();
         let cssVariableValue = view.style.getCssVariable(cssVariableName);
         if (cssVariableValue === null && matched.length) {
-            cssVariableValue = _evaluateCssVariableExpression(view, cssName, matched.join(', ')).split(',')[0];
+            cssVariableValue = _evaluateCssVariableExpression(view, cssName, matched.join(", ")).split(",")[0];
         }
 
         if (!cssVariableValue) {
-            cssVariableValue = 'unset';
+            cssVariableValue = "unset";
         }
 
         output = `${output.substring(0, idx)}${cssVariableValue}${output.substring(endIdx + 1)}`;
