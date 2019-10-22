@@ -760,8 +760,8 @@ export class StyleScope {
         return this._getSelectorsVersion();
     }
 
-    public _increaseApplicationCssSelectorVersion(): number {
-        return applicationCssSelectorVersion++;
+    public _increaseApplicationCssSelectorVersion(): void {
+        applicationCssSelectorVersion++;
     }
 
     public isApplicationCssSelectorsLatestVersionApplied(): boolean {

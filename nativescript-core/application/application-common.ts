@@ -143,7 +143,8 @@ function removeCssClass(rootView: View, cssClass: string) {
 }
 
 function increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
-    const styleScope = rootView._styleScope || (<any>rootView).currentPage._styleScope;
+    const styleScope = rootView._styleScope || ((<any>rootView).currentPage && (<any>rootView).currentPage._styleScope);
+
     if (styleScope) {
         styleScope._increaseApplicationCssSelectorVersion();
     }
