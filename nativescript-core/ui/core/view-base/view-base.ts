@@ -556,11 +556,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     @profile
-    public requestLayout(): void {
+    public requestLayout(calledFromChild = false): void {
         // Default implementation for non View instances (like TabViewItem).
         const parent = this.parent;
-        if (parent) {
-            parent.requestLayout();
+        if (parent && (!calledFromChild || this.style.width === "auto" || this.style.height === "auto" || parent.style.width === "auto" || parent.style.height === "auto")) {
+            parent.requestLayout(true);
         }
     }
 

@@ -796,9 +796,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
     }
 
-    public requestLayout(): void {
+    public requestLayout(calledFromChild): void {
         this._isLayoutValid = false;
-        super.requestLayout();
+        super.requestLayout(calledFromChild);
     }
 
     public abstract onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void;

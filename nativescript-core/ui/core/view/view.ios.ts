@@ -52,18 +52,22 @@ export class View extends ViewCommon {
         return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
     }
 
-    public requestLayout(): void {
-        super.requestLayout();
+    public requestLayout(calledFromChild): void {
+        const willBeCalledOnParent = (!calledFromChild || ((this.width === "auto" || this.height === "auto")));
         this._privateFlags |= PFLAG_FORCE_LAYOUT;
-
-        const nativeView = this.nativeViewProtected;
-        if (nativeView) {
-            nativeView.setNeedsLayout();
+        if (!willBeCalledOnParent) {
+            this._isLayoutValid = false;
+            const nativeView = this.nativeViewProtected;
+            if (nativeView) {
+                nativeView.setNeedsLayout();
+            }
+            if (this.viewController && this.viewController.view !== nativeView) {
+                this.viewController.view.setNeedsLayout();
+            }
+        } else {
+            super.requestLayout(calledFromChild);
         }
 
-        if (this.viewController && this.viewController.view !== nativeView) {
-            this.viewController.view.setNeedsLayout();
-        }
     }
 
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -657,16 +661,42 @@ export class ContainerView extends View {
     }
 }
 
+export class UICustomLayoutView extends UIView {
+    public owner: WeakRef<CustomLayoutView>;
+
+    public static initWithFrameAndOwner(frame: CGRect, owner: WeakRef<CustomLayoutView>): UICustomLayoutView {
+        const view = <UICustomLayoutView>UICustomLayoutView.alloc().initWithFrame(frame);
+        view.owner = owner;
+
+        return view;
+    }
+    layoutSubviews() {
+        super.layoutSubviews();
+        this.owner.get().forceLayout();
+    }
+}
 export class CustomLayoutView extends ContainerView {
 
     nativeViewProtected: UIView;
 
     createNativeView() {
-        return UIView.alloc().initWithFrame(UIScreen.mainScreen.bounds);
+        return UICustomLayoutView.initWithFrameAndOwner(UIScreen.mainScreen.bounds, new WeakRef(this));
     }
 
     get ios(): UIView {
         return this.nativeViewProtected;
+    }
+
+    public forceLayout(): void {
+        if (this._isLayoutValid) {
+            return;
+        }
+        const width = this.getMeasuredWidth()
+        const height = this.getMeasuredHeight()
+        const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
+        const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
+        this.measure(widthSpec, heightSpec);
+        this.layout(this._oldLeft, this._oldTop, this._oldRight, this._oldBottom, true);
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
