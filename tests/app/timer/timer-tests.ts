@@ -1,5 +1,5 @@
 import * as TKUnit from "../tk-unit";
-import * as timer from "tns-core-modules/timer";
+import * as timer from "@nativescript/core/timer";
 
 // >> timer-require
 // require("globals");

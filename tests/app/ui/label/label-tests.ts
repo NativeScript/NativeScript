@@ -2,25 +2,25 @@ import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 
 //>> label-require
-import * as LabelModule from "tns-core-modules/ui/label";
+import * as LabelModule from "@nativescript/core/ui/label";
 // << label-require
 
-import * as types from "tns-core-modules/utils/types";
-import * as colorModule from "tns-core-modules/color";
-import * as utils from "tns-core-modules/utils/utils";
-import * as observableModule from "tns-core-modules/data/observable";
-import * as bindable from "tns-core-modules/ui/core/bindable";
-import * as enums from "tns-core-modules/ui/enums";
+import * as types from "@nativescript/core/utils/types";
+import * as colorModule from "@nativescript/core/color";
+import * as utils from "@nativescript/core/utils/utils";
+import * as observableModule from "@nativescript/core/data/observable";
+import * as bindable from "@nativescript/core/ui/core/bindable";
+import * as enums from "@nativescript/core/ui/enums";
 import * as labelTestsNative from "./label-tests-native";
-import * as fs from "tns-core-modules/file-system";
+import * as fs from "@nativescript/core/file-system";
 
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
-import { isIOS, isAndroid } from "tns-core-modules/platform";
-import { Label } from "tns-core-modules/ui/label";
-import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
+import { isIOS, isAndroid } from "@nativescript/core/platform";
+import { Label } from "@nativescript/core/ui/label";
+import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
 import * as helper from "../../ui-helper";
-import { Span, FormattedString } from "tns-core-modules/text/formatted-string";
+import { Span, FormattedString } from "@nativescript/core/text/formatted-string";
 
 const testDir = "ui/label";
 

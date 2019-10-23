@@ -1,11 +1,11 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import * as viewModule from "tns-core-modules/ui/core/view";
+import * as viewModule from "@nativescript/core/ui/core/view";
 import * as listPickerTestsNative from "./list-picker-tests-native";
-import * as application from "tns-core-modules/application";
+import * as application from "@nativescript/core/application";
 
 // >> article-require-listpicker-module
-import * as listPickerModule from "tns-core-modules/ui/list-picker";
+import * as listPickerModule from "@nativescript/core/ui/list-picker";
 // << article-require-listpicker-module
 
 function _createListPicker(): listPickerModule.ListPicker {

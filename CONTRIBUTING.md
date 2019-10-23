@@ -124,7 +124,7 @@ If the commit reverts a previous commit, it should begin with `revert: `, follow
 ### Type
 Must be one of the following:
 
-* **build**: Changes that affect the build system or external dependencies (example scopes: npm, grunt)
+* **build**: Changes that affect the build system or external dependencies (example scopes: npm)
 * **ci**: Changes to our CI configuration files and scripts (example scopes: Travis, Jenkins)
 * **docs**: Documentation only changes
 * **feat**: A new feature

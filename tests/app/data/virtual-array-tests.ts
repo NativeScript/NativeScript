@@ -1,6 +1,6 @@
 import * as TKUnit from "../tk-unit";
-import * as types from "tns-core-modules/utils/types";
-import * as virtualArrayModule from "tns-core-modules/data/virtual-array";
+import * as types from "@nativescript/core/utils/types";
+import * as virtualArrayModule from "@nativescript/core/data/virtual-array";
 
 export var test_VirtualArray_shouldCreateArrayFromSpecifiedLength = function () {
     var array = new virtualArrayModule.VirtualArray<number>(100);

@@ -1,5 +1,5 @@
-﻿import * as observableModule from "tns-core-modules/data/observable";
-import * as pageModule from "tns-core-modules/ui/page";
+﻿import * as observableModule from "@nativescript/core/data/observable";
+import * as pageModule from "@nativescript/core/ui/page";
 
 class MainViewModel extends observableModule.Observable {
     private _item: any;

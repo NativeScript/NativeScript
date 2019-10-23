@@ -1,5 +1,5 @@
-﻿import * as observable from "tns-core-modules/data/observable";
-import * as trace from "tns-core-modules/trace";
+﻿import * as observable from "@nativescript/core/data/observable";
+import * as trace from "@nativescript/core/trace";
 trace.addCategories(trace.categories.Layout);
 trace.enable();
 

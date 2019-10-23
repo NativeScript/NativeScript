@@ -1,12 +1,12 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import * as viewModule from "tns-core-modules/ui/core/view";
-import * as observable from "tns-core-modules/data/observable";
-import * as color from "tns-core-modules/color";
-import * as platform from "tns-core-modules/platform";
+import * as viewModule from "@nativescript/core/ui/core/view";
+import * as observable from "@nativescript/core/data/observable";
+import * as color from "@nativescript/core/color";
+import * as platform from "@nativescript/core/platform";
 
 // >> article-require-progress-module
-import * as progressModule from "tns-core-modules/ui/progress";
+import * as progressModule from "@nativescript/core/ui/progress";
 // << article-require-progress-module
 
 export function test_default_TNS_values() {

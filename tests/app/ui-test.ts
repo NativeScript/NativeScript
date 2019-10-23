@@ -1,6 +1,6 @@
-import * as trace from "tns-core-modules/trace";
-import { View } from "tns-core-modules/ui/core/view";
-import { Page } from "tns-core-modules/ui/page";
+import * as trace from "@nativescript/core/trace";
+import { View } from "@nativescript/core/ui/core/view";
+import { Page } from "@nativescript/core/ui/page";
 
 import * as TKUnit from "./tk-unit";
 import * as navHelper from "./ui-helper";

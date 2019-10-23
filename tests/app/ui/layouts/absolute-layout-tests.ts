@@ -1,13 +1,13 @@
 ﻿import * as testModule from "../../ui-test";
 import * as TKUnit from "../../tk-unit";
-import * as labelModule from "tns-core-modules/ui/label";
-import * as colorModule from "tns-core-modules/color";
+import * as labelModule from "@nativescript/core/ui/label";
+import * as colorModule from "@nativescript/core/color";
 import * as layoutHelper from "./layout-helper";
 import * as commonTests from "./common-layout-tests";
 import * as helper from "../../ui-helper";
 
 // >> absolute-layout-require
-import * as absoluteLayoutModule from "tns-core-modules/ui/layouts/absolute-layout";
+import * as absoluteLayoutModule from "@nativescript/core/ui/layouts/absolute-layout";
 // << absolute-layout-require
 
 export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.AbsoluteLayout> {

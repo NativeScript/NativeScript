@@ -1,5 +1,5 @@
-import { EventData } from "tns-core-modules/data/observable";
-import { SearchBar } from "tns-core-modules/ui/search-bar";
+import { EventData } from "@nativescript/core/data/observable";
+import { SearchBar } from "@nativescript/core/ui/search-bar";
 
 export function navigatingTo(args: EventData) {
     console.log("page navigating to");

@@ -1,9 +1,9 @@
-import { createViewFromEntry } from "tns-core-modules/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 import { assertEqual, assertNull, assertThrows, assertNotNull, assert } from "../../tk-unit";
-import { _setResolver, ModuleNameResolver, PlatformContext } from "tns-core-modules/module-name-resolver";
-import { Button } from "tns-core-modules/ui/button";
+import { _setResolver, ModuleNameResolver, PlatformContext } from "@nativescript/core/module-name-resolver";
+import { Button } from "@nativescript/core/ui/button";
 import { navigate } from "../../ui-helper";
-import { Page, Color } from "tns-core-modules/ui/page";
+import { Page, Color } from "@nativescript/core/ui/page";
 
 const testPrefix = "bundle-file-qualifiers-tests";
 let modulesToCleanup: string[] = [];
@@ -28,7 +28,7 @@ export function tearDown() {
 }
 
 function createViewFromEntryAndNavigate(): Page {
-    const page = <Page>createViewFromEntry({
+    const page = <Page>Builder.createViewFromEntry({
         moduleName: `${testPrefix}/test`
     });
 

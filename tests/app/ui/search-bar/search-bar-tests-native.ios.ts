@@ -1,5 +1,5 @@
-import { SearchBar } from "tns-core-modules/ui/search-bar";
-import { Color } from "tns-core-modules/color";
+import { SearchBar } from "@nativescript/core/ui/search-bar";
+import { Color } from "@nativescript/core/color";
 import { getColor } from "../../ui-helper";
 
 export function getNativeHintColor(searchBar: SearchBar): Color {

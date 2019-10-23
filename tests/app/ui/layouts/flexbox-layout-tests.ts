@@ -1,8 +1,8 @@
 // >> flexbox-layout-require
-import { FlexboxLayout } from "tns-core-modules/ui/layouts/flexbox-layout";
+import { FlexboxLayout } from "@nativescript/core/ui/layouts/flexbox-layout";
 // << flexbox-layout-require
 
-import { Button } from "tns-core-modules/ui/button";
+import { Button } from "@nativescript/core/ui/button";
 
 export namespace FlexDirection {
     export const ROW: "row" = "row";
@@ -51,13 +51,12 @@ export namespace AlignSelf {
     export const STRETCH: "stretch" = "stretch";
 }
 
-import { View, unsetValue, Length, PercentLength } from "tns-core-modules/ui/core/view";
-import { Label } from "tns-core-modules/ui/label";
+import { View, unsetValue, Length, PercentLength } from "@nativescript/core/ui/core/view";
+import { Label } from "@nativescript/core/ui/label";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { parse } from "tns-core-modules/ui/builder";
-import {
-    dipToDp, left, top, right, bottom, height, width,
+import { Builder } from "@nativescript/core/ui/builder";
+import { dipToDp, left, top, right, bottom, height, width,
     paddingLeft, paddingTop, paddingRight, paddingBottom,
     equal, closeEnough, notEqual, check,
     heightEqual, widthEqual,
@@ -107,7 +106,7 @@ function test<U extends { root: View }>(ui: () => U, setup: (ui: U) => void, tes
 }
 
 let getViews = (template: string) => {
-    let root = parse(template);
+    let root = Builder.parse(template);
 
     return {
         root,

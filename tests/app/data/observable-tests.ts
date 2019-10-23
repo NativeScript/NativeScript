@@ -1,10 +1,10 @@
 // >> observable-require
-import { Observable, fromObject, fromObjectRecursive, PropertyChangeData, EventData, WrappedValue } from "tns-core-modules/data/observable";
+import { Observable, fromObject, fromObjectRecursive, PropertyChangeData, EventData, WrappedValue } from "@nativescript/core/data/observable";
 // << observable-require
 
 import * as TKUnit from "../tk-unit";
-import * as types from "tns-core-modules/utils/types";
-import { ObservableArray } from "tns-core-modules/data/observable-array";
+import * as types from "@nativescript/core/utils/types";
+import { ObservableArray } from "@nativescript/core/data/observable-array";
 
 var TESTED_NAME = "tested";
 class TestObservable extends Observable {

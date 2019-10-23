@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "nativescript-theme-core": "~1.0.6",
-    "tns-core-modules": "file:../../tns-core-modules"
+    "@nativescript/core": "file:../../nativescript-core",
+    "tns-core-modules": "file:../../dist/tns-core-modules"
   },
   "devDependencies": {
     "@types/chai": "~4.1.7",

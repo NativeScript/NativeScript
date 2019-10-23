@@ -1,19 +1,19 @@
-import { Observable, fromObject, fromObjectRecursive } from "tns-core-modules/data/observable";
-import { ViewBase } from "tns-core-modules/ui/core/view-base";
-import { BindingOptions } from "tns-core-modules/ui/core/bindable";
+import { Observable, fromObject, fromObjectRecursive } from "@nativescript/core/data/observable";
+import { ViewBase } from "@nativescript/core/ui/core/view-base";
+import { BindingOptions } from "@nativescript/core/ui/core/bindable";
 import * as TKUnit from "../../../tk-unit";
-import * as types from "tns-core-modules/utils/types";
+import * as types from "@nativescript/core/utils/types";
 import * as helper from "../../../ui-helper";
-import * as utils from "tns-core-modules/utils/utils";
-import * as bindingBuilder from "tns-core-modules/ui/builder/binding-builder";
-import * as appModule from "tns-core-modules/application";
-import * as trace from "tns-core-modules/trace";
-import { View } from "tns-core-modules/ui/core/view";
-import { Button } from "tns-core-modules/ui/button";
-import { Page } from "tns-core-modules/ui/page";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { Label } from "tns-core-modules/ui/label";
-import { TextField } from "tns-core-modules/ui/text-field";
+import * as utils from "@nativescript/core/utils/utils";
+import * as bindingBuilder from "@nativescript/core/ui/builder/binding-builder";
+import * as appModule from "@nativescript/core/application";
+import * as trace from "@nativescript/core/trace";
+import { View } from "@nativescript/core/ui/core/view";
+import { Button } from "@nativescript/core/ui/button";
+import { Page } from "@nativescript/core/ui/page";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { Label } from "@nativescript/core/ui/label";
+import { TextField } from "@nativescript/core/ui/text-field";
 
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic.

@@ -1,5 +1,5 @@
 // >> dialog-require
-import * as dialogs from "tns-core-modules/ui/dialogs";
+import * as dialogs from "@nativescript/core/ui/dialogs";
 // << dialog-require
 
 export function test_DummyTestForSnippetOnly0() {

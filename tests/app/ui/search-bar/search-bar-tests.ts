@@ -1,11 +1,11 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import * as viewModule from "tns-core-modules/ui/core/view";
+import * as viewModule from "@nativescript/core/ui/core/view";
 import * as searchBarTestsNative from "./search-bar-tests-native";
-import * as colorModule from "tns-core-modules/color";
-import * as observable from "tns-core-modules/data/observable";
+import * as colorModule from "@nativescript/core/color";
+import * as observable from "@nativescript/core/data/observable";
 // >> article-require-searchbar-module
-import * as searchBarModule from "tns-core-modules/ui/search-bar";
+import * as searchBarModule from "@nativescript/core/ui/search-bar";
 // << article-require-searchbar-module
 
 // ### Declaring a SearchBar.
