@@ -547,8 +547,8 @@ export class BottomNavigation extends TabNavigationBase {
         }
 
         const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-        items.forEach((item, i, arr) => {
-            (<any>item).index = i;
+        items.forEach((tabStripItem, i, arr) => {
+            tabStripItem._index = i;
             if (items[i]) {
                 const tabItemSpec = this.createTabItemSpec(items[i]);
                 tabItems.push(tabItemSpec);
@@ -699,7 +699,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
-        const index = (<any>tabStripItem).index;
+        const index = tabStripItem._index;
         const tabBarItem = this._bottomNavigationBar.getViewForItemAt(index);
         const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
         const drawable = this.getIcon(tabStripItem);
