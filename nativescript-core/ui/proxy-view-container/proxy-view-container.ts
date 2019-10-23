@@ -1,7 +1,7 @@
 import { ProxyViewContainer as ProxyViewContainerDefinition } from ".";
 import { LayoutBase, View, traceEnabled, traceWrite, traceCategories, CSSType } from "../layouts/layout-base";
 import { Property } from "../core/properties/properties";
-import { messageType } from "tns-core-modules/trace/trace";
+import { messageType } from "../../trace/trace";
 /**
  * Proxy view container that adds all its native children directly to the parent.
  * To be used as a logical grouping container of views.
@@ -172,6 +172,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
 
         this.eachLayoutChild((v) => {
             v[propName] = value;
+
             return true;
         });
     }
@@ -179,33 +180,33 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
 
 const layoutProperties = [
     // AbsoluteLayout
-    'left',
-    'top',
+    "left",
+    "top",
 
     // DockLayout
-    'dock',
+    "dock",
 
     // FlexLayout
-    'flexDirection',
-    'flexWrap',
-    'justifyContent',
-    'alignItems',
-    'alignContent',
-    'order',
-    'flexGrow',
-    'flexShrink',
-    'flexWrapBefore',
-    'alignSelf',
-    'flexFlow',
-    'flex',
+    "flexDirection",
+    "flexWrap",
+    "justifyContent",
+    "alignItems",
+    "alignContent",
+    "order",
+    "flexGrow",
+    "flexShrink",
+    "flexWrapBefore",
+    "alignSelf",
+    "flexFlow",
+    "flex",
 
     // GridLayout
-    'column',
-    'columnSpan',
-    'col',
-    'colSpan',
-    'row',
-    'rowSpan',
+    "column",
+    "columnSpan",
+    "col",
+    "colSpan",
+    "row",
+    "rowSpan",
 ];
 
 for (const propName of layoutProperties) {
