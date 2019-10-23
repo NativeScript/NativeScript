@@ -19,7 +19,7 @@ import {
     fromString as gestureFromString
 } from "../../gestures";
 
-import { getModalRootViewCssClass } from "../../../css/system-classes";
+import { getModalRootViewCssClasses } from "../../../css/system-classes";
 import { Builder } from "../../builder";
 import { sanitizeModuleName } from "../../builder/module-name-sanitizer";
 import { StyleScope } from "../../styling/style-scope";
@@ -371,7 +371,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     protected _showNativeModalView(parent: ViewCommon, options: ShowModalOptions) {
         _rootModalViews.push(this);
 
-        const modalRootViewCssClass = getModalRootViewCssClass();
+        const modalRootViewCssClass = getModalRootViewCssClasses()[0];
         this.cssClasses.add(modalRootViewCssClass);
 
         parent._modal = this;

@@ -8,6 +8,7 @@ import {
 } from "./view-common";
 
 import { ios as iosBackground, Background } from "../../styling/background";
+import { getModalRootViewCssClasses } from "../../../css/system-classes";
 import { ios as iosUtils } from "../../../utils/utils";
 import {
     Visibility,
@@ -398,7 +399,15 @@ export class View extends ViewCommon {
 
         this._setupAsRootView({});
 
+
         super._showNativeModalView(parentWithController, options);
+
+        const modalRootViewCssClasses = getModalRootViewCssClasses();
+        if (majorVersion >= 13 && modalRootViewCssClasses.length > 1) {
+            const modalRootViewSystemAppearanceCssClass = getModalRootViewCssClasses()[1];
+            this.cssClasses.add(modalRootViewSystemAppearanceCssClass);
+        }
+
         let controller = this.viewController;
         if (!controller) {
             const nativeView = this.ios || this.nativeViewProtected;

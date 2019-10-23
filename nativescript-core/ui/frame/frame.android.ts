@@ -20,7 +20,12 @@ import {
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { Builder } from "../builder";
-import { CLASS_PREFIX, getRootViewCssClasses, pushToRootViewCssClasses } from "../../css/system-classes";
+import {
+    CLASS_PREFIX,
+    getRootViewCssClasses,
+    pushToModalRootViewCssClasses,
+    pushToRootViewCssClasses
+} from "../../css/system-classes";
 import { device } from "../../platform/platform";
 import { profile } from "../../profiling";
 
@@ -1342,6 +1347,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             pushToRootViewCssClasses(`${CLASS_PREFIX}${ANDROID_PLATFORM}`);
             pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
             pushToRootViewCssClasses(`${CLASS_PREFIX}${application.android.orientation}`);
+
+            pushToModalRootViewCssClasses(`${CLASS_PREFIX}${application.android.systemAppearance}`);
             pushToRootViewCssClasses(`${CLASS_PREFIX}${application.android.systemAppearance}`);
 
             const rootViewCssClasses = getRootViewCssClasses();

@@ -41,7 +41,13 @@ import {
     UnhandledErrorEventData
 } from "./application";
 
-import { CLASS_PREFIX, pushToRootViewCssClasses, removeFromRootViewCssClasses } from "../css/system-classes";
+import {
+    CLASS_PREFIX,
+    pushToRootViewCssClasses,
+    removeFromModalRootViewCssClasses,
+    removeFromRootViewCssClasses,
+    pushToModalRootViewCssClasses
+} from "../css/system-classes";
 import { DeviceOrientation, SystemAppearance } from "../ui/enums/enums";
 
 export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
@@ -133,11 +139,13 @@ export function loadAppCss(): void {
 }
 
 function applyCssClass(rootView: View, cssClass: string) {
+    pushToModalRootViewCssClasses(cssClass);
     pushToRootViewCssClasses(cssClass);
     rootView.cssClasses.add(cssClass);
 }
 
 function removeCssClass(rootView: View, cssClass: string) {
+    removeFromModalRootViewCssClasses(cssClass);
     removeFromRootViewCssClasses(cssClass);
     rootView.cssClasses.delete(cssClass);
 }

@@ -19,6 +19,7 @@ import {
 } from "../../styling/style-properties";
 
 import { Background, ad as androidBackground } from "../../styling/background";
+import { getModalRootViewCssClasses } from "../../../css/system-classes";
 import { profile } from "../../../profiling";
 import { topmost } from "../../frame/frame-stack";
 import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
@@ -633,6 +634,13 @@ export class View extends ViewCommon {
     }
     protected _showNativeModalView(parent: View, options: ShowModalOptions) {
         super._showNativeModalView(parent, options);
+
+        const modalRootViewCssClasses = getModalRootViewCssClasses();
+        if (modalRootViewCssClasses.length > 1) {
+            const modalRootViewSystemAppearanceCssClass = getModalRootViewCssClasses()[1];
+            this.cssClasses.add(modalRootViewSystemAppearanceCssClass);
+        }
+
         initializeDialogFragment();
 
         const df = new DialogFragment();

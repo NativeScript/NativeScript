@@ -10,7 +10,7 @@ export const CLASS_PREFIX: string;
 /**
  * Gets CSS system class for modal root view.
  */
-export function getModalRootViewCssClass(): string;
+export function getModalRootViewCssClasses(): string[];
 
 /**
  * Gets CSS system classes for root view.
@@ -18,7 +18,13 @@ export function getModalRootViewCssClass(): string;
 export function getRootViewCssClasses(): string[];
 
 /**
- * Appends new CSS class to the system classes and returns the new length of the array.
+ * Appends new CSS class to the modal root view system classes and returns the new length of the array.
+ * @param value New CSS system class.
+ */
+export function pushToModalRootViewCssClasses(value: string): number;
+
+/**
+ * Appends new CSS class to the root view system classes and returns the new length of the array.
  * @param value New CSS system class.
  */
 export function pushToRootViewCssClasses(value: string): number;

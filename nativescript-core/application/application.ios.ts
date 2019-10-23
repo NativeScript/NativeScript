@@ -22,6 +22,7 @@ import { Builder } from "../ui/builder";
 import {
     CLASS_PREFIX,
     getRootViewCssClasses,
+    pushToModalRootViewCssClasses,
     pushToRootViewCssClasses
 } from "../css/system-classes";
 
@@ -496,6 +497,7 @@ function setRootViewCssClasses(rootView: View): void {
 function setRootViewSystemAppearanceCssClass(rootView: View): void {
     if (majorVersion >= 13) {
         const systemAppearanceCssClass = `${CLASS_PREFIX}${iosApp.systemAppearance}`;
+        pushToModalRootViewCssClasses(systemAppearanceCssClass);
         pushToRootViewCssClasses(systemAppearanceCssClass);
         rootView.cssClasses.add(systemAppearanceCssClass);
     }
