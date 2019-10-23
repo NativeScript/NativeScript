@@ -1,5 +1,7 @@
 import { ProxyViewContainer as ProxyViewContainerDefinition } from ".";
 import { LayoutBase, View, traceEnabled, traceWrite, traceCategories, CSSType } from "../layouts/layout-base";
+import { Property } from "../core/properties/properties";
+import { messageType } from "tns-core-modules/trace/trace";
 /**
  * Proxy view container that adds all its native children directly to the parent.
  * To be used as a logical grouping container of views.
@@ -11,6 +13,7 @@ import { LayoutBase, View, traceEnabled, traceWrite, traceCategories, CSSType } 
 // * Proxy (with children) is removed form the DOM. In _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
 @CSSType("ProxyViewContainer")
 export class ProxyViewContainer extends LayoutBase implements ProxyViewContainerDefinition {
+    private proxiedLayoutProperties = new Array<string>();
 
     constructor() {
         super();
@@ -62,7 +65,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
         if (traceEnabled()) {
-            traceWrite("ViewContainer._addViewToNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, traceCategories.ViewHierarchy);
+            traceWrite("ProxyViewContainer._addViewToNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, traceCategories.ViewHierarchy);
         }
         super._addViewToNativeVisualTree(child);
 
@@ -83,6 +86,12 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
             }
             if (traceEnabled()) {
                 traceWrite("ProxyViewContainer._addViewToNativeVisualTree at: " + atIndex + " base: " + baseIndex + " additional: " + insideIndex, traceCategories.ViewHierarchy);
+            }
+
+            if (!this.proxiedLayoutProperties.length) {
+                for (const propName of this.proxiedLayoutProperties) {
+                    child[propName] = this[propName];
+                }
             }
 
             return parent._addViewToNativeVisualTree(child, baseIndex + insideIndex);
@@ -147,4 +156,65 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
             });
         }
     }
+
+    /**
+     * Layout property changed, proxy the new value to the child view(s)
+     */
+    public _changedLayoutProperty(propName: string, value: string) {
+        const numChildren = this._getNativeViewsCount();
+        if (numChildren > 1) {
+            traceWrite("ProxyViewContainer._changeLayoutProperty - you're setting '" + propName + "' for " + this + " with more than one child. Probably this is not what you want, consider wrapping it in a StackLayout ", traceCategories.ViewHierarchy, messageType.error);
+        }
+
+        if (!this.proxiedLayoutProperties.includes(propName)) {
+            this.proxiedLayoutProperties.push(propName);
+        }
+
+        this.eachLayoutChild((v) => {
+            v[propName] = value;
+            return true;
+        });
+    }
+}
+
+const layoutProperties = [
+    // AbsoluteLayout
+    'left',
+    'top',
+
+    // DockLayout
+    'dock',
+
+    // FlexLayout
+    'flexDirection',
+    'flexWrap',
+    'justifyContent',
+    'alignItems',
+    'alignContent',
+    'order',
+    'flexGrow',
+    'flexShrink',
+    'flexWrapBefore',
+    'alignSelf',
+    'flexFlow',
+    'flex',
+
+    // GridLayout
+    'column',
+    'columnSpan',
+    'col',
+    'colSpan',
+    'row',
+    'rowSpan',
+];
+
+for (const propName of layoutProperties) {
+    const proxyProperty = new Property<ProxyViewContainer, string>({
+        name: propName,
+        valueChanged(target, oldValue, value) {
+            target._changedLayoutProperty(propName, value);
+        }
+    });
+
+    proxyProperty.register(ProxyViewContainer);
 }
