@@ -45,7 +45,7 @@ describe("frame-root-with-bottom-navigation", async function () {
 
                 before(async function () {
                     nsCapabilities.testReporter.context = this;
-                    logWarn(`=========${trIndex} BottomNavigation-${transition} =========`);
+                    logWarn(`=========${trIndex++}. BottomNavigation-${transition} =========`);
 
                     if (transition === "Flip" &&
                         driver.isAndroid && parseInt(driver.platformVersion) === 19) {
@@ -107,9 +107,11 @@ describe("frame-root-with-bottom-navigation", async function () {
                 it("loaded player details and navigate parent frame and go back", async function () {
                     await shared.testPlayerNavigated(playerTwo, screen);
 
-                    if (appSuspendResume) {
-                        await driver.backgroundApp(suspendTime);
-                        await screen.loadedElement(playerTwo.name); // wait for player
+                    if (shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (appSuspendResume) {
+                            await driver.backgroundApp(suspendTime);
+                            await screen.loadedElement(playerTwo.name); // wait for player
+                        }
                     }
 
                     await shared[`testSomePageNavigated${transition}`](screen);
@@ -120,8 +122,7 @@ describe("frame-root-with-bottom-navigation", async function () {
                     }
 
                     if (driver.isAndroid) {
-                        console.log("KOR");
-                        // await driver.navBack();
+                        await driver.navBack();
                     } else {
                         await screen.goBackFromSomePage();
                     }
@@ -197,10 +198,12 @@ describe("frame-root-with-bottom-navigation", async function () {
 
                     await shared.testTeamNavigated(teamTwo, screen);
 
-                    if (appSuspendResume) {
-                        await screen.loadedElement(teamTwo.name); // wait for team
-                        await driver.backgroundApp(suspendTime);
-                        await screen.loadedElement(teamTwo.name); // wait for team
+                    if (shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (appSuspendResume) {
+                            await screen.loadedElement(teamTwo.name); // wait for team
+                            await driver.backgroundApp(suspendTime);
+                            await screen.loadedElement(teamTwo.name); // wait for team
+                        }
                     }
 
                     await screen.loadedTeamDetails(teamTwo);
