@@ -54,8 +54,6 @@ function getMinWebpackVersion(projectData) {
         webpackMinVer = semver.parse(webpackVer);
     } else if (semver.validRange(webpackVer)) {
         webpackMinVer = semver.minVersion(webpackVer);
-    } else {
-        webpackMinVer = semver.coerce(webpackVer);
     }
 
     return webpackMinVer;
