@@ -22,8 +22,7 @@ import { Builder } from "../ui/builder";
 import {
     CLASS_PREFIX,
     getRootViewCssClasses,
-    pushToRootViewCssClasses,
-    resetRootViewCssClasses
+    pushToRootViewCssClasses
 } from "../css/system-classes";
 
 import { ios as iosView, View } from "../ui/core/view";
@@ -308,7 +307,7 @@ class IOSApplication implements IOSApplicationDefinition {
             this._window.makeKeyAndVisible();
         }
 
-        setupRootViewCssClasses(rootView);
+        setRootViewSystemAppearanceCssClass(rootView);
         rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
             const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
             const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
@@ -356,6 +355,8 @@ function createRootView(v?: View) {
         }
     }
 
+    setRootViewCssClasses(rootView);
+
     return rootView;
 }
 
@@ -398,7 +399,7 @@ export function _start(entry?: string | NavigationEntry) {
 
                     // Mind root view CSS classes in future work
                     // on embedding NativeScript applications
-                    setupRootViewCssClasses(rootView);
+                    setRootViewSystemAppearanceCssClass(rootView);
                     rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
                         const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
                         const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
@@ -482,20 +483,22 @@ function setViewControllerView(view: View): void {
     }
 }
 
-function setupRootViewCssClasses(rootView: View): void {
-    resetRootViewCssClasses();
-
+function setRootViewCssClasses(rootView: View): void {
     const deviceType = device.deviceType.toLowerCase();
     pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
     pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
     pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
 
-    if (majorVersion >= 13) {
-        pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.systemAppearance}`);
-    }
-
     const rootViewCssClasses = getRootViewCssClasses();
     rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
+}
+
+function setRootViewSystemAppearanceCssClass(rootView: View): void {
+    if (majorVersion >= 13) {
+        const systemAppearanceCssClass = `${CLASS_PREFIX}${iosApp.systemAppearance}`;
+        pushToRootViewCssClasses(systemAppearanceCssClass);
+        rootView.cssClasses.add(systemAppearanceCssClass);
+    }
 }
 
 export function orientation(): "portrait" | "landscape" | "unknown" {
