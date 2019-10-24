@@ -1,13 +1,13 @@
 import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
 
-import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item } from "./screen";
-import * as shared from "./shared.e2e-spec";
-import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
-import { TabNavigationScreen } from "./tab-navigation-screen";
+import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item } from "../screen";
+import * as shared from "../shared.e2e-spec";
+import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "../config";
+import { TabNavigationScreen } from "../tab-navigation-screen";
 
-const roots = ["BottomNavigation"];
+const roots = ["TabsTop", "TabsBottom"];
 
-const rootType = "frame-bottom-navigation-root";
+const rootType = "frame-tabs-root";
 describe(rootType, async function () {
     let driver: AppiumDriver;
     let screen: Screen;

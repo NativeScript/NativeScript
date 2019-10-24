@@ -1,13 +1,14 @@
 import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
 
-import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item } from "./screen";
-import * as shared from "./shared.e2e-spec";
-import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
-import { TabNavigationScreen } from "./tab-navigation-screen";
+import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item } from "../screen";
+import * as shared from "../shared.e2e-spec";
+import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "../config";
+import { TabViewNavigationScreen } from "../tabview-navigation-screen";
 
-const roots = ["TabsTop", "TabsBottom"];
+// NOTE: TabViewTop is Android only scenario (for iOS we will essentially execute 2x TabViewBottom)
+const roots = ["TabViewTop", "TabViewBottom"];
 
-const rootType = "frame-tabs-root";
+const rootType = "frame-root-with-tab";
 describe(rootType, async function () {
     let driver: AppiumDriver;
     let screen: Screen;
@@ -16,7 +17,8 @@ describe(rootType, async function () {
         nsCapabilities.testReporter.context = this;
         logWarn(`====== ${rootType} ========`);
         driver = await createDriver();
-        screen = new TabNavigationScreen(driver);
+        await driver.restartApp();
+        screen = new TabViewNavigationScreen(driver);
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
         }
