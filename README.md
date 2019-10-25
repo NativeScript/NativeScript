@@ -2,9 +2,9 @@
 
 ![NativeScript logo](https://i.imgur.com/YmNIMqS.png)
 
-[NativeScript](http://www.nativescript.org) is a framework for building native iOS and Android apps using JavaScript and CSS. NativeScript renders UIs with the native platform’s rendering engine, no [WebViews](http://developer.telerik.com/featured/what-is-a-webview/), resulting in native-like performance and UX.
+[NativeScript](http://www.nativescript.org) is a framework for building native iOS and Android apps, using JavaScript and CSS. NativeScript renders UIs with the native platform’s rendering engine, no [WebViews](http://developer.telerik.com/featured/what-is-a-webview/), resulting in a native-like performance and UX.
 
-NativeScript provides a best-of-both-worlds development experience. Our cross-platform JavaScript modules give you the convenience of writing iOS and Android apps from a single JavaScript codebase, while our runtimes give you the power of accessing native APIs, SDKs, and frameworks when you need all of them without having to open Xcode or Android Studio. NativeScript was created and is supported by [Telerik](http://www.telerik.com/).
+NativeScript provides the best-of-both-worlds development experience. Our cross-platform JavaScript module gives you the convenience of writing iOS and Android apps from a single JavaScript codebase, while our runtimes give you the power of accessing native APIs, SDKs and frameworks when you need all of them without having to open Xcode or Android Studio. NativeScript was created and is supported by [Telerik](http://www.telerik.com/).
 
 Check out the links below to get started:
 
@@ -15,11 +15,11 @@ Check out the links below to get started:
 * [Contributing](#contributing)
 * [Angular](#angular)
 
-> **IMPORTANT**: NativeScript is an inclusive community, and we expect all NativeScript community members, users, and contributors to treat each other respectfully. As such, all users of this repository must adhere to the [NativeScript community code of conduct](https://github.com/NativeScript/codeofconduct).
+> **IMPORTANT**: NativeScript is an inclusive community, and we expect all NativeScript community members, users and contributors to treat each other respectfully. As such, all users of this repository must adhere to the [NativeScript community code of conduct](https://github.com/NativeScript/codeofconduct).
 
 ## For CTOs
 
-Making the right technology choices is key to success. Our [CTO’s guide to NativeScript](https://www.nativescript.org/ctos-guide) helps you understand why NativeScript is the right choice for your next mobile project.
+Making the right technology choices is key to success. Our [CTO’s guide to NativeScript](https://www.nativescript.org/ctos-guide) helps you to understand why NativeScript is the right choice for your next mobile project.
 
 ## Getting Started and Installation
 
@@ -30,7 +30,7 @@ Our Getting Started Guides are hands-on tutorials that walk you through installi
 
 ## NativeScript architecture diagram
 
-Below is a common NativeScript architecture diagram. In more detail, read the [How NativeScript Works article](https://docs.nativescript.org/start/how-it-works).
+Below is a common NativeScript architecture diagram. For more details, read the [How NativeScript Works article](https://docs.nativescript.org/start/how-it-works).
 
 ![Architecture diagram](https://raw.githubusercontent.com/NativeScript/docs/master/docs/img/ns-common.png)
 
