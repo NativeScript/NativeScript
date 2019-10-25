@@ -38,7 +38,7 @@ describe("frame-root-with-single-frame", async function () {
         const playerOne: Item = playersData[`playerOne${transition}`];
         const playerTwo: Item = playersData[`playerTwo${transition}`];
 
-        describe(`frame-root-with-single-frame-transition-${transition}-scenarios:`, async function () {
+        describe(`frame-root-with-single-frame-transition-${transition}-scenario:`, async function () {
             before(async function () {
                 nsCapabilities.testReporter.context = this;
                 logWarn(`==== ${index}. Transition ${transition}`);

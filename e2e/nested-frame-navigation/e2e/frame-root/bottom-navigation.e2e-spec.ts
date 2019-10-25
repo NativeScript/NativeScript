@@ -41,7 +41,7 @@ describe("frame-root-with-bottom-navigation", async function () {
             const teamOne: Item = teamsData[`teamOne${transition}`];
             const teamTwo: Item = teamsData[`teamTwo${transition}`];
 
-            describe(`frame-root-with-bottom-navigation-transition-${transition}-scenarios:`, async function () {
+            describe(`frame-root-with-bottom-navigation-transition-${transition}-scenario:`, async function () {
 
                 before(async function () {
                     nsCapabilities.testReporter.context = this;

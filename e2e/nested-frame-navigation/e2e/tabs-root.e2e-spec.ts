@@ -40,7 +40,7 @@ describe(rootType, async function () {
 
     for (let index = 0; index < roots.length; index++) {
         const root = roots[index];
-        describe(`${rootType}-${root}-scenarios:`, async function () {
+        describe(`${rootType}-${root}-scenario:`, async function () {
 
             before(async function () {
                 nsCapabilities.testReporter.context = this;
@@ -54,7 +54,7 @@ describe(rootType, async function () {
                 const teamOne = teamsData[`teamOne${transition}`];
                 const teamTwo = teamsData[`teamTwo${transition}`];
 
-                describe(`${rootType}-${root}-transition-${transition}-scenarios:`, async function () {
+                describe(`${rootType}-${root}-transition-${transition}-scenario:`, async function () {
 
                     before(async function () {
                         nsCapabilities.testReporter.context = this;

@@ -43,7 +43,7 @@ describe(rootType, async function () {
         const playerTwo = playersData[`playerTwo${transition}`];
         const teamOne = teamsData[`teamOne${transition}`];
 
-        describe(`${rootType}-transition-${transition}-scenarios:`, async function () {
+        describe(`${rootType}-transition-${transition}-scenario:`, async function () {
 
             before(async function () {
                 nsCapabilities.testReporter.context = this;
