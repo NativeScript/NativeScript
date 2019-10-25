@@ -29,14 +29,14 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === "TabContentItem") {
+        if (value instanceof TabContentItem) {
             if (!this.items) {
                 this.items = new Array<TabContentItem>();
             }
             this.items.push(<TabContentItem>value);
             this._addView(value);
             // selectedIndexProperty.coerce(this);
-        } else if (name === "TabStrip") {
+        } else if (value instanceof TabStrip) {
             // Setting tabStrip will trigger onTabStripChanged
             this.tabStrip = value;
         }

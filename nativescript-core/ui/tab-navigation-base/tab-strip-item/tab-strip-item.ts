@@ -173,14 +173,14 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === "Image") {
+        if (value instanceof Image) {
             this.image = <Image>value;
             this.iconSource = (<Image>value).src;
             this._addView(value);
             // selectedIndexProperty.coerce(this);
         }
 
-        if (name === "Label") {
+        if (value instanceof Label) {
             this.label = <Label>value;
             this.title = (<Label>value).text;
             this._addView(value);

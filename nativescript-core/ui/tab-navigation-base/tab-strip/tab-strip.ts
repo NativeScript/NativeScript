@@ -44,7 +44,7 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === "TabStripItem") {
+        if (value instanceof TabStripItem) {
             if (!this.items) {
                 this.items = new Array<TabStripItem>();
             }
