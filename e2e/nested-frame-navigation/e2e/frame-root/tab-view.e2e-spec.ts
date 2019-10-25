@@ -22,7 +22,7 @@ describe("frame-root-with-tab-view", async function () {
             await driver.setDontKeepActivities(true);
         }
         if (driver.isIOS) {
-            logWarn("NOTE: TabViewTop is Android only scenario (for iOS we will not execute it)")
+            logWarn("NOTE: TabViewTop is Android only scenario (for iOS we will not execute it)");
             roots.shift();
         }
 
