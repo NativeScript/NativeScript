@@ -1,6 +1,6 @@
 # Contributing to NativeScript
 
-:+1: First of all, thank you for taking the time to contribute! :+1:
+:+1: First of all, thank you for taking out the time to contribute! :+1:
 
 Here are some guides on how to do that:
  - [Code of Conduct](#coc)
@@ -11,13 +11,13 @@ Here are some guides on how to do that:
  - [Releasing new versions](#release)
 
 ##  <a name="coc"></a> Code of Conduct
-Help us keep a healthy and open community. We expect all participants in this project to adhere to the [NativeScript Code Of Conduct](https://github.com/NativeScript/codeofconduct).
+Help us in keeping a healthy and open community. We expect all participants in this project to adhere to the [NativeScript Code Of Conduct](https://github.com/NativeScript/codeofconduct).
 
 
 ## <a name="bugs"></a> Reporting Bugs
 
 1. Always update to the most recent master release; the bug may already be resolved.
-2. Search for similar issues in the issues list for this repo; it may already be an identified problem.
+2. Search for similar issues in the issues list for this repo; there may already be an identified problem.
 3. If this is a bug or problem that is clear, simple, and is unlikely to require any discussion -- it is OK to open an issue on GitHub with a reproduction of the bug including workflows and screenshots. If possible, submit a Pull Request with a failing test, entire application or module. If you'd rather take matters into your own hands, fix the bug yourself (jump down to the [Submitting a PR](#pr) section).
 
 > While we are doing all we can to take care of every issue, sometimes we get overwhelmed. That's why
@@ -316,4 +316,4 @@ git checkout origin/master tns-platform-declarations/package.json tns-core-modul
 git commit --amend
 git push --force-with-lease
 ```
-This will require to repeat steps from 1 to 4, since we need to keep the branches with the same history
+This will require you to repeat steps from 1 to 4, since we need to keep the branches with the same history
