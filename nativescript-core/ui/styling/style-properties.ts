@@ -542,7 +542,7 @@ const STYLE_TRANSFORMATION_MAP = Object.freeze({
     "scaleX": ({ x }) => ({ property: "scale", value: { x, y: IDENTITY_TRANSFORMATION.scale.y } }),
     "scaleY": ({ y }) => ({ property: "scale", value: { y, x: IDENTITY_TRANSFORMATION.scale.x } }),
 
-    "translate": value => ({ property: "translate", value }),
+    "translate": ({ x }) => ({ property: "translate", value: { x, y: IDENTITY_TRANSFORMATION.translate.y } }),
     "translate3d": value => ({ property: "translate", value }),
     "translateX": ({ x }) => ({ property: "translate", value: { x, y: IDENTITY_TRANSFORMATION.translate.y } }),
     "translateY": ({ y }) => ({ property: "translate", value: { y, x: IDENTITY_TRANSFORMATION.translate.x } }),
