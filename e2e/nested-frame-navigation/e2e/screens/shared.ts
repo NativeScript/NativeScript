@@ -3,7 +3,11 @@ import { AppiumDriver } from "nativescript-dev-appium";
 import { Screen, Item } from "./screen";
 
 export const preventApplicationCrashCauesByAutomation = (driver: AppiumDriver) => {
-    return driver.nsCapabilities.device.apiLevel <= 23 || driver.isIOS;
+    return +driver.nsCapabilities.device.apiLevel > 23 && driver.isAndroid;
+};
+
+export const isApiLevel19 = (driver: AppiumDriver) => {
+    return +driver.nsCapabilities.device.apiLevel === 19 && driver.isAndroid;
 };
 
 export async function testPlayerNavigated(player: Item, screen: Screen) {

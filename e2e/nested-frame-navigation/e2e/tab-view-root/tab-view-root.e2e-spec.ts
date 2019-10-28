@@ -1,33 +1,39 @@
 import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
 
-import { Screen, playersData, teamsData } from "./screen";
-import * as shared from "./shared.e2e-spec";
-import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
-import { TabViewNavigationScreen } from "./tabview-navigation-screen";
+import { Screen, playersData, teamsData } from "../screens/screen";
+import * as shared from "../screens/shared";
+import { suspendTime, appSuspendResume, dontKeepActivities, allTransitions } from "../config";
+import { TabViewNavigationScreen } from "../screens/tabview-navigation-screen";
 
 // NOTE: TabViewTop is Android only scenario (for iOS we will essentially execute 2x TabViewBottom)
 const roots = ["TabViewTop", "TabViewBottom"];
 
-const rootType = "tab-root";
-describe(rootType, async function () {
+describe("tab-view-root", async function () {
     let driver: AppiumDriver;
     let screen: Screen;
-
+    let transitions = [...allTransitions];
     before(async function () {
         nsCapabilities.testReporter.context = this;
-        logWarn(`====== ${rootType} ========`);
+        logWarn(`====== tab-view-root ========`);
         driver = await createDriver();
+        await driver.restartApp();
         screen = new TabViewNavigationScreen(driver);
-        if (dontKeepActivities) {
-            await driver.setDontKeepActivities(true);
+        if (shared.isApiLevel19(driver)) {
+            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+            console.log("Skipping flip transition tests on api level 19");
+            transitions = transitions.filter(tr => !tr.toLowerCase().includes("flip"));
         }
-
+        await driver.setDontKeepActivities(dontKeepActivities);
         driver.defaultWaitTime = 8000;
     });
 
     after(async function () {
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(false);
+        }
+        if (driver.isIOS) {
+            roots.shift();
+            logWarn("TabViewTop is Android only scenario (for iOS it will be skipped)");
         }
         await driver.quit();
         console.log("Quit driver!");
@@ -41,7 +47,7 @@ describe(rootType, async function () {
 
     for (let index = 0; index < roots.length; index++) {
         const root = roots[index];
-        describe(`${rootType}-${root}-scenario:`, async function () {
+        describe(`tab-view-root-${root}-scenario:`, async function () {
 
             before(async function () {
                 nsCapabilities.testReporter.context = this;
@@ -55,17 +61,10 @@ describe(rootType, async function () {
                 const teamOne = teamsData[`teamOne${transition}`];
                 const teamTwo = teamsData[`teamTwo${transition}`];
 
-                describe(`${rootType}-${root}-transition-${transition}-scenario:`, async function () {
+                describe(`tab-view-root-${root}-transition-${transition}-scenario:`, async function () {
 
                     before(async function () {
                         nsCapabilities.testReporter.context = this;
-
-                        if (transition === "Flip" &&
-                            driver.isAndroid && parseInt(driver.platformVersion) === 19) {
-                            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
-                            console.log("skipping flip transition tests on api level 19");
-                            this.skip();
-                        }
                     });
 
                     it("loaded home page", async function () {

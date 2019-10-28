@@ -1,13 +1,14 @@
 import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
 
-import { Screen, playersData, home, somePage, teamsData, driverDefaultWaitTime } from "../screen";
-import * as shared from "../shared.e2e-spec";
-import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "../config";
-import { TabNavigationScreen } from "../tab-navigation-screen";
+import { Screen, playersData, home, somePage, teamsData, driverDefaultWaitTime } from "../screens/screen";
+import * as shared from "../screens/shared";
+import { suspendTime, appSuspendResume, dontKeepActivities, allTransitions } from "../config";
+import { TabNavigationScreen } from "../screens/tab-navigation-screen";
 
 describe("layout-root-with-single-frame", async function () {
     let driver: AppiumDriver;
     let screen: Screen;
+    let transitions = [...allTransitions];
 
     before(async function () {
         nsCapabilities.testReporter.context = this;
@@ -16,7 +17,11 @@ describe("layout-root-with-single-frame", async function () {
         screen = new TabNavigationScreen(driver);
         logWarn("====== layout-root-with-single-frame ========");
         await driver.setDontKeepActivities(dontKeepActivities);
-
+        if (shared.isApiLevel19(driver)) {
+            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+            console.log("Skipping flip transition tests on api level 19");
+            transitions = transitions.filter(tr => !tr.toLowerCase().includes("flip"));
+        }
         driver.defaultWaitTime = driverDefaultWaitTime;
     });
 
@@ -39,18 +44,11 @@ describe("layout-root-with-single-frame", async function () {
 
         const playerOne = playersData[`playerOne${transition}`];
         const playerTwo = playersData[`playerTwo${transition}`];
-        const teamOne = teamsData[`teamOne${transition}`];
 
-        describe(`${rootType}-transition-${transition}-scenario:`, async function () {
+        describe(`layout-root-with-single-frame-transition-${transition}-scenario:`, async function () {
 
             before(async function () {
                 nsCapabilities.testReporter.context = this;
-                if (transition === "Flip" &&
-                    driver.isAndroid && parseInt(driver.platformVersion) === 19) {
-                    // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
-                    console.log("skipping flip transition tests on api level 19");
-                    this.skip();
-                }
             });
 
             it("loaded home page", async function () {

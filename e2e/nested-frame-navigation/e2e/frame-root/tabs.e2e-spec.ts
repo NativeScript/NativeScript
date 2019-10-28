@@ -1,15 +1,16 @@
 import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
 
-import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item } from "../screen";
-import * as shared from "../shared.e2e-spec";
-import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "../config";
-import { TabNavigationScreen } from "../tab-navigation-screen";
+import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item } from "../screens/screen";
+import * as shared from "../screens/shared";
+import { suspendTime, appSuspendResume, dontKeepActivities, allTransitions } from "../config";
+import { TabNavigationScreen } from "../screens/tab-navigation-screen";
 
 const roots = ["TabsTop", "TabsBottom"];
 
 describe("frame-root-with-tabs", async function () {
     let driver: AppiumDriver;
     let screen: Screen;
+    let transitions = [...allTransitions];
 
     before(async function () {
         nsCapabilities.testReporter.context = this;
@@ -17,8 +18,11 @@ describe("frame-root-with-tabs", async function () {
         driver = await createDriver();
         await driver.restartApp();
         screen = new TabNavigationScreen(driver);
-        if (dontKeepActivities) {
-            await driver.setDontKeepActivities(true);
+        await driver.setDontKeepActivities(dontKeepActivities);
+        if (shared.isApiLevel19(driver)) {
+            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+            console.log("Skipping flip transition tests on api level 19");
+            transitions = transitions.filter(tr => !tr.toLowerCase().includes("flip"));
         }
 
         driver.defaultWaitTime = driverDefaultWaitTime;
@@ -55,13 +59,6 @@ describe("frame-root-with-tabs", async function () {
                     before(async function () {
                         nsCapabilities.testReporter.context = this;
                         logWarn(`========= ${root}-${transition} =========`);
-
-                        if (transition === "Flip" &&
-                            driver.isAndroid && parseInt(driver.platformVersion) === 19) {
-                            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
-                            console.log("skipping flip transition tests on api level 19");
-                            this.skip();
-                        }
                     });
 
                     it("loaded home page", async function () {
@@ -116,7 +113,7 @@ describe("frame-root-with-tabs", async function () {
                     it("loaded player details and navigate parent frame and go back", async function () {
                         await shared.testPlayerNavigated(playerTwo, screen);
 
-                        if (shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
                             if (appSuspendResume) {
                                 await driver.backgroundApp(suspendTime);
                                 await screen.loadedElement(playerTwo.name); // wait for player
@@ -167,7 +164,7 @@ describe("frame-root-with-tabs", async function () {
 
                         await shared.testPlayerNavigated(playerTwo, screen);
 
-                        if (shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
                             if (appSuspendResume) {
                                 await driver.backgroundApp(suspendTime);
                                 await screen.loadedElement(playerTwo.name); // wait for player
@@ -178,7 +175,7 @@ describe("frame-root-with-tabs", async function () {
 
                         await shared[`testSomePageNavigated${transition}`](screen);
 
-                        if (shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
                             if (appSuspendResume) {
                                 await driver.backgroundApp(suspendTime);
                                 await screen.loadedElement(somePage); // wait for some page
@@ -191,7 +188,7 @@ describe("frame-root-with-tabs", async function () {
                             await screen.goBackFromSomePage();
                         }
 
-                        if (shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
                             if (appSuspendResume) {
                                 // This sleeps prevent test to fail
                                 await driver.sleep(1000);
@@ -204,7 +201,7 @@ describe("frame-root-with-tabs", async function () {
 
                         await screen.toggleTeamsTab();
 
-                        if (shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
                             if (appSuspendResume) {
                                 await driver.backgroundApp(suspendTime);
                                 await screen.loadedElement(teamOne.name); // wait for teams list
@@ -215,7 +212,7 @@ describe("frame-root-with-tabs", async function () {
 
                         await shared.testTeamNavigated(teamTwo, screen);
 
-                        if (shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
                             if (appSuspendResume) {
                                 await screen.loadedElement(teamTwo.name); // wait for team
                                 await driver.backgroundApp(suspendTime);

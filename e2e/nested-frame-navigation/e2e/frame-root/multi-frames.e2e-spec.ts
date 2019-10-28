@@ -1,14 +1,15 @@
 
 import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
 
-import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item, stillOtherPage } from "../screen";
-import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "../config";
-import * as shared from "../shared.e2e-spec";
-import { TabNavigationScreen } from "../tab-navigation-screen";
+import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item, stillOtherPage } from "../screens/screen";
+import { suspendTime, appSuspendResume, dontKeepActivities, allTransitions } from "../config";
+import * as shared from "../screens/shared";
+import { TabNavigationScreen } from "../screens/tab-navigation-screen";
 
 describe("frame-root-with-multi-frames", async function () {
     let driver: AppiumDriver;
     let screen: Screen;
+    let transitions = [...allTransitions];
 
     before(async function () {
         nsCapabilities.testReporter.context = this;
@@ -17,6 +18,12 @@ describe("frame-root-with-multi-frames", async function () {
         screen = new TabNavigationScreen(driver);
         await driver.setDontKeepActivities(dontKeepActivities);
         driver.defaultWaitTime = driverDefaultWaitTime;
+
+        if (shared.isApiLevel19(driver)) {
+            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+            console.log("Skipping flip transition tests on api level 19");
+            transitions = transitions.filter(tr => !tr.toLowerCase().includes("flip"));
+        }
     });
 
     after(async function () {
@@ -45,13 +52,6 @@ describe("frame-root-with-multi-frames", async function () {
             before(async function () {
                 nsCapabilities.testReporter.context = this;
                 logWarn(`====${index}. Transition ${transition}`);
-
-                if (transition === "Flip" &&
-                    driver.isAndroid && parseInt(driver.platformVersion) === 19) {
-                    // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
-                    console.log("skipping flip transition tests on api level 19");
-                    this.skip();
-                }
             });
 
             it("loaded home page", async function () {
