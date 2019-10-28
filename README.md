@@ -19,7 +19,7 @@ Check out the links below to get started:
 
 ## For CTOs
 
-Making the right technology choices is key to success. Our [CTO’s guide to NativeScript](https://www.nativescript.org/ctos-guide) helps you understand why NativeScript is the right choice for your next mobile project.
+Making the right technology choices is the key to success. Our [CTO’s guide to NativeScript](https://www.nativescript.org/ctos-guide) helps you understand why NativeScript is the right choice for your next mobile project.
 
 ## Getting Started and Installation
 
