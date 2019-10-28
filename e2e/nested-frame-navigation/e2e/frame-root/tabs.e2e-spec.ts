@@ -46,7 +46,7 @@ describe("frame-root-with-tabs", async function () {
         const root = roots[index];
 
         describe(`frame-root-with-tabs-${root} scenario:`, async function () {
-            logWarn(`=====${index++}. Root: ${root}`);
+            logWarn(`===== ${index++}. Root: ${root}`);
             for (let trIndex = 0; trIndex < transitions.length; trIndex++) {
                 const transition = transitions[trIndex];
                 const playerOne: Item = playersData[`playerOne${transition}`];
