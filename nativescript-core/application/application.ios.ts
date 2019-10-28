@@ -300,14 +300,18 @@ class IOSApplication implements IOSApplicationDefinition {
             // setup view as styleScopeHost
             rootView._setupAsRootView({});
         }
+
         setViewControllerView(rootView);
+
         const haveController = this._window.rootViewController !== null;
         this._window.rootViewController = controller;
+
+        setRootViewSystemAppearanceCssClass(rootView);
+
         if (!haveController) {
             this._window.makeKeyAndVisible();
         }
 
-        setRootViewSystemAppearanceCssClass(rootView);
         rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
             const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
             const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
