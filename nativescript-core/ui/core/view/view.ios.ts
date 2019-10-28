@@ -30,6 +30,7 @@ export class View extends ViewCommon {
     nativeViewProtected: UIView;
     viewController: UIViewController;
     private _popoverPresentationDelegate: ios.UIPopoverPresentationControllerDelegateImp;
+    private _adaptivePresentationDelegate: ios.UIAdaptivePresentationControllerDelegateImp;
 
     private _isLaidOut = false;
     private _hasTransfrom = false;
@@ -422,15 +423,18 @@ export class View extends ViewCommon {
             controller.modalPresentationStyle = presentationStyle;
 
             if (presentationStyle === UIModalPresentationStyle.Popover) {
-                const popoverPresentationController = controller.popoverPresentationController;
-                this._popoverPresentationDelegate = ios.UIPopoverPresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
-                popoverPresentationController.delegate = this._popoverPresentationDelegate;
-                const view = parent.nativeViewProtected;
-                // Note: sourceView and sourceRect are needed to specify the anchor location for the popover.
-                // Note: sourceView should be the button triggering the modal. If it the Page the popover might appear "behind" the page content
-                popoverPresentationController.sourceView = view;
-                popoverPresentationController.sourceRect = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
+                this._setupPopoverControllerDelegate(controller, parent);
             }
+        }
+
+        const cancelable = options.cancelable !== undefined ? options.cancelable : true;
+
+        if (majorVersion >= 13 && cancelable) {
+            // Listen for dismiss modal callback.
+            this._setupAdaptiveControllerDelegate(controller);
+        } else if (majorVersion >= 13) {
+            // Prevent users from dismissing the modal.
+            (<any>controller).modalInPresentation = true;
         }
 
         this.horizontalAlignment = "stretch";
@@ -643,6 +647,22 @@ export class View extends ViewCommon {
             this.nativeViewProtected instanceof UIScrollView ||
             backgroundInternal.hasBorderWidth() ||
             backgroundInternal.hasBorderRadius();
+    }
+
+    private _setupPopoverControllerDelegate(controller: UIViewController, parent: View) {
+        const popoverPresentationController = controller.popoverPresentationController;
+        this._popoverPresentationDelegate = ios.UIPopoverPresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
+        popoverPresentationController.delegate = this._popoverPresentationDelegate;
+        const view = parent.nativeViewProtected;
+        // Note: sourceView and sourceRect are needed to specify the anchor location for the popover.
+        // Note: sourceView should be the button triggering the modal. If it the Page the popover might appear "behind" the page content
+        popoverPresentationController.sourceView = view;
+        popoverPresentationController.sourceRect = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
+    }
+
+    private _setupAdaptiveControllerDelegate(controller: UIViewController) {
+        this._adaptivePresentationDelegate = ios.UIAdaptivePresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
+        controller.presentationController.delegate = this._adaptivePresentationDelegate;
     }
 }
 View.prototype._nativeBackgroundState = "unset";
@@ -1015,6 +1035,28 @@ export namespace ios {
                 if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
                     owner.notify({ eventName: traitCollectionColorAppearanceChangedEvent, object: owner });
                 }
+            }
+        }
+    }
+
+    export class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
+        public static ObjCProtocols = [UIAdaptivePresentationControllerDelegate];
+
+        private owner: WeakRef<View>;
+        private closedCallback: Function;
+
+        public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp {
+            const instance = <UIAdaptivePresentationControllerDelegateImp>super.new();
+            instance.owner = owner;
+            instance.closedCallback = whenClosedCallback;
+
+            return instance;
+        }
+
+        public presentationControllerDidDismiss(presentationController: UIPresentationController) {
+            const owner = this.owner.get();
+            if (owner && typeof this.closedCallback === "function") {
+                this.closedCallback();
             }
         }
     }
