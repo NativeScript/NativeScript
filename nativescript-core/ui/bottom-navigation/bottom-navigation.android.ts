@@ -380,9 +380,7 @@ export class BottomNavigation extends TabNavigationBase {
             this._bottomNavigationBar.setVisibility(android.view.View.GONE);
         }
 
-        if (this._attachedToWindow) {
-            this.changeTab(this.selectedIndex);
-        }
+        this.changeTab(this.selectedIndex);
     }
 
     _onAttachedToWindow(): void {
@@ -467,8 +465,9 @@ export class BottomNavigation extends TabNavigationBase {
     // TODO: Should we extract adapter-like class?
     // TODO: Rename this?
     public changeTab(index: number) {
-        // this is the case when there are no items
-        if (index === -1) {
+        // index is -1 when there are no items
+        // bot nav is not attached if you change the tab too early
+        if (index === -1 || !this._attachedToWindow) {
             return;
         }
 
