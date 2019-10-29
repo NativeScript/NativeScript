@@ -4,18 +4,14 @@
 
 ### Bug Fixes
 
-* **action-bar-ios:** navigation button support for font icons ([#7918](https://github.com/NativeScript/NativeScript/issues/7918)) ([bdb411f](https://github.com/NativeScript/NativeScript/commit/bdb411f))
+* **action-bar:** font icon support to NavigationButton ([#7842](https://github.com/NativeScript/NativeScript/issues/7842)) ([4991e6d](https://github.com/NativeScript/NativeScript/commit/4991e6d)) ([#7918](https://github.com/NativeScript/NativeScript/issues/7918)) ([bdb411f](https://github.com/NativeScript/NativeScript/commit/bdb411f))
 * **action-bar-ios13:** action bar items population ([#7965](https://github.com/NativeScript/NativeScript/issues/7965)) ([ce96dad](https://github.com/NativeScript/NativeScript/commit/ce96dad))
-* **android:** check for root view on configuration changed ([#7944](https://github.com/NativeScript/NativeScript/issues/7944)) ([135aeff](https://github.com/NativeScript/NativeScript/commit/135aeff))
-* **android/action-bar:** process Icon Fonts in NavigationButton the same way as in ActionItem ([#7842](https://github.com/NativeScript/NativeScript/issues/7842)) ([4991e6d](https://github.com/NativeScript/NativeScript/commit/4991e6d))
 * **application-settings-android:** possible uninitialized sharedPreferences variable usage ([#7813](https://github.com/NativeScript/NativeScript/issues/7813)) ([4f421ff](https://github.com/NativeScript/NativeScript/commit/4f421ff))
-* change the way we import 'esprima' to avoid wrong path resolution in Angular projects ([fe2b977](https://github.com/NativeScript/NativeScript/commit/fe2b977))
 * **css:** parse css selectors with escape sequences ([#7689](https://github.com/NativeScript/NativeScript/issues/7689)) ([5520213](https://github.com/NativeScript/NativeScript/commit/5520213))
-* UIUserInterfaceStyle is undefined for iOS <= 11 ([#7931](https://github.com/NativeScript/NativeScript/issues/7931)) ([6c71394](https://github.com/NativeScript/NativeScript/commit/6c71394))
 * xml parsing when input value is reported as object instead of string ([#7916](https://github.com/NativeScript/NativeScript/issues/7916)) ([a06a5f9](https://github.com/NativeScript/NativeScript/commit/a06a5f9))
 * **css-android:** restore elements' native features if offending css is removed while the app is running ([#7789](https://github.com/NativeScript/NativeScript/issues/7789)) ([2beae5b](https://github.com/NativeScript/NativeScript/commit/2beae5b))
 * **css-calc:** reduce_css_calc_1.default is not a function ([#7787](https://github.com/NativeScript/NativeScript/issues/7787)) ([03d1ff0](https://github.com/NativeScript/NativeScript/commit/03d1ff0))
-* **ios-bot-nav:** incorrect layout on orientation change ([#7927](https://github.com/NativeScript/NativeScript/issues/7927)) ([c9bfec1](https://github.com/NativeScript/NativeScript/commit/c9bfec1))
+* **bottom-navigation-ios:** incorrect layout on orientation change ([#7927](https://github.com/NativeScript/NativeScript/issues/7927)) ([c9bfec1](https://github.com/NativeScript/NativeScript/commit/c9bfec1))
 
 
 ### Features
@@ -25,7 +21,7 @@
 * **css:** Add HSL/HSLA support ([#7730](https://github.com/NativeScript/NativeScript/issues/7730)) ([3cabdde](https://github.com/NativeScript/NativeScript/commit/3cabdde))
 * **dark-mode:** add system appearance property, event and CSS classes ([#7887](https://github.com/NativeScript/NativeScript/issues/7887)) ([5c9a217](https://github.com/NativeScript/NativeScript/commit/5c9a217))
 * **file-system:** async read/write ([#7671](https://github.com/NativeScript/NativeScript/issues/7671)) ([2146ac9](https://github.com/NativeScript/NativeScript/commit/2146ac9))
-* **ios-dark-mode:** adapt dynamic system colors ([#7826](https://github.com/NativeScript/NativeScript/issues/7826)) ([f82cf08](https://github.com/NativeScript/NativeScript/commit/f82cf08))
+* **dark-mode-ios:** adapt dynamic system colors ([#7826](https://github.com/NativeScript/NativeScript/issues/7826)) ([f82cf08](https://github.com/NativeScript/NativeScript/commit/f82cf08))
 * **platform-declarations:** add android29 typings ([#7923](https://github.com/NativeScript/NativeScript/issues/7923)) ([dc65402](https://github.com/NativeScript/NativeScript/commit/dc65402))
 * **platform-declarations:** generate typings from iOS 13.0 SDK ([#7817](https://github.com/NativeScript/NativeScript/issues/7817)) ([3e8d635](https://github.com/NativeScript/NativeScript/commit/3e8d635))
 * **segmented-bar-ios:** add support for the new selectedSegmentTintColor property ([#7880](https://github.com/NativeScript/NativeScript/issues/7880)) ([ca7c46d](https://github.com/NativeScript/NativeScript/commit/ca7c46d))
