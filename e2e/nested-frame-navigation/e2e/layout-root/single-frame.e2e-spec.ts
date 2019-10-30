@@ -145,6 +145,10 @@ describe("layout-root-with-single-frame", async function () {
         const playerOne = playersData["playerOneSlide"];
         const playerTwo = playersData["playerTwoSlide"];
 
+        before(async function () {
+            nsCapabilities.testReporter.context = this;
+        });
+
         it("loaded layout root with nested frames", async function () {
             await screen.navigateToLayoutWithFrame();
             await screen.loadedLayoutWithFrame();
@@ -203,6 +207,15 @@ describe("layout-root-with-single-frame", async function () {
     describe(`layout-root-with-single-frame-players-list-slide-transition with parent frame no transition:`, async function () {
         const playerOne = playersData["playerOneSlide"];
         const playerTwo = playersData["playerTwoSlide"];
+
+        before(async function () {
+            nsCapabilities.testReporter.context = this;
+            if (shared.isApiLevel19(driver)) {
+                // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+                logWarn("Skip tests on api level 19");
+                this.skip();
+            }
+        });
 
         it("loaded layout root with nested frames", async function () {
             await screen.navigateToLayoutWithFrame();
@@ -328,6 +341,11 @@ describe("layout-root-with-single-frame", async function () {
 
         before(async function () {
             nsCapabilities.testReporter.context = this;
+            if (shared.isApiLevel19(driver)) {
+                // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+                logWarn("Skip tests on api level 19");
+                this.skip();
+            }
         });
 
         it("loaded layout root with nested frames", async function () {
