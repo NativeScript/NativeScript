@@ -16,12 +16,7 @@ describe("tab-navigation-bottom-navigation-root", async function () {
         driver = await createDriver();
         await driver.restartApp();
         screen = new TabNavigationScreen(driver);
-        if (shared.isApiLevel19(driver)) {
-            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
-            console.log("Skipping flip transition tests on api level 19");
-            transitions = transitions.filter(tr => !tr.toLowerCase().includes("flip"));
-        }
-        await driver.setDontKeepActivities(dontKeepActivities);
+        driver.setDontKeepActivities(dontKeepActivities);
         driver.defaultWaitTime = 8000;
     });
 
@@ -49,6 +44,13 @@ describe("tab-navigation-bottom-navigation-root", async function () {
 
         describe(`bottom-navigation-root-transition-${transition}-scenario:`, async function () {
             before(async function () {
+                if (shared.isApiLevel19(driver) && (transition === "None" || transition === "Flip")) {
+                    // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+                    logWarn("Skipping flip or none transition tests on api level 19");
+                    this.skip();
+                } else {
+                    logWarn(`========= ${index}. ${transition} =========`);
+                }
                 nsCapabilities.testReporter.context = this;
             });
 

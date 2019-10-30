@@ -27,12 +27,6 @@ describe("frame-root-with-tab-view", async function () {
             roots.shift();
         }
 
-        if (shared.isApiLevel19(driver)) {
-            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
-            console.log("Skipping flip transition tests on api level 19");
-            transitions = transitions.filter(tr => !tr.toLowerCase().includes("flip"));
-        }
-
         driver.defaultWaitTime = driverDefaultWaitTime;
     });
 
@@ -63,10 +57,15 @@ describe("frame-root-with-tab-view", async function () {
                 const teamTwo: Item = teamsData[`teamTwo${transition}`];
 
                 describe(`frame-root-with-tab-view-${root}-transition-${transition}-scenario:`, async function () {
-
                     before(async function () {
                         nsCapabilities.testReporter.context = this;
-                        logWarn(`========= ${root}-${transition} =========`);
+                        if (shared.isApiLevel19(driver) && (transition === "None" || transition === "Flip")) {
+                            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+                            logWarn("Skipping flip or none transition tests on api level 19");
+                            this.skip();
+                        } else {
+                            logWarn(`========= ${root}-${transition} =========`);
+                        }
                     });
 
                     it("loaded home page", async function () {
