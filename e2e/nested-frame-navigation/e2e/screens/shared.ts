@@ -1,7 +1,7 @@
 import { AppiumDriver } from "nativescript-dev-appium";
 
 import { Screen, Item } from "./screen";
-import { logWarn } from "../../../../../mobile-devices-controller/lib/utils";
+import { logWarn } from "nativescript-dev-appium";
 
 export const preventApplicationCrashCauesByAutomation = (driver: AppiumDriver) => {
     if (driver.isIOS) {
