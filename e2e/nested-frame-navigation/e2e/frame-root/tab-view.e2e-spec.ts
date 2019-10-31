@@ -84,7 +84,7 @@ describe("frame-root-with-tab-view", async function () {
                     it("loaded player details and go back twice", async function () {
                         await shared.testPlayerNavigated(playerTwo, screen);
 
-                        if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (!shared.preventApplicationCrashCausedByAutomation(driver)) {
                             if (appSuspendResume) {
                                 await driver.backgroundApp(suspendTime);
                                 await screen.loadedElement(playerTwo.name); // wait for player
@@ -121,7 +121,7 @@ describe("frame-root-with-tab-view", async function () {
                     it("loaded player details and navigate parent frame and go back", async function () {
                         await shared.testPlayerNavigated(playerTwo, screen);
 
-                        if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (!shared.preventApplicationCrashCausedByAutomation(driver)) {
                             if (appSuspendResume) {
                                 await driver.backgroundApp(suspendTime);
                                 await screen.loadedElement(playerTwo.name); // wait for player
@@ -172,7 +172,7 @@ describe("frame-root-with-tab-view", async function () {
 
                         await shared.testPlayerNavigated(playerTwo, screen);
 
-                        if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (!shared.preventApplicationCrashCausedByAutomation(driver)) {
                             if (appSuspendResume) {
                                 await driver.backgroundApp(suspendTime);
                                 await screen.loadedElement(playerTwo.name); // wait for player
@@ -214,7 +214,7 @@ describe("frame-root-with-tab-view", async function () {
 
                         await shared.testTeamNavigated(teamTwo, screen);
 
-                        if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
+                        if (!shared.preventApplicationCrashCausedByAutomation(driver)) {
                             if (appSuspendResume) {
                                 await screen.loadedElement(teamTwo.name); // wait for team
                                 await driver.backgroundApp(suspendTime);
