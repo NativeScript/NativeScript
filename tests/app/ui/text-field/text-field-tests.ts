@@ -1,25 +1,25 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { View, isIOS } from "tns-core-modules/ui/core/view";
-import { Page } from "tns-core-modules/ui/page";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { Color } from "tns-core-modules/color";
+import { View, isIOS } from "@nativescript/core/ui/core/view";
+import { Page } from "@nativescript/core/ui/page";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { Color } from "@nativescript/core/color";
 import {
     getNativeText, getNativeHint, typeTextNatively, getNativeSecure,
     getNativeFontSize, getNativeColor, getNativeBackgroundColor,
     getNativeTextAlignment, getNativePlaceholderColor
 } from "./text-field-tests-native";
-import { FormattedString } from "tns-core-modules/text/formatted-string";
-import { Span } from "tns-core-modules/text/span";
+import { FormattedString } from "@nativescript/core/text/formatted-string";
+import { Span } from "@nativescript/core/text/span";
 
 // >> require-textfield
-import { TextField } from "tns-core-modules/ui/text-field";
+import { TextField } from "@nativescript/core/ui/text-field";
 // << require-textfield
 // Other frequently used modules when working with buttons include:
 // >> require-observable-binding-options-textfield
-import { BindingOptions } from "tns-core-modules/ui/core/bindable";
+import { BindingOptions } from "@nativescript/core/ui/core/bindable";
 
-import { Observable } from "tns-core-modules/data/observable";
+import { Observable } from "@nativescript/core/data/observable";
 // << require-observable-binding-options-textfield
 
 // ### Binding two TextFields text property to observable view-model property.

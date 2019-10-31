@@ -1,5 +1,5 @@
-import { createViewFromEntry } from "tns-core-modules/ui/builder";
-import { sanitizeModuleName } from "tns-core-modules/ui/builder/module-name-sanitizer";
+import { Builder } from "@nativescript/core/ui/builder";
+import { sanitizeModuleName } from "@nativescript/core/ui/builder/module-name-sanitizer";
 
 import { assertEqual, assertNull, assertThrows, assertNotNull } from "../../tk-unit";
 
@@ -8,7 +8,7 @@ const MISSING_MODULE = "ui/builder/missing-module";
 const labelId = "label";
 
 function getViewComponent(moduleName: string) {
-    return createViewFromEntry({ moduleName });
+    return Builder.createViewFromEntry({ moduleName });
 }
 
 export function test_view_is_module_root_component() {

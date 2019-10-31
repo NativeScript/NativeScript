@@ -1,6 +1,6 @@
-import * as pages from "tns-core-modules/ui/page";
-import * as buttons from "tns-core-modules/ui/button";
-import { VerticalAlignment } from "tns-core-modules/ui/core/view";
+import * as pages from "@nativescript/core/ui/page";
+import * as buttons from "@nativescript/core/ui/button";
+import { VerticalAlignment } from "@nativescript/core/ui/core/view";
 
 export function createPage() {
     var page = new pages.Page();

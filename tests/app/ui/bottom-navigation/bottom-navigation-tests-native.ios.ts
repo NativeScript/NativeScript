@@ -1,4 +1,4 @@
-import tabViewModule = require("tns-core-modules/ui/tab-view");
+import tabViewModule = require("@nativescript/core/ui/tab-view");
 
 export function getNativeTabCount(tabView: tabViewModule.TabView): number {
     if (!tabView.ios.viewControllers) {

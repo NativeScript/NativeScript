@@ -1,7 +1,7 @@
 // >> web-view-loaded
-import { EventData } from "tns-core-modules/data/observable";
-import { WebView } from "tns-core-modules/ui/web-view";
-import { isAndroid } from "tns-core-modules/platform";
+import { EventData } from "@nativescript/core/data/observable";
+import { WebView } from "@nativescript/core/ui/web-view";
+import { isAndroid } from "@nativescript/core/platform";
 
 export function navigatingTo(args: EventData) {
     console.log("page navigating to");

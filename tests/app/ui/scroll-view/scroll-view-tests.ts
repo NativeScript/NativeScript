@@ -1,12 +1,12 @@
 import * as TKUnit from "../../tk-unit";
-import { Button } from "tns-core-modules/ui/button";
-import { Page, isIOS } from "tns-core-modules/ui/page";
+import { Button } from "@nativescript/core/ui/button";
+import { Page, isIOS } from "@nativescript/core/ui/page";
 import { UITest } from "../../ui-test";
 import * as layoutHelper from "../layouts/layout-helper";
 import * as helper from "../../ui-helper";
 
 // >> article-require-scrollview-module
-import { ScrollView, ScrollEventData } from "tns-core-modules/ui/scroll-view";
+import { ScrollView, ScrollEventData } from "@nativescript/core/ui/scroll-view";
 // << article-require-scrollview-module
 
 class ScrollLayoutTest extends UITest<ScrollView> {

@@ -1,0 +1,26 @@
+{
+  "nativescript": {
+    "id": "org.nativescript.scopedpackages",
+    "tns-android": {
+      "version": "6.1.0"
+    },
+    "tns-ios": {
+      "version": "6.1.0"
+    }
+  },
+  "main": "app.js",
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
+  "dependencies": {
+    "@nativescript/core": "file:../../dist/nativescript-core-6.2.0.tgz",
+    "nativescript-theme-core": "~1.0.6",
+    "tns-core-modules": "file:../../dist/tns-core-modules-6.1.0.tgz"
+  },
+  "devDependencies": {
+    "nativescript-dev-webpack": "~1.2.0",
+    "typescript": "~3.5.3"
+  },
+  "gitHead": "5fa096231ded5351b53700f0d111d60160e52ebc",
+  "readme": "NativeScript Application"
+}

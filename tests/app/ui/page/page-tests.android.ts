@@ -1,9 +1,9 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { addLabelToPage } from "./page-tests-common";
-import { Page } from "tns-core-modules/ui/page";
-import { Label } from "tns-core-modules/ui/label";
-import { topmost } from "tns-core-modules/ui/frame";
+import { Page } from "@nativescript/core/ui/page";
+import { Label } from "@nativescript/core/ui/label";
+import { Frame } from "@nativescript/core/ui/frame";
 
 export * from "./page-tests-common";
 
@@ -16,7 +16,7 @@ export function test_NavigateToNewPage_WithAndroidCache() {
         return launchPage;
     });
 
-    TKUnit.assertEqual(topmost().backStack.length, 0, "The backstack should be empty before this test can be run.");
+    TKUnit.assertEqual(Frame.topmost().backStack.length, 0, "The backstack should be empty before this test can be run.");
 
     let testPage: Page;
     let label: Label;
@@ -31,7 +31,7 @@ export function test_NavigateToNewPage_WithAndroidCache() {
         return testPage;
     };
 
-    const currentPage = topmost().currentPage;
+    const currentPage = Frame.topmost().currentPage;
     helper.navigateWithHistory(pageFactory);
     TKUnit.assertNotNull(currentPage.nativeView);
     helper.goBack();
@@ -88,7 +88,7 @@ export function test_Resolve_Fragment_ForPage() {
         return testPage;
     };
 
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.navigate(pageFactory);
     TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
 

@@ -1,5 +1,5 @@
 // >> connectivity-require
-import * as connectivity from "tns-core-modules/connectivity";
+import * as connectivity from "@nativescript/core/connectivity";
 // << connectivity-require
 
 export var test_DummyTestForSnippetOnly0 = function () {

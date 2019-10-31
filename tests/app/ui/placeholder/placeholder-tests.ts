@@ -1,12 +1,12 @@
 import * as TKUnit from "../../tk-unit";
 // >> article-creating-view
-import { isIOS, isAndroid } from "tns-core-modules/platform";
-import * as utils from "tns-core-modules/utils/utils";
+import { isIOS, isAndroid } from "@nativescript/core/platform";
+import * as utils from "@nativescript/core/utils/utils";
 import * as helper from "../../ui-helper";
-import * as viewModule from "tns-core-modules/ui/core/view";
+import * as viewModule from "@nativescript/core/ui/core/view";
 
 // >> article-require-placeholder-module
-import * as placeholderModule from "tns-core-modules/ui/placeholder";
+import * as placeholderModule from "@nativescript/core/ui/placeholder";
 // << article-require-placeholder-module
 
 function creatingView(args) {

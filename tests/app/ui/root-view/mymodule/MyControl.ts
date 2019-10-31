@@ -1,7 +1,7 @@
-﻿import * as observable from "tns-core-modules/data/observable";
-import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
-import * as label from "tns-core-modules/ui/label";
-import * as button from "tns-core-modules/ui/button";
+﻿import * as observable from "@nativescript/core/data/observable";
+import * as stackLayoutModule from "@nativescript/core/ui/layouts/stack-layout";
+import * as label from "@nativescript/core/ui/label";
+import * as button from "@nativescript/core/ui/button";
 
 export class MyControl extends stackLayoutModule.StackLayout {
     constructor() {

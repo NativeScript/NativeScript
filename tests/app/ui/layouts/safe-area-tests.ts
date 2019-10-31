@@ -1,12 +1,12 @@
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
 import * as TKUnit from "../../tk-unit";
-import * as view from "tns-core-modules/ui/core/view";
+import * as view from "@nativescript/core/ui/core/view";
 import * as testModule from "../../ui-test";
-import * as platform from "tns-core-modules/platform";
+import * as platform from "@nativescript/core/platform";
 import * as helper from "../../ui-helper";
-import { parse } from "tns-core-modules/ui/builder";
-import { Page } from "tns-core-modules/ui/page";
-import { Label } from "tns-core-modules/ui/label";
+import { Builder } from "@nativescript/core/ui/builder";
+import { Page } from "@nativescript/core/ui/page";
+import { Label } from "@nativescript/core/ui/label";
 import {
     dipToDp, left, top, right, bottom, height, width,
     equal, closeEnough, lessOrCloseEnough, greaterOrCloseEnough,
@@ -39,7 +39,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
     }
 
     public test_layout_changed_event_count() {
-        const page = <Page>parse(`
+        const page = <Page>Builder.parse(`
         <Page>
             <GridLayout id="grid" backgroundColor="Crimson">
                 <Label id="label" text="label1" backgroundColor="Gold"></Label>
@@ -64,7 +64,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     // Common
     private getViews(template: string) {
-        let root = parse(template);
+        let root = Builder.parse(template);
 
         return {
             root,
@@ -292,7 +292,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     // Dock
     private getDockViews(template: string) {
-        let root = parse(template);
+        let root = Builder.parse(template);
 
         return {
             root,
@@ -804,7 +804,7 @@ export class SafeAreaTests extends testModule.UITest<any> {
 
     // Grid
     private getGridViews(template: string) {
-        let root = parse(template);
+        let root = Builder.parse(template);
 
         return {
             root,

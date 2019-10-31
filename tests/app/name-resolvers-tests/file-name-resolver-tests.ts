@@ -1,6 +1,6 @@
 ﻿import * as TKUnit from "../tk-unit";
-import * as fs from "tns-core-modules/file-system";
-import { FileNameResolver } from "tns-core-modules/file-system/file-name-resolver";
+import * as fs from "@nativescript/core/file-system";
+import { FileNameResolver } from "@nativescript/core/file-system/file-name-resolver";
 import {
     androidPhonePortraitContext,
     androidPhoneLandscapeContext,

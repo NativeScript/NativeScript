@@ -5,7 +5,7 @@ if (typeof NSDate !== "undefined") {
     start = java.lang.System.currentTimeMillis();
 }
 
-import * as application from "tns-core-modules/application";
+import * as application from "@nativescript/core/application";
 
 if (application.ios) {
     // Observe application notifications.

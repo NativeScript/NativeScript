@@ -1,7 +1,7 @@
-import { Button } from "tns-core-modules/ui/button";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
-import * as utils from "tns-core-modules/utils/utils";
+import { Button } from "@nativescript/core/ui/button";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
+import * as utils from "@nativescript/core/utils/utils";
 import * as TKUnit from "../../tk-unit";
 import * as def from "./layout-helper";
 
