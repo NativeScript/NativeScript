@@ -1,7 +1,7 @@
 
 import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
 
-import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item, stillOtherPage } from "../screens/screen";
+import { Screen, playersData, teamsData, driverDefaultWaitTime, Item } from "../screens/screen";
 import { suspendTime, appSuspendResume, dontKeepActivities, allTransitions } from "../config";
 import * as shared from "../screens/shared";
 import { TabNavigationScreen } from "../screens/tab-navigation-screen";
@@ -18,12 +18,6 @@ describe("frame-root-with-multi-frames", async function () {
         screen = new TabNavigationScreen(driver);
         await driver.setDontKeepActivities(dontKeepActivities);
         driver.defaultWaitTime = driverDefaultWaitTime;
-
-        if (shared.isApiLevel19(driver)) {
-            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
-            console.log("Skipping flip transition tests on api level 19");
-            transitions = transitions.filter(tr => !tr.toLowerCase().includes("flip"));
-        }
     });
 
     after(async function () {
@@ -51,7 +45,13 @@ describe("frame-root-with-multi-frames", async function () {
         describe(`frame-root-with-multi-frames-transition-${transition}-scenario:`, async function () {
             before(async function () {
                 nsCapabilities.testReporter.context = this;
-                logWarn(`====${index}. Transition ${transition}`);
+                if (shared.isApiLevel19(driver) && (transition === "None" || transition === "Flip")) {
+                    // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+                    logWarn("Skipping flip or none transition tests on api level 19");
+                    this.skip();
+                } else {
+                    logWarn(`==== ${index}. Transition ${transition}`);
+                }
             });
 
             it("loaded home page", async function () {

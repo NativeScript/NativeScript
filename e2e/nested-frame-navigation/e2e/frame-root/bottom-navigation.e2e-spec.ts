@@ -1,4 +1,4 @@
-import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
+import { AppiumDriver, createDriver, logWarn, nsCapabilities, logInfo } from "nativescript-dev-appium";
 
 import { Screen, playersData, somePage, teamsData, driverDefaultWaitTime, Item } from "../screens/screen";
 import * as shared from "../screens/shared";
@@ -8,6 +8,7 @@ import { TabNavigationScreen } from "../screens/tab-navigation-screen";
 describe("frame-root-with-bottom-navigation", async function () {
     let driver: AppiumDriver;
     let screen: Screen;
+
     let transitions = [...allTransitions];
 
     before(async function () {
@@ -18,12 +19,6 @@ describe("frame-root-with-bottom-navigation", async function () {
         screen = new TabNavigationScreen(driver);
         await driver.setDontKeepActivities(dontKeepActivities);
         driver.defaultWaitTime = driverDefaultWaitTime;
-
-        if (shared.isApiLevel19(driver)) {
-            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
-            console.log("Skipping flip transition tests on api level 19");
-            transitions = transitions.filter(tr => !tr.toLowerCase().includes("flip"));
-        }
     });
 
     after(async function () {
@@ -52,7 +47,13 @@ describe("frame-root-with-bottom-navigation", async function () {
 
                 before(async function () {
                     nsCapabilities.testReporter.context = this;
-                    logWarn(`=========${trIndex++}. BottomNavigation-${transition} =========`);
+                    if (shared.isApiLevel19(driver) && (transition === "None" || transition === "Flip")) {
+                        // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+                        logWarn("Skipping flip or none transition tests on api level 19");
+                        this.skip();
+                    } else {
+                        logWarn(`${trIndex++}. BottomNavigation-${transition} =========`);
+                    }
                 });
 
                 it("loaded home page", async function () {
@@ -107,7 +108,7 @@ describe("frame-root-with-bottom-navigation", async function () {
                 it("loaded player details and navigate parent frame and go back", async function () {
                     await shared.testPlayerNavigated(playerTwo, screen);
 
-                    if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
+                    if (!shared.preventApplicationCrashCausedByAutomation(driver)) {
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
                             await screen.loadedElement(playerTwo.name); // wait for player
@@ -158,9 +159,11 @@ describe("frame-root-with-bottom-navigation", async function () {
 
                     await shared.testPlayerNavigated(playerTwo, screen);
 
-                    if (appSuspendResume) {
-                        await driver.backgroundApp(suspendTime);
-                        await screen.loadedElement(playerTwo.name); // wait for player
+                    if (!shared.preventApplicationCrashCausedByAutomation(driver)) {
+                        if (appSuspendResume) {
+                            await driver.backgroundApp(suspendTime);
+                            await screen.loadedElement(playerTwo.name); // wait for player
+                        }
                     }
 
                     await screen.loadedPlayerDetails(playerTwo);
@@ -198,7 +201,7 @@ describe("frame-root-with-bottom-navigation", async function () {
 
                     await shared.testTeamNavigated(teamTwo, screen);
 
-                    if (!shared.preventApplicationCrashCauesByAutomation(driver)) {
+                    if (!shared.preventApplicationCrashCausedByAutomation(driver)) {
                         if (appSuspendResume) {
                             await screen.loadedElement(teamTwo.name); // wait for team
                             await driver.backgroundApp(suspendTime);
