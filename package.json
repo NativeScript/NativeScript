@@ -47,6 +47,7 @@
     "unit-test-watch": "mocha-typescript-watch -p unit-tests/tsconfig.json --opts unit-tests/mocha.opts",
     "dev-link-tns-core-modules-widgets": "(cd tns-core-modules-widgets/dist/package && npm link) && (cd nativescript-core && npm i ../tns-core-modules-widgets/dist/package --save)",
     "api-extractor": "api-extractor run --local --verbose && (cd nativescript-core && cat nativescript-core.header nativescript-core.d.ts > tmp_file && mv tmp_file nativescript-core.d.ts)",
+    "api-extractor-ci": "api-extractor run --verbose",
     "typedoc": "npm run api-extractor && typedoc --tsconfig tsconfig.typedoc.json",
     "typedoc-dev": "npm run typedoc && cd bin/dist/apiref && npx http-server",
     "build-core": "sh ./build/build-core.sh",
