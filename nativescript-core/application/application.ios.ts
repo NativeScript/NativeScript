@@ -24,8 +24,9 @@ export * from "./application-common";
 import { Builder } from "../ui/builder";
 import {
     CLASS_PREFIX,
-    getRootViewCssClasses,
-    pushToRootViewCssClasses
+    getSystemCssClasses,
+    pushToSystemCssClasses,
+    ROOT_VIEW_CSS_CLASS
 } from "../css/system-classes";
 import { ios as iosViewHelper } from "../ui/core/view/view-helper";
 import { device } from "../platform/platform";
@@ -304,7 +305,7 @@ export class iOSApplication implements iOSApplicationDefinition {
         const haveController = this._window.rootViewController !== null;
         this._window.rootViewController = controller;
 
-        setRootViewSystemAppearanceCssClass(rootView);
+        setRootViewsSystemAppearanceCssClass(rootView);
 
         if (!haveController) {
             this._window.makeKeyAndVisible();
@@ -353,7 +354,7 @@ function createRootView(v?: View) {
         }
     }
 
-    setRootViewCssClasses(rootView);
+    setRootViewsCssClasses(rootView);
 
     return rootView;
 }
@@ -395,7 +396,7 @@ export function run(entry?: string | NavigationEntry) {
 
                     // Mind root view CSS classes in future work
                     // on embedding NativeScript applications
-                    setRootViewSystemAppearanceCssClass(rootView);
+                    setRootViewsSystemAppearanceCssClass(rootView);
                     rootView.on(iosViewHelper.traitCollectionColorAppearanceChangedEvent, () => {
                         const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
                         const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
@@ -473,20 +474,22 @@ function setViewControllerView(view: View): void {
     }
 }
 
-function setRootViewCssClasses(rootView: View): void {
+function setRootViewsCssClasses(rootView: View): void {
     const deviceType = device.deviceType.toLowerCase();
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
 
-    const rootViewCssClasses = getRootViewCssClasses();
+    pushToSystemCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
+    pushToSystemCssClasses(`${CLASS_PREFIX}${deviceType}`);
+    pushToSystemCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
+
+    rootView.cssClasses.add(ROOT_VIEW_CSS_CLASS);
+    const rootViewCssClasses = getSystemCssClasses();
     rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
 }
 
-function setRootViewSystemAppearanceCssClass(rootView: View): void {
+function setRootViewsSystemAppearanceCssClass(rootView: View): void {
     if (majorVersion >= 13) {
         const systemAppearanceCssClass = `${CLASS_PREFIX}${iosApp.systemAppearance}`;
-        pushToRootViewCssClasses(systemAppearanceCssClass);
+        pushToSystemCssClasses(systemAppearanceCssClass);
         rootView.cssClasses.add(systemAppearanceCssClass);
     }
 }

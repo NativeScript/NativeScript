@@ -19,7 +19,7 @@ import {
     level as profilingLevel,
 } from "../profiling";
 import * as bindableResources from "../ui/core/bindable/bindable-resources";
-import { CLASS_PREFIX, pushToRootViewCssClasses, removeFromRootViewCssClasses } from "../css/system-classes";
+import { CLASS_PREFIX, pushToSystemCssClasses, removeSystemCssClass } from "../css/system-classes";
 import { DeviceOrientation, SystemAppearance } from "../ui/enums/enums";
 
 export { Observable };
@@ -129,13 +129,13 @@ export function loadAppCss(): void {
     }
 }
 
-function applyCssClass(rootView: View, cssClass: string) {
-    pushToRootViewCssClasses(cssClass);
+function addCssClass(rootView: View, cssClass: string) {
+    pushToSystemCssClasses(cssClass);
     rootView.cssClasses.add(cssClass);
 }
 
 function removeCssClass(rootView: View, cssClass: string) {
-    removeFromRootViewCssClasses(cssClass);
+    removeSystemCssClass(cssClass);
     rootView.cssClasses.delete(cssClass);
 }
 
@@ -147,18 +147,27 @@ function increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
     }
 }
 
+function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string) {
+    if (!rootView.cssClasses.has(newCssClass)) {
+        cssClasses.forEach(cssClass => removeCssClass(rootView, cssClass));
+        addCssClass(rootView, newCssClass);
+        increaseStyleScopeApplicationCssSelectorVersion(rootView);
+        rootView._onCssStateChange();
+    }
+}
+
 export function orientationChanged(rootView: View, newOrientation: "portrait" | "landscape" | "unknown"): void {
     if (!rootView) {
         return;
     }
 
     const newOrientationCssClass = `${CLASS_PREFIX}${newOrientation}`;
-    if (!rootView.cssClasses.has(newOrientationCssClass)) {
-        ORIENTATION_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
-        applyCssClass(rootView, newOrientationCssClass);
-        increaseStyleScopeApplicationCssSelectorVersion(rootView);
-        rootView._onCssStateChange();
-    }
+    applyCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
+
+    const rootModalViews = <Array<View>>rootView._getRootModalViews();
+    rootModalViews.forEach(rootModalView => {
+        applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
+    });
 }
 
 export function systemAppearanceChanged(rootView: View, newSystemAppearance: "dark" | "light"): void {
@@ -167,12 +176,12 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: "da
     }
 
     const newSystemAppearanceCssClass = `${CLASS_PREFIX}${newSystemAppearance}`;
-    if (!rootView.cssClasses.has(newSystemAppearanceCssClass)) {
-        SYSTEM_APPEARANCE_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
-        applyCssClass(rootView, newSystemAppearanceCssClass);
-        increaseStyleScopeApplicationCssSelectorVersion(rootView);
-        rootView._onCssStateChange();
-    }
+    applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
+
+    const rootModalViews = <Array<View>>rootView._getRootModalViews();
+    rootModalViews.forEach(rootModalView => {
+        applyCssClass(rootModalView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
+    });
 }
 
 global.__onUncaughtError = function (error: NativeScriptError) {
