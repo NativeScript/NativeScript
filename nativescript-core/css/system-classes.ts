@@ -3,29 +3,27 @@ const ROOT = "root";
 
 export const CLASS_PREFIX = "ns-";
 
-const modalRootViewCssClass = `${CLASS_PREFIX}${MODAL}`;
-const rootViewCssClasses = [`${CLASS_PREFIX}${ROOT}`];
+export const MODAL_ROOT_VIEW_CSS_CLASS = `${CLASS_PREFIX}${MODAL}`;
+export const ROOT_VIEW_CSS_CLASS = `${CLASS_PREFIX}${ROOT}`;
 
-export function getModalRootViewCssClass(): string {
-    return modalRootViewCssClass;
+const cssClasses = [];
+
+export function _getCssClasses(): string[] {
+    return cssClasses;
 }
 
-export function getRootViewCssClasses(): string[] {
-    return rootViewCssClasses;
+export function _pushToCssClasses(value: string): number {
+    cssClasses.push(value);
+
+    return cssClasses.length;
 }
 
-export function pushToRootViewCssClasses(value: string): number {
-    rootViewCssClasses.push(value);
-
-    return rootViewCssClasses.length;
-}
-
-export function removeFromRootViewCssClasses(value: string): string {
-    const index = rootViewCssClasses.indexOf(value);
+export function _removeCssClass(value: string): string {
+    const index = cssClasses.indexOf(value);
     let removedElement;
 
     if (index > -1) {
-        removedElement = rootViewCssClasses.splice(index, 1);
+        removedElement = cssClasses.splice(index, 1);
     }
 
     return removedElement;
