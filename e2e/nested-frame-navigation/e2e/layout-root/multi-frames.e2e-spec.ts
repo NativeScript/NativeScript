@@ -17,13 +17,6 @@ describe("layout-root-with-multi-frames", async function () {
         screen = new TabNavigationScreen(driver);
         logWarn("====== layout-root-with-multi-frames ========");
         await driver.setDontKeepActivities(dontKeepActivities);
-
-        if (shared.isApiLevel19(driver)) {
-            // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
-            console.log("Skipping flip transition tests on api level 19");
-            transitions = transitions.filter(tr => !tr.toLowerCase().includes("flip"));
-        }
-
         driver.defaultWaitTime = driverDefaultWaitTime;
     });
 
@@ -52,6 +45,13 @@ describe("layout-root-with-multi-frames", async function () {
 
             before(async function () {
                 nsCapabilities.testReporter.context = this;
+                if (shared.isApiLevel19(driver) && (transition === "None" || transition === "Flip")) {
+                    // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
+                    logWarn("Skipping flip or none transition tests on api level 19");
+                    this.skip();
+                } else {
+                    logWarn(`========= ${index}. ${transition} =========`);
+                }
             });
 
             it("loaded layout root with multi nested frames", async function () {
