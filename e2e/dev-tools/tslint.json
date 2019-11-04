@@ -1,0 +1,43 @@
+{
+  "extends": "tslint:latest",
+  "linterOptions": {
+    "exclude": [
+        "app/*.d.ts"
+    ]
+  },
+  "rules": {
+    "array-type": [true, "generic"],
+    "arrow-return-shorthand": true,
+    "deprecation": true,
+    "member-access": [true, "no-public"],
+    "newline-before-return": true,
+    "no-angle-bracket-type-assertion": false,
+    "no-consecutive-blank-lines": [true, 1],
+    "no-console": [false],
+    "no-implicit-dependencies": false,
+    "no-irregular-whitespace": true,
+    "no-submodule-imports": false,
+    "no-trailing-whitespace": [true, "ignore-blank-lines"],
+    "no-unnecessary-initializer": true,
+    "no-var-requires": false,
+    "object-literal-key-quotes": [true, "as-needed"],
+    "object-literal-sort-keys": false,
+    "one-variable-per-declaration": [true, "ignore-for-loop"],
+    "ordered-imports": false,
+    "prefer-conditional-expression": false,
+    "trailing-comma": [true, {
+      "multiline": "never",
+      "singleline": "never"
+    }],
+    "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
+    "whitespace": [true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-module",
+      "check-separator",
+      "check-type",
+      "check-preblock"
+    ]
+  }
+}

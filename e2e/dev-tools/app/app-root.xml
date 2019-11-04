@@ -1,0 +1,51 @@
+<!--
+The BottomNavigation component provides a way for high level navigation between different views by
+tapping on some of the tabs. Learn more about the BottomNavigation component
+in this documentation article: https://docs.nativescript.org/ui/ns-ui-widgets/bottom-navigation.
+Tabs component is similar to BottomNavigation but suitable for mid level navigation scenarios thus
+supports swiping between the views. Learn more about the Tabs component in this documentation article:
+https://docs.nativescript.org/angular/ui/ng-ui-widgets/tabs.
+-->
+<BottomNavigation>
+    <TabStrip>
+        <!--
+            Besides the approach demonstrated below there is alternative shorthand syntax for setting TabStripItem title and icon:
+
+            <TabStripItem title="Home" iconSource="res://tabIcons/home" />
+
+            Both shorthand and verbose syntax can use
+            TabStripItem Label {...} css selector to style the title label,
+            and TabStriptItem Image {...} css selector to style the icon image (see _app-common.scss).
+            Note that when working with font icons we recommend the usage of the verbose syntax as it
+            is explicit and describes better the need to provide font icon as well as set the respective font (e.g. via class name).
+         -->
+        <TabStripItem>
+            <!--
+                Note TabStripItem will only accept single Label and/or single Image elements that it
+                will "adopt"; any other layout elements you try to specify will be ignored
+            -->
+            <Label text="Home" />
+            <Image src="font://&#xf015;" class="fa t-36" />
+        </TabStripItem>
+        <TabStripItem>
+            <Label text="Browse" />
+            <Image src="font://&#xf1ea;" class="fa t-36" />
+        </TabStripItem>
+        <TabStripItem>
+            <Label text="Search" />
+            <Image src="font://&#xf002;" class="fa t-36" />
+        </TabStripItem>
+    </TabStrip>
+
+    <TabContentItem>
+        <Frame defaultPage="home/home-items-page" />
+    </TabContentItem>
+
+    <TabContentItem>
+        <Frame defaultPage="browse/browse-page" />
+    </TabContentItem>
+
+    <TabContentItem>
+        <Frame defaultPage="search/search-page" />
+    </TabContentItem>
+</BottomNavigation>

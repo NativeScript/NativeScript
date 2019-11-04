@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Application theme -->
+    <style name="AppTheme" parent="AppThemeBase">
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:datePickerStyle">@style/SpinnerDatePicker</item>
+        <item name="android:timePickerStyle">@style/SpinnerTimePicker</item>
+    </style>
+
+    <!-- Default style for DatePicker - in spinner mode -->
+    <style name="SpinnerDatePicker" parent="android:Widget.Material.Light.DatePicker">
+        <item name="android:datePickerMode">spinner</item>
+    </style>
+
+    <!-- Default style for TimePicker - in spinner mode -->
+    <style name="SpinnerTimePicker" parent="android:Widget.Material.Light.TimePicker">
+        <item name="android:timePickerMode">spinner</item>
+    </style>
+
+    <style name="NativeScriptToolbarStyle" parent="NativeScriptToolbarStyleBase">
+        <item name="android:elevation">4dp</item>
+        <item name="android:paddingTop">24dp</item>
+    </style>
+</resources>

@@ -1,0 +1,76 @@
+// Import the theme’s variables. If you’re using a color scheme
+// other than “light”, switch the path to the alternative scheme,
+// for example '~nativescript-theme-core/scss/dark'.
+@import '~nativescript-theme-core/scss/light';
+
+// Custom colors
+$background-dark: #F8F8F8 !default;
+$background-light: #FFFFFF !default;
+
+$blue-dark: #022734 !default;
+$blue-light: #02556E !default;
+$blue-50: rgba($blue-dark, 0.5) !default;
+$blue-20: rgba($blue-dark, 0.2) !default;
+$blue-10: rgba($blue-dark, 0.1) !default;
+
+$accent-dark: #3A53FF !default;
+$accent-light: #4781FE !default;
+
+$success-dark: #06CE6A !default;
+$success-light: #00E676 !default;
+
+$warning-dark: #f39c11 !default;
+$warning-light: #F2C112 !default;
+
+$error-dark: #D84039 !default;
+$error-light: #ED473F !default;
+
+$midnight-dark: #0F336D !default;
+$midnight-light: #14418B !default;
+
+$night-dark: #023141 !default;
+$night-light: #01526C !default;
+
+$page-icon-color: #D7D7D7 !default;
+
+// Sizes
+$page-content-placeholder-font-size: 20;
+
+/**
+ * Theme variables overrides
+**/
+
+// Colors
+$background: #fff;
+$primary: lighten(#000, 13%);
+$secondary: lighten(#000, 46%);
+$disabled: lighten(#000, 62%);
+$accent: $accent-dark;
+$error: $error-light;
+
+// SideDrawer
+$item-color-android : #737373;
+$item-active-background: #F8F8F8;
+$item-active-color: $accent;
+$item-active-icon-color: $item-active-color;
+$item-color-ios: $blue-dark;
+$item-color-android: $blue-dark;
+
+$side-drawer-header-background: #fafafa;
+$side-drawer-header-brand: #737373;
+$side-drawer-background: #FFFFFF;
+
+// ActionBar
+$ab-background: $accent;
+$ab-color: $white;
+
+// Buttons
+$btn-color-inverse: $white;
+$btn-color: $accent;
+$btn-color-secondary: darken($btn-color, 10%);
+$btn-color-outline-highlighted: lighten($btn-color, 10%);
+
+//Text colors
+$headings-color: $blue-dark;
+$secondary: $blue-dark;
+$text-color: $blue-dark;

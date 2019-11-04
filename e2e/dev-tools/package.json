@@ -1,0 +1,30 @@
+{
+  "nativescript": {
+    "id": "org.nativescript.devtools",
+    "tns-android": {
+      "version": "6.1.2"
+    },
+    "tns-ios": {
+      "version": "6.1.0"
+    }
+  },
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
+  "scripts": {
+    "lint": "tslint \"app/**/*.ts\""
+  },
+  "dependencies": {
+    "@nativescript/core": "file:../../nativescript-core",
+    "tns-core-modules": "file:../../dist/tns-core-modules"
+  },
+  "devDependencies": {
+    "nativescript-dev-webpack": "next",
+    "tns-platform-declarations": "file:../../tns-platform-declarations",
+    "node-sass": "^4.7.1",
+    "tslint": "~5.19.0",
+    "typescript": "~3.5.3"
+  },
+  "gitHead": "1964ea9e8ca1a0518e0d6370781eedcf6c23db42",
+  "readme": "NativeScript Application"
+}
