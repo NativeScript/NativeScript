@@ -200,6 +200,18 @@ export class DOMNode {
         return result;
     }
 
+    requestHighligh() {
+        notifyInspector((ins) => {
+            ins.nodeHighlightRequested(this.nodeId);
+        }); 
+    }
+
+    static requestCancelInspect() {
+        notifyInspector((ins) => {
+            ins.inspectModeCanceled();
+        }); 
+    }
+
     dispose() {
         unregisterNode(this);
         this.viewRef.clear();

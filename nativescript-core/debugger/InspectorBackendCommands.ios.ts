@@ -1460,6 +1460,15 @@ export namespace DOMDomain {
         pseudoElementRemoved(parentId: NodeId, pseudoElementId: NodeId): void {
             __inspectorSendEvent(JSON.stringify({ "method": "DOM.pseudoElementRemoved", "params": { "parentId": parentId, "pseudoElementId": pseudoElementId } }));
         }
+
+        // TODO: Move this into own domain
+        nodeHighlightRequested(nodeId: NodeId): void {
+            __inspectorSendEvent(JSON.stringify({ "method": "Overlay.nodeHighlightRequested", "params": { "nodeId": nodeId } }));
+        }
+        inspectModeCanceled(): void {
+            __inspectorSendEvent(JSON.stringify({ "method": "Overlay.inspectModeCanceled", "params": {} }));
+        }
+
     }
 }
 

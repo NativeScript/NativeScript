@@ -1,5 +1,13 @@
 import { InspectorEvents, InspectorCommands } from "./devtools-elements";
-import { getDocument, getComputedStylesForNode, removeNode, setAttributeAsText } from "./devtools-elements.common";
+import {
+    getDocument,
+    getComputedStylesForNode,
+    removeNode,
+    setAttributeAsText,
+    highlightNode,
+    hideHighlight,
+    setInspectMode
+} from "./devtools-elements.common";
 import { registerInspectorEvents, DOMNode } from "./dom-node";
 
 export function attachDOMInspectorEventCallbacks(DOMDomainFrontend: InspectorEvents) {
@@ -23,8 +31,13 @@ export function attachDOMInspectorCommandCallbacks(DOMDomainBackend: InspectorCo
 
     DOMDomainBackend.removeNode = removeNode;
     DOMDomainBackend.setAttributeAsText = setAttributeAsText;
+
+    DOMDomainBackend.highlightNode = highlightNode;
+    DOMDomainBackend.hideHighlight = hideHighlight;
+    DOMDomainBackend.setInspectMode = setInspectMode;
 }
 
 export function attachCSSInspectorCommandCallbacks(CSSDomainFrontend: InspectorCommands) {
     // no op
 }
+

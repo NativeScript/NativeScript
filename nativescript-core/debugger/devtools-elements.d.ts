@@ -6,6 +6,10 @@ export interface InspectorCommands {
     removeNode(nodeId: number): void;
     getComputedStylesForNode(nodeId: number): string | Array<{ name: string, value: string }>;
     setAttributeAsText(nodeId: number, text: string, name: string): void;
+
+    highlightNode(nodeId: number, selector?: string);
+    hideHighlight();
+    setInspectMode(mode: "none" | "searchForNode");
 }
 
 export interface InspectorEvents {
@@ -14,6 +18,9 @@ export interface InspectorEvents {
     childNodeRemoved(parentId: number, nodeId: number): void;
     attributeModified(nodeId: number, attrName: string, attrValue: string): void;
     attributeRemoved(nodeId: number, attrName: string): void;
+
+    nodeHighlightRequested(nodeId: number): void;
+    inspectModeCanceled(): void;
 }
 
 export function attachDOMInspectorEventCallbacks(inspector: InspectorEvents);

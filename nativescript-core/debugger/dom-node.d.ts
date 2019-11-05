@@ -19,4 +19,7 @@ export declare class DOMNode {
     getComputedProperties(): CSSComputedStyleProperty[];
     dispose(): void;
     toJSON(): string;
+
+    requestHighligh(): void;
+    static requestCancelInspect(): void;
 }

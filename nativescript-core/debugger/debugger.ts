@@ -65,6 +65,16 @@ export function setCSS(newCSS) {
     css = newCSS;
 }
 
+let overlay;
+
+export function getOverlay(): any {
+    return overlay;
+}
+
+export function setOverlay(newOverlay) {
+    overlay = newOverlay;
+}
+
 export namespace NetworkAgent {
     export interface Request {
         url: string;

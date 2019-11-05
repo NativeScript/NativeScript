@@ -11,11 +11,15 @@ Feel free to customize layouts and components to change how the tab view looks.
         <Label class="action-bar-title" text="Home"></Label>
     </ActionBar>
 
-    <ListView items="{{ items }}" itemTap="onItemTap" class="list-group">
-        <ListView.itemTemplate>
-            <StackLayout orientation="horizontal" class="list-group-item">
-                <Label text="{{ name }}" textWrap="true"></Label>
-            </StackLayout>
-        </ListView.itemTemplate>
-    </ListView>
+    <GridLayout rows="auto *">
+        <TextField text="hey there" />
+        
+        <ListView row="1" items="{{ items }}" itemTap="onItemTap" class="list-group">
+            <ListView.itemTemplate>
+                <StackLayout orientation="horizontal" class="list-group-item">
+                    <Label text="{{ name }}" textWrap="true"></Label>
+                </StackLayout>
+            </ListView.itemTemplate>
+        </ListView>
+    </GridLayout>
 </Page>
