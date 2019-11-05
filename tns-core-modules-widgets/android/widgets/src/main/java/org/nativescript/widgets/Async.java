@@ -186,6 +186,9 @@ public class Async {
                 } catch (IOException e) {
                     Log.e(TAG, "Failed to decode stream, IOException: " + e.getMessage());
                     return null;
+                } catch (OutOfMemoryError e) {
+                    Log.e(TAG, "Failed to decode stream, OutOfMemoryError: " + e.getMessage());
+                    return null;
                 } finally {
                     if (stream != null) {
                         try {
