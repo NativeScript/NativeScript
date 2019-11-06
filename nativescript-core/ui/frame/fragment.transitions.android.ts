@@ -17,6 +17,9 @@ interface TransitionListener {
 
 const defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
 
+const animFadeIn = 17432576; // android.R.anim.fade_in
+const animFadeOut = 17432577; // android.R.anim.fade_out
+
 export const waitingQueue = new Map<number, Set<ExpandedEntry>>();
 export const completedEntries = new Map<number, ExpandedEntry>();
 
@@ -105,7 +108,7 @@ export function _setAndroidFragmentTransitions(
         // Also setup empty/immediate transition to be executed when navigating back to this page.
         // TODO: Consider removing empty/immediate animator when migrating to official androidx.fragment.app.Fragment:1.2.
         if (isNestedDefaultTransition) {
-            fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+            fragmentTransaction.setCustomAnimations(animFadeIn, animFadeOut);
             setupAllAnimation(newEntry, noTransition);
             setupNewFragmentCustomTransition({ duration: 0, curve: null }, newEntry, noTransition);
         } else {

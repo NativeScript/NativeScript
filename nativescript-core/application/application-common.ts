@@ -142,6 +142,14 @@ function removeCssClass(rootView: View, cssClass: string) {
     rootView.cssClasses.delete(cssClass);
 }
 
+function increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
+    const styleScope = rootView._styleScope || ((<any>rootView).currentPage && (<any>rootView).currentPage._styleScope);
+
+    if (styleScope) {
+        styleScope._increaseApplicationCssSelectorVersion();
+    }
+}
+
 export function orientationChanged(rootView: View, newOrientation: "portrait" | "landscape" | "unknown"): void {
     if (!rootView) {
         return;
@@ -151,6 +159,7 @@ export function orientationChanged(rootView: View, newOrientation: "portrait" | 
     if (!rootView.cssClasses.has(newOrientationCssClass)) {
         ORIENTATION_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
         applyCssClass(rootView, newOrientationCssClass);
+        increaseStyleScopeApplicationCssSelectorVersion(rootView);
         rootView._onCssStateChange();
     }
 }
@@ -164,6 +173,7 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: "da
     if (!rootView.cssClasses.has(newSystemAppearanceCssClass)) {
         SYSTEM_APPEARANCE_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
         applyCssClass(rootView, newSystemAppearanceCssClass);
+        increaseStyleScopeApplicationCssSelectorVersion(rootView);
         rootView._onCssStateChange();
     }
 }

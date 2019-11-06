@@ -44,7 +44,7 @@ describe(`${imagePrefix}-suite`, () => {
 
     it("gestures_02_doubleTap", async function () {
         const lblDoubleTap = await driver.waitForElement("Double Tap here");
-        await lblDoubleTap.doubleTap();
+        await lblDoubleTap.doubleTap({ x: 20, y: 20 });
         const result = await driver.findElementByTextIfExists("Double Tap gesture detected, true", SearchOptions.contains);
         assert.isTrue(result != null && result !== undefined, `Gestures event 'Double Tap gesture detected, true' not detected!`);
     });
@@ -59,7 +59,7 @@ describe(`${imagePrefix}-suite`, () => {
     it("gestures_longPress", async function () {
         const lblTapOrDoubleTap = await driver.waitForElement("Tap or Double Tap");
         const rect = await lblTapOrDoubleTap.getRectangle();
-        await lblTapOrDoubleTap.doubleTap();
+        await lblTapOrDoubleTap.doubleTap({ x: 20, y: 20 });
         let result = await driver.findElementByTextIfExists("Last action: Double tap gesture, true", SearchOptions.contains);
         assert.isTrue(result != null && result !== undefined, `Gestures event 'Last action: Double tap gesture, true' not detected!`);
         await driver.clickPoint(rect.x, rect.y);
@@ -76,23 +76,23 @@ describe(`${imagePrefix}-suite`, () => {
 
     it("gestures_05_pan", async function () {
         const lblSwipe = await driver.waitForElement("Pan here");
-        const rect = await lblSwipe.getRectangle();
         await lblSwipe.pan([
-            { x: rect.x + 100, y: rect.y + 100 },
-            { x: rect.x + 140, y: rect.y + 120 },
-            { x: rect.x + 160, y: rect.y + 120 }
-        ], { x: 50, y: 50 });
+            { x: 10, y: 20 },
+            { x: 40, y: 30 },
+            { x: 50, y: 60 }
+        ], { x: 5, y: 5 });
 
         const result = await driver.findElementByTextIfExists("Pan deltaX", SearchOptions.contains);
         const text = await result.text();
-        assert.isTrue(/Pan deltaX:\d+; deltaY:\d+;, true, states: ended/.test(text), `Gestures event 'Pan deltaX: ...' not detected!`);
+        assert.isTrue(/Pan deltaX:([-+]?)\d+; deltaY:([-+]?)\d+;, true, states: ended/ig.test(text), `Gestures event 'Pan deltaX: ...' not detected!`);
     });
 
     it("gestures_06_pinch", async function () {
         const lblPan = await driver.waitForElement("Pinch here");
         await lblPan.pinch("out");
-        const result = await driver.findElementByTextIfExists("Pinch Scale: 1, true, states: ended", SearchOptions.contains);
-        assert.isTrue(result != null && result !== undefined, `Gestures event '"Pinch Scale: 0, true, states: ended"' not detected!`);
+        const result = await driver.findElementByTextIfExists("Pinch Scale:", SearchOptions.contains);
+        const text = await result.text();
+        assert.isTrue(/Pinch Scale: \d+, true, states: ended/ig.test(text), `Gestures event '"Pinch Scale: 0, true, states: ended"' not detected!`);
     });
 
     it("gestures_07_rotate", async function () {
