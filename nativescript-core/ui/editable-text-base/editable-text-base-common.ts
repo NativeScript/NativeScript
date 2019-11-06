@@ -16,7 +16,6 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
     public autocorrect: boolean;
     public hint: string;
     public maxLength: number;
-    public maxLines: number;
 
     public abstract dismissSoftInput();
     public abstract _setInputType(inputType: number): void;
@@ -68,6 +67,3 @@ hintProperty.register(EditableTextBase);
 
 export const maxLengthProperty = new Property<EditableTextBase, number>({ name: "maxLength", defaultValue: Number.POSITIVE_INFINITY, valueConverter: parseInt });
 maxLengthProperty.register(EditableTextBase);
-
-export const maxLinesProperty = new Property<EditableTextBase, number>({ name: "maxLines", valueConverter: parseInt });
-maxLinesProperty.register(EditableTextBase);

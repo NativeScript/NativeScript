@@ -1,7 +1,7 @@
 import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty,
-    autocapitalizationTypeProperty, autocorrectProperty, FormattedString, maxLinesProperty
+    autocapitalizationTypeProperty, autocorrectProperty, FormattedString
 } from "./editable-text-base-common";
 
 export * from "./editable-text-base-common";
@@ -192,21 +192,6 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         }
 
         this.nativeTextViewProtected.autocorrectionType = newValue;
-    }
-
-    [maxLinesProperty.getDefault](): number {
-        return 0;
-    }
-
-    [maxLinesProperty.setNative](value: number) {
-      this.nativeTextViewProtected.textContainer.maximumNumberOfLines = value;
-
-      if (value !== 0) {
-        this.nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
-      }
-      else {
-        this.nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByWordWrapping;
-      }
     }
 }
 
