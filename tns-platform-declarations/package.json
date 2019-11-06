@@ -1,6 +1,6 @@
 {
   "name": "tns-platform-declarations",
-  "version": "6.2.0",
+  "version": "6.3.0",
   "description": "Platform-specific TypeScript declarations for NativeScript for accessing native objects",
   "main": "",
   "scripts": {
