@@ -2,7 +2,6 @@
 import { Color } from "../../../color";
 import { AddArrayFromBuilder, AddChildFromBuilder, EventData, ViewBase } from "../../core/view";
 import { TabNavigationBase } from "../tab-navigation-base";
-import { TabStripItem } from "../tab-strip-item";
 import { TabStripItemEventData, TabStrip as TabStripDefinition } from "./";
 
 // Requires
@@ -10,6 +9,7 @@ import {
     backgroundColorProperty, backgroundInternalProperty, booleanConverter,
     colorProperty, CSSType, fontInternalProperty, Property, View
 } from "../../core/view";
+import { TabStripItem } from "../tab-strip-item";
 import { textTransformProperty } from "../../text-base";
 
 export const traceCategory = "TabView";
