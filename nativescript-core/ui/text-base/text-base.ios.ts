@@ -153,6 +153,10 @@ export class TextBase extends TextBaseCommon {
             this.nativeTextViewProtected.setAttributedTitleForState(attrText, UIControlState.Normal);
         }
         else {
+            if (majorVersion >= 13) {
+                this.nativeTextViewProtected.textColor = UIColor.labelColor;
+            }
+
             this.nativeTextViewProtected.attributedText = attrText;
         }
     }

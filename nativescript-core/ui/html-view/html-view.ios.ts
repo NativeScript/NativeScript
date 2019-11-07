@@ -1,8 +1,11 @@
 import {
     HtmlViewBase, View, layout, htmlProperty
 } from "./html-view-common";
+import { ios } from "../../utils/utils";
 
 export * from "./html-view-common";
+
+const majorVersion = ios.MajorVersion;
 
 export class HtmlView extends HtmlViewBase {
     nativeViewProtected: UITextView;
@@ -50,6 +53,14 @@ export class HtmlView extends HtmlViewBase {
     [htmlProperty.setNative](value: string) {
         const htmlString = NSString.stringWithString(value + "");
         const nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
-        this.nativeViewProtected.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
+        this.nativeViewProtected.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(
+            nsData,
+            <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType },
+            null
+        );
+
+        if (majorVersion >= 13) {
+            this.nativeViewProtected.textColor = UIColor.labelColor;
+        }
     }
 }
