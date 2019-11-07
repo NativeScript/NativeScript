@@ -72,12 +72,19 @@ class UITabBarControllerImpl extends UITabBarController {
     public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
         super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
         UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
-            .call(coordinator, null, () => {
+            .call(coordinator, () => {
                 const owner = this._owner.get();
-                if (owner && owner.items) {
-                    // owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions()); TODO:
+                if (owner && owner.tabStrip && owner.tabStrip.items) {
+                    const tabStrip = owner.tabStrip;
+                    tabStrip.items.forEach(tabStripItem => {
+                        updateBackgroundPositions(tabStrip, tabStripItem);
+
+                        const index = tabStripItem._index;
+                        const tabBarItemController = this.viewControllers[index];
+                        updateTitleAndIconPositions(tabStripItem, tabBarItemController.tabBarItem, tabBarItemController);
+                    });
                 }
-            });
+            }, null);
     }
 
     // Mind implementation for other controllers
@@ -213,6 +220,26 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     }
 }
 
+function updateBackgroundPositions(tabStrip: TabStrip, tabStripItem: TabStripItem) {
+    let bgView = (<any>tabStripItem).bgView;
+    if (!bgView) {
+        const index = tabStripItem._index;
+        const width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
+        const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
+        bgView = UIView.alloc().initWithFrame(frame);
+        tabStrip.nativeView.insertSubviewAtIndex(bgView, 0);
+        (<any>tabStripItem).bgView = bgView;
+    } else {
+        const index = tabStripItem._index;
+        const width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
+        const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
+        bgView.frame = frame;
+    }
+
+    const backgroundColor = tabStripItem.style.backgroundColor;
+    bgView.backgroundColor = backgroundColor instanceof Color ? backgroundColor.ios : backgroundColor;
+}
+
 function updateTitleAndIconPositions(tabStripItem: TabStripItem, tabBarItem: UITabBarItem, controller: UIViewController) {
     if (!tabStripItem || !tabBarItem) {
         return;
@@ -345,21 +372,11 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        if (!this.tabStrip) {
+        if (!this.tabStrip || !tabStripItem) {
             return;
         }
 
-        let bgView = (<any>tabStripItem).bgView;
-        if (!bgView) {
-            const index = (<any>tabStripItem).index;
-            const width = this.tabStrip.nativeView.frame.size.width / this.tabStrip.items.length;
-            const frame = CGRectMake(width * index, 0, width, this.tabStrip.nativeView.frame.size.width);
-            bgView = UIView.alloc().initWithFrame(frame);
-            this.tabStrip.nativeView.insertSubviewAtIndex(bgView, 0);
-            (<any>tabStripItem).bgView = bgView;
-        }
-
-        bgView.backgroundColor = value instanceof Color ? value.ios : value;
+        updateBackgroundPositions(this.tabStrip, tabStripItem);
     }
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
@@ -509,7 +526,7 @@ export class BottomNavigation extends TabNavigationBase {
                 applyStatesToItem(tabBarItem, states);
 
                 controller.tabBarItem = tabBarItem;
-                (<any>tabStripItem).index = i;
+                tabStripItem._index = i;
                 tabStripItem.setNativeView(tabBarItem);
             }
 
