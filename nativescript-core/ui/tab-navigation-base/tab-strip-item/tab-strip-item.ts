@@ -26,6 +26,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
 
     public image: Image;
     public label: Label;
+    public _index: number;
 
     private _title: string;
     private _iconSource: string;
@@ -211,7 +212,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
 
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
-            if ((<any>this).index === tabStripParent.selectedIndex &&
+            if (this._index === tabStripParent.selectedIndex &&
                 !(isIOS && tabStripParent instanceof Tabs)) {
                 this._goToVisualState("highlighted");
             }

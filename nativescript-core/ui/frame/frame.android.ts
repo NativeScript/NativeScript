@@ -9,7 +9,7 @@ import { Page } from "../page";
 import * as application from "../../application";
 
 import {
-    _stack, FrameBase, goBack, NavigationType, Observable,
+    _stack, FrameBase, NavigationType, Observable,
     traceCategories, traceEnabled, traceError, traceWrite, View
 } from "./frame-common";
 
@@ -1189,7 +1189,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         const view = this._rootView;
         let callSuper = false;
         if (view instanceof Frame) {
-            callSuper = !goBack();
+            callSuper = !FrameBase.goBack();
         } else {
             const viewArgs = <application.AndroidActivityBackPressedEventData>{
                 eventName: "activityBackPressed",
