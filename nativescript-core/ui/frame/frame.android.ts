@@ -937,18 +937,21 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
     @profile
     public onDestroyView(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-        if (traceEnabled()) {
-            traceWrite(`${fragment}.onDestroyView()`, traceCategories.NativeLifecycle);
-        }
+        try {
+            if (traceEnabled()) {
+                traceWrite(`${fragment}.onDestroyView()`, traceCategories.NativeLifecycle);
+            }
 
-        const hasRemovingParent = fragment.getRemovingParentFragment();
+            const hasRemovingParent = fragment.getRemovingParentFragment();
 
-        if (hasRemovingParent) {
-            const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), this.backgroundBitmap);
-            this.frame.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
-            this.backgroundBitmap = null;
+            if (hasRemovingParent) {
+                const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), this.backgroundBitmap);
+                this.frame.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
+                this.backgroundBitmap = null;
+            }
+        } finally {
+            superFunc.call(fragment);
         }
-        superFunc.call(fragment);
     }
 
     @profile
@@ -982,14 +985,17 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
     @profile
     public onPause(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-        // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-        // TODO: Consider removing it when update to androidx.fragment:1.2.0
-        const hasRemovingParent = fragment.getRemovingParentFragment();
+        try {
+            // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
+            // TODO: Consider removing it when update to androidx.fragment:1.2.0
+            const hasRemovingParent = fragment.getRemovingParentFragment();
 
-        if (hasRemovingParent) {
-            this.backgroundBitmap = this.loadBitmapFromView(this.frame.nativeViewProtected);
+            if (hasRemovingParent) {
+                this.backgroundBitmap = this.loadBitmapFromView(this.frame.nativeViewProtected);
+            }
+        } finally {
+            superFunc.call(fragment);
         }
-        superFunc.call(fragment);
     }
 
     @profile
@@ -1154,19 +1160,21 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
     @profile
     public onDestroy(activity: any, superFunc: Function): void {
-        if (traceEnabled()) {
-            traceWrite("NativeScriptActivity.onDestroy();", traceCategories.NativeLifecycle);
+        try {
+            if (traceEnabled()) {
+                traceWrite("NativeScriptActivity.onDestroy();", traceCategories.NativeLifecycle);
+            }
+
+            const rootView = this._rootView;
+            if (rootView) {
+                rootView._tearDownUI(true);
+            }
+
+            const exitArgs = { eventName: application.exitEvent, object: application.android, android: activity };
+            application.notify(exitArgs);
+        } finally {
+            superFunc.call(activity);
         }
-
-        const rootView = this._rootView;
-        if (rootView) {
-            rootView._tearDownUI(true);
-        }
-
-        const exitArgs = { eventName: application.exitEvent, object: application.android, android: activity };
-        application.notify(exitArgs);
-
-        superFunc.call(activity);
     }
 
     @profile
