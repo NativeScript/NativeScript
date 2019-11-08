@@ -12,6 +12,9 @@ import {
     CSS3Parser,
     CSSNativeScript
 } from "../../css/parser";
+import {
+    cssTreeParse
+} from "../../css/css-tree-parser";
 
 import {
     RuleSet,
@@ -50,11 +53,15 @@ function ensureCssAnimationParserModule() {
     }
 }
 
-let parser: "rework" | "nativescript" = "rework";
+let parser: "rework" | "nativescript" | "css-tree" = "rework";
 try {
     const appConfig = require("~/package.json");
-    if (appConfig && appConfig.cssParser === "nativescript") {
-        parser = "nativescript";
+    if (appConfig) {
+        if (appConfig.cssParser === "css-tree") {
+            parser = "css-tree";
+        } else if (appConfig.cssParser === "nativescript") {
+            parser = "nativescript";
+        }
     }
 } catch (e) {
     //
@@ -220,6 +227,10 @@ class CSSSource {
     private parseCSSAst() {
         if (this._source) {
             switch (parser) {
+                case "css-tree":
+                    this._ast = cssTreeParse(this._source, this._file);
+
+                    return;
                 case "nativescript":
                     const cssparser = new CSS3Parser(this._source);
                     const stylesheet = cssparser.parseAStylesheet();

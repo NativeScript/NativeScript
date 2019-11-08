@@ -15,7 +15,7 @@
     "@types/node": "~10.12.18",
     "chai": "^4.1.2",
     "css": "^2.2.1",
-    "css-tree": "^1.0.0-alpha24",
+    "css-tree": "^1.0.0-alpha.37",
     "gonzales": "^1.0.7",
     "madge": "^2.2.0",
     "markdown-snippet-injector": "0.2.2",
