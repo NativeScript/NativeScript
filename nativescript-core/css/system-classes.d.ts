@@ -1,30 +1,10 @@
-// /**
-//  * @module "system-classes"
-//  */ /** */
+/**
+ * @module "system-classes"
+ * This is an internal module.
+ */ /** */
+export const MODAL_ROOT_VIEW_CSS_CLASS;
+export const ROOT_VIEW_CSS_CLASS;
 
-// /**
-//  * String value "ns-" used for CSS system class prefix.
-//  */
-// export const CLASS_PREFIX: string;
-
-// /**
-//  * Gets CSS system class for modal root view.
-//  */
-// export function getModalRootViewCssClass(): string[];
-
-// /**
-//  * Gets CSS system classes for root view.
-//  */
-// export function getRootViewCssClasses(): string[];
-
-// /**
-//  * Appends new CSS class to the system classes and returns the new length of the array.
-//  * @param value New CSS system class.
-//  */
-// export function pushToRootViewCssClasses(value: string): number;
-
-// /**
-//  * Removes CSS class from the system classes and returns it.
-//  * @param value
-//  */
-// export function removeFromRootViewCssClasses(value: string): string;
+export function _getCssClasses(): string[];
+export function _pushToCssClasses(value: string): number;
+export function _removeCssClass(value: string): string;
