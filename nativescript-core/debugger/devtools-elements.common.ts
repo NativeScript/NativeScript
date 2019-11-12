@@ -4,9 +4,6 @@ import { getNodeById } from "./dom-node";
 import { ViewBase } from "../ui/core/view-base";
 import { mainThreadify } from "../utils/utils";
 
-// Use lazy requires for core modules
-const frameTopmost = () => require("../ui/frame").topmost();
-
 let unsetValue;
 function unsetViewValue(view, name) {
     if (!unsetValue) {
@@ -27,7 +24,7 @@ function getViewById(nodeId: number): ViewBase {
 }
 
 export function getDocument() {
-    const topMostFrame = frameTopmost();
+    const topMostFrame = require("../ui/frame").Frame.topmost();
     if (!topMostFrame) {
         return undefined;
     }
