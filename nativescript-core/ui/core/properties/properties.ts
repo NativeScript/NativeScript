@@ -58,19 +58,16 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
     return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
 }
 
-const cssVariableExpressionRegexp = /\bvar\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/;
-const cssVariableAllExpressionsRegexp = /\bvar\(\s*(--[^,\s]+?)(?:\s*,\s*(.+))?\s*\)/g;
-
 export function isCssVariable(property: string) {
     return /^--[^,\s]+?$/.test(property);
 }
 
 export function isCssCalcExpression(value: string) {
-    return /\bcalc\(/.test(value);
+    return value.includes("calc(");
 }
 
 export function isCssVariableExpression(value: string) {
-    return cssVariableExpressionRegexp.test(value);
+    return value.includes("var(--");
 }
 
 export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, value: string): string {
@@ -90,26 +87,28 @@ export function _evaluateCssVariableExpression(view: ViewBase, cssName: string, 
     while (lastValue !== output) {
         lastValue = output;
 
-        output = output.replace(cssVariableAllExpressionsRegexp, (matchStr, cssVariableName: string, fallbackStr: string) => {
-            const cssVariableValue = view.style.getCssVariable(cssVariableName);
-            if (cssVariableValue !== null) {
-                return cssVariableValue;
-            }
+        const idx = output.lastIndexOf("var(");
+        if (idx === -1) {
+            continue;
+        }
 
-            if (fallbackStr) {
-                // css-variable not found, using fallback-string.
-                const fallbackOutput = _evaluateCssVariableExpression(view, cssName, fallbackStr);
-                if (fallbackOutput) {
-                    // If the fallback have multiple values, return the first of them.
-                    return fallbackOutput.split(",")[0];
-                }
-            }
+        const endIdx = output.indexOf(")", idx);
+        if (endIdx === -1) {
+            continue;
+        }
 
-            // Couldn't find a value for the css-variable or the fallback, return "unset"
-            traceWrite(`Failed to get value for css-variable "${cssVariableName}" used in "${cssName}"=[${value}] to ${view}`, traceCategories.Style, traceMessageType.error);
+        const matched = output.substring(idx + 4, endIdx).split(",").map((v) => v.trim()).filter((v) => !!v);
+        const cssVariableName = matched.shift();
+        let cssVariableValue = view.style.getCssVariable(cssVariableName);
+        if (cssVariableValue === null && matched.length) {
+            cssVariableValue = _evaluateCssVariableExpression(view, cssName, matched.join(", ")).split(",")[0];
+        }
 
-            return "unset";
-        });
+        if (!cssVariableValue) {
+            cssVariableValue = "unset";
+        }
+
+        output = `${output.substring(0, idx)}${cssVariableValue}${output.substring(endIdx + 1)}`;
     }
 
     return output;
