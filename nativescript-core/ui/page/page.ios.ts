@@ -300,7 +300,7 @@ export class Page extends PageBase {
     nativeViewProtected: UIView;
     viewController: UIViewControllerImpl;
 
-    private _backgroundColor = majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+    private _backgroundColor = (majorVersion <= 12 && !UIColor.systemBackgroundColor) ? UIColor.whiteColor : UIColor.systemBackgroundColor;
     private _ios: UIViewControllerImpl;
     public _presentedViewController: UIViewController; // used when our page present native viewController without going through our abstraction.
 

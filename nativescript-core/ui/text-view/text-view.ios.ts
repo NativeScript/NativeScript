@@ -116,8 +116,8 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     private _isShowingHint: boolean;
     public _isEditing: boolean;
 
-    private _hintColor = majorVersion <= 12 ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
-    private _textColor = majorVersion <= 12 ? null : UIColor.labelColor;
+    private _hintColor = (majorVersion <= 12 || !UIColor.placeholderTextColor) ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
+    private _textColor = (majorVersion <= 12 || !UIColor.labelColor) ? null : UIColor.labelColor;
 
     createNativeView() {
         const textView = NoScrollAnimationUITextView.new();

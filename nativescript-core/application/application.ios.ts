@@ -89,7 +89,7 @@ class CADisplayLinkTarget extends NSObject {
 }
 
 class IOSApplication implements IOSApplicationDefinition {
-    private _backgroundColor = majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+    private _backgroundColor = (majorVersion <= 12 || !UIColor.systemBackgroundColor) ? UIColor.whiteColor : UIColor.systemBackgroundColor;
     private _delegate: typeof UIApplicationDelegate;
     private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
@@ -121,7 +121,6 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     get systemAppearance(): "light" | "dark" | null {
-
         // userInterfaceStyle is available on UITraitCollection since iOS 12.
         if (majorVersion <= 11) {
             return null;

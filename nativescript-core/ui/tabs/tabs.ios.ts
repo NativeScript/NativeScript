@@ -100,7 +100,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
 
         tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
 
-        if (majorVersion <= 12) {
+        if (majorVersion <= 12 || !UIColor.labelColor) {
             tabBar.tintColor = UIColor.blueColor;
             tabBar.barTintColor = UIColor.whiteColor;
             tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
