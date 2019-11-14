@@ -10,7 +10,7 @@ import * as application from "../../application";
 
 import {
     _stack, FrameBase, NavigationType, Observable,
-    traceCategories, traceEnabled, traceError, traceWrite, View
+    traceCategories, traceEnabled, traceError, traceWrite, View, Color
 } from "./frame-common";
 
 import {
@@ -91,6 +91,7 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 }
 
 export class Frame extends FrameBase {
+    public _originalBackground: any;
     private _android: AndroidFrame;
     private _containerViewId: number = -1;
     private _tearDownPending = false;
@@ -239,6 +240,16 @@ export class Frame extends FrameBase {
         // i.e. in a scenario with nested frames / frame with tabview let the descendandt cleanup the inner
         // fragments first, and then cleanup the parent fragments
         this.disposeCurrentFragment();
+    }
+
+    onLoaded(): void {
+        if (this._originalBackground) {
+            this.backgroundColor = null;
+            this.backgroundColor = this._originalBackground;
+            this._originalBackground = null;
+        }
+
+        super.onLoaded();
     }
 
     onUnloaded() {
@@ -953,6 +964,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
             if (hasRemovingParent) {
                 const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), this.backgroundBitmap);
+                this.frame._originalBackground = this.frame.backgroundColor || new Color("White");
                 this.frame.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
                 this.backgroundBitmap = null;
             }
