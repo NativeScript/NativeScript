@@ -180,11 +180,8 @@ public class Async {
                     stream = new java.net.URL(params[0]).openStream();
                     Bitmap bmp = BitmapFactory.decodeStream(stream);
                     return bmp;
-                } catch (MalformedURLException e) {
-                    Log.e(TAG, "Failed to decode stream, MalformedURLException: " + e.getMessage());
-                    return null;
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed to decode stream, IOException: " + e.getMessage());
+                } catch (Throwable t) {
+                    Log.e(TAG, "Failed to decode stream, Throwable: " + t.getMessage());
                     return null;
                 } finally {
                     if (stream != null) {
@@ -472,8 +469,8 @@ public class Async {
                         bitmapOptions.inSampleSize = scale;
                         this.responseAsImage = BitmapFactory.decodeByteArray(responseStream.buf(), 0, responseStream.size(), bitmapOptions);
                     }
-                } catch (Exception e) {
-                    Log.e(TAG, "Failed to decode byte array, Exception: " + e.getMessage());
+                } catch (Throwable t) {
+                    Log.e(TAG, "Failed to decode byte array, Throwable: " + t.getMessage());
                 }
 
                 if (this.responseAsImage == null) {
