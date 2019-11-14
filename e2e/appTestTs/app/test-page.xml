@@ -1,0 +1,5 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" id="page">
+    <StackLayout id="stack">
+        <Label id="label" text="Test Page Stack Label"></Label>
+    </StackLayout>
+</Page>

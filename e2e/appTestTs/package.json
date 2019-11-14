@@ -13,9 +13,10 @@
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",
   "dependencies": {
+    "@nativescript/core": "file:../../../../Downloads/nativescript-core-6.3.0.tgz",
     "@nativescript/theme": "~2.2.0",
     "nativescript-unit-test-runner": "^0.7.0",
-    "tns-core-modules": "~6.2.0"
+    "tns-core-modules": "file:../../../../Downloads/tns-core-modules-6.3.0.tgz"
   },
   "devDependencies": {
     "@types/karma-chai": "0.1.2",

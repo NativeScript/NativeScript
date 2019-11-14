@@ -1,0 +1,5 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" id="page" navigatingTo="navigatingTo">
+    <StackLayout id="stack">
+        <Label id="label" text="{{ message }}"></Label>
+    </StackLayout>
+</Page>

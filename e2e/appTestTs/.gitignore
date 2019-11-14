@@ -6,6 +6,7 @@ platforms/
 # NativeScript Template
 *.js.map
 *.js
+!karma.conf.js
 !webpack.config.js
 
 # Logs
