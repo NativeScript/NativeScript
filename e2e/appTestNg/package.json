@@ -22,6 +22,7 @@
     "@angular/router": "~8.2.0",
     "@nativescript/theme": "~2.2.0",
     "nativescript-angular": "~8.20.0",
+    "nativescript-unit-test-runner": "^0.7.0",
     "reflect-metadata": "~0.1.12",
     "rxjs": "^6.4.0",
     "tns-core-modules": "~6.2.0",
@@ -30,6 +31,15 @@
   "devDependencies": {
     "@angular/compiler-cli": "~8.2.0",
     "@ngtools/webpack": "~8.2.0",
+    "@types/karma-chai": "0.1.2",
+    "@types/mocha": "5.2.7",
+    "chai": "4.2.0",
+    "karma": "4.4.1",
+    "karma-chai": "0.1.0",
+    "karma-mocha": "1.3.0",
+    "karma-nativescript-launcher": "0.4.0",
+    "karma-webpack": "3.0.5",
+    "mocha": "6.2.2",
     "nativescript-dev-webpack": "~1.3.0",
     "typescript": "~3.5.3"
   },
