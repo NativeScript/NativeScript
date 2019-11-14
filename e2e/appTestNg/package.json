@@ -1,0 +1,38 @@
+{
+  "nativescript": {
+    "id": "org.nativescript.appTestNg",
+    "tns-android": {
+      "version": "6.2.0"
+    },
+    "tns-ios": {
+      "version": "6.2.0"
+    }
+  },
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
+  "dependencies": {
+    "@angular/animations": "~8.2.0",
+    "@angular/common": "~8.2.0",
+    "@angular/compiler": "~8.2.0",
+    "@angular/core": "~8.2.0",
+    "@angular/forms": "~8.2.0",
+    "@angular/platform-browser": "~8.2.0",
+    "@angular/platform-browser-dynamic": "~8.2.0",
+    "@angular/router": "~8.2.0",
+    "@nativescript/theme": "~2.2.0",
+    "nativescript-angular": "~8.20.0",
+    "reflect-metadata": "~0.1.12",
+    "rxjs": "^6.4.0",
+    "tns-core-modules": "~6.2.0",
+    "zone.js": "~0.9.1"
+  },
+  "devDependencies": {
+    "@angular/compiler-cli": "~8.2.0",
+    "@ngtools/webpack": "~8.2.0",
+    "nativescript-dev-webpack": "~1.3.0",
+    "typescript": "~3.5.3"
+  },
+  "gitHead": "6894b56740adbd34cb17ebf10afa6a05768747bf",
+  "readme": "NativeScript Application"
+}
