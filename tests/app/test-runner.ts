@@ -76,6 +76,9 @@ allTests["OBSERVABLE"] = observableTests;
 import * as timerTests from "./timer/timer-tests";
 allTests["TIMER"] = timerTests;
 
+import * as animationFrameTests from "./animation-frame/animation-frame";
+allTests["ANIMATION-FRAME"] = animationFrameTests;
+
 import * as colorTests from "./color/color-tests";
 allTests["COLOR"] = colorTests;
 
