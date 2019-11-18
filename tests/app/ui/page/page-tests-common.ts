@@ -385,7 +385,7 @@ export function test_page_backgroundColor() {
     helper.navigate(factory);
 
     if (isIOS) {
-        const backgroundColor = ios.MajorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+        const backgroundColor = (ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor) ? UIColor.whiteColor : UIColor.systemBackgroundColor;
         TKUnit.assertEqual(page.nativeView.backgroundColor, backgroundColor, "page backgroundColor is wrong");
     } else {
         const whiteColor = new Color("white");

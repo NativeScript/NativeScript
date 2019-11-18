@@ -153,7 +153,7 @@ export class TextBase extends TextBaseCommon {
             this.nativeTextViewProtected.setAttributedTitleForState(attrText, UIControlState.Normal);
         }
         else {
-            if (majorVersion >= 13) {
+            if (majorVersion >= 13 && UIColor.labelColor) {
                 this.nativeTextViewProtected.textColor = UIColor.labelColor;
             }
 
@@ -205,7 +205,7 @@ export class TextBase extends TextBaseCommon {
         if (dict.size > 0 || isTextView) {
             if (style.color) {
                 dict.set(NSForegroundColorAttributeName, style.color.ios);
-            } else if (majorVersion >= 13) {
+            } else if (majorVersion >= 13 && UIColor.labelColor) {
                 dict.set(NSForegroundColorAttributeName, UIColor.labelColor);
             }
         }
