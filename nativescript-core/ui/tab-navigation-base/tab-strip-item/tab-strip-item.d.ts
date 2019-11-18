@@ -37,6 +37,12 @@ export class TabStripItem extends View {
     public static tapEvent: string;
 
     //@private
+
+    /**
+     * @private
+     */
+    _index: number;
+
     /**
      * @private
      */

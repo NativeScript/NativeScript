@@ -848,11 +848,11 @@ export class Tabs extends TabsBase {
 
         const tabBarItems = [];
 
-        items.forEach((item: TabStripItem, i) => {
-            (<any>item).index = i;
-            const tabBarItem = this.createTabBarItem(item, i);
+        items.forEach((tabStripItem: TabStripItem, i) => {
+            tabStripItem._index = i;
+            const tabBarItem = this.createTabBarItem(tabStripItem, i);
             tabBarItems.push(tabBarItem);
-            item.setNativeView(tabBarItem);
+            tabStripItem.setNativeView(tabBarItem);
         });
 
         this.tabBarItems = tabBarItems;

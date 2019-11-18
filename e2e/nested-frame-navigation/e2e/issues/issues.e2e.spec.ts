@@ -1,7 +1,7 @@
 import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
-import { Screen } from "./screen";
-import { suspendTime, dontKeepActivities } from "./config";
-import { TabViewNavigationScreen } from "./tabview-navigation-screen";
+import { Screen } from "../screens/screen";
+import { suspendTime, dontKeepActivities } from "../config";
+import { TabViewNavigationScreen } from "../screens/tabview-navigation-screen";
 
 describe("issues", async function () {
     let driver: AppiumDriver;
@@ -10,6 +10,7 @@ describe("issues", async function () {
     before(async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
+        await driver.restartApp();
         screen = new TabViewNavigationScreen(driver);
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
@@ -35,7 +36,7 @@ describe("issues", async function () {
         await screen.loadedHome();
         const showSomePage = async function () {
             const somePageBtn = await driver.waitForElement("somePageOnRoot");
-            await somePageBtn.tap();
+            await somePageBtn.click();
             await screen.loadedSomePage();
         };
 

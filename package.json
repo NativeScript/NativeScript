@@ -9,6 +9,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.5.0",
+    "@nativescript/tslint-rules": "0.0.5",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.42",
     "@types/node": "~10.12.18",
