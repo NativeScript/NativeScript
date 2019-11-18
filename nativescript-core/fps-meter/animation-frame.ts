@@ -1,5 +1,5 @@
 import { FPSCallback } from "./fps-native";
-import { time } from "../profiling";
+import { getTimeInFrameBase } from "./animation-native";
 
 export interface FrameRequestCallback {
     (time: number): void;
@@ -40,10 +40,10 @@ function doFrame(currentTimeMillis: number) {
     }
 }
 
-export function requestAnimationFrame(cb: (frameTime: number) => any): number {
+export function requestAnimationFrame(cb: FrameRequestCallback): number {
     if(!inAnimationFrame) {
         inAnimationFrame = true;
-        zonedCallback(cb)(time()); // TODO: store and use lastFrameTime
+        zonedCallback(cb)(getTimeInFrameBase()); // TODO: store and use lastFrameTime
         inAnimationFrame = false;
         return getNewId();
     }
