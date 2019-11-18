@@ -1,4 +1,11 @@
 module.exports = function (config) {
+  config.set({
+    client: {
+      mocha: {
+        timeout: 3000 // 3 seconds - upped from 2 seconds
+      }
+    }
+  });
   const options = {
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -18,12 +25,10 @@ module.exports = function (config) {
     exclude: [
     ],
 
-
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
     },
-
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
