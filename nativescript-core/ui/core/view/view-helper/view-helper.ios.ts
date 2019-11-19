@@ -89,7 +89,9 @@ export namespace ios {
         ViewHelper.measureChild(null, owner, widthSpec, heightSpec);
         ViewHelper.layoutChild(null, owner, position.left, position.top, position.right, position.bottom);
 
-        owner.parent._layoutParent();
+        if (owner.parent) {
+            owner.parent._layoutParent();
+        }
     }
 
     export function getPositionFromFrame(frame: CGRect): { left, top, right, bottom } {
