@@ -170,6 +170,16 @@ export class AndroidApplication extends Observable {
 
     nativeApp: any /* android.app.Application */;
 
+    on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
+
+    on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+
+    on(event: "activityDestroyed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+    on(event: "activityStarted", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+    on(event: "activityPaused", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
     on(event: "activityResumed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
 
     on(event: "activityStopped", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
@@ -183,16 +193,6 @@ export class AndroidApplication extends Observable {
     on(event: "activityNewIntent", callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any);
 
     on(event: "activityRequestPermissions", callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
-
-    on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
-
-    on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
-
-    on(event: "activityDestroyed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-
-    on(event: "activityStarted", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-
-    on(event: "activityPaused", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
 
     orientation: "portrait" | "landscape" | "unknown";
 
@@ -404,15 +404,15 @@ export class ChangeType {
 // @public
 export class Color {
     constructor(knownColor: string);
-    constructor(alpha: number, red: number, green: number, blue: number);
     constructor(hex: string);
     constructor(argb: number);
+    constructor(alpha: number, red: number, green: number, blue: number);
     public a: number;
     android: number;
     public argb: number;
     public b: number;
-    public static equals(value1: Color, value2: Color): boolean;
     public equals(value: Color): boolean;
+    public static equals(value1: Color, value2: Color): boolean;
     public g: number;
     public hex: string;
     ios: any /* UIColor */;
@@ -1112,9 +1112,9 @@ export class ImageCache extends Observable {
     enqueue(request: DownloadRequest);
     get(key: string): any;
     maxRequests: number;
-    on(event: "downloadError", callback: (args: DownloadError) => void, thisArg?: any);
     on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
     on(event: "downloaded", callback: (args: DownloadedData) => void, thisArg?: any);
+    on(event: "downloadError", callback: (args: DownloadError) => void, thisArg?: any);
     // (undocumented)
     _onDownloadCompleted(key: string, image: any);
     // (undocumented)
@@ -1144,10 +1144,10 @@ export class ImageSource {
 
     static fromBase64Sync(source: string): ImageSource;
 
+    static fromData(data: any): Promise<ImageSource>;
+
     // @deprecated (undocumented)
     fromData(data: any): Promise<boolean>;
-
-    static fromData(data: any): Promise<ImageSource>;
 
     static fromDataSync(data: any): ImageSource;
 
@@ -1372,10 +1372,10 @@ export class ListView extends View {
     itemTemplates: string | Array<KeyedTemplate>;
     itemTemplateSelector: string | ((item: any, index: number, items: any) => string);
     public static loadMoreItemsEvent: string;
-    on(event: "loadMoreItems", callback: (args: EventData) => void, thisArg?: any);
-    on(event: "itemLoading", callback: (args: ItemEventData) => void, thisArg?: any);
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "itemLoading", callback: (args: ItemEventData) => void, thisArg?: any);
     on(event: "itemTap", callback: (args: ItemEventData) => void, thisArg?: any);
+    on(event: "loadMoreItems", callback: (args: EventData) => void, thisArg?: any);
     refresh();
     rowHeight: Length;
     scrollToIndex(index: number);
@@ -1482,9 +1482,9 @@ export class Observable {
 
     off(eventNames: string, callback?: any, thisArg?: any);
 
-    on(event: "propertyChange", callback: (data: EventData) => void, thisArg?: any);
-
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+
+    on(event: "propertyChange", callback: (data: EventData) => void, thisArg?: any);
 
     once(event: string, callback: (data: EventData) => void, thisArg?: any);
 
@@ -1506,9 +1506,9 @@ export class ObservableArray<T> extends Observable {
 
     public static changeEvent: string;
 
-    concat(...items: T[]): T[];
-
     concat<U extends T[]>(...items: U[]): T[];
+
+    concat(...items: T[]): T[];
 
     every(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean;
 
@@ -1558,9 +1558,9 @@ export class ObservableArray<T> extends Observable {
 
     sort(compareFn?: (a: T, b: T) => number): T[];
 
-    splice(start: number, deleteCount: number, ...items: T[]): T[];
-
     splice(start: number): T[];
+
+    splice(start: number, deleteCount: number, ...items: T[]): T[];
 
     // (undocumented)
     toLocaleString(): string;
@@ -1610,13 +1610,13 @@ export class Page extends ContentView {
 
     public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
 
+    public on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
+
     public on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
     public on(event: "navigatingFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
     public on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
-
-    public on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
     public onNavigatedFrom(isBackNavigation: boolean): void;
 
@@ -1779,9 +1779,9 @@ export class ScrollView extends ContentView {
 
     isScrollEnabled: boolean;
 
-    on(event: "scroll", callback: (args: ScrollEventData) => void, thisArg?: any);
-
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+
+    on(event: "scroll", callback: (args: ScrollEventData) => void, thisArg?: any);
 
     // (undocumented)
     _onOrientationChanged();
@@ -1816,11 +1816,11 @@ export class SearchBar extends View {
 
     ios: any /* UISearchBar */;
 
-    on(event: "close", callback: (args: EventData) => void, thisArg?: any);
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     on(event: "submit", callback: (args: EventData) => void, thisArg?: any);
 
-    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "close", callback: (args: EventData) => void, thisArg?: any);
 
     public static submitEvent: string;
 
@@ -2304,6 +2304,9 @@ export class TabStripItem extends View {
 
     image: Image;
 
+    // (undocumented)
+    _index: number;
+
     label: Label;
 
     on(eventNames: string, callback: (data: EventData) => void);
@@ -2678,12 +2681,12 @@ export abstract class View extends ViewBase {
     // (undocumented)
     _modalParent?: View;
     off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
-    on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
-    on(event: "androidBackPressed", callback: (args: EventData) => void, thisArg?: any);
-    on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
+    on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
     on(event: "loaded", callback: (args: EventData) => void, thisArg?: any);
     on(event: "unloaded", callback: (args: EventData) => void, thisArg?: any);
-    on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
+    on(event: "androidBackPressed", callback: (args: EventData) => void, thisArg?: any);
+    on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
+    on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
     _onAttachedToWindow(): void;
     onBackPressed(): boolean;
     _onDetachedFromWindow(): void;
@@ -2949,12 +2952,12 @@ export class WebView extends View {
 
     public static loadStartedEvent: string;
 
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+
     // Warning: (ae-forgotten-export) The symbol "LoadEventData" needs to be exported by the entry point index.d.ts
     on(event: "loadFinished", callback: (args: LoadEventData) => void, thisArg?: any);
 
     on(event: "loadStarted", callback: (args: LoadEventData) => void, thisArg?: any);
-
-    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     reload();
 
