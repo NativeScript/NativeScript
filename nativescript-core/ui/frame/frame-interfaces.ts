@@ -69,7 +69,6 @@ export interface AndroidFrame extends Observable {
     fragmentForPage(entry: BackstackEntry): any;
 }
 
-
 export interface AndroidActivityCallbacks {
     getRootView(): View;
     resetActivityContent(activity: any): void;
@@ -86,7 +85,6 @@ export interface AndroidActivityCallbacks {
     onNewIntent(activity: any, intent: any, superSetIntentFunc: Function, superFunc: Function): void;
 }
 
-
 export interface AndroidFragmentCallbacks {
     onHiddenChanged(fragment: any, hidden: boolean, superFunc: Function): void;
     onCreateAnimator(fragment: any, transit: number, enter: boolean, nextAnim: number, superFunc: Function): any;
@@ -100,7 +98,9 @@ export interface AndroidFragmentCallbacks {
     toStringOverride(fragment: any, superFunc: Function): string;
 }
 
+/* tslint:disable */
 export interface iOSFrame {
+    /* tslint:enable */
     controller: any /* UINavigationController */;
     navBarVisibility: "auto" | "never" | "always";
     _disableNavBarAnimation: boolean;

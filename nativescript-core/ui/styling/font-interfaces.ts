@@ -5,8 +5,8 @@ export type FontWeight = "100" | "200" | "300" | "normal" | "400" | "500" | "600
 export interface ParsedFont {
     fontStyle?: FontStyle;
     fontVariant?: string;
-    fontWeight?: FontWeight,
-    lineHeight?: string,
-    fontSize?: string,
-    fontFamily?: string
+    fontWeight?: FontWeight;
+    lineHeight?: string;
+    fontSize?: string;
+    fontFamily?: string;
 }

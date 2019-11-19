@@ -89,7 +89,9 @@ class CADisplayLinkTarget extends NSObject {
     };
 }
 
+/* tslint:disable */
 export class iOSApplication implements iOSApplicationDefinition {
+    /* tslint:enable */
     private _backgroundColor = majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
     private _delegate: typeof UIApplicationDelegate;
     private _window: UIWindow;
@@ -327,7 +329,9 @@ export class iOSApplication implements iOSApplicationDefinition {
     }
 }
 
+/* tslint:disable */
 const iosApp = new iOSApplication();
+/* tslint:enable */
 export { iosApp as ios };
 setApplication(iosApp);
 

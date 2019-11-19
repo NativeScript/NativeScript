@@ -18,7 +18,7 @@ export type TransformFunctionsInfo = {
     translate: Pair,
     rotate: number,
     scale: Pair,
-}
+};
 
 export type AnimationPromise = Promise<void> & Cancelable;
 

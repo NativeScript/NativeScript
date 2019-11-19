@@ -6,7 +6,7 @@ import { View } from "../core/view";
 
 // Requires
 import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
-import { ios as iosViewHelper}from "../core/view/view-helper";
+import { ios as iosViewHelper } from "../core/view/view-helper";
 import { profile } from "../../profiling";
 import { ios as iosUtils, layout } from "../../utils/utils";
 import {
