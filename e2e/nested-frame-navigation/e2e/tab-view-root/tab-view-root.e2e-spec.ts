@@ -1,32 +1,34 @@
 import { AppiumDriver, createDriver, logWarn, nsCapabilities } from "nativescript-dev-appium";
 
-import { Screen, playersData, teamsData } from "./screen";
-import * as shared from "./shared.e2e-spec";
-import { suspendTime, appSuspendResume, dontKeepActivities, transitions } from "./config";
-import { TabNavigationScreen } from "./tab-navigation-screen";
+import { Screen, playersData, teamsData } from "../screens/screen";
+import * as shared from "../screens/shared";
+import { suspendTime, appSuspendResume, dontKeepActivities, allTransitions } from "../config";
+import { TabViewNavigationScreen } from "../screens/tabview-navigation-screen";
 
-const roots = ["TabsTop", "TabsBottom"];
+// NOTE: TabViewTop is Android only scenario (for iOS we will essentially execute 2x TabViewBottom)
+const roots = ["TabViewTop", "TabViewBottom"];
 
-const rootType = "tabs-root";
-describe(rootType, async function () {
+describe("tab-view-root", async function () {
     let driver: AppiumDriver;
     let screen: Screen;
-
+    let transitions = [...allTransitions];
     before(async function () {
         nsCapabilities.testReporter.context = this;
-        logWarn(`====== ${rootType} ========`);
+        logWarn(`====== tab-view-root ========`);
         driver = await createDriver();
-        screen = new TabNavigationScreen(driver);
-        if (dontKeepActivities) {
-            await driver.setDontKeepActivities(true);
-        }
-
+        await driver.restartApp();
+        screen = new TabViewNavigationScreen(driver);
+        await driver.setDontKeepActivities(dontKeepActivities);
         driver.defaultWaitTime = 8000;
     });
 
     after(async function () {
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(false);
+        }
+        if (driver.isIOS) {
+            roots.shift();
+            logWarn("TabViewTop is Android only scenario (for iOS it will be skipped)");
         }
         await driver.quit();
         console.log("Quit driver!");
@@ -40,7 +42,7 @@ describe(rootType, async function () {
 
     for (let index = 0; index < roots.length; index++) {
         const root = roots[index];
-        describe(`${rootType}-${root}-scenarios:`, async function () {
+        describe(`tab-view-root-${root}-scenario:`, async function () {
 
             before(async function () {
                 nsCapabilities.testReporter.context = this;
@@ -54,16 +56,16 @@ describe(rootType, async function () {
                 const teamOne = teamsData[`teamOne${transition}`];
                 const teamTwo = teamsData[`teamTwo${transition}`];
 
-                describe(`${rootType}-${root}-transition-${transition}-scenarios:`, async function () {
+                describe(`tab-view-root-${root}-transition-${transition}-scenario:`, async function () {
 
                     before(async function () {
                         nsCapabilities.testReporter.context = this;
-
-                        if (transition === "Flip" &&
-                            driver.isAndroid && parseInt(driver.platformVersion) === 19) {
+                        if (shared.isApiLevel19(driver) && (transition === "None" || transition === "Flip")) {
                             // TODO: known issue https://github.com/NativeScript/NativeScript/issues/6798
-                            console.log("skipping flip transition tests on api level 19");
+                            logWarn("Skipping flip or none transition tests on api level 19");
                             this.skip();
+                        } else {
+                            logWarn(`========= ${root}-${transition} =========`);
                         }
                     });
 

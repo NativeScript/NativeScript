@@ -28,8 +28,3 @@ export function pushToRootViewCssClasses(value: string): number;
  * @param value
  */
 export function removeFromRootViewCssClasses(value: string): string;
-
-/**
- * Resets CSS classes for root view.
- */
-export function resetRootViewCssClasses(): string[];

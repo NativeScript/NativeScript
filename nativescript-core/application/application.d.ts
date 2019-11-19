@@ -53,6 +53,11 @@ export const lowMemoryEvent: string;
 export const orientationChangedEvent: string;
 
 /**
+ * String value used when hooking to systemAppearanceChanged event.
+ */
+export const systemAppearanceChangedEvent: string;
+
+/**
  * Event data containing information for the application events.
  */
 export interface ApplicationEventData extends EventData {

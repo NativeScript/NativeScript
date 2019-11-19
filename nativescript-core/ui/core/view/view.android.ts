@@ -33,6 +33,7 @@ const androidBackPressedEvent = "androidBackPressed";
 const shortAnimTime = 17694720; // android.R.integer.config_shortAnimTime
 const statePressed = 16842919; // android.R.attr.state_pressed
 const stateEnabled = 16842910; // android.R.attr.state_enabled
+const styleAnimationDialog = 16973826; // android.R.style.Animation_Dialog
 
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
@@ -187,7 +188,7 @@ function initializeDialogFragment() {
                 dialog
                     .getWindow()
                     .setWindowAnimations(
-                        android.R.style.Animation_Dialog
+                        styleAnimationDialog
                     );
             }
 

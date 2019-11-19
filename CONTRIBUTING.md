@@ -69,6 +69,7 @@ git checkout -b <my-fix-branch> master
     - Rebase your changes to the latest master: `git pull --rebase upstream master`.
     - Ensure all unit test are green for Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
     - Ensure your changes pass tslint validation. (run `npm run tslint` in the root of the repo).
+    - If you've made changes to a public API, make sure you update and add the `api-reports/NativeScript.api.md` file to the PR. (run `npm run api-extractor` to update the api-report and definitions).
 
 6. Push your fork. If you have rebased you might have to use force-push your branch:
 ```
@@ -244,7 +245,14 @@ cd ..
 4. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, 
 tag the release and update the CHANGELOG.md. Don't forget to check the auto-generated CHANGELOG.md 
 ```
-cd tns-core-modules
+cd nativescript-core
+npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s release"
+cd ..
+
+5. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, 
+tag the release and update the CHANGELOG.md. Don't forget to check the auto-generated CHANGELOG.md 
+```
+cd tns-core-modules-package
 npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s release"
 cd ..
 ```
@@ -253,7 +261,7 @@ Usually tns-core-modules-widgets should already have been released and we need t
 
 7. Create release-branch with change log
 ```
-git checkout -b release-[release-version]
+git checkout -b release-[version]
 ```
 
 7. Add changes
@@ -262,9 +270,9 @@ git add changed-files
 git commit -m "release: cut the %s release"
 git push
 ```
-8. Create git tag
+8. Create git tag as git tag 6.3.0 or use git UI
 ```
-git tag release-version
+git tag [release-version]
 git push --tags
 ```
 9. Create a pull request. Be careful to base your branch on the correct branch
