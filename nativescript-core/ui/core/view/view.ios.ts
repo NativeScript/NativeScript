@@ -427,14 +427,16 @@ export class View extends ViewCommon {
             }
         }
 
-        const cancelable = options.cancelable !== undefined ? options.cancelable : true;
+        const cancelable = options.cancelable !== undefined ? !!options.cancelable : true;
 
-        if (majorVersion >= 13 && cancelable) {
-            // Listen for dismiss modal callback.
-            this._setupAdaptiveControllerDelegate(controller);
-        } else if (majorVersion >= 13) {
-            // Prevent users from dismissing the modal.
-            (<any>controller).modalInPresentation = true;
+        if (majorVersion >= 13) {
+            if (cancelable) {
+                // Listen for dismiss modal callback.
+                this._setupAdaptiveControllerDelegate(controller);
+            } else {
+                // Prevent users from dismissing the modal.
+                (<any>controller).modalInPresentation = true;
+            }
         }
 
         this.horizontalAlignment = "stretch";

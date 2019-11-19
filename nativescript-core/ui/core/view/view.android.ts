@@ -646,7 +646,7 @@ export class View extends ViewCommon {
             console.log("ShowModalOptions.android.cancelable is deprecated. Use ShowModalOptions.cancelable instead.");
         }
 
-        cancelable = options.cancelable !== undefined ? options.cancelable : cancelable;
+        cancelable = options.cancelable !== undefined ? !!options.cancelable : cancelable;
 
         const dialogOptions: DialogOptions = {
             owner: this,
