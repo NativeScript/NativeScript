@@ -10,5 +10,5 @@ export interface LoadEventData extends EventData {
 }
 
 export interface WebViewClient {
-    new(owner: WebView): android.webkit.WebViewClient;
+    new(owner: WebView): any /* android.webkit.WebViewClient */;
 }

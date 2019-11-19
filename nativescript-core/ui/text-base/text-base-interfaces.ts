@@ -2,7 +2,7 @@
 import { TextBase } from "./text-base";
 
 export interface TextTransformation {
-    new(owner: TextBase): android.text.method.TransformationMethod;
+    new(owner: TextBase): any /* android.text.method.TransformationMethod */;
 }
 
 export type WhiteSpace = "initial" | "normal" | "nowrap";
