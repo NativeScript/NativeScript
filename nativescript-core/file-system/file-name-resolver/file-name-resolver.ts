@@ -1,4 +1,4 @@
-import { PlatformContext, FileNameResolver as FileNameResolverDefinition } from "../file-name-resolver";
+import { PlatformContext, FileNameResolver as FileNameResolverDefinition } from ".";
 import { screen, device } from "../../platform";
 import { path as fsPath, Folder, File } from "../file-system";
 import * as trace from "../../trace";
@@ -11,7 +11,9 @@ export class FileNameResolver implements FileNameResolverDefinition {
     private _context: PlatformContext;
     private _cache = {};
 
-    constructor(context: PlatformContext) {
+    // HACK: This @Deprecated decorator creates a circular dependency
+    // HACK: because the constructor parameter type is evaluated with 'typeof'
+    constructor(context: any) { // should be (context: PlatformContext)
         console.log("FileNameResolver is deprecated; use ModuleNameResolver instead");
 
         this._context = context;

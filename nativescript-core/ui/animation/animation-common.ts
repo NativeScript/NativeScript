@@ -1,19 +1,23 @@
-// Definitions.
+// Types.
 import {
     CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition,
-    AnimationPromise as AnimationPromiseDefinition,
-    Animation as AnimationBaseDefinition,
-    AnimationDefinition,
-    Pair
+    Animation as AnimationBaseDefinition
 } from ".";
-import { View } from "../core/view";
+import { 
+    AnimationDefinition, AnimationPromise as AnimationPromiseDefinition, 
+    Pair, PropertyAnimation 
+} from "./animation-interfaces";
 
-// Types.
+// Requires.
 import { Color } from "../../color";
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceType } from "../../trace";
+import { 
+    isEnabled as traceEnabled, write as traceWrite, 
+    categories as traceCategories, messageType as traceType 
+} from "../../trace";
 import { PercentLength } from "../styling/style-properties";
 
 export { Color, traceEnabled, traceWrite, traceCategories, traceType };
+export * from "./animation-interfaces";
 
 export module Properties {
     export const opacity = "opacity";
@@ -23,16 +27,6 @@ export module Properties {
     export const scale = "scale";
     export const height = "height";
     export const width = "width";
-}
-
-export interface PropertyAnimation {
-    target: View;
-    property: string;
-    value: any;
-    duration?: number;
-    delay?: number;
-    iterations?: number;
-    curve?: any;
 }
 
 export class CubicBezierAnimationCurve implements CubicBezierAnimationCurveDefinition {

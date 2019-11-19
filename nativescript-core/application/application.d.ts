@@ -610,7 +610,7 @@ export class AndroidApplication extends Observable {
 /**
  * The abstraction of an iOS-specific application object.
  */
-export interface iOSApplication {
+export class iOSApplication {
     /* tslint:enable */
     /**
      * The root view controller for the application.

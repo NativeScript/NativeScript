@@ -1,8 +1,12 @@
-import { getNodeById } from "./dom-node";
-
-// Needed for typings only
+// Types
 import { ViewBase } from "../ui/core/view-base";
+
+//Requires
+import { getNodeById } from "./dom-node";
 import { mainThreadify } from "../utils/utils";
+
+// Use lazy requires for core modules
+const getAppRootView = () => require("../application").getRootView();
 
 let unsetValue;
 function unsetViewValue(view, name) {
@@ -24,19 +28,19 @@ function getViewById(nodeId: number): ViewBase {
 }
 
 export function getDocument() {
-    const topMostFrame = require("../ui/frame").Frame.topmost();
-    if (!topMostFrame) {
+    const appRoot = getAppRootView();
+    if (!appRoot) {
         return undefined;
     }
 
     try {
-        topMostFrame.ensureDomNode();
+        appRoot.ensureDomNode();
 
     } catch (e) {
         console.log("ERROR in getDocument(): " + e);
     }
 
-    return topMostFrame.domNode.toObject();
+    return appRoot.domNode.toObject();
 }
 
 export function getComputedStylesForNode(nodeId): Array<{ name: string, value: string }> {
