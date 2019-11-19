@@ -1,5 +1,5 @@
 // >> trace-require
-import * as trace from "tns-core-modules/trace";
+import * as trace from "@nativescript/core/trace";
 // << trace-require
 
 export var test_DummyTestForSnippetOnly0 = function () {
@@ -20,7 +20,7 @@ export var test_DummyTestForSnippetOnly1 = function () {
         , trace.categories.Style
         , trace.categories.ViewHierarchy
         , trace.categories.VisualTreeEvents
-        ));
+    ));
     trace.enable();
     // << trace-specific-categories
 };

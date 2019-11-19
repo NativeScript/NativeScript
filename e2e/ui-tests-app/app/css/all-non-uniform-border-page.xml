@@ -18,7 +18,7 @@
                 <SegmentedBarItem title="SB 1" />
                 <SegmentedBarItem title="SB 2" />
             </SegmentedBar.items>
-        </SegmentedBar> 
+        </SegmentedBar>
         <DatePicker class="s0" row="4" col="2" year="1980" month="2" day="9"/>
         <TimePicker class="s0" row="5" col="0" hour="5" minute="30"/>
         <ListPicker class="s0" row="5" col="1" items="123"/>

@@ -9,16 +9,29 @@
         "noImplicitUseStrict": true,
         "experimentalDecorators": true,
         "lib": [
-            "es6", "dom"
+            "es6",
+            "dom"
         ]
     },
     "include": [
-        "tns-core-modules/**/*.d.ts"
+        "nativescript-core/**/*.d.ts"
     ],
     "exclude": [
-        "tns-core-modules/references.d.ts",
-        "tns-core-modules/node_modules",
-        "tns-core-modules/ui/frame/transition-definitions.android.d.ts",
-        "tns-core-modules/platforms/*"
-    ]
+        "nativescript-core/index.d.ts",
+        "nativescript-core/ui/index.d.ts",
+        "nativescript-core/ui/layouts/index.d.ts",
+        
+        "nativescript-core/references.d.ts",
+        "nativescript-core/node_modules",
+        "nativescript-core/ui/frame/transition-definitions.android.d.ts",
+        "nativescript-core/platforms/*"
+    ],
+    "typedocOptions": {
+        "out": "bin/dist/apiref",
+        "includeDeclarations": true,
+        "name": "NativeScript",
+        "theme": "./node_modules/nativescript-typedoc-theme",
+        "excludeExternals": true,
+        "externalPattern": "**/+(tns-core-modules|module).d.ts"
+    }
 }

@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "noEmitOnError": false,
+        "noEmitHelpers": true,
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "noImplicitUseStrict": true,
+        "removeComments": true,
+        "experimentalDecorators": true,
+        "diagnostics": true,
+        "sourceMap": false,
+        "lib": [
+            "es6", "dom"
+        ],
+        "baseUrl": "."
+    },
+    "include": [
+        "**/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

@@ -1,0 +1,9 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+    <Page.actionBar>
+        <ActionBar title="Scoped Packages Tests" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+    <StackLayout class="p-20">
+        <Label text="Check console output" class="h3"/>
+    </StackLayout>
+</Page>

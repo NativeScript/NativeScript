@@ -24,9 +24,9 @@ declare class MIDICIProfile extends NSObject implements NSSecureCoding {
 
 	constructor(o: { data: NSData; name: string; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithDataName(data: NSData, inName: string): this;
 }
@@ -47,9 +47,9 @@ declare class MIDICIProfileState extends NSObject implements NSSecureCoding {
 
 	constructor(o: { enabledProfiles: NSArray<MIDICIProfile> | MIDICIProfile[]; disabledProfiles: NSArray<MIDICIProfile> | MIDICIProfile[]; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithEnabledProfilesDisabledProfiles(enabled: NSArray<MIDICIProfile> | MIDICIProfile[], disabled: NSArray<MIDICIProfile> | MIDICIProfile[]): this;
 }
@@ -582,6 +582,8 @@ declare var kMIDIPropertyModel: string;
 declare var kMIDIPropertyName: string;
 
 declare var kMIDIPropertyNameConfiguration: string;
+
+declare var kMIDIPropertyNameConfigurationDictionary: string;
 
 declare var kMIDIPropertyOffline: string;
 

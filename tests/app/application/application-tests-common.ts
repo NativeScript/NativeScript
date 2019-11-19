@@ -1,5 +1,5 @@
-﻿import * as app from "tns-core-modules/application";
-import * as platform from "tns-core-modules/platform";
+﻿import * as app from "@nativescript/core/application";
+import * as platform from "@nativescript/core/platform";
 
 import * as TKUnit from "../tk-unit";
 
@@ -20,4 +20,8 @@ export function testInitialized() {
 export function testDisplayedEvent() {
     // global.isDisplayedEventFired flag is set in app.ts application.displayedEvent handler
     TKUnit.assert((<any>global).isDisplayedEventFired, "application.displayedEvent not fired");
+}
+
+export function testOrientation() {
+    TKUnit.assert(app.orientation(), "Orientation not initialized.");
 }

@@ -1,8 +1,8 @@
 import * as TKUnit from "../../tk-unit";
-import { _resetRootView } from "tns-core-modules/application/";
-import { Frame, NavigationEntry, topmost } from "tns-core-modules/ui/frame";
-import { Page } from "tns-core-modules/ui/page";
-import { Tabs, TabContentItem, TabStrip, TabStripItem } from "tns-core-modules/ui/tabs";
+import { _resetRootView } from "@nativescript/core/application/";
+import { Frame, NavigationEntry, } from "@nativescript/core/ui/frame";
+import { Page } from "@nativescript/core/ui/page";
+import { Tabs, TabContentItem, TabStrip, TabStripItem } from "@nativescript/core/ui/tabs";
 
 function waitUntilNavigatedToMaxTimeout(pages: Page[], action: Function) {
     const maxTimeout = 8;
@@ -85,10 +85,10 @@ export function test_frame_topmost_matches_selectedIndex() {
     };
 
     waitUntilNavigatedToMaxTimeout([items[0].page], () => _resetRootView(entry));
-    TKUnit.assertEqual(topmost().id, "Tab0 Frame0");
+    TKUnit.assertEqual(Frame.topmost().id, "Tab0 Frame0");
 
     waitUntilNavigatedToMaxTimeout([items[1].page], () => tabView.selectedIndex = 1);
-    TKUnit.assertEqual(topmost().id, "Tab1 Frame1");
+    TKUnit.assertEqual(Frame.topmost().id, "Tab1 Frame1");
 }
 
 // TODO: _resetRootView doesn't work with TabView or Tabs with pre-loading. The fragments that are removed crash the app with missing reference.

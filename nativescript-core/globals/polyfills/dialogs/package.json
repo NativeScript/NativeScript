@@ -1,0 +1,6 @@
+{
+  "name": "dialogs",
+  "main": "dialogs",
+  "types": "dialogs.d.ts",
+  "nativescript": {}
+}

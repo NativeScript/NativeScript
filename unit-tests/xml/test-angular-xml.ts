@@ -1,5 +1,5 @@
 import {assert} from "chai";
-const xml = require("tns-core-modules/xml");
+const xml = require("@nativescript/core/xml");
 
 describe("angular xml parser", () => {
     let last_element = null;

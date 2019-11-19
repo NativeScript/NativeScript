@@ -1,11 +1,11 @@
-import * as btns from "tns-core-modules/ui/button";
-import * as pages from "tns-core-modules/ui/page";
-import * as stacks from "tns-core-modules/ui/layouts/stack-layout";
-import * as scroll from "tns-core-modules/ui/scroll-view";
-import * as textView from "tns-core-modules/ui/text-view";
-import * as timer from "tns-core-modules/timer";
-import * as http from "tns-core-modules/http";
-import * as trace from "tns-core-modules/trace";
+import * as btns from "@nativescript/core/ui/button";
+import * as pages from "@nativescript/core/ui/page";
+import * as stacks from "@nativescript/core/ui/layouts/stack-layout";
+import * as scroll from "@nativescript/core/ui/scroll-view";
+import * as textView from "@nativescript/core/ui/text-view";
+import * as timer from "@nativescript/core/timer";
+import * as http from "@nativescript/core/http";
+import * as trace from "@nativescript/core/trace";
 trace.enable();
 trace.setCategories(trace.categories.Style);
 

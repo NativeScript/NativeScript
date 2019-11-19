@@ -1,7 +1,7 @@
-﻿import * as textViewModule from "tns-core-modules/ui/text-view";
-import * as colorModule from "tns-core-modules/color";
+﻿import * as textViewModule from "@nativescript/core/ui/text-view";
+import * as colorModule from "@nativescript/core/color";
 import { getColor } from "../../ui-helper";
-import * as enums from "tns-core-modules/ui/enums";
+import * as enums from "@nativescript/core/ui/enums";
 
 export function getNativeText(textView: textViewModule.TextView): string {
     return textView.ios.text;
@@ -47,7 +47,7 @@ export function getNativeTextAlignment(textView: textViewModule.TextView): strin
 
 export function typeTextNatively(textView: textViewModule.TextView, text: string): void {
     textView.ios.text = text;
-    
+
     // Setting the text will not trigger the delegate method, so we have to do it by hand.
     textView.ios.delegate.textViewDidEndEditing(textView.ios);
 }

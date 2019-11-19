@@ -15,6 +15,10 @@
 		B8E76F5B212C2F4E009CFCE2 /* UIView+PropertyBag.m in Sources */ = {isa = PBXBuildFile; fileRef = B8E76F59212C2F4E009CFCE2 /* UIView+PropertyBag.m */; };
 		B8E76F5E212C3134009CFCE2 /* UIView+PassThroughParent.h in Headers */ = {isa = PBXBuildFile; fileRef = B8E76F5C212C3134009CFCE2 /* UIView+PassThroughParent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B8E76F5F212C3134009CFCE2 /* UIView+PassThroughParent.m in Sources */ = {isa = PBXBuildFile; fileRef = B8E76F5D212C3134009CFCE2 /* UIView+PassThroughParent.m */; };
+		D004030F22F781A50089EAD8 /* NSString+Async.h in Headers */ = {isa = PBXBuildFile; fileRef = D004030D22F781A50089EAD8 /* NSString+Async.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D004031022F781A50089EAD8 /* NSString+Async.m in Sources */ = {isa = PBXBuildFile; fileRef = D004030E22F781A50089EAD8 /* NSString+Async.m */; };
+		D004031322FA27D60089EAD8 /* NSData+Async.h in Headers */ = {isa = PBXBuildFile; fileRef = D004031122FA27D60089EAD8 /* NSData+Async.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D004031422FA27D60089EAD8 /* NSData+Async.m in Sources */ = {isa = PBXBuildFile; fileRef = D004031222FA27D60089EAD8 /* NSData+Async.m */; };
 		F915D3551EC9EF5E00071914 /* TNSProcess.m in Sources */ = {isa = PBXBuildFile; fileRef = F915D3531EC9EF5E00071914 /* TNSProcess.m */; };
 		F915D3561EC9EF5E00071914 /* TNSProcess.h in Headers */ = {isa = PBXBuildFile; fileRef = F915D3541EC9EF5E00071914 /* TNSProcess.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F98F5CB31CD0EFEA00978308 /* TNSWidgets.h in Headers */ = {isa = PBXBuildFile; fileRef = F98F5CB21CD0EFEA00978308 /* TNSWidgets.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -43,6 +47,10 @@
 		B8E76F59212C2F4E009CFCE2 /* UIView+PropertyBag.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+PropertyBag.m"; sourceTree = "<group>"; };
 		B8E76F5C212C3134009CFCE2 /* UIView+PassThroughParent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+PassThroughParent.h"; sourceTree = "<group>"; };
 		B8E76F5D212C3134009CFCE2 /* UIView+PassThroughParent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+PassThroughParent.m"; sourceTree = "<group>"; };
+		D004030D22F781A50089EAD8 /* NSString+Async.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+Async.h"; sourceTree = "<group>"; };
+		D004030E22F781A50089EAD8 /* NSString+Async.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSString+Async.m"; sourceTree = "<group>"; };
+		D004031122FA27D60089EAD8 /* NSData+Async.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSData+Async.h"; sourceTree = "<group>"; };
+		D004031222FA27D60089EAD8 /* NSData+Async.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSData+Async.m"; sourceTree = "<group>"; };
 		F915D3531EC9EF5E00071914 /* TNSProcess.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TNSProcess.m; path = ../TNSProcess.m; sourceTree = "<group>"; };
 		F915D3541EC9EF5E00071914 /* TNSProcess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TNSProcess.h; path = ../TNSProcess.h; sourceTree = "<group>"; };
 		F98F5CAF1CD0EFEA00978308 /* TNSWidgets.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TNSWidgets.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -100,6 +108,8 @@
 				F98F5CB21CD0EFEA00978308 /* TNSWidgets.h */,
 				8B7321CD1D097ECD00884AC6 /* TNSLabel.h */,
 				8B7321CE1D097ECD00884AC6 /* TNSLabel.m */,
+				D004030D22F781A50089EAD8 /* NSString+Async.h */,
+				D004030E22F781A50089EAD8 /* NSString+Async.m */,
 				F98F5CC91CD0F09E00978308 /* UIImage+TNSBlocks.h */,
 				F98F5CCA1CD0F09E00978308 /* UIImage+TNSBlocks.m */,
 				F98F5CB41CD0EFEA00978308 /* Info.plist */,
@@ -109,6 +119,8 @@
 				B8E76F59212C2F4E009CFCE2 /* UIView+PropertyBag.m */,
 				B8E76F5C212C3134009CFCE2 /* UIView+PassThroughParent.h */,
 				B8E76F5D212C3134009CFCE2 /* UIView+PassThroughParent.m */,
+				D004031122FA27D60089EAD8 /* NSData+Async.h */,
+				D004031222FA27D60089EAD8 /* NSData+Async.m */,
 			);
 			path = TNSWidgets;
 			sourceTree = "<group>";
@@ -132,9 +144,11 @@
 				F915D3561EC9EF5E00071914 /* TNSProcess.h in Headers */,
 				F98F5CB31CD0EFEA00978308 /* TNSWidgets.h in Headers */,
 				B8E76F5E212C3134009CFCE2 /* UIView+PassThroughParent.h in Headers */,
+				D004031322FA27D60089EAD8 /* NSData+Async.h in Headers */,
 				F98F5CCB1CD0F09E00978308 /* UIImage+TNSBlocks.h in Headers */,
 				B8E76F52212C2DA2009CFCE2 /* NSObject+Swizzling.h in Headers */,
 				B8E76F5A212C2F4E009CFCE2 /* UIView+PropertyBag.h in Headers */,
+				D004030F22F781A50089EAD8 /* NSString+Async.h in Headers */,
 				8B7321CF1D097ECD00884AC6 /* TNSLabel.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -200,6 +214,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = F98F5CA51CD0EFEA00978308;
@@ -239,6 +254,8 @@
 				F915D3551EC9EF5E00071914 /* TNSProcess.m in Sources */,
 				F98F5CCC1CD0F09E00978308 /* UIImage+TNSBlocks.m in Sources */,
 				B8E76F53212C2DA2009CFCE2 /* NSObject+Swizzling.m in Sources */,
+				D004031022F781A50089EAD8 /* NSString+Async.m in Sources */,
+				D004031422FA27D60089EAD8 /* NSData+Async.m in Sources */,
 				B8E76F5B212C2F4E009CFCE2 /* UIView+PropertyBag.m in Sources */,
 				B8E76F5F212C3134009CFCE2 /* UIView+PassThroughParent.m in Sources */,
 			);

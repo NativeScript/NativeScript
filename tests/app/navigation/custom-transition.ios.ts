@@ -1,4 +1,4 @@
-﻿import * as transition from "tns-core-modules/ui/transition";
+﻿import * as transition from "@nativescript/core/ui/transition";
 
 export class CustomTransition extends transition.Transition {
     constructor(duration: number, curve: any) {

@@ -1,4 +1,4 @@
-﻿import * as pages from "tns-core-modules/ui/page";
+﻿import * as pages from "@nativescript/core/ui/page";
 
 export function pageLoaded(args) {
     var strArr: string[] = ["tests", "bindings", "tests"];

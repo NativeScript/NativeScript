@@ -1,4 +1,13 @@
 
+declare const enum AVAudioSessionRouteSelection {
+
+	None = 0,
+
+	Local = 1,
+
+	External = 2
+}
+
 declare const enum AVKitError {
 
 	Unknown = -1000,
@@ -29,6 +38,10 @@ declare class AVPictureInPictureController extends NSObject {
 	readonly pictureInPictureSuspended: boolean;
 
 	readonly playerLayer: AVPlayerLayer;
+
+	static readonly pictureInPictureButtonStartImage: UIImage;
+
+	static readonly pictureInPictureButtonStopImage: UIImage;
 
 	constructor(o: { playerLayer: AVPlayerLayer; });
 
@@ -76,6 +89,8 @@ declare class AVPlayerViewController extends UIViewController {
 
 	exitsFullScreenWhenPlaybackEnds: boolean;
 
+	pixelBufferAttributes: NSDictionary<string, any>;
+
 	player: AVPlayer;
 
 	readonly readyForDisplay: boolean;
@@ -104,6 +119,10 @@ interface AVPlayerViewControllerDelegate extends NSObjectProtocol {
 	playerViewControllerRestoreUserInterfaceForPictureInPictureStopWithCompletionHandler?(playerViewController: AVPlayerViewController, completionHandler: (p1: boolean) => void): void;
 
 	playerViewControllerShouldAutomaticallyDismissAtPictureInPictureStart?(playerViewController: AVPlayerViewController): boolean;
+
+	playerViewControllerWillBeginFullScreenPresentationWithAnimationCoordinator?(playerViewController: AVPlayerViewController, coordinator: UIViewControllerTransitionCoordinator): void;
+
+	playerViewControllerWillEndFullScreenPresentationWithAnimationCoordinator?(playerViewController: AVPlayerViewController, coordinator: UIViewControllerTransitionCoordinator): void;
 
 	playerViewControllerWillStartPictureInPicture?(playerViewController: AVPlayerViewController): void;
 
@@ -135,6 +154,8 @@ declare class AVRoutePickerView extends UIView {
 	activeTintColor: UIColor;
 
 	delegate: AVRoutePickerViewDelegate;
+
+	prioritizesVideoDevices: boolean;
 }
 
 interface AVRoutePickerViewDelegate extends NSObjectProtocol {

@@ -1,6 +1,6 @@
 import { assert } from "chai";
-import * as parser from "tns-core-modules/css";
-import * as selector from "tns-core-modules/ui/styling/css-selector";
+import * as parser from "@nativescript/core/css";
+import * as selector from "@nativescript/core/ui/styling/css-selector";
 
 describe("ui", () => {
     describe("styling", () => {

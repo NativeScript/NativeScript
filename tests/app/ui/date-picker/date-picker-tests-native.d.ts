@@ -1,5 +1,5 @@
 ﻿//@private
-import * as datePickerModule from "tns-core-modules/ui/date-picker";
+import * as datePickerModule from "@nativescript/core/ui/date-picker";
 
 export declare function getNativeYear(datePicker: datePickerModule.DatePicker): number;
 export declare function getNativeMonth(datePicker: datePickerModule.DatePicker): number;

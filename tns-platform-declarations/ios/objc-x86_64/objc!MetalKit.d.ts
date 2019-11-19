@@ -270,11 +270,13 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	colorPixelFormat: MTLPixelFormat;
 
-	readonly currentDrawable: MTLDrawable;
+	readonly currentDrawable: CAMetalDrawable;
 
 	readonly currentRenderPassDescriptor: MTLRenderPassDescriptor;
 
 	delegate: MTKViewDelegate;
+
+	depthStencilAttachmentTextureUsage: MTLTextureUsage;
 
 	depthStencilPixelFormat: MTLPixelFormat;
 
@@ -288,9 +290,15 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	framebufferOnly: boolean;
 
+	multisampleColorAttachmentTextureUsage: MTLTextureUsage;
+
 	readonly multisampleColorTexture: MTLTexture;
 
 	paused: boolean;
+
+	readonly preferredDevice: MTLDevice;
+
+	readonly preferredDrawableSize: CGSize;
 
 	preferredFramesPerSecond: number;
 
@@ -326,9 +334,9 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	drawLayerInContext(layer: CALayer, ctx: any): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithFrameDevice(frameRect: CGRect, device: MTLDevice): this;
 

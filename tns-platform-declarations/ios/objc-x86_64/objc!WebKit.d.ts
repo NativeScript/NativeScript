@@ -1,4 +1,6 @@
 
+declare var NSReadAccessURLDocumentOption: string;
+
 declare const enum WKAudiovisualMediaTypes {
 
 	None = 0,
@@ -42,6 +44,15 @@ declare class WKBackForwardListItem extends NSObject {
 	readonly title: string;
 }
 
+declare const enum WKContentMode {
+
+	Recommended = 0,
+
+	Mobile = 1,
+
+	Desktop = 2
+}
+
 declare class WKContentRuleList extends NSObject {
 
 	static alloc(): WKContentRuleList; // inherited from NSObject
@@ -68,6 +79,15 @@ declare class WKContentRuleListStore extends NSObject {
 	lookUpContentRuleListForIdentifierCompletionHandler(identifier: string, completionHandler: (p1: WKContentRuleList, p2: NSError) => void): void;
 
 	removeContentRuleListForIdentifierCompletionHandler(identifier: string, completionHandler: (p1: NSError) => void): void;
+}
+
+declare class WKContextMenuElementInfo extends NSObject {
+
+	static alloc(): WKContextMenuElementInfo; // inherited from NSObject
+
+	static new(): WKContextMenuElementInfo; // inherited from NSObject
+
+	readonly linkURL: NSURL;
 }
 
 declare const enum WKDataDetectorTypes {
@@ -111,7 +131,11 @@ declare const enum WKErrorCode {
 
 	ContentRuleListStoreRemoveFailed = 8,
 
-	ContentRuleListStoreVersionMismatch = 9
+	ContentRuleListStoreVersionMismatch = 9,
+
+	AttributedStringContentFailedToLoad = 10,
+
+	AttributedStringContentLoadTimedOut = 11
 }
 
 declare var WKErrorDomain: string;
@@ -164,6 +188,8 @@ declare class WKNavigation extends NSObject {
 	static alloc(): WKNavigation; // inherited from NSObject
 
 	static new(): WKNavigation; // inherited from NSObject
+
+	readonly effectiveContentMode: WKContentMode;
 }
 
 declare class WKNavigationAction extends NSObject {
@@ -191,6 +217,8 @@ declare const enum WKNavigationActionPolicy {
 interface WKNavigationDelegate extends NSObjectProtocol {
 
 	webViewDecidePolicyForNavigationActionDecisionHandler?(webView: WKWebView, navigationAction: WKNavigationAction, decisionHandler: (p1: WKNavigationActionPolicy) => void): void;
+
+	webViewDecidePolicyForNavigationActionPreferencesDecisionHandler?(webView: WKWebView, navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: (p1: WKNavigationActionPolicy, p2: WKWebpagePreferences) => void): void;
 
 	webViewDecidePolicyForNavigationResponseDecisionHandler?(webView: WKWebView, navigationResponse: WKNavigationResponse, decisionHandler: (p1: WKNavigationResponsePolicy) => void): void;
 
@@ -256,19 +284,25 @@ declare class WKPreferences extends NSObject implements NSSecureCoding {
 
 	static new(): WKPreferences; // inherited from NSObject
 
+	fraudulentWebsiteWarningEnabled: boolean;
+
+	javaEnabled: boolean;
+
 	javaScriptCanOpenWindowsAutomatically: boolean;
 
 	javaScriptEnabled: boolean;
 
 	minimumFontSize: number;
 
+	plugInsEnabled: boolean;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 interface WKPreviewActionItem extends UIPreviewActionItem {
@@ -309,9 +343,9 @@ declare class WKProcessPool extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class WKScriptMessage extends NSObject {
@@ -364,6 +398,8 @@ declare class WKSnapshotConfiguration extends NSObject implements NSCopying {
 
 	static new(): WKSnapshotConfiguration; // inherited from NSObject
 
+	afterScreenUpdates: boolean;
+
 	rect: CGRect;
 
 	snapshotWidth: number;
@@ -374,6 +410,14 @@ declare class WKSnapshotConfiguration extends NSObject implements NSCopying {
 interface WKUIDelegate extends NSObjectProtocol {
 
 	webViewCommitPreviewingViewController?(webView: WKWebView, previewingViewController: UIViewController): void;
+
+	webViewContextMenuConfigurationForElementCompletionHandler?(webView: WKWebView, elementInfo: WKContextMenuElementInfo, completionHandler: (p1: UIContextMenuConfiguration) => void): void;
+
+	webViewContextMenuDidEndForElement?(webView: WKWebView, elementInfo: WKContextMenuElementInfo): void;
+
+	webViewContextMenuForElementWillCommitWithAnimator?(webView: WKWebView, elementInfo: WKContextMenuElementInfo, animator: UIContextMenuInteractionCommitAnimating): void;
+
+	webViewContextMenuWillPresentForElement?(webView: WKWebView, elementInfo: WKContextMenuElementInfo): void;
 
 	webViewCreateWebViewWithConfigurationForNavigationActionWindowFeatures?(webView: WKWebView, configuration: WKWebViewConfiguration, navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures): WKWebView;
 
@@ -440,9 +484,9 @@ declare class WKUserContentController extends NSObject implements NSSecureCoding
 
 	addUserScript(userScript: WKUserScript): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	removeAllContentRuleLists(): void;
 
@@ -578,6 +622,8 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSe
 
 	dataDetectorTypes: WKDataDetectorTypes;
 
+	defaultWebpagePreferences: WKWebpagePreferences;
+
 	ignoresViewportScaleLimits: boolean;
 
 	mediaPlaybackAllowsAirPlay: boolean;
@@ -606,13 +652,22 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSe
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	setURLSchemeHandlerForURLScheme(urlSchemeHandler: WKURLSchemeHandler, urlScheme: string): void;
 
 	urlSchemeHandlerForURLScheme(urlScheme: string): WKURLSchemeHandler;
+}
+
+declare class WKWebpagePreferences extends NSObject {
+
+	static alloc(): WKWebpagePreferences; // inherited from NSObject
+
+	static new(): WKWebpagePreferences; // inherited from NSObject
+
+	preferredContentMode: WKContentMode;
 }
 
 declare class WKWebsiteDataRecord extends NSObject {
@@ -646,11 +701,11 @@ declare class WKWebsiteDataStore extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	fetchDataRecordsOfTypesCompletionHandler(dataTypes: NSSet<string>, completionHandler: (p1: NSArray<WKWebsiteDataRecord>) => void): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	removeDataOfTypesForDataRecordsCompletionHandler(dataTypes: NSSet<string>, dataRecords: NSArray<WKWebsiteDataRecord> | WKWebsiteDataRecord[], completionHandler: () => void): void;
 

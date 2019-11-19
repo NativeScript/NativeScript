@@ -1,0 +1,5 @@
+{
+  "name": "file-name_resolver",
+  "main": "file-name-resolver",
+  "types": "file-name-resolver.d.ts"
+}

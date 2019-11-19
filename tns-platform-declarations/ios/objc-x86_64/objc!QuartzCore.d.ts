@@ -72,9 +72,9 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	isEqual(object: any): boolean;
 
@@ -302,9 +302,9 @@ declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSSecureC
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	shouldArchiveValueForKey(key: string): boolean;
 }
@@ -400,6 +400,8 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	static alloc(): CALayer; // inherited from NSObject
 
+	static cornerCurveExpansionFactor(curve: string): number;
+
 	static defaultActionForKey(event: string): CAAction;
 
 	static defaultValueForKey(key: string): any;
@@ -443,6 +445,8 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 	contentsRect: CGRect;
 
 	contentsScale: number;
+
+	cornerCurve: string;
 
 	cornerRadius: number;
 
@@ -568,11 +572,11 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSSecureCoding 
 
 	drawInContext(ctx: any): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	hitTest(p: CGPoint): CALayer;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithLayer(layer: any): this;
 
@@ -677,13 +681,53 @@ declare class CAMediaTimingFunction extends NSObject implements NSSecureCoding {
 
 	constructor(o: { controlPoints: number; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	getControlPointAtIndexValues(idx: number, ptr: interop.Reference<number>): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithControlPoints(c1x: number, c1y: number, c2x: number, c2y: number): this;
+}
+
+interface CAMetalDrawable extends MTLDrawable {
+
+	layer: CAMetalLayer;
+
+	texture: MTLTexture;
+}
+declare var CAMetalDrawable: {
+
+	prototype: CAMetalDrawable;
+};
+
+declare class CAMetalLayer extends CALayer {
+
+	static alloc(): CAMetalLayer; // inherited from NSObject
+
+	static layer(): CAMetalLayer; // inherited from CALayer
+
+	static new(): CAMetalLayer; // inherited from NSObject
+
+	allowsNextDrawableTimeout: boolean;
+
+	colorspace: any;
+
+	device: MTLDevice;
+
+	drawableSize: CGSize;
+
+	framebufferOnly: boolean;
+
+	maximumDrawableCount: number;
+
+	pixelFormat: MTLPixelFormat;
+
+	readonly preferredDevice: MTLDevice;
+
+	presentsWithTransaction: boolean;
+
+	nextDrawable(): CAMetalDrawable;
 }
 
 declare class CAPropertyAnimation extends CAAnimation {
@@ -968,9 +1012,9 @@ declare class CAValueFunction extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 interface _CALayerIvars {
@@ -1009,6 +1053,10 @@ declare var kCAContentsFormatGray8Uint: string;
 declare var kCAContentsFormatRGBA16Float: string;
 
 declare var kCAContentsFormatRGBA8Uint: string;
+
+declare var kCACornerCurveCircular: string;
+
+declare var kCACornerCurveContinuous: string;
 
 declare var kCAEmitterLayerAdditive: string;
 

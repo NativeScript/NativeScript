@@ -6,7 +6,11 @@ GridLayout>GridLayout {
     background-color: rgba(0, 0, 255, 0.5);
 }
 
-.b1, .b2, .b3, .b4, .b5 {
+.b1,
+.b2,
+.b3,
+.b4,
+.b5 {
     background-image: url("res://tile");
 }
 

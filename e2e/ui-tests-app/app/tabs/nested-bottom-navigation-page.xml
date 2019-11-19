@@ -8,20 +8,20 @@
           <TabStripItem title="First"></TabStripItem>
           <TabStripItem title="Second"></TabStripItem>
       </TabStrip>
-  
+
       <TabContentItem>
           <Tabs>
             <TabStrip backgroundColor="palevioletred">
                 <TabStripItem title="First"></TabStripItem>
                 <TabStripItem title="Second"></TabStripItem>
             </TabStrip>
-        
+
             <TabContentItem>
                 <GridLayout backgroundColor="skyblue">
                   <Label text="First View"/>
                 </GridLayout>
             </TabContentItem>
-        
+
             <TabContentItem>
                 <GridLayout backgroundColor="gold">
                   <Label text="Second View" />
@@ -29,7 +29,7 @@
             </TabContentItem>
           </Tabs>
       </TabContentItem>
-  
+
       <TabContentItem>
           <GridLayout>
             <Label text="Second View" />

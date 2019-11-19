@@ -1,10 +1,10 @@
 import { UITest } from "../../ui-test";
-import { Label } from "tns-core-modules/ui/label";
+import { Label } from "@nativescript/core/ui/label";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as tabViewTestsNative from "./tabs-tests-native";
 
-import { Tabs, TabContentItem, TabStrip, TabStripItem, SelectedIndexChangedEventData } from "tns-core-modules/ui/tabs";
+import { Tabs, TabContentItem, TabStrip, TabStripItem, SelectedIndexChangedEventData } from "@nativescript/core/ui/tabs";
 
 export class TabsTest extends UITest<Tabs> {
 

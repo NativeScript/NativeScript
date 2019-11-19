@@ -1,8 +1,8 @@
-import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
-import * as pages from "tns-core-modules/ui/page";
-import * as buttons from "tns-core-modules/ui/button";
-import * as app from "tns-core-modules/application";
-import * as platform from "tns-core-modules/platform";
+import * as gridModule from "@nativescript/core/ui/layouts/grid-layout";
+import * as pages from "@nativescript/core/ui/page";
+import * as buttons from "@nativescript/core/ui/button";
+import * as app from "@nativescript/core/application";
+import * as platform from "@nativescript/core/platform";
 
 function printDeviceInfoAndroid() {
     console.log("android.os.Build.DEVICE = " + android.os.Build.DEVICE);                     //android.os.Build.DEVICE = hammerhead

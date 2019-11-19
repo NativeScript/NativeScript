@@ -27,7 +27,8 @@
                 "--colors",
                 "--opts",
                 "../config/mocha.opts",
-                "--grep=bottom-navigation",
+                "--grep",
+                "gestures-events-gestures",
                 "-a",
             ],
             "internalConsoleOptions": "openOnSessionStart",
@@ -45,10 +46,7 @@
                 "--opts",
                 "../config/mocha.opts",
                 "--grep=bottom-navigation",
-                "android",
-                "--grep=bottom-navigation",
-                "--port",
-                "8889",
+                "android"
             ],
             "internalConsoleOptions": "openOnSessionStart"
         }

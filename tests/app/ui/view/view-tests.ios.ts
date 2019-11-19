@@ -1,10 +1,10 @@
-import { View } from "tns-core-modules/ui/core/view";
-import { Button } from "tns-core-modules/ui/button";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
-import { Color } from "tns-core-modules/color";
+import { View } from "@nativescript/core/ui/core/view";
+import { Button } from "@nativescript/core/ui/button";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
+import { Color } from "@nativescript/core/color";
 import * as helper from "../../ui-helper";
 import * as TKUnit from "../../tk-unit";
-import * as utils from "tns-core-modules/utils/utils";
+import * as utils from "@nativescript/core/utils/utils";
 
 export * from "./view-tests-common";
 

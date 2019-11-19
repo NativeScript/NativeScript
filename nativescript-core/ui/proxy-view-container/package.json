@@ -1,0 +1,5 @@
+{
+  "name": "proxy-view-container",
+  "main": "proxy-view-container",
+  "types": "proxy-view-container.d.ts"
+}

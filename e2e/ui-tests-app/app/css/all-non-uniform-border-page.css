@@ -1,5 +1,6 @@
 .s0 {
-    border-width: 1 2 5 10; border-color: red green blue yellow;
+    border-width: 1 2 5 10;
+    border-color: red green blue yellow;
     width: 80;
     height: 80;
     font-size: 6;

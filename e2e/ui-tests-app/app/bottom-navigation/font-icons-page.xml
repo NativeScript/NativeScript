@@ -5,7 +5,7 @@
 
   <BottomNavigation automationText="tabNavigation" >
     <TabStrip>
-        <!-- font family + font size + color -->        
+        <!-- font family + font size + color -->
         <TabStripItem class="special">
             <Label text="All Set"/>
             <Image src="font://&#xF10B;" class="font-awesome font-size" />

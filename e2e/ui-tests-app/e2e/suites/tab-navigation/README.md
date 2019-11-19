@@ -1,4 +1,4 @@
-Please make sure that the 
+Please make sure that the
 
 <BottomNavigation automationText="tabNavigation"  >
 <Tabs automationText="tabNavigation"  >

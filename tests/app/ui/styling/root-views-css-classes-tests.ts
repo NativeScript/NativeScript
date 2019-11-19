@@ -5,22 +5,22 @@ import {
     android,
     getRootView,
     ios
-} from "tns-core-modules/application";
+} from "@nativescript/core/application";
 import {
     isAndroid,
+    isIOS,
     device
-} from "tns-core-modules/platform";
-import { Button } from "tns-core-modules/ui/button/button";
-import { Page } from "tns-core-modules/ui/page";
+} from "@nativescript/core/platform";
+import { Button } from "@nativescript/core/ui/button/button";
+import { Page } from "@nativescript/core/ui/page";
 import {
     ShownModallyData,
     ShowModalOptions,
     View
-} from "tns-core-modules/ui/frame";
-import {
-    _rootModalViews
-} from "tns-core-modules/ui/core/view/view-common";
-import { DeviceType } from "tns-core-modules/ui/enums/enums";
+} from "@nativescript/core/ui/frame";
+import { _rootModalViews } from "@nativescript/core/ui/core/view/view-common";
+import { DeviceType } from "@nativescript/core/ui/enums/enums";
+import { ios as iosUtils } from "@nativescript/core/utils/utils";
 
 const CLASS_NAME = "class-name";
 const ROOT_CSS_CLASS = "ns-root";
@@ -32,6 +32,8 @@ const TABLET_DEVICE_TYPE_CSS_CLASS = "ns-tablet";
 const PORTRAIT_ORIENTATION_CSS_CLASS = "ns-portrait";
 const LANDSCAPE_ORIENTATION_CSS_CLASS = "ns-landscape";
 const UNKNOWN_ORIENTATION_CSS_CLASS = "ns-unknown";
+const DARK_SYSTEM_APPEARANCE_CSS_CLASS = "ns-dark";
+const LIGHT_SYSTEM_APPEARANCE_CSS_CLASS = "ns-light";
 
 function _test_root_view_root_css_class(shouldSetClassName: boolean) {
     const rootView = getRootView();
@@ -219,6 +221,66 @@ export function test_root_view_orientation_css_class() {
 
 export function test_root_view_class_name_preserve_orientation_css_class() {
     _test_root_view_orientation_css_class(true);
+}
+
+function _test_root_view_system_appearance_css_class(shouldSetClassName: boolean) {
+    const rootView = getRootView();
+    if (shouldSetClassName) {
+        rootView.className = CLASS_NAME;
+    }
+
+    const rootViewCssClasses = rootView.cssClasses;
+    let systemAppearance;
+
+    if (isAndroid) {
+        systemAppearance = android.systemAppearance;
+    } else {
+        systemAppearance = ios.systemAppearance;
+    }
+
+    if (isIOS && iosUtils.MajorVersion <= 12) {
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            DARK_SYSTEM_APPEARANCE_CSS_CLASS),
+            `${DARK_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is present`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            LIGHT_SYSTEM_APPEARANCE_CSS_CLASS),
+            `${LIGHT_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is present`
+        );
+    } else if (systemAppearance === "dark") {
+        TKUnit.assertTrue(rootViewCssClasses.has(
+            DARK_SYSTEM_APPEARANCE_CSS_CLASS),
+            `${DARK_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is missing`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            LIGHT_SYSTEM_APPEARANCE_CSS_CLASS),
+            `${LIGHT_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is present`
+        );
+    } else if (systemAppearance === "light") {
+        TKUnit.assertTrue(rootViewCssClasses.has(
+            LIGHT_SYSTEM_APPEARANCE_CSS_CLASS),
+            `${LIGHT_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is missing`
+        );
+        TKUnit.assertFalse(rootViewCssClasses.has(
+            DARK_SYSTEM_APPEARANCE_CSS_CLASS),
+            `${DARK_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is present`
+        );
+    }
+
+    if (shouldSetClassName) {
+        TKUnit.assertTrue(rootViewCssClasses.has(
+            CLASS_NAME),
+            `${CLASS_NAME} CSS class is missing`
+        );
+    }
+}
+
+export function test_root_view_system_appearance_css_class() {
+    _test_root_view_system_appearance_css_class(false);
+}
+
+export function test_root_view_class_name_preserve_system_appearance_css_class() {
+    _test_root_view_system_appearance_css_class(true);
 }
 
 function _test_modal_root_view_modal_css_class(shouldSetClassName: boolean) {

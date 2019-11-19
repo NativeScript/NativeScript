@@ -19,11 +19,11 @@ mkdir -p ${PWD}/e2e/resources/images
         git init
         git remote add origin "$r_url"
     fi
-    
+
     echo ${PWD}
-    
+
     git config core.sparseCheckout true
-    
+
     # Loops over remaining args
     rm -rf .git/info/sparse-checkout || true
     if [ $1 = "all" ]; then

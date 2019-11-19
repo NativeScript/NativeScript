@@ -1,12 +1,12 @@
 import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 import * as timePickerTestsNative from "./time-picker-tests-native";
-import * as color from "tns-core-modules/color";
-import * as platform from "tns-core-modules/platform";
+import * as color from "@nativescript/core/color";
+import * as platform from "@nativescript/core/platform";
 import * as helper from "../../ui-helper";
 
 // >> require-time-picker
-import * as timePickerModule from "tns-core-modules/ui/time-picker";
+import * as timePickerModule from "@nativescript/core/ui/time-picker";
 // << require-time-picker
 
 function assertTime(timePicker: timePickerModule.TimePicker, expectedHour: number, expectedMinute) {

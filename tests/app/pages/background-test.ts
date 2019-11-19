@@ -1,5 +1,5 @@
-import * as view from "tns-core-modules/ui/core/view";
-import * as pages from "tns-core-modules/ui/page";
+import * as view from "@nativescript/core/ui/core/view";
+import * as pages from "@nativescript/core/ui/page";
 
 export function applyTap(args) {
     var page = <pages.Page>(<view.View>args.object).page;
