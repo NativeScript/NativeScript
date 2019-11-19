@@ -540,7 +540,7 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
             this.type[cssType]
         ];
 
-        if (cssClasses.size) {
+        if (cssClasses && cssClasses.size) {
             cssClasses.forEach(c => selectorClasses.push(this.class[c]));
         }
 
