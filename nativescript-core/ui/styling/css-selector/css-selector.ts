@@ -368,15 +368,15 @@ export namespace Selector {
         }
 
         public match(node: Node): Node {
-            return this.selectors.every((sel, i) => (node = i === 0 ? node : node.parent) && sel.match(node)) ? node : null;
+            return this.selectors.every((sel, i) => (node = (i === 0 ? node : node.parent)) && sel.match(node)) ? node : null;
         }
 
         public mayMatch(node: Node): Node {
-            return this.selectors.every((sel, i) => (node = i === 0 ? node : node.parent) && sel.mayMatch(node)) ? node : null;
+            return this.selectors.every((sel, i) => (node = (i === 0 ? node : node.parent)) && sel.mayMatch(node)) ? node : null;
         }
 
         public trackChanges(node: Node, map: ChangeAccumulator) {
-            this.selectors.forEach((sel, i) => (node = i === 0 ? node : node.parent) && sel.trackChanges(node, map));
+            this.selectors.forEach((sel, i) => (node = (i === 0 ? node : node.parent)) && sel.trackChanges(node, map));
         }
     }
     export class SiblingGroup {
@@ -387,15 +387,15 @@ export namespace Selector {
         }
 
         public match(node: Node): Node {
-            return this.selectors.every((sel, i) => (node = i === 0 ? node : getNodeDirectSibling(node)) && sel.match(node)) ? node : null;
+            return this.selectors.every((sel, i) => (node = (i === 0 ? node : getNodeDirectSibling(node))) && sel.match(node)) ? node : null;
         }
 
         public mayMatch(node: Node): Node {
-            return this.selectors.every((sel, i) => (node = i === 0 ? node : getNodeDirectSibling(node)) && sel.mayMatch(node)) ? node : null;
+            return this.selectors.every((sel, i) => (node = (i === 0 ? node : getNodeDirectSibling(node))) && sel.mayMatch(node)) ? node : null;
         }
 
         public trackChanges(node: Node, map: ChangeAccumulator) {
-            this.selectors.forEach((sel, i) => (node = i === 0 ? node : getNodeDirectSibling(node)) && sel.trackChanges(node, map));
+            this.selectors.forEach((sel, i) => (node = (i === 0 ? node : getNodeDirectSibling(node))) && sel.trackChanges(node, map));
         }
     }
     export interface Bound {
