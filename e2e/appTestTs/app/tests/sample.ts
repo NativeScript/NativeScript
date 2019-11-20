@@ -38,24 +38,24 @@
 // // });
 
 // // it("---> module", function (done) {
-// // 	// render done
-// // 	asdf("test-module").then((fixture) => {
-// // 		const label = fixture.getViewById("label");
-// // 		const actualText = label.text;
-// // 		const expectedText = "42 taps ";
-// // 		assert(actualText === expectedText, `Actual: ${actualText}, Expected: ${expectedText}`);
-// // 		done();
-// // 	});//.finally(done);
+// 	// render done
+// 	asdf("test-module").then((done) => {
+// 		const label = fixture.getViewById("label");
+// 		const actualText = label.text;
+// 		const expectedText = "42 taps ";
+// 		assert(actualText === expectedText, `Actual: ${actualText}, Expected: ${expectedText}`);
+// 		done();
+// 	});//.finally(done);
 // // });
 
-// // 	it('resolves', (done) => {
-// // 		const resolvingPromise = new Promise((resolve) => {
-// // 			resolve('promiseresolved');
-// // 		});
-// // 		resolvingPromise.then((result) => {
-// // 			expect(result).to.equal('promise resolved');
-// // 		}).finally(done);
-// // 	});
+// 	it('resolves', (done) => {
+// 		const resolvingPromise = new Promise((resolve) => {
+// 			resolve('promiseresolved');
+// 		});
+// 		resolvingPromise.then((result) => {
+// 			expect(result).to.equal('promise resolved');
+// 		}).finally(done);
+// 	});
 // // });
 
 // const resolvingPromise = new Promise((resolve) =>

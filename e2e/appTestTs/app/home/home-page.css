@@ -1,0 +1,43 @@
+.action-bar {
+    background-color: #12127D;
+    color: #BACECA;
+}
+
+.list-group {
+    background-color: #7A7878;
+}
+
+.list-item-featured {
+    background-color: #BACECA;
+    margin: 15 5 15 5;
+}
+
+.list-item-regular {
+    margin: 0 5 0 5;
+    padding: 5;
+    background-color: #BACECA;
+}
+
+.title-regular {
+    color: #142D63;
+    padding: 0 0 0 10;
+}
+
+.date-regular {
+     color: #4F77A5;
+     padding: 0 0 0 10;
+}
+
+.image-featured {
+     margin: 20 0 0 0;
+}
+
+.title-featured {
+    color: #142D63;
+    padding: 5 10 5 10;
+}
+
+.date-featured {
+    color: #4F77A5;
+    padding: 5 10 5 10;
+}

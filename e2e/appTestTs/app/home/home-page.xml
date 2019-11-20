@@ -1,0 +1,28 @@
+<Page navigatingTo="navigatingTo" class="page" xmlns="http://www.nativescript.org/tns.xsd" loaded="onPageLoaded">
+
+    <!-- <ActionBar title="News" class="action-bar">
+    </ActionBar> -->
+
+    <GridLayout>
+        <ListView id="list-view" class="list-group" items="{{ dataItems }}"
+            itemTemplateSelector="selectItemTemplate" separatorColor="transparent"
+            loadMoreItems="{{ onLoadMoreItems }}" loaded="onListViewLoaded" itemLoading="onItemLoading">
+            <ListView.itemTemplates>
+                <template key="regular">
+                    <GridLayout>
+                        <GridLayout rows="40, 30" columns="70, *" class="list-item-regular" loaded="onGridLoaded">
+                            <Image row="0" col="0" rowSpan="2" src="{{ image }}"
+                                stretch="aspectFill" />
+                            <Label row="0" col="1" text="{{ title }}" class="h3 title-regular"
+                                textWrap="true" height="40" />
+                            <Label row="1" col="1" text="{{ date }}" class="h4 date-regular"
+                                textWrap="true" height="30" />
+                        </GridLayout>
+                    </GridLayout>
+                </template>
+            </ListView.itemTemplates>
+        </ListView>
+
+        <ActivityIndicator busy="{{ isBusy }}" class="activity-indicator" />
+    </GridLayout>
+</Page>

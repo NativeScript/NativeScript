@@ -1,5 +1,22 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" id="page" navigatingTo="navigatingTo">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" id="page" navigatingTo="onNavigatingTo">
     <StackLayout id="stack">
-        <Label id="label" text="{{ message }}"></Label>
+
+        <!-- <Button id="label" text="{{ message }}" height="100" width="100" color="blue" backgroundColor="red"></Button> -->
+
+        <ListView items="{{ myTitles }}"
+                itemTap="onItemTap"
+                loaded="{{ onListViewLoaded }}"
+                separatorColor="orangered" rowHeight="50"
+                class="list-group" id="listView" row="2">
+            <ListView.itemTemplate>
+                <!-- The item template can only have a single root view container (e.g. GriLayout, StackLayout, etc.) -->
+                <StackLayout class="list-group-item">
+                    <Label text="{{ title || 'Downloading...' }}" textWrap="true" class="title" />
+                    <Label text="{{ title || 'Downloading...' }}" textWrap="true" class="title" />
+                    <Label text="{{ title || 'Downloading...' }}" textWrap="true" class="title" />
+                </StackLayout>
+            </ListView.itemTemplate>
+        </ListView>
+
     </StackLayout>
 </Page>
