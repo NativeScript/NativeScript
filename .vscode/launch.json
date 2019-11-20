@@ -69,6 +69,16 @@
             "stopOnEntry": true,
             "watch": true,
         },
+        {
+            "name": "Debug tests on iOS",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}/tests",
+            "sourceMaps": true,
+            "stopOnEntry": true,
+            "watch": true,
+        },
         // {
         //     "name": "Test on Android",
         //     "type": "nativescript",
