@@ -1159,7 +1159,7 @@ A full list of breaking changes could be found [here](https://github.com/NativeS
 
 - [(#2834)](https://github.com/NativeScript/NativeScript/issues/2834) Animations: scale() syntax does not support only one argument
 
-- [(#2813)](https://github.com/NativeScript/NativeScript/issues/2813) The Camera module in Android doesn't handle pemissions for you
+- [(#2813)](https://github.com/NativeScript/NativeScript/issues/2813) The Camera module in Android doesn't handle permissions for you
 
 - [(#2789)](https://github.com/NativeScript/NativeScript/issues/2789) CSS border-width causes text to overflow TextView
 
