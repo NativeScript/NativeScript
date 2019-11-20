@@ -1206,7 +1206,7 @@ export class ImageSource {
 export type InstrumentationMode = "counters" | "timeline" | "lifecycle";
 
 // @public
-export interface iOSApplication {
+export class iOSApplication {
     /* tslint:enable */
     addNotificationObserver(notificationName: string, onReceiveCallback: (notification: any /* NSNotification */) => void): any;
 
@@ -2304,6 +2304,9 @@ export class TabStripItem extends View {
 
     image: Image;
 
+    // (undocumented)
+    _index: number;
+
     label: Label;
 
     on(eventNames: string, callback: (data: EventData) => void);
@@ -2856,6 +2859,8 @@ export abstract class ViewBase extends Observable {
     // (undocumented)
     _isStyleScopeHost: boolean;
     // (undocumented)
+    public _layoutParent(): void;
+    // (undocumented)
     left: Length;
     public static loadedEvent: string;
     public loadView(view: ViewBase): void;
@@ -2905,8 +2910,8 @@ export abstract class ViewBase extends Observable {
     // (undocumented)
     _setupAsRootView(context: any): void;
     _setupUI(context: any /* android.content.Context */, atIndex?: number): void;
-    showModal(moduleName: string, modalOptions: ShowModalOptions): ViewBase;
     showModal(view: ViewBase, modalOptions: ShowModalOptions): ViewBase;
+    showModal(moduleName: string, modalOptions: ShowModalOptions): ViewBase;
     public readonly style: Style;
     // (undocumented)
     public _styleScope: any;
