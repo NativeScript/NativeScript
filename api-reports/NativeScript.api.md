@@ -2304,6 +2304,9 @@ export class TabStripItem extends View {
 
     image: Image;
 
+    // (undocumented)
+    _index: number;
+
     label: Label;
 
     on(eventNames: string, callback: (data: EventData) => void);
