@@ -7,6 +7,7 @@ Here are some guides on how to do that:
  - [Reporting Bugs](#bugs)
  - [Requesting New Features](#features)
  - [Submitting a PR](#pr)
+ - [Check test report](#test-report)
  - [Commit Message Guidelines](#commit-messages)
  - [Releasing new versions](#release)
 
@@ -81,6 +82,23 @@ git push origin <my-fix-branch> --force
 It's our turn from there on! We will review the PR and discuss changes you might have to make before merging it! Thanks! 
 
 >Note: Sometimes you will see someone from the contributors team writing strange comments like: `test` or `test branch_functional_tests#css-gradients-tests branch_widgets#vultix/css-gradients` - don't worry about it, these are just phrases that trigger the internal CI builds.
+
+## <a name="test-report"></a> Check test report
+
+The purpose of the test report view is to show the tests' results for the PRs for the external contributors. When a NativeScript team member triggers the tests, you can review the result by selecting the `Details` button next to the `ci/jenkins/core-modules-tests`  task. 
+
+> Note: the `Details` button will be available when the execution of the test completes and there is at least one failing test.
+
+When you click on the button, you will be redirected to the report page. On the left pane you can find a list of all failed jobs.
+
+> Note: Each item name consists of the application name, type of device and platform version: `pr-e2e-tests-[application-name]-[device-type]-[platform-version]`. Usually, the test applications, that are executed for PRs are part of NativeScript repository.
+
+Based on the executed suite, one of the following or all of the following files will be generated: `mochawesome.html` | `index.html` | `unit-tests.log`. Some of the reports also might include `*.png`, `*.logs` or `[page source].xml` files that can help in understanding where is the problem.
+
+For example:
+1. When you select the `index.html` page, an additional `TestNG Results` sidebar will be displayed. There you can find a list of all failures. 
+2. When you select one of them, you will see on the right side all tests, that have been executed. The problematic ones will be coloured in red. 
+3. If you click on one of them, detailed info or error log will be displayed. As we've mentioned above in some of the test reports, you will also find screenshots, that demonstrates the problem visually. Those images can be found below the info/ error log.
 
 ## <a name="commit-messages"></a> Commit Message Guidelines
 
