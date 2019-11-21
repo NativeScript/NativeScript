@@ -140,7 +140,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === "TabViewItem") {
+        if (value instanceof TabViewItemBase) {
             if (!this.items) {
                 this.items = new Array<TabViewItemBase>();
             }
