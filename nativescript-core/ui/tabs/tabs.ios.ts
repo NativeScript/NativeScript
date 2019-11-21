@@ -636,7 +636,11 @@ export class Tabs extends TabsBase {
 
     public _loadUnloadTabItems(newIndex: number) {
         const items = this.items;
-        const lastIndex = this.items.length - 1;
+        if (!items) {
+            return;
+        }
+
+        const lastIndex = items.length - 1;
         const offsideItems = this.offscreenTabLimit;
 
         let toUnload = [];
@@ -768,6 +772,10 @@ export class Tabs extends TabsBase {
 
     public _setCanBeLoaded(index: number) {
         const items = this.items;
+        if (!this.items) {
+            return;
+        }
+
         const lastIndex = items.length - 1;
         const offsideItems = this.offscreenTabLimit;
 
@@ -1085,10 +1093,8 @@ export class Tabs extends TabsBase {
             this._currentNativeSelectedIndex = value;
             this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, (finished: boolean) => {
                 if (finished) {
-                    if (majorVersion < 10) {
-                        // HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
-                        invokeOnRunLoop(() => this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, false, null));
-                    }
+                    // HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
+                    invokeOnRunLoop(() => this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, false, null));
 
                     this._canSelectItem = true;
                     this._setCanBeLoaded(value);
