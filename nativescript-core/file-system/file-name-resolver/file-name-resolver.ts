@@ -6,14 +6,11 @@ import * as appCommonModule from "../../application/application-common";
 
 import { findMatch } from "../../module-name-resolver/qualifier-matcher/qualifier-matcher";
 
-@Deprecated
 export class FileNameResolver implements FileNameResolverDefinition {
     private _context: PlatformContext;
     private _cache = {};
 
-    // HACK: This @Deprecated decorator creates a circular dependency
-    // HACK: because the constructor parameter type is evaluated with 'typeof'
-    constructor(context: any) { // should be (context: PlatformContext)
+    constructor(context: PlatformContext) {
         console.log("FileNameResolver is deprecated; use ModuleNameResolver instead");
 
         this._context = context;

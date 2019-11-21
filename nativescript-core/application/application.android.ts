@@ -175,7 +175,7 @@ setApplication(androidApp);
 let mainEntry: NavigationEntry;
 let started = false;
 
-export function _start(entry?: NavigationEntry | string) {
+export function run(entry?: NavigationEntry | string) {
     if (started) {
         throw new Error("Application is already started.");
     }
@@ -186,14 +186,6 @@ export function _start(entry?: NavigationEntry | string) {
         const nativeApp = getNativeApplication();
         androidApp.init(nativeApp);
     }
-}
-
-export function _shouldCreateRootFrame(): boolean {
-    return false;
-}
-
-export function run(entry?: NavigationEntry | string) {
-    _start(entry);
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {

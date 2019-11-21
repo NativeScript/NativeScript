@@ -1,5 +1,7 @@
-const MODE_SHIFT = 30;
-const MODE_MASK = 0x3 << MODE_SHIFT;
+// cache the MeasureSpec constants here, to prevent extensive marshaling calls to and from Java
+// TODO: While this boosts the performance it is error-prone in case Google changes these constants
+export const MODE_SHIFT = 30;
+export const MODE_MASK = 0x3 << MODE_SHIFT;
 
 export const UNSPECIFIED = 0 << MODE_SHIFT;
 export const EXACTLY = 1 << MODE_SHIFT;

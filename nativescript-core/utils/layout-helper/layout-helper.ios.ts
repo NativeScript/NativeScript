@@ -1,9 +1,6 @@
-import * as layoutHelperCommon from "./layout-helper-common";
+import { round, MODE_MASK } from "./layout-helper-common";
 
 export * from "./layout-helper-common";
-
-const MODE_SHIFT = 30;
-const MODE_MASK = 0x3 << MODE_SHIFT;
 
 let mainScreenScale;
 
@@ -30,8 +27,8 @@ export function measureNativeView(nativeView: any /* UIView */, width: number, w
         height: heightMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : toDeviceIndependentPixels(height)
     });
 
-    nativeSize.width = layoutHelperCommon.round(toDevicePixels(nativeSize.width));
-    nativeSize.height = layoutHelperCommon.round(toDevicePixels(nativeSize.height));
+    nativeSize.width = round(toDevicePixels(nativeSize.width));
+    nativeSize.height = round(toDevicePixels(nativeSize.height));
 
     return nativeSize;
 }

@@ -1,13 +1,10 @@
+import { MODE_MASK } from "./layout-helper-common";
 import { ad } from "../native-helper";
 
 export * from "./layout-helper-common";
 
 let density: number;
 
-// cache the MeasureSpec constants here, to prevent extensive marshaling calls to and from Java
-// TODO: While this boosts the performance it is error-prone in case Google changes these constants
-const MODE_SHIFT = 30;
-const MODE_MASK = 0x3 << MODE_SHIFT;
 let sdkVersion: number;
 let useOldMeasureSpec = false;
 

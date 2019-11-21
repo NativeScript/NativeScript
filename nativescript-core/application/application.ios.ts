@@ -367,7 +367,7 @@ export function getRootView() {
 }
 
 let started: boolean = false;
-export function _start(entry?: string | NavigationEntry) {
+export function run(entry?: string | NavigationEntry) {
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     started = true;
 
@@ -416,10 +416,6 @@ export function _start(entry?: string | NavigationEntry) {
             }
         }
     }
-}
-
-export function run(entry?: string | NavigationEntry) {
-    _start(entry);
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {
