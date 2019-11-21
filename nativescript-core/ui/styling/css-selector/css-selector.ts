@@ -503,10 +503,6 @@ function isDeclaration(node: cssParser.Node): node is cssParser.Declaration {
     return node.type === "declaration";
 }
 
-function isVirtualElement(node: Node) {
-    return node.nodeName === "ProxyViewContainer";
-}
-
 interface SelectorMap {
     [key: string]: SelectorCore[];
 }
@@ -524,16 +520,7 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
 
     query(node: T): SelectorsMatch<T> {
         const selectorsMatch = new SelectorsMatch<T>();
-
-        // We shouldn't query virtual elements
-        if (isVirtualElement(node)) {
-            selectorsMatch.selectors = [];
-
-            return selectorsMatch;
-        }
-
         const { cssClasses, id, cssType } = node;
-
         const selectorClasses = [
             this.universal,
             this.id[id],
@@ -587,10 +574,6 @@ export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
     public selectors;
 
     public addAttribute(node: T, attribute: string): void {
-        if (isVirtualElement(node)) {
-            return;
-        }
-
         let deps: Changes = this.properties(node);
         if (!deps.attributes) {
             deps.attributes = new Set();
@@ -599,10 +582,6 @@ export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
     }
 
     public addPseudoClass(node: T, pseudoClass: string): void {
-        if (isVirtualElement(node)) {
-            return;
-        }
-
         let deps: Changes = this.properties(node);
         if (!deps.pseudoClasses) {
             deps.pseudoClasses = new Set();
