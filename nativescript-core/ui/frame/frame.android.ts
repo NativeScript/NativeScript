@@ -483,6 +483,13 @@ export class Frame extends FrameBase {
     }
 
     public createNativeView() {
+        // Create native view with available _currentEntry occur in Don't Keep Activities 
+        // scenario when Activity is recreated on app suspend/resume. Push frame back in frame stack 
+        // since it was removed in disposeNativeView() method.
+        if (this._currentEntry) {
+            this._pushInFrameStack();
+        }
+
         return new org.nativescript.widgets.ContentLayout(this._context);
     }
 
