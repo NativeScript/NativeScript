@@ -247,14 +247,3 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
         return resourceData;
     }
 }
-
-@inspectorCommands.DomainDispatcher("Runtime")
-export class RuntimeDomainDebugger {
-    constructor() {
-        __inspectorSendEvent(`{"method":"Runtime.executionContextCreated","params":{"context":{"id":1,"origin":"http://main.xml","name":"","auxData":{"isDefault":true,"frameId":"${frameId}"}}}}`);
-    }
-
-    compileScript(): { scriptId?: string, exceptionDetails?: Object } {
-        return {};
-    }
-}

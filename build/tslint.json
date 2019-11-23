@@ -1,4 +1,7 @@
 {
+    "rulesDirectory": [
+        "@nativescript/tslint-rules"
+    ],
     "rules": {
         "arrow-return-shorthand": true,
         "class-name": true,
@@ -9,6 +12,7 @@
         "jsdoc-format": false,
         "max-line-length": [false, 120],
         "newline-before-return": true,
+        "no-android-resources": true,
         "no-arg": true,
         "no-bitwise": false,
         "no-consecutive-blank-lines": true,

@@ -205,6 +205,11 @@ function showUIAlertController(alertController: UIAlertController) {
     if (currentView) {
         currentView = currentView.modal || currentView;
 
+        //get to the top most view controller on the stack
+        while (currentView && currentView.modal) {
+            currentView = currentView.modal;
+        }
+        
         let viewController: UIViewController = currentView.ios;
 
         if (viewController.presentedViewController) {

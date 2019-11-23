@@ -5,7 +5,7 @@ import { ViewBase } from "../ui/core/view-base";
 import { mainThreadify } from "../utils/utils";
 
 // Use lazy requires for core modules
-const frameTopmost = () => require("../ui/frame").topmost();
+const getAppRootView = () => require("../application").getRootView();
 
 let unsetValue;
 function unsetViewValue(view, name) {
@@ -27,19 +27,19 @@ function getViewById(nodeId: number): ViewBase {
 }
 
 export function getDocument() {
-    const topMostFrame = frameTopmost();
-    if (!topMostFrame) {
+    const appRoot = getAppRootView();
+    if (!appRoot) {
         return undefined;
     }
 
     try {
-        topMostFrame.ensureDomNode();
+        appRoot.ensureDomNode();
 
     } catch (e) {
         console.log("ERROR in getDocument(): " + e);
     }
 
-    return topMostFrame.domNode.toObject();
+    return appRoot.domNode.toObject();
 }
 
 export function getComputedStylesForNode(nodeId): Array<{ name: string, value: string }> {
