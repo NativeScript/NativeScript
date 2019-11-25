@@ -75,6 +75,11 @@ export interface Point {
      * Represents the y coordinate of the location.
      */
     y: number;
+
+    /**
+     * Represents the z coordinate of the location.
+     */
+    z?: number;
 }
 
 /**
@@ -315,9 +320,25 @@ export abstract class View extends ViewBase {
     opacity: number;
 
     /**
-     * Gets or sets the rotate affine transform of the view.
+     * Gets or sets the rotate affine transform of the view along the Z axis.
      */
     rotate: number;
+
+    /**
+    * Gets or sets the rotate affine transform of the view along the X axis.
+    */
+    rotateX: number;
+
+    /**
+     * Gets or sets the rotate affine transform of the view along the Y axis.
+     */
+    rotateY: number;
+
+    /**
+     * Gets or sets the distance of the camera form the view perspective.
+     * Usually needed when rotating the view over the X or Y axis.
+     */
+    perspective: number;
 
     /**
      * Gets or sets the translateX affine transform of the view in device independent pixels.

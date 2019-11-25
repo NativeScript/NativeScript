@@ -21,7 +21,7 @@ import {
     backgroundColorProperty,
     scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty,
-    rotateProperty, opacityProperty,
+    rotateProperty, opacityProperty, rotateXProperty, rotateYProperty,
     widthProperty, heightProperty, PercentLength
 } from "../styling/style-properties";
 
@@ -213,7 +213,9 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
                 view.style[translateYProperty.keyframe] = animation.translate.y;
             }
             if ("rotate" in animation) {
-                view.style[rotateProperty.keyframe] = animation.rotate;
+                view.style[rotateXProperty.keyframe] = animation.rotate.x;
+                view.style[rotateYProperty.keyframe] = animation.rotate.y;
+                view.style[rotateProperty.keyframe] = animation.rotate.z;
             }
             if ("opacity" in animation) {
                 view.style[opacityProperty.keyframe] = animation.opacity;

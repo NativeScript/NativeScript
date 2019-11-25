@@ -251,6 +251,16 @@ export module ios {
      * Returns the visible UIViewController.
      */
     export function getVisibleViewController(rootViewController: any/* UIViewController*/): any/* UIViewController*/;
+
+    /**
+     * 
+     * @param transform Applies a rotation transform over X,Y and Y axis
+     * @param x Rotation over X axis in degrees
+     * @param y Rotation over Y axis in degrees
+     * @param z Rotation over Z axis in degrees
+     */
+    export function applyRotateTransform(transform: any /* CATransform3D*/, x: number, y: number, z: number): any /* CATransform3D*/;
+
 }
 
 /**

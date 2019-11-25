@@ -14,7 +14,7 @@ export function openFile(filePath: string): boolean {
         const path = filePath.replace("~", appPath);
 
         const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
-        controller.delegate = <UIDocumentInteractionControllerDelegate> new ios.UIDocumentInteractionControllerDelegateImpl();
+        controller.delegate = <UIDocumentInteractionControllerDelegate>new ios.UIDocumentInteractionControllerDelegateImpl();
 
         return controller.presentPreviewAnimated(true);
     }

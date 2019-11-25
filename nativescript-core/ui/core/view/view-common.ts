@@ -697,6 +697,27 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.rotate = value;
     }
 
+    get rotateX(): number {
+        return this.style.rotateX;
+    }
+    set rotateX(value: number) {
+        this.style.rotateX = value;
+    }
+
+    get rotateY(): number {
+        return this.style.rotateY;
+    }
+    set rotateY(value: number) {
+        this.style.rotateY = value;
+    }
+
+    get perspective(): number {
+        return this.style.perspective;
+    }
+    set perspective(value: number) {
+        this.style.perspective = value;
+    }
+
     get translateX(): dip {
         return this.style.translateX;
     }
