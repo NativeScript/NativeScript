@@ -83,10 +83,15 @@ export interface ShowModalOptions {
     }
     android?: {
         /**
+        * @deprecated Use ShowModalOptions.cancelable instead.
         * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
         */
         cancelable?: boolean
     }
+    /**
+    * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
+    */
+    cancelable?: boolean
 }
 
 export abstract class ViewBase extends Observable {

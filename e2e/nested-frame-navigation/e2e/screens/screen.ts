@@ -272,7 +272,7 @@ export abstract class Screen {
         const btnReset = await this._driver.waitForElement(resetApp);
 
         console.info(`====== Reset home "${resetApp}"`);
-        await btnReset.tap();
+        await btnReset.click();
     }
 
     goBackToPlayersList = async () => {
@@ -322,13 +322,13 @@ export abstract class Screen {
     togglePlayersTab = async () => {
         const lblPlayers = await this._driver.waitForElement(this.playersTab);
         logInfo(`====== Navigate to "${this.players}"`);
-        await lblPlayers.tap();
+        await lblPlayers.click();
     }
 
     toggleTeamsTab = async () => {
         const lblTeams = await this._driver.waitForElement(this.teamsTab);
         logInfo(`====== Navigate to "${this.teams}"`);
-        await lblTeams.tap();
+        await lblTeams.click();
     }
 
     loadedHome = async () => {
@@ -435,7 +435,7 @@ export abstract class Screen {
     private navigateToPage = async (page: string) => {
         const btnPage = await this._driver.waitForElement(page);
         logInfo(`====== Navigate to "${page}"`);
-        await btnPage.tap();
+        await btnPage.click();
     }
 
     private loadedPage = async (page: string) => {
@@ -447,7 +447,7 @@ export abstract class Screen {
     private navigateToItem = async (item: Item) => {
         const lblItem = await this._driver.waitForElement(item.name);
         logInfo(`====== Navigate to "${item.name}"`);
-        await lblItem.tap();
+        await lblItem.click();
     }
 
     private loadedItem = async (item: Item) => {
@@ -463,6 +463,6 @@ export abstract class Screen {
     private goBack = async (accessibilityId: string) => {
         const btnBack = await this._driver.waitForElement(accessibilityId);
         logInfo(`====== Go back with "${accessibilityId}"`);
-        await btnBack.tap();
+        await btnBack.click();
     }
 }

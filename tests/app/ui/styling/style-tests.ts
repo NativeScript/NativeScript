@@ -1789,6 +1789,7 @@ export function test_nested_css_calc_and_variables() {
 
     const cssVarName = `--my-width-factor-base-${Date.now()}`;
     const cssVarName2 = `--my-width-factor-${Date.now()}`;
+    const undefinedCssVarName = `--my-undefined-variable-${Date.now()}`;
 
     const stack = new stackModule.StackLayout();
     stack.css = `
@@ -1808,6 +1809,10 @@ export function test_nested_css_calc_and_variables() {
 
     StackLayout.nested {
         ${cssVarName2}: calc(var(${cssVarName}) * 2);
+    }
+
+    StackLayout.nested-fallback {
+        width: calc(calc(var(${undefinedCssVarName}, 16) / 2) * 2));
     }
     `;
 
@@ -1841,6 +1846,9 @@ export function test_nested_css_calc_and_variables() {
 
     stack.className = "nested";
     TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1 }, "Stack - width === 100%");
+
+    stack.className = "nested-fallback";
+    TKUnit.assertDeepEqual(stack.width, 16, "Stack - width === 16");
 }
 
 export function test_css_variable_is_applied_to_normal_properties() {
