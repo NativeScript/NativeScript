@@ -1,4 +1,4 @@
-import { FPSCallback } from "./fps-native";
+import { FPSCallback } from "../fps-meter/fps-native";
 import { getTimeInFrameBase } from "./animation-native";
 
 export interface FrameRequestCallback {

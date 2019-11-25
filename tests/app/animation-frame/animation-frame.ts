@@ -1,6 +1,6 @@
 import * as TKUnit from "../tk-unit";
-import * as animationFrame from "@nativescript/core/fps-meter/animation-frame";
-import * as fpsNative from "@nativescript/core/fps-meter/fps-native"
+import * as animationFrame from "@nativescript/core/animation-frame";
+import * as fpsNative from "@nativescript/core/fps-meter/fps-native";
 
 export function test_requestAnimationFrame_isDefined() {
     TKUnit.assertNotEqual(animationFrame.requestAnimationFrame, undefined, "Method animationFrame.requestAnimationFrame() should be defined!");
