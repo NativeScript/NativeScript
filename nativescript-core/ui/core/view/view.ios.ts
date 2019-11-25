@@ -31,6 +31,7 @@ export class View extends ViewCommon implements ViewDefinition {
     nativeViewProtected: UIView;
     viewController: UIViewController;
     private _popoverPresentationDelegate: ios.UIPopoverPresentationControllerDelegateImp;
+    private _adaptivePresentationDelegate: ios.UIAdaptivePresentationControllerDelegateImp;
 
     private _isLaidOut = false;
     private _hasTransfrom = false;
@@ -438,14 +439,19 @@ export class View extends ViewCommon implements ViewDefinition {
             controller.modalPresentationStyle = presentationStyle;
 
             if (presentationStyle === UIModalPresentationStyle.Popover) {
-                const popoverPresentationController = controller.popoverPresentationController;
-                this._popoverPresentationDelegate = ios.UIPopoverPresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
-                popoverPresentationController.delegate = <UIPopoverPresentationControllerDelegate>this._popoverPresentationDelegate;
-                const view = parent.nativeViewProtected;
-                // Note: sourceView and sourceRect are needed to specify the anchor location for the popover.
-                // Note: sourceView should be the button triggering the modal. If it the Page the popover might appear "behind" the page content
-                popoverPresentationController.sourceView = view;
-                popoverPresentationController.sourceRect = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
+                this._setupPopoverControllerDelegate(controller, parent);
+            }
+        }
+
+        const cancelable = options.cancelable !== undefined ? !!options.cancelable : true;
+
+        if (majorVersion >= 13) {
+            if (cancelable) {
+                // Listen for dismiss modal callback.
+                this._setupAdaptiveControllerDelegate(controller);
+            } else {
+                // Prevent users from dismissing the modal.
+                (<any>controller).modalInPresentation = true;
             }
         }
 
@@ -659,6 +665,22 @@ export class View extends ViewCommon implements ViewDefinition {
             this.nativeViewProtected instanceof UIScrollView ||
             backgroundInternal.hasBorderWidth() ||
             backgroundInternal.hasBorderRadius();
+    }
+
+    private _setupPopoverControllerDelegate(controller: UIViewController, parent: View) {
+        const popoverPresentationController = controller.popoverPresentationController;
+        this._popoverPresentationDelegate = ios.UIPopoverPresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
+        popoverPresentationController.delegate = <UIPopoverPresentationControllerDelegate>this._popoverPresentationDelegate;
+        const view = parent.nativeViewProtected;
+        // Note: sourceView and sourceRect are needed to specify the anchor location for the popover.
+        // Note: sourceView should be the button triggering the modal. If it the Page the popover might appear "behind" the page content
+        popoverPresentationController.sourceView = view;
+        popoverPresentationController.sourceRect = CGRectMake(0, 0, view.frame.size.width, view.frame.size.height);
+    }
+
+    private _setupAdaptiveControllerDelegate(controller: UIViewController) {
+        this._adaptivePresentationDelegate = ios.UIAdaptivePresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
+        controller.presentationController.delegate = <UIAdaptivePresentationControllerDelegate>this._adaptivePresentationDelegate;
     }
 }
 View.prototype._nativeBackgroundState = "unset";

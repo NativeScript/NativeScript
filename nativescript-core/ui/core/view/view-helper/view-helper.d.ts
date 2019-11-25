@@ -54,6 +54,9 @@ export namespace ios {
     export class UILayoutViewController {
         public static initWithOwner(owner: WeakRef<View>): UILayoutViewController;
     }
+    export class UIAdaptivePresentationControllerDelegateImp {
+        public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp;
+    }
     export class UIPopoverPresentationControllerDelegateImp {
         public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp;
     }

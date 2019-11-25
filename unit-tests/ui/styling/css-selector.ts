@@ -22,12 +22,14 @@ describe("ui", () => {
                     let rulesAst = parse.stylesheet.rules.filter(n => n.type === "rule");
                     let rules = selector.fromAstNodes(rulesAst);
                     let map = new selector.SelectorsMap(rules);
+
                     return { rules, map };
                 }
                 
                 function createOne(css: string, source: string = "css-selectors.ts@test"): selector.RuleSet {
                     let {rules} = create(css, source);
                     assert.equal(rules.length, 1);
+
                     return rules[0];
                 }
                 
@@ -51,7 +53,7 @@ describe("ui", () => {
                         button { color: red; }
                         image { color: green; }
                     `);
-                
+            
                     let buttonQuerry = map.query({ cssType: "button" }).selectors;
                     assert.equal(buttonQuerry.length, 1);
                     assert.includeDeepMembers(buttonQuerry[0].ruleset.declarations, [
@@ -76,8 +78,8 @@ describe("ui", () => {
                     ".class": (view) => view.cssClasses.has("class"),
                     ":pseudo": (view) => view.cssPseudoClasses.has("pseudo"),
                     "[src1]": (view) => "src1" in view,
-                    "[src2='src-value']": (view) => view['src2'] === 'src-value'
-                }
+                    "[src2='src-value']": (view) => view["src2"] === "src-value"
+                };
                 
                 let positivelyMatchingView = {
                     cssType: "type",
@@ -86,7 +88,7 @@ describe("ui", () => {
                     cssPseudoClasses: new Set(["pseudo"]),
                     "src1": "src",
                     "src2": "src-value"
-                }
+                };
                 
                 let negativelyMatchingView = {
                     cssType: "nottype",
@@ -95,7 +97,7 @@ describe("ui", () => {
                     cssPseudoClasses: new Set(["notpseudo"]),
                     // Has no "src1"
                     "src2": "not-src-value"
-                }
+                };
                 
                 it("simple selectors match", () => {
                     for (let sel in positiveMatches) {
@@ -191,7 +193,8 @@ describe("ui", () => {
                                 }
                             }
                         }
-                    }
+                    };
+
                     assert.isTrue(sel.match(child));
                 });
 
@@ -215,7 +218,7 @@ describe("ui", () => {
                                 toString
                             }
                         }
-                    }
+                    };
 
                     let match = map.query(button);
                     assert.equal(match.selectors.length, 1, "Expected match to have one selector.");

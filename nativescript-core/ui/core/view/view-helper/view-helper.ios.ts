@@ -3,7 +3,7 @@ import { View } from "..";
 
 // Requires
 import { ViewHelper } from "./view-helper-common";
-import { 
+import {
     ios as iosUtils,
     layout
 } from "../../../../utils/utils";
@@ -315,6 +315,28 @@ export namespace ios {
                 if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
                     owner.notify({ eventName: traitCollectionColorAppearanceChangedEvent, object: owner });
                 }
+            }
+        }
+    }
+
+    export class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
+        public static ObjCProtocols = [UIAdaptivePresentationControllerDelegate];
+
+        private owner: WeakRef<View>;
+        private closedCallback: Function;
+
+        public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp {
+            const instance = <UIAdaptivePresentationControllerDelegateImp>super.new();
+            instance.owner = owner;
+            instance.closedCallback = whenClosedCallback;
+
+            return instance;
+        }
+
+        public presentationControllerDidDismiss(presentationController: UIPresentationController) {
+            const owner = this.owner.get();
+            if (owner && typeof this.closedCallback === "function") {
+                this.closedCallback();
             }
         }
     }
