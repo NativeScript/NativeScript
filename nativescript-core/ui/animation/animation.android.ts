@@ -98,6 +98,7 @@ function getAndroidRepeatCount(iterations: number): number {
 function createObjectAnimator(nativeView: android.view.View, propertyName: string, value: number): android.animation.ObjectAnimator {
     let arr = Array.create("float", 1);
     arr[0] = value;
+
     return android.animation.ObjectAnimator.ofFloat(nativeView, propertyName, arr);
 }
 
@@ -112,7 +113,7 @@ function createAnimationSet(animators: android.animation.ObjectAnimator[], itera
 
         //TODO: not sure if we have to do that for each animator
         animatorsArray[index].setRepeatCount(iterations);
-    })
+    });
 
     animatorSet.playTogether(animatorsArray);
     animatorSet.setupStartValues();

@@ -26,7 +26,7 @@ const TRANSFORM_MATRIXES = {
             cosZ, -sinZ, 0,
             sinZ, cosZ, 0,
             0, 0, 1,
-        ]
+        ];
     },
 };
 

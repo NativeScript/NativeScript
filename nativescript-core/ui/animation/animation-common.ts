@@ -241,7 +241,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
             // Make sure the value of the rotation property is always Point3D
             let rotationValue: Point3D;
             if (typeof animationDefinition.rotate === "number") {
-                rotationValue = { x: 0, y: 0, z: animationDefinition.rotate }
+                rotationValue = { x: 0, y: 0, z: animationDefinition.rotate };
             } else {
                 rotationValue = animationDefinition.rotate;
             }

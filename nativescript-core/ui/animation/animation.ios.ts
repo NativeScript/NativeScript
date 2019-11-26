@@ -448,7 +448,7 @@ export class Animation extends AnimationBase {
         let nativeAnimation;
 
         if (args.subPropertiesToAnimate) {
-            nativeAnimation = this._createGroupAnimation(args, animation)
+            nativeAnimation = this._createGroupAnimation(args, animation);
         } else {
             nativeAnimation = this._createBasicAnimation(args, animation);
         }
