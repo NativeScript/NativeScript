@@ -249,7 +249,7 @@ function _test_onLiveSync_ModalViewClosed(context: ModuleContext) {
 }
 
 function livesync(context: ModuleContext) {
-    const ls = (<any>global).__hmrSyncBackup || global.__onLiveSync;
+    const ls = (<any>global).__coreModulesLiveSync || global.__onLiveSync;
     ls(context);
 }
 
