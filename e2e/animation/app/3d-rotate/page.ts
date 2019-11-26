@@ -25,11 +25,12 @@ export function onAnimateXYZ(args: EventData) {
     rotate({ x: 360, y: 360, z: 360 });
 }
 
-function rotate(rotate: Point3D) {
-    view.animate({
+async function rotate(rotate: Point3D) {
+    await view.animate({
         rotate,
         duration: 1000
-    }).then(reset);
+    });
+    reset();
 }
 
 function reset() {

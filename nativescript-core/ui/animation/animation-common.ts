@@ -11,11 +11,15 @@ import {
 
 // Requires.
 import { Color } from "../../color";
+<<<<<<< HEAD
 import {
     isEnabled as traceEnabled, write as traceWrite,
     categories as traceCategories, messageType as traceType
 } from "../../trace";
 import { PercentLength } from "../styling/style-properties";
+=======
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceType } from "../../trace";
+>>>>>>> chore: unused import cleanup
 
 export { Color, traceEnabled, traceWrite, traceCategories, traceType };
 export * from "./animation-interfaces";
