@@ -6,10 +6,10 @@ export interface FrameRequestCallback {
 }
 
 let animationId = 0;
-let nextFrameAnimationCallbacks: {[key: string]: FrameRequestCallback} = {};
+let nextFrameAnimationCallbacks: { [key: string]: FrameRequestCallback } = {};
 let shouldStop = true;
 let inAnimationFrame = false;
-let native: FPSCallback;
+let fpsCallback: FPSCallback;
 let lastFrameTime = 0;
 
 function getNewId() {
@@ -17,10 +17,10 @@ function getNewId() {
 }
 
 function ensureNative() {
-    if (native) {
+    if (fpsCallback) {
         return;
     }
-    native = new FPSCallback(doFrame);
+    fpsCallback = new FPSCallback(doFrame);
 }
 
 function doFrame(currentTimeMillis: number) {
@@ -36,24 +36,27 @@ function doFrame(currentTimeMillis: number) {
     }
     inAnimationFrame = false;
     if (shouldStop) {
-        native.stop(); // TODO: check performance without stopping to allow consistent frame times
+        fpsCallback.stop(); // TODO: check performance without stopping to allow consistent frame times
     }
 }
 
 export function requestAnimationFrame(cb: FrameRequestCallback): number {
-    if(!inAnimationFrame) {
+    if (!inAnimationFrame) {
         inAnimationFrame = true;
         zonedCallback(cb)(getTimeInFrameBase()); // TODO: store and use lastFrameTime
         inAnimationFrame = false;
+
         return getNewId();
     }
     ensureNative();
     const animId = getNewId();
     nextFrameAnimationCallbacks[animId] = zonedCallback(cb) as FrameRequestCallback;
     shouldStop = false;
-    native.start();
+    fpsCallback.start();
+
     return animId;
-};
+}
+
 export function cancelAnimationFrame(id: number) {
     delete nextFrameAnimationCallbacks[id];
-};
+}

@@ -54,8 +54,8 @@ export function test_requestAnimationFrame_nextCallbackCalledInNextFrame() {
     animationFrame.requestAnimationFrame((firstFrameTime) => {
         animationFrame.requestAnimationFrame((frameTime) => {
             frameCb.stop();
-            completed = frameTime > firstFrameTime && frameTime == currentFrameTime;
-        })
+            completed = frameTime > firstFrameTime && frameTime === currentFrameTime;
+        });
     });
 
     TKUnit.waitUntilReady(() => completed, 0.5, false);
@@ -75,7 +75,7 @@ export function test_requestAnimationFrame_shouldBeCancelled() {
     animationFrame.requestAnimationFrame((firstFrameTime) => {
         const cbId = animationFrame.requestAnimationFrame((frameTime) => {
             completed = true;
-        })
+        });
         animationFrame.cancelAnimationFrame(cbId);
     });
 
