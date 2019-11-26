@@ -470,10 +470,10 @@ export class Animation extends AnimationBase {
         }
     }
 
-    private static _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
-        let groupAnimation = new CAAnimationGroup();
+private static _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
+        let groupAnimation =  CAAnimationGroup.new();
         groupAnimation.duration = args.duration;
-        const animations = NSMutableArray.alloc().initWithCapacity(3);
+        const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(3);
 
         args.subPropertiesToAnimate.forEach(property => {
             const basicAnimationArgs = { ...args };

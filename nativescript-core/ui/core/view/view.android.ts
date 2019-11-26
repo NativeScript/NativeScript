@@ -14,7 +14,7 @@ import {
     visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
     minWidthProperty, minHeightProperty, widthProperty, heightProperty,
     marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty,
-    rotateProperty, rotateXProperty, rotateYProperty,, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
+    rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
     zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty
 } from "../../styling/style-properties";
 

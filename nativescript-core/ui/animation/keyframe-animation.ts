@@ -61,7 +61,7 @@ interface Keyframe {
     backgroundColor?: Color;
     scale?: { x: number, y: number };
     translate?: { x: number, y: number };
-    rotate?: number;
+    rotate?: { x: number, y: number, z: number };
     opacity?: number;
     width?: PercentLength;
     height?: PercentLength;
