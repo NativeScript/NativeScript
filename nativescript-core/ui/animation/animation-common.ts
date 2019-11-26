@@ -11,15 +11,11 @@ import {
 
 // Requires.
 import { Color } from "../../color";
-<<<<<<< HEAD
 import {
     isEnabled as traceEnabled, write as traceWrite,
     categories as traceCategories, messageType as traceType
 } from "../../trace";
 import { PercentLength } from "../styling/style-properties";
-=======
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceType } from "../../trace";
->>>>>>> chore: unused import cleanup
 
 export { Color, traceEnabled, traceWrite, traceCategories, traceType };
 export * from "./animation-interfaces";
@@ -160,22 +156,19 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
                 continue;
             }
 
-            if (item === Properties.opacity ||
+            if ((item === Properties.opacity ||
                 item === "duration" ||
                 item === "delay" ||
-                item === "iterations") {
-
-                if (typeof value !== "number") {
-                    throw new Error(`Property ${item} must be valid number. Value: ${value}`);
-                }
-
-            } else if (item === Properties.scale || item === Properties.translate) {
-                const pair = <Pair>value;
-                if (typeof pair.x !== "number" || typeof pair.y !== "number") {
-                    throw new Error(`Property ${item} must be valid Pair. Value: ${value}`);
-                }
+                item === "iterations") && typeof value !== "number") {
+                throw new Error(`Property ${item} must be valid number. Value: ${value}`);
+            } else if ((item === Properties.scale || item === Properties.translate) &&
+                (typeof (<Pair>value).x !== "number" || typeof (<Pair>value).y !== "number")) {
+                throw new Error(`Property ${item} must be valid Pair. Value: ${value}`);
             } else if (item === Properties.backgroundColor && !Color.isValid(animationDefinition.backgroundColor)) {
                 throw new Error(`Property ${item} must be valid color. Value: ${value}`);
+            } else if (item === Properties.width || item === Properties.height) {
+                // Coerce input into a PercentLength object in case it's a string.
+                animationDefinition[item] = PercentLength.parse(<any>value);
             } else if (item === Properties.rotate) {
                 const rotate: number | Point3D = value;
                 if ((typeof rotate !== "number") &&
