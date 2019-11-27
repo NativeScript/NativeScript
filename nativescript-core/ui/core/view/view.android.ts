@@ -380,11 +380,13 @@ export class View extends ViewCommon {
     @profile
     public onUnloaded() {
         if (this.touchListenerIsSet) {
-            this.nativeViewProtected.setOnTouchListener(null);
             this.touchListenerIsSet = false;
-            this.nativeViewProtected.setClickable(this._isClickable);
+            if (this.nativeViewProtected) {
+                this.nativeViewProtected.setOnTouchListener(null);
+                this.nativeViewProtected.setClickable(this._isClickable);
+            }
         }
-
+        
         this._manager = null;
         this._rootManager = null;
         super.onUnloaded();
