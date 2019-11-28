@@ -245,5 +245,5 @@ for (const name of layoutProperties) {
 }
 
 function makeProxyPropName(propName) {
-    return `_proxy:${propName}`
+    return `_proxy:${propName}`;
 }
