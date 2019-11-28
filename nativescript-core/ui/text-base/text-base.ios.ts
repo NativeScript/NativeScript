@@ -1,15 +1,17 @@
-import { TextDecoration, TextAlignment, TextTransform } from "./text-base";
+// Types
+import { TextDecoration, TextAlignment, TextTransform } from "./text-base-common";
+
+// Requires
 import { Font } from "../styling/font";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, lineHeightProperty,
     FormattedString, Span, Color, isBold, resetSymbol
 } from "./text-base-common";
-
-export * from "./text-base-common";
-
 import { isString } from "../../utils/types";
 import { ios } from "../../utils/utils";
+
+export * from "./text-base-common";
 
 const majorVersion = ios.MajorVersion;
 

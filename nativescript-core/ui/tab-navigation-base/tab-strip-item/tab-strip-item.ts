@@ -213,7 +213,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
             if (this._index === tabStripParent.selectedIndex &&
-                !(isIOS && tabStripParent instanceof Tabs)) {
+                !(isIOS && tabStripParent.cssType.toLowerCase() === "tabs")) {
                 this._goToVisualState("highlighted");
             }
         } else {
