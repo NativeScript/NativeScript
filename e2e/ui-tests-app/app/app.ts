@@ -88,9 +88,7 @@ application.on(application.discardedErrorEvent, function (args: application.Disc
     console.log("### [Discarded] stack: " + args.error.stack);
 });
 
-application.setCssFileName("app.css");
-application._start({ moduleName: "main-page" });
+application.run({ moduleName: "app-root" });
 
 // TODO: investigate tab-view -> tabviewcss test crash
 // TODO: investigate css -> layouts border overlap failure
-// application.run({ moduleName: "app-root" });

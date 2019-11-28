@@ -1,6 +1,8 @@
+// Types
 import { BindingOptions } from ".";
 import { ViewBase } from "../view-base";
 
+// Requires
 import { unsetValue } from "../properties";
 import { Observable, WrappedValue, PropertyChangeData, EventData } from "../../../data/observable";
 import { addWeakEventListener, removeWeakEventListener } from "../weak-event-listener";
@@ -16,8 +18,7 @@ import {
     messageType as traceMessageType
 } from "../../../trace";
 import * as types from "../../../utils/types";
-
-import * as applicationCommon from "../../../application/application-common";
+import * as bindableResources from "./bindable-resources";
 import * as polymerExpressions from "../../../js-libs/polymer-expressions";
 
 export {
@@ -368,7 +369,7 @@ export class Binding {
                 let context = this.source && this.source.get && this.source.get() || global;
                 let model = {};
                 let addedProps = [];
-                const resources = applicationCommon.getResources();
+                const resources = bindableResources.get();
                 for (let prop in resources) {
                     if (resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
                         context[prop] = resources[prop];
