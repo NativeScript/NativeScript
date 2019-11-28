@@ -13,7 +13,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const hashSalt = Date.now().toString();
 
 const ANDROID_MAX_CYCLES = 66;
-const IOS_MAX_CYCLES = 39;
+const IOS_MAX_CYCLES = 32;
 let numCyclesDetected = 0;
 
 module.exports = env => {

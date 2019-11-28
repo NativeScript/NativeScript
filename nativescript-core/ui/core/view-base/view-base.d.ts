@@ -440,6 +440,11 @@ export abstract class ViewBase extends Observable {
     _isStyleScopeHost: boolean;
 
     /**
+     * @private
+     */
+    public _layoutParent(): void;
+
+    /**
      * Determines the depth of suspended updates.
      * When the value is 0 the current property updates are not batched nor scoped and must be immediately applied.
      * If the value is 1 or greater, the current updates are batched and does not have to provide immediate update.

@@ -1206,7 +1206,7 @@ export class ImageSource {
 export type InstrumentationMode = "counters" | "timeline" | "lifecycle";
 
 // @public
-export interface iOSApplication {
+export class iOSApplication {
     /* tslint:enable */
     addNotificationObserver(notificationName: string, onReceiveCallback: (notification: any /* NSNotification */) => void): any;
 
@@ -2860,6 +2860,8 @@ export abstract class ViewBase extends Observable {
     public _isPaddingRelative: boolean;
     // (undocumented)
     _isStyleScopeHost: boolean;
+    // (undocumented)
+    public _layoutParent(): void;
     // (undocumented)
     left: Length;
     public static loadedEvent: string;

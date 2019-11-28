@@ -69,7 +69,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
 }
 
 export function _createIOSAnimatedTransitioning(navigationTransition: NavigationTransition, nativeCurve: UIViewAnimationCurve, operation: UINavigationControllerOperation, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
-    const instance = navigationTransition.instance;
+    const instance = <Transition>navigationTransition.instance;
     let transition: Transition;
 
     if (instance) {
