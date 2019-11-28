@@ -1,8 +1,10 @@
-import { WebView as WebViewDefinition, LoadEventData, NavigationType } from ".";
+import { WebView as WebViewDefinition } from ".";
+import { LoadEventData, NavigationType } from "./web-view-interfaces";
 import { ContainerView, Property, EventData, CSSType } from "../core/view";
 import { File, knownFolders, path } from "../../file-system";
 
-export { File, knownFolders, path, NavigationType };
+export { File, knownFolders, path };
+export * from "./web-view-interfaces";
 export * from "../core/view";
 
 export const srcProperty = new Property<WebViewBase, string>({ name: "src" });
@@ -87,6 +89,10 @@ export abstract class WebViewBase extends ContainerView implements WebViewDefini
     }
 }
 
+// HACK: Use an interface with the same name, so that the class above fulfills the 'implements' requirement
+// HACK: We use the 'implements' to verify the class above is the same as the one declared in the d.ts
+// HACK: We declare all these 'on' statements, so that they can appear in the API reference
+// HACK: Do we need this? Is it useful? There are static fields to the WebViewBase class for the event names.
 export interface WebViewBase {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
     on(event: "loadFinished", callback: (args: LoadEventData) => void, thisArg?: any);

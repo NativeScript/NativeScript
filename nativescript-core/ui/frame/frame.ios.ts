@@ -1,23 +1,22 @@
-// Definitions.
-import {
-    iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition
-} from ".";
-import { ios as iosView } from "../core/view";
+//Types
+import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from ".";
+import { FrameBase, NavigationType } from "./frame-common";
 import { Page } from "../page";
-import { profile } from "../../profiling";
+import { View } from "../core/view";
 
-//Types.
-import {
-    FrameBase, View, isCategorySet, layout,
-    NavigationType, traceCategories, traceEnabled, traceWrite
-} from "./frame-common";
+// Requires
 import { _createIOSAnimatedTransitioning } from "./fragment.transitions";
-
-import * as utils from "../../utils/utils";
+import { ios as iosViewHelper } from "../core/view/view-helper";
+import { profile } from "../../profiling";
+import { ios as iosUtils, layout } from "../../utils/utils";
+import {
+    isCategorySet, isEnabled as traceEnabled,
+    categories as traceCategories, write as traceWrite
+} from "../../trace";
 
 export * from "./frame-common";
 
-const majorVersion = utils.ios.MajorVersion;
+const majorVersion = iosUtils.MajorVersion;
 
 const ENTRY = "_entry";
 const DELEGATE = "_delegate";
@@ -64,8 +63,10 @@ export class Frame extends FrameBase {
         }
     }
 
+    // !!! THIS PROFILE DECORATOR CREATES A CIRCULAR DEPENDENCY
+    // !!! BECAUSE THE PARAMETER TYPE IS EVALUATED WITH TYPEOF
     @profile
-    public _navigateCore(backstackEntry: BackstackEntry) {
+    public _navigateCore(backstackEntry: any) {
         super._navigateCore(backstackEntry);
 
         let viewController: UIViewController = backstackEntry.resolvedPage.ios;
@@ -541,7 +542,7 @@ class UINavigationControllerImpl extends UINavigationController {
         if (majorVersion >= 13) {
             const owner = this._owner.get();
             if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
-                owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
+                owner.notify({ eventName: iosViewHelper.traitCollectionColorAppearanceChangedEvent, object: owner });
             }
         }
     }

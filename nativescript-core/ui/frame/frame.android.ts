@@ -3,6 +3,7 @@ import {
     AndroidFrame as AndroidFrameDefinition, AndroidActivityCallbacks,
     AndroidFragmentCallbacks, BackstackEntry, NavigationTransition
 } from ".";
+import { TransitionState } from "./frame-common";
 import { Page } from "../page";
 
 // Types.
@@ -25,15 +26,6 @@ import { device } from "../../platform/platform";
 import { profile } from "../../profiling";
 
 export * from "./frame-common";
-
-interface TransitionState {
-    enterTransitionListener: any;
-    exitTransitionListener: any;
-    reenterTransitionListener: any;
-    returnTransitionListener: any;
-    transitionName: string;
-    entry: BackstackEntry;
-}
 
 const ANDROID_PLATFORM = "android";
 
@@ -372,8 +364,10 @@ export class Frame extends FrameBase {
         return false;
     }
 
+    // HACK: This @profile decorator creates a circular dependency
+    // HACK: because the function parameter type is evaluated with 'typeof'
     @profile
-    public _navigateCore(newEntry: BackstackEntry) {
+    public _navigateCore(newEntry: any) { // should be (newEntry: BackstackEntry)
         super._navigateCore(newEntry);
 
         // set frameId here so that we could use it in fragment.transitions
@@ -1285,12 +1279,11 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         savedInstanceState: android.os.Bundle,
         fireLaunchEvent: boolean
     ): void {
-        const shouldCreateRootFrame = application._shouldCreateRootFrame();
         let rootView = this._rootView;
 
         if (traceEnabled()) {
             traceWrite(
-                `Frame.setActivityContent rootView: ${rootView} shouldCreateRootFrame: ${shouldCreateRootFrame} fireLaunchEvent: ${fireLaunchEvent}`,
+                `Frame.setActivityContent rootView: ${rootView} shouldCreateRootFrame: false fireLaunchEvent: ${fireLaunchEvent}`,
                 traceCategories.NativeLifecycle
             );
         }
@@ -1311,36 +1304,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
                     throw new Error("Main entry is missing. App cannot be started. Verify app bootstrap.");
                 }
 
-                if (shouldCreateRootFrame) {
-                    const extras = intent.getExtras();
-                    let frameId = -1;
-
-                    // We have extras when we call - new Frame().navigate();
-                    // savedInstanceState is used when activity is recreated.
-                    // NOTE: On API 23+ we get extras on first run.
-                    // Check changed - first try to get frameId from Extras if not from saveInstanceState.
-                    if (extras) {
-                        frameId = extras.getInt(INTENT_EXTRA, -1);
-                    }
-
-                    if (savedInstanceState && frameId < 0) {
-                        frameId = savedInstanceState.getInt(INTENT_EXTRA, -1);
-                    }
-
-                    if (!rootView) {
-                        // If we have frameId from extras - we are starting a new activity from navigation (e.g. new Frame().navigate()))
-                        // Then we check if we have frameId from savedInstanceState - this happens when Activity is destroyed but app was not (e.g. suspend)
-                        rootView = getFrameByNumberId(frameId) || new Frame();
-                    }
-
-                    if (rootView instanceof Frame) {
-                        rootView.navigate(mainEntry);
-                    } else {
-                        throw new Error("A Frame must be used to navigate to a Page.");
-                    }
-                } else {
-                    rootView = Builder.createViewFromEntry(mainEntry);
-                }
+                rootView = Builder.createViewFromEntry(mainEntry);
             }
 
             this._rootView = rootView;
@@ -1356,14 +1320,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             rootViewCssClasses.forEach(c => this._rootView.cssClasses.add(c));
         }
 
-        // Initialize native visual tree;
-        if (shouldCreateRootFrame) {
-            // Don't setup as styleScopeHost
-            rootView._setupUI(activity);
-        } else {
-            // setup view as styleScopeHost
-            rootView._setupAsRootView(activity);
-        }
+        // setup view as styleScopeHost
+        rootView._setupAsRootView(activity);
 
         activity.setContentView(rootView.nativeViewProtected, new org.nativescript.widgets.CommonLayoutParams());
     }

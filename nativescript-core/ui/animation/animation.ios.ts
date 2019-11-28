@@ -1,7 +1,15 @@
-import { AnimationDefinition, AnimationPromise } from ".";
+// Types
+import { 
+    AnimationDefinitionInternal, AnimationPromise, IOSView,
+    PropertyAnimation, PropertyAnimationInfo
+} from "./animation-common";
 import { View } from "../core/view";
 
-import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
+// Requires
+import { 
+    AnimationBase, Properties, CubicBezierAnimationCurve, 
+    traceWrite, traceEnabled, traceCategories, traceType 
+} from "./animation-common";
 import {
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty,
@@ -24,21 +32,6 @@ class AnimationInfo {
     public duration: number;
     public repeatCount: number;
     public delay: number;
-}
-
-interface PropertyAnimationInfo extends PropertyAnimation {
-    _propertyResetCallback?: any;
-    _originalValue?: any;
-}
-
-interface AnimationDefinitionInternal extends AnimationDefinition {
-    valueSource?: "animation" | "keyframe";
-}
-
-interface IOSView extends View {
-    _suspendPresentationLayerUpdates();
-    _resumePresentationLayerUpdates();
-    _isPresentationLayerUpdateSuspeneded();
 }
 
 class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {

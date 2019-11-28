@@ -1,13 +1,29 @@
 // Require globals first so that snapshot takes __extends function.
 import "../globals";
-import { Observable, EventData } from "../data/observable";
+
+// Types
+import { AndroidApplication, iOSApplication } from ".";
+import {
+    CssChangedEventData, DiscardedErrorEventData,
+    LoadAppCSSEventData, UnhandledErrorEventData
+} from "./application-interfaces";
+import { EventData } from "../data/observable/observable-interfaces";
 import { View } from "../ui/core/view";
+
+// Requires
+import { Observable } from "../data/observable";
 import {
     trace as profilingTrace,
     time,
     uptime,
     level as profilingLevel,
 } from "../profiling";
+import * as bindableResources from "../ui/core/bindable/bindable-resources";
+import { CLASS_PREFIX, pushToRootViewCssClasses, removeFromRootViewCssClasses } from "../css/system-classes";
+import { DeviceOrientation, SystemAppearance } from "../ui/enums/enums";
+
+export { Observable };
+export * from "./application-interfaces";
 
 const events = new Observable();
 let launched = false;
@@ -29,22 +45,6 @@ if (profilingLevel() > 0) {
 export function hasLaunched(): boolean {
     return launched;
 }
-
-export { Observable };
-
-import {
-    AndroidApplication,
-    CssChangedEventData,
-    DiscardedErrorEventData,
-    iOSApplication,
-    LoadAppCSSEventData,
-    UnhandledErrorEventData
-} from "./application";
-
-import { CLASS_PREFIX, pushToRootViewCssClasses, removeFromRootViewCssClasses } from "../css/system-classes";
-import { DeviceOrientation, SystemAppearance } from "../ui/enums/enums";
-
-export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
@@ -70,18 +70,16 @@ const SYSTEM_APPEARANCE_CSS_CLASSES = [
 
 let cssFile: string = "./app.css";
 
-let resources: any = {};
-
 export function getResources() {
-    return resources;
+    return bindableResources.get();
 }
 
 export function setResources(res: any) {
-    resources = res;
+    bindableResources.set(res);
 }
 
-export let android = undefined;
-export let ios = undefined;
+export let android: AndroidApplication = undefined;
+export let ios: iOSApplication = undefined;
 
 export const on: typeof events.on = events.on.bind(events);
 export const off: typeof events.off = events.off.bind(events);
@@ -127,8 +125,7 @@ export function loadAppCss(): void {
     try {
         events.notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: app, cssFile: getCssFileName() });
     } catch (e) {
-        throw new Error(`The file ${getCssFileName()} couldn't be loaded! ` +
-            `You may need to register it inside ./app/vendor.ts.`);
+        throw new Error(`The app CSS file ${getCssFileName()} couldn't be loaded!`);
     }
 }
 
