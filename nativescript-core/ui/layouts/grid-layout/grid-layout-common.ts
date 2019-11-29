@@ -58,7 +58,8 @@ function convertGridLength(value: string): ItemSpec {
 }
 
 function parseAndAddItemSpecs(value: string, func: (itemSpec: ItemSpec) => void): void {
-    const arr = value.split(/[\s,]+/);
+    // ensure value is a string since view bindings could be parsed as number/int's here
+    const arr = `${value}`.split(/[\s,]+/);
     for (let i = 0, length = arr.length; i < length; i++) {
         const str = arr[i].trim();
         if (str.length > 0) {
