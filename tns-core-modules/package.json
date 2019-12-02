@@ -26,9 +26,8 @@
   "license": "Apache-2.0",
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
-    "reduce-css-calc": "^2.1.6",
-    "tns-core-modules-widgets": "file:../tns-core-modules-widgets-6.1.1.tgz",
-    "tslib": "1.10.0"
+    "tns-core-modules-widgets": "next",
+    "tslib": "^1.9.3"
   },
   "devDependencies": {
     "@types/node": "~10.12.18",
