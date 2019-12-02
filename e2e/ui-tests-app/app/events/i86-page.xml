@@ -9,6 +9,6 @@
           </FormattedString.spans>
         </FormattedString>
       </Label.formattedText>
-    </Label>    
+    </Label>
   </StackLayout>
 </Page>

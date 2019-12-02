@@ -1,0 +1,5 @@
+{
+  "name": "text-base",
+  "main": "text-base",
+  "types": "text-base.d.ts"
+}

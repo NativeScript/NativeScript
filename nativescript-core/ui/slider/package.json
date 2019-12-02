@@ -1,0 +1,5 @@
+{
+  "name": "slider",
+  "main": "slider",
+  "types": "slider.d.ts"
+}

@@ -1,7 +1,7 @@
-import * as textFieldModule from "tns-core-modules/ui/text-field";
-import * as colorModule from "tns-core-modules/color";
-import * as utilsModule from "tns-core-modules/utils/utils";
-import * as enums from "tns-core-modules/ui/enums";
+import * as textFieldModule from "@nativescript/core/ui/text-field";
+import * as colorModule from "@nativescript/core/color";
+import * as utilsModule from "@nativescript/core/utils/utils";
+import * as enums from "@nativescript/core/ui/enums";
 
 export function getNativeText(textField: textFieldModule.TextField): string {
     return textField.android.getText().toString();

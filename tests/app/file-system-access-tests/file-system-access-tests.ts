@@ -1,5 +1,5 @@
 import * as TKUnit from "../tk-unit";
-import * as fs from "tns-core-modules/file-system";
+import * as fs from "@nativescript/core/file-system";
 
 export var test_UTF8_BOM_is_not_returned = function () {
     var path = fs.path.join(fs.knownFolders.currentApp().path, "file-system-access-tests", "xml.expected");

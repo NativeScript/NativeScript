@@ -1,14 +1,14 @@
-﻿import * as frame from "tns-core-modules/ui/frame";
-import * as observable from "tns-core-modules/data/observable";
+﻿import { Frame } from "@nativescript/core/ui/frame";
+import * as observable from "@nativescript/core/data/observable";
 
-import * as trace from "tns-core-modules/trace";
+import * as trace from "@nativescript/core/trace";
 trace.setCategories("gestures");
 trace.enable();
 
 export function itemTap(args) {
     console.log("----- Item tapped: " + args.view.tag);
 
-    frame.topmost().navigate({
+    Frame.topmost().navigate({
         moduleName: "./pages/page5",
     });
 }

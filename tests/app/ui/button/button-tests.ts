@@ -1,19 +1,19 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import * as viewModule from "tns-core-modules/ui/core/view";
-import * as pagesModule from "tns-core-modules/ui/page";
+import * as viewModule from "@nativescript/core/ui/core/view";
+import * as pagesModule from "@nativescript/core/ui/page";
 import * as buttonTestsNative from "./button-tests-native";
-import * as colorModule from "tns-core-modules/color";
-import * as formattedStringModule from "tns-core-modules/text/formatted-string";
-import * as spanModule from "tns-core-modules/text/span";
+import * as colorModule from "@nativescript/core/color";
+import * as formattedStringModule from "@nativescript/core/text/formatted-string";
+import * as spanModule from "@nativescript/core/text/span";
 
 // >> button-require
-import * as buttonModule from "tns-core-modules/ui/button";
+import * as buttonModule from "@nativescript/core/ui/button";
 // << button-require
 
 // >> button-require-others
-import * as bindable from "tns-core-modules/ui/core/bindable";
-import * as observable from "tns-core-modules/data/observable";
+import * as bindable from "@nativescript/core/ui/core/bindable";
+import * as observable from "@nativescript/core/data/observable";
 // << button-require-others
 
 export function test_recycling() {

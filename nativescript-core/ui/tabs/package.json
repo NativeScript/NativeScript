@@ -1,0 +1,5 @@
+{
+  "name": "tabs",
+  "main": "tabs",
+  "types": "tabs.d.ts"
+}

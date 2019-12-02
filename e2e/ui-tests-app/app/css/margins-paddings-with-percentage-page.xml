@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" class="with-percent">
   <GridLayout rows="40,*, *, *, *">
     <StackLayout>
       <Button text="Change css of page" tap="applyTap" id="button"></Button>

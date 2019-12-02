@@ -1,0 +1,6 @@
+{
+  "name": "image-source",
+  "main": "image-source",
+  "types": "image-source.d.ts",
+  "nativescript": {}
+}

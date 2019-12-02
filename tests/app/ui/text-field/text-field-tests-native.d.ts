@@ -1,6 +1,6 @@
 ﻿//@private
-import * as textFieldModule from "tns-core-modules/ui/text-field";
-import * as colorModule from "tns-core-modules/color";
+import * as textFieldModule from "@nativescript/core/ui/text-field";
+import * as colorModule from "@nativescript/core/color";
 
 export declare function getNativeText(textField: textFieldModule.TextField): string;
 export declare function getNativeHint(textField: textFieldModule.TextField): string;

@@ -1,9 +1,9 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import * as types from "tns-core-modules/utils/types";
+import * as types from "@nativescript/core/utils/types";
 
 // >> htmlview-require
-import * as htmlViewModule from "tns-core-modules/ui/html-view";
+import * as htmlViewModule from "@nativescript/core/ui/html-view";
 // << htmlview-require
 
 export function test_recycling() {

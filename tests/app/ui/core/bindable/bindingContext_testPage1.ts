@@ -1,5 +1,5 @@
-﻿import * as observable from "tns-core-modules/data/observable";
-import * as pageModule from "tns-core-modules/ui/page";
+﻿import * as observable from "@nativescript/core/data/observable";
+import * as pageModule from "@nativescript/core/ui/page";
 
 function loadViewModel() {
     viewModel.set("testProperty", "Alabala");

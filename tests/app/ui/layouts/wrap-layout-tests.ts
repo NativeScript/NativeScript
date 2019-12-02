@@ -1,12 +1,12 @@
 import * as TKUnit from "../../tk-unit";
-import { Label } from "tns-core-modules/ui/label";
+import { Label } from "@nativescript/core/ui/label";
 import * as layoutHelper from "./layout-helper";
 import * as testModule from "../../ui-test";
 import * as commonTests from "./common-layout-tests";
 import * as helper from "../../ui-helper";
 
 // >> wrap-layout-require
-import * as wrapLayoutModule from "tns-core-modules/ui/layouts/wrap-layout";
+import * as wrapLayoutModule from "@nativescript/core/ui/layouts/wrap-layout";
 // << wrap-layout-require
 
 export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayout> {

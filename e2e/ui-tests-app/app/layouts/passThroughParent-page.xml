@@ -1,4 +1,4 @@
-<Page class="page" actionBarHidden="true" 
+<Page class="page" actionBarHidden="true"
     xmlns="http://schemas.nativescript.org/tns.xsd">
 
     <WrapLayout tap="onOuterWrapLayoutTap" automationText="onOuterWrapLayoutTap" backgroundColor="#bed3f4" padding="5">

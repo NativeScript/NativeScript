@@ -1,0 +1,21 @@
+.with-percent { background-color: orange; font-size: 8; }
+.with-percent GridLayout { margin: 3%; background-color: lightgreen; font-size: 8; }
+.with-percent StackLayout { border-color: red; border-width: 1; }
+.with-percent StackLayout * { border-color: blue; border-width: 1; }
+.with-percent GridLayout { border-color: green; border-width: 1; }
+.with-percent .test1 { padding: 10%; }
+.with-percent .test2 { padding: 10%; background-color: lightblue; }
+.with-percent .test3 { margin: 1% 2% 3% 4%; }
+.with-percent WrapLayout { orientation: vertical; width: 75%; height: 45% }
+.with-percent Button { color: black }
+
+.without-percent { background-color: orange; font-size: 8; }
+.without-percent GridLayout { margin:3; background-color: lightgreen; font-size: 8; }
+.without-percent StackLayout { border-color: red; border-width: 1; }
+.without-percent StackLayout * { border-color: blue; border-width: 1; }
+.without-percent GridLayout { border-color: green; border-width: 1; }
+.without-percent .test1 { padding: 10; }
+.without-percent .test2 { padding: 10; background-color: lightblue; }
+.without-percent .test3 { margin: 10 20 30 40; }
+.without-percent WrapLayout { orientation: vertical; width: 100; height: 120; }
+.without-percent Button { color: black }

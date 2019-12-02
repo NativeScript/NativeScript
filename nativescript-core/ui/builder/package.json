@@ -1,0 +1,5 @@
+{
+  "name": "builder",
+  "main": "builder",
+  "types": "builder.d.ts"
+}

@@ -1,7 +1,7 @@
-﻿import * as observable from "tns-core-modules/data/observable";
-import * as action from "tns-core-modules/ui/action-bar";
+﻿import * as observable from "@nativescript/core/data/observable";
+import * as action from "@nativescript/core/ui/action-bar";
 
-import * as pages from "tns-core-modules/ui/page";
+import * as pages from "@nativescript/core/ui/page";
 
 var currentPage: pages.Page;
 // Event handler for Page "loaded" event attached in main-page.xml

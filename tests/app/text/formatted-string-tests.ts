@@ -1,10 +1,10 @@
 // >> formatted-string-require
-import { FormattedString } from "tns-core-modules/text/formatted-string";
-import { Span } from "tns-core-modules/text/span";
+import { FormattedString } from "@nativescript/core/text/formatted-string";
+import { Span } from "@nativescript/core/text/span";
 // << formatted-string-require
 
-import { Observable } from "tns-core-modules/data/observable";
-import { Label } from "tns-core-modules/ui/label";
+import { Observable } from "@nativescript/core/data/observable";
+import { Label } from "@nativescript/core/ui/label";
 import * as TKUnit from "../tk-unit";
 
 export function test_FormattedString_RemovesEventListeners_for_spans() {

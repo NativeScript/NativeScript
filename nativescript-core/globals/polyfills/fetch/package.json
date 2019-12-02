@@ -1,0 +1,6 @@
+{
+  "name": "fetch",
+  "main": "fetch",
+  "types": "fetch.d.ts",
+  "nativescript": {}
+}

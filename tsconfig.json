@@ -1,10 +1,38 @@
 {
-    "extends": "./tsconfig.shared",
+    "compilerOptions": {
+        "noEmitOnError": false,
+        "noEmitHelpers": true,
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "noImplicitUseStrict": true,
+        "removeComments": true,
+        "experimentalDecorators": true,
+        "diagnostics": true,
+        "sourceMap": true,
+        "lib": [
+            "es6",
+            "dom"
+        ],
+        "types": [
+            "node",
+            "chai",
+            "mocha"
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "tns-core-modules/*": [
+                "tns-core-modules/*"
+            ]
+        }
+    },
     "exclude": [
         "tns-core-modules/node_modules/",
         "tns-core-modules/package/",
         "tns-core-modules/references.d.ts",
         "tns-platform-declarations/ios/objc-x86_64/",
+        "tns-platform-declarations/ios-typings-prj/",
         "tns-platform-declarations/node_modules/",
         "tns-platform-declarations/package/",
         "tns-platform-declarations/references.d.ts",
@@ -13,6 +41,7 @@
         "tns-platform-declarations/android/androidx-*.d.ts",
         "tests/",
         "apps/",
+        "dist/",
         "e2e/",
         "node_modules/",
         "package/",
@@ -21,6 +50,7 @@
         "Deploy",
         "out",
         "obj",
-        "unit-tests/common-types.d.ts"
+        "unit-tests/common-types.d.ts",
+        "dist"
     ]
 }

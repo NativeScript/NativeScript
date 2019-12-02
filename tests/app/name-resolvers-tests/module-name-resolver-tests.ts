@@ -1,5 +1,5 @@
 import * as TKUnit from "../tk-unit";
-import { ModuleNameResolver, ModuleListProvider } from "tns-core-modules/module-name-resolver";
+import { ModuleNameResolver, ModuleListProvider } from "@nativescript/core/module-name-resolver";
 
 import {
     androidPhonePortraitContext,

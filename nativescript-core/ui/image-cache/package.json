@@ -1,0 +1,5 @@
+{
+  "name": "image-cache",
+  "main": "image-cache",
+  "types": "image-cache.d.ts"
+}

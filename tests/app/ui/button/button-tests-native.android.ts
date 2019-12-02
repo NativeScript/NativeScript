@@ -1,7 +1,7 @@
-import * as buttonModule from "tns-core-modules/ui/button";
-import * as colorModule from "tns-core-modules/color";
-import * as utilsModule from "tns-core-modules/utils/utils";
-import * as enums from "tns-core-modules/ui/enums";
+import * as buttonModule from "@nativescript/core/ui/button";
+import * as colorModule from "@nativescript/core/color";
+import * as utilsModule from "@nativescript/core/utils/utils";
+import * as enums from "@nativescript/core/ui/enums";
 
 export function getNativeText(button: buttonModule.Button): string {
     return button.android.getText();

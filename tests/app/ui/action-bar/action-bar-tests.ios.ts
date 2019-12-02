@@ -1,11 +1,11 @@
 import { createPageAndNavigate } from "./action-bar-tests-common";
-import * as PageModule from "tns-core-modules/ui/page";
+import * as PageModule from "@nativescript/core/ui/page";
 import * as TKUnit from "../../tk-unit";
-import * as LabelModule from "tns-core-modules/ui/label";
+import * as LabelModule from "@nativescript/core/ui/label";
 import * as helper from "../../ui-helper";
-import * as view from "tns-core-modules/ui/core/view";
-import * as actionBar from "tns-core-modules/ui/action-bar";
-import { Visibility } from "tns-core-modules/ui/enums";
+import * as view from "@nativescript/core/ui/core/view";
+import * as actionBar from "@nativescript/core/ui/action-bar";
+import { Visibility } from "@nativescript/core/ui/enums";
 
 export * from "./action-bar-tests-common";
 

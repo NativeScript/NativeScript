@@ -1,7 +1,0 @@
-{
-  "name" : "http-request",
-  "main" : "http-request",
-  "types": "http-request.d.ts",
-  "nativescript": {}
-}
-

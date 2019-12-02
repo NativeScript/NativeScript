@@ -1,5 +1,5 @@
-import * as trace from "tns-core-modules/trace";
-import { Page } from "tns-core-modules/ui/page";
+import * as trace from "@nativescript/core/trace";
+import { Page } from "@nativescript/core/ui/page";
 
 import * as tests from "./test-runner";
 

@@ -1,4 +1,4 @@
-var appSettings = require("tns-core-modules/application-settings");
+var appSettings = require("@nativescript/core/application-settings");
 import * as TKUnit from "../tk-unit";
 
 var stringKey: string = "stringKey";

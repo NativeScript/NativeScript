@@ -1,0 +1,6 @@
+{
+  "name": "http",
+  "main": "http",
+  "types": "http.d.ts",
+  "nativescript": {}
+}

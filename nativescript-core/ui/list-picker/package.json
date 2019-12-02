@@ -1,0 +1,5 @@
+{
+  "name": "list-picker",
+  "main": "list-picker",
+  "types": "list-picker.d.ts"
+}

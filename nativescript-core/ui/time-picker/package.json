@@ -1,0 +1,5 @@
+{
+  "name": "time-picker",
+  "main": "time-picker",
+  "types": "time-picker.d.ts"
+}

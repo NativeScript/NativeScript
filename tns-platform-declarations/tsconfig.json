@@ -14,16 +14,14 @@
         "lib": [
             "es6", "dom"
         ],
-        "baseUrl": ".",
-        "paths": {
-            "tns-core-modules/*": ["tns-core-modules/*"]
-        }
+        "baseUrl": "."
     },
     "exclude": [
         "android-*.d.ts",
         "android/android-*.d.ts",
         "android/androidx-*.d.ts",
         "ios/objc-x86_64",
+        "ios-typings-prj",
         "node_modules",
         "package"
     ]

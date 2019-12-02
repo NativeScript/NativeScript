@@ -1,8 +1,8 @@
-import * as observable from "tns-core-modules/data/observable";
-import * as view from "tns-core-modules/ui/core/view";
-import * as label from "tns-core-modules/ui/label";
-import * as pages from "tns-core-modules/ui/page";
-import * as http from "tns-core-modules/http";
+import * as observable from "@nativescript/core/data/observable";
+import * as view from "@nativescript/core/ui/core/view";
+import * as label from "@nativescript/core/ui/label";
+import * as pages from "@nativescript/core/ui/page";
+import * as http from "@nativescript/core/http";
 
 var obj = new observable.Observable();
 obj.set("id", 0);

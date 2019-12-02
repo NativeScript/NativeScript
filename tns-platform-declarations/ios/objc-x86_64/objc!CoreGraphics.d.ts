@@ -139,6 +139,8 @@ declare const enum CGBlendMode {
 
 declare function CGColorConversionInfoCreate(src: any, dst: any): any;
 
+declare function CGColorConversionInfoCreateWithOptions(src: any, dst: any, options: NSDictionary<any, any>): any;
+
 declare function CGColorConversionInfoGetTypeID(): number;
 
 declare const enum CGColorConversionInfoTransformType {
@@ -157,6 +159,10 @@ declare function CGColorCreateCopy(color: any): any;
 declare function CGColorCreateCopyByMatchingToColorSpace(p1: any, intent: CGColorRenderingIntent, color: any, options: NSDictionary<any, any>): any;
 
 declare function CGColorCreateCopyWithAlpha(color: any, alpha: number): any;
+
+declare function CGColorCreateGenericGrayGamma2_2(gray: number, alpha: number): any;
+
+declare function CGColorCreateSRGB(red: number, green: number, blue: number, alpha: number): any;
 
 declare function CGColorCreateWithPattern(space: any, pattern: any, components: interop.Pointer | interop.Reference<number>): any;
 
@@ -240,6 +246,8 @@ declare function CGColorSpaceGetName(space: any): string;
 declare function CGColorSpaceGetNumberOfComponents(space: any): number;
 
 declare function CGColorSpaceGetTypeID(): number;
+
+declare function CGColorSpaceIsHDR(p1: any): boolean;
 
 declare function CGColorSpaceIsWideGamutRGB(p1: any): boolean;
 
@@ -923,6 +931,8 @@ declare function CGPDFContextAddDocumentMetadata(context: any, metadata: NSData)
 
 declare function CGPDFContextBeginPage(context: any, pageInfo: NSDictionary<any, any>): void;
 
+declare function CGPDFContextBeginTag(context: any, tagType: CGPDFTagType, tagProperties: NSDictionary<any, any>): void;
+
 declare function CGPDFContextClose(context: any): void;
 
 declare function CGPDFContextCreate(consumer: any, mediaBox: interop.Pointer | interop.Reference<CGRect>, auxiliaryInfo: NSDictionary<any, any>): any;
@@ -930,6 +940,8 @@ declare function CGPDFContextCreate(consumer: any, mediaBox: interop.Pointer | i
 declare function CGPDFContextCreateWithURL(url: NSURL, mediaBox: interop.Pointer | interop.Reference<CGRect>, auxiliaryInfo: NSDictionary<any, any>): any;
 
 declare function CGPDFContextEndPage(context: any): void;
+
+declare function CGPDFContextEndTag(context: any): void;
 
 declare function CGPDFContextSetDestinationForRect(context: any, name: string, rect: CGRect): void;
 
@@ -1096,6 +1108,109 @@ declare function CGPDFStringCopyTextString(string: interop.Pointer | interop.Ref
 declare function CGPDFStringGetBytePtr(string: interop.Pointer | interop.Reference<any>): string;
 
 declare function CGPDFStringGetLength(string: interop.Pointer | interop.Reference<any>): number;
+
+declare const enum CGPDFTagType {
+
+	Document = 100,
+
+	Part = 101,
+
+	Art = 102,
+
+	Section = 103,
+
+	Div = 104,
+
+	BlockQuote = 105,
+
+	Caption = 106,
+
+	TOC = 107,
+
+	TOCI = 108,
+
+	Index = 109,
+
+	NonStructure = 110,
+
+	Private = 111,
+
+	Paragraph = 200,
+
+	Header = 201,
+
+	Header1 = 202,
+
+	Header2 = 203,
+
+	Header3 = 204,
+
+	Header4 = 205,
+
+	Header5 = 206,
+
+	Header6 = 207,
+
+	List = 300,
+
+	ListItem = 301,
+
+	Label = 302,
+
+	ListBody = 303,
+
+	Table = 400,
+
+	TableRow = 401,
+
+	TableHeaderCell = 402,
+
+	TableDataCell = 403,
+
+	TableHeader = 404,
+
+	TableBody = 405,
+
+	TableFooter = 406,
+
+	Span = 500,
+
+	Quote = 501,
+
+	Note = 502,
+
+	Reference = 503,
+
+	Bibliography = 504,
+
+	Code = 505,
+
+	Link = 506,
+
+	Annotation = 507,
+
+	Ruby = 600,
+
+	RubyBaseText = 601,
+
+	RubyAnnotationText = 602,
+
+	RubyPunctuation = 603,
+
+	Warichu = 604,
+
+	WarichuText = 605,
+
+	WarichuPunctiation = 606,
+
+	Figure = 700,
+
+	Formula = 701,
+
+	Form = 702
+}
+
+declare function CGPDFTagTypeGetName(tagType: CGPDFTagType): string;
 
 declare function CGPathAddArc(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, x: number, y: number, radius: number, startAngle: number, endAngle: number, clockwise: boolean): void;
 
@@ -1392,9 +1507,17 @@ declare var kCGColorSpaceDCIP3: string;
 
 declare var kCGColorSpaceDisplayP3: string;
 
+declare var kCGColorSpaceDisplayP3_HLG: string;
+
+declare var kCGColorSpaceDisplayP3_PQ_EOTF: string;
+
 declare var kCGColorSpaceExtendedGray: string;
 
+declare var kCGColorSpaceExtendedLinearDisplayP3: string;
+
 declare var kCGColorSpaceExtendedLinearGray: string;
+
+declare var kCGColorSpaceExtendedLinearITUR_2020: string;
 
 declare var kCGColorSpaceExtendedLinearSRGB: string;
 
@@ -1415,6 +1538,10 @@ declare var kCGColorSpaceGenericRGBLinear: string;
 declare var kCGColorSpaceGenericXYZ: string;
 
 declare var kCGColorSpaceITUR_2020: string;
+
+declare var kCGColorSpaceITUR_2020_HLG: string;
+
+declare var kCGColorSpaceITUR_2020_PQ_EOTF: string;
 
 declare var kCGColorSpaceITUR_709: string;
 
@@ -1479,3 +1606,11 @@ declare var kCGPDFOutlineDestination: string;
 declare var kCGPDFOutlineDestinationRect: string;
 
 declare var kCGPDFOutlineTitle: string;
+
+declare var kCGPDFTagPropertyActualText: any;
+
+declare var kCGPDFTagPropertyAlternativeText: any;
+
+declare var kCGPDFTagPropertyLanguageText: any;
+
+declare var kCGPDFTagPropertyTitleText: any;

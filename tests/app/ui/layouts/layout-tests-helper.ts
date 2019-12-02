@@ -1,6 +1,6 @@
-import { View, Length } from "tns-core-modules/ui/core/view";
+import { View, Length } from "@nativescript/core/ui/core/view";
 import * as TKUnit from "../../tk-unit";
-import { layout } from "tns-core-modules/utils/utils";
+import { layout } from "@nativescript/core/utils/utils";
 
 import round = layout.round;
 export const dipToDp = layout.toDevicePixels;

@@ -1,0 +1,6 @@
+{
+  "name": "xml",
+  "main": "xml",
+  "types": "xml.d.ts",
+  "nativescript": {}
+}

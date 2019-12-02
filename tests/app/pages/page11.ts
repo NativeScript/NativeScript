@@ -1,7 +1,7 @@
-import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
-import * as sp from "tns-core-modules/ui/layouts/stack-layout";
-import * as button from "tns-core-modules/ui/button";
-import { Page } from "tns-core-modules/ui/page";
+import * as gridModule from "@nativescript/core/ui/layouts/grid-layout";
+import * as sp from "@nativescript/core/ui/layouts/stack-layout";
+import * as button from "@nativescript/core/ui/button";
+import { Page } from "@nativescript/core/ui/page";
 
 export function createPage() {
     var StackLayout = new sp.StackLayout();

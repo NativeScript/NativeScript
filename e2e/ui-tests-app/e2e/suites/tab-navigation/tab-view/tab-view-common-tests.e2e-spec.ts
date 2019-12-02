@@ -99,7 +99,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         const index = driver.nsCapabilities.device.platform === Platform.IOS
             ? (+driver.nsCapabilities.device.apiLevel >= 11 ? 2 : 3) : 1;
 
-        const tabItemLocator = driver.isAndroid ? driver.locators.image :  driver.locators.getElementByName("imagebutton");
+        const tabItemLocator = driver.isAndroid ? driver.locators.image : driver.locators.getElementByName("imagebutton");
         let btns = await driver.findElementsByClassName(tabItemLocator, 5000);
         await btns[index].click();
         await driver.imageHelper.compareScreen();

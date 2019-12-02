@@ -1,4 +1,4 @@
-import { Tabs } from "tns-core-modules/ui/tabs";
+import { Tabs } from "@nativescript/core/ui/tabs";
 
 // TODO: Should we add getCount to UIPageViewController???
 export function getNativeTabCount(tabView: Tabs): number {

@@ -13,7 +13,7 @@ export function addChild(args) {
     button.text = "Button" + buttonsCount;
     button.margin = 10;
     button.backgroundColor = "lightgreen";
-    
+
     (<StackLayout>args.object.page.getViewById("target")).addChild(button);
     buttonsCount++;
 }

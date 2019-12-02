@@ -13,7 +13,8 @@
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",
   "dependencies": {
-    "tns-core-modules": "file:../../tns-core-modules"
+    "@nativescript/core": "file:../../nativescript-core",
+    "tns-core-modules": "file:../../dist/tns-core-modules"
   },
   "devDependencies": {
     "@testdeck/mocha": "0.0.6",

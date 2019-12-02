@@ -1,9 +1,9 @@
 // >> frame-require
-import { Frame, getFrameById, topmost, NavigationEntry } from "tns-core-modules/ui/frame";
+import { Frame, NavigationEntry } from "@nativescript/core/ui/frame";
 // << frame-require
 
-import { Label } from "tns-core-modules/ui/label";
-import { Page } from "tns-core-modules/ui/page";
+import { Label } from "@nativescript/core/ui/label";
+import { Page } from "@nativescript/core/ui/page";
 import * as TKUnit from "../../tk-unit";
 
 const NAV_WAIT = 15;
@@ -13,7 +13,7 @@ function emptyNavigationQueue(frame: Frame) {
 
 export function ignore_test_DummyTestForSnippetOnly0() {
     // >> frame-navigating
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.navigate("details-page");
     // << frame-navigating
 }
@@ -28,7 +28,7 @@ export function ignore_test_DummyTestForSnippetOnly1() {
 
         return page;
     };
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.navigate(func);
     // <<frame-factory-func
 }
@@ -40,7 +40,7 @@ export function ignore_test_DummyTestForSnippetOnly2() {
         context: { info: "something you want to pass to your page" },
         animated: false
     };
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.navigate(navigationEntry);
     // << frame-naventry
 }
@@ -52,20 +52,20 @@ export function ignore_test_DummyTestForSnippetOnly3() {
         bindingContext: { info: "something you want to pass as binding context to your page" },
         animated: false
     };
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.navigate(navigationEntry);
     // << frame-naventrycontext
 }
 
 export function ignore_test_DummyTestForSnippetOnly4() {
     // >> frame-back
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.goBack();
     // << frame-back
 }
 
 export function test_can_go_back() {
-    const frame = topmost();
+    const frame = Frame.topmost();
 
     frame.navigate({ create: () => new Page(), clearHistory: true });
     emptyNavigationQueue(frame);
@@ -138,7 +138,7 @@ export function test_can_go_back() {
 }
 
 export function test_go_back_to_backstack_entry() {
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.navigate(() => new Page());
     emptyNavigationQueue(frame);
 
@@ -156,7 +156,7 @@ export function test_go_back_to_backstack_entry() {
 }
 
 export function test_page_parent_when_backstackVisible_is_false() {
-    const frame = topmost();
+    const frame = Frame.topmost();
 
     const pages = new Array<Page>();
     const create = () => {
@@ -182,7 +182,7 @@ export function test_page_parent_when_backstackVisible_is_false() {
 }
 
 export function test_page_parent_when_navigate_with_clear_history() {
-    const frame = topmost();
+    const frame = Frame.topmost();
 
     const pages = new Array<Page>();
     const create = () => {
@@ -209,7 +209,7 @@ export function test_page_parent_when_navigate_with_clear_history() {
 }
 
 export function test_page_parent_when_navigate_back() {
-    const frame = topmost();
+    const frame = Frame.topmost();
 
     const pages = new Array<Page>();
     const create = () => {
@@ -239,8 +239,8 @@ export function test_frame_retrieval_API_when_navigating() {
     initialFrame.id = "initialFrame";
     initialFrame.navigate(() => new Page());
 
-    const initialTopmost = topmost();
-    const initialFrameById = getFrameById("initialFrame");
+    const initialTopmost = Frame.topmost();
+    const initialFrameById = Frame.getFrameById("initialFrame");
 
     TKUnit.assertEqual(initialTopmost, initialFrame);
     TKUnit.assertEqual(initialFrameById, initialFrame);
@@ -249,16 +249,16 @@ export function test_frame_retrieval_API_when_navigating() {
     newFrame.id = "newFrame";
     newFrame.navigate(() => new Page());
 
-    const newTopmost = topmost();
-    const newFrameById = getFrameById("newFrame");
+    const newTopmost = Frame.topmost();
+    const newFrameById = Frame.getFrameById("newFrame");
 
     TKUnit.assertEqual(newTopmost, newFrame);
     TKUnit.assertEqual(newFrameById, newFrame);
 
     initialFrame.navigate(() => new Page());
 
-    const previousTopmost = topmost();
-    const previousFrameById = getFrameById("initialFrame");
+    const previousTopmost = Frame.topmost();
+    const previousFrameById = Frame.getFrameById("initialFrame");
 
     TKUnit.assertEqual(previousTopmost, initialFrame);
     TKUnit.assertEqual(previousFrameById, initialFrame);

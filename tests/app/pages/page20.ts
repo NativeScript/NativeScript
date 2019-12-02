@@ -1,7 +1,7 @@
-﻿import * as observable from "tns-core-modules/data/observable";
-import * as trace from "tns-core-modules/trace";
-import { Button } from "tns-core-modules/ui/button";
-import { Page } from "tns-core-modules/ui/page";
+﻿import * as observable from "@nativescript/core/data/observable";
+import * as trace from "@nativescript/core/trace";
+import { Button } from "@nativescript/core/ui/button";
+import { Page } from "@nativescript/core/ui/page";
 trace.addCategories(trace.categories.Layout);
 trace.enable();
 

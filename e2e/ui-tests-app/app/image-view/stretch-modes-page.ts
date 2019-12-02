@@ -6,10 +6,10 @@ const sources = [
     { w: 32, h: 18, src: "i32x18" },
     { w: 32, h: 32, src: "i32x32" },
     { w: 18, h: 32, src: "i18x32" }
-].map(({w, h, src})  => ({w, h, src: `res://${src}` }));
+].map(({ w, h, src }) => ({ w, h, src: `res://${src}` }));
 const stretchModes: Stretch[] = ["none", "aspectFill", "aspectFit", "fill"];
-const widths = [ +8, 0, -8 ];
-const heights = [ +8, 0, -8 ];
+const widths = [+8, 0, -8];
+const heights = [+8, 0, -8];
 
 export function navigatingTo(args) {
     const variants: { src: string, stretch: Stretch, width: number, height: number }[] = [];
@@ -24,7 +24,7 @@ export function navigatingTo(args) {
     const grid: LayoutBase = args.object.getViewById("root");
     const label: Label = args.object.getViewById("label");
     let lastTap = null;
-    variants.forEach(({ src, stretch, width, height}) => {
+    variants.forEach(({ src, stretch, width, height }) => {
         const image = new Image();
         image.src = src;
 

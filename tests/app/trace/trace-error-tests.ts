@@ -1,7 +1,7 @@
 import {
     ErrorHandler, getErrorHandler, setErrorHandler, DefaultErrorHandler,
     error as traceError
-} from "tns-core-modules/trace";
+} from "@nativescript/core/trace";
 import * as TKUnit from "../tk-unit";
 
 let cachedErrorHandler: ErrorHandler;
@@ -61,7 +61,7 @@ export function test_trace_error_should_pass_errors() {
         }
     });
     traceError(testError);
-    
+
     TKUnit.assert(called, "trace.error() should call handler;");
     TKUnit.assertDeepEqual(actualError, testError);
 }

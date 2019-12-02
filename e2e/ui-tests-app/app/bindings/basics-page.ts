@@ -54,7 +54,7 @@ export function createPage() {
 
     stack.addChild(targetOneWay);
     stack.addChild(buttonOneWay);
-    
+
     // TwoWay Binding
     var bindingOptionTwoWay = {
         sourceProperty: "textSource",
