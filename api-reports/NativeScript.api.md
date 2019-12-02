@@ -170,6 +170,16 @@ export class AndroidApplication extends Observable {
 
     nativeApp: any /* android.app.Application */;
 
+    on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
+
+    on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+
+    on(event: "activityDestroyed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+    on(event: "activityStarted", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
+    on(event: "activityPaused", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+
     on(event: "activityResumed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
 
     on(event: "activityStopped", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
@@ -183,16 +193,6 @@ export class AndroidApplication extends Observable {
     on(event: "activityNewIntent", callback: (args: AndroidActivityNewIntentEventData) => void, thisArg?: any);
 
     on(event: "activityRequestPermissions", callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
-
-    on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
-
-    on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
-
-    on(event: "activityDestroyed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-
-    on(event: "activityStarted", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
-
-    on(event: "activityPaused", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
 
     orientation: "portrait" | "landscape" | "unknown";
 
@@ -219,7 +219,7 @@ export class Animation {
     // (undocumented)
     public isPlaying: boolean;
     // Warning: (ae-forgotten-export) The symbol "AnimationPromise" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public play: (resetOnFinish?: boolean) => AnimationPromise;
     // (undocumented)
@@ -404,15 +404,15 @@ export class ChangeType {
 // @public
 export class Color {
     constructor(knownColor: string);
-    constructor(alpha: number, red: number, green: number, blue: number);
     constructor(hex: string);
     constructor(argb: number);
+    constructor(alpha: number, red: number, green: number, blue: number);
     public a: number;
     android: number;
     public argb: number;
     public b: number;
-    public static equals(value1: Color, value2: Color): boolean;
     public equals(value: Color): boolean;
+    public static equals(value1: Color, value2: Color): boolean;
     public g: number;
     public hex: string;
     ios: any /* UIColor */;
@@ -432,7 +432,7 @@ export interface CommonLayoutParams {
     // (undocumented)
     heightPercent: number;
     // Warning: (ae-forgotten-export) The symbol "HorizontalAlignment" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     horizontalAlignment: HorizontalAlignment;
     // (undocumented)
@@ -448,7 +448,7 @@ export interface CommonLayoutParams {
     // (undocumented)
     topMarginPercent: number;
     // Warning: (ae-forgotten-export) The symbol "VerticalAlignment" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     verticalAlignment: VerticalAlignment;
     // (undocumented)
@@ -466,7 +466,7 @@ export const Connectivity: {
 };
 
 // Warning: (ae-forgotten-export) The symbol "AddChildFromBuilder" needs to be exported by the entry point index.d.ts
-// 
+//
 // @public
 export class ContentView extends View implements AddChildFromBuilder {
     // (undocumented)
@@ -524,7 +524,7 @@ export class DefaultErrorHandler implements ErrorHandler {
 }
 
 // Warning: (ae-forgotten-export) The symbol "Device" needs to be exported by the entry point index.d.ts
-// 
+//
 // @public
 export const Device: Device_2;
 
@@ -668,19 +668,19 @@ export class FileSystemEntity {
 // @public (undocumented)
 export class FlexboxLayout extends LayoutBase {
     // Warning: (ae-forgotten-export) The symbol "AlignContent" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public alignContent: AlignContent;
     // Warning: (ae-forgotten-export) The symbol "AlignItems" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public alignItems: AlignItems;
     // Warning: (ae-forgotten-export) The symbol "FlexDirection" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public flexDirection: FlexDirection;
     // Warning: (ae-forgotten-export) The symbol "FlexWrap" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public flexWrap: FlexWrap;
     // (undocumented)
@@ -694,11 +694,11 @@ export class FlexboxLayout extends LayoutBase {
     // (undocumented)
     public static getOrder(view: View): number;
     // Warning: (ae-forgotten-export) The symbol "JustifyContent" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public justifyContent: JustifyContent;
     // Warning: (ae-forgotten-export) The symbol "AlignSelf" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public static setAlignSelf(view: View, align: AlignSelf);
     // (undocumented)
@@ -845,7 +845,7 @@ export class Frame extends View {
     _removeFromFrameStack();
 
     // Warning: (ae-forgotten-export) The symbol "NavigationType" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     setCurrent(entry: BackstackEntry, navigationType: NavigationType): void;
 
@@ -1112,9 +1112,9 @@ export class ImageCache extends Observable {
     enqueue(request: DownloadRequest);
     get(key: string): any;
     maxRequests: number;
-    on(event: "downloadError", callback: (args: DownloadError) => void, thisArg?: any);
     on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
     on(event: "downloaded", callback: (args: DownloadedData) => void, thisArg?: any);
+    on(event: "downloadError", callback: (args: DownloadError) => void, thisArg?: any);
     // (undocumented)
     _onDownloadCompleted(key: string, image: any);
     // (undocumented)
@@ -1144,10 +1144,10 @@ export class ImageSource {
 
     static fromBase64Sync(source: string): ImageSource;
 
+    static fromData(data: any): Promise<ImageSource>;
+
     // @deprecated (undocumented)
     fromData(data: any): Promise<boolean>;
-
-    static fromData(data: any): Promise<ImageSource>;
 
     static fromDataSync(data: any): ImageSource;
 
@@ -1206,7 +1206,7 @@ export class ImageSource {
 export type InstrumentationMode = "counters" | "timeline" | "lifecycle";
 
 // @public
-export interface iOSApplication {
+export class iOSApplication {
     /* tslint:enable */
     addNotificationObserver(notificationName: string, onReceiveCallback: (notification: any /* NSNotification */) => void): any;
 
@@ -1309,7 +1309,7 @@ export interface LaunchEventData extends ApplicationEventData {
 }
 
 // Warning: (ae-forgotten-export) The symbol "CustomLayoutView" needs to be exported by the entry point index.d.ts
-// 
+//
 // @public
 export class LayoutBase extends CustomLayoutView {
     addChild(view: View): void;
@@ -1372,10 +1372,10 @@ export class ListView extends View {
     itemTemplates: string | Array<KeyedTemplate>;
     itemTemplateSelector: string | ((item: any, index: number, items: any) => string);
     public static loadMoreItemsEvent: string;
-    on(event: "loadMoreItems", callback: (args: EventData) => void, thisArg?: any);
-    on(event: "itemLoading", callback: (args: ItemEventData) => void, thisArg?: any);
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "itemLoading", callback: (args: ItemEventData) => void, thisArg?: any);
     on(event: "itemTap", callback: (args: ItemEventData) => void, thisArg?: any);
+    on(event: "loadMoreItems", callback: (args: EventData) => void, thisArg?: any);
     refresh();
     rowHeight: Length;
     scrollToIndex(index: number);
@@ -1482,9 +1482,9 @@ export class Observable {
 
     off(eventNames: string, callback?: any, thisArg?: any);
 
-    on(event: "propertyChange", callback: (data: EventData) => void, thisArg?: any);
-
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+
+    on(event: "propertyChange", callback: (data: EventData) => void, thisArg?: any);
 
     once(event: string, callback: (data: EventData) => void, thisArg?: any);
 
@@ -1506,9 +1506,9 @@ export class ObservableArray<T> extends Observable {
 
     public static changeEvent: string;
 
-    concat(...items: T[]): T[];
-
     concat<U extends T[]>(...items: U[]): T[];
+
+    concat(...items: T[]): T[];
 
     every(callbackfn: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean;
 
@@ -1558,9 +1558,9 @@ export class ObservableArray<T> extends Observable {
 
     sort(compareFn?: (a: T, b: T) => number): T[];
 
-    splice(start: number, deleteCount: number, ...items: T[]): T[];
-
     splice(start: number): T[];
+
+    splice(start: number, deleteCount: number, ...items: T[]): T[];
 
     // (undocumented)
     toLocaleString(): string;
@@ -1610,13 +1610,13 @@ export class Page extends ContentView {
 
     public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
 
+    public on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
+
     public on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
     public on(event: "navigatingFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
     public on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
-
-    public on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
 
     public onNavigatedFrom(isBackNavigation: boolean): void;
 
@@ -1779,9 +1779,9 @@ export class ScrollView extends ContentView {
 
     isScrollEnabled: boolean;
 
-    on(event: "scroll", callback: (args: ScrollEventData) => void, thisArg?: any);
-
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+
+    on(event: "scroll", callback: (args: ScrollEventData) => void, thisArg?: any);
 
     // (undocumented)
     _onOrientationChanged();
@@ -1816,11 +1816,11 @@ export class SearchBar extends View {
 
     ios: any /* UISearchBar */;
 
-    on(event: "close", callback: (args: EventData) => void, thisArg?: any);
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     on(event: "submit", callback: (args: EventData) => void, thisArg?: any);
 
-    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "close", callback: (args: EventData) => void, thisArg?: any);
 
     public static submitEvent: string;
 
@@ -1832,7 +1832,7 @@ export class SearchBar extends View {
 }
 
 // Warning: (ae-forgotten-export) The symbol "AddArrayFromBuilder" needs to be exported by the entry point index.d.ts
-// 
+//
 // @public
 export class SegmentedBar extends View implements AddChildFromBuilder, AddArrayFromBuilder {
     // (undocumented)
@@ -1874,6 +1874,8 @@ export interface ShowModalOptions {
     }
 
     animated?: boolean;
+
+    cancelable?: boolean
 
     closeCallback: Function;
 
@@ -1962,17 +1964,17 @@ export class Style extends Observable {
     // (undocumented)
     public backgroundColor: Color;
     // Warning: (ae-forgotten-export) The symbol "LinearGradient" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public backgroundImage: string | LinearGradient;
     // Warning: (ae-forgotten-export) The symbol "Background" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public backgroundInternal: Background;
     // (undocumented)
     public backgroundPosition: string;
     // Warning: (ae-forgotten-export) The symbol "BackgroundRepeat" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public backgroundRepeat: BackgroundRepeat;
     // (undocumented)
@@ -2014,17 +2016,17 @@ export class Style extends Observable {
     // (undocumented)
     public flexDirection: FlexDirection;
     // Warning: (ae-forgotten-export) The symbol "FlexGrow" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public flexGrow: FlexGrow;
     // Warning: (ae-forgotten-export) The symbol "FlexShrink" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public flexShrink: FlexShrink;
     // (undocumented)
     public flexWrap: FlexWrap;
     // Warning: (ae-forgotten-export) The symbol "FlexWrapBefore" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public flexWrapBefore: FlexWrapBefore;
     // (undocumented)
@@ -2067,7 +2069,7 @@ export class Style extends Observable {
     // (undocumented)
     public opacity: number;
     // Warning: (ae-forgotten-export) The symbol "Order" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public order: Order;
     // (undocumented)
@@ -2109,19 +2111,19 @@ export class Style extends Observable {
     // (undocumented)
     public tabTextFontSize: number;
     // Warning: (ae-forgotten-export) The symbol "TextAlignment" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public textAlignment: TextAlignment;
     // (undocumented)
     public textDecoration: TextDecoration;
     // Warning: (ae-forgotten-export) The symbol "TextTransform" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public textTransform: TextTransform;
     // (undocumented)
     public tintColor: Color;
     // Warning: (ae-forgotten-export) The symbol "dip" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public translateX: dip;
     // (undocumented)
@@ -2133,11 +2135,11 @@ export class Style extends Observable {
     // (undocumented)
     public viewRef: WeakRef<ViewBase>;
     // Warning: (ae-forgotten-export) The symbol "Visibility" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public visibility: Visibility;
     // Warning: (ae-forgotten-export) The symbol "WhiteSpace" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public whiteSpace: WhiteSpace;
     // (undocumented)
@@ -2303,6 +2305,9 @@ export class TabStripItem extends View {
     iconSource: string;
 
     image: Image;
+
+    // (undocumented)
+    _index: number;
 
     label: Label;
 
@@ -2678,12 +2683,12 @@ export abstract class View extends ViewBase {
     // (undocumented)
     _modalParent?: View;
     off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
-    on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
-    on(event: "androidBackPressed", callback: (args: EventData) => void, thisArg?: any);
-    on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
+    on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
     on(event: "loaded", callback: (args: EventData) => void, thisArg?: any);
     on(event: "unloaded", callback: (args: EventData) => void, thisArg?: any);
-    on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
+    on(event: "androidBackPressed", callback: (args: EventData) => void, thisArg?: any);
+    on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
+    on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
     _onAttachedToWindow(): void;
     onBackPressed(): boolean;
     _onDetachedFromWindow(): void;
@@ -2746,7 +2751,7 @@ export abstract class ViewBase extends Observable {
     public _automaticallyAdjustsScrollViewInsets: boolean;
     public _batchUpdate<T>(callback: () => T): T;
     // Warning: (ae-forgotten-export) The symbol "BindingOptions" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     public bind(options: BindingOptions, source?: Object): void;
     // (undocumented)
@@ -2790,7 +2795,7 @@ export abstract class ViewBase extends Observable {
     // (undocumented)
     _domId: number;
     // Warning: (ae-forgotten-export) The symbol "DOMNode" needs to be exported by the entry point index.d.ts
-    // 
+    //
     // (undocumented)
     domNode: DOMNode;
     public eachChild(callback: (child: ViewBase) => boolean): void;
@@ -2855,6 +2860,8 @@ export abstract class ViewBase extends Observable {
     public _isPaddingRelative: boolean;
     // (undocumented)
     _isStyleScopeHost: boolean;
+    // (undocumented)
+    public _layoutParent(): void;
     // (undocumented)
     left: Length;
     public static loadedEvent: string;
@@ -2949,12 +2956,12 @@ export class WebView extends View {
 
     public static loadStartedEvent: string;
 
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+
     // Warning: (ae-forgotten-export) The symbol "LoadEventData" needs to be exported by the entry point index.d.ts
     on(event: "loadFinished", callback: (args: LoadEventData) => void, thisArg?: any);
 
     on(event: "loadStarted", callback: (args: LoadEventData) => void, thisArg?: any);
-
-    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     reload();
 
@@ -2984,7 +2991,7 @@ export class XmlParser {
 
 
 // Warnings were encountered during analysis:
-// 
+//
 // nativescript-core/index.d.ts:15:5 - (ae-forgotten-export) The symbol "getMainEntry" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:16:5 - (ae-forgotten-export) The symbol "getRootView" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:17:5 - (ae-forgotten-export) The symbol "setResources" needs to be exported by the entry point index.d.ts
@@ -3058,9 +3065,9 @@ export class XmlParser {
 // nativescript-core/index.d.ts:117:5 - (ae-forgotten-export) The symbol "layout" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:118:5 - (ae-forgotten-export) The symbol "ad" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:119:5 - (ae-forgotten-export) The symbol "ios" needs to be exported by the entry point index.d.ts
-// nativescript-core/ui/core/view-base/view-base.d.ts:166:26 - (ae-forgotten-export) The symbol "Property" needs to be exported by the entry point index.d.ts
-// nativescript-core/ui/core/view-base/view-base.d.ts:166:26 - (ae-forgotten-export) The symbol "CssProperty" needs to be exported by the entry point index.d.ts
-// nativescript-core/ui/core/view-base/view-base.d.ts:166:26 - (ae-forgotten-export) The symbol "CssAnimationProperty" needs to be exported by the entry point index.d.ts
+// nativescript-core/ui/core/view-base/view-base.d.ts:171:26 - (ae-forgotten-export) The symbol "Property" needs to be exported by the entry point index.d.ts
+// nativescript-core/ui/core/view-base/view-base.d.ts:171:26 - (ae-forgotten-export) The symbol "CssProperty" needs to be exported by the entry point index.d.ts
+// nativescript-core/ui/core/view-base/view-base.d.ts:171:26 - (ae-forgotten-export) The symbol "CssAnimationProperty" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

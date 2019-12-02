@@ -1,0 +1,6 @@
+{
+  "name": "animation-frame",
+  "main": "animation-frame",
+  "types": "animation-frame.d.ts",
+  "nativescript": {}
+}

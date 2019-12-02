@@ -377,6 +377,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this._emit("unloaded");
     }
 
+    public _layoutParent() {
+        if (this.parent) {
+            this.parent._layoutParent();
+        }
+    }
+
     public _suspendNativeUpdates(type: SuspendType): void {
         if (type) {
             this._suspendNativeUpdatesCount = this._suspendNativeUpdatesCount | type;

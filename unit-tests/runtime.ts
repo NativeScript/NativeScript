@@ -11,6 +11,7 @@ moduleAlias.addAliases({
     "@nativescript/core/platform": path.resolve(__dirname, "polyfills", "platform"),
     "@nativescript/core/file-system/file-system-access": path.resolve(__dirname, "polyfills", "file-system-access"),
     "@nativescript/core/utils/utils": path.resolve(tnsCoreModules, "utils/utils-common"),
+    "./layout-helper": path.resolve(tnsCoreModules, "utils/layout-helper/layout-helper-common"),
     "./mainthread-helper": path.resolve(__dirname, "polyfills", "mainthread-helper"),
     "@nativescript/core/color": path.resolve(tnsCoreModules, "color/color-common"),
     "@nativescript/core/ui/styling/font": path.resolve(tnsCoreModules, "ui/styling/font-common"),

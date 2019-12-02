@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Unit Tests",
+            "name": "Launch mocha tests",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
             "args": [
                 "--timeout",
@@ -15,82 +15,67 @@
                 "--opts",
                 "unit-tests/mocha.opts"
             ],
-            "internalConsoleOptions": "openOnSessionStart",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
             "preLaunchTask": "tsc-unit-tests"
         },
         {
-            "name": "Launch on iOS",
-            "type": "nativescript",
-            "request": "launch",
-            "platform": "ios",
-            "appRoot": "${workspaceRoot}",
-            "sourceMaps": true,
-            "watch": true
-        },
-        // {
-        //     "name": "Test on iOS",
-        //     "type": "nativescript",
-        //     "request": "launch",
-        //     "platform": "ios",
-        //     "appRoot": "${workspaceRoot}",
-        //     "sourceMaps": true,
-        //     "watch": false,
-        //     "stopOnEntry": true,
-        //     "launchTests": true,
-        //     "tnsArgs": [
-        //         "--justlaunch"
-        //     ]
-        // },
-        {
-            "name": "Attach on iOS",
-            "type": "nativescript",
-            "request": "attach",
-            "platform": "ios",
-            "appRoot": "${workspaceRoot}",
-            "sourceMaps": true,
-            "watch": false
-        },
-        {
-            "name": "Launch on Android",
-            "type": "nativescript",
-            "request": "launch",
-            "platform": "android",
-            "appRoot": "${workspaceRoot}",
-            "sourceMaps": true,
-            "watch": true
-        },
-        {
-            "name": "Debug tests on Android",
+            "name": "Launch tests on Android",
             "type": "nativescript",
             "request": "launch",
             "platform": "android",
             "appRoot": "${workspaceRoot}/tests",
             "sourceMaps": true,
             "stopOnEntry": true,
-            "watch": true,
+            "watch": true
         },
-        // {
-        //     "name": "Test on Android",
-        //     "type": "nativescript",
-        //     "request": "launch",
-        //     "platform": "android",
-        //     "appRoot": "${workspaceRoot}",
-        //     "sourceMaps": true,
-        //     "watch": false,
-        //     "stopOnEntry": true,
-        //     "launchTests": true,
-        //     "tnsArgs": [
-        //         "--justlaunch"
-        //     ]
-        // },
         {
-            "name": "Attach on Android",
+            "name": "Launch tests on iOS",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}/tests",
+            "sourceMaps": true,
+            "stopOnEntry": true,
+            "watch": true
+        },
+        {
+            "name": "Attach ui tests on Android",
             "type": "nativescript",
             "request": "attach",
             "platform": "android",
-            "appRoot": "${workspaceRoot}",
+            "appRoot": "${workspaceRoot}/e2e/ui-tests-app",
             "sourceMaps": true,
             "watch": false
+        },
+        {
+            "name": "Launch ui tests on Android",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "android",
+            "appRoot": "${workspaceRoot}/e2e/ui-tests-app",
+            "sourceMaps": true,
+            "stopOnEntry": true,
+            "watch": true
+        },
+        {
+            "name": "Attach ui tests on iOS",
+            "type": "nativescript",
+            "request": "attach",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}/e2e/ui-tests-app",
+            "sourceMaps": true,
+            "watch": false
+        },
+        {
+            "name": "Launch ui tests on iOS",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}/e2e/ui-tests-app",
+            "sourceMaps": true,
+            "stopOnEntry": true,
+            "watch": true
         }
     ]
 }

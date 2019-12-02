@@ -1,3 +1,21 @@
+<a name="6.2.1"></a>
+## [6.2.1](https://github.com/NativeScript/NativeScript/compare/6.2.0...6.2.1) (2019-11-12)
+
+
+### Bug Fixes
+
+* **dark-mode:** formatted string and html view text color ([#8031](https://github.com/NativeScript/NativeScript/issues/8031)) ([0c7f838](https://github.com/NativeScript/NativeScript/commit/0c7f838))
+* ensure @CallSuper native methods call superFunc ([#8025](https://github.com/NativeScript/NativeScript/issues/8025)) ([7fa9978](https://github.com/NativeScript/NativeScript/commit/7fa9978))
+* **dev-tools:** use app root in getDocument() ([#8071](https://github.com/NativeScript/NativeScript/issues/8071)) ([f686472](https://github.com/NativeScript/NativeScript/commit/f686472))
+* **gradient:** import LinearGradient with alias ([#8063](https://github.com/NativeScript/NativeScript/issues/8063)) ([eb33ede](https://github.com/NativeScript/NativeScript/commit/eb33ede))
+
+
+### Features
+
+* **application:** add system appearance changed event to typings ([#8034](https://github.com/NativeScript/NativeScript/issues/8034)) ([2a34368](https://github.com/NativeScript/NativeScript/commit/2a34368))
+
+
+
 <a name="6.2.0"></a>
 # [6.2.0](https://github.com/NativeScript/NativeScript/compare/6.1.2...6.2.0) (2019-10-24)
 
@@ -1141,7 +1159,7 @@ A full list of breaking changes could be found [here](https://github.com/NativeS
 
 - [(#2834)](https://github.com/NativeScript/NativeScript/issues/2834) Animations: scale() syntax does not support only one argument
 
-- [(#2813)](https://github.com/NativeScript/NativeScript/issues/2813) The Camera module in Android doesn't handle pemissions for you
+- [(#2813)](https://github.com/NativeScript/NativeScript/issues/2813) The Camera module in Android doesn't handle permissions for you
 
 - [(#2789)](https://github.com/NativeScript/NativeScript/issues/2789) CSS border-width causes text to overflow TextView
 
