@@ -43,8 +43,8 @@ import {
 
 import {
     CLASS_PREFIX,
-    _pushToCssClasses,
-    _removeCssClass
+    pushToSystemCssClasses,
+    removeSystemCssClass
 } from "../css/system-classes";
 import { DeviceOrientation, SystemAppearance } from "../ui/enums/enums";
 
@@ -137,12 +137,12 @@ export function loadAppCss(): void {
 }
 
 function addCssClass(rootView: View, cssClass: string) {
-    _pushToCssClasses(cssClass);
+    pushToSystemCssClasses(cssClass);
     rootView.cssClasses.add(cssClass);
 }
 
 function removeCssClass(rootView: View, cssClass: string) {
-    _removeCssClass(cssClass);
+    removeSystemCssClass(cssClass);
     rootView.cssClasses.delete(cssClass);
 }
 

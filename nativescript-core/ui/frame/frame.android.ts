@@ -22,8 +22,8 @@ import {
 import { Builder } from "../builder";
 import {
     CLASS_PREFIX,
-    _getCssClasses,
-    _pushToCssClasses,
+    getSystemCssClasses,
+    pushToSystemCssClasses,
     ROOT_VIEW_CSS_CLASS
 } from "../../css/system-classes";
 import { device } from "../../platform/platform";
@@ -1353,13 +1353,13 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
             const deviceType = device.deviceType.toLowerCase();
 
-            _pushToCssClasses(`${CLASS_PREFIX}${ANDROID_PLATFORM}`);
-            _pushToCssClasses(`${CLASS_PREFIX}${deviceType}`);
-            _pushToCssClasses(`${CLASS_PREFIX}${application.android.orientation}`);
-            _pushToCssClasses(`${CLASS_PREFIX}${application.android.systemAppearance}`);
+            pushToSystemCssClasses(`${CLASS_PREFIX}${ANDROID_PLATFORM}`);
+            pushToSystemCssClasses(`${CLASS_PREFIX}${deviceType}`);
+            pushToSystemCssClasses(`${CLASS_PREFIX}${application.android.orientation}`);
+            pushToSystemCssClasses(`${CLASS_PREFIX}${application.android.systemAppearance}`);
 
             this._rootView.cssClasses.add(ROOT_VIEW_CSS_CLASS);
-            const rootViewCssClasses = _getCssClasses();
+            const rootViewCssClasses = getSystemCssClasses();
             rootViewCssClasses.forEach(c => this._rootView.cssClasses.add(c));
         }
 

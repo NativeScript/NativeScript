@@ -21,8 +21,8 @@ export * from "./application-common";
 import { Builder } from "../ui/builder";
 import {
     CLASS_PREFIX,
-    _getCssClasses,
-    _pushToCssClasses,
+    getSystemCssClasses,
+    pushToSystemCssClasses,
     ROOT_VIEW_CSS_CLASS
 } from "../css/system-classes";
 
@@ -491,19 +491,19 @@ function setViewControllerView(view: View): void {
 function setRootViewsCssClasses(rootView: View): void {
     const deviceType = device.deviceType.toLowerCase();
 
-    _pushToCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
-    _pushToCssClasses(`${CLASS_PREFIX}${deviceType}`);
-    _pushToCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
+    pushToSystemCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
+    pushToSystemCssClasses(`${CLASS_PREFIX}${deviceType}`);
+    pushToSystemCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
 
     rootView.cssClasses.add(ROOT_VIEW_CSS_CLASS);
-    const rootViewCssClasses = _getCssClasses();
+    const rootViewCssClasses = getSystemCssClasses();
     rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
 }
 
 function setRootViewsSystemAppearanceCssClass(rootView: View): void {
     if (majorVersion >= 13) {
         const systemAppearanceCssClass = `${CLASS_PREFIX}${iosApp.systemAppearance}`;
-        _pushToCssClasses(systemAppearanceCssClass);
+        pushToSystemCssClasses(systemAppearanceCssClass);
         rootView.cssClasses.add(systemAppearanceCssClass);
     }
 }

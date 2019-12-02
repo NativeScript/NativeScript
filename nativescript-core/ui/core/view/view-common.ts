@@ -19,7 +19,7 @@ import {
     fromString as gestureFromString
 } from "../../gestures";
 
-import { _getCssClasses, MODAL_ROOT_VIEW_CSS_CLASS } from "../../../css/system-classes";
+import { getSystemCssClasses, MODAL_ROOT_VIEW_CSS_CLASS } from "../../../css/system-classes";
 import { Builder } from "../../builder";
 import { sanitizeModuleName } from "../../builder/module-name-sanitizer";
 import { StyleScope } from "../../styling/style-scope";
@@ -372,7 +372,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         _rootModalViews.push(this);
 
         this.cssClasses.add(MODAL_ROOT_VIEW_CSS_CLASS);
-        const modalRootViewCssClasses = _getCssClasses();
+        const modalRootViewCssClasses = getSystemCssClasses();
         modalRootViewCssClasses.forEach(c => this.cssClasses.add(c));
 
         parent._modal = this;
