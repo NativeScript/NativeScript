@@ -7,7 +7,7 @@ import { Page } from "../../page";
 
 // Types.
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from "../properties";
-import { getModalRootViewCssClass, getRootViewCssClasses } from "../../../css/system-classes";
+import { getSystemCssClasses, MODAL_ROOT_VIEW_CSS_CLASS, ROOT_VIEW_CSS_CLASS } from "../../../css/system-classes";
 import { Source } from "../../../utils/debug";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories } from "../bindable";
 import { isIOS, isAndroid } from "../../../platform";
@@ -1045,20 +1045,20 @@ export const classNameProperty = new Property<ViewBase, string>({
     name: "className",
     valueChanged(view: ViewBase, oldValue: string, newValue: string) {
         const cssClasses = view.cssClasses;
+        const rootViewsCssClasses = getSystemCssClasses();
 
-        const modalViewCssClass = getModalRootViewCssClass();
-        const rootViewCssClasses = getRootViewCssClasses();
-
-        const shouldAddModalRootViewCssClass = cssClasses.has(modalViewCssClass);
-        const shouldAddRootViewCssClasses = cssClasses.has(rootViewCssClasses[0]);
+        const shouldAddModalRootViewCssClasses = cssClasses.has(MODAL_ROOT_VIEW_CSS_CLASS);
+        const shouldAddRootViewCssClasses = cssClasses.has(ROOT_VIEW_CSS_CLASS);
 
         cssClasses.clear();
 
-        if (shouldAddModalRootViewCssClass) {
-            cssClasses.add(modalViewCssClass);
+        if (shouldAddModalRootViewCssClasses) {
+            cssClasses.add(MODAL_ROOT_VIEW_CSS_CLASS);    
         } else if (shouldAddRootViewCssClasses) {
-            rootViewCssClasses.forEach(c => cssClasses.add(c));
+            cssClasses.add(ROOT_VIEW_CSS_CLASS);
         }
+
+        rootViewsCssClasses.forEach(c => cssClasses.add(c));
 
         if (typeof newValue === "string" && newValue !== "") {
             newValue.split(" ").forEach(c => cssClasses.add(c));
