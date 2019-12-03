@@ -640,12 +640,21 @@ export class View extends ViewCommon {
         args.putInt(DOMID, this._domId);
         df.setArguments(args);
 
+        let cancelable = true;
+
+        if (options.android && (<any>options).android.cancelable !== undefined) {
+            cancelable = !!(<any>options).android.cancelable;
+            console.log("ShowModalOptions.android.cancelable is deprecated. Use ShowModalOptions.cancelable instead.");
+        }
+
+        cancelable = options.cancelable !== undefined ? !!options.cancelable : cancelable;
+
         const dialogOptions: DialogOptions = {
             owner: this,
             fullscreen: !!options.fullscreen,
             animated: !!options.animated,
             stretched: !!options.stretched,
-            cancelable: options.android ? !!options.android.cancelable : true,
+            cancelable: cancelable,
             shownCallback: () => this._raiseShownModallyEvent(),
             dismissCallback: () => this.closeModal()
         };

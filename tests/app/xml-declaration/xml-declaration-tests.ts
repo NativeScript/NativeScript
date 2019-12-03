@@ -469,7 +469,7 @@ export function test_parse_ShouldParseBindingToSpecialProperty() {
     p.bindingContext = obj;
 
     TKUnit.assertEqual(p.content.className, classProp);
-    TKUnit.assertEqual(p.content.cssClasses.size, 1);
+    TKUnit.assert(p.content.cssClasses.has(classProp));
 }
 
 export function test_parse_ShouldParseBindingsWithCommaInsideSingleQuote() {

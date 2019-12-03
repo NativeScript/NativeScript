@@ -1,10 +1,6 @@
-import { WebViewBase, knownFolders, traceEnabled, traceWrite, traceCategories } from "./web-view-common";
+import { WebViewBase, knownFolders, traceEnabled, traceWrite, traceCategories, WebViewClient } from "./web-view-common";
 
 export * from "./web-view-common";
-
-interface WebViewClient {
-    new(owner: WebView): android.webkit.WebViewClient;
-}
 
 let WebViewClient: WebViewClient;
 
