@@ -275,8 +275,8 @@ export class Frame extends FrameBase {
             fragmentExitTransition.setResetOnTransitionEnd(true);
         }
 
-        transaction.remove(fragment);
         transaction.commitNowAllowingStateLoss();
+        transaction.remove(fragment);
     }
 
     private createFragment(backstackEntry: BackstackEntry, fragmentTag: string): androidx.fragment.app.Fragment {
