@@ -50,7 +50,7 @@ declare namespace NodeJS {
         /**
          *
          * @param name Name of the module to be loaded
-         * @param loadForUI Is this UI module is being loaded for UI from tns-core-modules/builder.
+         * @param loadForUI Is this UI module is being loaded for UI from @nativescript/core/ui/builder.
          * Xml, css/scss and js/ts modules for pages and custom-components should load with loadForUI=true.
          * Passing "true" will enable the HMR mechanics this module. Default value is false.
          */
