@@ -3,8 +3,6 @@ import { TabStripItem as TabStripItemDefinition } from ".";
 import { PropertyChangeData } from "../../../data/observable";
 import { TabNavigationBase } from "../tab-navigation-base";
 import { TabStrip } from "../tab-strip";
-import { Image } from "../../image/image";
-import { Label } from "../../label/label";
 import { Color } from "../../../color";
 import { AddChildFromBuilder } from "../../core/view";
 
@@ -12,8 +10,9 @@ import { AddChildFromBuilder } from "../../core/view";
 import {
     View, ViewBase, CSSType, backgroundColorProperty, backgroundInternalProperty, PseudoClassHandler
 } from "../../core/view";
-import { Tabs } from "../../tabs";
 import { isIOS } from "../../../platform";
+import { Image } from "../../image/image";
+import { Label } from "../../label/label";
 
 export * from "../../core/view";
 export const traceCategory = "TabView";
@@ -173,14 +172,14 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === "Image") {
+        if (value instanceof Image) {
             this.image = <Image>value;
             this.iconSource = (<Image>value).src;
             this._addView(value);
             // selectedIndexProperty.coerce(this);
         }
 
-        if (name === "Label") {
+        if (value instanceof Label) {
             this.label = <Label>value;
             this.title = (<Label>value).text;
             this._addView(value);
@@ -214,6 +213,8 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
             if (this._index === tabStripParent.selectedIndex &&
                 !(isIOS && tabStripParent.cssType.toLowerCase() === "tabs")) {
+                // HACK: tabStripParent instanceof Tabs creates a circular dependency
+                // HACK: tabStripParent.cssType === "Tabs" is a hacky workaround
                 this._goToVisualState("highlighted");
             }
         } else {

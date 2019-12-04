@@ -1,6 +1,7 @@
 import * as TKUnit from "../tk-unit";
 import * as app from "@nativescript/core/application";
 import * as platformModule from "@nativescript/core/platform";
+import { ios } from "@nativescript/core/utils/utils";
 
 export function test_platform() {
     let expectedPlatform;
@@ -19,7 +20,12 @@ export function test_device_screen() {
     TKUnit.assert(platformModule.device.uuid, "Device UUID not initialized.");
 
     TKUnit.assert(platformModule.device.language, "Preferred language not initialized.");
-    TKUnit.assert(platformModule.device.region, "Preferred region not initialized.");
+    
+    // NSLocale.currentLocale.objectForKey(NSLocaleCountryCode) not initialized by default on iOS13 simulator;
+    // can be set through Settings -> General -> Language & Region -> Region
+    if (platformModule.isAndroid || ios.MajorVersion < 13) {
+        TKUnit.assert(platformModule.device.region, "Preferred region not initialized.");
+    }
 
     TKUnit.assert(platformModule.device.os, "OS not initialized.");
     TKUnit.assert(platformModule.device.osVersion, "OS version not initialized.");
