@@ -59,12 +59,12 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         const top = FrameBase.topmost();
         if (top && top.canGoBack()) {
             top.goBack();
-    
+
             return true;
         } else if (top) {
             let parentFrameCanGoBack = false;
             let parentFrame = <FrameBase>getAncestor(top, "Frame");
-    
+
             while (parentFrame && !parentFrameCanGoBack) {
                 if (parentFrame && parentFrame.canGoBack()) {
                     parentFrameCanGoBack = true;
@@ -72,18 +72,18 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
                     parentFrame = <FrameBase>getAncestor(parentFrame, "Frame");
                 }
             }
-    
+
             if (parentFrame && parentFrameCanGoBack) {
                 parentFrame.goBack();
-    
+
                 return true;
             }
         }
-    
+
         if (frameStack.length > 1) {
             top._popFromFrameStack();
         }
-    
+
         return false;
     }
 
@@ -205,10 +205,10 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             traceWrite(`NAVIGATE`, traceCategories.Navigation);
         }
 
+        this._pushInFrameStack();
+
         const entry = buildEntryFromArgs(param);
         const page = Builder.createViewFromEntry(entry) as Page;
-
-        this._pushInFrameStack();
 
         const backstackEntry: BackstackEntry = {
             entry: entry,
