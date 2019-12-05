@@ -79,7 +79,15 @@ export interface ShowModalOptions {
         /**
          * The UIModalPresentationStyle to be used when showing the dialog in iOS .
          */
-        presentationStyle: any /* UIModalPresentationStyle */
+        presentationStyle?: any; /* UIModalPresentationStyle */
+        /**
+        * width of the popup dialog
+        */
+        width?: number;
+        /**
+        * height of the popup dialog
+        */
+        height?: number;
     }
     android?: {
         /**
