@@ -20,6 +20,7 @@
   "dependencies": {
     "nativescript-hook": "0.2.5",
     "reduce-css-calc": "^2.1.6",
+    "css-tree": "^1.0.0-alpha.37",
     "semver": "6.3.0",
     "tns-core-modules-widgets": "next",
     "tslib": "1.10.0"
