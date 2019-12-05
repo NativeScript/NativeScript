@@ -541,7 +541,9 @@ class UINavigationControllerImpl extends UINavigationController {
 
         if (majorVersion >= 13) {
             const owner = this._owner.get();
-            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            if (owner &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
                 owner.notify({ eventName: iosViewHelper.traitCollectionColorAppearanceChangedEvent, object: owner });
             }
         }

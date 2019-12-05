@@ -93,7 +93,7 @@ class CADisplayLinkTarget extends NSObject {
 /* tslint:disable */
 export class iOSApplication implements iOSApplicationDefinition {
     /* tslint:enable */
-    private _backgroundColor = majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+    private _backgroundColor = (majorVersion <= 12 || !UIColor.systemBackgroundColor) ? UIColor.whiteColor : UIColor.systemBackgroundColor;
     private _delegate: typeof UIApplicationDelegate;
     private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
@@ -125,7 +125,6 @@ export class iOSApplication implements iOSApplicationDefinition {
     }
 
     get systemAppearance(): "light" | "dark" | null {
-
         // userInterfaceStyle is available on UITraitCollection since iOS 12.
         if (majorVersion <= 11) {
             return null;
