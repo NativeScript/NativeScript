@@ -1,15 +1,17 @@
-import { TextDecoration, TextAlignment, TextTransform } from "./text-base";
+// Types
+import { TextDecoration, TextAlignment, TextTransform } from "./text-base-common";
+
+// Requires
 import { Font } from "../styling/font";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, lineHeightProperty,
     FormattedString, Span, Color, isBold, resetSymbol
 } from "./text-base-common";
-
-export * from "./text-base-common";
-
 import { isString } from "../../utils/types";
 import { ios } from "../../utils/utils";
+
+export * from "./text-base-common";
 
 const majorVersion = ios.MajorVersion;
 
@@ -153,7 +155,7 @@ export class TextBase extends TextBaseCommon {
             this.nativeTextViewProtected.setAttributedTitleForState(attrText, UIControlState.Normal);
         }
         else {
-            if (majorVersion >= 13) {
+            if (majorVersion >= 13 && UIColor.labelColor) {
                 this.nativeTextViewProtected.textColor = UIColor.labelColor;
             }
 
@@ -205,7 +207,7 @@ export class TextBase extends TextBaseCommon {
         if (dict.size > 0 || isTextView) {
             if (style.color) {
                 dict.set(NSForegroundColorAttributeName, style.color.ios);
-            } else if (majorVersion >= 13) {
+            } else if (majorVersion >= 13 && UIColor.labelColor) {
                 dict.set(NSForegroundColorAttributeName, UIColor.labelColor);
             }
         }

@@ -24,7 +24,7 @@ export * from "./tabs-common";
 const majorVersion = iosUtils.MajorVersion;
 
 // Equivalent to dispatch_async(dispatch_get_main_queue(...)) call
-const invokeOnRunLoop = (function() {
+const invokeOnRunLoop = (function () {
     const runloop = CFRunLoopGetMain();
 
     return (action: () => any) => {
@@ -100,7 +100,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
 
         tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
 
-        if (majorVersion <= 12) {
+        if (majorVersion <= 12 || !UIColor.labelColor) {
             tabBar.tintColor = UIColor.blueColor;
             tabBar.barTintColor = UIColor.whiteColor;
             tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
@@ -216,7 +216,9 @@ class UIPageViewControllerImpl extends UIPageViewController {
 
         if (majorVersion >= 13) {
             const owner = this._owner.get();
-            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            if (owner &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
                 owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
             }
         }
@@ -634,7 +636,11 @@ export class Tabs extends TabsBase {
 
     public _loadUnloadTabItems(newIndex: number) {
         const items = this.items;
-        const lastIndex = this.items.length - 1;
+        if (!items) {
+            return;
+        }
+
+        const lastIndex = items.length - 1;
         const offsideItems = this.offscreenTabLimit;
 
         let toUnload = [];
@@ -766,6 +772,10 @@ export class Tabs extends TabsBase {
 
     public _setCanBeLoaded(index: number) {
         const items = this.items;
+        if (!this.items) {
+            return;
+        }
+
         const lastIndex = items.length - 1;
         const offsideItems = this.offscreenTabLimit;
 
@@ -1083,11 +1093,9 @@ export class Tabs extends TabsBase {
             this._currentNativeSelectedIndex = value;
             this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, (finished: boolean) => {
                 if (finished) {
-                    if (majorVersion < 10) {
-                        // HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
-                        invokeOnRunLoop(() => this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, false, null));
-                    }
-                    
+                    // HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
+                    invokeOnRunLoop(() => this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, false, null));
+
                     this._canSelectItem = true;
                     this._setCanBeLoaded(value);
                     this._loadUnloadTabItems(value);

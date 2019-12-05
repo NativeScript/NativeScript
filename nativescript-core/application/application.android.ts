@@ -1,4 +1,5 @@
-// Definitions.
+// Types.
+import { AndroidApplication as AndroidApplicationDefinition } from ".";
 import {
     AndroidActivityBackPressedEventData,
     AndroidActivityBundleEventData,
@@ -6,26 +7,24 @@ import {
     AndroidActivityNewIntentEventData,
     AndroidActivityRequestPermissionsEventData,
     AndroidActivityResultEventData,
-    AndroidApplication as AndroidApplicationDefinition,
     ApplicationEventData,
     CssChangedEventData,
     OrientationChangedEventData,
     SystemAppearanceChangedEventData
-} from ".";
+} from "./application-interfaces";
+import { View } from "../ui/core/view";
+import { NavigationEntry, AndroidActivityCallbacks } from "../ui/frame/frame-interfaces";
 
+// Requires
 import {
-    displayedEvent, hasListeners, livesync, lowMemoryEvent, notify, Observable, on,
+    displayedEvent, hasListeners, livesync, lowMemoryEvent, notify, Observable,
     orientationChanged, orientationChangedEvent, setApplication, suspendEvent,
     systemAppearanceChanged, systemAppearanceChangedEvent
 } from "./application-common";
-
-import { profile } from "../profiling";
-
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
-// Types.
-import { NavigationEntry, View, AndroidActivityCallbacks } from "../ui/frame";
+import { profile } from "../profiling";
 
 const ActivityCreated = "activityCreated";
 const ActivityDestroyed = "activityDestroyed";
@@ -149,6 +148,10 @@ export class AndroidApplication extends Observable implements AndroidApplication
     }
 }
 
+// HACK: Use an interface with the same name, so that the class above fulfills the 'implements' requirement
+// HACK: We use the 'implements' to verify the class above is the same as the one declared in the d.ts
+// HACK: We declare all these 'on' statements, so that they can appear in the API reference
+// HACK: Do we need this? Is it useful? There are static fields to the AndroidApplication class for the event names.
 export interface AndroidApplication {
     on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
     on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
@@ -171,9 +174,8 @@ setApplication(androidApp);
 
 let mainEntry: NavigationEntry;
 let started = false;
-const createRootFrame = { value: true };
 
-export function _start(entry?: NavigationEntry | string) {
+export function run(entry?: NavigationEntry | string) {
     if (started) {
         throw new Error("Application is already started.");
     }
@@ -184,15 +186,6 @@ export function _start(entry?: NavigationEntry | string) {
         const nativeApp = getNativeApplication();
         androidApp.init(nativeApp);
     }
-}
-
-export function _shouldCreateRootFrame(): boolean {
-    return createRootFrame.value;
-}
-
-export function run(entry?: NavigationEntry | string) {
-    createRootFrame.value = false;
-    _start(entry);
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {
@@ -213,7 +206,6 @@ export function _resetRootView(entry?: NavigationEntry | string) {
         throw new Error("Cannot find android activity.");
     }
 
-    createRootFrame.value = false;
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     const callbacks: AndroidActivityCallbacks = activity[CALLBACKS];
     if (!callbacks) {

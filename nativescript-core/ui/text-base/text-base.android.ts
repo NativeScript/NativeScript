@@ -1,4 +1,7 @@
-import { TextDecoration, TextAlignment, TextTransform, WhiteSpace } from "./text-base";
+// Types
+import { TextTransformation, TextDecoration, TextAlignment, TextTransform, WhiteSpace } from "./text-base-common";
+
+// Requires
 import { Font } from "../styling/font";
 import { backgroundColorProperty } from "../styling/style-properties";
 import {
@@ -10,10 +13,6 @@ import {
 import { isString } from "../../utils/types";
 
 export * from "./text-base-common";
-
-interface TextTransformation {
-    new(owner: TextBase): android.text.method.TransformationMethod;
-}
 
 let TextTransformation: TextTransformation;
 

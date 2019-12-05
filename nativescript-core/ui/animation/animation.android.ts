@@ -1,22 +1,22 @@
-// Definitions.
-import { AnimationDefinition, AnimationPromise } from ".";
+// Types.
+import { AnimationDefinitionInternal, AnimationPromise, PropertyAnimation } from "./animation-common";
 import { View } from "../core/view";
 
-import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, Color, traceWrite, traceEnabled, traceCategories, traceType } from "./animation-common";
+// Requires
+import { 
+    AnimationBase, Properties, CubicBezierAnimationCurve, Color, traceWrite,
+    traceEnabled, traceCategories, traceType 
+} from "./animation-common";
 import {
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty,
     heightProperty, widthProperty, PercentLength
 } from "../styling/style-properties";
-
 import { layout } from "../../utils/utils";
 import { device, screen } from "../../platform";
 import lazy from "../../utils/lazy";
-export * from "./animation-common";
 
-interface AnimationDefinitionInternal extends AnimationDefinition {
-    valueSource?: "animation" | "keyframe";
-}
+export * from "./animation-common";
 
 let argbEvaluator: android.animation.ArgbEvaluator;
 function ensureArgbEvaluator() {
