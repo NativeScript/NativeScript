@@ -1584,7 +1584,7 @@ export function test_nested_css_calc() {
     stack.className = "wide";
     TKUnit.assertEqual(stack.width as any, 125, "Stack - width === 125");
 
-    (stack as any).style = `width: calc(100% * calc(1 / 2)`;
+    (stack as any).style = `width: calc(100% * calc(1 / 2))`;
 
     TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
 }
