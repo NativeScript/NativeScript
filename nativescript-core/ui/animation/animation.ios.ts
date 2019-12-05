@@ -1,14 +1,14 @@
 // Types
-import { 
+import {
     AnimationDefinitionInternal, AnimationPromise, IOSView,
     PropertyAnimation, PropertyAnimationInfo
 } from "./animation-common";
 import { View } from "../core/view";
 
 // Requires
-import { 
-    AnimationBase, Properties, CubicBezierAnimationCurve, 
-    traceWrite, traceEnabled, traceCategories, traceType 
+import {
+    AnimationBase, Properties, CubicBezierAnimationCurve,
+    traceWrite, traceEnabled, traceCategories, traceType
 } from "./animation-common";
 import {
     opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty,
@@ -470,8 +470,8 @@ export class Animation extends AnimationBase {
         }
     }
 
-private static _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
-        let groupAnimation =  CAAnimationGroup.new();
+    private static _createGroupAnimation(args: AnimationInfo, animation: PropertyAnimation) {
+        let groupAnimation = CAAnimationGroup.new();
         groupAnimation.duration = args.duration;
         const animations = NSMutableArray.alloc<CAAnimation>().initWithCapacity(3);
 
