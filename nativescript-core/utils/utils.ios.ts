@@ -48,4 +48,4 @@ export function openUrl(location: string): boolean {
     return false;
 }
 
-mainScreenScale 
+mainScreenScale = UIScreen.mainScreen.scale;

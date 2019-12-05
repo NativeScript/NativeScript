@@ -50,7 +50,8 @@ export function test_AnimatingProperties(done) {
         .then(() => {
             //console.log("Animation finished.");
             // >> (hide)
-            assertIOSNativeTransformIsCorrect(label);
+            const expectedIOSAffineTransform = "[-2, 2.4492935982947064e-16, -2.4492935982947064e-16, -2, 100, 100]";
+            assertIOSNativeTransformIsCorrect(label, expectedIOSAffineTransform);
             done();
             // << (hide)
         })
@@ -163,7 +164,8 @@ export function test_ChainingAnimations(done) {
         .then(() => {
             //console.log("Animation finished");
             // >> (hide)
-            assertIOSNativeTransformIsCorrect(label);
+            const expectedIOSAffineTransform = "[1, 0, 0, 1, 0, 0]";
+            assertIOSNativeTransformIsCorrect(label, expectedIOSAffineTransform);
             done();
             // << (hide)
         })
@@ -192,7 +194,8 @@ export function test_ReusingAnimations(done) {
         .then(() => {
             //console.log("Animation finished");
             // >> (hide)
-            assertIOSNativeTransformIsCorrect(label);
+            const expectedIOSAffineTransform = "[1, 0, 0, 1, 0, 0]";
+            assertIOSNativeTransformIsCorrect(label, expectedIOSAffineTransform);
             done();
             // << (hide)
         })
@@ -231,9 +234,10 @@ export function test_AnimatingMultipleViews(done) {
         .then(() => {
             //console.log("Animations finished");
             // >> (hide)
-            assertIOSNativeTransformIsCorrect(label1);
-            assertIOSNativeTransformIsCorrect(label2);
-            assertIOSNativeTransformIsCorrect(label3);
+            const expectedIOSAffineTransform = "[1, 0, 0, 1, 200, 200]";
+            assertIOSNativeTransformIsCorrect(label1, expectedIOSAffineTransform);
+            assertIOSNativeTransformIsCorrect(label2, expectedIOSAffineTransform);
+            assertIOSNativeTransformIsCorrect(label3, expectedIOSAffineTransform);
             done();
             // << (hide)
         })
@@ -367,7 +371,9 @@ export function test_AnimateTranslate(done) {
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
             TKUnit.assertEqual(label.translateY, 200, "label.translateY");
-            assertIOSNativeTransformIsCorrect(label);
+
+            const expectedIOSAffineTransform = "[1, 0, 0, 1, 100, 200]";
+            assertIOSNativeTransformIsCorrect(label, expectedIOSAffineTransform);
             done();
         })
         .catch((e) => {
@@ -382,7 +388,9 @@ export function test_AnimateScale(done) {
         .then(() => {
             TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
-            assertIOSNativeTransformIsCorrect(label);
+
+            const expectedIOSAffineTransform = "[2, 0, 0, 3, 0, 0]";
+            assertIOSNativeTransformIsCorrect(label, expectedIOSAffineTransform);
             done();
         })
         .catch((e) => {
@@ -396,7 +404,9 @@ export function test_AnimateRotate(done) {
     label.animate({ rotate: 123, duration: 5 })
         .then(() => {
             TKUnit.assertEqual(label.rotate, 123, "label.rotate");
-            assertIOSNativeTransformIsCorrect(label);
+
+            const expectedIOSAffineTransform = "[-0.54463903501502708, 0.83867056794542405, -0.83867056794542405, -0.54463903501502708, 0, 0]";
+            assertIOSNativeTransformIsCorrect(label, expectedIOSAffineTransform);
             done();
         })
         .catch((e) => {
@@ -433,6 +443,7 @@ function animateExtentAndAssertExpected(along: "height" | "width", value: Percen
             expectedNumber,
             `PercentLength.toDevicePixels(${inputString}) should be "${expectedNumber}" but is "${observedNumber}"`
         );
+
         assertIOSNativeTransformIsCorrect(label);
     });
 }
@@ -524,7 +535,9 @@ export function test_AnimateTranslateScaleAndRotateSimultaneously(done) {
             TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
             TKUnit.assertEqual(label.rotate, 123, "label.rotate");
-            assertIOSNativeTransformIsCorrect(label);
+
+            const expectedIOSAffineTransform = "[-1.0892780700300542, 1.6773411358908481, -2.5160117038362722, -1.6339171050450814, 100, 200]";
+            assertIOSNativeTransformIsCorrect(label, expectedIOSAffineTransform);
             done();
         })
         .catch((e) => {
@@ -539,7 +552,9 @@ export function test_AnimateTranslateScaleAndRotateSequentially(done) {
         .then(() => {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
             TKUnit.assertEqual(label.translateY, 200, "label.translateY");
-            assertIOSNativeTransformIsCorrect(label);
+
+            const expectedIOSAffineTransform = "[1, 0, 0, 1, 100, 200]";
+            assertIOSNativeTransformIsCorrect(label, expectedIOSAffineTransform);
 
             return label.animate({ scale: { x: 2, y: 3 }, duration: 5 });
         })
@@ -548,7 +563,9 @@ export function test_AnimateTranslateScaleAndRotateSequentially(done) {
             TKUnit.assertEqual(label.translateY, 200, "label.translateY");
             TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
-            assertIOSNativeTransformIsCorrect(label);
+
+            const expectedIOSAffineTransform = "[2, 0, 0, 3, 100, 200]";
+            assertIOSNativeTransformIsCorrect(label, expectedIOSAffineTransform);
 
             return label.animate({ rotate: 123, duration: 5 });
         })
@@ -558,7 +575,9 @@ export function test_AnimateTranslateScaleAndRotateSequentially(done) {
             TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
             TKUnit.assertEqual(label.rotate, 123, "label.rotate");
-            assertIOSNativeTransformIsCorrect(label);
+
+            const expectedIOSAffineTransform = "[-1.0892780700300542, 1.6773411358908481, -2.5160117038362722, -1.6339171050450814, 100, 200]";
+            assertIOSNativeTransformIsCorrect(label, expectedIOSAffineTransform);
             done();
         })
         .catch((e) => {
@@ -620,9 +639,9 @@ export function test_PlayPromiseIsRejectedWhenAnimationIsCancelled(done) {
     animation.cancel();
 }
 
-function assertIOSNativeTransformIsCorrect(view: viewModule.View) {
+function assertIOSNativeTransformIsCorrect(view: viewModule.View, expectedIOSAffineTransformString?: string) {
     if (view.ios) {
-        var errorMessage = (<any>animation)._getTransformMismatchErrorMessage(view);
+        var errorMessage = (<any>animation)._getTransformMismatchErrorMessage(view, expectedIOSAffineTransformString);
         if (errorMessage) {
             TKUnit.assert(false, errorMessage);
         }

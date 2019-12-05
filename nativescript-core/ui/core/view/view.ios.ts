@@ -9,6 +9,7 @@ import {
 import { ios } from "./view-helper";
 import { ios as iosBackground, Background } from "../../styling/background";
 import { ios as iosUtils } from "../../../utils/utils";
+import { ios as iosNativeHelper } from "../../../utils/native-helper";
 import {
     perspectiveProperty, Visibility,
     visibilityProperty, opacityProperty,
@@ -354,7 +355,7 @@ export class View extends ViewCommon implements ViewDefinition {
         let transform = CATransform3DIdentity;
         transform.m34 = -1 / perspective;
         transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
-        transform = iosUtils.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
+        transform = iosNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
         transform = CATransform3DScale(transform, scaleX, scaleY, 1);
         this.ios.layer.transform = transform;
         if (!CATransform3DEqualToTransform(this.ios.layer.transform, transform)) {
