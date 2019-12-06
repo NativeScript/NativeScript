@@ -93,7 +93,7 @@ function nativeArrayIncludes<T>(arr: native.Array<T>, what: T): boolean {
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -291,7 +291,7 @@ export class Frame extends FrameBase {
         if (!fragmentFound) {
             return;
         }
-
+        
         const transaction = fragmentManager.beginTransaction();
         const fragmentExitTransition = fragment.getExitTransition();
 
@@ -1057,6 +1057,12 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
+        // Don't try to creat bitmaps with no dimensions as this causes a crash
+        // This might happen when showing and closing dialogs fast.  
+        if (!(view && view.getWidth() > 0 && view.getHeight() > 0)) {
+            return undefined;
+        }
+
         // Another way to get view bitmap. Test performance vs setDrawingCacheEnabled
         // const width = view.getWidth();
         // const height = view.getHeight();
@@ -1066,7 +1072,8 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         // view.draw(canvas);
 
         view.setDrawingCacheEnabled(true);
-        const bitmap = android.graphics.Bitmap.createBitmap(view.getDrawingCache());
+        const drawCache = view.getDrawingCache();
+        const bitmap = android.graphics.Bitmap.createBitmap(drawCache);
         view.setDrawingCacheEnabled(false);
 
         return bitmap;
