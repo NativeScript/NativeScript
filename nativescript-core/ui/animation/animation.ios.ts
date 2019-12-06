@@ -693,12 +693,7 @@ export class Animation extends AnimationBase {
     }
 }
 
-/**
- * 
- * @param view 
- * @param expectedAffineTransformString in the format [a, b, c, d, tx, ty] @see https://developer.apple.com/documentation/uikit/1624505-cgaffinetransformfromstring?language=objc a,b,c,d in radians
- */
-export function _getTransformMismatchErrorMessage(view: View, expectedAffineTransformString?: string): string {
+export function _getTransformMismatchErrorMessage(view: View): string {
     // Order is important: translate, rotate, scale
     let result: CGAffineTransform = CGAffineTransformIdentity;
     const tx = view.translateX;
@@ -709,12 +704,8 @@ export function _getTransformMismatchErrorMessage(view: View, expectedAffineTran
     let viewTransform = NSStringFromCGAffineTransform(result);
     let nativeTransform = NSStringFromCGAffineTransform(view.nativeViewProtected.transform);
 
-    if (!expectedAffineTransformString) {
-        expectedAffineTransformString = nativeTransform;
-    }
-
-    if (viewTransform !== expectedAffineTransformString) {
-        return "View transform does not match expected. View: " + viewTransform + "; Expected: " + expectedAffineTransformString;
+    if (viewTransform !== nativeTransform) {
+        return "View and Native transforms do not match. View: " + viewTransform + "; Native: " + nativeTransform;
     }
 
     return undefined;
