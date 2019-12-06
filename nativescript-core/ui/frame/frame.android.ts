@@ -87,16 +87,6 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
     return attachStateChangeListener;
 }
 
-function nativeArrayIncludes<T>(arr: native.Array<T>, what: T): boolean {
-    for (let i = 0; i < arr.length; i++) {
-        if (arr[i] === what) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 export class Frame extends FrameBase {
     public _originalBackground: any;
     private _android: AndroidFrame;
@@ -274,24 +264,9 @@ export class Frame extends FrameBase {
             !this._currentEntry.fragment.isAdded()) {
             return;
         }
-        const fragmentManager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
+        const fragment: androidx.fragment.app.Fragment = this._currentEntry.fragment;
+        const fragmentManager: androidx.fragment.app.FragmentManager = fragment.getFragmentManager();
 
-        // Check if manager contains the fragment to be removed
-        // This might happen when a dialog is already closed with android back btn
-        const fragment = this._currentEntry.fragment;
-        const fragmentFound = nativeArrayIncludes(fragmentManager.getFragments().toArray(), fragment);
-
-        if (traceEnabled()) {
-            const message = fragmentFound ?
-                `Frame.disposeCurrentFragment - fragment(${fragment}) found in fragmentManager(${fragmentManager}). Removing ...` :
-                `Frame.disposeCurrentFragment - fragment(${fragment}) NOT found in fragmentManager(${fragmentManager}). Skipping remove`;
-            traceWrite(message, traceCategories.NativeLifecycle);
-        }
-
-        if (!fragmentFound) {
-            return;
-        }
-        
         const transaction = fragmentManager.beginTransaction();
         const fragmentExitTransition = fragment.getExitTransition();
 
@@ -662,7 +637,7 @@ function clearEntry(entry: BackstackEntry): void {
     entry.recreated = false;
     entry.fragment = null;
     const page = entry.resolvedPage;
-    if (page._context) {
+    if (page && page._context) {
         entry.resolvedPage._tearDownUI(true);
     }
 }
