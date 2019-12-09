@@ -10,7 +10,7 @@ export function startFPSMeter() {
     callbackId = addCallback((fps: number, minFps: number) => {
         // console.log(`Frames per seconds: ${fps.toFixed(2)}`);
         // console.log(minFps.toFixed(2));
-        if(fpsLabel) {
+        if (fpsLabel) {
             fpsLabel.text = `${fps}`;
         }
 
@@ -46,7 +46,7 @@ let isIn1 = false;
 
 export function pageLoaded(args) {
     startFPSMeter();
-    if(loaded) {
+    if (loaded) {
         fpsLabel = null;
         // stopFPSMeter();
         timeouts.forEach((v) => clearTimeout(v));
@@ -82,7 +82,7 @@ export function pageLoaded(args) {
 }
 
 export function pageUnloaded(args) {
-    
+    //
 }
 
 export function makeReusable(args: EventData) {
@@ -97,7 +97,7 @@ export function test(args: any) {
     const stack2: StackLayout = page.getViewById("stack2");
     label.parent.removeChild(label);
     // console.log(label.nativeView);
-    if(isIn1) {
+    if (isIn1) {
         isIn1 = false;
         stack2.addChild(label);
     } else {

@@ -712,6 +712,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
                 return true;
             });
+
             return;
         } else if (this._context) {
             this._tearDownUI(true);
