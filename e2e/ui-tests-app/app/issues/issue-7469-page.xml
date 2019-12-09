@@ -1,0 +1,35 @@
+<Page
+    xmlns="http://schemas.nativescript.org/tns.xsd" class="page" loaded="pageLoaded" unloaded="pageUnloaded">
+    <StackLayout class="p-20">
+        <Button text="disable" tap="test" id="toggleUserInteraction" automationText="toggleUserInteraction"/>
+        <Label id="fpslabel" text=""></Label>
+        <StackLayout id="removelabel" loaded="makeReusable">
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <Label loaded="makeReusable" text="abc"></Label>
+          <WebView loaded="makeReusable" width="100" height="100" src="https://google.com"></WebView>
+        </StackLayout>
+        <StackLayout id="stack1" class="stack1">
+          <Label text="Stack 1"></Label>
+        </StackLayout>
+        <StackLayout id="stack2" class="stack2">
+          <Label text="Stack 2"></Label>
+        </StackLayout>
+    </StackLayout>
+</Page>

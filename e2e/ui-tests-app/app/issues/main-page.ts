@@ -11,6 +11,7 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
+    examples.set("7469", "issues/issue-7469-page");
     examples.set("2911", "issues/issue-2911-page");
     examples.set("2674", "issues/issue-2674-page");
     examples.set("2942", "issues/issue-2942-page");
