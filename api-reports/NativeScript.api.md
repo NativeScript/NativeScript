@@ -2904,6 +2904,7 @@ export abstract class ViewBase extends Observable {
     _removeViewFromNativeVisualTree(view: ViewBase): void;
     public requestLayout(): void;
     resetNativeView(): void;
+    public reusable: boolean;
     // (undocumented)
     row: number;
     // (undocumented)
