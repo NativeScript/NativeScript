@@ -2790,6 +2790,7 @@ export abstract class ViewBase extends Observable {
     // (undocumented)
     _defaultPaddingTop: number;
     public deletePseudoClass(name: string): void;
+    destroyNode(forceDestroyChildren?: boolean): void;
     public _dialogClosed(): void;
     disposeNativeView(): void;
     // (undocumented)

@@ -375,6 +375,13 @@ export abstract class ViewBase extends Observable {
      * This method should *not* be overridden by derived views.
      */
     _tearDownUI(force?: boolean): void;
+    
+    /**
+     * Tears down the UI of a reusable node by making it no longer reusable.
+     * @see _tearDownUI
+     * @param forceDestroyChildren Force destroy the children (even if they are reusable)
+     */
+    destroyNode(forceDestroyChildren?: boolean): void;
 
     /**
      * Creates a native view.
