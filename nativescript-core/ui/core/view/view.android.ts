@@ -155,6 +155,8 @@ function initializeDialogFragment() {
             const ownerId = this.getArguments().getInt(DOMID);
             const options = getModalOptions(ownerId);
             this.owner = options.owner;
+            // Set owner._dialogFragment to this in case the DialogFragment was recreated after app suspend
+            this.owner._dialogFragment = this;
             this._fullscreen = options.fullscreen;
             this._animated = options.animated;
             this._cancelable = options.cancelable;
