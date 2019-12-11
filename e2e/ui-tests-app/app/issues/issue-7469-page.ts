@@ -75,6 +75,10 @@ export function pageUnloaded(args) {
 export function makeReusable(args: EventData) {
     console.log("loaded:", args.object);
     // console.log("making reusable");
+    if ((args.object as any).___reusableRan) {
+        return;
+    }
+    (args.object as any).___reusableRan = true;
     (args.object as any).reusable = true;
 }
 
@@ -125,4 +129,16 @@ export function test(args: any) {
     }
     // console.log("onTap");
     // alert("onTap");
+}
+let ignoreInput = false;
+
+export function toggleReusable(args: EventData) {
+    if (ignoreInput) {
+        return;
+    }
+    ignoreInput = true;
+    setTimeout(() => ignoreInput = false, 0); // hack to avoid gesture collision
+    const target: any = args.object;
+    target.reusable = !target.reusable;
+    console.log(`${target} is now ${target.reusable ? "" : "NOT "}reusable`);
 }
