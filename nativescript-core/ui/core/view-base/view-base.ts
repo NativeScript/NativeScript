@@ -702,16 +702,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     @profile
     public _setupUI(context: android.content.Context, atIndex?: number, parentIsLoaded?: boolean): void {
         if (this._context === context) {
-            this._resumeNativeUpdates(SuspendType.UISetup);
             if (this.parent) {
                 const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
                 this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
             }
-            this.eachChild((child) => {
-                child._setupUI(context);
-
-                return true;
-            });
 
             return;
         } else if (this._context) {
@@ -850,9 +844,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         //     }
         // }
 
-        if (preserveNativeView) {
-            this._suspendNativeUpdates(SuspendType.UISetup);
-        } else {
+        if (!preserveNativeView) {
             this.disposeNativeView();
 
             this._suspendNativeUpdates(SuspendType.UISetup);
