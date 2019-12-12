@@ -13,7 +13,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.notify({ eventName: EditableTextBase.blurEvent, object: this });
     }
 
-    [keyboardTypeProperty.getDefault](): "datetime" | "phone" | "number" | "url" | "email" | string {
+    [keyboardTypeProperty.getDefault](): "datetime" | "phone" | "number" | "url" | "email" | "integer" | string {
         let keyboardType = this.nativeTextViewProtected.keyboardType;
         switch (keyboardType) {
             case UIKeyboardType.NumbersAndPunctuation:
@@ -28,11 +28,14 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
             case UIKeyboardType.EmailAddress:
                 return "email";
 
+            case UIKeyboardType.NumberPad:
+                return "integer";
+
             default:
                 return keyboardType.toString();
         }
     }
-    [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | string) {
+    [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | "integer" | string) {
         let newKeyboardType: UIKeyboardType;
         switch (value) {
             case "datetime":
@@ -53,6 +56,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 ;
             case "email":
                 newKeyboardType = UIKeyboardType.EmailAddress;
+                break;
+
+            case "integer":
+                newKeyboardType = UIKeyboardType.NumberPad;
                 break;
 
             default:
