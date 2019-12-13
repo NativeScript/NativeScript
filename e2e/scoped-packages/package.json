@@ -13,9 +13,9 @@
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",
   "dependencies": {
-    "@nativescript/core": "file:../../dist/nativescript-core-6.2.0.tgz",
+    "@nativescript/core": "file:../../dist/nativescript-core-6.3.0.tgz",
     "nativescript-theme-core": "~1.0.6",
-    "tns-core-modules": "file:../../dist/tns-core-modules-6.2.0.tgz"
+    "tns-core-modules": "file:../../dist/tns-core-modules-6.3.0.tgz"
   },
   "devDependencies": {
     "nativescript-dev-webpack": "~1.2.0",
