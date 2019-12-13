@@ -1,12 +1,12 @@
 ﻿// Types
 import { TabNavigationBase as TabNavigationBaseDefinition, SelectedIndexChangedEventData } from ".";
-import { TabContentItem } from "../tab-content-item";
-import { TabStrip } from "../tab-strip";
 import { TabStripItem } from "../tab-strip-item";
 import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder, EventData } from "../../core/view";
 
 // Requires
-import { View, Property, CoercibleProperty, isIOS, Color } from "../../core/view";
+import { View, Property, CoercibleProperty, isIOS } from "../../core/view";
+import { TabContentItem } from "../tab-content-item";
+import { TabStrip } from "../tab-strip";
 
 // TODO: Impl trace
 // export const traceCategory = "TabView";
@@ -29,14 +29,14 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === "TabContentItem") {
+        if (value instanceof TabContentItem) {
             if (!this.items) {
                 this.items = new Array<TabContentItem>();
             }
             this.items.push(<TabContentItem>value);
             this._addView(value);
             // selectedIndexProperty.coerce(this);
-        } else if (name === "TabStrip") {
+        } else if (value instanceof TabStrip) {
             // Setting tabStrip will trigger onTabStripChanged
             this.tabStrip = value;
         }

@@ -432,6 +432,11 @@ export class View extends ViewCommon implements ViewDefinition {
             controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
         } else {
             controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
+            //check whether both height and width is provided and are positive numbers
+            // set it has prefered content size to the controller presenting the dialog
+            if (options.ios && options.ios.width > 0 && options.ios.height > 0) {
+                controller.preferredContentSize = CGSizeMake(options.ios.width, options.ios.height);
+            }
         }
 
         if (options.ios && options.ios.presentationStyle) {

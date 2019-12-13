@@ -312,7 +312,9 @@ export namespace ios {
 
             if (majorVersion >= 13) {
                 const owner = this.owner.get();
-                if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+                if (owner && 
+                    this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection &&
+                    this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
                     owner.notify({ eventName: traitCollectionColorAppearanceChangedEvent, object: owner });
                 }
             }

@@ -1,3 +1,16 @@
+## [6.2.2](https://github.com/NativeScript/NativeScript/compare/6.2.1...6.2.2) (2019-11-25)
+
+
+### Bug Fixes
+
+* **android:** Fatal Exception: java.lang.OutOfMemoryError ([#8061](https://github.com/NativeScript/NativeScript/issues/8061)) ([#8098](https://github.com/NativeScript/NativeScript/issues/8098)) ([bca1271](https://github.com/NativeScript/NativeScript/commit/bca1271))
+* **frame:** nested frame wrong background after parent navigation ([#8095](https://github.com/NativeScript/NativeScript/issues/8095)) ([d983f79](https://github.com/NativeScript/NativeScript/commit/d983f79))
+* tab navigations don't work with lowercase xml ([#8016](https://github.com/NativeScript/NativeScript/issues/8016)) ([800f5bc](https://github.com/NativeScript/NativeScript/commit/800f5bc))
+* **frame:** push recreated frame back in frameStack when Don't Keep Activities enabled ([#8096](https://github.com/NativeScript/NativeScript/issues/8096)) ([47f4c25](https://github.com/NativeScript/NativeScript/commit/47f4c25))
+* **iOS:** check for iOS 13 APIs ([#8093](https://github.com/NativeScript/NativeScript/issues/8093)) ([b069ff3](https://github.com/NativeScript/NativeScript/commit/b069ff3))
+
+
+
 <a name="6.2.1"></a>
 ## [6.2.1](https://github.com/NativeScript/NativeScript/compare/6.2.0...6.2.1) (2019-11-12)
 
