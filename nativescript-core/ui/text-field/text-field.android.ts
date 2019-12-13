@@ -77,6 +77,9 @@ export class TextField extends TextFieldBase {
                 case "email":
                     inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
                     break;
+                case "integer":
+                    inputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
+                    break;
                 default:
                     break;
             }
