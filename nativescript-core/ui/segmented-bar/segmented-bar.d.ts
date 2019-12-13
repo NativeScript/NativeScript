@@ -17,6 +17,11 @@ export class SegmentedBarItem extends ViewBase {
      * Gets or sets the title of the SegmentedBarItem.
      */
     public title: string;
+
+    /**
+     * Gets or sets text-alignment style property.
+     */
+    public textAlignment: SegmentedBarItemTextAlignment;
 }
 
 /**
@@ -94,3 +99,5 @@ export const selectedBackgroundColorProperty: CssProperty<Style, Color>;
  * Gets or sets the items dependency property of the SegmentedBar.
  */
 export const itemsProperty: Property<SegmentedBar, SegmentedBarItem[]>;
+
+export type SegmentedBarItemTextAlignment = "initial" | "left" | "center" | "right";

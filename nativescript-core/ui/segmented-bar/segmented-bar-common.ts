@@ -1,8 +1,10 @@
 ﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from ".";
 import {
     ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
-    Property, CoercibleProperty, InheritedCssProperty, Color, Style, EventData, CSSType
+    Property, CoercibleProperty, InheritedCssProperty, Color, Style, EventData, CSSType,
+    makeParser, makeValidator
 } from "../core/view";
+import { SegmentedBarItemTextAlignment } from "./segmented-bar";
 
 export * from "../core/view";
 
@@ -13,11 +15,24 @@ export module knownCollections {
 @CSSType("SegmentedBarItem")
 export abstract class SegmentedBarItemBase extends ViewBase implements SegmentedBarItemDefinition {
     private _title: string = "";
+    private _textAlign: SegmentedBarItemTextAlignment = "initial";
 
     get title(): string {
         return this._title;
     }
     set title(value: string) {
+        let strValue = (value !== null && value !== undefined) ? value.toString() : "";
+        if (this._title !== strValue) {
+            this._title = strValue;
+            this._update();
+        }
+    }
+
+    get textAlignment() {
+        return this._textAlign;
+    }
+
+    set textAligment(value: string) {
         let strValue = (value !== null && value !== undefined) ? value.toString() : "";
         if (this._title !== strValue) {
             this._title = strValue;
@@ -136,3 +151,7 @@ itemsProperty.register(SegmentedBarBase);
 
 export const selectedBackgroundColorProperty = new InheritedCssProperty<Style, Color>({ name: "selectedBackgroundColor", cssName: "selected-background-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 selectedBackgroundColorProperty.register(Style);
+
+const textAlignmentConverter = makeParser<SegmentedBarItemTextAlignment>(makeValidator<SegmentedBarItemTextAlignment>("initial", "left", "center", "right"));
+export const textAlignmentProperty = new Property<SegmentedBarItemBase, SegmentedBarItemTextAlignment>({ name: "textAlignment", defaultValue: "initial", valueConverter: textAlignmentConverter });
+textAlignmentProperty.register(SegmentedBarItemBase);

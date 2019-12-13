@@ -1,8 +1,9 @@
 import { Font } from "../styling/font";
 import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
-    colorProperty, fontInternalProperty, fontSizeProperty, Color, layout
+    colorProperty, fontInternalProperty, fontSizeProperty, Color, layout, textAlignmentProperty
 } from "./segmented-bar-common";
+import { SegmentedBarItemTextAlignment } from "./segmented-bar";
 
 export * from "./segmented-bar-common";
 
@@ -146,6 +147,25 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
     }
     [fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
         this.nativeViewProtected.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
+    }
+
+    [textAlignmentProperty.getDefault](): SegmentedBarItemTextAlignment {
+        return "initial";
+    }
+    [textAlignmentProperty.setNative](value: SegmentedBarItemTextAlignment) {
+        let verticalGravity = this.nativeViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+        switch (value) {
+            case "initial":
+            case "left":
+                this.nativeViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
+                break;
+            case "center":
+                this.nativeViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
+                break;
+            case "right":
+                this.nativeViewProtected.setGravity(android.view.Gravity.END | verticalGravity);
+                break;
+        }
     }
 
     [selectedBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable {
