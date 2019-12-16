@@ -1,3 +1,12 @@
+## [6.3.1](https://github.com/NativeScript/NativeScript/compare/6.3.0...6.3.1) (2019-12-16)
+
+
+### Bug Fixes
+
+* null reference exception in view.android.onUnloaded ([#8153](https://github.com/NativeScript/NativeScript/issues/8153)) ([da639f2](https://github.com/NativeScript/NativeScript/commit/da639f2))
+
+
+
 # [6.3.0](https://github.com/NativeScript/NativeScript/compare/6.2.2...6.3.0) (2019-12-06)
 
 
