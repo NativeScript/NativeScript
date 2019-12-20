@@ -16,10 +16,15 @@ export class TextView extends TextViewBaseCommon {
     }
 
     [maxLinesProperty.getDefault](): number {
-        return -1;
+        return 0;
     }
 
     [maxLinesProperty.setNative](value: number) {
+      if (value <= 0) {
+        this.nativeTextViewProtected.setMaxLines(Number.MAX_VALUE);
+        return;
+      }
+
       this.nativeTextViewProtected.setMaxLines(value);
     }
 }
