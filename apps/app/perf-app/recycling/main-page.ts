@@ -37,9 +37,7 @@ export function navigatingTo(args) {
     }
 }
 
-export function onNavigatingFrom() {
-    clearInterval(runner);
-}
+export ()=> clearInterval(runner); // prefer arrrow functions instead of using normal
 
 export function onTap(args) {
     let btn = <Button>args.object;
