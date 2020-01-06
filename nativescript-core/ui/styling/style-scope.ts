@@ -53,12 +53,12 @@ function ensureCssAnimationParserModule() {
     }
 }
 
-let parser: "rework" | "nativescript" | "css-tree" = "rework";
+let parser: "rework" | "nativescript" | "css-tree" = "css-tree";
 try {
     const appConfig = require("~/package.json");
     if (appConfig) {
-        if (appConfig.cssParser === "css-tree") {
-            parser = "css-tree";
+        if (appConfig.cssParser === "rework") {
+            parser = "rework";
         } else if (appConfig.cssParser === "nativescript") {
             parser = "nativescript";
         }
