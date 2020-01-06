@@ -350,10 +350,15 @@ export class View extends ViewCommon implements ViewDefinition {
     public updateNativeTransform() {
         const scaleX = this.scaleX || 1e-6;
         const scaleY = this.scaleY || 1e-6;
-        let perspective = this.perspective || 300;
+        const perspective = this.perspective || 300;
 
-        let transform = CATransform3DIdentity;
-        transform.m34 = -1 / perspective;
+        let transform = new CATransform3D(CATransform3DIdentity);
+
+        // Only set perspective if there is 3D rotation
+        if (this.rotateX || this.rotateY) {
+            transform.m34 = -1 / perspective;
+        }
+        
         transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
         transform = iosNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
         transform = CATransform3DScale(transform, scaleX, scaleY, 1);

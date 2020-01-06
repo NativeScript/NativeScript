@@ -396,9 +396,7 @@ export function test_AnimateRotate(done) {
     label.animate({ rotate: 123, duration: 5 })
         .then(() => {
             TKUnit.assertEqual(label.rotate, 123, "label.rotate");
-
-            const expectedIOSAffineTransform = "[-0.54463903501502708, 0.83867056794542405, -0.83867056794542405, -0.54463903501502708, 0, 0]";
-            assertIOSNativeTransformIsCorrect(label, expectedIOSAffineTransform);
+            assertIOSNativeTransformIsCorrect(label);
             done();
         })
         .catch((e) => {

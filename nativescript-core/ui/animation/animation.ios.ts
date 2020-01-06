@@ -16,6 +16,8 @@ import {
     heightProperty, widthProperty, PercentLength
 } from "../styling/style-properties";
 
+import { ios as iosNativeHelper } from "../../utils/native-helper";
+
 import { screen } from "../../platform";
 
 export * from "./animation-common";
@@ -694,19 +696,41 @@ export class Animation extends AnimationBase {
 }
 
 export function _getTransformMismatchErrorMessage(view: View): string {
-    // Order is important: translate, rotate, scale
-    let result: CGAffineTransform = CGAffineTransformIdentity;
-    const tx = view.translateX;
-    const ty = view.translateY;
-    result = CGAffineTransformTranslate(result, tx, ty);
-    result = CGAffineTransformRotate(result, (view.rotate || 0) * Math.PI / 180);
-    result = CGAffineTransformScale(result, view.scaleX || 1, view.scaleY || 1);
-    let viewTransform = NSStringFromCGAffineTransform(result);
-    let nativeTransform = NSStringFromCGAffineTransform(view.nativeViewProtected.transform);
+    const expectedTransform = calculateTransform(view);
+    const expectedTransformString = getCATransform3DString(expectedTransform);
+    const actualTransformString = getCATransform3DString(view.nativeViewProtected.layer.transform);
 
-    if (viewTransform !== nativeTransform) {
-        return "View and Native transforms do not match. View: " + viewTransform + "; Native: " + nativeTransform;
+    if (actualTransformString !== expectedTransformString) {
+        return "View and Native transforms do not match.\nActual: " + actualTransformString + ";\nExpected: " + expectedTransformString;
     }
 
     return undefined;
+}
+
+function calculateTransform(view: View): CATransform3D {
+    const scaleX = view.scaleX || 1e-6;
+    const scaleY = view.scaleY || 1e-6;
+    const perspective = view.perspective || 300;
+
+    // Order is important: translate, rotate, scale
+    let expectedTransform = new CATransform3D(CATransform3DIdentity);
+
+    // Only set perspective if there is 3D rotation
+    if (view.rotateX || view.rotateY) {
+        expectedTransform.m34 = -1 / perspective;
+    }
+
+    expectedTransform = CATransform3DTranslate(expectedTransform, view.translateX, view.translateY, 0);
+    expectedTransform = iosNativeHelper.applyRotateTransform(expectedTransform, view.rotateX, view.rotateY, view.rotate);
+    expectedTransform = CATransform3DScale(expectedTransform, scaleX, scaleY, 1);
+    
+    return expectedTransform;
+}
+
+function getCATransform3DString(t: CATransform3D) {
+    return `[
+    ${t.m11}, ${t.m12}, ${t.m13}, ${t.m14},
+    ${t.m21}, ${t.m22}, ${t.m23}, ${t.m24},
+    ${t.m31}, ${t.m32}, ${t.m33}, ${t.m34},
+    ${t.m41}, ${t.m42}, ${t.m43}, ${t.m44}]`;
 }
