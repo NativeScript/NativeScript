@@ -14,18 +14,6 @@ export * from "./html-view-common";
 
 const majorVersion = ios.MajorVersion;
 
-function uiColorToHex(uiColor: UIColor): string {
-    const rgba = CGColorGetComponents(uiColor.CGColor); // eslint-disable-line no-undef
-    const nsColor = new Color(
-        Math.round(rgba[3] * 255),
-        Math.round(rgba[0] * 255),
-        Math.round(rgba[1] * 255),
-        Math.round(rgba[2] * 255),
-    );
-
-    return nsColor.hex;
-}
-
 export class HtmlView extends HtmlViewBase {
     nativeViewProtected: UITextView;
     private currentHtml: string;
@@ -87,7 +75,8 @@ export class HtmlView extends HtmlViewBase {
             styles.push(`font-size: ${this.nativeViewProtected.font.pointSize}px;`);
         }
         if (this.nativeViewProtected.textColor) {
-            styles.push(`color: ${uiColorToHex(this.nativeViewProtected.textColor)};`);
+            const textColor = Color.fromIosColor(this.nativeViewProtected.textColor);
+            styles.push(`color: ${textColor.hex};`);
         }
         if (styles.length > 0) {
             html += `<style>body {${styles.join("")}}</style>`;
