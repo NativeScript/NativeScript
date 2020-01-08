@@ -1,5 +1,5 @@
 // Definitions.
-import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from ".";
+import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, GestureEventDataWithState } from ".";
 import { View, EventData } from "../core/view";
 
 // Types.
@@ -62,7 +62,7 @@ function initializeTapAndDoubleTapGestureListener() {
 
         public onLongPress(motionEvent: android.view.MotionEvent): void {
             if (this._type & GestureTypes.longPress) {
-                const args = _getArgs(GestureTypes.longPress, this._target, motionEvent);
+                const args = _getLongPressArgs(GestureTypes.longPress, this._target, GestureStateTypes.began, motionEvent);
                 _executeCallback(this._observer, args);
             }
         }
@@ -380,6 +380,18 @@ function _getArgs(type: GestureTypes, view: View, e: android.view.MotionEvent): 
         ios: undefined,
         object: view,
         eventName: toString(type),
+    };
+}
+
+function _getLongPressArgs(type: GestureTypes, view: View, state: GestureStateTypes, e: android.view.MotionEvent): GestureEventDataWithState {
+    return <GestureEventDataWithState>{
+        type: type,
+        view: view,
+        android: e,
+        ios: undefined,
+        object: view,
+        eventName: toString(type),
+        state: state
     };
 }
 
