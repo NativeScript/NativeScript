@@ -180,7 +180,6 @@ export class View extends ViewCommon implements ViewDefinition {
             if (adjustedFrame) {
                 nativeView.frame = adjustedFrame;
             }
-
             
             if (this._hasTransfrom) {
                 // re-apply the transform after the frame is adjusted
