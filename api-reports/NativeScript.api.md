@@ -413,6 +413,7 @@ export class Color {
     public b: number;
     public equals(value: Color): boolean;
     public static equals(value1: Color, value2: Color): boolean;
+    public static fromIosColor(value: any /* UIColor */): Color;
     public g: number;
     public hex: string;
     ios: any /* UIColor */;
