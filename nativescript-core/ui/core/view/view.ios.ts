@@ -158,6 +158,7 @@ export class View extends ViewCommon implements ViewDefinition {
     }
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect): void {
+
         let oldFrame = this._cachedFrame || nativeView.frame;
         if (!CGRectEqualToRect(oldFrame, frame)) {
             if (traceEnabled()) {
@@ -168,8 +169,8 @@ export class View extends ViewCommon implements ViewDefinition {
             let transform = null;
             if (this._hasTransfrom) {
                 // Always set identity transform before setting frame;
-                transform = nativeView.transform;
-                nativeView.transform = CGAffineTransformIdentity;
+                transform = nativeView.layer.transform;
+                nativeView.layer.transform = CATransform3DIdentity;
                 nativeView.frame = frame;
             } else {
                 nativeView.frame = frame;
@@ -180,9 +181,10 @@ export class View extends ViewCommon implements ViewDefinition {
                 nativeView.frame = adjustedFrame;
             }
 
+            
             if (this._hasTransfrom) {
                 // re-apply the transform after the frame is adjusted
-                nativeView.transform = transform;
+                nativeView.layer.transform = transform;
             }
 
             const boundsOrigin = nativeView.bounds.origin;
@@ -362,14 +364,13 @@ export class View extends ViewCommon implements ViewDefinition {
         transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
         transform = iosNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
         transform = CATransform3DScale(transform, scaleX, scaleY, 1);
-        this.ios.layer.transform = transform;
-        if (!CATransform3DEqualToTransform(this.ios.layer.transform, transform)) {
+        if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
             const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
             if (!updateSuspended) {
                 CATransaction.begin();
             }
-            this.ios.layer.transform = transform;
-            this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, CATransform3DIdentity);
+            this.nativeViewProtected.layer.transform = transform;
+            this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
             if (!updateSuspended) {
                 CATransaction.commit();
             }
