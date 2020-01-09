@@ -1,5 +1,12 @@
+import { Color } from "../../color";
+import { Font } from "../styling/font";
 import {
-    HtmlViewBase, View, layout, htmlProperty
+    colorProperty,
+    fontInternalProperty,
+} from "../styling/style-properties";
+import {
+    HtmlViewBase, View, layout, htmlProperty, fontSizeProperty,
+    linkColorProperty,
 } from "./html-view-common";
 import { ios } from "../../utils/utils";
 
@@ -9,6 +16,7 @@ const majorVersion = ios.MajorVersion;
 
 export class HtmlView extends HtmlViewBase {
     nativeViewProtected: UITextView;
+    private currentHtml: string;
 
     public createNativeView() {
         const view = UITextView.new();
@@ -19,6 +27,14 @@ export class HtmlView extends HtmlViewBase {
         view.dataDetectorTypes = UIDataDetectorTypes.All;
 
         return view;
+    }
+
+    public initNativeView(): void {
+        super.initNativeView();
+
+        // Remove extra padding
+        this.nativeViewProtected.textContainer.lineFragmentPadding = 0;
+        this.nativeViewProtected.textContainerInset = (UIEdgeInsets as any).zero;
     }
 
     get ios(): UITextView {
@@ -50,8 +66,22 @@ export class HtmlView extends HtmlViewBase {
     [htmlProperty.getDefault](): string {
         return "";
     }
-    [htmlProperty.setNative](value: string) {
-        const htmlString = NSString.stringWithString(value + "");
+
+    private renderWithStyles() {
+        let html = this.currentHtml;
+        const styles = [];
+        if (this.nativeViewProtected.font) {
+            styles.push(`font-family: '${this.nativeViewProtected.font.fontName}';`);
+            styles.push(`font-size: ${this.nativeViewProtected.font.pointSize}px;`);
+        }
+        if (this.nativeViewProtected.textColor) {
+            const textColor = Color.fromIosColor(this.nativeViewProtected.textColor);
+            styles.push(`color: ${textColor.hex};`);
+        }
+        if (styles.length > 0) {
+            html += `<style>body {${styles.join("")}}</style>`;
+        }
+        const htmlString = NSString.stringWithString(html + "");
         const nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
         this.nativeViewProtected.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(
             nsData,
@@ -62,5 +92,39 @@ export class HtmlView extends HtmlViewBase {
         if (majorVersion >= 13 && UIColor.labelColor) {
             this.nativeViewProtected.textColor = UIColor.labelColor;
         }
+    }
+
+    [htmlProperty.setNative](value: string) {
+        this.currentHtml = value;
+        this.renderWithStyles();
+    }
+
+    [colorProperty.getDefault](): UIColor {
+        return this.nativeViewProtected.textColor;
+    }
+    [colorProperty.setNative](value: Color | UIColor) {
+        const color = value instanceof Color ? value.ios : value;
+        this.nativeViewProtected.textColor = color;
+        this.renderWithStyles();
+    }
+
+    [linkColorProperty.getDefault](): UIColor {
+        return this.nativeViewProtected.linkTextAttributes[NSForegroundColorAttributeName];
+    }
+    [linkColorProperty.setNative](value: Color | UIColor) {
+        const color = value instanceof Color ? value.ios : value;
+        const linkTextAttributes = NSDictionary.dictionaryWithObjectForKey(
+            color,
+            NSForegroundColorAttributeName,
+        );
+        this.nativeViewProtected.linkTextAttributes = linkTextAttributes;
+    }
+    [fontInternalProperty.getDefault](): UIFont {
+        return this.nativeViewProtected.font;
+    }
+    [fontInternalProperty.setNative](value: Font | UIFont) {
+        const font = value instanceof Font ? value.getUIFont(this.nativeViewProtected.font) : value;
+        this.nativeViewProtected.font = font;
+        this.renderWithStyles();
     }
 }
