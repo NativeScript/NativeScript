@@ -7,6 +7,9 @@ script:
 - npm run setup
 - npm run unit-test
 
+# public API changes check
+- npm run api-extractor-ci
+
 # circular references check
 - cd tests && npm i
 - node_modules/.bin/webpack --env.android

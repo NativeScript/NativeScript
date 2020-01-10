@@ -1,6 +1,33 @@
 import { AppiumDriver } from "nativescript-dev-appium";
 
 import { Screen, Item } from "./screen";
+import { logWarn } from "nativescript-dev-appium";
+
+export const preventApplicationCrashCausedByAutomation = (driver: AppiumDriver) => {
+    if (driver.isIOS) {
+        return false;
+    }
+
+    let preventApplicationCrashCauesByAutomation = false;
+
+    if (Number.isInteger(+driver.nsCapabilities.device.apiLevel)) {
+        preventApplicationCrashCauesByAutomation = +driver.nsCapabilities.device.apiLevel > 23;
+    } else {
+        const majorVersion = driver.nsCapabilities.device.apiLevel.split(".")[0];
+        preventApplicationCrashCauesByAutomation = +majorVersion > 6;
+    }
+    if (preventApplicationCrashCauesByAutomation) {
+        logWarn("Skip run in background app, since it causes crash related to automation!");
+    }
+
+    return preventApplicationCrashCauesByAutomation;
+};
+
+export const isApiLevel19 = (driver: AppiumDriver) => {
+    return driver.isAndroid
+        && (`${driver.nsCapabilities.device.apiLevel}`.startsWith("19")
+            || `${driver.nsCapabilities.device.apiLevel}`.startsWith("4.4.2"));
+};
 
 export async function testPlayerNavigated(player: Item, screen: Screen) {
     await screen.navigateToPlayerDetails(player);

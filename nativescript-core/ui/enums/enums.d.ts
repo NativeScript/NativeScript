@@ -73,6 +73,12 @@ export module KeyboardType {
      * iOS:  [UIKeyboardTypeEmailAddress](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
      */
     export const email: BaseKeyboardType
+
+    /**
+     * Android: [TYPE_CLASS_NUMBER](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_NUMBER | [TYPE_NUMBER_VARIATION_PASSWORD](android type_text_variation_password)) 
+     * iOS:  [UIKeyboardTypeNumberPad](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
+     */
+    export const integer: BaseKeyboardType
 }
 
 /**
@@ -641,7 +647,7 @@ export module AnimationCurve {
 }
 
 /**
- * @deprecated use `UserInterfaceStyle` instead.
+ * @deprecated use `SystemAppearance` instead.
  *
  * Specifies the types of the status bar style.
  */
@@ -657,8 +663,24 @@ export module StatusBarStyle {
     export const dark: string;
 }
 
+/**
+ * Specifies the types of the system appearance.
+ */
+export module SystemAppearance {
+    /**
+     * The light system appearance.
+     */
+    export const light: string;
+
+    /**
+     * The dark system appearance.
+     */
+    export const dark: string;
+}
 
 /**
+ * @deprecated use `SystemAppearance` instead.
+ *
  * Specifies the types of the user interface style.
  */
 export module UserInterfaceStyle {

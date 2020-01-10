@@ -79,14 +79,27 @@ export interface ShowModalOptions {
         /**
          * The UIModalPresentationStyle to be used when showing the dialog in iOS .
          */
-        presentationStyle: any /* UIModalPresentationStyle */
+        presentationStyle?: any; /* UIModalPresentationStyle */
+        /**
+        * width of the popup dialog
+        */
+        width?: number;
+        /**
+        * height of the popup dialog
+        */
+        height?: number;
     }
     android?: {
         /**
+        * @deprecated Use ShowModalOptions.cancelable instead.
         * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
         */
         cancelable?: boolean
     }
+    /**
+    * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
+    */
+    cancelable?: boolean
 }
 
 export abstract class ViewBase extends Observable {
@@ -433,6 +446,11 @@ export abstract class ViewBase extends Observable {
      * @private
      */
     _isStyleScopeHost: boolean;
+
+    /**
+     * @private
+     */
+    public _layoutParent(): void;
 
     /**
      * Determines the depth of suspended updates.

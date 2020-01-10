@@ -27,7 +27,7 @@ extract_snippets() {
 
     npm install markdown-snippet-injector
 
-    for SNIPPET_DIR in {tests/app,apps/app,tns-core-modules} ; do
+    for SNIPPET_DIR in {tests/app,apps/app,nativescript-core} ; do
         echo "Extracting snippets from: $SNIPPET_DIR"
         node "$BIN" --root="$SNIPPET_DIR" --target="$TARGET_DIR" \
             --sourceext=".js|.ts|.xml|.html|.css"

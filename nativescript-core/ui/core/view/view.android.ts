@@ -33,6 +33,7 @@ const androidBackPressedEvent = "androidBackPressed";
 const shortAnimTime = 17694720; // android.R.integer.config_shortAnimTime
 const statePressed = 16842919; // android.R.attr.state_pressed
 const stateEnabled = 16842910; // android.R.attr.state_enabled
+const styleAnimationDialog = 16973826; // android.R.style.Animation_Dialog
 
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
@@ -187,7 +188,7 @@ function initializeDialogFragment() {
                 dialog
                     .getWindow()
                     .setWindowAnimations(
-                        android.R.style.Animation_Dialog
+                        styleAnimationDialog
                     );
             }
 
@@ -639,12 +640,21 @@ export class View extends ViewCommon {
         args.putInt(DOMID, this._domId);
         df.setArguments(args);
 
+        let cancelable = true;
+
+        if (options.android && (<any>options).android.cancelable !== undefined) {
+            cancelable = !!(<any>options).android.cancelable;
+            console.log("ShowModalOptions.android.cancelable is deprecated. Use ShowModalOptions.cancelable instead.");
+        }
+
+        cancelable = options.cancelable !== undefined ? !!options.cancelable : cancelable;
+
         const dialogOptions: DialogOptions = {
             owner: this,
             fullscreen: !!options.fullscreen,
             animated: !!options.animated,
             stretched: !!options.stretched,
-            cancelable: options.android ? !!options.android.cancelable : true,
+            cancelable: cancelable,
             shownCallback: () => this._raiseShownModallyEvent(),
             dismissCallback: () => this.closeModal()
         };

@@ -43,6 +43,35 @@ export function test_children_immediately_registered_in_parent_grid_layout() {
     helper.buildUIAndRunTest(outer, testAction);
 }
 
+export function test_proxy_layout_properties() {
+    const outer = new GridLayout();
+    const proxy = new ProxyViewContainer();
+
+    function testAction(views: Array<View>) {
+        outer.addChild(proxy);
+
+        const btn = createBtn("1");
+        proxy.addChild(btn);
+
+        proxy.row = 1;
+        TKUnit.assertEqual(proxy.row, btn.row, "Proxy row value to existing child");
+
+        const btn2 = createBtn("2");
+        proxy.addChild(btn2);
+        TKUnit.assertEqual(proxy.row, btn2.row, "Proxy row value to new child");
+
+        proxy.removeChild(btn2);
+
+        btn.row = 0;
+        TKUnit.assertNotEqual(proxy.row, btn.row, "Child value changed");
+
+        proxy.row = 1;
+        TKUnit.assertNotEqual(proxy.row, btn.row, "Changed child value not overridden");
+    }
+
+    helper.buildUIAndRunTest(outer, testAction);
+}
+
 export function test_children_registered_in_parent_grid_layout_on_attach() {
     const outer = new GridLayout();
     const proxy = new ProxyViewContainer();

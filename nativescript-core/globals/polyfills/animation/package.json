@@ -1,0 +1,6 @@
+{
+  "name": "animation",
+  "main": "animation",
+  "types": "animation.d.ts",
+  "nativescript": {}
+}

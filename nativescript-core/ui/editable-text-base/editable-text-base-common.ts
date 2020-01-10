@@ -38,7 +38,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
 export const placeholderColorProperty = new CssProperty<Style, Color>({ name: "placeholderColor", cssName: "placeholder-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 placeholderColorProperty.register(Style);
 
-const keyboardTypeConverter = makeParser<KeyboardType>(makeValidator<KeyboardType>("datetime", "phone", "number", "url", "email"));
+const keyboardTypeConverter = makeParser<KeyboardType>(makeValidator<KeyboardType>("datetime", "phone", "number", "url", "email", "integer"));
 
 export const keyboardTypeProperty = new Property<EditableTextBase, KeyboardType>({ name: "keyboardType", valueConverter: keyboardTypeConverter });
 keyboardTypeProperty.register(EditableTextBase);

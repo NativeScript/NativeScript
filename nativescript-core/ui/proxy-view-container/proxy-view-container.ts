@@ -1,5 +1,8 @@
 import { ProxyViewContainer as ProxyViewContainerDefinition } from ".";
 import { LayoutBase, View, traceEnabled, traceWrite, traceCategories, CSSType } from "../layouts/layout-base";
+import { Property } from "../core/properties/properties";
+import { messageType } from "../../trace/trace";
+
 /**
  * Proxy view container that adds all its native children directly to the parent.
  * To be used as a logical grouping container of views.
@@ -11,6 +14,7 @@ import { LayoutBase, View, traceEnabled, traceWrite, traceCategories, CSSType } 
 // * Proxy (with children) is removed form the DOM. In _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
 @CSSType("ProxyViewContainer")
 export class ProxyViewContainer extends LayoutBase implements ProxyViewContainerDefinition {
+    private proxiedLayoutProperties = new Set<string>();
 
     constructor() {
         super();
@@ -62,9 +66,18 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
         if (traceEnabled()) {
-            traceWrite("ViewContainer._addViewToNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, traceCategories.ViewHierarchy);
+            traceWrite("ProxyViewContainer._addViewToNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, traceCategories.ViewHierarchy);
         }
         super._addViewToNativeVisualTree(child);
+
+        layoutProperties.forEach((propName) => {
+            const proxyPropName = makeProxyPropName(propName);
+            child[proxyPropName] = child[propName];
+
+            if (this.proxiedLayoutProperties.has(propName)) {
+                this._applyLayoutPropertyToChild(child, propName, this[propName]);
+            }
+        });
 
         const parent = this.parent;
         if (parent instanceof View) {
@@ -147,4 +160,90 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
             });
         }
     }
+
+    /**
+     * Layout property changed, proxy the new value to the child view(s)
+     */
+    public _changedLayoutProperty(propName: string, value: string) {
+        const numChildren = this._getNativeViewsCount();
+        if (numChildren > 1) {
+            traceWrite("ProxyViewContainer._changeLayoutProperty - you're setting '" + propName + "' for " + this + " with more than one child. Probably this is not what you want, consider wrapping it in a StackLayout ", traceCategories.ViewHierarchy, messageType.error);
+        }
+
+        this.eachLayoutChild((child) => {
+            this._applyLayoutPropertyToChild(child, propName, value);
+
+            return true;
+        });
+
+        this.proxiedLayoutProperties.add(propName);
+    }
+
+    /**
+     * Apply the layout property to the child view.
+     */
+    private _applyLayoutPropertyToChild(child: View, propName: string, value: any) {
+        const proxyPropName = makeProxyPropName(propName);
+        if (proxyPropName in child) {
+            if (child[propName] !== child[proxyPropName]) {
+                // Value was set directly on the child view, don't override.
+                if (traceEnabled()) {
+                    traceWrite("ProxyViewContainer._applyLayoutPropertyToChild child " + child + " has its own value [" + child[propName] + "] for [" + propName + "]", traceCategories.ViewHierarchy);
+                }
+
+                return;
+            }
+        }
+
+        child[propName] = value;
+        child[proxyPropName] = value;
+    }
+}
+
+// Layout propeties to be proxyed to the child views
+const layoutProperties = [
+    // AbsoluteLayout
+    "left",
+    "top",
+
+    // DockLayout
+    "dock",
+
+    // FlexLayout
+    "flexDirection",
+    "flexWrap",
+    "justifyContent",
+    "alignItems",
+    "alignContent",
+    "order",
+    "flexGrow",
+    "flexShrink",
+    "flexWrapBefore",
+    "alignSelf",
+    "flexFlow",
+    "flex",
+
+    // GridLayout
+    "column",
+    "columnSpan",
+    "col",
+    "colSpan",
+    "row",
+    "rowSpan",
+];
+
+// Override the inherited layout properties
+for (const name of layoutProperties) {
+    const proxyProperty = new Property<ProxyViewContainer, string>({
+        name,
+        valueChanged(target, oldValue, value) {
+            target._changedLayoutProperty(name, value);
+        }
+    });
+
+    proxyProperty.register(ProxyViewContainer);
+}
+
+function makeProxyPropName(propName) {
+    return `_proxy:${propName}`;
 }

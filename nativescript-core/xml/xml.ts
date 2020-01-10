@@ -1,4 +1,4 @@
-// TODO: Delete `tns-core-modules/xml/xml.js` from source control after
+// TODO: Delete `nativescript-core/xml/xml.js` from source control after
 // https://github.com/NativeScript/nativescript-dev-webpack/issues/932
 
 import * as definition from ".";

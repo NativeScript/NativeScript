@@ -78,7 +78,9 @@ class UITabBarControllerImpl extends UITabBarController {
 
         if (majorVersion >= 13) {
             const owner = this._owner.get();
-            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            if (owner &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
                 owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
             }
         }
