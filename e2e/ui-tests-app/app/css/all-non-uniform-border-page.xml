@@ -11,7 +11,7 @@
         <ActivityIndicator class="s0" row="2" col="2" busy="false"/>
         <Image class="s0" row="3" col="0" src="~/resources/images/gravatar.png" stretch="fill"/>
         <ListView class="s0" row="3" col="1" items="ListView"/>
-        <HtmlView class="s0" row="3" col="2" html="<h1>HtmlView</h1>"/>
+        <HtmlView class="s0 html-view" row="3" col="2" html="<h1>HtmlView</h1><a href='http://www.nativescript.org'>{N} Site</a>"/>
         <WebView class="s0" row="4" col="0" src="~/web-view/test.html"/>
         <SegmentedBar class="s0" row="4" col="1">
             <SegmentedBar.items>
