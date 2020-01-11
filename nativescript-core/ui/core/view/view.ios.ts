@@ -9,10 +9,12 @@ import {
 import { ios } from "./view-helper";
 import { ios as iosBackground, Background } from "../../styling/background";
 import { ios as iosUtils } from "../../../utils/utils";
+import { ios as iosNativeHelper } from "../../../utils/native-helper";
 import {
-    Visibility,
+    perspectiveProperty, Visibility,
     visibilityProperty, opacityProperty,
-    rotateProperty, scaleXProperty, scaleYProperty,
+    rotateProperty, rotateXProperty, rotateYProperty,
+    scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty,
     backgroundInternalProperty, clipPathProperty
 } from "../../styling/style-properties";
@@ -156,6 +158,7 @@ export class View extends ViewCommon implements ViewDefinition {
     }
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect): void {
+
         let oldFrame = this._cachedFrame || nativeView.frame;
         if (!CGRectEqualToRect(oldFrame, frame)) {
             if (traceEnabled()) {
@@ -166,8 +169,8 @@ export class View extends ViewCommon implements ViewDefinition {
             let transform = null;
             if (this._hasTransfrom) {
                 // Always set identity transform before setting frame;
-                transform = nativeView.transform;
-                nativeView.transform = CGAffineTransformIdentity;
+                transform = nativeView.layer.transform;
+                nativeView.layer.transform = CATransform3DIdentity;
                 nativeView.frame = frame;
             } else {
                 nativeView.frame = frame;
@@ -177,10 +180,10 @@ export class View extends ViewCommon implements ViewDefinition {
             if (adjustedFrame) {
                 nativeView.frame = adjustedFrame;
             }
-
+            
             if (this._hasTransfrom) {
                 // re-apply the transform after the frame is adjusted
-                nativeView.transform = transform;
+                nativeView.layer.transform = transform;
             }
 
             const boundsOrigin = nativeView.bounds.origin;
@@ -348,18 +351,25 @@ export class View extends ViewCommon implements ViewDefinition {
     public updateNativeTransform() {
         const scaleX = this.scaleX || 1e-6;
         const scaleY = this.scaleY || 1e-6;
-        const rotate = this.rotate || 0;
-        let newTransform = CGAffineTransformIdentity;
-        newTransform = CGAffineTransformTranslate(newTransform, this.translateX, this.translateY);
-        newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
-        newTransform = CGAffineTransformScale(newTransform, scaleX, scaleY);
-        if (!CGAffineTransformEqualToTransform(this.nativeViewProtected.transform, newTransform)) {
+        const perspective = this.perspective || 300;
+
+        let transform = new CATransform3D(CATransform3DIdentity);
+
+        // Only set perspective if there is 3D rotation
+        if (this.rotateX || this.rotateY) {
+            transform.m34 = -1 / perspective;
+        }
+        
+        transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
+        transform = iosNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
+        transform = CATransform3DScale(transform, scaleX, scaleY, 1);
+        if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
             const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
             if (!updateSuspended) {
                 CATransaction.begin();
             }
-            this.nativeViewProtected.transform = newTransform;
-            this._hasTransfrom = this.nativeViewProtected && !CGAffineTransformEqualToTransform(this.nativeViewProtected.transform, CGAffineTransformIdentity);
+            this.nativeViewProtected.layer.transform = transform;
+            this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
             if (!updateSuspended) {
                 CATransaction.commit();
             }
@@ -576,6 +586,27 @@ export class View extends ViewCommon implements ViewDefinition {
         return 0;
     }
     [rotateProperty.setNative](value: number) {
+        this.updateNativeTransform();
+    }
+
+    [rotateXProperty.getDefault](): number {
+        return 0;
+    }
+    [rotateXProperty.setNative](value: number) {
+        this.updateNativeTransform();
+    }
+
+    [rotateYProperty.getDefault](): number {
+        return 0;
+    }
+    [rotateYProperty.setNative](value: number) {
+        this.updateNativeTransform();
+    }
+
+    [perspectiveProperty.getDefault](): number {
+        return 300;
+    }
+    [perspectiveProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
 

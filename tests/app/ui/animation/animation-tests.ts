@@ -433,6 +433,7 @@ function animateExtentAndAssertExpected(along: "height" | "width", value: Percen
             expectedNumber,
             `PercentLength.toDevicePixels(${inputString}) should be "${expectedNumber}" but is "${observedNumber}"`
         );
+
         assertIOSNativeTransformIsCorrect(label);
     });
 }

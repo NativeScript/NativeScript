@@ -251,6 +251,7 @@ export module ios {
      * Returns the visible UIViewController.
      */
     export function getVisibleViewController(rootViewController: any/* UIViewController*/): any/* UIViewController*/;
+
 }
 
 /**
