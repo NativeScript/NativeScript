@@ -113,6 +113,12 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         return null;
     }
 
+    public getTabBarBackgroundArgbColor(): any {
+        const colorDrawable = this.getTabBarBackgroundColor() as android.graphics.drawable.ColorDrawable;
+
+        return colorDrawable && colorDrawable.getColor();
+    }
+
     public setTabBarBackgroundColor(value: any): void {
         // overridden by inheritors
     }
