@@ -294,6 +294,15 @@ class UIViewControllerImpl extends UIViewController {
             }
         }
     }
+
+    public get preferredStatusBarStyle(): UIStatusBarStyle {
+        const owner = this._owner.get();
+        if (owner) {
+            return owner.statusBarStyle === "dark" ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+        } else {
+            return UIStatusBarStyle.Default;
+        }
+    }
 }
 
 export class Page extends PageBase {
