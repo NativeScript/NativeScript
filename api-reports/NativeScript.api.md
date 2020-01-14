@@ -2197,6 +2197,8 @@ export class TabContentItem extends ContentView {
 export class TabNavigationBase extends View {
     android: any /* android.view.View */;
 
+    getTabBarBackgroundArgbColor(): any
+
     getTabBarBackgroundColor(): any
 
     getTabBarColor(): any
