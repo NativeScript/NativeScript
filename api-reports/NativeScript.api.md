@@ -243,7 +243,8 @@ export interface AnimationDefinition {
 
     opacity?: number;
 
-    rotate?: number;
+    // Warning: (ae-forgotten-export) The symbol "Point3D" needs to be exported by the entry point index.d.ts
+    rotate?: number | Point3D;
 
     scale?: Pair;
 
@@ -413,6 +414,7 @@ export class Color {
     public b: number;
     public equals(value: Color): boolean;
     public static equals(value1: Color, value2: Color): boolean;
+    public static fromIosColor(value: any /* UIColor */): Color;
     public g: number;
     public hex: string;
     ios: any /* UIColor */;
@@ -1206,7 +1208,7 @@ export class ImageSource {
 export type InstrumentationMode = "counters" | "timeline" | "lifecycle";
 
 // @public
-export interface iOSApplication {
+export class iOSApplication {
     /* tslint:enable */
     addNotificationObserver(notificationName: string, onReceiveCallback: (notification: any /* NSNotification */) => void): any;
 
@@ -1884,7 +1886,9 @@ export interface ShowModalOptions {
     fullscreen?: boolean;
 
     ios?: {
-        presentationStyle: any /* UIModalPresentationStyle */
+        presentationStyle?: any; /* UIModalPresentationStyle */
+        width?: number;
+        height?: number;
     }
 
     stretched?: boolean;
@@ -2083,6 +2087,8 @@ export class Style extends Observable {
     // (undocumented)
     public paddingTop: Length;
     // (undocumented)
+    public perspective: number;
+    // (undocumented)
     public placeholderColor: Color;
     // Warning: (ae-forgotten-export) The symbol "PropertyBagClass" needs to be exported by the entry point index.d.ts
     public readonly PropertyBag: PropertyBagClass;
@@ -2090,6 +2096,10 @@ export class Style extends Observable {
     public resetUnscopedCssVariables(): void;
     // (undocumented)
     public rotate: number;
+    // (undocumented)
+    public rotateX: number;
+    // (undocumented)
+    public rotateY: number;
     // (undocumented)
     public scaleX: number;
     // (undocumented)
@@ -2699,12 +2709,15 @@ export abstract class View extends ViewBase {
     opacity: number;
     originX: number;
     originY: number;
+    perspective: number;
     // (undocumented)
     _redrawNativeBackground(value: any): void;
     // (undocumented)
     _removeAnimation(animation: Animation): boolean;
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number;
     rotate: number;
+    rotateX: number;
+    rotateY: number;
     scaleX: number;
     scaleY: number;
     _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): { boundsChanged: boolean, sizeChanged: boolean };
@@ -2860,6 +2873,8 @@ export abstract class ViewBase extends Observable {
     public _isPaddingRelative: boolean;
     // (undocumented)
     _isStyleScopeHost: boolean;
+    // (undocumented)
+    public _layoutParent(): void;
     // (undocumented)
     left: Length;
     public static loadedEvent: string;
@@ -3063,9 +3078,9 @@ export class XmlParser {
 // nativescript-core/index.d.ts:117:5 - (ae-forgotten-export) The symbol "layout" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:118:5 - (ae-forgotten-export) The symbol "ad" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:119:5 - (ae-forgotten-export) The symbol "ios" needs to be exported by the entry point index.d.ts
-// nativescript-core/ui/core/view-base/view-base.d.ts:171:26 - (ae-forgotten-export) The symbol "Property" needs to be exported by the entry point index.d.ts
-// nativescript-core/ui/core/view-base/view-base.d.ts:171:26 - (ae-forgotten-export) The symbol "CssProperty" needs to be exported by the entry point index.d.ts
-// nativescript-core/ui/core/view-base/view-base.d.ts:171:26 - (ae-forgotten-export) The symbol "CssAnimationProperty" needs to be exported by the entry point index.d.ts
+// nativescript-core/ui/core/view-base/view-base.d.ts:179:26 - (ae-forgotten-export) The symbol "Property" needs to be exported by the entry point index.d.ts
+// nativescript-core/ui/core/view-base/view-base.d.ts:179:26 - (ae-forgotten-export) The symbol "CssProperty" needs to be exported by the entry point index.d.ts
+// nativescript-core/ui/core/view-base/view-base.d.ts:179:26 - (ae-forgotten-export) The symbol "CssAnimationProperty" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

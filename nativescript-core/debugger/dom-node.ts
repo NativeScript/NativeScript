@@ -1,5 +1,5 @@
 import { CSSComputedStyleProperty } from "./css-agent";
-import { InspectorEvents } from "./devtools-elements";
+import { InspectorEvents } from "./devtools-elements-interfaces";
 
 // Needed for typings only
 import { ViewBase } from "../ui/core/view";

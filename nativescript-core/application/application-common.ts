@@ -1,13 +1,29 @@
 // Require globals first so that snapshot takes __extends function.
 import "../globals";
-import { Observable, EventData } from "../data/observable";
+
+// Types
+import { AndroidApplication, iOSApplication } from ".";
+import {
+    CssChangedEventData, DiscardedErrorEventData,
+    LoadAppCSSEventData, UnhandledErrorEventData
+} from "./application-interfaces";
+import { EventData } from "../data/observable/observable-interfaces";
 import { View } from "../ui/core/view";
+
+// Requires
+import { Observable } from "../data/observable";
 import {
     trace as profilingTrace,
     time,
     uptime,
     level as profilingLevel,
 } from "../profiling";
+import * as bindableResources from "../ui/core/bindable/bindable-resources";
+import { CLASS_PREFIX, pushToSystemCssClasses, removeSystemCssClass } from "../css/system-classes";
+import { DeviceOrientation, SystemAppearance } from "../ui/enums/enums";
+
+export { Observable };
+export * from "./application-interfaces";
 
 const events = new Observable();
 let launched = false;
@@ -29,22 +45,6 @@ if (profilingLevel() > 0) {
 export function hasLaunched(): boolean {
     return launched;
 }
-
-export { Observable };
-
-import {
-    AndroidApplication,
-    CssChangedEventData,
-    DiscardedErrorEventData,
-    iOSApplication,
-    LoadAppCSSEventData,
-    UnhandledErrorEventData
-} from "./application";
-
-import { CLASS_PREFIX, pushToRootViewCssClasses, removeFromRootViewCssClasses } from "../css/system-classes";
-import { DeviceOrientation, SystemAppearance } from "../ui/enums/enums";
-
-export { UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData };
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
@@ -70,18 +70,16 @@ const SYSTEM_APPEARANCE_CSS_CLASSES = [
 
 let cssFile: string = "./app.css";
 
-let resources: any = {};
-
 export function getResources() {
-    return resources;
+    return bindableResources.get();
 }
 
 export function setResources(res: any) {
-    resources = res;
+    bindableResources.set(res);
 }
 
-export let android = undefined;
-export let ios = undefined;
+export let android: AndroidApplication = undefined;
+export let ios: iOSApplication = undefined;
 
 export const on: typeof events.on = events.on.bind(events);
 export const off: typeof events.off = events.off.bind(events);
@@ -127,18 +125,17 @@ export function loadAppCss(): void {
     try {
         events.notify(<LoadAppCSSEventData>{ eventName: "loadAppCss", object: app, cssFile: getCssFileName() });
     } catch (e) {
-        throw new Error(`The file ${getCssFileName()} couldn't be loaded! ` +
-            `You may need to register it inside ./app/vendor.ts.`);
+        throw new Error(`The app CSS file ${getCssFileName()} couldn't be loaded!`);
     }
 }
 
-function applyCssClass(rootView: View, cssClass: string) {
-    pushToRootViewCssClasses(cssClass);
+function addCssClass(rootView: View, cssClass: string) {
+    pushToSystemCssClasses(cssClass);
     rootView.cssClasses.add(cssClass);
 }
 
 function removeCssClass(rootView: View, cssClass: string) {
-    removeFromRootViewCssClasses(cssClass);
+    removeSystemCssClass(cssClass);
     rootView.cssClasses.delete(cssClass);
 }
 
@@ -150,18 +147,27 @@ function increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
     }
 }
 
+function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string) {
+    if (!rootView.cssClasses.has(newCssClass)) {
+        cssClasses.forEach(cssClass => removeCssClass(rootView, cssClass));
+        addCssClass(rootView, newCssClass);
+        increaseStyleScopeApplicationCssSelectorVersion(rootView);
+        rootView._onCssStateChange();
+    }
+}
+
 export function orientationChanged(rootView: View, newOrientation: "portrait" | "landscape" | "unknown"): void {
     if (!rootView) {
         return;
     }
 
     const newOrientationCssClass = `${CLASS_PREFIX}${newOrientation}`;
-    if (!rootView.cssClasses.has(newOrientationCssClass)) {
-        ORIENTATION_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
-        applyCssClass(rootView, newOrientationCssClass);
-        increaseStyleScopeApplicationCssSelectorVersion(rootView);
-        rootView._onCssStateChange();
-    }
+    applyCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
+
+    const rootModalViews = <Array<View>>rootView._getRootModalViews();
+    rootModalViews.forEach(rootModalView => {
+        applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
+    });
 }
 
 export function systemAppearanceChanged(rootView: View, newSystemAppearance: "dark" | "light"): void {
@@ -170,12 +176,12 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: "da
     }
 
     const newSystemAppearanceCssClass = `${CLASS_PREFIX}${newSystemAppearance}`;
-    if (!rootView.cssClasses.has(newSystemAppearanceCssClass)) {
-        SYSTEM_APPEARANCE_CSS_CLASSES.forEach(cssClass => removeCssClass(rootView, cssClass));
-        applyCssClass(rootView, newSystemAppearanceCssClass);
-        increaseStyleScopeApplicationCssSelectorVersion(rootView);
-        rootView._onCssStateChange();
-    }
+    applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
+
+    const rootModalViews = <Array<View>>rootView._getRootModalViews();
+    rootModalViews.forEach(rootModalView => {
+        applyCssClass(rootModalView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
+    });
 }
 
 global.__onUncaughtError = function (error: NativeScriptError) {

@@ -1,4 +1,5 @@
-import { WebViewBase, knownFolders, traceWrite, traceEnabled, traceCategories, NavigationType } from "./web-view-common";
+import { NavigationType } from ".";
+import { WebViewBase, knownFolders, traceWrite, traceEnabled, traceCategories } from "./web-view-common";
 import { profile } from "../../profiling";
 export * from "./web-view-common";
 

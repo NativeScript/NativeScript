@@ -1,7 +1,8 @@
-import { getNodeById } from "./dom-node";
-
-// Needed for typings only
+// Types
 import { ViewBase } from "../ui/core/view-base";
+
+//Requires
+import { getNodeById } from "./dom-node";
 import { mainThreadify } from "../utils/utils";
 
 // Use lazy requires for core modules

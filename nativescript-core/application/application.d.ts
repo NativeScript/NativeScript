@@ -212,15 +212,6 @@ export function run(entry?: NavigationEntry | string);
 export function _resetRootView(entry?: NavigationEntry | string);
 
 /**
- * @private
- */
-export function _shouldCreateRootFrame(): boolean;
-/**
- * @private
- */
-export function _start(entry?: NavigationEntry | string);
-
-/**
  * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
  * @param eventNames - String corresponding to events (e.g. "onLaunch"). Optionally could be used more events separated by `,` (e.g. "onLaunch", "onSuspend").
  * @param callback - Callback function which will be executed when event is raised.
@@ -610,7 +601,7 @@ export class AndroidApplication extends Observable {
 /**
  * The abstraction of an iOS-specific application object.
  */
-export interface iOSApplication {
+export class iOSApplication {
     /* tslint:enable */
     /**
      * The root view controller for the application.

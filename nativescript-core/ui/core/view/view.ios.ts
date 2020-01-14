@@ -1,24 +1,27 @@
-// Definitions.
+// Types.
 import { Point, View as ViewDefinition, dip } from ".";
-import { ViewBase } from "../view-base";
 
+// Requires
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     traceEnabled, traceWrite, traceCategories, traceError, traceMessageType, ShowModalOptions
 } from "./view-common";
-
+import { ios } from "./view-helper";
 import { ios as iosBackground, Background } from "../../styling/background";
 import { ios as iosUtils } from "../../../utils/utils";
+import { ios as iosNativeHelper } from "../../../utils/native-helper";
 import {
-    Visibility,
+    perspectiveProperty, Visibility,
     visibilityProperty, opacityProperty,
-    rotateProperty, scaleXProperty, scaleYProperty,
+    rotateProperty, rotateXProperty, rotateYProperty,
+    scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty,
     backgroundInternalProperty, clipPathProperty
 } from "../../styling/style-properties";
 import { profile } from "../../../profiling";
 
 export * from "./view-common";
+export { ios };
 
 const PFLAG_FORCE_LAYOUT = 1;
 const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
@@ -26,7 +29,7 @@ const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
 const majorVersion = iosUtils.MajorVersion;
 
-export class View extends ViewCommon {
+export class View extends ViewCommon implements ViewDefinition {
     nativeViewProtected: UIView;
     viewController: UIViewController;
     private _popoverPresentationDelegate: ios.UIPopoverPresentationControllerDelegateImp;
@@ -155,6 +158,7 @@ export class View extends ViewCommon {
     }
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect): void {
+
         let oldFrame = this._cachedFrame || nativeView.frame;
         if (!CGRectEqualToRect(oldFrame, frame)) {
             if (traceEnabled()) {
@@ -165,8 +169,8 @@ export class View extends ViewCommon {
             let transform = null;
             if (this._hasTransfrom) {
                 // Always set identity transform before setting frame;
-                transform = nativeView.transform;
-                nativeView.transform = CGAffineTransformIdentity;
+                transform = nativeView.layer.transform;
+                nativeView.layer.transform = CATransform3DIdentity;
                 nativeView.frame = frame;
             } else {
                 nativeView.frame = frame;
@@ -176,10 +180,10 @@ export class View extends ViewCommon {
             if (adjustedFrame) {
                 nativeView.frame = adjustedFrame;
             }
-
+            
             if (this._hasTransfrom) {
                 // re-apply the transform after the frame is adjusted
-                nativeView.transform = transform;
+                nativeView.layer.transform = transform;
             }
 
             const boundsOrigin = nativeView.bounds.origin;
@@ -213,6 +217,21 @@ export class View extends ViewCommon {
         const nativeView = this.nativeViewProtected;
         const frame = ios.getFrameFromPosition({ left, top, right, bottom });
         this._setNativeViewFrame(nativeView, frame);
+    }
+
+    public _layoutParent() {
+        if (this.nativeViewProtected) {
+            const frame = this.nativeViewProtected.frame;
+            const origin = frame.origin;
+            const size = frame.size;
+            const left = layout.toDevicePixels(origin.x);
+            const top = layout.toDevicePixels(origin.y);
+            const width = layout.toDevicePixels(size.width);
+            const height = layout.toDevicePixels(size.height);
+            this._setLayoutFlags(left, top, width + left, height + top);
+        }
+
+        super._layoutParent();
     }
 
     public _setLayoutFlags(left: number, top: number, right: number, bottom: number): void {
@@ -332,18 +351,25 @@ export class View extends ViewCommon {
     public updateNativeTransform() {
         const scaleX = this.scaleX || 1e-6;
         const scaleY = this.scaleY || 1e-6;
-        const rotate = this.rotate || 0;
-        let newTransform = CGAffineTransformIdentity;
-        newTransform = CGAffineTransformTranslate(newTransform, this.translateX, this.translateY);
-        newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
-        newTransform = CGAffineTransformScale(newTransform, scaleX, scaleY);
-        if (!CGAffineTransformEqualToTransform(this.nativeViewProtected.transform, newTransform)) {
+        const perspective = this.perspective || 300;
+
+        let transform = new CATransform3D(CATransform3DIdentity);
+
+        // Only set perspective if there is 3D rotation
+        if (this.rotateX || this.rotateY) {
+            transform.m34 = -1 / perspective;
+        }
+        
+        transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
+        transform = iosNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
+        transform = CATransform3DScale(transform, scaleX, scaleY, 1);
+        if (!CATransform3DEqualToTransform(this.nativeViewProtected.layer.transform, transform)) {
             const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
             if (!updateSuspended) {
                 CATransaction.begin();
             }
-            this.nativeViewProtected.transform = newTransform;
-            this._hasTransfrom = this.nativeViewProtected && !CGAffineTransformEqualToTransform(this.nativeViewProtected.transform, CGAffineTransformIdentity);
+            this.nativeViewProtected.layer.transform = transform;
+            this._hasTransfrom = this.nativeViewProtected && !CATransform3DEqualToTransform(this.nativeViewProtected.transform3D, CATransform3DIdentity);
             if (!updateSuspended) {
                 CATransaction.commit();
             }
@@ -399,11 +425,11 @@ export class View extends ViewCommon {
 
         this._setupAsRootView({});
 
-        super._showNativeModalView(parentWithController, options);
+        super._showNativeModalView(<ViewCommon>parentWithController, options);
         let controller = this.viewController;
         if (!controller) {
             const nativeView = this.ios || this.nativeViewProtected;
-            controller = ios.UILayoutViewController.initWithOwner(new WeakRef(this));
+            controller = <UIViewController>ios.UILayoutViewController.initWithOwner(new WeakRef(this));
 
             if (nativeView instanceof UIView) {
                 controller.view.addSubview(nativeView);
@@ -416,6 +442,11 @@ export class View extends ViewCommon {
             controller.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
         } else {
             controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
+            //check whether both height and width is provided and are positive numbers
+            // set it has prefered content size to the controller presenting the dialog
+            if (options.ios && options.ios.width > 0 && options.ios.height > 0) {
+                controller.preferredContentSize = CGSizeMake(options.ios.width, options.ios.height);
+            }
         }
 
         if (options.ios && options.ios.presentationStyle) {
@@ -558,6 +589,27 @@ export class View extends ViewCommon {
         this.updateNativeTransform();
     }
 
+    [rotateXProperty.getDefault](): number {
+        return 0;
+    }
+    [rotateXProperty.setNative](value: number) {
+        this.updateNativeTransform();
+    }
+
+    [rotateYProperty.getDefault](): number {
+        return 0;
+    }
+    [rotateYProperty.setNative](value: number) {
+        this.updateNativeTransform();
+    }
+
+    [perspectiveProperty.getDefault](): number {
+        return 300;
+    }
+    [perspectiveProperty.setNative](value: number) {
+        this.updateNativeTransform();
+    }
+
     [scaleXProperty.getDefault](): number {
         return 1;
     }
@@ -654,7 +706,7 @@ export class View extends ViewCommon {
     private _setupPopoverControllerDelegate(controller: UIViewController, parent: View) {
         const popoverPresentationController = controller.popoverPresentationController;
         this._popoverPresentationDelegate = ios.UIPopoverPresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
-        popoverPresentationController.delegate = this._popoverPresentationDelegate;
+        popoverPresentationController.delegate = <UIPopoverPresentationControllerDelegate>this._popoverPresentationDelegate;
         const view = parent.nativeViewProtected;
         // Note: sourceView and sourceRect are needed to specify the anchor location for the popover.
         // Note: sourceView should be the button triggering the modal. If it the Page the popover might appear "behind" the page content
@@ -664,7 +716,7 @@ export class View extends ViewCommon {
 
     private _setupAdaptiveControllerDelegate(controller: UIViewController) {
         this._adaptivePresentationDelegate = ios.UIAdaptivePresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
-        controller.presentationController.delegate = this._adaptivePresentationDelegate;
+        controller.presentationController.delegate = <UIAdaptivePresentationControllerDelegate>this._adaptivePresentationDelegate;
     }
 }
 View.prototype._nativeBackgroundState = "unset";
@@ -719,369 +771,6 @@ export class CustomLayoutView extends ContainerView {
 
         if (child.nativeViewProtected) {
             child.nativeViewProtected.removeFromSuperview();
-        }
-    }
-}
-
-export namespace ios {
-    export const traitCollectionColorAppearanceChangedEvent = "traitCollectionColorAppearanceChanged";
-
-    export function getParentWithViewController(view: View): View {
-        while (view && !view.viewController) {
-            view = view.parent as View;
-        }
-
-        // Note: Might return undefined if no parent with viewController is found
-        return view;
-    }
-
-    export function updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
-        if (majorVersion <= 10) {
-            owner._automaticallyAdjustsScrollViewInsets = false;
-            // This API is deprecated, but has no alternative for <= iOS 10
-            // Defaults to true and results to appliyng the insets twice together with our logic
-            // for iOS 11+ we use the contentInsetAdjustmentBehavior property in scrollview
-            // https://developer.apple.com/documentation/uikit/uiviewcontroller/1621372-automaticallyadjustsscrollviewin
-            controller.automaticallyAdjustsScrollViewInsets = false;
-        }
-    }
-
-    export function updateConstraints(controller: UIViewController, owner: View): void {
-        if (majorVersion <= 10) {
-            const layoutGuide = initLayoutGuide(controller);
-            (<any>controller.view).safeAreaLayoutGuide = layoutGuide;
-        }
-    }
-
-    function initLayoutGuide(controller: UIViewController) {
-        const rootView = controller.view;
-        const layoutGuide = UILayoutGuide.alloc().init();
-        rootView.addLayoutGuide(layoutGuide);
-        NSLayoutConstraint.activateConstraints(<any>[
-            layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor),
-            layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor),
-            layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor),
-            layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)
-        ]);
-
-        return layoutGuide;
-    }
-
-    export function layoutView(controller: UIViewController, owner: View): void {
-        let layoutGuide = controller.view.safeAreaLayoutGuide;
-        if (!layoutGuide) {
-            traceWrite(`safeAreaLayoutGuide during layout of ${owner}. Creating fallback constraints, but layout might be wrong.`,
-                traceCategories.Layout, traceMessageType.error);
-
-            layoutGuide = initLayoutGuide(controller);
-        }
-        const safeArea = layoutGuide.layoutFrame;
-        let position = ios.getPositionFromFrame(safeArea);
-        const safeAreaSize = safeArea.size;
-
-        const hasChildViewControllers = controller.childViewControllers.count > 0;
-        if (hasChildViewControllers) {
-            const fullscreen = controller.view.frame;
-            position = ios.getPositionFromFrame(fullscreen);
-        }
-
-        const safeAreaWidth = layout.round(layout.toDevicePixels(safeAreaSize.width));
-        const safeAreaHeight = layout.round(layout.toDevicePixels(safeAreaSize.height));
-
-        const widthSpec = layout.makeMeasureSpec(safeAreaWidth, layout.EXACTLY);
-        const heightSpec = layout.makeMeasureSpec(safeAreaHeight, layout.EXACTLY);
-
-        View.measureChild(null, owner, widthSpec, heightSpec);
-        View.layoutChild(null, owner, position.left, position.top, position.right, position.bottom);
-
-        layoutParent(owner.parent);
-    }
-
-    export function getPositionFromFrame(frame: CGRect): { left, top, right, bottom } {
-        const left = layout.round(layout.toDevicePixels(frame.origin.x));
-        const top = layout.round(layout.toDevicePixels(frame.origin.y));
-        const right = layout.round(layout.toDevicePixels(frame.origin.x + frame.size.width));
-        const bottom = layout.round(layout.toDevicePixels(frame.origin.y + frame.size.height));
-
-        return { left, right, top, bottom };
-    }
-
-    export function getFrameFromPosition(position: { left, top, right, bottom }, insets?: { left, top, right, bottom }): CGRect {
-        insets = insets || { left: 0, top: 0, right: 0, bottom: 0 };
-
-        const left = layout.toDeviceIndependentPixels(position.left + insets.left);
-        const top = layout.toDeviceIndependentPixels(position.top + insets.top);
-        const width = layout.toDeviceIndependentPixels(position.right - position.left - insets.left - insets.right);
-        const height = layout.toDeviceIndependentPixels(position.bottom - position.top - insets.top - insets.bottom);
-
-        return CGRectMake(left, top, width, height);
-    }
-
-    export function shrinkToSafeArea(view: View, frame: CGRect): CGRect {
-        const insets = view.getSafeAreaInsets();
-        if (insets.left || insets.top) {
-            const position = ios.getPositionFromFrame(frame);
-            const adjustedFrame = ios.getFrameFromPosition(position, insets);
-
-            if (traceEnabled()) {
-                traceWrite(this + " :shrinkToSafeArea: " + JSON.stringify(ios.getPositionFromFrame(adjustedFrame)), traceCategories.Layout);
-            }
-
-            return adjustedFrame;
-        }
-
-        return null;
-    }
-
-    export function expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
-        const availableSpace = getAvailableSpaceFromParent(view, frame);
-        const safeArea = availableSpace.safeArea;
-        const fullscreen = availableSpace.fullscreen;
-        const inWindow = availableSpace.inWindow;
-
-        const position = ios.getPositionFromFrame(frame);
-        const safeAreaPosition = ios.getPositionFromFrame(safeArea);
-        const fullscreenPosition = ios.getPositionFromFrame(fullscreen);
-        const inWindowPosition = ios.getPositionFromFrame(inWindow);
-
-        const adjustedPosition = position;
-
-        if (position.left && inWindowPosition.left <= safeAreaPosition.left) {
-            adjustedPosition.left = fullscreenPosition.left;
-        }
-
-        if (position.top && inWindowPosition.top <= safeAreaPosition.top) {
-            adjustedPosition.top = fullscreenPosition.top;
-        }
-
-        if (inWindowPosition.right < fullscreenPosition.right && inWindowPosition.right >= safeAreaPosition.right + fullscreenPosition.left) {
-            adjustedPosition.right += fullscreenPosition.right - inWindowPosition.right;
-        }
-
-        if (inWindowPosition.bottom < fullscreenPosition.bottom && inWindowPosition.bottom >= safeAreaPosition.bottom + fullscreenPosition.top) {
-            adjustedPosition.bottom += fullscreenPosition.bottom - inWindowPosition.bottom;
-        }
-
-        const adjustedFrame = CGRectMake(layout.toDeviceIndependentPixels(adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.top), layout.toDeviceIndependentPixels(adjustedPosition.right - adjustedPosition.left), layout.toDeviceIndependentPixels(adjustedPosition.bottom - adjustedPosition.top));
-
-        if (traceEnabled()) {
-            traceWrite(view + " :expandBeyondSafeArea: " + JSON.stringify(ios.getPositionFromFrame(adjustedFrame)), traceCategories.Layout);
-        }
-
-        return adjustedFrame;
-    }
-
-    function layoutParent(view: ViewBase): void {
-        if (!view) {
-            return;
-        }
-
-        if (view instanceof View && view.nativeViewProtected) {
-            const frame = view.nativeViewProtected.frame;
-            const origin = frame.origin;
-            const size = frame.size;
-            const left = layout.toDevicePixels(origin.x);
-            const top = layout.toDevicePixels(origin.y);
-            const width = layout.toDevicePixels(size.width);
-            const height = layout.toDevicePixels(size.height);
-            view._setLayoutFlags(left, top, width + left, height + top);
-        }
-
-        layoutParent(view.parent);
-    }
-
-    function getAvailableSpaceFromParent(view: View, frame: CGRect): { safeArea: CGRect, fullscreen: CGRect, inWindow: CGRect } {
-        if (!view) {
-            return;
-        }
-
-        let scrollView = null;
-        let viewControllerView = null;
-
-        if (view.viewController) {
-            viewControllerView = view.viewController.view;
-        } else {
-            let parent = view.parent as View;
-            while (parent && !parent.viewController && !(parent.nativeViewProtected instanceof UIScrollView)) {
-                parent = parent.parent as View;
-            }
-
-            if (parent.nativeViewProtected instanceof UIScrollView) {
-                scrollView = parent.nativeViewProtected;
-            } else if (parent.viewController) {
-                viewControllerView = parent.viewController.view;
-            }
-        }
-
-        let fullscreen = null;
-        let safeArea = null;
-
-        if (viewControllerView) {
-            safeArea = viewControllerView.safeAreaLayoutGuide.layoutFrame;
-            fullscreen = viewControllerView.frame;
-        }
-        else if (scrollView) {
-            const insets = scrollView.safeAreaInsets;
-            safeArea = CGRectMake(insets.left, insets.top, scrollView.contentSize.width - insets.left - insets.right, scrollView.contentSize.height - insets.top - insets.bottom);
-            fullscreen = CGRectMake(0, 0, scrollView.contentSize.width, scrollView.contentSize.height);
-        }
-
-        const locationInWindow = view.getLocationInWindow();
-        let inWindowLeft = locationInWindow.x;
-        let inWindowTop = locationInWindow.y;
-
-        if (scrollView) {
-            inWindowLeft += scrollView.contentOffset.x;
-            inWindowTop += scrollView.contentOffset.y;
-        }
-
-        const inWindow = CGRectMake(inWindowLeft, inWindowTop, frame.size.width, frame.size.height);
-
-        return { safeArea: safeArea, fullscreen: fullscreen, inWindow: inWindow };
-    }
-
-    export class UILayoutViewController extends UIViewController {
-        public owner: WeakRef<View>;
-
-        public static initWithOwner(owner: WeakRef<View>): UILayoutViewController {
-            const controller = <UILayoutViewController>UILayoutViewController.new();
-            controller.owner = owner;
-
-            return controller;
-        }
-
-        public viewDidLoad(): void {
-            super.viewDidLoad();
-
-            // Unify translucent and opaque bars layout
-            // this.edgesForExtendedLayout = UIRectEdgeBottom;
-            this.extendedLayoutIncludesOpaqueBars = true;
-        }
-
-        public viewWillLayoutSubviews(): void {
-            super.viewWillLayoutSubviews();
-            const owner = this.owner.get();
-            if (owner) {
-                updateConstraints(this, owner);
-            }
-        }
-
-        public viewDidLayoutSubviews(): void {
-            super.viewDidLayoutSubviews();
-            const owner = this.owner.get();
-            if (owner) {
-                if (majorVersion >= 11) {
-                    // Handle nested UILayoutViewController safe area application.
-                    // Currently, UILayoutViewController can be nested only in a TabView.
-                    // The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
-                    const tabViewItem = owner.parent;
-                    const tabView = tabViewItem && tabViewItem.parent;
-                    let parent = tabView && tabView.parent;
-
-                    // Handle Angular scenario where TabView is in a ProxyViewContainer
-                    // It is possible to wrap components in ProxyViewContainers indefinitely
-                    // Not using instanceof ProxyViewContainer to avoid circular dependency
-                    // TODO: Try moving UILayoutViewController out of view module
-                    while (parent && !parent.nativeViewProtected) {
-                        parent = parent.parent;
-                    }
-
-                    if (parent) {
-                        const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
-                        const currentInsetsTop = this.view.safeAreaInsets.top;
-                        const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-
-                        const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
-                        const currentInsetsBottom = this.view.safeAreaInsets.bottom;
-                        const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
-
-                        if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
-                            const additionalInsets = new UIEdgeInsets({ top: additionalInsetsTop, left: 0, bottom: additionalInsetsBottom, right: 0 });
-                            this.additionalSafeAreaInsets = additionalInsets;
-                        }
-                    }
-                }
-
-                layoutView(this, owner);
-            }
-        }
-
-        public viewWillAppear(animated: boolean): void {
-            super.viewWillAppear(animated);
-            const owner = this.owner.get();
-            if (!owner) {
-                return;
-            }
-
-            updateAutoAdjustScrollInsets(this, owner);
-
-            if (!owner.parent) {
-                owner.callLoaded();
-            }
-        }
-
-        public viewDidDisappear(animated: boolean): void {
-            super.viewDidDisappear(animated);
-            const owner = this.owner.get();
-            if (owner && !owner.parent) {
-                owner.callUnloaded();
-            }
-        }
-
-        // Mind implementation for other controllers
-        public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
-            super.traitCollectionDidChange(previousTraitCollection);
-
-            if (majorVersion >= 13) {
-                const owner = this.owner.get();
-                if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
-                    owner.notify({ eventName: traitCollectionColorAppearanceChangedEvent, object: owner });
-                }
-            }
-        }
-    }
-
-    export class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
-        public static ObjCProtocols = [UIAdaptivePresentationControllerDelegate];
-
-        private owner: WeakRef<View>;
-        private closedCallback: Function;
-
-        public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp {
-            const instance = <UIAdaptivePresentationControllerDelegateImp>super.new();
-            instance.owner = owner;
-            instance.closedCallback = whenClosedCallback;
-
-            return instance;
-        }
-
-        public presentationControllerDidDismiss(presentationController: UIPresentationController) {
-            const owner = this.owner.get();
-            if (owner && typeof this.closedCallback === "function") {
-                this.closedCallback();
-            }
-        }
-    }
-
-    export class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
-        public static ObjCProtocols = [UIPopoverPresentationControllerDelegate];
-
-        private owner: WeakRef<View>;
-        private closedCallback: Function;
-
-        public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp {
-            const instance = <UIPopoverPresentationControllerDelegateImp>super.new();
-            instance.owner = owner;
-            instance.closedCallback = whenClosedCallback;
-
-            return instance;
-        }
-
-        public popoverPresentationControllerDidDismissPopover(popoverPresentationController: UIPopoverPresentationController) {
-            const owner = this.owner.get();
-            if (owner && typeof this.closedCallback === "function") {
-                this.closedCallback();
-            }
         }
     }
 }

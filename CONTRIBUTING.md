@@ -266,6 +266,7 @@ tag the release and update the CHANGELOG.md. Don't forget to check the auto-gene
 cd nativescript-core
 npm --no-git-tag-version version [major|minor|patch] -m "release: cut the %s release"
 cd ..
+```
 
 5. Execute [`npm version`](https://docs.npmjs.com/cli/version) to bump the version of `tns-core-modules`, 
 tag the release and update the CHANGELOG.md. Don't forget to check the auto-generated CHANGELOG.md 

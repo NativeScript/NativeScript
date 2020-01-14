@@ -93,7 +93,9 @@ class UITabBarControllerImpl extends UITabBarController {
 
         if (majorVersion >= 13) {
             const owner = this._owner.get();
-            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            if (owner &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
                 owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
             }
         }
@@ -155,23 +157,6 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 
         const owner = this._owner.get();
         if (owner) {
-            if (tabBarController.viewControllers) {
-                const position = tabBarController.viewControllers.indexOfObject(viewController);
-                if (position !== NSNotFound) {
-                    const prevPosition = owner.selectedIndex;
-                    const tabStripItems = owner.tabStrip && owner.tabStrip.items;
-                    if (tabStripItems) {
-                        if (tabStripItems[position]) {
-                            tabStripItems[position]._emit(TabStripItem.selectEvent);
-                        }
-
-                        if (tabStripItems[prevPosition]) {
-                            tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
-                        }
-                    }
-                }
-            }
-
             owner._onViewControllerShown(viewController);
         }
 
@@ -354,6 +339,17 @@ export class BottomNavigation extends TabNavigationBase {
 
             newItem.canBeLoaded = true;
             newItem.loadView(newItem.content);
+        }
+
+        const tabStripItems = this.tabStrip && this.tabStrip.items;
+        if (tabStripItems) {
+            if (tabStripItems[newIndex]) {
+                tabStripItems[newIndex]._emit(TabStripItem.selectEvent);
+            }
+
+            if (tabStripItems[oldIndex]) {
+                tabStripItems[oldIndex]._emit(TabStripItem.unselectEvent);
+            }
         }
 
         super.onSelectedIndexChanged(oldIndex, newIndex);

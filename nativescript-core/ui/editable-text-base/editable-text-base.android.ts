@@ -248,8 +248,9 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     [keyboardTypeProperty.getDefault](): number {
         return this.nativeTextViewProtected.getInputType();
     }
-    [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | number) {
+    [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | "integer" | number) {
         let newInputType;
+
         switch (value) {
             case "datetime":
                 newInputType = android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL;
@@ -269,6 +270,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
             case "email":
                 newInputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+                break;
+
+            case "integer":
+                newInputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
                 break;
 
             default:

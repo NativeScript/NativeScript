@@ -5,3 +5,10 @@
     height: 80;
     font-size: 6;
 }
+
+.html-view {
+    font-size: 10;
+    link-color: red;
+    color: green;
+    font-family: 'Courier New', Courier, monospace;
+}

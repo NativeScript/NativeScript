@@ -287,9 +287,20 @@ class UIViewControllerImpl extends UIViewController {
 
         if (majorVersion >= 13) {
             const owner = this._owner.get();
-            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            if (owner &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
                 owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
             }
+        }
+    }
+
+    public get preferredStatusBarStyle(): UIStatusBarStyle {
+        const owner = this._owner.get();
+        if (owner) {
+            return owner.statusBarStyle === "dark" ? UIStatusBarStyle.LightContent : UIStatusBarStyle.Default;
+        } else {
+            return UIStatusBarStyle.Default;
         }
     }
 }
@@ -298,7 +309,7 @@ export class Page extends PageBase {
     nativeViewProtected: UIView;
     viewController: UIViewControllerImpl;
 
-    private _backgroundColor = majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+    private _backgroundColor = (majorVersion <= 12 && !UIColor.systemBackgroundColor) ? UIColor.whiteColor : UIColor.systemBackgroundColor;
     private _ios: UIViewControllerImpl;
     public _presentedViewController: UIViewController; // used when our page present native viewController without going through our abstraction.
 
