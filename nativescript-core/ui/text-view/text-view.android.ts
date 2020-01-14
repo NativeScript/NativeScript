@@ -22,6 +22,7 @@ export class TextView extends TextViewBaseCommon {
     [maxLinesProperty.setNative](value: number) {
       if (value <= 0) {
         this.nativeTextViewProtected.setMaxLines(Number.MAX_VALUE);
+
         return;
       }
 
