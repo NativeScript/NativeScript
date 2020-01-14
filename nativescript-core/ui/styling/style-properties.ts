@@ -472,6 +472,15 @@ function convertToPaddings(this: void, value: string | Length): [CssProperty<any
 export const rotateProperty = new CssAnimationProperty<Style, number>({ name: "rotate", cssName: "rotate", defaultValue: 0, valueConverter: parseFloat });
 rotateProperty.register(Style);
 
+export const rotateXProperty = new CssAnimationProperty<Style, number>({ name: "rotateX", cssName: "rotatex", defaultValue: 0, valueConverter: parseFloat });
+rotateXProperty.register(Style);
+
+export const rotateYProperty = new CssAnimationProperty<Style, number>({ name: "rotateY", cssName: "rotatey", defaultValue: 0, valueConverter: parseFloat });
+rotateYProperty.register(Style);
+
+export const perspectiveProperty = new CssAnimationProperty<Style, number>({ name: "perspective", cssName: "perspective", defaultValue: 1000, valueConverter: parseFloat });
+perspectiveProperty.register(Style);
+
 export const scaleXProperty = new CssAnimationProperty<Style, number>({ name: "scaleX", cssName: "scaleX", defaultValue: 1, valueConverter: parseFloat });
 scaleXProperty.register(Style);
 
@@ -500,6 +509,8 @@ const transformProperty = new ShorthandProperty<Style, string>({
         let translateX = this.translateX;
         let translateY = this.translateY;
         let rotate = this.rotate;
+        let rotateX = this.rotateX;
+        let rotateY = this.rotateY;
         let result = "";
         if (translateX !== 0 || translateY !== 0) {
             result += `translate(${translateX}, ${translateY}) `;
@@ -507,7 +518,8 @@ const transformProperty = new ShorthandProperty<Style, string>({
         if (scaleX !== 1 || scaleY !== 1) {
             result += `scale(${scaleX}, ${scaleY}) `;
         }
-        if (rotate !== 0) {
+        if (rotateX !== 0 || rotateY !== 0 || rotate !== 0) {
+            result += `rotate(${rotateX}, ${rotateY}, ${rotate}) `;
             result += `rotate (${rotate})`;
         }
 
@@ -519,13 +531,16 @@ transformProperty.register(Style);
 
 const IDENTITY_TRANSFORMATION = {
     translate: { x: 0, y: 0 },
-    rotate: 0,
+    rotate: { x: 0, y: 0, z: 0 },
     scale: { x: 1, y: 1 },
 };
 
 const TRANSFORM_SPLITTER = new RegExp(/\s*(.+?)\((.*?)\)/g);
 const TRANSFORMATIONS = Object.freeze([
     "rotate",
+    "rotateX",
+    "rotateY",
+    "rotate3d",
     "translate",
     "translate3d",
     "translateX",
@@ -547,7 +562,28 @@ const STYLE_TRANSFORMATION_MAP = Object.freeze({
     "translateX": ({ x }) => ({ property: "translate", value: { x, y: IDENTITY_TRANSFORMATION.translate.y } }),
     "translateY": ({ y }) => ({ property: "translate", value: { y, x: IDENTITY_TRANSFORMATION.translate.x } }),
 
-    "rotate": value => ({ property: "rotate", value }),
+    "rotate3d": value => ({ property: "rotate", value }),
+    "rotateX": (x) => ({
+        property: "rotate", value: {
+            x,
+            y: IDENTITY_TRANSFORMATION.rotate.y,
+            z: IDENTITY_TRANSFORMATION.rotate.z
+        }
+    }),
+    "rotateY": (y) => ({
+        property: "rotate", value: {
+            x: IDENTITY_TRANSFORMATION.rotate.x,
+            y,
+            z: IDENTITY_TRANSFORMATION.rotate.z
+        }
+    }),
+    "rotate": (z) => ({
+        property: "rotate", value: {
+            x: IDENTITY_TRANSFORMATION.rotate.x,
+            y: IDENTITY_TRANSFORMATION.rotate.y,
+            z
+        }
+    }),
 });
 
 function convertToTransform(value: string): [CssProperty<any, any>, any][] {
@@ -564,7 +600,9 @@ function convertToTransform(value: string): [CssProperty<any, any>, any][] {
         [scaleXProperty, scale.x],
         [scaleYProperty, scale.y],
 
-        [rotateProperty, rotate],
+        [rotateProperty, rotate.z],
+        [rotateXProperty, rotate.x],
+        [rotateYProperty, rotate.y],
     ];
 }
 
@@ -619,13 +657,13 @@ function normalizeTransformation({ property, value }: Transformation): Transform
 function convertTransformValue(property: string, stringValue: string)
     : TransformationValue {
 
-    const [x, y = x] = stringValue.split(",").map(parseFloat);
+    const [x, y = x, z = y] = stringValue.split(",").map(parseFloat);
 
-    if (property === "rotate") {
+    if (property === "rotate" || property === "rotateX" || property === "rotateY") {
         return stringValue.slice(-3) === "rad" ? radiansToDegrees(x) : x;
     }
 
-    return { x, y };
+    return { x, y, z };
 }
 
 // Background properties.

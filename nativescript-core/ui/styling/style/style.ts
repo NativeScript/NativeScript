@@ -86,6 +86,10 @@ export class Style extends Observable implements StyleDefinition {
     public backgroundInternal: Background;
 
     public rotate: number;
+    public rotateX: number;
+    public rotateY: number;
+    public perspective: number;
+
     public scaleX: number;
     public scaleY: number;
     public translateX: dip;

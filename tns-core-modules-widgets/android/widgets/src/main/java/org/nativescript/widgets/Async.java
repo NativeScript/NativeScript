@@ -525,6 +525,7 @@ public class Async {
                     // apply timeout
                     if (options.timeout > 0) {
                         connection.setConnectTimeout(options.timeout);
+                        connection.setReadTimeout(options.timeout);
                     }
 
                     // don't follow redirect (30x) responses; by default, HttpURLConnection follows them.

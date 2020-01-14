@@ -576,6 +576,14 @@
                 public static getRotate(view: android.view.View): number;
                 public static setRotate(view: android.view.View, value: number): void;
 
+                public static getRotateX(view: android.view.View): number;
+                public static setRotateX(view: android.view.View, value: number): void;
+
+                public static getRotateY(view: android.view.View): number;
+                public static setRotateY(view: android.view.View, value: number): void;
+
+                public static setPerspective(view: android.view.View, value: number): void;
+
                 public static getScaleX(view: android.view.View): number;
                 public static setScaleX(view: android.view.View, value: number): void;
 
