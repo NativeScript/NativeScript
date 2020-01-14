@@ -157,6 +157,10 @@ export class Color implements definition.Color {
     public toString(): string {
         return this.hex;
     }
+
+    public static fromIosColor(value: UIColor): Color {
+        return undefined;
+    }
 }
 
 function isRgbOrRgba(value: string): boolean {

@@ -525,6 +525,8 @@ export class CssState {
         const view = this.viewRef.get();
         if (view) {
             view.style["keyframe:rotate"] = unsetValue;
+            view.style["keyframe:rotateX"] = unsetValue;
+            view.style["keyframe:rotateY"] = unsetValue;
             view.style["keyframe:scaleX"] = unsetValue;
             view.style["keyframe:scaleY"] = unsetValue;
             view.style["keyframe:translateX"] = unsetValue;
