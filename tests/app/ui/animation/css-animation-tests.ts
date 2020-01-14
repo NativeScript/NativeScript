@@ -122,7 +122,7 @@ export function test_ReadTransformAllSet() {
     const animation = createAnimationFromCSS(css, "test");
     const { rotate, scale, translate } = getTransformsValues(animation.keyframes[0].declarations);
 
-    TKUnit.assertAreClose(rotate, 10, DELTA);
+    TKUnit.assertAreClose(rotate.z, 10, DELTA);
 
     TKUnit.assertAreClose(scale.x, 5, SCALE_DELTA);
     TKUnit.assertAreClose(scale.y, 1, SCALE_DELTA);
@@ -136,7 +136,7 @@ export function test_ReadTransformNone() {
     const animation = createAnimationFromCSS(css, "test");
     const { rotate, scale, translate } = getTransformsValues(animation.keyframes[0].declarations);
 
-    TKUnit.assertEqual(rotate, 0);
+    TKUnit.assertEqual(rotate.z, 0);
 
     TKUnit.assertEqual(scale.x, 1);
     TKUnit.assertEqual(scale.y, 1);
@@ -271,7 +271,7 @@ export function test_ReadRotate() {
     const { rotate } = getTransforms(animation.keyframes[0].declarations);
 
     TKUnit.assertEqual(rotate.property, "rotate");
-    TKUnit.assertAreClose(rotate.value, 5, DELTA);
+    TKUnit.assertAreClose(rotate.value.z, 5, DELTA);
 }
 
 export function test_ReadRotateDeg() {
@@ -280,7 +280,7 @@ export function test_ReadRotateDeg() {
     const { rotate } = getTransforms(animation.keyframes[0].declarations);
 
     TKUnit.assertEqual(rotate.property, "rotate");
-    TKUnit.assertAreClose(rotate.value, 45, DELTA);
+    TKUnit.assertAreClose(rotate.value.z, 45, DELTA);
 }
 
 export function test_ReadRotateRad() {
@@ -289,7 +289,7 @@ export function test_ReadRotateRad() {
     const { rotate } = getTransforms(animation.keyframes[0].declarations);
 
     TKUnit.assertEqual(rotate.property, "rotate");
-    TKUnit.assertAreClose(rotate.value, 45, DELTA);
+    TKUnit.assertAreClose(rotate.value.z, 45, DELTA);
 }
 
 export function test_ReadAnimationWithUnsortedKeyframes() {

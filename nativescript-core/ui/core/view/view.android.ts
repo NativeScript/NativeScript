@@ -10,17 +10,18 @@ import {
 } from "./view-common";
 
 import {
-    Length, PercentLength, Visibility, HorizontalAlignment, VerticalAlignment,
+    perspectiveProperty, Length, PercentLength, Visibility, HorizontalAlignment, VerticalAlignment,
     visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
     minWidthProperty, minHeightProperty, widthProperty, heightProperty,
     marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty,
-    rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
+    rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
     zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty
 } from "../../styling/style-properties";
 
 import { Background, ad as androidBackground } from "../../styling/background";
 import { profile } from "../../../profiling";
 import { topmost } from "../../frame/frame-stack";
+import { screen } from "../../../platform";
 import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
 import { device } from "../../../platform";
 import lazy from "../../../utils/lazy";
@@ -909,6 +910,20 @@ export class View extends ViewCommon {
 
     [rotateProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setRotate(this.nativeViewProtected, float(value));
+    }
+
+    [rotateXProperty.setNative](value: number) {
+        org.nativescript.widgets.ViewHelper.setRotateX(this.nativeViewProtected, float(value));
+    }
+
+    [rotateYProperty.setNative](value: number) {
+        org.nativescript.widgets.ViewHelper.setRotateY(this.nativeViewProtected, float(value));
+    }
+
+    [perspectiveProperty.setNative](value: number) {
+        const scale = screen.mainScreen.scale;
+        const distance = value * scale;
+        org.nativescript.widgets.ViewHelper.setPerspective(this.nativeViewProtected, float(distance));
     }
 
     [scaleXProperty.setNative](value: number) {

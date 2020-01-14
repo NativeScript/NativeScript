@@ -155,5 +155,14 @@ export module ios {
      */
     export function getVisibleViewController(rootViewController: any/* UIViewController*/): any/* UIViewController*/;
 
-    export class UIDocumentInteractionControllerDelegateImpl {}
+    /**
+     * 
+     * @param transform Applies a rotation transform over X,Y and Z axis
+     * @param x Rotation over X axis in degrees
+     * @param y Rotation over Y axis in degrees
+     * @param z Rotation over Z axis in degrees
+     */
+    export function applyRotateTransform(transform: any /* CATransform3D*/, x: number, y: number, z: number): any /* CATransform3D*/;
+
+    export class UIDocumentInteractionControllerDelegateImpl { }
 }
