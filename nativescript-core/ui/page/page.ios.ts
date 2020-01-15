@@ -93,6 +93,7 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
+        // console.log("---> viewWillAppear", owner);
         const frame = this.navigationController ? (<any>this.navigationController).owner : null;
         const newEntry = this[ENTRY];
 
@@ -124,6 +125,9 @@ class UIViewControllerImpl extends UIViewController {
         // Pages in backstack are unloaded so raise loaded here.
         if (!owner.isLoaded) {
             owner.callLoaded();
+        } else {
+            // console.log(" ------>  MANUAL UPDATE!")
+            owner.actionBar.update();
         }
     }
 
@@ -136,6 +140,7 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
+        // console.log("---> viewDidAppear", owner);
         const navigationController = this.navigationController;
         const frame: Frame = navigationController ? (<any>navigationController).owner : null;
         // Skip navigation events if modal page is shown.
@@ -192,7 +197,8 @@ class UIViewControllerImpl extends UIViewController {
         if (!owner) {
             return;
         }
-
+        
+        console.log("---> viewWillDisappear", owner);
         // Cache presentedViewController if any. We don't want to raise
         // navigation events in case of presenting view controller.
         if (!owner._presentedViewController) {
@@ -223,7 +229,8 @@ class UIViewControllerImpl extends UIViewController {
         if (!page || page.modal || page._presentedViewController) {
             return;
         }
-
+        
+        console.log("---> viewDidDisappear", page);
         // Forward navigation does not remove page from frame so we raise unloaded manually.
         if (page.isLoaded) {
             page.callUnloaded();
@@ -343,6 +350,7 @@ export class Page extends PageBase {
     }
 
     public onLoaded(): void {
+        // console.log(this, " onLoaded");
         super.onLoaded();
         if (this.hasActionBar) {
             this.actionBar.update();
