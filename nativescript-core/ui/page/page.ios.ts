@@ -93,7 +93,6 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        // console.log("---> viewWillAppear", owner);
         const frame = this.navigationController ? (<any>this.navigationController).owner : null;
         const newEntry = this[ENTRY];
 
@@ -126,7 +125,11 @@ class UIViewControllerImpl extends UIViewController {
         if (!owner.isLoaded) {
             owner.callLoaded();
         } else {
-            // console.log(" ------>  MANUAL UPDATE!")
+            // Note: Handle the case of canceled backstack navigation. (https://github.com/NativeScript/NativeScript/issues/7430)
+            // In this case viewWillAppear will be executed for the previous page and it will change the ActionBar
+            // because changes happen in an interactive transition - IOS will animate between the the states.
+            // If canceled - viewWillAppear will be called for the current page(which is already loaded) and we need to
+            // update the action bar explicitly, so that it is not left styles as the previous page.
             owner.actionBar.update();
         }
     }
@@ -140,7 +143,6 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        // console.log("---> viewDidAppear", owner);
         const navigationController = this.navigationController;
         const frame: Frame = navigationController ? (<any>navigationController).owner : null;
         // Skip navigation events if modal page is shown.
@@ -198,7 +200,6 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
         
-        console.log("---> viewWillDisappear", owner);
         // Cache presentedViewController if any. We don't want to raise
         // navigation events in case of presenting view controller.
         if (!owner._presentedViewController) {
@@ -230,7 +231,6 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
         
-        console.log("---> viewDidDisappear", page);
         // Forward navigation does not remove page from frame so we raise unloaded manually.
         if (page.isLoaded) {
             page.callUnloaded();
