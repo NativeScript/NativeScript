@@ -350,7 +350,6 @@ export class Page extends PageBase {
     }
 
     public onLoaded(): void {
-        // console.log(this, " onLoaded");
         super.onLoaded();
         if (this.hasActionBar) {
             this.actionBar.update();
