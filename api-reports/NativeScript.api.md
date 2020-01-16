@@ -2476,6 +2476,8 @@ export class TextView extends EditableTextBase {
     android: any /* android.widget.EditText */;
 
     ios: any /* UITextView */;
+
+    maxLines: number;
 }
 
 // @public
