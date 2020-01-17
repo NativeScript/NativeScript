@@ -1916,26 +1916,30 @@ export class Slider extends View {
 
 // @public
 export class Span extends ViewBase {
-    public backgroundColor: Color;
+     public backgroundColor: Color;
 
-    public color: Color;
+     public color: Color;
 
-    public fontFamily: string;
+     public fontFamily: string;
 
-    public fontSize: number;
+     public fontSize: number;
 
-    public fontStyle: FontStyle;
+     public fontStyle: FontStyle;
 
-    public fontWeight: FontWeight;
+     public fontWeight: FontWeight;
 
-    // (undocumented)
-    _setTextInternal(value: string): void;
+     public static linkTapEvent: string;
 
-    public text: string;
+     // (undocumented)
+     _setTextInternal(value: string): void;
 
-    public textDecoration: TextDecoration;
-    //@endprivate
-}
+     public readonly tappable: boolean;
+
+     public text: string;
+
+     public textDecoration: TextDecoration;
+     //@endprivate
+ }
 
 // @public
 export class StackLayout extends LayoutBase {
