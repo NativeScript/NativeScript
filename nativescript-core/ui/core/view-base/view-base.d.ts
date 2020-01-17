@@ -310,7 +310,7 @@ export abstract class ViewBase extends Observable {
     /**
      * Invalidates the layout of the view and triggers a new layout pass.
      */
-    public requestLayout(calledFromParent?:boolean): void;
+    public requestLayout(calledFromChild?:boolean): void;
 
     /**
      * Iterates over children of type ViewBase.

@@ -819,7 +819,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
     }
 
-    public requestLayout(calledFromChild): void {
+    public requestLayout(calledFromChild?:boolean): void {
         this._isLayoutValid = false;
         super.requestLayout(calledFromChild);
     }

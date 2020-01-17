@@ -56,7 +56,7 @@ export class View extends ViewCommon implements ViewDefinition {
         return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
     }
 
-    public requestLayout(calledFromChild): void {
+    public requestLayout(calledFromChild?:boolean): void {
         const willBeCalledOnParent = (!calledFromChild || ((this.width === "auto" || this.height === "auto")));
         this._privateFlags |= PFLAG_FORCE_LAYOUT;
         if (!willBeCalledOnParent) {

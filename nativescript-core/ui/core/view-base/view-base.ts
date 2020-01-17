@@ -566,6 +566,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         // Default implementation for non View instances (like TabViewItem).
         const parent = this.parent;
         if (parent && (!calledFromChild || this.style.width === "auto" || this.style.height === "auto" || parent.style.width === "auto" || parent.style.height === "auto")) {
+            // if parent view depends on child view we need to force call requestLayout on parent
             parent.requestLayout(true);
         }
     }
