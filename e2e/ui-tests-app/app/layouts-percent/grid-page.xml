@@ -1,0 +1,18 @@
+﻿<Page loaded="onLoaded">
+  <GridLayout rows="auto, 50, auto, 50" columns="auto, 50, auto, 50">
+    <!-- View Properties -->
+    <Button text="wh" tap="{{ onWidthHeight }}" id="widthHeight" automationText="widthHeight" style="background-color: lightpink;" width="25%" height="25%" />
+    <Button text="n" tap="{{ onMinWidthMinHeight }}" col="1" id="minWidthMinHeight" automationText="minWidthMinHeight" style="background-color: lightblue;" />
+    <Button text="m" tap="{{ onMargins }}" col="2" id="margins" automationText="margins" style="background-color: lightsalmon;" />
+    <Button text="a" tap="{{ onAlignments }}" row="1" id="alignments" automationText="alignments" style="background-color: lightblue;" />
+    <Button text="c" tap="{{ onCollapse }}" row="1" col="1" id="collapse" automationText="collapse" style="background-color: lightblue;" />
+    <Button text="v" tap="{{ onVisibile }}" row="1" col="2" id="visible" automationText="visible" style="background-color: lightblue;" />
+    <!-- Layout Properties -->
+    <Button text="p" tap="{{ onPaddings }}" row="2" id="paddings" automationText="paddings" style="background-color: lightgray;" />
+    <Button text="all" tap="{{ onAllProperties }}" row="2" col="1" id="allProperties" automationText="allProperties" style="background-color: aquamarine;" />
+    <StackLayout row="2" col="2" width="25%" height="25%">
+      <Button text="1" tap="onAddRowColumn" id="addRowColumn" automationText="addRowColumn" style="background-color: lightgreen;" width="50%" height="50%" horizontalAlignment="left" />
+      <Button text="0" tap="onRemoveRowColumn" id="removeRowColumn" automationText="removeRowColumn" style="background-color: lightgreen;" width="50%" height="50%" horizontalAlignment="right" />
+    </StackLayout>
+  </GridLayout>
+</Page>

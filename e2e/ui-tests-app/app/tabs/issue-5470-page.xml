@@ -1,0 +1,27 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+
+    <ActionBar title="Tabs issue 5470" icon="" class="action-bar">
+    </ActionBar>
+
+    <Tabs automationText="tabNavigation"  >
+        <TabStrip>
+            <TabStripItem title="Tab1"></TabStripItem>
+            <TabStripItem title="Tab2"></TabStripItem>
+        </TabStrip>
+
+        <TabContentItem>
+            <GridLayout rows="*, auto" columns="*">
+                <StackLayout row="0" backgroundColor="lightblue"></StackLayout>
+                <StackLayout row="1" backgroundColor="green" height="50"></StackLayout>
+            </GridLayout>
+        </TabContentItem>
+
+        <TabContentItem>
+            <GridLayout rows="*, auto" columns="*">
+                <StackLayout row="0" backgroundColor="lightblue"></StackLayout>
+                <StackLayout row="1" backgroundColor="red" height="50"></StackLayout>
+            </GridLayout>
+        </TabContentItem>
+    </Tabs>
+
+</Page>

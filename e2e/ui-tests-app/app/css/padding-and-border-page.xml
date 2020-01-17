@@ -1,0 +1,25 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <StackLayout id="container" class="padding green">
+
+        <Label text="Label padding" class="padding"/>
+        <TextField text="TextField padding" class="padding"/>
+        <TextView text="TextView padding" class="padding"/>
+        <Button text="Button padding" class="padding"/>
+
+        <Label text="Label padding yellow" class="padding yellow"/>
+        <TextField text="TextField padding yellow" class="padding yellow"/>
+        <TextView text="TextView padding yellow" class="padding yellow"/>
+        <Button text="Button padding yellow" class="padding yellow"/>
+
+        <Label text="Label border" class="border"/>
+        <TextField text="TextField border" class="border"/>
+        <TextView text="TextView border" class="border"/>
+        <Button text="Button border" class="border"/>
+
+        <Label text="Label padding border" class="padding border"/>
+        <TextField text="TextField padding border" class="padding border"/>
+        <TextView text="TextView padding border" class="padding border"/>
+        <Button text="Button padding border" class="padding border"/>
+
+    </StackLayout>
+</Page>

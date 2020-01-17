@@ -1,14 +1,14 @@
-import * as btns from "tns-core-modules/ui/button";
-import * as pages from "tns-core-modules/ui/page";
-import * as stacks from "tns-core-modules/ui/layouts/stack-layout";
-import * as scroll from "tns-core-modules/ui/scroll-view";
-import * as textView from "tns-core-modules/ui/text-view";
-import * as labels from "tns-core-modules/ui/label";
-import * as trace from "tns-core-modules/trace";
-import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
-import * as sliders from "tns-core-modules/ui/slider";
-import * as switches from "tns-core-modules/ui/switch";
-import * as bindable from "tns-core-modules/ui/core/bindable";
+import * as btns from "@nativescript/core/ui/button";
+import * as pages from "@nativescript/core/ui/page";
+import * as stacks from "@nativescript/core/ui/layouts/stack-layout";
+import * as scroll from "@nativescript/core/ui/scroll-view";
+import * as textView from "@nativescript/core/ui/text-view";
+import * as labels from "@nativescript/core/ui/label";
+import * as trace from "@nativescript/core/trace";
+import * as gridModule from "@nativescript/core/ui/layouts/grid-layout";
+import * as sliders from "@nativescript/core/ui/slider";
+import * as switches from "@nativescript/core/ui/switch";
+import * as bindable from "@nativescript/core/ui/core/bindable";
 
 trace.enable();
 //trace.setCategories(trace.categories.Style + " ," + trace.categories.Binding);
@@ -67,7 +67,7 @@ export function createPage() {
             targetProperty: desc.name,
         };
         control.bind(options, slider);
-    };
+    }
 
     function createBooleanPropertyUI(desc: BoolPropertyDescriptor) {
         var lbl = new labels.Label();
@@ -85,7 +85,7 @@ export function createPage() {
             targetProperty: desc.name,
         };
         control.bind(options, sw);
-    };
+    }
 
     function createStringPropertyUI(desc: StringPropertyDescriptor) {
         var lbl = new labels.Label();
@@ -102,7 +102,7 @@ export function createPage() {
             targetProperty: desc.name,
         };
         control.bind(options, txt);
-    };
+    }
 
     createNumericPropertyUI({ name: "style.minWidth", value: 30, min: 10, max: 300 });
     createNumericPropertyUI({ name: "style.width", value: 100, min: 10, max: 300 });
@@ -121,6 +121,7 @@ export function createPage() {
     createStringPropertyUI({ name: "className", value: "testClass" });
 
     page.css = ".testClass { background-color: LightGreen }";
+
     return page;
 }
 //export var Page = page;

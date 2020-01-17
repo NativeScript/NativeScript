@@ -1,0 +1,26 @@
+#body {
+    flex-flow: row wrap;
+}
+
+.flex-item {
+    align-items: center;
+    justify-content: center;
+}
+
+.header,
+.footer {
+    flex: 1;
+    width: 100%;
+    background-color: lightgreen;
+}
+
+.main {
+    flex: 5;
+    height: 60%;
+    background-color: lightsalmon;
+}
+
+.sidebar {
+    flex: 1;
+    background-color: lightblue;
+}

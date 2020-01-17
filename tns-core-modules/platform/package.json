@@ -1,6 +1,0 @@
-{
-  "name" : "platform",
-  "main" : "platform",
-  "types" : "platform.d.ts",
-  "nativescript": {}
-}

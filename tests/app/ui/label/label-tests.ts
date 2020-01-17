@@ -1,32 +1,35 @@
-﻿import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 
 //>> label-require
-import * as LabelModule from "tns-core-modules/ui/label";
+import * as LabelModule from "@nativescript/core/ui/label";
 // << label-require
 
-import * as types from "tns-core-modules/utils/types";
-import * as colorModule from "tns-core-modules/color";
-import * as utils from "tns-core-modules/utils/utils";
-import * as observableModule from "tns-core-modules/data/observable";
-import * as bindable from "tns-core-modules/ui/core/bindable";
-import * as enums from "tns-core-modules/ui/enums";
+import * as types from "@nativescript/core/utils/types";
+import * as colorModule from "@nativescript/core/color";
+import * as utils from "@nativescript/core/utils/utils";
+import * as observableModule from "@nativescript/core/data/observable";
+import * as bindable from "@nativescript/core/ui/core/bindable";
+import * as enums from "@nativescript/core/ui/enums";
 import * as labelTestsNative from "./label-tests-native";
-import * as fs from "tns-core-modules/file-system";
+import * as fs from "@nativescript/core/file-system";
 
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
-import { isIOS, isAndroid } from "tns-core-modules/platform";
-import { Label } from "tns-core-modules/ui/label";
-import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
-import * as helper from "../helper";
-import { Span, FormattedString } from "tns-core-modules/text/formatted-string";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
+import { isIOS, isAndroid } from "@nativescript/core/platform";
+import { Label } from "@nativescript/core/ui/label";
+import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
+import * as helper from "../../ui-helper";
+import { Span, FormattedString } from "@nativescript/core/text/formatted-string";
+
+const testDir = "ui/label";
 
 export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
     public create(): LabelModule.Label {
         const label = new LabelModule.Label();
         label.text = "Label";
+
         return label;
     }
 
@@ -525,7 +528,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         view.id = "testLabel";
         page.addCss("#testLabel { text-align: " + this.expectedTextAlignment + "; }");
-        page.addCssFile(fs.path.join(__dirname, "label-tests.css"));
+        page.addCssFile(fs.path.join(testDir, "label-tests-page.css"));
 
         const actualResult = view.style.textAlignment;
         // actual result is taken from #testLabel tag, because it has a greater priority (id vs type).
@@ -559,7 +562,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         this.waitUntilTestElementIsLoaded();
 
         view.id = "testLabel";
-        page.addCssFile(fs.path.join(__dirname, "label-tests-wrong.css"));
+        page.addCssFile(fs.path.join(testDir, "label-tests-wrong-page.css"));
         TKUnit.assertNotEqual(this.errorMessage, undefined);
     }
 
@@ -646,6 +649,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new GridLayout();
             host.width = 100;
             host.height = 100;
+
             return host;
         });
     }
@@ -656,6 +660,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new GridLayout();
             host.width = 100;
             host.height = 100;
+
             return host;
         });
     }
@@ -666,9 +671,10 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new StackLayout();
             label.width = 100;
             label.height = 100;
+
             return host;
         });
-    };
+    }
 
     public test_ChangingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
         this.requestLayoutFixture(false, "Hello World", label => {
@@ -676,33 +682,37 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new StackLayout();
             label.width = 100;
             label.height = 100;
+
             return host;
         });
-    };
+    }
 
     public test_SettingTextWhenSizedToContentShouldInvalidate() {
         this.requestLayoutFixture(true, "", label => {
             label.textWrap = false;
             let host = new StackLayout();
             host.orientation = "horizontal";
+
             return host;
         });
-    };
+    }
 
     public test_ChangingTextWhenSizedToContentShouldInvalidate() {
         this.requestLayoutFixture(true, "Hello World", label => {
             label.textWrap = false;
             let host = new StackLayout();
             host.orientation = "horizontal";
+
             return host;
         });
-    };
+    }
 
     public test_SettingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldRequestLayout() {
         this.requestLayoutFixture(true, "", label => {
             label.textWrap = false;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -712,6 +722,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = false;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -721,6 +732,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = true;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -730,10 +742,11 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = true;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
-    
+
     public test_FormattedText_ShouldNotCrash_WheRemovedFromSpan() {
         const label = this.testView;
         label.color = new colorModule.Color("red");
@@ -741,13 +754,13 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         const span = new Span();
         span.text = "test";
-        
+
         const formattedString = new FormattedString();
         formattedString.spans.push(span);
 
         label._addChildFromBuilder("FormattedString", formattedString);
         label._removeView(formattedString);
-    };
+    }
 }
 
 export function createTestCase(): LabelTest {

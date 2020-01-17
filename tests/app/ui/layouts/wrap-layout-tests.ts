@@ -1,12 +1,12 @@
-﻿import * as TKUnit from "../../TKUnit";
-import { Label } from "tns-core-modules/ui/label";
+import * as TKUnit from "../../tk-unit";
+import { Label } from "@nativescript/core/ui/label";
 import * as layoutHelper from "./layout-helper";
 import * as testModule from "../../ui-test";
 import * as commonTests from "./common-layout-tests";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 
 // >> wrap-layout-require
-import * as wrapLayoutModule from "tns-core-modules/ui/layouts/wrap-layout";
+import * as wrapLayoutModule from "@nativescript/core/ui/layouts/wrap-layout";
 // << wrap-layout-require
 
 export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayout> {
@@ -231,7 +231,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         layoutHelper.assertMeasure(btn2, 80, 50);
 
         // There should be no space left for the button on the first row,
-        // because for the padding (200 - 100 - 30) = 70 button wants 80  
+        // because for the padding (200 - 100 - 30) = 70 button wants 80
         layoutHelper.assertLayout(btn1, 0, 0, 100, 50, "button1");
         layoutHelper.assertLayout(btn2, 0, 50, 80, 50, "button2");
     }
@@ -258,7 +258,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         layoutHelper.assertMeasure(btn2, 50, 80);
 
         // There should be no space left for the button on the first row,
-        // because of the padding (200 - 100 - 30) = 70 button wants 80  
+        // because of the padding (200 - 100 - 30) = 70 button wants 80
         layoutHelper.assertLayout(btn1, 0, 0, 50, 100, "button1");
         layoutHelper.assertLayout(btn2, 50, 0, 50, 80, "button2");
     }

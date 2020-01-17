@@ -1,0 +1,22 @@
+<Page>
+    <GridLayout rows="*,*,*,*,*,*" columns="*,*,*">
+        <StackLayout  id="s0" row="0" col="0"/>
+        <StackLayout  id="s1" row="0" col="1"/>
+        <StackLayout  id="s2" row="0" col="2"/>
+        <StackLayout  id="s3" row="1" col="0"/>
+        <StackLayout  id="s4" row="1" col="1"/>
+        <StackLayout  id="s5" row="1" col="2"/>
+        <StackLayout  id="s6" row="2" col="0"/>
+        <StackLayout  id="s7" row="2" col="1"/>
+        <StackLayout  id="s8" row="2" col="2"/>
+        <StackLayout  id="s9" row="3" col="0"/>
+        <StackLayout id="s10" row="3" col="1"/>
+        <StackLayout id="s11" row="3" col="2"/>
+        <StackLayout id="s12" row="4" col="0"/>
+        <StackLayout id="s13" row="4" col="1"/>
+        <StackLayout id="s14" row="4" col="2"/>
+        <StackLayout id="s15" row="5" col="0"/>
+        <StackLayout id="s16" row="5" col="1"/>
+        <StackLayout id="s17" row="5" col="2"/>
+    </GridLayout>
+</Page>

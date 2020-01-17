@@ -1,0 +1,11 @@
+<Page
+    xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+    <StackLayout class="p-20">
+        <Button text="disable" tap="toggle" id="toggleUserInteraction" automationText="toggleUserInteraction"/>
+        <GridLayout rows="100 50 100" id="layoutid">
+            <Button id="testBtn" automationText="testBtn" row="0" isUserInteractionEnabled="{{userinteraction}}" text="test" tap="test" />
+            <Label id="testLabel" automationText="testLabel" row="1" text="test" isUserInteractionEnabled="{{userinteraction}}" tap="test"/>
+            <StackLayout id="testStackLayout" automationText="testStackLayout" row="2" isUserInteractionEnabled="{{userinteraction}}" backgroundColor="red" tap="test"></StackLayout>
+        </GridLayout>
+    </StackLayout>
+</Page>

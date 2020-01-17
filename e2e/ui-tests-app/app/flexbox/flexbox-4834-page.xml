@@ -1,0 +1,55 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+
+    <StackLayout width="200" class="p-20">
+
+        <!-- Android -->
+        <FlexboxLayout>
+            <Label textWrap="true" text="a b c d e f g h i j k l m n o p q r s t" />
+        </FlexboxLayout>
+
+        <FlexboxLayout>
+            <Image src="https://placehold.it/40x40" />
+            <Label textWrap="true" text="a b c d e f g h i j k l m n o p" />
+        </FlexboxLayout>
+
+        <FlexboxLayout flexWrap="wrap">
+            <Label textWrap="true" text="a b c d e f g h i j k l m n o p q r s t" />
+            <Label textWrap="true" text="a b c d e f g h i j k l m n o p q r s t" />
+        </FlexboxLayout>
+
+
+        <!-- iOS -->
+        <FlexboxLayout>
+            <Label textWrap="true" text="a b c d e f g h i j k l m n o p" />
+        </FlexboxLayout>
+
+        <FlexboxLayout>
+            <Label textWrap="true" text="a b c d e f g h i j k l m n o p q" />
+        </FlexboxLayout>
+
+        <FlexboxLayout>
+            <Image src="https://placehold.it/40x40" />
+            <Label textWrap="true" text="a b c d e f g h i j k l m" />
+        </FlexboxLayout>
+
+        <FlexboxLayout>
+            <Image src="https://placehold.it/40x40" />
+            <Label textWrap="true" text="a b c d e f g h i j k l m n" />
+        </FlexboxLayout>
+
+        <FlexboxLayout flexWrap="wrap">
+            <Label textWrap="true" text="a b c d e f g h i j k l m n o p" />
+            <Label textWrap="true" text="a b c d e f g h i j k l m n o p q" />
+        </FlexboxLayout>
+
+
+        <!-- Common -->
+        <FlexboxLayout alignItems="flex-start">
+            <Label textWrap="true" text="a b" style="flex-shrink:0;" />
+            <Label textWrap="true" text="a b c d e f g h i" />
+            <Label textWrap="true" text="a b c d e f g h i j" />
+            <Label textWrap="true" text="a b c d e f g h i j k" />
+        </FlexboxLayout>
+
+    </StackLayout>
+</Page>

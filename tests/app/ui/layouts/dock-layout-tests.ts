@@ -1,17 +1,17 @@
-﻿import * as button from "tns-core-modules/ui/button";
-import { DockLayout } from "tns-core-modules/ui/layouts/dock-layout";
-import * as TKUnit from "../../TKUnit";
+import * as button from "@nativescript/core/ui/button";
+import { DockLayout } from "@nativescript/core/ui/layouts/dock-layout";
+import * as TKUnit from "../../tk-unit";
 import * as helper from "./layout-helper";
 import * as testModule from "../../ui-test";
 import * as commonTests from "./common-layout-tests";
-import * as testHelper from "../helper";
+import * as testHelper from "../../ui-helper";
 
 // >> dock-layout-require
-import * as dockModule from "tns-core-modules/ui/layouts/dock-layout";
+import * as dockModule from "@nativescript/core/ui/layouts/dock-layout";
 // << dock-layout-require
 
 // >> dock-layout-others
-import * as enums from "tns-core-modules/ui/enums";
+import * as enums from "@nativescript/core/ui/enums";
 // << dock-layout-others
 
 export class DockLayoutTest extends testModule.UITest<DockLayout> {
@@ -20,6 +20,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
         let rootLayout = new DockLayout();
         rootLayout.height = { value: 300, unit: "px" };
         rootLayout.width = { value: 300, unit: "px" };
+
         return rootLayout;
     }
 
@@ -51,7 +52,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public test_dock_left() {
         var testBtn = new helper.MyButton();
-        testBtn.width = { value: 20, unit: "px" }
+        testBtn.width = { value: 20, unit: "px" };
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
 
@@ -116,12 +117,12 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
         this.testView.addChild(testBtnTop);
 
         var testBtnRight = new helper.MyButton();
-        testBtnRight.width = { value: 20, unit: "px" }
+        testBtnRight.width = { value: 20, unit: "px" };
         dockModule.DockLayout.setDock(testBtnRight, "right");
         this.testView.addChild(testBtnRight);
 
         var testBtnBottom = new helper.MyButton();
-        testBtnBottom.height = { value: 20, unit: "px" }
+        testBtnBottom.height = { value: 20, unit: "px" };
         dockModule.DockLayout.setDock(testBtnBottom, "bottom");
         this.testView.addChild(testBtnBottom);
 

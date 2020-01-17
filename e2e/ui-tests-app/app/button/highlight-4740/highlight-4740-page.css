@@ -1,0 +1,7 @@
+.btn {
+    font-size: 18;
+}
+
+.btn:highlighted {
+    background-color: red
+}

@@ -1,0 +1,9 @@
+<Page loaded="pageLoaded">
+  <StackLayout>
+    <Label text="Handlers as exports" tap="tapAction" doubleTap="doubleTapAction" />
+    <Label text="Bound handlers" tap="{{ tapAction }}" doubleTap="{{ doubleTapAction }}" />
+    <Label text="Result: "></Label>
+    <Label id="resultContainer"></Label>
+    <Button text="clean-result" tap="{{ cleanResult }}" />
+  </StackLayout>
+</Page>

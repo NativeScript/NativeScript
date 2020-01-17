@@ -1,15 +1,15 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
-import * as viewModule from "tns-core-modules/ui/core/view";
-import { Label } from "tns-core-modules/ui/label";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import * as colorModule from "tns-core-modules/color";
-import * as enums from "tns-core-modules/ui/enums";
-import { AnimationPromise } from "tns-core-modules/ui/animation";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
+import * as viewModule from "@nativescript/core/ui/core/view";
+import { Label } from "@nativescript/core/ui/label";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import * as colorModule from "@nativescript/core/color";
+import * as enums from "@nativescript/core/ui/enums";
+import { AnimationPromise } from "@nativescript/core/ui/animation";
 
 // >> animation-require
-import * as animation from "tns-core-modules/ui/animation";
-import { PercentLength } from "tns-core-modules/ui/styling/style-properties";
+import * as animation from "@nativescript/core/ui/animation";
+import { PercentLength } from "@nativescript/core/ui/styling/style-properties";
 // << animation-require
 
 function prepareTest(parentHeight?: number, parentWidth?: number): Label {
@@ -28,6 +28,7 @@ function prepareTest(parentHeight?: number, parentWidth?: number): Label {
     stackLayout.addChild(label);
     mainPage.content = stackLayout;
     TKUnit.waitUntilReady(() => label.isLoaded);
+
     return label;
 }
 
@@ -106,7 +107,7 @@ export function test_CancellingAnimation(done) {
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
             } else if (e.toString() === "Error: Animation cancelled.") {
-                done()
+                done();
             } else {
                 done(e);
             }
@@ -133,7 +134,7 @@ export function test_CancellingAnimate(done) {
             if (!e) {
                 done(new Error("Cancel path did not have proper error"));
             } else if (e.toString() === "Error: Animation cancelled.") {
-                done()
+                done();
             } else {
                 done(e);
             }
@@ -415,6 +416,7 @@ function animateExtentAndAssertExpected(along: "height" | "width", value: Percen
         duration: 5,
         [along]: value
     };
+
     return label.animate(props).then(() => {
         const observedString: string = PercentLength.convertToString(label[along]);
         const inputString: string = PercentLength.convertToString(value);
@@ -431,6 +433,7 @@ function animateExtentAndAssertExpected(along: "height" | "width", value: Percen
             expectedNumber,
             `PercentLength.toDevicePixels(${inputString}) should be "${expectedNumber}" but is "${observedNumber}"`
         );
+
         assertIOSNativeTransformIsCorrect(label);
     });
 }
@@ -499,10 +502,10 @@ export function test_AnimateExtent_Should_ThrowIfCannotParsePercentLength() {
     const label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
-            label.animate({width: "-frog%"});
+            label.animate({ width: "-frog%" });
         }, "Invalid percent string should throw");
         TKUnit.assertThrows(() => {
-            label.animate({height: "-frog%"});
+            label.animate({ height: "-frog%" });
         }, "Invalid percent string should throw");
     });
 }
@@ -538,6 +541,7 @@ export function test_AnimateTranslateScaleAndRotateSequentially(done) {
             TKUnit.assertEqual(label.translateX, 100, "label.translateX");
             TKUnit.assertEqual(label.translateY, 200, "label.translateY");
             assertIOSNativeTransformIsCorrect(label);
+
             return label.animate({ scale: { x: 2, y: 3 }, duration: 5 });
         })
         .then(() => {
@@ -546,6 +550,7 @@ export function test_AnimateTranslateScaleAndRotateSequentially(done) {
             TKUnit.assertEqual(label.scaleX, 2, "label.scaleX");
             TKUnit.assertEqual(label.scaleY, 3, "label.scaleY");
             assertIOSNativeTransformIsCorrect(label);
+
             return label.animate({ rotate: 123, duration: 5 });
         })
         .then(() => {
@@ -571,7 +576,8 @@ export function test_AnimationsAreAlwaysPlayed(done) {
     animation1.play()
         .then(() => {
             TKUnit.assert(label.opacity === 0, `Label opacity should be 0 after first animation, actual value is ${label.opacity}.`);
-            return animation2.play()
+
+            return animation2.play();
         })
         .then(() => {
             TKUnit.assert(label.opacity === 1, `Label opacity should be 1 after second animation, actual value is ${label.opacity}.`);

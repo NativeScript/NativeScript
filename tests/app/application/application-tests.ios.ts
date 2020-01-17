@@ -1,8 +1,9 @@
 ﻿/* tslint:disable:no-unused-variable */
-import * as app from "tns-core-modules/application";
-import * as commonTests from "./application-tests-common";
+import * as app from "@nativescript/core/application";
+import { ios } from "@nativescript/core/utils/utils";
+import * as TKUnit from "../tk-unit";
 
-global.moduleMerge(commonTests, exports);
+export * from "./application-tests-common";
 
 // >> application-ios-observer
 //// Add the notification observer
@@ -40,3 +41,27 @@ if (app.ios) {
 }
 
 // << application-ios-delegate
+
+export function testIOSApplicationInitialized() {
+    TKUnit.assert(app.ios, "iOS application not initialized.");
+    TKUnit.assert(app.ios.delegate, "iOS delegate not initialized.");
+    TKUnit.assert(app.ios.nativeApp, "iOS nativeApp not initialized.");
+    TKUnit.assert(app.ios.orientation, "iOS orientation not initialized.");
+
+    if (ios.MajorVersion <= 11) {
+        TKUnit.assertNull(app.ios.systemAppearance, "iOS system appearance should be `null` on iOS <= 11.");
+    } else {
+        TKUnit.assert(app.ios.systemAppearance, "iOS system appearance not initialized.");
+    }
+
+    TKUnit.assert(app.ios.window, "iOS window not initialized.");
+    TKUnit.assert(app.ios.rootController, "iOS root controller not initialized.");
+}
+
+export function testSystemAppearance() {
+    if (ios.MajorVersion <= 11) {
+        TKUnit.assertNull(app.systemAppearance(), "System appearance should be `null` on iOS <= 11.");
+    } else {
+        TKUnit.assert(app.systemAppearance(), "System appearance not initialized.");
+    }
+}

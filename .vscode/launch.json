@@ -1,50 +1,81 @@
 {
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
             "type": "node",
             "request": "launch",
-            "name": "Unit Tests",
+            "name": "Launch mocha tests",
             "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-            "args": [ "--timeout", "999999", "--opts", "unit-tests/mocha.opts" ],
-            "internalConsoleOptions": "openOnSessionStart",
+            "args": [
+                "--timeout",
+                "999999",
+                "--opts",
+                "unit-tests/mocha.opts"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
             "preLaunchTask": "tsc-unit-tests"
         },
         {
-            "name": "Launch on iOS",
+            "name": "Launch tests on Android",
             "type": "nativescript",
             "request": "launch",
-            "platform": "ios",
-            "appRoot": "${workspaceRoot}",
+            "platform": "android",
+            "appRoot": "${workspaceRoot}/tests",
             "sourceMaps": true,
+            "stopOnEntry": true,
             "watch": true
         },
         {
-            "name": "Attach on iOS",
+            "name": "Launch tests on iOS",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}/tests",
+            "sourceMaps": true,
+            "stopOnEntry": true,
+            "watch": true
+        },
+        {
+            "name": "Attach ui tests on Android",
             "type": "nativescript",
             "request": "attach",
-            "platform": "ios",
-            "appRoot": "${workspaceRoot}",
+            "platform": "android",
+            "appRoot": "${workspaceRoot}/e2e/ui-tests-app",
             "sourceMaps": true,
             "watch": false
         },
         {
-            "name": "Launch on Android",
+            "name": "Launch ui tests on Android",
             "type": "nativescript",
             "request": "launch",
             "platform": "android",
-            "appRoot": "${workspaceRoot}",
+            "appRoot": "${workspaceRoot}/e2e/ui-tests-app",
             "sourceMaps": true,
+            "stopOnEntry": true,
             "watch": true
         },
         {
-            "name": "Attach on Android",
+            "name": "Attach ui tests on iOS",
             "type": "nativescript",
             "request": "attach",
-            "platform": "android",
-            "appRoot": "${workspaceRoot}",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}/e2e/ui-tests-app",
             "sourceMaps": true,
             "watch": false
+        },
+        {
+            "name": "Launch ui tests on iOS",
+            "type": "nativescript",
+            "request": "launch",
+            "platform": "ios",
+            "appRoot": "${workspaceRoot}/e2e/ui-tests-app",
+            "sourceMaps": true,
+            "stopOnEntry": true,
+            "watch": true
         }
     ]
 }

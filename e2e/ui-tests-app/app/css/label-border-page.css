@@ -1,0 +1,101 @@
+Label {
+    font-size: 6;
+    width: 80;
+    height: 80;
+}
+
+#s0 {
+    border-width: 5;
+}
+
+#s1 {
+    border-width: 5;
+    border-color: rgba(255, 0, 0, 1);
+}
+
+#s2 {
+    border-width: 5;
+    border-color: red red red green;
+}
+
+#s3 {
+    border-width: 5;
+    border-color: red;
+    border-radius: 5;
+}
+
+#s4 {
+    border-width: 5;
+    border-color: red;
+    border-radius: 50;
+}
+
+#s5 {
+    border-width: 5 10 15 20;
+    border-color: rgb(255, 0, 0);
+}
+
+#s6 {
+    border-width: 5;
+    border-color: red green blue yellow;
+}
+
+#s7 {
+    border-width: 5 10 15 20;
+    border-color: red green blue yellow;
+}
+
+#s8 {
+    border-width: 5 10;
+    border-color: red green;
+}
+
+#s9 {
+    border-width: 15 10 5;
+    border-color: red green blue;
+}
+
+#s10 {
+    border-width: 5 0;
+    border-color: black;
+}
+
+#s11 {
+    background-color: magenta;
+}
+
+#s12 {
+    border-width: 5 10 15 20;
+    border-color: red green blue yellow;
+    border-radius: 5 10 15 20;
+}
+
+#s13 {
+    border-width: 5 10 15 20;
+    border-color: red green blue yellow;
+    border-radius: 5;
+}
+
+#s14 {
+    border-width: 5 10 15 20;
+    border-color: red green blue yellow;
+    background-color: magenta;
+}
+
+#s15 {
+    border-width: 5 10 15 20;
+    border-color: red green blue yellow;
+    background-image: url('~/resources/images/test2.png');
+}
+
+#s16 {
+    border-width: 5;
+    border-color: red;
+    padding: 5;
+}
+
+#s17 {
+    border-width: 5 6 7 8;
+    border-color: red green blue yellow;
+    padding: 5 6 7 8;
+}

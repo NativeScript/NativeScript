@@ -1,0 +1,5 @@
+{
+  "name": "control-state-change",
+  "main": "control-state-change",
+  "types": "control-state-change.d.ts"
+}

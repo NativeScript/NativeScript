@@ -1,0 +1,13 @@
+<Page backgroundColor="yellow">
+  <ActionBar flat="true" backgroundColor="blue" automationText="actionBar">
+      <Label text="flat action bar"></Label>
+  </ActionBar>
+
+  <TabView androidTabsPosition="bottom" loaded="onLoaded">
+      <TabViewItem title="First">
+          <StackLayout backgroundColor="red">
+            <Label text="First View" backgroundColor="green"/>
+          </StackLayout>
+      </TabViewItem>
+  </TabView>
+</Page>

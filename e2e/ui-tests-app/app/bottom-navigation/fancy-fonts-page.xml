@@ -1,0 +1,82 @@
+<Page>
+  <ActionBar title="BottomNavigation" icon="" class="action-bar">
+  </ActionBar>
+  <BottomNavigation id="bottomNavigation" automationText="tabNavigation"  class="font-awesome">
+    <TabStrip iosIconRenderingMode="alwaysOriginal">
+      <TabStripItem title="motorcycle-res" iconSource="res://baseline_motorcycle_black_24"></TabStripItem>
+      <TabStripItem iconSource="font://&#xf206;" title="icon">
+      </TabStripItem>
+
+      <TabStripItem iconSource="res://up" title="ICON-RES"></TabStripItem>
+
+      <TabStripItem title="Simply Long Title"></TabStripItem>
+
+      <TabStripItem iconSource="res://icon" id="lastStripItem" title="LAST"></TabStripItem>
+
+    </TabStrip>
+    <TabContentItem>
+      <GridLayout rows="*, *, *, 40" columns="*, *">
+        <Label text="iconSource: " row="0" col="0" />
+        <Image src="res://baseline_motorcycle_black_24" style="border-color: gray; border-width: 2px;" row="0" col="1" />
+        <Label text="text: " row="1" col="0" />
+        <Label text="motorcycle-res" row="1" col="1" />
+        <Label text="background-color: aquamarine; from selected item" style="background-color: aquamarine;" row="2" colSpan="2" />
+        <Button tap="selectTab" text="selectSecondTab" automationText="selectSecondTab" tag="1" row="3" colSpan="2" />
+      </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem id="second-tab-content-item">
+      <StackLayout>
+        <WrapLayout orientation="horizontal">
+          <Label text="font: " automationText="fa-bicycle-icon-content" />
+          <Label text="font://&#xf206;" />
+        </WrapLayout>
+        <WrapLayout orientation="horizontal">
+          <Label text="title: " />
+          <Label text="fa-bicycle-font-awesome" />
+        </WrapLayout>
+        <Label text="background-color: blueviolet;" style="background-color: blueviolet;" />
+        <Button tap="selectTab" text="selectLastTab" automationText="selectSecondTab" tag="4" row="2" colSpan="2" />
+      </StackLayout>
+    </TabContentItem>
+
+    <TabContentItem id="third-tab-content-item">
+      <StackLayout>
+        <WrapLayout orientation="horizontal">
+          <Label text="iconSource: " automationText="icon-res-content"></Label>
+          <Image src="res://up" style="border-color: gray; border-width: 2px;"></Image>
+        </WrapLayout>
+        <WrapLayout orientation="horizontal">
+          <Label text="title: " automationText="icon-res-content"></Label>
+          <Label text="ICON-RES"></Label>
+        </WrapLayout>
+        <Label text="background-color: blue;" style="background-color: blue;"></Label>
+      </StackLayout>
+    </TabContentItem>
+
+    <TabContentItem id="fourth-tab-content-item">
+      <StackLayout>
+        <WrapLayout orientation="horizontal">
+          <Label text="title: "></Label>
+          <Label text="Simply Long Title"></Label>
+        </WrapLayout>
+        <Label text="background-color: gray;" style="background-color: gray;"></Label>
+      </StackLayout>
+    </TabContentItem>
+
+    <TabContentItem id="fifth-tab-content-item">
+      <StackLayout>
+        <WrapLayout orientation="horizontal">
+          <Label text="iconSource: "></Label>
+          <Image src="res://icon" style="border-color: gray; border-width: 2px;"></Image>
+        </WrapLayout>
+           <WrapLayout orientation="horizontal">
+          <Label text="title: "></Label>
+          <Label text="LAST"></Label>
+        </WrapLayout>
+        <Label text="background-color: brown;" style="background-color: brown;">></Label>
+      </StackLayout>
+
+    </TabContentItem>
+  </BottomNavigation>
+</Page>

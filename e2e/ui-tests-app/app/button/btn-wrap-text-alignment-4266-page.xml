@@ -1,0 +1,13 @@
+<Page>
+    <Page.actionBar>
+        <ActionBar title="{{ exampleName }}">
+            <NavigationButton text="Go Back" android.systemIcon="ic_menu_back"></NavigationButton>
+        </ActionBar>
+    </Page.actionBar>
+    <GridLayout rows="*,*,*,*">
+        <Button text="This a test of a wrapping button [CENTER]" textWrap="true" style="text-align:center; width:100" />
+        <Button row="1" text="This a test of a wrapping button [RIGHT]" textWrap="true" style="text-align:right;width:100" />
+        <Button row="2" text="This a test of a wrapping button [LEFT]" textWrap="true" style="text-align:left;width:100" />
+        <Button row="3" text="&#xf8ff; This a test of a wrapping button [CENTER ICON]" textWrap="true" style="text-align:center;width:100" />
+    </GridLayout>
+</Page>

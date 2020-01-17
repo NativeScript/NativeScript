@@ -1,7 +1,7 @@
-﻿import * as textFieldModule from "tns-core-modules/ui/text-field";
-import * as colorModule from "tns-core-modules/color";
-import { getColor } from "../helper";
-import * as enums from "tns-core-modules/ui/enums";
+﻿import * as textFieldModule from "@nativescript/core/ui/text-field";
+import * as colorModule from "@nativescript/core/color";
+import { getColor } from "../../ui-helper";
+import * as enums from "@nativescript/core/ui/enums";
 
 export function getNativeText(textField: textFieldModule.TextField): string {
     return textField.ios.text;
@@ -46,7 +46,7 @@ export function getNativeTextAlignment(textField: textFieldModule.TextField): st
 
 export function typeTextNatively(textField: textFieldModule.TextField, text: string): void {
     textField.ios.text = text;
-    
+
     // Setting the text will not trigger the delegate method, so we have to do it by hand.
     textField.ios.delegate.textFieldDidEndEditing(textField.ios);
 }

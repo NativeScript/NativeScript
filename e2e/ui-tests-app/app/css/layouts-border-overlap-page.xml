@@ -1,0 +1,25 @@
+<Page>
+    <GridLayout rows="*,*,*,*,*" columns="*,*,*" id="root">
+
+        <StackLayout  class="s0" row="0" col="0"><Label textWrap="true" text="border-width: 20;"/></StackLayout>
+        <StackLayout  class="s1" row="0" col="1"><Label textWrap="true" text="padding: 20;"/></StackLayout>
+        <StackLayout  class="s2" row="0" col="2"><Label textWrap="true" text="border-width: 20 0 0 20;"/></StackLayout>
+
+        <AbsoluteLayout  class="s0" row="1" col="0"><Label textWrap="true" text="border-width: 20;"/></AbsoluteLayout>
+        <AbsoluteLayout  class="s1" row="1" col="1"><Label textWrap="true" text="padding: 20;"/></AbsoluteLayout>
+        <AbsoluteLayout  class="s2" row="1" col="2"><Label textWrap="true" text="border-width: 20 0 0 20;"/></AbsoluteLayout>
+
+        <DockLayout  class="s0" row="2" col="0"><Label textWrap="true" text="border-width: 20;"/></DockLayout>
+        <DockLayout  class="s1" row="2" col="1"><Label textWrap="true" text="padding: 20;"/></DockLayout>
+        <DockLayout  class="s2" row="2" col="2"><Label textWrap="true" text="border-width: 20 0 0 20;"/></DockLayout>
+
+        <GridLayout  class="s0" row="3" col="0"><Label textWrap="true" text="border-width: 20;"/></GridLayout>
+        <GridLayout  class="s1" row="3" col="1"><Label textWrap="true" text="padding: 20;"/></GridLayout>
+        <GridLayout  class="s2" row="3" col="2"><Label textWrap="true" text="border-width: 20 0 0 20;"/></GridLayout>
+
+        <WrapLayout  class="s0" row="4" col="0"><Label textWrap="true" text="border-width: 20;"/></WrapLayout>
+        <WrapLayout  class="s1" row="4" col="1"><Label textWrap="true" text="padding: 20;"/></WrapLayout>
+        <WrapLayout  class="s2" row="4" col="2"><Label textWrap="true" text="border-width: 20 0 0 20;"/></WrapLayout>
+
+    </GridLayout>
+</Page>

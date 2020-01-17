@@ -1,0 +1,28 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <StackLayout>
+        <GridLayout height="60" rows="auto" columns="auto, *">
+            <SearchBar id="searchBar1" hint="Search" text="auto(sb), * col, no width" />
+        </GridLayout>
+        <GridLayout height="60" rows="auto" columns="auto, *">
+            <SearchBar id="searchBar2" width="100%" hint="Search" text="auto(sb), * col, width 100%" />
+        </GridLayout>
+        <GridLayout height="60" rows="auto" columns="auto, *">
+            <SearchBar id="searchBar3" width="300" hint="Search" text="auto(sb), * col, width 300dip" />
+        </GridLayout>
+        <GridLayout height="60" rows="auto" columns="*, auto">
+            <SearchBar col="1" id="searchBar4" width="300" hint="Search" text="*, auto(sb) col, width 300dip" />
+        </GridLayout>
+        <GridLayout height="60" rows="auto" columns="auto, 200">
+            <SearchBar id="searchBar5" hint="Search" text="auto(sb), 200 cols, no width" />
+        </GridLayout>
+        <GridLayout height="60" rows="auto" columns="200, auto">
+            <SearchBar col="1" id="searchBar6" hint="Search" text="200, auto(sb) cols, no width" />
+        </GridLayout>
+        <StackLayout height="60">
+            <SearchBar id="searchBar7" hint="Search" text="stack, no width" />
+        </StackLayout>
+        <StackLayout height="60">
+            <SearchBar id="searchBar8" width="300" hint="Search" text="stack, width 300dip" />
+        </StackLayout>
+    </StackLayout>
+</Page>

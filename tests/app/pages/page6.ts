@@ -1,5 +1,5 @@
-﻿import * as pages from "tns-core-modules/ui/page";
-import * as fpsModule from "tns-core-modules/fps-meter";
+import * as pages from "@nativescript/core/ui/page";
+import * as fpsModule from "@nativescript/core/fps-meter";
 
 export function createPage() {
     var startTime;
@@ -20,6 +20,7 @@ export function createPage() {
     startTime = java.lang.System.nanoTime();
 
     var page = new pages.Page();
+
     return page;
 }
 //var gridLayout = new grid.GridLayout();

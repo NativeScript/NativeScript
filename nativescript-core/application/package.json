@@ -1,0 +1,6 @@
+{
+  "name": "application",
+  "main": "application",
+  "types": "application.d.ts",
+  "nativescript": {}
+}

@@ -1,0 +1,12 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <ActionBar title=" issue-5274 "></ActionBar>
+    <StackLayout class="paddingCssPanel">
+        <Label id="label" backgroundColor="green"
+        text="assrts .paddingCssPanel{
+                            vertical-align: center;
+                            font-size: 20;
+                            margin: 15;
+                        } of StackLayout" textWrap="true" />
+        <Button id="button" text="change" backgroundColor="yellow" style="padding:50"/>
+    </StackLayout>
+</Page>

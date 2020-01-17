@@ -1,0 +1,10 @@
+<Page>
+<GridLayout rows="* auto" columns="* * * *">
+    <WebView colSpan="3" src="someUrl | pathToLocalFile | htmlString" loaded="webViewLoaded" />
+
+    <Button row="1" col="0" text="rel" tap="loadRelative"/>
+    <Button row="1" col="1" text="abs" tap="loadAbsolute"/>
+    <Button row="1" col="2" text="file" tap="loadFile"/>
+    <Button row="1" col="3" text="str" tap="loadString"/>
+</GridLayout>
+</Page>

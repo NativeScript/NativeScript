@@ -1,5 +1,5 @@
-import * as stack from "tns-core-modules/ui/layouts/stack-layout";
-import { unsetValue } from "tns-core-modules/ui/core/view";
+import * as stack from "@nativescript/core/ui/layouts/stack-layout";
+import { unsetValue } from "@nativescript/core/ui/core/view";
 
 export function buttonTap(args) {
     var stackLayout = <stack.StackLayout>args.object.parent;

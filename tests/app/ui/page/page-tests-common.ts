@@ -1,11 +1,11 @@
 // >> article-require-page-module
-import { Page, ShownModallyData, NavigatedData } from "tns-core-modules/ui/page";
+import { Page, ShownModallyData, NavigatedData } from "@nativescript/core/ui/page";
 // FrameModule is needed in order to have an option to navigate to the new page.
-import { topmost, NavigationEntry } from "tns-core-modules/ui/frame";
+import { Frame, NavigationEntry } from "@nativescript/core/ui/frame";
 // << article-require-page-module
 
 // TODO: Remove this and get it from global to decouple builder for angular
-import { createViewFromEntry } from "tns-core-modules/ui/builder";
+import { Builder } from "@nativescript/core/ui/builder";
 
 // >> article-set-bindingcontext
 function pageLoaded(args) {
@@ -14,16 +14,17 @@ function pageLoaded(args) {
 }
 exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
-import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { View, PercentLength, unsetValue, EventData, isIOS } from "tns-core-modules/ui/core/view";
-import { Frame, stack } from "tns-core-modules/ui/frame";
-import { Label } from "tns-core-modules/ui/label";
-import { Color } from "tns-core-modules/color";
-import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view/tab-view";
-import { _resetRootView } from "tns-core-modules/application";
-import { Button } from "tns-core-modules/ui/button/button";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
+
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { View, PercentLength, unsetValue, EventData, isIOS } from "@nativescript/core/ui/core/view";
+import { Label } from "@nativescript/core/ui/label";
+import { Color } from "@nativescript/core/color";
+import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view/tab-view";
+import { _resetRootView } from "@nativescript/core/application";
+import { Button } from "@nativescript/core/ui/button/button";
+import { ios } from "@nativescript/core/utils/utils";
 
 export function addLabelToPage(page: Page, text?: string) {
     const label = new Label();
@@ -49,6 +50,7 @@ export function test_AfterPageLoaded_is_called_NativeInstance_is_created() {
         label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -66,12 +68,13 @@ export function test_PageLoaded_is_called_once() {
     let loaded = 0;
     const handler = function (data) {
         loaded++;
-    }
+    };
 
     const pageFactory = function (): Page {
         page1 = new Page();
         page1.id = `page1_test_PageLoaded_is_called_once`;
         addLabelToPage(page1, "Page 1");
+
         return page1;
     };
 
@@ -83,6 +86,7 @@ export function test_PageLoaded_is_called_once() {
         page2.id = `page2_test_PageLoaded_is_called_once`;
         addLabelToPage(page2, "Page 2");
         page2.on(Label.loadedEvent, handler);
+
         return page2;
     };
 
@@ -95,8 +99,7 @@ export function test_PageLoaded_is_called_once() {
 export function test_NavigateToNewPage() {
     // >> article-create-navigate-to-page
 
-    const topFrame = topmost();
-    const currentPage = topFrame.currentPage;
+    const topFrame = Frame.topmost();
 
     let testPage: Page;
     const pageFactory = function (): Page {
@@ -104,6 +107,7 @@ export function test_NavigateToNewPage() {
         const label = new Label();
         label.text = "The quick brown fox jumps over the lazy dog.";
         testPage.content = label;
+
         return testPage;
     };
 
@@ -153,13 +157,13 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
 
         testPage.on(Page.loadedEvent, function (data: EventData) {
             eventSequence.push("loaded");
-            TKUnit.assertNotEqual(topmost().currentPage, data.object);
+            TKUnit.assertNotEqual(Frame.topmost().currentPage, data.object);
         });
 
         testPage.on(Page.navigatedToEvent, function (data: NavigatedData) {
             eventSequence.push("navigatedTo");
             TKUnit.assertEqual(data.context, context, "navigatedTo : navigationContext");
-            TKUnit.assertEqual(topmost().currentPage, data.object);
+            TKUnit.assertEqual(Frame.topmost().currentPage, data.object);
         });
 
         testPage.on(Page.navigatingFromEvent, function (data: NavigatedData) {
@@ -187,7 +191,7 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
             name: "slide",
             duration: 10,
         } : undefined
-    }
+    };
 
     helper.navigateWithEntry(navigationEntry);
     helper.goBack();
@@ -197,7 +201,6 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
 }
 
 export function test_NavigateTo_WithContext() {
-    const currentPage = topmost().currentPage;
     // >> article-pass-data
     let testPage: Page;
     const pageFactory = function (): Page {
@@ -205,6 +208,7 @@ export function test_NavigateTo_WithContext() {
         testPage.on(Page.navigatedToEvent, function () {
             //console.log(JSON.stringify(context));
         });
+
         return testPage;
     };
 
@@ -214,7 +218,7 @@ export function test_NavigateTo_WithContext() {
         animated: false
     };
 
-    const topFrame = topmost();
+    const topFrame = Frame.topmost();
     topFrame.navigate(navEntry);
     // << article-pass-data
     TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty());
@@ -228,7 +232,6 @@ export function test_NavigateTo_WithContext() {
 
 //https://github.com/NativeScript/NativeScript/issues/731
 export function test_NavigateTo_WithBindingContext() {
-    const currentPage = topmost().currentPage;
     let testPage: Page;
     let bindingContext;
     const pageFactory = function (): Page {
@@ -236,6 +239,7 @@ export function test_NavigateTo_WithBindingContext() {
         testPage.on(Page.navigatingToEvent, function (args: NavigatedData) {
             bindingContext = (<Page>args.object).bindingContext;
         });
+
         return testPage;
     };
 
@@ -245,7 +249,7 @@ export function test_NavigateTo_WithBindingContext() {
         animated: false
     };
 
-    const topFrame = topmost();
+    const topFrame = Frame.topmost();
     topFrame.navigate(navEntry);
     TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty());
     helper.goBack();
@@ -260,12 +264,13 @@ export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
         testPage = new Page();
         testPage.id = "testPage_test_FrameBackStack_WhenNavigatingForwardAndBack";
         addLabelToPage(testPage);
+
         return testPage;
     };
 
     helper.navigateWithHistory(pageFactory);
 
-    const topFrame = topmost();
+    const topFrame = Frame.topmost();
     TKUnit.assertEqual(topFrame.backStack.length, 1);
     TKUnit.assertTrue(topFrame.canGoBack(), "topFrame.canGoBack() should be true");
 
@@ -276,7 +281,7 @@ export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
 }
 
 export function test_LoadPageFromModule() {
-    const topFrame = topmost();
+    const topFrame = Frame.topmost();
     helper.navigateToModule("ui/page/test-page-module");
 
     TKUnit.assert(topFrame.currentPage.content instanceof Label, "Content of the test page should be a Label created within test-page-module.");
@@ -285,20 +290,23 @@ export function test_LoadPageFromModule() {
 }
 
 export function test_LoadPageFromDeclarativeWithCSS() {
-    const topFrame = topmost();
-    helper.navigateToModule("ui/page/test-page-declarative-css");
+    const topFrame = Frame.topmost();
+    helper.navigateToModule("ui/page/test-declarative-css-page");
 
     TKUnit.assert(topFrame.currentPage.content instanceof Label, "Content of the test page should be a Label created within test-page-module-css.");
+
     const testLabel = <Label>topFrame.currentPage.content;
     TKUnit.assertEqual(testLabel.text, "Label created within a page declarative file with css.");
     TKUnit.assertEqual(testLabel.style.backgroundColor.hex, "#00FF00");
 }
 
 export function test_LoadPageFromModuleWithCSS() {
-    const topFrame = topmost();
-    helper.navigateToModule("ui/page/test-page-module-css");
+    const topFrame = Frame.topmost();
+
+    helper.navigateToModule("ui/page/test-module-css-page");
 
     TKUnit.assert(topFrame.currentPage.content instanceof Label, "Content of the test page should be a Label created within test-page-module-css.");
+
     const testLabel = <Label>topFrame.currentPage.content;
     TKUnit.assertEqual(testLabel.text, "Label created within a page module css.");
     TKUnit.assertEqual(testLabel.style.backgroundColor.hex, "#00FF00");
@@ -311,6 +319,7 @@ export function test_NavigateToPageCreatedWithNavigationEntry() {
         testPage = new Page();
         testPage.id = "testPage_test_NavigateToPageCreatedWithNavigationEntry";
         addLabelToPage(testPage, expectedText);
+
         return testPage;
     };
 
@@ -368,15 +377,18 @@ export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
     TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#0000FF");
 }
 
-export function test_page_backgroundColor_is_white() {
+export function test_page_backgroundColor() {
     const page = new Page();
-    page.id = "page_test_page_backgroundColor_is_white";
+    page.id = "page_test_page_backgroundColor";
+
     const factory = () => page;
     helper.navigate(factory);
-    const whiteColor = new Color("white");
+
     if (isIOS) {
-        TKUnit.assertTrue(whiteColor.ios.CGColor.isEqual(page.nativeViewProtected.backgroundColor.CGColor), "page default backgroundColor should be white");
+        const backgroundColor = (ios.MajorVersion <= 12 || !UIColor.systemBackgroundColor) ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+        TKUnit.assertEqual(page.nativeView.backgroundColor, backgroundColor, "page backgroundColor is wrong");
     } else {
+        const whiteColor = new Color("white");
         TKUnit.assertEqual(page.nativeViewProtected.getBackground().getColor(), whiteColor.android, "page default backgroundColor should be white");
     }
 }
@@ -384,8 +396,8 @@ export function test_page_backgroundColor_is_white() {
 export function test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage() {
     let page: Page;
     const loadedEventHandler = function (args) {
-        TKUnit.assertNotEqual(topmost().currentPage, args.object, "When a page is loaded it should not yet be the current page.");
-    }
+        TKUnit.assertNotEqual(Frame.topmost().currentPage, args.object, "When a page is loaded it should not yet be the current page.");
+    };
 
     const pageFactory = function (): Page {
         page = new Page();
@@ -394,6 +406,7 @@ export function test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage() 
         const label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -404,8 +417,8 @@ export function test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage() 
 export function test_WhenPageIsNavigatedToFrameCurrentPageIsNowTheSameAsThePage() {
     let page: Page;
     const navigatedEventHandler = function (args) {
-        TKUnit.assertEqual(topmost().currentPage, args.object, `frame.topmost().currentPage should be equal to args.object page instance in the page.navigatedTo event handler. Expected: ${args.object.id}; Actual: ${topmost().currentPage.id};`);
-    }
+        TKUnit.assertEqual(Frame.topmost().currentPage, args.object, `frame.Frame.topmost().currentPage should be equal to args.object page instance in the page.navigatedTo event handler. Expected: ${args.object.id}; Actual: ${Frame.topmost().currentPage.id};`);
+    };
 
     const pageFactory = function (): Page {
         page = new Page();
@@ -414,6 +427,7 @@ export function test_WhenPageIsNavigatedToFrameCurrentPageIsNowTheSameAsThePage(
         const label = new Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -425,6 +439,7 @@ export function test_WhenInnerViewCallsCloseModal_WithArguments_ShouldPassResult
     _test_WhenInnerViewCallsCloseModal((args: ShownModallyData) => {
         const page = <Page>args.object;
         const button = <Button>page.content;
+
         return button.closeModal.bind(button);
     }, "return value");
 }
@@ -433,6 +448,7 @@ export function test_WhenInnerViewCallsCloseModal_WithoutArguments_ShouldWork() 
     _test_WhenInnerViewCallsCloseModal((args: ShownModallyData) => {
         const page = <Page>args.object;
         const button = <Button>page.content;
+
         return button.closeModal.bind(button);
     });
 }
@@ -454,14 +470,14 @@ function _test_WhenInnerViewCallsCloseModal(closeModalGetter: (ShownModallyData)
 
     const modalCloseCallback = function (returnValue: any) {
         modalClosedWithResult = returnValue === result;
-    }
+    };
 
     const modalPageShownModallyEventHandler = function (args: ShownModallyData) {
         const page = <Page>args.object;
         page.off(View.shownModallyEvent, modalPageShownModallyEventHandler);
 
         closeModalGetter(args)(result);
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args: NavigatedData) {
         const page = <Page>args.object;
@@ -475,13 +491,13 @@ function _test_WhenInnerViewCallsCloseModal(closeModalGetter: (ShownModallyData)
         button.text = "CLOSE MODAL";
         modalPage.content = button;
 
-        (<Button>page.content).showModal(modalPage, {}, modalCloseCallback);
-    }
+        (<Button>page.content).showModal(modalPage, { context: {}, closeCallback: modalCloseCallback });
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
         masterPage.id = "masterPage_test_WhenInnerViewCallsCloseModal_WithArguments_ShouldPassResult";
-        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
 
         const button = new Button();
         button.text = "TAP";
@@ -493,11 +509,6 @@ function _test_WhenInnerViewCallsCloseModal(closeModalGetter: (ShownModallyData)
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => modalClosedWithResult);
-
-    if (isIOS) {
-        // Remove this line when we have a good way to detect actual modal close on ios
-        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
-    }
 }
 
 export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() {
@@ -505,7 +516,7 @@ export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() 
 
     const modalCloseCallback = function (returnValue: any) {
         modalClosed = true;
-    }
+    };
 
     const createTabItems = function (count: number) {
         var items = new Array<TabViewItem>();
@@ -521,13 +532,13 @@ export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() 
         }
 
         return items;
-    }
+    };
 
     const modalPageShownModallyEventHandler = function (args: ShownModallyData) {
         const page = <Page>args.object;
         page.off(View.shownModallyEvent, modalPageShownModallyEventHandler);
         args.closeCallback();
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -537,13 +548,18 @@ export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() 
         modalPage.id = "modalPage_test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal";
         modalPage.on(View.shownModallyEvent, modalPageShownModallyEventHandler);
         const tabViewItem = (<TabView>page.content).items[0];
-        tabViewItem.showModal(modalPage, {}, modalCloseCallback, false, false);
-    }
+        tabViewItem.showModal(modalPage, {
+            context: {},
+            closeCallback: modalCloseCallback,
+            fullscreen: false,
+            animated: false
+        });
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
         masterPage.id = "masterPage_test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal";
-        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
 
         const tabView = new TabView();
         tabView.items = createTabItems(2);
@@ -555,11 +571,6 @@ export function test_WhenViewBaseCallsShowModal_WithArguments_ShouldOpenModal() 
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => modalClosed);
-
-    if (isIOS) {
-        // Remove this line when we have a good way to detect actual modal close on ios
-        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
-    }
 }
 
 export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_ShouldOpenModal() {
@@ -567,7 +578,7 @@ export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_Sh
 
     const modalCloseCallback = function (returnValue: any) {
         modalClosed = true;
-    }
+    };
 
     const createTabItems = function (count: number) {
         var items = new Array<TabViewItem>();
@@ -583,13 +594,13 @@ export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_Sh
         }
 
         return items;
-    }
+    };
 
     const modalPageShownModallyEventHandler = function (args: ShownModallyData) {
         const page = <Page>args.object;
         page.off(View.shownModallyEvent, modalPageShownModallyEventHandler);
         args.closeCallback();
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -605,12 +616,12 @@ export function test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_Sh
             fullscreen: false,
             animated: false
         });
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
         masterPage.id = "masterPage_test_WhenViewBaseCallsShowModal_WithShowModalOptionsArguments_ShouldOpenModal";
-        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
 
         const tabView = new TabView();
         tabView.items = createTabItems(2);
@@ -642,27 +653,26 @@ export function test_WhenViewBaseCallsShowModal_WithoutArguments_ShouldThrow() {
         }
 
         return items;
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
         page.off(Page.navigatedToEvent, hostNavigatedToEventHandler);
 
-        const hostPage = <Page>args.object;
         const tabViewItem = (<TabView>page.content).items[0];
         try {
-            tabViewItem.showModal();
+            (<any>tabViewItem).showModal();
         } catch (e) {
             modalThrows = true;
         }
 
         navigatedTo = true;
-    }
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
         masterPage.id = "masterPage_test_WhenViewBaseCallsShowModal_WithoutArguments_ShouldThrow";
-        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler)
+        masterPage.on(Page.navigatedToEvent, hostNavigatedToEventHandler);
 
         const tabView = new TabView();
         tabView.items = createTabItems(2);
@@ -689,12 +699,13 @@ export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
         } else {
             forwardCounter++;
         }
-    }
+    };
 
     const pageFactory1 = function (): Page {
         page1 = new Page();
         page1.id = "page1_test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect";
         page1.on(Page.navigatedToEvent, navigatedEventHandler);
+
         return page1;
     };
 
@@ -702,6 +713,7 @@ export function test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect() {
         page2 = new Page();
         page2.id = "page2_test_WhenNavigatingForwardAndBack_IsBackNavigationIsCorrect";
         page2.on(Page.navigatedToEvent, navigatedEventHandler);
+
         return page2;
     };
 
@@ -723,7 +735,7 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
 
     const modalCloseCallback = function (returnValue: any) {
         modalClosed = true;
-    }
+    };
 
     const createTabItems = function (count: number) {
         var items = new Array<TabViewItem>();
@@ -739,11 +751,11 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
         }
 
         return items;
-    }
+    };
 
     const tabViewShownModallyEventHandler = function (args: ShownModallyData) {
         args.closeCallback("return value");
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -753,8 +765,13 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
         tabView.items = createTabItems(2);
         tabView.on(View.shownModallyEvent, tabViewShownModallyEventHandler);
 
-        page.showModal(tabView, {}, modalCloseCallback, false, false);
-    }
+        page.showModal(tabView, {
+            context: {},
+            closeCallback: modalCloseCallback,
+            fullscreen: false,
+            animated: false
+        });
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -764,17 +781,13 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => modalClosed);
-
-    if (isIOS) {
-        // Remove this line when we have a good way to detect actual modal close on ios
-        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
-    }
 }
 
 export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
@@ -797,7 +810,7 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
         TKUnit.assertEqual(returnValue, "return value", "Modal-page must return value!");
         modalClosed = true;
         TKUnit.assertNull(masterPage.modal, "currentPage.modal should be undefined when no modal page is shown!");
-    }
+    };
 
     let modalPage: Page;
     let shownModally = 0;
@@ -805,19 +818,19 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
     const onShownModal = function (args: ShownModallyData) {
         shownModally++;
         modalPage.off(Page.shownModallyEvent, onShownModal);
-    }
+    };
 
     let modalLoaded = 0;
     const onModalLoaded = function (args: EventData) {
         modalLoaded++;
         modalPage.off(Page.loadedEvent, onModalLoaded);
-    }
+    };
 
     let modalUnloaded = 0;
     const onModalUnloaded = function (args: EventData) {
         modalUnloaded++;
         modalPage.off(Page.unloadedEvent, onModalUnloaded);
-    }
+    };
 
     const navigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -827,12 +840,18 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
             moduleName: basePath + "modal-page"
         };
 
-        modalPage = createViewFromEntry(entry) as Page;
+        modalPage = Builder.createViewFromEntry(entry) as Page;
         modalPage.on(Page.shownModallyEvent, onShownModal);
         modalPage.on(Page.loadedEvent, onModalLoaded);
         modalPage.on(Page.unloadedEvent, onModalUnloaded);
 
-        page.showModal(modalPage, ctx, modalCloseCallback, false, false);
+        page.showModal(modalPage, {
+            context: ctx,
+            closeCallback: modalCloseCallback,
+            fullscreen: false,
+            animated: false
+        });
+
         TKUnit.assertTrue((<any>modalPage).showingModally, "showingModally");
     };
 
@@ -843,6 +862,7 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
@@ -854,11 +874,6 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
     TKUnit.assertEqual(modalUnloaded, 1, "modalUnloaded");
 
     masterPage.off(Page.navigatedToEvent, navigatedToEventHandler);
-
-    if (isIOS) {
-        // Remove this line when we have a good way to detect actual modal close on ios
-        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
-    }
 }
 
 export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised() {
@@ -870,9 +885,9 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
     let ready = false;
 
     const modalCloseCallback = function (returnValue: any) {
-        TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
+        TKUnit.assertEqual(Frame._stack().length, 1, "Single frame should be instantiated at this point!");
         ready = true;
-    }
+    };
 
     const hostNavigatingToEventHandler = function () {
         hostNavigatingToCount++;
@@ -891,8 +906,8 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
     };
 
     const modalPageShownModallyEventHandler = function () {
-        TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
-    }
+        TKUnit.assertEqual(Frame._stack().length, 1, "Single frame should be instantiated at this point!");
+    };
 
     const hostNavigatedToEventHandler2 = function (args: NavigatedData) {
         const page = <Page>args.object;
@@ -903,13 +918,18 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
             moduleName: basePath + "modal-page"
         };
 
-        TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
+        TKUnit.assertEqual(Frame._stack().length, 1, "Single frame should be instantiated at this point!");
 
-        const modalPage = createViewFromEntry(entry) as Page;
+        const modalPage = Builder.createViewFromEntry(entry) as Page;
         modalPage.on(Frame.shownModallyEvent, modalPageShownModallyEventHandler);
 
-        page.showModal(modalPage, {}, modalCloseCallback, false, false);
-    }
+        page.showModal(modalPage, {
+            context: {},
+            closeCallback: modalCloseCallback,
+            fullscreen: false,
+            animated: false
+        });
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -923,17 +943,13 @@ export function test_WhenModalPageShownHostPageNavigationEventsShouldNotBeRaised
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => ready);
-
-    if (isIOS) {
-        // Remove this line when we have a good way to detect actual modal close on ios
-        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
-    }
 
     // only raised by the initial navigation to the master page
     TKUnit.assertTrue(hostNavigatingToCount === 1);
@@ -953,7 +969,7 @@ export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
 
     const modalCloseCallback = function (returnValue: any) {
         ready = true;
-    }
+    };
 
     const modalNavigatingToEventHandler = function () {
         modalNavigatingToCount++;
@@ -979,14 +995,14 @@ export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
             moduleName: basePath + "modal-page"
         };
 
-        const modalPage = createViewFromEntry(entry) as Page;
+        const modalPage = Builder.createViewFromEntry(entry) as Page;
         modalPage.on(Page.navigatingToEvent, modalNavigatingToEventHandler);
         modalPage.on(Page.navigatedToEvent, modalNavigatedToEventHandler);
         modalPage.on(Page.navigatingFromEvent, modalNavigatingFromEventHandler);
         modalPage.on(Page.navigatedFromEvent, modalNavigatedFromEventHandler);
 
         (args.object as Frame).navigate(() => modalPage);
-    }
+    };
 
     let modalFrame;
 
@@ -997,8 +1013,13 @@ export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
         modalFrame = new Frame();
         modalFrame.on(Frame.shownModallyEvent, modalFrameShownModallyEventHandler);
 
-        page.showModal(modalFrame, {}, modalCloseCallback, false, false);
-    }
+        page.showModal(modalFrame, {
+            context: {},
+            closeCallback: modalCloseCallback,
+            fullscreen: false,
+            animated: false
+        });
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1008,17 +1029,13 @@ export function test_WhenModalPageShownModalNavigationToEventsShouldBeRaised() {
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => ready && !modalFrame.isLoaded);
-
-    if (isIOS) {
-        // Remove this line when we have a good way to detect actual modal close on ios
-        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
-    }
 
     // only raised by the initial show modal navigation
     TKUnit.assertTrue(modalNavigatingToCount === 1);
@@ -1035,20 +1052,20 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
     let ready = false;
 
     const modalCloseCallback = function (returnValue: any) {
-        TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
+        TKUnit.assertEqual(Frame._stack().length, 1, "Single frame should be instantiated at this point!");
         ready = true;
-    }
+    };
 
     const modalFrameShowingModallyEventHandler = function (args: ShownModallyData) {
         showingModallyCount++;
-    }
+    };
 
     const modalFrameShownModallyEventHandler = function (args: ShownModallyData) {
         shownModallyCount++;
-        TKUnit.assertEqual(stack().length, 2, "Host and modal frame should be instantiated at this point!");
+        TKUnit.assertEqual(Frame._stack().length, 2, "Host and modal frame should be instantiated at this point!");
 
         args.closeCallback("return value");
-    }
+    };
 
     let modalFrame;
 
@@ -1061,19 +1078,24 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
             moduleName: basePath + "modal-page"
         };
 
-        const modalPage = createViewFromEntry(entry) as Page;
+        const modalPage = Builder.createViewFromEntry(entry) as Page;
 
-        TKUnit.assertEqual(stack().length, 1, "Single frame should be instantiated at this point!");
+        TKUnit.assertEqual(Frame._stack().length, 1, "Single frame should be instantiated at this point!");
 
         modalFrame = new Frame();
         modalFrame.on(Frame.showingModallyEvent, modalFrameShowingModallyEventHandler);
         modalFrame.on(Frame.shownModallyEvent, modalFrameShownModallyEventHandler);
         modalFrame.navigate(() => modalPage);
 
-        TKUnit.assertEqual(stack().length, 2, "Host and modal frame should be instantiated at this point!");
+        TKUnit.assertEqual(Frame._stack().length, 2, "Host and modal frame should be instantiated at this point!");
 
-        page.showModal(modalFrame, {}, modalCloseCallback, false, false);
-    }
+        page.showModal(modalFrame, {
+            context: {},
+            closeCallback: modalCloseCallback,
+            fullscreen: false,
+            animated: false
+        });
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1083,18 +1105,13 @@ export function test_WhenModalFrameShownModalEventsRaisedOnRootModalFrame() {
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => ready && !modalFrame.isLoaded);
-
-    if (isIOS) {
-        // Remove this line when we have a good way to detect actual modal close on ios
-        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
-    }
-
     TKUnit.assertTrue(showingModallyCount === 1);
     TKUnit.assertTrue(shownModallyCount === 1);
 }
@@ -1107,11 +1124,11 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
 
     const modalCloseCallback = function (returnValue: any) {
         ready = true;
-    }
+    };
 
     const modalPageShowingModallyEventHandler = function (args: ShownModallyData) {
         showingModallyCount++;
-    }
+    };
 
     const modalPageShownModallyEventHandler = function (args: ShownModallyData) {
         shownModallyCount++;
@@ -1119,7 +1136,7 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
         setTimeout(() => {
             args.closeCallback("return value");
         }, 0);
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -1130,12 +1147,17 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
             moduleName: basePath + "modal-page"
         };
 
-        const modalPage = createViewFromEntry(entry) as Page;
+        const modalPage = Builder.createViewFromEntry(entry) as Page;
         modalPage.on(Page.showingModallyEvent, modalPageShowingModallyEventHandler);
         modalPage.on(Page.shownModallyEvent, modalPageShownModallyEventHandler);
 
-        page.showModal(modalPage, {}, modalCloseCallback, false, false);
-    }
+        page.showModal(modalPage, {
+            context: {},
+            closeCallback: modalCloseCallback,
+            fullscreen: false,
+            animated: false
+        });
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1145,18 +1167,13 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalPage() {
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
     helper.navigate(masterPageFactory);
 
     TKUnit.waitUntilReady(() => ready);
-
-    if (isIOS) {
-        // Remove this line when we have a good way to detect actual modal close on ios
-        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
-    }
-
     TKUnit.assertTrue(showingModallyCount === 1);
     TKUnit.assertTrue(shownModallyCount === 1);
 }
@@ -1168,17 +1185,17 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
     let ready = false;
 
     const modalCloseCallback = function (returnValue: any) {
-        TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
+        TKUnit.assertEqual(Frame._stack().length, 1, "Single host frame should be instantiated at this point!");
         setTimeout(() => ready = true, 50);
-    }
+    };
 
     const modalTabViewShowingModallyEventHandler = function (args: ShownModallyData) {
         showingModallyCount++;
-    }
+    };
 
     const modalTabViewShownModallyEventHandler = function (args: ShownModallyData) {
         shownModallyCount++;
-    }
+    };
 
     const hostNavigatedToEventHandler = function (args) {
         const page = <Page>args.object;
@@ -1189,16 +1206,21 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
             moduleName: basePath + "modal-tab-root"
         };
 
-        TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
+        TKUnit.assertEqual(Frame._stack().length, 1, "Single host frame should be instantiated at this point!");
 
-        const modalTabView = createViewFromEntry(entry) as TabView;
+        const modalTabView = Builder.createViewFromEntry(entry) as TabView;
         modalTabView.on(TabView.showingModallyEvent, modalTabViewShowingModallyEventHandler);
         modalTabView.on(TabView.shownModallyEvent, modalTabViewShownModallyEventHandler);
 
-        TKUnit.assertEqual(stack().length, 2, "Host and tab modal frame should be instantiated at this point!");
+        TKUnit.assertEqual(Frame._stack().length, 2, "Host and tab modal frame should be instantiated at this point!");
 
-        page.showModal(modalTabView, {}, modalCloseCallback, false, false);
-    }
+        page.showModal(modalTabView, {
+            context: {},
+            closeCallback: modalCloseCallback,
+            fullscreen: false,
+            animated: false
+        });
+    };
 
     const masterPageFactory = function (): Page {
         const masterPage = new Page();
@@ -1208,23 +1230,18 @@ export function test_WhenModalPageShownShowModalEventsRaisedOnRootModalTabView()
         const label = new Label();
         label.text = "Text";
         masterPage.content = label;
+
         return masterPage;
     };
 
-    TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
+    TKUnit.assertEqual(Frame._stack().length, 1, "Single host frame should be instantiated at this point!");
 
     helper.navigate(masterPageFactory);
 
-    TKUnit.assertEqual(stack().length, 2, "Host and modal tab frame should be instantiated at this point!");
+    TKUnit.assertEqual(Frame._stack().length, 2, "Host and modal tab frame should be instantiated at this point!");
 
     TKUnit.waitUntilReady(() => ready);
-
-    if (isIOS) {
-        // Remove this line when we have a good way to detect actual modal close on ios
-        TKUnit.waitUntilReady(() => !(<UIViewController>topmost().currentPage.viewController).presentedViewController);
-    }
-
-    TKUnit.assertEqual(stack().length, 1, "Single host frame should be instantiated at this point!");
+    TKUnit.assertEqual(Frame._stack().length, 1, "Single host frame should be instantiated at this point!");
 
     TKUnit.assertTrue(showingModallyCount === 1);
     TKUnit.assertTrue(shownModallyCount === 1);
@@ -1241,7 +1258,7 @@ export function test_percent_width_and_height_support() {
     testPage.content = stackLayout;
 
     const pageWidth = testPage.getMeasuredWidth();
-    const pageHeight = testPage.getMeasuredHeight()
+    const pageHeight = testPage.getMeasuredHeight();
 
     TKUnit.assertEqual(pageWidth, Math.round(pageWidth / 2), "Current page MeasuredWidth incorrect");
     TKUnit.assertEqual(pageHeight, Math.round(pageHeight / 2), "Current page MeasuredHeight incorrect");

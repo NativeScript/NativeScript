@@ -1,0 +1,17 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo" class="page">
+
+    <Page.actionBar>
+        <ActionBar title="My App" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <GridLayout>
+        <ScrollView>
+            <StackLayout backgroundColor="teal">
+                <GridLayout height="30" backgroundColor="red" />
+                <GridLayout height="30" backgroundColor="yellow" />
+                <GridLayout height="30" backgroundColor="green" />
+            </StackLayout>
+        </ScrollView>
+    </GridLayout>
+</Page>

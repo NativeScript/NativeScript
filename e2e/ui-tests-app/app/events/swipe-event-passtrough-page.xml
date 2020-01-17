@@ -1,0 +1,10 @@
+﻿<Page navigatingTo="navigatingTo">
+  <GridLayout rows="*, *" columns="*, *, *" swipe="onSwipe" backgroundColor="lightgreen">
+    <StackLayout row="0" col="1" automationText="swipeHere" tap="onTap" backgroundColor="lightblue">
+      <Label text="swipe/tap inside" verticalAlignement="top"/>
+    </StackLayout>
+    <Label row="1" colSpan="3"
+      text="" textWrap="true"
+      id="output" style="font-size: 10, font-family: monospace;"/>
+  </GridLayout>
+</Page>

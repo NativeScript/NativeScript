@@ -1,0 +1,14 @@
+<Page loaded="pageLoaded">
+    <GridLayout id="grid-layout">
+        <ListView id="lv1" items="{{ items }}" itemTemplateSelector="age % 2 === 0 ? 'green':'red'" itemTap="onItemTap">
+            <ListView.itemTemplates>
+                <template key="red">
+                    <Label text="{{ name + ' ' + id }}" style.backgroundColor="red"/>
+                </template>
+                <template key="green">
+                    <Label text="{{  name + ' ' + id }}" style.backgroundColor="green"/>
+                </template>
+            </ListView.itemTemplates>
+        </ListView>
+    </GridLayout>
+</Page>

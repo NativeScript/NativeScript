@@ -1,0 +1,15 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+  <StackLayout>
+    <Label text="100" style.fontWeight="100" />
+    <Label text="200" style.fontWeight="200" />
+    <Label text="300" style.fontWeight="300" />
+    <Label text="400" style.fontWeight="400" />
+    <Label text="normal" style.fontWeight="normal" />
+    <Label text="500" style.fontWeight="500" />
+    <Label text="600" style.fontWeight="600" />
+    <Label text="700" style.fontWeight="700" />
+    <Label text="bold" style.fontWeight="bold" />
+    <Label text="800" style.fontWeight="800" />
+    <Label text="900" style.fontWeight="900" />
+  </StackLayout>
+</Page>

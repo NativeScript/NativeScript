@@ -1,13 +1,13 @@
-﻿import * as actionTestsCommon from "./action-bar-tests-common";
-import * as PageModule from "tns-core-modules/ui/page";
-import * as TKUnit from "../../TKUnit";
-import * as LabelModule from "tns-core-modules/ui/label";
-import * as helper from "../helper";
-import * as view from "tns-core-modules/ui/core/view";
-import * as actionBar from "tns-core-modules/ui/action-bar";
-import { Visibility } from "tns-core-modules/ui/enums";
+import { createPageAndNavigate } from "./action-bar-tests-common";
+import * as PageModule from "@nativescript/core/ui/page";
+import * as TKUnit from "../../tk-unit";
+import * as LabelModule from "@nativescript/core/ui/label";
+import * as helper from "../../ui-helper";
+import * as view from "@nativescript/core/ui/core/view";
+import * as actionBar from "@nativescript/core/ui/action-bar";
+import { Visibility } from "@nativescript/core/ui/enums";
 
-global.moduleMerge(actionTestsCommon, exports);
+export * from "./action-bar-tests-common";
 
 export function test_NavBar_isVisible_when_MenuItems_areSet() {
 
@@ -20,7 +20,7 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
         navBarIsVisible = !page.actionBar.nativeView.hidden;
         console.log(navBarIsVisible);
         console.log(page.actionBar.nativeView.hidden);
-    }
+    };
 
     var pageFactory = function (): PageModule.Page {
         page = new PageModule.Page();
@@ -32,6 +32,7 @@ export function test_NavBar_isVisible_when_MenuItems_areSet() {
         label = new LabelModule.Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -56,7 +57,7 @@ export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript(
         for (i = menuItems.length - 1; i >= 0; i--) {
             page.actionBar.actionItems.removeItem(menuItems[i]);
         }
-    }
+    };
 
     var pageFactory = function (): PageModule.Page {
         page = new PageModule.Page();
@@ -68,6 +69,7 @@ export function test_NavBarItemsAreClearedFromNativeWhenClearedFromNativeScript(
         label = new LabelModule.Label();
         label.text = "Text";
         page.content = label;
+
         return page;
     };
 
@@ -87,7 +89,7 @@ export function test_actionItem_visibility() {
     var actionItem = new actionBar.ActionItem();
     actionItem.text = "Test";
     actionItem.ios.position = "left";
-    var page = actionTestsCommon.createPageAndNavigate();
+    var page = createPageAndNavigate();
 
     page.actionBar.actionItems.addItem(actionItem);
 
@@ -111,7 +113,7 @@ export function test_actionItem_visibility() {
 export function test_navigationButton_visibility() {
     var actionItem = new actionBar.ActionItem();
     actionItem.text = "Test";
-    var page = actionTestsCommon.createPageAndNavigate();
+    var page = createPageAndNavigate();
 
     page.actionBar.navigationButton = actionItem;
 

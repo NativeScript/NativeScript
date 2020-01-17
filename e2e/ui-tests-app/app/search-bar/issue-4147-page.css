@@ -1,0 +1,13 @@
+#bg-color {
+    background-color: red;
+}
+
+.color {
+    color: blue;
+}
+
+#border {
+    border-color: yellow;
+    border-width: 5;
+    border-style: solid;
+}

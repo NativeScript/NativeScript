@@ -1,0 +1,36 @@
+.direct-child--type>Button {
+  background-color: red;
+  color: white;
+}
+
+.direct-child--class>.test-child {
+  background-color: blue;
+  color: white;
+}
+
+.direct-sibling--type Button+Label {
+  background-color: green;
+  color: white;
+}
+
+.direct-sibling--id #test-child+#test-child-2 {
+  background-color: pink;
+}
+
+.direct-sibling--class .test-child+.test-child-2 {
+  background-color: yellow;
+}
+
+.direct-sibling--attribute Button[data="test-child"]+Button[data="test-child-2"] {
+  background-color: blueviolet;
+  color: white;
+}
+
+.direct-sibling--pseudo-selector Button+Button:disabled {
+  background-color: black;
+  color: white;
+}
+
+.sibling-test-label {
+  text-align: center;
+}

@@ -1,11 +1,11 @@
 /* tslint:disable:no-unused-variable */
 // >> file-system-require
-import * as fs from "tns-core-modules/file-system";
+import * as fs from "@nativescript/core/file-system";
 // << file-system-require
 
-import * as TKUnit from "../TKUnit";
-import * as appModule from "tns-core-modules/application";
-import * as platform from "tns-core-modules/platform";
+import * as TKUnit from "../tk-unit";
+import * as appModule from "@nativescript/core/application";
+import * as platform from "@nativescript/core/platform";
 
 export var testPathNormalize = function () {
     // >> file-system-normalize
@@ -71,7 +71,7 @@ export var testFileFromPath = function () {
             // << (hide)
         });
     // << file-system-create
-}
+};
 
 export var testFolderFromPath = function () {
     // >> file-system-create-folder
@@ -83,7 +83,7 @@ export var testFolderFromPath = function () {
     folder.remove();
     // << (hide)
     // << file-system-create-folder
-}
+};
 
 export var testFileWrite = function () {
     // >> file-system-write-string
@@ -124,7 +124,7 @@ export var testGetFile = function () {
     file.remove();
     // << (hide)
     // << file-system-create-file
-}
+};
 
 export var testGetFolder = function () {
     // >> file-system-get-folder
@@ -180,7 +180,7 @@ export var testFileReadWriteBinary = function () {
     var fileName = "logo.png";
     var error;
 
-    var sourceFile = fs.File.fromPath(__dirname + "/../" + fileName);
+    var sourceFile = fs.File.fromPath(__dirname + "/assets/" + fileName);
     var destinationFile = fs.knownFolders.documents().getFile(fileName);
 
     var source = sourceFile.readSync(e => { error = e; });
@@ -199,6 +199,46 @@ export var testFileReadWriteBinary = function () {
     destinationFile.removeSync();
     // << (hide)
     // << file-system-read-binary
+};
+
+export var testFileReadWriteBinaryAsync = function () {
+    // >> file-system-read-binary-async
+    var fileName = "logo.png";
+
+    var sourceFile = fs.File.fromPath(__dirname + "/assets/" + fileName);
+    var destinationFile = fs.knownFolders.documents().getFile(fileName);
+
+    // Read the file
+    sourceFile.read()
+        .then(function (source) {
+            // Succeeded in reading the file
+            // >> (hide)
+            destinationFile.write(source).then(function () {
+                // Succeded in writing the file
+                destinationFile.read()
+                    .then(function (destination) {
+                        if (platform.device.os === platform.platformNames.ios) {
+                            TKUnit.assertTrue(source.isEqualToData(destination));
+                        } else {
+                            TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
+                        }
+
+                        destinationFile.removeSync();
+                    }, function (error) {
+                        TKUnit.assert(false, "Failed to read destination binary async");
+                    });
+            }, function (error) {
+                // Failed to write the file.
+                TKUnit.assert(false, "Failed to write binary async");
+            });
+            // << (hide)
+        }, function (error) {
+            // Failed to read the file.
+            // >> (hide)
+            TKUnit.assert(false, "Failed to read binary async");
+            // << (hide)
+        });
+    // << file-system-read-binary-async
 };
 
 export var testGetKnownFolders = function () {
@@ -239,8 +279,8 @@ function _testIOSSpecificKnownFolder(knownFolderName: string) {
     }
     else {
         TKUnit.assertThrows(testFunc,
-        `Trying to retrieve the ${knownFolderName} known folder on a platform different from iOS should throw!`,
-        `The "${knownFolderName}" known folder is available on iOS only!`);
+            `Trying to retrieve the ${knownFolderName} known folder on a platform different from iOS should throw!`,
+            `The "${knownFolderName}" known folder is available on iOS only!`);
     }
 }
 
@@ -319,10 +359,11 @@ export var testEnumEntities = function () {
                 testFolderFound = true;
             }
         }
-    }
+    };
     // << (hide)
     documents.eachEntity(function (entity) {
         console.log(entity.name);
+
         // Return true to continue, or return false to stop the iteration.
         return true;
     });
@@ -490,7 +531,7 @@ export var testFolderRemove = function () {
             // << (hide)
         });
     // << file-system-remove-folder
-}
+};
 
 export var testFolderClear = function () {
     // >> file-system-clear-folder
@@ -550,7 +591,7 @@ export function testKnownFolderRemove(done) {
         function (error) {
             done(null);
         });
-};
+}
 
 export function test_FSEntity_Properties() {
     var documents = fs.knownFolders.documents();
@@ -570,9 +611,10 @@ export function test_FileSize(done) {
     var file = fs.knownFolders.documents().getFile("Test_File_Size.txt");
     file.writeText("Hello World!").then(() => {
         TKUnit.assert(file.size === "Hello World!".length);
+
         return file.remove();
     }).then(() => done())
-    .catch(done);
+        .catch(done);
 }
 
 export function test_UnlockAfterWrite(done) {
@@ -581,19 +623,20 @@ export function test_UnlockAfterWrite(done) {
         return file.readText();
     }).then(value => {
         TKUnit.assert(value === "Hello World!");
+
         return file.remove();
     }).then(() => done())
-    .catch(done);
+        .catch(done);
 }
 
 export function test_CreateParentOnNewFile(done) {
     var documentsFolderName = fs.knownFolders.documents().path;
     var tempFileName = fs.path.join(documentsFolderName, "folder1", "folder2", "Test_File_Create_Parent.txt");
     var file = fs.File.fromPath(tempFileName);
-    file.writeText("Hello World!").then(() =>  {
+    file.writeText("Hello World!").then(() => {
         return fs.knownFolders.documents().getFolder("folder1").remove();
     }).then(() => done())
-    .catch(done);
+        .catch(done);
 }
 
 export function test_FolderClear_RemovesEmptySubfolders(done) {

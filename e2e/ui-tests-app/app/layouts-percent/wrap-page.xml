@@ -1,0 +1,16 @@
+﻿<Page loaded="onLoaded">
+  <WrapLayout>
+    <!-- View Properties -->
+    <Button text="wh" tap="{{ onWidthHeight }}" id="widthHeight" automationText="widthHeight" style="background-color: lightpink;" width="20%" height="10%" />
+    <Button text="n" tap="{{ onMinWidthMinHeight }}" id="minWidthMinHeight" automationText="minWidthMinHeight" style="background-color: lightblue;" />
+    <Button text="m" tap="{{ onMargins }}" id="margins" automationText="margins" style="background-color: lightsalmon;" />
+    <Button text="a" tap="{{ onAlignments }}" id="alignments" automationText="alignments" style="background-color: lightblue;" width="20%" height="10%" />
+    <Button text="c" tap="{{ onCollapse }}" id="collapse" automationText="collapse" style="background-color: lightblue;" width="20%" height="10%" />
+    <Button text="v" tap="{{ onVisibile }}" id="visible" automationText="visible" style="background-color: lightblue;" width="20%" height="10%" />
+    <!-- Layout Properties -->
+    <Button text="p" tap="{{ onPaddings }}" id="paddings" automationText="paddings" style="background-color: lightgray;" width="20%" height="10%" />
+    <Button text="all" tap="{{ onAllProperties }}" id="allProperties" automationText="allProperties" style="background-color: aquamarine;" width="20%" height="10%" />
+    <Button text="o" tap="onOrientation" id="orientation" automationText="orientation" style="background-color: lightgreen;" width="20%" height="10%" />
+    <Button text="i" tap="onItemWidthItemHeight" id="itemWidthItemHeight" automationText="itemWidthItemHeight" style="background-color: lightgreen;" width="20%" height="10%" />
+  </WrapLayout>
+</Page>

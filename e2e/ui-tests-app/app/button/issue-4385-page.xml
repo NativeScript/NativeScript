@@ -1,0 +1,35 @@
+<Page
+    xmlns="http://schemas.nativescript.org/tns.xsd" loaded="navigatingTo">
+    <Page.actionBar>
+        <ActionBar title="4385">
+            <NavigationButton text="Go Back" android.systemIcon="ic_menu_back" tap="onNavBtnTap"/>
+        </ActionBar>
+    </Page.actionBar>
+    <StackLayout>
+        <!--In xml the new line can be set with &#xA;-->
+        <Button style="text-align:center; background-color:yellow" textWrap="true" class="btnIcon" >
+            <Button.formattedText>
+                <formattedString>
+                    <formattedString.spans>
+                        <Span text="&#xf1ec; text-align: center" fontSize="14">
+                        </Span>
+                        <Span text="&#xA;new line">
+                        </Span>
+                    </formattedString.spans>
+                </formattedString>
+            </Button.formattedText>
+        </Button>
+        <Button style="text-align:center; background-color:green" textWrap="true" class="btnIcon" >
+            <button.formattedText>
+                <formattedString>
+                    <formattedString.spans>
+                        <Span text="code behind" fontSize="14">
+                        </Span>
+                        <Span text="{{ test }}">
+                        </Span>
+                    </formattedString.spans>
+                </formattedString>
+            </button.formattedText>
+        </Button>
+    </StackLayout>
+</Page>

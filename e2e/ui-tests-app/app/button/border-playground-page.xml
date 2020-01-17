@@ -1,0 +1,40 @@
+<Page>
+    <GridLayout rows="*,*,*,auto" columns="*,*,*">
+        <StackLayout id="top-left" class="button-container" row="0" col="0">
+            <Button text="Radius" id="borderTopLeftRadius" tap="onToggle"/>
+        </StackLayout>
+        <StackLayout id="top" class="button-container" row="0" col="1">
+            <Button text="Color" id="borderTopColor" tap="onToggle"/>
+            <Button text="Width" id="borderTopWidth" tap="onToggle"/>
+        </StackLayout>
+        <StackLayout id="top-right" class="button-container" row="0" col="2">
+            <Button text="Radius" id="borderTopRightRadius" tap="onToggle"/>
+        </StackLayout>
+        <StackLayout id="left" class="button-container" row="1" col="0">
+            <Button text="Color" id="borderLeftColor" tap="onToggle"/>
+            <Button text="Width" id="borderLeftWidth" tap="onToggle"/>
+        </StackLayout>
+        <StackLayout id="target" row="1" col="1">
+            <Button text="BGColor" tap="onToggle"/>
+            <Button text="BGImage" tap="onToggle"/>
+            <Button text="BGGradient" tap="onToggle"/>
+        </StackLayout>
+        <StackLayout id="right" class="button-container" row="1" col="2">
+            <Button text="Color" id="borderRightColor" tap="onToggle"/>
+            <Button text="Width" id="borderRightWidth" tap="onToggle"/>
+        </StackLayout>
+        <StackLayout id="bottom-left" class="button-container" row="2" col="0">
+            <Button text="Radius" id="borderBottomLeftRadius" tap="onToggle"/>
+        </StackLayout>
+        <StackLayout id="bottom" class="button-container" row="2" col="1">
+            <Button text="Color" id="borderBottomColor" tap="onToggle"/>
+            <Button text="Width" id="borderBottomWidth" tap="onToggle"/>
+        </StackLayout>
+        <StackLayout id="bottom-right" class="button-container" row="2" col="2">
+            <Button text="Radius" id="borderBottomRightRadius" tap="onToggle"/>
+        </StackLayout>
+        <ScrollView id="scrollView" row="3" col="0" colSpan="3" height="200">
+            <TextView id="debugConsole" text=""/>
+        </ScrollView>
+    </GridLayout>
+</Page>

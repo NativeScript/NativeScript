@@ -1,0 +1,7 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onLoaded">
+  <GridLayout rows="*, 7*">
+     <Button row="0" text="a1" tap="onButtonTap"/>
+
+    <GridLayout id="Container" fontSize="12" borderColor="black" margin="5" borderWidth="1" row="1"/>
+  </GridLayout>
+</Page>

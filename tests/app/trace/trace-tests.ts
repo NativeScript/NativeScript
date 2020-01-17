@@ -1,5 +1,5 @@
-﻿// >> trace-require
-import * as trace from "tns-core-modules/trace";
+// >> trace-require
+import * as trace from "@nativescript/core/trace";
 // << trace-require
 
 export var test_DummyTestForSnippetOnly0 = function () {
@@ -7,7 +7,7 @@ export var test_DummyTestForSnippetOnly0 = function () {
     trace.setCategories(trace.categories.All);
     trace.enable();
     // << trace-all-categories
-}
+};
 
 export var test_DummyTestForSnippetOnly1 = function () {
     // >> trace-specific-categories
@@ -20,10 +20,10 @@ export var test_DummyTestForSnippetOnly1 = function () {
         , trace.categories.Style
         , trace.categories.ViewHierarchy
         , trace.categories.VisualTreeEvents
-        ));
+    ));
     trace.enable();
     // << trace-specific-categories
-}
+};
 
 export var test_DummyTestForSnippetOnly2 = function () {
     // >> trace-message
@@ -33,4 +33,4 @@ export var test_DummyTestForSnippetOnly2 = function () {
         trace.write("My Debug Message", trace.categories.Debug);
     }
     // << trace-message
-}
+};

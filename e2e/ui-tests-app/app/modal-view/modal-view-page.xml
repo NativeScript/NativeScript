@@ -1,0 +1,12 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" backgroundColor="white">
+  <StackLayout backgroundColor="PaleGreen">
+    <Button text="Login (pop-up)" tap="onTap" />
+    <Button text="Login (full-screen)" tap="onTap" />
+    <Button text="Login (pop-up-stretched)" tap="onTapStretched" />
+
+    <Button text="Login (second modal in cb)" tap="onTapSecondModalInCB" />
+    <Button text="Login (second modal in timer)" tap="onTapSecondModalInTimer" />
+
+    <Label id="label" text="Anonymous"/>
+  </StackLayout>
+</Page>

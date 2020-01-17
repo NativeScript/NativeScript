@@ -1,0 +1,5 @@
+{
+  "name": "action-bar",
+  "main": "action-bar",
+  "types": "action-bar.d.ts"
+}

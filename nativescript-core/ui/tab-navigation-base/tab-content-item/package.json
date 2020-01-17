@@ -1,0 +1,5 @@
+{
+  "name": "tab-content-item",
+  "main": "tab-content-item",
+  "types": "tab-content-item.d.ts"
+}

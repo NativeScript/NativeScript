@@ -1,0 +1,33 @@
+<Page class="page">
+
+  <ActionBar title="BottomNavigation color" icon="" class="action-bar">
+  </ActionBar>
+
+  <BottomNavigation automationText="tabNavigation">
+    <TabStrip>
+        <TabStripItem title="first" class="special"></TabStripItem>
+        <TabStripItem title="second"></TabStripItem>
+        <TabStripItem class="nested">
+            <Label text="third" />
+        </TabStripItem>
+    </TabStrip>
+
+    <TabContentItem class="special">
+        <GridLayout>
+          <Label text="First View" />
+        </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+        <GridLayout>
+          <Label text="Second View" />
+        </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+        <GridLayout>
+          <Label text="Third View" />
+        </GridLayout>
+    </TabContentItem>
+  </BottomNavigation>
+</Page>

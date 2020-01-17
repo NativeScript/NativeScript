@@ -1,0 +1,14 @@
+Button.even,
+Button.odd {
+    border-radius: 5;
+    color: white;
+    margin: 0 5 5 0;
+}
+
+Button.even {
+    background-color: #0000cc;
+}
+
+Button.odd {
+    background-color: #33cc33;
+}

@@ -1,0 +1,13 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ActionBar flat="true">
+        <Label text="Nested page flat action bar"></Label>
+    </ActionBar>
+
+    <GridLayout rows="*, *" columns="*, *" backgroundColor="red">
+        <Label row="0" col="0" text="test" backgroundColor="gold"></Label>
+        <Label row="0" col="1" text="test" backgroundColor="green"></Label>
+        <Label row="1" col="0" text="test" backgroundColor="yellow"></Label>
+        <Label row="1" col="1" text="test" backgroundColor="purple"></Label>
+    </GridLayout>
+</Page>

@@ -1,0 +1,6 @@
+.bg-background {
+    background-image: url("~/resources/images/gravatar.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}

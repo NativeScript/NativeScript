@@ -1,0 +1,11 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+  <StackLayout class="p-20">
+    <ListPicker items="{{ items }}"
+      textField="name"
+      valueField="role"
+      selectedIndex="2"
+      selectedValue="{{ selectedItem }}">
+    </ListPicker>
+    <Label text="{{ selectedItem }}" textWrap="true" />
+  </StackLayout>
+</Page>

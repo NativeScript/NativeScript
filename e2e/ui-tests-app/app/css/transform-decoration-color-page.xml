@@ -1,0 +1,23 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+  <StackLayout>
+    <Label text="Label red" style="color: red;"/>
+    <Button text="Button red" style="color: red;"/>
+    <TextField autocorrect="false" text="TextField red" style="color: red;"/>
+    <TextView autocorrect="false" text="TextView red" style="color: red;"/>
+
+    <Label text="Label uppercase red" style="text-transform: uppercase; color: red;"/>
+    <Button text="Button uppercase red" style="text-transform: uppercase; color: red;"/>
+    <TextField autocorrect="false" text="TextField uppercase red" style="text-transform: uppercase; color: red;"/>
+    <TextView autocorrect="false" text="TextView uppercase red" style="text-transform: uppercase; color: red;"/>
+
+    <Label text="Label underline line-through blue" style="text-decoration: underline line-through; color: blue;"/>
+    <Button text="Button underline line-through blue" style="text-decoration: underline line-through; color: blue;"/>
+    <TextField autocorrect="false" text="TextField underline line-through blue" style="text-decoration: underline line-through; color: blue;"/>
+    <TextView autocorrect="false" text="TextView underline line-through blue" style="text-decoration: underline line-through; color: blue;"/>
+
+    <Label text="Label uppercase underline line-through green" style="text-transform: uppercase; text-decoration: underline line-through; color: green;"/>
+    <Button text="Button uppercase underline line-through green" style="text-transform: uppercase; text-decoration: underline line-through; color: green;"/>
+    <TextField autocorrect="false" text="TextField uppercase underline line-through green" style="text-transform: uppercase; text-decoration: underline line-through; color: green;"/>
+    <TextView autocorrect="false" text="TextView uppercase underline line-through green" style="text-transform: uppercase; text-decoration: underline line-through; color: green;"/>
+  </StackLayout>
+</Page>

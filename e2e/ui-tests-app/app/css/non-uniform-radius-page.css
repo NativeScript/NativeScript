@@ -1,0 +1,68 @@
+GridLayout>GridLayout {
+    width: 60;
+    height: 60;
+    margin: 2;
+    border-color: rgba(0, 255, 0, 0.5);
+    background-color: rgba(0, 0, 255, 0.5);
+}
+
+.b1,
+.b2,
+.b3,
+.b4,
+.b5 {
+    background-image: url("res://tile");
+}
+
+.b1 {
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+
+.b2 {
+    background-repeat: repeat-x;
+    background-position: 0% 0%;
+}
+
+.b3 {
+    background-repeat: repeat-y;
+    background-position: 0% 0%;
+}
+
+.b4 {
+    background-repeat: repeat;
+    background-position: 0% 0%;
+}
+
+.b5 {
+    background-repeat: no-repeat;
+    background-position: 100% 100%;
+}
+
+.g1 {
+    border-width: 15;
+    border-color: red;
+    border-radius: 0 10 20 30;
+    background-color: blue;
+}
+
+.g2 {
+    border-width: 15 10 5 0;
+    border-color: red;
+    border-radius: 0 10 20 30;
+    background-color: blue;
+}
+
+.g3 {
+    border-width: 5 10 5 10;
+    border-color: red;
+    border-radius: 20 20 20 20;
+    background-color: blue;
+}
+
+.g4 {
+    border-width: 10 5 10 5;
+    border-color: red;
+    border-radius: 20 20 20 20;
+    background-color: blue;
+}

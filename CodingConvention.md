@@ -427,8 +427,8 @@ Use the [JSDoc][JSDOC] convention for comments. When writing a comment always th
 + When you are creating a new class
 + Public methods - include all the arguments and if possible the types {String}, {Number}. Optional arguments should be marked too. Check the [@param tag][param]
 
-[JSDOC]: http://usejsdoc.org/
-[param]: http://usejsdoc.org/tags-param.html
+[JSDOC]: https://devdocs.io/jsdoc/
+[param]: https://devdocs.io/jsdoc/tags-param
 
 ## File/module structure
 
@@ -439,7 +439,9 @@ A typical module should have the following structure:
 3. export variables and functions
 4. export class declarations
 
+<!--
 For more information see [this file](https://github.com/telerik/xPlatCore/blob/master/JS/BCL/CreateNewModule.md)
+-->
 
 ## File naming
 Use lower case for file names. Use a dash to separate different words.

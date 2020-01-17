@@ -1,0 +1,23 @@
+.c {
+    border-width: 5;
+    padding: 5;
+    border-color: magenta;
+    background-color: cyan;
+}
+
+.c1 {
+    border-width: 5;
+    border-color: red green blue yellow;
+    background-color: white;
+    horizontal-align: left;
+    margin: 1;
+}
+
+.c2 {
+    border-width: 5;
+    padding: 10;
+    border-color: red green blue yellow;
+    background-color: white;
+    horizontal-align: left;
+    margin: 1;
+}

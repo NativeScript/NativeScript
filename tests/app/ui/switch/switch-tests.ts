@@ -1,12 +1,12 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
-import * as viewModule from "tns-core-modules/ui/core/view";
-import * as bindable from "tns-core-modules/ui/core/bindable";
-import * as observable from "tns-core-modules/data/observable";
-import * as color from "tns-core-modules/color";
-import * as platform from "tns-core-modules/platform";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
+import * as viewModule from "@nativescript/core/ui/core/view";
+import * as bindable from "@nativescript/core/ui/core/bindable";
+import * as observable from "@nativescript/core/data/observable";
+import * as color from "@nativescript/core/color";
+import * as platform from "@nativescript/core/platform";
 // >> article-require-switch
-import * as switchModule from "tns-core-modules/ui/switch";
+import * as switchModule from "@nativescript/core/ui/switch";
 // << article-require-switch
 
 // ### Binding the Switch checked property and Button isEanbled property to a observable view-model property.
@@ -37,7 +37,7 @@ export function test_default_native_values() {
 
     function testAction(views: Array<viewModule.View>) {
         TKUnit.assertEqual(getNativeValue(mySwitch), false, "Default native switch.checked");
-    };
+    }
 
     helper.buildUIAndRunTest(mySwitch, testAction);
 }
@@ -50,10 +50,10 @@ if (platform.device.os === platform.platformNames.ios) {
 
         function testAction(views: Array<viewModule.View>) {
             TKUnit.assert(mySwitch.color.ios.isEqual(mySwitch.ios.thumbTintColor), "mySwitch.color");
-        };
+        }
 
         helper.buildUIAndRunTest(mySwitch, testAction);
-    }
+    };
 
     exports.test_set_backgroundColor = function () {
         var mySwitch = new switchModule.Switch();
@@ -61,10 +61,10 @@ if (platform.device.os === platform.platformNames.ios) {
 
         function testAction(views: Array<viewModule.View>) {
             TKUnit.assert(CGColorEqualToColor((<color.Color>mySwitch.backgroundColor).ios.CGColor, mySwitch.ios.onTintColor.CGColor), "mySwitch.color");
-        };
+        }
 
         helper.buildUIAndRunTest(mySwitch, testAction);
-    }
+    };
 }
 
 export function test_set_TNS_checked_updates_native_checked() {
@@ -74,7 +74,7 @@ export function test_set_TNS_checked_updates_native_checked() {
         mySwitch.checked = true;
         // << article-setting-checked-property
         TKUnit.assertEqual(getNativeValue(mySwitch), true, "Native checked is different from TNS checked.");
-    };
+    }
 
     helper.buildUIAndRunTest(mySwitch, testAction);
 }
@@ -84,7 +84,7 @@ export function test_set_native_checked_updates_TNS_checked() {
     function testAction(views: Array<viewModule.View>) {
         setNativeValue(mySwitch, true);
         TKUnit.assertEqual(mySwitch.checked, true, "Native checked is different from TNS checked.");
-    };
+    }
 
     helper.buildUIAndRunTest(mySwitch, testAction);
 }
@@ -111,10 +111,10 @@ export function test_set_native_checked_triggers_propertyChanged() {
     }
 
     helper.buildUIAndRunTest(mySwitch, testAction);
-};
+}
 
 export function test_binding_value_to_model() {
-    var mySwitch = new switchModule.Switch()
+    var mySwitch = new switchModule.Switch();
 
     function testAction(views: Array<viewModule.View>) {
         // >> aricle-binding-checked-property
@@ -143,6 +143,7 @@ export function test_binding_value_to_model() {
 function getNativeValue(mySwitch: switchModule.Switch): boolean {
     if (platform.isAndroid) {
         const nativeView: android.widget.Switch = mySwitch.nativeViewProtected;
+
         return nativeView.isChecked();
     } else if (mySwitch.ios) {
         return mySwitch.ios.on;

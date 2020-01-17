@@ -1,0 +1,12 @@
+<Page id="Page" xmlns="http://schemas.nativescript.org/tns.xsd">
+<ScrollView height="auto">
+  <StackLayout id="StackLayout">
+    <Image id="Image" width="100" height="100" class="elementStyle" src="~/resources/images/gravatar.png"/>
+    <Button id="Button" backgroundColor="blue" class="elementStyle" text="TAP"  />
+    <Label id="Label" backgroundColor="red" class="elementStyle" text="sample label" textWrap="true"/>
+    <TextField id="TextField" backgroundColor="green" class="elementStyle" hint="" text="Sample textfield" />
+    <TextView id="TextView" class="elementStyle" text="Sample text view" backgroundColor="yellow" editable="true" />
+    <AbsoluteLayout id="AbsoluteLayout" class="container" iosOverflowSafeArea="false"></AbsoluteLayout>
+  </StackLayout>
+  </ScrollView>
+</Page>

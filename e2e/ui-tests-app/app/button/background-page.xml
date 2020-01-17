@@ -1,0 +1,51 @@
+<Page>
+  <GridLayout rows="240, *">
+    <GridLayout automationText="test-element" id="test-element" width="290" iosOverflowSafeArea="false"></GridLayout>
+    <WrapLayout row="1">
+      <Button width="40" height="40" text="r" tap="resetTap"/>
+
+      <!-- Background and Border -->
+      <Button width="40" height="40" text="1" tap="applyTap" tag="margin: 20; background-color: lightgreen;"/>
+      <Button width="40" height="40" text="21" tap="applyTap" tag="margin: 20; background-color: lightgreen; border-color: lightpink; border-radius: 20; border-width: 40;"/>
+      <Button width="40" height="40" text="22" tap="applyTap" tag="margin: 20; background-color: lightgreen; border-color: lightpink; border-radius: 40; border-width: 40;"/>
+      <Button width="40" height="40" text="23" tap="applyTap" tag="margin: 20; background-color: lightgreen; border-color: lightpink; border-radius: 40; border-width: 20;"/>
+
+      <!-- Repeat -->
+      <Button width="40" height="40" text="31" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png');"/>
+      <Button width="40" height="40" text="32" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:repeat-y;"/>
+      <Button width="40" height="40" text="33" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:repeat-x;"/>
+
+      <!-- Position -->
+      <Button width="40" height="40" text="41" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat;"/>
+      <Button width="40" height="40" text="42" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: right top;"/>
+      <Button width="40" height="40" text="43" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: center center;"/>
+      <Button width="40" height="40" text="44" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: left bottom;"/>
+      <Button width="40" height="40" text="45" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: 20% 80%;"/>
+      <Button width="40" height="40" text="46" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: 20 80;"/>
+      <Button width="40" height="40" text="47" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: -10 20;"/>
+      <Button width="40" height="40" text="48" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: 10 -20;"/>
+      <Button width="40" height="40" text="49" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: -10 -20;"/>
+      <Button width="40" height="40" text="50" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: center;"/>
+      <Button width="40" height="40" text="51" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: left;"/>
+      <Button width="40" height="40" text="52" tap="applyTap" tag="margin: 20; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: bottom;"/>
+
+      <!-- Size -->
+      <Button width="40" height="40" text="61" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: center center; background-size: 100px 100px;"/>
+      <Button width="40" height="40" text="62" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: center center; background-size: 100% 100%;"/>
+      <Button width="40" height="40" text="63" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: center center; background-size: cover;"/>
+      <Button width="40" height="40" text="64" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: center center; background-size: contain;"/>
+
+      <!-- All -->
+      <Button width="40" height="40" text="71" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/resources/images/test2.png'); background-repeat:repeat-x; background-position: 20% 80%; background-size: 25% 50%; border-radius: 20; border-width: 4; border-color: lightpink;"/>
+      <Button width="40" height="40" text="72" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/resources/images/test2.png'); background-repeat:repeat-y; background-position: 80 20; background-size: 50 25; border-radius: 20; border-width: 4; border-color: lightpink; opacity: 0.5;"/>
+
+      <!-- Antialiasing -->
+      <Button width="40" height="40" text="73" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/resources/images/test2.png'); background-repeat:repeat-x; background-position: -15% -15%; background-size: 50% 50%; border-radius: 9; border-width: 3; border-color: black;"/>
+      <Button width="40" height="40" text="74" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/resources/images/test2.png'); background-repeat:repeat-y; background-position: -15% -15%; background-size: 50% 50%; border-radius: 9; border-width: 3; border-color: black;"/>
+      <Button width="40" height="40" text="75" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/resources/images/test2.png'); background-repeat:repeat; background-position: -15% -15%; background-size: 50% 50%; border-radius: 9; border-width: 3; border-color: black;"/>
+      <Button width="40" height="40" text="76" tap="applyTap" tag="margin: 20; background-color: lightgreen; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: -15% -15%; background-size: 50% 50%; border-radius: 9; border-width: 3; border-color: black;"/>
+      <Button width="40" height="40" text="77" tap="applyTap" tag="margin: 20; background-color: #FF00FF00; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: -15% -15%; background-size: 50% 50%; border-radius: 20; border-width: 10; border-color: #66FF0000;"/>
+      <Button width="40" height="40" text="78" tap="applyTap" tag="margin: 20; background-color: #FF00FF00; background-image: url('~/resources/images/test2.png'); background-repeat:no-repeat; background-position: -15% -15%; background-size: 50% 50%; border-width: 10; border-color: #66FF0000;"/>
+    </WrapLayout>
+  </GridLayout>
+</Page>

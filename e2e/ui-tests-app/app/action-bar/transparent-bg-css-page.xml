@@ -1,0 +1,6 @@
+<Page>
+  <ActionBar title="This is transparent" class="action" automationText="actionBar"/>
+  <StackLayout>
+    <Button text="go to cleared page" tap="navigate"/>
+  </StackLayout>
+</Page>

@@ -1,5 +1,5 @@
-﻿// >> dialog-require
-import * as dialogs from "tns-core-modules/ui/dialogs";
+// >> dialog-require
+import * as dialogs from "@nativescript/core/ui/dialogs";
 // << dialog-require
 
 export function test_DummyTestForSnippetOnly0() {
@@ -10,7 +10,7 @@ export function test_DummyTestForSnippetOnly0() {
         cancelButtonText: "Cancel",
         actions: ["Human", "Elf", "Dwarf", "Orc"]
     };
-    dialogs.action(options).then((result) => { 
+    dialogs.action(options).then((result) => {
         console.log(result);
     });
     // << dialog-action
@@ -67,7 +67,7 @@ export function test_DummyTestForSnippetOnly4() {
         defaultText: "Enter your name",
         inputType: dialogs.inputType.text
     };
-    dialogs.prompt(options).then((result: dialogs.PromptResult) => { 
+    dialogs.prompt(options).then((result: dialogs.PromptResult) => {
         console.log("Hello, " + result.text);
     });
     // << dialog-prompt

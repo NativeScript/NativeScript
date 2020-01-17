@@ -1,19 +1,19 @@
-﻿import * as TKUnit from "../../TKUnit";
-import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style } from "tns-core-modules/ui/core/view";
-import { topmost } from "tns-core-modules/ui/frame";
-import { Page } from "tns-core-modules/ui/page";
-import { Button } from "tns-core-modules/ui/button";
-import { Label } from "tns-core-modules/ui/label";
-import { Color } from "tns-core-modules/color";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { AbsoluteLayout } from "tns-core-modules/ui/layouts/absolute-layout";
-import * as types from "tns-core-modules/utils/types";
-import * as helper from "../../ui/helper";
-import * as observable from "tns-core-modules/data/observable";
-import * as bindable from "tns-core-modules/ui/core/bindable";
+import * as TKUnit from "../../tk-unit";
+import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style } from "@nativescript/core/ui/core/view";
+import { Frame } from "@nativescript/core/ui/frame";
+import { Page } from "@nativescript/core/ui/page";
+import { Button } from "@nativescript/core/ui/button";
+import { Label } from "@nativescript/core/ui/label";
+import { Color } from "@nativescript/core/color";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { AbsoluteLayout } from "@nativescript/core/ui/layouts/absolute-layout";
+import * as types from "@nativescript/core/utils/types";
+import * as helper from "../../ui-helper";
+import * as observable from "@nativescript/core/data/observable";
+import * as bindable from "@nativescript/core/ui/core/bindable";
 import * as definition from "./view-tests";
-import { isIOS, isAndroid } from "tns-core-modules/platform";
-import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
+import { isAndroid } from "@nativescript/core/platform";
+import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
 
 export function test_eachDescendant() {
     const test = function (views: Array<View>) {
@@ -23,42 +23,43 @@ export function test_eachDescendant() {
         const callback = function (child: View): boolean {
             TKUnit.assert(child === views[counter]);
             counter++;
+
             return true;
         };
 
-        eachDescendant(topmost(), callback);
+        eachDescendant(Frame.topmost(), callback);
         // Descendants: page, actionBar, button
         TKUnit.assertEqual(counter, 3, "descendants");
     };
 
     helper.do_PageTest_WithButton(test);
-};
+}
 
 export function test_getViewById_Static() {
     const test = function (views: Array<View>) {
         views[1].id = "myLayout";
 
         // traverse the visual tree and verify the hierarchy
-        const result = getViewById(topmost(), "myLayout");
+        const result = getViewById(Frame.topmost(), "myLayout");
 
         TKUnit.assert(result === views[1]);
     };
 
     helper.do_PageTest_WithButton(test);
-};
+}
 
 export function test_getViewById_Instance() {
     const test = function (views: Array<View>) {
         views[1].id = "myLayout";
 
         // traverse the visual tree and verify the hierarchy
-        const result = topmost().getViewById<View>("myLayout");
+        const result = Frame.topmost().getViewById<View>("myLayout");
 
         TKUnit.assert(result === views[1]);
     };
 
     helper.do_PageTest_WithButton(test);
-};
+}
 
 export function test_eachDescendant_Break_Iteration() {
     const test = function (views: Array<View>) {
@@ -67,21 +68,22 @@ export function test_eachDescendant_Break_Iteration() {
         const callback = function (child: View): boolean {
             TKUnit.assert(child === views[0]);
             counter++;
+
             return false;
         };
 
-        eachDescendant(topmost(), callback);
+        eachDescendant(Frame.topmost(), callback);
         TKUnit.assert(counter === 1);
     };
 
     helper.do_PageTest_WithButton(test);
-};
+}
 
 export function test_parent_IsValid_WhenAttached_ToVisualTree() {
     const test = function (views: Array<View>) {
         // views[0] is a Page instance, its parent should be the topmost frame
         TKUnit.assert(types.isDefined(views[0].parent));
-        TKUnit.assert(views[0].parent === topmost());
+        TKUnit.assert(views[0].parent === Frame.topmost());
 
         // views[1] is a Button instance, its parent should be the Page (views[0])
         TKUnit.assert(types.isDefined(views[1].parent));
@@ -89,7 +91,7 @@ export function test_parent_IsValid_WhenAttached_ToVisualTree() {
     };
 
     helper.do_PageTest_WithButton(test);
-};
+}
 
 export function test_parent_IsReset_WhenDetached_FromVisualTree() {
     let cachedViews: Array<View>;
@@ -103,20 +105,20 @@ export function test_parent_IsReset_WhenDetached_FromVisualTree() {
     TKUnit.assert(types.isUndefined(cachedViews[1].parent));
     TKUnit.assert(types.isDefined(cachedViews[2].parent));
     TKUnit.assert(cachedViews[2].parent === cachedViews[1]);
-};
+}
 
 export function test_domId_IsUnique() {
     const btn = new Button();
-    const topframe = topmost();
+    const topframe = Frame.topmost();
     TKUnit.assert(btn._domId !== topframe._domId);
     TKUnit.assert(btn._domId !== topframe.currentPage._domId);
-};
+}
 
 export function test_Id_WillNotCrash_WhenSetToNumber() {
     const btn = new Button();
     btn.id = "1";
     TKUnit.assert(btn.id === "1");
-};
+}
 
 export function test_event_LoadedUnloaded_IsRaised() {
     const test = function (views: Array<View>) {
@@ -151,7 +153,7 @@ export function test_event_LoadedUnloaded_IsRaised() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_bindingContext_IsInherited() {
     const context = {};
@@ -163,7 +165,7 @@ export function test_bindingContext_IsInherited() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-    topmost().bindingContext = undefined;
+    Frame.topmost().bindingContext = undefined;
 }
 
 export function test_isAddedToNativeVisualTree_IsUpdated() {
@@ -183,7 +185,7 @@ export function test_isAddedToNativeVisualTree_IsUpdated() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_addView_WillThrow_IfView_IsAlreadyAdded() {
     const test = function (views: Array<View>) {
@@ -202,7 +204,7 @@ export function test_addView_WillThrow_IfView_IsAlreadyAdded() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_addToNativeVisualTree_WillThrow_IfView_IsAlreadyAdded() {
     const test = function (views: [Page, StackLayout, View, View]) {
@@ -221,7 +223,7 @@ export function test_addToNativeVisualTree_WillThrow_IfView_IsAlreadyAdded() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-};
+}
 
 export function test_InheritableStyleProperties_AreInherited() {
     helper.do_PageTest_WithStackLayout_AndButton((views) => {
@@ -233,14 +235,14 @@ export function test_InheritableStyleProperties_AreInherited() {
 
         TKUnit.assertEqual(newButton.style.color, redColor, "Color should be inherited");
     });
-};
+}
 
 export class TestButton extends Button {
 
 }
 
 export function test_InheritableStylePropertiesWhenUsedWithExtendedClass_AreInherited() {
-    let page = topmost().currentPage;
+    let page = Frame.topmost().currentPage;
     let redColor = new Color("red");
     page.style.color = redColor;
 
@@ -280,6 +282,7 @@ const customShortHandProperty = new ShorthandProperty<Style, string>({
     cssName: "custom-short-hand",
     converter(value: string): [CssProperty<any, any>, any][] {
         const values = value.split(",");
+
         return [
             [customCssAProperty, values[0]],
             [customCssBProperty, values[1]]
@@ -359,6 +362,7 @@ class TestView extends LayoutBase {
 
     [customViewProperty.getDefault](): string {
         this.viewPropGetDefaultCounter++;
+
         return "customViewPropertyDefaultValue";
     }
     [customViewProperty.setNative](value: string) {
@@ -368,6 +372,7 @@ class TestView extends LayoutBase {
 
     [customCssProperty.getDefault](): string {
         this.cssPropGetDefaultCounter++;
+
         return "customCssPropertyDefaultValue";
     }
     [customCssProperty.setNative](value: string) {
@@ -377,6 +382,7 @@ class TestView extends LayoutBase {
 
     [customCssAnimationProperty.getDefault](): string {
         this.cssAnimPropGetDefaultCounter++;
+
         return "customCssAnimationPropertyDefaultValue";
     }
     [customCssAnimationProperty.setNative](value: string) {
@@ -410,7 +416,7 @@ export function test_NativeSetter_not_called_when_property_is_not_set() {
         TKUnit.assertEqual(testView.cssPropCounter, 0, "Native setter should not be called if value is not set.");
         TKUnit.assertEqual(testView.cssAnimPropCounter, 0, "Native setter should not be called if value is not set.");
     });
-};
+}
 
 export function test_GetDefault_not_called_when_property_is_not_set() {
     const testView = new TestView("view");
@@ -420,7 +426,7 @@ export function test_GetDefault_not_called_when_property_is_not_set() {
         TKUnit.assertEqual(testView.cssPropGetDefaultCounter, 0, "Get default should not be called if value is not set.");
         TKUnit.assertEqual(testView.cssAnimPropGetDefaultCounter, 0, "Get default should not be called if value is not set.");
     });
-};
+}
 
 export function test_NativeSetter_called_only_once_with_localValue() {
     const testView = new TestView("view");
@@ -441,7 +447,7 @@ export function test_NativeSetter_called_only_once_with_localValue() {
         TKUnit.assertEqual(testView.cssAnimPropGetDefaultCounter, 1, "GetDefault count called once");
         TKUnit.assertEqual(testView.viewPropGetDefaultCounter, 1, "GetDefault count called once");
     });
-};
+}
 
 export function test_NativeSetter_called_only_once_with_localValue_after_added_to_visual_tree() {
     const testView = new TestView("view");
@@ -464,16 +470,16 @@ export function test_NativeSetter_called_only_once_with_localValue_after_added_t
         TKUnit.assertEqual(testView.cssAnimPropGetDefaultCounter, 1, "GetDefault count called once");
         TKUnit.assertEqual(testView.viewPropGetDefaultCounter, 1, "GetDefault count called once");
     });
-};
+}
 
 export function test_NativeSetter_called_only_once_with_cssValue() {
     const testView = new TestView("view");
     testView.id = "myID";
     const pageCSS = `
-    #myID { 
-        custom: testViewValue; 
-        custom-css-property: testCssValue; 
-        custom-css-animation-property: testCssAnimValue; 
+    #myID {
+        custom: testViewValue;
+        custom-css-property: testCssValue;
+        custom-css-animation-property: testCssAnimValue;
     }`;
 
     helper.buildUIAndRunTest(testView, () => {
@@ -485,7 +491,7 @@ export function test_NativeSetter_called_only_once_with_cssValue() {
         TKUnit.assertEqual(testView.cssAnimPropNativeValue, "testCssAnimValue", "Native value");
         TKUnit.assertEqual(testView.viewPropNativeValue, "testViewValue", "Native value");
     }, { pageCss: pageCSS });
-};
+}
 
 export function test_NativeSetter_called_only_once_with_cssValue_and_localValue() {
     const testView = new TestView("view");
@@ -494,10 +500,10 @@ export function test_NativeSetter_called_only_once_with_cssValue_and_localValue(
     testView.customCssAnimationProperty = "testCssAnimationValueLocal";
     testView.custom = "testViewValueLocal";
     const pageCSS = `
-    #myID { 
-        custom-css-property: testCssValueCSS; 
-        custom: testViewValueCSS; 
-        custom-css-animation-property: testCssAnimValueCSS;         
+    #myID {
+        custom-css-property: testCssValueCSS;
+        custom: testViewValueCSS;
+        custom-css-animation-property: testCssAnimValueCSS;
     }`;
 
     helper.buildUIAndRunTest(testView, () => {
@@ -511,7 +517,7 @@ export function test_NativeSetter_called_only_once_with_cssValue_and_localValue(
         // View property set from CSS sets local value
         TKUnit.assertEqual(testView.viewPropNativeValue, "testViewValueCSS", "Native value");
     }, { pageCss: pageCSS });
-};
+}
 
 export function test_NativeSetter_called_only_once_with_multiple_sets() {
     const testView = new TestView("view");
@@ -532,7 +538,7 @@ export function test_NativeSetter_called_only_once_with_multiple_sets() {
         TKUnit.assertEqual(testView.cssAnimPropNativeValue, "testCssAnimValue2", "Native value");
         TKUnit.assertEqual(testView.viewPropNativeValue, "testViewValue2", "Native value");
     });
-};
+}
 
 export function test_NativeSetter_called_when_add_and_remove() {
     const firstView = new TestView("firstView");
@@ -560,7 +566,7 @@ export function test_NativeSetter_called_when_add_and_remove() {
         TKUnit.assertEqual(secondView.cssPropCounter, 2, "7");
         TKUnit.assertEqual(secondView.viewPropCounter, 2, "8");
     });
-};
+}
 
 export function test_NativeSetter_called_when_add_and_remove_and_recycled() {
     const firstView = new TestView("firstView");
@@ -595,7 +601,7 @@ export function test_NativeSetter_called_when_add_and_remove_and_recycled() {
         TKUnit.assertEqual(secondView.cssPropCounter, 2, "7");
         TKUnit.assertEqual(secondView.viewPropCounter, 2, "8");
     });
-};
+}
 
 export function test_InheritableProperties_getValuesFromParent() {
     const testValue = 35;
@@ -614,7 +620,7 @@ export function test_InheritableProperties_getValuesFromParent() {
     secondView.addChild(thirdView);
 
     helper.do_PageTest(test, firstView, secondView, thirdView);
-};
+}
 
 export function test_BooleanInheritableProperties_getValuesFromParent() {
     const testValue = false;
@@ -633,7 +639,7 @@ export function test_BooleanInheritableProperties_getValuesFromParent() {
     secondView.addChild(thirdView);
 
     helper.do_PageTest(test, firstView, secondView, thirdView);
-};
+}
 
 export function test_InheritableProperties_resetValuesOnRemoveFromVisualTree() {
     const testValue = 35;
@@ -656,7 +662,7 @@ export function test_InheritableProperties_resetValuesOnRemoveFromVisualTree() {
     secondView.addChild(thirdView);
 
     helper.do_PageTest(test, firstView, secondView, thirdView);
-};
+}
 
 export function test_InheritableProperties_DefaultValue() {
     const test = function (views: Array<View>) {
@@ -673,7 +679,7 @@ export function test_InheritableProperties_DefaultValue() {
     firstView.addChild(secondView);
 
     helper.do_PageTest(test, firstView, secondView, thirdView);
-};
+}
 
 export function test_InheritableProperties_ChangeNotification() {
     const testValue = 35;
@@ -695,7 +701,7 @@ export function test_InheritableProperties_ChangeNotification() {
     firstView.addChild(secondView);
 
     helper.do_PageTest(test, firstView, secondView, thirdView);
-};
+}
 
 function property_binding_test(propName: string, firstValue: any, secondValue: any, view?: View) {
     let actualResult;
@@ -747,155 +753,155 @@ function property_binding_style_test(propName: string, firstValue: any, secondVa
 
 export function test_binding_width() {
     property_binding_test("width", 42, 43);
-};
+}
 
 export function test_binding_height() {
     property_binding_test("height", 42, 43);
-};
+}
 
 export function test_binding_minWidth() {
     property_binding_test("minWidth", 42, 43);
-};
+}
 
 export function test_binding_minHeight() {
     property_binding_test("minHeight", 42, 43);
-};
+}
 
 export function test_binding_horizontalAlignment() {
     property_binding_test("horizontalAlignment", "left", "right");
-};
+}
 
 export function test_binding_verticalAlignment() {
     property_binding_test("verticalAlignment", "top", "bottom");
-};
+}
 
 export function test_binding_marginLeft() {
     property_binding_test("marginLeft", 42, 43);
-};
+}
 
 export function test_binding_marginTop() {
     property_binding_test("marginTop", 42, 43);
-};
+}
 
 export function test_binding_marginRight() {
     property_binding_test("marginRight", 42, 43);
-};
+}
 
 export function test_binding_marginBottom() {
     property_binding_test("marginBottom", 42, 43);
-};
+}
 
 export function test_binding_visibility() {
     property_binding_test("visibility", "collapse", "visible");
-};
+}
 
 export function test_binding_isEnabled() {
     property_binding_test("isEnabled", false, true);
-};
+}
 
 export function test_binding_isUserInteractionEnabled() {
     property_binding_test("isUserInteractionEnabled", false, true);
-};
+}
 
 export function test_binding_id() {
     property_binding_test("id", "id1", "id2");
-};
+}
 
 export function test_binding_cssClass() {
     property_binding_test("cssClass", "class1", "class2");
-};
+}
 
 export function test_binding_className() {
     property_binding_test("className", "class1", "class2");
-};
+}
 
 export function test_binding_style_color() {
     property_binding_style_test("color", new Color("#FF0000"), new Color("#00FF00"));
-};
+}
 
 export function test_binding_style_backgroundColor() {
     property_binding_style_test("backgroundColor", new Color("#FF0000"), new Color("#00FF00"));
-};
+}
 
 export function test_binding_style_fontSize() {
     property_binding_style_test("fontSize", 5, 10);
-};
+}
 
 export function test_binding_style_textAlignment() {
     property_binding_style_test("textAlignment", "right", "center");
-};
+}
 
 export function test_binding_style_width() {
     property_binding_style_test("width", 42, 43);
-};
+}
 
 export function test_binding_style_height() {
     property_binding_style_test("height", 42, 43);
-};
+}
 
 export function test_binding_style_minWidth() {
     property_binding_style_test("minWidth", 42, 43);
-};
+}
 
 export function test_binding_style_minHeight() {
     property_binding_style_test("minHeight", 42, 43);
-};
+}
 
 export function test_binding_style_margin() {
     property_binding_style_test("margin", "1 2 3 4", "2 3 2 3");
-};
+}
 
 export function test_binding_style_marginLeft() {
     property_binding_style_test("marginLeft", 42, 43);
-};
+}
 
 export function test_binding_style_marginTop() {
     property_binding_style_test("marginTop", 42, 43);
-};
+}
 
 export function test_binding_style_marginRight() {
     property_binding_style_test("marginRight", 42, 43);
-};
+}
 
 export function test_binding_style_marginBottom() {
     property_binding_style_test("marginBottom", 42, 43);
-};
+}
 
 export function test_binding_style_padding() {
     property_binding_style_test("padding", "1 2 3 4", "2 3 2 3");
-};
+}
 
 export function test_binding_style_paddingLeft() {
     property_binding_style_test("paddingLeft", 42, 43);
-};
+}
 
 export function test_binding_style_paddingTop() {
     property_binding_style_test("paddingTop", 42, 43);
-};
+}
 
 export function test_binding_style_paddingRight() {
     property_binding_style_test("paddingRight", 42, 43);
-};
+}
 
 export function test_binding_style_paddingBottom() {
     property_binding_style_test("paddingBottom", 42, 43);
-};
+}
 
 export function test_binding_style_horizontalAlignment() {
     property_binding_style_test("horizontalAlignment", "left", "right");
-};
+}
 
 export function test_binding_style_verticalAlignment() {
     property_binding_style_test("verticalAlignment", "top", "bottom");
-};
+}
 
 export function test_binding_style_visibility() {
     property_binding_style_test("visibility", "collapse", "visible");
-};
+}
 
 export function test_binding_style_opacity() {
     property_binding_style_test("opacity", 0.5, 0.6);
-};
+}
 
 function _createLabelWithBorder(): View {
     const lbl = new Label();
@@ -918,7 +924,7 @@ export function testIsVisible() {
         TKUnit.assertEqual(lbl.visibility, "collapse");
         TKUnit.assertEqual(lbl.isCollapsed, true);
     });
-};
+}
 
 export function testSetInlineStyle() {
     const lbl = new Label();
@@ -932,7 +938,7 @@ export function testSetInlineStyle() {
         TKUnit.assertEqual(lbl.color.hex, expectedColor);
         TKUnit.assertEqual((<Color>lbl.backgroundColor).hex, expectedBackgroundColor);
     });
-};
+}
 
 export function testBackgroundColor() {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
@@ -940,17 +946,17 @@ export function testBackgroundColor() {
         helper.waitUntilLayoutReady(lbl);
         TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, "BackgroundColor not applied correctly!");
     });
-};
+}
 
 export function testBackgroundImage() {
     const lbl = _createLabelWithBorder();
     lbl.className = "myClass";
     helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
         const page = <Page>views[1];
-        page.css = ".myClass { background-image: url('~/logo.png') }";
+        page.css = ".myClass { background-image: url('~/assets/logo.png') }";
         TKUnit.assertEqual(definition.checkNativeBackgroundImage(lbl), true, "Style background-image not loaded correctly.");
     });
-};
+}
 
 export function testBackgroundShorthand_With_EmptyBorder() {
     // Related to issue https://github.com/NativeScript/NativeScript/issues/4415
@@ -961,7 +967,7 @@ export function testBackgroundShorthand_With_EmptyBorder() {
     helper.buildUIAndRunTest(lbl, (views: Array<View>) => {
         helper.waitUntilLayoutReady(lbl);
     }, { pageCss: css });
-};
+}
 
 export function test_automation_text_default_value() {
     let view = new Button();
@@ -971,12 +977,12 @@ export function test_automation_text_default_value() {
 export function test_getLocationInWindow_IsUndefinedWhenNotInTheVisualTree() {
     const label = new Label();
     TKUnit.assertNull(label.getLocationInWindow());
-};
+}
 
 export function test_getLocationOnScreen_IsUndefinedWhenNotInTheVisualTree() {
     const label = new Label();
     TKUnit.assertNull(label.getLocationOnScreen());
-};
+}
 
 const delta = 1;
 export function test_getLocationRelativeToOtherView() {
@@ -1020,7 +1026,7 @@ export function test_getLocationRelativeToOtherView() {
         TKUnit.assertAreClose(a2InA1.x, 10, delta, "a2InA1.x");
         TKUnit.assertAreClose(a2InA1.y, 10, delta, "a2InA1.y");
     });
-};
+}
 
 export function test_getActualSize() {
     const label = new Label();
@@ -1032,7 +1038,7 @@ export function test_getActualSize() {
         TKUnit.assertAreClose(actualSize.width, 100, delta, "actualSize.width");
         TKUnit.assertAreClose(actualSize.height, 200, delta, "actualSize.height");
     });
-};
+}
 
 export function test_background_image_doesnt_throw() {
     var btn = new Button();

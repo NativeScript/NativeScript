@@ -1,19 +1,20 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
-import { isIOS, isAndroid } from "tns-core-modules/platform";
-import { Label } from "tns-core-modules/ui/label";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import * as frameModule from "tns-core-modules/ui/frame";
-import { Page, NavigatedData } from "tns-core-modules/ui/page";
-import { ListView, ItemEventData } from "tns-core-modules/ui/list-view";
-import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
-import { Button } from "tns-core-modules/ui/button";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
+import { isIOS, isAndroid } from "@nativescript/core/platform";
+import { Label } from "@nativescript/core/ui/label";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { Frame } from "@nativescript/core/ui/frame";
+import { Page } from "@nativescript/core/ui/page";
+import { ListView, ItemEventData } from "@nativescript/core/ui/list-view";
+import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view";
+import { Button } from "@nativescript/core/ui/button";
 
 var ASYNC = 2;
 
 function _createTabView(): TabView {
     var tabView = new TabView();
     tabView.id = "TabView";
+
     return tabView;
 }
 
@@ -28,6 +29,7 @@ function _createItems(count: number): Array<TabViewItem> {
         tabEntry["index"] = i;
         items.push(tabEntry);
     }
+
     return items;
 }
 
@@ -61,22 +63,24 @@ function _clickHandlerFactory(index: number) {
             var detailsPage = new Page();
             detailsPage.id = "details-page";
             detailsPage.content = detailsLabel;
+
             return detailsPage;
         };
 
         helper.navigateWithHistory(pageFactory);
-    }
+    };
 }
 
-function _createFrameView(): frameModule.Frame {
-    const frame = new frameModule.Frame();
+function _createFrameView(): Frame {
+    const frame = new Frame();
     frame.navigate({ create: () => new Page() });
+
     return frame;
 }
 
 export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
     // https://github.com/NativeScript/NativeScript/issues/6490
-    const topFrame = frameModule.topmost();
+    const topFrame = Frame.topmost();
 
     let tabViewPage: Page;
     let tabView: TabView;
@@ -101,7 +105,7 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
         tabViewPage.content = tabView;
 
         return tabViewPage;
-    }
+    };
 
     helper.waitUntilNavigatedFrom(() => topFrame.navigate(pageFactory), topFrame);
 
@@ -119,13 +123,7 @@ export function testBackNavigationToTabViewWithNestedFramesShouldWork() {
 }
 
 export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithAListViewTheListViewIsThere() {
-    var topFrame = frameModule.topmost();
-
-    let oldChache;
-    if (topFrame.android) {
-        oldChache = topFrame.android.cachePagesOnNavigate;
-        topFrame.android.cachePagesOnNavigate = true;
-    }
+    var topFrame = Frame.topmost();
 
     let tabViewPage: Page;
     let tabView: TabView;
@@ -155,7 +153,7 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
         tabViewPage.content = tabView;
 
         return tabViewPage;
-    }
+    };
 
     let rootPage = helper.getCurrentPage();
 
@@ -166,16 +164,12 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
     // This will navigate to a details page. The wait is inside the method.
     _clickTheFirstButtonInTheListViewNatively(tabView);
 
-    frameModule.goBack();
+    Frame.goBack();
     TKUnit.waitUntilReady(() => topFrame.navigationQueueIsEmpty()); //() => topFrame.currentPage === tabViewPage);
 
-    frameModule.goBack();
+    Frame.goBack();
 
     TKUnit.waitUntilReady(() => topFrame.currentPage === rootPage);
-
-    if (topFrame.android) {
-        topFrame.android.cachePagesOnNavigate = oldChache;
-    }
 
     TKUnit.assert(tabView.items[0].view instanceof ListView, "ListView should be created when navigating back to the main page.");
 }
@@ -191,7 +185,7 @@ function tabViewIsFullyLoaded(tabView: TabView): boolean {
     }
 
     if (tabView.android) {
-        var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+        var viewPager: androidx.viewpager.widget.ViewPager = (<any>tabView)._viewPager;
         if (viewPager.getChildCount() === 0) {
             return false;
         }
@@ -201,7 +195,7 @@ function tabViewIsFullyLoaded(tabView: TabView): boolean {
 }
 
 export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
-    let topFrame = frameModule.topmost();
+    let topFrame = Frame.topmost();
     let rootPage = helper.getCurrentPage();
 
     let itemCount = 2;
@@ -214,13 +208,13 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     function createLoadedFor(tabIndex: number) {
         return function () {
             loadedEventsCount[tabIndex] = loadedEventsCount[tabIndex] + 1;
-        }
+        };
     }
 
     function createUnloadedFor(tabIndex: number) {
         return function () {
             unloadedEventsCount[tabIndex] = unloadedEventsCount[tabIndex] + 1;
-        }
+        };
     }
 
     tabView.items.forEach((item, i) => {
@@ -231,6 +225,7 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
     const tabViewPage = new Page();
     helper.navigateWithHistory(() => {
         tabViewPage.content = tabView;
+
         return tabViewPage;
     });
     TKUnit.waitUntilReady(() => tabViewIsFullyLoaded(tabView), ASYNC);
@@ -265,7 +260,7 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
 
 function _clickTheFirstButtonInTheListViewNatively(tabView: TabView) {
     if (tabView.android) {
-        var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
+        var viewPager: androidx.viewpager.widget.ViewPager = (<any>tabView)._viewPager;
         var androidListView = <android.widget.ListView>viewPager.getChildAt(0);
         var stackLayout = <org.nativescript.widgets.StackLayout>androidListView.getChildAt(0);
         var button = <android.widget.Button>stackLayout.getChildAt(0);

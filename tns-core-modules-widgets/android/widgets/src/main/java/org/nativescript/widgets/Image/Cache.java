@@ -26,7 +26,7 @@ import android.graphics.BitmapFactory;
 import android.os.Build.VERSION_CODES;
 import android.os.Environment;
 import android.os.StatFs;
-import android.support.v4.util.LruCache;
+import android.util.LruCache;
 import android.util.Log;
 
 import java.io.File;

@@ -1,0 +1,18 @@
+﻿<Page loaded="onLoaded">
+
+  <GridLayout rows="*, *" columns="*, *" backgroundColor="DarkSlateBlue">
+        <GridLayout row="0" col="0" backgroundColor="Coral">
+            <Label verticalAlignment="top" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id sem ex. Aenean at ultricies metus, ut tincidunt nunc. Vivamus dictum sem sed ante fermentum, id congue lacus lacinia. Integer bibendum tincidunt quam ornare ullamcorper. Curabitur vel erat convallis, congue sapien vel, consequat augue. Praesent pharetra egestas ante, volutpat bibendum odio placerat nec. Curabitur maximus nibh et semper pharetra. Sed nibh massa, tempus eget orci vitae, aliquet feugiat magna. Sed condimentum sem non eros vulputate rhoncus. Suspendisse maximus neque sed eros ullamcorper, at hendrerit ante sollicitudin." textWrap="true" />
+        </GridLayout>
+        <GridLayout row="1" col="0" backgroundColor="SkyBlue" iosOverflowSafeArea="false">
+            <Label verticalAlignment="top" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id sem ex. Aenean at ultricies metus, ut tincidunt nunc. Vivamus dictum sem sed ante fermentum, id congue lacus lacinia. Integer bibendum tincidunt quam ornare ullamcorper. Curabitur vel erat convallis, congue sapien vel, consequat augue. Praesent pharetra egestas ante, volutpat bibendum odio placerat nec. Curabitur maximus nibh et semper pharetra. Sed nibh massa, tempus eget orci vitae, aliquet feugiat magna. Sed condimentum sem non eros vulputate rhoncus. Suspendisse maximus neque sed eros ullamcorper, at hendrerit ante sollicitudin." textWrap="true" />
+        </GridLayout>
+        <GridLayout row="0" col="1" backgroundColor="SkyBlue" iosOverflowSafeArea="false">
+            <Label verticalAlignment="top" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id sem ex. Aenean at ultricies metus, ut tincidunt nunc. Vivamus dictum sem sed ante fermentum, id congue lacus lacinia. Integer bibendum tincidunt quam ornare ullamcorper. Curabitur vel erat convallis, congue sapien vel, consequat augue. Praesent pharetra egestas ante, volutpat bibendum odio placerat nec. Curabitur maximus nibh et semper pharetra. Sed nibh massa, tempus eget orci vitae, aliquet feugiat magna. Sed condimentum sem non eros vulputate rhoncus. Suspendisse maximus neque sed eros ullamcorper, at hendrerit ante sollicitudin." textWrap="true" />
+        </GridLayout>
+        <GridLayout row="1" col="1" backgroundColor="Coral">
+            <Label verticalAlignment="top" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id sem ex. Aenean at ultricies metus, ut tincidunt nunc. Vivamus dictum sem sed ante fermentum, id congue lacus lacinia. Integer bibendum tincidunt quam ornare ullamcorper. Curabitur vel erat convallis, congue sapien vel, consequat augue. Praesent pharetra egestas ante, volutpat bibendum odio placerat nec. Curabitur maximus nibh et semper pharetra. Sed nibh massa, tempus eget orci vitae, aliquet feugiat magna. Sed condimentum sem non eros vulputate rhoncus. Suspendisse maximus neque sed eros ullamcorper, at hendrerit ante sollicitudin." textWrap="true" />
+        </GridLayout>
+    </GridLayout>
+
+</Page>

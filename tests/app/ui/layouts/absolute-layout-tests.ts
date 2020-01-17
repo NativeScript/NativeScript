@@ -1,13 +1,13 @@
 ﻿import * as testModule from "../../ui-test";
-import * as TKUnit from "../../TKUnit";
-import * as labelModule from "tns-core-modules/ui/label";
-import * as colorModule from "tns-core-modules/color";
+import * as TKUnit from "../../tk-unit";
+import * as labelModule from "@nativescript/core/ui/label";
+import * as colorModule from "@nativescript/core/color";
 import * as layoutHelper from "./layout-helper";
 import * as commonTests from "./common-layout-tests";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 
 // >> absolute-layout-require
-import * as absoluteLayoutModule from "tns-core-modules/ui/layouts/absolute-layout";
+import * as absoluteLayoutModule from "@nativescript/core/ui/layouts/absolute-layout";
 // << absolute-layout-require
 
 export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.AbsoluteLayout> {
@@ -51,7 +51,7 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
         absoluteLayout.height = { value: 230, unit: "px" };
         absoluteLayout.style.backgroundColor = new colorModule.Color("LightGray");
         let label = new labelModule.Label();
-        
+
         absoluteLayoutModule.AbsoluteLayout.setLeft(label, layoutHelper.dp(10));
         absoluteLayoutModule.AbsoluteLayout.setTop(label, layoutHelper.dp(10));
         label.width = { value: 100, unit: "px" };

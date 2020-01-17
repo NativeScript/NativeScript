@@ -1,0 +1,30 @@
+<Page class="page">
+  <ActionBar title="Tabs icon title placement" icon="" class="action-bar">
+  </ActionBar>
+
+  <Tabs automationText="tabNavigation"  >
+    <TabStrip>
+      <TabStripItem title="Title" iconSource="res://add_to_fav"></TabStripItem>
+      <TabStripItem iconSource="res://add_to_fav"></TabStripItem>
+      <TabStripItem title="Title"></TabStripItem>
+    </TabStrip>
+
+    <TabContentItem>
+      <GridLayout>
+        <Label text="Title and icon" />
+      </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+      <GridLayout>
+        <Label text="Only icon" />
+      </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+      <GridLayout>
+        <Label text="Only title" />
+      </GridLayout>
+    </TabContentItem>
+  </Tabs>
+</Page>

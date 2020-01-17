@@ -1,0 +1,16 @@
+#button1 {
+    android-elevation: 0;
+    border-color: rgba(0, 0, 0, 0);
+    border-width: 3;
+}
+
+#button2 {
+    android-elevation: 0;
+    border-color: rgba(0, 0, 0, 0.5);
+    border-width: 3;
+}
+
+#button3 {
+    android-elevation: 0;
+    border-width: 3;
+}

@@ -1,6 +1,11 @@
 ﻿declare module org {
     module nativescript {
         module widgets {
+            export class CustomTransition extends androidx.transition.Visibility {
+                constructor(animatorSet: android.animation.AnimatorSet, transitionName: string);
+                public setResetOnTransitionEnd(resetOnTransitionEnd: boolean): void;
+                public getTransitionName(): string;
+            }
             export module Async {
                 export class CompleteCallback {
                     constructor(implementation: ICompleteCallback);
@@ -15,6 +20,13 @@
 
                 export module Image {
                     export function download(url: string, callback: CompleteCallback, context: any);
+                }
+
+                export module File {
+                    export function readText(path: string, encoding: string, callback: CompleteCallback, context: any);
+                    export function read(path: string, callback: CompleteCallback, context: any);
+                    export function writeText(path: string, content: string, encoding: string, callback: CompleteCallback, context: any);
+                    export function write(path: string, content: native.Array<number>, callback: CompleteCallback, context: any);
                 }
 
                 export module Http {
@@ -48,6 +60,12 @@
 
                     export function MakeRequest(options: RequestOptions, callback: CompleteCallback, context: any);
                 }
+            }
+
+            export class FragmentBase extends androidx.fragment.app.Fragment {
+                constructor();
+
+                public getRemovingParentFragment(): androidx.fragment.app.Fragment;
             }
 
             export class BorderDrawable extends android.graphics.drawable.ColorDrawable {
@@ -122,7 +140,7 @@
 
             export class LinearGradientDefinition {
                 constructor(startX: number, endX: number, startY: number,
-                            endY: number, colors: number[], stops?: number[]);
+                    endY: number, colors: number[], stops?: number[]);
 
                 public getStartX(): number;
                 public getStartY(): number;
@@ -164,12 +182,6 @@
 
                 public horizontalAlignment: HorizontalAlignment;
                 public verticalAlignment: VerticalAlignment;
-            }
-
-            export class FragmentBase extends android.support.v4.app.Fragment {
-                constructor();
-
-                public getRemovingParentFragment(): android.support.v4.app.Fragment;
             }
 
             export enum Stretch {
@@ -390,7 +402,7 @@
                 setTabTextFontSize(fontSize: number): void;
                 getTabTextFontSize(): number;
 
-                setItems(items: Array<TabItemSpec>, viewPager: android.support.v4.view.ViewPager): void;
+                setItems(items: Array<TabItemSpec>, viewPager: androidx.viewpager.widget.ViewPager): void;
                 updateItemAt(position: number, itemSpec: TabItemSpec): void;
 
                 getTextViewForItemAt(index: number): android.widget.TextView;
@@ -398,7 +410,52 @@
                 getItemCount(): number;
             }
 
-            export class TabViewPager extends android.support.v4.view.ViewPager {
+            export class TabsBar extends android.widget.HorizontalScrollView {
+                constructor(context: android.content.Context);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet, defStyle: number);
+
+                setSelectedIndicatorColors(color: Array<number>): void;
+                getSelectedIndicatorColors(): Array<number>;
+                setTabTextColor(color: number): void;
+                getTabTextColor(): number;
+                setSelectedTabTextColor(color: number): void;
+                getSelectedTabTextColor(): number;
+                setTabTextFontSize(fontSize: number): void;
+                getTabTextFontSize(): number;
+
+                setItems(items: Array<TabItemSpec>, viewPager: androidx.viewpager.widget.ViewPager): void;
+                updateItemAt(position: number, itemSpec: TabItemSpec): void;
+
+                getTextViewForItemAt(index: number): android.widget.TextView;
+                getViewForItemAt(index: number): android.widget.LinearLayout;
+                getItemCount(): number;
+            }
+
+            export class BottomNavigationBar extends android.widget.LinearLayout {
+                constructor(context: android.content.Context);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet);
+                constructor(context: android.content.Context, attrs: android.util.AttributeSet, defStyle: number);
+
+                setTabTextColor(color: number): void;
+                getTabTextColor(): number;
+                setSelectedTabTextColor(color: number): void;
+                getSelectedTabTextColor(): number;
+                setTabTextFontSize(fontSize: number): void;
+                getTabTextFontSize(): number;
+
+                onTap(position: number): boolean;
+                onSelectedPositionChange(position: number, prevPosition: number): void;
+                setSelectedPosition(position: number): void;
+                setItems(items: Array<TabItemSpec>): void;
+                updateItemAt(position: number, itemSpec: TabItemSpec): void;
+
+                getTextViewForItemAt(index: number): android.widget.TextView;
+                getViewForItemAt(index: number): android.widget.LinearLayout;
+                getItemCount(): number;
+            }
+
+            export class TabViewPager extends androidx.viewpager.widget.ViewPager {
                 constructor(context: android.content.Context);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet);
 
@@ -407,8 +464,12 @@
 
             export class TabItemSpec {
                 title: string;
+                fontSize: number;
+                typeFace: android.graphics.Typeface;
                 iconId: number;
                 iconDrawable: android.graphics.drawable.Drawable;
+                backgroundColor: number;
+                color: number;
             }
 
             export namespace image {
@@ -514,6 +575,14 @@
 
                 public static getRotate(view: android.view.View): number;
                 public static setRotate(view: android.view.View, value: number): void;
+
+                public static getRotateX(view: android.view.View): number;
+                public static setRotateX(view: android.view.View, value: number): void;
+
+                public static getRotateY(view: android.view.View): number;
+                public static setRotateY(view: android.view.View, value: number): void;
+
+                public static setPerspective(view: android.view.View, value: number): void;
 
                 public static getScaleX(view: android.view.View): number;
                 public static setScaleX(view: android.view.View, value: number): void;

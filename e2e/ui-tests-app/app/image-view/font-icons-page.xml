@@ -1,0 +1,16 @@
+<Page navigatingTo="navigatingTo">
+    <GridLayout rows="*, *, *" columns="*, *" height="200">
+        <!-- font family only -->
+        <Image row="0" col="0" src="font://&#xF10B;" class="font-awesome"/>
+        <!-- font family + font size -->
+        <Image row="0" col="1" src="font://&#xF10B;" class="font-awesome font-size"/>
+        <!-- font family + color -->
+        <Image row="1" col="0" src="font://&#xF10B;" class="font-awesome color"/>
+        <!-- font family + font size + color -->
+        <Image row="1" col="1" src="font://&#xF10B;" class="font-awesome font-size color"/>
+        <!-- default font + valid char code -->
+        <Image row="2" col="0" src="font://&#xF10B;" />
+        <!-- font family + invalid char code -->
+        <Image row="2" col="1" src="font://&#xF556;" class="font-awesome"/>
+    </GridLayout>
+</Page>

@@ -1,0 +1,6 @@
+@import './main-page-common.css';
+
+Button.even,
+Button.odd {
+    padding: 5;
+}

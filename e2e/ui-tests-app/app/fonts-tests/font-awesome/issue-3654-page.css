@@ -1,0 +1,11 @@
+Button {
+    background-color: #48a23f;
+    text-align: center;
+    width: 32%;
+    height: 25%;
+    font-size: 18em;
+}
+
+.font-awesome {
+    font-family: "FontAwesome";
+}

@@ -1,0 +1,5 @@
+<Page showingModally="onShownModally" actionBarHidden="true" automationText="actionBar">
+    <StackLayout id="layout" >
+        <Button text="Close" tap="onTap" />
+    </StackLayout>
+</Page>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page loaded="pageLoaded">
+    <ScrollView orientation="vertical">
+        <WrapLayout id="wrapLayoutWithExamples"/>
+    </ScrollView>
+</Page>

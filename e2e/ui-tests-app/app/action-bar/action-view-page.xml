@@ -1,0 +1,19 @@
+<Page>
+  <Page.actionBar>
+    <ActionBar automationText="actionBar">
+      <ActionBar.actionItems>
+        <ActionItem tap="navigate">
+          <ActionItem.actionView>
+            <StackLayout orientation="horizontal">
+              <Label text="Green" color="green" />
+              <Label text="Red" color="red" />
+            </StackLayout>
+          </ActionItem.actionView>
+        </ActionItem>
+      </ActionBar.actionItems>
+    </ActionBar>
+  </Page.actionBar>
+  <StackLayout>
+    <Button text="go to cleared page" tap="navigate"/>
+  </StackLayout>
+</Page>

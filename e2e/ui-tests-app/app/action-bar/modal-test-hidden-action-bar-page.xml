@@ -1,0 +1,6 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" actionBarHidden="true" automationText="actionBar">
+  <StackLayout>
+    <button text="Open Modal" tap="btnClick" />
+    <button text="Go Back" tap="btnBack" />
+  </StackLayout>
+</Page>

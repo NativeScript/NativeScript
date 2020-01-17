@@ -1,0 +1,43 @@
+﻿<Page>
+    <Page.actionBar>
+        <ActionBar title="Text transform" class="action-bar"></ActionBar>
+    </Page.actionBar>
+    <StackLayout>
+        <Button class="class-style" id="id-style">
+            <Button.formattedText>
+                <FormattedString>
+                    <FormattedString.spans>
+                        <Span text="button"></Span>
+                    </FormattedString.spans>
+                </FormattedString>
+            </Button.formattedText>
+        </Button>
+        <TextView class="class-style" id="id-style">
+            <TextView.formattedText>
+                <FormattedString>
+                    <FormattedString.spans>
+                        <Span text="text view"></Span>
+                    </FormattedString.spans>
+                </FormattedString>
+            </TextView.formattedText>
+        </TextView>
+        <TextField class="class-style" id="id-style">
+            <TextField.formattedText>
+                <FormattedString>
+                    <FormattedString.spans>
+                        <Span text="text field"></Span>
+                    </FormattedString.spans>
+                </FormattedString>
+            </TextField.formattedText>
+        </TextField>
+        <Label class="class-style" id="id-style">
+            <TextField.formattedText>
+                <FormattedString>
+                    <FormattedString.spans>
+                        <Span text="l a b e l"></Span>
+                    </FormattedString.spans>
+                </FormattedString>
+            </TextField.formattedText>
+        </Label>
+    </StackLayout>
+</Page>

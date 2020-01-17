@@ -9,6 +9,8 @@ declare class ARAnchor extends NSObject implements ARAnchorCopying, NSSecureCodi
 
 	readonly name: string;
 
+	readonly sessionIdentifier: NSUUID;
+
 	readonly transform: simd_float4x4;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -23,11 +25,11 @@ declare class ARAnchor extends NSObject implements ARAnchorCopying, NSSecureCodi
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	initWithAnchor(anchor: ARAnchor): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithNameTransform(name: string, transform: simd_float4x4): this;
 
@@ -147,6 +149,87 @@ declare var ARBlendShapeLocationNoseSneerRight: string;
 
 declare var ARBlendShapeLocationTongueOut: string;
 
+declare class ARBody2D extends NSObject {
+
+	static alloc(): ARBody2D; // inherited from NSObject
+
+	static new(): ARBody2D; // inherited from NSObject
+
+	readonly skeleton: ARSkeleton2D;
+}
+
+declare class ARBodyAnchor extends ARAnchor implements ARTrackable {
+
+	static alloc(): ARBodyAnchor; // inherited from NSObject
+
+	static new(): ARBodyAnchor; // inherited from NSObject
+
+	readonly estimatedScaleFactor: number;
+
+	readonly skeleton: ARSkeleton3D;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly isTracked: boolean; // inherited from ARTrackable
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ARBodyTrackingConfiguration extends ARConfiguration {
+
+	static alloc(): ARBodyTrackingConfiguration; // inherited from NSObject
+
+	static new(): ARBodyTrackingConfiguration; // inherited from NSObject
+
+	autoFocusEnabled: boolean;
+
+	automaticImageScaleEstimationEnabled: boolean;
+
+	automaticSkeletonScaleEstimationEnabled: boolean;
+
+	detectionImages: NSSet<ARReferenceImage>;
+
+	environmentTexturing: AREnvironmentTexturing;
+
+	initialWorldMap: ARWorldMap;
+
+	maximumNumberOfTrackedImages: number;
+
+	planeDetection: ARPlaneDetection;
+
+	wantsHDREnvironmentTextures: boolean;
+}
+
 declare class ARCamera extends NSObject implements NSCopying {
 
 	static alloc(): ARCamera; // inherited from NSObject
@@ -154,6 +237,10 @@ declare class ARCamera extends NSObject implements NSCopying {
 	static new(): ARCamera; // inherited from NSObject
 
 	readonly eulerAngles: interop.Reference<number>;
+
+	readonly exposureDuration: number;
+
+	readonly exposureOffset: number;
 
 	readonly imageResolution: CGSize;
 
@@ -178,11 +265,96 @@ declare class ARCamera extends NSObject implements NSCopying {
 	viewMatrixForOrientation(orientation: UIInterfaceOrientation): simd_float4x4;
 }
 
+declare const enum ARCoachingGoal {
+
+	Tracking = 0,
+
+	HorizontalPlane = 1,
+
+	VerticalPlane = 2,
+
+	AnyPlane = 3
+}
+
+declare class ARCoachingOverlayView extends UIView {
+
+	static alloc(): ARCoachingOverlayView; // inherited from NSObject
+
+	static appearance(): ARCoachingOverlayView; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): ARCoachingOverlayView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): ARCoachingOverlayView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): ARCoachingOverlayView; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): ARCoachingOverlayView; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): ARCoachingOverlayView; // inherited from UIAppearance
+
+	static new(): ARCoachingOverlayView; // inherited from NSObject
+
+	activatesAutomatically: boolean;
+
+	delegate: ARCoachingOverlayViewDelegate;
+
+	goal: ARCoachingGoal;
+
+	readonly isActive: boolean;
+
+	session: ARSession;
+
+	sessionProvider: NSObject;
+
+	setActiveAnimated(active: boolean, animated: boolean): void;
+}
+
+interface ARCoachingOverlayViewDelegate extends NSObjectProtocol {
+
+	coachingOverlayViewDidDeactivate?(coachingOverlayView: ARCoachingOverlayView): void;
+
+	coachingOverlayViewDidRequestSessionReset?(coachingOverlayView: ARCoachingOverlayView): void;
+
+	coachingOverlayViewWillActivate?(coachingOverlayView: ARCoachingOverlayView): void;
+}
+declare var ARCoachingOverlayViewDelegate: {
+
+	prototype: ARCoachingOverlayViewDelegate;
+};
+
+declare class ARCollaborationData extends NSObject implements NSSecureCoding {
+
+	static alloc(): ARCollaborationData; // inherited from NSObject
+
+	static new(): ARCollaborationData; // inherited from NSObject
+
+	readonly priority: ARCollaborationDataPriority;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum ARCollaborationDataPriority {
+
+	Critical = 0,
+
+	Optional = 1
+}
+
 declare class ARConfiguration extends NSObject implements NSCopying {
 
 	static alloc(): ARConfiguration; // inherited from NSObject
 
 	static new(): ARConfiguration; // inherited from NSObject
+
+	static supportsFrameSemantics(frameSemantics: ARFrameSemantics): boolean;
+
+	frameSemantics: ARFrameSemantics;
 
 	lightEstimationEnabled: boolean;
 
@@ -261,6 +433,8 @@ declare const enum ARErrorCode {
 	InvalidWorldMap = 302,
 
 	InvalidConfiguration = 303,
+
+	CollaborationDataUnavailable = 304,
 
 	InsufficientFeatures = 400,
 
@@ -350,11 +524,11 @@ declare class ARFaceGeometry extends NSObject implements NSCopying, NSSecureCodi
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	initWithBlendShapes(blendShapes: NSDictionary<string, number>): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ARFaceTrackingConfiguration extends ARConfiguration {
@@ -362,6 +536,14 @@ declare class ARFaceTrackingConfiguration extends ARConfiguration {
 	static alloc(): ARFaceTrackingConfiguration; // inherited from NSObject
 
 	static new(): ARFaceTrackingConfiguration; // inherited from NSObject
+
+	maximumNumberOfTrackedFaces: number;
+
+	worldTrackingEnabled: boolean;
+
+	static readonly supportedNumberOfTrackedFaces: number;
+
+	static readonly supportsWorldTracking: boolean;
 }
 
 declare class ARFrame extends NSObject implements NSCopying {
@@ -374,15 +556,25 @@ declare class ARFrame extends NSObject implements NSCopying {
 
 	readonly camera: ARCamera;
 
+	readonly cameraGrainIntensity: number;
+
+	readonly cameraGrainTexture: MTLTexture;
+
 	readonly capturedDepthData: AVDepthData;
 
 	readonly capturedDepthDataTimestamp: number;
 
 	readonly capturedImage: any;
 
+	readonly detectedBody: ARBody2D;
+
+	readonly estimatedDepthData: any;
+
 	readonly lightEstimate: ARLightEstimate;
 
 	readonly rawFeaturePoints: ARPointCloud;
+
+	readonly segmentationBuffer: any;
 
 	readonly timestamp: number;
 
@@ -393,6 +585,19 @@ declare class ARFrame extends NSObject implements NSCopying {
 	displayTransformForOrientationViewportSize(orientation: UIInterfaceOrientation, viewportSize: CGSize): CGAffineTransform;
 
 	hitTestTypes(point: CGPoint, types: ARHitTestResultType): NSArray<ARHitTestResult>;
+
+	raycastQueryFromPointAllowingTargetAlignment(point: CGPoint, target: ARRaycastTarget, alignment: ARRaycastTargetAlignment): ARRaycastQuery;
+}
+
+declare const enum ARFrameSemantics {
+
+	None = 0,
+
+	PersonSegmentation = 1,
+
+	PersonSegmentationWithDepth = 3,
+
+	BodyDetection = 4
 }
 
 declare class ARHitTestResult extends NSObject {
@@ -432,6 +637,8 @@ declare class ARImageAnchor extends ARAnchor implements ARTrackable {
 	static alloc(): ARImageAnchor; // inherited from NSObject
 
 	static new(): ARImageAnchor; // inherited from NSObject
+
+	readonly estimatedScaleFactor: number;
 
 	readonly referenceImage: ARReferenceImage;
 
@@ -496,6 +703,28 @@ declare class ARLightEstimate extends NSObject {
 	readonly ambientIntensity: number;
 }
 
+declare class ARMatteGenerator extends NSObject {
+
+	static alloc(): ARMatteGenerator; // inherited from NSObject
+
+	static new(): ARMatteGenerator; // inherited from NSObject
+
+	constructor(o: { device: MTLDevice; matteResolution: ARMatteResolution; });
+
+	generateDilatedDepthFromFrameCommandBuffer(frame: ARFrame, commandBuffer: MTLCommandBuffer): MTLTexture;
+
+	generateMatteFromFrameCommandBuffer(frame: ARFrame, commandBuffer: MTLCommandBuffer): MTLTexture;
+
+	initWithDeviceMatteResolution(device: MTLDevice, matteResolution: ARMatteResolution): this;
+}
+
+declare const enum ARMatteResolution {
+
+	Full = 0,
+
+	Half = 1
+}
+
 declare class ARObjectAnchor extends ARAnchor {
 
 	static alloc(): ARObjectAnchor; // inherited from NSObject
@@ -523,6 +752,13 @@ declare class AROrientationTrackingConfiguration extends ARConfiguration {
 	static new(): AROrientationTrackingConfiguration; // inherited from NSObject
 
 	autoFocusEnabled: boolean;
+}
+
+declare class ARParticipantAnchor extends ARAnchor {
+
+	static alloc(): ARParticipantAnchor; // inherited from NSObject
+
+	static new(): ARParticipantAnchor; // inherited from NSObject
 }
 
 declare class ARPlaneAnchor extends ARAnchor {
@@ -565,7 +801,11 @@ declare const enum ARPlaneClassification {
 
 	Table = 4,
 
-	Seat = 5
+	Seat = 5,
+
+	Window = 6,
+
+	Door = 7
 }
 
 declare const enum ARPlaneClassificationStatus {
@@ -614,9 +854,9 @@ declare class ARPlaneGeometry extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ARPointCloud extends NSObject implements NSSecureCoding {
@@ -635,9 +875,125 @@ declare class ARPointCloud extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class ARPositionalTrackingConfiguration extends ARConfiguration {
+
+	static alloc(): ARPositionalTrackingConfiguration; // inherited from NSObject
+
+	static new(): ARPositionalTrackingConfiguration; // inherited from NSObject
+
+	initialWorldMap: ARWorldMap;
+
+	planeDetection: ARPlaneDetection;
+}
+
+declare class ARQuickLookPreviewItem extends NSObject implements QLPreviewItem {
+
+	static alloc(): ARQuickLookPreviewItem; // inherited from NSObject
+
+	static new(): ARQuickLookPreviewItem; // inherited from NSObject
+
+	allowsContentScaling: boolean;
+
+	canonicalWebPageURL: NSURL;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly previewItemTitle: string; // inherited from QLPreviewItem
+
+	readonly previewItemURL: NSURL; // inherited from QLPreviewItem
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { fileAtURL: NSURL; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithFileAtURL(url: NSURL): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ARRaycastQuery extends NSObject {
+
+	static alloc(): ARRaycastQuery; // inherited from NSObject
+
+	static new(): ARRaycastQuery; // inherited from NSObject
+
+	readonly direction: interop.Reference<number>;
+
+	readonly origin: interop.Reference<number>;
+
+	readonly target: ARRaycastTarget;
+
+	readonly targetAlignment: ARRaycastTargetAlignment;
+
+	constructor(o: { origin: interop.Reference<number>; direction: interop.Reference<number>; allowingTarget: ARRaycastTarget; alignment: ARRaycastTargetAlignment; });
+
+	initWithOriginDirectionAllowingTargetAlignment(origin: interop.Reference<number>, direction: interop.Reference<number>, target: ARRaycastTarget, alignment: ARRaycastTargetAlignment): this;
+}
+
+declare class ARRaycastResult extends NSObject {
+
+	static alloc(): ARRaycastResult; // inherited from NSObject
+
+	static new(): ARRaycastResult; // inherited from NSObject
+
+	readonly anchor: ARAnchor;
+
+	readonly target: ARRaycastTarget;
+
+	readonly targetAlignment: ARRaycastTargetAlignment;
+
+	readonly worldTransform: simd_float4x4;
+}
+
+declare const enum ARRaycastTarget {
+
+	ExistingPlaneGeometry = 0,
+
+	ExistingPlaneInfinite = 1,
+
+	EstimatedPlane = 2
+}
+
+declare const enum ARRaycastTargetAlignment {
+
+	Horizontal = 0,
+
+	Vertical = 1,
+
+	Any = 2
 }
 
 declare class ARReferenceImage extends NSObject {
@@ -652,6 +1008,8 @@ declare class ARReferenceImage extends NSObject {
 
 	readonly physicalSize: CGSize;
 
+	readonly resourceGroupName: string;
+
 	constructor(o: { CGImage: any; orientation: CGImagePropertyOrientation; physicalWidth: number; });
 
 	constructor(o: { pixelBuffer: any; orientation: CGImagePropertyOrientation; physicalWidth: number; });
@@ -659,6 +1017,8 @@ declare class ARReferenceImage extends NSObject {
 	initWithCGImageOrientationPhysicalWidth(image: any, orientation: CGImagePropertyOrientation, physicalWidth: number): this;
 
 	initWithPixelBufferOrientationPhysicalWidth(pixelBuffer: any, orientation: CGImagePropertyOrientation, physicalWidth: number): this;
+
+	validateWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 }
 
 declare class ARReferenceObject extends NSObject implements NSSecureCoding {
@@ -677,6 +1037,8 @@ declare class ARReferenceObject extends NSObject implements NSSecureCoding {
 
 	readonly rawFeaturePoints: ARPointCloud;
 
+	readonly resourceGroupName: string;
+
 	readonly scale: interop.Reference<number>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -685,13 +1047,13 @@ declare class ARReferenceObject extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	exportObjectToURLPreviewImageError(url: NSURL, previewImage: UIImage): boolean;
 
 	initWithArchiveURLError(url: NSURL): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	referenceObjectByApplyingTransform(transform: simd_float4x4): ARReferenceObject;
 
@@ -740,7 +1102,7 @@ declare class ARSCNPlaneGeometry extends SCNGeometry {
 	updateFromPlaneGeometry(planeGeometry: ARPlaneGeometry): void;
 }
 
-declare class ARSCNView extends SCNView {
+declare class ARSCNView extends SCNView implements ARSessionProviding {
 
 	static alloc(): ARSCNView; // inherited from NSObject
 
@@ -762,13 +1124,53 @@ declare class ARSCNView extends SCNView {
 
 	delegate: ARSCNViewDelegate;
 
+	rendersCameraGrain: boolean;
+
+	rendersMotionBlur: boolean;
+
 	session: ARSession;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
 
 	anchorForNode(node: SCNNode): ARAnchor;
 
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	hitTestTypes(point: CGPoint, types: ARHitTestResultType): NSArray<ARHitTestResult>;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
 	nodeForAnchor(anchor: ARAnchor): SCNNode;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	raycastQueryFromPointAllowingTargetAlignment(point: CGPoint, target: ARRaycastTarget, alignment: ARRaycastTargetAlignment): ARRaycastQuery;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 
 	unprojectPointOntoPlaneWithTransform(point: CGPoint, planeTransform: simd_float4x4): interop.Reference<number>;
 }
@@ -790,7 +1192,7 @@ declare var ARSCNViewDelegate: {
 	prototype: ARSCNViewDelegate;
 };
 
-declare class ARSKView extends SKView {
+declare class ARSKView extends SKView implements ARSessionProviding {
 
 	static alloc(): ARSKView; // inherited from NSObject
 
@@ -812,11 +1214,45 @@ declare class ARSKView extends SKView {
 
 	session: ARSession;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
 	anchorForNode(node: SKNode): ARAnchor;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	hitTestTypes(point: CGPoint, types: ARHitTestResultType): NSArray<ARHitTestResult>;
 
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
 	nodeForAnchor(anchor: ARAnchor): SKNode;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 interface ARSKViewDelegate extends ARSessionObserver, SKViewDelegate {
@@ -836,6 +1272,13 @@ declare var ARSKViewDelegate: {
 	prototype: ARSKViewDelegate;
 };
 
+declare const enum ARSegmentationClass {
+
+	None = 0,
+
+	Person = 255
+}
+
 declare class ARSession extends NSObject {
 
 	static alloc(): ARSession; // inherited from NSObject
@@ -850,6 +1293,8 @@ declare class ARSession extends NSObject {
 
 	delegateQueue: NSObject;
 
+	readonly identifier: NSUUID;
+
 	addAnchor(anchor: ARAnchor): void;
 
 	createReferenceObjectWithTransformCenterExtentCompletionHandler(transform: simd_float4x4, center: interop.Reference<number>, extent: interop.Reference<number>, completionHandler: (p1: ARReferenceObject, p2: NSError) => void): void;
@@ -858,6 +1303,8 @@ declare class ARSession extends NSObject {
 
 	pause(): void;
 
+	raycast(query: ARRaycastQuery): NSArray<ARRaycastResult>;
+
 	removeAnchor(anchor: ARAnchor): void;
 
 	runWithConfiguration(configuration: ARConfiguration): void;
@@ -865,6 +1312,10 @@ declare class ARSession extends NSObject {
 	runWithConfigurationOptions(configuration: ARConfiguration, options: ARSessionRunOptions): void;
 
 	setWorldOrigin(relativeTransform: simd_float4x4): void;
+
+	trackedRaycastUpdateHandler(query: ARRaycastQuery, updateHandler: (p1: NSArray<ARRaycastResult>) => void): ARTrackedRaycast;
+
+	updateWithCollaborationData(collaborationData: ARCollaborationData): void;
 }
 
 interface ARSessionDelegate extends ARSessionObserver {
@@ -890,6 +1341,8 @@ interface ARSessionObserver extends NSObjectProtocol {
 
 	sessionDidOutputAudioSampleBuffer?(session: ARSession, audioSampleBuffer: any): void;
 
+	sessionDidOutputCollaborationData?(session: ARSession, data: ARCollaborationData): void;
+
 	sessionInterruptionEnded?(session: ARSession): void;
 
 	sessionShouldAttemptRelocalization?(session: ARSession): boolean;
@@ -901,12 +1354,99 @@ declare var ARSessionObserver: {
 	prototype: ARSessionObserver;
 };
 
+interface ARSessionProviding extends NSObjectProtocol {
+
+	session: ARSession;
+}
+declare var ARSessionProviding: {
+
+	prototype: ARSessionProviding;
+};
+
 declare const enum ARSessionRunOptions {
 
 	ResetTracking = 1,
 
-	RemoveExistingAnchors = 2
+	RemoveExistingAnchors = 2,
+
+	StopTrackedRaycasts = 4
 }
+
+declare class ARSkeleton extends NSObject {
+
+	static alloc(): ARSkeleton; // inherited from NSObject
+
+	static new(): ARSkeleton; // inherited from NSObject
+
+	readonly definition: ARSkeletonDefinition;
+
+	readonly jointCount: number;
+
+	isJointTracked(jointIndex: number): boolean;
+}
+
+declare class ARSkeleton2D extends ARSkeleton {
+
+	static alloc(): ARSkeleton2D; // inherited from NSObject
+
+	static new(): ARSkeleton2D; // inherited from NSObject
+
+	readonly jointLandmarks: interop.Pointer | interop.Reference<interop.Reference<number>>;
+
+	landmarkForJointNamed(jointName: string): interop.Reference<number>;
+}
+
+declare class ARSkeleton3D extends ARSkeleton {
+
+	static alloc(): ARSkeleton3D; // inherited from NSObject
+
+	static new(): ARSkeleton3D; // inherited from NSObject
+
+	readonly jointLocalTransforms: interop.Pointer | interop.Reference<simd_float4x4>;
+
+	readonly jointModelTransforms: interop.Pointer | interop.Reference<simd_float4x4>;
+
+	localTransformForJointName(jointName: string): simd_float4x4;
+
+	modelTransformForJointName(jointName: string): simd_float4x4;
+}
+
+declare class ARSkeletonDefinition extends NSObject {
+
+	static alloc(): ARSkeletonDefinition; // inherited from NSObject
+
+	static new(): ARSkeletonDefinition; // inherited from NSObject
+
+	readonly jointCount: number;
+
+	readonly jointNames: NSArray<string>;
+
+	readonly neutralBodySkeleton3D: ARSkeleton3D;
+
+	readonly parentIndices: NSArray<number>;
+
+	static readonly defaultBody2DSkeletonDefinition: ARSkeletonDefinition;
+
+	static readonly defaultBody3DSkeletonDefinition: ARSkeletonDefinition;
+
+	indexForJointName(jointName: string): number;
+}
+
+declare var ARSkeletonJointNameHead: string;
+
+declare var ARSkeletonJointNameLeftFoot: string;
+
+declare var ARSkeletonJointNameLeftHand: string;
+
+declare var ARSkeletonJointNameLeftShoulder: string;
+
+declare var ARSkeletonJointNameRightFoot: string;
+
+declare var ARSkeletonJointNameRightHand: string;
+
+declare var ARSkeletonJointNameRightShoulder: string;
+
+declare var ARSkeletonJointNameRoot: string;
 
 interface ARTrackable extends NSObjectProtocol {
 
@@ -916,6 +1456,15 @@ declare var ARTrackable: {
 
 	prototype: ARTrackable;
 };
+
+declare class ARTrackedRaycast extends NSObject {
+
+	static alloc(): ARTrackedRaycast; // inherited from NSObject
+
+	static new(): ARTrackedRaycast; // inherited from NSObject
+
+	stopTracking(): void;
+}
 
 declare const enum ARTrackingState {
 
@@ -944,6 +1493,8 @@ declare class ARVideoFormat extends NSObject implements NSCopying {
 	static alloc(): ARVideoFormat; // inherited from NSObject
 
 	static new(): ARVideoFormat; // inherited from NSObject
+
+	readonly captureDevicePosition: AVCaptureDevicePosition;
 
 	readonly framesPerSecond: number;
 
@@ -981,9 +1532,9 @@ declare class ARWorldMap extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum ARWorldMappingStatus {
@@ -1005,6 +1556,10 @@ declare class ARWorldTrackingConfiguration extends ARConfiguration {
 
 	autoFocusEnabled: boolean;
 
+	automaticImageScaleEstimationEnabled: boolean;
+
+	collaborationEnabled: boolean;
+
 	detectionImages: NSSet<ARReferenceImage>;
 
 	detectionObjects: NSSet<ARReferenceObject>;
@@ -1016,4 +1571,10 @@ declare class ARWorldTrackingConfiguration extends ARConfiguration {
 	maximumNumberOfTrackedImages: number;
 
 	planeDetection: ARPlaneDetection;
+
+	userFaceTrackingEnabled: boolean;
+
+	wantsHDREnvironmentTextures: boolean;
+
+	static readonly supportsUserFaceTracking: boolean;
 }

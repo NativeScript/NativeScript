@@ -1,0 +1,5 @@
+﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+  <StackLayout>
+    <Label text="&#xf117;" style="font-family: Material-Design-Iconic-Font" /> <!--Moved to tab-view.xml-->
+  </StackLayout>
+</Page>

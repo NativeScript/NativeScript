@@ -1,0 +1,8 @@
+<Page showingModally="onShownModally">
+    <StackLayout id="layout" >
+        <Label backgroundColor="green" id="label1" text="short" textWrap="true" />
+        <Label backgroundColor="red" id="label2" text="" textWrap="true" />
+        <Button text="Change text" tap="change" />
+        <Button text="Close" tap="onTap" />
+    </StackLayout>
+</Page>

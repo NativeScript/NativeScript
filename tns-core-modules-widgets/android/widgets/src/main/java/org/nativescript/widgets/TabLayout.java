@@ -18,8 +18,8 @@ package org.nativescript.widgets;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -284,6 +284,10 @@ public class TabLayout extends HorizontalScrollView {
             textView.setVisibility(GONE);
         }
 
+        if (tabItem.backgroundColor != 0) {
+            ll.setBackgroundColor(tabItem.backgroundColor);
+        }
+
         if (imgView.getVisibility() == VISIBLE && textView.getVisibility() == VISIBLE) {
             ll.setMinimumHeight((int) (LARGE_MIN_HEIGHT * density));
         } else {
@@ -295,6 +299,15 @@ public class TabLayout extends HorizontalScrollView {
             lp.width = 0;
             lp.weight = 1;
         }
+    }
+
+    public boolean onTap(int position) {
+        // to be overridden in JS
+        return true;
+    }
+
+    public void onSelectedPositionChange(int position, int prevPosition) {
+        // to be overridden in JS
     }
 
     private void populateTabStrip() {
@@ -370,6 +383,12 @@ public class TabLayout extends HorizontalScrollView {
                 return;
             }
 
+            int prevPosition = mTabStrip.getSelectedPosition();
+
+            if (prevPosition != position) {
+                onSelectedPositionChange(position, prevPosition);
+            }
+
             mTabStrip.onViewPagerPageChanged(position, positionOffset);
 
             View selectedTitle = mTabStrip.getChildAt(position);
@@ -411,7 +430,9 @@ public class TabLayout extends HorizontalScrollView {
         public void onClick(View v) {
             for (int i = 0; i < mTabStrip.getChildCount(); i++) {
                 if (v == mTabStrip.getChildAt(i)) {
-                    mViewPager.setCurrentItem(i);
+                    if (onTap(i)) {
+                        mViewPager.setCurrentItem(i);
+                    }
                     return;
                 }
             }

@@ -1,0 +1,9 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo">
+    <StackLayout>
+            <Button id="button1" text="Shosho button" margin="10"/>
+            <Label id="label1" text="Shosho label" margin="10"/>
+
+            <Button text="1. Set border width to 3" tap="onSetBorderWidthTo3" />
+            <Button text="2. Set border width to 0" tap="onSetBorderWidthTo0" />
+    </StackLayout>
+</Page>

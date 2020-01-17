@@ -1,0 +1,8 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+  <Page.actionBar>
+      <ActionBar title="red green"/>
+  </Page.actionBar>
+  <StackLayout>
+    <Button text="Forward" tap="onTap" />
+  </StackLayout>
+</Page>

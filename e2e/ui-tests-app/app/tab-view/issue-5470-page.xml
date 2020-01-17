@@ -1,0 +1,29 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+
+    <Page.actionBar>
+        <ActionBar title="TabView content sizing" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <TabView id="tabViewContainer">
+        <TabView.items>
+            <TabViewItem title="Tab1" >
+                <TabViewItem.view>
+                    <GridLayout rows="*, auto" columns="*">
+                        <StackLayout row="0" backgroundColor="lightblue"></StackLayout>
+                        <StackLayout row="1" backgroundColor="green" height="50"></StackLayout>
+                    </GridLayout>
+                </TabViewItem.view>
+            </TabViewItem>
+            <TabViewItem title="Tab2" >
+                <TabViewItem.view>
+                    <GridLayout rows="*, auto" columns="*">
+                        <StackLayout row="0" backgroundColor="lightblue"></StackLayout>
+                        <StackLayout row="1" backgroundColor="red" height="50"></StackLayout>
+                    </GridLayout>
+                </TabViewItem.view>
+            </TabViewItem>
+        </TabView.items>
+    </TabView>
+
+</Page>

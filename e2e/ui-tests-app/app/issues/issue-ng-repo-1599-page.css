@@ -1,0 +1,35 @@
+.page {
+  padding: 20;
+}
+
+.title {
+  font-weight: bold;
+}
+
+.list-items {
+  border-radius: 10;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center top;
+  background-color: black;
+  margin-top: 20;
+}
+
+.item-title {
+  color: white;
+  vertical-align: bottom;
+  font-size: 30;
+  padding: 180 20 20;
+  font-weight: 600;
+}
+
+.list-item__row {
+  padding-left: 20;
+}
+
+.list-item {
+  border-radius: 4;
+  background-color: white;
+  margin: 0 10 20 0;
+  padding: 5 10;
+}

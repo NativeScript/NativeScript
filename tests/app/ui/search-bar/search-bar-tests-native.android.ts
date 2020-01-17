@@ -1,6 +1,6 @@
-import * as colorModule from "tns-core-modules/color";
-import * as searchBarModule from "tns-core-modules/ui/search-bar";
-import * as utils from "tns-core-modules/utils/utils";
+import * as colorModule from "@nativescript/core/color";
+import * as searchBarModule from "@nativescript/core/ui/search-bar";
+import * as utils from "@nativescript/core/utils/utils";
 
 function getTextView(bar: android.widget.SearchView): android.widget.TextView {
     if (bar) {
@@ -20,6 +20,7 @@ export function getNativeHintColor(searchBar: searchBarModule.SearchBar): colorM
     if (textView) {
         return new colorModule.Color(textView.getHintTextColors().getDefaultColor());
     }
+
     return undefined;
 }
 
@@ -29,6 +30,7 @@ export function getNativeTextFieldBackgroundColor(searchBar: searchBarModule.Sea
     if (textView) {
         return new colorModule.Color((<android.graphics.drawable.ColorDrawable>textView.getBackground()).getColor());
     }
+
     return undefined;
 }
 
@@ -38,5 +40,6 @@ export function getNativeFontSize(searchBar: searchBarModule.SearchBar): number 
     if (textView) {
         return textView.getTextSize() / utils.layout.getDisplayDensity();
     }
+
     return undefined;
 }

@@ -1,16 +1,16 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
-import { Button } from "tns-core-modules/ui/button";
-import { Label } from "tns-core-modules/ui/label";
-import { TextField } from "tns-core-modules/ui/text-field";
-import { TextView } from "tns-core-modules/ui/text-view";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { Color } from "tns-core-modules/color";
-import { isAndroid, isIOS } from "tns-core-modules/platform";
-import { View } from "tns-core-modules/ui/core/view";
-import { Length, PercentLength } from "tns-core-modules/ui/core/view";
-import * as fontModule from "tns-core-modules/ui/styling/font";
-import { LengthPercentUnit, LengthPxUnit } from "tns-core-modules/ui/styling/style-properties";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
+import { Button } from "@nativescript/core/ui/button";
+import { Label } from "@nativescript/core/ui/label";
+import { TextField } from "@nativescript/core/ui/text-field";
+import { TextView } from "@nativescript/core/ui/text-view";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { Color } from "@nativescript/core/color";
+import { isAndroid, isIOS } from "@nativescript/core/platform";
+import { View } from "@nativescript/core/ui/core/view";
+import { Length, PercentLength } from "@nativescript/core/ui/core/view";
+import * as fontModule from "@nativescript/core/ui/styling/font";
+import { LengthPercentUnit, LengthPxUnit } from "@nativescript/core/ui/styling/style-properties";
 
 export function test_setting_textDecoration_property_from_CSS_is_applied_to_Style() {
     test_property_from_CSS_is_applied_to_style("textDecoration", "text-decoration", "underline");
@@ -626,7 +626,7 @@ export function test_setting_label_whiteSpace_nowrap_sets_native() {
             TKUnit.assertEqual((<UILabel>testView.ios).numberOfLines, 1);
         }
     });
-};
+}
 
 export function test_setting_label_whiteSpace_normal_sets_native() {
     const testView = new Label();
@@ -640,7 +640,7 @@ export function test_setting_label_whiteSpace_normal_sets_native() {
             TKUnit.assertEqual((<UILabel>testView.ios).numberOfLines, 0);
         }
     });
-};
+}
 
 export function test_setting_button_whiteSpace_nowrap_sets_native() {
     const testView = new Button();
@@ -654,7 +654,7 @@ export function test_setting_button_whiteSpace_nowrap_sets_native() {
             TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 1);
         }
     });
-};
+}
 
 export function test_setting_button_whiteSpace_normal_sets_native() {
     const testView = new Button();
@@ -668,7 +668,7 @@ export function test_setting_button_whiteSpace_normal_sets_native() {
             TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 0);
         }
     });
-};
+}
 
 const initial = "text Text";
 const capitalized = "Text Text";
@@ -752,23 +752,6 @@ export const test_setting_textView_textTransform_sets_native = function () {
     }
 };
 
-export const test_setting_button_textTransform_sets_native = function () {
-    const testView = new Button();
-    testView.text = initial;
-    testView.style.textTransform = "capitalize";
-
-    executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).titleForState(UIControlState.Normal); });
-};
-
-export const test_setting_label_textTransform_and_textDecoration_sets_native = function () {
-    const testView = new Label();
-    testView.text = initial;
-    testView.style.textTransform = "capitalize";
-    testView.style.textDecoration = "underline";
-
-    executeTransformTest(testView, androidText, iOSText);
-};
-
 export const test_setting_textField_textTransform_and_textDecoration_sets_native = function () {
     if (isIOS) {
         const testView = new TextField();
@@ -789,6 +772,23 @@ export const test_setting_textView_textTransform_and_textDecoration_sets_native 
 
         executeTransformTest(testView, androidText, iOSText);
     }
+};
+
+export const test_setting_button_textTransform_sets_native = function () {
+    const testView = new Button();
+    testView.text = initial;
+    testView.style.textTransform = "capitalize";
+
+    executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).titleForState(UIControlState.Normal); });
+};
+
+export const test_setting_label_textTransform_and_textDecoration_sets_native = function () {
+    const testView = new Label();
+    testView.text = initial;
+    testView.style.textTransform = "capitalize";
+    testView.style.textDecoration = "underline";
+
+    executeTransformTest(testView, androidText, iOSText);
 };
 
 export const test_setting_button_textTransform_and_textDecoration_sets_native = function () {
@@ -878,16 +878,16 @@ function assertPercentLengthParseInputOutputPairs(pairs: [string, any][]) {
 
 export function test_PercentLength_parses_pixel_values_from_string_input() {
     assertPercentLengthParseInputOutputPairs([
-        ["4px", {unit: "px", value: 4}],
-        ["-4px", {unit: "px", value: -4}],
+        ["4px", { unit: "px", value: 4 }],
+        ["-4px", { unit: "px", value: -4 }],
     ]);
 }
 
 export function test_PercentLength_parses_percentage_values_from_string_input() {
     assertPercentLengthParseInputOutputPairs([
-        ["4%", {unit: "%", value: 0.04}],
-        ["17%", {unit: "%", value: 0.17}],
-        ["-27%", {unit: "%", value: -0.27}],
+        ["4%", { unit: "%", value: 0.04 }],
+        ["17%", { unit: "%", value: 0.17 }],
+        ["-27%", { unit: "%", value: -0.27 }],
     ]);
 }
 
@@ -910,7 +910,7 @@ export function test_PercentLength_returns_unsupported_types_untouched() {
     const inputs: any[] = [
         null,
         undefined,
-        {baz: true}
+        { baz: true }
     ];
     inputs.forEach((input) => {
         const result = PercentLength.parse(input);

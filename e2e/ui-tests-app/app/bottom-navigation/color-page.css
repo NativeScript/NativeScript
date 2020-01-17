@@ -1,0 +1,27 @@
+BottomNavigation {
+  color: gold;
+}
+
+TabContentItem.special {
+  color: olive;
+}
+
+TabStrip {
+  color: skyblue;
+}
+
+TabStripItem.special {
+  color: teal;
+}
+
+TabStripItem.special:active {
+  color: yellowgreen;
+}
+
+TabStripItem.nested Label {
+  color: teal;
+}
+
+TabStripItem.nested:active Label {
+  color: yellowgreen;
+}

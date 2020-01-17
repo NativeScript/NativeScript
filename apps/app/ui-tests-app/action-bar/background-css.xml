@@ -1,6 +1,0 @@
-<Page>
-  <ActionBar title="This is RED" class="action" />
-  <StackLayout>
-    <Button text="go to cleared page" tap="navigate"/>
-  </StackLayout>
-</Page>

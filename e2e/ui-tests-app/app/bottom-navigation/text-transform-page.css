@@ -1,0 +1,27 @@
+BottomNavigation {
+  text-transform: lowercase;
+}
+
+TabContentItem.special {
+  text-transform: uppercase;
+}
+
+TabStrip {
+  text-transform: capitalize;
+}
+
+TabStripItem.special {
+  text-transform: lowercase;
+}
+
+TabStripItem.special:active {
+  text-transform: uppercase;
+}
+
+TabStripItem.nested Label {
+  text-transform: lowercase;
+}
+
+TabStripItem.nested:active Label {
+  text-transform: uppercase;
+}

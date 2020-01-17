@@ -1,0 +1,14 @@
+<Page>
+  <Page.actionBar>
+    <ActionBar automationText="actionBar">
+      <ActionBar.actionItems>
+        <ActionItem icon="res://icon" tap="navigate"/>
+        <ActionItem icon="res://add_to_fav" tap="navigate"/>
+      </ActionBar.actionItems>
+    </ActionBar>
+  </Page.actionBar>
+  <StackLayout>
+    <Button text="go to cleared page" automationText="goToClearedPage" tap="navigate"/>
+    <Button text="undefined" tap="onChangeRenderingMode"/>
+  </StackLayout>
+</Page>

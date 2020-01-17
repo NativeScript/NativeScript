@@ -1,0 +1,32 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo" class="page">
+
+    <Page.actionBar>
+        <ActionBar title="My App" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <StackLayout>
+        <StackLayout class="p-10" row="0">
+            <Label text="Default style = scrolls out of container" class="body m-b-10" />
+            <TextView hint="Add your comment..." />
+        </StackLayout>
+
+        <StackLayout class="p-10" row="1">
+            <Label text="Adding border changes the height but fixes scrolling" textWrap="true" class="body m-b-10" />
+            <TextView hint="Add your comment..." class="bordered" />
+        </StackLayout>
+
+        <StackLayout class="p-10" row="2">
+            <TextView hint="bordered fixed-height border-radius" class="bordered fixed-height border-radius" />
+        </StackLayout>
+
+        <StackLayout class="p-10" row="2">
+            <TextView hint="bordered fixed-height border-radius-nonuniform" class="bordered fixed-height border-radius-nonuniform" />
+        </StackLayout>
+
+        <StackLayout class="p-10" row="3">
+            <TextView hint="bordered-nonuniform fixed-height" class="bordered-nonuniform fixed-height" />
+        </StackLayout>
+
+    </StackLayout>
+</Page>

@@ -1,0 +1,34 @@
+<Page>
+    <GridLayout rows="*,*,*,*,*" columns="*,*" automationText="clipPath">
+        <StackLayout col="0" colSpan="2" row="0" width="100" height="100" style.backgroundColor="magenta">
+            <Button width="100" height="100" text="no clip-path" style="background-image: url('~/resources/images/inset-test.png'); background-size: 100% 100%; background-repeat: no-repeat;" />
+        </StackLayout>
+
+        <StackLayout col="0" row="1" width="100" height="100" style.backgroundColor="magenta">
+            <Button width="100" height="100" text="inset(10)" style="clip-path: inset(10); background-image: url('~/resources/images/inset-test.png'); background-size: 100% 100%; background-repeat: no-repeat;" />
+        </StackLayout>
+        <StackLayout col="0" row="2" width="100" height="100" style.backgroundColor="magenta">
+            <Button width="100" height="100" text="inset(10 20)" style="clip-path: inset(10 20); background-image: url('~/resources/images/inset-test.png'); background-size: 100% 100%; background-repeat: no-repeat;" />
+        </StackLayout>
+        <StackLayout col="0" row="3" width="100" height="100" style.backgroundColor="magenta">
+            <Button width="100" height="100" text="inset(10 20 30)" style="clip-path: inset(10 20 30); background-image: url('~/resources/images/inset-test.png'); background-size: 100% 100%; background-repeat: no-repeat;" />
+        </StackLayout>
+        <StackLayout col="0" row="4" width="100" height="100" style.backgroundColor="magenta">
+            <Button width="100" height="100" text="inset(10 20 30 40)" style="clip-path: inset(10 20 30 40); background-image: url('~/resources/images/inset-test.png'); background-size: 100% 100%; background-repeat: no-repeat;" />
+        </StackLayout>
+
+        <StackLayout col="1" row="1" width="100" height="100" style.backgroundColor="magenta">
+            <Button width="100" height="100" text="inset(10%)" style="clip-path: inset(10%); background-image: url('~/resources/images/inset-test.png'); background-size: 100% 100%; background-repeat: no-repeat;" />
+        </StackLayout>
+        <StackLayout col="1" row="2" width="100" height="100" style.backgroundColor="magenta">
+            <Button width="100" height="100" text="inset(10% 20%)" style="clip-path: inset(10% 20%); background-image: url('~/resources/images/inset-test.png'); background-size: 100% 100%; background-repeat: no-repeat;" />
+        </StackLayout>
+        <StackLayout col="1" row="3" width="100" height="100" style.backgroundColor="magenta">
+            <Button width="100" height="100" text="inset(10% 20% 30%)" style="clip-path: inset(10% 20% 30%); background-image: url('~/resources/images/inset-test.png'); background-size: 100% 100%; background-repeat: no-repeat;" />
+        </StackLayout>
+        <StackLayout col="1" row="4" width="100" height="100" style.backgroundColor="magenta">
+            <Button width="100" height="100" text="inset(10% 20% 30% 40%)" style="clip-path: inset(10% 20% 30% 40%); background-image: url('~/resources/images/inset-test.png'); background-size: 100% 100%; background-repeat: no-repeat;" />
+        </StackLayout>
+
+    </GridLayout>
+</Page>

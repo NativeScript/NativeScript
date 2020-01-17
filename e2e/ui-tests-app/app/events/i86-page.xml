@@ -1,0 +1,14 @@
+﻿<Page>
+  <StackLayout>
+    <Label margin="2">
+      <Label.formattedText>
+        <FormattedString color="White">
+          <FormattedString.spans>
+            <Span text="FormattedString foregroundColor cannot be set to named color" />
+            <Span text="https://github.com/NativeScript/cross-platform-modules/issues/86"/>
+          </FormattedString.spans>
+        </FormattedString>
+      </Label.formattedText>
+    </Label>
+  </StackLayout>
+</Page>

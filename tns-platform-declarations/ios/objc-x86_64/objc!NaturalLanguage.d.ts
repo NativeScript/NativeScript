@@ -1,4 +1,89 @@
 
+declare const enum NLDistanceType {
+
+	Cosine = 0
+}
+
+declare class NLEmbedding extends NSObject {
+
+	static alloc(): NLEmbedding; // inherited from NSObject
+
+	static currentRevisionForLanguage(language: string): number;
+
+	static embeddingWithContentsOfURLError(url: NSURL): NLEmbedding;
+
+	static new(): NLEmbedding; // inherited from NSObject
+
+	static supportedRevisionsForLanguage(language: string): NSIndexSet;
+
+	static wordEmbeddingForLanguage(language: string): NLEmbedding;
+
+	static wordEmbeddingForLanguageRevision(language: string, revision: number): NLEmbedding;
+
+	static writeEmbeddingForDictionaryLanguageRevisionToURLError(dictionary: NSDictionary<string, NSArray<number>>, language: string, revision: number, url: NSURL): boolean;
+
+	readonly dimension: number;
+
+	readonly language: string;
+
+	readonly revision: number;
+
+	readonly vocabularySize: number;
+
+	containsString(string: string): boolean;
+
+	distanceBetweenStringAndStringDistanceType(firstString: string, secondString: string, distanceType: NLDistanceType): number;
+
+	enumerateNeighborsForStringMaximumCountDistanceTypeUsingBlock(string: string, maxCount: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	enumerateNeighborsForStringMaximumCountMaximumDistanceDistanceTypeUsingBlock(string: string, maxCount: number, maxDistance: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	enumerateNeighborsForVectorMaximumCountDistanceTypeUsingBlock(vector: NSArray<number> | number[], maxCount: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	enumerateNeighborsForVectorMaximumCountMaximumDistanceDistanceTypeUsingBlock(vector: NSArray<number> | number[], maxCount: number, maxDistance: number, distanceType: NLDistanceType, block: (p1: string, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	getVectorForString(vector: interop.Pointer | interop.Reference<number>, string: string): boolean;
+
+	neighborsForStringMaximumCountDistanceType(string: string, maxCount: number, distanceType: NLDistanceType): NSArray<string>;
+
+	neighborsForStringMaximumCountMaximumDistanceDistanceType(string: string, maxCount: number, maxDistance: number, distanceType: NLDistanceType): NSArray<string>;
+
+	neighborsForVectorMaximumCountDistanceType(vector: NSArray<number> | number[], maxCount: number, distanceType: NLDistanceType): NSArray<string>;
+
+	neighborsForVectorMaximumCountMaximumDistanceDistanceType(vector: NSArray<number> | number[], maxCount: number, maxDistance: number, distanceType: NLDistanceType): NSArray<string>;
+
+	vectorForString(string: string): NSArray<number>;
+}
+
+declare class NLGazetteer extends NSObject {
+
+	static alloc(): NLGazetteer; // inherited from NSObject
+
+	static gazetteerWithContentsOfURLError(url: NSURL): NLGazetteer;
+
+	static new(): NLGazetteer; // inherited from NSObject
+
+	static writeGazetteerForDictionaryLanguageToURLError(dictionary: NSDictionary<string, NSArray<string>>, language: string, url: NSURL): boolean;
+
+	readonly data: NSData;
+
+	readonly language: string;
+
+	constructor(o: { contentsOfURL: NSURL; });
+
+	constructor(o: { data: NSData; });
+
+	constructor(o: { dictionary: NSDictionary<string, NSArray<string>>; language: string; });
+
+	initWithContentsOfURLError(url: NSURL): this;
+
+	initWithDataError(data: NSData): this;
+
+	initWithDictionaryLanguageError(dictionary: NSDictionary<string, NSArray<string>>, language: string): this;
+
+	labelForString(string: string): string;
+}
+
 declare var NLLanguageAmharic: string;
 
 declare var NLLanguageArabic: string;
@@ -173,9 +258,9 @@ declare class NLModelConfiguration extends NSObject implements NSCopying, NSSecu
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare const enum NLModelType {
@@ -249,6 +334,8 @@ declare var NLTagSchemeNameTypeOrLexicalClass: string;
 
 declare var NLTagSchemeScript: string;
 
+declare var NLTagSchemeSentimentScore: string;
+
 declare var NLTagSchemeTokenType: string;
 
 declare var NLTagSentenceTerminator: string;
@@ -269,6 +356,8 @@ declare class NLTagger extends NSObject {
 
 	static new(): NLTagger; // inherited from NSObject
 
+	static requestAssetsForLanguageTagSchemeCompletionHandler(language: string, tagScheme: string, completionHandler: (p1: NLTaggerAssetsResult, p2: NSError) => void): void;
+
 	readonly dominantLanguage: string;
 
 	string: string;
@@ -279,9 +368,13 @@ declare class NLTagger extends NSObject {
 
 	enumerateTagsInRangeUnitSchemeOptionsUsingBlock(range: NSRange, unit: NLTokenUnit, scheme: string, options: NLTaggerOptions, block: (p1: string, p2: NSRange, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
 
+	gazetteersForTagScheme(tagScheme: string): NSArray<NLGazetteer>;
+
 	initWithTagSchemes(tagSchemes: NSArray<string> | string[]): this;
 
 	modelsForTagScheme(tagScheme: string): NSArray<NLModel>;
+
+	setGazetteersForTagScheme(gazetteers: NSArray<NLGazetteer> | NLGazetteer[], tagScheme: string): void;
 
 	setLanguageRange(language: string, range: NSRange): void;
 
@@ -294,6 +387,15 @@ declare class NLTagger extends NSObject {
 	tagsInRangeUnitSchemeOptionsTokenRanges(range: NSRange, unit: NLTokenUnit, scheme: string, options: NLTaggerOptions, tokenRanges: interop.Pointer | interop.Reference<NSArray<NSValue>>): NSArray<string>;
 
 	tokenRangeAtIndexUnit(characterIndex: number, unit: NLTokenUnit): NSRange;
+}
+
+declare const enum NLTaggerAssetsResult {
+
+	Available = 0,
+
+	NotAvailable = 1,
+
+	Error = 2
 }
 
 declare const enum NLTaggerOptions {

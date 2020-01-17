@@ -1,7 +1,7 @@
-import * as TKUnit from "../TKUnit";
-import { Label } from "tns-core-modules/ui/label";
+import * as TKUnit from "../tk-unit";
+import { Label } from "@nativescript/core/ui/label";
 // >> observable-array-require
-import { ObservableArray, ChangedData, ChangeType } from "tns-core-modules/data/observable-array";
+import { ObservableArray, ChangedData, ChangeType } from "@nativescript/core/data/observable-array";
 // << observable-array-require
 
 export const test_ObservableArray_shouldCopySourceArrayItems = function () {
@@ -114,7 +114,7 @@ export const test_ObservableArray_popShouldRemoveTheLastElement = function () {
     // >> (hide)
     const viewBase = new Label();
     viewBase.set("testProperty", 0);
-    viewBase.bind({sourceProperty: "length", targetProperty: "testProperty"}, array);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
     const result = array.pop();
     // << observable-array-join-pop
@@ -157,7 +157,7 @@ export const test_ObservableArray_pushShouldAppendNewElement = function () {
     // >> (hide)
     const viewBase = new Label();
     viewBase.set("testProperty", 0);
-    viewBase.bind({sourceProperty: "length", targetProperty: "testProperty"}, array);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
     const result = array.push(4);
     // << observable-array-push
@@ -196,7 +196,7 @@ export const test_ObservableArray_pushShouldAppendNewElements = function () {
     // >> (hide)
     const viewBase = new Label();
     viewBase.set("testProperty", 0);
-    viewBase.bind({sourceProperty: "length", targetProperty: "testProperty"}, array);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
     const result = array.push(4, 5, 6);
     // << observable-array-push-multiple
@@ -235,7 +235,7 @@ export const test_ObservableArray_pushShouldAppendNewElementsFromSourceArray = f
     // >> (hide)
     const viewBase = new Label();
     viewBase.set("testProperty", 0);
-    viewBase.bind({sourceProperty: "length", targetProperty: "testProperty"}, array);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
     const result = array.push([4, 5, 6]);
     // << observable-array-push-source
@@ -282,7 +282,7 @@ export const test_ObservableArray_shiftShouldRemoveTheFirstElement = function ()
     // >> (hide)
     const viewBase = new Label();
     viewBase.set("testProperty", 0);
-    viewBase.bind({sourceProperty: "length", targetProperty: "testProperty"}, array);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
     const result = array.shift();
     // << observable-array-shift
@@ -354,7 +354,7 @@ export const test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsSta
     // >> (hide)
     const viewBase = new Label();
     viewBase.set("testProperty", 0);
-    viewBase.bind({sourceProperty: "length", targetProperty: "testProperty"}, array);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
     const result = array.splice(1, 2);
     // << observable-array-splice
@@ -410,7 +410,7 @@ export const test_ObservableArray_spliceShouldRemoveAndInertSpecifiedNumberOfEle
         // args.action is "splice".
         // args.index is the start index.
         // args.removed.length is equal to the number of deleted items.
-        // args.addedCount is equal to the delta between number of inserted items and number of deleted items but not less than 0.
+        // args.addedCount is equal to the amount of added and replaced items.
 
         // >> (hide)
         result = args;
@@ -421,7 +421,7 @@ export const test_ObservableArray_spliceShouldRemoveAndInertSpecifiedNumberOfEle
     // << observable-array-splice-args-change
 
     TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Splice &&
-        result.removed.length === 2 && result.index === 1 && result.addedCount === 1, "ObservableArray splice() should raise 'change' event with correct args!");
+        result.removed.length === 2 && result.index === 1 && result.addedCount === 3, "ObservableArray splice() should raise 'change' event with correct args!");
 };
 
 export const test_ObservableArray_unshiftShouldInsertNewElementsFromTheStart = function () {
@@ -430,7 +430,7 @@ export const test_ObservableArray_unshiftShouldInsertNewElementsFromTheStart = f
     // >> (hide)
     const viewBase = new Label();
     viewBase.set("testProperty", 0);
-    viewBase.bind({sourceProperty: "length", targetProperty: "testProperty"}, array);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
     const result = array.unshift(4, 5);
     // << observable-array-unshift
@@ -647,7 +647,7 @@ export const test_reduce_with_initial_value = function () {
 };
 
 export const test_reduce_with_zero_as_initial_value = function () {
-    const sa = [{prop: 1}, {prop: 2}, {prop: 3}];
+    const sa = [{ prop: 1 }, { prop: 2 }, { prop: 3 }];
     let array: ObservableArray<any> = new ObservableArray(sa);
     const result = array.reduce((a, b) => a + b.prop, 0);
     TKUnit.assertEqual(result, 6, "ObservableArray reduce function broken when Initial Value is zero.");
@@ -672,7 +672,7 @@ export const test_reduceRight_with_initial_value = function () {
 };
 
 export const test_reduceRight_with_zero_as_initial_value = function () {
-    const sa = [{prop: 1}, {prop: 2}, {prop: 3}];
+    const sa = [{ prop: 1 }, { prop: 2 }, { prop: 3 }];
     let array: ObservableArray<any> = new ObservableArray(sa);
     const result = array.reduceRight((a, b) => a + b.prop, 0);
     TKUnit.assertEqual(result, 6, "ObservableArray reduceRight function broken when Initial Value is zero.");

@@ -1,5 +1,5 @@
 import { android as androidApp, AndroidActivityBackPressedEventData } from "tns-core-modules/application";
-import { fromObject, Observable } from "tns-core-modules/data/observable"
+import { fromObject, Observable } from "tns-core-modules/data/observable";
 
 let context: Observable;
 function activityBackPressedCallback(args: AndroidActivityBackPressedEventData) {

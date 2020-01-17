@@ -1,0 +1,15 @@
+﻿<Page loaded="onLoaded">
+  <DockLayout>
+    <!-- View Properties -->
+    <Button text="wh" tap="{{ onWidthHeight }}" id="widthHeight" automationText="widthHeight" style="background-color: lightblue;" />
+    <Button text="n" tap="{{ onMinWidthMinHeight }}" dock="right" id="minWidthMinHeight" automationText="minWidthMinHeight" style="background-color: lightblue;" />
+    <Button text="m" tap="{{ onMargins }}" dock="top" id="margins" automationText="margins" style="background-color: lightblue;" />
+    <Button text="a" tap="{{ onAlignments }}" dock="top" id="alignments" automationText="alignments" style="background-color: lightblue;" />
+    <Button text="c" tap="{{ onCollapse }}" dock="bottom" id="collapse" automationText="collapse" style="background-color: lightblue;" />
+    <Button text="v" tap="{{ onVisibile }}" dock="bottom" id="visible" automationText="visible" style="background-color: lightblue;" />
+    <!-- Layout Properties -->
+    <Button text="p" tap="{{ onPaddings }}" dock="top" id="paddings" automationText="paddings" style="background-color: lightgray;" />
+    <Button text="all" tap="{{ onAllProperties }}" dock="top" id="allProperties" automationText="allProperties" style="background-color: aquamarine;" />
+    <Button text="tr" tap="onStretchLastChild" id="stretchLastChild" automationText="stretchLastChild" style="background-color: lightgreen;" />
+  </DockLayout>
+</Page>

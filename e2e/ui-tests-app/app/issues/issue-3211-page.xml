@@ -1,0 +1,5 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <StackLayout>
+        <Button text="alert me" tap="onTap" margin="15"/>
+    </StackLayout>
+</Page>

@@ -1,14 +1,14 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
-import { View } from "tns-core-modules/ui/core/view";
-import { Button } from "tns-core-modules/ui/button";
-import { Page } from "tns-core-modules/ui/page";
-import { ScrollView } from "tns-core-modules/ui/scroll-view";
-import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
-import { ProxyViewContainer } from "tns-core-modules/ui/proxy-view-container";
-import { ListView } from "tns-core-modules/ui/list-view";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
+import { View } from "@nativescript/core/ui/core/view";
+import { Button } from "@nativescript/core/ui/button";
+import { Page } from "@nativescript/core/ui/page";
+import { ScrollView } from "@nativescript/core/ui/scroll-view";
+import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
+import { ProxyViewContainer } from "@nativescript/core/ui/proxy-view-container";
+import { ListView } from "@nativescript/core/ui/list-view";
 
 export function test_add_children_to_attached_proxy() {
     const outer = new StackLayout();
@@ -24,7 +24,7 @@ export function test_add_children_to_attached_proxy() {
         outer.addChild(createBtn("5"));
 
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -38,7 +38,36 @@ export function test_children_immediately_registered_in_parent_grid_layout() {
         proxy.addChild(createBtn("1"));
 
         assertNativeChildren(outer, ["1"]);
-    };
+    }
+
+    helper.buildUIAndRunTest(outer, testAction);
+}
+
+export function test_proxy_layout_properties() {
+    const outer = new GridLayout();
+    const proxy = new ProxyViewContainer();
+
+    function testAction(views: Array<View>) {
+        outer.addChild(proxy);
+
+        const btn = createBtn("1");
+        proxy.addChild(btn);
+
+        proxy.row = 1;
+        TKUnit.assertEqual(proxy.row, btn.row, "Proxy row value to existing child");
+
+        const btn2 = createBtn("2");
+        proxy.addChild(btn2);
+        TKUnit.assertEqual(proxy.row, btn2.row, "Proxy row value to new child");
+
+        proxy.removeChild(btn2);
+
+        btn.row = 0;
+        TKUnit.assertNotEqual(proxy.row, btn.row, "Child value changed");
+
+        proxy.row = 1;
+        TKUnit.assertNotEqual(proxy.row, btn.row, "Changed child value not overridden");
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -53,7 +82,7 @@ export function test_children_registered_in_parent_grid_layout_on_attach() {
         outer.addChild(proxy);
 
         assertNativeChildren(outer, ["1"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -73,7 +102,7 @@ export function test_add_children_to_detached_proxy() {
         outer.addChild(createBtn("5"));
 
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -95,7 +124,7 @@ export function test_remove_proxy() {
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
         outer.removeChild(proxy);
         assertNativeChildren(outer, ["1", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -118,7 +147,7 @@ export function test_remove_child_of_attached_proxy() {
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
         proxy.removeChild(testBtn);
         assertNativeChildren(outer, ["1", "2", "4", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -139,7 +168,7 @@ export function test_insert_inside_proxy() {
         assertNativeChildren(outer, ["1", "2", "4", "5"]);
         proxy.insertChild(createBtn("3"), 1);
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -159,7 +188,7 @@ export function test_insert_after_proxy() {
         assertNativeChildren(outer, ["1", "2", "3", "4"]);
         outer.insertChild(createBtn("5"), 2);
         assertNativeChildren(outer, ["1", "2", "3", "4", "5"]);
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -179,7 +208,7 @@ export function test_proxy_does_not_stop_request_layout_bubble() {
         TKUnit.assert(outer.isLayoutValid, "outer container isLayoutValid should be true");
         btn.requestLayout();
         TKUnit.assertFalse(outer.isLayoutValid, "outer container isLayoutValid should be invalidated here");
-    };
+    }
 
     helper.buildUIAndRunTest(outer, testAction);
 }
@@ -191,7 +220,7 @@ export function test_proxy_iniside_page() {
     function testAction(views: Array<View>) {
         const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
-    };
+    }
 
     helper.buildUIAndRunTest(proxy, testAction);
 }
@@ -206,7 +235,7 @@ export function test_proxy_inside_scroll_view() {
     function testAction(views: Array<View>) {
         const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
-    };
+    }
 
     helper.buildUIAndRunTest(scroll, testAction);
 }
@@ -221,7 +250,7 @@ export function test_proxy_inside_border() {
     function testAction(views: Array<View>) {
         const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
-    };
+    }
 
     helper.buildUIAndRunTest(scroll, testAction);
 }
@@ -240,7 +269,7 @@ export function test_proxy_inside_listview_itemTemplate_crash() {
     function testAction(views: Array<View>) {
         const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
-    };
+    }
 
     helper.buildUIAndRunTest(list, testAction);
 }
@@ -285,6 +314,7 @@ function waitUntilElementLayoutIsValid(view: View, timeoutSec?: number): void {
 function createBtn(text: string): Button {
     const b = new Button();
     b.text = text;
+
     return b;
 }
 

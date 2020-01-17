@@ -1,0 +1,65 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo" class="page">
+
+    <Page.actionBar>
+        <ActionBar title="My App" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <StackLayout>
+        <StackLayout class="p-10" row="0">
+            <Label text="Default style = scrolls out of container" class="body m-b-10" />
+            <ScrollView height="40">
+                <StackLayout>
+                    <GridLayout width="30" height="30" backgroundColor="red" />
+                    <GridLayout width="30" height="30" backgroundColor="yellow" />
+                    <GridLayout width="30" height="30" backgroundColor="green" />
+                </StackLayout>
+            </ScrollView>
+        </StackLayout>
+
+        <StackLayout class="p-10" row="1">
+            <Label text="Adding border changes the height but fixes scrolling" textWrap="true" class="body m-b-10" />
+            <ScrollView class="bordered" height="40">
+                <StackLayout>
+                    <GridLayout width="30" height="30" backgroundColor="red" />
+                    <GridLayout width="30" height="30" backgroundColor="yellow" />
+                    <GridLayout width="30" height="30" backgroundColor="green" />
+                </StackLayout>
+            </ScrollView>
+        </StackLayout>
+
+        <StackLayout class="p-10" row="2">
+            <Label text="border-radius" class="body m-b-10" />
+            <ScrollView class="bordered fixed-height border-radius">
+                <StackLayout>
+                    <GridLayout width="30" height="30" backgroundColor="red" />
+                    <GridLayout width="30" height="30" backgroundColor="yellow" />
+                    <GridLayout width="30" height="30" backgroundColor="green" />
+                </StackLayout>
+            </ScrollView>
+        </StackLayout>
+
+        <StackLayout class="p-10" row="2">
+            <Label text="border-radius = weird" class="body m-b-10" />
+            <ScrollView class="bordered fixed-height border-radius-nonuniform">
+                <StackLayout>
+                    <GridLayout width="30" height="30" backgroundColor="red" />
+                    <GridLayout width="30" height="30" backgroundColor="yellow" />
+                    <GridLayout width="30" height="30" backgroundColor="green" />
+                </StackLayout>
+            </ScrollView>
+        </StackLayout>
+
+        <StackLayout class="p-10" row="3">
+            <Label text="border-width = weird" class="body m-b-10" />
+            <ScrollView class="bordered-nonuniform fixed-height">
+                <StackLayout>
+                    <GridLayout width="30" height="30" backgroundColor="red" />
+                    <GridLayout width="30" height="30" backgroundColor="yellow" />
+                    <GridLayout width="30" height="30" backgroundColor="green" />
+                </StackLayout>
+            </ScrollView>
+        </StackLayout>
+
+    </StackLayout>
+</Page>

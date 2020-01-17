@@ -38,9 +38,9 @@ declare class GKAgent extends GKComponent implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class GKAgent2D extends GKAgent implements NSSecureCoding {
@@ -59,9 +59,9 @@ declare class GKAgent2D extends GKAgent implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class GKAgent3D extends GKAgent {
@@ -209,9 +209,9 @@ declare class GKComponent extends NSObject implements NSCopying, NSSecureCoding 
 
 	didAddToEntity(): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	updateWithDeltaTime(seconds: number): void;
 
@@ -348,7 +348,7 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 
 	constructor(o: { URL: NSURL; error: NSError; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	exportToURLError(url: NSURL, error: NSError): boolean;
 
@@ -356,7 +356,7 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 
 	initWithAttribute(attribute: NSObjectProtocol): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithExamplesActionsAttributes(examples: NSArray<NSArray<NSObjectProtocol>> | NSArray<NSObjectProtocol>[], actions: NSArray<NSObjectProtocol> | NSObjectProtocol[], attributes: NSArray<NSObjectProtocol> | NSObjectProtocol[]): this;
 
@@ -383,9 +383,9 @@ declare class GKEntity extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	removeComponentForClass(componentClass: typeof NSObject): void;
 
@@ -517,11 +517,11 @@ declare class GKGraph extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	findPathFromNodeToNode(startNode: GKGraphNode, endNode: GKGraphNode): NSArray<GKGraphNode>;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithNodes(nodes: NSArray<GKGraphNode> | GKGraphNode[]): this;
 
@@ -544,7 +544,7 @@ declare class GKGraphNode extends NSObject implements NSSecureCoding {
 
 	costToNode(node: GKGraphNode): number;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	estimatedCostToNode(node: GKGraphNode): number;
 
@@ -552,7 +552,7 @@ declare class GKGraphNode extends NSObject implements NSSecureCoding {
 
 	findPathToNode(goalNode: GKGraphNode): NSArray<GKGraphNode>;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	removeConnectionsToNodesBidirectional(nodes: NSArray<GKGraphNode> | GKGraphNode[], bidirectional: boolean): void;
 }
@@ -1091,9 +1091,9 @@ declare class GKPolygonObstacle extends GKObstacle implements NSSecureCoding {
 
 	constructor(o: { points: interop.Pointer | interop.Reference<interop.Reference<number>>; count: number; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithPointsCount(points: interop.Pointer | interop.Reference<interop.Reference<number>>, numPoints: number): this;
 
@@ -1236,9 +1236,9 @@ declare class GKRandomSource extends NSObject implements GKRandom, NSCopying, NS
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	nextBool(): boolean;
 
@@ -1454,9 +1454,9 @@ declare class GKScene extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	removeEntity(entity: GKEntity): void;
 

@@ -71,25 +71,25 @@ previous_url: /ApiReference/data/observable-array/HOW-TO
 ### Handle "change" event to know more info about the change after calling shift() method.
 {%snippet observable-array-shift-change%}
 
-### Use slice() method to return array with all ObservableArray elements. 
+### Use slice() method to return array with all ObservableArray elements.
 {%snippet observable-array-slice%}
 
-### Use slice(star, end) method to return section of the array. 
+### Use slice(star, end) method to return section of the array.
 {%snippet observable-array-slice-args%}
 
-### Use sort() method to sort the array. 
+### Use sort() method to sort the array.
 {%snippet observable-array-sort%}
 
-### Use sort(compareFunction) method to sort the array with your own comparing logic. 
+### Use sort(compareFunction) method to sort the array with your own comparing logic.
 {%snippet observable-array-sort-comparer%}
 
-### Use splice(start, deleteCount) method to delete elements in the array. 
+### Use splice(start, deleteCount) method to delete elements in the array.
 {%snippet observable-array-splice%}
 
 ### Handle "change" event to know more info about the change after calling splice(start, deleteCount) method.
 {%snippet observable-array-splice-change%}
 
-### Use splice(start, deleteCount, ...arguments) method to remove and insert elements in the array. 
+### Use splice(start, deleteCount, ...arguments) method to remove and insert elements in the array.
 {%snippet observable-array-splice-args%}
 
 ### Handle "change" event to know more info about the change after calling splice(start, deleteCount, ...arguments) method.

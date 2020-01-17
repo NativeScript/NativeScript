@@ -1,13 +1,12 @@
-﻿import * as TKUnit from "../../TKUnit";
-import { Button } from "tns-core-modules/ui/button";
-import { Page, isIOS } from "tns-core-modules/ui/page";
+import * as TKUnit from "../../tk-unit";
+import { Button } from "@nativescript/core/ui/button";
+import { Page, isIOS } from "@nativescript/core/ui/page";
 import { UITest } from "../../ui-test";
 import * as layoutHelper from "../layouts/layout-helper";
-import * as frame from "tns-core-modules/ui/frame";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 
 // >> article-require-scrollview-module
-import { ScrollView, ScrollEventData } from "tns-core-modules/ui/scroll-view";
+import { ScrollView, ScrollEventData } from "@nativescript/core/ui/scroll-view";
 // << article-require-scrollview-module
 
 class ScrollLayoutTest extends UITest<ScrollView> {
@@ -27,6 +26,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
 
         // Use page with scrollableContent disabled for scroll-view tests
         (<any>this.testPage).scrollableContent = false;
+
         return scrollView;
     }
 
@@ -135,7 +135,7 @@ class ScrollLayoutTest extends UITest<ScrollView> {
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
         this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), true);
 
-        // No synchronous change. 
+        // No synchronous change.
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
 
         TKUnit.waitUntilReady(() => TKUnit.areClose(layoutHelper.dip(this.testView.horizontalOffset), 100, 0.9));

@@ -1,0 +1,8 @@
+Label {
+    background-image: url('~/resources/images/test2.png');
+    background-repeat: no-repeat;
+    background-position: left;
+    background-size: contain;
+    margin: 10;
+    border-width: 1;
+}

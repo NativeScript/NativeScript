@@ -1,0 +1,40 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+    <Page.actionBar>
+        <ActionBar title="tabview-with-scrollview_4022" icon="" class="action-bar" />
+    </Page.actionBar>
+    <GridLayout>
+            <TabView>
+                <TabView.items>
+                    <TabViewItem title="Tab 1">
+                        <TabViewItem.view>
+                            <ScrollView>
+                                <StackLayout height="1500">
+                                    <Label text="Tab1" textWrap="true" color="#FED700" margin="20" horizontalAlignment="center"/>
+                                    <Image src="res://icon" height="100" />
+                                </StackLayout>
+                            </ScrollView>
+                        </TabViewItem.view>
+                    </TabViewItem>
+
+                    <TabViewItem title="Tab 2" >
+                        <TabViewItem.view>
+                            <StackLayout>
+                                <Label text="Tab2" textWrap="true" color="#FED700" margin="20" horizontalAlignment="center"/>
+                                <Image src="res://icon" height="100" />
+                            </StackLayout>
+                        </TabViewItem.view>
+                    </TabViewItem>
+
+                    <TabViewItem title="Tab 3">
+                        <TabViewItem.view>
+                            <StackLayout>
+                                <Label text="Tab3" textWrap="true" color="#FED700" margin="20" horizontalAlignment="center"/>
+                                <Image src="res://icon" height="100" />
+                            </StackLayout>
+                        </TabViewItem.view>
+                    </TabViewItem>
+
+                </TabView.items>
+            </TabView>
+    </GridLayout>
+</Page>

@@ -1,0 +1,7 @@
+
+<Page
+    xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+    <StackLayout class="p-20">
+        <Button text="go to sub" tap="onTap" class="btn"/>
+    </StackLayout>
+</Page>

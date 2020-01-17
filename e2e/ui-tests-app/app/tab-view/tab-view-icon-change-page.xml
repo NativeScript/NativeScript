@@ -1,0 +1,16 @@
+ <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo">
+    <TabView id="tab-view" selectedIndexChanged="onSelectedIndexChanged" iosIconRenderingMode="alwaysOriginal">
+        <TabView.items>
+            <TabViewItem iconSource="res://icon">
+                <TabViewItem.view>
+                    <Label text="first tab"/>
+                </TabViewItem.view>
+            </TabViewItem>
+            <TabViewItem iconSource="res://testlogo">
+                <TabViewItem.view>
+                    <Label text="second tab"/>
+                </TabViewItem.view>
+            </TabViewItem>
+        </TabView.items>
+    </TabView>
+</Page>

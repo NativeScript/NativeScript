@@ -1,0 +1,23 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page" navigatingTo="onNavigatingTo">
+    <ActionBar title="BottomNavigation icon change" icon="" class="action-bar">
+    </ActionBar>
+
+    <BottomNavigation id="tab-view" selectedIndexChanged="onSelectedIndexChanged" automationText="tabNavigation"  >
+        <TabStrip iosIconRenderingMode="alwaysOriginal">
+            <TabStripItem iconSource="res://icon" title="selected"></TabStripItem>
+            <TabStripItem iconSource="res://testlogo" title="unselected"></TabStripItem>
+        </TabStrip>
+
+        <TabContentItem>
+            <GridLayout>
+                <Label text="first tab"/>
+            </GridLayout>
+        </TabContentItem>
+
+        <TabContentItem>
+            <GridLayout>
+                <Label text="second tab"/>
+            </GridLayout>
+        </TabContentItem>
+    </BottomNavigation>
+</Page>

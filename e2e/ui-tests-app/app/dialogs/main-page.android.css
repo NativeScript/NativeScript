@@ -1,0 +1,8 @@
+@import './main-page-common.css';
+
+Button.even,
+Button.odd {
+    height: 25;
+    font-size: 10;
+    padding: 0;
+}

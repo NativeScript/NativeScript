@@ -1,0 +1,15 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+<StackLayout>
+  <Button height="50" width="100" text="hide keyboard" onTap="hideKeyboard" style.fontSize="8"/>
+  <Button height="50" width="100" loaded="onButtonLoaded" text="Click me 3rd (Android)" style.fontSize="8"
+    recycleNativeView="false"/>
+  <ListView loaded="onListViewLoaded">
+      <ListView.itemTemplate>
+        <StackLayout>
+              <TextField text="Click me 1st"/>
+              <TextField text="Click me 2nd" keyboardType="number"/>
+        </StackLayout>
+      </ListView.itemTemplate>
+  </ListView>
+</StackLayout>
+</Page>

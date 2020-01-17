@@ -1,3 +1,358 @@
+## [6.2.2](https://github.com/NativeScript/NativeScript/compare/6.2.1...6.2.2) (2019-11-25)
+
+
+### Bug Fixes
+
+* **android:** Fatal Exception: java.lang.OutOfMemoryError ([#8061](https://github.com/NativeScript/NativeScript/issues/8061)) ([#8098](https://github.com/NativeScript/NativeScript/issues/8098)) ([bca1271](https://github.com/NativeScript/NativeScript/commit/bca1271))
+* **frame:** nested frame wrong background after parent navigation ([#8095](https://github.com/NativeScript/NativeScript/issues/8095)) ([d983f79](https://github.com/NativeScript/NativeScript/commit/d983f79))
+* tab navigations don't work with lowercase xml ([#8016](https://github.com/NativeScript/NativeScript/issues/8016)) ([800f5bc](https://github.com/NativeScript/NativeScript/commit/800f5bc))
+* **frame:** push recreated frame back in frameStack when Don't Keep Activities enabled ([#8096](https://github.com/NativeScript/NativeScript/issues/8096)) ([47f4c25](https://github.com/NativeScript/NativeScript/commit/47f4c25))
+* **iOS:** check for iOS 13 APIs ([#8093](https://github.com/NativeScript/NativeScript/issues/8093)) ([b069ff3](https://github.com/NativeScript/NativeScript/commit/b069ff3))
+
+
+
+<a name="6.2.1"></a>
+## [6.2.1](https://github.com/NativeScript/NativeScript/compare/6.2.0...6.2.1) (2019-11-12)
+
+
+### Bug Fixes
+
+* **dark-mode:** formatted string and html view text color ([#8031](https://github.com/NativeScript/NativeScript/issues/8031)) ([0c7f838](https://github.com/NativeScript/NativeScript/commit/0c7f838))
+* ensure @CallSuper native methods call superFunc ([#8025](https://github.com/NativeScript/NativeScript/issues/8025)) ([7fa9978](https://github.com/NativeScript/NativeScript/commit/7fa9978))
+* **dev-tools:** use app root in getDocument() ([#8071](https://github.com/NativeScript/NativeScript/issues/8071)) ([f686472](https://github.com/NativeScript/NativeScript/commit/f686472))
+* **gradient:** import LinearGradient with alias ([#8063](https://github.com/NativeScript/NativeScript/issues/8063)) ([eb33ede](https://github.com/NativeScript/NativeScript/commit/eb33ede))
+
+
+### Features
+
+* **application:** add system appearance changed event to typings ([#8034](https://github.com/NativeScript/NativeScript/issues/8034)) ([2a34368](https://github.com/NativeScript/NativeScript/commit/2a34368))
+
+
+
+<a name="6.2.0"></a>
+# [6.2.0](https://github.com/NativeScript/NativeScript/compare/6.1.2...6.2.0) (2019-10-24)
+
+
+### Bug Fixes
+
+* **action-bar:** font icon support to NavigationButton ([#7842](https://github.com/NativeScript/NativeScript/issues/7842)) ([4991e6d](https://github.com/NativeScript/NativeScript/commit/4991e6d)) ([#7918](https://github.com/NativeScript/NativeScript/issues/7918)) ([bdb411f](https://github.com/NativeScript/NativeScript/commit/bdb411f))
+* **action-bar-ios13:** action bar items population ([#7965](https://github.com/NativeScript/NativeScript/issues/7965)) ([ce96dad](https://github.com/NativeScript/NativeScript/commit/ce96dad))
+* **application-settings-android:** possible uninitialized sharedPreferences variable usage ([#7813](https://github.com/NativeScript/NativeScript/issues/7813)) ([4f421ff](https://github.com/NativeScript/NativeScript/commit/4f421ff))
+* **css:** parse css selectors with escape sequences ([#7689](https://github.com/NativeScript/NativeScript/issues/7689)) ([5520213](https://github.com/NativeScript/NativeScript/commit/5520213))
+* xml parsing when input value is reported as object instead of string ([#7916](https://github.com/NativeScript/NativeScript/issues/7916)) ([a06a5f9](https://github.com/NativeScript/NativeScript/commit/a06a5f9))
+* **css-android:** restore elements' native features if offending css is removed while the app is running ([#7789](https://github.com/NativeScript/NativeScript/issues/7789)) ([2beae5b](https://github.com/NativeScript/NativeScript/commit/2beae5b))
+* **css-calc:** reduce_css_calc_1.default is not a function ([#7787](https://github.com/NativeScript/NativeScript/issues/7787)) ([03d1ff0](https://github.com/NativeScript/NativeScript/commit/03d1ff0))
+* **bottom-navigation-ios:** incorrect layout on orientation change ([#7927](https://github.com/NativeScript/NativeScript/issues/7927)) ([c9bfec1](https://github.com/NativeScript/NativeScript/commit/c9bfec1))
+
+
+### Features
+
+* **action-bar-android:** add properties to control the titleView content insets ([#7805](https://github.com/NativeScript/NativeScript/issues/7805)) ([57a8605](https://github.com/NativeScript/NativeScript/commit/57a8605))
+* **css:** add attribute scoped css without global refresh ([#7907](https://github.com/NativeScript/NativeScript/issues/7907)) ([f791a40](https://github.com/NativeScript/NativeScript/commit/f791a40))
+* **css:** Add HSL/HSLA support ([#7730](https://github.com/NativeScript/NativeScript/issues/7730)) ([3cabdde](https://github.com/NativeScript/NativeScript/commit/3cabdde))
+* **dark-mode:** add system appearance property, event and CSS classes ([#7887](https://github.com/NativeScript/NativeScript/issues/7887)) ([5c9a217](https://github.com/NativeScript/NativeScript/commit/5c9a217))
+* **file-system:** async read/write ([#7671](https://github.com/NativeScript/NativeScript/issues/7671)) ([2146ac9](https://github.com/NativeScript/NativeScript/commit/2146ac9))
+* **dark-mode-ios:** adapt dynamic system colors ([#7826](https://github.com/NativeScript/NativeScript/issues/7826)) ([f82cf08](https://github.com/NativeScript/NativeScript/commit/f82cf08))
+* **platform-declarations:** add android29 typings ([#7923](https://github.com/NativeScript/NativeScript/issues/7923)) ([dc65402](https://github.com/NativeScript/NativeScript/commit/dc65402))
+* **platform-declarations:** generate typings from iOS 13.0 SDK ([#7817](https://github.com/NativeScript/NativeScript/issues/7817)) ([3e8d635](https://github.com/NativeScript/NativeScript/commit/3e8d635))
+* **segmented-bar-ios:** add support for the new selectedSegmentTintColor property ([#7880](https://github.com/NativeScript/NativeScript/issues/7880)) ([ca7c46d](https://github.com/NativeScript/NativeScript/commit/ca7c46d))
+* overhaul and streamline Android page navigation transitions ([#7925](https://github.com/NativeScript/NativeScript/issues/7925)) ([08e23bc](https://github.com/NativeScript/NativeScript/commit/08e23bc))
+* Scoped Packages ([#7911](https://github.com/NativeScript/NativeScript/issues/7911)) ([cc97a16](https://github.com/NativeScript/NativeScript/commit/cc97a16))
+* update material components dependency to 92.3 ([#7936](https://github.com/NativeScript/NativeScript/issues/7936)) ([866c2b0](https://github.com/NativeScript/NativeScript/commit/866c2b0))
+
+
+
+<a name="6.1.2"></a>
+## [6.1.2](https://github.com/NativeScript/NativeScript/compare/6.1.1...6.1.2) (2019-10-15)
+
+
+### Bug Fixes
+
+* expose orientation to application module ([#7832](https://github.com/NativeScript/NativeScript/issues/7832)) ([4166e2d](https://github.com/NativeScript/NativeScript/commit/4166e2d))
+* **frame-android:** IllegalStateException: The specified child already has a parent ([#7948](https://github.com/NativeScript/NativeScript/issues/7948)) ([ff30c48](https://github.com/NativeScript/NativeScript/commit/ff30c48))
+* **tabs-ios9:** no view controller managing visible view error ([#7837](https://github.com/NativeScript/NativeScript/issues/7837)) ([7fe8d1c](https://github.com/NativeScript/NativeScript/commit/7fe8d1c))
+
+
+### Features
+
+* **css:** add attribute scoped css without global refresh ([#7907](https://github.com/NativeScript/NativeScript/issues/7907)) ([#7947](https://github.com/NativeScript/NativeScript/issues/7947)) ([b377eb6](https://github.com/NativeScript/NativeScript/commit/b377eb6))
+
+
+
+## [6.1.1](https://github.com/NativeScript/NativeScript/compare/6.1.0...6.1.1) (2019-09-11)
+
+
+### Bug Fixes
+
+* **android-list-picker:** NoSuchFieldException on api29 ([#7790](https://github.com/NativeScript/NativeScript/issues/7790)) ([997d6de](https://github.com/NativeScript/NativeScript/commit/997d6de))
+* **css-calc:** reduce_css_calc_1.default is not a function ([#7787](https://github.com/NativeScript/NativeScript/issues/7787)) ([#7801](https://github.com/NativeScript/NativeScript/issues/7801)) ([20c0773](https://github.com/NativeScript/NativeScript/commit/20c0773))
+
+
+
+<a name="6.1.0"></a>
+# [6.1.0](https://github.com/NativeScript/NativeScript/compare/6.0.7...6.1.0) (2019-09-02)
+
+
+### Bug Fixes
+
+* dots can now be used in module names ([#7655](https://github.com/NativeScript/NativeScript/issues/7655)) ([b6ff4d3](https://github.com/NativeScript/NativeScript/commit/b6ff4d3))
+* **css:** parse css selectors with escape sequences ([#7689](https://github.com/NativeScript/NativeScript/issues/7689)) ([#7732](https://github.com/NativeScript/NativeScript/issues/7732)) ([e3ed028](https://github.com/NativeScript/NativeScript/commit/e3ed028))
+* **ios-tabs:** handle tabs extended layout for ios 10 ([f7f0612](https://github.com/NativeScript/NativeScript/commit/f7f0612))
+* **ios-tabs:** crash when add tabstrip in loaded event ([#7743](https://github.com/NativeScript/NativeScript/issues/7743)) ([a66f2f2](https://github.com/NativeScript/NativeScript/commit/a66f2f2))
+* **ios-tabs:** handle nesting proxy view container ([#7755](https://github.com/NativeScript/NativeScript/issues/7755)) ([92c3338](https://github.com/NativeScript/NativeScript/commit/92c3338))
+* handle empty folders in non-bundle-compat ([#7649](https://github.com/NativeScript/NativeScript/issues/7649)) ([5fd7913](https://github.com/NativeScript/NativeScript/commit/5fd7913))
+
+
+### Features
+
+* implement css-variables and css-calc ([#7553](https://github.com/NativeScript/NativeScript/issues/7553)) ([673c808](https://github.com/NativeScript/NativeScript/commit/673c808))
+* add CSS classes to app/modal root views to target platform/device/orientation/type ([#7606](https://github.com/NativeScript/NativeScript/issues/7606)) ([3adba68](https://github.com/NativeScript/NativeScript/commit/3adba68))
+* **GridLayout:** Add synonym property column[Span] for col[Span] in GridLayout ([#7641](https://github.com/NativeScript/NativeScript/issues/7641)) ([d3c39c1](https://github.com/NativeScript/NativeScript/commit/d3c39c1))
+* apply styles when adding them to the application scope ([#7652](https://github.com/NativeScript/NativeScript/issues/7652)) ([1d12136](https://github.com/NativeScript/NativeScript/commit/1d12136))
+* expose application orientation ([#7602](https://github.com/NativeScript/NativeScript/issues/7602)) ([e2c3c8c](https://github.com/NativeScript/NativeScript/commit/e2c3c8c))
+* **ios-bottom-navigation:** add icon rendering mode ([#7738](https://github.com/NativeScript/NativeScript/issues/7738)) ([ff6d89f](https://github.com/NativeScript/NativeScript/commit/ff6d89f))
+* **android-tabs/bottom-navigation:** fix tab resource icon size based on specification ([#7737](https://github.com/NativeScript/NativeScript/issues/7737)) ([f436b6f](https://github.com/NativeScript/NativeScript/commit/f436b6f))
+* **tabs/bottom-navigation:** introduce TabStrip.isIconSizeFixed property ([#7691](https://github.com/NativeScript/NativeScript/issues/7691)) ([8039c2c](https://github.com/NativeScript/NativeScript/commit/8039c2c))
+* **tabs/bottom-navigation:** add support for custom tabstrip ([#7580](https://github.com/NativeScript/NativeScript/issues/7580)) ([acc3436](https://github.com/NativeScript/NativeScript/commit/acc3436))
+* **tabs/bottom-navigation:** inherit TabContentItem from ContentView ([#7629](https://github.com/NativeScript/NativeScript/issues/7629)) ([72ca461](https://github.com/NativeScript/NativeScript/commit/72ca461))
+* **tabs/bottom-navigation:** flexible font icon usage ([#7672](https://github.com/NativeScript/NativeScript/issues/7672)) ([c0b8db4](https://github.com/NativeScript/NativeScript/commit/c0b8db4))
+* **tabs:** emit tabStripItem tap event ([#7693](https://github.com/NativeScript/NativeScript/issues/7693)) ([b0d1c91](https://github.com/NativeScript/NativeScript/commit/b0d1c91))
+* **tabs/bottom-navigation:** add TabStrip.itemTap event ([#7711](https://github.com/NativeScript/NativeScript/issues/7711)) ([55c9cc9](https://github.com/NativeScript/NativeScript/commit/55c9cc9))
+
+
+<a name="6.0.7"></a>
+## [6.0.7](https://github.com/NativeScript/NativeScript/compare/6.0.4...6.0.7) (2019-08-22)
+
+
+### Bug Fixes
+
+* **bottom-navigation:** codebehind creation ([#7624](https://github.com/NativeScript/NativeScript/issues/7624)) ([056d0bf](https://github.com/NativeScript/NativeScript/commit/056d0bf))
+* prevent plugin podfile platform version clash ([#7626](https://github.com/NativeScript/NativeScript/issues/7626)) ([49b3571](https://github.com/NativeScript/NativeScript/commit/49b3571))
+* **hmr:** close modal views during livesync [#7668](https://github.com/NativeScript/NativeScript/issues/7668) ([#7679](https://github.com/NativeScript/NativeScript/issues/7679)) ([9877b20](https://github.com/NativeScript/NativeScript/commit/9877b20))
+* **tabs-android:** tabStripItem color not applied ([#7617](https://github.com/NativeScript/NativeScript/issues/7617)) ([2518655](https://github.com/NativeScript/NativeScript/commit/2518655))
+
+
+
+<a name="6.0.6"></a>
+## [6.0.6](https://github.com/NativeScript/NativeScript/compare/6.0.5...6.0.6) (2019-08-08)
+
+
+### Bug Fixes
+
+* **tns-core-modules-widgets:** use correct version (6.0.6).
+
+
+
+## [6.0.5](https://github.com/NativeScript/NativeScript/compare/6.0.4...6.0.5) (2019-08-02)
+
+
+### Bug Fixes
+
+* **bottom-navigation:** codebehind creation ([#7624](https://github.com/NativeScript/NativeScript/issues/7624)) ([056d0bf](https://github.com/NativeScript/NativeScript/commit/056d0bf))
+* **tabs-android:** tabStripItem color not applied ([#7617](https://github.com/NativeScript/NativeScript/issues/7617)) ([2518655](https://github.com/NativeScript/NativeScript/commit/2518655))
+* prevent plugin podfile platform version clash ([#7626](https://github.com/NativeScript/NativeScript/issues/7626)) ([49b3571](https://github.com/NativeScript/NativeScript/commit/49b3571))
+
+
+
+<a name="6.0.5"></a>
+## [6.0.5](https://github.com/NativeScript/NativeScript/compare/6.0.4...6.0.5) (2019-08-02)
+
+
+### Bug Fixes
+
+* **observable-array:** splice to notify correct amount of added items ([#7426](https://github.com/NativeScript/NativeScript/issues/7426)) ([5e14de6](https://github.com/NativeScript/NativeScript/commit/5e14de6))
+* added missing openFile method in ios utils ([#7431](https://github.com/NativeScript/NativeScript/issues/7431)) ([cb58cab](https://github.com/NativeScript/NativeScript/commit/cb58cab))
+* full Unicode support in xml ([#7428](https://github.com/NativeScript/NativeScript/issues/7428)) ([b8659e6](https://github.com/NativeScript/NativeScript/commit/b8659e6))
+* **timer:** setTimeout/setInterval support for boolean period ([#7569](https://github.com/NativeScript/NativeScript/issues/7569)) ([a569bb2](https://github.com/NativeScript/NativeScript/commit/a569bb2))
+
+
+### Features
+
+* **bottom-navigation-ios:** limit to 5 items ([5815246](https://github.com/NativeScript/NativeScript/commit/5815246))
+* split globals to support smaller worker chunks ([0ee0b67](https://github.com/NativeScript/NativeScript/commit/0ee0b67))
+
+
+
+<a name="6.0.4"></a>
+## [6.0.4](https://github.com/NativeScript/NativeScript/compare/6.0.3...6.0.4) (2019-07-30)
+
+
+### Bug Fixes
+
+* **ios:** 'ui/tabs' not found for element 'Tabs'
+
+
+<a name="6.0.3"></a>
+## [6.0.3](https://github.com/NativeScript/NativeScript/compare/6.0.2...6.0.3) (2019-07-29)
+
+
+### Bug Fixes
+
+* **ios:** move material design dependency to podfile ([#7592](https://github.com/NativeScript/NativeScript/issues/7592)) ([291e3b4](https://github.com/NativeScript/NativeScript/commit/291e3b4))
+
+
+
+<a name="6.0.2"></a>
+## [6.0.2](https://github.com/NativeScript/NativeScript/compare/6.0.0...6.0.2) (2019-07-26)
+
+
+### Bug Fixes
+
+* **android:** remove wait for doubletap if no gesture recognizer ([#7584](https://github.com/NativeScript/NativeScript/issues/7584)) ([9fd5ddc](https://github.com/NativeScript/NativeScript/commit/9fd5ddc))
+* **bottom-navigation:** crash when tab selected with no item ([#7527](https://github.com/NativeScript/NativeScript/issues/7527)) ([46c17ca](https://github.com/NativeScript/NativeScript/commit/46c17ca))
+* **tabs:** tab bar not visible when nested in layout ([#7544](https://github.com/NativeScript/NativeScript/issues/7544)) ([f00b370](https://github.com/NativeScript/NativeScript/commit/f00b370))
+* **tabs-android:** wrong tabStripItem selected ([#7522](https://github.com/NativeScript/NativeScript/issues/7522)) ([ca22ba9](https://github.com/NativeScript/NativeScript/commit/ca22ba9))
+* **tabs-ios:** crash when setting tabStripItems through items property ([#7548](https://github.com/NativeScript/NativeScript/issues/7548)) ([4511c76](https://github.com/NativeScript/NativeScript/commit/4511c76))
+* **tabs-ios:** unable to return to tab after tab with nested frame visited ([#7574](https://github.com/NativeScript/NativeScript/issues/7574)) ([490cab0](https://github.com/NativeScript/NativeScript/commit/490cab0))
+
+
+
+<a name="6.0.0"></a>
+# [6.0.0](https://github.com/NativeScript/NativeScript/compare/5.4.2...6.0.0) (2019-06-28)
+
+
+### Bug Fixes
+
+* **bundle:** support for file qualifiers with webpack ([#7386](https://github.com/NativeScript/NativeScript/issues/7386)) ([9fcc1dd](https://github.com/NativeScript/NativeScript/commit/9fcc1dd))
+* **bundle:** code-only typescript custom components with webpack ([#7321](https://github.com/NativeScript/NativeScript/issues/7321)) ([9fcc1dd](https://github.com/NativeScript/NativeScript/commit/9fcc1dd))
+* **bundle:** component builder support for codeFile / cssFile / import with webpack ([#7324](https://github.com/NativeScript/NativeScript/issues/7324)) ([9fcc1dd](https://github.com/NativeScript/NativeScript/commit/9fcc1dd))
+* **bundle:** different event order ([NativeScript/nativescript-cli#4633](https://github.com/NativeScript/nativescript-cli/issues/4633)) ([8851835](https://github.com/NativeScript/NativeScript/commit/8851835))
+* restore TextField.textChange and Switch.checkedChange event syntax in xml ([#7403](https://github.com/NativeScript/NativeScript/issues/7403)) ([76b5089](https://github.com/NativeScript/NativeScript/commit/76b5089))
+* **android:** ignore gzip content-encoding for status code 204 ([#7417](https://github.com/NativeScript/NativeScript/issues/7417)) ([4437cd6](https://github.com/NativeScript/NativeScript/commit/4437cd6))
+* **android-transition:** exit transition not executed after app suspend resume ([#7402](https://github.com/NativeScript/NativeScript/issues/7402)) ([f08b491](https://github.com/NativeScript/NativeScript/commit/f08b491))
+* **css-state:** _appliedSelectorsVersion assignment ([#7405](https://github.com/NativeScript/NativeScript/issues/7405)) ([9ecf07f](https://github.com/NativeScript/NativeScript/commit/9ecf07f))
+* **observable-array**: splice to notify correct amount of added items ([#7426](https://github.com/NativeScript/NativeScript/pull/7426)) ([5e14de6](https://github.com/NativeScript/NativeScript/commit/5e14de6))
+* cancel contradictory gesture events ([#7296](https://github.com/NativeScript/NativeScript/issues/7296)) ([b8a82f2](https://github.com/NativeScript/NativeScript/commit/b8a82f2))
+* allow span descendants in FormattedString ([#7369](https://github.com/NativeScript/NativeScript/issues/7369)) ([01c4b8c](https://github.com/NativeScript/NativeScript/commit/01c4b8c))
+
+
+### Features
+
+* **bundle:** bundle workflow support ([#7320](https://github.com/NativeScript/NativeScript/issues/7320)) ([ecd9fc3](https://github.com/NativeScript/NativeScript/commit/ecd9fc3))
+* **android:** androidX support ([#7039](https://github.com/NativeScript/NativeScript/issues/7039)) ([c5db112](https://github.com/NativeScript/NativeScript/commit/c5db112))
+* **BETA/EXPERIMENTAL:** bottom navigation and tabs components ([#6967](https://github.com/NativeScript/NativeScript/issues/6967)) ([0c2c1cc](https://github.com/NativeScript/NativeScript/commit/0c2c1cc))
+* add support for :focus pseudo class in TextField / TextView ([#7396](https://github.com/NativeScript/NativeScript/pull/7396)) ([0bfddab](https://github.com/NativeScript/NativeScript/commit/0bfddab))
+* **animation:** support animating width/height properties ([#5147](https://github.com/NativeScript/NativeScript/pull/5147)) ([e7c575](https://github.com/NativeScript/NativeScript/commit/e7c575))
+
+### BREAKING CHANGES
+
+* `AndroidApplication.currentContext` in `tns-core-modules/application` module is now removed.
+
+Use `AndroidApplication.startActivity`, `AndroidApplication.foregroundActivity`, or `AndroidApplication.context` properties instead.
+
+
+* `start(...)` method in `tns-core-modules/application` module is now removed.
+
+Use `application.run(...)` method instead. Check the "Flexible Frame Composition" section in [this document](https://docs.google.com/document/d/1Iia0yEr5seq4H9qk4oMuJs4-M8dgmne98fymCO5IczA/edit) that explains the full migration path from `application.start(...)` to `application.run(...)` and the implications from this change
+
+
+* `loadPage(...)` method in `tns-core-modules/ui/builder` module is now removed.
+
+Use `createViewFromEntry(entry: NavigationEntry)` method in `tns-core-modules/ui/builder` module instead.
+
+
+* `tns-core-modules/ui/core/dependency-observable` module is now removed.
+
+Use `tns-core-modules/ui/core/properties` module instead.
+
+
+* `ViewBase.showModal()`, `ViewBase.showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): ViewBase`, and `ViewBase.showModal(view: ViewBase, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): ViewBase` method overloads are now removed.
+
+Use `ViewBase.showModal(moduleName: string, modalOptions: ShowModalOptions): ViewBase` or `ViewBase.showModal(view: ViewBase, modalOptions: ShowModalOptions): ViewBase` instead.
+
+
+* `Frame.androidOptionSelectedEvent` and `AndroidOptionEventData` interfrace in `tns-core-modules/ui/frame` module are now removed.
+
+Event not raised by NativeScript core framework anymore.
+
+
+* `AndroidFrame.cachePagesOnNavigate` in `tns-core-modules/ui/frame` module is now removed.
+
+Not used internally in NativeScript core framework anymore.
+
+
+* `stack()` method in `tns-core-modules/ui/frame` module is now removed.
+
+Use `getFrameById(...)` method if you want to retrieve a frame different than the topmost one instead.
+
+
+* `AndroidActivityCallbacks.onCreate(activity: any, savedInstanceState: any, superFunc: Function)` method overload in `tns-core-modules/ui/frame` module is now removed.
+
+Use `AndroidActivityCallbacks.onCreate(activity: any, savedInstanceState: any, intent: any, superFunc: Function)` instead.
+
+
+* `WebView.url` property in `tns-core-modules/ui/web-view` module is now removed.
+
+Use `WebView.src` property instead.
+
+
+* `ios.getter(...)` function in `tns-core-modules/utils` module is now removed.
+
+Use the respective native property directly instead.
+
+
+* `View.observe(...)` method in `tns-core-modules/ui/core/view` module is now removed.
+
+Use `View.on(...)` method instead.
+
+* The addedCount variable from ObservableArray.splice(...) change event is always the amount of added items.
+
+Migration steps:
+The old addedCount can be obtained by `const addedCount = event.addedCount - event.removed.length`
+
+* Fix to cancel contradictory gesture events (e.g. tap and double tap) introduces the following behavior breaking change
+
+Before:
+* **iOS / Android**:
+    * double tap: child tap -> parent tap -> child double tap -> parent double tap
+    * tap: child tap -> parent tap
+
+After: 
+* **iOS**:
+    * double tap: child double tap
+    * tap: child tap
+* **Android**:
+    * double tap: child double tap -> parent double tap
+    * tap: child tap -> parent tap
+
+Migration steps:
+Move event handlers accordingly.
+
+
+
+## [5.4.3](https://github.com/NativeScript/NativeScript/compare/5.4.2...5.4.3) (2019-06-21)
+
+
+### Bug Fixes
+
+* clear the `resolvedPage` when entry is being cleared, change the passed `View` to be a weak reference ([#7327](https://github.com/NativeScript/NativeScript/issues/7327)) ([dfe7621](https://github.com/NativeScript/NativeScript/commit/dfe7621))
+
+
+
+<a name="5.4.2"></a>
+## [5.4.2](https://github.com/NativeScript/NativeScript/compare/5.4.1...5.4.2) (2019-06-06)
+
+
+### Bug Fixes
+
+* **hmr:** support for multi module replacement ([7c22ffe](https://github.com/NativeScript/NativeScript/commit/7c22ffe))
+* register layout child for nested custom components ([#7230](https://github.com/NativeScript/NativeScript/issues/7230)) ([3604df8](https://github.com/NativeScript/NativeScript/commit/3604df8))
+* **ios:** potential memory leak with propertybag implementation ([#7298](https://github.com/NativeScript/NativeScript/issues/7298)) ([1c22a73](https://github.com/NativeScript/NativeScript/commit/1c22a73))
+* **platform-declarations-ios:** Change 2^64-1 enum values to -1 ([6720139](https://github.com/NativeScript/NativeScript/commit/6720139))
+
+
+
+## [5.4.1](https://github.com/NativeScript/NativeScript/compare/5.4.0...5.4.1) (2019-05-23)
+
+
+### Bug Fixes
+
+* **android:** CommonLayoutParams measure/layout child guard ([#7271](https://github.com/NativeScript/NativeScript/issues/7271)) ([333ab36](https://github.com/NativeScript/NativeScript/commit/333ab36))
+* **android:** elevation should not require explicit dynamic elevation offset ([#7250](https://github.com/NativeScript/NativeScript/issues/7250)) ([be6e408](https://github.com/NativeScript/NativeScript/commit/be6e408))
+* **hmr:** quick fade upon replace navigation ([#7251](https://github.com/NativeScript/NativeScript/issues/7251)) ([0aca087](https://github.com/NativeScript/NativeScript/commit/0aca087))
+
+
+
 <a name="5.4.0"></a>
 # [5.4.0](https://github.com/NativeScript/NativeScript/compare/5.3.2...5.4.0) (2019-05-14)
 
@@ -817,7 +1172,7 @@ A full list of breaking changes could be found [here](https://github.com/NativeS
 
 - [(#2834)](https://github.com/NativeScript/NativeScript/issues/2834) Animations: scale() syntax does not support only one argument
 
-- [(#2813)](https://github.com/NativeScript/NativeScript/issues/2813) The Camera module in Android doesn't handle pemissions for you
+- [(#2813)](https://github.com/NativeScript/NativeScript/issues/2813) The Camera module in Android doesn't handle permissions for you
 
 - [(#2789)](https://github.com/NativeScript/NativeScript/issues/2789) CSS border-width causes text to overflow TextView
 

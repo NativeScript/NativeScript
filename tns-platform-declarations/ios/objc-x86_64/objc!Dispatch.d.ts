@@ -85,6 +85,13 @@ declare var OS_dispatch_source: {
 	prototype: OS_dispatch_source;
 };
 
+interface OS_dispatch_workloop extends OS_dispatch_queue {
+}
+declare var OS_dispatch_workloop: {
+
+	prototype: OS_dispatch_workloop;
+};
+
 declare var _dispatch_data_destructor_free: () => void;
 
 declare var _dispatch_data_destructor_munmap: () => void;
@@ -137,6 +144,10 @@ declare function dispatch_assert_queue_not(queue: NSObject): void;
 
 declare function dispatch_async(queue: NSObject, block: () => void): void;
 
+declare function dispatch_async_and_wait(queue: NSObject, block: () => void): void;
+
+declare function dispatch_async_and_wait_f(queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+
 declare function dispatch_async_f(queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare const enum dispatch_autorelease_frequency_t {
@@ -149,6 +160,10 @@ declare const enum dispatch_autorelease_frequency_t {
 }
 
 declare function dispatch_barrier_async(queue: NSObject, block: () => void): void;
+
+declare function dispatch_barrier_async_and_wait(queue: NSObject, block: () => void): void;
+
+declare function dispatch_barrier_async_and_wait_f(queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_barrier_async_f(queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
@@ -287,6 +302,8 @@ declare function dispatch_set_context(object: NSObject, context: interop.Pointer
 
 declare function dispatch_set_finalizer_f(object: NSObject, finalizer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
+declare function dispatch_set_qos_class_floor(object: NSObject, qos_class: qos_class_t, relative_priority: number): void;
+
 declare function dispatch_set_target_queue(object: NSObject, queue: NSObject): void;
 
 declare function dispatch_source_cancel(source: NSObject): void;
@@ -326,5 +343,11 @@ declare function dispatch_sync_f(queue: NSObject, context: interop.Pointer | int
 declare function dispatch_time(when: number, delta: number): number;
 
 declare function dispatch_walltime(when: interop.Pointer | interop.Reference<timespec>, delta: number): number;
+
+declare function dispatch_workloop_create(label: string): NSObject;
+
+declare function dispatch_workloop_create_inactive(label: string): NSObject;
+
+declare function dispatch_workloop_set_autorelease_frequency(workloop: NSObject, frequency: dispatch_autorelease_frequency_t): void;
 
 declare function dispatch_write(fd: number, data: NSObject, queue: NSObject, handler: (p1: NSObject, p2: number) => void): void;

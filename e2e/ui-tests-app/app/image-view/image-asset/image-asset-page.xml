@@ -1,0 +1,6 @@
+﻿<Page loaded="pageLoaded">
+      <GridLayout rows="*, *">
+        <Image row="0" src="{{ cameraImageAsset }}" stretch="aspectFill" margin="10"/>
+        <Image row="1" src="{{ cameraImageSrc }}" stretch="aspectFill" margin="10"></Image>
+    </GridLayout>
+</Page>

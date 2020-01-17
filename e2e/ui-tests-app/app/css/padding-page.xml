@@ -1,0 +1,8 @@
+﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd" >
+  <StackLayout automationText="padding">
+    <Label id="label" text="Label" backgroundColor="red" style="padding:50"/>
+    <TextField id="textField" text="TextField" backgroundColor="green" style="padding:50"/>
+    <TextView id="textView" text="TextView" backgroundColor="blue" style="padding:50"/>
+    <Button id="button" text="Button" backgroundColor="yellow" style="padding:50"/>
+  </StackLayout>
+</Page>

@@ -56,7 +56,55 @@ declare const enum at_block_format_t {
 
 	at_block_format_astc_12x12_ldr = 14,
 
-	at_block_format_count = 15
+	at_block_format_astc_4x4_hdr = 17,
+
+	at_block_format_astc_5x4_hdr = 18,
+
+	at_block_format_astc_5x5_hdr = 19,
+
+	at_block_format_astc_6x5_hdr = 20,
+
+	at_block_format_astc_6x6_hdr = 21,
+
+	at_block_format_astc_8x5_hdr = 22,
+
+	at_block_format_astc_8x6_hdr = 23,
+
+	at_block_format_astc_8x8_hdr = 24,
+
+	at_block_format_astc_10x5_hdr = 25,
+
+	at_block_format_astc_10x6_hdr = 26,
+
+	at_block_format_astc_10x8_hdr = 27,
+
+	at_block_format_astc_10x10_hdr = 28,
+
+	at_block_format_astc_12x10_hdr = 29,
+
+	at_block_format_astc_12x12_hdr = 30,
+
+	at_block_format_bc1 = 33,
+
+	at_block_format_bc2 = 34,
+
+	at_block_format_bc3 = 35,
+
+	at_block_format_bc4 = 36,
+
+	at_block_format_bc4s = 37,
+
+	at_block_format_bc5 = 38,
+
+	at_block_format_bc5s = 39,
+
+	at_block_format_bc6 = 40,
+
+	at_block_format_bc6u = 41,
+
+	at_block_format_bc7 = 42,
+
+	at_block_format_count = 43
 }
 
 declare function at_block_format_to_MTLPixelFormat(p1: at_block_format_t): number;
@@ -99,7 +147,9 @@ declare const enum at_error_t {
 
 	at_error_invalid_source_data = -3,
 
-	at_error_invalid_flag = -4
+	at_error_invalid_flag = -4,
+
+	at_error_hdr_block_format_required = -5
 }
 
 declare const enum at_flags_t {

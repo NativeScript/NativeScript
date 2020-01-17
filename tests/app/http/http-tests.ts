@@ -1,19 +1,16 @@
-import { ImageSource } from "tns-core-modules/image-source";
-import * as TKUnit from "../TKUnit";
-import * as http from "tns-core-modules/http";
-import * as fs from "tns-core-modules/file-system";
-import { addHeader } from "tns-core-modules/http/http-request";
+import { ImageSource } from "@nativescript/core/image-source";
+import * as TKUnit from "../tk-unit";
+import * as http from "@nativescript/core/http";
+import * as fs from "@nativescript/core/file-system";
+import { addHeader } from "@nativescript/core/http/http-request";
 
 export var test_getString_isDefined = function () {
     TKUnit.assert(typeof (http.getString) !== "undefined", "Method http.getString() should be defined!");
 };
 
 export var test_getString = function (done: (err: Error, res?: string) => void) {
-    var result;
-
     http.getString("https://httpbin.org/get").then(function (r) {
         //// Argument (r) is string!
-        result = r;
         done(null);
     }, function (e) {
         //// Argument (e) is Error!
@@ -22,14 +19,8 @@ export var test_getString = function (done: (err: Error, res?: string) => void) 
 };
 
 export var test_getString_fail = function (done) {
-    var result;
-    var completed: boolean;
-    var isReady = function () { return completed; }
-
     http.getString({ url: "hgfttp://httpbin.org/get", method: "GET", timeout: 2000 }).catch(function (e) {
-        completed = true;
-        result = e;
-        done(null)
+        done(null);
     });
 };
 
@@ -137,7 +128,7 @@ export var test_getJSON_fail_when_result_is_not_JSONP = function (done) {
     });
 };
 
-export var test_gzip_request_explicit = function(done) {
+export var test_gzip_request_explicit = function (done) {
     var result;
 
     http.request({
@@ -145,7 +136,8 @@ export var test_gzip_request_explicit = function(done) {
         method: "GET",
         headers: {
             "Accept-Encoding": "gzip"
-        }}).then(function (r) {
+        }
+    }).then(function (r) {
         result = r;
         try {
             TKUnit.assert(typeof (JSON.stringify(result)) === "string", "Result from gzipped stream should be valid JSON object!");
@@ -157,14 +149,15 @@ export var test_gzip_request_explicit = function(done) {
     }, function (e) {
         done(e);
     });
-}
+};
 
-export var test_gzip_request_implicit = function(done) {
+export var test_gzip_request_implicit = function (done) {
     var result;
 
     http.request({
         url: "https://postman-echo.com/gzip",
-        method: "GET"}).then(function (r) {
+        method: "GET"
+    }).then(function (r) {
         result = r;
         try {
             TKUnit.assert(typeof (JSON.stringify(result)) === "string", "Result from gzipped stream should be valid JSON object!");
@@ -176,7 +169,7 @@ export var test_gzip_request_implicit = function(done) {
     }, function (e) {
         done(e);
     });
-}
+};
 
 export var test_getImage_isDefined = function () {
     TKUnit.assert(typeof (http.getImage) !== "undefined", "Method http.getImage() should be defined!");
@@ -330,7 +323,7 @@ export var test_request_responseStatusCodeShouldBeDefined = function (done) {
         var statusCode = response.statusCode;
         result = response;
         try {
-            TKUnit.assert(typeof (result.statusCode) !== "undefined", "response.statusCode should be defined!");
+            TKUnit.assert(typeof (statusCode) !== "undefined", "response.statusCode should be defined!");
             done(null);
         }
         catch (err) {
@@ -384,9 +377,6 @@ export var test_request_responseContentShouldBeDefined = function (done) {
     http.request({ url: "https://httpbin.org/get", method: "GET" }).then(function (response) {
         //// Argument (response) is HttpResponse!
         //// Content property of the response is HttpContent!
-        var str = response.content.toString();
-        var obj = response.content.toJSON();
-        var img = response.content.toImage();
         result = response;
         try {
             TKUnit.assert(typeof (result.content) !== "undefined", "response.content should be defined!");
@@ -646,12 +636,12 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
 };
 
 declare var Worker: any;
-export var test_getString_WorksProperlyInWorker = function(done) {
+export var test_getString_WorksProperlyInWorker = function (done) {
     let worker = new Worker("./http-string-worker");
-    worker.onmessage = function(msg) {
+    worker.onmessage = function (msg) {
         done();
     };
-    worker.onerror = function(e) {
+    worker.onerror = function (e) {
         done(e);
     };
 };

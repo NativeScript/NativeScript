@@ -1,0 +1,8 @@
+<Page navigatingTo="navigatingTo">
+  <GridLayout id="root"
+    rows="26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26"
+    columns="26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26"
+    horizontalAlignment="left" verticalAlignment="top"
+    margin="6">
+  </GridLayout>
+</Page>

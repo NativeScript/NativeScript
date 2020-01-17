@@ -1,0 +1,15 @@
+<Page loaded="loaded">
+  <StackLayout>
+    <ListView items="{{ items }}">
+      <ListView.itemTemplate>
+        <StackLayout orientation="horizontal" tap="toggle">
+            <Label text="{{ text }}" />
+            <Label text="marked" visibility="{{ selected ? 'visible' : 'collapse' }}" />
+            <Label text="{{ selected ? 'yep' : 'nope' }}"  />
+            <Label text="test" class="{{ selected ? 'selected' : 'unselected' }}" />
+            <Label text="{{ selected ? 'yep' : 'nope' }}" class="{{ selected ? 'selected' : 'unselected' }}" />
+        </StackLayout>
+      </ListView.itemTemplate>
+    </ListView>
+  </StackLayout>
+</Page>

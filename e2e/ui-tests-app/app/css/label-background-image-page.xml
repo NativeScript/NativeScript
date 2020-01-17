@@ -1,0 +1,7 @@
+<Page>
+    <StackLayout>
+        <Label text="Label1"/>
+        <Label text="Label2" width="150" height="200" />
+        <Label text="Label3" width="200" height="150"/>
+    </StackLayout>
+</Page>

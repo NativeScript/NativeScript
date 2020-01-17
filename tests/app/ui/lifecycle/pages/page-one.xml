@@ -7,6 +7,6 @@
         <!-- This little piggy has both attributes and CSS -->
         <btnCount:Button id="btn3" borderWidth="1" borderColor="gray" borderRadius="16" fontWeight="bold" fontSize="16" />
         <!-- This one has it all -->
-        <btnCount:Button id="btn4" borderRadius="3" style="background-image: url('~/logo.png'); background-position: center; background-repeat: no-repeat; background-size: cover;" />
+        <btnCount:Button id="btn4" borderRadius="3" style="background-image: url('~/assets/logo.png'); background-position: center; background-repeat: no-repeat; background-size: cover;" />
     </StackLayout>
 </Page>

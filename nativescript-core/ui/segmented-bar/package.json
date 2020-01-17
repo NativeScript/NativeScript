@@ -1,0 +1,5 @@
+{
+  "name": "segmented-bar",
+  "main": "segmented-bar",
+  "types": "segmented-bar.d.ts"
+}

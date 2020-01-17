@@ -1,0 +1,29 @@
+<Page>
+    <GridLayout rows="*,*,*,*,*,*" >
+        <Button backgroundImage="url('~/resources/images/no-image.png')"
+            borderRadius='125' borderWidth='2' borderColor='black'
+            backgroundRepeat="repeat" backgroundSize="contain"
+            />
+        <Button row="1" backgroundImage="url('~/resources/images/no-image.png')"
+            borderRadius='5' borderWidth='2' borderColor='black'
+            backgroundRepeat="repeat-y"
+            />
+        <Button row="2" backgroundImage="url('~/resources/images/no-image.png')"
+            borderRadius='25' borderWidth='2' borderColor='black'
+            backgroundRepeat="repeat-x"
+            />
+         <Button row="3" backgroundImage="url('res://icon')"
+            borderRadius='10' borderWidth='2' borderColor='black'
+            backgroundRepeat="no-repeat"
+            backgroundSize="contain"
+            height="80" width="180"
+            />
+        <Button row="4" text="css background no-repeat" class="testBtn"/>
+        <Button row="5" backgroundImage="url('res://icon')"
+            borderRadius='10' borderWidth='2' borderColor='black'
+            style="background-repeat: no-repeat"
+            backgroundSize="contain"
+            height="80" width="180"
+            />
+    </GridLayout>
+</Page>

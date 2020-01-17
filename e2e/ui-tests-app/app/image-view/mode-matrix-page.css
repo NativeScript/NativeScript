@@ -1,0 +1,9 @@
+Image {
+    margin: 1;
+}
+
+GridLayout {
+    background-image: url("res://tile");
+    background-repeat: repeat;
+    background-size: 78 78;
+}

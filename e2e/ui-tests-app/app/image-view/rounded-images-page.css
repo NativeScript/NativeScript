@@ -1,0 +1,61 @@
+﻿Page {
+    background-color: #1B3943;
+}
+
+.one {
+    width: 100;
+    height: 100;
+    border-radius: 0;
+    border-width: 0;
+    border-color: gray;
+}
+
+.two {
+    width: 100;
+    height: 100;
+    border-radius: 50;
+    border-width: 0;
+    border-color: gray;
+}
+
+.three {
+    width: 100;
+    height: 100;
+    border-radius: 0;
+    border-width: 20;
+    border-color: gray;
+}
+
+.four {
+    width: 100;
+    height: 100;
+    border-radius: 40;
+    border-width: 5;
+    border-color: gray;
+}
+
+.five {
+    width: 100;
+    height: 100;
+    border-radius: 20;
+    border-width: 30;
+    border-color: gray;
+}
+
+.six {
+    width: 100;
+    height: 50;
+    border-radius: 30;
+    border-width: 5;
+    border-color: gray;
+}
+
+style {
+    width: 200;
+    height: 200;
+    color: white;
+    border-width: 2;
+    border-color: blue;
+    border-radius: 100;
+    background-image: url('~/resources/images/red.png');
+}

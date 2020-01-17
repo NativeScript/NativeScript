@@ -1,0 +1,17 @@
+<Page class="page">
+
+  <ActionBar title="Tabs background-color" icon="" class="action-bar">
+  </ActionBar>
+
+ <GridLayout rows="auto,*">
+     <StackLayout row="0" >
+        <Button automationText="add-tab" text="add-tab" tap="{{ createItems }}"/>
+        <Button automationText="remove-last-tab" text="remove-last-tab" tap="{{ removeLastItem }}"/>
+    </StackLayout>
+    <GridLayout row="1">
+        <Tabs loaded="tabsLoaded" items="{{ tabContentItems }}" automationText="tabNavigation"  >
+            <TabStrip items="{{ tabStripItems }}"></TabStrip>
+        </Tabs>
+    </GridLayout>
+  </GridLayout>
+</Page>

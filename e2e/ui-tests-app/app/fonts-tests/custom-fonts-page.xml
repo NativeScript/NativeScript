@@ -1,0 +1,13 @@
+<Page>
+  <StackLayout>
+    <Button text="Button" style="font-family: Sofia" />
+    <Label text="Label" style="font-family: Sofia" />
+    <TextField text="TextField" style="font-family: Sofia" />
+    <TextView text="TextView" style="font-family: Sofia" />
+
+    <Button text="Button" style="font-family: Pacifico" />
+    <Label text="Label" style="font-family: Pacifico" />
+    <TextField text="TextField" style="font-family: Pacifico" />
+    <TextView text="TextView" style="font-family: Pacifico" />
+  </StackLayout>
+</Page>

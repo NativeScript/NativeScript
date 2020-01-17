@@ -1,0 +1,24 @@
+<Page>
+  <Page.actionBar>
+      <ActionBar title="TextView hint color"/>
+  </Page.actionBar>
+    <StackLayout id="container">
+        <Label text="TextView:" />
+        <TextView hint="nothing" fontSize="18" />
+        <TextView hint="placeholder-color"  style="placeholder-color: green;" fontSize="18" />
+        <TextView hint="color" style="color: brown;" fontSize="18" />
+        <TextView hint="both" style="color: brown; placeholder-color: green;" fontSize="18" />
+
+        <Label text="TextField:" />
+        <TextField hint="nothing" fontSize="18" />
+        <TextField hint="placeholder-color"  style="placeholder-color: green;" fontSize="18" />
+        <TextField hint="color" style="color: brown;" fontSize="18" />
+        <TextField hint="both" style="color: brown; placeholder-color: green;" fontSize="18" />
+
+        <StackLayout orientation="horizontal">
+        <Button id="btnSetText" text="set text" tap="setText" width="80"/>
+        <Button id="btnResetStyles" text="reset style" tap="resetStyles" width="80"/>
+        <Button id="btnClearText" text="reset text" tap="resetText" width="80"/>
+        </StackLayout>
+    </StackLayout>
+</Page>

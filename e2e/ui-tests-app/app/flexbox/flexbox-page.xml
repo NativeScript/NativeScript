@@ -1,0 +1,123 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" android:actionBarHidden="true">
+    <GridLayout rows="auto, *">
+        <GridLayout class="control" columns="auto, *" rows="25, 15, 25, 15, 25, 15, 15, 15, 15, 25, 15">
+
+            <Label row="0" text="flexDirection" verticalAlignment="center" />
+            <!--default=row-->
+            <FlexboxLayout row="0" col="1">
+                <Button text="row"            tag="flex-direction: row;"            tap="flexDirection" flexGrow="1" automationText="flexDirection-row" />
+                <Button text="row-reverse"    tag="flex-direction: row-reverse;"    tap="flexDirection" flexGrow="1" automationText="flexDirection-row-reverse" />
+                <Button text="column"         tag="flex-direction: column;"         tap="flexDirection" flexGrow="1" automationText="flexDirection-column" />
+                <Button text="column-reverse" tag="flex-direction: column-reverse;" tap="flexDirection" flexGrow="1" automationText="flexDirection-column-reverse" />
+            </FlexboxLayout>
+
+            <Label row="1" text="flexWrap" verticalAlignment="center" />
+            <!--default=nowrap-->
+            <FlexboxLayout row="1" col="1">
+                <Button text="nowrap"       tag="flex-wrap: nowrap;"       tap="flexWrap" flexGrow="1" automationText="flexWrap-nowrap" />
+                <Button text="wrap"         tag="flex-wrap: wrap;"         tap="flexWrap" flexGrow="1" automationText="flexWrap-wrap" />
+                <Button text="wrap-reverse" tag="flex-wrap: wrap-reverse;" tap="flexWrap" flexGrow="1" automationText="flexWrap-wrap-reverse" />
+            </FlexboxLayout>
+
+            <Label row="2" text="justifyContent" verticalAlignment="center" />
+            <!--defeault=flex-start-->
+            <FlexboxLayout row="2" col="1">
+                <Button text="flex-start"    tag="justify-content: flex-start;"    tap="justifyContent" flexGrow="1" automationText="justifyContent-flex-start" />
+                <Button text="flex-end"      tag="justify-content: flex-end;"      tap="justifyContent" flexGrow="1" automationText="justifyContent-flex-end" />
+                <Button text="center"        tag="justify-content: center;"        tap="justifyContent" flexGrow="1" automationText="justifyContent-center" />
+                <Button text="space-between" tag="justify-content: space-between;" tap="justifyContent" flexGrow="1" automationText="justifyContent-space-between" />
+                <Button text="space-around"  tag="justify-content: space-around;"  tap="justifyContent" flexGrow="1" automationText="justifyContent-space-around" />
+            </FlexboxLayout>
+
+            <Label row="3" text="alignItems" verticalAlignment="center" />
+            <!--default=stretch-->
+            <FlexboxLayout row="3" col="1">
+                <Button text="flex-start" tag="align-items: flex-start;" tap="alignItems" flexGrow="1" automationText="alignItems-flex-start" />
+                <Button text="flex-end"   tag="align-items: flex-end;"   tap="alignItems" flexGrow="1" automationText="alignItems-flex-end" />
+                <Button text="center"     tag="align-items: center;"     tap="alignItems" flexGrow="1" automationText="alignItems-center" />
+                <Button text="baseline"   tag="align-items: baseline;"   tap="alignItems" flexGrow="1" automationText="alignItems-baseline" />
+                <Button text="stretch"    tag="align-items: stretch;"    tap="alignItems" flexGrow="1" automationText="alignItems-stretch" />
+            </FlexboxLayout>
+
+            <Label row="4" text="alignContent" verticalAlignment="center" />
+            <!--default=stretch-->
+            <FlexboxLayout row="4" col="1">
+                <Button text="flex-start"    tag="align-content: flex-start;"    tap="alignContent" flexGrow="1" automationText="alignContent-flex-start" />
+                <Button text="flex-end"      tag="align-content: flex-end;"      tap="alignContent" flexGrow="1" automationText="alignContent-flex-end" />
+                <Button text="center"        tag="align-content: center;"        tap="alignContent" flexGrow="1" automationText="alignContent-center" />
+                <Button text="space-between" tag="align-content: space-between;" tap="alignContent" flexGrow="1" automationText="alignContent-space-between" />
+                <Button text="space-around"  tag="align-content: space-around;"  tap="alignContent" flexGrow="1" automationText="alignContent-space-around" />
+                <Button text="stretch"       tag="align-content: stretch;"       tap="alignContent" flexGrow="1" automationText="alignContent-stretch" />
+            </FlexboxLayout>
+
+            <Label row="5" colSpan="2" text="--- selected item properties ---" />
+
+            <Label text="order" row="6" />
+            <!--default=1-->
+            <FlexboxLayout row="6" col="1">
+                <Button text="0" tap="order" flexGrow="1" automationText="order-0" />
+                <Button text="1" tap="order" flexGrow="1" automationText="order-1" />
+                <Button text="2" tap="order" flexGrow="1" automationText="order-2" />
+                <Button text="3" tap="order" flexGrow="1" automationText="order-3" />
+                <Button text="4" tap="order" flexGrow="1" automationText="order-4" />
+            </FlexboxLayout>
+
+            <Label text="flexGrow" row="7" />
+            <!--default=0-->
+            <FlexboxLayout row="7" col="1">
+                <Button text="0" tap="flexGrow" flexGrow="1" automationText="flexGrow-0" />
+                <Button text="1" tap="flexGrow" flexGrow="1" automationText="flexGrow-1" />
+                <Button text="2" tap="flexGrow" flexGrow="1" automationText="flexGrow-2" />
+                <Button text="3" tap="flexGrow" flexGrow="1" automationText="flexGrow-3" />
+                <Button text="4" tap="flexGrow" flexGrow="1" automationText="flexGrow-4" />
+            </FlexboxLayout>
+
+            <Label text="flexShrink" row="8" />
+            <!--default=1-->
+            <FlexboxLayout row="8" col="1">
+                <Button text="0" tap="flexShrink" flexGrow="1" automationText="flexShrink-0" />
+                <Button text="1" tap="flexShrink" flexGrow="1" automationText="flexShrink-1" />
+                <Button text="2" tap="flexShrink" flexGrow="1" automationText="flexShrink-2" />
+                <Button text="3" tap="flexShrink" flexGrow="1" automationText="flexShrink-3" />
+                <Button text="4" tap="flexShrink" flexGrow="1" automationText="flexShrink-4" />
+            </FlexboxLayout>
+
+            <Label row="9" text="alignSelf" verticalAlignment="center" />
+            <!--defaut=stretch-->
+            <FlexboxLayout row="9" col="1">
+                <Button text="auto"       tap="alignSelf" flexGrow="1" automationText="alignSelf-auto" />
+                <Button text="flex-start" tap="alignSelf" flexGrow="1" automationText="alignSelf-flex-start" />
+                <Button text="flex-end"   tap="alignSelf" flexGrow="1" automationText="alignSelf-flex-end" />
+                <Button text="center"     tap="alignSelf" flexGrow="1" automationText="alignSelf-center" />
+                <Button text="baseline"   tap="alignSelf" flexGrow="1" automationText="alignSelf-baseline" />
+                <Button text="stretch"    tap="alignSelf" flexGrow="1" automationText="alignSelf-stretch" />
+            </FlexboxLayout>
+
+            <Label row="10" text="flexWrapBefore" verticalAlignment="center" />
+            <FlexboxLayout row="10" col="1">
+                <Button text="true"  tap="flexWrapBefore" flexGrow="1" automationText="flexWrapBefore-true" />
+                <Button text="false" tap="flexWrapBefore" flexGrow="1" automationText="flexWrapBefore-false" />
+            </FlexboxLayout>
+        </GridLayout>
+
+        <FlexboxLayout id="container" row="1">
+            <Label text="row"            tap="select" backgroundColor="yellow"      automationText="itemRow-0" margin="10" />
+            <Label text="row-reverse"    tap="select" backgroundColor="lightgreen"  automationText="itemRowReverse-0" />
+            <Label text="column"         tap="select" backgroundColor="lightblue"   automationText="itemColumn-0" />
+            <Label text="column-reverse" tap="select" backgroundColor="lightsalmon" automationText="itemColumnReverse-0" />
+
+            <Label text="row"            tap="select" backgroundColor="yellow"      automationText="itemRow-1" />
+            <Label text="row-reverse"    tap="select" backgroundColor="lightgreen"  automationText="itemRowReverse-1" />
+            <Label text="column"         tap="select" backgroundColor="lightblue"   automationText="itemColumn-1" />
+            <Label text="column-reverse" tap="select" backgroundColor="lightsalmon" automationText="itemColumnReverse-1" />
+
+            <!--
+            <Label text="row"            tap="select" backgroundColor="yellow"      automationText="itemRow-2" />
+            <Label text="row-reverse"    tap="select" backgroundColor="lightgreen"  automationText="itemRowReverse-2" />
+            <Label text="column"         tap="select" backgroundColor="lightblue"   automationText="itemColumn-2" />
+            <Label text="column-reverse" tap="select" backgroundColor="lightsalmon" automationText="itemColumnReverse-2" />
+            -->
+
+        </FlexboxLayout>
+    </GridLayout>
+</Page>

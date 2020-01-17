@@ -1,0 +1,34 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo" class="page">
+
+    <Page.actionBar>
+        <ActionBar title="My App" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <StackLayout>
+        <StackLayout class="p-10" row="0">
+            <Label text="Row height = 40" class="body m-b-10"/>
+            <ListView items="{{ $value }}" rowHeight="40">
+                <ListView.itemTemplate>
+                    <Label text="{{ $value }}" backgroundColor="green"/>
+                </ListView.itemTemplate>
+            </ListView>
+        </StackLayout>
+        <StackLayout class="p-10" row="0">
+            <Label text="Row height pixels = 40" class="body m-b-10"/>
+            <ListView items="{{ $value }}" rowHeight="40px">
+                <ListView.itemTemplate>
+                    <Label text="{{ $value }}" backgroundColor="green"/>
+                </ListView.itemTemplate>
+            </ListView>
+        </StackLayout>
+        <StackLayout class="p-10" row="0">
+            <Label text="Row height dips = 40" class="body m-b-10"/>
+            <ListView items="{{ $value }}" rowHeight="40dips">
+                <ListView.itemTemplate>
+                    <Label text="{{ $value }}" backgroundColor="green"/>
+                </ListView.itemTemplate>
+            </ListView>
+        </StackLayout>
+    </StackLayout>
+</Page>

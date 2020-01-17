@@ -1,6 +1,0 @@
-{
-  "name" : "matrix",
-  "main" : "matrix",
-  "types" : "matrix.d.ts",
-  "nativescript": {}
-}

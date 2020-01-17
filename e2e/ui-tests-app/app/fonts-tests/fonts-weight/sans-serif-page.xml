@@ -1,0 +1,36 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" class="page">
+  <ActionBar title="Sans Serif"/>
+  <ScrollView>
+    <GridLayout columns="* *">
+        <StackLayout>
+          <Label text="sample" style="font-family: sans-serif;"/>
+          <Label style="font-family: sans-serif; font-weight: 100;"      text="sample - 100" />
+          <Label style="font-family: sans-serif; font-weight: 200;"      text="sample - 200" />
+          <Label style="font-family: sans-serif; font-weight: 300;"      text="sample - 300" />
+          <Label style="font-family: sans-serif; font-weight: 400;"      text="sample - 400"/>
+          <Label style="font-family: sans-serif; font-weight: normal;"   text="sample - normal"/>
+          <Label style="font-family: sans-serif; font-weight: 500;"      text="sample - 500"/>
+          <Label style="font-family: sans-serif; font-weight: 600;"      text="sample - 600"/>
+          <Label style="font-family: sans-serif; font-weight: 700;"      text="sample - 700"/>
+          <Label style="font-family: sans-serif; font-weight: bold;"     text="sample - bold"/>
+          <Label style="font-family: sans-serif; font-weight: 800;"      text="sample - 800"/>
+          <Label style="font-family: sans-serif; font-weight: 900;"      text="sample - 900"/>
+        </StackLayout>
+
+        <StackLayout col="1">
+          <Label text="sample" style="font-family: sans-serif; font-style: italic;"/>
+          <Label style="font-family: sans-serif; font-style: italic; font-weight: 100;"      text="sample - 100" />
+          <Label style="font-family: sans-serif; font-style: italic; font-weight: 200;"      text="sample - 200" />
+          <Label style="font-family: sans-serif; font-style: italic; font-weight: 300;"      text="sample - 300" />
+          <Label style="font-family: sans-serif; font-style: italic; font-weight: 400;"      text="sample - 400"/>
+          <Label style="font-family: sans-serif; font-style: italic; font-weight: normal;"   text="sample - normal"/>
+          <Label style="font-family: sans-serif; font-style: italic; font-weight: 500;"      text="sample - 500"/>
+          <Label style="font-family: sans-serif; font-style: italic; font-weight: 600;"      text="sample - 600"/>
+          <Label style="font-family: sans-serif; font-style: italic; font-weight: 700;"      text="sample - 700"/>
+          <Label style="font-family: sans-serif; font-style: italic; font-weight: bold;"     text="sample - bold"/>
+          <Label style="font-family: sans-serif; font-style: italic; font-weight: 800;"      text="sample - 800"/>
+          <Label style="font-family: sans-serif; font-style: italic; font-weight: 900;"      text="sample - 900"/>
+        </StackLayout>
+    </GridLayout>
+  </ScrollView>
+</Page>

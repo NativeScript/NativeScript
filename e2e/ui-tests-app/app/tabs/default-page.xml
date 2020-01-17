@@ -1,0 +1,89 @@
+<Page>
+
+  <ActionBar title="Tabs" icon="" class="action-bar">
+  </ActionBar>
+
+  <!-- w/o TabStrip -->
+  <!-- <BottomNavigation>
+      <TabContentItem>
+        <GridLayout>
+          <Label text="First View"/>
+        </GridLayout>
+      </TabContentItem>
+      <TabContentItem>
+        <GridLayout>
+          <Label text="Second View"/>
+        </GridLayout>
+      </TabContentItem>
+  </BottomNavigation> -->
+
+  <!-- w/ TabStrip -->
+  <Tabs id="tabsNav" automationText="tabNavigation"  >
+    <TabStrip>
+      <TabStripItem title="First Tab 11" iconSource="res://icon"></TabStripItem>
+      <TabStripItem>
+        <!-- <Image src="res://icon" /> -->
+        <Label text="News" />
+      </TabStripItem>
+      <!-- <TabStripItem title="Favorites" iconSource="res://icon"></TabStripItem> -->
+      <TabStripItem>
+        <!-- <Image src="res://icon" /> -->
+        <Label text="Places" />
+      </TabStripItem>
+      <!-- <TabStripItem title="Music" iconSource="res://icon"></TabStripItem> -->
+    </TabStrip>
+
+    <TabContentItem>
+      <StackLayout backgroundColor="blue">
+        <Label text="First View"/>
+        <Button tap="goToSecond" text="go to second" />
+      </StackLayout>
+    </TabContentItem>
+    <TabContentItem>
+      <StackLayout backgroundColor="red">
+        <Label text="Second View"/>
+        <Button tap="goToFirst" text="go to first" />
+      </StackLayout>
+    </TabContentItem>
+    <TabContentItem>
+      <StackLayout backgroundColor="green">
+        <Label text="First View"/>
+        <Button tap="goToSecond" text="go to second" />
+      </StackLayout>
+    </TabContentItem>
+    <!-- <TabContentItem>
+      <StackLayout>
+        <Label text="Second View"/>
+        <Button tap="goToFirst" text="go to first" />
+      </StackLayout>
+    </TabContentItem>
+    <TabContentItem>
+      <StackLayout>
+        <Label text="First View"/>
+        <Button tap="goToSecond" text="go to second" />
+      </StackLayout>
+    </TabContentItem> -->
+  </Tabs>
+
+  <!-- =============================================================================================== -->
+
+  <!-- Bottom Bar with TabStrip -->
+  <!-- <BottomNavigationBar>
+    <TabStrip>
+      <TabStripItem title="First Tab" iconSource="res://icon"></TabStripItem>
+      <TabStripItem>
+        <Image src="res://icon" />
+        <Label text="Second Tab" />
+      </TabStripItem>
+    </TabStrip>
+  </BottomNavigationBar> -->
+
+  <!-- Bottom Bar w/o TabStrip -->
+  <!-- <BottomNavigationBar>
+    <TabStripItem title="First Tab" iconSource="res://icon"></TabStripItem>
+    <TabStripItem>
+      <Image src="res://icon" />
+      <Label text="Second Tab" />
+    </TabStripItem>
+  </BottomNavigationBar> -->
+</Page>

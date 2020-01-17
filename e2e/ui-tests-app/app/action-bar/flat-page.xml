@@ -1,0 +1,11 @@
+<Page navigatedTo="onNavigateTo" backgroundColor="yellow">
+
+  <ActionBar backgroundColor="blue" automationText="actionBar">
+      <Label text="flat action bar"></Label>
+  </ActionBar>
+
+  <StackLayout backgroundColor="red">
+    <Button margin="30" text="change flat property" tap="changeFlatPropertyValue"/>
+    <Label id="flatPropertyValue" backgroundColor="green" />
+  </StackLayout>
+</Page>

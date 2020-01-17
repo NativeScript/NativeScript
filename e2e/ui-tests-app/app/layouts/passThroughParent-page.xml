@@ -1,0 +1,28 @@
+<Page class="page" actionBarHidden="true"
+    xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <WrapLayout tap="onOuterWrapLayoutTap" automationText="onOuterWrapLayoutTap" backgroundColor="#bed3f4" padding="5">
+        <StackLayout tap="onStackLayoutThrowTap" automationText="stackLayout1" backgroundColor="#f3f9db" height="180" isPassThroughParentEnabled="true">
+            <Label automationText="label1" text="isPassThroughParentEnabled='true'" isUserInteractionEnabled="false" />
+            <Button automationText="onUserInteractionDisabledThrowTap1" isUserInteractionEnabled="false" tap="onUserInteractionDisabledThrowTap" text="isUserInteractionEnabled='false'"></Button>
+            <Button automationText="onDisabledThrowTap1" isEnabled="false" tap="onDisabledThrowTap" text="isEnabled='false'"></Button>
+            <Button tap="onTap" text="TAP" automationText="btn1"></Button>
+        </StackLayout>
+
+        <StackLayout tap="onStackLayoutThrowTap" automationText="stackLayout2" style.margin="20" height="250" width="300" backgroundColor="#f5edf7" isPassThroughParentEnabled="true">
+            <Label automationText="label2" text="isPassThroughParentEnabled='true'" isUserInteractionEnabled="false" />
+            <StackLayout tap="onStackLayoutThrowTap" automationText="stackLayout3" backgroundColor="#f3f9db" height="200" isPassThroughParentEnabled="true">
+                <Label automationText="label3" text="isPassThroughParentEnabled='true'" isUserInteractionEnabled="false" />
+                <Button automationText="onUserInteractionDisabledThrowTap2" isUserInteractionEnabled="false" tap="onUserInteractionDisabledThrowTap" text="isUserInteractionEnabled='false'"></Button>
+                <Button automationText="onDisabledThrowTap2" isEnabled="false" tap="onDisabledThrowTap" text="isEnabled='false'"></Button>
+                <Button automationText="btn2" tap="onTap" text="TAP"></Button>
+            </StackLayout>
+        </StackLayout>
+
+        <Button text="x" automationText="clearResult" tap="clearResult" height="35" width="40" padding="0" />
+
+        <StackLayout>
+            <Label id="resultLabel" textWrap="true" />
+        </StackLayout>
+    </WrapLayout>
+</Page>

@@ -1,0 +1,19 @@
+<Page class="page" navigatingTo="navigatingTo">
+
+  <ActionBar title="BottomNavigation binding" icon="" class="action-bar">
+  </ActionBar>
+
+    <GridLayout rows="auto,*">
+    <StackLayout row="0" >
+        <Button automationText="add-tab" text="add-tab" tap="{{ createItems }}"/>
+        <Button automationText="remove-last-tab" text="remove-last-tab" tap="{{ removeLastItem }}"/>
+
+    </StackLayout>
+        <GridLayout row="1">
+            <BottomNavigation automationText="tabNavigation"  loaded="bottomNavigaitonLoaded" items="{{ tabContentItems }}">
+                <TabStrip items="{{ tabStripItems }}" iosIconRenderingMode="alwaysOriginal">
+                </TabStrip>
+            </BottomNavigation>
+        </GridLayout>
+    </GridLayout>
+</Page>

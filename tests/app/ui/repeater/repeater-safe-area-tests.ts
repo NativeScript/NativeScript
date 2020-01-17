@@ -1,16 +1,11 @@
-import * as helper from "../helper";
-import * as TKUnit from "../../TKUnit";
-import { parse } from "tns-core-modules/ui/builder";
-import * as view from "tns-core-modules/ui/core/view";
-import * as platform from "tns-core-modules/platform";
-import { Repeater } from "tns-core-modules/ui/repeater";
-import { ios as iosUtils } from "tns-core-modules/utils/utils";
+import * as helper from "../../ui-helper";
+import * as TKUnit from "../../tk-unit";
+import { Builder } from "@nativescript/core/ui/builder";
+import * as view from "@nativescript/core/ui/core/view";
+import * as platform from "@nativescript/core/platform";
+import { Repeater } from "@nativescript/core/ui/repeater";
 import { UITest } from "../../ui-test";
-import {
-    dipToDp, left, top, right, bottom, height, width,
-    equal, check, lessOrCloseEnough, greaterOrCloseEnough,
-    isLeftAlignedWith, isRightAlignedWith, isTopAlignedWith
-} from "../layouts/layout-tests-helper";
+import { left, top, right, bottom, equal } from "../layouts/layout-tests-helper";
 
 export class RepeaterSafeAreaTest extends UITest<Repeater> {
 
@@ -26,19 +21,20 @@ export class RepeaterSafeAreaTest extends UITest<Repeater> {
             waitUntilTestElementLayoutIsValid(ui.root);
             test(ui);
         }, pageOptions);
-    };
+    }
 
     private noop() {
         // no operation
-    };
+    }
 
     private getViews(template: string) {
-        let root = parse(template);
+        let root = Builder.parse(template);
+
         return {
             root,
             list: root.getViewById("repeater") as Repeater
         };
-    };
+    }
 
     private repeater_in_full_screen(repeater: Repeater, pageOptions?: helper.PageOptions) {
         const l = left(repeater);

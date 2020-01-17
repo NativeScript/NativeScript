@@ -1,0 +1,5 @@
+{
+  "name": "content-view",
+  "main": "content-view",
+  "types": "content-view.d.ts"
+}

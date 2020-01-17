@@ -1,0 +1,45 @@
+Label,
+Button {
+    text-align: center;
+    padding: 10;
+    margin: 16;
+    background-color: #bbb;
+}
+
+.elevation-0 {
+    android-elevation: 0;
+}
+
+.elevation-2 {
+    android-elevation: 2;
+}
+
+.elevation-4 {
+    android-elevation: 4;
+}
+
+.elevation-4:highlighted {
+    android-elevation: 2;
+}
+
+.elevation-8 {
+    android-elevation: 8;
+}
+
+.elevation-10 {
+    android-elevation: 10;
+}
+
+.pressed-z-10 {
+    android-dynamic-elevation-offset: 10;
+}
+
+.round {
+    color: #fff;
+    background-color: #ff1744;
+    border-radius: 50%;
+    /* TODO kills elevation */
+    width: 80;
+    height: 80;
+    android-elevation: 8;
+}

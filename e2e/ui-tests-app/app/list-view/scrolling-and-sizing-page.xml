@@ -1,0 +1,65 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo" class="page">
+
+    <Page.actionBar>
+        <ActionBar title="My App" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <StackLayout>
+        <StackLayout class="p-10" row="0">
+            <Label text="Default style = scrolls out of container" class="body m-b-10" />
+            <ListView items="{{ $value }}" height="40">
+                <ListView.itemTemplate>
+                    <Label text="{{ $value }}" />
+                </ListView.itemTemplate>
+            </ListView>
+        </StackLayout>
+
+        <StackLayout class="p-10" row="1">
+            <Label text="Adding border changes the height but fixes scrolling" textWrap="true" class="body m-b-10" />
+            <ListView items="{{ $value }}" height="40" class="bordered">
+                <ListView.itemTemplate>
+                    <Label text="{{ $value }}" />
+                </ListView.itemTemplate>
+            </ListView>
+        </StackLayout>
+
+        <StackLayout class="p-10" row="2">
+            <Label text="border-radius" class="body m-b-10" />
+            <ListView items="{{ $value }}" class="bordered fixed-height border-radius">
+                <ListView.itemTemplate>
+                    <Label text="{{ $value }}" />
+                </ListView.itemTemplate>
+            </ListView>
+        </StackLayout>
+
+        <StackLayout class="p-10" row="2">
+            <Label text="border-radius = weird" class="body m-b-10" />
+            <ListView items="{{ $value }}" class="bordered fixed-height border-radius-nonuniform">
+                <ListView.itemTemplate>
+                    <Label text="{{ $value }}" />
+                </ListView.itemTemplate>
+            </ListView>
+        </StackLayout>
+
+        <StackLayout class="p-10" row="3">
+            <Label text="border-width = weird" class="body m-b-10" />
+            <ListView items="{{ $value }}" class="bordered-nonuniform fixed-height">
+                <ListView.itemTemplate>
+                    <Label text="{{ $value }}" />
+                </ListView.itemTemplate>
+            </ListView>
+        </StackLayout>
+
+         <StackLayout class="p-10" row="3">
+            <Label text="ios-estimated-row-height" class="body m-b-10" />
+            <ListView items="{{ $value }}" iosEstimatedRowHeight="0">
+                <ListView.itemTemplate>
+                    <Label text="{{ $value }}" />
+                </ListView.itemTemplate>
+            </ListView>
+            <Label text="after-auto-estimated-height" class="body m-b-10" />
+        </StackLayout>
+
+    </StackLayout>
+</Page>

@@ -1,0 +1,36 @@
+<Page>
+
+  <ActionBar title="Tabs" icon="" class="action-bar">
+  </ActionBar>
+
+  <Tabs id="tabsNav" automationText="tabNavigation">
+    <TabStrip backgroundColor="palevioletred">
+      <TabStripItem title="First Tab 11" iconSource="res://icon"></TabStripItem>
+      <TabStripItem>
+        <Label text="News" />
+      </TabStripItem>
+      <TabStripItem>
+        <Label text="Places" />
+      </TabStripItem>
+    </TabStrip>
+
+    <TabContentItem>
+      <StackLayout backgroundColor="skyblue">
+        <Label text="First View"/>
+        <Button tap="goToSecond" text="go to second" />
+      </StackLayout>
+    </TabContentItem>
+    <TabContentItem>
+      <StackLayout backgroundColor="gold">
+        <Label text="Second View"/>
+        <Button tap="goToFirst" text="go to first" />
+      </StackLayout>
+    </TabContentItem>
+    <TabContentItem>
+      <StackLayout backgroundColor="olive">
+        <Label text="First View"/>
+        <Button tap="goToSecond" text="go to second" />
+      </StackLayout>
+    </TabContentItem>
+  </Tabs>
+</Page>

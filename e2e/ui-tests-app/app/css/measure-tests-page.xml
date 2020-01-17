@@ -1,0 +1,16 @@
+<Page>
+    <StackLayout class="c">
+
+        <Label text="Label" class="c1"/>
+        <Button text="Button" class="c1"/>
+        <TextField text="TextField" class="c1"/>
+        <TextView text="TextView" class="c1"/>
+        <Image src="~/resources/images/gravatar2.png" class="c1" stretch="none"/>
+
+        <Label text="Label" class="c2"/>
+        <Button text="Button" class="c2"/>
+        <TextField text="TextField" class="c2"/>
+        <TextView text="TextView" class="c2" style.horizonhorizontalAlignmenttalAligment="left"/>
+        <Image src="~/resources/images/gravatar2.png" class="c2" stretch="none"/>
+    </StackLayout>
+</Page>

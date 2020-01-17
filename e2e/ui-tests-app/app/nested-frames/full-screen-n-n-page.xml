@@ -1,0 +1,10 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" actionBarHidden="true">
+
+    <ActionBar>
+        <Label text="Parent page"></Label>
+    </ActionBar>
+
+    <GridLayout backgroundColor="blue">
+        <Frame id="nestedFrame" defaultPage="nested-frames/nested-page" actionBarVisibility="never"></Frame>
+    </GridLayout>
+</Page>

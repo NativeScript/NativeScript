@@ -1,0 +1,93 @@
+﻿<Page>
+    <StackLayout>
+
+      <Label autocorrect="false" text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through;" />
+      <Label autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;">
+        <Label.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="label" fontWeight="bold" color="#0000ff" />
+              <Span text="Label" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Label.formattedText>
+      </Label>
+      <Label autocorrect="false" >
+        <Label.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="label" fontWeight="bold" color="#0000ff" />
+              <Span text="Label" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Label.formattedText>
+      </Label>
+
+      <Button text="buttonButton" style="text-transform: uppercase; text-decoration: underline line-through;" />
+      <Button autocorrect="false"  style="text-transform: uppercase; text-decoration: underline line-through;">
+        <Button.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="button" fontWeight="bold" color="#0000ff" />
+              <Span text="Button" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Button.formattedText>
+      </Button>
+      <Button autocorrect="false" >
+        <Button.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="button" fontWeight="bold" color="#0000ff" />
+              <Span text="Button" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </Button.formattedText>
+      </Button>
+
+      <TextField autocorrect="false" text="textField" style="text-transform: uppercase; text-decoration: underline line-through;" />
+      <TextField autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;">
+        <TextField.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontWeight="bold" color="#0000ff" />
+              <Span text="Field" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </TextField.formattedText>
+      </TextField>
+      <TextField autocorrect="false">
+        <TextField.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontWeight="bold" color="#0000ff" />
+              <Span text="Field" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </TextField.formattedText>
+      </TextField>
+
+      <TextView autocorrect="false" text="textView" style="text-transform: uppercase; text-decoration: underline line-through;" />
+      <TextView autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;">
+        <TextView.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontWeight="bold" color="#0000ff" />
+              <Span text="View" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </TextView.formattedText>
+      </TextView>
+      <TextView autocorrect="false">
+        <TextView.formattedText>
+          <FormattedString>
+            <FormattedString.spans>
+              <Span text="text" fontWeight="bold" color="#0000ff" />
+              <Span text="View" fontStyle="italic" color="#00ff00" />
+            </FormattedString.spans>
+          </FormattedString>
+        </TextView.formattedText>
+      </TextView>
+
+    </StackLayout>
+</Page>

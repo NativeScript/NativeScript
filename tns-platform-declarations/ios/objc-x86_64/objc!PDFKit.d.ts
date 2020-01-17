@@ -234,11 +234,11 @@ declare class PDFAnnotation extends NSObject implements NSCoding, NSCopying {
 
 	drawWithBoxInContext(box: PDFDisplayBox, context: any): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
 	initWithBoundsForTypeWithProperties(bounds: CGRect, annotationType: string, properties: NSDictionary<any, any>): this;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	removeBezierPath(path: UIBezierPath): void;
 
@@ -485,9 +485,9 @@ declare class PDFBorder extends NSObject implements NSCoding, NSCopying {
 
 	drawInRect(rect: CGRect): void;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var PDFBorderKeyDashPattern: string;
@@ -960,9 +960,9 @@ declare class PDFThumbnailView extends UIView implements NSCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var PDFThumbnailViewDocumentEditedNotification: string;
@@ -1167,6 +1167,8 @@ declare var PDFViewCopyPermissionNotification: string;
 interface PDFViewDelegate extends NSObjectProtocol {
 
 	PDFViewOpenPDFForRemoteGoToAction?(sender: PDFView, action: PDFActionRemoteGoTo): void;
+
+	PDFViewParentViewController?(): UIViewController;
 
 	PDFViewPerformFind?(sender: PDFView): void;
 

@@ -1,0 +1,59 @@
+<Page>
+
+  <ActionBar title="BottomNavigation" icon="" class="action-bar">
+  </ActionBar>
+
+  <BottomNavigation id="bottomNav"  automationText="tabNavigation" >
+    <TabStrip iosIconRenderingMode="alwaysOriginal">
+      <TabStripItem title="First Tab 11" iconSource="res://icon"></TabStripItem>
+      <TabStripItem>
+        <!-- <Image src="res://icon" /> -->
+        <Label text="News" />
+      </TabStripItem>
+      <TabStripItem title="Favorites" iconSource="res://icon"></TabStripItem>
+      <TabStripItem>
+        <!-- <Image src="res://icon" /> -->
+        <Label text="Places" />
+      </TabStripItem>
+      <TabStripItem title="Music" iconSource="res://icon"></TabStripItem>
+            <TabStripItem title="Music" iconSource="res://icon"></TabStripItem>
+    </TabStrip>
+
+    <TabContentItem>
+      <StackLayout>
+        <Label text="First View"/>
+        <Button tap="goToSecond" text="go to second" automationText="goToSecond" />
+      </StackLayout>
+    </TabContentItem>
+    <TabContentItem>
+      <StackLayout>
+        <Label text="Second View"/>
+        <Button tap="goToFirst" text="go to first" automationText="goToFirst" />
+      </StackLayout>
+    </TabContentItem>
+    <TabContentItem>
+      <StackLayout>
+        <Label text="First View"/>
+        <Button tap="goToSecond" text="go to second" automationText="goToSecond" />
+      </StackLayout>
+    </TabContentItem>
+    <TabContentItem>
+      <StackLayout>
+        <Label text="Second View"/>
+        <Button tap="goToFirst" text="go to first" automationText="goToFirst" />
+      </StackLayout>
+    </TabContentItem>
+    <TabContentItem>
+      <StackLayout>
+        <Label text="First View"/>
+        <Button tap="goToSecond" text="go to second" automationText="goToSecond" />
+      </StackLayout>
+    </TabContentItem>
+        <TabContentItem>
+      <StackLayout>
+        <Label text="First View"/>
+        <Button tap="goToSecond" text="go to second" automationText="goToSecond" />
+      </StackLayout>
+    </TabContentItem>
+  </BottomNavigation>
+</Page>

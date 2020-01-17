@@ -1,0 +1,14 @@
+.s0 {
+    border-width: 1 2 5 10;
+    border-color: red green blue yellow;
+    width: 80;
+    height: 80;
+    font-size: 6;
+}
+
+.html-view {
+    font-size: 10;
+    link-color: red;
+    color: green;
+    font-family: 'Courier New', Courier, monospace;
+}

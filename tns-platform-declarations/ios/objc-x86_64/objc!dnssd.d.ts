@@ -74,6 +74,8 @@ declare const kDNSServiceErr_BadState: number;
 
 declare const kDNSServiceErr_BadTime: number;
 
+declare const kDNSServiceErr_DefunctConnection: number;
+
 declare const kDNSServiceErr_DoubleNAT: number;
 
 declare const kDNSServiceErr_Firewall: number;
@@ -120,6 +122,8 @@ declare const kDNSServiceErr_Unknown: number;
 
 declare const kDNSServiceErr_Unsupported: number;
 
+declare const kDNSServiceFlagAnsweredFromCache: number;
+
 declare const kDNSServiceFlagsAdd: number;
 
 declare const kDNSServiceFlagsAllowExpiredAnswers: number;
@@ -158,7 +162,7 @@ declare const kDNSServiceFlagsMoreComing: number;
 
 declare const kDNSServiceFlagsNoAutoRename: number;
 
-declare const kDNSServiceFlagsNonBrowsable: number;
+declare const kDNSServiceFlagsPrivateFive: number;
 
 declare const kDNSServiceFlagsPrivateFour: number;
 

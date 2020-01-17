@@ -1,0 +1,15 @@
+﻿.class-style {
+    font-size: 55;
+    color: red;
+
+}
+
+#id-style {
+    background-color: blue;
+}
+
+Label {
+    border-color: black;
+    border-radius: 25;
+    margin: 10px;
+}

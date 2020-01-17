@@ -6,9 +6,9 @@
 //  Copyright © 2018 Telerik A D. All rights reserved.
 //
 
-#import "UIView+PassThroughParent.h"
 #import "NSObject+Swizzling.h"
-#import "NSObject+PropertyBag.h"
+#import "UIView+PassThroughParent.h"
+#import "UIView+PropertyBag.h"
 
 
 NSString * const TLKPassThroughParentKey = @"passThroughParent";

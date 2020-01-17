@@ -1,6 +1,6 @@
-﻿import * as pageModule from "tns-core-modules/ui/page";
-import * as buttonModule from "tns-core-modules/ui/button";
-import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
+import * as pageModule from "@nativescript/core/ui/page";
+import * as buttonModule from "@nativescript/core/ui/button";
+import * as stackModule from "@nativescript/core/ui/layouts/stack-layout";
 
 export function createPage() {
     var page = new pageModule.Page();
@@ -35,5 +35,6 @@ export function createPage() {
     stackLayout.addChild(btn4);
 
     page.content = stackLayout;
+
     return page;
 }

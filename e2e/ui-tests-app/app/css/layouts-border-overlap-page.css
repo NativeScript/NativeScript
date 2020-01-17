@@ -1,0 +1,32 @@
+StackLayout,
+AbsoluteLayout,
+DockLayout,
+GridLayout,
+WrapLayout {
+    margin: 5;
+    background-color: yellow;
+}
+
+#root {
+    background-color: white;
+}
+
+Label {
+    font-size: 6;
+    text-align: left;
+    vertical-align: top;
+    background-color: red;
+}
+
+.s0 {
+    border-width: 20;
+}
+
+.s1 {
+    padding: 20;
+}
+
+.s2 {
+    border-width: 20 0 0 20;
+    border-color: black;
+}

@@ -1,8 +1,9 @@
-﻿import { Page } from "tns-core-modules/ui/page";
-import { View } from "tns-core-modules/ui/core/view";
-import * as trace from "tns-core-modules/trace";
-import * as navHelper from "./ui/helper";
-import * as TKUnit from "./TKUnit";
+import * as trace from "@nativescript/core/trace";
+import { View } from "@nativescript/core/ui/core/view";
+import { Page } from "@nativescript/core/ui/page";
+
+import * as TKUnit from "./tk-unit";
+import * as navHelper from "./ui-helper";
 
 export class UITest<T extends View> implements trace.TraceWriter {
 
@@ -38,6 +39,7 @@ export class UITest<T extends View> implements trace.TraceWriter {
         const pageFactory = () => {
             const page = new Page();
             this._testPage = page;
+
             return page;
         };
 

@@ -1,0 +1,38 @@
+<Page>
+  <ActionBar title="issue-6439"></ActionBar>
+
+  <GridLayout>
+    <ScrollView>
+      <StackLayout>
+        <StackLayout>
+          <Label text="Play with NativeScript!" textWrap="true" class="title" />
+          <StackLayout class="hr-light"></StackLayout>
+        </StackLayout>
+        <StackLayout>
+          <Label text="Play with NativeScript!" textWrap="true" class="title" />
+          <StackLayout class="hr-light"></StackLayout>
+        </StackLayout>
+        <StackLayout>
+          <Label text="Play with NativeScript!" textWrap="true" class="title" />
+          <StackLayout class="hr-light"></StackLayout>
+        </StackLayout>
+        <StackLayout>
+          <Label text="Play with NativeScript!" textWrap="true" class="title" />
+          <StackLayout class="hr-light"></StackLayout>
+        </StackLayout>
+        <StackLayout>
+          <Label text="Play with NativeScript!" textWrap="true" class="title" />
+          <StackLayout class="hr-light"></StackLayout>
+        </StackLayout>
+        <StackLayout>
+          <Label text="Play with NativeScript!" textWrap="true" class="title" />
+          <StackLayout class="hr-light"></StackLayout>
+        </StackLayout>
+        <StackLayout>
+          <Label text="Play with NativeScript!" textWrap="true" class="title" />
+          <StackLayout class="hr-light"></StackLayout>
+        </StackLayout>
+      </StackLayout>
+    </ScrollView>
+  </GridLayout>
+</Page>

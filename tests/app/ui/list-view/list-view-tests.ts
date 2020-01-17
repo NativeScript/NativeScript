@@ -1,22 +1,22 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
 import { UITest } from "../../ui-test";
-import { getResources as appGetResources } from "tns-core-modules/application";
-import { Observable, EventData } from "tns-core-modules/data/observable";
-import { isFunction, isUndefined } from "tns-core-modules/utils/types";
-import { isAndroid, isIOS } from "tns-core-modules/platform";
-import { GC } from "tns-core-modules/utils/utils";
-import { Page } from "tns-core-modules/ui/page";
-import { View, KeyedTemplate } from "tns-core-modules/ui/core/view";
+import { getResources as appGetResources } from "@nativescript/core/application";
+import { Observable, EventData } from "@nativescript/core/data/observable";
+import { isFunction, isUndefined } from "@nativescript/core/utils/types";
+import { isAndroid, isIOS } from "@nativescript/core/platform";
+import { GC } from "@nativescript/core/utils/utils";
+import { Page } from "@nativescript/core/ui/page";
+import { View, KeyedTemplate } from "@nativescript/core/ui/core/view";
 import { MyButton, MyStackLayout } from "../layouts/layout-helper";
 
 // >> article-require-listview-module
-import { ListView, ItemEventData } from "tns-core-modules/ui/list-view";
+import { ListView, ItemEventData } from "@nativescript/core/ui/list-view";
 // << article-require-listview-module
 
 // >> article-require-modules-listview
-import { ObservableArray } from "tns-core-modules/data/observable-array";
-import { Label } from "tns-core-modules/ui/label";
+import { ObservableArray } from "@nativescript/core/data/observable-array";
+import { Label } from "@nativescript/core/ui/label";
 // << article-require-modules-listview
 
 // >> article-item-tap
@@ -356,7 +356,7 @@ export class ListViewTest extends UITest<ListView> {
         this.waitUntilListViewReady();
         TKUnit.assertEqual(this.getNativeViewCount(listView), 3, "getNativeViewCount");
 
-        // Remove the first 2 elements and add 
+        // Remove the first 2 elements and add
         data.splice(0, 2, "d", "e", "f");
         this.waitUntilListViewReady();
         TKUnit.assertEqual(this.getNativeViewCount(listView), 4, "getNativeViewCount");
@@ -465,6 +465,7 @@ export class ListViewTest extends UITest<ListView> {
             var month = value.getMonth() + 1;
             result = result.replace("MM", month < 10 ? "0" + month : month);
             result = result.replace("YYYY", value.getFullYear());
+
             return result;
         };
 
@@ -505,8 +506,9 @@ export class ListViewTest extends UITest<ListView> {
             var label = new Label();
             label.id = "testLabel";
             label.bind({ sourceProperty: "$value", targetProperty: "text", twoWay: false });
+
             return label;
-        }
+        };
         listView.items = [1, 2, 3];
 
         this.waitUntilListViewReady();
@@ -586,8 +588,9 @@ export class ListViewTest extends UITest<ListView> {
 
         var testConverter = function (value) {
             converterCalledCounter++;
+
             return value;
-        }
+        };
 
         appGetResources()["testConverter"] = testConverter;
 
@@ -609,8 +612,9 @@ export class ListViewTest extends UITest<ListView> {
 
         var testConverter = function (value) {
             converterCalledCounter++;
+
             return value;
-        }
+        };
 
         appGetResources()["testConverter"] = testConverter;
 
@@ -644,7 +648,7 @@ export class ListViewTest extends UITest<ListView> {
     }
 
     public test_no_memory_leak_when_items_is_observable_array() {
-        // Keep the reference to the observable array to test the weakEventListener 
+        // Keep the reference to the observable array to test the weakEventListener
         var colors = new ObservableArray(["red", "green", "blue"]);
 
         let weakRef = new WeakRef<ListView>(this.testView);
@@ -736,7 +740,7 @@ export class ListViewTest extends UITest<ListView> {
             let array = new ArrayBuffer(4 * 1024 * 1024);
             if (!array) {
                 ///
-            };
+            }
         }
 
         GC();
@@ -759,17 +763,6 @@ export class ListViewTest extends UITest<ListView> {
         TKUnit.assertEqual(lastNativeElementVisible, false, "Last element is not visible");
     }
 
-    public test_scrollToIndex_should_coerce_larger_index_to_last_item_index() {
-        var listView = this.testView;
-
-        listView.items = MANY_ITEMS;
-        listView.scrollToIndex(10000);
-        TKUnit.wait(0.1);
-
-        var lastNativeElementVisible = this.checkItemVisibleAtIndex(listView, MANY_ITEMS.length - 1);
-        TKUnit.assertEqual(lastNativeElementVisible, true, "last element is visible");        
-    }
-
     public test_scrollToIndex_should_not_throw_if_items_not_set() {
         var listView = this.testView;
         listView.scrollToIndex(10000);
@@ -789,6 +782,7 @@ export class ListViewTest extends UITest<ListView> {
                 new ArrayBuffer(4 * 1024 * 1024);
             }
             GC();
+
             return !weakRef.get();
         });
 
@@ -808,6 +802,7 @@ export class ListViewTest extends UITest<ListView> {
             if (nativeElement instanceof android.view.ViewGroup) {
                 return (<android.widget.TextView>((<any>nativeElement).getChildAt(0))).getText() + "";
             }
+
             return (<android.widget.TextView>nativeElement).getText() + "";
         }
         else if (listView.ios) {
@@ -998,6 +993,7 @@ export class ListViewTest extends UITest<ListView> {
                 }
             });
         }
+
         return items;
     }
 }

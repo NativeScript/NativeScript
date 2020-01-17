@@ -1,0 +1,6 @@
+{
+  "name": "image-asset",
+  "main": "image-asset",
+  "types": "image-asset.d.ts",
+  "nativescript": {}
+}

@@ -1,0 +1,25 @@
+<Page>
+  <StackLayout>
+    <Button text="RESET" tap="resetStyles"/>
+
+    <TextView text="no align"    />
+    <TextView text="left"    style="text-align: left" />
+    <TextView text="center"  style="text-align: center" />
+    <TextView text="right"   style="text-align: right" />
+
+    <WrapLayout>
+      <TextView text="normal" />
+      <TextView text="color"       style="color: green"/>
+      <TextView text="size"        style="font-size: 32" />
+      <TextView text="italic"      style="font-style: italic" />
+      <TextView text="bold"        style="font-weight: bold"/>
+      <TextView text="bold-italic" style="font-weight: bold; font-style: italic"/>
+      <TextView text="serif"       style="font-family: serif"/>
+      <TextView text="sans-serif"  style="font-family: sans-serif"/>
+      <TextView text="monospace"   style="font-family: monospace"/>
+      <TextView text="Times New Roman"   style="font-family: Times New Roman"/>
+      <TextView text="invalid font"   style="font-family: InvalidFont"/>
+      <TextView text="all in one"  style="font-family: serif; font-weight: bold; font-style: italic; font-size: 32; color: green" />
+    </WrapLayout>
+  </StackLayout>
+</Page>

@@ -1,19 +1,19 @@
-import * as frameModule from "tns-core-modules/ui/frame";
-import * as TKUnit from "../../TKUnit";
-import { unsetValue, PercentLength } from "tns-core-modules/ui/core/view";
+import { Frame } from "@nativescript/core/ui/frame";
+import * as TKUnit from "../../tk-unit";
+import { unsetValue, PercentLength } from "@nativescript/core/ui/core/view";
 
 export * from "./frame-tests-common";
 
 export function test_percent_width_and_height_set_to_page_support() {
-    let topFrame = frameModule.topmost();
+    let topFrame = Frame.topmost();
     let currentPage = topFrame.currentPage;
 
     (<any>currentPage).width = "50%";
     (<any>currentPage).height = "50%";
 
-   TKUnit.waitUntilReady(() => {
-            return currentPage.isLayoutValid;
-        }, 1);
+    TKUnit.waitUntilReady(() => {
+        return currentPage.isLayoutValid;
+    }, 1);
 
     let topFrameWidth = topFrame.getMeasuredWidth();
     let topFrameHeight = topFrame.getMeasuredHeight();
@@ -33,19 +33,19 @@ export function test_percent_width_and_height_set_to_page_support() {
 }
 
 export function test_percent_margin_set_to_page_support() {
-    let topFrame = frameModule.topmost();
+    let topFrame = Frame.topmost();
     let currentPage = topFrame.currentPage;
     currentPage.margin = "10%";
 
-     TKUnit.waitUntilReady(() => {
-            return currentPage.isLayoutValid;
-        }, 1);
+    TKUnit.waitUntilReady(() => {
+        return currentPage.isLayoutValid;
+    }, 1);
 
     let topFrameWidth = topFrame.getMeasuredWidth();
     let topFrameHeight = topFrame.getMeasuredHeight();
 
     let currentPageWidth = currentPage.getMeasuredWidth();
-    let currentPageHeight = currentPage.getMeasuredHeight()
+    let currentPageHeight = currentPage.getMeasuredHeight();
 
     let marginLeft = topFrameWidth * 0.1;
     let marginTop = topFrameHeight * 0.1;

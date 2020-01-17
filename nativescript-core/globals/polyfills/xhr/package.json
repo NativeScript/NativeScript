@@ -1,0 +1,6 @@
+{
+  "name": "xhr",
+  "main": "xhr",
+  "types": "xhr.d.ts",
+  "nativescript": {}
+}

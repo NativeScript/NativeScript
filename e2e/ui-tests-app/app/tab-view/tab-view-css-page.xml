@@ -1,0 +1,36 @@
+<Page
+  xmlns="http://schemas.nativescript.org/tns.xsd"
+  loaded="loaded">
+  <TabView id="test-element">
+    <TabView.items>
+      <TabViewItem title="IteM onE">
+        <TabViewItem.view>
+          <ScrollView>
+            <StackLayout>
+              <Button text="tab-text-color: green;" tap="applyTap" tag="tab-text-color: green;" style.fontSize="8"/>
+              <Button text="tab-background-color: yellow;" tap="applyTap" tag="tab-background-color: yellow;" style.fontSize="8"/>
+              <Button text="selected-tab-text-color: red;" tap="applyTap" tag="selected-tab-text-color: red;" style.fontSize="8"/>
+              <Button text="android-selected-tab-highlight-color: orange;" tap="applyTap" tag="android-selected-tab-highlight-color: orange;" style.fontSize="8"/>
+              <Button text="text-transform: uppercase;" tap="applyTap" tag="text-transform: uppercase;" style.fontSize="8"/>
+              <Button text="text-transform: lowercase;" tap="applyTap" tag="text-transform: lowercase;" style.fontSize="8"/>
+              <Button text="text-transform: capitalize;" tap="applyTap" tag="text-transform: capitalize;" style.fontSize="8"/>
+              <Button text="text-transform: none;" tap="applyTap" tag="text-transform: none;" style.fontSize="8"/>
+              <Button text="all" tap="applyTap" tag="tab-text-color: green; tab-background-color: yellow; selected-tab-text-color: red; android-selected-tab-highlight-color: orange; text-transform: uppercase;" style.fontSize="8"/>
+              <Button text="reset" tap="resetTap" style.fontSize="8"/>
+            </StackLayout>
+          </ScrollView>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="IteM twO">
+        <TabViewItem.view>
+          <Label text="Item 2"/>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="IteM threE">
+        <TabViewItem.view>
+          <Label text="Item 3"/>
+        </TabViewItem.view>
+      </TabViewItem>
+    </TabView.items>
+  </TabView>
+</Page>

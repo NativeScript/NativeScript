@@ -1,21 +1,22 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
-import * as PageTestCommon from "./page-tests-common";
-import { Page } from "tns-core-modules/ui/page";
-import { Label } from "tns-core-modules/ui/label";
-import { topmost } from "tns-core-modules/ui/frame";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
+import { addLabelToPage } from "./page-tests-common";
+import { Page } from "@nativescript/core/ui/page";
+import { Label } from "@nativescript/core/ui/label";
+import { Frame } from "@nativescript/core/ui/frame";
 
-global.moduleMerge(PageTestCommon, exports);
+export * from "./page-tests-common";
 
 export function test_NavigateToNewPage_WithAndroidCache() {
     // Clear history if any.
     helper.navigate(() => {
         const launchPage = new Page();
         launchPage.id = "launchPage_test_NavigateToNewPage_WithAndroidCache";
+
         return launchPage;
     });
 
-    TKUnit.assertEqual(topmost().backStack.length, 0, "The backstack should be empty before this test can be run.");
+    TKUnit.assertEqual(Frame.topmost().backStack.length, 0, "The backstack should be empty before this test can be run.");
 
     let testPage: Page;
     let label: Label;
@@ -26,20 +27,14 @@ export function test_NavigateToNewPage_WithAndroidCache() {
         label = new Label();
         label.text = "The quick brown fox jumps over the lazy dog.";
         testPage.content = label;
+
         return testPage;
     };
 
-    const androidFrame = topmost().android;
-    const cachingBefore = androidFrame.cachePagesOnNavigate;
-    try {
-        const currentPage = topmost().currentPage;
-        androidFrame.cachePagesOnNavigate = true;
-        helper.navigateWithHistory(pageFactory);
-        TKUnit.assertNotNull(currentPage.nativeView);
-        helper.goBack();
-    } finally {
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
+    const currentPage = Frame.topmost().currentPage;
+    helper.navigateWithHistory(pageFactory);
+    TKUnit.assertNotNull(currentPage.nativeView);
+    helper.goBack();
 
     TKUnit.assertNull(testPage.parent, "Page.parent should become undefined after navigating back");
     TKUnit.assertFalse(testPage.isLoaded, "Page.isLoaded should become false after navigating back");
@@ -58,7 +53,8 @@ export function test_NavigateToNewPage_InnerControl() {
     const pageFactory = function () {
         testPage = new Page();
         testPage.id = "testPage_test_NavigateToNewPage_InnerControl";
-        PageTestCommon.addLabelToPage(testPage);
+        addLabelToPage(testPage);
+
         return testPage;
     };
 
@@ -77,31 +73,22 @@ export function test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow()
     const pageFactory = function () {
         const testPage = new Page();
         testPage.id = "testPage_test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow";
+
         return testPage;
     };
 
-    const androidFrame = topmost().android;
-    const cachingBefore = androidFrame.cachePagesOnNavigate;
-
     helper.navigate(pageFactory);
-
-    try {
-        // Set caching to same value.
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
-    finally {
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
 }
 
-export var test_Resolve_Fragment_ForPage = function () {
+export function test_Resolve_Fragment_ForPage() {
     let testPage: Page;
     const pageFactory = () => {
         testPage = new Page();
+
         return testPage;
     };
 
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.navigate(pageFactory);
     TKUnit.waitUntilReady(() => frame.navigationQueueIsEmpty());
 

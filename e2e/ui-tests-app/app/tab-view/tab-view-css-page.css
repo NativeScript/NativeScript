@@ -1,0 +1,2 @@
+/* Currently need an empty css file to make this module a style scope host.
+This tests sets css on the module and without this empty file the css is set on the frame on top of it */

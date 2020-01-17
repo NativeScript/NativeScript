@@ -1,7 +1,7 @@
 <TabView androidTabsPosition="top">
     <TabViewItem title="Players">
         <GridLayout rows="auto, auto, *">
-            <Label text="tab root top home" />
+            <Label text="tabview root top home" />
             <Button row="1" text="reset app" tap="onReset" />
             <GridLayout row="2">
                 <Frame defaultPage="players/players-items-page" />

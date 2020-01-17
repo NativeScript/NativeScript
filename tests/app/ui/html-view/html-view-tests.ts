@@ -1,9 +1,9 @@
-﻿import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
-import * as types from "tns-core-modules/utils/types";
+import * as TKUnit from "../../tk-unit";
+import * as helper from "../../ui-helper";
+import * as types from "@nativescript/core/utils/types";
 
 // >> htmlview-require
-import * as htmlViewModule from "tns-core-modules/ui/html-view";
+import * as htmlViewModule from "@nativescript/core/ui/html-view";
 // << htmlview-require
 
 export function test_recycling() {
@@ -13,9 +13,10 @@ export function test_recycling() {
 var _createHtmlViewFunc = function (): htmlViewModule.HtmlView {
     // >> htmlview-create
     var htmlView = new htmlViewModule.HtmlView();
+
     // << htmlview-create
     return htmlView;
-}
+};
 
 export var testLoadHTMLString = function () {
     let page = helper.getCurrentPage();
@@ -31,4 +32,4 @@ export var testLoadHTMLString = function () {
     } else if (htmlView.android) {
         TKUnit.assert(htmlView.android.getText(), "HTML string not loaded properly. Actual: " + htmlView.android.getText());
     }
-}
+};

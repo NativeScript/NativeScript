@@ -1,0 +1,12 @@
+.container {
+    width: 200;
+    height: 200;
+    clip-path: polygon(50% 3%, 3% 100%, 100% 100%);
+    background-color: black;
+}
+
+.elementStyle {
+    width: 200;
+    height: 200;
+    clip-path: polygon(50% 3%, 3% 100%, 100% 100%);
+}

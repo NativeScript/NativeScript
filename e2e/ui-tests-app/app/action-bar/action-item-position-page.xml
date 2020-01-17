@@ -1,0 +1,15 @@
+<Page
+  xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo">
+  <Page.actionBar>
+    <ActionBar automationText="actionBar">
+      <ActionItem ios.position="right" tap="{{ change }}">
+        <Button text="{{ text }}" backgroundColor="red" />
+      </ActionItem>
+    </ActionBar>
+  </Page.actionBar>
+  <StackLayout>
+    <Label text="Tap to change the text in the actionbar" class="title"/>
+    <Button text="Tap" tap="{{ onTap }}" />
+    <Label text="{{ text }}"/>
+  </StackLayout>
+</Page>

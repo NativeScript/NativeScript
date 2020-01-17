@@ -1,0 +1,20 @@
+<Page>
+  <TabView selectedIndex="1" style="tab-text-color: yellow; color:yellow; selected-tab-text-color: red; android-selected-tab-highlight-color:red; background-color: green; tab-background-color: blue;">
+    <TabView.items>
+      <TabViewItem title="First">
+        <TabViewItem.view>
+          <GridLayout>
+            <Label text="First View" verticalAlignment="center" horizontalAlignment="center"/>
+          </GridLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="Second">
+        <TabViewItem.view>
+          <GridLayout>
+            <Label text="Second View" verticalAlignment="center" horizontalAlignment="center"/>
+          </GridLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+    </TabView.items>
+  </TabView>
+</Page>

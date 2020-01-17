@@ -1,13 +1,13 @@
 import { AppiumDriver } from "nativescript-dev-appium";
 import { assert } from "chai";
 
-const home = "Home"
+const home = "Home";
 const chainingWithAnimationSet = "chaining-with-animation-set";
 const animateSequentially = "Animate Sequentially";
 
 export class Screen {
 
-    private _driver: AppiumDriver
+    private _driver: AppiumDriver;
 
     constructor(driver: AppiumDriver) {
         this._driver = driver;

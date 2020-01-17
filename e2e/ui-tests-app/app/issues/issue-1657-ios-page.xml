@@ -1,0 +1,19 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" style="background-color: #30b773; color: #ffffff;">
+    <Page.actionBar>
+        <ActionBar title="Title" icon="" style="background-color: #30b773; color: #ffffff;">
+            <NavigationButton text="Back" icon="" tap="" />
+            <ActionBar.actionItems>
+                <ActionItem icon="" text="Left" tap="" ios.position="left" />
+                <ActionItem icon="" text="Right" tap="" ios.position="right" />
+            </ActionBar.actionItems>
+        </ActionBar>
+    </Page.actionBar>
+
+    <StackLayout>
+        <Label text="Issue 1657" class="title"/>
+        <Button text="go to subPage" tap="onTap"/>
+        <Button text="changeTranslucent" tap="changeTranslucent"/>
+        <Button text="change speed to very slow" tap="changeLayerSpeed"/>
+        <Button text="default layer speed" tap="defaultLayerSpeed"/>
+    </StackLayout>
+</Page>

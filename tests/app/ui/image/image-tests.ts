@@ -1,25 +1,25 @@
-﻿import { Image } from "tns-core-modules/ui/image";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
-import { isIOS, isAndroid } from "tns-core-modules/platform";
-import { PropertyChangeData } from "tns-core-modules/data/observable";
-import * as utils from "tns-core-modules/utils/utils";
-import * as TKUnit from "../../TKUnit";
-import { getColor } from "../helper";
+import { Image } from "@nativescript/core/ui/image";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
+import { isIOS, isAndroid } from "@nativescript/core/platform";
+import { PropertyChangeData } from "@nativescript/core/data/observable";
+import * as utils from "@nativescript/core/utils/utils";
+import * as TKUnit from "../../tk-unit";
+import { getColor } from "../../ui-helper";
 
 // >> img-require
-import * as ImageModule from "tns-core-modules/ui/image";
+import * as ImageModule from "@nativescript/core/ui/image";
 // << img-require
 
-import * as types from "tns-core-modules/utils/types";
-import * as ImageSourceModule from "tns-core-modules/image-source";
-import * as ViewModule from "tns-core-modules/ui/core/view";
-import * as helper from "../helper";
-import * as ObservableModule from "tns-core-modules/data/observable";
-import * as color from "tns-core-modules/color";
-import * as backgroundModule from "tns-core-modules/ui/styling/background";
-import { android as androidApp } from "tns-core-modules/application";
-const imagePath = "~/logo.png";
+import * as types from "@nativescript/core/utils/types";
+import { ImageSource } from "@nativescript/core/image-source";
+import * as ViewModule from "@nativescript/core/ui/core/view";
+import * as helper from "../../ui-helper";
+import * as ObservableModule from "@nativescript/core/data/observable";
+import * as color from "@nativescript/core/color";
+import * as backgroundModule from "@nativescript/core/ui/styling/background";
+import { android as androidApp } from "@nativescript/core/application";
+const imagePath = "~/assets/logo.png";
 
 export function test_recycling() {
     helper.nativeView_recycling_test(() => new Image());
@@ -49,10 +49,10 @@ export const test_setting_src_to_resource = function () {
 
         TKUnit.assert(width > 0, "Width should be greater than 0.");
         TKUnit.assert(height > 0, "Height should be greater than 0.");
-    }
+    };
 
     helper.buildUIAndRunTest(image, testFunc);
-}
+};
 
 const IMAGE_LOADED_EVENT = "isLoadingChange";
 
@@ -107,7 +107,7 @@ export const test_SettingImageSrcToURL_async = function (done) {
 export const test_SettingImageSrcToFileWithinApp_sync = function () {
     // >> img-create-local
     const image = new ImageModule.Image();
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
     // << img-create-local
 
     runImageTestSync(image, image.src);
@@ -116,7 +116,7 @@ export const test_SettingImageSrcToFileWithinApp_sync = function () {
 export const test_SettingImageSrcToFileWithinApp_async = function (done) {
     const image = new ImageModule.Image();
     (<any>image).useCache = false;
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
     runImageTestAsync(image, image.src, done);
 };
 
@@ -136,9 +136,17 @@ export const test_SettingImageSrcToDataURI_async = function (done) {
     runImageTestAsync(image, image.src, done);
 };
 
+export const test_SettingImageSrcToFontIconCode_sync = function () {
+    const image = new ImageModule.Image();
+    image.style.fontFamily = "FontAwesome";
+    image.src = "font://&#xF10B";
+
+    runImageTestSync(image, image.src);
+};
+
 export function test_imageSourceNotResetAfterCreateUI() {
     let image = new ImageModule.Image();
-    let imageSource = ImageSourceModule.fromResource("splashscreen");
+    let imageSource = ImageSource.fromResourceSync("splashscreen");
     TKUnit.assertNotEqual(null, imageSource);
     image.imageSource = imageSource;
     helper.buildUIAndRunTest(image, () => {
@@ -164,9 +172,9 @@ export const __test_SettingImageSrcTwiceMustNotMismatch = function (done) {
         }
     });
     image.loadMode = "async";
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
     image.src = null;
-    // At somepoint image.imageSource was set to "~/logo.png";
+    // At somepoint image.imageSource was set to "~/assets/logo.png";
 };
 
 export const test_SettingStretch_AspectFit = function () {
@@ -267,7 +275,7 @@ export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(
 
     let called = false;
     image.requestLayout = () => called = true;
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
 
     TKUnit.assertFalse(called, "image.requestLayout should not be called.");
 });
@@ -285,7 +293,7 @@ export const test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout 
 
     let called = false;
     image.requestLayout = () => called = true;
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
 
     TKUnit.assertFalse(called, "image.requestLayout should not be called.");
 });
@@ -301,7 +309,7 @@ export const test_SettingImageSourceWhenSizedToContentShouldInvalidate = ios(() 
 
     let called = false;
     image.requestLayout = () => called = true;
-    image.src = "~/logo.png";
+    image.src = "~/assets/logo.png";
 
     TKUnit.assertTrue(called, "image.requestLayout should be called.");
 });

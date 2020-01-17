@@ -1,0 +1,19 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <FlexboxLayout id="body">
+        <FlexboxLayout class="flex-item header">
+            <Label text="Header" />
+        </FlexboxLayout>
+        <FlexboxLayout class="flex-item sidebar">
+            <Label text="Sidebar" />
+        </FlexboxLayout>
+        <FlexboxLayout class="flex-item main">
+            <Label text="Main" />
+        </FlexboxLayout>
+        <FlexboxLayout class="flex-item sidebar">
+            <Label text="Sidebar" />
+        </FlexboxLayout>
+        <FlexboxLayout class="flex-item footer">
+            <Label text="Footer" />
+        </FlexboxLayout>
+    </FlexboxLayout>
+</Page>

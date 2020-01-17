@@ -1,17 +1,19 @@
-import * as TKUnit from "../../TKUnit";
-import * as application from "tns-core-modules/application";
-import * as buttonModule from "tns-core-modules/ui/button";
-import * as labelModule from "tns-core-modules/ui/label";
-import * as pageModule from "tns-core-modules/ui/page";
-import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
-import * as wrapModule from "tns-core-modules/ui/layouts/wrap-layout";
-import * as tabViewModule from "tns-core-modules/ui/tab-view";
-import * as helper from "../../ui/helper";
-import * as types from "tns-core-modules/utils/types";
-import * as viewModule from "tns-core-modules/ui/core/view";
-import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS } from "tns-core-modules/ui/styling/style-scope";
-import { unsetValue } from "tns-core-modules/ui/core/view";
-import * as color from "tns-core-modules/color";
+import * as TKUnit from "../../tk-unit";
+import * as application from "@nativescript/core/application";
+import * as buttonModule from "@nativescript/core/ui/button";
+import * as labelModule from "@nativescript/core/ui/label";
+import * as pageModule from "@nativescript/core/ui/page";
+import * as stackModule from "@nativescript/core/ui/layouts/stack-layout";
+import * as wrapModule from "@nativescript/core/ui/layouts/wrap-layout";
+import * as tabViewModule from "@nativescript/core/ui/tab-view";
+import * as helper from "../../ui-helper";
+import * as types from "@nativescript/core/utils/types";
+import * as viewModule from "@nativescript/core/ui/core/view";
+import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS } from "@nativescript/core/ui/styling/style-scope";
+import { unsetValue } from "@nativescript/core/ui/core/view";
+import * as color from "@nativescript/core/color";
+import * as fs from "@nativescript/core/file-system";
+import { _evaluateCssCalcExpression } from "@nativescript/core/ui/core/properties/properties";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     const stack = new stackModule.StackLayout();
@@ -196,11 +198,34 @@ export function test_class_selector() {
     TKUnit.assert(btnWithNoClass.style.color === undefined, "Color should not have a value");
 }
 
+export function test_class_selector_with_escape_characters() {
+    let page = helper.getClearCurrentPage();
+    let btnWithClass1: buttonModule.Button;
+    let btnWithClass2: buttonModule.Button;
+
+    page.css = ".test-1 { color: red; } .test-1\\/2 { color: blue }";
+
+    //// Will be styled
+    btnWithClass1 = new buttonModule.Button();
+    btnWithClass1.className = "test-1";
+
+    btnWithClass2 = new buttonModule.Button();
+    btnWithClass2.className = "test-1/2";
+
+    const stack = new stackModule.StackLayout();
+    page.content = stack;
+    stack.addChild(btnWithClass1);
+    stack.addChild(btnWithClass2);
+
+    helper.assertViewColor(btnWithClass1, "#FF0000");
+    helper.assertViewColor(btnWithClass2, "#0000FF");
+}
+
 export function test_multiple_class_selector() {
     let page = helper.getClearCurrentPage();
     let btnWithClasses: buttonModule.Button;
 
-    page.css = ".style1 { color: red; } .style2 { background-color: blue } ";
+    page.css = ".style1 { color: red; } .style2 { background-color: blue; } ";
 
     //// Will be styled
     btnWithClasses = new buttonModule.Button();
@@ -212,6 +237,24 @@ export function test_multiple_class_selector() {
 
     helper.assertViewColor(btnWithClasses, "#FF0000");
     helper.assertViewBackgroundColor(btnWithClasses, "#0000FF");
+}
+
+export function test_class_selector_overwriting() {
+    const page = helper.getClearCurrentPage();
+    page.css = ".first { color: red; } .second { background-color: blue; }";
+
+    const btnWithClass = new buttonModule.Button();
+    const stack = new stackModule.StackLayout();
+    page.content = stack;
+    stack.addChild(btnWithClass);
+
+    btnWithClass.className = "first";
+    helper.assertViewColor(btnWithClass, "#FF0000");
+    TKUnit.assert(btnWithClass.style.backgroundColor === undefined, " Background color should not have a value");
+
+    btnWithClass.className = "second";
+    TKUnit.assert(btnWithClass.style.color === undefined, "Color should not have a value");
+    helper.assertViewBackgroundColor(btnWithClass, "#0000FF");
 }
 
 export function test_id_selector() {
@@ -279,7 +322,7 @@ export function test_class_and_state_selector() {
     page.style.color = unsetValue;
 
     let btn = new buttonModule.Button();
-    btn.className = "test"
+    btn.className = "test";
 
     let testStack = new stackModule.StackLayout();
     page.content = testStack;
@@ -297,7 +340,7 @@ export function test_class_and_state_selector_with_multiple_classes() {
     let testStack = new stackModule.StackLayout();
     page.content = testStack;
 
-    btn.className = "test otherClass"
+    btn.className = "test otherClass";
     testStack.addChild(btn);
 
     page.css = ".test:pressed { color: red; }";
@@ -362,10 +405,10 @@ export const test_composite_selector_type_and_class = function () {
         TKUnit.assert(btnWithClass.style.color.hex === "#FF0000", "Color property no applied correctly.");
         TKUnit.assert(btnWithNoClass.style.color === undefined, "btnWithNoClass color should not have a value");
         TKUnit.assert(lblWithClass.style.color === undefined, "lblWithClass color should not have a value");
-    }
+    };
 
     helper.buildUIAndRunTest(testStack, testFunc, { pageCss: testCss });
-}
+};
 
 export const test_composite_selector_type_class_state = function () {
     const testStack = new stackModule.StackLayout();
@@ -393,9 +436,9 @@ export const test_composite_selector_type_class_state = function () {
         TKUnit.assertNull(btnWithNoClass.style.color, "Color should not have a value.");
 
         TKUnit.assertNull(lblWithClass.style.color, "Color should not have a value");
-    }
+    };
     helper.buildUIAndRunTest(testStack, testFunc, { pageCss: testCss });
-}
+};
 
 export const test_style_is_applied_when_control_is_added_after_load = function () {
     let page = helper.getClearCurrentPage();
@@ -407,7 +450,7 @@ export const test_style_is_applied_when_control_is_added_after_load = function (
     testStack.addChild(btn);
     TKUnit.assert(btn.style.color, "Color property no applied correctly.");
     TKUnit.assertEqual(btn.style.color.hex, "#FF0000", "Color property not applied correctly.");
-}
+};
 
 const changeIdOrClassTestCss =
     "button { background-color: #111111 } " +
@@ -587,7 +630,7 @@ function testSelectorsPrioritiesTemplate(css: string) {
 
     btnWithId = new buttonModule.Button();
     btnWithId.className = "button-class";
-    btnWithId.id = "myButton"
+    btnWithId.id = "myButton";
     testStack.addChild(btnWithId);
 
     page.css = css;
@@ -647,7 +690,7 @@ export function test_CSS_isAppliedOnPage_From_Import() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         const page: pageModule.Page = <pageModule.Page>views[1];
-        page.css = "@import url('~/ui/styling/test.css');";
+        page.css = "@import url('ui/styling/test-page.css');";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
@@ -658,7 +701,7 @@ export function test_CSS_isAppliedOnPage_From_Import_Without_Url() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         const page: pageModule.Page = <pageModule.Page>views[1];
-        page.css = "@import '~/ui/styling/test.css';";
+        page.css = "@import 'ui/styling/test-page.css';";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
@@ -669,7 +712,7 @@ export function test_CSS_isAppliedOnPage_From_addCssFile() {
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
         const page: pageModule.Page = <pageModule.Page>views[1];
-        page.addCssFile("~/ui/styling/test.css");
+        page.addCssFile(fs.knownFolders.currentApp().path + "/ui/styling/test-page.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
@@ -683,10 +726,10 @@ export function test_CSS_isAppliedOnPage_From_changeCssFile() {
     const testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewColor(testButton, "#0000FF");
         const page: pageModule.Page = <pageModule.Page>views[1];
-        page.changeCssFile("~/ui/styling/test.css");
+        page.changeCssFile(fs.knownFolders.currentApp().path + "/ui/styling/test-page.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
         TKUnit.assert(testButton.style.color === undefined, "Color should not have a value");
-    }
+    };
 
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
@@ -757,7 +800,7 @@ export function test_basic_hierarchical_selectors() {
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#FF0000");
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -783,7 +826,7 @@ export function test_basic_hierarchical_direct_child_selectors() {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#FF0000");
         // only buttons that are direct children of StackLayout should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#00FF00");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -809,7 +852,7 @@ export function test_basic_hierarchical_direct_child_more_levels_selectors() {
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // only buttons that are direct children of StackLayout and WrapLayout should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -837,7 +880,7 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types()
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // only buttons that are direct children of StackLayout and WrapLayout should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -866,7 +909,7 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types2(
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // only buttons that are direct children of Layout with id stack and Layout with cssClass wraplayoutClass should have red background color
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#FF0000");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -895,7 +938,7 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types_i
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // this is an invalid css so red style should not be applied
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#00FF00");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -924,7 +967,7 @@ export function test_hierarchical_direct_child_more_levels_diff_selector_types_i
         helper.assertViewBackgroundColor(stack.getViewById("testButton1"), "#00FF00");
         // this is an invalid css so red style should not be applied
         helper.assertViewBackgroundColor(stack.getViewById("testButton2"), "#00FF00");
-    }
+    };
 
     helper.buildUIAndRunTest(stack, testFunc, { pageCss: testCss });
 }
@@ -937,7 +980,7 @@ export function test_type_attr_selector() {
 
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -950,7 +993,7 @@ export function test_class_attr_selector() {
 
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -963,7 +1006,7 @@ export function test_id_attr_selector() {
 
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -975,7 +1018,7 @@ export function test_type_attr_value_selector() {
 
     let testFunc = function (views: Array<viewModule.View>) {
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -988,7 +1031,7 @@ export function test_type_attr_invalid_value_selector() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1001,7 +1044,7 @@ export function test_tilde_attr_selector_correct_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1014,7 +1057,7 @@ export function test_tilde_attr_selector_correct_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1027,7 +1070,7 @@ export function test_tilde_attr_selector_correct_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1040,7 +1083,7 @@ export function test_tilde_attr_selector_incorrect_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1053,7 +1096,7 @@ export function test_tilde_attr_selector_incorrect_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1066,7 +1109,7 @@ export function test_tilde_attr_selector_incorrect_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1079,7 +1122,7 @@ export function test_pipe_attr_selector_correct_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1092,7 +1135,7 @@ export function test_pipe_attr_selector_correct_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1105,7 +1148,7 @@ export function test_pipe_attr_selector_incorrect_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1118,7 +1161,7 @@ export function test_pipe_attr_selector_incorrect_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1131,7 +1174,7 @@ export function test_pipe_attr_selector_incorrect_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1144,7 +1187,7 @@ export function test_power_attr_selector_correct_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1157,7 +1200,7 @@ export function test_power_attr_selector_correct_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1170,7 +1213,7 @@ export function test_power_attr_selector_correct_synta2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1183,7 +1226,7 @@ export function test_power_attr_selector_incorrect_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1196,7 +1239,7 @@ export function test_power_attr_selector_incorrect_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1209,7 +1252,7 @@ export function test_dollar_attr_selector_correct_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1222,7 +1265,7 @@ export function test_dollar_attr_selector_correct_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1235,7 +1278,7 @@ export function test_dollar_attr_selector_correct_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1248,7 +1291,7 @@ export function test_dollar_attr_selector_incorrect_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1261,7 +1304,7 @@ export function test_dollar_attr_selector_incorrect_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1274,7 +1317,7 @@ export function test_dollar_attr_selector_incorrect_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1287,7 +1330,7 @@ export function test_star_attr_selector_correct_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1300,7 +1343,7 @@ export function test_star_attr_selector_correct_syntax1() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1313,7 +1356,7 @@ export function test_star_attr_selector_correct_syntax2() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1326,7 +1369,7 @@ export function test_star_attr_selector_correct_syntax3() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1339,7 +1382,7 @@ export function test_star_attr_selector_correct_syntax4() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1352,7 +1395,7 @@ export function test_star_attr_selector_correct_syntax5() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#FF0000");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1365,7 +1408,7 @@ export function test_star_attr_selector_incorrect_syntax() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1378,7 +1421,7 @@ export function test_alone_attr_selector() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1391,7 +1434,7 @@ export function test_UsingSameSelectors_ShouldApplyLatest() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1404,7 +1447,7 @@ export function test_UsingSameSelectorsWithSpecific_ShouldApplyLatest() {
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
-    }
+    };
     helper.buildUIAndRunTest(testButton, testFunc, { pageCss: testCss });
 }
 
@@ -1422,6 +1465,421 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
         stack.className = "added";
         helper.assertViewBackgroundColor(label, "#0000FF");
         helper.assertViewBackgroundColor(stack, "#FF0000");
+    });
+}
+
+export function test_evaluateCssCalcExpression() {
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(1px + 1px)"), "2px", "Simple calc (1)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(50px - (20px - 30px))"), "60px", "Simple calc (2)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100px - (100px - 100%))"), "100%", "Simple calc (3)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100px + (100px - 100%))"), "calc(200px - 100%)", "Simple calc (4)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100% - 10px + 20px)"), "calc(100% + 10px)", "Simple calc (5)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(100% + 10px - 20px)"), "calc(100% - 10px)", "Simple calc (6)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(10.px + .0px)"), "10px", "Simple calc (8)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("a calc(1px + 1px)"), "a 2px", "Ignore value surrounding calc function (1)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(1px + 1px) a"), "2px a", "Ignore value surrounding calc function (2)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("a calc(1px + 1px) b"), "a 2px b", "Ignore value surrounding calc function (3)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("a calc(1px + 1px) b calc(1em + 2em) c"), "a 2px b 3em c", "Ignore value surrounding calc function (4)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression(`calc(\n1px \n* 2 \n* 1.5)`), "3px", "Handle new lines");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(1/100)"), "0.01", "Handle precision correctly (1)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(5/1000000)"), "0.00001", "Handle precision correctly (2)");
+    TKUnit.assertEqual(_evaluateCssCalcExpression("calc(5/100000)"), "0.00005", "Handle precision correctly (3)");
+}
+
+export function test_css_calc() {
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout.slim {
+        width: calc(100 * .1);
+    }
+
+    StackLayout.wide {
+        width: calc(100 * 1.25);
+    }
+
+    StackLayout.invalid-css-calc {
+        width: calc(asd3 * 1.25);
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    stack.className = "slim";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10");
+
+    stack.className = "wide";
+    TKUnit.assertEqual(stack.width as any, 125, "Stack - width === 125");
+
+    (stack as any).style = `width: calc(100% / 2)`;
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
+
+    // This should log an error for the invalid css-calc expression, but not cause a crash
+    stack.className = "invalid-css-calc";
+}
+
+export function test_css_calc_units() {
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout.no_unit {
+        width: calc(100 * .1);
+    }
+
+    StackLayout.dip_unit {
+        width: calc(100dip * .1);
+    }
+
+    StackLayout.pct_unit {
+        width: calc(100% * .1);
+    }
+
+    StackLayout.px_unit {
+        width: calc(100px * .1);
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    stack.className = "no_unit";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10");
+
+    stack.className = "dip_unit";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10dip");
+
+    stack.className = "pct_unit";
+    TKUnit.assertDeepEqual(stack.width as any, { unit: "%", value: 0.1 }, "Stack - width === 10%");
+
+    stack.className = "px_unit";
+    TKUnit.assertDeepEqual(stack.width as any, { unit: "px", value: 10 }, "Stack - width === 10px");
+}
+
+export function test_nested_css_calc() {
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout.slim {
+        width: calc(calc(10 * 10) * .1);
+    }
+
+    StackLayout.wide {
+        width: calc(calc(10 * 10) * 1.25);
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    stack.className = "slim";
+    TKUnit.assertEqual(stack.width as any, 10, "Stack - width === 10");
+
+    stack.className = "wide";
+    TKUnit.assertEqual(stack.width as any, 125, "Stack - width === 125");
+
+    (stack as any).style = `width: calc(100% * calc(1 / 2))`;
+
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
+}
+
+export function test_css_variables() {
+    const blackColor = "#000000";
+    const redColor = "#FF0000";
+    const greenColor = "#00FF00";
+    const blueColor = "#0000FF";
+
+    const page = helper.getClearCurrentPage();
+
+    const cssVarName = `--my-background-color-${Date.now()}`;
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout[use-css-vars] {
+        background-color: var(${cssVarName});
+    }
+
+    StackLayout.make-red {
+        ${cssVarName}: red;
+    }
+
+    StackLayout.make-blue {
+        ${cssVarName}: blue;
+    }
+
+    Label.lab1 {
+        background-color: var(${cssVarName});
+        color: black;
+    }`;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    // This should log an error about not finding the css-variable but not cause a crash
+    stack["use-css-vars"] = true;
+    label.className = "lab1";
+
+    stack.className = "make-red";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, redColor, "Stack - background-color is red");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, redColor, "Label - background-color is red");
+
+    stack.className = "make-blue";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, blueColor, "Stack - background-color is blue");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, blueColor, "Label - background-color is blue");
+
+    stack.className = "make-red";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, redColor, "Stack - background-color is red");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, redColor, "Label - background-color is red");
+
+    // view.style takes priority over css-classes.
+    (stack as any).style = `${cssVarName}: ${greenColor}`;
+    stack.className = "";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, greenColor, "Stack - background-color is green");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, greenColor, "Label - background-color is green");
+
+    stack.className = "make-red";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, greenColor, "Stack - background-color is green");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, greenColor, "Label - background-color is green");
+
+    (stack as any).style = "";
+    TKUnit.assertEqual(label.color.hex, blackColor, "text color is black");
+    TKUnit.assertEqual((<color.Color>stack.backgroundColor).hex, redColor, "Stack - background-color is red");
+    TKUnit.assertEqual((<color.Color>label.backgroundColor).hex, redColor, "Label - background-color is red");
+}
+
+export function test_css_calc_and_variables() {
+    const page = helper.getClearCurrentPage();
+
+    const cssVarName = `--my-width-factor-${Date.now()}`;
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout[use-css-vars] {
+        ${cssVarName}: 1;
+        width: calc(100% * var(${cssVarName}));
+    }
+
+    StackLayout.slim {
+        ${cssVarName}: 0.1;
+    }
+
+    StackLayout.wide {
+        ${cssVarName}: 1.25;
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack["use-css-vars"] = true;
+    stack.addChild(label);
+
+    stack.className = "";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1 }, "Stack - width === 100%");
+
+    stack.className = "slim";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.1 }, "Stack - width === 10%");
+
+    stack.className = "wide";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1.25 }, "Stack - width === 125%");
+
+    // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
+    (stack as any).style = `${cssVarName}: 0.5`;
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
+}
+
+export function test_css_variable_fallback() {
+    const redColor = "#FF0000";
+    const blueColor = "#0000FF";
+    const limeColor = new color.Color("lime").hex;
+    const yellowColor = new color.Color("yellow").hex;
+
+    const classToValue = [
+        {
+            className: "defined-css-variable",
+            expectedColor: blueColor,
+        }, {
+            className: "defined-css-variable-with-fallback",
+            expectedColor: blueColor,
+        }, {
+            className: "undefined-css-variable-without-fallback",
+            expectedColor: undefined,
+        }, {
+            className: "undefined-css-variable-with-fallback",
+            expectedColor: redColor,
+        }, {
+            className: "undefined-css-variable-with-defined-fallback",
+            expectedColor: limeColor,
+        }, {
+            className: "undefined-css-variable-with-multiple-fallbacks",
+            expectedColor: limeColor,
+        }, {
+            className: "undefined-css-variable-with-missing-fallback-value",
+            expectedColor: undefined,
+        }, {
+            className: "undefined-css-variable-with-nested-fallback",
+            expectedColor: yellowColor,
+        },
+    ];
+
+    const page = helper.getClearCurrentPage();
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    .defined-css-variable {
+        --my-var: blue;
+        color: var(--my-var); /* resolved as color: blue; */
+    }
+
+    .defined-css-variable-with-fallback {
+        --my-var: blue;
+        color: var(--my-var, red); /* resolved as color: blue; */
+    }
+
+    .undefined-css-variable-without-fallback {
+        color: var(--undefined-var); /* resolved as color: unset; */
+    }
+
+    .undefined-css-variable-with-fallback {
+        color: var(--undefined-var, red); /* resolved as color: red; */
+    }
+
+    .undefined-css-variable-with-defined-fallback {
+        --my-fallback-var: lime;
+        color: var(--undefined-var, var(--my-fallback-var)); /* resolved as color: lime; */
+    }
+
+    .undefined-css-variable-with-multiple-fallbacks {
+        --my-fallback-var: lime;
+        color: var(--undefined-var, var(--my-fallback-var), yellow); /* resolved as color: lime; */
+    }
+
+    .undefined-css-variable-with-missing-fallback-value {
+        color: var(--undefined-var, var(--undefined-fallback-var)); /* resolved as color: unset; */
+    }
+
+    .undefined-css-variable-with-nested-fallback {
+        color: var(--undefined-var, var(--undefined-fallback-var, yellow)); /* resolved as color: yellow; */
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack.addChild(label);
+
+    for (const { className, expectedColor } of classToValue) {
+        label.className = className;
+        TKUnit.assertEqual(label.color && label.color.hex, expectedColor, className);
+    }
+}
+
+export function test_nested_css_calc_and_variables() {
+    const page = helper.getClearCurrentPage();
+
+    const cssVarName = `--my-width-factor-base-${Date.now()}`;
+    const cssVarName2 = `--my-width-factor-${Date.now()}`;
+    const undefinedCssVarName = `--my-undefined-variable-${Date.now()}`;
+
+    const stack = new stackModule.StackLayout();
+    stack.css = `
+    StackLayout[use-css-vars] {
+        ${cssVarName}: 0.5;
+        ${cssVarName2}: var(${cssVarName});
+        width: calc(100% * calc(var(${cssVarName2}) * 2));
+    }
+
+    StackLayout.slim {
+        ${cssVarName}: 0.05;
+    }
+
+    StackLayout.wide {
+        ${cssVarName}: 0.625
+    }
+
+    StackLayout.nested {
+        ${cssVarName2}: calc(var(${cssVarName}) * 2);
+    }
+
+    StackLayout.nested-fallback {
+        width: calc(calc(var(${undefinedCssVarName}, 16) / 2) * 2));
+    }
+    `;
+
+    const label = new labelModule.Label();
+    page.content = stack;
+    stack["use-css-vars"] = true;
+    stack.addChild(label);
+
+    stack.className = "";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1 }, "Stack - width === 100%");
+
+    stack.className = "nested";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 2 }, "Stack - width === 200%");
+
+    stack.className = "slim";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.1 }, "Stack - width === 10%");
+
+    stack.className = "slim nested";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.2 }, "Stack - width === 20%");
+
+    stack.className = "wide";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1.25 }, "Stack - width === 125%");
+
+    stack.className = "wide nested";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 2.5 }, "Stack - width === 250%");
+
+    // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
+    stack.className = "wide";
+    (stack as any).style = `${cssVarName}: 0.25`;
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
+
+    stack.className = "nested";
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1 }, "Stack - width === 100%");
+
+    stack.className = "nested-fallback";
+    TKUnit.assertDeepEqual(stack.width, 16, "Stack - width === 16");
+}
+
+export function test_css_variable_is_applied_to_normal_properties() {
+    const stack = new stackModule.StackLayout();
+
+    const cssVarName = `--my-custom-variable-${Date.now()}`;
+
+    helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
+        const page = <pageModule.Page>views[1];
+        const expected = "horizontal";
+        page.css = `StackLayout {
+            ${cssVarName}: ${expected};
+            orientation: var(${cssVarName});
+        }`;
+        TKUnit.assertEqual(stack.orientation, expected);
+    });
+}
+
+export function test_css_variable_is_applied_to_special_properties() {
+    const stack = new stackModule.StackLayout();
+
+    const cssVarName = `--my-custom-variable-${Date.now()}`;
+
+    helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
+        const page = <pageModule.Page>views[1];
+        const expected = "test";
+        page.css = `StackLayout {
+            ${cssVarName}: ${expected};
+            class: var(${cssVarName});
+        }`;
+        TKUnit.assertEqual(stack.className, expected);
     });
 }
 

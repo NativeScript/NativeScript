@@ -1,0 +1,30 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" class="with-percent">
+  <GridLayout rows="40,*, *, *, *">
+    <StackLayout>
+      <Button text="Change css of page" tap="applyTap" id="button"></Button>
+    </StackLayout>
+    <StackLayout row="1">
+      <StackLayout class="test1">
+        <Label text="padding 30" />
+      </StackLayout>
+    </StackLayout>
+    <StackLayout row="2">
+      <DockLayout class="test2">
+        <Label text="DockLayout padding: 30margin" autocorrect="false"/>
+      </DockLayout>
+    </StackLayout>
+    <StackLayout row="3">
+      <AbsoluteLayout class="test3">
+        <Label text="AbsoluteLayout margin: 30"/>
+      </AbsoluteLayout>
+    </StackLayout>
+    <StackLayout row="4">
+      <WrapLayout orientation="vertical">
+        <Label text="Label in WrapLayout " autocorrect="false"/>
+        <Label text="width=75%" autocorrect="false"/>
+        <Label text="height=45%" autocorrect="false"/>
+        <Label text="test" autocorrect="false"/>
+      </WrapLayout>
+    </StackLayout>
+  </GridLayout>
+</Page>
