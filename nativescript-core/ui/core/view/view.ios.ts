@@ -56,7 +56,7 @@ export class View extends ViewCommon implements ViewDefinition {
         return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
     }
 
-    public requestLayout(calledFromChild?:boolean): void {
+    public requestLayout(calledFromChild?: boolean): void {
         const willBeCalledOnParent = (!calledFromChild || ((this.width === "auto" || this.height === "auto")));
         this._privateFlags |= PFLAG_FORCE_LAYOUT;
         if (!willBeCalledOnParent) {
@@ -765,8 +765,8 @@ export class CustomLayoutView extends ContainerView {
         if (this._isLayoutValid) {
             return;
         }
-        const width = this.getMeasuredWidth()
-        const height = this.getMeasuredHeight()
+        const width = this.getMeasuredWidth();
+        const height = this.getMeasuredHeight();
         const widthSpec = layout.makeMeasureSpec(width, layout.EXACTLY);
         const heightSpec = layout.makeMeasureSpec(height, layout.EXACTLY);
         this.measure(widthSpec, heightSpec);

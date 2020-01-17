@@ -497,7 +497,7 @@ export class View extends ViewCommon {
     }
 
     @profile
-    public requestLayout(calledFromChild?:boolean): void {
+    public requestLayout(calledFromChild?: boolean): void {
         const willBeCalledOnParent = (!calledFromChild || ((this.width === "auto" || this.height === "auto")));
         if (!willBeCalledOnParent) {
             if (this.nativeViewProtected) {
