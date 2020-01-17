@@ -273,7 +273,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 break;
 
             case "integer":
-                newInputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
+                newInputType = android.text.InputType.TYPE_CLASS_NUMBER;
                 break;
 
             default:
