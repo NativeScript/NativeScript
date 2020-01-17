@@ -68,6 +68,7 @@ function initializeClickableSpan(): void {
         constructor(owner: Span) {
             super();
             this.owner = new WeakRef(owner);
+
             return global.__native(this);
         }
         onClick(view: android.view.View): void {
@@ -410,6 +411,7 @@ function isStringTappable(formattedString: FormattedString) {
             return true;
         }
     }
+
     return false;
 }
 
