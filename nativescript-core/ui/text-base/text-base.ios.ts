@@ -371,38 +371,38 @@ export class TextBase extends TextBaseCommon {
         return mas;
     }
 
-    getBaselineOffset(font: UIFont, defaultFontSize: number, align?: string | number) : number {
-        console.log(font.pointSize, font.lineHeight, font.ascender, font.descender, font.leading);
+    getBaselineOffset(font: UIFont, align?: string | number) : number {
+        if (!align || align === "baseline") {
+            return 0;
+        }
 
         if (align === "top") {
-            return defaultFontSize - font.descender - font.ascender + font.leading / 2;
+            return -this.fontSize - font.descender - font.ascender - font.leading / 2;
         }
 
         if (align === "bottom") {
-            return -defaultFontSize / 2;
+            return font.descender + font.leading / 2;
         }
 
         if (align === "text-top") {
-            return defaultFontSize - font.descender - font.ascender;
+            return -this.fontSize - font.descender - font.ascender;
         }
 
         if (align === "text-bottom") {
-            return font.descender / font.pointSize * defaultFontSize;
+            return font.descender;
         }
 
         if (align === "middle") {
-            return -font.lineHeight / 2 - font.descender;
+            return (font.descender - font.ascender) / 2 - font.descender;
         }
 
         if (align === "super") {
-            return defaultFontSize * .4;
+            return -this.fontSize * .4;
         }
 
         if (align === "sub") {
-            return (font.descender - font.ascender) / font.pointSize * font.lineHeight * .4;
+            return (font.descender - font.ascender) * .4;
         }
-
-        return 0;
     }
 
     createMutableStringForSpan(span: Span, text: string): NSMutableAttributedString {
@@ -411,7 +411,7 @@ export class TextBase extends TextBaseCommon {
         const style = span.style;
         const align = style.verticalAlignment;
 
-        let font = new Font(style.fontFamily, style.fontSize || 12, style.fontStyle, style.fontWeight);
+        let font = new Font(style.fontFamily, style.fontSize, style.fontStyle, style.fontWeight);
         let iosFont = font.getUIFont(viewFont);
 
         attrDict[NSFontAttributeName] = iosFont;
@@ -444,12 +444,7 @@ export class TextBase extends TextBaseCommon {
         }
 
         if (align) {
-            attrDict[NSBaselineOffsetAttributeName] =
-                this.getBaselineOffset(
-                    iosFont,
-                    (<TextBase>span.parent.parent).fontSize * layout.getDisplayDensity(),
-                    align
-                );
+            attrDict[NSBaselineOffsetAttributeName] = this.getBaselineOffset(iosFont, align);
         }
 
         return NSMutableAttributedString.alloc().initWithStringAttributes(text, <any>attrDict);
