@@ -371,7 +371,7 @@ export class TextBase extends TextBaseCommon {
         return mas;
     }
 
-    getBaselineOffset(font: UIFont, align?: string | number) : number {
+    getBaselineOffset(font: UIFont, align?: string | number): number {
         if (!align || align === "baseline") {
             return 0;
         }
