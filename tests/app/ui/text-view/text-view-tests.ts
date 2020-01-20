@@ -346,6 +346,18 @@ export var testBindEditableToBindingConext = function () {
     });
 };
 
+export var testSetMaxLines = function () {
+    helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
+        var textView = <textViewModule.TextView>views[0];
+
+        textView.maxLines = 3;
+
+        var expectedValue = 3;
+        var actualValue = textViewTestsNative.getNativeMaxLines(textView);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+};
+
 var expectedFontSize = 42;
 export var testLocalFontSizeFromCss = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {

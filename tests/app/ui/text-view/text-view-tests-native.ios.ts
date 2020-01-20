@@ -51,3 +51,7 @@ export function typeTextNatively(textView: textViewModule.TextView, text: string
     // Setting the text will not trigger the delegate method, so we have to do it by hand.
     textView.ios.delegate.textViewDidEndEditing(textView.ios);
 }
+
+export function getNativeMaxLines(textView: textViewModule.TextView): number {
+    return textView.ios.textContainer.maximumNumberOfLines;
+}
