@@ -2915,7 +2915,7 @@ export abstract class ViewBase extends Observable {
     public _removeViewCore(view: ViewBase): void;
     // (undocumented)
     _removeViewFromNativeVisualTree(view: ViewBase): void;
-    public requestLayout(calledFromChild?: boolean): void;
+    public requestLayout(calledFromChild?:boolean): void;
     resetNativeView(): void;
     // (undocumented)
     row: number;
