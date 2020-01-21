@@ -38,7 +38,7 @@ const createComponentInstance = profile("createComponentInstance", (elementName:
             resolvedModuleName = resolveModuleName(namespace, "");
             instanceModule = global.loadModule(resolvedModuleName, true);
         } else {
-            // load module from tns-core-modules/ui or mapped paths
+            // load module from @nativescript/core/ui or mapped paths
             resolvedModuleName = MODULES[elementName] || UI_PATH +
                 (elementName.toLowerCase().indexOf("layout") !== -1 ? "layouts/" : "") +
                 elementName.split(/(?=[A-Z])/).join("-").toLowerCase();

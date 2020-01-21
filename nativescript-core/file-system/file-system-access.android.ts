@@ -495,7 +495,7 @@ export class FileSystemAccess {
 
     // TODO: This method is the same as in the iOS implementation.
     // Make it in a separate file / module so it can be reused from both implementations.
-    private getFileExtension(path: string): string {
+    public getFileExtension(path: string): string {
         const dotIndex = path.lastIndexOf(".");
         if (dotIndex && dotIndex >= 0 && dotIndex < path.length) {
             return path.substring(dotIndex);

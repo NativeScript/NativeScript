@@ -1,19 +1,22 @@
+// Types
+import { iOSApplication as iOSApplicationDefinition } from ".";
 import {
     ApplicationEventData,
     CssChangedEventData,
-    iOSApplication as IOSApplicationDefinition,
     LaunchEventData,
     LoadAppCSSEventData,
     OrientationChangedEventData,
     SystemAppearanceChangedEventData
-} from ".";
+} from "./application-interfaces";
+import { View } from "../ui/core/view";
+import { NavigationEntry } from "../ui/frame/frame-interfaces";
 
+// Require
 import {
     displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on,
     orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent,
     systemAppearanceChanged, systemAppearanceChangedEvent
 } from "./application-common";
-
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
@@ -21,13 +24,11 @@ export * from "./application-common";
 import { Builder } from "../ui/builder";
 import {
     CLASS_PREFIX,
-    getRootViewCssClasses,
-    pushToRootViewCssClasses,
-    resetRootViewCssClasses
+    getSystemCssClasses,
+    pushToSystemCssClasses,
+    ROOT_VIEW_CSS_CLASS
 } from "../css/system-classes";
-
-import { ios as iosView, View } from "../ui/core/view";
-import { Frame, NavigationEntry } from "../ui/frame";
+import { ios as iosViewHelper } from "../ui/core/view/view-helper";
 import { device } from "../platform/platform";
 import { profile } from "../profiling";
 import { ios } from "../utils/utils";
@@ -89,8 +90,10 @@ class CADisplayLinkTarget extends NSObject {
     };
 }
 
-class IOSApplication implements IOSApplicationDefinition {
-    private _backgroundColor = majorVersion <= 12 ? UIColor.whiteColor : UIColor.systemBackgroundColor;
+/* tslint:disable */
+export class iOSApplication implements iOSApplicationDefinition {
+    /* tslint:enable */
+    private _backgroundColor = (majorVersion <= 12 || !UIColor.systemBackgroundColor) ? UIColor.whiteColor : UIColor.systemBackgroundColor;
     private _delegate: typeof UIApplicationDelegate;
     private _window: UIWindow;
     private _observers: Array<NotificationObserver>;
@@ -122,7 +125,6 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     get systemAppearance(): "light" | "dark" | null {
-
         // userInterfaceStyle is available on UITraitCollection since iOS 12.
         if (majorVersion <= 11) {
             return null;
@@ -294,22 +296,21 @@ class IOSApplication implements IOSApplicationDefinition {
 
         this._rootView = rootView;
 
-        if (createRootFrame.value) {
-            // Don't setup as styleScopeHost
-            rootView._setupUI({});
-        } else {
-            // setup view as styleScopeHost
-            rootView._setupAsRootView({});
-        }
+        // setup view as styleScopeHost
+        rootView._setupAsRootView({});
+
         setViewControllerView(rootView);
+
         const haveController = this._window.rootViewController !== null;
         this._window.rootViewController = controller;
+
+        setRootViewsSystemAppearanceCssClass(rootView);
+
         if (!haveController) {
             this._window.makeKeyAndVisible();
         }
 
-        setupRootViewCssClasses(rootView);
-        rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
+        rootView.on(iosViewHelper.traitCollectionColorAppearanceChangedEvent, () => {
             const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
             const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
 
@@ -328,8 +329,9 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 }
 
-const iosApp = new IOSApplication();
-
+/* tslint:disable */
+const iosApp = new iOSApplication();
+/* tslint:enable */
 export { iosApp as ios };
 setApplication(iosApp);
 
@@ -347,14 +349,11 @@ function createRootView(v?: View) {
         if (!mainEntry) {
             throw new Error("Main entry is missing. App cannot be started. Verify app bootstrap.");
         } else {
-            if (createRootFrame.value) {
-                const frame = rootView = new Frame();
-                frame.navigate(mainEntry);
-            } else {
-                rootView = Builder.createViewFromEntry(mainEntry);
-            }
+            rootView = Builder.createViewFromEntry(mainEntry);
         }
     }
+
+    setRootViewsCssClasses(rootView);
 
     return rootView;
 }
@@ -367,10 +366,8 @@ export function getRootView() {
     return iosApp.rootView;
 }
 
-// NOTE: for backwards compatibility. Remove for 4.0.0.
-const createRootFrame = { value: true };
 let started: boolean = false;
-export function _start(entry?: string | NavigationEntry) {
+export function run(entry?: string | NavigationEntry) {
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     started = true;
 
@@ -398,8 +395,8 @@ export function _start(entry?: string | NavigationEntry) {
 
                     // Mind root view CSS classes in future work
                     // on embedding NativeScript applications
-                    setupRootViewCssClasses(rootView);
-                    rootView.on(iosView.traitCollectionColorAppearanceChangedEvent, () => {
+                    setRootViewsSystemAppearanceCssClass(rootView);
+                    rootView.on(iosViewHelper.traitCollectionColorAppearanceChangedEvent, () => {
                         const userInterfaceStyle = controller.traitCollection.userInterfaceStyle;
                         const newSystemAppearance = getSystemAppearanceValue(userInterfaceStyle);
 
@@ -421,11 +418,6 @@ export function _start(entry?: string | NavigationEntry) {
     }
 }
 
-export function run(entry?: string | NavigationEntry) {
-    createRootFrame.value = false;
-    _start(entry);
-}
-
 export function addCss(cssText: string, attributeScoped?: boolean): void {
     notify(<CssChangedEventData>{ eventName: "cssChanged", object: <any>iosApp, cssText: cssText });
     if (!attributeScoped) {
@@ -437,7 +429,6 @@ export function addCss(cssText: string, attributeScoped?: boolean): void {
 }
 
 export function _resetRootView(entry?: NavigationEntry | string) {
-    createRootFrame.value = false;
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     iosApp.setWindowContent();
 }
@@ -462,7 +453,7 @@ function getViewController(rootView: View): UIViewController {
     if (!(viewController instanceof UIViewController)) {
         // We set UILayoutViewController dynamically to the root view if it doesn't have a view controller
         // At the moment the root view doesn't have its native view created. We set it in the setViewControllerView func
-        viewController = iosView.UILayoutViewController.initWithOwner(new WeakRef(rootView)) as UIViewController;
+        viewController = iosViewHelper.UILayoutViewController.initWithOwner(new WeakRef(rootView)) as UIViewController;
         rootView.viewController = viewController;
     }
 
@@ -477,25 +468,29 @@ function setViewControllerView(view: View): void {
         throw new Error("Root should be either UIViewController or UIView");
     }
 
-    if (viewController instanceof iosView.UILayoutViewController) {
+    if (viewController instanceof iosViewHelper.UILayoutViewController) {
         viewController.view.addSubview(nativeView);
     }
 }
 
-function setupRootViewCssClasses(rootView: View): void {
-    resetRootViewCssClasses();
-
+function setRootViewsCssClasses(rootView: View): void {
     const deviceType = device.deviceType.toLowerCase();
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${deviceType}`);
-    pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
 
-    if (majorVersion >= 13) {
-        pushToRootViewCssClasses(`${CLASS_PREFIX}${iosApp.systemAppearance}`);
-    }
+    pushToSystemCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
+    pushToSystemCssClasses(`${CLASS_PREFIX}${deviceType}`);
+    pushToSystemCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
 
-    const rootViewCssClasses = getRootViewCssClasses();
+    rootView.cssClasses.add(ROOT_VIEW_CSS_CLASS);
+    const rootViewCssClasses = getSystemCssClasses();
     rootViewCssClasses.forEach(c => rootView.cssClasses.add(c));
+}
+
+function setRootViewsSystemAppearanceCssClass(rootView: View): void {
+    if (majorVersion >= 13) {
+        const systemAppearanceCssClass = `${CLASS_PREFIX}${iosApp.systemAppearance}`;
+        pushToSystemCssClasses(systemAppearanceCssClass);
+        rootView.cssClasses.add(systemAppearanceCssClass);
+    }
 }
 
 export function orientation(): "portrait" | "landscape" | "unknown" {

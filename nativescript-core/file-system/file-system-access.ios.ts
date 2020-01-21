@@ -395,7 +395,7 @@ export class FileSystemAccess {
 
     // TODO: This method is the same as in the iOS implementation.
     // Make it in a separate file / module so it can be reused from both implementations.
-    private getFileExtension(path: string): string {
+    public getFileExtension(path: string): string {
         // TODO [For Panata]: The definitions currently specify "any" as a return value of this method
         //const nsString = Foundation.NSString.stringWithString(path);
         //const extension = nsString.pathExtension();

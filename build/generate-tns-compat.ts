@@ -81,6 +81,13 @@ function processDefinitionFile(entry: EntryInfo) {
     }
 }
 
+function processTypeScriptFile(entry: EntryInfo) {
+    const relativeFilePathNoExt = entry.path.replace(/\.ts$/, "");
+
+    createReExportFile(relativeFilePathNoExt, ".ts");
+    addTestImport(relativeFilePathNoExt);
+}
+
 function createReExportFile(pathNoExt: string, ext: ".ts" | ".d.ts") {
     const outputFile = path.join(outputFolder, pathNoExt + ext);
     if (!fs.existsSync(outputFile)) {
@@ -161,6 +168,11 @@ function generateExportsForPrivateModules() {
     //  * .d.ts file with re-exports for definitions for the .d.ts
     //  * .ts file with re-exports for the corresponding ts/js file (is such exists)
     await traverseInputDir(["*.d.ts"], processDefinitionFile);
+
+    console.log(" ------> GENERATING FILES FROM TYPESCRIPT");
+    // Traverse all ts files which are not platform specific and create
+    //  * .ts file with re-exports for the corresponding ts file
+    await traverseInputDir(["*(?<!\.(d|android|ios)).ts"], processTypeScriptFile);
 
     generateExportsForPrivateModules();
 

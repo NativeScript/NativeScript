@@ -65,7 +65,7 @@ export class EditableTextBase extends TextBase {
     //@endprivate
 }
 
-export type KeyboardType = "datetime" | "phone" | "number" | "url" | "email";
+export type KeyboardType = "datetime" | "phone" | "number" | "url" | "email" | "integer";
 export type ReturnKeyType = "done" | "next" | "go" | "search" | "send";
 export type UpdateTextTrigger = "focusLost" | "textChanged";
 export type AutocapitalizationType = "none" | "words" | "sentences" | "allcharacters";

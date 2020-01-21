@@ -1,7 +1,7 @@
 import { ScrollEventData } from "../scroll-view";
-import { TextView as TextViewDefinition } from ".";
+import { TextViewBase as TextViewBaseCommon, maxLinesProperty } from "./text-view-common";
 import {
-    EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
+    editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
     Length, _updateCharactersInRangeReplacementString, Color, layout,
@@ -110,14 +110,14 @@ class NoScrollAnimationUITextView extends UITextView {
 }
 
 @CSSType("TextView")
-export class TextView extends EditableTextBase implements TextViewDefinition {
+export class TextView extends TextViewBaseCommon {
     nativeViewProtected: UITextView;
     private _delegate: UITextViewDelegateImpl;
     private _isShowingHint: boolean;
     public _isEditing: boolean;
 
-    private _hintColor = majorVersion <= 12 ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
-    private _textColor = majorVersion <= 12 ? null : UIColor.labelColor;
+    private _hintColor = (majorVersion <= 12 || !UIColor.placeholderTextColor) ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
+    private _textColor = (majorVersion <= 12 || !UIColor.labelColor) ? null : UIColor.labelColor;
 
     createNativeView() {
         const textView = NoScrollAnimationUITextView.new();
@@ -333,6 +333,20 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
         this.nativeTextViewProtected.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
+    [maxLinesProperty.getDefault](): number {
+        return 0;
+    }
+    [maxLinesProperty.setNative](value: number) {
+      this.nativeTextViewProtected.textContainer.maximumNumberOfLines = value;
+
+      if (value !== 0) {
+        this.nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+      }
+      else {
+        this.nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+      }
+    }
+
 }
 
 TextView.prototype.recycleNativeView = "auto";

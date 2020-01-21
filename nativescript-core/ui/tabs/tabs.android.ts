@@ -465,7 +465,11 @@ export class Tabs extends TabsBase {
 
     public _loadUnloadTabItems(newIndex: number) {
         const items = this.items;
-        const lastIndex = this.items.length - 1;
+        if (!items) {
+            return;
+        }
+
+        const lastIndex = items.length - 1;
         const offsideItems = this.offscreenTabLimit;
 
         let toUnload = [];
@@ -617,10 +621,10 @@ export class Tabs extends TabsBase {
         }
 
         const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-        items.forEach((item: TabStripItem, i, arr) => {
-            (<any>item).index = i;
-            const tabItemSpec = this.createTabItemSpec(item);
-            (<any>item).tabItemSpec = tabItemSpec;
+        items.forEach((tabStripItem: TabStripItem, i, arr) => {
+            tabStripItem._index = i;
+            const tabItemSpec = this.createTabItemSpec(tabStripItem);
+            (<any>tabStripItem).tabItemSpec = tabItemSpec;
             tabItems.push(tabItemSpec);
         });
 
@@ -649,9 +653,7 @@ export class Tabs extends TabsBase {
 
             // BACKGROUND-COLOR
             const backgroundColor = tabStripItem.style.backgroundColor;
-            if (backgroundColor) {
-                tabItemSpec.backgroundColor = backgroundColor.android;
-            }
+            tabItemSpec.backgroundColor = backgroundColor ? backgroundColor.android : this.getTabBarBackgroundArgbColor();
 
             // COLOR
             const color = nestedLabel.style.color;
@@ -808,7 +810,7 @@ export class Tabs extends TabsBase {
     }
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
-        const index = (<any>tabStripItem).index;
+        const index = tabStripItem._index;
         const tabBarItem = this._tabsBar.getViewForItemAt(index);
         const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
         const drawable = this.getIcon(tabStripItem);
