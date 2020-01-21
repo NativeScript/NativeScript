@@ -721,7 +721,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
                 } else if ("number".equals(vx.getType()) && "ident".equals(vy.getType())) {
                     if ("%".equals(vx.getUnit())) {
                         res.posX = spaceX * vx.getValue() / 100;
-                    } else if ("number".equals(vx.getType()) || "px".equals(vx.getUnit()) || vx.getUnit() == null || vx.getUnit().isEmpty()) {
+                    } else if ("px".equals(vx.getUnit()) || vx.getUnit() == null || vx.getUnit().isEmpty()) {
                         res.posX = vx.getValue();
                     }
 

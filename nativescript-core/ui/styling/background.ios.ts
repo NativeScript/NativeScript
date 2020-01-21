@@ -330,7 +330,7 @@ function getDrawParams(this: void, image: UIImage, background: BackgroundDefinit
             } else if (v.x.type === "number" && v.y.type === "ident") {
               if (v.x.unit === "%") {
                 res.posX = spaceX * v.x.value / 100;
-              } else if (v.x.type === "number" || v.x.unit === "px" || v.x.unit === "") {
+              } else if (v.x.unit === "px" || v.x.unit === "") {
                 res.posX = v.x.value;
               }
 
