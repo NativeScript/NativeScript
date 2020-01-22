@@ -1,6 +1,6 @@
-import * as pages from "tns-core-modules/ui/page";
-import * as buttons from "tns-core-modules/ui/button";
-import { VerticalAlignment } from "tns-core-modules/ui/core/view";
+import * as pages from "@nativescript/core/ui/page";
+import * as buttons from "@nativescript/core/ui/button";
+import { VerticalAlignment } from "@nativescript/core/ui/core/view";
 
 export function createPage() {
     var page = new pages.Page();
@@ -18,41 +18,41 @@ export function createPage() {
         btn.verticalAlignment = vAligns[(count++) % 4];
     });
 
-//export function performanceTest() {
-//        var testBtn = new buttons.Button();
-//        var i = 0;
-//        var tmp;
-//        var start;
-//        var end;
+    //export function performanceTest() {
+    //        var testBtn = new buttons.Button();
+    //        var i = 0;
+    //        var tmp;
+    //        var start;
+    //        var end;
 
-//        start = new Date().getTime();
-//        for (i = 0; i < 1000000; i++) {
-//            tmp = testBtn.verticalAlignment;
-//        }
-//        end = new Date().getTime();
-//        console.log("GET from STYLE time: " + (end - start));
+    //        start = new Date().getTime();
+    //        for (i = 0; i < 1000000; i++) {
+    //            tmp = testBtn.verticalAlignment;
+    //        }
+    //        end = new Date().getTime();
+    //        console.log("GET from STYLE time: " + (end - start));
 
-//        start = new Date().getTime();
-//        for (i = 0; i < 1000000; i++) {
-//            tmp = testBtn.horizontalAlignment;
-//        }
-//        end = new Date().getTime();
-//        console.log("GET from LayoutInfo time: " + (end - start));
+    //        start = new Date().getTime();
+    //        for (i = 0; i < 1000000; i++) {
+    //            tmp = testBtn.horizontalAlignment;
+    //        }
+    //        end = new Date().getTime();
+    //        console.log("GET from LayoutInfo time: " + (end - start));
 
-//        start = new Date().getTime();
-//        for (i = 0; i < 1000000; i++) {
-//            testBtn.verticalAlignment = vAligns[i % 4];
-//        }
-//        end = new Date().getTime();
-//        console.log("SET to STYLE time: " + (end - start));
+    //        start = new Date().getTime();
+    //        for (i = 0; i < 1000000; i++) {
+    //            testBtn.verticalAlignment = vAligns[i % 4];
+    //        }
+    //        end = new Date().getTime();
+    //        console.log("SET to STYLE time: " + (end - start));
 
-//        start = new Date().getTime();
-//        for (i = 0; i < 1000000; i++) {
-//            testBtn.horizontalAlignment = hAligns[i % 4];
-//        }
-//        end = new Date().getTime();
-//        console.log("SET from LayoutInfo time: " + (end - start));
-//    }
+    //        start = new Date().getTime();
+    //        for (i = 0; i < 1000000; i++) {
+    //            testBtn.horizontalAlignment = hAligns[i % 4];
+    //        }
+    //        end = new Date().getTime();
+    //        console.log("SET from LayoutInfo time: " + (end - start));
+    //    }
 
     page.content = btn;
 

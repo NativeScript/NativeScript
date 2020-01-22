@@ -1,5 +1,5 @@
 /* tslint:disable:no-unused-variable */
-import * as app from "tns-core-modules/application";
+import * as app from "@nativescript/core/application";
 import * as TKUnit from "../tk-unit";
 
 export * from "./application-tests-common";
@@ -41,9 +41,14 @@ export function testAndroidApplicationInitialized() {
     TKUnit.assert(app.android, "Android application not initialized.");
     TKUnit.assert(app.android.context, "Android context not initialized.");
     TKUnit.assert(app.android.foregroundActivity, "Android foregroundActivity not initialized.");
-    TKUnit.assert(app.android.foregroundActivity.isNativeScriptActivity, "Andorid foregroundActivity.isNativeScriptActivity is false.");
+    TKUnit.assert(app.android.foregroundActivity.isNativeScriptActivity, "Android foregroundActivity.isNativeScriptActivity is false.");
     TKUnit.assert(app.android.startActivity, "Android startActivity not initialized.");
     TKUnit.assert(app.android.nativeApp, "Android nativeApp not initialized.");
     TKUnit.assert(app.android.orientation, "Android orientation not initialized.");
     TKUnit.assert(app.android.packageName, "Android packageName not initialized.");
+    TKUnit.assert(app.android.systemAppearance, "Android system appearance not initialized.");
+}
+
+export function testSystemAppearance() {
+    TKUnit.assert(app.systemAppearance(), "System appearance not initialized.");
 }

@@ -10,19 +10,16 @@ import {
     CSS3Parser,
     TokenObjectType,
     CSSNativeScript,
-} from "tns-core-modules/css/parser";
-import {
-    parse
-} from "tns-core-modules/css";
+} from "@nativescript/core/css/parser";
 
 import * as fs from "fs";
-import * as shadyCss from 'shady-css-parser';
-import * as reworkCss from 'css';
+import * as shadyCss from "shady-css-parser";
+import * as reworkCss from "css";
 
-const parseCss: any = require('parse-css');
-const gonzales: any = require('gonzales');
+const parseCss: any = require("parse-css");
+const gonzales: any = require("gonzales");
 const parserlib: any = require("parserlib");
-const csstree: any = require('css-tree');
+const csstree: any = require("css-tree");
 
 describe("css", () => {
     describe("parser", () => {
@@ -45,7 +42,7 @@ describe("css", () => {
         describe("values", () => {
             describe("url", () => {
                 test(parseURL, "url('smiley.gif')  ", { start: 0, end: 19, value: "smiley.gif" });
-                test(parseURL, '  url("frown.gif") ', { start: 0, end: 19, value: "frown.gif" });
+                test(parseURL, "  url(\"frown.gif\") ", { start: 0, end: 19, value: "frown.gif" });
                 test(parseURL, "  url(lucky.gif)", { start: 0, end: 16, value: "lucky.gif" });
                 test(parseURL, "url(lucky.gif) #FF0000", 15, null);
                 test(parseURL, "repeat url(lucky.gif) #FF0000", 6, { start: 6, end: 22, value: "lucky.gif" });
@@ -56,6 +53,8 @@ describe("css", () => {
                 test(parseColor, "  #85456789 ", { start: 0, end: 12, value: 0x85456789 });
                 test(parseColor, "  rgb(255, 8, 128) ", { start: 0, end: 18, value: 0xFFFF0880 });
                 test(parseColor, "  rgba(255, 8, 128, 0.5) ", { start: 0, end: 24, value: 0x80FF0880 });
+                test(parseColor, "  hsl(330.9, 100%, 51.6%) ", { start: 0, end: 25, value: 0xFFFF0880 });
+                test(parseColor, "  hsla(330.9, 100%, 51.6%, 0.5) ", { start: 0, end: 31, value: 0x80FF0880 });
                 test(parseColor, "#FF0000 url(lucky.gif)", 8, null);
                 test(parseColor, "url(lucky.gif) #FF0000 repeat", 15, { start: 15, end: 23, value: 0xFFFF0000 });
             });
@@ -90,8 +89,8 @@ describe("css", () => {
             });
             describe("background", () => {
                 test(parseBackground, "   #996633  ", { start: 0, end: 12, value: { color: 0xFF996633 }});
-                test(parseBackground, '  #00ff00 url("smiley.gif") repeat-y ', { start: 0, end: 37, value: { color: 0xFF00FF00, image: "smiley.gif", repeat: "repeat-y" }});
-                test(parseBackground, '   url(smiley.gif)  no-repeat  top 50% left 100% #00ff00', { start: 0, end: 56, value: {
+                test(parseBackground, "  #00ff00 url(\"smiley.gif\") repeat-y ", { start: 0, end: 37, value: { color: 0xFF00FF00, image: "smiley.gif", repeat: "repeat-y" }});
+                test(parseBackground, "   url(smiley.gif)  no-repeat  top 50% left 100% #00ff00", { start: 0, end: 56, value: {
                     color: 0xFF00FF00,
                     image: "smiley.gif",
                     repeat: "no-repeat",
@@ -101,7 +100,7 @@ describe("css", () => {
                         y: { align: "top", offset: { value: 0.5, unit: "%" }}
                     }
                 }});
-                test(parseBackground, '   url(smiley.gif)  no-repeat  top 50% left 100% / 100px 100px #00ff00', { start: 0, end: 70, value: {
+                test(parseBackground, "   url(smiley.gif)  no-repeat  top 50% left 100% / 100px 100px #00ff00", { start: 0, end: 70, value: {
                     color: 0xFF00FF00,
                     image: "smiley.gif",
                     repeat: "no-repeat",
@@ -112,24 +111,24 @@ describe("css", () => {
                     },
                     size: { x: { value: 100, unit: "px" }, y: { value: 100, unit: "px" }}
                 }});
-                test(parseBackground, '  linear-gradient(to right top) ', { start: 0, end: 32, value: {
+                test(parseBackground, "  linear-gradient(to right top) ", { start: 0, end: 32, value: {
                     image: {
-                        angle: Math.PI * 1/4,
+                        angle: Math.PI * 1 / 4,
                         colors: []
                     }
                 }});
-                test(parseBackground, '  linear-gradient(45deg, #0000FF, #00FF00) ', { start: 0, end: 43, value: {
+                test(parseBackground, "  linear-gradient(45deg, #0000FF, #00FF00) ", { start: 0, end: 43, value: {
                     image: {
-                        angle: Math.PI * 1/4,
+                        angle: Math.PI * 1 / 4,
                         colors: [
                             { argb: 0xFF0000FF },
                             { argb: 0xFF00FF00 }
                         ]
                     }
                 }});
-                test(parseBackground, 'linear-gradient(0deg, blue, green 40%, red)', { start: 0, end: 43, value: {
+                test(parseBackground, "linear-gradient(0deg, blue, green 40%, red)", { start: 0, end: 43, value: {
                     image: {
-                        angle: Math.PI * 0/4,
+                        angle: Math.PI * 0 / 4,
                         colors: [
                             { argb: 0xFF0000FF },
                             { argb: 0xFF008000, offset: { value: 0.4, unit: "%" }},
@@ -175,11 +174,11 @@ describe("css", () => {
                 test(parseSelector, `[src ${attributeTest} "val"]`, { start: 0, end: 12 + attributeTest.length, value: [[[{ type: "[]", property: "src", test: attributeTest, value: "val"}], undefined]]});
             });
             test(parseSelector, "listview > .image", { start: 0, end: 17, value: [
-                [[{ type: "", identifier: "listview"}], ">"], 
+                [[{ type: "", identifier: "listview"}], ">"],
                 [[{ type: ".", identifier: "image"}], undefined]
             ]});
             test(parseSelector, "listview  .image", { start: 0, end: 16, value: [
-                [[{ type: "", identifier: "listview"}], " "], 
+                [[{ type: "", identifier: "listview"}], " "],
                 [[{ type: ".", identifier: "image"}], undefined]
             ]});
             test(parseSelector, "button:hover", { start: 0, end: 12, value: [[[{ type: "", identifier: "button" }, { type: ":", identifier: "hover"}], undefined]]});
@@ -227,15 +226,23 @@ describe("css", () => {
 
                     let original = themeCoreLightIos.replace(/\/\*([^\/]|\/[^\*])*\*\//g, "").replace(/\n/g, " ");
                     let roundtrip = stylesheet.map(m => {
-                        if (!m) return "";
-                        if (typeof m === "string") return m;
+                        if (!m) {
+                            return "";
+                        }
+
+                        if (typeof m === "string") {
+                            return m;
+                        }
+
                         return m.text;
                     }).join("");
 
                     let lastIndex = Math.min(original.length, roundtrip.length);
-                    for(var i = 0; i < lastIndex; i++)
-                        if (original[i] != roundtrip[i])
+                    for (var i = 0; i < lastIndex; i++) {
+                        if (original[i] !== roundtrip[i]) {
                             assert.equal(roundtrip.substr(i, 50), original.substr(i, 50), "Round-tripped CSS string differ at index: " + i);
+                        }
+                    }
 
                     assert.equal(roundtrip.length, original.length, "Expected round-tripped string lengths to match.");
                 });
@@ -317,7 +324,7 @@ describe("css", () => {
                     const parser = new CSS3Parser(".btn-primary{border-color:rgba(255,0,0,0)}");
                     const stylesheet = parser.parseAStylesheet();
 
-                    assert.deepEqual(stylesheet, {rules:[
+                    assert.deepEqual(stylesheet, {rules: [
                         {
                             type: "qualified-rule",
                             prelude: [{ type: 2, text: "." }, { type: 6, text: "btn-primary" }],
@@ -368,6 +375,7 @@ describe("css", () => {
                     const [startSec, startMSec] = process.hrtime();
                     action();
                     const [endSec, endMSec] = process.hrtime();
+
                     return (endSec - startSec) * 1000 + (endMSec - startMSec) / 1000000;
                 }
                 const charCodeByCharCodeDuration = trapDuration(() => {
@@ -388,7 +396,7 @@ describe("css", () => {
                     let char;
                     let c = 0;
                     for (let i = 0; i < themeCoreLightIos.length; i++) {
-                        const char = themeCoreLightIos[i];
+                        char = themeCoreLightIos[i];
                         if ((char >= "a" && char <= "z") || (char >= "A" && char <= "Z") || char === "_") {
                             c++;
                         }
@@ -400,7 +408,7 @@ describe("css", () => {
                     let char;
                     let c = 0;
                     for (let i = 0; i < themeCoreLightIos.length; i++) {
-                        const char = themeCoreLightIos[i];
+                        char = themeCoreLightIos[i];
                         if (compareCharRegEx.test(char)) {
                             c++;
                         }

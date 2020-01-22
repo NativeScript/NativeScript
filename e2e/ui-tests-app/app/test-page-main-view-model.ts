@@ -33,7 +33,7 @@ export class TestPageMainViewModel extends Observable {
             frame.topmost().navigate(exampleFullPath);
         } catch (error) {
             console.log("EXAMPLE LOAD FAILED:" + error);
-            alert("Cannot find example: " + exampleFullPath);
+            alert("Error loading example: " + exampleFullPath + " \nerror: " + error && error.message);
 
         }
     }

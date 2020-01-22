@@ -1,5 +1,5 @@
-import {assert} from "chai";
-const xml = require("tns-core-modules/xml");
+import { assert } from "chai";
+const xml = require("@nativescript/core/xml");
 
 describe("xml parser", () => {
     let last_element = null;
@@ -27,7 +27,7 @@ describe("xml parser", () => {
         assert.equal('TextField', last_element);
         assert.equal('hello', last_attrs['text']);
     });
-    
+
     it("resolves entities", () => {
         parser.parse("<element>&lt;&gt;&quot;&amp;&apos;</element>");
         assert.equal("<>\"&'", last_data);
@@ -44,8 +44,8 @@ describe("xml parser", () => {
     });
 
     it("resolves <> inside quotes", () => {
-            parser.parse("<element name='<&>' blah=\"b<a&>\"/>");
-            assert.equal("<&>", last_attrs.name);
-            assert.equal("b<a&>", last_attrs.blah);
+        parser.parse("<element name='<&>' blah=\"b<a&>\"/>");
+        assert.equal("<&>", last_attrs.name);
+        assert.equal("b<a&>", last_attrs.blah);
     });
 });

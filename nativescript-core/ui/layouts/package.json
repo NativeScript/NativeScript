@@ -1,0 +1,5 @@
+{
+	"name" : "layouts",
+	"main" : "index",
+	"types" : "index.d.ts"
+}

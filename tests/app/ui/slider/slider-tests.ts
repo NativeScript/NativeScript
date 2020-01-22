@@ -1,14 +1,14 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { View } from "tns-core-modules/ui/core/view";
-import { Page } from "tns-core-modules/ui/page";
-import { BindingOptions } from "tns-core-modules/ui/core/bindable";
-import { Observable, EventData, PropertyChangeData } from "tns-core-modules/data/observable";
-import { Color } from "tns-core-modules/color";
-import { isIOS } from "tns-core-modules/platform";
+import { View } from "@nativescript/core/ui/core/view";
+import { Page } from "@nativescript/core/ui/page";
+import { BindingOptions } from "@nativescript/core/ui/core/bindable";
+import { Observable, EventData, PropertyChangeData } from "@nativescript/core/data/observable";
+import { Color } from "@nativescript/core/color";
+import { isIOS } from "@nativescript/core/platform";
 
 // >> article-require-slider
-import { Slider } from "tns-core-modules/ui/slider";
+import { Slider } from "@nativescript/core/ui/slider";
 // << article-require-slider
 
 // ### Binding the Progress and Slider value properties to a observable view-model property.

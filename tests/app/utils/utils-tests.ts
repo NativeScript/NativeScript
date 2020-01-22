@@ -1,6 +1,6 @@
 import * as TKUnit from "../tk-unit";
-import * as utils from "tns-core-modules/utils/utils";
-import { isIOS } from "tns-core-modules/platform";
+import * as utils from "@nativescript/core/utils/utils";
+import { isIOS } from "@nativescript/core/platform";
 
 export function test_GC_isDefined() {
     TKUnit.assertNotEqual(utils.GC, undefined, "Method utils.GC() should be defined!");

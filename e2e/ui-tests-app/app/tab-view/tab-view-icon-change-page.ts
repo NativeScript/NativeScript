@@ -2,7 +2,7 @@ import { TabView, SelectedIndexChangedEventData } from "tns-core-modules/ui/tab-
 
 export function onSelectedIndexChanged(args: SelectedIndexChangedEventData) {
     const tabView = args.object as TabView;
-    
+
     const newItem = tabView.items[args.newIndex];
     if (newItem) {
         newItem.iconSource = "res://icon";

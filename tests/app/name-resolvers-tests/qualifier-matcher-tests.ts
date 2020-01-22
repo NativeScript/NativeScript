@@ -1,6 +1,6 @@
 import * as TKUnit from "../tk-unit";
-import * as enums from "tns-core-modules/ui/enums";
-import { findMatch, PlatformContext } from "tns-core-modules/module-name-resolver/qualifier-matcher";
+import * as enums from "@nativescript/core/ui/enums";
+import { findMatch, PlatformContext } from "@nativescript/core/module-name-resolver/qualifier-matcher";
 
 export const androidPhonePortraitContext: PlatformContext = {
     width: 360,

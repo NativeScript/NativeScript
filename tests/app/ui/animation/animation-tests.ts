@@ -1,15 +1,15 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import * as viewModule from "tns-core-modules/ui/core/view";
-import { Label } from "tns-core-modules/ui/label";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import * as colorModule from "tns-core-modules/color";
-import * as enums from "tns-core-modules/ui/enums";
-import { AnimationPromise } from "tns-core-modules/ui/animation";
+import * as viewModule from "@nativescript/core/ui/core/view";
+import { Label } from "@nativescript/core/ui/label";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import * as colorModule from "@nativescript/core/color";
+import * as enums from "@nativescript/core/ui/enums";
+import { AnimationPromise } from "@nativescript/core/ui/animation";
 
 // >> animation-require
-import * as animation from "tns-core-modules/ui/animation";
-import { PercentLength } from "tns-core-modules/ui/styling/style-properties";
+import * as animation from "@nativescript/core/ui/animation";
+import { PercentLength } from "@nativescript/core/ui/styling/style-properties";
 // << animation-require
 
 function prepareTest(parentHeight?: number, parentWidth?: number): Label {
@@ -433,6 +433,7 @@ function animateExtentAndAssertExpected(along: "height" | "width", value: Percen
             expectedNumber,
             `PercentLength.toDevicePixels(${inputString}) should be "${expectedNumber}" but is "${observedNumber}"`
         );
+
         assertIOSNativeTransformIsCorrect(label);
     });
 }
@@ -501,10 +502,10 @@ export function test_AnimateExtent_Should_ThrowIfCannotParsePercentLength() {
     const label = new Label();
     helper.buildUIAndRunTest(label, (views: Array<viewModule.View>) => {
         TKUnit.assertThrows(() => {
-            label.animate({width: "-frog%"});
+            label.animate({ width: "-frog%" });
         }, "Invalid percent string should throw");
         TKUnit.assertThrows(() => {
-            label.animate({height: "-frog%"});
+            label.animate({ height: "-frog%" });
         }, "Invalid percent string should throw");
     });
 }

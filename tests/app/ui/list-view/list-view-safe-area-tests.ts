@@ -1,9 +1,9 @@
 import * as helper from "../../ui-helper";
 import * as TKUnit from "../../tk-unit";
-import { parse } from "tns-core-modules/ui/builder";
-import * as view from "tns-core-modules/ui/core/view";
-import * as platform from "tns-core-modules/platform";
-import { ListView } from "tns-core-modules/ui/list-view";
+import { Builder } from "@nativescript/core/ui/builder";
+import * as view from "@nativescript/core/ui/core/view";
+import * as platform from "@nativescript/core/platform";
+import { ListView } from "@nativescript/core/ui/list-view";
 import { ViewModel } from "./list-view-view-model";
 import { UITest } from "../../ui-test";
 import {
@@ -33,7 +33,7 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
     }
 
     private getViews(template: string) {
-        let root = parse(template);
+        let root = Builder.parse(template);
 
         return {
             root,

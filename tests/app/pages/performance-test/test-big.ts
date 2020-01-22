@@ -1,4 +1,4 @@
-import * as observable from "tns-core-modules/data/observable";
+import * as observable from "@nativescript/core/data/observable";
 
 declare function __stopCPUProfiler(name: string);
 

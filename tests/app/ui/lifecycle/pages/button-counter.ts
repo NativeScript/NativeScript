@@ -1,5 +1,5 @@
-import * as button from "tns-core-modules/ui/button";
-import * as view from "tns-core-modules/ui/core/view";
+import * as button from "@nativescript/core/ui/button";
+import * as view from "@nativescript/core/ui/core/view";
 
 export class Button extends button.Button {
     nativeBackgroundRedraws = 0;

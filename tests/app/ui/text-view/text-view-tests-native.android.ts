@@ -1,7 +1,7 @@
-import * as textViewModule from "tns-core-modules/ui/text-view";
-import * as colorModule from "tns-core-modules/color";
-import * as utilsModule from "tns-core-modules/utils/utils";
-import * as enums from "tns-core-modules/ui/enums";
+import * as textViewModule from "@nativescript/core/ui/text-view";
+import * as colorModule from "@nativescript/core/color";
+import * as utilsModule from "@nativescript/core/utils/utils";
+import * as enums from "@nativescript/core/ui/enums";
 
 export function getNativeText(textView: textViewModule.TextView): string {
     return textView.android.getText().toString();
@@ -62,4 +62,8 @@ export function typeTextNatively(textView: textViewModule.TextView, text: string
     textView.android.requestFocus();
     textView.android.setText(text);
     textView.android.clearFocus();
+}
+
+export function getNativeMaxLines(textView: textViewModule.TextView): number {
+    return textView.android.getMaxLines();
 }

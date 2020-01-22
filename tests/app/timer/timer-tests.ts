@@ -1,5 +1,5 @@
 import * as TKUnit from "../tk-unit";
-import * as timer from "tns-core-modules/timer";
+import * as timer from "@nativescript/core/timer";
 
 // >> timer-require
 // require("globals");
@@ -80,7 +80,7 @@ export function test_setTimeout_callbackCalledWithBooleanPeriod() {
         // >> (hide)
         completed = true;
         // << (hide)
-    // @ts-ignore
+        // @ts-ignore
     }, false);
     // << timer-set-false
 

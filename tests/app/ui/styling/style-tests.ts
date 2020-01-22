@@ -1,19 +1,19 @@
 import * as TKUnit from "../../tk-unit";
-import * as application from "tns-core-modules/application";
-import * as buttonModule from "tns-core-modules/ui/button";
-import * as labelModule from "tns-core-modules/ui/label";
-import * as pageModule from "tns-core-modules/ui/page";
-import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
-import * as wrapModule from "tns-core-modules/ui/layouts/wrap-layout";
-import * as tabViewModule from "tns-core-modules/ui/tab-view";
+import * as application from "@nativescript/core/application";
+import * as buttonModule from "@nativescript/core/ui/button";
+import * as labelModule from "@nativescript/core/ui/label";
+import * as pageModule from "@nativescript/core/ui/page";
+import * as stackModule from "@nativescript/core/ui/layouts/stack-layout";
+import * as wrapModule from "@nativescript/core/ui/layouts/wrap-layout";
+import * as tabViewModule from "@nativescript/core/ui/tab-view";
 import * as helper from "../../ui-helper";
-import * as types from "tns-core-modules/utils/types";
-import * as viewModule from "tns-core-modules/ui/core/view";
-import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS } from "tns-core-modules/ui/styling/style-scope";
-import { unsetValue } from "tns-core-modules/ui/core/view";
-import * as color from "tns-core-modules/color";
-import * as fs from "tns-core-modules/file-system";
-import { _evaluateCssCalcExpression } from "tns-core-modules/ui/core/properties/properties";
+import * as types from "@nativescript/core/utils/types";
+import * as viewModule from "@nativescript/core/ui/core/view";
+import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS } from "@nativescript/core/ui/styling/style-scope";
+import { unsetValue } from "@nativescript/core/ui/core/view";
+import * as color from "@nativescript/core/color";
+import * as fs from "@nativescript/core/file-system";
+import { _evaluateCssCalcExpression } from "@nativescript/core/ui/core/properties/properties";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     const stack = new stackModule.StackLayout();
@@ -225,7 +225,7 @@ export function test_multiple_class_selector() {
     let page = helper.getClearCurrentPage();
     let btnWithClasses: buttonModule.Button;
 
-    page.css = ".style1 { color: red; } .style2 { background-color: blue } ";
+    page.css = ".style1 { color: red; } .style2 { background-color: blue; } ";
 
     //// Will be styled
     btnWithClasses = new buttonModule.Button();
@@ -237,6 +237,24 @@ export function test_multiple_class_selector() {
 
     helper.assertViewColor(btnWithClasses, "#FF0000");
     helper.assertViewBackgroundColor(btnWithClasses, "#0000FF");
+}
+
+export function test_class_selector_overwriting() {
+    const page = helper.getClearCurrentPage();
+    page.css = ".first { color: red; } .second { background-color: blue; }";
+
+    const btnWithClass = new buttonModule.Button();
+    const stack = new stackModule.StackLayout();
+    page.content = stack;
+    stack.addChild(btnWithClass);
+
+    btnWithClass.className = "first";
+    helper.assertViewColor(btnWithClass, "#FF0000");
+    TKUnit.assert(btnWithClass.style.backgroundColor === undefined, " Background color should not have a value");
+
+    btnWithClass.className = "second";
+    TKUnit.assert(btnWithClass.style.color === undefined, "Color should not have a value");
+    helper.assertViewBackgroundColor(btnWithClass, "#0000FF");
 }
 
 export function test_id_selector() {
@@ -1497,7 +1515,7 @@ export function test_css_calc() {
     TKUnit.assertEqual(stack.width as any, 125, "Stack - width === 125");
 
     (stack as any).style = `width: calc(100% / 2)`;
-    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
 
     // This should log an error for the invalid css-calc expression, but not cause a crash
     stack.className = "invalid-css-calc";
@@ -1566,9 +1584,9 @@ export function test_nested_css_calc() {
     stack.className = "wide";
     TKUnit.assertEqual(stack.width as any, 125, "Stack - width === 125");
 
-    (stack as any).style = `width: calc(100% * calc(1 / 2)`;
+    (stack as any).style = `width: calc(100% * calc(1 / 2))`;
 
-    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
 }
 
 export function test_css_variables() {
@@ -1678,7 +1696,7 @@ export function test_css_calc_and_variables() {
 
     // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
     (stack as any).style = `${cssVarName}: 0.5`;
-    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
 }
 
 export function test_css_variable_fallback() {
@@ -1771,6 +1789,7 @@ export function test_nested_css_calc_and_variables() {
 
     const cssVarName = `--my-width-factor-base-${Date.now()}`;
     const cssVarName2 = `--my-width-factor-${Date.now()}`;
+    const undefinedCssVarName = `--my-undefined-variable-${Date.now()}`;
 
     const stack = new stackModule.StackLayout();
     stack.css = `
@@ -1790,6 +1809,10 @@ export function test_nested_css_calc_and_variables() {
 
     StackLayout.nested {
         ${cssVarName2}: calc(var(${cssVarName}) * 2);
+    }
+
+    StackLayout.nested-fallback {
+        width: calc(calc(var(${undefinedCssVarName}, 16) / 2) * 2));
     }
     `;
 
@@ -1819,10 +1842,13 @@ export function test_nested_css_calc_and_variables() {
     // Test setting the CSS variable via the style-attribute, this should override any value set via css-class
     stack.className = "wide";
     (stack as any).style = `${cssVarName}: 0.25`;
-    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 0.5 }, "Stack - width === 50%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
 
     stack.className = "nested";
-    TKUnit.assertDeepEqual(stack.width,  { unit: "%", value: 1 }, "Stack - width === 100%");
+    TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1 }, "Stack - width === 100%");
+
+    stack.className = "nested-fallback";
+    TKUnit.assertDeepEqual(stack.width, 16, "Stack - width === 16");
 }
 
 export function test_css_variable_is_applied_to_normal_properties() {

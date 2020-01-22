@@ -1,6 +1,6 @@
 import * as TKUnit from "../../../tk-unit";
-import { Observable, EventData } from "tns-core-modules/data/observable";
-import { addWeakEventListener, removeWeakEventListener } from "tns-core-modules/ui/core/weak-event-listener";
+import { Observable, EventData } from "@nativescript/core/data/observable";
+import { addWeakEventListener, removeWeakEventListener } from "@nativescript/core/ui/core/weak-event-listener";
 import { forceGC } from "../../../ui-helper";
 
 class Target {
@@ -103,7 +103,7 @@ export function test_listenerDoesNotRetainTarget(done) {
 
     // with the v8 6.5 the GC does not release WeakRefs so fast if you pass them to a method
     // that's why we are making the call to the addWeakEventListener in a closure so that the WeakRef will be easier released
-    (function() {
+    (function () {
         addWeakEventListener(sourceRef.get(), Observable.propertyChangeEvent, emptyHandler, targetRef.get());
     })();
     forceGC();
@@ -123,7 +123,7 @@ export function test_listenerDoesNotRetainSource(done) {
 
     // with the v8 6.5 the GC does not release WeakRefs so fast if you pass them to a method
     // that's why we are making the call to the addWeakEventListener in a closure so that the WeakRef will be easier released
-    (function() {
+    (function () {
         addWeakEventListener(sourceRef.get(), Observable.propertyChangeEvent, targetRef.get().onEvent, targetRef.get());
     })();
     forceGC();

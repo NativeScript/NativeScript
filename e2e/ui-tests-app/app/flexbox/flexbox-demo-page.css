@@ -7,7 +7,8 @@
     justify-content: center;
 }
 
-.header, .footer {
+.header,
+.footer {
     flex: 1;
     width: 100%;
     background-color: lightgreen;

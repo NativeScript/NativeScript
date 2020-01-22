@@ -1,24 +1,24 @@
-import { Image } from "tns-core-modules/ui/image";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
-import { isIOS, isAndroid } from "tns-core-modules/platform";
-import { PropertyChangeData } from "tns-core-modules/data/observable";
-import * as utils from "tns-core-modules/utils/utils";
+import { Image } from "@nativescript/core/ui/image";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
+import { isIOS, isAndroid } from "@nativescript/core/platform";
+import { PropertyChangeData } from "@nativescript/core/data/observable";
+import * as utils from "@nativescript/core/utils/utils";
 import * as TKUnit from "../../tk-unit";
 import { getColor } from "../../ui-helper";
 
 // >> img-require
-import * as ImageModule from "tns-core-modules/ui/image";
+import * as ImageModule from "@nativescript/core/ui/image";
 // << img-require
 
-import * as types from "tns-core-modules/utils/types";
-import * as ImageSourceModule from "tns-core-modules/image-source";
-import * as ViewModule from "tns-core-modules/ui/core/view";
+import * as types from "@nativescript/core/utils/types";
+import { ImageSource } from "@nativescript/core/image-source";
+import * as ViewModule from "@nativescript/core/ui/core/view";
 import * as helper from "../../ui-helper";
-import * as ObservableModule from "tns-core-modules/data/observable";
-import * as color from "tns-core-modules/color";
-import * as backgroundModule from "tns-core-modules/ui/styling/background";
-import { android as androidApp } from "tns-core-modules/application";
+import * as ObservableModule from "@nativescript/core/data/observable";
+import * as color from "@nativescript/core/color";
+import * as backgroundModule from "@nativescript/core/ui/styling/background";
+import { android as androidApp } from "@nativescript/core/application";
 const imagePath = "~/assets/logo.png";
 
 export function test_recycling() {
@@ -146,7 +146,7 @@ export const test_SettingImageSrcToFontIconCode_sync = function () {
 
 export function test_imageSourceNotResetAfterCreateUI() {
     let image = new ImageModule.Image();
-    let imageSource = ImageSourceModule.fromResource("splashscreen");
+    let imageSource = ImageSource.fromResourceSync("splashscreen");
     TKUnit.assertNotEqual(null, imageSource);
     image.imageSource = imageSource;
     helper.buildUIAndRunTest(image, () => {

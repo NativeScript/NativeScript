@@ -2,15 +2,15 @@
 import * as TKUnit from './tk-unit';
 import './ui-test';
 
-import { _resetRootView } from 'tns-core-modules/application';
-import * as platform from 'tns-core-modules/platform';
-import { messageType } from 'tns-core-modules/trace';
-import { Button } from 'tns-core-modules/ui/button';
-import { Frame, topmost } from 'tns-core-modules/ui/frame';
-import { StackLayout } from 'tns-core-modules/ui/layouts/stack-layout';
-import { Page } from 'tns-core-modules/ui/page';
-import { TextView } from 'tns-core-modules/ui/text-view';
-import { ios } from 'tns-core-modules/utils/utils';
+import { _resetRootView } from '@nativescript/core/application';
+import * as platform from '@nativescript/core/platform';
+import { messageType } from '@nativescript/core/trace';
+import { Button } from '@nativescript/core/ui/button';
+import { Frame } from '@nativescript/core/ui/frame';
+import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
+import { Page } from '@nativescript/core/ui/page';
+import { TextView } from '@nativescript/core/ui/text-view';
+import { ios } from '@nativescript/core/utils/utils';
 
 Frame.defaultAnimatedNavigation = false;
 
@@ -75,6 +75,9 @@ allTests["OBSERVABLE"] = observableTests;
 
 import * as timerTests from "./timer/timer-tests";
 allTests["TIMER"] = timerTests;
+
+import * as animationFrameTests from "./animation-frame/animation-frame";
+allTests["ANIMATION-FRAME"] = animationFrameTests;
 
 import * as colorTests from "./color/color-tests";
 allTests["COLOR"] = colorTests;
@@ -199,6 +202,9 @@ allTests["LABEL"] = labelTests;
 import * as bottomNavigationTests from "./ui/bottom-navigation/bottom-navigation-tests";
 allTests["BOTTOM-NAVIGATION"] = bottomNavigationTests;
 
+import * as bottomNavigationTestsNew from "./ui/bottom-navigation/bottom-navigation-tests-new";
+allTests["BOTTOM-NAVIGATION-NEW"] = bottomNavigationTestsNew;
+
 import * as bottomNavigationNavigationTests from "./ui/bottom-navigation/bottom-navigation-navigation-tests";
 // TODO: uncomment this
 // allTests["BOTTOM-NAVIGATION-NAVIGATION"] = bottomNavigationNavigationTests;
@@ -206,11 +212,17 @@ import * as bottomNavigationNavigationTests from "./ui/bottom-navigation/bottom-
 import * as tabsTests from "./ui/tabs/tabs-tests";
 allTests["TABS"] = tabsTests;
 
+import * as tabsTestsNew from "./ui/tabs/tabs-tests-new";
+allTests["TABS-NEW"] = tabsTestsNew;
+
 import * as tabsNavigationTests from "./ui/tabs/tabs-navigation-tests";
 allTests["TABS-NAVIGATION"] = tabsNavigationTests;
 
 import * as tabViewTests from "./ui/tab-view/tab-view-tests";
 allTests["TAB-VIEW"] = tabViewTests;
+
+import * as tabViewTestsNew from "./ui/tab-view/tab-view-tests-new";
+allTests["TAB-VIEW-NEW"] = tabViewTestsNew;
 
 import * as tabViewNavigationTests from "./ui/tab-view/tab-view-navigation-tests";
 allTests["TAB-VIEW-NAVIGATION"] = tabViewNavigationTests;
@@ -416,7 +428,7 @@ function showReportPage(finalMessage: string) {
     messageContainer.text = finalMessage;
     stack.addChild(messageContainer);
 
-    topmost().navigate({
+    Frame.topmost().navigate({
         create: () => {
             const page = new Page();
             page.content = stack;
@@ -444,7 +456,7 @@ function startLog(): void {
 function log(): void {
     let testsName: string = this.name;
     let duration = TKUnit.time() - this.start;
-    TKUnit.write(testsName + " COMPLETED for " + duration.toFixed(2) + " BACKSTACK DEPTH: " + topmost().backStack.length, messageType.info);
+    TKUnit.write(testsName + " COMPLETED for " + duration.toFixed(2) + " BACKSTACK DEPTH: " + Frame.topmost().backStack.length, messageType.info);
 }
 
 let testsSelector: string

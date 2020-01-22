@@ -1,11 +1,11 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import * as viewModule from "tns-core-modules/ui/core/view";
+import * as viewModule from "@nativescript/core/ui/core/view";
 import * as searchBarTestsNative from "./search-bar-tests-native";
-import * as colorModule from "tns-core-modules/color";
-import * as observable from "tns-core-modules/data/observable";
+import * as colorModule from "@nativescript/core/color";
+import * as observable from "@nativescript/core/data/observable";
 // >> article-require-searchbar-module
-import * as searchBarModule from "tns-core-modules/ui/search-bar";
+import * as searchBarModule from "@nativescript/core/ui/search-bar";
 // << article-require-searchbar-module
 
 // ### Declaring a SearchBar.
@@ -107,7 +107,8 @@ export var testSearchBarPropertiesWithCSS = function () {
         TKUnit.assert(hintColorActualValue === expectedHintColor, "HintColor - Actual: " + hintColorActualValue + "; Expected: " + expectedHintColor);
         TKUnit.assert(expectedTextFieldBackgroundColor === textFieldBackgroundColorActualValue, "Text Background Color - Actual: " + textFieldBackgroundColorActualValue + "; Expected: " + expectedTextFieldBackgroundColor);
         TKUnit.assertAreClose(expectedFontSize, fontSizeActualValue, 0.2, "Font Size - Actual: " + fontSizeActualValue + "; Expected: " + expectedFontSize);
-    }, { pageCss: `
+    }, {
+        pageCss: `
         SearchBar {
             text-field-hint-color: blue;
             text-field-background-color: red;

@@ -1,0 +1,6 @@
+{
+  "name": "polyfill-helpers",
+  "main": "polyfill-helpers",
+  "types": "polyfill-helpers.d.ts",
+  "nativescript": {}
+}

@@ -27,23 +27,13 @@ extract_snippets() {
 
     npm install markdown-snippet-injector
 
-    for SNIPPET_DIR in {tests/app,apps/app,tns-core-modules} ; do
+    for SNIPPET_DIR in {tests/app,apps/app,nativescript-core} ; do
         echo "Extracting snippets from: $SNIPPET_DIR"
         node "$BIN" --root="$SNIPPET_DIR" --target="$TARGET_DIR" \
             --sourceext=".js|.ts|.xml|.html|.css"
     done
 
     archive_dist_dir "snippets"
-}
-
-extract_cookbook() {
-    COOKBOOK_DIR="$DIST_DIR/cookbook"
-    rm -rf "$COOKBOOK_DIR"
-    
-    npm_install
-    grunt articles
-    mv "$DIST_DIR/articles" "$COOKBOOK_DIR"
-    archive_dist_dir "cookbook"
 }
 
 extract_apiref() {
@@ -62,6 +52,5 @@ mkdir -p "$TARGET_DIR"
 
 if [ "${BASH_SOURCE[0]}" == "$0" ] ; then
     extract_snippets
-    extract_cookbook
     extract_apiref
 fi

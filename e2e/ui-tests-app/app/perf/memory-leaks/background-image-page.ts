@@ -36,7 +36,7 @@ function getMemoryUsage(args: EventData) {
     var activityManager = application.android.context.getSystemService(android.content.Context.ACTIVITY_SERVICE);
     activityManager.getMemoryInfo(mi);
     let usedMemory = mi.totalMem - mi.availMem;
-    
+
     setLabelText(<Page>args.object, usedMemory, "usedMemory");
 
     console.log("availMem in bytes: " + mi.availMem);

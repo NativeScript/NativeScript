@@ -1,4 +1,8 @@
-StackLayout, AbsoluteLayout, DockLayout, GridLayout, WrapLayout {
+StackLayout,
+AbsoluteLayout,
+DockLayout,
+GridLayout,
+WrapLayout {
     margin: 5;
     background-color: yellow;
 }
@@ -23,5 +27,6 @@ Label {
 }
 
 .s2 {
-    border-width: 20 0 0 20; border-color:black;
+    border-width: 20 0 0 20;
+    border-color: black;
 }

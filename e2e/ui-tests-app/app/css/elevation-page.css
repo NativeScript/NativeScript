@@ -1,4 +1,5 @@
-Label, Button {
+Label,
+Button {
     text-align: center;
     padding: 10;
     margin: 16;
@@ -36,7 +37,8 @@ Label, Button {
 .round {
     color: #fff;
     background-color: #ff1744;
-    border-radius: 50%; /* TODO kills elevation */
+    border-radius: 50%;
+    /* TODO kills elevation */
     width: 80;
     height: 80;
     android-elevation: 8;

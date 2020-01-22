@@ -1,4 +1,5 @@
 *.tgz
+ios-typings-prj
 package
 test.ts
 test.js

@@ -1,0 +1,5 @@
+{
+  "name": "repeater",
+  "main": "repeater",
+  "types": "repeater.d.ts"
+}

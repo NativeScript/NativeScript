@@ -1,0 +1,5 @@
+{
+  "name": "tab-strip-item",
+  "main": "tab-strip-item",
+  "types": "tab-strip-item.d.ts"
+}

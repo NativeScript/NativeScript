@@ -1,6 +1,6 @@
-﻿import { topmost } from "tns-core-modules/ui/frame";
+﻿import { Frame } from "@nativescript/core/ui/frame";
 import * as TKUnit from "../../tk-unit";
-import { Page, ShownModallyData } from "tns-core-modules/ui/page";
+import { Page, ShownModallyData } from "@nativescript/core/ui/page";
 
 export var modalPage: Page;
 export function onShowingModally(args) {
@@ -15,6 +15,6 @@ export function onShownModally(args: ShownModallyData) {
         args.context.shownModally = true;
     }
 
-    TKUnit.assertEqual(topmost().currentPage.modal, page, "frame.topmost().currentPage.modal should be equal to the page instance on page.shownModally event handler.");
+    TKUnit.assertEqual(Frame.topmost().currentPage.modal, page, "Frame.topmost().currentPage.modal should be equal to the page instance on page.shownModally event handler.");
     args.closeCallback("return value");
 }

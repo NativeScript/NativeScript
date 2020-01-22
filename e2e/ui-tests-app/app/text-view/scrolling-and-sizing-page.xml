@@ -27,6 +27,6 @@
         <StackLayout class="p-10" row="3">
             <TextView hint="bordered-nonuniform fixed-height" class="bordered-nonuniform fixed-height" />
         </StackLayout>
- 
+
     </StackLayout>
 </Page>

@@ -1,15 +1,15 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import * as builder from "tns-core-modules/ui/builder";
-import { Label } from "tns-core-modules/ui/label";
-import { Button } from "tns-core-modules/ui/button";
-import { Page } from "tns-core-modules/ui/page";
-import { View, isIOS } from "tns-core-modules/ui/core/view";
-import { fromObject } from "tns-core-modules/data/observable";
-import { topmost } from "tns-core-modules/ui/frame";
+import { Builder } from "@nativescript/core/ui/builder";
+import { Label } from "@nativescript/core/ui/label";
+import { Button } from "@nativescript/core/ui/button";
+import { Page } from "@nativescript/core/ui/page";
+import { View, isIOS } from "@nativescript/core/ui/core/view";
+import { fromObject } from "@nativescript/core/data/observable";
+import { Frame } from "@nativescript/core/ui/frame";
 
 // >> actionbar-common-require
-import * as actionBarModule from "tns-core-modules/ui/action-bar";
+import * as actionBarModule from "@nativescript/core/ui/action-bar";
 // << actionbar-common-require
 
 export function test_actionItem_inherit_bindingContext() {
@@ -42,7 +42,7 @@ export function test_actionItem_inherit_bindingContext() {
 }
 
 export function test_actionBar_inherit_bindingContext_inXML() {
-    const p = <Page>builder.parse(
+    const p = <Page>Builder.parse(
         "<Page> <Page.actionBar> <ActionBar title=\"{{ myProp }} \" /> </Page.actionBar> </Page>");
     p.bindingContext = { myProp: "success" };
 
@@ -50,7 +50,7 @@ export function test_actionBar_inherit_bindingContext_inXML() {
 }
 
 export function test_actionItem_inherit_bindingContext_inXML() {
-    const p = <Page>builder.parse(
+    const p = <Page>Builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionBar.actionItems>" +
         "<ActionItem text=\"{{ myProp }} \" />" +
         "</ActionBar.actionItems> </ActionBar> </Page.actionBar> </Page>");
@@ -62,7 +62,7 @@ export function test_actionItem_inherit_bindingContext_inXML() {
 }
 
 export function test_actionItem_page_property_inXML() {
-    const p = <Page>builder.parse(
+    const p = <Page>Builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionBar.actionItems>" +
         "<ActionItem text=\"test\" />" +
         "</ActionBar.actionItems> </ActionBar> </Page.actionBar> </Page>");
@@ -73,7 +73,7 @@ export function test_actionItem_page_property_inXML() {
 }
 
 export function test_actionItem_actionView_inXML() {
-    const p = <Page>builder.parse(
+    const p = <Page>Builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
         "<Label/>" +
         "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
@@ -83,7 +83,7 @@ export function test_actionItem_actionView_inXML() {
 }
 
 export function test_actionItem_actionView_inherit_bindingContext_inXML() {
-    const p = <Page>builder.parse(
+    const p = <Page>Builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
         "<Label text=\"{{ myProp }} \" />" +
         "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
@@ -95,7 +95,7 @@ export function test_actionItem_actionView_inherit_bindingContext_inXML() {
 }
 
 export function test_ActionBar_is_not_empty_when_actionItem_actionView_is_set() {
-    const p = <Page>builder.parse(
+    const p = <Page>Builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
         "<Label text=\"test\" />" +
         "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
@@ -104,7 +104,7 @@ export function test_ActionBar_is_not_empty_when_actionItem_actionView_is_set() 
 }
 
 export function test_navigationButton_inherit_bindingContext_inXML() {
-    const p = <Page>builder.parse(
+    const p = <Page>Builder.parse(
         "<Page> <Page.actionBar> <ActionBar>" +
         "<NavigationButton text=\"{{ myProp }} \" />" +
         "</ActionBar> </Page.actionBar> </Page>");
@@ -115,7 +115,7 @@ export function test_navigationButton_inherit_bindingContext_inXML() {
 }
 
 export function test_titleView_inherit_bindingContext_inXML() {
-    const p = <Page>builder.parse(
+    const p = <Page>Builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionBar.titleView>" +
         "<Button text=\"{{ myProp }} \" />" +
         "</ActionBar.titleView> </ActionBar> </Page.actionBar> </Page>");
@@ -127,7 +127,7 @@ export function test_titleView_inherit_bindingContext_inXML() {
 }
 
 export function test_titleView_inXML() {
-    const p = <Page>builder.parse(
+    const p = <Page>Builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionBar.titleView>" +
         "<Button/>" +
         "</ActionBar.titleView> </ActionBar> </Page.actionBar> </Page>");
@@ -137,7 +137,7 @@ export function test_titleView_inXML() {
 }
 
 export function test_titleView_inXML_short_definition() {
-    const p = <Page>builder.parse(
+    const p = <Page>Builder.parse(
         "<Page> <Page.actionBar> <ActionBar>" +
         "<Button/>" +
         "</ActionBar> </Page.actionBar> </Page>");
@@ -147,7 +147,7 @@ export function test_titleView_inXML_short_definition() {
 }
 
 export function test_ActionBar_is_not_empty_when_titleView_is_set() {
-    const p = <Page>builder.parse(
+    const p = <Page>Builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionBar.titleView>" +
         "<Button text=\"test\" />" +
         "</ActionBar.titleView> </ActionBar> </Page.actionBar> </Page>");
@@ -156,7 +156,7 @@ export function test_ActionBar_is_not_empty_when_titleView_is_set() {
 }
 
 export function test_ActionBarItemBindingToEvent() {
-    const p = <Page>builder.parse("<Page><Page.actionBar><ActionBar><ActionBar.actionItems><ActionItem tap=\"{{ test }}\"/></ActionBar.actionItems></ActionBar></Page.actionBar></Page>");
+    const p = <Page>Builder.parse("<Page><Page.actionBar><ActionBar><ActionBar.actionItems><ActionItem tap=\"{{ test }}\"/></ActionBar.actionItems></ActionBar></Page.actionBar></Page>");
 
     const testAction = function (views: Array<View>) {
         const page = <Page>views[0];
@@ -306,10 +306,10 @@ export function test_LoadedEventsOrder_WithoutPageContent() {
 }
 
 export function test_ActionBarVisibility_Never_ShouldNotShowDeclaredActionBar() {
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.actionBarVisibility = "never";
 
-    const page = <Page>builder.parse(
+    const page = <Page>Builder.parse(
         `<Page>
             <ActionBar>
                 <ActionBar.titleView>
@@ -333,10 +333,10 @@ export function test_ActionBarVisibility_Never_ShouldNotShowDeclaredActionBar() 
 }
 
 export function test_ActionBarVisibility_Always_ShouldShownHiddenActionBar() {
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.actionBarVisibility = "always";
 
-    const page = <Page>builder.parse(
+    const page = <Page>Builder.parse(
         `<Page actionBarHidden="true">
             <ActionBar>
                 <ActionBar.titleView>
@@ -360,10 +360,10 @@ export function test_ActionBarVisibility_Always_ShouldShownHiddenActionBar() {
 }
 
 export function test_ActionBarVisibility_Auto_ShouldRespectPageActionBarHiddenProperty() {
-    const frame = topmost();
+    const frame = Frame.topmost();
     frame.actionBarVisibility = "auto";
 
-    const page = <Page>builder.parse(
+    const page = <Page>Builder.parse(
         `<Page actionBarHidden="true">
             <ActionBar>
                 <ActionBar.titleView>

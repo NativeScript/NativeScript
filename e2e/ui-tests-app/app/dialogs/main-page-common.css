@@ -1,4 +1,5 @@
-Button.even, Button.odd {
+Button.even,
+Button.odd {
     border-radius: 5;
     color: white;
     margin: 0 5 5 0;

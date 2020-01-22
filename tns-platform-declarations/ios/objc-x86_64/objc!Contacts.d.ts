@@ -10,6 +10,190 @@ declare const enum CNAuthorizationStatus {
 	Authorized = 3
 }
 
+declare class CNChangeHistoryAddContactEvent extends CNChangeHistoryEvent {
+
+	static alloc(): CNChangeHistoryAddContactEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryAddContactEvent; // inherited from NSObject
+
+	readonly contact: CNContact;
+
+	readonly containerIdentifier: string;
+}
+
+declare class CNChangeHistoryAddGroupEvent extends CNChangeHistoryEvent {
+
+	static alloc(): CNChangeHistoryAddGroupEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryAddGroupEvent; // inherited from NSObject
+
+	readonly containerIdentifier: string;
+
+	readonly group: CNGroup;
+}
+
+declare class CNChangeHistoryAddMemberToGroupEvent extends CNChangeHistoryEvent {
+
+	static alloc(): CNChangeHistoryAddMemberToGroupEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryAddMemberToGroupEvent; // inherited from NSObject
+
+	readonly group: CNGroup;
+
+	readonly member: CNContact;
+}
+
+declare class CNChangeHistoryAddSubgroupToGroupEvent extends CNChangeHistoryEvent {
+
+	static alloc(): CNChangeHistoryAddSubgroupToGroupEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryAddSubgroupToGroupEvent; // inherited from NSObject
+
+	readonly group: CNGroup;
+
+	readonly subgroup: CNGroup;
+}
+
+declare class CNChangeHistoryDeleteContactEvent extends CNChangeHistoryEvent {
+
+	static alloc(): CNChangeHistoryDeleteContactEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryDeleteContactEvent; // inherited from NSObject
+
+	readonly contactIdentifier: string;
+}
+
+declare class CNChangeHistoryDeleteGroupEvent extends CNChangeHistoryEvent {
+
+	static alloc(): CNChangeHistoryDeleteGroupEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryDeleteGroupEvent; // inherited from NSObject
+
+	readonly groupIdentifier: string;
+}
+
+declare class CNChangeHistoryDropEverythingEvent extends CNChangeHistoryEvent {
+
+	static alloc(): CNChangeHistoryDropEverythingEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryDropEverythingEvent; // inherited from NSObject
+}
+
+declare class CNChangeHistoryEvent extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CNChangeHistoryEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryEvent; // inherited from NSObject
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	acceptEventVisitor(visitor: CNChangeHistoryEventVisitor): void;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+interface CNChangeHistoryEventVisitor extends NSObjectProtocol {
+
+	visitAddContactEvent(event: CNChangeHistoryAddContactEvent): void;
+
+	visitAddGroupEvent?(event: CNChangeHistoryAddGroupEvent): void;
+
+	visitAddMemberToGroupEvent?(event: CNChangeHistoryAddMemberToGroupEvent): void;
+
+	visitAddSubgroupToGroupEvent?(event: CNChangeHistoryAddSubgroupToGroupEvent): void;
+
+	visitDeleteContactEvent(event: CNChangeHistoryDeleteContactEvent): void;
+
+	visitDeleteGroupEvent?(event: CNChangeHistoryDeleteGroupEvent): void;
+
+	visitDropEverythingEvent(event: CNChangeHistoryDropEverythingEvent): void;
+
+	visitRemoveMemberFromGroupEvent?(event: CNChangeHistoryRemoveMemberFromGroupEvent): void;
+
+	visitRemoveSubgroupFromGroupEvent?(event: CNChangeHistoryRemoveSubgroupFromGroupEvent): void;
+
+	visitUpdateContactEvent(event: CNChangeHistoryUpdateContactEvent): void;
+
+	visitUpdateGroupEvent?(event: CNChangeHistoryUpdateGroupEvent): void;
+}
+declare var CNChangeHistoryEventVisitor: {
+
+	prototype: CNChangeHistoryEventVisitor;
+};
+
+declare class CNChangeHistoryFetchRequest extends CNFetchRequest implements NSSecureCoding {
+
+	static alloc(): CNChangeHistoryFetchRequest; // inherited from NSObject
+
+	static new(): CNChangeHistoryFetchRequest; // inherited from NSObject
+
+	additionalContactKeyDescriptors: NSArray<CNKeyDescriptor>;
+
+	excludedTransactionAuthors: NSArray<string>;
+
+	includeGroupChanges: boolean;
+
+	mutableObjects: boolean;
+
+	shouldUnifyResults: boolean;
+
+	startingToken: NSData;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class CNChangeHistoryRemoveMemberFromGroupEvent extends CNChangeHistoryEvent {
+
+	static alloc(): CNChangeHistoryRemoveMemberFromGroupEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryRemoveMemberFromGroupEvent; // inherited from NSObject
+
+	readonly group: CNGroup;
+
+	readonly member: CNContact;
+}
+
+declare class CNChangeHistoryRemoveSubgroupFromGroupEvent extends CNChangeHistoryEvent {
+
+	static alloc(): CNChangeHistoryRemoveSubgroupFromGroupEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryRemoveSubgroupFromGroupEvent; // inherited from NSObject
+
+	readonly group: CNGroup;
+
+	readonly subgroup: CNGroup;
+}
+
+declare class CNChangeHistoryUpdateContactEvent extends CNChangeHistoryEvent {
+
+	static alloc(): CNChangeHistoryUpdateContactEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryUpdateContactEvent; // inherited from NSObject
+
+	readonly contact: CNContact;
+}
+
+declare class CNChangeHistoryUpdateGroupEvent extends CNChangeHistoryEvent {
+
+	static alloc(): CNChangeHistoryUpdateGroupEvent; // inherited from NSObject
+
+	static new(): CNChangeHistoryUpdateGroupEvent; // inherited from NSObject
+
+	readonly group: CNGroup;
+}
+
 declare class CNContact extends NSObject implements NSCopying, NSItemProviderReading, NSItemProviderWriting, NSMutableCopying, NSSecureCoding {
 
 	static alloc(): CNContact; // inherited from NSObject
@@ -128,9 +312,9 @@ declare class CNContact extends NSObject implements NSCopying, NSItemProviderRea
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	isEqual(object: any): boolean;
 
@@ -180,7 +364,7 @@ declare var CNContactEmailAddressesKey: string;
 
 declare var CNContactFamilyNameKey: string;
 
-declare class CNContactFetchRequest extends NSObject implements NSSecureCoding {
+declare class CNContactFetchRequest extends CNFetchRequest implements NSSecureCoding {
 
 	static alloc(): CNContactFetchRequest; // inherited from NSObject
 
@@ -202,9 +386,9 @@ declare class CNContactFetchRequest extends NSObject implements NSSecureCoding {
 
 	constructor(o: { keysToFetch: NSArray<CNKeyDescriptor> | CNKeyDescriptor[]; });
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithKeysToFetch(keysToFetch: NSArray<CNKeyDescriptor> | CNKeyDescriptor[]): this;
 }
@@ -233,9 +417,9 @@ declare class CNContactFormatter extends NSFormatter implements NSSecureCoding {
 
 	attributedStringFromContactDefaultAttributes(contact: CNContact, attributes: NSDictionary<any, any>): NSAttributedString;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	stringFromContact(contact: CNContact): string;
 }
@@ -309,9 +493,9 @@ declare class CNContactProperty extends NSObject implements NSCopying, NSSecureC
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var CNContactPropertyAttribute: string;
@@ -336,9 +520,9 @@ declare class CNContactRelation extends NSObject implements NSCopying, NSSecureC
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithName(name: string): this;
 }
@@ -366,11 +550,17 @@ declare class CNContactStore extends NSObject {
 
 	static new(): CNContactStore; // inherited from NSObject
 
+	readonly currentHistoryToken: NSData;
+
 	containersMatchingPredicateError(predicate: NSPredicate): NSArray<CNContainer>;
 
 	defaultContainerIdentifier(): string;
 
 	enumerateContactsWithFetchRequestErrorUsingBlock(fetchRequest: CNContactFetchRequest, error: interop.Pointer | interop.Reference<NSError>, block: (p1: CNContact, p2: interop.Pointer | interop.Reference<boolean>) => void): boolean;
+
+	enumeratorForChangeHistoryFetchRequestError(request: CNChangeHistoryFetchRequest): CNFetchResult<NSEnumerator<CNChangeHistoryEvent>>;
+
+	enumeratorForContactFetchRequestError(request: CNContactFetchRequest): CNFetchResult<NSEnumerator<CNContact>>;
 
 	executeSaveRequestError(saveRequest: CNSaveRequest): boolean;
 
@@ -448,9 +638,9 @@ declare class CNContainer extends NSObject implements NSCopying, NSSecureCoding 
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare var CNContainerIdentifierKey: string;
@@ -485,6 +675,10 @@ declare const enum CNErrorCode {
 
 	NoAccessableWritableContainers = 101,
 
+	UnauthorizedKeys = 102,
+
+	FeatureDisabledByUser = 103,
+
 	RecordDoesNotExist = 200,
 
 	InsertedRecordAlreadyExists = 201,
@@ -496,6 +690,10 @@ declare const enum CNErrorCode {
 	ParentRecordDoesNotExist = 204,
 
 	RecordIdentifierInvalid = 205,
+
+	RecordNotWritable = 206,
+
+	ParentContainerNotWritable = 207,
 
 	ValidationMultipleErrors = 300,
 
@@ -511,6 +709,12 @@ declare const enum CNErrorCode {
 
 	ClientIdentifierDoesNotExist = 601,
 
+	ClientIdentifierCollision = 602,
+
+	ChangeHistoryExpired = 603,
+
+	ChangeHistoryInvalidAnchor = 604,
+
 	VCardMalformed = 700,
 
 	VCardSummarizationError = 701
@@ -525,6 +729,24 @@ declare var CNErrorUserInfoAffectedRecordsKey: string;
 declare var CNErrorUserInfoKeyPathsKey: string;
 
 declare var CNErrorUserInfoValidationErrorsKey: string;
+
+declare class CNFetchRequest extends NSObject {
+
+	static alloc(): CNFetchRequest; // inherited from NSObject
+
+	static new(): CNFetchRequest; // inherited from NSObject
+}
+
+declare class CNFetchResult<ValueType> extends NSObject {
+
+	static alloc<ValueType>(): CNFetchResult<ValueType>; // inherited from NSObject
+
+	static new<ValueType>(): CNFetchResult<ValueType>; // inherited from NSObject
+
+	readonly currentHistoryToken: NSData;
+
+	readonly value: ValueType;
+}
 
 declare class CNGroup extends NSObject implements NSCopying, NSMutableCopying, NSSecureCoding {
 
@@ -546,9 +768,9 @@ declare class CNGroup extends NSObject implements NSCopying, NSMutableCopying, N
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -579,9 +801,9 @@ declare class CNInstantMessageAddress extends NSObject implements NSCopying, NSS
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithUsernameService(username: string, service: string): this;
 }
@@ -619,29 +841,431 @@ declare var CNKeyDescriptor: {
 
 declare var CNLabelContactRelationAssistant: string;
 
+declare var CNLabelContactRelationAunt: string;
+
+declare var CNLabelContactRelationAuntFathersBrothersWife: string;
+
+declare var CNLabelContactRelationAuntFathersElderBrothersWife: string;
+
+declare var CNLabelContactRelationAuntFathersElderSister: string;
+
+declare var CNLabelContactRelationAuntFathersSister: string;
+
+declare var CNLabelContactRelationAuntFathersYoungerBrothersWife: string;
+
+declare var CNLabelContactRelationAuntFathersYoungerSister: string;
+
+declare var CNLabelContactRelationAuntMothersBrothersWife: string;
+
+declare var CNLabelContactRelationAuntMothersElderSister: string;
+
+declare var CNLabelContactRelationAuntMothersSister: string;
+
+declare var CNLabelContactRelationAuntMothersYoungerSister: string;
+
+declare var CNLabelContactRelationAuntParentsElderSister: string;
+
+declare var CNLabelContactRelationAuntParentsSister: string;
+
+declare var CNLabelContactRelationAuntParentsYoungerSister: string;
+
+declare var CNLabelContactRelationBoyfriend: string;
+
 declare var CNLabelContactRelationBrother: string;
+
+declare var CNLabelContactRelationBrotherInLaw: string;
+
+declare var CNLabelContactRelationBrotherInLawElderSistersHusband: string;
+
+declare var CNLabelContactRelationBrotherInLawHusbandsBrother: string;
+
+declare var CNLabelContactRelationBrotherInLawHusbandsSistersHusband: string;
+
+declare var CNLabelContactRelationBrotherInLawSistersHusband: string;
+
+declare var CNLabelContactRelationBrotherInLawSpousesBrother: string;
+
+declare var CNLabelContactRelationBrotherInLawWifesBrother: string;
+
+declare var CNLabelContactRelationBrotherInLawWifesSistersHusband: string;
+
+declare var CNLabelContactRelationBrotherInLawYoungerSistersHusband: string;
 
 declare var CNLabelContactRelationChild: string;
 
+declare var CNLabelContactRelationChildInLaw: string;
+
+declare var CNLabelContactRelationCoBrotherInLaw: string;
+
+declare var CNLabelContactRelationCoFatherInLaw: string;
+
+declare var CNLabelContactRelationCoMotherInLaw: string;
+
+declare var CNLabelContactRelationCoParentInLaw: string;
+
+declare var CNLabelContactRelationCoSiblingInLaw: string;
+
+declare var CNLabelContactRelationCoSisterInLaw: string;
+
+declare var CNLabelContactRelationColleague: string;
+
+declare var CNLabelContactRelationCousin: string;
+
+declare var CNLabelContactRelationCousinFathersBrothersDaughter: string;
+
+declare var CNLabelContactRelationCousinFathersBrothersSon: string;
+
+declare var CNLabelContactRelationCousinFathersSistersDaughter: string;
+
+declare var CNLabelContactRelationCousinFathersSistersSon: string;
+
+declare var CNLabelContactRelationCousinGrandparentsSiblingsChild: string;
+
+declare var CNLabelContactRelationCousinGrandparentsSiblingsDaughter: string;
+
+declare var CNLabelContactRelationCousinGrandparentsSiblingsSon: string;
+
+declare var CNLabelContactRelationCousinMothersBrothersDaughter: string;
+
+declare var CNLabelContactRelationCousinMothersBrothersSon: string;
+
+declare var CNLabelContactRelationCousinMothersSistersDaughter: string;
+
+declare var CNLabelContactRelationCousinMothersSistersSon: string;
+
+declare var CNLabelContactRelationCousinOrSiblingsChild: string;
+
+declare var CNLabelContactRelationCousinParentsSiblingsChild: string;
+
+declare var CNLabelContactRelationCousinParentsSiblingsDaughter: string;
+
+declare var CNLabelContactRelationCousinParentsSiblingsSon: string;
+
 declare var CNLabelContactRelationDaughter: string;
+
+declare var CNLabelContactRelationDaughterInLaw: string;
+
+declare var CNLabelContactRelationDaughterInLawOrSisterInLaw: string;
+
+declare var CNLabelContactRelationDaughterInLawOrStepdaughter: string;
+
+declare var CNLabelContactRelationElderBrother: string;
+
+declare var CNLabelContactRelationElderBrotherInLaw: string;
+
+declare var CNLabelContactRelationElderCousin: string;
+
+declare var CNLabelContactRelationElderCousinFathersBrothersDaughter: string;
+
+declare var CNLabelContactRelationElderCousinFathersBrothersSon: string;
+
+declare var CNLabelContactRelationElderCousinFathersSistersDaughter: string;
+
+declare var CNLabelContactRelationElderCousinFathersSistersSon: string;
+
+declare var CNLabelContactRelationElderCousinMothersBrothersDaughter: string;
+
+declare var CNLabelContactRelationElderCousinMothersBrothersSon: string;
+
+declare var CNLabelContactRelationElderCousinMothersSiblingsDaughterOrFathersSistersDaughter: string;
+
+declare var CNLabelContactRelationElderCousinMothersSiblingsSonOrFathersSistersSon: string;
+
+declare var CNLabelContactRelationElderCousinMothersSistersDaughter: string;
+
+declare var CNLabelContactRelationElderCousinMothersSistersSon: string;
+
+declare var CNLabelContactRelationElderCousinParentsSiblingsDaughter: string;
+
+declare var CNLabelContactRelationElderCousinParentsSiblingsSon: string;
+
+declare var CNLabelContactRelationElderSibling: string;
+
+declare var CNLabelContactRelationElderSiblingInLaw: string;
+
+declare var CNLabelContactRelationElderSister: string;
+
+declare var CNLabelContactRelationElderSisterInLaw: string;
+
+declare var CNLabelContactRelationEldestBrother: string;
+
+declare var CNLabelContactRelationEldestSister: string;
 
 declare var CNLabelContactRelationFather: string;
 
+declare var CNLabelContactRelationFatherInLaw: string;
+
+declare var CNLabelContactRelationFatherInLawHusbandsFather: string;
+
+declare var CNLabelContactRelationFatherInLawOrStepfather: string;
+
+declare var CNLabelContactRelationFatherInLawWifesFather: string;
+
+declare var CNLabelContactRelationFemaleCousin: string;
+
+declare var CNLabelContactRelationFemaleFriend: string;
+
+declare var CNLabelContactRelationFemalePartner: string;
+
 declare var CNLabelContactRelationFriend: string;
+
+declare var CNLabelContactRelationGirlfriend: string;
+
+declare var CNLabelContactRelationGirlfriendOrBoyfriend: string;
+
+declare var CNLabelContactRelationGrandaunt: string;
+
+declare var CNLabelContactRelationGrandchild: string;
+
+declare var CNLabelContactRelationGrandchildOrSiblingsChild: string;
+
+declare var CNLabelContactRelationGranddaughter: string;
+
+declare var CNLabelContactRelationGranddaughterDaughtersDaughter: string;
+
+declare var CNLabelContactRelationGranddaughterSonsDaughter: string;
+
+declare var CNLabelContactRelationGrandfather: string;
+
+declare var CNLabelContactRelationGrandfatherFathersFather: string;
+
+declare var CNLabelContactRelationGrandfatherMothersFather: string;
+
+declare var CNLabelContactRelationGrandmother: string;
+
+declare var CNLabelContactRelationGrandmotherFathersMother: string;
+
+declare var CNLabelContactRelationGrandmotherMothersMother: string;
+
+declare var CNLabelContactRelationGrandnephew: string;
+
+declare var CNLabelContactRelationGrandnephewBrothersGrandson: string;
+
+declare var CNLabelContactRelationGrandnephewSistersGrandson: string;
+
+declare var CNLabelContactRelationGrandniece: string;
+
+declare var CNLabelContactRelationGrandnieceBrothersGranddaughter: string;
+
+declare var CNLabelContactRelationGrandnieceSistersGranddaughter: string;
+
+declare var CNLabelContactRelationGrandparent: string;
+
+declare var CNLabelContactRelationGrandson: string;
+
+declare var CNLabelContactRelationGrandsonDaughtersSon: string;
+
+declare var CNLabelContactRelationGrandsonSonsSon: string;
+
+declare var CNLabelContactRelationGranduncle: string;
+
+declare var CNLabelContactRelationGreatGrandchild: string;
+
+declare var CNLabelContactRelationGreatGrandchildOrSiblingsGrandchild: string;
+
+declare var CNLabelContactRelationGreatGranddaughter: string;
+
+declare var CNLabelContactRelationGreatGrandfather: string;
+
+declare var CNLabelContactRelationGreatGrandmother: string;
+
+declare var CNLabelContactRelationGreatGrandparent: string;
+
+declare var CNLabelContactRelationGreatGrandson: string;
+
+declare var CNLabelContactRelationHusband: string;
+
+declare var CNLabelContactRelationMaleCousin: string;
+
+declare var CNLabelContactRelationMaleFriend: string;
+
+declare var CNLabelContactRelationMalePartner: string;
 
 declare var CNLabelContactRelationManager: string;
 
 declare var CNLabelContactRelationMother: string;
 
+declare var CNLabelContactRelationMotherInLaw: string;
+
+declare var CNLabelContactRelationMotherInLawHusbandsMother: string;
+
+declare var CNLabelContactRelationMotherInLawOrStepmother: string;
+
+declare var CNLabelContactRelationMotherInLawWifesMother: string;
+
+declare var CNLabelContactRelationNephew: string;
+
+declare var CNLabelContactRelationNephewBrothersSon: string;
+
+declare var CNLabelContactRelationNephewBrothersSonOrHusbandsSiblingsSon: string;
+
+declare var CNLabelContactRelationNephewOrCousin: string;
+
+declare var CNLabelContactRelationNephewSistersSon: string;
+
+declare var CNLabelContactRelationNephewSistersSonOrWifesSiblingsSon: string;
+
+declare var CNLabelContactRelationNiece: string;
+
+declare var CNLabelContactRelationNieceBrothersDaughter: string;
+
+declare var CNLabelContactRelationNieceBrothersDaughterOrHusbandsSiblingsDaughter: string;
+
+declare var CNLabelContactRelationNieceOrCousin: string;
+
+declare var CNLabelContactRelationNieceSistersDaughter: string;
+
+declare var CNLabelContactRelationNieceSistersDaughterOrWifesSiblingsDaughter: string;
+
 declare var CNLabelContactRelationParent: string;
+
+declare var CNLabelContactRelationParentInLaw: string;
+
+declare var CNLabelContactRelationParentsElderSibling: string;
+
+declare var CNLabelContactRelationParentsSibling: string;
+
+declare var CNLabelContactRelationParentsSiblingFathersElderSibling: string;
+
+declare var CNLabelContactRelationParentsSiblingFathersSibling: string;
+
+declare var CNLabelContactRelationParentsSiblingFathersYoungerSibling: string;
+
+declare var CNLabelContactRelationParentsSiblingMothersElderSibling: string;
+
+declare var CNLabelContactRelationParentsSiblingMothersSibling: string;
+
+declare var CNLabelContactRelationParentsSiblingMothersYoungerSibling: string;
+
+declare var CNLabelContactRelationParentsYoungerSibling: string;
 
 declare var CNLabelContactRelationPartner: string;
 
+declare var CNLabelContactRelationSibling: string;
+
+declare var CNLabelContactRelationSiblingInLaw: string;
+
+declare var CNLabelContactRelationSiblingsChild: string;
+
 declare var CNLabelContactRelationSister: string;
+
+declare var CNLabelContactRelationSisterInLaw: string;
+
+declare var CNLabelContactRelationSisterInLawBrothersWife: string;
+
+declare var CNLabelContactRelationSisterInLawElderBrothersWife: string;
+
+declare var CNLabelContactRelationSisterInLawHusbandsBrothersWife: string;
+
+declare var CNLabelContactRelationSisterInLawHusbandsSister: string;
+
+declare var CNLabelContactRelationSisterInLawSpousesSister: string;
+
+declare var CNLabelContactRelationSisterInLawWifesBrothersWife: string;
+
+declare var CNLabelContactRelationSisterInLawWifesSister: string;
+
+declare var CNLabelContactRelationSisterInLawYoungerBrothersWife: string;
 
 declare var CNLabelContactRelationSon: string;
 
+declare var CNLabelContactRelationSonInLaw: string;
+
+declare var CNLabelContactRelationSonInLawOrBrotherInLaw: string;
+
+declare var CNLabelContactRelationSonInLawOrStepson: string;
+
 declare var CNLabelContactRelationSpouse: string;
+
+declare var CNLabelContactRelationStepbrother: string;
+
+declare var CNLabelContactRelationStepchild: string;
+
+declare var CNLabelContactRelationStepdaughter: string;
+
+declare var CNLabelContactRelationStepfather: string;
+
+declare var CNLabelContactRelationStepmother: string;
+
+declare var CNLabelContactRelationStepparent: string;
+
+declare var CNLabelContactRelationStepsister: string;
+
+declare var CNLabelContactRelationStepson: string;
+
+declare var CNLabelContactRelationTeacher: string;
+
+declare var CNLabelContactRelationUncle: string;
+
+declare var CNLabelContactRelationUncleFathersBrother: string;
+
+declare var CNLabelContactRelationUncleFathersElderBrother: string;
+
+declare var CNLabelContactRelationUncleFathersElderSistersHusband: string;
+
+declare var CNLabelContactRelationUncleFathersSistersHusband: string;
+
+declare var CNLabelContactRelationUncleFathersYoungerBrother: string;
+
+declare var CNLabelContactRelationUncleFathersYoungerSistersHusband: string;
+
+declare var CNLabelContactRelationUncleMothersBrother: string;
+
+declare var CNLabelContactRelationUncleMothersElderBrother: string;
+
+declare var CNLabelContactRelationUncleMothersSistersHusband: string;
+
+declare var CNLabelContactRelationUncleMothersYoungerBrother: string;
+
+declare var CNLabelContactRelationUncleParentsBrother: string;
+
+declare var CNLabelContactRelationUncleParentsElderBrother: string;
+
+declare var CNLabelContactRelationUncleParentsYoungerBrother: string;
+
+declare var CNLabelContactRelationWife: string;
+
+declare var CNLabelContactRelationYoungerBrother: string;
+
+declare var CNLabelContactRelationYoungerBrotherInLaw: string;
+
+declare var CNLabelContactRelationYoungerCousin: string;
+
+declare var CNLabelContactRelationYoungerCousinFathersBrothersDaughter: string;
+
+declare var CNLabelContactRelationYoungerCousinFathersBrothersSon: string;
+
+declare var CNLabelContactRelationYoungerCousinFathersSistersDaughter: string;
+
+declare var CNLabelContactRelationYoungerCousinFathersSistersSon: string;
+
+declare var CNLabelContactRelationYoungerCousinMothersBrothersDaughter: string;
+
+declare var CNLabelContactRelationYoungerCousinMothersBrothersSon: string;
+
+declare var CNLabelContactRelationYoungerCousinMothersSiblingsDaughterOrFathersSistersDaughter: string;
+
+declare var CNLabelContactRelationYoungerCousinMothersSiblingsSonOrFathersSistersSon: string;
+
+declare var CNLabelContactRelationYoungerCousinMothersSistersDaughter: string;
+
+declare var CNLabelContactRelationYoungerCousinMothersSistersSon: string;
+
+declare var CNLabelContactRelationYoungerCousinParentsSiblingsDaughter: string;
+
+declare var CNLabelContactRelationYoungerCousinParentsSiblingsSon: string;
+
+declare var CNLabelContactRelationYoungerSibling: string;
+
+declare var CNLabelContactRelationYoungerSiblingInLaw: string;
+
+declare var CNLabelContactRelationYoungerSister: string;
+
+declare var CNLabelContactRelationYoungerSisterInLaw: string;
+
+declare var CNLabelContactRelationYoungestBrother: string;
+
+declare var CNLabelContactRelationYoungestSister: string;
 
 declare var CNLabelDateAnniversary: string;
 
@@ -664,6 +1288,8 @@ declare var CNLabelPhoneNumberPager: string;
 declare var CNLabelPhoneNumberWorkFax: string;
 
 declare var CNLabelPhoneNumberiPhone: string;
+
+declare var CNLabelSchool: string;
 
 declare var CNLabelURLAddressHomePage: string;
 
@@ -693,9 +1319,9 @@ declare class CNLabeledValue<ValueType> extends NSObject implements NSCopying, N
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithLabelValue(label: string, value: ValueType): this;
 
@@ -819,9 +1445,9 @@ declare class CNPhoneNumber extends NSObject implements NSCopying, NSSecureCodin
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithStringValue(string: string): this;
 }
@@ -856,9 +1482,9 @@ declare class CNPostalAddress extends NSObject implements NSCopying, NSMutableCo
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -954,9 +1580,9 @@ declare class CNSocialProfile extends NSObject implements NSCopying, NSSecureCod
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void;
+	encodeWithCoder(coder: NSCoder): void;
 
-	initWithCoder(aDecoder: NSCoder): this;
+	initWithCoder(coder: NSCoder): this;
 
 	initWithUrlStringUsernameUserIdentifierService(urlString: string, username: string, userIdentifier: string, service: string): this;
 }

@@ -1,0 +1,5 @@
+{
+  "name": "style",
+  "main": "style",
+  "types": "style.d.ts"
+}

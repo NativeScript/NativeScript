@@ -1,7 +1,7 @@
 ﻿<Page>
   <ListView loaded="loaded">
     <ListView.itemTemplate>
-      <WebView loaded="onLoaded" loadStarted="onLoadStarted" loadFinished="onLoadFinished" unloaded="onUnloaded" 
+      <WebView loaded="onLoaded" loadStarted="onLoadStarted" loadFinished="onLoadFinished" unloaded="onUnloaded"
                src="https://docs.nativescript.org/" minHeight="250" />
     </ListView.itemTemplate>
   </ListView>

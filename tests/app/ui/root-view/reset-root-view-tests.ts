@@ -1,10 +1,10 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { Page } from "tns-core-modules/ui/page";
-import { isAndroid } from "tns-core-modules/platform";
-import { Frame, NavigationEntry, _stack } from "tns-core-modules/ui/frame";
-import { _resetRootView, getRootView } from "tns-core-modules/application";
-import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
+import { Page } from "@nativescript/core/ui/page";
+import { isAndroid } from "@nativescript/core/platform";
+import { Frame, NavigationEntry } from "@nativescript/core/ui/frame";
+import { _resetRootView, getRootView } from "@nativescript/core/application";
+import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view";
 
 function waitUntilTabViewReady(page: Page, action: Function) {
     helper.waitUntilNavigatedTo(page, action);
@@ -60,7 +60,7 @@ export function test_reset_frame_to_frame() {
     helper.waitUntilNavigatedTo(testFrameRoot1.page, () => _resetRootView(testFrameRoot1.entry));
 
     const rootView1 = getRootView();
-    const frameStack1 = _stack();
+    const frameStack1 = Frame._stack();
     TKUnit.assertEqual(rootView1, testFrameRoot1.root);
     TKUnit.assertEqual(frameStack1.length, 1);
 
@@ -69,7 +69,7 @@ export function test_reset_frame_to_frame() {
     helper.waitUntilNavigatedTo(testFrameRoot2.page, () => _resetRootView(testFrameRoot2.entry));
 
     const rootView2 = getRootView();
-    const frameStack2 = _stack();
+    const frameStack2 = Frame._stack();
     TKUnit.assertEqual(rootView2, testFrameRoot2.root);
     TKUnit.assertEqual(frameStack2.length, 1);
 }
@@ -80,7 +80,7 @@ export function test_reset_frame_to_tab() {
     helper.waitUntilNavigatedTo(testFrameRoot.page, () => _resetRootView(testFrameRoot.entry));
 
     const rootView1 = getRootView();
-    const frameStack1 = _stack();
+    const frameStack1 = Frame._stack();
     TKUnit.assertEqual(rootView1, testFrameRoot.root);
     TKUnit.assertEqual(frameStack1.length, 1);
 
@@ -89,7 +89,7 @@ export function test_reset_frame_to_tab() {
     waitUntilTabViewReady(testTabRoot.page, () => _resetRootView(testTabRoot.entry));
 
     const rootView2 = getRootView();
-    const frameStack2 = _stack();
+    const frameStack2 = Frame._stack();
     TKUnit.assertEqual(rootView2, testTabRoot.root);
     TKUnit.assertEqual(frameStack2.length, 2);
 }
@@ -100,7 +100,7 @@ export function test_reset_tab_to_frame() {
     waitUntilTabViewReady(testTabRoot.page, () => _resetRootView(testTabRoot.entry));
 
     const rootView2 = getRootView();
-    const frameStack2 = _stack();
+    const frameStack2 = Frame._stack();
     TKUnit.assertEqual(rootView2, testTabRoot.root);
     TKUnit.assertEqual(frameStack2.length, 2);
 
@@ -109,7 +109,7 @@ export function test_reset_tab_to_frame() {
     helper.waitUntilNavigatedTo(testFrameRoot.page, () => _resetRootView(testFrameRoot.entry));
 
     const rootView1 = getRootView();
-    const frameStack1 = _stack();
+    const frameStack1 = Frame._stack();
     TKUnit.assertEqual(rootView1, testFrameRoot.root);
     TKUnit.assertEqual(frameStack1.length, 1);
 }
@@ -120,7 +120,7 @@ export function test_reset_tab_to_tab() {
     waitUntilTabViewReady(testTabRoot1.page, () => _resetRootView(testTabRoot1.entry));
 
     const rootView1 = getRootView();
-    const frameStack1 = _stack();
+    const frameStack1 = Frame._stack();
     TKUnit.assertEqual(rootView1, testTabRoot1.root);
     TKUnit.assertEqual(frameStack1.length, 2);
 
@@ -129,7 +129,7 @@ export function test_reset_tab_to_tab() {
     waitUntilTabViewReady(testTabRoot2.page, () => _resetRootView(testTabRoot2.entry));
 
     const rootView2 = getRootView();
-    const frameStack2 = _stack();
+    const frameStack2 = Frame._stack();
     TKUnit.assertEqual(rootView2, testTabRoot2.root);
     TKUnit.assertEqual(frameStack2.length, 2);
 }

@@ -1,28 +1,14 @@
 {
-	// See http://go.microsoft.com/fwlink/?LinkId=733558
-	// for the documentation about the tasks.json format
-	"version": "0.1.0",
-	"command": "tsc",
-	"isShellCommand": true,
-	"args": ["-p", "."],
-	"showOutput": "always",
-	"problemMatcher": "$tsc",
-	"tasks": [
-		{
-			"taskName": "tsc-unit-tests",
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "tsc-unit-tests",
+            "type": "shell",
 			"problemMatcher": "$tsc",
 			"command": "./node_modules/.bin/tsc",
-			"args": [ "-p", "tsconfig.unit-tests.json" ]
-		},
-		{
-			"taskName": "unit-tests",
-			"command": "npm",
-			"args": ["run", "unit-test"]
-		},
-		{
-			"taskName": "unit-tests-watch",
-			"command": "npm",
-			"args": ["run", "unit-test-watch"]
-		}
-	]
+			"args": [ "-p", "unit-tests/tsconfig.json" ],
+        }
+    ]
 }
