@@ -388,7 +388,7 @@ export class View extends ViewCommon {
                 this.nativeViewProtected.setClickable(this._isClickable);
             }
         }
-        
+
         this._manager = null;
         this._rootManager = null;
         super.onUnloaded();
@@ -832,6 +832,11 @@ export class View extends ViewCommon {
         stateListAnimator.addState([statePressed, stateEnabled], pressedSet);
         stateListAnimator.addState([stateEnabled], notPressedSet);
         stateListAnimator.addState([], defaultSet);
+
+        const currentAnimator = nativeView.getStateListAnimator();
+        if (currentAnimator) {
+            currentAnimator.jumpToCurrentState();
+        }
         nativeView.setStateListAnimator(stateListAnimator);
     }
 
