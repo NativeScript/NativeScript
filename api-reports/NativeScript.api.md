@@ -1010,6 +1010,8 @@ export const Http: {
 export interface HttpContent {
   raw: any;
 
+  toArrayBuffer: () => ArrayBuffer;
+
   toFile: (destinationFilePath?: string) => File;
 
   toImage: () => Promise<ImageSource>;
@@ -1021,7 +1023,7 @@ export interface HttpContent {
 
 // @public
 export interface HttpRequestOptions {
-  content?: string | FormData;
+  content?: string | FormData | ArrayBuffer;
 
   dontFollowRedirects?: boolean;
 
