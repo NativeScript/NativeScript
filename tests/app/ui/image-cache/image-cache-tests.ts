@@ -8,6 +8,8 @@ const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 export const test_ImageCache_ValidUrl = function (done: (err: Error, res?: string) => void) {
     // see https://github.com/NativeScript/NativeScript/issues/6643
     if (isAndroid && sdkVersion() < 20) {
+        done(null);
+
         return;
     }
 
