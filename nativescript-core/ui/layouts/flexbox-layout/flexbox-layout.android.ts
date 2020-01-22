@@ -7,7 +7,9 @@ import {
     flexShrinkProperty, FlexShrink,
     flexWrapBeforeProperty, FlexWrapBefore,
     alignSelfProperty, AlignSelf,
-    flexDirectionProperty, flexWrapProperty, justifyContentProperty, alignItemsProperty, alignContentProperty
+    flexDirectionProperty, flexWrapProperty, justifyContentProperty, alignItemsProperty, alignContentProperty,
+    minWidthProperty, minHeightProperty,
+    CssProperty
 } from "./flexbox-layout-common";
 
 export * from "./flexbox-layout-common";
@@ -134,8 +136,21 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         this.nativeViewProtected.setAlignContent(alignContentMap[alignContent]);
     }
 
+    private getChildPropertyValue<T>(child: View, prop: CssProperty<any, T>): T {
+        if (minWidthProperty.isSet(child.style)) {
+            return child[prop.name];
+        } else if (child[prop.getDefault]) {
+            return child[prop.getDefault]();
+        } else {
+            return prop.defaultValue;
+        }
+    }
+
     public _updateNativeLayoutParams(child: View): void {
         super._updateNativeLayoutParams(child);
+
+        this._setChildMinWidthNative(child, this.getChildPropertyValue(child, minWidthProperty));
+        this._setChildMinHeightNative(child, this.getChildPropertyValue(child, minHeightProperty));
 
         const lp = <org.nativescript.widgets.FlexboxLayout.LayoutParams>child.nativeViewProtected.getLayoutParams();
         const style = child.style;
@@ -147,22 +162,22 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         child.nativeViewProtected.setLayoutParams(lp);
     }
 
-    public _setChildMinWidthNative(child: View): void {
+    public _setChildMinWidthNative(child: View, value: Length): void {
         child._setMinWidthNative(0);
         const nativeView = child.nativeViewProtected;
         const lp = nativeView.getLayoutParams();
         if (lp instanceof widgetLayoutParams) {
-            lp.minWidth = Length.toDevicePixels(child.style.minWidth, 0);
+            lp.minWidth = Length.toDevicePixels(value, 0);
             nativeView.setLayoutParams(lp);
         }
     }
 
-    public _setChildMinHeightNative(child: View): void {
+    public _setChildMinHeightNative(child: View, value: Length): void {
         child._setMinHeightNative(0);
         const nativeView = child.nativeViewProtected;
         const lp = nativeView.getLayoutParams();
         if (lp instanceof widgetLayoutParams) {
-            lp.minHeight = Length.toDevicePixels(child.style.minHeight, 0);
+            lp.minHeight = Length.toDevicePixels(value, 0);
             nativeView.setLayoutParams(lp);
         }
     }

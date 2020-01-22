@@ -389,7 +389,7 @@ export class View extends ViewCommon {
                 this.nativeViewProtected.setClickable(this._isClickable);
             }
         }
-        
+
         this._manager = null;
         this._rootManager = null;
         super.onUnloaded();
@@ -982,17 +982,17 @@ export class View extends ViewCommon {
 
     [minWidthProperty.setNative](value: Length) {
         if (this.parent instanceof CustomLayoutView && this.parent.nativeViewProtected) {
-            this.parent._setChildMinWidthNative(this);
+            this.parent._setChildMinWidthNative(this, value);
         } else {
-            this._setMinWidthNative(this.minWidth);
+            this._setMinWidthNative(value);
         }
     }
 
     [minHeightProperty.setNative](value: Length) {
         if (this.parent instanceof CustomLayoutView && this.parent.nativeViewProtected) {
-            this.parent._setChildMinHeightNative(this);
+            this.parent._setChildMinHeightNative(this, value);
         } else {
-            this._setMinHeightNative(this.minHeight);
+            this._setMinHeightNative(value);
         }
     }
 
@@ -1050,16 +1050,15 @@ export class CustomLayoutView extends ContainerView implements CustomLayoutViewD
     }
 
     public _updateNativeLayoutParams(child: View): void {
-        this._setChildMinWidthNative(child);
-        this._setChildMinHeightNative(child);
+        // noop
     }
 
-    public _setChildMinWidthNative(child: View): void {
-        child._setMinWidthNative(child.minWidth);
+    public _setChildMinWidthNative(child: View, value: Length): void {
+        child._setMinWidthNative(value);
     }
 
-    public _setChildMinHeightNative(child: View): void {
-        child._setMinHeightNative(child.minHeight);
+    public _setChildMinHeightNative(child: View, value: Length): void {
+        child._setMinHeightNative(value);
     }
 
     public _removeViewFromNativeVisualTree(child: ViewCommon): void {
