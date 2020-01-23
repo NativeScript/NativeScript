@@ -829,6 +829,11 @@ export class View extends ViewCommon {
         stateListAnimator.addState([statePressed, stateEnabled], pressedSet);
         stateListAnimator.addState([stateEnabled], notPressedSet);
         stateListAnimator.addState([], defaultSet);
+
+        const currentAnimator = nativeView.getStateListAnimator();
+        if (currentAnimator) {
+            currentAnimator.jumpToCurrentState();
+        }
         nativeView.setStateListAnimator(stateListAnimator);
     }
 
