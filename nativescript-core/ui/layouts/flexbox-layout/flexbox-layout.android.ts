@@ -136,21 +136,13 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         this.nativeViewProtected.setAlignContent(alignContentMap[alignContent]);
     }
 
-    private getChildPropertyValue<T>(child: View, prop: CssProperty<any, T>): T {
-        if (minWidthProperty.isSet(child.style)) {
-            return child[prop.name];
-        } else if (child[prop.getDefault]) {
-            return child[prop.getDefault]();
-        } else {
-            return prop.defaultValue;
-        }
-    }
-
     public _updateNativeLayoutParams(child: View): void {
         super._updateNativeLayoutParams(child);
 
-        this._setChildMinWidthNative(child, this.getChildPropertyValue(child, minWidthProperty));
-        this._setChildMinHeightNative(child, this.getChildPropertyValue(child, minHeightProperty));
+        // NOTE: If minWidth/Height is not set, the next code will clear the default native values for minWidth/Height.
+        // Flex box will not respect the button default min width. Keeping this behavior for back-compatibility.
+        this._setChildMinWidthNative(child, child.minWidth);
+        this._setChildMinHeightNative(child, child.minHeight);
 
         const lp = <org.nativescript.widgets.FlexboxLayout.LayoutParams>child.nativeViewProtected.getLayoutParams();
         const style = child.style;
