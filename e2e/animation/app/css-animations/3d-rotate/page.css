@@ -1,0 +1,75 @@
+.rotate-x {
+    rotateX: 60;
+}
+
+.rotate-y {
+    rotateY: 60;
+}
+
+.rotate-z {
+    rotate: 60;
+}
+
+.original {
+    transform: none;
+}
+ 
+.animate-x {
+    animation-name: rotateX;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+}
+
+.animate-y {
+    animation-name: rotateY;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+}
+
+.animate-z {
+    animation-name: rotateZ;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+}
+
+.animate-xyz-3d {
+    animation-name: rotateXYZ3D;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+}
+
+.animate-xyz {
+    animation-name: rotateXYZ;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes rotateX {
+    from { transform: none; }
+    50%  { transform: rotateX(60) }
+    to  { transform: none; }
+}
+
+@keyframes rotateY {
+    from { transform: none; }
+    50%  { transform: rotateY(60) }
+    to  { transform: none; }
+}
+
+@keyframes rotateZ {
+    from { transform: none; }
+    50%  { transform: rotate(60) }
+    to  { transform: none; }
+}
+
+@keyframes rotateXYZ3D {
+    from { transform: none; }
+    50%  { transform: rotate3d(60, 60, 60) }
+    to  { transform: none; }
+}
+
+@keyframes rotateXYZ {
+    from { transform: none; }
+    50%  { transform: rotateX(60) rotateY(60) rotate(60) }
+    to  { transform: none; }
+}

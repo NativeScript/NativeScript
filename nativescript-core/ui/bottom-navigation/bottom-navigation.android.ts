@@ -578,9 +578,7 @@ export class BottomNavigation extends TabNavigationBase {
 
             // BACKGROUND-COLOR
             const backgroundColor = tabStripItem.style.backgroundColor;
-            if (backgroundColor) {
-                tabItemSpec.backgroundColor = backgroundColor.android;
-            }
+            tabItemSpec.backgroundColor = backgroundColor ? backgroundColor.android : this.getTabBarBackgroundArgbColor();
 
             // COLOR
             const color = titleLabel.style.color;

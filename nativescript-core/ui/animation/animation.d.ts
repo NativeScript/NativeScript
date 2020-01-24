@@ -47,7 +47,7 @@ export interface AnimationDefinition {
     /**
      * Animates the rotate affine transform of the view. Value should be a number specifying the rotation amount in degrees.
      */
-    rotate?: number;
+    rotate?: number | Point3D;
 
     /**
      * The length of the animation in milliseconds. The default duration is 300 milliseconds.
@@ -97,14 +97,24 @@ export type Transformation = {
 /**
  * Defines possible css transformations
  */
-export type TransformationType = "rotate" |
+export type TransformationType =
+    "rotate" | "rotateX" | "rotateY" |
     "translate" | "translateX" | "translateY" |
     "scale" | "scaleX" | "scaleY";
 
 /**
  * Defines possible css transformation values
  */
-export type TransformationValue = Pair | number;
+export type TransformationValue = Point3D | Pair | number;
+
+/**
+ * Defines a point in 3d space (x, y and z) for rotation in 3d animations.
+ */
+export interface Point3D {
+    x: number;
+    y: number;
+    z: number;
+}
 
 /**
  * Defines a pair of values (horizontal and vertical) for translate and scale animations.
@@ -119,7 +129,7 @@ export interface Pair {
  */
 export type TransformFunctionsInfo = {
     translate: Pair,
-    rotate: number,
+    rotate: Point3D,
     scale: Pair,
 }
 
