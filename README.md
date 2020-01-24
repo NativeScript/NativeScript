@@ -74,6 +74,9 @@ In addition to the code that makes up the NativeScript framework itself, we also
 
 We love PRs, and accept them for all of our repositories — even docs! Please follow our [contribution guide](https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md) if you want to become part of the project.
 
+## Rewards
+Since we love PRs, we are giving unique set of stickers to our contributors as a small token of gratitude in this contest [first time contribution contest](https://www.nativescript.org/blog/nativescript-first-time-contribution-contest-continued-and-extended).
+
 ## Angular
 
 We [worked together with the Google Angular team](https://angularjs.blogspot.com/2015/12/building-mobile-apps-with-angular-2-and.html) to make Angular 2+ work on top of NativeScript. To use Angular with NativeScript please follow the [getting started](http://docs.nativescript.org/angular/tutorial/ng-chapter-0) article.
