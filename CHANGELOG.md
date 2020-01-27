@@ -1,3 +1,43 @@
+## [6.3.2](https://github.com/NativeScript/NativeScript/compare/6.3.1...6.3.2) (2019-12-20)
+
+
+### Bug Fixes
+
+* check is disposed fragment is in the FragmentManager ([#8201](https://github.com/NativeScript/NativeScript/issues/8201)) ([4b00376](https://github.com/NativeScript/NativeScript/commit/4b00376))
+* handle fake attach after FragMgr is destroyed ([#8200](https://github.com/NativeScript/NativeScript/issues/8200)) ([d1858f8](https://github.com/NativeScript/NativeScript/commit/d1858f8))
+
+
+
+## [6.3.1](https://github.com/NativeScript/NativeScript/compare/6.3.0...6.3.1) (2019-12-16)
+
+
+### Bug Fixes
+
+* null reference exception in view.android.onUnloaded ([#8153](https://github.com/NativeScript/NativeScript/issues/8153)) ([da639f2](https://github.com/NativeScript/NativeScript/commit/da639f2))
+
+
+
+# [6.3.0](https://github.com/NativeScript/NativeScript/compare/6.2.2...6.3.0) (2019-12-06)
+
+
+### Bug Fixes
+
+* **android:** Fatal Exception: java.lang.OutOfMemoryError ([#8061](https://github.com/NativeScript/NativeScript/issues/8061)) ([8d382a6](https://github.com/NativeScript/NativeScript/commit/8d382a6b2e722e9298becdcfb3b43a41352a9136))
+* **grid-layout:** value parser will now accept strings or numbers ([#8042](https://github.com/NativeScript/NativeScript/issues/8042)) ([3199a39](https://github.com/NativeScript/NativeScript/commit/3199a392b45635606e06119845099965246395c3))
+* **iOS:** Opening alert/confirm on top most of modal dialogs ([#7982](https://github.com/NativeScript/NativeScript/issues/7982)) ([60ac4e7](https://github.com/NativeScript/NativeScript/commit/60ac4e7a05c9e627eb9fc7a1bdf004c7fca99817)), closes [#6939](https://github.com/NativeScript/NativeScript/issues/6939)
+* nested css-calc and css-variables with fallback ([#7987](https://github.com/NativeScript/NativeScript/issues/7987)) ([fc2a233](https://github.com/NativeScript/NativeScript/commit/fc2a233e9598def50969247c1516c32260b7e283))
+
+
+### Features
+
+* **css:** Added optional css-tree parser ([#8076](https://github.com/NativeScript/NativeScript/issues/8076)) ([49a7607](https://github.com/NativeScript/NativeScript/commit/49a7607f4e0f3d359820b5ae731f806966de2921))
+* **dialogs:** Setting the size of popup dialog thru dialog options ([#8041](https://github.com/NativeScript/NativeScript/issues/8041)) ([cd5703a](https://github.com/NativeScript/NativeScript/commit/cd5703a6b79598031ef334a9cf3132e688422aba))
+* support requestAnimationFrame ([#8112](https://github.com/NativeScript/NativeScript/issues/8112)) ([2aa6e9b](https://github.com/NativeScript/NativeScript/commit/2aa6e9bf922286f9ffd747f901dbc922cd9446b9))
+* System css classes for modals ([#8155](https://github.com/NativeScript/NativeScript/issues/8155)) ([7b78f3b](https://github.com/NativeScript/NativeScript/commit/7b78f3b0c640d9d43026744b919a03996191f788))
+* **modal-view-ios:** handle iOS 13 dismiss modal gesture ([#8024](https://github.com/NativeScript/NativeScript/issues/8024)) ([c5df258](https://github.com/NativeScript/NativeScript/commit/c5df2580439c24c57fb364cba91050a00e391c35))
+
+
+
 ## [6.2.2](https://github.com/NativeScript/NativeScript/compare/6.2.1...6.2.2) (2019-11-25)
 
 

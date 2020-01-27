@@ -150,14 +150,14 @@ export class Frame extends FrameBase {
 
     _onAttachedToWindow(): void {
         super._onAttachedToWindow();
-        this._attachedToWindow = true;
-
+        
         // _onAttachedToWindow called from OS again after it was detach
         // TODO: Consider testing and removing it when update to androidx.fragment:1.2.0
         if (this._manager && this._manager.isDestroyed()) {
             return;
         }
-
+        
+        this._attachedToWindow = true;
         this._processNextNavigationEntry();
     }
 
@@ -264,13 +264,13 @@ export class Frame extends FrameBase {
             !this._currentEntry.fragment.isAdded()) {
             return;
         }
+        const fragment: androidx.fragment.app.Fragment = this._currentEntry.fragment;
+        const fragmentManager: androidx.fragment.app.FragmentManager = fragment.getFragmentManager();
 
-        const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
-        const transaction = manager.beginTransaction();
-        const fragment = this._currentEntry.fragment;
+        const transaction = fragmentManager.beginTransaction();
         const fragmentExitTransition = fragment.getExitTransition();
 
-        // Reset animation to its initial state to prevent mirrorered effect when restore current fragment transitions
+        // Reset animation to its initial state to prevent mirrored effect when restore current fragment transitions
         if (fragmentExitTransition && fragmentExitTransition instanceof org.nativescript.widgets.CustomTransition) {
             fragmentExitTransition.setResetOnTransitionEnd(true);
         }
@@ -637,7 +637,7 @@ function clearEntry(entry: BackstackEntry): void {
     entry.recreated = false;
     entry.fragment = null;
     const page = entry.resolvedPage;
-    if (page._context) {
+    if (page && page._context) {
         entry.resolvedPage._tearDownUI(true);
     }
 }
@@ -1032,6 +1032,12 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
+        // Don't try to creat bitmaps with no dimensions as this causes a crash
+        // This might happen when showing and closing dialogs fast.  
+        if (!(view && view.getWidth() > 0 && view.getHeight() > 0)) {
+            return undefined;
+        }
+
         // Another way to get view bitmap. Test performance vs setDrawingCacheEnabled
         // const width = view.getWidth();
         // const height = view.getHeight();
@@ -1041,7 +1047,8 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         // view.draw(canvas);
 
         view.setDrawingCacheEnabled(true);
-        const bitmap = android.graphics.Bitmap.createBitmap(view.getDrawingCache());
+        const drawCache = view.getDrawingCache();
+        const bitmap = android.graphics.Bitmap.createBitmap(drawCache);
         view.setDrawingCacheEnabled(false);
 
         return bitmap;
