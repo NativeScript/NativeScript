@@ -155,7 +155,11 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     public _setChildMinWidthNative(child: View, value: Length): void {
-        child._setMinWidthNative(0);
+        // Check needed to maintain back-compat after https://github.com/NativeScript/NativeScript/pull/7804
+        if (!child._ignoreFlexMinWidthHeightReset) {
+            child._setMinWidthNative(0);
+        }
+
         const nativeView = child.nativeViewProtected;
         const lp = nativeView.getLayoutParams();
         if (lp instanceof widgetLayoutParams) {
@@ -165,7 +169,11 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     public _setChildMinHeightNative(child: View, value: Length): void {
-        child._setMinHeightNative(0);
+        // Check needed to maintain back-compat after https://github.com/NativeScript/NativeScript/pull/7804
+        if (!child._ignoreFlexMinWidthHeightReset) {
+            child._setMinHeightNative(0);
+        }
+
         const nativeView = child.nativeViewProtected;
         const lp = nativeView.getLayoutParams();
         if (lp instanceof widgetLayoutParams) {

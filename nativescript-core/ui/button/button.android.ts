@@ -190,3 +190,5 @@ export class Button extends ButtonBase {
         return 4; // 4dp @dimen/button_pressed_z_material
     }
 }
+
+Button.prototype._ignoreFlexMinWidthHeightReset = true;

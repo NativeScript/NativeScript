@@ -227,6 +227,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     _oldTop: number;
     _oldRight: number;
     _oldBottom: number;
+    _ignoreFlexMinWidthHeightReset: boolean;
 
     public effectiveMinWidth: number;
     public effectiveMinHeight: number;
