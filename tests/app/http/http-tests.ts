@@ -636,14 +636,16 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
     });
 };
 
-// TODO: how do you make this work?
-// declare var Worker: any;
-// export var test_getString_WorksProperlyInWorker = function(done) {
-//     let worker = new Worker("./http-string-worker");
-//     worker.onmessage = function(msg) {
-//         done();
-//     };
-//     worker.onerror = function(e) {
-//         done(e);
-//     };
-// };
+export var test_getString_WorksProperlyInWorker = function(done) {
+    const HttpStringWorker = require("nativescript-worker-loader!./http-string-worker");
+    let worker = new HttpStringWorker();
+    console.log("Worker Created");
+    worker.onmessage = function(msg) {
+        console.log("Message received");
+        done();
+    };
+    worker.onerror = function(e) {
+        console.log("errir received");
+        done(e);
+    };
+};

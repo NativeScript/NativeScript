@@ -327,7 +327,7 @@ public class Async {
             public String url;
             public String method;
             public ArrayList<KeyValuePair> headers;
-            public ByteBuffer content;
+            public Object content;
             public int timeout = -1;
             public int screenWidth = -1;
             public int screenHeight = -1;
@@ -361,7 +361,14 @@ public class Async {
                 OutputStream outStream = connection.getOutputStream();
                 openedStreams.push(outStream);
 
-                outStream.write(this.content.array());
+                if (this.content instanceof String) {
+                    OutputStreamWriter writer = new OutputStreamWriter(outStream);
+                    openedStreams.push(writer);
+
+                    writer.write((String) this.content);
+                } else {
+                    outStream.write(((java.nio.ByteBuffer)this.content).array());
+                }
             }
         }
 
