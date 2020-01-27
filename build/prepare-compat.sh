@@ -31,10 +31,6 @@ NATIVESCRIPT_CORE_ARGS=${NATIVESCRIPT_CORE_ARGS:-$DEFAULT_NATIVESCRIPT_CORE_ARGS
     echo "Copying $PACKAGE_SOURCE $DIST/$PACKAGE..."
     npx ncp "$PACKAGE_SOURCE" "$DIST/$PACKAGE"
 
-    echo "TODO(REMOVE THIS HACK): Copying platfroms/ios/Podfile"
-    mkdir -p "$DIST/$PACKAGE/platforms/ios"
-    npx ncp "nativescript-core/platforms/ios/Podfile" "$DIST/$PACKAGE/platforms/ios/Podfile"
-
     echo "Copying README and LICENSE to $DIST/$PACKAGE"
     npx ncp LICENSE "$DIST"/"$PACKAGE"/LICENSE
       
