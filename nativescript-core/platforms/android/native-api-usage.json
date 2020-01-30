@@ -17,6 +17,7 @@
         "android.media*:*",
         "android.widget*:*",
         "android.animation*:*",
+        "android.provider*:*",
         "android.text*:*",
         "android.webkit*:*",
         "androidx.appcompat*:*",
