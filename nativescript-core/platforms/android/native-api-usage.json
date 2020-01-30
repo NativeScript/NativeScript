@@ -17,6 +17,11 @@
         "android.widget*:*",
         "android.animation*:*",
         "android.text*:*",
-        "android.webkit*:*"
+        "android.webkit*:*",
+        "androidx.appcompat*:*",
+        "androidx.core*:*",
+        "androidx.viewpager.widget*:*",
+        "androidx.fragment*:*",
+        "androidx.transition*:*"
     ]
 }
