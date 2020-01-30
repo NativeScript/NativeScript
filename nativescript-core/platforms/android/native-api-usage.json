@@ -1,6 +1,7 @@
 {
     "uses": [
         "java.lang:*",
+        "java.lang.reflect:*",
         "java.io:*",
         "java.nio:*",
         "java.util:*",
