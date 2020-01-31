@@ -1,3 +1,32 @@
+# 6.4.0 (2020-01-31)
+
+
+### Bug Fixes
+
+* button textAlignment on IOS (UIButton) ([#8181](https://github.com/NativeScript/NativeScript/issues/8181)) ([05ef9b0](https://github.com/NativeScript/NativeScript/commit/05ef9b0))
+* **android:** crash on setting elevation on API21 ([#8269](https://github.com/NativeScript/NativeScript/issues/8269)) ([02763ec](https://github.com/NativeScript/NativeScript/commit/02763ec))
+* **android:** Request Timeout [#6523](https://github.com/NativeScript/NativeScript/issues/6523) ([#8194](https://github.com/NativeScript/NativeScript/issues/8194)) ([d65a2db](https://github.com/NativeScript/NativeScript/commit/d65a2db))
+* invoke done callback in image cache unit test for API Level < 20 ([#8267](https://github.com/NativeScript/NativeScript/issues/8267)) ([f293398](https://github.com/NativeScript/NativeScript/commit/f293398))
+* make integer type visible ([ea8a436](https://github.com/NativeScript/NativeScript/commit/ea8a436))
+* remove the password for TextField as well ([#8290](https://github.com/NativeScript/NativeScript/issues/8290)) ([0b50f3e](https://github.com/NativeScript/NativeScript/commit/0b50f3e))
+* return default tab background color when the background color is not explicitely set through css ([#8240](https://github.com/NativeScript/NativeScript/issues/8240)) ([8569b51](https://github.com/NativeScript/NativeScript/commit/8569b51))
+* **ios:** ActionBar style wrong after cancelled swipe back navigation ([#8252](https://github.com/NativeScript/NativeScript/issues/8252)) ([6133d6b](https://github.com/NativeScript/NativeScript/commit/6133d6b))
+* **ios/bottom-navigation:** move TabStrip items event emitting to selectedIndex changed handler ([#8160](https://github.com/NativeScript/NativeScript/issues/8160)) ([8550c32](https://github.com/NativeScript/NativeScript/commit/8550c32))
+
+
+### Features
+
+* **html-view:** Additional properties for HtmlView component ([#8207](https://github.com/NativeScript/NativeScript/issues/8207)) ([9217094](https://github.com/NativeScript/NativeScript/commit/9217094))
+* **http:** better binary support & XHR support ([#7707](https://github.com/NativeScript/NativeScript/issues/7707)) ([e293367](https://github.com/NativeScript/NativeScript/commit/e293367))
+* **ios:** set preferredStatusBarStyle in Page VCs ([#8241](https://github.com/NativeScript/NativeScript/issues/8241)) ([4e48e68](https://github.com/NativeScript/NativeScript/commit/4e48e68))
+* add longPress state with UIGestureRecognizer (iOS) ([416f1c8](https://github.com/NativeScript/NativeScript/commit/416f1c8))
+* **textview:** added maxLines property ([#7943](https://github.com/NativeScript/NativeScript/issues/7943)) ([3c79ded](https://github.com/NativeScript/NativeScript/commit/3c79ded))
+* Add 3D rotation to view - takeover of PR# 5950 ([#8136](https://github.com/NativeScript/NativeScript/issues/8136)) ([e8f5ac8](https://github.com/NativeScript/NativeScript/commit/e8f5ac8)), closes [#8076](https://github.com/NativeScript/NativeScript/issues/8076) [#8041](https://github.com/NativeScript/NativeScript/issues/8041)
+* Add Android APIs usage list ([#8286](https://github.com/NativeScript/NativeScript/issues/8286)) ([f031f6f](https://github.com/NativeScript/NativeScript/commit/f031f6f))
+* add integer only keyboard type for text-field and for all editable text components ([954e1c6](https://github.com/NativeScript/NativeScript/commit/954e1c6))
+* Add iOS APIs usage list ([#8291](https://github.com/NativeScript/NativeScript/issues/8291)) ([3bb8a40](https://github.com/NativeScript/NativeScript/commit/3bb8a40))
+* Make css-tree the default parser ([ab4c389](https://github.com/NativeScript/NativeScript/commit/ab4c389))
+
 ## [6.3.2](https://github.com/NativeScript/NativeScript/compare/6.3.1...6.3.2) (2019-12-20)
 
 

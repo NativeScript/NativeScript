@@ -75,4 +75,9 @@ export class Color {
      * @param value Input string.
      */
     public static isValid(value: any): boolean;
+
+    /**
+     * Creates color from iOS-specific UIColor value representation.
+     */
+    public static fromIosColor(value: any /* UIColor */): Color;
 }

@@ -10,3 +10,4 @@ export declare function getNativeColor(textView: textViewModule.TextView): color
 export declare function getNativeBackgroundColor(textView: textViewModule.TextView): colorModule.Color;
 export declare function getNativeTextAlignment(textView: textViewModule.TextView): string;
 export declare function typeTextNatively(textView: textViewModule.TextView, text: string): void;
+export declare function getNativeMaxLines(textView: textViewModule.TextView): number;

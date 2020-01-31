@@ -8,7 +8,7 @@ import {
     traceEnabled, traceCategories, traceType 
 } from "./animation-common";
 import {
-    opacityProperty, backgroundColorProperty, rotateProperty,
+    opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty,
     translateXProperty, translateYProperty, scaleXProperty, scaleYProperty,
     heightProperty, widthProperty, PercentLength
 } from "../styling/style-properties";
@@ -89,6 +89,36 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
                 throw new Error(`Invalid animation curve: ${curve}`);
             }
     }
+}
+
+function getAndroidRepeatCount(iterations: number): number {
+    return (iterations === Number.POSITIVE_INFINITY) ? android.view.animation.Animation.INFINITE : iterations - 1;
+}
+
+function createObjectAnimator(nativeView: android.view.View, propertyName: string, value: number): android.animation.ObjectAnimator {
+    let arr = Array.create("float", 1);
+    arr[0] = value;
+
+    return android.animation.ObjectAnimator.ofFloat(nativeView, propertyName, arr);
+}
+
+function createAnimationSet(animators: android.animation.ObjectAnimator[], iterations: number): android.animation.AnimatorSet {
+    iterations = getAndroidRepeatCount(iterations);
+
+    const animatorSet = new android.animation.AnimatorSet();
+    const animatorsArray = Array.create(android.animation.Animator, animators.length);
+
+    animators.forEach((animator, index) => {
+        animatorsArray[index] = animator;
+
+        //TODO: not sure if we have to do that for each animator
+        animatorsArray[index].setRepeatCount(iterations);
+    });
+
+    animatorSet.playTogether(animatorsArray);
+    animatorSet.setupStartValues();
+
+    return animatorSet;
 }
 
 export class Animation extends AnimationBase {
@@ -264,16 +294,14 @@ export class Animation extends AnimationBase {
 
         this._target = propertyAnimation.target;
 
-        let nativeArray;
         const nativeView = <android.view.View>propertyAnimation.target.nativeViewProtected;
         const animators = new Array<android.animation.Animator>();
         const propertyUpdateCallbacks = new Array<Function>();
         const propertyResetCallbacks = new Array<Function>();
         let originalValue1;
         let originalValue2;
+        let originalValue3;
         const density = layout.getDisplayDensity();
-        let xyObjectAnimators: any;
-        let animatorSet: android.animation.AnimatorSet;
 
         let key = propertyKeys[propertyAnimation.property];
         if (key) {
@@ -295,8 +323,6 @@ export class Animation extends AnimationBase {
                 opacityProperty._initDefaultNativeValue(style);
 
                 originalValue1 = nativeView.getAlpha();
-                nativeArray = Array.create("float", 1);
-                nativeArray[0] = propertyAnimation.value;
                 propertyUpdateCallbacks.push(checkAnimation(() => {
                     propertyAnimation.target.style[setLocal ? opacityProperty.name : opacityProperty.keyframe] = propertyAnimation.value;
                 }));
@@ -310,7 +336,7 @@ export class Animation extends AnimationBase {
                         propertyAnimation.target[opacityProperty.setNative](propertyAnimation.target.style.opacity);
                     }
                 }));
-                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
+                animators.push(createObjectAnimator(nativeView, "alpha", propertyAnimation.value));
                 break;
 
             case Properties.backgroundColor:
@@ -318,7 +344,7 @@ export class Animation extends AnimationBase {
 
                 ensureArgbEvaluator();
                 originalValue1 = propertyAnimation.target.backgroundColor;
-                nativeArray = Array.create(java.lang.Object, 2);
+                const nativeArray = Array.create(java.lang.Object, 2);
                 nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);
                 nativeArray[1] = java.lang.Integer.valueOf((<Color>propertyAnimation.value).argb);
                 let animator = android.animation.ValueAnimator.ofObject(argbEvaluator, nativeArray);
@@ -350,18 +376,6 @@ export class Animation extends AnimationBase {
                 translateXProperty._initDefaultNativeValue(style);
                 translateYProperty._initDefaultNativeValue(style);
 
-                xyObjectAnimators = Array.create(android.animation.Animator, 2);
-
-                nativeArray = Array.create("float", 1);
-                nativeArray[0] = propertyAnimation.value.x * density;
-                xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationX", nativeArray);
-                xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
-
-                nativeArray = Array.create("float", 1);
-                nativeArray[0] = propertyAnimation.value.y * density;
-                xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationY", nativeArray);
-                xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
-
                 originalValue1 = nativeView.getTranslationX() / density;
                 originalValue2 = nativeView.getTranslationY() / density;
 
@@ -385,27 +399,16 @@ export class Animation extends AnimationBase {
                     }
                 }));
 
-                animatorSet = new android.animation.AnimatorSet();
-                animatorSet.playTogether(xyObjectAnimators);
-                animatorSet.setupStartValues();
-                animators.push(animatorSet);
+                animators.push(
+                    createAnimationSet([
+                        createObjectAnimator(nativeView, "translationX", propertyAnimation.value.x * density),
+                        createObjectAnimator(nativeView, "translationY", propertyAnimation.value.y * density)
+                    ], propertyAnimation.iterations));
                 break;
 
             case Properties.scale:
                 scaleXProperty._initDefaultNativeValue(style);
                 scaleYProperty._initDefaultNativeValue(style);
-
-                xyObjectAnimators = Array.create(android.animation.Animator, 2);
-
-                nativeArray = Array.create("float", 1);
-                nativeArray[0] = propertyAnimation.value.x;
-                xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleX", nativeArray);
-                xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
-
-                nativeArray = Array.create("float", 1);
-                nativeArray[0] = propertyAnimation.value.y;
-                xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleY", nativeArray);
-                xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
 
                 originalValue1 = nativeView.getScaleX();
                 originalValue2 = nativeView.getScaleY();
@@ -430,34 +433,53 @@ export class Animation extends AnimationBase {
                     }
                 }));
 
-                animatorSet = new android.animation.AnimatorSet();
-                animatorSet.playTogether(xyObjectAnimators);
-                animatorSet.setupStartValues();
-                animators.push(animatorSet);
+                animators.push(
+                    createAnimationSet([
+                        createObjectAnimator(nativeView, "scaleX", propertyAnimation.value.x),
+                        createObjectAnimator(nativeView, "scaleY", propertyAnimation.value.y)
+                    ], propertyAnimation.iterations));
                 break;
 
             case Properties.rotate:
                 rotateProperty._initDefaultNativeValue(style);
+                rotateXProperty._initDefaultNativeValue(style);
+                rotateYProperty._initDefaultNativeValue(style);
 
-                originalValue1 = nativeView.getRotation();
-                nativeArray = Array.create("float", 1);
-                nativeArray[0] = propertyAnimation.value;
+                originalValue1 = nativeView.getRotationX();
+                originalValue2 = nativeView.getRotationY();
+                originalValue3 = nativeView.getRotation();
+
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[setLocal ? rotateProperty.name : rotateProperty.keyframe] = propertyAnimation.value;
+                    propertyAnimation.target.style[setLocal ? rotateXProperty.name : rotateXProperty.keyframe] = propertyAnimation.value.x;
+                    propertyAnimation.target.style[setLocal ? rotateYProperty.name : rotateYProperty.keyframe] = propertyAnimation.value.y;
+                    propertyAnimation.target.style[setLocal ? rotateProperty.name : rotateProperty.keyframe] = propertyAnimation.value.z;
                 }));
                 propertyResetCallbacks.push(checkAnimation(() => {
                     if (setLocal) {
-                        propertyAnimation.target.style[rotateProperty.name] = originalValue1;
+                        propertyAnimation.target.style[rotateXProperty.name] = originalValue1;
+                        propertyAnimation.target.style[rotateYProperty.name] = originalValue2;
+                        propertyAnimation.target.style[rotateProperty.name] = originalValue3;
                     } else {
-                        propertyAnimation.target.style[rotateProperty.keyframe] = originalValue1;
+                        propertyAnimation.target.style[rotateXProperty.keyframe] = originalValue1;
+                        propertyAnimation.target.style[rotateYProperty.keyframe] = originalValue2;
+                        propertyAnimation.target.style[rotateProperty.keyframe] = originalValue3;
                     }
 
                     if (propertyAnimation.target.nativeViewProtected) {
                         propertyAnimation.target[rotateProperty.setNative](propertyAnimation.target.style.rotate);
+                        propertyAnimation.target[rotateXProperty.setNative](propertyAnimation.target.style.rotateX);
+                        propertyAnimation.target[rotateYProperty.setNative](propertyAnimation.target.style.rotateY);
                     }
                 }));
-                animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
+
+                animators.push(
+                    createAnimationSet([
+                        createObjectAnimator(nativeView, "rotationX", propertyAnimation.value.x),
+                        createObjectAnimator(nativeView, "rotationY", propertyAnimation.value.y),
+                        createObjectAnimator(nativeView, "rotation", propertyAnimation.value.z)
+                    ], propertyAnimation.iterations));
                 break;
+
             case Properties.width:
             case Properties.height: {
 
@@ -465,7 +487,7 @@ export class Animation extends AnimationBase {
                 const extentProperty = isVertical ? heightProperty : widthProperty;
 
                 extentProperty._initDefaultNativeValue(style);
-                nativeArray = Array.create("float", 2);
+                const nativeArray = Array.create("float", 2);
                 let toValue = propertyAnimation.value;
                 let parent = propertyAnimation.target.parent as View;
                 if (!parent) {
@@ -473,7 +495,7 @@ export class Animation extends AnimationBase {
                 }
                 const parentExtent: number = isVertical ? parent.getMeasuredHeight() : parent.getMeasuredWidth();
                 toValue = PercentLength.toDevicePixels(toValue, parentExtent, parentExtent) / screen.mainScreen.scale;
-                const nativeHeight: number = isVertical ? nativeView.getHeight() : nativeView.getWidth();
+                let nativeHeight: number = isVertical ? nativeView.getHeight() : nativeView.getWidth();
                 const targetStyle: string = setLocal ? extentProperty.name : extentProperty.keyframe;
                 originalValue1 = nativeHeight / screen.mainScreen.scale;
                 nativeArray[0] = originalValue1;
@@ -516,7 +538,7 @@ export class Animation extends AnimationBase {
 
             // Repeat Count
             if (propertyAnimation.iterations !== undefined && animators[i] instanceof android.animation.ValueAnimator) {
-                (<android.animation.ValueAnimator>animators[i]).setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
+                (<android.animation.ValueAnimator>animators[i]).setRepeatCount(getAndroidRepeatCount(propertyAnimation.iterations));
             }
 
             // Interpolator
@@ -532,9 +554,5 @@ export class Animation extends AnimationBase {
         this._animators = this._animators.concat(animators);
         this._propertyUpdateCallbacks = this._propertyUpdateCallbacks.concat(propertyUpdateCallbacks);
         this._propertyResetCallbacks = this._propertyResetCallbacks.concat(propertyResetCallbacks);
-    }
-
-    private static _getAndroidRepeatCount(iterations: number): number {
-        return (iterations === Number.POSITIVE_INFINITY) ? android.view.animation.Animation.INFINITE : iterations - 1;
     }
 }

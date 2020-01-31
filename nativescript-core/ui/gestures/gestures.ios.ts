@@ -1,5 +1,5 @@
 // Definitions.
-import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
+import { GestureEventData, GestureEventDataWithState, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
 import { View, EventData } from "../core/view";
 
 // Types.
@@ -167,7 +167,9 @@ export class GesturesObserver extends GesturesObserverBase {
             }
 
             if (type & GestureTypes.longPress) {
-                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.longPress));
+                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.longPress, args => {
+                    this._executeCallback(_getLongPressData(args));
+                }));
             }
 
             if (type & GestureTypes.touch) {
@@ -353,6 +355,20 @@ function _getRotationData(args: GestureEventData): RotationGestureEventData {
         ios: args.ios,
         android: undefined,
         rotation: recognizer.rotation * (180.0 / Math.PI),
+        object: args.view,
+        eventName: toString(args.type),
+        state: getState(recognizer)
+    };
+}
+
+function _getLongPressData(args: GestureEventData): GestureEventDataWithState {
+    const recognizer = <UILongPressGestureRecognizer>args.ios;
+
+    return <GestureEventDataWithState>{
+        type: args.type,
+        view: args.view,
+        ios: args.ios,
+        android: undefined,
         object: args.view,
         eventName: toString(args.type),
         state: getState(recognizer)

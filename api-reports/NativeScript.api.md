@@ -243,7 +243,8 @@ export interface AnimationDefinition {
 
     opacity?: number;
 
-    rotate?: number;
+    // Warning: (ae-forgotten-export) The symbol "Point3D" needs to be exported by the entry point index.d.ts
+    rotate?: number | Point3D;
 
     scale?: Pair;
 
@@ -413,6 +414,7 @@ export class Color {
     public b: number;
     public equals(value: Color): boolean;
     public static equals(value1: Color, value2: Color): boolean;
+    public static fromIosColor(value: any /* UIColor */): Color;
     public g: number;
     public hex: string;
     ios: any /* UIColor */;
@@ -1008,6 +1010,8 @@ export const Http: {
 export interface HttpContent {
   raw: any;
 
+  toArrayBuffer: () => ArrayBuffer;
+
   toFile: (destinationFilePath?: string) => File;
 
   toImage: () => Promise<ImageSource>;
@@ -1019,7 +1023,7 @@ export interface HttpContent {
 
 // @public
 export interface HttpRequestOptions {
-  content?: string | FormData;
+  content?: string | FormData | ArrayBuffer;
 
   dontFollowRedirects?: boolean;
 
@@ -2085,6 +2089,8 @@ export class Style extends Observable {
     // (undocumented)
     public paddingTop: Length;
     // (undocumented)
+    public perspective: number;
+    // (undocumented)
     public placeholderColor: Color;
     // Warning: (ae-forgotten-export) The symbol "PropertyBagClass" needs to be exported by the entry point index.d.ts
     public readonly PropertyBag: PropertyBagClass;
@@ -2092,6 +2098,10 @@ export class Style extends Observable {
     public resetUnscopedCssVariables(): void;
     // (undocumented)
     public rotate: number;
+    // (undocumented)
+    public rotateX: number;
+    // (undocumented)
+    public rotateY: number;
     // (undocumented)
     public scaleX: number;
     // (undocumented)
@@ -2188,6 +2198,8 @@ export class TabContentItem extends ContentView {
 // @public
 export class TabNavigationBase extends View {
     android: any /* android.view.View */;
+
+    getTabBarBackgroundArgbColor(): any
 
     getTabBarBackgroundColor(): any
 
@@ -2466,6 +2478,8 @@ export class TextView extends EditableTextBase {
     android: any /* android.widget.EditText */;
 
     ios: any /* UITextView */;
+
+    maxLines: number;
 }
 
 // @public
@@ -2701,12 +2715,15 @@ export abstract class View extends ViewBase {
     opacity: number;
     originX: number;
     originY: number;
+    perspective: number;
     // (undocumented)
     _redrawNativeBackground(value: any): void;
     // (undocumented)
     _removeAnimation(animation: Animation): boolean;
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number;
     rotate: number;
+    rotateX: number;
+    rotateY: number;
     scaleX: number;
     scaleY: number;
     _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): { boundsChanged: boolean, sizeChanged: boolean };
