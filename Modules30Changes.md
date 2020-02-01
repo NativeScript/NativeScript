@@ -153,7 +153,7 @@ There are several type of Properties in modules 3.0:
 
 ### Events raised when property value change
 One significant change is that properties before 3.0 were raising two events when a value is changed - `propertyChange` and  propertyName + `Change` (like `textChange`). The second event was added at some point to make module compatible with Angular.
-With 3.0 we removed `propertyChange` event and left only the second event. This was done in order to improve performance of our property system. This also leads to cleaner code (no need to listen for every `propertyChange` and then check the name of the poperty that raised the event).
+With 3.0 we removed `propertyChange` event and left only the second event. This was done in order to improve performance of our property system. This also leads to cleaner code (no need to listen for every `propertyChange` and then check the name of the property that raised the event).
 
 With 3.0 if you want to get notification when some property value change you have to specify the *`propertyName`Change* as eventName to `addEventListener` method (like `textField.addEventListener('textChange'`, handler...)).
 
@@ -311,7 +311,7 @@ image.width = { value: 100, unit: "px" };
 You have to be careful when getting the value - you might get a complex object instead of `number`.
 
 ### Enumerations
-Enumeration from `ui/enums` modules are not used anymore. Most ot the properties that accepts specific strings are defined directly with the allowed values:
+Enumeration from `ui/enums` modules are not used anymore. Most of the properties that accepts specific strings are defined directly with the allowed values:
 `export type TextAlignment = "initial" | "left" | "center" | "right";`
 TypeScript will warn in case you set invalid value.
 
