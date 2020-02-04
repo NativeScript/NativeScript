@@ -145,7 +145,7 @@ export function _setAndroidFragmentTransitions(
         if (currentFragmentNeedsDifferentAnimation) {
             setupCurrentFragmentExplodeTransition(navigationTransition, currentEntry);
         }
-    } else if (name === "flip") {
+    } else if (name.indexOf("flip") === 0) {
         const direction = name.substr("flip".length) || "right"; //Extract the direction from the string
         const flipTransition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
 
