@@ -819,7 +819,9 @@ export class Tabs extends TabsBase {
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        if (value.fontSize) {
+            tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        }
         tabStripItem.nativeViewProtected.setTypeface(value.getAndroidTypeface());
     }
 
