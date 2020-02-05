@@ -65,11 +65,14 @@ mkdir -p "$DIST"
     npx ncp README.md "$DIST"/"$PACKAGE"/README.md
 
     (
-        echo 'TypeScript transpile...'
         cd "$DIST/$PACKAGE"
         npm install
-        npx tsc
     )
+    
+    # Aways execute npx tsc from repo root to use the local typescript
+    echo 'TypeScript transpile...'
+    npx tsc -v
+    npx tsc -p "$DIST/$PACKAGE"
 
     echo "Clearing typescript definitions from private APIs..."
     npx ts-node --project ./build/tsconfig.json build/clear-private-definitions "$DIST/$PACKAGE"
