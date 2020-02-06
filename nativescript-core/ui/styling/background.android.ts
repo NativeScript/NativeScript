@@ -56,7 +56,7 @@ export module ad {
             && !background.image
             && background.color) {
 
-            if (drawable instanceof org.nativescript.widgets.BorderDrawable) {
+            if (drawable instanceof org.nativescript.widgets.BorderDrawable && androidView._cachedDrawable) {
                 if (!(androidView._cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState)) {
                     return;
                 }
@@ -81,13 +81,13 @@ export module ad {
             }
         } else {
             const cachedDrawable = androidView._cachedDrawable;
-            let defaultDrawable: android.graphics.drawable.Drawable;
-            if (cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState) {
-                defaultDrawable = cachedDrawable.newDrawable(nativeView.getResources());
-            } else if (cachedDrawable instanceof android.graphics.drawable.Drawable) {
-                defaultDrawable = cachedDrawable;
-            } else {
-                defaultDrawable = null;
+            let defaultDrawable: android.graphics.drawable.Drawable = null;
+            if (cachedDrawable) {
+                if (cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState) {
+                    defaultDrawable = cachedDrawable.newDrawable(nativeView.getResources());
+                } else if (cachedDrawable instanceof android.graphics.drawable.Drawable) {
+                    defaultDrawable = cachedDrawable;
+                }
             }
 
             nativeView.setBackground(defaultDrawable);
