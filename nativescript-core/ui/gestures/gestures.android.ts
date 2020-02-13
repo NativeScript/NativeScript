@@ -396,16 +396,16 @@ function _getLongPressArgs(type: GestureTypes, view: View, state: GestureStateTy
 }
 
 function _getDoubleTapArgs(view: View, e: android.view.MotionEvent): DoubleTapGestureEventData {
-	return <DoubleTapGestureEventData>{
-		type: GestureTypes.doubleTap,
-		view: view,
-		android: e,
-		locationX: e.getX() / layout.getDisplayDensity(),
-		locationY: e.getY() / layout.getDisplayDensity(),
-		ios: undefined,
-		object: view,
-		eventName: toString(GestureTypes.doubleTap),
-	};
+    return <DoubleTapGestureEventData>{
+        type: GestureTypes.doubleTap,
+        view: view,
+        android: e,
+        locationX: e.getX() / layout.getDisplayDensity(),
+        locationY: e.getY() / layout.getDisplayDensity(),
+        ios: undefined,
+        object: view,
+        eventName: toString(GestureTypes.doubleTap),
+    };
 }
 
 function _getSwipeArgs(direction: SwipeDirection, view: View,
