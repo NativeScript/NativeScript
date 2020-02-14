@@ -405,6 +405,7 @@ export var testBindCloseOnReturnToBindingConext = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
         if (!isIOS) {
             TKUnit.assert(true === true);
+
             return;
         }
         var textField = <TextField>views[0];
@@ -436,6 +437,7 @@ export var testDontCloseOnReturn = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
         if (!isIOS) {
             TKUnit.assert(true === true);
+
             return;
         }
         var textField = <TextField>views[0];
@@ -457,6 +459,7 @@ export var testCloseOnReturn = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
         if (!isIOS) {
             TKUnit.assert(true === true);
+
             return;
         }
         var textField = <TextField>views[0];
@@ -478,6 +481,7 @@ export var testCloseOnReturnByDefault = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
         if (!isIOS) {
             TKUnit.assert(true === true);
+
             return;
         }
         var textField = <TextField>views[0];
