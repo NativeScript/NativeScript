@@ -66,7 +66,9 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
         // Called when the user presses the return button.
         const owner = this._owner.get();
         if (owner) {
-            owner.dismissSoftInput();
+            if (owner.closeOnReturn) {
+                owner.dismissSoftInput();
+            }
             owner.notify({ eventName: TextField.returnPressEvent, object: owner });
         }
 
