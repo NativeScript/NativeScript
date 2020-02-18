@@ -615,8 +615,16 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     public loadView(view: ViewBase): void {
         if (view && !view.isLoaded) {
-            view.callLoaded();
+            if (this._shouldDelayLoad()) {
+                setTimeout(() => view.callLoaded());
+            } else {
+                view.callLoaded();
+            }
         }
+    }
+
+    public _shouldDelayLoad(): boolean {
+        return false;
     }
 
     public unloadView(view: ViewBase): void {
@@ -1053,7 +1061,7 @@ export const classNameProperty = new Property<ViewBase, string>({
         cssClasses.clear();
 
         if (shouldAddModalRootViewCssClasses) {
-            cssClasses.add(MODAL_ROOT_VIEW_CSS_CLASS);    
+            cssClasses.add(MODAL_ROOT_VIEW_CSS_CLASS);
         } else if (shouldAddRootViewCssClasses) {
             cssClasses.add(ROOT_VIEW_CSS_CLASS);
         }
