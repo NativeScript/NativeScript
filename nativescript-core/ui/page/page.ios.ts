@@ -93,7 +93,7 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        const frame = <Frame>(this.navigationController ? (<any>this.navigationController).owner : null);
+        const frame = (this.navigationController ? (<any>this.navigationController).owner : null);
         const newEntry = this[ENTRY];
 
         // Don't raise event if currentPage was showing modal page.
