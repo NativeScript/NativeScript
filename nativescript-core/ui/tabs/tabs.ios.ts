@@ -7,6 +7,7 @@ import { TextTransform } from "../text-base";
 // Requires
 import { Color } from "../../color";
 import { ImageSource } from "../../image-source";
+import { device } from "../../platform";
 import { ios as iosUtils, isFontIconURI, layout } from "../../utils/utils";
 import { ios as iosView, View } from "../core/view";
 import { Frame } from "../frame";
@@ -14,6 +15,7 @@ import { Font } from "../styling/font";
 import {
     getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty
 } from "../tab-navigation-base/tab-navigation-base";
+import { getTransformedText } from "../text-base";
 import { swipeEnabledProperty, TabsBase } from "./tabs-common";
 
 // TODO
@@ -22,6 +24,7 @@ import { swipeEnabledProperty, TabsBase } from "./tabs-common";
 export * from "./tabs-common";
 
 const majorVersion = iosUtils.MajorVersion;
+const isPhone = device.deviceType === "Phone";
 
 // Equivalent to dispatch_async(dispatch_get_main_queue(...)) call
 const invokeOnRunLoop = (function () {
@@ -71,6 +74,17 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
         const selectedIndex = tabBarItems.indexOf(selectedItem);
 
         owner.selectedIndex = selectedIndex;
+    }
+}
+
+class BackgroundIndicatorTemplate extends NSObject implements MDCTabBarIndicatorTemplate {
+    public static ObjCProtocols = [MDCTabBarIndicatorTemplate];
+
+    public indicatorAttributesForContext(context: MDCTabBarIndicatorContext): MDCTabBarIndicatorAttributes {
+        let attributes = new MDCTabBarIndicatorAttributes();
+        attributes.path = UIBezierPath.bezierPathWithRect(context.bounds);
+
+        return attributes;
     }
 }
 
@@ -223,6 +237,25 @@ class UIPageViewControllerImpl extends UIPageViewController {
             }
         }
     }
+
+    public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
+        super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
+        UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
+            .call(coordinator, () => {
+                const owner = this._owner.get();
+                if (owner && owner.tabStrip && owner.tabStrip.items) {
+                    const tabStrip = owner.tabStrip;
+                    tabStrip.items.forEach(tabStripItem => {
+                        updateBackgroundPositions(tabStrip, tabStripItem,
+                            this.tabBar.alignment !== MDCTabBarAlignment.Justified || (owner.selectedIndex !== tabStripItem._index) ? owner._defaultItemBackgroundColor : null);
+
+                        const index = tabStripItem._index;
+                        const tabBarItemController = owner.viewControllers[index];
+                        updateTitleAndIconPositions(tabStripItem, tabBarItemController.tabBarItem, tabBarItemController);
+                    });
+                }
+            }, null);
+    }
 }
 
 class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewControllerDataSource {
@@ -355,172 +388,61 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
     }
 }
 
-// class UITabBarControllerImpl extends UITabBarController {
-
-//     private _owner: WeakRef<Tabs>;
-
-//     public static initWithOwner(owner: WeakRef<Tabs>): UITabBarControllerImpl {
-//         let handler = <UITabBarControllerImpl>UITabBarControllerImpl.new();
-//         handler._owner = owner;
-//         return handler;
-//     }
-
-//     @profile
-//     public viewWillAppear(animated: boolean): void {
-//         super.viewWillAppear(animated);
-//         const owner = this._owner.get();
-//         if (!owner) {
-//             return;
-//         }
-
-//         // Unify translucent and opaque bars layout
-//         this.extendedLayoutIncludesOpaqueBars = true;
-
-//         iosView.updateAutoAdjustScrollInsets(this, owner);
-
-//         if (!owner.parent) {
-//             owner.callLoaded();
-//         }
-//     }
-
-//     @profile
-//     public viewDidDisappear(animated: boolean): void {
-//         super.viewDidDisappear(animated);
-//         const owner = this._owner.get();
-//         if (owner && !owner.parent && owner.isLoaded && !this.presentedViewController) {
-//             owner.callUnloaded();
-//         }
-//     }
-
-//     public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
-//         super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
-//         UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
-//             .call(coordinator, null, () => {
-//                 const owner = this._owner.get();
-//                 if (owner && owner.items) {
-//                     // owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions()); TODO:
-//                 }
-//             });
-//     }
-// }
-
-// class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControllerDelegate {
-//     public static ObjCProtocols = [UITabBarControllerDelegate];
-
-//     private _owner: WeakRef<Tabs>;
-
-//     public static initWithOwner(owner: WeakRef<Tabs>): UITabBarControllerDelegateImpl {
-//         let delegate = <UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
-//         delegate._owner = owner;
-//         return delegate;
-//     }
-
-//     public tabBarControllerShouldSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): boolean {
-//         if (traceEnabled()) {
-//             traceWrite("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
-//         }
-
-//         let owner = this._owner.get();
-//         if (owner) {
-//             // "< More" cannot be visible after clicking on the main tab bar buttons.
-//             let backToMoreWillBeVisible = false;
-//             owner._handleTwoNavigationBars(backToMoreWillBeVisible);
-//         }
-
-//         if ((<any>tabBarController).selectedViewController === viewController) {
-//             return false;
-//         }
-
-//         (<any>tabBarController)._willSelectViewController = viewController;
-
-//         return true;
-//     }
-
-//     public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
-//         if (traceEnabled()) {
-//             traceWrite("TabView.delegate.DID_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
-//         }
-
-//         const owner = this._owner.get();
-//         if (owner) {
-//             owner._onViewControllerShown(viewController);
-//         }
-
-//         (<any>tabBarController)._willSelectViewController = undefined;
-//     }
-// }
-
-// class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
-//     public static ObjCProtocols = [UINavigationControllerDelegate];
-
-//     private _owner: WeakRef<Tabs>;
-
-//     public static initWithOwner(owner: WeakRef<Tabs>): UINavigationControllerDelegateImpl {
-//         let delegate = <UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
-//         delegate._owner = owner;
-//         return delegate;
-//     }
-
-//     navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-//         if (traceEnabled()) {
-//             traceWrite("TabView.moreNavigationController.WILL_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
-//         }
-
-//         let owner = this._owner.get();
-//         if (owner) {
-//             // If viewController is one of our tab item controllers, then "< More" will be visible shortly.
-//             // Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
-//             let backToMoreWillBeVisible = owner._ios.viewControllers.containsObject(viewController);
-//             owner._handleTwoNavigationBars(backToMoreWillBeVisible);
-//         }
-//     }
-
-//     navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-//         if (traceEnabled()) {
-//             traceWrite("TabView.moreNavigationController.DID_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
-//         }
-//         // We don't need Edit button in More screen.
-//         navigationController.navigationBar.topItem.rightBarButtonItem = null;
-//         let owner = this._owner.get();
-//         if (owner) {
-//             owner._onViewControllerShown(viewController);
-//         }
-//     }
-// }
-
-// function updateTitleAndIconPositions(tabStripItem: TabStripItem, tabBarItem: UITabBarItem, controller: UIViewController) {
-//     if (!tabStripItem || !tabBarItem) {
-//         return;
-//     }
-
-//     // For iOS <11 icon is *always* above the text.
-//     // For iOS 11 icon is above the text *only* on phones in portrait mode.
-//     const orientation = controller.interfaceOrientation;
-//     const isPortrait = orientation !== UIInterfaceOrientation.LandscapeLeft && orientation !== UIInterfaceOrientation.LandscapeRight;
-//     const isIconAboveTitle = (majorVersion < 11) || (isPhone && isPortrait);
-
-//     if (!tabStripItem.iconSource) {
-//         if (isIconAboveTitle) {
-//             tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
-//         } else {
-//             tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
-//         }
-//     }
-
-//     if (!tabStripItem.title) {
-//         if (isIconAboveTitle) {
-//             tabBarItem.imageInsets = new UIEdgeInsets({ top: 6, left: 0, bottom: -6, right: 0 });
-//         } else {
-//             tabBarItem.imageInsets = new UIEdgeInsets({ top: 0, left: 0, bottom: 0, right: 0 });
-//         }
-//     }
-// }
-
 function iterateIndexRange(index: number, eps: number, lastIndex: number, callback: (i) => void) {
     const rangeStart = Math.max(0, index - eps);
     const rangeEnd = Math.min(index + eps, lastIndex);
     for (let i = rangeStart; i <= rangeEnd; i++) {
         callback(i);
+    }
+}
+
+function updateBackgroundPositions(tabStrip: TabStrip, tabStripItem: TabStripItem, color: UIColor = null) {
+    let bgView = (<any>tabStripItem).bgView;
+    if (!bgView) {
+        const index = tabStripItem._index;
+        let width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
+        const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
+        bgView = UIView.alloc().initWithFrame(frame);
+        tabStrip.nativeView.insertSubviewAtIndex(bgView, 0);
+        (<any>tabStripItem).bgView = bgView;
+    }
+     else {
+        const index = tabStripItem._index;
+        let width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
+        const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
+        bgView.frame = frame;
+    }
+
+    const backgroundColor = tabStripItem.style.backgroundColor;
+    bgView.backgroundColor = color || (backgroundColor instanceof Color ? backgroundColor.ios : backgroundColor);
+
+}
+
+function updateTitleAndIconPositions(tabStripItem: TabStripItem, tabBarItem: UITabBarItem, controller: UIViewController) {
+    if (!tabStripItem || !tabBarItem) {
+        return;
+    }
+
+    // For iOS <11 icon is *always* above the text.
+    // For iOS 11 icon is above the text *only* on phones in portrait mode.
+    const orientation = controller.interfaceOrientation;
+    const isPortrait = orientation !== UIInterfaceOrientation.LandscapeLeft && orientation !== UIInterfaceOrientation.LandscapeRight;
+    const isIconAboveTitle = (majorVersion < 11) || (isPhone && isPortrait);
+
+    if (!tabStripItem.iconSource) {
+        if (isIconAboveTitle) {
+            tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
+        } else {
+            tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
+        }
+    }
+
+    if (!tabStripItem.title) {
+        if (isIconAboveTitle) {
+            tabBarItem.imageInsets = new UIEdgeInsets({ top: 6, left: 0, bottom: -6, right: 0 });
+        } else {
+            tabBarItem.imageInsets = new UIEdgeInsets({ top: 0, left: 0, bottom: 0, right: 0 });
+        }
     }
 }
 
@@ -542,11 +464,12 @@ export class Tabs extends TabsBase {
     private _delegate: UIPageViewControllerDelegateImpl;
     // private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
     private _iconsCache = {};
+    private _backgroundIndicatorColor: UIColor;
+    public _defaultItemBackgroundColor: UIColor;
 
     constructor() {
         super();
 
-        // this.viewController = this._ios = <UIPageViewControllerImpl>UIPageViewControllerImpl.initWithOwner(new WeakRef(this)); // .alloc().initWithTransitionStyleNavigationOrientationOptions(UIPageViewControllerTransitionStyle.Scroll, UIPageViewControllerNavigationOrientation.Horizontal, null); // UITabBarControllerImpl.initWithOwner(new WeakRef(this));
         this.viewController = this._ios = <UIPageViewControllerImpl>UIPageViewControllerImpl.initWithOwner(new WeakRef(this)); //alloc().initWithTransitionStyleNavigationOrientationOptions(UIPageViewControllerTransitionStyle.Scroll, UIPageViewControllerNavigationOrientation.Horizontal, null);;
     }
 
@@ -558,8 +481,6 @@ export class Tabs extends TabsBase {
         super.initNativeView();
         this._dataSource = UIPageViewControllerDataSourceImpl.initWithOwner(new WeakRef(this));
         this._delegate = UIPageViewControllerDelegateImpl.initWithOwner(new WeakRef(this));
-        // this._delegate = UITabBarControllerDelegateImpl.initWithOwner(new WeakRef(this));
-        // this._moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
     disposeNativeView() {
@@ -567,7 +488,6 @@ export class Tabs extends TabsBase {
         this._delegate = null;
         this._ios.tabBarDelegate = null;
         this._ios.tabBar = null;
-        // this._moreNavigationControllerDelegate = null;
         super.disposeNativeView();
     }
 
@@ -576,23 +496,21 @@ export class Tabs extends TabsBase {
     public onLoaded() {
         super.onLoaded();
 
+        this.setViewControllers(this.items);
+
         const selectedIndex = this.selectedIndex;
         const selectedView = this.items && this.items[selectedIndex] && this.items[selectedIndex].content;
         if (selectedView instanceof Frame) {
-            (<Frame>selectedView)._pushInFrameStackRecursive();
+            selectedView._pushInFrameStackRecursive();
         }
 
         this._ios.dataSource = this._dataSource;
         this._ios.delegate = this._delegate;
-
-        const tabStripItems = this.tabStrip ? this.tabStrip.items : null;
-        this.setTabStripItems(tabStripItems);
     }
 
     public onUnloaded() {
         this._ios.dataSource = null;
         this._ios.delegate = null;
-        // this._ios.moreNavigationController.delegate = null;
         super.onUnloaded();
     }
 
@@ -614,20 +532,33 @@ export class Tabs extends TabsBase {
             return;
         }
 
-        // const oldItem = items[oldIndex];
-        // if (oldItem) {
-        //     oldItem.unloadView(oldItem.view);
-        // }
+        const oldItem = items[oldIndex];
+        if (oldItem) {
+            oldItem.canBeLoaded = false;
+            oldItem.unloadView(oldItem.content);
+        }
 
-        // const newItem = items[newIndex];
-        // if (newItem && this.isLoaded) {
-        //     const selectedView = items[newIndex].view;
-        //     if (selectedView instanceof Frame) {
-        //         selectedView._pushInFrameStackRecursive();
-        //     }
+        const newItem = items[newIndex];
+        if (newItem && this.isLoaded) {
+            const selectedView = items[newIndex].content;
+            if (selectedView instanceof Frame) {
+                selectedView._pushInFrameStackRecursive();
+            }
 
-        //     newItem.loadView(newItem.view);
-        // }
+            newItem.canBeLoaded = true;
+            newItem.loadView(newItem.content);
+        }
+
+        const tabStripItems = this.tabStrip && this.tabStrip.items;
+        if (tabStripItems) {
+            if (tabStripItems[newIndex]) {
+                tabStripItems[newIndex]._emit(TabStripItem.selectEvent);
+            }
+
+            if (tabStripItems[oldIndex]) {
+                tabStripItems[oldIndex]._emit(TabStripItem.unselectEvent);
+            }
+        }
 
         this._loadUnloadTabItems(newIndex);
 
@@ -705,46 +636,6 @@ export class Tabs extends TabsBase {
         }
     }
 
-    // private _actionBarHiddenByTabView: boolean;
-    // public _handleTwoNavigationBars(backToMoreWillBeVisible: boolean) {
-    //     // TODO
-    //     // if (traceEnabled()) {
-    //     //     traceWrite(`TabView._handleTwoNavigationBars(backToMoreWillBeVisible: ${backToMoreWillBeVisible})`, traceCategories.Debug);
-    //     // }
-
-    //     // The "< Back" and "< More" navigation bars should not be visible simultaneously.
-    //     const page = this.page || this._selectedView.page || (<any>this)._selectedView.currentPage;
-    //     if (!page || !page.frame) {
-    //         return;
-    //     }
-
-    //     let actionBarVisible = page.frame._getNavBarVisible(page);
-
-    //     if (backToMoreWillBeVisible && actionBarVisible) {
-    //         page.frame.ios._disableNavBarAnimation = true;
-    //         page.actionBarHidden = true;
-    //         page.frame.ios._disableNavBarAnimation = false;
-    //         this._actionBarHiddenByTabView = true;
-    //         // TODO
-    //         // if (traceEnabled()) {
-    //         //     traceWrite(`TabView hid action bar`, traceCategories.Debug);
-    //         // }
-    //         return;
-    //     }
-
-    //     if (!backToMoreWillBeVisible && this._actionBarHiddenByTabView) {
-    //         page.frame.ios._disableNavBarAnimation = true;
-    //         page.actionBarHidden = false;
-    //         page.frame.ios._disableNavBarAnimation = false;
-    //         this._actionBarHiddenByTabView = undefined;
-    //         // TODO
-    //         // if (traceEnabled()) {
-    //         //     traceWrite(`TabView restored action bar`, traceCategories.Debug);
-    //         // }
-    //         return;
-    //     }
-    // }
-
     private getViewController(item: TabContentItem): UIViewController {
         let newController: UIViewController = item.content ? item.content.viewController : null;
 
@@ -789,112 +680,55 @@ export class Tabs extends TabsBase {
     private setViewControllers(items: TabContentItem[]) {
         const length = items ? items.length : 0;
         if (length === 0) {
-            // this._ios.setViewControllersDirectionAnimatedCompletion(null, null, false, null);
+            this.viewControllers = null;
+
             return;
         }
 
         const viewControllers = [];
+        const tabBarItems = [];
 
-        items.forEach((item) => {
+        if (this.tabStrip) {
+            this.tabStrip.setNativeView(this._ios.tabBar);
+        }
+
+        const tabStripItems = this.tabStrip && this.tabStrip.items;
+        if (tabStripItems) {
+            if (tabStripItems[this.selectedIndex]) {
+                tabStripItems[this.selectedIndex]._emit(TabStripItem.selectEvent);
+            }
+        }
+
+        items.forEach((item, i) => {
             const controller = this.getViewController(item);
+
+            if (this.tabStrip && this.tabStrip.items && this.tabStrip.items[i]) {
+                const tabStripItem = <TabStripItem>this.tabStrip.items[i];
+                const tabBarItem = this.createTabBarItem(tabStripItem, i);
+                updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
+
+                setViewTextAttributes(this._ios.tabBar, tabBarItem, tabStripItem.label, i === this.selectedIndex);
+
+                controller.tabBarItem = tabBarItem;
+                tabStripItem._index = i;
+                tabBarItems.push(tabBarItem);
+                tabStripItem.setNativeView(tabBarItem);
+            }
+
+            item.canBeLoaded = true;
             viewControllers.push(controller);
         });
 
         this.viewControllers = viewControllers;
-
-        // const controllers = NSMutableArray.alloc<UIViewController>().initWithCapacity(length);
-
-        // const selectedItem = items[this.selectedIndex];
-        // const controller = this.getViewController(selectedItem);
-        // controllers.addObject(controller);
-
-        // this._ios.setViewControllersDirectionAnimatedCompletion(controllers, UIPageViewControllerNavigationDirection.Forward, false, null);
-
-        iterateIndexRange(this.selectedIndex, 1, this.items.length, (index) => {
-            (<TabContentItem>items[index]).canBeLoaded = true;
-        });
-
-        // (<TabContentItemDefinition>selectedItem).canBeLoaded = true;
-
-        // const nextItem = items[this.selectedIndex + 1];
-        // (<TabContentItemDefinition>nextItem).canBeLoaded = true;
-
-        // const states = getTitleAttributesForStates(this);
-
-        // items.forEach((item, i) => {
-        //     const controller = this.getViewController(item);
-
-        //     let icon = null;
-        //     let title = "";
-
-        //     if (this.tabStrip && this.tabStrip.items && this.tabStrip.items[i]) {
-        //         const tabStripItem = <TabStripItem>this.tabStrip.items[i];
-        //         icon = this._getIcon(tabStripItem.iconSource);
-        //         title = tabStripItem.title;
-
-        //         const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((title || ""), icon, i);
-        //         updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
-
-        //         applyStatesToItem(tabBarItem, states);
-
-        //         controller.tabBarItem = tabBarItem;
-        //     }
-
-        //     controllers.addObject(controller);
-        //     (<TabContentItemDefinition>item).canBeLoaded = true;
-        // });
-
-        // this._ios.viewControllers = controllers;
-        // this._ios.customizableViewControllers = null;
-
-        // // When we set this._ios.viewControllers, someone is clearing the moreNavigationController.delegate, so we have to reassign it each time here.
-        // this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
-    }
-
-    private setTabStripItems(items: Array<TabStripItem>) {
-        if (!this.tabStrip || !items) {
-            return;
-        }
-
-        const tabBarItems = [];
-
-        items.forEach((tabStripItem: TabStripItem, i) => {
-            tabStripItem._index = i;
-            const tabBarItem = this.createTabBarItem(tabStripItem, i);
-            tabBarItems.push(tabBarItem);
-            tabStripItem.setNativeView(tabBarItem);
-        });
-
         this.tabBarItems = tabBarItems;
 
         if (this.viewController && this.viewController.tabBar) {
             this.viewController.tabBar.itemAppearance = this.getTabBarItemAppearance();
-            this.viewController.tabBar.items = NSArray.arrayWithArray(tabBarItems);
+            this.viewController.tabBar.items = NSArray.arrayWithArray(this.tabBarItems);
             // TODO: investigate why this call is necessary to actually toggle item appearance
             this.viewController.tabBar.sizeToFit();
-            this.tabStrip.setNativeView(this.viewController.tabBar);
+
         }
-
-        // const length = items ? items.length : 0;
-        // if (length === 0) {
-        //     this._tabLayout.setItems(null, null);
-        //     return;
-        // }
-
-        // const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-        // items.forEach((item: TabStripItem, i, arr) => {
-        //     const tabItemSpec = createTabItemSpec(item);
-        //     (<any>item).index = i;
-        //     (<any>item).tabItemSpec = tabItemSpec;
-        //     tabItems.push(tabItemSpec);
-        // });
-
-        // const tabLayout = this._tabLayout;
-        // tabLayout.setItems(tabItems, this._viewPager);
-        // items.forEach((item, i, arr) => {
-        //     const tv = tabLayout.getTextViewForItemAt(i);
-        //     item.setNativeView(tv);
-        // });
     }
 
     private createTabBarItem(item: TabStripItem, index: number): UITabBarItem {
@@ -904,6 +738,11 @@ export class Tabs extends TabsBase {
         if (item.isLoaded) {
             image = this.getIcon(item);
             title = item.label.text;
+
+            const textTransform = item.label.style.textTransform;
+            if (textTransform) {
+                title = getTransformedText(title, textTransform);
+            }
 
             if (!this.tabStrip._hasImage) {
                 this.tabStrip._hasImage = !!image;
@@ -938,6 +777,8 @@ export class Tabs extends TabsBase {
     }
 
     private getIcon(tabStripItem: TabStripItem): UIImage {
+        // Image and Label children of TabStripItem
+        // take priority over its `iconSource` and `title` properties
         const iconSource = tabStripItem.image && tabStripItem.image.src;
         if (!iconSource) {
             return null;
@@ -945,13 +786,15 @@ export class Tabs extends TabsBase {
 
         const target = tabStripItem.image;
         const font = target.style.fontInternal;
-        const color = tabStripItem.parent.style.color;
+        const color = target.style.color;
         const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
 
+        let isFontIcon = false;
         let image: UIImage = this._iconsCache[iconTag];
         if (!image) {
             let is = new ImageSource;
             if (isFontIconURI(iconSource)) {
+                isFontIcon = true;
                 const fontIconCode = iconSource.split("//")[1];
                 is = ImageSource.fromFontIconCodeSync(fontIconCode, font, color);
             } else {
@@ -965,7 +808,11 @@ export class Tabs extends TabsBase {
                     image = this.getFixedSizeIcon(image);
                 }
 
-                const originalRenderedImage = image.imageWithRenderingMode(this.getIconRenderingMode());
+                let renderingMode: UIImageRenderingMode = UIImageRenderingMode.AlwaysOriginal;
+                if (!isFontIcon) {
+                    renderingMode = this.getIconRenderingMode();
+                }
+                const originalRenderedImage = image.imageWithRenderingMode(renderingMode);
                 this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
             } else {
@@ -994,26 +841,6 @@ export class Tabs extends TabsBase {
         return resultImage;
     }
 
-    // private _updateIOSTabBarColorsAndFonts(): void {
-    //     if (!this.tabStrip || !this.tabStrip.items || !this.tabStrip.items.length) {
-    //         return;
-    //     }
-
-    //     const tabBar = <UITabBar>this.ios.tabBar;
-    //     const states = getTitleAttributesForStates(this);
-    //     for (let i = 0; i < tabBar.items.count; i++) {
-    //         applyStatesToItem(tabBar.items[i], states);
-    //     }
-    // }
-
-    // TODO: Move this to TabStripItem
-    // [fontInternalProperty.getDefault](): Font {
-    //     return null;
-    // }
-    // [fontInternalProperty.setNative](value: Font) {
-    //     this._updateIOSTabBarColorsAndFonts();
-    // }
-
     public getTabBarBackgroundColor(): UIColor {
         return this._ios.tabBar.barTintColor;
     }
@@ -1022,8 +849,76 @@ export class Tabs extends TabsBase {
         this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
     }
 
+    public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
+        tabStripItem.nativeView.title = value;
+    }
+
+    private equalUIColor(first: UIColor, second: UIColor): boolean {
+        if (!first && !second) {
+            return true;
+        }
+        if (!first || !second) {
+            return false;
+        }
+        const firstComponents = CGColorGetComponents(first.CGColor);
+        const secondComponents = CGColorGetComponents(second.CGColor);
+
+        return firstComponents[0] === secondComponents[0]
+            && firstComponents[1] === secondComponents[1]
+            && firstComponents[2] === secondComponents[2]
+            && firstComponents[3] === secondComponents[3];
+    }
+
+    private isSelectedAndHightlightedItem(tabStripItem: TabStripItem): boolean {
+        return (tabStripItem._index === this.selectedIndex && tabStripItem["_visualState"] === "highlighted");
+    }
+
+    public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
+        if (!this.tabStrip || !tabStripItem) {
+            return;
+        }
+
+        let newColor = value instanceof Color ? value.ios : value;
+        const itemSelectedAndHighlighted = this.isSelectedAndHightlightedItem(tabStripItem);
+
+        if (!this._defaultItemBackgroundColor && !itemSelectedAndHighlighted) {
+            this._defaultItemBackgroundColor = newColor;
+        }
+
+        if (this.viewController.tabBar.alignment !== MDCTabBarAlignment.Justified && itemSelectedAndHighlighted
+            && !this.equalUIColor(this._defaultItemBackgroundColor, newColor)) {
+            if (!this._backgroundIndicatorColor) {
+                this._backgroundIndicatorColor = newColor;
+                this._ios.tabBar.selectionIndicatorTemplate = new BackgroundIndicatorTemplate();
+                this._ios.tabBar.tintColor = newColor;
+            }
+        } else {
+            updateBackgroundPositions(this.tabStrip, tabStripItem, newColor);
+        }
+    }
+
+    public setTabBarItemColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
+        setViewTextAttributes(this._ios.tabBar, tabStripItem.nativeView, tabStripItem.label);
+    }
+
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
+        const image = this.getIcon(tabStripItem);
+
+        tabStripItem.nativeView.image = image;
+        tabStripItem.nativeView.selectedImage = image;
+    }
+
+    public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
+        setViewTextAttributes(this._ios.tabBar, tabStripItem.nativeView, tabStripItem.label);
+    }
+
     public getTabBarFontInternal(): UIFont {
         return this._ios.tabBar.unselectedItemTitleFont;
+    }
+
+    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
+        const title = getTransformedText(tabStripItem.label.text, value);
+        tabStripItem.nativeView.title = title;
     }
 
     public setTabBarFontInternal(value: Font): void {
@@ -1048,7 +943,7 @@ export class Tabs extends TabsBase {
     }
 
     public getTabBarColor(): UIColor {
-        return this._ios.tabBar.titleColorForState(MDCTabBarItemState.Normal);
+         return this._ios.tabBar.titleColorForState(MDCTabBarItemState.Normal);
     }
 
     public setTabBarColor(value: UIColor | Color): void {
@@ -1126,6 +1021,12 @@ export class Tabs extends TabsBase {
         return null;
     }
     [itemsProperty.setNative](value: TabContentItem[]) {
+        if (value) {
+            value.forEach((item: TabContentItem, i) => {
+                (<any>item).index = i;
+            });
+        }
+
         this.setViewControllers(value);
         selectedIndexProperty.coerce(this);
     }
@@ -1133,8 +1034,10 @@ export class Tabs extends TabsBase {
     [tabStripProperty.getDefault](): TabStrip {
         return null;
     }
+
     [tabStripProperty.setNative](value: TabStrip) {
-        this.setTabStripItems(value.items);
+        this.setViewControllers(this.items);
+        selectedIndexProperty.coerce(this);
     }
 
     [swipeEnabledProperty.getDefault](): boolean {
@@ -1145,4 +1048,28 @@ export class Tabs extends TabsBase {
             this.viewController.scrollView.scrollEnabled = value;
         }
     }
+}
+
+function setViewTextAttributes(tabBar: MDCTabBar, item: UITabBarItem, view: View, setSelected: boolean = false): any {
+    if (!view) {
+        return null;
+    }
+
+    const defaultTabItemFontSize = 10;
+    const tabItemFontSize = view.style.fontSize || defaultTabItemFontSize;
+    const font: UIFont = view.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+    const tabItemTextColor = view.style.color;
+
+    const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
+
+    tabBar.unselectedItemTitleFont = font;
+    tabBar.selectedItemTitleFont = font;
+
+    tabBar.setTitleColorForState(textColor, MDCTabBarItemState.Normal);
+    if (setSelected) {
+        tabBar.setTitleColorForState(textColor, MDCTabBarItemState.Selected);
+        tabBar.barTintColor = textColor;
+    }
+
+    tabBar.inkColor = UIColor.clearColor;
 }
