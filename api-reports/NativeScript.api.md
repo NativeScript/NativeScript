@@ -2274,6 +2274,8 @@ export class Tabs extends TabNavigationBase {
 
     ios: any /* UITabBarController */;
 
+    iosAlignment: "leading" | "justified" | "center" | "centerSelected";
+
     items: Array<TabContentItem>;
 
     offscreenTabLimit: number;

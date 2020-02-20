@@ -22,6 +22,7 @@ export class TabsBase extends TabNavigationBase implements TabsDefinition {
     public swipeEnabled: boolean;
     public offscreenTabLimit: number;
     public tabsPosition: "top" | "bottom";
+    public iosAlignment: "leading" | "justified" | "center" | "centerSelected";
 }
 
 // TODO: Add Unit tests
@@ -39,3 +40,6 @@ offscreenTabLimitProperty.register(TabsBase);
 
 export const tabsPositionProperty = new Property<TabsBase, "top" | "bottom">({ name: "tabsPosition", defaultValue: "top" });
 tabsPositionProperty.register(TabsBase);
+
+export const iosAlignmentProperty = new Property<TabsBase, "leading" | "justified" | "center" | "centerSelected">({ name: "iosAlignment", defaultValue: "justified" });
+iosAlignmentProperty.register(TabsBase);
