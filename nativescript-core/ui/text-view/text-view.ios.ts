@@ -1,7 +1,7 @@
 import { ScrollEventData } from "../scroll-view";
-import { TextView as TextViewDefinition } from ".";
+import { TextViewBase as TextViewBaseCommon, maxLinesProperty } from "./text-view-common";
 import {
-    EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
+    editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
     Length, _updateCharactersInRangeReplacementString, Color, layout,
@@ -110,7 +110,7 @@ class NoScrollAnimationUITextView extends UITextView {
 }
 
 @CSSType("TextView")
-export class TextView extends EditableTextBase implements TextViewDefinition {
+export class TextView extends TextViewBaseCommon {
     nativeViewProtected: UITextView;
     private _delegate: UITextViewDelegateImpl;
     private _isShowingHint: boolean;
@@ -333,6 +333,20 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
         this.nativeTextViewProtected.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
+    [maxLinesProperty.getDefault](): number {
+        return 0;
+    }
+    [maxLinesProperty.setNative](value: number) {
+      this.nativeTextViewProtected.textContainer.maximumNumberOfLines = value;
+
+      if (value !== 0) {
+        this.nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+      }
+      else {
+        this.nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+      }
+    }
+
 }
 
 TextView.prototype.recycleNativeView = "auto";

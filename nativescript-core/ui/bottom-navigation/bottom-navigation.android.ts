@@ -385,14 +385,14 @@ export class BottomNavigation extends TabNavigationBase {
 
     _onAttachedToWindow(): void {
         super._onAttachedToWindow();
-        this._attachedToWindow = true;
 
         // _onAttachedToWindow called from OS again after it was detach
         // TODO: Consider testing and removing it when update to androidx.fragment:1.2.0
         if (this._manager && this._manager.isDestroyed()) {
             return;
         }
-
+        
+        this._attachedToWindow = true;
         this.changeTab(this.selectedIndex);
     }
 
