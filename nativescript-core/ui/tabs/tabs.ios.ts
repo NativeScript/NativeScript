@@ -15,7 +15,6 @@ import { Font } from "../styling/font";
 import {
     getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty,
 } from "../tab-navigation-base/tab-navigation-base";
-import { getTransformedText } from "../text-base";
 import { swipeEnabledProperty, iosAlignmentProperty, TabsBase } from "./tabs-common";
 
 // TODO
@@ -739,11 +738,6 @@ export class Tabs extends TabsBase {
             image = this.getIcon(item);
             title = item.label.text;
 
-            const textTransform = item.label.style.textTransform;
-            if (textTransform) {
-                title = getTransformedText(title, textTransform);
-            }
-
             if (!this.tabStrip._hasImage) {
                 this.tabStrip._hasImage = !!image;
             }
@@ -760,9 +754,9 @@ export class Tabs extends TabsBase {
 
     private getTabBarItemAppearance(): MDCTabBarItemAppearance {
         let itemAppearance;
-        if (this.tabStrip._hasImage && this.tabStrip._hasTitle) {
+        if (this.tabStrip && this.tabStrip._hasImage && this.tabStrip._hasTitle) {
             itemAppearance = MDCTabBarItemAppearance.TitledImages;
-        } else if (this.tabStrip._hasImage) {
+        } else if (this.tabStrip && this.tabStrip._hasImage) {
             itemAppearance = MDCTabBarItemAppearance.Images;
         } else {
             itemAppearance = MDCTabBarItemAppearance.Titles;
@@ -916,11 +910,6 @@ export class Tabs extends TabsBase {
         return this._ios.tabBar.unselectedItemTitleFont;
     }
 
-    public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
-        const title = getTransformedText(tabStripItem.label.text, value);
-        tabStripItem.nativeView.title = title;
-    }
-
     public setTabBarFontInternal(value: Font): void {
         const defaultTabItemFontSize = 10;
         const tabItemFontSize = this.tabStrip.style.fontSize || defaultTabItemFontSize;
@@ -931,7 +920,15 @@ export class Tabs extends TabsBase {
     }
 
     public getTabBarTextTransform(): TextTransform {
-        return null;
+        switch (this._ios.tabBar.titleTextTransform) {
+            case MDCTabBarTextTransform.None:
+                return "none";
+            case MDCTabBarTextTransform.Automatic:
+                return "initial";
+            case MDCTabBarTextTransform.Uppercase:
+            default:
+                return "uppercase";
+        }
     }
 
     public setTabBarTextTransform(value: TextTransform): void {
@@ -939,6 +936,8 @@ export class Tabs extends TabsBase {
             this._ios.tabBar.titleTextTransform = MDCTabBarTextTransform.None;
         } else if (value === "uppercase") {
             this._ios.tabBar.titleTextTransform = MDCTabBarTextTransform.Uppercase;
+        } else if (value === "initial") {
+            this._ios.tabBar.titleTextTransform = MDCTabBarTextTransform.Automatic;
         }
     }
 
@@ -1061,8 +1060,6 @@ export class Tabs extends TabsBase {
     }
 
     [iosAlignmentProperty.setNative](value: "leading" | "justified" | "center" | "centerSelected") {
-        console.log("iosAlignment", value);
-
         if (!this.viewController || !this.viewController.tabBar) {
             return;
         }

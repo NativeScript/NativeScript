@@ -13,6 +13,7 @@ import {
 import { isIOS } from "../../../platform";
 import { Image } from "../../image/image";
 import { Label } from "../../label/label";
+import { textTransformProperty, TextTransform } from "../../text-base";
 
 export * from "../../core/view";
 export const traceCategory = "TabView";
@@ -234,6 +235,19 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         const tabStripParent = parent && <TabNavigationBase>parent.parent;
 
         return tabStripParent && tabStripParent.setTabBarItemBackgroundColor(this, value);
+    }
+
+    [textTransformProperty.getDefault](): TextTransform {
+        const parent = <TabStrip>this.parent;
+        const tabStripParent = parent && <TabNavigationBase>parent.parent;
+
+        return tabStripParent && tabStripParent.getTabBarItemTextTransform(this);
+    }
+    [textTransformProperty.setNative](value: TextTransform) {
+        const parent = <TabStrip>this.parent;
+        const tabStripParent = parent && <TabNavigationBase>parent.parent;
+
+        return tabStripParent && tabStripParent.setTabBarItemTextTransform(this, value);
     }
 
     [backgroundInternalProperty.getDefault](): any {

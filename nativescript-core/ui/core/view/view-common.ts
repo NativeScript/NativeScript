@@ -26,6 +26,7 @@ import { sanitizeModuleName } from "../../builder/module-name-sanitizer";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
 import { BackgroundRepeat } from "../../styling/style-properties";
+import { TextTransform } from "../../text-base";
 
 export * from "../../styling/style-properties";
 export * from "../view-base";
@@ -716,6 +717,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
     set perspective(value: number) {
         this.style.perspective = value;
+    }
+
+    get textTransform(): TextTransform {
+        return this.style.textTransform;
+    }
+    set textTransform(value: TextTransform) {
+        this.style.textTransform = value;
     }
 
     get translateX(): dip {
