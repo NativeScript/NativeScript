@@ -166,7 +166,7 @@ export class XMLHttpRequest {
     private _listeners: Map<string, Array<Function>> = new Map<string, Array<Function>>();
 
     public addEventListener(eventName: string, handler: Function) {
-        if (eventName !== "load" && eventName !== "error" && eventName !== "progress") {
+        if (["abort", "error", "load", "loadend", "loadstart", "progress", "readystatechange"].indexOf(eventName) === -1) {
             throw new Error("Event not supported: " + eventName);
         }
 
