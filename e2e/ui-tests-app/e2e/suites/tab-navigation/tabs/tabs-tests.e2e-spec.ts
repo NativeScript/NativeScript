@@ -283,4 +283,22 @@ describe(`${imagePrefix}-suite`, async function () {
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await tabsViewBasePage.navigateBackToSuitMainPage();
     });
+
+    // it(`${imagePrefix}-frame-in-tabs`, async function () {
+    //     await tabsViewBasePage.navigateToSample("frame-in-tabs");
+    //     await driver.imageHelper.compareScreen();
+
+    //     // go through the tabs and check that they are loaded
+    //     await tabsViewBasePage.tabOnItem(1);
+    //     await driver.imageHelper.compareScreen();
+
+    //     await tabsViewBasePage.tabOnItem(2);
+    //     await driver.imageHelper.compareScreen();
+
+    //     await tabsViewBasePage.tabOnItem(3);
+    //     await driver.imageHelper.compareScreen();
+
+    //     assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+    //     await tabsViewBasePage.navigateBackToSuitMainPage();
+    // });
 });

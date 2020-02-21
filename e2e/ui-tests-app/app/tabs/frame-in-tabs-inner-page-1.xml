@@ -1,0 +1,3 @@
+<Page class="page" >
+    <Label text="Inner label 1" backgroundColor="blue"/>
+</Page>
