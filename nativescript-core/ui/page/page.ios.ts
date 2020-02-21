@@ -93,7 +93,7 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        const frame = this.navigationController ? (<any>this.navigationController).owner : null;
+        const frame = (this.navigationController ? (<any>this.navigationController).owner : null);
         const newEntry = this[ENTRY];
 
         // Don't raise event if currentPage was showing modal page.
@@ -199,7 +199,7 @@ class UIViewControllerImpl extends UIViewController {
         if (!owner) {
             return;
         }
-        
+
         // Cache presentedViewController if any. We don't want to raise
         // navigation events in case of presenting view controller.
         if (!owner._presentedViewController) {
@@ -230,7 +230,6 @@ class UIViewControllerImpl extends UIViewController {
         if (!page || page.modal || page._presentedViewController) {
             return;
         }
-        
         // Forward navigation does not remove page from frame so we raise unloaded manually.
         if (page.isLoaded) {
             page.callUnloaded();
@@ -347,6 +346,10 @@ export class Page extends PageBase {
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
         //
+    }
+
+    public _shouldDelayLoad(): boolean {
+        return this._frame && this._frame._animationInProgress;
     }
 
     public onLoaded(): void {
