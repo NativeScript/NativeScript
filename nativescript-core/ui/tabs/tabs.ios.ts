@@ -15,7 +15,7 @@ import { Font } from "../styling/font";
 import {
     getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty,
 } from "../tab-navigation-base/tab-navigation-base";
-import { swipeEnabledProperty, iosAlignmentProperty, TabsBase } from "./tabs-common";
+import { swipeEnabledProperty, TabsBase } from "./tabs-common";
 
 // TODO
 // import { profile } from "../../profiling";
@@ -706,7 +706,7 @@ export class Tabs extends TabsBase {
                 const tabBarItem = this.createTabBarItem(tabStripItem, i);
                 updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
 
-                setViewTextAttributes(this._ios.tabBar, tabBarItem, tabStripItem.label, i === this.selectedIndex);
+                setViewTextAttributes(this._ios.tabBar, tabStripItem.label, i === this.selectedIndex);
 
                 controller.tabBarItem = tabBarItem;
                 tabStripItem._index = i;
@@ -892,7 +892,7 @@ export class Tabs extends TabsBase {
     }
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        setViewTextAttributes(this._ios.tabBar, tabStripItem.nativeView, tabStripItem.label);
+        setViewTextAttributes(this._ios.tabBar, tabStripItem.label);
     }
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
@@ -903,7 +903,7 @@ export class Tabs extends TabsBase {
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        setViewTextAttributes(this._ios.tabBar, tabStripItem.nativeView, tabStripItem.label);
+        setViewTextAttributes(this._ios.tabBar, tabStripItem.label);
     }
 
     public getTabBarFontInternal(): UIFont {
@@ -958,6 +958,37 @@ export class Tabs extends TabsBase {
     public setTabBarHighlightColor(value: UIColor | Color) {
         const nativeColor = value instanceof Color ? value.ios : value;
         this._ios.tabBar.tintColor = nativeColor;
+    }
+
+    public getIOSAlignment(): "leading" | "justified" | "center" | "centerSelected" {
+        if (!this.viewController || !this.viewController.tabBar) {
+            return "justified";
+        }
+
+        let alignment = this.viewController.tabBar.alignment.toString();
+
+        return <any>(alignment.charAt(0).toLowerCase() + alignment.substring(1));
+    }
+
+    public setIOSAlignment(value: "leading" | "justified" | "center" | "centerSelected") {
+        if (!this.viewController || !this.viewController.tabBar) {
+            return;
+        }
+
+        let alignment = MDCTabBarAlignment.Justified;
+        switch (value) {
+            case "leading":
+                alignment = MDCTabBarAlignment.Leading;
+                break;
+            case "center":
+                alignment = MDCTabBarAlignment.Center;
+                break;
+            case "centerSelected":
+                alignment = MDCTabBarAlignment.CenterSelected;
+                break;
+        }
+
+        this.viewController.tabBar.alignment = alignment;
     }
 
     [selectedIndexProperty.setNative](value: number) {
@@ -1048,40 +1079,9 @@ export class Tabs extends TabsBase {
             this.viewController.scrollView.scrollEnabled = value;
         }
     }
-
-    [iosAlignmentProperty.getDefault](): "leading" | "justified" | "center" | "centerSelected" {
-        if (!this.viewController || !this.viewController.tabBar) {
-            return "justified";
-        }
-
-        let alignment = this.viewController.tabBar.alignment.toString();
-
-        return <any>(alignment.charAt(0).toLowerCase() + alignment.substring(1));
-    }
-
-    [iosAlignmentProperty.setNative](value: "leading" | "justified" | "center" | "centerSelected") {
-        if (!this.viewController || !this.viewController.tabBar) {
-            return;
-        }
-
-        let alignment = MDCTabBarAlignment.Justified;
-        switch (value) {
-            case "leading":
-                alignment = MDCTabBarAlignment.Leading;
-                break;
-            case "center":
-                alignment = MDCTabBarAlignment.Center;
-                break;
-            case "centerSelected":
-                alignment = MDCTabBarAlignment.CenterSelected;
-                break;
-        }
-
-        this.viewController.tabBar.alignment = alignment;
-    }
 }
 
-function setViewTextAttributes(tabBar: MDCTabBar, item: UITabBarItem, view: View, setSelected: boolean = false): any {
+function setViewTextAttributes(tabBar: MDCTabBar, view: View, setSelected: boolean = false): any {
     if (!view) {
         return null;
     }
@@ -1089,16 +1089,17 @@ function setViewTextAttributes(tabBar: MDCTabBar, item: UITabBarItem, view: View
     const defaultTabItemFontSize = 10;
     const tabItemFontSize = view.style.fontSize || defaultTabItemFontSize;
     const font: UIFont = view.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
-    const tabItemTextColor = view.style.color;
-
-    const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
 
     tabBar.unselectedItemTitleFont = font;
     tabBar.selectedItemTitleFont = font;
 
-    tabBar.setTitleColorForState(textColor, MDCTabBarItemState.Normal);
-    if (setSelected) {
-        tabBar.setTitleColorForState(textColor, MDCTabBarItemState.Selected);
+    const tabItemTextColor = view.style.color;
+    const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
+    if (textColor) {
+        tabBar.setTitleColorForState(textColor, MDCTabBarItemState.Normal);
+        if (setSelected) {
+            tabBar.setTitleColorForState(textColor, MDCTabBarItemState.Selected);
+        }
     }
 
     tabBar.inkColor = UIColor.clearColor;

@@ -33,6 +33,16 @@ export class TabStrip extends View {
     highlightColor: Color;
 
     /**
+     * Gets or set the MDCTabBarAlignment of the tab bar icons in iOS. Defaults to "justified"
+     * Valid values are:
+     *  - leading
+     *  - justified
+     *  - center
+     *  - centerSelected
+     */
+    iosAlignment: "leading" | "justified" | "center" | "centerSelected";
+
+    /**
      * @private
      */
     _hasImage: boolean;

@@ -154,6 +154,18 @@ export class TabNavigationBase extends View {
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
+    getIOSAlignment(): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setIOSAlignment(value: any)
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
     setTabBarItemTitle(tabStripItem: TabStripItem, value: any): any
 
     /**

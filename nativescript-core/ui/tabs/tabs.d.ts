@@ -50,16 +50,6 @@ export class Tabs extends TabNavigationBase {
     tabsPosition: "top" | "bottom";
 
     /**
-     * Gets or set the MDCTabBarAlignment of the tab bar icons in iOS. Defaults to "justified"
-     * Valid values are:
-     *  - leading
-     *  - justified
-     *  - center
-     *  - centerSelected
-     */
-    iosAlignment: "leading" | "justified" | "center" | "centerSelected";
-
-    /**
      * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.
      */
     android: any /* android.view.View */; //android.support.v4.view.ViewPager;

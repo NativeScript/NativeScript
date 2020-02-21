@@ -150,6 +150,15 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         // overridden by inheritors
     }
 
+    public getIOSAlignment(): any {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setIOSAlignment(value: any) {
+        // overridden by inheritors
+    }
+
     public getTabBarColor(): any {
         // overridden by inheritors
         return null;

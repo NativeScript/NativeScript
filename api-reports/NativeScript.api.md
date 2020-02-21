@@ -2202,6 +2202,8 @@ export class TabContentItem extends ContentView {
 export class TabNavigationBase extends View {
     android: any /* android.view.View */;
 
+    getIOSAlignment(): any
+
     getTabBarBackgroundArgbColor(): any
 
     getTabBarBackgroundColor(): any
@@ -2241,6 +2243,8 @@ export class TabNavigationBase extends View {
 
     public static selectedIndexChangedEvent: string;
 
+    setIOSAlignment(value: any)
+
     setTabBarBackgroundColor(value: any): void
 
     setTabBarColor(value: any): void
@@ -2274,8 +2278,6 @@ export class Tabs extends TabNavigationBase {
 
     ios: any /* UITabBarController */;
 
-    iosAlignment: "leading" | "justified" | "center" | "centerSelected";
-
     items: Array<TabContentItem>;
 
     offscreenTabLimit: number;
@@ -2305,6 +2307,8 @@ export class TabStrip extends View {
     _hasTitle: boolean;
 
     highlightColor: Color;
+
+    iosAlignment: "leading" | "justified" | "center" | "centerSelected";
 
     iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
