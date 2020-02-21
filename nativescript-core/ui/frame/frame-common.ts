@@ -42,6 +42,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
     public actionBarVisibility: "auto" | "never" | "always";
     public _currentEntry: BackstackEntry;
+    public _animationInProgress = false;
     public _executingContext: NavigationContext;
     public _isInFrameStack = false;
     public static defaultAnimatedNavigation = true;
