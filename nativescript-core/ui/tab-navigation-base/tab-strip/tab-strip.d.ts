@@ -6,6 +6,7 @@
 import { Color } from "../../../color";
 import { EventData, Property, View } from "../../core/view";
 import { TabStripItem } from "../tab-strip-item";
+import { IOSAlignment } from "../tab-navigation-base/tab-navigation-base";
 
 /**
  * Represents a tab strip.
@@ -40,7 +41,7 @@ export class TabStrip extends View {
      *  - center
      *  - centerSelected
      */
-    iosAlignment: "leading" | "justified" | "center" | "centerSelected";
+    iosAlignment: IOSAlignment;
 
     /**
      * @private

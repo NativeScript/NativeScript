@@ -150,7 +150,7 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         // overridden by inheritors
     }
 
-    public getIOSAlignment(): any {
+    public getIOSAlignment(): IOSAlignment {
         // overridden by inheritors
         return null;
     }
@@ -296,3 +296,5 @@ export const tabStripProperty = new Property<TabNavigationBase, TabStrip>({
     }
 });
 tabStripProperty.register(TabNavigationBase);
+
+export type IOSAlignment = "leading" | "justified" | "center" | "centerSelected";

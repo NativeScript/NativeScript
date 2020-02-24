@@ -1213,6 +1213,9 @@ export class ImageSource {
 export type InstrumentationMode = "counters" | "timeline" | "lifecycle";
 
 // @public
+export type IOSAlignment = "leading" | "justified" | "center" | "centerSelected";
+
+// @public
 export class iOSApplication {
     /* tslint:enable */
     addNotificationObserver(notificationName: string, onReceiveCallback: (notification: any /* NSNotification */) => void): any;
@@ -2202,7 +2205,7 @@ export class TabContentItem extends ContentView {
 export class TabNavigationBase extends View {
     android: any /* android.view.View */;
 
-    getIOSAlignment(): any
+    getIOSAlignment(): IOSAlignment
 
     getTabBarBackgroundArgbColor(): any
 
@@ -2308,7 +2311,7 @@ export class TabStrip extends View {
 
     highlightColor: Color;
 
-    iosAlignment: "leading" | "justified" | "center" | "centerSelected";
+    iosAlignment: IOSAlignment;
 
     iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 

@@ -207,17 +207,14 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 
 function updateBackgroundPositions(tabStrip: TabStrip, tabStripItem: TabStripItem) {
     let bgView = (<any>tabStripItem).bgView;
+    const index = tabStripItem._index;
+    const width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
+    const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
     if (!bgView) {
-        const index = tabStripItem._index;
-        const width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
-        const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
         bgView = UIView.alloc().initWithFrame(frame);
         tabStrip.nativeView.insertSubviewAtIndex(bgView, 0);
         (<any>tabStripItem).bgView = bgView;
     } else {
-        const index = tabStripItem._index;
-        const width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
-        const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
         bgView.frame = frame;
     }
 

@@ -13,7 +13,7 @@ import { ios as iosView, View } from "../core/view";
 import { Frame } from "../frame";
 import { Font } from "../styling/font";
 import {
-    getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty,
+    getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty, IOSAlignment,
 } from "../tab-navigation-base/tab-navigation-base";
 import { swipeEnabledProperty, TabsBase } from "./tabs-common";
 
@@ -397,18 +397,15 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
 
 function updateBackgroundPositions(tabStrip: TabStrip, tabStripItem: TabStripItem, color: UIColor = null) {
     let bgView = (<any>tabStripItem).bgView;
+    const index = tabStripItem._index;
+    let width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
+    const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
     if (!bgView) {
-        const index = tabStripItem._index;
-        let width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
-        const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
         bgView = UIView.alloc().initWithFrame(frame);
         tabStrip.nativeView.insertSubviewAtIndex(bgView, 0);
         (<any>tabStripItem).bgView = bgView;
     }
      else {
-        const index = tabStripItem._index;
-        let width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
-        const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
         bgView.frame = frame;
     }
 
@@ -960,7 +957,7 @@ export class Tabs extends TabsBase {
         this._ios.tabBar.tintColor = nativeColor;
     }
 
-    public getIOSAlignment(): "leading" | "justified" | "center" | "centerSelected" {
+    public getIOSAlignment(): IOSAlignment {
         if (!this.viewController || !this.viewController.tabBar) {
             return "justified";
         }
@@ -970,7 +967,7 @@ export class Tabs extends TabsBase {
         return <any>(alignment.charAt(0).toLowerCase() + alignment.substring(1));
     }
 
-    public setIOSAlignment(value: "leading" | "justified" | "center" | "centerSelected") {
+    public setIOSAlignment(value: IOSAlignment) {
         if (!this.viewController || !this.viewController.tabBar) {
             return;
         }
