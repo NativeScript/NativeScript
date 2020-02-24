@@ -11,14 +11,12 @@ import {
 } from "../../core/view";
 import { TabStripItem } from "../tab-strip-item";
 import { textTransformProperty } from "../../text-base";
-import { IOSAlignment } from "../tab-navigation-base/tab-navigation-base";
 
 export const traceCategory = "TabView";
 
 // Place this on top because the webpack ts-loader doesn't work when export
 // is after reference
 export const highlightColorProperty = new Property<TabStrip, Color>({ name: "highlightColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
-export const iosAlignmentProperty = new Property<TabStrip, IOSAlignment>({ name: "iosAlignment", defaultValue: "justified" });
 
 @CSSType("TabStrip")
 export class TabStrip extends View implements TabStripDefinition, AddChildFromBuilder, AddArrayFromBuilder {
@@ -26,7 +24,6 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     public items: TabStripItem[];
     public isIconSizeFixed: boolean;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
-    public iosAlignment: IOSAlignment;
     public highlightColor: Color;
     public _hasImage: boolean;
     public _hasTitle: boolean;
@@ -130,18 +127,6 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
 
         return parent && parent.setTabBarHighlightColor(value);
     }
-
-    [iosAlignmentProperty.getDefault](): IOSAlignment {
-        const parent = <TabNavigationBase>this.parent;
-
-        return parent && parent.getIOSAlignment() || "justified";
-    }
-
-    [iosAlignmentProperty.setNative](value: IOSAlignment) {
-        const parent = <TabNavigationBase>this.parent;
-
-        return parent && parent.setIOSAlignment(value);
-    }
 }
 
 export interface TabStrip {
@@ -165,4 +150,3 @@ export const isIconSizeFixedProperty = new Property<TabStrip, boolean>({
 isIconSizeFixedProperty.register(TabStrip);
 
 highlightColorProperty.register(TabStrip);
-iosAlignmentProperty.register(TabStrip);

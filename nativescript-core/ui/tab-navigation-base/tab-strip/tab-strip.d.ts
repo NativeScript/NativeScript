@@ -6,7 +6,6 @@
 import { Color } from "../../../color";
 import { EventData, Property, View } from "../../core/view";
 import { TabStripItem } from "../tab-strip-item";
-import { IOSAlignment } from "../tab-navigation-base/tab-navigation-base";
 
 /**
  * Represents a tab strip.
@@ -32,16 +31,6 @@ export class TabStrip extends View {
      * Gets or sets the color that marks the selected tab of the tab strip. Works for Tabs component only.
      */
     highlightColor: Color;
-
-    /**
-     * Gets or set the MDCTabBarAlignment of the tab bar icons in iOS. Defaults to "justified"
-     * Valid values are:
-     *  - leading
-     *  - justified
-     *  - center
-     *  - centerSelected
-     */
-    iosAlignment: IOSAlignment;
 
     /**
      * @private

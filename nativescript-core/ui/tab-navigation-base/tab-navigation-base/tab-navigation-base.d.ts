@@ -154,18 +154,6 @@ export class TabNavigationBase extends View {
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    getIOSAlignment(): IOSAlignment
-
-    /**
-     * @private
-     * Method is intended to be overridden by inheritors and used as "protected"
-     */
-    setIOSAlignment(value: IOSAlignment)
-
-    /**
-     * @private
-     * Method is intended to be overridden by inheritors and used as "protected"
-     */
     setTabBarItemTitle(tabStripItem: TabStripItem, value: any): any
 
     /**
@@ -236,15 +224,6 @@ export class TabNavigationBase extends View {
 }
 
 export function getIconSpecSize(size: { width: number, height: number }): { width: number, height: number }
-
-/**
- * IOS Alignment of the Tabs TabStrip to use.
- *  - `leading` The tabs are aligned to the left
- *  - `justified` The tab stript is split equally to all the tab items
- *  - `center` The tabs are aligned in the center
- *  - `centerSelected` The tab moves to make the selected tab in the center
- */
-export type IOSAlignment = "leading" | "justified" | "center" | "centerSelected";
 
 export const itemsProperty: Property<TabNavigationBase, TabContentItem[]>;
 export const tabStripProperty: Property<TabNavigationBase, TabStrip>

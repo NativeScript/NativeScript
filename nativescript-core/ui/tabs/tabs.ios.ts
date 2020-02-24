@@ -13,9 +13,9 @@ import { ios as iosView, View } from "../core/view";
 import { Frame } from "../frame";
 import { Font } from "../styling/font";
 import {
-    getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty, IOSAlignment,
+    getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty,
 } from "../tab-navigation-base/tab-navigation-base";
-import { swipeEnabledProperty, TabsBase } from "./tabs-common";
+import { swipeEnabledProperty, TabsBase, IOSTabBarItemsAlignment, iOSTabBarItemsAlignmentProperty } from "./tabs-common";
 
 // TODO
 // import { profile } from "../../profiling";
@@ -956,37 +956,6 @@ export class Tabs extends TabsBase {
         this._ios.tabBar.tintColor = nativeColor;
     }
 
-    public getIOSAlignment(): IOSAlignment {
-        if (!this.viewController || !this.viewController.tabBar) {
-            return "justified";
-        }
-
-        let alignment = this.viewController.tabBar.alignment.toString();
-
-        return <any>(alignment.charAt(0).toLowerCase() + alignment.substring(1));
-    }
-
-    public setIOSAlignment(value: IOSAlignment) {
-        if (!this.viewController || !this.viewController.tabBar) {
-            return;
-        }
-
-        let alignment = MDCTabBarAlignment.Justified;
-        switch (value) {
-            case "leading":
-                alignment = MDCTabBarAlignment.Leading;
-                break;
-            case "center":
-                alignment = MDCTabBarAlignment.Center;
-                break;
-            case "centerSelected":
-                alignment = MDCTabBarAlignment.CenterSelected;
-                break;
-        }
-
-        this.viewController.tabBar.alignment = alignment;
-    }
-
     [selectedIndexProperty.setNative](value: number) {
         // TODO
         // if (traceEnabled()) {
@@ -1074,6 +1043,37 @@ export class Tabs extends TabsBase {
         if (this.viewController && this.viewController.scrollView) {
             this.viewController.scrollView.scrollEnabled = value;
         }
+    }
+
+    [iOSTabBarItemsAlignmentProperty.getDefault](): IOSTabBarItemsAlignment {
+        if (!this.viewController || !this.viewController.tabBar) {
+            return "justified";
+        }
+
+        let alignment = this.viewController.tabBar.alignment.toString();
+
+        return <any>(alignment.charAt(0).toLowerCase() + alignment.substring(1));
+    }
+
+    [iOSTabBarItemsAlignmentProperty.setNative](value: IOSTabBarItemsAlignment) {
+        if (!this.viewController || !this.viewController.tabBar) {
+            return;
+        }
+
+        let alignment = MDCTabBarAlignment.Justified;
+        switch (value) {
+            case "leading":
+                alignment = MDCTabBarAlignment.Leading;
+                break;
+            case "center":
+                alignment = MDCTabBarAlignment.Center;
+                break;
+            case "centerSelected":
+                alignment = MDCTabBarAlignment.CenterSelected;
+                break;
+        }
+
+        this.viewController.tabBar.alignment = alignment;
     }
 }
 

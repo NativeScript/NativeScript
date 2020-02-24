@@ -1213,9 +1213,6 @@ export class ImageSource {
 export type InstrumentationMode = "counters" | "timeline" | "lifecycle";
 
 // @public
-export type IOSAlignment = "leading" | "justified" | "center" | "centerSelected";
-
-// @public
 export class iOSApplication {
     /* tslint:enable */
     addNotificationObserver(notificationName: string, onReceiveCallback: (notification: any /* NSNotification */) => void): any;
@@ -1241,6 +1238,9 @@ export class iOSApplication {
     /* tslint:enable */
     window: any /* UIWindow */;
 }
+
+// @public
+export type IOSTabBarItemsAlignment = "leading" | "justified" | "center" | "centerSelected";
 
 // @public
 export const isAndroid: boolean;
@@ -2205,8 +2205,6 @@ export class TabContentItem extends ContentView {
 export class TabNavigationBase extends View {
     android: any /* android.view.View */;
 
-    getIOSAlignment(): IOSAlignment
-
     getTabBarBackgroundArgbColor(): any
 
     getTabBarBackgroundColor(): any
@@ -2246,8 +2244,6 @@ export class TabNavigationBase extends View {
 
     public static selectedIndexChangedEvent: string;
 
-    setIOSAlignment(value: IOSAlignment)
-
     setTabBarBackgroundColor(value: any): void
 
     setTabBarColor(value: any): void
@@ -2281,6 +2277,8 @@ export class Tabs extends TabNavigationBase {
 
     ios: any /* UITabBarController */;
 
+    iOSTabBarItemsAlignment: IOSTabBarItemsAlignment;
+
     items: Array<TabContentItem>;
 
     offscreenTabLimit: number;
@@ -2310,8 +2308,6 @@ export class TabStrip extends View {
     _hasTitle: boolean;
 
     highlightColor: Color;
-
-    iosAlignment: IOSAlignment;
 
     iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
