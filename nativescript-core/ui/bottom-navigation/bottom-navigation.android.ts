@@ -243,6 +243,7 @@ export class BottomNavigation extends TabNavigationBase {
     private _currentTransaction: androidx.fragment.app.FragmentTransaction;
     private _attachedToWindow = false;
     public _originalBackground: any;
+    private _textTransform: TextTransform = "none";
 
     constructor() {
         super();
@@ -391,7 +392,7 @@ export class BottomNavigation extends TabNavigationBase {
         if (this._manager && this._manager.isDestroyed()) {
             return;
         }
-        
+
         this._attachedToWindow = true;
         this.changeTab(this.selectedIndex);
     }
@@ -562,6 +563,18 @@ export class BottomNavigation extends TabNavigationBase {
         });
     }
 
+    private getItemLabelTextTransform(tabStripItem: TabStripItem): TextTransform {
+        const nestedLabel = tabStripItem.label;
+        let textTransform: TextTransform = null;
+        if (nestedLabel && nestedLabel.style.textTransform && nestedLabel.style.textTransform !== "initial") {
+            textTransform = nestedLabel.style.textTransform;
+        } else if (tabStripItem.style.textTransform && tabStripItem.style.textTransform !== "initial") {
+            textTransform = tabStripItem.style.textTransform;
+        }
+
+        return textTransform || this._textTransform;
+    }
+
     private createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
         const tabItemSpec = new org.nativescript.widgets.TabItemSpec();
 
@@ -570,10 +583,8 @@ export class BottomNavigation extends TabNavigationBase {
             let title = titleLabel.text;
 
             // TEXT-TRANSFORM
-            const textTransform = titleLabel.style.textTransform;
-            if (textTransform) {
-                title = getTransformedText(title, textTransform);
-            }
+            const textTransform = this.getItemLabelTextTransform(tabStripItem);
+            title = getTransformedText(title, textTransform);
             tabItemSpec.title = title;
 
             // BACKGROUND-COLOR
@@ -713,6 +724,24 @@ export class BottomNavigation extends TabNavigationBase {
         const titleLabel = tabStripItem.label;
         const title = getTransformedText(titleLabel.text, value);
         tabStripItem.nativeViewProtected.setText(title);
+    }
+
+    public getTabBarTextTransform(): TextTransform {
+        return this._textTransform;
+    }
+
+    public setTabBarTextTransform(value: TextTransform): void {
+        let items = this.tabStrip && this.tabStrip.items;
+        if (items) {
+            items.forEach((tabStripItem) => {
+                if (tabStripItem.label && tabStripItem.nativeViewProtected) {
+                    const nestedLabel = tabStripItem.label;
+                    const title = getTransformedText(nestedLabel.text, value);
+                    tabStripItem.nativeViewProtected.setText(title);
+                }
+            });
+        }
+        this._textTransform = value;
     }
 
     [selectedIndexProperty.setNative](value: number) {
