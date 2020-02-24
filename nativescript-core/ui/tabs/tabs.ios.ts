@@ -239,21 +239,20 @@ class UIPageViewControllerImpl extends UIPageViewController {
 
     public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
         super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
-        UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
-            .call(coordinator, () => {
-                const owner = this._owner.get();
-                if (owner && owner.tabStrip && owner.tabStrip.items) {
-                    const tabStrip = owner.tabStrip;
-                    tabStrip.items.forEach(tabStripItem => {
-                        updateBackgroundPositions(tabStrip, tabStripItem,
-                            this.tabBar.alignment !== MDCTabBarAlignment.Justified || (owner.selectedIndex !== tabStripItem._index) ? owner._defaultItemBackgroundColor : null);
+        coordinator.animateAlongsideTransitionCompletion(() => {
+            const owner = this._owner.get();
+            if (owner && owner.tabStrip && owner.tabStrip.items) {
+                const tabStrip = owner.tabStrip;
+                tabStrip.items.forEach(tabStripItem => {
+                    updateBackgroundPositions(tabStrip, tabStripItem,
+                        this.tabBar.alignment !== MDCTabBarAlignment.Justified || (owner.selectedIndex !== tabStripItem._index) ? owner._defaultItemBackgroundColor : null);
 
-                        const index = tabStripItem._index;
-                        const tabBarItemController = owner.viewControllers[index];
-                        updateTitleAndIconPositions(tabStripItem, tabBarItemController.tabBarItem, tabBarItemController);
-                    });
-                }
-            }, null);
+                    const index = tabStripItem._index;
+                    const tabBarItemController = owner.viewControllers[index];
+                    updateTitleAndIconPositions(tabStripItem, tabBarItemController.tabBarItem, tabBarItemController);
+                });
+            }
+        }, null);
     }
 }
 
