@@ -155,7 +155,7 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         return null;
     }
 
-    public setIOSAlignment(value: any) {
+    public setIOSAlignment(value: IOSAlignment) {
         // overridden by inheritors
     }
 

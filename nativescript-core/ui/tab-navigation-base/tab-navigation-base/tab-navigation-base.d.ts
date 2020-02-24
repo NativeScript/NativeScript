@@ -160,7 +160,7 @@ export class TabNavigationBase extends View {
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    setIOSAlignment(value: any)
+    setIOSAlignment(value: IOSAlignment)
 
     /**
      * @private

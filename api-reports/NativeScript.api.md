@@ -2246,7 +2246,7 @@ export class TabNavigationBase extends View {
 
     public static selectedIndexChangedEvent: string;
 
-    setIOSAlignment(value: any)
+    setIOSAlignment(value: IOSAlignment)
 
     setTabBarBackgroundColor(value: any): void
 
