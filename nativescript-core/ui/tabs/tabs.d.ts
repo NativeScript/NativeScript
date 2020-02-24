@@ -94,9 +94,9 @@ export const selectedIndexProperty: Property<Tabs, number>;
 
 /**
  * IOS Alignment of the Tabs TabStrip to use.
- *  - `leading` The tabs are aligned to the left
- *  - `justified` The tab stript is split equally to all the tab items
- *  - `center` The tabs are aligned in the center
- *  - `centerSelected` The tab moves to make the selected tab in the center
+ *  - `leading` - tab items are aligned to the left
+ *  - `justified` - tab strip is split equally to all the tab items
+ *  - `center` - tabs items are aligned in the center
+ *  - `centerSelected` - tab items move to make the selected tab in the center
  */
 export type IOSTabBarItemsAlignment = "leading" | "justified" | "center" | "centerSelected";
