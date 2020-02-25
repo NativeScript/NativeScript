@@ -2934,7 +2934,7 @@ export abstract class ViewBase extends Observable {
     // (undocumented)
     _setupAsRootView(context: any): void;
     _setupUI(context: any /* android.content.Context */, atIndex?: number): void;
-    _shouldDelayLoad(): boolean;
+    _shouldDelayLayout(): boolean;
     showModal(moduleName: string, modalOptions: ShowModalOptions): ViewBase;
     showModal(view: ViewBase, modalOptions: ShowModalOptions): ViewBase;
     public readonly style: Style;
