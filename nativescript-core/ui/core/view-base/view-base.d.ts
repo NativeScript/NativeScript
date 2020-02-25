@@ -474,7 +474,7 @@ export abstract class ViewBase extends Observable {
      * When returning true the callLoaded method will be run in setTimeout
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    _shouldDelayLoad(): boolean;
+    _shouldDelayLayout(): boolean;
 
     /**
      * @private
