@@ -727,9 +727,9 @@ function applyStatesToItem(item: UITabBarItem, states: TabStates, tabBar: UITabB
     item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
     item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
 
-    // there's a bug when setting the item color on ios 13 if there's no backround set to the tabstrip
+    // there's a bug when setting the item color on ios 13 if there's no background set to the tabstrip
     // https://books.google.bg/books?id=99_BDwAAQBAJ&q=tabBar.unselectedItemTintColor
-    // to fix the above issue we are applying the selected fix only for the case when there is no background set
+    // to fix the above issue we are applying the selected fix only for the case, when there is no background set
     // in that case we have the following known issue:
     // the color to all unselected items, so you won't be able to set different colors for the different not selected items
     if ((!tabBar.barTintColor) && (states.normalState[UITextAttributeTextColor] && (majorVersion > 9))) {
