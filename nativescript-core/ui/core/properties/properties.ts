@@ -200,7 +200,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (wrapped || changed) {
-                if (affectsLayout) {
+                if (affectsLayout && this.readyForRequestLayout) {
                     this.requestLayout();
                 }
 
@@ -277,7 +277,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                     owner.notify<PropertyChangeData>({ object: owner, eventName, propertyName, value, oldValue });
                 }
 
-                if (affectsLayout) {
+                if (affectsLayout && owner.readyForRequestLayout) {
                     owner.requestLayout();
                 }
 
@@ -401,7 +401,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
                     this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
                 }
 
-                if (affectsLayout) {
+                if (affectsLayout && this.readyForRequestLayout) {
                     this.requestLayout();
                 }
 
@@ -612,7 +612,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                     this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
                 }
 
-                if (affectsLayout) {
+                if (affectsLayout && view.readyForRequestLayout) {
                     view.requestLayout();
                 }
             }
@@ -693,7 +693,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                     this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
                 }
 
-                if (affectsLayout) {
+                if (affectsLayout && view.readyForRequestLayout) {
                     view.requestLayout();
                 }
             }
@@ -1046,7 +1046,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                     this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
                 }
 
-                if (affectsLayout) {
+                if (affectsLayout && view.readyForRequestLayout) {
                     view.requestLayout();
                 }
 

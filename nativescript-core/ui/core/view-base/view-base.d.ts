@@ -103,6 +103,9 @@ export interface ShowModalOptions {
 }
 
 export abstract class ViewBase extends Observable {
+
+    readyForRequestLayout: boolean;
+    
     // Dynamic properties.
     left: Length;
     top: Length;

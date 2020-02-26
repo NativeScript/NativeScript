@@ -196,6 +196,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     public _domId: number;
     public _context: any;
+    public _readyForRequestLayout: boolean;
     public _isAddedToNativeVisualTree: boolean;
     public _cssState: ssm.CssState = new ssm.CssState(new WeakRef(this));
     public _styleScope: ssm.StyleScope;
@@ -774,19 +775,32 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
 
         this.setNativeView(nativeView);
-
+        this._readyForRequestLayout = false;
         if (this.parent) {
             const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
             this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
+            this._readyForRequestLayout = this.parent._readyForRequestLayout;
         }
 
         this._resumeNativeUpdates(SuspendType.UISetup);
 
         this.eachChild((child) => {
+            child._readyForRequestLayout = this._readyForRequestLayout
             child._setupUI(context);
 
             return true;
         });
+    }
+    set readyForRequestLayout(value: boolean) {
+        this._readyForRequestLayout =value
+        this.eachChild((child) => {
+            child._readyForRequestLayout = value
+            return true;
+        });
+    }
+    get readyForRequestLayout() {
+        return this._readyForRequestLayout;
+        // return true;
     }
 
     setNativeView(value: any): void {
