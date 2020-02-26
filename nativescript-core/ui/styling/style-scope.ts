@@ -110,6 +110,19 @@ class CSSSource {
         this.parse();
     }
 
+    public static fromDetect(cssOrAst: any, keyframes: KeyframesMap, fileName?: string): CSSSource {
+        if (typeof cssOrAst === "string") {
+            // raw-loader
+            return CSSSource.fromSource(cssOrAst, keyframes, fileName);
+        } else if (typeof cssOrAst === "object" && cssOrAst.type === "stylesheet" && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
+            // css-loader
+            return CSSSource.fromAST(cssOrAst, keyframes, fileName);
+        } else {
+            // css2json-loader
+            return CSSSource.fromSource(cssOrAst.toString(), keyframes, fileName);
+        }
+    }
+
     public static fromURI(uri: string, keyframes: KeyframesMap): CSSSource {
         // webpack modules require all file paths to be relative to /app folder
         const appRelativeUri = CSSSource.pathRelativeToApp(uri);
@@ -119,16 +132,7 @@ class CSSSource {
         try {
             const cssOrAst = global.loadModule(resolvedModuleName, true);
             if (cssOrAst) {
-                if (typeof cssOrAst === "string") {
-                    // raw-loader
-                    return CSSSource.fromSource(cssOrAst, keyframes, resolvedModuleName);
-                } else if (typeof cssOrAst === "object" && cssOrAst.type === "stylesheet" && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
-                    // css-loader
-                    return CSSSource.fromAST(cssOrAst, keyframes, resolvedModuleName);
-                } else {
-                    // css2json-loader
-                    return CSSSource.fromSource(cssOrAst.toString(), keyframes, resolvedModuleName);
-                }
+                return CSSSource.fromDetect(cssOrAst, keyframes, resolvedModuleName);
             }
         } catch (e) {
             traceWrite(`Could not load CSS from ${uri}: ${e}`, traceCategories.Error, traceMessageType.error);
@@ -325,7 +329,7 @@ export function removeTaggedAdditionalCSS(tag: String | Number): Boolean {
 }
 
 export function addTaggedAdditionalCSS(cssText: string, tag?: string | Number): Boolean {
-    const parsed: RuleSet[] = CSSSource.fromSource(cssText, applicationKeyframes, undefined).selectors;
+    const parsed: RuleSet[] = CSSSource.fromDetect(cssText, applicationKeyframes, undefined).selectors;
     let changed = false;
     if (parsed && parsed.length) {
         changed = true;
