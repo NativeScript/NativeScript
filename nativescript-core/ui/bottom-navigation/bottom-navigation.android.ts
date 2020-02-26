@@ -391,7 +391,7 @@ export class BottomNavigation extends TabNavigationBase {
         if (this._manager && this._manager.isDestroyed()) {
             return;
         }
-        
+
         this._attachedToWindow = true;
         this.changeTab(this.selectedIndex);
     }
@@ -614,6 +614,9 @@ export class BottomNavigation extends TabNavigationBase {
 
     private getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
+        if (!iconSource) {
+            return null;
+        }
 
         let is: ImageSource;
         if (isFontIconURI(iconSource)) {
@@ -705,7 +708,10 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        if (value.fontSize) {
+            tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        }
+
         tabStripItem.nativeViewProtected.setTypeface(value.getAndroidTypeface());
     }
 
