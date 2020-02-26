@@ -13,6 +13,8 @@ DIST=dist;
 ROOT_DIR=$(cd `dirname $0` && pwd)/..;
 cd "$ROOT_DIR"
 
+# Aways execute npx tsc from repo root to use the local typescript
+npx tsc -v
 npx tsc -p nativescript-core/tsconfig.barrels.json
 
 FROM="temp/dts-out"
