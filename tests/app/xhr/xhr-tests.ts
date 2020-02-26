@@ -110,17 +110,6 @@ export var test_XMLHttpRequest_headersSentAndReceivedProperly = function (done) 
     // </snippet>
 };
 
-export var test_XMLHttpRequest_setResponseTypeShouldNotThrow = function (done) {
-    try {
-        var xhr = new XMLHttpRequest();
-        (<any>xhr)._setResponseType();
-        done(null);
-    }
-    catch (err) {
-        done(err);
-    }
-};
-
 export var test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) {
     // <snippet module="xhr" title="xhr">
     // ### Send/receive JSON
@@ -128,14 +117,12 @@ export var test_XMLHttpRequest_contentSentAndReceivedProperly = function (done) 
     let xhr = new XMLHttpRequest();
     xhr.open("POST", "https://httpbin.org/post");
     xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.responseType = "json";
     xhr.onreadystatechange = function () {
         if (xhr.readyState > 3) {
-            var result = JSON.parse(xhr.responseText);
-            // var valueOne = result["json"]["MyVariableOne"];
             // <hide>
             try {
-                TKUnit.assert(result["json"]["MyVariableOne"] === "ValueOne" && result["json"]["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly!");
-                TKUnit.assert(xhr.response.json.MyVariableOne === "ValueOne" && xhr.response.json.MyVariableTwo === "ValueTwo", "Response content not parsed properly!");
+                TKUnit.assert(xhr.response.json.MyVariableOne === "ValueOne" && xhr.response.json.MyVariableTwo === "ValueTwo", "Response content not parsed properly!" + JSON.stringify(xhr.response));
                 done(null);
             }
             catch (err) {
@@ -182,7 +169,7 @@ export var test_XMLHttpRequest_FormDataContentSentAndReceivedProperly = function
 };
 
 export var test_XMLHttpRequest_abortShouldCancelonreadystatechange = function (done) {
-    var flag = false;
+    let flag = false;
     // <snippet module="xhr" title="xhr">
     // ### Abort request
     // ``` JavaScript
@@ -198,11 +185,11 @@ export var test_XMLHttpRequest_abortShouldCancelonreadystatechange = function (d
     xhr.abort();
     // ```
     // </snippet>
-    TKUnit.assert(flag === false, "Content not sent/received properly!");
+    TKUnit.assert(flag, "Content not sent/received properly!");
     done(null);
 };
 
-export var test_XMLHttpRequest_requestShouldBePossibleAfterAbort = function (done) {
+export var test_XMLHttpRequest_requestShouldBePossibleAfterAbortedOpen = function (done) {
     xhr = new XMLHttpRequest();
     xhr.open("POST", "https://httpbin.org/post");
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -218,10 +205,24 @@ export var test_XMLHttpRequest_requestShouldBePossibleAfterAbort = function (don
             }
         }
     };
-    xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
+
     xhr.abort();
 
     xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
+};
+
+export var test_XMLHttpRequest_requestShouldntBePossibleAfterAbortedSentRequest = function () {
+    xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://httpbin.org/post");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" }));
+    xhr.abort();
+
+    TKUnit.assertThrows(
+        () => xhr.send(JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })),
+        "Didn't raise re-attempt to send after aborted send",
+        "Failed to execute 'send' on 'XMLHttpRequest': The object's state must be OPENED."
+    );
 };
 
 export function test_ignore_zero_length_request_body() {
@@ -262,7 +263,7 @@ export function test_xhr_events() {
     xhr.removeEventListener("error", badEvent);
 
     xhr._errorFlag = true;
-    xhr._setReadyState(xhr.DONE, "error data");
+    xhr._setRequestError("error", "error data");
     TKUnit.assertEqual(errorCallbackData, "error data");
     TKUnit.assertEqual(errorEventData, "error data");
 }
@@ -282,7 +283,7 @@ export function test_xhr_responseType_rss() {
     };
 
     xhr._loadResponse(response);
-    TKUnit.assertEqual(xhr.responseType, "text");
+    TKUnit.assertEqual(xhr.responseType, "");
     TKUnit.assertEqual(xhr.response, rawRssFeed);
 }
 
@@ -301,11 +302,11 @@ export function test_xhr_responseType_text() {
     };
     xhr._loadResponse(response);
 
-    TKUnit.assertEqual(xhr.responseType, "text");
+    TKUnit.assertEqual(xhr.responseType, "");
     TKUnit.assertEqual(xhr.response, "response body");
 }
 
-export function test_xhr_responseType_switched_to_JSON_if_header_present() {
+export function test_xhr_responseType_should_not_switch_to_JSON_if_header_present() {
     const xhr = <any>new XMLHttpRequest();
     const response = {
         statusCode: 200,
@@ -320,11 +321,11 @@ export function test_xhr_responseType_switched_to_JSON_if_header_present() {
     };
     xhr._loadResponse(response);
 
-    TKUnit.assertEqual(xhr.responseType, "json");
-    TKUnit.assertEqual(xhr.response.data, 42);
+    TKUnit.assertEqual(xhr.responseType, "");
+    TKUnit.assertEqual(xhr.response, "{\"data\": 42}");
 }
 
-export function test_xhr_responseType_switched_to_JSON_if_headers_content_type_has_json_suffix() {
+export function test_xhr_responseType__should_not_switch_to_JSON_if_headers_content_type_has_json_suffix() {
     const xhr = <any>new XMLHttpRequest();
     const response = {
         statusCode: 200,
@@ -340,8 +341,8 @@ export function test_xhr_responseType_switched_to_JSON_if_headers_content_type_h
     };
     xhr._loadResponse(response);
 
-    TKUnit.assertEqual(xhr.responseType, "json");
-    TKUnit.assertEqual(xhr.response.data, 42);
+    TKUnit.assertEqual(xhr.responseType, "");
+    TKUnit.assertEqual(xhr.response, "{\"data\": 42}");
 }
 
 export function test_sets_status_and_statusText(done) {
@@ -376,11 +377,13 @@ export function test_responseType(done) {
     xhr.responseType = "";
     xhr.responseType = "text";
     xhr.responseType = "json";
+    xhr.responseType = "blob";
+    xhr.responseType = "arraybuffer";
 
     TKUnit.assertThrows(
-        () => xhr.responseType = "arraybuffer",
+        () => xhr.responseType = "document",
         "Didn't raise on unsupported type.",
-        "Response type of 'arraybuffer' not supported."
+        "Response type of 'document' not supported."
     );
     done(null);
 }
@@ -403,9 +406,57 @@ export function test_getResponseHeader() {
     TKUnit.assertEqual(xhr.getResponseHeader("Content-Type"), "application/json");
 }
 
-export function test_soap_content_types_recognized_as_text() {
-    const xhr = <any>new XMLHttpRequest();
+export var test_XMLHttpRequest_contentReceivedArrayBufferProperly = function (done) {
+    // <snippet module="xhr" title="xhr">
+    // ### Receive Blob
+    // ``` JavaScript
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", "https://httpbin.org/image/jpeg");
+    xhr.responseType = "arraybuffer";
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState > 3) {
+            // <hide>
+            try {
+                TKUnit.assertEqual(xhr.getResponseHeader("Content-Length"), "35588");
+                TKUnit.assertEqual(xhr.getResponseHeader("Content-Type"), "image/jpeg");
+                TKUnit.assertEqual((xhr.response as ArrayBuffer).byteLength, 35588);
+                done(null);
+            }
+            catch (err) {
+                done(err);
+            }
+            // </hide>
+        }
+    };
+    xhr.send();
+    // ```
+    // </snippet>
+};
 
-    TKUnit.assertTrue(xhr.isTextContentType("text/xml"), "text/xml failed to be recognized as a text response type");
-    TKUnit.assertTrue(xhr.isTextContentType("application/xml"), "application/xml failed to be recognized as a text response type");
-}
+export var test_XMLHttpRequest_contentReceivedBlobProperly = function (done) {
+    // <snippet module="xhr" title="xhr">
+    // ### Receive Blob
+    // ``` JavaScript
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", "https://httpbin.org/image/jpeg");
+    xhr.responseType = "blob";
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState > 3) {
+            // <hide>
+            try {
+                TKUnit.assertEqual(xhr.getResponseHeader("Content-Length"), "35588");
+                TKUnit.assertEqual(xhr.getResponseHeader("Content-Type"), "image/jpeg");
+                TKUnit.assertEqual((xhr.response as Blob).size, 35588);
+                TKUnit.assertEqual((xhr.response as Blob).type, "image/jpeg");
+                done(null);
+            }
+            catch (err) {
+                done(err);
+            }
+            // </hide>
+        }
+    };
+    xhr.send();
+    // ```
+    // </snippet>
+};

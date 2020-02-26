@@ -93,7 +93,7 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        const frame = this.navigationController ? (<any>this.navigationController).owner : null;
+        const frame = (this.navigationController ? (<any>this.navigationController).owner : null);
         const newEntry = this[ENTRY];
 
         // Don't raise event if currentPage was showing modal page.
@@ -124,6 +124,13 @@ class UIViewControllerImpl extends UIViewController {
         // Pages in backstack are unloaded so raise loaded here.
         if (!owner.isLoaded) {
             owner.callLoaded();
+        } else {
+            // Note: Handle the case of canceled backstack navigation. (https://github.com/NativeScript/NativeScript/issues/7430)
+            // In this case viewWillAppear will be executed for the previous page and it will change the ActionBar
+            // because changes happen in an interactive transition - IOS will animate between the the states.
+            // If canceled - viewWillAppear will be called for the current page(which is already loaded) and we need to
+            // update the action bar explicitly, so that it is not left styles as the previous page.
+            owner.actionBar.update();
         }
     }
 
@@ -223,7 +230,6 @@ class UIViewControllerImpl extends UIViewController {
         if (!page || page.modal || page._presentedViewController) {
             return;
         }
-
         // Forward navigation does not remove page from frame so we raise unloaded manually.
         if (page.isLoaded) {
             page.callUnloaded();
@@ -340,6 +346,10 @@ export class Page extends PageBase {
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
         //
+    }
+
+    public _shouldDelayLayout(): boolean {
+        return this._frame && this._frame._animationInProgress;
     }
 
     public onLoaded(): void {
