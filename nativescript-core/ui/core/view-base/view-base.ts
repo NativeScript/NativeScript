@@ -343,8 +343,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         if (this._isLoaded) {
             return;
         }
-
-        this._isLoaded = true;
         this._cssState.onLoaded();
         this._resumeNativeUpdates(SuspendType.Loaded);
 
@@ -353,6 +351,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
             return true;
         });
+        this._isLoaded = true;
 
         this._emit("loaded");
     }
