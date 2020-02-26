@@ -732,7 +732,7 @@ function applyStatesToItem(item: UITabBarItem, states: TabStates, tabBar: UITabB
     // to fix the above issue we are applying the selected fix only for the case, when there is no background set
     // in that case we have the following known issue:
     // we will set the color to all unselected items, so you won't be able to set different colors for the different not selected items
-    if ((!tabBar.barTintColor) && (states.normalState[UITextAttributeTextColor] && (majorVersion > 9))) {
+    if (!tabBar.barTintColor && states.normalState[UITextAttributeTextColor] && (majorVersion > 9)) {
         tabBar.unselectedItemTintColor = states.normalState[UITextAttributeTextColor];
     }
 }
