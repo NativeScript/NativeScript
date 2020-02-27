@@ -348,7 +348,7 @@ export class Page extends PageBase {
         //
     }
 
-    public _shouldDelayLoad(): boolean {
+    public _shouldDelayLayout(): boolean {
         return this._frame && this._frame._animationInProgress;
     }
 
