@@ -1,3 +1,24 @@
+## [6.4.3](https://github.com/NativeScript/NativeScript/compare/6.4.0...6.4.3) (2020-02-27)
+
+
+### Bug Fixes
+
+* **ios:** Ensure ObserverClass is initialized ([#8365](https://github.com/NativeScript/NativeScript/issues/8365)) ([06b9ecf](https://github.com/NativeScript/NativeScript/commit/06b9ecf))
+* **tabs:** delay loadView when animation runs ([#8353](https://github.com/NativeScript/NativeScript/issues/8353)) ([e649a6c](https://github.com/NativeScript/NativeScript/commit/e649a6c))
+* XHR readystatechange event ([cff125d](https://github.com/NativeScript/NativeScript/commit/cff125d))
+* **build:** Add platforms/android to NPM package ([#8312](https://github.com/NativeScript/NativeScript/issues/8312)) ([a644e40](https://github.com/NativeScript/NativeScript/commit/a644e40))
+* guard cachedDrawable ([#8320](https://github.com/NativeScript/NativeScript/issues/8320)) ([dd11158](https://github.com/NativeScript/NativeScript/commit/dd11158))
+* **andoid:** crash when setting font on tab-item with no image ([2dd3bb2](https://github.com/NativeScript/NativeScript/commit/2dd3bb2))
+* **android:** tap-trip-item title disappearing ([cb8cea8](https://github.com/NativeScript/NativeScript/commit/cb8cea8))
+* flipLeft and flipRight on Android ([#8307](https://github.com/NativeScript/NativeScript/issues/8307)) ([c13b104](https://github.com/NativeScript/NativeScript/commit/c13b104))
+
+
+### Features
+
+* Add .kt extension to  known extensions map ([#8363](https://github.com/NativeScript/NativeScript/issues/8363)) ([398457c](https://github.com/NativeScript/NativeScript/commit/398457c))
+
+
+
 ## 6.4.1 (2020-02-17)
 
 
