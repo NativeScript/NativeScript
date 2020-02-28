@@ -785,22 +785,21 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this._resumeNativeUpdates(SuspendType.UISetup);
 
         this.eachChild((child) => {
-            child._readyForRequestLayout = this._readyForRequestLayout
+            child._readyForRequestLayout = this._readyForRequestLayout;
             child._setupUI(context);
 
             return true;
         });
     }
     set readyForRequestLayout(value: boolean) {
-        this._readyForRequestLayout =value
+        this._readyForRequestLayout = value;
         this.eachChild((child) => {
-            child._readyForRequestLayout = value
+            child._readyForRequestLayout = value;
             return true;
         });
     }
     get readyForRequestLayout() {
         return this._readyForRequestLayout;
-        // return true;
     }
 
     setNativeView(value: any): void {
