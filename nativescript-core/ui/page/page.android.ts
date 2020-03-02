@@ -45,13 +45,15 @@ export class Page extends PageBase {
     @profile
     public onLoaded() {
         super.onLoaded();
-        if (this.actionBarHidden !== undefined) {
+        if (this.hasActionBar) {
             this.updateActionBar();
         }
     }
 
     private updateActionBar() {
-        this.actionBar.update();
+        if (this.actionBar) {
+            this.actionBar.update();
+        }
     }
 
     [actionBarHiddenProperty.setNative](value: boolean) {

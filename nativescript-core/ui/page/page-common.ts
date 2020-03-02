@@ -33,11 +33,11 @@ export class PageBase extends ContentView implements PageDefinition {
     }
 
     get actionBar(): ActionBar {
-        if (!this._actionBar) {
-            this.hasActionBar = true;
-            this._actionBar = new ActionBar();
-            this._addView(this._actionBar);
-        }
+        // if (!this._actionBar) {
+        //     this.hasActionBar = true;
+        //     this._actionBar = new ActionBar();
+        //     this._addView(this._actionBar);
+        // }
 
         return this._actionBar;
     }
