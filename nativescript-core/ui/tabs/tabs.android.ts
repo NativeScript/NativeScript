@@ -700,6 +700,9 @@ export class Tabs extends TabsBase {
 
     private getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
+        if (!iconSource) {
+            return null;
+        }
 
         let is: ImageSource;
         if (isFontIconURI(iconSource)) {
@@ -825,12 +828,14 @@ export class Tabs extends TabsBase {
         const tabBarItem = this._tabsBar.getViewForItemAt(index);
         const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
         const drawable = this.getIcon(tabStripItem);
-
+        
         imgView.setImageDrawable(drawable);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        if (value.fontSize) {
+            tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        }
         tabStripItem.nativeViewProtected.setTypeface(value.getAndroidTypeface());
     }
 
