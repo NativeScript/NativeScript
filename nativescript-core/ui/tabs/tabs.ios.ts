@@ -722,7 +722,6 @@ export class Tabs extends TabsBase {
             this.viewController.tabBar.items = NSArray.arrayWithArray(this.tabBarItems);
             // TODO: investigate why this call is necessary to actually toggle item appearance
             this.viewController.tabBar.sizeToFit();
-            this.tabStrip.setNativeView(this.viewController.tabBar);
             if (this.selectedIndex) {
                 this.viewController.tabBar.setSelectedItemAnimated(this.tabBarItems[this.selectedIndex], false);
             }
