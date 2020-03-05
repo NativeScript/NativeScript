@@ -561,12 +561,24 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
     }
 
+    private performLayout(currentRun = 0) {
+        // if there's an animation in progress we need to delay the layout
+        // we've added a guard of 5000 milliseconds execution
+        // to make sure that the layout will happen even if the animation haven't finished in 5 seconds
+        if (this._shouldDelayLayout() && currentRun < 100) {
+            setTimeout(() => this.performLayout(currentRun), currentRun);
+            currentRun++;
+        } else {
+            this.parent.requestLayout();
+        }
+    }
+
     @profile
     public requestLayout(): void {
         // Default implementation for non View instances (like TabViewItem).
         const parent = this.parent;
         if (parent) {
-            parent.requestLayout();
+            this.performLayout();
         }
     }
 
@@ -617,6 +629,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         if (view && !view.isLoaded) {
             view.callLoaded();
         }
+    }
+
+    public _shouldDelayLayout(): boolean {
+        return false;
     }
 
     public unloadView(view: ViewBase): void {
@@ -1053,7 +1069,7 @@ export const classNameProperty = new Property<ViewBase, string>({
         cssClasses.clear();
 
         if (shouldAddModalRootViewCssClasses) {
-            cssClasses.add(MODAL_ROOT_VIEW_CSS_CLASS);    
+            cssClasses.add(MODAL_ROOT_VIEW_CSS_CLASS);
         } else if (shouldAddRootViewCssClasses) {
             cssClasses.add(ROOT_VIEW_CSS_CLASS);
         }

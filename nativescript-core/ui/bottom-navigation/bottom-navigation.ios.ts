@@ -377,7 +377,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
         const states = getTitleAttributesForStates(tabStripItem.label);
-        applyStatesToItem(tabStripItem.nativeView, states);
+        applyStatesToItem(tabStripItem.nativeView, states, this.viewController.tabBar);
     }
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
@@ -389,7 +389,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
         const states = getTitleAttributesForStates(tabStripItem.label);
-        applyStatesToItem(tabStripItem.nativeView, states);
+        applyStatesToItem(tabStripItem.nativeView, states, this.viewController.tabBar);
     }
 
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
@@ -519,7 +519,7 @@ export class BottomNavigation extends TabNavigationBase {
                 updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
 
                 const states = getTitleAttributesForStates(tabStripItem.label);
-                applyStatesToItem(tabBarItem, states);
+                applyStatesToItem(tabBarItem, states, this.viewController.tabBar);
 
                 controller.tabBarItem = tabBarItem;
                 tabStripItem._index = i;
@@ -719,11 +719,20 @@ function getTitleAttributesForStates(view: View): TabStates {
     return result;
 }
 
-function applyStatesToItem(item: UITabBarItem, states: TabStates) {
+function applyStatesToItem(item: UITabBarItem, states: TabStates, tabBar: UITabBar) {
     if (!states) {
         return;
     }
 
     item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
     item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
+
+    // there's a bug when setting the item color on ios 13 if there's no background set to the tabstrip
+    // https://books.google.bg/books?id=99_BDwAAQBAJ&q=tabBar.unselectedItemTintColor
+    // to fix the above issue we are applying the selected fix only for the case, when there is no background set
+    // in that case we have the following known issue:
+    // we will set the color to all unselected items, so you won't be able to set different colors for the different not selected items
+    if (!tabBar.barTintColor && states.normalState[UITextAttributeTextColor] && (majorVersion > 9)) {
+        tabBar.unselectedItemTintColor = states.normalState[UITextAttributeTextColor];
+    }
 }

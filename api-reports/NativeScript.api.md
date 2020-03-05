@@ -772,6 +772,9 @@ export class Frame extends View {
 
     animated: boolean;
 
+    // (undocumented)
+    _animationInProgress: boolean;
+
     backStack: Array<BackstackEntry>;
 
     canGoBack(): boolean;
@@ -1016,6 +1019,8 @@ export const Http: {
 export interface HttpContent {
   raw: any;
 
+  toArrayBuffer: () => ArrayBuffer;
+
   toFile: (destinationFilePath?: string) => File;
 
   toImage: () => Promise<ImageSource>;
@@ -1027,7 +1032,7 @@ export interface HttpContent {
 
 // @public
 export interface HttpRequestOptions {
-  content?: string | FormData;
+  content?: string | FormData | ArrayBuffer;
 
   dontFollowRedirects?: boolean;
 
@@ -2934,6 +2939,7 @@ export abstract class ViewBase extends Observable {
     // (undocumented)
     _setupAsRootView(context: any): void;
     _setupUI(context: any /* android.content.Context */, atIndex?: number): void;
+    _shouldDelayLayout(): boolean;
     showModal(moduleName: string, modalOptions: ShowModalOptions): ViewBase;
     showModal(view: ViewBase, modalOptions: ShowModalOptions): ViewBase;
     public readonly style: Style;

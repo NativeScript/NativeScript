@@ -2,7 +2,7 @@
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
-import { TextTransform } from "../text-base";
+import { TextTransform, ViewBase } from "../text-base";
 
 // Requires
 import { Color } from "../../color";
@@ -873,6 +873,9 @@ export class Tabs extends TabsBase {
             // TODO: investigate why this call is necessary to actually toggle item appearance
             this.viewController.tabBar.sizeToFit();
             this.tabStrip.setNativeView(this.viewController.tabBar);
+            if (this.selectedIndex) {
+                this.viewController.tabBar.setSelectedItemAnimated(this.tabBarItems[this.selectedIndex], false);
+            }
         }
 
         // const length = items ? items.length : 0;
@@ -1066,6 +1069,17 @@ export class Tabs extends TabsBase {
         this._ios.tabBar.tintColor = nativeColor;
     }
 
+    private visitFrames(view: ViewBase, operation: (frame: Frame) => {}) {
+        if (view instanceof Frame) {
+            operation(view);
+        }
+        view.eachChild(child => {
+            this.visitFrames(child, operation);
+
+            return true;
+        });
+    }
+
     [selectedIndexProperty.setNative](value: number) {
         // TODO
         // if (traceEnabled()) {
@@ -1091,7 +1105,12 @@ export class Tabs extends TabsBase {
             }
 
             this._currentNativeSelectedIndex = value;
+
+            // do not make layout changes while the animation is in progress https://stackoverflow.com/a/47031524/613113
+            this.visitFrames(item, frame => frame._animationInProgress = true);
+
             this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, (finished: boolean) => {
+                this.visitFrames(item, frame => frame._animationInProgress = false);
                 if (finished) {
                     // HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
                     invokeOnRunLoop(() => this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, false, null));

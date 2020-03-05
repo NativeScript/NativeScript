@@ -127,7 +127,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
 
-            return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
+            return tabStripParent && tabStripParent.setTabBarIconColor(this, args.value);
         });
         this.image.style.on("colorChange", this._imageColorHandler);
 
@@ -135,7 +135,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
 
-            return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
+            return tabStripParent && tabStripParent.setTabBarIconColor(this, args.value);
         });
         this.image.style.on("fontInternalChange", this._imageFontHandler);
 
@@ -143,7 +143,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
 
-            return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
+            return tabStripParent && tabStripParent.setTabBarIconColor(this, args.value);
         });
         this.image.on("srcChange", this._imageSrcHandler);
     }
