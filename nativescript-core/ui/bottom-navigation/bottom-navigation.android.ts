@@ -36,6 +36,11 @@ let BottomNavigationBar: any;
 let AttachStateChangeListener: any;
 let appResources: android.content.res.Resources;
 
+class IconInfo {
+    drawable: android.graphics.drawable.BitmapDrawable;
+    height: number;
+}
+
 function makeFragmentName(viewId: number, id: number): string {
     return "android:bottomnavigation:" + viewId + ":" + id;
 }
@@ -596,12 +601,13 @@ export class BottomNavigation extends TabNavigationBase {
             // ICON
             const iconSource = tabStripItem.image && tabStripItem.image.src;
             if (iconSource) {
-                const icon = this.getIcon(tabStripItem);
+                const iconInfo = this.getIconInfo(tabStripItem);
 
-                if (icon) {
+                if (iconInfo) {
                     // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                     // tslint:disable-next-line:deprecation
-                    tabItemSpec.iconDrawable = icon;
+                    tabItemSpec.iconDrawable = iconInfo.drawable;
+                    tabItemSpec.imageHeight = iconInfo.height;
                 } else {
                     // TODO:
                     // traceMissingIcon(iconSource);
@@ -612,7 +618,7 @@ export class BottomNavigation extends TabNavigationBase {
         return tabItemSpec;
     }
 
-    private getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
+    private getOriginalIcon(tabStripItem: TabStripItem): android.graphics.Bitmap {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
         if (!iconSource) {
             return null;
@@ -629,21 +635,33 @@ export class BottomNavigation extends TabNavigationBase {
             is = ImageSource.fromFileOrResourceSync(iconSource);
         }
 
-        let imageDrawable: android.graphics.drawable.BitmapDrawable;
-        if (is && is.android) {
-            let image = is.android;
+        return is && is.android;
+    }
 
+    private getDrawableInfo(image: android.graphics.Bitmap): IconInfo {
+        if (image) {
             if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
                 image = this.getFixedSizeIcon(image);
             }
 
-            imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
+            let imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
+
+            return {
+                drawable: imageDrawable,
+                height: image.getHeight()
+            };
         } else {
             // TODO
             // traceMissingIcon(iconSource);
         }
 
-        return imageDrawable;
+        return null;
+    }
+
+    private getIconInfo(tabStripItem: TabStripItem): IconInfo {
+        let originalIcon = this.getOriginalIcon(tabStripItem);
+
+        return this.getDrawableInfo(originalIcon);
     }
 
     private getFixedSizeIcon(image: android.graphics.Bitmap): android.graphics.Bitmap {
@@ -702,9 +720,9 @@ export class BottomNavigation extends TabNavigationBase {
         const index = tabStripItem._index;
         const tabBarItem = this._bottomNavigationBar.getViewForItemAt(index);
         const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
-        const drawable = this.getIcon(tabStripItem);
+        const drawableInfo = this.getIconInfo(tabStripItem);
 
-        imgView.setImageDrawable(drawable);
+        imgView.setImageDrawable(drawableInfo.drawable);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {

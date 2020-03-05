@@ -19,6 +19,7 @@ package org.nativescript.widgets;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -54,6 +55,7 @@ public class BottomNavigationBar extends LinearLayout {
     private SparseArray<String> mContentDescriptions = new SparseArray<String>();
 
     private final TabStrip mTabStrip;
+    private int mMaxImageHeight;
 
     public BottomNavigationBar(Context context) {
         this(context, null);
@@ -108,6 +110,7 @@ public class BottomNavigationBar extends LinearLayout {
     public void setItems(TabItemSpec[] items) {
         mTabStrip.removeAllViews();
         mTabItems = items;
+        setImageHeights();
         populateTabStrip();
     }
 
@@ -120,25 +123,25 @@ public class BottomNavigationBar extends LinearLayout {
         TextView textView = (TextView)ll.getChildAt(1);
         this.setupItem(ll, textView, imgView, tabItem);
     }
-  
+
     /**
      * Gets the TextView for tab item at index
      */
     public TextView getTextViewForItemAt(int index){
         LinearLayout ll = this.getViewForItemAt(index);
-        return  (ll != null) ? (TextView)ll.getChildAt(1) : null;       
+        return  (ll != null) ? (TextView)ll.getChildAt(1) : null;
     }
-    
+
     /**
      * Gets the LinearLayout container for tab item at index
      */
     public LinearLayout getViewForItemAt(int index){
         LinearLayout result = null;
-        
+
         if(this.mTabStrip.getChildCount() > index){
             result = (LinearLayout)this.mTabStrip.getChildAt(index);
         }
-        
+
         return result;
     }
 
@@ -165,7 +168,7 @@ public class BottomNavigationBar extends LinearLayout {
 
         ImageView imgView = new ImageView(context);
         imgView.setScaleType(ScaleType.FIT_CENTER);
-        LinearLayout.LayoutParams imgLP = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams imgLP = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, this.mMaxImageHeight > 0 ? this.mMaxImageHeight : ViewGroup.LayoutParams.WRAP_CONTENT);
         imgLP.gravity = Gravity.CENTER;
         imgView.setLayoutParams(imgLP);
 
@@ -184,10 +187,9 @@ public class BottomNavigationBar extends LinearLayout {
         ll.addView(textView);
         return ll;
     }
-    
+
     private void setupItem(LinearLayout ll, TextView textView,ImageView imgView, TabItemSpec tabItem){
         float density = getResources().getDisplayMetrics().density;
-        
         if (tabItem.iconId != 0) {
             imgView.setImageResource(tabItem.iconId);
             imgView.setVisibility(VISIBLE);
@@ -205,14 +207,14 @@ public class BottomNavigationBar extends LinearLayout {
             if (tabItem.typeFace != null) {
                 textView.setTypeface(tabItem.typeFace);
             }
-    
+
             if (tabItem.fontSize != 0) {
                 textView.setTextSize(tabItem.fontSize);
             }
-    
+
             if (tabItem.color != 0) {
                 textView.setTextColor(tabItem.color);
-                mTabStrip.setShouldUpdateTabsTextColor(false);          
+                mTabStrip.setShouldUpdateTabsTextColor(false);
             }
         } else {
             textView.setVisibility(GONE);
@@ -238,17 +240,28 @@ public class BottomNavigationBar extends LinearLayout {
         // to be overridden in JS
     }
 
+    private void setImageHeights(){
+        for (int i = 0; i < this.mTabItems.length; i++) {
+            TabItemSpec tabItem = this.mTabItems[i];
+            if(tabItem.imageHeight == 0 && tabItem.iconId != 0) {
+                Drawable drawable = getResources().getDrawable(tabItem.iconId);
+                tabItem.imageHeight = drawable.getIntrinsicHeight();
+            }
+            if(tabItem.imageHeight > this.mMaxImageHeight) {
+                this.mMaxImageHeight = tabItem.imageHeight;
+            }
+        }
+    }
+
     private void populateTabStrip() {
         final OnClickListener tabClickListener = new TabClickListener();
 
         if (this.mTabItems != null) {
             int count = this.mTabItems.length < 5 ? this.mTabItems.length : 5;
             for (int i = 0; i < count; i++) {
-                View tabView = null;
-
                 TabItemSpec tabItem;
                 tabItem = this.mTabItems[i];
-                tabView = createDefaultTabView(getContext(), tabItem);
+                View tabView = createDefaultTabView(getContext(), tabItem);
                 tabView.setOnClickListener(tabClickListener);
 
                 String desc = mContentDescriptions.get(i, null);
