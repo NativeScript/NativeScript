@@ -481,8 +481,8 @@ function _getTapArgs(
     ios: undefined,
     object: view,
     eventName: toString(type),
-    getX: () => e.getX(),
-    getY: () => e.getY(),
+    getX: () => e.getX() / layout.getDisplayDensity(),
+    getY: () => e.getY() / layout.getDisplayDensity(),
     getPointerCount: () => e.getPointerCount()
   };
 }
@@ -901,11 +901,11 @@ class TouchGestureEventData implements TouchGestureEventData {
   }
 
   getX(): number {
-    return this.getActivePointers()[0].getX();
+    return this.getActivePointers()[0].getX() / layout.getDisplayDensity();
   }
 
   getY(): number {
-    return this.getActivePointers()[0].getY();
+    return this.getActivePointers()[0].getY() / layout.getDisplayDensity();
   }
 
   private getActionType(e: android.view.MotionEvent): string {

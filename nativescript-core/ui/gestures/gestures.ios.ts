@@ -430,8 +430,10 @@ function _getTapData(args: GestureEventData): TapGestureEventData {
     android: undefined,
     object: args.object,
     eventName: toString(args.type),
-    getX: () => recognizer.locationInView(recognizer.view).x,
-    getY: () => recognizer.locationInView(recognizer.view).y,
+    getX: () =>
+      recognizer.locationInView(recognizer.view).x / layout.getDisplayDensity(),
+    getY: () =>
+      recognizer.locationInView(recognizer.view).y / layout.getDisplayDensity(),
     getPointerCount: () => recognizer.numberOfTouches
   };
 }
@@ -668,12 +670,16 @@ class TouchGestureEventData implements TouchGestureEventData {
   }
 
   getX(): number {
-    return this.getMainPointer().locationInView(this.view.nativeViewProtected)
-      .x;
+    return (
+      this.getMainPointer().locationInView(this.view.nativeViewProtected).x /
+      layout.getDisplayDensity()
+    );
   }
 
   getY(): number {
-    return this.getMainPointer().locationInView(this.view.nativeViewProtected)
-      .y;
+    return (
+      this.getMainPointer().locationInView(this.view.nativeViewProtected).y /
+      layout.getDisplayDensity()
+    );
   }
 }
