@@ -66,7 +66,7 @@ export class Page extends PageBase {
     [actionBarHiddenProperty.setNative](value: boolean) {
         // in case the actionBar is not created and actionBarHidden is changed to true
         // the actionBar will be created by updateActionBar
-        if (value || this.hasActionBar) {
+        if (!value || this.hasActionBar) {
             this.updateActionBar();
         }
     }
