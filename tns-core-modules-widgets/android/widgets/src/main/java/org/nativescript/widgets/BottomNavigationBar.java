@@ -243,13 +243,15 @@ public class BottomNavigationBar extends LinearLayout {
     }
 
     private void setImageHeights(){
-        for (TabItemSpec tabItem : this.mTabItems) {
-            if(tabItem.imageHeight == 0 && tabItem.iconId != 0) {
-                Drawable drawable = getResources().getDrawable(tabItem.iconId);
-                tabItem.imageHeight = drawable.getIntrinsicHeight();
-            }
-            if(tabItem.imageHeight > this.mMaxImageHeight) {
-                this.mMaxImageHeight = tabItem.imageHeight;
+        if (this.mTabItems != null) {
+            for (TabItemSpec tabItem : this.mTabItems) {
+                if(tabItem.imageHeight == 0 && tabItem.iconId != 0) {
+                    Drawable drawable = getResources().getDrawable(tabItem.iconId);
+                    tabItem.imageHeight = drawable.getIntrinsicHeight();
+                }
+                if(tabItem.imageHeight > this.mMaxImageHeight) {
+                    this.mMaxImageHeight = tabItem.imageHeight;
+                }
             }
         }
     }
