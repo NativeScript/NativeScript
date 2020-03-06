@@ -216,8 +216,8 @@ export interface PinchGestureEventData extends GestureEventDataWithState {
  * Provides gesture event data for double tap gesture.
  */
 export interface DoubleTapGestureEventData extends GestureEventData {
-    locationX: number;
-    locationY: number;
+    getX(): number;
+    getY(): number;
 }
 
 /**

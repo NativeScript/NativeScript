@@ -309,8 +309,8 @@ function _getDoubleTapData(args: GestureEventData): DoubleTapGestureEventData {
         view: args.view,
         ios: args.ios,
         android: undefined,
-        locationX: location.x,
-        locationY: location.y,
+        getX: () => location.x,
+        getY: () => location.y,
         object: args.view,
         eventName: toString(args.type)
     };
