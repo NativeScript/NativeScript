@@ -650,12 +650,9 @@ export class BottomNavigation extends TabNavigationBase {
                 drawable: imageDrawable,
                 height: image.getHeight()
             };
-        } else {
-            // TODO
-            // traceMissingIcon(iconSource);
         }
 
-        return null;
+        return new IconInfo();
     }
 
     private getIconInfo(tabStripItem: TabStripItem): IconInfo {

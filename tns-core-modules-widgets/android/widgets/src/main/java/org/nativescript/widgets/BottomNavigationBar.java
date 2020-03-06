@@ -158,34 +158,36 @@ public class BottomNavigationBar extends LinearLayout {
     protected View createDefaultTabView(Context context, TabItemSpec tabItem) {
         float density = getResources().getDisplayMetrics().density;
 
-        LinearLayout ll = new LinearLayout(context);
-        ll.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        ll.setGravity(Gravity.CENTER);
-        ll.setOrientation(LinearLayout.VERTICAL);
-        TypedValue outValue = new TypedValue();
-        getContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackground, outValue, true);
-        ll.setBackgroundResource(outValue.resourceId);
+        LinearLayout tabItemLayout = new LinearLayout(context);
+        tabItemLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        tabItemLayout.setGravity(Gravity.CENTER);
+        tabItemLayout.setOrientation(LinearLayout.VERTICAL);
+        TypedValue backgroundOutValue = new TypedValue();
+        getContext().getTheme().resolveAttribute(android.R.attr.selectableItemBackground, backgroundOutValue, true);
+        tabItemLayout.setBackgroundResource(backgroundOutValue.resourceId);
 
-        ImageView imgView = new ImageView(context);
-        imgView.setScaleType(ScaleType.FIT_CENTER);
-        LinearLayout.LayoutParams imgLP = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, this.mMaxImageHeight > 0 ? this.mMaxImageHeight : ViewGroup.LayoutParams.WRAP_CONTENT);
-        imgLP.gravity = Gravity.CENTER;
-        imgView.setLayoutParams(imgLP);
+        ImageView iconImageView = new ImageView(context);
+        iconImageView.setScaleType(ScaleType.FIT_CENTER);
+        int iconImageHeight = this.mMaxImageHeight > 0 ? this.mMaxImageHeight : ViewGroup.LayoutParams.WRAP_CONTENT;
+        int iconImageWidth = ViewGroup.LayoutParams.WRAP_CONTENT;
+        LinearLayout.LayoutParams iconImageLayoutParams = new LinearLayout.LayoutParams(iconImageWidth, iconImageHeight);
+        iconImageLayoutParams.gravity = Gravity.CENTER;
+        iconImageView.setLayoutParams(iconImageLayoutParams);
 
-        TextView textView = new TextView(context);
-        textView.setGravity(Gravity.CENTER);
-        textView.setMaxWidth((int) (ITEM_TEXT_MAX_WIDTH * density));
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, ITEM_TEXT_SIZE_SP);
-        textView.setTypeface(Typeface.DEFAULT_BOLD);
-        textView.setEllipsize(TextUtils.TruncateAt.END);
-        textView.setMaxLines(1);
-        textView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        TextView titleTextView = new TextView(context);
+        titleTextView.setGravity(Gravity.CENTER);
+        titleTextView.setMaxWidth((int) (ITEM_TEXT_MAX_WIDTH * density));
+        titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, ITEM_TEXT_SIZE_SP);
+        titleTextView.setTypeface(Typeface.DEFAULT_BOLD);
+        titleTextView.setEllipsize(TextUtils.TruncateAt.END);
+        titleTextView.setMaxLines(1);
+        titleTextView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-        this.setupItem(ll, textView, imgView, tabItem);
+        this.setupItem(tabItemLayout, titleTextView, iconImageView, tabItem);
 
-        ll.addView(imgView);
-        ll.addView(textView);
-        return ll;
+        tabItemLayout.addView(iconImageView);
+        tabItemLayout.addView(titleTextView);
+        return tabItemLayout;
     }
 
     private void setupItem(LinearLayout ll, TextView textView,ImageView imgView, TabItemSpec tabItem){
@@ -241,8 +243,7 @@ public class BottomNavigationBar extends LinearLayout {
     }
 
     private void setImageHeights(){
-        for (int i = 0; i < this.mTabItems.length; i++) {
-            TabItemSpec tabItem = this.mTabItems[i];
+        for (TabItemSpec tabItem : this.mTabItems) {
             if(tabItem.imageHeight == 0 && tabItem.iconId != 0) {
                 Drawable drawable = getResources().getDrawable(tabItem.iconId);
                 tabItem.imageHeight = drawable.getIntrinsicHeight();
