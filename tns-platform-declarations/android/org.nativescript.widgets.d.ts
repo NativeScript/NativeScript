@@ -468,6 +468,7 @@
                 typeFace: android.graphics.Typeface;
                 iconId: number;
                 iconDrawable: android.graphics.drawable.Drawable;
+                imageHeight: number;
                 backgroundColor: number;
                 color: number;
             }
