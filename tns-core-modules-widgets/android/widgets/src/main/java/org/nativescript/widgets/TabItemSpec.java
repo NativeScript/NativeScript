@@ -9,6 +9,7 @@ public class TabItemSpec {
     public Typeface typeFace;
     public int iconId;
     public Drawable iconDrawable;
+    public int imageHeight;
     public int backgroundColor;
     public int color;
 }
