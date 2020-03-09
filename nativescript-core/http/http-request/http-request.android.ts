@@ -28,7 +28,6 @@ let imageSource: typeof imageSourceModule;
 function ensureImageSource() {
     if (!imageSource) {
         imageSource = require("../../image-source");
-        imageSource = require("../../image-source");
     }
 }
 
