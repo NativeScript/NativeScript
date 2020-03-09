@@ -641,9 +641,9 @@ export class Tabs extends TabsBase {
     private getItemLabelTextTransform(tabStripItem: TabStripItem): TextTransform {
         const nestedLabel = tabStripItem.label;
         let textTransform: TextTransform = null;
-        if (nestedLabel && nestedLabel.style.textTransform && nestedLabel.style.textTransform !== "initial") {
+        if (nestedLabel && nestedLabel.style.textTransform !== "initial") {
             textTransform = nestedLabel.style.textTransform;
-        } else if (tabStripItem.style.textTransform && tabStripItem.style.textTransform !== "initial") {
+        } else if (tabStripItem.style.textTransform !== "initial") {
             textTransform = tabStripItem.style.textTransform;
         }
 
@@ -828,7 +828,7 @@ export class Tabs extends TabsBase {
         const tabBarItem = this._tabsBar.getViewForItemAt(index);
         const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
         const drawable = this.getIcon(tabStripItem);
-        
+
         imgView.setImageDrawable(drawable);
     }
 
