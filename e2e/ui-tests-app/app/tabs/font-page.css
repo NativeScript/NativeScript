@@ -1,0 +1,27 @@
+Tabs {
+  font: 24 'Times New Roman', Times, serif;
+}
+
+TabContentItem.special {
+  font: italic bold 12 Georgia, serif;
+}
+
+TabStrip {
+  font: 15 arial, sans-serif;
+}
+
+TabStripItem.special {
+  font: 12 monospace;
+}
+
+TabStripItem.special:active {
+  font: 16 monospace;
+}
+
+TabStripItem.nested Label {
+  font: 12 monospace;
+}
+
+TabStripItem.nested:active Label {
+  font: 16 monospace;
+}

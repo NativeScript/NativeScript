@@ -1,0 +1,39 @@
+.font-awesome {
+  font-family: "FontAwesome";
+}
+
+.font-size {
+  font-size: 36;
+}
+
+TabStrip {
+  color: mediumvioletred;
+}
+
+TabStripItem {
+  color: skyblue;
+}
+
+TabStripItem:active {
+  color: darkblue;
+}
+
+TabStripItem.special Image {
+  color: lightgreen;
+}
+
+TabStripItem.special:active Image {
+  color: darkgreen;
+}
+
+TabStripItem.special Label {
+  color: gold;
+}
+
+TabStripItem.special:active Label {
+  color: darkgoldenrod;
+}
+
+TabStripItem:active .font-size {
+  font-size: 10;
+}

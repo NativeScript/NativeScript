@@ -52,6 +52,8 @@ class TabStrip extends LinearLayout {
     private int mSelectedTabTextColor;
     private float mTabTextFontSize;
 
+    private boolean mShouldUpdateTabsTextColor;
+
     TabStrip(Context context) {
         this(context, null);
     }
@@ -87,6 +89,8 @@ class TabStrip extends LinearLayout {
         // Default selected color is the same as mTabTextColor
         mSelectedTabTextColor = mTabTextColor;
 
+        mShouldUpdateTabsTextColor = true;
+
         setMeasureWithLargestChildEnabled(true);
     }
 
@@ -120,16 +124,22 @@ class TabStrip extends LinearLayout {
         return mSelectedTabTextColor;
     }
 
+    void setShouldUpdateTabsTextColor(boolean value) {
+        mShouldUpdateTabsTextColor = value;
+    }
+
     private void updateTabsTextColor(){
-        final int childCount = getChildCount();
-        for (int i = 0; i < childCount; i++){
-            LinearLayout linearLayout = (LinearLayout)getChildAt(i);
-            TextView textView = (TextView)linearLayout.getChildAt(1);
-            if (i == mSelectedPosition){
-                textView.setTextColor(mSelectedTabTextColor);
-            }
-            else {
-                textView.setTextColor(mTabTextColor);
+        if (mShouldUpdateTabsTextColor) {
+            final int childCount = getChildCount();
+            for (int i = 0; i < childCount; i++){
+                LinearLayout linearLayout = (LinearLayout)getChildAt(i);
+                TextView textView = (TextView)linearLayout.getChildAt(1);
+                if (i == mSelectedPosition){
+                    textView.setTextColor(mSelectedTabTextColor);
+                }
+                else {
+                    textView.setTextColor(mTabTextColor);
+                }
             }
         }
     }
@@ -152,11 +162,23 @@ class TabStrip extends LinearLayout {
         }
     }
 
+    // Used by TabLayout (the 'old' tab-view control)
     void onViewPagerPageChanged(int position, float positionOffset) {
         mSelectedPosition = position;
         mSelectionOffset = positionOffset;
         invalidate();
         updateTabsTextColor();
+    }
+
+    // Used by TabsBar
+    void onTabsViewPagerPageChanged(int position, float positionOffset) {
+        mSelectedPosition = position;
+        mSelectionOffset = positionOffset;
+        invalidate();
+    }
+
+    int getSelectedPosition(){
+        return mSelectedPosition;
     }
 
     void setSelectedPosition(int position) {
@@ -166,7 +188,9 @@ class TabStrip extends LinearLayout {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
+
         final int height = getHeight();
         final int childCount = getChildCount();
         final TabLayout.TabColorizer tabColorizer = mCustomTabColorizer != null
@@ -174,7 +198,7 @@ class TabStrip extends LinearLayout {
                 : mDefaultTabColorizer;
 
         // Thick colored underline below the current selection
-        if (childCount > 0) {
+        if (childCount > 0 && mSelectedPosition < childCount) {
             View selectedTitle = getChildAt(mSelectedPosition);
             int left = selectedTitle.getLeft();
             int right = selectedTitle.getRight();

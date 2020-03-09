@@ -9,7 +9,7 @@ export function onShowingModally(args: ShownModallyData) {
         username: "username",
         password: "password",
         context: args.context,
-        onLoginButtonTap: function() {
+        onLoginButtonTap: function () {
             console.log("login-page.onLoginButtonTap");
             args.closeCallback(this.username, this.password);
         }

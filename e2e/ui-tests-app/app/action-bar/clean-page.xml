@@ -1,6 +1,6 @@
 <Page>
   <Page.actionBar>
-    <ActionBar title="Page Title">
+    <ActionBar title="Page Title" automationText="actionBar">
       <NavigationButton text="go back"/>
       <ActionBar.actionItems>
         <ActionItem text="ITEM" tap="navigate"/>

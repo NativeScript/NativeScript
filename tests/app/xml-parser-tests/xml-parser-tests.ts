@@ -1,11 +1,15 @@
 // >> xml-module-snippet
-//var xmlModule = require("tns-core-modules/xml");
+//var xmlModule = require("@nativescript/core/xml");
 // << xml-module-snippet
 
 import * as TKUnit from "../tk-unit";
-import * as xmlModule from "tns-core-modules/xml";
-import * as fs from "tns-core-modules/file-system";
-import * as builder from "tns-core-modules/ui/builder";
+import * as xmlModule from "@nativescript/core/xml";
+import * as fs from "@nativescript/core/file-system";
+import { Builder } from "@nativescript/core/ui/builder";
+import { isIOS, device } from "@nativescript/core/platform";
+import lazy from "@nativescript/core/utils/lazy";
+
+const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
 export var test_XmlParser_IsDefined = function () {
     TKUnit.assertNotEqual(xmlModule.XmlParser, undefined, "Class XmlParser should be defined!");
@@ -54,6 +58,32 @@ export var test_XmlParser_EntityReferencesInAttributeValuesAreDecoded = function
     TKUnit.assert(data === "<>\"&'", "Expected result: <>\"&'; Actual result: " + data + ";");
 };
 
+export var test_XmlParser_UnicodeEntitiesAreDecoded = function () {
+    var data;
+    var xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
+        switch (event.eventType) {
+            case xmlModule.ParserEventType.Text:
+                data = event.data;
+                break;
+        }
+    });
+    xmlParser.parse("<element>&#x1f923;&#x2713;</element>");
+    TKUnit.assert(data === "\uD83E\uDD23\u2713", "Expected result: \uD83E\uDD23\u2713; Actual result: " + data + ";");
+};
+
+export var test_XmlParser_UnicodeEntitiesInAttributeValuesAreDecoded = function () {
+    var data;
+    var xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
+        switch (event.eventType) {
+            case xmlModule.ParserEventType.StartElement:
+                data = event.attributes["text"];
+                break;
+        }
+    });
+    xmlParser.parse("<Label text=\"&#x1f923;&#x2713;\"/>");
+    TKUnit.assert(data === "\uD83E\uDD23\u2713", "Expected result: \uD83E\uDD23\u2713; Actual result: " + data + ";");
+};
+
 export var test_XmlParser_OnErrorIsCalledWhenAnErrorOccurs = function () {
     var e;
     var xmlParser = new xmlModule.XmlParser(
@@ -68,6 +98,10 @@ export var test_XmlParser_OnErrorIsCalledWhenAnErrorOccurs = function () {
 };
 
 export var test_XmlParser_IntegrationTest = function () {
+    if (isIOS && sdkVersion() < 10) {
+        return;
+    }
+
     var actualResult = "";
     var xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
         if (event.eventType === xmlModule.ParserEventType.Text && event.data.trim() === "") {
@@ -118,7 +152,7 @@ export var test_XmlParser_IntegrationTest = function () {
 };
 
 export var test_XmlParser_DummyDocumentationTest = function () {
-    
+
     // >> xml-parser-snippet
     var onEventCallback = function (event: xmlModule.ParserEvent) {
         switch (event.eventType) {
@@ -168,6 +202,10 @@ export var test_XmlParser_DummyDocumentationTest = function () {
 };
 
 export var test_XmlParser_NamespacesTest = function () {
+    if (isIOS && sdkVersion() < 10) {
+        return;
+    }
+
     var xmlParser = new xmlModule.XmlParser(function (event: xmlModule.ParserEvent) {
         if (event.eventType !== xmlModule.ParserEventType.StartElement) {
             return;
@@ -185,9 +223,9 @@ export var test_XmlParser_NamespacesTest = function () {
 };
 
 export function test_MultiParserTemplate() {
-    const xml = global.loadModule("xml-parser-tests/itemTemplates.xml");
+    const xml = global.loadModule("xml-parser-tests/itemTemplates.xml", true);
 
-    const view: any = builder.parse(xml);
+    const view: any = Builder.parse(xml);
     TKUnit.assertNotNull(view.items);
     TKUnit.assertEqual(view.items.length, 1);
 }

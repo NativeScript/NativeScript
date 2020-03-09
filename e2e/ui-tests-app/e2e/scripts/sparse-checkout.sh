@@ -19,16 +19,20 @@ mkdir -p ${PWD}/e2e/resources/images
         git init
         git remote add origin "$r_url"
     fi
-    
+
     echo ${PWD}
-    
+
     git config core.sparseCheckout true
-    
+
     # Loops over remaining args
     rm -rf .git/info/sparse-checkout || true
-    for i; do
-        echo "$app_name/$i" >> .git/info/sparse-checkout
-    done
+    if [ $1 = "all" ]; then
+        echo "$app_name" >> .git/info/sparse-checkout
+    else
+        for i; do
+            echo "$app_name/$i" >> .git/info/sparse-checkout
+        done
+    fi
     echo "scripts" >> .git/info/sparse-checkout
     cat .git/info/sparse-checkout
     git read-tree -mu HEAD

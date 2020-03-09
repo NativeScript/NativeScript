@@ -1,0 +1,5 @@
+{
+  "name": "web-view",
+  "main": "web-view",
+  "types": "web-view.d.ts"
+}

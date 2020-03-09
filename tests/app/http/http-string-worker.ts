@@ -1,4 +1,6 @@
-import * as http from "tns-core-modules/http";
+import * as http from "@nativescript/core/http";
+
+(<any>global).FormData = class FormData {};
 
 declare var postMessage: any;
 

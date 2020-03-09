@@ -93,7 +93,9 @@ declare const enum LAError {
 
 	BiometryLockout = -8,
 
-	NotInteractive = -1004
+	NotInteractive = -1004,
+
+	WatchNotAvailable = -11
 }
 
 declare var LAErrorDomain: string;
@@ -102,7 +104,11 @@ declare const enum LAPolicy {
 
 	DeviceOwnerAuthenticationWithBiometrics = 1,
 
-	DeviceOwnerAuthentication = 2
+	DeviceOwnerAuthentication = 2,
+
+	DeviceOwnerAuthenticationWithWatch = 3,
+
+	DeviceOwnerAuthenticationWithBiometricsOrWatch = 4
 }
 
 declare var LATouchIDAuthenticationMaximumAllowableReuseDuration: number;

@@ -2,10 +2,10 @@
     <ActionBar title="BottomNavigation icon change" icon="" class="action-bar">
     </ActionBar>
 
-    <BottomNavigation id="tab-view" selectedIndexChanged="onSelectedIndexChanged">
-        <TabStrip>
-            <TabStripItem iconSource="res://icon"></TabStripItem>
-            <TabStripItem iconSource="res://testlogo"></TabStripItem>
+    <BottomNavigation id="tab-view" selectedIndexChanged="onSelectedIndexChanged" automationText="tabNavigation"  >
+        <TabStrip iosIconRenderingMode="alwaysOriginal">
+            <TabStripItem iconSource="res://icon" title="selected"></TabStripItem>
+            <TabStripItem iconSource="res://testlogo" title="unselected"></TabStripItem>
         </TabStrip>
 
         <TabContentItem>
@@ -20,4 +20,4 @@
             </GridLayout>
         </TabContentItem>
     </BottomNavigation>
-</Page> 
+</Page>

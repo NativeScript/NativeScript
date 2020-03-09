@@ -1,13 +1,13 @@
 import * as TKUnit from "../../tk-unit";
-import * as styleScope from "tns-core-modules/ui/styling/style-scope";
-import * as keyframeAnimation from "tns-core-modules/ui/animation/keyframe-animation";
-import * as enums from "tns-core-modules/ui/enums";
+import * as styleScope from "@nativescript/core/ui/styling/style-scope";
+import * as keyframeAnimation from "@nativescript/core/ui/animation/keyframe-animation";
+import * as enums from "@nativescript/core/ui/enums";
 import * as helper from "../../ui-helper";
-import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
-import * as labelModule from "tns-core-modules/ui/label";
-import * as color from "tns-core-modules/color";
+import * as stackModule from "@nativescript/core/ui/layouts/stack-layout";
+import * as labelModule from "@nativescript/core/ui/label";
+import * as color from "@nativescript/core/color";
 
-import { SelectorCore } from "tns-core-modules/ui/styling/css-selector";
+import { SelectorCore } from "@nativescript/core/ui/styling/css-selector";
 
 const DELTA = 1;
 const SCALE_DELTA = 0.001;
@@ -27,7 +27,7 @@ function createAnimationFromCSS(css: string, name: string): keyframeAnimation.Ke
 }
 
 function findSelectorInScope(scope: styleScope.StyleScope, cssClass: string): SelectorCore {
-    let selectors = scope.query({cssClasses: new Set([cssClass])});
+    let selectors = scope.query({ cssClasses: new Set([cssClass]) });
 
     return selectors[0];
 }
@@ -122,7 +122,7 @@ export function test_ReadTransformAllSet() {
     const animation = createAnimationFromCSS(css, "test");
     const { rotate, scale, translate } = getTransformsValues(animation.keyframes[0].declarations);
 
-    TKUnit.assertAreClose(rotate, 10, DELTA);
+    TKUnit.assertAreClose(rotate.z, 10, DELTA);
 
     TKUnit.assertAreClose(scale.x, 5, SCALE_DELTA);
     TKUnit.assertAreClose(scale.y, 1, SCALE_DELTA);
@@ -136,7 +136,7 @@ export function test_ReadTransformNone() {
     const animation = createAnimationFromCSS(css, "test");
     const { rotate, scale, translate } = getTransformsValues(animation.keyframes[0].declarations);
 
-    TKUnit.assertEqual(rotate, 0);
+    TKUnit.assertEqual(rotate.z, 0);
 
     TKUnit.assertEqual(scale.x, 1);
     TKUnit.assertEqual(scale.y, 1);
@@ -271,7 +271,7 @@ export function test_ReadRotate() {
     const { rotate } = getTransforms(animation.keyframes[0].declarations);
 
     TKUnit.assertEqual(rotate.property, "rotate");
-    TKUnit.assertAreClose(rotate.value, 5, DELTA);
+    TKUnit.assertAreClose(rotate.value.z, 5, DELTA);
 }
 
 export function test_ReadRotateDeg() {
@@ -280,7 +280,7 @@ export function test_ReadRotateDeg() {
     const { rotate } = getTransforms(animation.keyframes[0].declarations);
 
     TKUnit.assertEqual(rotate.property, "rotate");
-    TKUnit.assertAreClose(rotate.value, 45, DELTA);
+    TKUnit.assertAreClose(rotate.value.z, 45, DELTA);
 }
 
 export function test_ReadRotateRad() {
@@ -289,7 +289,7 @@ export function test_ReadRotateRad() {
     const { rotate } = getTransforms(animation.keyframes[0].declarations);
 
     TKUnit.assertEqual(rotate.property, "rotate");
-    TKUnit.assertAreClose(rotate.value, 45, DELTA);
+    TKUnit.assertAreClose(rotate.value.z, 45, DELTA);
 }
 
 export function test_ReadAnimationWithUnsortedKeyframes() {
@@ -426,12 +426,12 @@ export function test_AnimationCurveInKeyframes() {
 function getTransformsValues(declarations) {
     return Object.assign({},
         ...(<any>Object).entries(getTransforms(declarations))
-        .map(([k, v]) => ({[k]: v.value}))
+            .map(([k, v]) => ({ [k]: v.value }))
     );
 }
 
 function getTransforms(declarations) {
-    const [ translate, rotate, scale  ] = [...declarations];
+    const [translate, rotate, scale] = [...declarations];
 
     return { translate, rotate, scale };
 }

@@ -1,7 +1,7 @@
 <Page
   xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo">
   <Page.actionBar>
-    <ActionBar>
+    <ActionBar automationText="actionBar">
       <ActionItem ios.position="right" tap="{{ change }}">
         <Button text="{{ text }}" backgroundColor="red" />
       </ActionItem>

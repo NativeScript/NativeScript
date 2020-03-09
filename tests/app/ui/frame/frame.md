@@ -47,6 +47,6 @@ export function backNavigation(args){
     frame.goBack(backstackEntryFirstPage);
 }
 ```
-With the help of the Frame we access the page's BackstackEntry by providing the the sequence number - `backStack[<page number>]`. In the example above we will navigate back to the initial page and to do that we need to take the first BackstackEntry as follow: `topmost().backStack[0]`
+With the help of the Frame we access the page's BackstackEntry by providing the the sequence number - `backStack[<page number>]`. In the example above we will navigate back to the initial page and to do that we need to take the first BackstackEntry as follow: `Frame.topmost().backStack[0]`
 
 > NB: We start counting the pages from 0. If we need to take the entry for the first page we need to take the it while using the 0 index, for the second 1 index, etc.

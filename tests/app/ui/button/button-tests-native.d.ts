@@ -1,6 +1,6 @@
 //@private
-import * as buttonModule from "tns-core-modules/ui/button";
-import * as colorModule from "tns-core-modules/color";
+import * as buttonModule from "@nativescript/core/ui/button";
+import * as colorModule from "@nativescript/core/color";
 
 export declare function getNativeText(button: buttonModule.Button): string;
 export declare function getNativeTextWrap(button: buttonModule.Button): boolean;

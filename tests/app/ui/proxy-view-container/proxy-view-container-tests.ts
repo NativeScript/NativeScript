@@ -1,14 +1,14 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { View } from "tns-core-modules/ui/core/view";
-import { Button } from "tns-core-modules/ui/button";
-import { Page } from "tns-core-modules/ui/page";
-import { ScrollView } from "tns-core-modules/ui/scroll-view";
-import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
-import { ProxyViewContainer } from "tns-core-modules/ui/proxy-view-container";
-import { ListView } from "tns-core-modules/ui/list-view";
+import { View } from "@nativescript/core/ui/core/view";
+import { Button } from "@nativescript/core/ui/button";
+import { Page } from "@nativescript/core/ui/page";
+import { ScrollView } from "@nativescript/core/ui/scroll-view";
+import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
+import { ProxyViewContainer } from "@nativescript/core/ui/proxy-view-container";
+import { ListView } from "@nativescript/core/ui/list-view";
 
 export function test_add_children_to_attached_proxy() {
     const outer = new StackLayout();
@@ -38,6 +38,35 @@ export function test_children_immediately_registered_in_parent_grid_layout() {
         proxy.addChild(createBtn("1"));
 
         assertNativeChildren(outer, ["1"]);
+    }
+
+    helper.buildUIAndRunTest(outer, testAction);
+}
+
+export function test_proxy_layout_properties() {
+    const outer = new GridLayout();
+    const proxy = new ProxyViewContainer();
+
+    function testAction(views: Array<View>) {
+        outer.addChild(proxy);
+
+        const btn = createBtn("1");
+        proxy.addChild(btn);
+
+        proxy.row = 1;
+        TKUnit.assertEqual(proxy.row, btn.row, "Proxy row value to existing child");
+
+        const btn2 = createBtn("2");
+        proxy.addChild(btn2);
+        TKUnit.assertEqual(proxy.row, btn2.row, "Proxy row value to new child");
+
+        proxy.removeChild(btn2);
+
+        btn.row = 0;
+        TKUnit.assertNotEqual(proxy.row, btn.row, "Child value changed");
+
+        proxy.row = 1;
+        TKUnit.assertNotEqual(proxy.row, btn.row, "Changed child value not overridden");
     }
 
     helper.buildUIAndRunTest(outer, testAction);

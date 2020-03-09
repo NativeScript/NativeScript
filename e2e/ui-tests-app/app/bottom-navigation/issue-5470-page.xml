@@ -3,7 +3,7 @@
     <ActionBar title="BottomNavigation issue 5470" icon="" class="action-bar">
     </ActionBar>
 
-    <BottomNavigation>
+    <BottomNavigation automationText="tabNavigation" >
         <TabStrip>
             <TabStripItem title="Tab1"></TabStripItem>
             <TabStripItem title="Tab2"></TabStripItem>

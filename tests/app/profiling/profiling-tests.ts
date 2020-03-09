@@ -1,5 +1,5 @@
 import { assert, assertEqual, assertFalse, assertNull, assertTrue, assertThrows } from "../tk-unit";
-import { enable, disable, profile, time, start, stop, timer, isRunning, resetProfiles } from "tns-core-modules/profiling";
+import { enable, disable, profile, time, start, stop, timer, isRunning, resetProfiles } from "@nativescript/core/profiling";
 
 enable();
 class TestClass {

@@ -1,0 +1,27 @@
+Tabs {
+  color: gold;
+}
+
+TabContentItem.special {
+  color: green;
+}
+
+TabStrip {
+  color: skyblue;
+}
+
+TabStripItem.special {
+  color: teal;
+}
+
+TabStripItem.special:active {
+  color: yellowgreen;
+}
+
+TabStripItem.nested Label {
+  color: teal;
+}
+
+TabStripItem.nested:active Label {
+  color: yellowgreen;
+}

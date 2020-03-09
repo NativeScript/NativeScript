@@ -1,0 +1,6 @@
+{
+  "name": "timers",
+  "main": "timers",
+  "types": "timers.d.ts",
+  "nativescript": {}
+}

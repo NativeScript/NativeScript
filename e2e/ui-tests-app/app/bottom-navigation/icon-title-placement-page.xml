@@ -2,7 +2,7 @@
   <ActionBar title="BottomNavigation icon title placement" icon="" class="action-bar">
   </ActionBar>
 
-  <BottomNavigation>
+  <BottomNavigation automationText="tabNavigation"  >
     <TabStrip>
         <TabStripItem title="Title" iconSource="res://add_to_fav"></TabStripItem>
         <TabStripItem iconSource="res://add_to_fav"></TabStripItem>

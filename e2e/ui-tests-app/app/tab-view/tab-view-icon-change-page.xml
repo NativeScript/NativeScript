@@ -6,11 +6,11 @@
                     <Label text="first tab"/>
                 </TabViewItem.view>
             </TabViewItem>
-            <TabViewItem iconSource="res://testlogo"> 
+            <TabViewItem iconSource="res://testlogo">
                 <TabViewItem.view>
                     <Label text="second tab"/>
                 </TabViewItem.view>
             </TabViewItem>
         </TabView.items>
     </TabView>
-</Page> 
+</Page>

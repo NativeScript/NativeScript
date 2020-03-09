@@ -1,5 +1,7 @@
+/* Currently app.land.css is never loaded */
+@import '~nativescript-theme-core/css/lime.css';
+
 .root-footer {
-    horizontal-align: middle;
     color: black;
     background-color: lightpink;
 }

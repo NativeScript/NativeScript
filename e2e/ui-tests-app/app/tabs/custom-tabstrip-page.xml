@@ -1,0 +1,41 @@
+<Page>
+
+  <ActionBar title="Tabs Custom TabStrip" icon="" class="action-bar">
+  </ActionBar>
+
+  <GridLayout>
+    <GridLayout>
+      <Tabs id="tabsNav" automationText="tabNavigation" >
+        <TabContentItem>
+          <GridLayout backgroundColor="skyblue">
+            <Label text="First View"/>
+          </GridLayout>
+        </TabContentItem>
+        <TabContentItem>
+          <GridLayout backgroundColor="gold">
+            <Label text="Second View"/>
+          </GridLayout>
+        </TabContentItem>
+        <TabContentItem>
+          <GridLayout backgroundColor="olive">
+            <Label text="Third View"/>
+          </GridLayout>
+        </TabContentItem>
+      </Tabs>
+    </GridLayout>
+
+    <GridLayout columns="*, *, *" class="custom-tabstrip">
+      <GridLayout automationText="first-tab" col="0" class="custom-tabstripitem skyblue" tap="goToFirst">
+        <Label text="First" class="custom-title"></Label>
+      </GridLayout>
+
+      <GridLayout automationText="second-tab" col="1" class="custom-tabstripitem gold" tap="goToSecond">
+        <Label text="Second" class="custom-title"></Label>
+      </GridLayout>
+
+      <GridLayout automationText="third-tab" col="2" class="custom-tabstripitem olive" tap="goToThird">
+        <Label text="Third" class="custom-title"></Label>
+      </GridLayout>
+    </GridLayout>
+  </GridLayout>
+</Page>

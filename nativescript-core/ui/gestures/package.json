@@ -1,0 +1,5 @@
+{
+  "name": "gestures",
+  "main": "gestures",
+  "types": "gestures.d.ts"
+}

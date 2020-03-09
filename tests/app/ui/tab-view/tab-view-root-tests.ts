@@ -1,9 +1,9 @@
 import * as TKUnit from "../../tk-unit";
-import { isAndroid } from "tns-core-modules/platform";
-import { _resetRootView } from "tns-core-modules/application/";
-import { Frame, NavigationEntry, topmost } from "tns-core-modules/ui/frame";
-import { Page } from "tns-core-modules/ui/page";
-import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
+import { isAndroid } from "@nativescript/core/platform";
+import { _resetRootView } from "@nativescript/core/application/";
+import { Frame, NavigationEntry } from "@nativescript/core/ui/frame";
+import { Page } from "@nativescript/core/ui/page";
+import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view";
 
 function waitUntilNavigatedToMaxTimeout(pages: Page[], action: Function) {
     const maxTimeout = 8;
@@ -22,7 +22,7 @@ function waitUntilTabViewReady(page: Page, action: Function) {
     action();
 
     if (isAndroid) {
-        TKUnit.waitUntilReady(() => page.frame._currentEntry.fragment.isAdded());
+        TKUnit.waitUntilReady(() => page.frame._currentEntry.fragment && page.frame._currentEntry.fragment.isAdded());
     } else {
         TKUnit.waitUntilReady(() => page.isLoaded);
     }
@@ -81,10 +81,10 @@ export function test_frame_topmost_matches_selectedIndex() {
     };
 
     waitUntilNavigatedToMaxTimeout([items[0].page], () => _resetRootView(entry));
-    TKUnit.assertEqual(topmost().id, "Tab0 Frame0");
+    TKUnit.assertEqual(Frame.topmost().id, "Tab0 Frame0");
 
     waitUntilNavigatedToMaxTimeout([items[1].page], () => tabView.selectedIndex = 1);
-    TKUnit.assertEqual(topmost().id, "Tab1 Frame1");
+    TKUnit.assertEqual(Frame.topmost().id, "Tab1 Frame1");
 }
 
 export function test_offset_zero_should_raise_same_events() {

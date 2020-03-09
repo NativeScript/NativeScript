@@ -1,0 +1,20 @@
+<Page>
+  <Page.actionBar>
+    <ActionBar automationText="actionBar">
+      <NavigationButton icon="font://&#xF137;" class="font-awesome font-size color"/>
+      <ActionBar.actionItems>
+        <!-- font family + font size + color -->
+        <ActionItem icon="font://&#xF10B;" class="font-awesome font-size color" tap="navigate"/>
+        <!-- default font + valid char code -->
+        <ActionItem icon="font://&#xF10B;" tap="navigate"/>
+        <!-- font family + invalid char code -->
+        <ActionItem icon="font://&#xF556;" class="font-awesome font-size" tap="navigate"/>
+      </ActionBar.actionItems>
+    </ActionBar>
+  </Page.actionBar>
+
+  <StackLayout>
+    <Button text="go to cleared page" tap="navigate"/>
+    <Button text="undefined" tap="onChangeRenderingMode"/>
+  </StackLayout>
+</Page>

@@ -1,0 +1,5 @@
+{
+  "name": "frame",
+  "main": "frame",
+  "types": "frame.d.ts"
+}

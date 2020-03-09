@@ -1,6 +1,14 @@
 
 export const setImageName = (suite: string, spec: string, testsName: string) => {
-    const testName = `${suite}-${spec}-${testsName.replace(suite, "").replace(spec, "")}`.replace(/(\-+)/ig, "-").replace(/(\_+)/ig, "_");
+    let testName = testsName
+        .replace(suite, "")
+        .replace(spec, "");
+    testName = `${suite}-${spec}-${testName}`
+        .replace("should", "-")
+        .replace(/\s+/g, "-")
+        .replace(/\_+/ig, "_")
+        .replace(/[!$%^&*()+|~=`{}\[\]:";'<>?,.\/]/g, "")
+        .replace(/\-+/g, "-");
 
     return testName;
 };

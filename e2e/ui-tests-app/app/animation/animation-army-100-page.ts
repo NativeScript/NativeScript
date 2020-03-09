@@ -23,10 +23,10 @@ export function onUnloaded() {
 }
 
 export function getBoxPropertyAnimationData(property: string,
-                                            animateEase: string,
-                                            target: View,
-                                            extentX: number = 128,
-                                            extentY: number = 128) {
+    animateEase: string,
+    target: View,
+    extentX: number = 128,
+    extentY: number = 128) {
     let animateKey;
     let animateValueTo;
     let animateValueFrom;
@@ -66,8 +66,8 @@ export function getBoxPropertyAnimationData(property: string,
         case "scale":
             target.originX = target.originY = 0.5;
             animateKey = "scale";
-            animateValueTo = {x: 0.1, y: 0.1};
-            animateValueFrom = {x: 1, y: 1};
+            animateValueTo = { x: 0.1, y: 0.1 };
+            animateValueFrom = { x: 1, y: 1 };
             break;
         default:
             throw new Error(`demo animation for "${property}" is not implemented`);

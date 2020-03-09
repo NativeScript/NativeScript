@@ -1,0 +1,63 @@
+<Page class="page">
+
+  <ActionBar title="Tabs font icons" icon="" class="action-bar">
+  </ActionBar>
+
+  <Tabs automationText="tabNavigation">
+    <TabStrip>
+        <!-- font family + font size + color -->
+        <TabStripItem class="special">
+            <Label text="All Set"/>
+            <Image src="font://&#xF10B;" class="font-awesome font-size" />
+        </TabStripItem>
+
+        <!-- default font + valid char code -->
+        <TabStripItem>
+            <Label text="Invalid Font" />
+            <Image src="font://&#xF10B;" />
+        </TabStripItem>
+
+        <!-- font family + invalid char code -->
+        <TabStripItem>
+            <Label text="Invalid Char" />
+            <Image src="font://&#xF556;" class="font-awesome font-size"/>
+        </TabStripItem>
+    </TabStrip>
+
+    <TabContentItem class="special">
+        <StackLayout>
+            <Label text="char code: phone" />
+            <Label text="font: Font Awesome" />
+            <Label text="font size: 36" />
+            <Label text="icon color inactive: lightgreen" />
+            <Label text="icon color active: darkgreen" />
+            <Label text="title color inactive: gold" />
+            <Label text="title color active: darkgoldenrod" />
+        </StackLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+        <StackLayout>
+            <Label text="char code: phone" />
+            <Label text="font: default/invalid" />
+            <Label text="font size: default" />
+            <Label text="icon color inactive: skyblue" />
+            <Label text="icon color active: darkblue" />
+            <Label text="title color inactive: skyblue" />
+            <Label text="title color active: darkblue" />
+        </StackLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+        <StackLayout>
+            <Label text="char code: invalid" />
+            <Label text="font: Font Awesome" />
+            <Label text="font size: 36" />
+            <Label text="icon color inactive: skyblue" />
+            <Label text="icon color active: darkblue" />
+            <Label text="title color inactive: skyblue" />
+            <Label text="title color active: darkblue" />
+        </StackLayout>
+    </TabContentItem>
+  </Tabs>
+</Page>

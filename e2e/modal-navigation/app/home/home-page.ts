@@ -27,12 +27,6 @@ export function onModalNoPage(args: EventData) {
         closeCallback: () => console.log("home-page modal frame closed"),
         fullscreen: false
     });
-
-    view.showModal("modal-no-page/modal-no-page", {
-        context: "context",
-        closeCallback: () => console.log("home-page modal frame closed"),
-        fullscreen: false
-    });
 }
 
 export function onPopoverModal(args: EventData) {

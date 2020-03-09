@@ -1,5 +1,5 @@
 <Page>
-  <ActionBar title="This is RED" class="action" />
+  <ActionBar title="This is RED" class="action"  automationText="actionBar"/>
   <StackLayout>
     <Button text="go to cleared page" tap="navigate"/>
   </StackLayout>

@@ -1,0 +1,35 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="loaded">
+  <BottomNavigation automationText="tabNavigation"  id="bottomNavigation" >
+    <TabStrip>
+      <TabStripItem title="IteM onE"></TabStripItem>
+      <TabStripItem title="IteM twO"></TabStripItem>
+      <TabStripItem title="IteM threE"></TabStripItem>
+    </TabStrip>
+
+    <TabContentItem>
+      <GridLayout>
+          <ScrollView>
+            <StackLayout>
+              <Button text="text-transform: uppercase;" tap="applyTap" tag="text-transform: uppercase;" style.fontSize="8"/>
+              <Button text="text-transform: lowercase;" tap="applyTap" tag="text-transform: lowercase;" style.fontSize="8"/>
+              <Button text="text-transform: capitalize;" tap="applyTap" tag="text-transform: capitalize;" style.fontSize="8"/>
+              <Button text="text-transform: none;" tap="applyTap" tag="text-transform: none;" style.fontSize="8"/>
+              <Button text="reset" tap="resetTap" style.fontSize="8"/>
+            </StackLayout>
+          </ScrollView>
+      </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+      <GridLayout>
+          <Label text="Item 2"/>
+      </GridLayout>
+    </TabContentItem>
+
+        <TabContentItem>
+      <GridLayout>
+       <Label text="Item 3"/>
+      </GridLayout>
+    </TabContentItem>
+  </BottomNavigation>
+</Page>

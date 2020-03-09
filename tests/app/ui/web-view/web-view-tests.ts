@@ -2,7 +2,7 @@ import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 
 // >> webview-require
-import * as webViewModule from "tns-core-modules/ui/web-view";
+import * as webViewModule from "@nativescript/core/ui/web-view";
 // << webview-require
 
 // >> declare-webview-xml

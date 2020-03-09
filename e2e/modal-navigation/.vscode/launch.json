@@ -7,6 +7,25 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "debug tests",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "args": [
+                "-u",
+                "tdd",
+                "--timeout",
+                "999999",
+                "--colors",
+                "--opts",
+                "../config/mocha.opts",
+                "-a",
+                "--grep",
+                "modal-frame:"
+            ],
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch Tests on Android",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
@@ -15,13 +34,9 @@
                 "--timeout",
                 "999999",
                 "--colors",
-                // "${workspaceFolder}/test",
                 "--opts",
-                "./e2e/config/mocha.opts",
-                "--runType",
-                "android23",
-                "--reuseDevice",
-                "--verbose"
+                "../config/mocha.opts",
+                "android"
             ],
             "internalConsoleOptions": "openOnSessionStart"
         },
@@ -36,13 +51,9 @@
                 "--timeout",
                 "999999",
                 "--colors",
-                // "${workspaceFolder}/test",
                 "--opts",
-                "./e2e/config/mocha.opts",
-                "--runType",
-                "sim.iPhoneX.iOS112",
-                "--reuseDevice",
-                "--verbose"
+                "../config/mocha.opts",
+                "ios"
             ],
             "internalConsoleOptions": "openOnSessionStart"
         },

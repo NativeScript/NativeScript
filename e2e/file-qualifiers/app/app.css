@@ -1,5 +1,6 @@
+@import '~nativescript-theme-core/css/core.light.css';
+
 .root-footer {
-    horizontal-align: middle;
     color: black;
     background-color: lightgreen
 }

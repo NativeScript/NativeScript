@@ -23,6 +23,7 @@ export function loadExamples() {
     examples.set("actTransparentBgCss", "action-bar/transparent-bg-css-page");
     examples.set("modalHiddenActBar", "action-bar/modal-test-hidden-action-bar-page");
     examples.set("modalShownActBar", "action-bar/modal-test-with-action-bar-page");
+    examples.set("font-icons", "action-bar/font-icons-page");
     examples.set("flat", "action-bar/flat-page");
     examples.set("flat-tab", "action-bar/flat-tab-page");
     examples.set("flat-tab-opaque-bar", "action-bar/flat-tab-opaque-bar-page");

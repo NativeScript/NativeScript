@@ -1,4 +1,4 @@
-<Page cssFile="~/ui-tests-app/css/test-page.css" loaded="onLoaded">
+<Page loaded="onLoaded">
   <TabView androidSwipeEnabled="false">
     <TabView.items>
 

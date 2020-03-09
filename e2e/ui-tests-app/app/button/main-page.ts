@@ -13,7 +13,6 @@ export function loadExamples() {
     const examples = new Map<string, string>();
     examples.set("btn-wrap-text-alignment-4266", "button/btn-wrap-text-alignment-4266-page");
     examples.set("button-border", "button/button-border-page");
-    examples.set("styles", "button/styles-page");
     examples.set("background", "button/background-page");
     examples.set("border-playground", "button/border-playground-page");
     examples.set("issue-4287", "button/issue-4287-page");

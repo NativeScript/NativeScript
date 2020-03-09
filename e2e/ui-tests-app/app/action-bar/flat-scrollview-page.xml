@@ -1,6 +1,6 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" backgroundColor="yellow">
 
-    <ActionBar flat="true" backgroundColor="blue">
+    <ActionBar flat="true" backgroundColor="blue" automationText="actionBar">
         <Label text="flat action bar"></Label>
     </ActionBar>
 

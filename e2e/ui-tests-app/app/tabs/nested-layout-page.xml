@@ -1,0 +1,26 @@
+<Page class="page">
+
+    <ActionBar title="Tabs nested in Layout" icon="" class="action-bar">
+    </ActionBar>
+
+    <GridLayout>
+      <Tabs>
+        <TabStrip backgroundColor="palevioletred">
+            <TabStripItem title="First"></TabStripItem>
+            <TabStripItem title="Second"></TabStripItem>
+        </TabStrip>
+
+        <TabContentItem>
+            <GridLayout backgroundColor="skyblue">
+              <Label text="First View" />
+            </GridLayout>
+        </TabContentItem>
+
+        <TabContentItem>
+            <GridLayout backgroundColor="gold">
+              <Label text="Second View" />
+            </GridLayout>
+        </TabContentItem>
+      </Tabs>
+    </GridLayout>
+  </Page>

@@ -1,0 +1,31 @@
+.custom-tabstrip {
+  height: 100;
+  vertical-align: bottom;
+  ios-overflow-safe-area-enabled: false;
+}
+
+.custom-tabstripitem {
+  height: 80;
+  width: 80;
+  vertical-align: center;
+  horizontal-align: center;
+  clip-path: circle(100% at 50% 50%);
+}
+
+.custom-title {
+  color: white;
+  vertical-align: center;
+  horizontal-align: center;
+}
+
+.skyblue {
+  background-color: skyblue;
+}
+
+.gold {
+  background-color: gold;
+}
+
+.olive {
+  background-color: olive;
+}

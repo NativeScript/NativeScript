@@ -1,16 +1,16 @@
-import { Color } from "tns-core-modules/color";
-import { FormattedString, Span } from "tns-core-modules/text/formatted-string";
-import { ActionBar } from "tns-core-modules/ui/action-bar";
+import { Color } from "@nativescript/core/color";
+import { FormattedString, Span } from "@nativescript/core/text/formatted-string";
+import { ActionBar } from "@nativescript/core/ui/action-bar";
 // TODO: Remove this and get it from global to decouple builder for angular
-import { createViewFromEntry } from "tns-core-modules/ui/builder";
-import { Button } from "tns-core-modules/ui/button";
-import { isIOS, unsetValue, View, ViewBase } from "tns-core-modules/ui/core/view";
-import * as frame from "tns-core-modules/ui/frame";
-import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { Page } from "tns-core-modules/ui/page";
-import { TabView, TabViewItem } from "tns-core-modules/ui/tab-view";
-import * as utils from "tns-core-modules/utils/utils";
+import { Builder } from "@nativescript/core/ui/builder";
+import { Button } from "@nativescript/core/ui/button";
+import { isIOS, unsetValue, View, ViewBase } from "@nativescript/core/ui/core/view";
+import { Frame, NavigationEntry } from "@nativescript/core/ui/frame";
+import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
+import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
+import { Page } from "@nativescript/core/ui/page";
+import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view";
+import * as utils from "@nativescript/core/utils/utils";
 
 import * as TKUnit from "./tk-unit";
 
@@ -167,29 +167,29 @@ export function navigateToModuleAndRunTest(moduleName, context, testFunction) {
 }
 
 export function navigate(pageFactory: () => Page, navigationContext?: any): Page {
-    let entry: frame.NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: true };
+    let entry: NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: true };
 
     return navigateWithEntry(entry);
 }
 
 export function navigateWithHistory(pageFactory: () => Page, navigationContext?: any): Page {
-    let entry: frame.NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: false };
+    let entry: NavigationEntry = { create: pageFactory, animated: false, context: navigationContext, clearHistory: false };
 
     return navigateWithEntry(entry);
 }
 
 export function navigateToModule(moduleName: string, context?: any): Page {
-    let entry: frame.NavigationEntry = { moduleName: moduleName, context: context, animated: false, clearHistory: true };
+    let entry: NavigationEntry = { moduleName: moduleName, context: context, animated: false, clearHistory: true };
 
     return navigateWithEntry(entry);
 }
 
 export function getCurrentPage(): Page {
-    return frame.topmost().currentPage;
+    return Frame.topmost().currentPage;
 }
 
 export function getClearCurrentPage(): Page {
-    let page = frame.topmost().currentPage;
+    let page = Frame.topmost().currentPage;
     page.style.backgroundColor = unsetValue;
     page.style.color = unsetValue;
     page.bindingContext = unsetValue;
@@ -212,8 +212,8 @@ export function waitUntilNavigatedTo(page: Page, action: Function) {
     TKUnit.waitUntilReady(() => completed, 5);
 }
 
-export function waitUntilNavigatedFrom(action: Function, topFrame?: frame.Frame) {
-    const currentPage = topFrame ? topFrame.currentPage : frame.topmost().currentPage;
+export function waitUntilNavigatedFrom(action: Function, topFrame?: Frame) {
+    const currentPage = topFrame ? topFrame.currentPage : Frame.topmost().currentPage;
     let completed = false;
     function navigatedFrom(args) {
         args.object.page.off("navigatedFrom", navigatedFrom);
@@ -229,20 +229,20 @@ export function waitUntilLayoutReady(view: View): void {
     TKUnit.waitUntilReady(() => view.isLayoutValid);
 }
 
-export function navigateWithEntry(entry: frame.NavigationEntry, topFrame?: frame.Frame): Page {
-    const page = createViewFromEntry(entry) as Page;
+export function navigateWithEntry(entry: NavigationEntry, topFrame?: Frame): Page {
+    const page = Builder.createViewFromEntry(entry) as Page;
     entry.moduleName = null;
     entry.create = function () {
         return page;
     };
 
-    waitUntilNavigatedFrom(() => topFrame ? topFrame.navigate(entry) : frame.topmost().navigate(entry));
+    waitUntilNavigatedFrom(() => topFrame ? topFrame.navigate(entry) : Frame.topmost().navigate(entry));
 
     return page;
 }
 
-export function goBack(topFrame?: frame.Frame) {
-    waitUntilNavigatedFrom(() => topFrame ? topFrame.goBack() : frame.topmost().goBack());
+export function goBack(topFrame?: Frame) {
+    waitUntilNavigatedFrom(() => topFrame ? topFrame.goBack() : Frame.topmost().goBack());
 }
 
 export function assertAreClose(actual: number, expected: number, message: string): void {

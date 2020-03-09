@@ -1,0 +1,5 @@
+{
+  "name": "tab-navigation-base",
+  "main": "tab-navigation-base",
+  "types": "tab-navigation-base.d.ts"
+}
