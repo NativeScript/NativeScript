@@ -14,6 +14,7 @@
     "Foundation.*:*",
 
     "MaterialComponents.MDCTabBar:*",
+    "MaterialComponents.MDCTabBarIndicatorTemplate:*",
 
     "NativeScriptEmbedder:*",
 
