@@ -270,6 +270,7 @@ export class View extends ViewCommon {
         }
 
         const pointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
+
         return {
             x: pointInWindow.x,
             y: pointInWindow.y
@@ -283,6 +284,7 @@ export class View extends ViewCommon {
 
         const pointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
         const pointOnScreen = this.nativeViewProtected.window.convertPointToWindow(pointInWindow, null);
+
         return {
             x: pointOnScreen.x,
             y: pointOnScreen.y
@@ -298,6 +300,7 @@ export class View extends ViewCommon {
 
         const myPointInWindow = this.nativeViewProtected.convertPointToView(this.nativeViewProtected.bounds.origin, null);
         const otherPointInWindow = otherView.nativeViewProtected.convertPointToView(otherView.nativeViewProtected.bounds.origin, null);
+
         return {
             x: myPointInWindow.x - otherPointInWindow.x,
             y: myPointInWindow.y - otherPointInWindow.y
@@ -373,7 +376,8 @@ export class View extends ViewCommon {
         const parentWithController = ios.getParentWithViewController(parent);
         if (!parentWithController) {
             traceWrite(`Could not find parent with viewController for ${parent} while showing modal view.`,
-                traceCategories.ViewHierarchy, traceMessageType.error)
+                traceCategories.ViewHierarchy, traceMessageType.error);
+
             return;
         }
 
@@ -381,12 +385,14 @@ export class View extends ViewCommon {
         if (parentController.presentedViewController) {
             traceWrite("Parent is already presenting view controller. Close the current modal page before showing another one!",
                 traceCategories.ViewHierarchy, traceMessageType.error);
+
             return;
         }
 
         if (!parentController.view || !parentController.view.window) {
             traceWrite("Parent page is not part of the window hierarchy.",
                 traceCategories.ViewHierarchy, traceMessageType.error);
+
             return;
         }
 
@@ -448,13 +454,15 @@ export class View extends ViewCommon {
 
     protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
         if (!parent || !parent.viewController) {
-            traceError("Trying to hide modal view but no parent with viewController specified.")
+            traceError("Trying to hide modal view but no parent with viewController specified.");
+
             return;
         }
 
         // modal view has already been closed by UI, probably as a popover
         if (!parent.viewController.presentedViewController) {
             whenClosedCallback();
+
             return;
         }
 
@@ -466,6 +474,7 @@ export class View extends ViewCommon {
 
     [isEnabledProperty.getDefault](): boolean {
         const nativeView = this.nativeViewProtected;
+
         return nativeView instanceof UIControl ? nativeView.enabled : true;
     }
     [isEnabledProperty.setNative](value: boolean) {
@@ -594,6 +603,7 @@ export class View extends ViewCommon {
             const frame = nativeView.frame;
             const origin = frame.origin;
             const size = frame.size;
+
             return {
                 left: Math.round(layout.toDevicePixels(origin.x)),
                 top: Math.round(layout.toDevicePixels(origin.y)),
@@ -729,6 +739,7 @@ export namespace ios {
             layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor),
             layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)
         ]);
+
         return layoutGuide;
     }
 
@@ -794,6 +805,7 @@ export namespace ios {
 
             return adjustedFrame;
         }
+
         return null;
     }
 
@@ -901,7 +913,7 @@ export namespace ios {
 
         const inWindow = CGRectMake(inWindowLeft, inWindowTop, frame.size.width, frame.size.height);
 
-        return { safeArea: safeArea, fullscreen: fullscreen, inWindow: inWindow }
+        return { safeArea: safeArea, fullscreen: fullscreen, inWindow: inWindow };
     }
 
     export class UILayoutViewController extends UIViewController {
@@ -910,6 +922,7 @@ export namespace ios {
         public static initWithOwner(owner: WeakRef<View>): UILayoutViewController {
             const controller = <UILayoutViewController>UILayoutViewController.new();
             controller.owner = owner;
+
             return controller;
         }
 

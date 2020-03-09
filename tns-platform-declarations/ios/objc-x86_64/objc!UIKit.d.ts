@@ -1022,16 +1022,6 @@ declare var NSUnderlinePatternDot: NSUnderlineStyle;
 declare var NSUnderlinePatternSolid: NSUnderlineStyle;
 
 declare const enum NSUnderlineStyle {
-	// TODO: Remove the deprecated Style... values with the next typings update
-	// (should happen automatically when they are produced from the script)
-	StyleNone = 0,
-
-	StyleSingle = 1,
-
-	StyleThick = 2,
-
-	StyleDouble = 9,
-	// /TODO
 
 	None = 0,
 

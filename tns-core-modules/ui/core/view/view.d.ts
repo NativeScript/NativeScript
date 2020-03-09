@@ -494,15 +494,6 @@ export abstract class View extends ViewBase {
     public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
 
     /**
-     * @deprecated use on() instead
-     *
-     * @param type - Type of the gesture.
-     * @param callback - A function that will be executed when gesture is received.
-     * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
-     */
-    observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any);
-
-    /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
      * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change") or you can use gesture types.
      * @param callback - Callback function which will be executed when event is raised.

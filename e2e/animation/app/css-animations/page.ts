@@ -10,6 +10,7 @@ export function pageLoaded(args: EventData) {
 
 export function onButtonTap(args: EventData) {
     const clickedButton = <Button>args.object;
-    const destination = "./css-animations/" + clickedButton.text + "/page";
+
+    const destination =  clickedButton.text + "/page";
     currentFrame.navigate(destination);
 }

@@ -1,4 +1,4 @@
-﻿import {
+import {
     LayoutBaseCommon, clipToBoundsProperty, isPassThroughParentEnabledProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length
 } from "./layout-base-common";
@@ -11,12 +11,12 @@ export class LayoutBase extends LayoutBaseCommon {
         return true;
     }
     [clipToBoundsProperty.setNative](value: boolean) {
-        // TODO: Use ClipRectangle if API > 16! 
+        // TODO: Use ClipRectangle if API > 16!
 
-        // We can't implement this without calling setClipChildren(false) on every ancestor up in the visual tree, 
-        // which will kill performance. It will also lead to unwanted side effects such as other totally unrelated 
-        // views being affected by setting the parents' setClipChildren to false. 
-        // The problem in Android is that a ViewGroup either clips ALL of its children or it does not. Unlike iOS, the clipping 
+        // We can't implement this without calling setClipChildren(false) on every ancestor up in the visual tree,
+        // which will kill performance. It will also lead to unwanted side effects such as other totally unrelated
+        // views being affected by setting the parents' setClipChildren to false.
+        // The problem in Android is that a ViewGroup either clips ALL of its children or it does not. Unlike iOS, the clipping
         // cannot be controlled on a per view basis. So clipToBounds=false will have to be somehow achieved with stacking different
         // views on top of one another in an AbsoluteLayout or GridLayout. There is always a workaround when playing with layouts.
         //

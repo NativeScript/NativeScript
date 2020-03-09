@@ -1,10 +1,10 @@
-﻿import * as imageCacheModule from "tns-core-modules/ui/image-cache";
+import * as imageCacheModule from "tns-core-modules/ui/image-cache";
 import * as imageSource from "tns-core-modules/image-source";
 import * as types from "tns-core-modules/utils/types";
 import { device } from "tns-core-modules/platform";
 import lazy from "tns-core-modules/utils/lazy";
 
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 
 const sdkVersion = lazy(() => parseInt(device.sdkVersion));
 
@@ -44,7 +44,7 @@ export const test_ImageCache_ValidUrl = function() {
 
     TKUnit.waitUntilReady(() => types.isDefined(validKey), 8);
     TKUnit.assertEqual(validKey, url, "Key should equal the provided url");
-}
+};
 
 export const test_ImageCache_NothingAtProvidedUrl = function() {
     const cache = new imageCacheModule.Cache();
@@ -81,4 +81,4 @@ export const test_ImageCache_NothingAtProvidedUrl = function() {
 
     TKUnit.waitUntilReady(() => errorCaught);
     TKUnit.assertEqual(`No image for key: ${url}`, errorMessage);
-}
+};

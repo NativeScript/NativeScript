@@ -1,0 +1,23 @@
+<Page class="page">
+  <ActionBar title="BottomNavigation color" icon="" class="action-bar">
+  </ActionBar>
+
+  <BottomNavigation style="color: green;">
+    <TabStrip>
+      <TabStripItem title="First"></TabStripItem>
+      <TabStripItem title="Second"></TabStripItem>
+    </TabStrip>
+
+    <TabContentItem>
+      <GridLayout>
+        <Label text="First View" />
+      </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+      <GridLayout>
+        <Label text="Second View" />
+      </GridLayout>
+    </TabContentItem>
+  </BottomNavigation>
+</Page>

@@ -94,6 +94,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
     concat(): T[] {
         this._addArgs.index = this._array.length;
         const result = this._array.concat.apply(this._array, arguments);
+
         return result;
     }
 
@@ -244,6 +245,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
                 return i;
             }
         }
+
         return -1;
     }
 
@@ -260,6 +262,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
                 return i;
             }
         }
+
         return -1;
     }
 

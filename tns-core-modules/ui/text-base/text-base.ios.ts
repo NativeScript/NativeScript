@@ -1,4 +1,4 @@
-﻿import { TextDecoration, TextAlignment, TextTransform } from "./text-base";
+import { TextDecoration, TextAlignment, TextTransform } from "./text-base";
 import { Font } from "../styling/font";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
@@ -55,6 +55,7 @@ export class TextBase extends TextBaseCommon {
     [fontInternalProperty.getDefault](): UIFont {
         let nativeView = this.nativeTextViewProtected;
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
+
         return nativeView.font;
     }
     [fontInternalProperty.setNative](value: Font | UIFont) {
@@ -159,17 +160,14 @@ export class TextBase extends TextBaseCommon {
             case "none":
                 break;
             case "underline":
-                // TODO: Replace deprecated `StyleSingle` with `Single` after the next typings update
-                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
+                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.Single);
                 break;
             case "line-through":
-                // TODO: Replace deprecated `StyleSingle` with `Single` after the next typings update
-                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
+                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.Single);
                 break;
             case "underline line-through":
-                // TODO: Replace deprecated `StyleSingle` with `Single` after the next typings update
-                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
-                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
+                dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.Single);
+                dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.Single);
                 break;
             default:
                 throw new Error(`Invalid text decoration value: ${style.textDecoration}. Valid values are: 'none', 'underline', 'line-through', 'underline line-through'.`);
@@ -246,6 +244,7 @@ export class TextBase extends TextBaseCommon {
                 spanStart += spanText.length;
             }
         }
+
         return mas;
     }
 

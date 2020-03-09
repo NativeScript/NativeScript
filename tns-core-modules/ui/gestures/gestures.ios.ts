@@ -1,4 +1,4 @@
-﻿// Definitions.
+// Definitions.
 import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
 import { View, EventData } from "../core/view";
 
@@ -10,6 +10,7 @@ export * from "./gestures-common";
 export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver {
     const observer = new GesturesObserver(target, callback, context);
     observer.observe(type);
+
     return observer;
 }
 
@@ -17,11 +18,6 @@ class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecog
     public static ObjCProtocols = [UIGestureRecognizerDelegate];
 
     public gestureRecognizerShouldRecognizeSimultaneouslyWithGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean {
-        // If both gesture recognizers are of type UITapGestureRecognizer, do not allow
-        // simultaneous recognition.
-        if (gestureRecognizer instanceof UITapGestureRecognizer && otherGestureRecognizer instanceof UITapGestureRecognizer) {
-            return false;
-        }
         return true;
     }
 
@@ -33,6 +29,7 @@ class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecog
             && otherGestureRecognizer.numberOfTapsRequired === 2) {
             return true;
         }
+
         return false;
     }
 }
@@ -469,6 +466,7 @@ class TouchGestureEventData implements TouchGestureEventData {
         if (this._mainPointer === undefined) {
             this._mainPointer = this.ios.touches.anyObject();
         }
+
         return this._mainPointer;
     }
 
@@ -502,6 +500,6 @@ class TouchGestureEventData implements TouchGestureEventData {
     }
 
     getY(): number {
-        return this.getMainPointer().locationInView(this.view.nativeViewProtected).y
+        return this.getMainPointer().locationInView(this.view.nativeViewProtected).y;
     }
 }

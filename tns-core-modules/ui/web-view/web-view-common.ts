@@ -64,7 +64,7 @@ export abstract class WebViewBase extends ContainerView implements WebViewDefini
     [srcProperty.setNative](src: string) {
         this.stopLoading();
 
-        // Add file:/// prefix for local files. 
+        // Add file:/// prefix for local files.
         // They should be loaded with _loadUrl() method as it handles query params.
         if (src.indexOf("~/") === 0) {
             src = `file:///${knownFolders.currentApp().path}/` + src.substr(2);
@@ -85,14 +85,8 @@ export abstract class WebViewBase extends ContainerView implements WebViewDefini
             this._loadData(src);
         }
     }
-
-    get url(): string {
-        throw new Error("Property url of WebView is deprecated. Use src instead");
-    }
-    set url(value: string) {
-        throw new Error("Property url of WebView is deprecated. Use src instead")
-    }
 }
+
 export interface WebViewBase {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
     on(event: "loadFinished", callback: (args: LoadEventData) => void, thisArg?: any);

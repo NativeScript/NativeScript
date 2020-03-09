@@ -1,4 +1,4 @@
-﻿import { Observable, EventData } from "../../../data/observable";
+import { Observable, EventData } from "../../../data/observable";
 
 const handlersForEventName = new Map<string, (eventData: EventData) => void>();
 const sourcesMap = new WeakMap<Observable, Map<string, Array<TargetHandlerPair>>>();
@@ -22,6 +22,7 @@ function getHandlerForEventName(eventName: string): (eventData: EventData) => vo
             if (!sourceEventMap) {
                 // There is no event map for this source - it is safe to detach the listener;
                 source.removeEventListener(eventName, handlersForEventName.get(eventName));
+
                 return;
             }
 

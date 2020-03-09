@@ -1,4 +1,4 @@
-﻿import {
+import {
     ImageSource, ImageAsset, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, Color,
     isDataURI, isFileOrResourcePath, RESOURCE_PREFIX, Length
 } from "./image-common";
@@ -26,6 +26,7 @@ function initializeImageLoadedListener() {
     class ImageLoadedListenerImpl extends java.lang.Object implements org.nativescript.widgets.image.Worker.OnImageLoadedListener {
         constructor(public owner: Image) {
             super();
+
             return global.__native(this);
         }
 
@@ -80,6 +81,7 @@ export class Image extends ImageBase {
 
         if (!value) {
             imageView.setUri(null, 0, 0, false, false, true);
+
             return;
         }
 

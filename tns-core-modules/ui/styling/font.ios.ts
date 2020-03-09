@@ -1,6 +1,6 @@
-﻿import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyle, FontWeight } from "./font-common";
+import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyle, FontWeight } from "./font-common";
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "../../trace";
-import { device } from "../../platform"
+import { device } from "../../platform";
 import * as fs from "../../file-system";
 export * from "./font-common";
 
@@ -39,6 +39,7 @@ export class Font extends FontBase {
         if (!this._uiFont) {
             this._uiFont = createUIFont(this, defaultFont);
         }
+
         return this._uiFont;
     }
 
@@ -210,12 +211,13 @@ function registerFontsInFolder(fontsFolderPath) {
             ((<fs.File>fileEntity).extension === ".ttf" || (<fs.File>fileEntity).extension === ".otf")) {
             ios.registerFont(fileEntity.name);
         }
+
         return true;
     });
 }
 
 function registerCustomFonts() {
-    const appDir = fs.knownFolders.currentApp().path
+    const appDir = fs.knownFolders.currentApp().path;
     const fontsDir = fs.path.join(appDir, "fonts");
     if (fs.Folder.exists(fontsDir)) {
         registerFontsInFolder(fontsDir);

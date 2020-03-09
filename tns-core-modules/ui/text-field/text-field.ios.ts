@@ -1,4 +1,4 @@
-﻿import {
+import {
     TextFieldBase, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty,
     Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color, layout
 } from "./text-field-common";
@@ -20,6 +20,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public static initWithOwner(owner: WeakRef<TextField>): UITextFieldDelegateImpl {
         const delegate = <UITextFieldDelegateImpl>UITextFieldDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -100,6 +101,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
         }
 
         this.firstEdit = false;
+
         return true;
     }
 }
@@ -111,6 +113,7 @@ class UITextFieldImpl extends UITextField {
     public static initWithOwner(owner: WeakRef<TextField>): UITextFieldImpl {
         const handler = <UITextFieldImpl>UITextFieldImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 

@@ -1,4 +1,4 @@
-﻿import * as pages from "tns-core-modules/ui/page";
+import * as pages from "tns-core-modules/ui/page";
 import * as fpsModule from "tns-core-modules/fps-meter";
 
 export function createPage() {
@@ -20,6 +20,7 @@ export function createPage() {
     startTime = java.lang.System.nanoTime();
 
     var page = new pages.Page();
+
     return page;
 }
 //var gridLayout = new grid.GridLayout();

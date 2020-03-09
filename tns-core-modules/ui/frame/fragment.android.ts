@@ -7,6 +7,7 @@ class FragmentClass extends org.nativescript.widgets.FragmentBase {
     
     constructor() {
         super();
+
         return global.__native(this);
     }
 
@@ -33,6 +34,7 @@ class FragmentClass extends org.nativescript.widgets.FragmentBase {
 
     public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle) {
         let result = this._callbacks.onCreateView(this, inflater, container, savedInstanceState, super.onCreateView);
+
         return result;
     }
 

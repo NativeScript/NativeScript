@@ -1,0 +1,16 @@
+{
+    "extends": "./tsconfig.shared",
+    "compilerOptions": {
+        "noUnusedLocals": true,
+        "noUnusedParameters": true
+    },
+    "include": [
+        "tns-core-modules",
+        "tests",
+        "e2e"
+    ],
+    "exclude": [
+        "**/node_modules/**",
+        "**/platforms/**"
+    ]
+}

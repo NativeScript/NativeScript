@@ -1,4 +1,4 @@
-﻿import { NavigationTransition } from "./frame";
+import { NavigationTransition } from "./frame";
 import { Transition } from "../transition/transition";
 import { SlideTransition } from "../transition/slide-transition";
 import { FadeTransition } from "../transition/fade-transition";
@@ -32,6 +32,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
         impl._operation = operation;
         impl._fromVC = fromVC;
         impl._toVC = toVC;
+
         return impl;
     }
 

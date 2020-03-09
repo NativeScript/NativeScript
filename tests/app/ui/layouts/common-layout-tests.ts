@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../TKUnit";
+﻿import * as TKUnit from "../../tk-unit";
 import * as layoutHelper from "./layout-helper";
 import * as testModule from "../../ui-test";
 import { LayoutBase, unsetValue, PercentLength } from "tns-core-modules/ui/layouts/layout-base";

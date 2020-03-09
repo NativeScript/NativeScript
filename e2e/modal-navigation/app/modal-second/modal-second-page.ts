@@ -1,7 +1,5 @@
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { NavigatedData, Page } from "tns-core-modules/ui/page";
 import { View, EventData } from "tns-core-modules/ui/core/view";
-import { Frame } from "tns-core-modules/ui/frame";
 
 export function onNavigatingTo(args: NavigatedData) {
     console.log("second-page onNavigatingTo");

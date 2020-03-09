@@ -1,4 +1,4 @@
-﻿// Types
+// Types
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 
@@ -6,7 +6,7 @@ import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { TabNavigationBase, itemsProperty, selectedIndexProperty } from "../tab-navigation-base/tab-navigation-base";
 import { Frame } from "../frame";
 import { ios as iosView, View, CSSType } from "../core/view";
-import { ios as iosUtils, layout } from "../../utils/utils"
+import { ios as iosUtils, layout } from "../../utils/utils";
 import { device } from "../../platform";
 import { Color } from "../../color";
 import { fromFileOrResource } from "../../image-source";
@@ -28,6 +28,7 @@ class UITabBarControllerImpl extends UITabBarController {
     public static initWithOwner(owner: WeakRef<BottomNavigation>): UITabBarControllerImpl {
         let handler = <UITabBarControllerImpl>UITabBarControllerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 
@@ -80,6 +81,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
     public static initWithOwner(owner: WeakRef<BottomNavigation>): UITabBarControllerDelegateImpl {
         let delegate = <UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -128,6 +130,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     public static initWithOwner(owner: WeakRef<BottomNavigation>): UINavigationControllerDelegateImpl {
         let delegate = <UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -274,6 +277,14 @@ export class BottomNavigation extends TabNavigationBase {
         super.onSelectedIndexChanged(oldIndex, newIndex);
     }
 
+    public getTabBarBackgroundColor(): UIColor {
+        return this._ios.tabBar.barTintColor;
+    }
+
+    public setTabBarBackgroundColor(value: UIColor | Color): void {
+        this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+    }
+
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         const width = layout.getMeasureSpecSize(widthMeasureSpec);
         const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
@@ -323,6 +334,7 @@ export class BottomNavigation extends TabNavigationBase {
             page.actionBarHidden = true;
             page.frame.ios._disableNavBarAnimation = false;
             this._actionBarHiddenByTabView = true;
+
             // TODO
             // if (traceEnabled()) {
             //     traceWrite(`TabView hid action bar`, traceCategories.Debug);
@@ -335,6 +347,7 @@ export class BottomNavigation extends TabNavigationBase {
             page.actionBarHidden = false;
             page.frame.ios._disableNavBarAnimation = false;
             this._actionBarHiddenByTabView = undefined;
+
             // TODO
             // if (traceEnabled()) {
             //     traceWrite(`TabView restored action bar`, traceCategories.Debug);
@@ -348,6 +361,7 @@ export class BottomNavigation extends TabNavigationBase {
 
         if (newController) {
             (<any>item).setViewController(newController, newController.view);
+
             return newController;
         }
 
@@ -371,11 +385,16 @@ export class BottomNavigation extends TabNavigationBase {
         const length = items ? items.length : 0;
         if (length === 0) {
             this._ios.viewControllers = null;
+
             return;
         }
 
         const controllers = NSMutableArray.alloc<UIViewController>().initWithCapacity(length);
         const states = getTitleAttributesForStates(this);
+
+        if (this.tabStrip) {
+            this.tabStrip.setNativeView(this._ios.tabBar);
+        }
 
         items.forEach((item, i) => {
             const controller = this.getViewController(item);
@@ -394,6 +413,7 @@ export class BottomNavigation extends TabNavigationBase {
                 applyStatesToItem(tabBarItem, states);
 
                 controller.tabBarItem = tabBarItem;
+                tabStripItem.setNativeView(tabBarItem);
             }
 
             controllers.addObject(controller);
@@ -431,17 +451,17 @@ export class BottomNavigation extends TabNavigationBase {
         return image;
     }
 
-    private _updateIOSTabBarColorsAndFonts(): void {
-        if (!this.tabStrip || !this.tabStrip.items || !this.tabStrip.items.length) {
-            return;
-        }
+    // private _updateIOSTabBarColorsAndFonts(): void {
+    //     if (!this.tabStrip || !this.tabStrip.items || !this.tabStrip.items.length) {
+    //         return;
+    //     }
 
-        const tabBar = <UITabBar>this.ios.tabBar;
-        const states = getTitleAttributesForStates(this);
-        for (let i = 0; i < tabBar.items.count; i++) {
-            applyStatesToItem(tabBar.items[i], states);
-        }
-    }
+    //     const tabBar = <UITabBar>this.ios.tabBar;
+    //     const states = getTitleAttributesForStates(this);
+    //     for (let i = 0; i < tabBar.items.count; i++) {
+    //         applyStatesToItem(tabBar.items[i], states);
+    //     }
+    // }
 
     // TODO: Move this to TabStripItem
     // [fontInternalProperty.getDefault](): Font {
@@ -485,16 +505,16 @@ function getTitleAttributesForStates(tabView: BottomNavigation): TabStates {
     const font: UIFont = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
     const tabItemTextColor = tabView.style.tabTextColor;
     const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
-    result.normalState = { [NSFontAttributeName]: font }
+    result.normalState = { [NSFontAttributeName]: font };
     if (textColor) {
-        result.normalState[UITextAttributeTextColor] = textColor
+        result.normalState[UITextAttributeTextColor] = textColor;
     }
 
     const tabSelectedItemTextColor = tabView.style.selectedTabTextColor;
     const selectedTextColor = tabItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
-    result.selectedState = { [NSFontAttributeName]: font }
+    result.selectedState = { [NSFontAttributeName]: font };
     if (selectedTextColor) {
-        result.selectedState[UITextAttributeTextColor] = selectedTextColor
+        result.selectedState[UITextAttributeTextColor] = selectedTextColor;
     }
 
     return result;

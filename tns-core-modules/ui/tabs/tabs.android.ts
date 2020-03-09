@@ -7,6 +7,7 @@ import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
 import { selectedIndexProperty, itemsProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
 import { TabsBase, swipeEnabledProperty, offscreenTabLimitProperty } from "./tabs-common";
 import { Frame } from "../frame";
+import { Color } from "../core/view";
 import { fromFileOrResource } from "../../image-source";
 import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
 import * as application from "../../application";
@@ -32,6 +33,7 @@ function makeFragmentName(viewId: number, id: number): string {
 function getTabById(id: number): Tabs {
     const ref = tabs.find(ref => {
         const tab = ref.get();
+
         return tab && tab._domId === id;
     });
 
@@ -49,6 +51,7 @@ function initializeNativeClasses() {
 
         constructor() {
             super();
+
             return global.__native(this);
         }
 
@@ -58,6 +61,7 @@ function initializeNativeClasses() {
             args.putInt(INDEX, index);
             const fragment = new TabFragmentImplementation();
             fragment.setArguments(args);
+
             return fragment;
         }
 
@@ -65,7 +69,7 @@ function initializeNativeClasses() {
             super.onCreate(savedInstanceState);
             const args = this.getArguments();
             this.tab = getTabById(args.getInt(TABID));
-            this.index = args.getInt(INDEX)
+            this.index = args.getInt(INDEX);
             if (!this.tab) {
                 throw new Error(`Cannot find TabView`);
             }
@@ -88,11 +92,13 @@ function initializeNativeClasses() {
 
         constructor(public owner: Tabs) {
             super();
+
             return global.__native(this);
         }
 
         getCount() {
             const items = this.items;
+
             return items ? items.length : 0;
         }
 
@@ -204,6 +210,7 @@ function initializeNativeClasses() {
             // Commit the current transaction on save to prevent "No view found for id 0xa" exception on restore.
             // Related to: https://github.com/NativeScript/NativeScript/issues/6466
             this._commitCurrentTransaction();
+
             return null;
         }
 
@@ -258,6 +265,7 @@ function getDefaultAccentColor(context: android.content.Context): number {
         //Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
         defaultAccentColor = ad.resources.getPaletteColor(ACCENT_COLOR, context) || 0xFF33B5E5;
     }
+
     return defaultAccentColor;
 }
 
@@ -484,7 +492,7 @@ export class Tabs extends TabsBase {
 
         const matchingItems = currentPagerAdapterItems.filter((currentItem) => {
             return !!items.filter((item) => {
-                return item._domId === currentItem._domId
+                return item._domId === currentItem._domId;
             })[0];
         });
 
@@ -508,6 +516,7 @@ export class Tabs extends TabsBase {
         const length = items ? items.length : 0;
         if (length === 0) {
             this._tabLayout.setItems(null, null);
+
             return;
         }
 
@@ -521,6 +530,7 @@ export class Tabs extends TabsBase {
 
         const tabLayout = this._tabLayout;
         tabLayout.setItems(tabItems, this._viewPager);
+        this.tabStrip.setNativeView(tabLayout);
         items.forEach((item, i, arr) => {
             const tv = tabLayout.getTextViewForItemAt(i);
             item.setNativeView(tv);
@@ -559,6 +569,18 @@ export class Tabs extends TabsBase {
 
     public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
         this._tabLayout.updateItemAt(index, spec);
+    }
+
+    public getTabBarBackgroundColor(): android.graphics.drawable.Drawable {
+        return this._tabLayout.getBackground();
+    }
+
+    public setTabBarBackgroundColor(value: android.graphics.drawable.Drawable | Color): void {
+        if (value instanceof Color) {
+            this._tabLayout.setBackgroundColor(value.android);
+        } else {
+            this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
+        }
     }
 
     [selectedIndexProperty.setNative](value: number) {
@@ -601,4 +623,15 @@ export class Tabs extends TabsBase {
     [offscreenTabLimitProperty.setNative](value: number) {
         this._viewPager.setOffscreenPageLimit(value);
     }
+}
+
+function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
+    if (value) {
+        const constantState = value.getConstantState();
+        if (constantState) {
+            return constantState.newDrawable(resources);
+        }
+    }
+
+    return value;
 }

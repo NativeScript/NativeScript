@@ -1,14 +1,12 @@
-import * as commonTests from "./view-tests-common";
-
 import { View } from "tns-core-modules/ui/core/view";
 import { Button } from "tns-core-modules/ui/button";
 import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import { Color } from "tns-core-modules/color";
-import * as helper from "../helper";
-import * as TKUnit from "../../TKUnit";
+import * as helper from "../../ui-helper";
+import * as TKUnit from "../../tk-unit";
 import * as utils from "tns-core-modules/utils/utils";
 
-global.moduleMerge(commonTests, exports);
+export * from "./view-tests-common";
 
 class MyGrid extends GridLayout {
     public backgroundDrawCount: number = 0;
@@ -39,6 +37,7 @@ export function checkNativeBackgroundColor(v: View): boolean {
     if (v.ios instanceof UILabel) {
         var cgColor1 = (<UILabel>v.ios).layer.backgroundColor;
         var cgColor2 = (<UIColor>(<Color>v.backgroundColor).ios).CGColor;
+
         return v.backgroundColor && !!CGColorEqualToColor(cgColor1, cgColor2);
     }
 
@@ -56,12 +55,13 @@ export function testBackgroundInternalChangedOnceOnResize() {
     layout.className = "myClass";
     layout.backgroundColor = new Color(255, 255, 0, 0);
 
-    root.css = ".myClass { background-image: url('~/logo.png') }";
+    root.css = ".myClass { background-image: url('~/assets/logo.png') }";
     root.content = layout;
 
     function trackCount() {
         let result = layout.backgroundDrawCount;
         layout.backgroundDrawCount = 0;
+
         return result;
     }
 

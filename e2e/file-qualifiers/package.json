@@ -1,0 +1,23 @@
+{
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "readme": "NativeScript Application",
+  "repository": "<fill-your-repository-here>",
+  "nativescript": {
+    "id": "org.nativescript.filequalifiers",
+    "tns-ios": {
+      "version": "6.0.0-2019-06-19-084246-01"
+    },
+    "tns-android": {
+      "version": "6.0.0-2019-06-24-113546-01"
+    }
+  },
+  "dependencies": {
+    "tns-core-modules": "file:../../tns-core-modules"
+  },
+  "devDependencies": {
+    "nativescript-dev-webpack": "next",
+    "tns-platform-declarations": "next",
+    "typescript": "3.4.1"
+  }
+}

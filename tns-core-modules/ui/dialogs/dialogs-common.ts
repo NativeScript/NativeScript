@@ -1,4 +1,4 @@
-﻿// Types.
+// Types.
 import { View } from "../core/view";
 import { Color } from "../../color";
 import { Page } from "../page";
@@ -78,7 +78,7 @@ export module capitalizationType {
 let frame: typeof frameModule;
 export function getCurrentPage(): Page {
     if (!frame) {
-        frame = require("ui/frame");
+        frame = require("../frame");
     }
 
     let topmostFrame = frame.topmost();
@@ -108,7 +108,7 @@ let textField: View;
 
 export function getButtonColors(): { color: Color, backgroundColor: Color } {
     if (!button) {
-        const Button = require("ui/button").Button;
+        const Button = require("../button").Button;
         button = new Button;
         if (isIOS) {
             button._setupUI({});
@@ -121,12 +121,13 @@ export function getButtonColors(): { color: Color, backgroundColor: Color } {
         buttonColor = btn.color;
         buttonBackgroundColor = <Color>btn.backgroundColor;
     });
+
     return { color: buttonColor, backgroundColor: buttonBackgroundColor };
 }
 
 export function getLabelColor(): Color {
     if (!label) {
-        const Label = require("ui/label").Label;
+        const Label = require("../label").Label;
         label = new Label;
         if (isIOS) {
             label._setupUI({});
@@ -137,12 +138,13 @@ export function getLabelColor(): Color {
     applySelectors(label, (lbl) => {
         labelColor = lbl.color;
     });
+
     return labelColor;
 }
 
 export function getTextFieldColor(): Color {
     if (!textField) {
-        const TextField = require("ui/text-field").TextField;
+        const TextField = require("../text-field").TextField;
         textField = new TextField();
         if (isIOS) {
             textField._setupUI({});
@@ -153,6 +155,7 @@ export function getTextFieldColor(): Color {
     applySelectors(textField, (tf) => {
         textFieldColor = tf.color;
     });
+
     return textFieldColor;
 }
 

@@ -6,6 +6,8 @@ export * from "../core/view";
 
 @CSSType("Switch")
 export class SwitchBase extends View implements SwitchDefinition {
+    public static checkedChangeEvent = "checkedChange";
+
     public checked: boolean;
     public offBackgroundColor: Color;
 

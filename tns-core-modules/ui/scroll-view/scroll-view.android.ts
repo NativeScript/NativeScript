@@ -1,7 +1,7 @@
-﻿import { ScrollEventData } from ".";
-import { 
+import { ScrollEventData } from ".";
+import {
     ScrollViewBase, layout, scrollBarIndicatorVisibleProperty,
-    isUserInteractionEnabledProperty, isScrollEnabledProperty 
+    isUserInteractionEnabledProperty, isScrollEnabledProperty
 } from "./scroll-view-common";
 
 export * from "./scroll-view-common";
@@ -48,7 +48,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
-        // NOTE: different behavior on iOS & Android: 
+        // NOTE: different behavior on iOS & Android:
         // iOS disables user interaction recursively for all subviews as well
         this.nativeViewProtected.setClickable(value);
         this.nativeViewProtected.setFocusable(value);
@@ -70,7 +70,7 @@ export class ScrollView extends ScrollViewBase {
             this.nativeViewProtected.setHorizontalScrollBarEnabled(value);
         } else {
             this.nativeViewProtected.setVerticalScrollBarEnabled(value);
-        }   
+        }
     }
 
     public scrollToVerticalOffset(value: number, animated: boolean) {

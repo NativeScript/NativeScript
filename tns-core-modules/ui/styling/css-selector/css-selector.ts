@@ -1,4 +1,4 @@
-﻿import { Node, Declaration, Changes, ChangeMap } from ".";
+import { Node, Declaration, Changes, ChangeMap } from ".";
 import { isNullOrUndefined } from "../../../utils/types";
 import { escapeRegexSymbols } from "../../../utils/utils-common";
 
@@ -53,6 +53,7 @@ function getNodeDirectSibling(node): null | Node {
     if (nodeIndex === 0) {
         return null;
     }
+
     return node.parent.getChildAt(nodeIndex - 1);
 }
 
@@ -62,8 +63,9 @@ function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic: b
         cls.prototype.rarity = rarity;
         cls.prototype.combinator = undefined;
         cls.prototype.dynamic = dynamic;
+
         return cls;
-    }
+    };
 }
 
 declare type Combinator = "+" | ">" | "~" | " ";
@@ -89,8 +91,10 @@ export abstract class SimpleSelector extends SelectorCore {
             return this.match(node);
         } else if (this.mayMatch(node)) {
             this.trackChanges(node, map);
+
             return true;
         }
+
         return false;
     }
     public mayMatch(node: Node): boolean { return this.match(node); }
@@ -155,6 +159,7 @@ export class AttributeSelector extends SimpleSelector {
         if (!test) {
             // HasAttribute
             this.match = node => !isNullOrUndefined(node[attribute]);
+
             return;
         }
 
@@ -180,6 +185,7 @@ export class AttributeSelector extends SimpleSelector {
             case "~=": // Includes
                 if (/\s/.test(value)) {
                     this.match = node => false;
+
                     return;
                 }
                 regexp = new RegExp("(^|\\s)" + escapedValue + "(\\s|$)");
@@ -191,9 +197,11 @@ export class AttributeSelector extends SimpleSelector {
 
         if (regexp) {
             this.match = node => regexp.test(node[attribute] + "");
+
             return;
         } else {
             this.match = node => false;
+
             return;
         }
     }
@@ -272,6 +280,7 @@ export class Selector extends SelectorCore {
         return this.groups.every((group, i) => {
             if (i === 0) {
                 node = group.match(node);
+
                 return !!node;
             } else {
                 let ancestor = node;
@@ -280,6 +289,7 @@ export class Selector extends SelectorCore {
                         return true;
                     }
                 }
+
                 return false;
             }
         });
@@ -300,6 +310,7 @@ export class Selector extends SelectorCore {
                 let nextNode = group.mayMatch(node);
                 bounds.push({ left: node, right: node });
                 node = nextNode;
+
                 return !!node;
             } else {
                 let ancestor = node;
@@ -308,9 +319,11 @@ export class Selector extends SelectorCore {
                     if (nextNode) {
                         bounds.push({ left: ancestor, right: null });
                         node = nextNode;
+
                         return true;
                     }
                 }
+
                 return false;
             }
         });
@@ -400,6 +413,7 @@ export function fromAstNodes(astRules: cssParser.Node[]): RuleSet[] {
         let declarations = rule.declarations.filter(isDeclaration).map(createDeclaration);
         let selectors = rule.selectors.map(createSelector);
         let ruleset = new RuleSet(selectors, declarations);
+
         return ruleset;
     });
 }
@@ -457,6 +471,7 @@ export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequ
         if (!parsedSelector) {
             return new InvalidSelector(new Error("Empty selector"));
         }
+
         return createSelectorFromAst(parsedSelector.value);
     } catch (e) {
         return new InvalidSelector(e);
@@ -475,7 +490,7 @@ interface SelectorInDocument {
     sel: SelectorCore;
 }
 interface SelectorMap {
-    [key: string]: SelectorInDocument[]
+    [key: string]: SelectorInDocument[];
 }
 export class SelectorsMap<T extends Node> implements LookupSorter {
     private id: SelectorMap = {};
@@ -566,6 +581,7 @@ export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
         if (!set) {
             this.changeMap.set(node, set = {});
         }
+
         return set;
     }
 }

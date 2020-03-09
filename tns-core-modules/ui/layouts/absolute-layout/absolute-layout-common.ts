@@ -1,4 +1,4 @@
-﻿import { AbsoluteLayout as AbsoluteLayoutDefinition } from ".";
+import { AbsoluteLayout as AbsoluteLayoutDefinition } from ".";
 import { LayoutBase, View, Property, Length, zeroLength, CSSType } from "../layout-base";
 
 export * from "../layout-base";
@@ -10,6 +10,7 @@ function validateArgs(element: View): View {
     if (!element) {
         throw new Error("element cannot be null or undefinied.");
     }
+
     return element;
 }
 

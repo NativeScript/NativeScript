@@ -1,8 +1,4 @@
 {
-  "description": "NativeScript Application",
-  "license": "SEE LICENSE IN <your-license-filename>",
-  "readme": "NativeScript Application",
-  "repository": "<fill-your-repository-here>",
   "nativescript": {
     "id": "org.nativescript.apps",
     "tns-android": {
@@ -12,16 +8,17 @@
       "version": "next"
     }
   },
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
   "dependencies": {
-    "tns-core-modules": "*"
+    "tns-core-modules": "file:../tns-core-modules"
   },
   "devDependencies": {
-    "babel-traverse": "6.10.4",
-    "babel-types": "6.11.1",
-    "babylon": "6.8.3",
-    "lazy": "1.0.11",
-    "nativescript-dev-typescript": "next",
-    "tns-platform-declarations": "androidx",
-    "typescript": "^3.1.6"
-  }
+    "nativescript-dev-webpack": "next",
+    "node-sass": "^4.12.0",
+    "typescript": "~3.4.1"
+  },
+  "gitHead": "c06800e52ee1a184ea2dffd12a6702aaa43be4e3",
+  "readme": "NativeScript Application"
 }

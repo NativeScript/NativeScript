@@ -2,12 +2,12 @@ declare var __registerDomainDispatcher;
 declare var __inspectorSendEvent;
 export function DomainDispatcher(domain: string): ClassDecorator {
     return klass => __registerDomainDispatcher(domain, klass);
-} 
+}
  // Heap
 // Heap domain exposes JavaScript heap attributes and capabilities.
 export namespace HeapDomain {
 // JavaScriptCore HeapSnapshot JSON data.
-export type HeapSnapshotData = string
+export type HeapSnapshotData = string;
 
 export interface GarbageCollection {
     // The type of garbage collection.
@@ -16,17 +16,17 @@ export interface GarbageCollection {
     endTime: number;
 }
 
-export interface GetPreviewMethodArguments { 
-    // Identifier of the heap object within the snapshot. 
-    heapObjectId: number
+export interface GetPreviewMethodArguments {
+    // Identifier of the heap object within the snapshot.
+    heapObjectId: number;
 }
-export interface GetRemoteObjectMethodArguments { 
-    // Identifier of the heap object within the snapshot. 
-    heapObjectId: number,
-    // Symbolic group name that can be used to release multiple objects. 
-    objectGroup?: string
+export interface GetRemoteObjectMethodArguments {
+    // Identifier of the heap object within the snapshot.
+    heapObjectId: number;
+    // Symbolic group name that can be used to release multiple objects.
+    objectGroup?: string;
 }
-export interface HeapDomainDispatcher { 
+export interface HeapDomainDispatcher {
     // Enables Heap domain events.
     enable(): void;
     // Disables Heap domain events.
@@ -44,18 +44,18 @@ export interface HeapDomainDispatcher {
     // Returns the strongly referenced Runtime.RemoteObject for a Heap.HeapObjectId.
     getRemoteObject(params: GetRemoteObjectMethodArguments): { result: RuntimeDomain.RemoteObject };
 }
-export class HeapFrontend { 
+export class HeapFrontend {
     // Information about the garbage collection.
-    garbageCollected(collection: GarbageCollection): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Heap.garbageCollected", "params": { "collection": collection } } )); 
+    garbageCollected(collection: GarbageCollection): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Heap.garbageCollected", "params": { "collection": collection } } ));
     }
     // Tracking started.
-    trackingStart(timestamp: number, snapshotData: HeapSnapshotData): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Heap.trackingStart", "params": { "timestamp": timestamp, "snapshotData": snapshotData } } )); 
+    trackingStart(timestamp: number, snapshotData: HeapSnapshotData): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Heap.trackingStart", "params": { "timestamp": timestamp, "snapshotData": snapshotData } } ));
     }
     // Tracking stopped.
-    trackingComplete(timestamp: number, snapshotData: HeapSnapshotData): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Heap.trackingComplete", "params": { "timestamp": timestamp, "snapshotData": snapshotData } } )); 
+    trackingComplete(timestamp: number, snapshotData: HeapSnapshotData): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Heap.trackingComplete", "params": { "timestamp": timestamp, "snapshotData": snapshotData } } ));
     }
 }
 }
@@ -64,13 +64,13 @@ export class HeapFrontend {
 // Debugger domain exposes JavaScript debugging capabilities. It allows setting and removing breakpoints, stepping through execution, exploring stack traces, etc.
 export namespace DebuggerDomain {
 // Breakpoint identifier.
-export type BreakpointId = string
+export type BreakpointId = string;
 // Breakpoint action identifier.
-export type BreakpointActionIdentifier = number
+export type BreakpointActionIdentifier = number;
 // Unique script identifier.
-export type ScriptId = string
+export type ScriptId = string;
 // Call frame identifier.
-export type CallFrameId = string
+export type CallFrameId = string;
 
 export interface Location {
     // Script identifier as reported in the <code>Debugger.scriptParsed</code>.
@@ -168,89 +168,89 @@ export interface CSPViolationPauseReason {
     directive: string;
 }
 
-export interface SetBreakpointsActiveMethodArguments { 
-    // New value for breakpoints active state. 
-    active: boolean
+export interface SetBreakpointsActiveMethodArguments {
+    // New value for breakpoints active state.
+    active: boolean;
 }
-export interface SetBreakpointByUrlMethodArguments { 
-    // Line number to set breakpoint at. 
-    lineNumber: number,
-    // URL of the resources to set breakpoint on. 
-    url?: string,
-    // Regex pattern for the URLs of the resources to set breakpoints on. Either <code>url</code> or <code>urlRegex</code> must be specified. 
-    urlRegex?: string,
-    // Offset in the line to set breakpoint at. 
-    columnNumber?: number,
-    // Options to apply to this breakpoint to modify its behavior. 
-    options?: BreakpointOptions
+export interface SetBreakpointByUrlMethodArguments {
+    // Line number to set breakpoint at.
+    lineNumber: number;
+    // URL of the resources to set breakpoint on.
+    url?: string;
+    // Regex pattern for the URLs of the resources to set breakpoints on. Either <code>url</code> or <code>urlRegex</code> must be specified.
+    urlRegex?: string;
+    // Offset in the line to set breakpoint at.
+    columnNumber?: number;
+    // Options to apply to this breakpoint to modify its behavior.
+    options?: BreakpointOptions;
 }
-export interface SetBreakpointMethodArguments { 
-    // Location to set breakpoint in. 
-    location: Location,
-    // Options to apply to this breakpoint to modify its behavior. 
-    options?: BreakpointOptions
+export interface SetBreakpointMethodArguments {
+    // Location to set breakpoint in.
+    location: Location;
+    // Options to apply to this breakpoint to modify its behavior.
+    options?: BreakpointOptions;
 }
-export interface RemoveBreakpointMethodArguments { 
-    breakpointId: BreakpointId
+export interface RemoveBreakpointMethodArguments {
+    breakpointId: BreakpointId;
 }
-export interface ContinueToLocationMethodArguments { 
-    // Location to continue to. 
-    location: Location
+export interface ContinueToLocationMethodArguments {
+    // Location to continue to.
+    location: Location;
 }
-export interface SearchInContentMethodArguments { 
-    // Id of the script to search in. 
-    scriptId: ScriptId,
-    // String to search for. 
-    query: string,
-    // If true, search is case sensitive. 
-    caseSensitive?: boolean,
-    // If true, treats string parameter as regex. 
-    isRegex?: boolean
+export interface SearchInContentMethodArguments {
+    // Id of the script to search in.
+    scriptId: ScriptId;
+    // String to search for.
+    query: string;
+    // If true, search is case sensitive.
+    caseSensitive?: boolean;
+    // If true, treats string parameter as regex.
+    isRegex?: boolean;
 }
-export interface GetScriptSourceMethodArguments { 
-    // Id of the script to get source for. 
-    scriptId: ScriptId
+export interface GetScriptSourceMethodArguments {
+    // Id of the script to get source for.
+    scriptId: ScriptId;
 }
-export interface SetScriptSourceMethodArguments { 
-    // Absolute location of the script to set source for. 
-    scriptUrl: string,
-    // Script source. 
-    scriptSource: string
+export interface SetScriptSourceMethodArguments {
+    // Absolute location of the script to set source for.
+    scriptUrl: string;
+    // Script source.
+    scriptSource: string;
 }
-export interface GetFunctionDetailsMethodArguments { 
-    // Id of the function to get location for. 
-    functionId: RuntimeDomain.RemoteObjectId
+export interface GetFunctionDetailsMethodArguments {
+    // Id of the function to get location for.
+    functionId: RuntimeDomain.RemoteObjectId;
 }
-export interface SetPauseOnExceptionsMethodArguments { 
-    // Pause on exceptions mode. 
-    state: any /* none,uncaught,all */
+export interface SetPauseOnExceptionsMethodArguments {
+    // Pause on exceptions mode.
+    state: any; /* none,uncaught,all */
 }
-export interface SetPauseOnAssertionsMethodArguments { 
-    enabled: boolean
+export interface SetPauseOnAssertionsMethodArguments {
+    enabled: boolean;
 }
-export interface EvaluateOnCallFrameMethodArguments { 
-    // Call frame identifier to evaluate on. 
-    callFrameId: CallFrameId,
-    // Expression to evaluate. 
-    expression: string,
-    // String object group name to put result into (allows rapid releasing resulting object handles using <code>releaseObjectGroup</code>). 
-    objectGroup?: string,
-    // Specifies whether command line API should be available to the evaluated expression, defaults to false. 
-    includeCommandLineAPI?: boolean,
-    // Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state. 
-    doNotPauseOnExceptionsAndMuteConsole?: boolean,
-    // Whether the result is expected to be a JSON object that should be sent by value. 
-    returnByValue?: boolean,
-    // Whether preview should be generated for the result. 
-    generatePreview?: boolean,
-    // Whether the resulting value should be considered for saving in the $n history. 
-    saveResult?: boolean
+export interface EvaluateOnCallFrameMethodArguments {
+    // Call frame identifier to evaluate on.
+    callFrameId: CallFrameId;
+    // Expression to evaluate.
+    expression: string;
+    // String object group name to put result into (allows rapid releasing resulting object handles using <code>releaseObjectGroup</code>).
+    objectGroup?: string;
+    // Specifies whether command line API should be available to the evaluated expression, defaults to false.
+    includeCommandLineAPI?: boolean;
+    // Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state.
+    doNotPauseOnExceptionsAndMuteConsole?: boolean;
+    // Whether the result is expected to be a JSON object that should be sent by value.
+    returnByValue?: boolean;
+    // Whether preview should be generated for the result.
+    generatePreview?: boolean;
+    // Whether the resulting value should be considered for saving in the $n history.
+    saveResult?: boolean;
 }
-export interface SetOverlayMessageMethodArguments { 
-    // Overlay message to display when paused in debugger. 
-    message?: string
+export interface SetOverlayMessageMethodArguments {
+    // Overlay message to display when paused in debugger.
+    message?: string;
 }
-export interface DebuggerDomainDispatcher { 
+export interface DebuggerDomainDispatcher {
     // Enables debugger for the given page. Clients should not assume that the debugging has been enabled until the result for this command is received.
     enable(): void;
     // Disables debugger for given page.
@@ -292,38 +292,38 @@ export interface DebuggerDomainDispatcher {
     // Sets overlay message.
     setOverlayMessage(params: SetOverlayMessageMethodArguments): void;
 }
-export class DebuggerFrontend { 
+export class DebuggerFrontend {
     // Called when global has been cleared and debugger client should reset its state. Happens upon navigation or reload.
-    globalObjectCleared(): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.globalObjectCleared", "params": {  } } )); 
+    globalObjectCleared(): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.globalObjectCleared", "params": {  } } ));
     }
     // Fired when virtual machine parses script. This event is also fired for all known and uncollected scripts upon enabling debugger.
-    scriptParsed(scriptId: ScriptId, url: string, startLine: number, startColumn: number, endLine: number, endColumn: number, isContentScript?: boolean, sourceURL?: string, sourceMapURL?: string): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.scriptParsed", "params": { "scriptId": scriptId, "url": url, "startLine": startLine, "startColumn": startColumn, "endLine": endLine, "endColumn": endColumn, "isContentScript": isContentScript, "sourceURL": sourceURL, "sourceMapURL": sourceMapURL } } )); 
+    scriptParsed(scriptId: ScriptId, url: string, startLine: number, startColumn: number, endLine: number, endColumn: number, isContentScript?: boolean, sourceURL?: string, sourceMapURL?: string): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.scriptParsed", "params": { "scriptId": scriptId, "url": url, "startLine": startLine, "startColumn": startColumn, "endLine": endLine, "endColumn": endColumn, "isContentScript": isContentScript, "sourceURL": sourceURL, "sourceMapURL": sourceMapURL } } ));
     }
     // Fired when virtual machine fails to parse the script.
-    scriptFailedToParse(url: string, scriptSource: string, startLine: number, errorLine: number, errorMessage: string): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.scriptFailedToParse", "params": { "url": url, "scriptSource": scriptSource, "startLine": startLine, "errorLine": errorLine, "errorMessage": errorMessage } } )); 
+    scriptFailedToParse(url: string, scriptSource: string, startLine: number, errorLine: number, errorMessage: string): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.scriptFailedToParse", "params": { "url": url, "scriptSource": scriptSource, "startLine": startLine, "errorLine": errorLine, "errorMessage": errorMessage } } ));
     }
     // Fired when breakpoint is resolved to an actual script and location.
-    breakpointResolved(breakpointId: BreakpointId, location: Location): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.breakpointResolved", "params": { "breakpointId": breakpointId, "location": location } } )); 
+    breakpointResolved(breakpointId: BreakpointId, location: Location): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.breakpointResolved", "params": { "breakpointId": breakpointId, "location": location } } ));
     }
     // Fired when the virtual machine stopped on breakpoint or exception or any other stop criteria.
-    paused(callFrames: CallFrame[], reason: any /* XHR,DOM,EventListener,exception,assert,CSPViolation,DebuggerStatement,Breakpoint,PauseOnNextStatement,other */, data?: Object): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.paused", "params": { "callFrames": callFrames, "reason": reason, "data": data } } )); 
+    paused(callFrames: CallFrame[], reason: any /* XHR,DOM,EventListener,exception,assert,CSPViolation,DebuggerStatement,Breakpoint,PauseOnNextStatement,other */, data?: Object): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.paused", "params": { "callFrames": callFrames, "reason": reason, "data": data } } ));
     }
     // Fired when the virtual machine resumed execution.
-    resumed(): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.resumed", "params": {  } } )); 
+    resumed(): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.resumed", "params": {  } } ));
     }
     // Fires when a new probe sample is collected.
-    didSampleProbe(sample: ProbeSample): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.didSampleProbe", "params": { "sample": sample } } )); 
+    didSampleProbe(sample: ProbeSample): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.didSampleProbe", "params": { "sample": sample } } ));
     }
     // Fired when a "sound" breakpoint action is triggered on a breakpoint.
-    playBreakpointActionSound(breakpointActionId: BreakpointActionIdentifier): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.playBreakpointActionSound", "params": { "breakpointActionId": breakpointActionId } } )); 
+    playBreakpointActionSound(breakpointActionId: BreakpointActionIdentifier): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Debugger.playBreakpointActionSound", "params": { "breakpointActionId": breakpointActionId } } ));
     }
 }
 }
@@ -332,9 +332,9 @@ export class DebuggerFrontend {
 // Runtime domain exposes JavaScript runtime by means of remote evaluation and mirror objects. Evaluation results are returned as mirror object that expose object type, string representation and unique identifier that can be used for further object reference. Original objects are maintained in memory unless they are either explicitly released or are released along with the other objects in their object group.
 export namespace RuntimeDomain {
 // Unique object identifier.
-export type RemoteObjectId = string
+export type RemoteObjectId = string;
 // Id of an execution context.
-export type ExecutionContextId = number
+export type ExecutionContextId = number;
 
 export interface RemoteObject {
     // Object type.
@@ -529,91 +529,91 @@ export interface BasicBlock {
     executionCount: number;
 }
 
-export const enum SyntaxErrorType { None, Irrecoverable, UnterminatedLiteral, Recoverable }; 
+export const enum SyntaxErrorType { None, Irrecoverable, UnterminatedLiteral, Recoverable }
 
-export interface ParseMethodArguments { 
-    // Source code to parse. 
-    source: string
+export interface ParseMethodArguments {
+    // Source code to parse.
+    source: string;
 }
-export interface EvaluateMethodArguments { 
-    // Expression to evaluate. 
-    expression: string,
-    // Symbolic group name that can be used to release multiple objects. 
-    objectGroup?: string,
-    // Determines whether Command Line API should be available during the evaluation. 
-    includeCommandLineAPI?: boolean,
-    // Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state. 
-    doNotPauseOnExceptionsAndMuteConsole?: boolean,
-    // Specifies in which isolated context to perform evaluation. Each content script lives in an isolated context and this parameter may be used to specify one of those contexts. If the parameter is omitted or 0 the evaluation will be performed in the context of the inspected page. 
-    contextId?: ExecutionContextId,
-    // Whether the result is expected to be a JSON object that should be sent by value. 
-    returnByValue?: boolean,
-    // Whether preview should be generated for the result. 
-    generatePreview?: boolean,
-    // Whether the resulting value should be considered for saving in the $n history. 
-    saveResult?: boolean
+export interface EvaluateMethodArguments {
+    // Expression to evaluate.
+    expression: string;
+    // Symbolic group name that can be used to release multiple objects.
+    objectGroup?: string;
+    // Determines whether Command Line API should be available during the evaluation.
+    includeCommandLineAPI?: boolean;
+    // Specifies whether evaluation should stop on exceptions and mute console. Overrides setPauseOnException state.
+    doNotPauseOnExceptionsAndMuteConsole?: boolean;
+    // Specifies in which isolated context to perform evaluation. Each content script lives in an isolated context and this parameter may be used to specify one of those contexts. If the parameter is omitted or 0 the evaluation will be performed in the context of the inspected page.
+    contextId?: ExecutionContextId;
+    // Whether the result is expected to be a JSON object that should be sent by value.
+    returnByValue?: boolean;
+    // Whether preview should be generated for the result.
+    generatePreview?: boolean;
+    // Whether the resulting value should be considered for saving in the $n history.
+    saveResult?: boolean;
 }
-export interface CallFunctionOnMethodArguments { 
-    // Identifier of the object to call function on. 
-    objectId: RemoteObjectId,
-    // Declaration of the function to call. 
-    functionDeclaration: string,
-    // Call arguments. All call arguments must belong to the same JavaScript world as the target object. 
-    arguments?: CallArgument[],
-    // Specifies whether function call should stop on exceptions and mute console. Overrides setPauseOnException state. 
-    doNotPauseOnExceptionsAndMuteConsole?: boolean,
-    // Whether the result is expected to be a JSON object which should be sent by value. 
-    returnByValue?: boolean,
-    // Whether preview should be generated for the result. 
-    generatePreview?: boolean
+export interface CallFunctionOnMethodArguments {
+    // Identifier of the object to call function on.
+    objectId: RemoteObjectId;
+    // Declaration of the function to call.
+    functionDeclaration: string;
+    // Call arguments. All call arguments must belong to the same JavaScript world as the target object.
+    arguments?: CallArgument[];
+    // Specifies whether function call should stop on exceptions and mute console. Overrides setPauseOnException state.
+    doNotPauseOnExceptionsAndMuteConsole?: boolean;
+    // Whether the result is expected to be a JSON object which should be sent by value.
+    returnByValue?: boolean;
+    // Whether preview should be generated for the result.
+    generatePreview?: boolean;
 }
-export interface GetPropertiesMethodArguments { 
-    // Identifier of the object to return properties for. 
-    objectId: RemoteObjectId,
-    // If true, returns properties belonging only to the object itself, not to its prototype chain. 
-    ownProperties?: boolean,
-    // Whether preview should be generated for property values. 
-    generatePreview?: boolean
+export interface GetPropertiesMethodArguments {
+    // Identifier of the object to return properties for.
+    objectId: RemoteObjectId;
+    // If true, returns properties belonging only to the object itself, not to its prototype chain.
+    ownProperties?: boolean;
+    // Whether preview should be generated for property values.
+    generatePreview?: boolean;
 }
-export interface GetDisplayablePropertiesMethodArguments { 
-    // Identifier of the object to return properties for. 
-    objectId: RemoteObjectId,
-    // Whether preview should be generated for property values. 
-    generatePreview?: boolean
+export interface GetDisplayablePropertiesMethodArguments {
+    // Identifier of the object to return properties for.
+    objectId: RemoteObjectId;
+    // Whether preview should be generated for property values.
+    generatePreview?: boolean;
 }
-export interface GetCollectionEntriesMethodArguments { 
-    // Id of the collection to get entries for. 
-    objectId: RemoteObjectId,
-    // Symbolic group name that can be used to release multiple. If not provided, it will be the same objectGroup as the RemoteObject determined from <code>objectId</code>. This is useful for WeakMap to release the collection entries. 
-    objectGroup?: string,
-    // If provided skip to this index before collecting values. Otherwise, 0. 
-    startIndex?: number,
-    // If provided only return <code>numberToFetch</code> values. Otherwise, return values all the way to the end. 
-    numberToFetch?: number
+export interface GetCollectionEntriesMethodArguments {
+    // Id of the collection to get entries for.
+    objectId: RemoteObjectId;
+    // Symbolic group name that can be used to release multiple. If not provided, it will be the same objectGroup as the RemoteObject determined from <code>objectId</code>. This is useful for WeakMap to release the collection entries.
+    objectGroup?: string;
+    // If provided skip to this index before collecting values. Otherwise, 0.
+    startIndex?: number;
+    // If provided only return <code>numberToFetch</code> values. Otherwise, return values all the way to the end.
+    numberToFetch?: number;
 }
-export interface SaveResultMethodArguments { 
-    // Id or value of the object to save. 
-    value: CallArgument,
-    // Unique id of the execution context. To specify in which execution context script evaluation should be performed. If not provided, determine from the CallArgument's objectId. 
-    contextId?: ExecutionContextId
+export interface SaveResultMethodArguments {
+    // Id or value of the object to save.
+    value: CallArgument;
+    // Unique id of the execution context. To specify in which execution context script evaluation should be performed. If not provided, determine from the CallArgument's objectId.
+    contextId?: ExecutionContextId;
 }
-export interface ReleaseObjectMethodArguments { 
-    // Identifier of the object to release. 
-    objectId: RemoteObjectId
+export interface ReleaseObjectMethodArguments {
+    // Identifier of the object to release.
+    objectId: RemoteObjectId;
 }
-export interface ReleaseObjectGroupMethodArguments { 
-    // Symbolic object group name. 
-    objectGroup: string
+export interface ReleaseObjectGroupMethodArguments {
+    // Symbolic object group name.
+    objectGroup: string;
 }
-export interface GetRuntimeTypesForVariablesAtOffsetsMethodArguments { 
-    // An array of type locations we're requesting information for. Results are expected in the same order they're sent in. 
-    locations: TypeLocation[]
+export interface GetRuntimeTypesForVariablesAtOffsetsMethodArguments {
+    // An array of type locations we're requesting information for. Results are expected in the same order they're sent in.
+    locations: TypeLocation[];
 }
-export interface GetBasicBlocksMethodArguments { 
-    // Indicates which sourceID information is requested for. 
-    sourceID: string
+export interface GetBasicBlocksMethodArguments {
+    // Indicates which sourceID information is requested for.
+    sourceID: string;
 }
-export interface RuntimeDomainDispatcher { 
+export interface RuntimeDomainDispatcher {
     // Parses JavaScript source code for errors.
     parse(params: ParseMethodArguments): { result: SyntaxErrorType, message?: string, range?: ErrorRange };
     // Evaluates expression on global object.
@@ -649,10 +649,10 @@ export interface RuntimeDomainDispatcher {
     // Returns a list of basic blocks for the given sourceID with information about their text ranges and whether or not they have executed.
     getBasicBlocks(params: GetBasicBlocksMethodArguments): { basicBlocks: BasicBlock[] };
 }
-export class RuntimeFrontend { 
+export class RuntimeFrontend {
     // Issued when new execution context is created.
-    executionContextCreated(context: ExecutionContextDescription): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Runtime.executionContextCreated", "params": { "context": context } } )); 
+    executionContextCreated(context: ExecutionContextDescription): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Runtime.executionContextCreated", "params": { "context": context } } ));
     }
 }
 }
@@ -699,15 +699,15 @@ export interface CallFrame {
     columnNumber: number;
 }
 
-export interface SetMonitoringXHREnabledMethodArguments { 
-    // Monitoring enabled state. 
-    enabled: boolean
+export interface SetMonitoringXHREnabledMethodArguments {
+    // Monitoring enabled state.
+    enabled: boolean;
 }
-export interface AddInspectedNodeMethodArguments { 
-    // DOM node id to be accessible by means of $0 command line API. 
-    nodeId: DOMDomain.NodeId
+export interface AddInspectedNodeMethodArguments {
+    // DOM node id to be accessible by means of $0 command line API.
+    nodeId: DOMDomain.NodeId;
 }
-export interface ConsoleDomainDispatcher { 
+export interface ConsoleDomainDispatcher {
     // Enables console domain, sends the messages collected so far to the client by means of the <code>messageAdded</code> notification.
     enable(): void;
     // Disables console domain, prevents further console messages from being reported to the client.
@@ -719,22 +719,22 @@ export interface ConsoleDomainDispatcher {
     // Enables console to refer to the node with given id via $0 (see Command Line API for more details).
     addInspectedNode(params: AddInspectedNodeMethodArguments): void;
 }
-export class ConsoleFrontend { 
+export class ConsoleFrontend {
     // Issued when new console message is added.
-    messageAdded(message: ConsoleMessage): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Console.messageAdded", "params": { "message": message } } )); 
+    messageAdded(message: ConsoleMessage): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Console.messageAdded", "params": { "message": message } } ));
     }
     // Issued when subsequent message(s) are equal to the previous one(s).
-    messageRepeatCountUpdated(count: number): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Console.messageRepeatCountUpdated", "params": { "count": count } } )); 
+    messageRepeatCountUpdated(count: number): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Console.messageRepeatCountUpdated", "params": { "count": count } } ));
     }
     // Issued when console is cleared. This happens either upon <code>clearMessages</code> command or after page navigation.
-    messagesCleared(): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Console.messagesCleared", "params": {  } } )); 
+    messagesCleared(): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Console.messagesCleared", "params": {  } } ));
     }
     // Issued from console.takeHeapSnapshot.
-    heapSnapshot(timestamp: number, snapshotData: HeapDomain.HeapSnapshotData, title?: string): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Console.heapSnapshot", "params": { "timestamp": timestamp, "snapshotData": snapshotData, "title": title } } )); 
+    heapSnapshot(timestamp: number, snapshotData: HeapDomain.HeapSnapshotData, title?: string): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Console.heapSnapshot", "params": { "timestamp": timestamp, "snapshotData": snapshotData, "title": title } } ));
     }
 }
 }
@@ -756,7 +756,7 @@ export interface SearchMatch {
 // Actions and events related to the inspected page belong to the page domain.
 export namespace PageDomain {
 // Unique script identifier.
-export type ScriptIdentifier = string
+export type ScriptIdentifier = string;
 
 export interface Frame {
     // Frame unique identifier.
@@ -831,109 +831,109 @@ export interface Cookie {
     session: boolean;
 }
 
-export const enum ResourceType { Document, Stylesheet, Image, Font, Script, XHR, WebSocket, Other }; 
+export const enum ResourceType { Document, Stylesheet, Image, Font, Script, XHR, WebSocket, Other }
 
-export const enum CoordinateSystem { Viewport, Page }; 
+export const enum CoordinateSystem { Viewport, Page }
 
-export interface AddScriptToEvaluateOnLoadMethodArguments { 
-    scriptSource: string
+export interface AddScriptToEvaluateOnLoadMethodArguments {
+    scriptSource: string;
 }
-export interface RemoveScriptToEvaluateOnLoadMethodArguments { 
-    identifier: ScriptIdentifier
+export interface RemoveScriptToEvaluateOnLoadMethodArguments {
+    identifier: ScriptIdentifier;
 }
-export interface ReloadMethodArguments { 
-    // If true, browser cache is ignored (as if the user pressed Shift+refresh). 
-    ignoreCache?: boolean,
-    // If set, the script will be injected into all frames of the inspected page after reload. 
-    scriptToEvaluateOnLoad?: string
+export interface ReloadMethodArguments {
+    // If true, browser cache is ignored (as if the user pressed Shift+refresh).
+    ignoreCache?: boolean;
+    // If set, the script will be injected into all frames of the inspected page after reload.
+    scriptToEvaluateOnLoad?: string;
 }
-export interface NavigateMethodArguments { 
-    // URL to navigate the page to. 
-    url: string
+export interface NavigateMethodArguments {
+    // URL to navigate the page to.
+    url: string;
 }
-export interface DeleteCookieMethodArguments { 
-    // Name of the cookie to remove. 
-    cookieName: string,
-    // URL to match cooke domain and path. 
-    url: string
+export interface DeleteCookieMethodArguments {
+    // Name of the cookie to remove.
+    cookieName: string;
+    // URL to match cooke domain and path.
+    url: string;
 }
-export interface GetResourceContentMethodArguments { 
-    // Frame id to get resource for. 
-    frameId: NetworkDomain.FrameId,
-    // URL of the resource to get content for. 
-    url: string
+export interface GetResourceContentMethodArguments {
+    // Frame id to get resource for.
+    frameId: NetworkDomain.FrameId;
+    // URL of the resource to get content for.
+    url: string;
 }
-export interface SearchInResourceMethodArguments { 
-    // Frame id for resource to search in. 
-    frameId: NetworkDomain.FrameId,
-    // URL of the resource to search in. 
-    url: string,
-    // String to search for. 
-    query: string,
-    // If true, search is case sensitive. 
-    caseSensitive?: boolean,
-    // If true, treats string parameter as regex. 
-    isRegex?: boolean,
-    // Request id for resource to search in. 
-    requestId?: NetworkDomain.RequestId
+export interface SearchInResourceMethodArguments {
+    // Frame id for resource to search in.
+    frameId: NetworkDomain.FrameId;
+    // URL of the resource to search in.
+    url: string;
+    // String to search for.
+    query: string;
+    // If true, search is case sensitive.
+    caseSensitive?: boolean;
+    // If true, treats string parameter as regex.
+    isRegex?: boolean;
+    // Request id for resource to search in.
+    requestId?: NetworkDomain.RequestId;
 }
-export interface SearchInResourcesMethodArguments { 
-    // String to search for. 
-    text: string,
-    // If true, search is case sensitive. 
-    caseSensitive?: boolean,
-    // If true, treats string parameter as regex. 
-    isRegex?: boolean
+export interface SearchInResourcesMethodArguments {
+    // String to search for.
+    text: string;
+    // If true, search is case sensitive.
+    caseSensitive?: boolean;
+    // If true, treats string parameter as regex.
+    isRegex?: boolean;
 }
-export interface SetDocumentContentMethodArguments { 
-    // Frame id to set HTML for. 
-    frameId: NetworkDomain.FrameId,
-    // HTML content to set. 
-    html: string
+export interface SetDocumentContentMethodArguments {
+    // Frame id to set HTML for.
+    frameId: NetworkDomain.FrameId;
+    // HTML content to set.
+    html: string;
 }
-export interface SetShowPaintRectsMethodArguments { 
-    // True for showing paint rectangles 
-    result: boolean
+export interface SetShowPaintRectsMethodArguments {
+    // True for showing paint rectangles
+    result: boolean;
 }
-export interface SetScriptExecutionDisabledMethodArguments { 
-    // Whether script execution should be disabled in the page. 
-    value: boolean
+export interface SetScriptExecutionDisabledMethodArguments {
+    // Whether script execution should be disabled in the page.
+    value: boolean;
 }
-export interface SetTouchEmulationEnabledMethodArguments { 
-    // Whether the touch event emulation should be enabled. 
-    enabled: boolean
+export interface SetTouchEmulationEnabledMethodArguments {
+    // Whether the touch event emulation should be enabled.
+    enabled: boolean;
 }
-export interface SetEmulatedMediaMethodArguments { 
-    // Media type to emulate. Empty string disables the override. 
-    media: string
+export interface SetEmulatedMediaMethodArguments {
+    // Media type to emulate. Empty string disables the override.
+    media: string;
 }
-export interface SetCompositingBordersVisibleMethodArguments { 
-    // True for showing compositing borders. 
-    visible: boolean
+export interface SetCompositingBordersVisibleMethodArguments {
+    // True for showing compositing borders.
+    visible: boolean;
 }
-export interface SnapshotNodeMethodArguments { 
-    // Id of the node to snapshot. 
-    nodeId: DOMDomain.NodeId
+export interface SnapshotNodeMethodArguments {
+    // Id of the node to snapshot.
+    nodeId: DOMDomain.NodeId;
 }
-export interface SnapshotRectMethodArguments { 
-    // X coordinate 
-    x: number,
-    // Y coordinate 
-    y: number,
-    // Rectangle width 
-    width: number,
-    // Rectangle height 
-    height: number,
-    // Indicates the coordinate system of the supplied rectangle. 
-    coordinateSystem: CoordinateSystem
+export interface SnapshotRectMethodArguments {
+    // X coordinate
+    x: number;
+    // Y coordinate
+    y: number;
+    // Rectangle width
+    width: number;
+    // Rectangle height
+    height: number;
+    // Indicates the coordinate system of the supplied rectangle.
+    coordinateSystem: CoordinateSystem;
 }
-export interface HandleJavaScriptDialogMethodArguments { 
-    // Whether to accept or dismiss the dialog. 
-    accept: boolean,
-    // The text to enter into the dialog prompt before accepting. Used only if this is a prompt dialog. 
-    promptText?: string
+export interface HandleJavaScriptDialogMethodArguments {
+    // Whether to accept or dismiss the dialog.
+    accept: boolean;
+    // The text to enter into the dialog prompt before accepting. Used only if this is a prompt dialog.
+    promptText?: string;
 }
-export interface PageDomainDispatcher { 
+export interface PageDomainDispatcher {
     // Enables page domain notifications.
     enable(): void;
     // Disables page domain notifications.
@@ -981,48 +981,48 @@ export interface PageDomainDispatcher {
     // Grab an archive of the page.
     archive(): { data: string };
 }
-export class PageFrontend { 
-    domContentEventFired(timestamp: number): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Page.domContentEventFired", "params": { "timestamp": timestamp } } )); 
+export class PageFrontend {
+    domContentEventFired(timestamp: number): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Page.domContentEventFired", "params": { "timestamp": timestamp } } ));
     }
-    loadEventFired(timestamp: number): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Page.loadEventFired", "params": { "timestamp": timestamp } } )); 
+    loadEventFired(timestamp: number): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Page.loadEventFired", "params": { "timestamp": timestamp } } ));
     }
     // Fired once navigation of the frame has completed. Frame is now associated with the new loader.
-    frameNavigated(frame: Frame): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameNavigated", "params": { "frame": frame } } )); 
+    frameNavigated(frame: Frame): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameNavigated", "params": { "frame": frame } } ));
     }
     // Fired when frame has been detached from its parent.
-    frameDetached(frameId: NetworkDomain.FrameId): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameDetached", "params": { "frameId": frameId } } )); 
+    frameDetached(frameId: NetworkDomain.FrameId): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameDetached", "params": { "frameId": frameId } } ));
     }
     // Fired when frame has started loading.
-    frameStartedLoading(frameId: NetworkDomain.FrameId): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameStartedLoading", "params": { "frameId": frameId } } )); 
+    frameStartedLoading(frameId: NetworkDomain.FrameId): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameStartedLoading", "params": { "frameId": frameId } } ));
     }
     // Fired when frame has stopped loading.
-    frameStoppedLoading(frameId: NetworkDomain.FrameId): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameStoppedLoading", "params": { "frameId": frameId } } )); 
+    frameStoppedLoading(frameId: NetworkDomain.FrameId): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameStoppedLoading", "params": { "frameId": frameId } } ));
     }
     // Fired when frame schedules a potential navigation.
-    frameScheduledNavigation(frameId: NetworkDomain.FrameId, delay: number): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameScheduledNavigation", "params": { "frameId": frameId, "delay": delay } } )); 
+    frameScheduledNavigation(frameId: NetworkDomain.FrameId, delay: number): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameScheduledNavigation", "params": { "frameId": frameId, "delay": delay } } ));
     }
     // Fired when frame no longer has a scheduled navigation.
-    frameClearedScheduledNavigation(frameId: NetworkDomain.FrameId): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameClearedScheduledNavigation", "params": { "frameId": frameId } } )); 
+    frameClearedScheduledNavigation(frameId: NetworkDomain.FrameId): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Page.frameClearedScheduledNavigation", "params": { "frameId": frameId } } ));
     }
     // Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to open.
-    javascriptDialogOpening(message: string): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Page.javascriptDialogOpening", "params": { "message": message } } )); 
+    javascriptDialogOpening(message: string): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Page.javascriptDialogOpening", "params": { "message": message } } ));
     }
     // Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) has been closed.
-    javascriptDialogClosed(): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Page.javascriptDialogClosed", "params": {  } } )); 
+    javascriptDialogClosed(): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Page.javascriptDialogClosed", "params": {  } } ));
     }
     // Fired when the JavaScript is enabled/disabled on the page
-    scriptsEnabled(isEnabled: boolean): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Page.scriptsEnabled", "params": { "isEnabled": isEnabled } } )); 
+    scriptsEnabled(isEnabled: boolean): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Page.scriptsEnabled", "params": { "isEnabled": isEnabled } } ));
     }
 }
 }
@@ -1031,13 +1031,13 @@ export class PageFrontend {
 // Network domain allows tracking network activities of the page. It exposes information about http, file, data and other requests and responses, their headers, bodies, timing, etc.
 export namespace NetworkDomain {
 // Unique loader identifier.
-export type LoaderId = string
+export type LoaderId = string;
 // Unique frame identifier.
-export type FrameId = string
+export type FrameId = string;
 // Unique request identifier.
-export type RequestId = string
+export type RequestId = string;
 // Number of seconds since epoch.
-export type Timestamp = number
+export type Timestamp = number;
 
 export interface Headers {
 }
@@ -1142,25 +1142,25 @@ export interface Initiator {
     lineNumber?: number;
 }
 
-export interface SetExtraHTTPHeadersMethodArguments { 
-    // Map with extra HTTP headers. 
-    headers: Headers
+export interface SetExtraHTTPHeadersMethodArguments {
+    // Map with extra HTTP headers.
+    headers: Headers;
 }
-export interface GetResponseBodyMethodArguments { 
-    // Identifier of the network request to get content for. 
-    requestId: RequestId
+export interface GetResponseBodyMethodArguments {
+    // Identifier of the network request to get content for.
+    requestId: RequestId;
 }
-export interface SetCacheDisabledMethodArguments { 
-    // Cache disabled state. 
-    cacheDisabled: boolean
+export interface SetCacheDisabledMethodArguments {
+    // Cache disabled state.
+    cacheDisabled: boolean;
 }
-export interface LoadResourceMethodArguments { 
-    // Frame to load the resource from. 
-    frameId: FrameId,
-    // URL of the resource to load. 
-    url: string
+export interface LoadResourceMethodArguments {
+    // Frame to load the resource from.
+    frameId: FrameId;
+    // URL of the resource to load.
+    url: string;
 }
-export interface NetworkDomainDispatcher { 
+export interface NetworkDomainDispatcher {
     // Enables network tracking, network events will now be delivered to the client.
     enable(): void;
     // Disables network tracking, prevents network events from being sent to the client.
@@ -1174,62 +1174,62 @@ export interface NetworkDomainDispatcher {
     // Loads a resource in the context of a frame on the inspected page without cross origin checks.
     loadResource(params: LoadResourceMethodArguments): { content: string, mimeType: string, status: number };
 }
-export class NetworkFrontend { 
+export class NetworkFrontend {
     // Fired when page is about to send HTTP request.
-    requestWillBeSent(requestId: RequestId, frameId: FrameId, loaderId: LoaderId, documentURL: string, request: Request, timestamp: Timestamp, initiator: Initiator, redirectResponse?: Response, type?: PageDomain.ResourceType): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.requestWillBeSent", "params": { "requestId": requestId, "frameId": frameId, "loaderId": loaderId, "documentURL": documentURL, "request": request, "timestamp": timestamp, "initiator": initiator, "redirectResponse": redirectResponse, "type": type } } )); 
+    requestWillBeSent(requestId: RequestId, frameId: FrameId, loaderId: LoaderId, documentURL: string, request: Request, timestamp: Timestamp, initiator: Initiator, redirectResponse?: Response, type?: PageDomain.ResourceType): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.requestWillBeSent", "params": { "requestId": requestId, "frameId": frameId, "loaderId": loaderId, "documentURL": documentURL, "request": request, "timestamp": timestamp, "initiator": initiator, "redirectResponse": redirectResponse, "type": type } } ));
     }
     // Fired if request ended up loading from cache.
-    requestServedFromCache(requestId: RequestId): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.requestServedFromCache", "params": { "requestId": requestId } } )); 
+    requestServedFromCache(requestId: RequestId): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.requestServedFromCache", "params": { "requestId": requestId } } ));
     }
     // Fired when HTTP response is available.
-    responseReceived(requestId: RequestId, frameId: FrameId, loaderId: LoaderId, timestamp: Timestamp, type: PageDomain.ResourceType, response: Response): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.responseReceived", "params": { "requestId": requestId, "frameId": frameId, "loaderId": loaderId, "timestamp": timestamp, "type": type, "response": response } } )); 
+    responseReceived(requestId: RequestId, frameId: FrameId, loaderId: LoaderId, timestamp: Timestamp, type: PageDomain.ResourceType, response: Response): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.responseReceived", "params": { "requestId": requestId, "frameId": frameId, "loaderId": loaderId, "timestamp": timestamp, "type": type, "response": response } } ));
     }
     // Fired when data chunk was received over the network.
-    dataReceived(requestId: RequestId, timestamp: Timestamp, dataLength: number, encodedDataLength: number): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.dataReceived", "params": { "requestId": requestId, "timestamp": timestamp, "dataLength": dataLength, "encodedDataLength": encodedDataLength } } )); 
+    dataReceived(requestId: RequestId, timestamp: Timestamp, dataLength: number, encodedDataLength: number): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.dataReceived", "params": { "requestId": requestId, "timestamp": timestamp, "dataLength": dataLength, "encodedDataLength": encodedDataLength } } ));
     }
     // Fired when HTTP request has finished loading.
-    loadingFinished(requestId: RequestId, timestamp: Timestamp, sourceMapURL?: string): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.loadingFinished", "params": { "requestId": requestId, "timestamp": timestamp, "sourceMapURL": sourceMapURL } } )); 
+    loadingFinished(requestId: RequestId, timestamp: Timestamp, sourceMapURL?: string): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.loadingFinished", "params": { "requestId": requestId, "timestamp": timestamp, "sourceMapURL": sourceMapURL } } ));
     }
     // Fired when HTTP request has failed to load.
-    loadingFailed(requestId: RequestId, timestamp: Timestamp, errorText: string, canceled?: boolean): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.loadingFailed", "params": { "requestId": requestId, "timestamp": timestamp, "errorText": errorText, "canceled": canceled } } )); 
+    loadingFailed(requestId: RequestId, timestamp: Timestamp, errorText: string, canceled?: boolean): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.loadingFailed", "params": { "requestId": requestId, "timestamp": timestamp, "errorText": errorText, "canceled": canceled } } ));
     }
     // Fired when HTTP request has been served from memory cache.
-    requestServedFromMemoryCache(requestId: RequestId, frameId: FrameId, loaderId: LoaderId, documentURL: string, timestamp: Timestamp, initiator: Initiator, resource: CachedResource): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.requestServedFromMemoryCache", "params": { "requestId": requestId, "frameId": frameId, "loaderId": loaderId, "documentURL": documentURL, "timestamp": timestamp, "initiator": initiator, "resource": resource } } )); 
+    requestServedFromMemoryCache(requestId: RequestId, frameId: FrameId, loaderId: LoaderId, documentURL: string, timestamp: Timestamp, initiator: Initiator, resource: CachedResource): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.requestServedFromMemoryCache", "params": { "requestId": requestId, "frameId": frameId, "loaderId": loaderId, "documentURL": documentURL, "timestamp": timestamp, "initiator": initiator, "resource": resource } } ));
     }
     // Fired when WebSocket is about to initiate handshake.
-    webSocketWillSendHandshakeRequest(requestId: RequestId, timestamp: Timestamp, request: WebSocketRequest): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketWillSendHandshakeRequest", "params": { "requestId": requestId, "timestamp": timestamp, "request": request } } )); 
+    webSocketWillSendHandshakeRequest(requestId: RequestId, timestamp: Timestamp, request: WebSocketRequest): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketWillSendHandshakeRequest", "params": { "requestId": requestId, "timestamp": timestamp, "request": request } } ));
     }
     // Fired when WebSocket handshake response becomes available.
-    webSocketHandshakeResponseReceived(requestId: RequestId, timestamp: Timestamp, response: WebSocketResponse): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketHandshakeResponseReceived", "params": { "requestId": requestId, "timestamp": timestamp, "response": response } } )); 
+    webSocketHandshakeResponseReceived(requestId: RequestId, timestamp: Timestamp, response: WebSocketResponse): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketHandshakeResponseReceived", "params": { "requestId": requestId, "timestamp": timestamp, "response": response } } ));
     }
     // Fired upon WebSocket creation.
-    webSocketCreated(requestId: RequestId, url: string): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketCreated", "params": { "requestId": requestId, "url": url } } )); 
+    webSocketCreated(requestId: RequestId, url: string): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketCreated", "params": { "requestId": requestId, "url": url } } ));
     }
     // Fired when WebSocket is closed.
-    webSocketClosed(requestId: RequestId, timestamp: Timestamp): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketClosed", "params": { "requestId": requestId, "timestamp": timestamp } } )); 
+    webSocketClosed(requestId: RequestId, timestamp: Timestamp): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketClosed", "params": { "requestId": requestId, "timestamp": timestamp } } ));
     }
     // Fired when WebSocket frame is received.
-    webSocketFrameReceived(requestId: RequestId, timestamp: Timestamp, response: WebSocketFrame): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketFrameReceived", "params": { "requestId": requestId, "timestamp": timestamp, "response": response } } )); 
+    webSocketFrameReceived(requestId: RequestId, timestamp: Timestamp, response: WebSocketFrame): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketFrameReceived", "params": { "requestId": requestId, "timestamp": timestamp, "response": response } } ));
     }
     // Fired when WebSocket frame error occurs.
-    webSocketFrameError(requestId: RequestId, timestamp: Timestamp, errorMessage: string): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketFrameError", "params": { "requestId": requestId, "timestamp": timestamp, "errorMessage": errorMessage } } )); 
+    webSocketFrameError(requestId: RequestId, timestamp: Timestamp, errorMessage: string): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketFrameError", "params": { "requestId": requestId, "timestamp": timestamp, "errorMessage": errorMessage } } ));
     }
     // Fired when WebSocket frame is sent.
-    webSocketFrameSent(requestId: RequestId, timestamp: Timestamp, response: WebSocketFrame): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketFrameSent", "params": { "requestId": requestId, "timestamp": timestamp, "response": response } } )); 
+    webSocketFrameSent(requestId: RequestId, timestamp: Timestamp, response: WebSocketFrame): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "Network.webSocketFrameSent", "params": { "requestId": requestId, "timestamp": timestamp, "response": response } } ));
     }
 }
 }
@@ -1238,9 +1238,9 @@ export class NetworkFrontend {
 // This domain exposes DOM read/write operations. Each DOM Node is represented with its mirror object that has an <code>id</code>. This <code>id</code> can be used to get additional information on the Node, resolve it into the JavaScript object wrapper, etc. It is important that client receives DOM events only for the nodes that are known to the client. Backend keeps track of the nodes that were sent to the client and never sends the same node twice. It is client's responsibility to collect information about the nodes that were sent to the client.
 export namespace DOMDomain {
 // Unique DOM node identifier.
-export type NodeId = number
+export type NodeId = number;
 // Unique DOM node identifier used to reference a node that may not have been pushed to the front-end.
-export type BackendNodeId = number
+export type BackendNodeId = number;
 
 export interface Node {
     // Node identifier that is passed into the rest of the DOM messages as the <code>nodeId</code>. Backend will only push node with given <code>id</code> once. It is aware of all requested nodes and will only fire DOM events for nodes known to the client.
@@ -1317,71 +1317,71 @@ export interface HighlightConfig {
     marginColor?: RGBAColor;
 }
 
-export const enum PseudoType { Before, After }; 
+export const enum PseudoType { Before, After }
 
-export const enum ShadowRootType { UserAgent, Open, Closed }; 
+export const enum ShadowRootType { UserAgent, Open, Closed }
 
-export const enum LiveRegionRelevant { Additions, Removals, Text }; 
+export const enum LiveRegionRelevant { Additions, Removals, Text }
 
-export interface RemoveNodeMethodArguments { 
-    // Id of the node to remove. 
-    nodeId: NodeId
+export interface RemoveNodeMethodArguments {
+    // Id of the node to remove.
+    nodeId: NodeId;
 }
-export interface SetAttributeValueMethodArguments { 
-    // Id of the element to set attribute for. 
-    nodeId: NodeId,
-    // Attribute name. 
-    name: string,
-    // Attribute value. 
-    value: string
+export interface SetAttributeValueMethodArguments {
+    // Id of the element to set attribute for.
+    nodeId: NodeId;
+    // Attribute name.
+    name: string;
+    // Attribute value.
+    value: string;
 }
-export interface SetAttributesAsTextMethodArguments { 
-    // Id of the element to set attributes for. 
-    nodeId: NodeId,
-    // Text with a number of attributes. Will parse this text using HTML parser. 
-    text: string,
-    // Attribute name to replace with new attributes derived from text in case text parsed successfully. 
-    name?: string
+export interface SetAttributesAsTextMethodArguments {
+    // Id of the element to set attributes for.
+    nodeId: NodeId;
+    // Text with a number of attributes. Will parse this text using HTML parser.
+    text: string;
+    // Attribute name to replace with new attributes derived from text in case text parsed successfully.
+    name?: string;
 }
-export interface RemoveAttributeMethodArguments { 
-    // Id of the element to remove attribute from. 
-    nodeId: NodeId,
-    // Name of the attribute to remove. 
-    name: string
+export interface RemoveAttributeMethodArguments {
+    // Id of the element to remove attribute from.
+    nodeId: NodeId;
+    // Name of the attribute to remove.
+    name: string;
 }
-export interface PerformSearchMethodArguments { 
-    // Plain text or query selector or XPath search query. 
-    query: string,
-    // Ids of nodes to use as starting points for the search. 
-    nodeIds?: NodeId[]
+export interface PerformSearchMethodArguments {
+    // Plain text or query selector or XPath search query.
+    query: string;
+    // Ids of nodes to use as starting points for the search.
+    nodeIds?: NodeId[];
 }
-export interface GetSearchResultsMethodArguments { 
-    // Unique search session identifier. 
-    searchId: string,
-    // Start index of the search result to be returned. 
-    fromIndex: number,
-    // End index of the search result to be returned. 
-    toIndex: number
+export interface GetSearchResultsMethodArguments {
+    // Unique search session identifier.
+    searchId: string;
+    // Start index of the search result to be returned.
+    fromIndex: number;
+    // End index of the search result to be returned.
+    toIndex: number;
 }
-export interface DiscardSearchResultsMethodArguments { 
-    // Unique search session identifier. 
-    searchId: string
+export interface DiscardSearchResultsMethodArguments {
+    // Unique search session identifier.
+    searchId: string;
 }
-export interface HighlightNodeMethodArguments { 
-    // A descriptor for the highlight appearance. 
-    highlightConfig: HighlightConfig,
-    // Identifier of the node to highlight. 
-    nodeId?: NodeId,
-    // JavaScript object id of the node to be highlighted. 
-    objectId?: RuntimeDomain.RemoteObjectId
+export interface HighlightNodeMethodArguments {
+    // A descriptor for the highlight appearance.
+    highlightConfig: HighlightConfig;
+    // Identifier of the node to highlight.
+    nodeId?: NodeId;
+    // JavaScript object id of the node to be highlighted.
+    objectId?: RuntimeDomain.RemoteObjectId;
 }
-export interface ResolveNodeMethodArguments { 
-    // Id of the node to resolve. 
-    nodeId: NodeId,
-    // Symbolic group name that can be used to release multiple objects. 
-    objectGroup?: string
+export interface ResolveNodeMethodArguments {
+    // Id of the node to resolve.
+    nodeId: NodeId;
+    // Symbolic group name that can be used to release multiple objects.
+    objectGroup?: string;
 }
-export interface DOMDomainDispatcher { 
+export interface DOMDomainDispatcher {
     enable(): void;
     disable(): void;
     // Returns the root DOM node to the caller.
@@ -1407,58 +1407,58 @@ export interface DOMDomainDispatcher {
     // Resolves JavaScript node object for given node id.
     resolveNode(params: ResolveNodeMethodArguments): { object: RuntimeDomain.RemoteObject };
 }
-export class DOMFrontend { 
+export class DOMFrontend {
     // Fired when <code>Document</code> has been totally updated. Node ids are no longer valid.
-    documentUpdated(): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.documentUpdated", "params": {  } } )); 
+    documentUpdated(): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.documentUpdated", "params": {  } } ));
     }
     // Fired when backend wants to provide client with the missing DOM structure. This happens upon most of the calls requesting node ids.
-    setChildNodes(parentId: NodeId, nodes: Node[]): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.setChildNodes", "params": { "parentId": parentId, "nodes": nodes } } )); 
+    setChildNodes(parentId: NodeId, nodes: Node[]): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.setChildNodes", "params": { "parentId": parentId, "nodes": nodes } } ));
     }
     // Fired when <code>Element</code>'s attribute is modified.
-    attributeModified(nodeId: NodeId, name: string, value: string): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.attributeModified", "params": { "nodeId": nodeId, "name": name, "value": value } } )); 
+    attributeModified(nodeId: NodeId, name: string, value: string): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.attributeModified", "params": { "nodeId": nodeId, "name": name, "value": value } } ));
     }
     // Fired when <code>Element</code>'s attribute is removed.
-    attributeRemoved(nodeId: NodeId, name: string): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.attributeRemoved", "params": { "nodeId": nodeId, "name": name } } )); 
+    attributeRemoved(nodeId: NodeId, name: string): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.attributeRemoved", "params": { "nodeId": nodeId, "name": name } } ));
     }
     // Fired when <code>Element</code>'s inline style is modified via a CSS property modification.
-    inlineStyleInvalidated(nodeIds: NodeId[]): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.inlineStyleInvalidated", "params": { "nodeIds": nodeIds } } )); 
+    inlineStyleInvalidated(nodeIds: NodeId[]): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.inlineStyleInvalidated", "params": { "nodeIds": nodeIds } } ));
     }
     // Mirrors <code>DOMCharacterDataModified</code> event.
-    characterDataModified(nodeId: NodeId, characterData: string): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.characterDataModified", "params": { "nodeId": nodeId, "characterData": characterData } } )); 
+    characterDataModified(nodeId: NodeId, characterData: string): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.characterDataModified", "params": { "nodeId": nodeId, "characterData": characterData } } ));
     }
     // Fired when <code>Container</code>'s child node count has changed.
-    childNodeCountUpdated(nodeId: NodeId, childNodeCount: number): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.childNodeCountUpdated", "params": { "nodeId": nodeId, "childNodeCount": childNodeCount } } )); 
+    childNodeCountUpdated(nodeId: NodeId, childNodeCount: number): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.childNodeCountUpdated", "params": { "nodeId": nodeId, "childNodeCount": childNodeCount } } ));
     }
     // Mirrors <code>DOMNodeInserted</code> event.
     childNodeInserted(parentNodeId: NodeId, previousNodeId: NodeId, node: Node): void {
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.childNodeInserted", "params": { "parentNodeId": parentNodeId, "previousNodeId": previousNodeId, "node": node } } )); 
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.childNodeInserted", "params": { "parentNodeId": parentNodeId, "previousNodeId": previousNodeId, "node": node } } ));
     }
     // Mirrors <code>DOMNodeRemoved</code> event.
-    childNodeRemoved(parentNodeId: NodeId, nodeId: NodeId): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.childNodeRemoved", "params": { "parentNodeId": parentNodeId, "nodeId": nodeId } } )); 
+    childNodeRemoved(parentNodeId: NodeId, nodeId: NodeId): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.childNodeRemoved", "params": { "parentNodeId": parentNodeId, "nodeId": nodeId } } ));
     }
     // Called when shadow root is pushed into the element.
-    shadowRootPushed(hostId: NodeId, root: Node): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.shadowRootPushed", "params": { "hostId": hostId, "root": root } } )); 
+    shadowRootPushed(hostId: NodeId, root: Node): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.shadowRootPushed", "params": { "hostId": hostId, "root": root } } ));
     }
     // Called when shadow root is popped from the element.
-    shadowRootPopped(hostId: NodeId, rootId: NodeId): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.shadowRootPopped", "params": { "hostId": hostId, "rootId": rootId } } )); 
+    shadowRootPopped(hostId: NodeId, rootId: NodeId): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.shadowRootPopped", "params": { "hostId": hostId, "rootId": rootId } } ));
     }
     // Called when a pseudo element is added to an element.
-    pseudoElementAdded(parentId: NodeId, pseudoElement: Node): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.pseudoElementAdded", "params": { "parentId": parentId, "pseudoElement": pseudoElement } } )); 
+    pseudoElementAdded(parentId: NodeId, pseudoElement: Node): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.pseudoElementAdded", "params": { "parentId": parentId, "pseudoElement": pseudoElement } } ));
     }
     // Called when a pseudo element is removed from an element.
-    pseudoElementRemoved(parentId: NodeId, pseudoElementId: NodeId): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "DOM.pseudoElementRemoved", "params": { "parentId": parentId, "pseudoElementId": pseudoElementId } } )); 
+    pseudoElementRemoved(parentId: NodeId, pseudoElementId: NodeId): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "DOM.pseudoElementRemoved", "params": { "parentId": parentId, "pseudoElementId": pseudoElementId } } ));
     }
 }
 }
@@ -1466,7 +1466,7 @@ export class DOMFrontend {
 // CSS
 // This domain exposes CSS read/write operations. All CSS objects (stylesheets, rules, and styles) have an associated 'id' used in subsequent operations on the related object. Each object type has a specific 'id' structure, and those are not interchangeable between objects of different kinds. CSS objects can be loaded using the <code>get*ForNode()</code> calls (which accept a DOM node id). A client can also discover all the existing stylesheets with the <code>getAllStyleSheets()</code> method (or keeping track of the <code>styleSheetAdded</code>/<code>styleSheetRemoved</code> events) and subsequently load the required stylesheet contents using the <code>getStyleSheet[Text]()</code> methods.
 export namespace CSSDomain {
-export type StyleSheetId = string
+export type StyleSheetId = string;
 
 export interface PseudoElementMatches {
     // Pseudo element type.
@@ -1673,24 +1673,24 @@ export interface StyleDeclarationEdit {
     text: string;
 }
 
-export const enum StyleSheetOrigin { Injected, UserAgent, Inspector, Regular }; 
+export const enum StyleSheetOrigin { Injected, UserAgent, Inspector, Regular }
 
-export interface GetMatchedStylesForNodeMethodArguments { 
-    nodeId: DOMDomain.NodeId
+export interface GetMatchedStylesForNodeMethodArguments {
+    nodeId: DOMDomain.NodeId;
 }
-export interface GetInlineStylesForNodeMethodArguments { 
-    nodeId: DOMDomain.NodeId
+export interface GetInlineStylesForNodeMethodArguments {
+    nodeId: DOMDomain.NodeId;
 }
-export interface GetComputedStyleForNodeMethodArguments { 
-    nodeId: DOMDomain.NodeId
+export interface GetComputedStyleForNodeMethodArguments {
+    nodeId: DOMDomain.NodeId;
 }
-export interface GetPlatformFontsForNodeMethodArguments { 
-    nodeId: DOMDomain.NodeId
+export interface GetPlatformFontsForNodeMethodArguments {
+    nodeId: DOMDomain.NodeId;
 }
-export interface GetStyleSheetTextMethodArguments { 
-    styleSheetId: StyleSheetId
+export interface GetStyleSheetTextMethodArguments {
+    styleSheetId: StyleSheetId;
 }
-export interface CSSDomainDispatcher { 
+export interface CSSDomainDispatcher {
     // Enables the CSS agent for the given page. Clients should not assume that the CSS agent has been enabled until the result of this command is received.
     enable(): void;
     // Disables the CSS agent for the given page.
@@ -1706,29 +1706,29 @@ export interface CSSDomainDispatcher {
     // Returns the current textual content and the URL for a stylesheet.
     getStyleSheetText(params: GetStyleSheetTextMethodArguments): { text: string };
 }
-export class CSSFrontend { 
+export class CSSFrontend {
     // Fires whenever a MediaQuery result changes (for example, after a browser window has been resized.) The current implementation considers only viewport-dependent media features.
-    mediaQueryResultChanged(): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "CSS.mediaQueryResultChanged", "params": {  } } )); 
+    mediaQueryResultChanged(): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "CSS.mediaQueryResultChanged", "params": {  } } ));
     }
     // Fires whenever a web font gets loaded.
-    fontsUpdated(): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "CSS.fontsUpdated", "params": {  } } )); 
+    fontsUpdated(): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "CSS.fontsUpdated", "params": {  } } ));
     }
     // Fired whenever a stylesheet is changed as a result of the client operation.
-    styleSheetChanged(styleSheetId: StyleSheetId): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "CSS.styleSheetChanged", "params": { "styleSheetId": styleSheetId } } )); 
+    styleSheetChanged(styleSheetId: StyleSheetId): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "CSS.styleSheetChanged", "params": { "styleSheetId": styleSheetId } } ));
     }
     // Fired whenever an active document stylesheet is added.
-    styleSheetAdded(header: CSSStyleSheetHeader): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "CSS.styleSheetAdded", "params": { "header": header } } )); 
+    styleSheetAdded(header: CSSStyleSheetHeader): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "CSS.styleSheetAdded", "params": { "header": header } } ));
     }
     // Fired whenever an active document stylesheet is removed.
-    styleSheetRemoved(styleSheetId: StyleSheetId): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "CSS.styleSheetRemoved", "params": { "styleSheetId": styleSheetId } } )); 
+    styleSheetRemoved(styleSheetId: StyleSheetId): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "CSS.styleSheetRemoved", "params": { "styleSheetId": styleSheetId } } ));
     }
-    layoutEditorChange(styleSheetId: StyleSheetId, changeRange: SourceRange): void { 
-         __inspectorSendEvent(JSON.stringify( { "method": "CSS.layoutEditorChange", "params": { "styleSheetId": styleSheetId, "changeRange": changeRange } } )); 
+    layoutEditorChange(styleSheetId: StyleSheetId, changeRange: SourceRange): void {
+         __inspectorSendEvent(JSON.stringify( { "method": "CSS.layoutEditorChange", "params": { "styleSheetId": styleSheetId, "changeRange": changeRange } } ));
     }
 }
 }

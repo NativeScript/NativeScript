@@ -1,4 +1,4 @@
-﻿import { BottomNavigation } from "tns-core-modules/ui/bottom-navigation";
+import { BottomNavigation } from "tns-core-modules/ui/bottom-navigation";
 
 export function getNativeTabCount(tabView: BottomNavigation): number {
     // there is no native tab content view implementation for Android Bottom Navigation
@@ -24,7 +24,7 @@ export function getNativeFont(tabView: BottomNavigation): any {
         return {
             typeface: tv.getTypeface(),
             size: tv.getTextSize()
-        }
+        };
     }
 
     return null;
@@ -32,8 +32,9 @@ export function getNativeFont(tabView: BottomNavigation): any {
 
 export function getOriginalFont(tabView: BottomNavigation): any {
     const tv: android.widget.TextView = (<org.nativescript.widgets.BottomNavigationBar>(<any>tabView)._bottomNavigationBar).getTextViewForItemAt(0);
+
     return {
         typeface: tv.getTypeface(),
         size: tv.getTextSize()
-    }
+    };
 }

@@ -1,4 +1,4 @@
-﻿import { Background } from "../styling/background";
+import { Background } from "../styling/background";
 import {
     SliderBase, valueProperty, minValueProperty, maxValueProperty,
     colorProperty, backgroundColorProperty, backgroundInternalProperty, Color
@@ -20,6 +20,7 @@ function initializeListenerClass(): void {
         class SeekBarChangeListenerImpl extends java.lang.Object implements android.widget.SeekBar.OnSeekBarChangeListener {
             constructor() {
                 super();
+
                 return global.__native(this);
             }
 
@@ -56,6 +57,7 @@ export class Slider extends SliderBase {
         if (!SeekBar) {
             SeekBar = android.widget.SeekBar;
         }
+
         return new SeekBar(this._context);
     }
 
@@ -82,7 +84,7 @@ export class Slider extends SliderBase {
     }
 
     /**
-     * There is no minValue in Android. We simulate this by subtracting the minValue from the native value and maxValue. 
+     * There is no minValue in Android. We simulate this by subtracting the minValue from the native value and maxValue.
      * We need this method to call native setMax and setProgress methods when minValue property is changed,
      * without handling the native value changed callback.
      */

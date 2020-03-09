@@ -20,6 +20,7 @@ export function getNativeHintColor(searchBar: searchBarModule.SearchBar): colorM
     if (textView) {
         return new colorModule.Color(textView.getHintTextColors().getDefaultColor());
     }
+
     return undefined;
 }
 
@@ -29,6 +30,7 @@ export function getNativeTextFieldBackgroundColor(searchBar: searchBarModule.Sea
     if (textView) {
         return new colorModule.Color((<android.graphics.drawable.ColorDrawable>textView.getBackground()).getColor());
     }
+
     return undefined;
 }
 
@@ -38,5 +40,6 @@ export function getNativeFontSize(searchBar: searchBarModule.SearchBar): number 
     if (textView) {
         return textView.getTextSize() / utils.layout.getDisplayDensity();
     }
+
     return undefined;
 }

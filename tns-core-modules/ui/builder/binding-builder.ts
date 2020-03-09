@@ -1,4 +1,4 @@
-﻿// regex that contains all symbols applicable for expression used to AI detect an expression.
+// regex that contains all symbols applicable for expression used to AI detect an expression.
 const expressionSymbolsRegex = /[\+\-\*\/%\?:<>=!\|&\(\)^~]/;
 
 export module bindingConstants {
@@ -11,7 +11,7 @@ export module bindingConstants {
     export const parentValueKey = "$parent";
     export const parentsValueKey = "$parents";
     export const newPropertyValueKey = "$newPropertyValue";
-};
+}
 
 const hasEqualSignRegex = /=+/;
 const equalSignComparisionOperatorsRegex = /(==|===|>=|<=|!=|!==)/;
@@ -44,7 +44,7 @@ function areNamedParams(params: Array<any>) {
 const namedParamConstants = {
     propName: "propName",
     propValue: "propValue"
-}
+};
 
 function getPropertyNameValuePair(param, knownOptions, callback) {
     let nameValuePair = {};
@@ -67,6 +67,7 @@ function getPropertyNameValuePair(param, knownOptions, callback) {
             nameValuePair[namedParamConstants.propName] = propertyName;
             nameValuePair[namedParamConstants.propValue] = propertyValue;
         }
+
         return nameValuePair;
     }
 

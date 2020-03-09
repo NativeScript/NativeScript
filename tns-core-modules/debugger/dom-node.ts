@@ -37,6 +37,7 @@ const propertyBlacklist = [
 
 function lazy<T>(action: () => T): () => T {
     let _value: T;
+
     return () => _value || (_value = action());
 }
 const percentLengthToStringLazy = lazy<(length) => string>(() => require("../ui/styling/style-properties").PercentLength.convertToString);
@@ -133,6 +134,7 @@ export class DOMNode {
         view.eachChild((child) => {
             child.ensureDomNode();
             res.push(child.domNode);
+
             return true;
         });
 
@@ -194,6 +196,7 @@ export class DOMNode {
                     value: valueToString(pair[1])
                 };
             });
+
         return result;
     }
 

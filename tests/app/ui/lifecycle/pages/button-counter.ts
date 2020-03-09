@@ -15,10 +15,12 @@ export class Button extends button.Button {
 
     [view.backgroundInternalProperty.setNative](value) {
         this.backgroundInternalSetNativeCount++;
+
         return super[view.backgroundInternalProperty.setNative](value);
     }
     [view.fontInternalProperty.setNative](value) {
         this.fontInternalSetNativeCount++;
+
         return super[view.fontInternalProperty.setNative](value);
     }
     _redrawNativeBackground(value: any): void {
@@ -27,6 +29,7 @@ export class Button extends button.Button {
     }
     [view.colorProperty.setNative](value) {
         this.colorSetNativeCount++;
+
         return super[view.colorProperty.setNative](value);
     }
 }

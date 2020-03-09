@@ -3,13 +3,15 @@
  * @module "ui/tab-navigation/tab-strip"
  */ /** */
 
-import { ViewBase, Property } from "../../core/view";
+import { View, Property } from "../../core/view";
+import { Color } from "../../../color";
 import { TabStripItem } from "../tab-strip-item";
 
 /**
  * Represents a tab strip.
  */
-export class TabStrip extends ViewBase {
+export class TabStrip extends View {
+
     /**
      * Gets or sets the items of the tab strip.
      */

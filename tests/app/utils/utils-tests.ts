@@ -1,14 +1,14 @@
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 import * as utils from "tns-core-modules/utils/utils";
 import { isIOS } from "tns-core-modules/platform";
 
 export function test_GC_isDefined() {
     TKUnit.assertNotEqual(utils.GC, undefined, "Method utils.GC() should be defined!");
-};
+}
 
 export function test_releaseNativeObject_isDefined() {
     TKUnit.assertNotEqual(utils.releaseNativeObject, undefined, "Method utils.releaseNativeObject() should be defined!");
-};
+}
 
 export function test_releaseNativeObject_canBeCalledWithNativeObject() {
     if (isIOS) {
@@ -16,7 +16,7 @@ export function test_releaseNativeObject_canBeCalledWithNativeObject() {
     } else {
         test_releaseNativeObject_canBeCalledWithNativeObject_Android();
     }
-};
+}
 
 export function test_executeOnMainThread_Works(done: Function) {
     utils.executeOnMainThread(() => {
@@ -66,7 +66,7 @@ function test_releaseNativeObject_canBeCalledWithNativeObject_iOS() {
             deallocated = true;
         }
     }));
-    TKUnit.assertMatches(obj.description, /NSObject/, "Object description should match!")
+    TKUnit.assertMatches(obj.description, /NSObject/, "Object description should match!");
 
     utils.releaseNativeObject(obj);
 
@@ -77,7 +77,7 @@ function test_releaseNativeObject_canBeCalledWithNativeObject_iOS() {
 
 function test_releaseNativeObject_canBeCalledWithNativeObject_Android() {
     const obj = new java.lang.Object();
-    TKUnit.assertMatches(obj.toString(), /java.lang.Object/, "Object description should match!")
+    TKUnit.assertMatches(obj.toString(), /java.lang.Object/, "Object description should match!");
 
     utils.releaseNativeObject(obj);
 

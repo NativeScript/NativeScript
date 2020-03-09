@@ -1,4 +1,4 @@
-﻿import {
+import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty,
     autocapitalizationTypeProperty, autocorrectProperty, hintProperty, resetSymbol,
@@ -56,6 +56,7 @@ function initializeEditTextListeners(): void {
     class EditTextListenersImpl extends java.lang.Object implements android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {
         constructor(private owner: EditableTextBase) {
             super();
+
             return global.__native(this);
         }
 

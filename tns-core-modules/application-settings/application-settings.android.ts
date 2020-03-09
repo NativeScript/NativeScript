@@ -1,4 +1,4 @@
-﻿import * as common from "./application-settings-common";
+import * as common from "./application-settings-common";
 import { getNativeApplication } from "../application";
 
 let sharedPreferences: android.content.SharedPreferences;
@@ -15,6 +15,7 @@ function verify(key: string) {
 
 export function hasKey(key: string): boolean {
     verify(key);
+
     return sharedPreferences.contains(key);
 }
 
@@ -24,6 +25,7 @@ export function getBoolean(key: string, defaultValue?: boolean): boolean {
     if (hasKey(key)) {
         return sharedPreferences.getBoolean(key, false);
     }
+
     return defaultValue;
 }
 
@@ -32,6 +34,7 @@ export function getString(key: string, defaultValue?: string): string {
     if (hasKey(key)) {
         return sharedPreferences.getString(key, "");
     }
+
     return defaultValue;
 }
 
@@ -40,6 +43,7 @@ export function getNumber(key: string, defaultValue?: number): number {
     if (hasKey(key)) {
         return sharedPreferences.getFloat(key, float(0.0));
     }
+
     return defaultValue;
 }
 

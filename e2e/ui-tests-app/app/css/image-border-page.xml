@@ -1,0 +1,22 @@
+<Page>
+    <GridLayout rows="*,*,*,*,*,*" columns="*,*,*">
+        <Image  id="s0" row="0" col="0" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image  id="s1" row="0" col="1" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image  id="s2" row="0" col="2" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image  id="s3" row="1" col="0" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image  id="s4" row="1" col="1" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image  id="s5" row="1" col="2" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image  id="s6" row="2" col="0" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image  id="s7" row="2" col="1" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image  id="s8" row="2" col="2" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image  id="s9" row="3" col="0" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image id="s10" row="3" col="1" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image id="s11" row="3" col="2" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image id="s12" row="4" col="0" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image id="s13" row="4" col="1" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image id="s14" row="4" col="2" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image id="s15" row="5" col="0" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image id="s16" row="5" col="1" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <Image id="s17" row="5" col="2" src="~/resources/images/gravatar.png" stretch="fill"/>
+    </GridLayout>
+</Page>

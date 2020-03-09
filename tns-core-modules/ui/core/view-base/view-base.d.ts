@@ -159,34 +159,6 @@ export abstract class ViewBase extends Observable {
     //@endprivate
 
     /**
-     * @deprecated use showModal with ShowModalOptions instead
-     *
-     * Shows the View contained in moduleName as a modal view.
-     * @param moduleName - The name of the module to load starting from the application root.
-     * @param context - Any context you want to pass to the modally shown view.
-     * This same context will be available in the arguments of the shownModally event handler.
-     * @param closeCallback - A function that will be called when the view is closed.
-     * Any arguments provided when calling ShownModallyData.closeCallback will be available here.
-     * @param fullscreen - An optional parameter specifying whether to show the modal view in full-screen mode.
-     * @param animated - An optional parameter specifying whether to show the modal view with animation.
-     * @param stretched - An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
-     */
-    showModal(moduleName: string, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): ViewBase;
-
-    /**
-     * @deprecated use showModal with ShowModalOptions instead
-     *
-     * Shows the view passed as parameter as a modal view.
-     * @param view - View instance to be shown modally.
-     * @param context - Any context you want to pass to the modally shown view. This same context will be available in the arguments of the shownModally event handler.
-     * @param closeCallback - A function that will be called when the view is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
-     * @param fullscreen - An optional parameter specifying whether to show the modal view in full-screen mode.
-     * @param animated - An optional parameter specifying whether to show the modal view with animation.
-     * @param stretched - An optional parameter specifying whether to stretch the modal view when not in full-screen mode.
-     */
-    showModal(view: ViewBase, context: any, closeCallback: Function, fullscreen?: boolean, animated?: boolean, stretched?: boolean): ViewBase;
-
-    /**
      * Shows the View contained in moduleName as a modal view.
      * @param moduleName - The name of the module to load starting from the application root.
      * @param modalOptions - A ShowModalOptions instance
@@ -199,11 +171,6 @@ export abstract class ViewBase extends Observable {
      * @param modalOptions - A ShowModalOptions instance
      */
     showModal(view: ViewBase, modalOptions: ShowModalOptions): ViewBase;
-
-    /**
-     * @deprecated use showModal method with arguments
-     */
-    showModal(): ViewBase;
 
     /**
      * Closes the current modal view that this page is showing.
@@ -365,13 +332,7 @@ export abstract class ViewBase extends Observable {
     public cssPseudoClasses: Set<string>;
 
     public _goToVisualState(state: string): void;
-    /**
-     * @deprecated
-     *
-     * This used to be the way to set attribute values in early {N} versions.
-     * Now attributes are expected to be set as plain properties on the view instances.
-     */
-    public _applyXmlAttribute(attribute, value): boolean;
+
     public setInlineStyle(style: string): void;
 
     _context: any /* android.content.Context */;

@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 import * as datePickerTestsNative from "./date-picker-tests-native";
 import * as color from "tns-core-modules/color";
@@ -8,7 +8,7 @@ import * as platform from "tns-core-modules/platform";
 import * as datePickerModule from "tns-core-modules/ui/date-picker";
 // << date-picker-require
 
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 
 export function test_recycling() {
     helper.nativeView_recycling_test(() => new datePickerModule.DatePicker());
@@ -46,6 +46,7 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     public create() {
         const datePicker = new datePickerModule.DatePicker();
         datePicker.id = "DatePicker";
+
         return datePicker;
     }
     

@@ -185,15 +185,6 @@ export module ad {
  * Module with ios specific utilities.
  */
 export module ios {
-    /**
-     * @deprecated use the respective native property directly
-     *
-     * Checks if the property is a function and if it is, calls it on this.
-     * Designed to support backward compatibility for methods that became properties.
-     * Will not work on delegates since it checks if the propertyValue is a function, and delegates are marshalled as functions.
-     * Example: getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(NSDate.dateWithTimeIntervalSinceNow(waitTime));
-     */
-    export function getter<T>(_this: any, propertyValue: T | { (): T }): T;
 
     // Common properties between UILabel, UITextView and UITextField
     export interface TextUIView {

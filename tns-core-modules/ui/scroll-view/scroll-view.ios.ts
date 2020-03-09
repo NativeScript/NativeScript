@@ -1,4 +1,4 @@
-﻿import { ScrollEventData } from ".";
+import { ScrollEventData } from ".";
 import {
     View, layout, ScrollViewBase, scrollBarIndicatorVisibleProperty, isScrollEnabledProperty
 } from "./scroll-view-common";
@@ -14,6 +14,7 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
     public static initWithOwner(owner: WeakRef<ScrollView>): UIScrollViewDelegateImpl {
         let impl = <UIScrollViewDelegateImpl>UIScrollViewDelegateImpl.new();
         impl._owner = owner;
+
         return impl;
     }
 
@@ -40,6 +41,7 @@ export class ScrollView extends ScrollViewBase {
     
     public createNativeView() {
         const view = UIScrollView.new();
+
         return view;
     }
 

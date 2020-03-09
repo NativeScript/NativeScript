@@ -1,4 +1,4 @@
-﻿import { FormattedString as FormattedStringDefinition } from "./formatted-string";
+import { FormattedString as FormattedStringDefinition } from "./formatted-string";
 import { Span } from "./span";
 import { Observable, PropertyChangeData } from "../data/observable";
 import { ObservableArray, ChangedData } from "../data/observable-array";
@@ -12,8 +12,6 @@ export { Span };
 export module knownCollections {
     export const spans = "spans";
 }
-
-const CHILD_SPAN = "Span";
 
 export class FormattedString extends ViewBase implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
     private _spans: ObservableArray<Span>;
@@ -77,6 +75,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
         if (!this._spans) {
             this._spans = new ObservableArray<Span>();
         }
+
         return this._spans;
     }
 
@@ -85,6 +84,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
         for (let i = 0, length = this._spans.length; i < length; i++) {
             result += this._spans.getItem(i).text;
         }
+
         return result;
     }
 
@@ -95,7 +95,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === CHILD_SPAN) {
+        if (value instanceof Span) {
             this.spans.push(value);
         }
     }
@@ -109,7 +109,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
                 this._addView(span);
 
                 // Then attach handlers - we skip the first nofitication because
-                // we raise change for the whole instance. 
+                // we raise change for the whole instance.
                 this.addPropertyChangeHandler(span);
             }
         }

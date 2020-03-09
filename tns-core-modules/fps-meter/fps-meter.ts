@@ -1,4 +1,4 @@
-﻿import * as fpsNative from "./fps-native";
+import * as fpsNative from "./fps-native";
 
 const callbacks = {};
 let idCounter = 0;
@@ -9,7 +9,7 @@ let frameStartTime = 0;
 function doFrame(currentTimeMillis: number) {
     let fps = 0;
     if (frameStartTime > 0) {
-        // take the span in milliseconds        
+        // take the span in milliseconds
         const timeSpan = (currentTimeMillis - frameStartTime);
         framesRendered++;
 

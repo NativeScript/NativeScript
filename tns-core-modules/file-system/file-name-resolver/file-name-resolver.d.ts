@@ -3,14 +3,10 @@
  * @module "file-system/file-name-resolver"
  */ /** */
 
-export interface PlatformContext {
-    width: number;
-    height: number;
-    os: string;
-    deviceType: string;
-}
+ import { PlatformContext } from "../../module-name-resolver/qualifier-matcher";
+ export { PlatformContext } from "../../module-name-resolver/qualifier-matcher";
 
-export class FileNameResolver {
+ export class FileNameResolver {
     constructor(context: PlatformContext);
     resolveFileName(path: string, ext: string): string;
     clearCache(): void;
@@ -18,4 +14,3 @@ export class FileNameResolver {
 
 export function resolveFileName(path: string, ext: string): string;
 export function clearCache(): void;
-export function _findFileMatch(path: string, ext: string, candidates: Array<string>, context: PlatformContext): string;

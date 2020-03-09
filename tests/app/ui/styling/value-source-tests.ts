@@ -1,8 +1,8 @@
 import * as color from "tns-core-modules/color";
 import * as button from "tns-core-modules/ui/button";
 import * as stack from "tns-core-modules/ui/layouts/stack-layout";
-import * as helper from "../helper";
-import * as TKUnit from "../../TKUnit";
+import * as helper from "../../ui-helper";
+import * as TKUnit from "../../tk-unit";
 import { unsetValue } from "tns-core-modules/ui/core/view";
 
 export var test_value_Inherited_after_unset = function () {
@@ -16,7 +16,7 @@ export var test_value_Inherited_after_unset = function () {
     helper.assertViewColor(btn, "#0000FF");
     btn.className = "";
     helper.assertViewColor(btn, "#FF0000");
-}
+};
 
 export var test_value_Inherited_stronger_than_Default = function () {
     let page = helper.getCurrentPage();
@@ -27,7 +27,7 @@ export var test_value_Inherited_stronger_than_Default = function () {
     page.css = "stackLayout { color: red; }";
     helper.assertViewColor(btn, "#FF0000");
     page.css = "";
-}
+};
 
 export var test_value_Css_stronger_than_Inherited = function () {
     let page = helper.getCurrentPage();
@@ -39,7 +39,7 @@ export var test_value_Css_stronger_than_Inherited = function () {
     page.css = "stackLayout { color: red; } button { color: blue; }";
 
     helper.assertViewColor(btn, "#0000FF");
-}
+};
 
 export function test_value_Local_stronger_than_Css() {
     let testPage = helper.getCurrentPage();

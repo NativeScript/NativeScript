@@ -1,4 +1,4 @@
-﻿import { Label as LabelDefinition } from ".";
+import { Label as LabelDefinition } from ".";
 import { TextBase, WhiteSpace, whiteSpaceProperty, booleanConverter, CSSType } from "../text-base";
 import { profile } from "../../profiling";
 
@@ -16,7 +16,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
     set textWrap(value: boolean) {
         if (typeof value === "string") {
-            value = booleanConverter(value)
+            value = booleanConverter(value);
         }
         
         this.style.whiteSpace = value ? "normal" : "nowrap";
@@ -27,6 +27,7 @@ export class Label extends TextBase implements LabelDefinition {
         if (!TextView) {
             TextView = android.widget.TextView;
         }
+
         return new TextView(this._context);
     }
 

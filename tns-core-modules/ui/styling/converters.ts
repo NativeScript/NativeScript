@@ -1,4 +1,4 @@
-﻿import { AnimationCurve } from "../enums";
+import { AnimationCurve } from "../enums";
 
 const STYLE_CURVE_MAP = Object.freeze({
     "ease": AnimationCurve.ease,
@@ -35,6 +35,7 @@ function parseCubicBezierCurve(value: string) {
         coords.length === 4) {
 
         const [x1, x2, y1, y2] = [...coords];
+
         return AnimationCurve.cubicBezier(x1, x2, y1, y2);
     } else {
         throw new Error(`Invalid value for animation: ${value}`);

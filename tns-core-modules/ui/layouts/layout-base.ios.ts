@@ -1,4 +1,4 @@
-import { 
+import {
     LayoutBaseCommon, clipToBoundsProperty, isPassThroughParentEnabledProperty, View
 } from "./layout-base-common";
 

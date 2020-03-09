@@ -1,4 +1,4 @@
-﻿import { StackLayoutBase, orientationProperty } from "./stack-layout-common";
+import { StackLayoutBase, orientationProperty } from "./stack-layout-common";
 
 export * from "./stack-layout-common";
 
@@ -10,6 +10,6 @@ export class StackLayout extends StackLayoutBase {
     }
 
     [orientationProperty.setNative](value: "horizontal" | "vertical") {
-        this.nativeViewProtected.setOrientation(value === "vertical" ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal)
+        this.nativeViewProtected.setOrientation(value === "vertical" ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal);
     }
 }

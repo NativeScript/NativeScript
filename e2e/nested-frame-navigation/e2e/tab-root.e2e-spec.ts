@@ -14,7 +14,7 @@ describe(rootType, async function () {
 
     before(async function () {
         nsCapabilities.testReporter.context = this;
-        logWarn(`====== ${rootType} ========`)
+        logWarn(`====== ${rootType} ========`);
         driver = await createDriver();
         screen = new Screen(driver);
         if (dontKeepActivities) {
@@ -85,14 +85,14 @@ describe(rootType, async function () {
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerTwo.name) // wait for player
+                            await driver.waitForElement(playerTwo.name); // wait for player
                         }
 
                         await shared.testPlayerNavigatedBack(screen, driver);
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerOne.name) // wait for players list
+                            await driver.waitForElement(playerOne.name); // wait for players list
                         }
 
                         await shared.testPlayerNavigated(playerTwo, screen);
@@ -104,7 +104,7 @@ describe(rootType, async function () {
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(teamOne.name) // wait for teams list
+                            await driver.waitForElement(teamOne.name); // wait for teams list
                         }
                     });
 
@@ -117,7 +117,7 @@ describe(rootType, async function () {
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerOne.name) // wait for players list
+                            await driver.waitForElement(playerOne.name); // wait for players list
                         }
 
                         await screen.loadedPlayersList();
@@ -127,7 +127,7 @@ describe(rootType, async function () {
                         if (driver.isIOS) {
                             if (appSuspendResume) {
                                 await driver.backgroundApp(suspendTime);
-                                await driver.waitForElement(playerTwo.name) // wait for player
+                                await driver.waitForElement(playerTwo.name); // wait for player
                             }
                         }
 
@@ -137,7 +137,7 @@ describe(rootType, async function () {
                             // TODO: run in background from appium breaks the test. Investigate the issue, once with the app and with appium
                             if (appSuspendResume) {
                                 await driver.backgroundApp(suspendTime);
-                                await driver.waitForElement(teamOne.name) // wait for teams list
+                                await driver.waitForElement(teamOne.name); // wait for teams list
                             }
                         }
 
@@ -147,14 +147,14 @@ describe(rootType, async function () {
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(teamTwo.name) // wait for team
+                            await driver.waitForElement(teamTwo.name); // wait for team
                         }
 
                         await screen.togglePlayersTab();
 
                         if (appSuspendResume) {
                             await driver.backgroundApp(suspendTime);
-                            await driver.waitForElement(playerTwo.name) // wait for player
+                            await driver.waitForElement(playerTwo.name); // wait for player
                         }
 
                         await screen.loadedPlayerDetails(playerTwo);
@@ -175,7 +175,7 @@ describe(rootType, async function () {
                         await screen.loadedHome();
                     });
                 });
-            };
+            }
         });
     }
 });

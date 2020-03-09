@@ -1,4 +1,4 @@
-﻿import { EventListener, TraceWriter, ErrorHandler } from ".";
+import { EventListener, TraceWriter, ErrorHandler } from ".";
 
 let enabled = false;
 let _categories = {};
@@ -58,6 +58,7 @@ export function write(message: any, category: string, type?: number) {
         for (i = 0; i < _writers.length; i++) {
             _writers[i].write(message, category, type);
         }
+
         return;
     }
 

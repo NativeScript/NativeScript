@@ -1,4 +1,4 @@
-﻿import * as textViewModule from "tns-core-modules/ui/text-view";
+import * as textViewModule from "tns-core-modules/ui/text-view";
 import * as colorModule from "tns-core-modules/color";
 import * as utilsModule from "tns-core-modules/utils/utils";
 import * as enums from "tns-core-modules/ui/enums";
@@ -22,6 +22,7 @@ export function getNativeHint(textView: textViewModule.TextView): string {
 
 export function getNativeFontSize(textView: textViewModule.TextView): number {
     var density = utilsModule.layout.getDisplayDensity();
+
     return textView.android.getTextSize() / density;
 }
 
@@ -35,7 +36,7 @@ export function getNativeBackgroundColor(textView: textViewModule.TextView): col
         return new colorModule.Color((<org.nativescript.widgets.BorderDrawable>bkg).getBackgroundColor());
     }
     else {
-        return new colorModule.Color(bkg.backgroundColor)
+        return new colorModule.Color(bkg.backgroundColor);
     }
 }
 

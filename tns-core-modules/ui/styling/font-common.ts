@@ -1,4 +1,4 @@
-﻿import { Font as FontDefinition, ParsedFont } from "./font";
+import { Font as FontDefinition, ParsedFont } from "./font";
 import { makeValidator, makeParser } from "../core/properties";
 
 export abstract class Font implements FontDefinition {
@@ -84,6 +84,7 @@ export function parseFontFamily(value: string): Array<string> {
             result.push(str);
         }
     }
+
     return result;
 }
 
@@ -106,7 +107,7 @@ const styles = new Set();
 //- 100(Thin) (API16 -thin)
 //- 200(Extra Light / Ultra Light) (API16 -light)
 //- 300(Light) (API16 -light)
-//- 400(Normal) 
+//- 400(Normal)
 //- 500(Medium) (API21 -medium)
 //- 600(Semi Bold / Demi Bold) (API21 -medium)
 //- 700(Bold) (API16 -bold)
@@ -132,7 +133,7 @@ export function parseFont(fontValue: string): ParsedFont {
         fontStyle: "normal",
         fontVariant: "normal",
         fontWeight: "normal"
-    }
+    };
 
     const parts = fontValue.split(/\s+/);
     let part: string;

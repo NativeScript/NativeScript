@@ -1,5 +1,5 @@
-﻿import { Placeholder as PlaceholderDefinition, CreateViewEventData } from "."
-import { View, EventData, CSSType } from "../core/view"
+import { Placeholder as PlaceholderDefinition, CreateViewEventData } from ".";
+import { View, EventData, CSSType } from "../core/view";
 
 @CSSType("Placeholder")
 export class Placeholder extends View implements PlaceholderDefinition {
@@ -8,6 +8,7 @@ export class Placeholder extends View implements PlaceholderDefinition {
     public createNativeView() {
         const args = <CreateViewEventData>{ eventName: Placeholder.creatingViewEvent, object: this, view: undefined, context: this._context };
         this.notify(args);
+
         return <android.view.View>args.view;
     }
 }

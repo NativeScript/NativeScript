@@ -1,4 +1,4 @@
-﻿import { WrapLayoutBase, orientationProperty, itemWidthProperty, itemHeightProperty, Length } from "./wrap-layout-common";
+import { WrapLayoutBase, orientationProperty, itemWidthProperty, itemHeightProperty, Length } from "./wrap-layout-common";
 
 export * from "./wrap-layout-common";
 
@@ -10,7 +10,7 @@ export class WrapLayout extends WrapLayoutBase {
     }
 
     [orientationProperty.setNative](value: "horizontal" | "vertical") {
-        this.nativeViewProtected.setOrientation(value === "vertical" ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal)
+        this.nativeViewProtected.setOrientation(value === "vertical" ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal);
     }
 
     [itemWidthProperty.setNative](value: Length) {

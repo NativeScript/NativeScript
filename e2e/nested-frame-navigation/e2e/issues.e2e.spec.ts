@@ -36,7 +36,7 @@ describe("issues", async function () {
             const somePageBtn = await driver.waitForElement("somePageOnRoot");
             await somePageBtn.tap();
             await screen.loadedSomePage();
-        }
+        };
 
         await showSomePage();
 

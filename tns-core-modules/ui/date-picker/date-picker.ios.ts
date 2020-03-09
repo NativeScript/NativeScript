@@ -1,9 +1,7 @@
-﻿import {
+import {
     DatePickerBase, yearProperty, monthProperty, dayProperty,
     dateProperty, maxDateProperty, minDateProperty, colorProperty, Color
 } from "./date-picker-common";
-
-import { ios } from "../../utils/utils";
 
 export * from "./date-picker-common";
 
@@ -14,6 +12,7 @@ export class DatePicker extends DatePickerBase {
     public createNativeView() {
         const picker = UIDatePicker.new();
         picker.datePickerMode = UIDatePickerMode.Date;
+
         return picker;
     }
 
@@ -87,6 +86,7 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
     public static initWithOwner(owner: WeakRef<DatePicker>): UIDatePickerChangeHandlerImpl {
         const impl = <UIDatePickerChangeHandlerImpl>UIDatePickerChangeHandlerImpl.new();
         impl._owner = owner;
+
         return impl;
     }
 

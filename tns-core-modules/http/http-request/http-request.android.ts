@@ -1,4 +1,4 @@
-﻿// imported for definition purposes only
+// imported for definition purposes only
 import * as httpModule from "../../http";
 import * as imageSourceModule from "../../image-source";
 import * as platformModule from "../../platform";
@@ -27,21 +27,33 @@ const pendingRequests = {};
 let imageSource: typeof imageSourceModule;
 function ensureImageSource() {
     if (!imageSource) {
+<<<<<<< HEAD
         imageSource = require("tns-core-modules/image-source");
+=======
+        imageSource = require("../../image-source");
+>>>>>>> bf6c77c355b5fcf07eeea143aa4d9ee2e639103f
     }
 }
 
 let platform: typeof platformModule;
 function ensurePlatform() {
     if (!platform) {
+<<<<<<< HEAD
         platform = require("tns-core-modules/platform");
+=======
+        platform = require("../../platform");
+>>>>>>> bf6c77c355b5fcf07eeea143aa4d9ee2e639103f
     }
 }
 
 let fs: typeof fsModule;
 function ensureFileSystem() {
     if (!fs) {
+<<<<<<< HEAD
         fs = require("tns-core-modules/file-system");
+=======
+        fs = require("../../file-system");
+>>>>>>> bf6c77c355b5fcf07eeea143aa4d9ee2e639103f
     }
 }
 
@@ -68,6 +80,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 
     if (result.error) {
         callbacks.rejectCallback(new Error(result.error.toString()));
+
         return;
     }
 
@@ -111,6 +124,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                 } else {
                     str = result.responseAsString;
                 }
+
                 return parseJSON(str);
             },
             toImage: () => {
@@ -249,7 +263,8 @@ function decodeResponse(raw: any, encoding?: HttpResponseEncoding) {
     if (encoding === HttpResponseEncoding.GBK) {
         charsetName = "GBK";
     }
-    return raw.toString(charsetName)
+
+    return raw.toString(charsetName);
 }
 
 export function addHeader(headers: httpModule.Headers, key: string, value: string): void {

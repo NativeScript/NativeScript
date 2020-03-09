@@ -11,7 +11,7 @@ if (app.android) {
 }
 // << application-app-check
 
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 
 export function testInitialized() {
     if (platform.device.os === platform.platformNames.android) {

@@ -1,4 +1,4 @@
-﻿import { getNativeApplication, android as androidApp } from "../application";
+import { getNativeApplication, android as androidApp } from "../application";
 
 export enum connectionType {
     none = 0,
@@ -57,8 +57,8 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
     let onReceiveCallback = function onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
         let newConnectionType = getConnectionType();
         connectionTypeChangedCallback(newConnectionType);
-    }
-    let zoneCallback = <any>zonedCallback(onReceiveCallback); 
+    };
+    let zoneCallback = <any>zonedCallback(onReceiveCallback);
     androidApp.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, zoneCallback);
 }
 

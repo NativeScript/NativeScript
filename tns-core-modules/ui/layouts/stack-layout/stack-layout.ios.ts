@@ -1,4 +1,4 @@
-﻿import { StackLayoutBase, View, layout, VerticalAlignment, HorizontalAlignment } from "./stack-layout-common";
+import { StackLayoutBase, View, layout, VerticalAlignment, HorizontalAlignment } from "./stack-layout-common";
 import * as trace from "../../../trace";
 
 export * from "./stack-layout-common";
@@ -40,12 +40,12 @@ export class StackLayout extends StackLayoutBase {
         if (isVertical) {
             let childWidth = (widthMode === layout.UNSPECIFIED) ? 0 : width - horizontalPaddingsAndMargins;
             childWidth = Math.max(0, childWidth);
-            childMeasureSpec = layout.makeMeasureSpec(childWidth, widthMode)
+            childMeasureSpec = layout.makeMeasureSpec(childWidth, widthMode);
         }
         else {
             let childHeight = (heightMode === layout.UNSPECIFIED) ? 0 : height - verticalPaddingsAndMargins;
             childHeight = Math.max(0, childHeight);
-            childMeasureSpec = layout.makeMeasureSpec(childHeight, heightMode)
+            childMeasureSpec = layout.makeMeasureSpec(childHeight, heightMode);
         }
 
         let childSize: { measuredWidth: number; measuredHeight: number };
@@ -53,8 +53,8 @@ export class StackLayout extends StackLayoutBase {
         this.eachLayoutChild((child, last) => {
             if (isVertical) {
 
-                // Measuring ListView, with no height property set, with layout.AT_MOST will 
-                // result in total height equal to the count ot all items multiplied by DEFAULT_HEIGHT = 44 or the 
+                // Measuring ListView, with no height property set, with layout.AT_MOST will
+                // result in total height equal to the count ot all items multiplied by DEFAULT_HEIGHT = 44 or the
                 // maximum available space for the StackLayout. Any following controls will be visible only if enough space left.
                 childSize = View.measureChild(this, child, childMeasureSpec, layout.makeMeasureSpec(remainingLength, measureSpec));
 
@@ -134,7 +134,7 @@ export class StackLayout extends StackLayoutBase {
 
             View.layoutChild(this, child, childLeft, childTop, childRight, childTop + childHeight);
             childTop += childHeight;
-        })
+        });
     }
 
     private layoutHorizontal(left: number, top: number, right: number, bottom: number, insets: { left, top, right, bottom }): void {

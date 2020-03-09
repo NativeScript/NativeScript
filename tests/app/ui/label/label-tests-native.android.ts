@@ -1,4 +1,4 @@
-﻿import * as labelModule from "tns-core-modules/ui/label";
+import * as labelModule from "tns-core-modules/ui/label";
 import * as enums from "tns-core-modules/ui/enums";
 import * as colorModule from "tns-core-modules/color";
 
@@ -26,6 +26,6 @@ export function getNativeBackgroundColor(label: labelModule.Label): colorModule.
         return new colorModule.Color((<org.nativescript.widgets.BorderDrawable>bkg).getBackgroundColor());
     }
     else {
-        return new colorModule.Color(bkg.backgroundColor)
+        return new colorModule.Color(bkg.backgroundColor);
     }
 }

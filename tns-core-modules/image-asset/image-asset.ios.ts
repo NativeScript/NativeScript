@@ -1,9 +1,9 @@
-import * as common from "./image-asset-common";
+import { ImageAssetBase, getRequestedImageSize } from "./image-asset-common";
 import { path as fsPath, knownFolders } from "../file-system";
 
-global.moduleMerge(common, exports);
+export * from "./image-asset-common";
 
-export class ImageAsset extends common.ImageAsset {
+export class ImageAsset extends ImageAssetBase {
     private _ios: PHAsset;
 
     constructor(asset: string | PHAsset | UIImage) {
@@ -16,7 +16,7 @@ export class ImageAsset extends common.ImageAsset {
             this.nativeImage = UIImage.imageWithContentsOfFile(asset);
         }
         else if (asset instanceof UIImage) {
-            this.nativeImage = asset
+            this.nativeImage = asset;
         }
         else {
             this.ios = asset;
@@ -38,12 +38,13 @@ export class ImageAsset extends common.ImageAsset {
 
         let srcWidth = this.nativeImage ? this.nativeImage.size.width : this.ios.pixelWidth;
         let srcHeight = this.nativeImage ? this.nativeImage.size.height : this.ios.pixelHeight;
-        let requestedSize = common.getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
+        let requestedSize = getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
 
         if (this.nativeImage) {
             let newSize = CGSizeMake(requestedSize.width, requestedSize.height);
             let resizedImage = this.scaleImage(this.nativeImage, newSize);
             callback(resizedImage, null);
+
             return;
         }
 
@@ -72,6 +73,7 @@ export class ImageAsset extends common.ImageAsset {
         image.drawInRect(CGRectMake(0, 0, requestedSize.width, requestedSize.height));
         let resultImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
+
         return resultImage;
     }
 }

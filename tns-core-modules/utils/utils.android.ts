@@ -1,8 +1,10 @@
-﻿import {
+import {
     write as traceWrite,
     categories as traceCategories,
     messageType as traceMessageType,
 } from "../trace";
+
+import { layoutCommon } from "./utils-common";
 
 export * from "./utils-common";
 
@@ -55,12 +57,17 @@ export module layout {
     export function measureNativeView(nativeView: any /* android.view.View */, width: number, widthMode: number, height: number, heightMode: number): { width: number, height: number } {
         const view = <android.view.View>nativeView;
         view.measure(makeMeasureSpec(width, widthMode), makeMeasureSpec(height, heightMode));
+
         return {
             width: view.getMeasuredWidth(),
             height: view.getMeasuredHeight()
         };
     }
 }
+
+// TODO(webpack-workflow): Export all methods from layoutCommon
+// Think of a cleaner way to do that
+Object.assign(layout, layoutCommon);
 
 // We are using "ad" here to avoid namespace collision with the global android object
 export module ad {
@@ -103,6 +110,7 @@ export module ad {
         if (!inputMethodManager) {
             inputMethodManager = <android.view.inputmethod.InputMethodManager>getApplicationContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
         }
+
         return inputMethodManager;
     }
 
@@ -118,7 +126,7 @@ export module ad {
         let windowToken: android.os.IBinder;
 
         if (nativeView instanceof android.view.View) {
-            windowToken = nativeView.getWindowToken()
+            windowToken = nativeView.getWindowToken();
         } else if (androidApp.foregroundActivity instanceof androidx.appcompat.app.AppCompatActivity) {
             const decorView = androidApp.foregroundActivity.getWindow().getDecorView();
             windowToken = decorView ? decorView.getWindowToken() : null;
@@ -137,6 +145,7 @@ export module ad {
                     hashSet.add("" + str[element]);
                 }
             }
+
             return hashSet;
         }
 
@@ -170,6 +179,7 @@ export module ad {
             const resources = getResources();
             const packageName = getPackageName();
             const uri = packageName + name;
+
             return resources.getIdentifier(uri, null, null);
         }
         export function getPalleteColor(name: string, context: android.content.Context): number {
@@ -183,7 +193,7 @@ export module ad {
             let result = 0;
             try {
                 if (!attr) {
-                    attr = java.lang.Class.forName("androidx.appcompat.R$attr")
+                    attr = java.lang.Class.forName("androidx.appcompat.R$attr");
                 }
 
                 let colorID = 0;
@@ -203,6 +213,7 @@ export module ad {
             }
 
             attrCache.set(name, result);
+
             return result;
         }
     }
@@ -226,8 +237,10 @@ export function openUrl(location: string): boolean {
     } catch (e) {
         // We Don't do anything with an error.  We just output it
         traceWrite("Error in OpenURL", traceCategories.Error, traceMessageType.error);
+
         return false;
     }
+
     return true;
 }
 
@@ -241,6 +254,7 @@ function isExternalStorageReadOnly(): boolean {
     if (android.os.Environment.MEDIA_MOUNTED_READ_ONLY === extStorageState) {
         return true;
     }
+
     return false;
 }
 
@@ -254,6 +268,7 @@ function isExternalStorageAvailable(): boolean {
     if (android.os.Environment.MEDIA_MOUNTED === extStorageState) {
         return true;
     }
+
     return false;
 }
 
@@ -299,6 +314,7 @@ Applications cannot access internal storage of other application on Android (see
         // Ensure external storage is available
         if (isExternalStorageReadOnly()) {
             traceWrite("External storage is read only", traceCategories.Error, traceMessageType.error);
+
             return false;
         }
 
@@ -319,6 +335,7 @@ Applications cannot access internal storage of other application on Android (see
             );
             intent.setDataAndType(android.net.Uri.fromFile(new java.io.File(filePath)), mimeType);
             context.startActivity(chooserIntent);
+
             return true;
         }
 

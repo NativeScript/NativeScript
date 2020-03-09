@@ -13,6 +13,7 @@ class NativeScriptActivity extends androidx.appcompat.app.AppCompatActivity {
     public isNativeScriptActivity;
     constructor() {
         super();
+
         return global.__native(this);
     }
 

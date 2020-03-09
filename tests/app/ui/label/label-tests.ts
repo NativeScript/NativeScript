@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 
 //>> label-require
@@ -19,14 +19,17 @@ import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 import { Label } from "tns-core-modules/ui/label";
 import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 import { Span, FormattedString } from "tns-core-modules/text/formatted-string";
+
+const testDir = "ui/label";
 
 export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
     public create(): LabelModule.Label {
         const label = new LabelModule.Label();
         label.text = "Label";
+
         return label;
     }
 
@@ -525,7 +528,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         view.id = "testLabel";
         page.addCss("#testLabel { text-align: " + this.expectedTextAlignment + "; }");
-        page.addCssFile(fs.path.join(__dirname, "label-tests.css"));
+        page.addCssFile(fs.path.join(testDir, "label-tests-page.css"));
 
         const actualResult = view.style.textAlignment;
         // actual result is taken from #testLabel tag, because it has a greater priority (id vs type).
@@ -559,7 +562,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         this.waitUntilTestElementIsLoaded();
 
         view.id = "testLabel";
-        page.addCssFile(fs.path.join(__dirname, "label-tests-wrong.css"));
+        page.addCssFile(fs.path.join(testDir, "label-tests-wrong-page.css"));
         TKUnit.assertNotEqual(this.errorMessage, undefined);
     }
 
@@ -646,6 +649,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new GridLayout();
             host.width = 100;
             host.height = 100;
+
             return host;
         });
     }
@@ -656,6 +660,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new GridLayout();
             host.width = 100;
             host.height = 100;
+
             return host;
         });
     }
@@ -666,9 +671,10 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new StackLayout();
             label.width = 100;
             label.height = 100;
+
             return host;
         });
-    };
+    }
 
     public test_ChangingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
         this.requestLayoutFixture(false, "Hello World", label => {
@@ -676,33 +682,37 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             let host = new StackLayout();
             label.width = 100;
             label.height = 100;
+
             return host;
         });
-    };
+    }
 
     public test_SettingTextWhenSizedToContentShouldInvalidate() {
         this.requestLayoutFixture(true, "", label => {
             label.textWrap = false;
             let host = new StackLayout();
             host.orientation = "horizontal";
+
             return host;
         });
-    };
+    }
 
     public test_ChangingTextWhenSizedToContentShouldInvalidate() {
         this.requestLayoutFixture(true, "Hello World", label => {
             label.textWrap = false;
             let host = new StackLayout();
             host.orientation = "horizontal";
+
             return host;
         });
-    };
+    }
 
     public test_SettingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldRequestLayout() {
         this.requestLayoutFixture(true, "", label => {
             label.textWrap = false;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -712,6 +722,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = false;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -721,6 +732,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = true;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -730,6 +742,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             label.textWrap = true;
             let host = new StackLayout();
             host.width = 100;
+
             return host;
         });
     }
@@ -747,7 +760,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         label._addChildFromBuilder("FormattedString", formattedString);
         label._removeView(formattedString);
-    };
+    }
 }
 
 export function createTestCase(): LabelTest {

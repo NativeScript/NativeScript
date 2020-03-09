@@ -1,4 +1,4 @@
-﻿import { Label as LabelDefinition } from ".";
+import { Label as LabelDefinition } from ".";
 import { Background } from "../styling/background";
 import {
     TextBase, View, layout,
@@ -26,6 +26,7 @@ export class Label extends TextBase implements LabelDefinition {
     public createNativeView() {
         const view = TNSLabel.new();
         view.userInteractionEnabled = true;
+
         return view;
     }
 
@@ -38,7 +39,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
     set textWrap(value: boolean) {
         if (typeof value === "string") {
-            value = booleanConverter(value)
+            value = booleanConverter(value);
         }
 
         this.style.whiteSpace = value ? "normal" : "nowrap";
@@ -70,16 +71,16 @@ export class Label extends TextBase implements LabelDefinition {
             let nativeSize;
             if (this.textWrap) {
                 // https://github.com/NativeScript/NativeScript/issues/4834
-                // NOTE: utils.measureNativeView(...) relies on UIView.sizeThatFits(...) that 
+                // NOTE: utils.measureNativeView(...) relies on UIView.sizeThatFits(...) that
                 // seems to have various issues when laying out UILabel instances.
-                // We use custom measure logic here that relies on overriden 
+                // We use custom measure logic here that relies on overriden
                 // UILabel.textRectForBounds:limitedToNumberOfLines: in TNSLabel widget.
                 nativeSize = this._measureNativeView(width, widthMode, height, heightMode);
             } else {
                 // https://github.com/NativeScript/NativeScript/issues/6059
                 // NOTE: _measureNativeView override breaks a scenario with StackLayout that arranges
                 // labels horizontally (with textWrap=false) e.g. we are measuring label #2 within 356px,
-                // label #2 needs more, and decides to show ellipsis(...) but because of this its native size 
+                // label #2 needs more, and decides to show ellipsis(...) but because of this its native size
                 // returned from UILabel.textRectForBounds:limitedToNumberOfLines: logic becomes 344px, so
                 // StackLayout tries to measure label #3 within the remaining 12px which is wrong;
                 // label #2 with ellipsis should take the whole 356px and label #3 should not be visible at all.
@@ -115,6 +116,7 @@ export class Label extends TextBase implements LabelDefinition {
 
         nativeSize.width = layout.round(layout.toDevicePixels(nativeSize.width));
         nativeSize.height = layout.round(layout.toDevicePixels(nativeSize.height));
+
         return nativeSize;
     }
 

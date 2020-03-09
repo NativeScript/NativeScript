@@ -1,4 +1,4 @@
-﻿import { DockLayoutBase, View, dockProperty, stretchLastChildProperty } from "./dock-layout-common";
+import { DockLayoutBase, View, dockProperty, stretchLastChildProperty } from "./dock-layout-common";
 
 export * from "./dock-layout-common";
 
@@ -29,7 +29,7 @@ View.prototype[dockProperty.setNative] = function(this: View, value: "left" | "t
 
         nativeView.setLayoutParams(lp);
     }
-}
+};
 
 export class DockLayout extends DockLayoutBase {
     nativeViewProtected: org.nativescript.widgets.DockLayout;

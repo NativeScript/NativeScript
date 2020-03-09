@@ -1,5 +1,5 @@
 /* tslint:disable:no-unused-variable */
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../tk-unit";
 import * as types from "tns-core-modules/utils/types";
 
 export var test_fetch_defined = function () {
@@ -56,11 +56,11 @@ export var test_fetch_formData = function (done: (err: Error, res?: string) => v
 
 export var test_fetch_fail_invalid_url = function (done) {
     var completed: boolean;
-    var isReady = function () { return completed; }
+    var isReady = function () { return completed; };
 
     fetch("hgfttp://httpbin.org/get").catch(function (e) {
         completed = true;
-        done(null)
+        done(null);
     }).catch(failOnError(done));
 };
 
@@ -145,4 +145,4 @@ export var test_fetch_post_json = function (done) {
 
 const failOnError = function (done: (err: Error, res?: string) => void) {
     return e => done(e);
-}
+};

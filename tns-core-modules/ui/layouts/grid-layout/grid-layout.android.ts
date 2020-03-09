@@ -1,4 +1,4 @@
-﻿import {
+import {
     GridLayoutBase, ItemSpec as ItemSpecBase, View, layout,
     rowProperty, columnProperty, rowSpanProperty, columnSpanProperty, GridUnitType
 } from "./grid-layout-common";
@@ -13,7 +13,7 @@ function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.CommonLayoutP
             setter(lp, value);
             nativeView.setLayoutParams(lp);
         }
-    }
+    };
 }
 
 View.prototype[rowProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.row = value);

@@ -1,6 +1,4 @@
-﻿import * as definition from "./fps-native";
-
-import * as utils from "../utils/utils";
+import * as definition from "./fps-native";
 
 class FrameHandlerImpl extends NSObject {
 
@@ -9,6 +7,7 @@ class FrameHandlerImpl extends NSObject {
     public static initWithOwner(owner: WeakRef<FPSCallback>): FrameHandlerImpl {
         let handler = <FrameHandlerImpl>FrameHandlerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 

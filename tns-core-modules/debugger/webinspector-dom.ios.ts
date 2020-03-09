@@ -50,6 +50,7 @@ export class DOMDomainDebugger implements inspectorCommandTypes.DOMDomain.DOMDom
 
     getDocument(): { root: inspectorCommandTypes.DOMDomain.Node } {
         const domNode = this.commands.getDocument();
+
         return { root: domNode };
     }
 

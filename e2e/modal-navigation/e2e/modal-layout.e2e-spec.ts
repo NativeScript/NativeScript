@@ -1,5 +1,5 @@
 import { AppiumDriver, createDriver, nsCapabilities } from "nativescript-dev-appium";
-import { Screen, driverDefaultWaitTime } from "./screen"
+import { Screen, driverDefaultWaitTime } from "./screen";
 import {
     roots,
     modalFrameBackground,
@@ -8,7 +8,7 @@ import {
     testNestedModalFrameBackground,
     testNestedModalPageBackground,
     testDialogBackground
-} from "./shared.e2e-spec"
+} from "./shared.e2e-spec";
 
 describe("modal-layout:", async function () {
 
@@ -80,5 +80,5 @@ describe("modal-layout:", async function () {
                 await testSecondPageBackground(driver, screen);
             });
         });
-    };
+    }
 });

@@ -5,7 +5,7 @@ import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 
 // Requires
 import { TabNavigationBase, itemsProperty, selectedIndexProperty, tabStripProperty } from "../tab-navigation-base/tab-navigation-base";
-import { CSSType } from "../core/view";
+import { CSSType, Color } from "../core/view";
 import { Frame } from "../frame";
 import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
 import { fromFileOrResource } from "../../image-source";
@@ -32,6 +32,7 @@ function makeFragmentName(viewId: number, id: number): string {
 function getTabById(id: number): BottomNavigation {
     const ref = tabs.find(ref => {
         const tab = ref.get();
+
         return tab && tab._domId === id;
     });
 
@@ -49,6 +50,7 @@ function initializeNativeClasses() {
 
         constructor() {
             super();
+
             return global.__native(this);
         }
 
@@ -58,6 +60,7 @@ function initializeNativeClasses() {
             args.putInt(INDEX, index);
             const fragment = new TabFragmentImplementation();
             fragment.setArguments(args);
+
             return fragment;
         }
 
@@ -65,7 +68,7 @@ function initializeNativeClasses() {
             super.onCreate(savedInstanceState);
             const args = this.getArguments();
             this.tab = getTabById(args.getInt(TABID));
-            this.index = args.getInt(INDEX)
+            this.index = args.getInt(INDEX);
             if (!this.tab) {
                 throw new Error(`Cannot find BottomNavigation`);
             }
@@ -82,6 +85,7 @@ function initializeNativeClasses() {
 
         constructor(context: android.content.Context, public owner: BottomNavigation) {
             super(context);
+
             return global.__native(this);
         }
 
@@ -89,7 +93,7 @@ function initializeNativeClasses() {
             this.owner.changeTab(position);
             this.owner.selectedIndex = position;
         }
-    }    
+    }
 
     TabFragment = TabFragmentImplementation;
     BottomNavigationBar = BottomNavigationBarImplementation;
@@ -103,16 +107,17 @@ function createTabItemSpec(item: TabContentItem, tabStripItem: TabStripItem): or
         if (tabStripItem.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
             result.iconId = ad.resources.getDrawableId(tabStripItem.iconSource.substr(RESOURCE_PREFIX.length));
             if (result.iconId === 0) {
-                // TODO: 
+                // TODO:
                 // traceMissingIcon(tabStripItem.iconSource);
             }
         } else {
             const is = fromFileOrResource(tabStripItem.iconSource);
             if (is) {
                 // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
+                // tslint:disable-next-line:deprecation
                 result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
             } else {
-                // TODO: 
+                // TODO:
                 // traceMissingIcon(tabStripItem.iconSource);
             }
         }
@@ -347,6 +352,11 @@ export class BottomNavigation extends TabNavigationBase {
             });
 
             this._bottomNavigationBar.setItems(tabItems);
+            this.tabStrip.setNativeView(this._bottomNavigationBar);
+            this.tabStrip.items.forEach((item, i, arr) => {
+                const tv = this._bottomNavigationBar.getTextViewForItemAt(i);
+                item.setNativeView(tv);
+            });
         }
     }
 
@@ -354,8 +364,20 @@ export class BottomNavigation extends TabNavigationBase {
         this._bottomNavigationBar.updateItemAt(index, spec);
     }
 
+    public getTabBarBackgroundColor(): android.graphics.drawable.Drawable {
+        return this._bottomNavigationBar.getBackground();
+    }
+
+    public setTabBarBackgroundColor(value: android.graphics.drawable.Drawable | Color): void {
+        if (value instanceof Color) {
+            this._bottomNavigationBar.setBackgroundColor(value.android);
+        } else {
+            this._bottomNavigationBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
+        }
+    }
+
     [selectedIndexProperty.setNative](value: number) {
-        const smoothScroll = false;
+        // const smoothScroll = false;
 
         // if (traceEnabled()) {
         //     traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
@@ -377,4 +399,15 @@ export class BottomNavigation extends TabNavigationBase {
     [tabStripProperty.setNative](value: TabStrip) {
         this.setAdapterItems([]);
     }
+}
+
+function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
+    if (value) {
+        const constantState = value.getConstantState();
+        if (constantState) {
+            return constantState.newDrawable(resources);
+        }
+    }
+
+    return value;
 }

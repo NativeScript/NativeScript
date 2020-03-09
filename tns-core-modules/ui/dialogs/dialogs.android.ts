@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Android specific dialogs functions implementation.
  */
 import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
@@ -18,6 +18,7 @@ function createAlertDialog(options?: DialogOptions): android.app.AlertDialog.Bui
     if (options && options.cancelable === false) {
         alert.setCancelable(false);
     }
+
     return alert;
 }
 
@@ -318,7 +319,7 @@ export function action(arg: any): Promise<string> {
             if (options.actions) {
                 alert.setItems(options.actions, new android.content.DialogInterface.OnClickListener({
                     onClick: function (dialog: android.content.DialogInterface, which: number) {
-                        resolve(options.actions[which])
+                        resolve(options.actions[which]);
                     }
                 }));
             }
@@ -327,7 +328,7 @@ export function action(arg: any): Promise<string> {
                 alert.setNegativeButton(options.cancelButtonText, new android.content.DialogInterface.OnClickListener({
                     onClick: function (dialog: android.content.DialogInterface, id: number) {
                         dialog.cancel();
-                        resolve(options.cancelButtonText)
+                        resolve(options.cancelButtonText);
                     }
                 }));
             }

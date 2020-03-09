@@ -4,6 +4,12 @@ import { ViewBase } from "../view-base";
 
 // Types.
 import { WrappedValue, PropertyChangeData } from "../../../data/observable";
+import {
+    write as traceWrite,
+    categories as traceCategories,
+    messageType as traceMessageType,
+} from "../../../trace";
+
 import { Style } from "../../styling/style";
 
 import { profile } from "../../../profiling";
@@ -53,6 +59,7 @@ export function _getStyleProperties(): CssProperty<any, any>[] {
 function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
     const props = [];
     Object.getOwnPropertySymbols(map).forEach(symbol => props.push(map[symbol]));
+
     return props;
 }
 
@@ -125,7 +132,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                 if (affectsLayout) {
                     this.requestLayout();
                 }
-                
+
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -254,7 +261,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
             const originalValue: U = coerceKey in target ? target[coerceKey] : defaultValue;
             // need that to make coercing but also fire change events
             target[propertyName] = originalValue;
-        }
+        };
 
         this.set = function (this: T, boxedValue: U): void {
             const reset = boxedValue === unsetValue;
@@ -335,7 +342,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
                     }
                 }
             }
-        }
+        };
     }
 }
 
@@ -397,6 +404,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
                             setInheritedValue.call(child, newValue);
                         }
                     }
+
                     return true;
                 });
             }
@@ -466,6 +474,13 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
         const property = this;
 
         function setLocalValue(this: T, newValue: U | string): void {
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`${newValue} not set to view because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+
+                return;
+            }
+
             const reset = newValue === unsetValue || newValue === "";
             let value: U;
             if (reset) {
@@ -482,7 +497,6 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (changed) {
-                const view = this.view;
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -534,6 +548,13 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
         }
 
         function setCssValue(this: T, newValue: U | string): void {
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`${newValue} not set to view because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+
+                return;
+            }
+
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
             // We have localValueSource - NOOP.
@@ -557,7 +578,6 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (changed) {
-                const view = this.view;
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -718,12 +738,18 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                 enumerable, configurable,
                 get: getsComputed ? function (this: T) { return this[computedValue]; } : function (this: T) { return this[symbol]; },
                 set(this: T, boxedValue: U | string) {
+                    const view = this.viewRef.get();
+                    if (!view) {
+                        traceWrite(`${boxedValue} not set to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+
+                        return;
+                    }
 
                     const oldValue = this[computedValue];
                     const oldSource = this[computedSource];
                     const wasSet = oldSource !== ValueSource.Default;
                     const reset = boxedValue === unsetValue || boxedValue === "";
-        
+
                     if (reset) {
                         this[symbol] = unsetValue;
                         if (this[computedSource] === propertySource) {
@@ -760,7 +786,6 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                         valueChanged(this, oldValue, value);
                     }
 
-                    const view = this.view;
                     if (view[setNative] && (computedValueChanged || isSet !== wasSet)) {
                         if (view._suspendNativeUpdatesCount) {
                             if (view._suspendedUpdates) {
@@ -786,7 +811,7 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                         this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
                     }
                 }
-            }
+            };
         }
 
         const defaultPropertyDescriptor = descriptor(defaultValueKey, ValueSource.Default, false, false, false);
@@ -812,14 +837,20 @@ export class CssAnimationProperty<T extends Style, U> implements definitions.Css
                 Object.defineProperty(cls.prototype, options.cssName, stylePropertyDescriptor);
             }
             Object.defineProperty(cls.prototype, keyframeName, keyframePropertyDescriptor);
-        }
+        };
     }
 
     public _initDefaultNativeValue(target: T): void {
+        const view = target.viewRef.get();
+        if (!view) {
+            traceWrite(`_initDefaultNativeValue not executed to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+
+            return;
+        }
+
         const defaultValueKey = this.defaultValueKey;
 
         if (!(defaultValueKey in target)) {
-            const view = target.view;
             const getDefault = this.getDefault;
             target[defaultValueKey] = view[getDefault] ? view[getDefault]() : this.defaultValue;
         }
@@ -862,6 +893,13 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
         const property = this;
 
         const setFunc = (valueSource: ValueSource) => function (this: T, boxedValue: any): void {
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`${boxedValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+    
+                return;
+            }
+
             const reset = boxedValue === unsetValue || boxedValue === "";
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
             if (reset) {
@@ -876,7 +914,6 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
             }
 
             const oldValue: U = key in this ? this[key] : defaultValue;
-            const view = this.view;
             let value: U;
             let unsetNativeValue = false;
             if (reset) {
@@ -907,7 +944,6 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
             const changed: boolean = equalityComparer ? !equalityComparer(oldValue, value) : oldValue !== value;
 
             if (changed) {
-                const view = this.view;
                 if (valueChanged) {
                     valueChanged(this, oldValue, value);
                 }
@@ -955,6 +991,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                             setInheritedFunc.call(childStyle, value);
                         }
                     }
+
                     return true;
                 });
             }
@@ -997,7 +1034,14 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
         const converter = options.converter;
 
         function setLocalValue(this: T, value: string | P): void {
-            this.view._batchUpdate(() => {
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`setLocalValue not executed to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+    
+                return;
+            }
+
+            view._batchUpdate(() => {
                 for (let [p, v] of converter(value)) {
                     this[p.name] = v;
                 }
@@ -1005,7 +1049,14 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
         }
 
         function setCssValue(this: T, value: string): void {
-            this.view._batchUpdate(() => {
+            const view = this.viewRef.get();
+            if (!view) {
+                traceWrite(`setCssValue not executed to view because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+    
+                return;
+            }
+
+            view._batchUpdate(() => {
                 for (let [p, v] of converter(value)) {
                     this[p.cssName] = v;
                 }
@@ -1034,7 +1085,7 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
                     this[property.cssLocalName] = value;
                 });
             }
-        }
+        };
 
         cssSymbolPropertyMap[key] = this;
     }
@@ -1267,6 +1318,7 @@ export function propagateInheritableCssProperties(parentStyle: Style, childStyle
 
 export function makeValidator<T>(...values: T[]): (value: any) => value is T {
     const set = new Set(values);
+
     return (value: any): value is T => set.has(value);
 }
 
@@ -1314,5 +1366,6 @@ export function getComputedCssValues(view: ViewBase): [string, any][] {
     result.push(["left", "auto"]);
     result.push(["bottom", "auto"]);
     result.push(["right", "auto"]);
+
     return result;
 }

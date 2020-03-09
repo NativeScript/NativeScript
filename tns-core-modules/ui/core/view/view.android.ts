@@ -102,13 +102,14 @@ function initializeDialogFragment() {
             context: android.content.Context,
             themeResId: number) {
             super(context, themeResId);
+
             return global.__native(this);
         }
 
         public onDetachedFromWindow(): void {
             super.onDetachedFromWindow();
             this.fragment = null;
-        };
+        }
 
         public onBackPressed(): void {
             const view = this.fragment.owner;
@@ -143,6 +144,7 @@ function initializeDialogFragment() {
 
         constructor() {
             super();
+
             return global.__native(this);
         }
 
@@ -177,6 +179,7 @@ function initializeDialogFragment() {
             }
 
             dialog.setCanceledOnTouchOutside(this._cancelable);
+
             return dialog;
         }
 
@@ -263,14 +266,12 @@ export class View extends ViewCommon {
     private layoutChangeListener: android.view.View.OnLayoutChangeListener;
     private _manager: androidx.fragment.app.FragmentManager;
     private _rootManager: androidx.fragment.app.FragmentManager;
-    private _originalElevation: number;
-    private _originalStateListAnimator: any; /* android.animation.StateListAnimator; */
 
     nativeViewProtected: android.view.View;
 
     // TODO: Implement unobserve that detach the touchListener.
-    observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
-        super.observe(type, callback, thisArg);
+    _observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
+        super._observe(type, callback, thisArg);
         if (this.isLoaded && !this.touchListenerIsSet) {
             this.setOnTouchListener();
         }
@@ -400,7 +401,7 @@ export class View extends ViewCommon {
     }
 
     private hasGestureObservers() {
-        return this._gestureObservers && Object.keys(this._gestureObservers).length > 0
+        return this._gestureObservers && Object.keys(this._gestureObservers).length > 0;
     }
 
     public initNativeView(): void {
@@ -557,10 +558,11 @@ export class View extends ViewCommon {
 
         let nativeArray = (<any>Array).create("int", 2);
         this.nativeViewProtected.getLocationInWindow(nativeArray);
+
         return {
             x: layout.toDeviceIndependentPixels(nativeArray[0]),
             y: layout.toDeviceIndependentPixels(nativeArray[1]),
-        }
+        };
     }
 
     public getLocationOnScreen(): Point {
@@ -570,10 +572,11 @@ export class View extends ViewCommon {
 
         let nativeArray = (<any>Array).create("int", 2);
         this.nativeViewProtected.getLocationOnScreen(nativeArray);
+
         return {
             x: layout.toDeviceIndependentPixels(nativeArray[0]),
             y: layout.toDeviceIndependentPixels(nativeArray[1]),
-        }
+        };
     }
 
     public getLocationRelativeTo(otherView: ViewCommon): Point {
@@ -587,10 +590,11 @@ export class View extends ViewCommon {
         this.nativeViewProtected.getLocationOnScreen(myArray);
         let otherArray = (<any>Array).create("int", 2);
         otherView.nativeViewProtected.getLocationOnScreen(otherArray);
+
         return {
             x: layout.toDeviceIndependentPixels(myArray[0] - otherArray[0]),
             y: layout.toDeviceIndependentPixels(myArray[1] - otherArray[1]),
-        }
+        };
     }
 
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
@@ -633,7 +637,7 @@ export class View extends ViewCommon {
             cancelable: options.android ? !!options.android.cancelable : true,
             shownCallback: () => this._raiseShownModallyEvent(),
             dismissCallback: () => this.closeModal()
-        }
+        };
 
         saveModal(dialogOptions);
 
@@ -813,7 +817,7 @@ export class View extends ViewCommon {
     [horizontalAlignmentProperty.setNative](value: HorizontalAlignment) {
         const nativeView = this.nativeViewProtected;
         const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-        // Set only if params gravity exists.
+        // Set only if params gravity exists.
         if (lp.gravity !== undefined) {
             switch (value) {
                 case "left":
@@ -851,7 +855,7 @@ export class View extends ViewCommon {
     [verticalAlignmentProperty.setNative](value: VerticalAlignment) {
         const nativeView = this.nativeViewProtected;
         const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-        // Set only if params gravity exists.
+        // Set only if params gravity exists.
         if (lp.gravity !== undefined) {
             switch (value) {
                 case "top":
@@ -994,6 +998,7 @@ export class CustomLayoutView extends ContainerView implements CustomLayoutViewD
             if (child instanceof View) {
                 this._updateNativeLayoutParams(child);
             }
+
             return true;
         }
 
@@ -1037,7 +1042,7 @@ interface NativePercentLengthPropertyOptions {
     auto?: number;
     getPixels?: NativeGetter;
     setPixels: NativeSetter;
-    setPercent?: NativeSetter
+    setPercent?: NativeSetter;
 }
 
 function createNativePercentLengthProperty(options: NativePercentLengthPropertyOptions) {
@@ -1057,7 +1062,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
             } else {
                 return { value, unit: "px" };
             }
-        }
+        };
     }
     if (setter) {
         View.prototype[setter] = function(this: View, length: PercentLength) {
@@ -1080,54 +1085,54 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
             } else {
                 throw new Error(`Unsupported PercentLength ${length}`);
             }
-        }
+        };
     }
 }
 
 createNativePercentLengthProperty({
     setter: marginTopProperty.setNative,
-    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginTop },
-    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginTopPercent }
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginTop; },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginTopPercent; }
 });
 
 createNativePercentLengthProperty({
     setter: marginRightProperty.setNative,
-    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginRight },
-    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginRightPercent }
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginRight; },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginRightPercent; }
 });
 
 createNativePercentLengthProperty({
     setter: marginBottomProperty.setNative,
-    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginBottom },
-    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginBottomPercent }
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginBottom; },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginBottomPercent; }
 });
 
 createNativePercentLengthProperty({
     setter: marginLeftProperty.setNative,
-    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginLeft },
-    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginLeftPercent }
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginLeft; },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginLeftPercent; }
 });
 
 createNativePercentLengthProperty({
     setter: widthProperty.setNative,
     auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    get setPixels() { return org.nativescript.widgets.ViewHelper.setWidth },
-    get setPercent() { return org.nativescript.widgets.ViewHelper.setWidthPercent }
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setWidth; },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setWidthPercent; }
 });
 
 createNativePercentLengthProperty({
     setter: heightProperty.setNative,
     auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    get setPixels() { return org.nativescript.widgets.ViewHelper.setHeight },
-    get setPercent() { return org.nativescript.widgets.ViewHelper.setHeightPercent }
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setHeight; },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setHeightPercent; }
 });
 
 createNativePercentLengthProperty({
     setter: "_setMinWidthNative",
-    get setPixels() { return org.nativescript.widgets.ViewHelper.setMinWidth }
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMinWidth; }
 });
 
 createNativePercentLengthProperty({
     setter: "_setMinHeightNative",
-    get setPixels() { return org.nativescript.widgets.ViewHelper.setMinHeight }
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMinHeight; }
 });

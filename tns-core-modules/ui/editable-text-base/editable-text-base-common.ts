@@ -1,11 +1,12 @@
 ﻿import { EditableTextBase as EditableTextBaseDefinition, KeyboardType, ReturnKeyType, UpdateTextTrigger, AutocapitalizationType } from ".";
-import { TextBase, Property, CssProperty, Style, Color, booleanConverter, makeValidator, makeParser } from "../text-base";
+import { TextBase, Property, CssProperty, Style, Color, booleanConverter, makeValidator, makeParser, PseudoClassHandler } from "../text-base";
 
 export * from "../text-base";
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
     public static blurEvent = "blur";
     public static focusEvent = "focus";
+    public static textChangeEvent = "textChange";
 
     public keyboardType: KeyboardType;
     public returnKeyType: ReturnKeyType;
@@ -18,6 +19,17 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
 
     public abstract dismissSoftInput();
     public abstract _setInputType(inputType: number): void;
+
+    private _focusHandler = () => this._goToVisualState("focus");
+    private _blurHandler = () => this._goToVisualState("blur");
+
+    @PseudoClassHandler("focus", "blur")
+    _updateTextBaseFocusStateHandler(subscribe) {
+        const method = subscribe ? "on" : "off";
+
+        this[method]("focus", this._focusHandler);
+        this[method]("blur", this._blurHandler);
+    }
 }
 
 // TODO: Why not name it - hintColor property??

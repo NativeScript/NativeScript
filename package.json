@@ -82,7 +82,7 @@
     "typedoc": "typedoc --tsconfig tsconfig.typedoc.json --out bin/dist/apiref --includeDeclarations --name NativeScript --theme ./node_modules/nativescript-typedoc-theme --excludeExternals --externalPattern \"**/+(tns-core-modules|module).d.ts\"",
     "dev-typedoc": "npm run typedoc && cd bin/dist/apiref && npx http-server",
     "test-tsc-es2016": "npm run tsc -- -p tsconfig.public.es2016.json",
-    "tslint": "tslint --project tsconfig.json --config build/tslint.json 'tns-core-modules/**/*.ts' 'tests/**/*.ts' 'apps/**/*.ts' 'e2e/**/*.ts' -e '**/node_modules/**' -e '**/platforms/**'",
+    "tslint": "tslint --project tsconfig.tslint.json --config build/tslint.json",
     "madge-ios": "tsc --skipLibCheck && tns prepare ios --path tests && madge --circular tests/platforms/ios/tests/app/tns_modules/tns-core-modules",
     "madge-ios-image": "tsc --skipLibCheck && tns prepare ios --path tests && madge --image graph-tests-ios.svg tests/platforms/ios/tests/app/tns_modules/tns-core-modules",
     "madge-android": "tsc --skipLibCheck && tns prepare android --path tests && madge --circular tests/platforms/android/app/src/main/assets/app/tns_modules/tns-core-modules",

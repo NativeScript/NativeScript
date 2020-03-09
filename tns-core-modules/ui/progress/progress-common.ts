@@ -1,4 +1,4 @@
-﻿import { Progress as ProgressDefinition } from ".";
+import { Progress as ProgressDefinition } from ".";
 import { View, Property, CoercibleProperty, CSSType } from "../core/view";
 
 export * from "../core/view";
@@ -34,10 +34,10 @@ ProgressBase.prototype.recycleNativeView = "auto";
  * Represents the observable property backing the value property of each Progress instance.
  */
 export const valueProperty = new CoercibleProperty<ProgressBase, number>({
-    name: "value", 
-    defaultValue: 0, 
+    name: "value",
+    defaultValue: 0,
     coerceValue: (t, v) => {
-        return v < 0 ? 0 : Math.min(v, t.maxValue)
+        return v < 0 ? 0 : Math.min(v, t.maxValue);
     },
     valueConverter: (v) => parseInt(v)
 });

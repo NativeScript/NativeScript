@@ -1,4 +1,4 @@
-﻿import { Font } from "../styling/font";
+import { Font } from "../styling/font";
 import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
     colorProperty, fontInternalProperty, fontSizeProperty, Color, layout
@@ -43,6 +43,7 @@ function initializeNativeClasses(): void {
     class TabChangeListenerImpl extends java.lang.Object implements android.widget.TabHost.OnTabChangeListener {
         constructor(public owner: SegmentedBar) {
             super();
+
             return global.__native(this);
         }
 
@@ -58,6 +59,7 @@ function initializeNativeClasses(): void {
     class TabContentFactoryImpl extends java.lang.Object implements android.widget.TabHost.TabContentFactory {
         constructor(public owner: SegmentedBar) {
             super();
+
             return global.__native(this);
         }
 
@@ -69,6 +71,7 @@ function initializeNativeClasses(): void {
             tv.setVisibility(android.view.View.GONE);
             tv.setMaxLines(1);
             tv.setEllipsize(android.text.TextUtils.TruncateAt.END);
+
             return tv;
         }
     }
@@ -76,6 +79,7 @@ function initializeNativeClasses(): void {
     class TabHostImpl extends android.widget.TabHost {
         constructor(context: android.content.Context, attrs: android.util.AttributeSet) {
             super(context, attrs);
+
             return global.__native(this);
         }
 
@@ -146,6 +150,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 
     [selectedBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable {
         const viewGroup = <android.view.ViewGroup>this.nativeViewProtected.getParent();
+
         return viewGroup.getBackground();
     }
     [selectedBackgroundColorProperty.setNative](value: Color | android.graphics.drawable.Drawable) {
@@ -213,6 +218,7 @@ export class SegmentedBar extends SegmentedBarBase {
         tabHostLayout.addView(frame);
 
         nativeView.addView(tabHostLayout);
+
         return nativeView;
     }
 

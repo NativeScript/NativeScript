@@ -13,7 +13,7 @@
     }
   },
   "dependencies": {
-    "nativescript-theme-core": "~1.0.4",
+    "nativescript-theme-core": "~1.0.6",
     "tns-core-modules": "next"
   },
   "devDependencies": {
@@ -26,8 +26,8 @@
     "mocha": "~5.2.0",
     "mochawesome": "~3.1.2",
     "nativescript-dev-appium": "next",
-    "nativescript-dev-typescript": "next",
-    "nativescript-dev-webpack": "next"
+    "nativescript-dev-webpack": "next",
+    "typescript": "~3.4.1"
   },
   "scripts": {
     "e2e": "tsc -p e2e && mocha --opts ../config/mocha.opts --recursive e2e --appiumCapsLocation ../config/appium.capabilities.json",

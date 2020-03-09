@@ -1,4 +1,4 @@
-﻿import { ScrollEventData } from "../scroll-view";
+import { ScrollEventData } from "../scroll-view";
 import { TextView as TextViewDefinition } from ".";
 import {
     EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
@@ -20,6 +20,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public static initWithOwner(owner: WeakRef<TextView>): UITextViewDelegateImpl {
         const impl = <UITextViewDelegateImpl>UITextViewDelegateImpl.new();
         impl._owner = owner;
+
         return impl;
     }
 
@@ -117,6 +118,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         if (!textView.font) {
             textView.font = UIFont.systemFontOfSize(12);
         }
+
         return textView;
     }
 
@@ -168,7 +170,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
             if (placeholderColor) {
                 this.nativeTextViewProtected.textColor = placeholderColor.ios;
             } else if (color) {
-                // Use semi-transparent version of color for back-compatibility 
+                // Use semi-transparent version of color for back-compatibility
                 this.nativeTextViewProtected.textColor = color.ios.colorWithAlphaComponent(0.22);
             } else {
                 this.nativeTextViewProtected.textColor = UIColor.blackColor.colorWithAlphaComponent(0.22);

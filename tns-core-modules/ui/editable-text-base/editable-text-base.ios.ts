@@ -1,4 +1,4 @@
-﻿import {
+import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty,
     autocapitalizationTypeProperty, autocorrectProperty, FormattedString
@@ -195,9 +195,10 @@ export function _updateCharactersInRangeReplacementString(formattedText: Formatt
         let span = formattedText.spans.getItem(i);
         if (currentLocation <= rangeLocation && rangeLocation < (currentLocation + span.text.length)) {
             let newText = splice(span.text, rangeLocation - currentLocation, deletingText ? rangeLength : 0, replacementString);
-            span._setTextInternal(newText); 
+            span._setTextInternal(newText);
+
             return;
-        } 
+        }
         currentLocation += span.text.length;
     }
 }

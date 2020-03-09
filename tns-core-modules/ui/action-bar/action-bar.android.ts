@@ -18,6 +18,7 @@ let AppCompatTextView;
 let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
 function generateItemId(): number {
     actionItemIdGenerator++;
+
     return actionItemIdGenerator;
 }
 
@@ -39,11 +40,13 @@ function initializeMenuItemClickListener(): void {
     class MenuItemClickListenerImpl extends java.lang.Object implements androidx.appcompat.widget.Toolbar.OnMenuItemClickListener {
         constructor(public owner: ActionBar) {
             super();
+
             return global.__native(this);
         }
 
         onMenuItemClick(item: android.view.MenuItem): boolean {
             let itemId = item.getItemId();
+
             return this.owner._onAndroidItemSelected(itemId);
         }
     }
@@ -189,6 +192,7 @@ export class ActionBar extends ActionBarBase {
         // Handle home button
         if (this.navigationButton && itemId === R_ID_HOME) {
             this.navigationButton._raiseTap();
+
             return true;
         }
 
@@ -204,6 +208,7 @@ export class ActionBar extends ActionBarBase {
 
         if (menuItem) {
             menuItem._raiseTap();
+
             return true;
         }
 
@@ -351,6 +356,7 @@ export class ActionBar extends ActionBarBase {
             else {
                 this.nativeViewProtected.addView(child.nativeViewProtected, atIndex);
             }
+
             return true;
         }
 

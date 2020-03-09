@@ -1,4 +1,4 @@
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as testModule from "../../ui-test";
 
 // >> webview-require
@@ -16,6 +16,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
     public create(): webViewModule.WebView {
         // >> declare-webview
         let webView = new webViewModule.WebView();
+
         // << declare-webview
         return webView;
     }

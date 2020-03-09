@@ -1,4 +1,4 @@
-﻿import { Font } from "../styling/font";
+import { Font } from "../styling/font";
 import {
     SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
     textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, isEnabledProperty
@@ -17,6 +17,7 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
     public static initWithOwner(owner: WeakRef<SearchBar>): UISearchBarDelegateImpl {
         let delegate = <UISearchBarDelegateImpl>UISearchBarDelegateImpl.new();
         delegate._owner = owner;
+
         return delegate;
     }
 
@@ -137,6 +138,7 @@ export class SearchBar extends SearchBarBase {
         if (sf) {
             return sf.textColor;
         }
+
         return null;
     }
     [colorProperty.setNative](value: UIColor | Color) {
@@ -150,6 +152,7 @@ export class SearchBar extends SearchBarBase {
 
     [fontInternalProperty.getDefault](): UIFont {
         let sf = this._textField;
+
         return sf ? sf.font : null;
     }
     [fontInternalProperty.setNative](value: UIFont | Font) {
@@ -190,7 +193,7 @@ export class SearchBar extends SearchBarBase {
         return null;
     }
     [textFieldBackgroundColorProperty.setNative](value: Color | UIColor) {
-        const color = value instanceof Color ? value.ios : value
+        const color = value instanceof Color ? value.ios : value;
         const textField = this._textField;
         if (textField) {
             textField.backgroundColor = color;

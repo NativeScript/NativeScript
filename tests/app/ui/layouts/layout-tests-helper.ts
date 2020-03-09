@@ -1,5 +1,5 @@
 import { View, Length } from "tns-core-modules/ui/core/view";
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import { layout } from "tns-core-modules/utils/utils";
 
 import round = layout.round;
@@ -20,10 +20,10 @@ export function width(view: View): number {
     return round(dipToDp(view.getActualSize().width));
 }
 
-export function paddingLeft(view: View): number { return Length.toDevicePixels(view.style.paddingLeft, 0) + Length.toDevicePixels(view.parent.style.paddingLeft, 0) + (<View>view.parent).getSafeAreaInsets().left; };
-export function paddingTop(view: View): number { return top(view) + Length.toDevicePixels(view.style.paddingTop, 0) };
-export function paddingRight(view: View): number { return right(view) - Length.toDevicePixels(view.style.paddingRight, 0) };
-export function paddingBottom(view: View): number { return bottom(view) - Length.toDevicePixels(view.style.paddingBottom, 0) };
+export function paddingLeft(view: View): number { return Length.toDevicePixels(view.style.paddingLeft, 0) + Length.toDevicePixels(view.parent.style.paddingLeft, 0) + (<View>view.parent).getSafeAreaInsets().left; }
+export function paddingTop(view: View): number { return top(view) + Length.toDevicePixels(view.style.paddingTop, 0); }
+export function paddingRight(view: View): number { return right(view) - Length.toDevicePixels(view.style.paddingRight, 0); }
+export function paddingBottom(view: View): number { return bottom(view) - Length.toDevicePixels(view.style.paddingBottom, 0); }
 
 export function equal<T>(a: T, b: T, message?: string) {
     message ? TKUnit.assertEqual(a, b, message) : TKUnit.assertEqual(a, b);

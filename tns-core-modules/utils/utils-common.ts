@@ -1,13 +1,14 @@
-﻿import * as types from "./types";
-import { dispatchToMainThread, isMainThread } from "./mainthread-helper"
+import * as types from "./types";
+import { dispatchToMainThread, isMainThread } from "./mainthread-helper";
 
-export * from "./mainthread-helper"
+export * from "./mainthread-helper";
 
 export const RESOURCE_PREFIX = "res://";
 export const FILE_PREFIX = "file:///";
 
 export function escapeRegexSymbols(source: string): string {
     let escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
+
     return source.replace(escapeRegex, "\\$&");
 }
 
@@ -33,10 +34,11 @@ export function convertString(value: any): any {
 
 export function getModuleName(path: string): string {
     let moduleName = path.replace("./", "");
+
     return moduleName.substring(0, moduleName.lastIndexOf("."));
 }
 
-export module layout {
+export module layoutCommon {
     const MODE_SHIFT = 30;
     const MODE_MASK = 0x3 << MODE_SHIFT;
 
@@ -51,9 +53,9 @@ export module layout {
 
     export function getMode(mode: number): string {
         switch (mode) {
-            case layout.EXACTLY:
+            case layoutCommon.EXACTLY:
                 return "Exact";
-            case layout.AT_MOST:
+            case layoutCommon.AT_MOST:
                 return "AtMost";
             default:
                 return "Unspecified";
@@ -82,6 +84,7 @@ export module layout {
         }
 
         text += size;
+
         return text;
     }
 
@@ -94,6 +97,7 @@ export module layout {
         } else if (value > 0) {
             return 1;
         }
+
         return -1;
     }
 }
@@ -114,6 +118,7 @@ export function isDataURI(uri: string): boolean {
     }
 
     const firstSegment = uri.trim().split(",")[0];
+
     return firstSegment && firstSegment.indexOf("data:") === 0 && firstSegment.indexOf("base64") >= 0;
 }
 
@@ -170,5 +175,5 @@ export function mainThreadify(func: Function): (...args: any[]) => void {
     return function () {
         const argsToPass = arguments;
         executeOnMainThread(() => func.apply(this, argsToPass));
-    }
+    };
 }

@@ -1,5 +1,5 @@
-import { knownFolders } from "../file-system"
-import { isAndroid } from "../platform"
+import { knownFolders } from "../file-system";
+import { isAndroid } from "../platform";
 
 export let debug = true;
 

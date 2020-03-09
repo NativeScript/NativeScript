@@ -1,8 +1,8 @@
-﻿import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import * as view from "tns-core-modules/ui/core/view";
 import * as page from "tns-core-modules/ui/page";
 import * as types from "tns-core-modules/utils/types";
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 
 function assertInState(view: view.View, state: string, knownStates: string[]): void {
     let pseudo = view.cssPseudoClasses;
@@ -35,10 +35,10 @@ export var test_goToVisualState = function () {
 
         TKUnit.assert(types.isDefined(btn.style.color) && btn.style.color.name === "white");
         TKUnit.assert(types.isDefined(btn.style.backgroundColor) && btn.style.backgroundColor.name === "black");
-    }
+    };
 
     helper.do_PageTest_WithButton(test);
-}
+};
 
 export var test_goToVisualState_NoState_ShouldResetStyledProperties = function () {
     var test = function (views: Array<view.View>) {
@@ -61,10 +61,10 @@ export var test_goToVisualState_NoState_ShouldResetStyledProperties = function (
         // properties are reset (set to undefined)
         TKUnit.assert(types.isUndefined(btn.style.color));
         TKUnit.assert(types.isUndefined(btn.style.backgroundColor));
-    }
+    };
 
     helper.do_PageTest_WithButton(test);
-}
+};
 
 export var test_goToVisualState_NoState_ShouldGoToNormal = function () {
     var test = function (views: Array<view.View>) {
@@ -88,7 +88,7 @@ export var test_goToVisualState_NoState_ShouldGoToNormal = function () {
         // the actual state is "normal" and properties are reverted to these settings (if any)
         TKUnit.assert(types.isDefined(btn.style.color) && btn.style.color.name === "orange");
         TKUnit.assert(types.isDefined(btn.style.backgroundColor) && btn.style.backgroundColor.name === "black");
-    }
+    };
 
     helper.do_PageTest_WithButton(test);
-} 
+};

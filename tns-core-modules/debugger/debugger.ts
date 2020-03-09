@@ -137,14 +137,14 @@ export namespace NetworkAgent {
             connectionId: 0,
             encodedDataLength: contentLength,
             securityState: "info"
-        }
+        };
 
         const responseData: NetworkAgent.ResponseData = {
             requestId: requestIdStr,
             type: mimeTypeToType(response.mimeType),
             response: response,
             timestamp: getTimeStamp()
-        }
+        };
 
         global.__inspector.responseReceived(responseData);
         global.__inspector.loadingFinished({
@@ -175,7 +175,7 @@ export namespace NetworkAgent {
             requestId: requestIdStr,
             data: data,
             hasTextContent: hasTextContent
-        }
+        };
 
         global.__inspector.dataForRequestId(successfulRequestData);
     }
@@ -188,7 +188,7 @@ export namespace NetworkAgent {
             postData: options.content ? options.content.toString() : "",
             initialPriority: "Medium",
             referrerPolicy: "no-referrer-when-downgrade"
-        }
+        };
 
         const requestData: NetworkAgent.RequestData = {
             requestId: requestId.toString(),
@@ -197,13 +197,14 @@ export namespace NetworkAgent {
             timestamp: getTimeStamp(),
             type: "Document",
             wallTime: 0
-        }
+        };
 
         global.__inspector.requestWillBeSent(requestData);
     }
 
     function getTimeStamp(): number {
         const d = new Date();
+
         return Math.round(d.getTime() / 1000);
     }
 

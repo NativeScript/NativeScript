@@ -1,6 +1,6 @@
-import * as helper from "../helper";
+import * as helper from "../../ui-helper";
 import * as btnCounter from "./pages/button-counter";
-import * as TKUnit from "../../TKUnit";
+import * as TKUnit from "../../tk-unit";
 import { isIOS, isAndroid } from "tns-core-modules/platform";
 
 // Integration tests that asser sertain runtime behavior, lifecycle events atc.
@@ -104,7 +104,7 @@ export function test_navigating_away_does_not_excessively_reset() {
             TKUnit.assertEqual(button.backgroundInternalSetNativeCount, count, `Expecting ${button.id}'s backgroundInternal.setNative call count`);
             TKUnit.assertEqual(button.fontInternalSetNativeCount, count, `Expecting ${button.id}'s fontInternal.setNative call count`);
             TKUnit.assertEqual(button.nativeBackgroundRedraws, count, `Expecting ${button.id}'s nativeBackgroundRedraws call count`);
-        })
+        });
     }
 
     assert(1);

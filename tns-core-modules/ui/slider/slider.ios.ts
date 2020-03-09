@@ -1,4 +1,4 @@
-﻿import { Background } from "../styling/background";
+import { Background } from "../styling/background";
 
 import {
     SliderBase, valueProperty, minValueProperty, maxValueProperty,
@@ -15,6 +15,7 @@ class SliderChangeHandlerImpl extends NSObject {
     public static initWithOwner(owner: WeakRef<Slider>): SliderChangeHandlerImpl {
         let handler = <SliderChangeHandlerImpl>SliderChangeHandlerImpl.new();
         handler._owner = owner;
+
         return handler;
     }
 

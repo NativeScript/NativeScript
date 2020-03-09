@@ -85,16 +85,19 @@ export function print(name: string): TimerInfo {
     }
 
     console.log(`---- [${name}] STOP total: ${info.totalTime} count:${info.count}`);
+
     return info;
 }
 
 export function isRunning(name: string): boolean {
     const info = timers[name];
+
     return !!(info && info.runCount);
 }
 
 function countersProfileFunctionFactory<F extends Function>(fn: F, name: string, type: MemberType = MemberType.Instance): F {
     profileNames.push(name);
+
     return <any>function () {
         start(name);
         try {
@@ -102,7 +105,7 @@ function countersProfileFunctionFactory<F extends Function>(fn: F, name: string,
         } finally {
             stop(name);
         }
-    }
+    };
 }
 
 function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string, type: MemberType = MemberType.Instance): F {
@@ -191,7 +194,7 @@ const profileMethodUnnamed = (target, key, descriptor) => {
 
     // return edited descriptor as opposed to overwriting the descriptor
     return descriptor;
-}
+};
 
 const profileStaticMethodUnnamed = (ctor, key, descriptor) => {
     // save a reference to the original method this way we keep the values currently in the
@@ -212,7 +215,7 @@ const profileStaticMethodUnnamed = (ctor, key, descriptor) => {
 
     // return edited descriptor as opposed to overwriting the descriptor
     return descriptor;
-}
+};
 
 function profileMethodNamed(name: string): MethodDecorator {
     return (target, key, descriptor: PropertyDescriptor) => {
@@ -229,7 +232,7 @@ function profileMethodNamed(name: string): MethodDecorator {
 
         // return edited descriptor as opposed to overwriting the descriptor
         return descriptor;
-    }
+    };
 }
 
 const voidMethodDecorator = () => {
@@ -241,31 +244,37 @@ export function profile(nameFnOrTarget?: string | Function | Object, fnOrKey?: F
         if (!profileFunctionFactory) {
             return;
         }
+
         return profileMethodUnnamed(nameFnOrTarget, fnOrKey, descriptor);
     } else if (typeof nameFnOrTarget === "function" && (typeof fnOrKey === "string" || typeof fnOrKey === "symbol")) {
         if (!profileFunctionFactory) {
             return;
         }
+
         return profileStaticMethodUnnamed(nameFnOrTarget, fnOrKey, descriptor);
     } else if (typeof nameFnOrTarget === "string" && typeof fnOrKey === "function") {
         if (!profileFunctionFactory) {
             return fnOrKey;
         }
+
         return profileFunction(fnOrKey, nameFnOrTarget);
     } else if (typeof nameFnOrTarget === "function") {
         if (!profileFunctionFactory) {
             return nameFnOrTarget;
         }
+
         return profileFunction(nameFnOrTarget);
     } else if (typeof nameFnOrTarget === "string") {
         if (!profileFunctionFactory) {
             return voidMethodDecorator;
         }
+
         return profileMethodNamed(nameFnOrTarget);
     } else {
         if (!profileFunctionFactory) {
             return voidMethodDecorator;
         }
+
         return profileMethodUnnamed;
     }
 }

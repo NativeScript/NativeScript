@@ -1,4 +1,4 @@
-﻿import { LayoutBase as LayoutBaseDefinition } from "./layout-base";
+import { LayoutBase as LayoutBaseDefinition } from "./layout-base";
 import { View, CustomLayoutView, Property, AddChildFromBuilder, getViewById, Length, booleanConverter } from "../core/view";
 
 export * from "../core/view";
@@ -116,6 +116,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
         for (let i = 0; i < index && i < this._subViews.length; i++) {
             result += this._subViews[i]._getNativeViewsCount();
         }
+
         return result;
     }
 

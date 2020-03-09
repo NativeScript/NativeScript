@@ -92,7 +92,7 @@ describe(rootType, async function () {
 
                 if (appSuspendResume) {
                     await driver.backgroundApp(suspendTime);
-                    await screen.loadedSomePage() // wait for some page
+                    await screen.loadedSomePage(); // wait for some page
                 }
 
                 if (driver.isAndroid) {
@@ -116,7 +116,7 @@ describe(rootType, async function () {
 
                 if (appSuspendResume) {
                     await driver.backgroundApp(suspendTime);
-                    await screen.loadedSomePage() // wait for some page
+                    await screen.loadedSomePage(); // wait for some page
                 }
 
                 if (driver.isAndroid) {
@@ -166,7 +166,7 @@ describe(rootType, async function () {
 
                 if (appSuspendResume) {
                     await driver.backgroundApp(suspendTime);
-                    await screen.loadedElement(playerOne.name) // wait for players list
+                    await screen.loadedElement(playerOne.name); // wait for players list
                 }
 
                 await shared.testPlayerNavigated(playerTwo, screen);

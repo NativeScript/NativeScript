@@ -1,5 +1,4 @@
 import * as application from "tns-core-modules/application";
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { NavigatedData, Page } from "tns-core-modules/ui/page";
 import { View, EventData, ShowModalOptions } from "tns-core-modules/ui/core/view";
 import { Frame } from "tns-core-modules/ui/frame";
@@ -23,10 +22,17 @@ export function onNavigatedFrom(args: NavigatedData) {
 export function onModalNoPage(args: EventData) {
     const view = args.object as View;
 
-    view.showModal("modal-no-page/modal-no-page",
-        "context",
-        () => console.log("home-page modal frame closed"),
-        false);
+    view.showModal("modal-no-page/modal-no-page", {
+        context: "context",
+        closeCallback: () => console.log("home-page modal frame closed"),
+        fullscreen: false
+    });
+
+    view.showModal("modal-no-page/modal-no-page", {
+        context: "context",
+        closeCallback: () => console.log("home-page modal frame closed"),
+        fullscreen: false
+    });
 }
 
 export function onPopoverModal(args: EventData) {
@@ -38,7 +44,7 @@ export function onPopoverModal(args: EventData) {
         ios: {
             presentationStyle: UIModalPresentationStyle.Popover
         }
-    }
+    };
 
     view.showModal("modal-no-page/modal-no-page", options);
 }
@@ -49,49 +55,51 @@ export function onModalFrame(args: EventData) {
     const frame = new Frame();
     frame.navigate("modal/modal-page");
 
-    view.showModal(frame,
-        "context",
-        () => console.log("home-page modal frame closed"),
-        false);
+    view.showModal(frame, {
+        context: "context",
+        closeCallback: () => console.log("home-page modal frame closed"),
+        fullscreen: false
+    });
 }
 
 export function onModalPage(args: EventData) {
     const view = args.object as View;
-    view.showModal("modal/modal-page",
-        { frameless: true },
-        () => console.log("home-page modal page closed"),
-        false);
+    view.showModal("modal/modal-page", {
+        context: { frameless: true },
+        closeCallback: () => console.log("home-page modal page closed"),
+        fullscreen: false
+    });
 }
 
 export function onModalLayout(args: EventData) {
     const view = args.object as View;
-    view.showModal("modal-layout/modal-layout-root",
-        "context",
-        () => console.log("home-page modal layout closed"),
-        false);
+    view.showModal("modal-layout/modal-layout-root", {
+        context: "context",
+        closeCallback: () => console.log("home-page modal layout closed"),
+        fullscreen: false
+    });
 }
 
 export function onAndroidBackEvents(args: EventData) {
     const view = args.object as View;
-    view.showModal(
-        "android-back-button/android-back-button-page",
-        null,
-        () => console.log("android-back-button modal page layout closed"),
-        true, true, true);
+    view.showModal("android-back-button/android-back-button-page", {
+        context: null,
+        closeCallback: () => console.log("android-back-button modal page layout closed"),
+        fullscreen: true,
+        animated: true,
+        stretched: true
+    });
 }
 
 export function onModalTabView(args: EventData) {
-    const fullscreen = false;
-    const animated = false;
-    const stretched = true;
-
     const view = args.object as View;
-    view.showModal("modal-tab/modal-tab-root",
-        { frameless: true },
-        () => console.log("home-page modal tabview closed"),
-        fullscreen,
-        animated,
-        stretched);
+    view.showModal("modal-tab/modal-tab-root", {
+        context: { frameless: true },
+        closeCallback: () => console.log("home-page modal tabview closed"),
+        fullscreen: false,
+        animated: false,
+        stretched: true
+    });
 }
 
 export function onNavigate(args: EventData) {

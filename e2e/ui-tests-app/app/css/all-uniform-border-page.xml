@@ -1,0 +1,29 @@
+<Page loaded="onLoaded">
+    <GridLayout rows="*,*,*,*,*,*" columns="*,*,*">
+        <Button class="s0" row="0" col="0" text="Button"/>
+        <Label class="s0" row="0" col="1" text="Label"/>
+        <TextField class="s0" row="0" col="2" autocorrect="false" text="TextField"/>
+        <TextView class="s0" row="1" col="0" autocorrect="false" text="TextView Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec blandit, tortor vitae imperdiet gravida, eros neque scelerisque sapien, vel ultricies turpis ipsum vitae nisi. Sed ut consequat magna, scelerisque malesuada elit. Proin posuere purus dolor, semper sagittis dolor tempus ut. Praesent lorem mauris, ultricies eu faucibus quis, auctor ut leo. Mauris tincidunt justo id urna malesuada, at dapibus orci tincidunt. Suspendisse sollicitudin eget lorem porttitor pharetra. Phasellus cursus mauris ut urna sollicitudin pharetra."/>
+        <SearchBar id="sb" class="s0" row="1" col="1" text="SearchBar"/>
+        <Switch class="s0" row="1" col="2" checked="true"/>
+        <Slider class="s0" row="2" col="0" minValue="0" maxValue="100" value="50"/>
+        <Progress class="s0" row="2" col="1" maxValue="100" value="50"/>
+        <ActivityIndicator class="s0" row="2" col="2" busy="false"/>
+        <Image class="s0" row="3" col="0" src="~/resources/images/gravatar.png" stretch="fill"/>
+        <ListView class="s0" row="3" col="1" items="ListView"/>
+        <HtmlView class="s0" row="3" col="2" html="<h1>HtmlView</h1>"/>
+        <WebView class="s0" row="4" col="0" src="~/web-view/test.html"/>
+        <SegmentedBar class="s0" row="4" col="1">
+            <SegmentedBar.items>
+                <SegmentedBarItem title="SB 1" />
+                <SegmentedBarItem title="SB 2" />
+            </SegmentedBar.items>
+        </SegmentedBar>
+        <DatePicker class="s0" row="4" col="2" year="1980" month="2" day="9"/>
+        <TimePicker class="s0" row="5" col="0" hour="5" minute="30"/>
+        <ListPicker class="s0" row="5" col="1" items="123"/>
+        <ScrollView class="s0" row="5" col="2">
+            <Label text="ScrollView" autocorrect="false" width="160" height="160" style.backgroundColor="gray"/>
+        </ScrollView>
+    </GridLayout>
+</Page>

@@ -86,7 +86,7 @@ export const playersData = {
         description: "Defender",
         transition: "flip"
     }
-}
+};
 
 export const teamsData = {
     teamOneDefault: {
@@ -129,7 +129,7 @@ export const teamsData = {
         description: "u21",
         transition: "flip"
     },
-}
+};
 export interface Item {
     name: string;
     description: string;
@@ -137,7 +137,7 @@ export interface Item {
 
 export class Screen {
 
-    private _driver: AppiumDriver
+    private _driver: AppiumDriver;
 
     public currentAnimation: string;
 
@@ -147,7 +147,7 @@ export class Screen {
 
     navigateToLayoutWithFrame = async () => {
         await this.navigateToPage(layoutWithFrame);
-    };
+    }
 
     navigateToLayoutWithMultiFrame = async () => {
         await this.navigateToPage(layoutWithMultiFrame);
@@ -183,23 +183,23 @@ export class Screen {
 
     navigateToStillOtherPageSlide = async () => {
         await this.navigateToPage(navigateToStillOtherPageSlide);
-    };
+    }
 
     navigateToSomePageDefault = async () => {
         await this.navigateToPage(navigateToSomePageDefault);
-    };
+    }
 
     navigateToSomePageNone = async () => {
         await this.navigateToPage(navigateToSomePageNone);
-    };
+    }
 
     navigateToSomePageSlide = async () => {
         await this.navigateToPage(navigateToSomePageSlide);
-    };
+    }
 
     navigateToSomePageFlip = async () => {
         await this.navigateToPage(navigateToSomePageFlip);
-    };
+    }
 
     navigateToOtherPageDefault = async () => {
         await this.navigateToPage(navigateToOtherPageDefault);
@@ -219,26 +219,26 @@ export class Screen {
 
     navigateToPlayerDetails = async (player: Item) => {
         await this.navigateToItem(player);
-    };
+    }
 
     navigateToTeamDetails = async (team: Item) => {
         await this.navigateToItem(team);
-    };
+    }
 
     resetToHome = async () => {
         const btnReset = await this._driver.waitForElement(resetApp);
 
-        console.info(`====== Reset home "${resetApp}"`)
+        console.info(`====== Reset home "${resetApp}"`);
         await btnReset.tap();
-    };
+    }
 
     goBackToPlayersList = async () => {
         await this.goBack(playerBack);
-    };
+    }
 
     goBackToTeamsList = async () => {
         await this.goBack(teamBack);
-    };
+    }
 
     goBackFromStillOtherPage = async () => {
         await this.goBack(stillOtherPageBack);
@@ -280,16 +280,16 @@ export class Screen {
         const lblHome = await this._driver.waitForElement(home);
         assert.isDefined(lblHome);
         console.log(home + " loaded!");
-    };
+    }
 
     loadedLayoutWithFrame = async () => {
         await this.loadedPage(layoutHome);
-    };
+    }
 
     loadedLayoutWithMultiFrame = async () => {
         await this.loadedPage(layoutHome);
         await this.loadedPage(layoutHomeSecondary);
-    };
+    }
 
     loadedPageWithFrame = async () => {
         await this.loadedPage(frameHome);
@@ -351,19 +351,19 @@ export class Screen {
         const el = await this._driver.waitForElement(element);
         assert.isDefined(el);
         console.log(`${element} loaded!`);
-    };
+    }
 
     private navigateToPage = async (page: string) => {
         const btnPage = await this._driver.waitForElement(page);
         logInfo(`====== Navigate to "${page}"`);
         await btnPage.tap();
-    };
+    }
 
     private loadedPage = async (page: string) => {
         const lblPage = await this._driver.waitForElement(page);
         assert.isDefined(lblPage);
         console.log(page + " loaded!");
-    };
+    }
 
     private navigateToItem = async (item: Item) => {
         const lblItem = await this._driver.waitForElement(item.name);

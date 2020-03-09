@@ -1,4 +1,4 @@
-﻿import {
+import {
     HtmlViewBase, View, layout, htmlProperty
 } from "./html-view-common";
 
@@ -14,6 +14,7 @@ export class HtmlView extends HtmlViewBase {
         view.selectable = true;
         view.userInteractionEnabled = true;
         view.dataDetectorTypes = UIDataDetectorTypes.All;
+
         return view;
     }
 

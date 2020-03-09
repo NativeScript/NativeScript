@@ -24,8 +24,9 @@ export class LinearGradient {
             return {
                 color: new Color(color.argb),
                 offset: offsetUnit
-            }
+            };
         });
+
         return result;
     }
 
@@ -33,7 +34,7 @@ export class LinearGradient {
         if (!first && !second) {
             return true;
         } else if (!first || !second) {
-            return false
+            return false;
         }
 
         if (first.angle !== second.angle) {

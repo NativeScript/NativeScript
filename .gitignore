@@ -48,6 +48,8 @@ tscommand*.tmp.txt
 
 # Other
 *.js
+# https://github.com/NativeScript/nativescript-dev-webpack/issues/932
+!tns-core-modules/xml/xml.js
 !tests/hooks/**/*.*
 !gruntfile.js
 !js-libs/**/*.*

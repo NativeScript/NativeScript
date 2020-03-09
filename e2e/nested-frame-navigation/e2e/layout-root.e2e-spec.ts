@@ -13,7 +13,7 @@ describe(rootType, async function () {
         nsCapabilities.testReporter.context = this;
         driver = await createDriver();
         screen = new Screen(driver);
-        logWarn("====== layout-root ========")
+        logWarn("====== layout-root ========");
         if (dontKeepActivities) {
             await driver.setDontKeepActivities(true);
         }
@@ -72,7 +72,7 @@ describe(rootType, async function () {
 
                 if (appSuspendResume) {
                     await driver.backgroundApp(suspendTime);
-                    await driver.waitForElement(playerTwo.name) // wait for player
+                    await driver.waitForElement(playerTwo.name); // wait for player
                 }
 
                 await shared.testPlayerNavigatedBack(screen, driver);
@@ -158,14 +158,14 @@ describe(rootType, async function () {
 
                 if (appSuspendResume) {
                     await driver.backgroundApp(suspendTime);
-                    await driver.waitForElement(playerTwo.name) // wait for player
+                    await driver.waitForElement(playerTwo.name); // wait for player
                 }
 
                 await shared.testPlayerNavigatedBack(screen, driver);
 
                 if (appSuspendResume) {
                     await driver.backgroundApp(suspendTime);
-                    await driver.waitForElement(playerOne.name) // wait for players list
+                    await driver.waitForElement(playerOne.name); // wait for players list
                 }
 
                 await shared.testPlayerNavigated(playerTwo, screen);
@@ -306,7 +306,7 @@ describe(rootType, async function () {
                 await screen.loadedHome();
             });
         });
-    };
+    }
 
     describe(`${rootType}-players-list-slide-transition with parent frame default transition:`, async function () {
         const playerOne = playersData["playerOneSlide"];

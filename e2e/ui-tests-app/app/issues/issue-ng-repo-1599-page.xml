@@ -1,0 +1,109 @@
+<Page>
+  <ActionBar title="issue-ng-repo-1599"></ActionBar>
+
+  <ScrollView>
+    <GridLayout rows="auto, *" columns="*" class="page page-content">
+      <!-- Banner -->
+      <StackLayout row="0" orientation="vertical">
+        <StackLayout>
+          <Label textWrap="true" text="My shopping lists" class="title"></Label>
+        </StackLayout>
+      </StackLayout>
+      <!-- Offer categories -->
+      <StackLayout row="1">
+        <!-- Shopping list 1 -->
+        <StackLayout class="list-items" backgroundImage="~/resources/images/woods.jpg">
+          <Label text="Shopping list 1" class="item-title" textWrap="true"></Label>
+          <ScrollView orientation="horizontal">
+              <StackLayout orientation="horizontal" class="list-item__row">
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+              </StackLayout>
+          </ScrollView>
+        </StackLayout>
+        <!-- Shopping list 2 -->
+        <StackLayout class="list-items" backgroundImage="~/resources/images/woods.jpg">
+          <Label text="Shopping list 2" class="item-title" textWrap="true"></Label>
+          <ScrollView orientation="horizontal">
+              <StackLayout orientation="horizontal" class="list-item__row">
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+              </StackLayout>
+          </ScrollView>
+        </StackLayout>
+        <!-- Shopping list 3 -->
+        <StackLayout class="list-items" backgroundImage="~/resources/images/woods.jpg">
+          <Label text="Shopping list 3" class="item-title" textWrap="true"></Label>
+          <ScrollView orientation="horizontal">
+              <StackLayout orientation="horizontal" class="list-item__row">
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+              </StackLayout>
+          </ScrollView>
+        </StackLayout>
+        <!-- Shopping list 4 -->
+        <StackLayout class="list-items" backgroundImage="~/resources/images/woods.jpg">
+          <Label text="Shopping list 4" class="item-title" textWrap="true"></Label>
+          <ScrollView orientation="horizontal">
+              <StackLayout orientation="horizontal" class="list-item__row">
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+                  <StackLayout class="list-item">
+                      <Label text="Shop Item" textWrap="true" />
+                  </StackLayout>
+              </StackLayout>
+          </ScrollView>
+        </StackLayout>
+      </StackLayout>
+    </GridLayout>
+  </ScrollView>
+</Page>
