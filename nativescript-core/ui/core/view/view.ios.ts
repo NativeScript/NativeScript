@@ -180,7 +180,7 @@ export class View extends ViewCommon implements ViewDefinition {
             if (adjustedFrame) {
                 nativeView.frame = adjustedFrame;
             }
-            
+
             if (this._hasTransfrom) {
                 // re-apply the transform after the frame is adjusted
                 nativeView.layer.transform = transform;
@@ -359,7 +359,7 @@ export class View extends ViewCommon implements ViewDefinition {
         if (this.rotateX || this.rotateY) {
             transform.m34 = -1 / perspective;
         }
-        
+
         transform = CATransform3DTranslate(transform, this.translateX, this.translateY, 0);
         transform = iosNativeHelper.applyRotateTransform(transform, this.rotateX, this.rotateY, this.rotate);
         transform = CATransform3DScale(transform, scaleX, scaleY, 1);
@@ -479,8 +479,7 @@ export class View extends ViewCommon implements ViewDefinition {
         parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
         const transitionCoordinator = parentController.transitionCoordinator;
         if (transitionCoordinator) {
-            UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
-                .call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
+            transitionCoordinator.animateAlongsideTransitionCompletion(null, () => this._raiseShownModallyEvent());
         } else {
             // Apparently iOS 9+ stops all transitions and animations upon application suspend and transitionCoordinator becomes null here in this case.
             // Since we are not waiting for any transition to complete, i.e. transitionCoordinator is null, we can directly raise our shownModally event.
