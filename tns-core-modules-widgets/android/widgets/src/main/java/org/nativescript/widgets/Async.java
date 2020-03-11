@@ -26,6 +26,7 @@ import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -326,7 +327,7 @@ public class Async {
             public String url;
             public String method;
             public ArrayList<KeyValuePair> headers;
-            public String content;
+            public Object content;
             public int timeout = -1;
             public int screenWidth = -1;
             public int screenHeight = -1;
@@ -353,17 +354,21 @@ public class Async {
             }
 
             public void writeContent(HttpURLConnection connection, Stack<Closeable> openedStreams) throws IOException {
-                if (this.content == null || this.content.getClass() != String.class) {
+                if (this.content == null) {
                     return;
                 }
 
                 OutputStream outStream = connection.getOutputStream();
                 openedStreams.push(outStream);
 
-                OutputStreamWriter writer = new OutputStreamWriter(outStream);
-                openedStreams.push(writer);
+                if (this.content instanceof String) {
+                    OutputStreamWriter writer = new OutputStreamWriter(outStream);
+                    openedStreams.push(writer);
 
-                writer.write((String) this.content);
+                    writer.write((String) this.content);
+                } else {
+                    outStream.write(((java.nio.ByteBuffer)this.content).array());
+                }
             }
         }
 

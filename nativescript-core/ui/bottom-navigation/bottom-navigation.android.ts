@@ -385,7 +385,6 @@ export class BottomNavigation extends TabNavigationBase {
 
     _onAttachedToWindow(): void {
         super._onAttachedToWindow();
-        this._attachedToWindow = true;
 
         // _onAttachedToWindow called from OS again after it was detach
         // TODO: Consider testing and removing it when update to androidx.fragment:1.2.0
@@ -393,6 +392,7 @@ export class BottomNavigation extends TabNavigationBase {
             return;
         }
 
+        this._attachedToWindow = true;
         this.changeTab(this.selectedIndex);
     }
 
@@ -614,6 +614,9 @@ export class BottomNavigation extends TabNavigationBase {
 
     private getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
+        if (!iconSource) {
+            return null;
+        }
 
         let is: ImageSource;
         if (isFontIconURI(iconSource)) {
@@ -705,7 +708,10 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        if (value.fontSize) {
+            tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        }
+
         tabStripItem.nativeViewProtected.setTypeface(value.getAndroidTypeface());
     }
 
