@@ -867,59 +867,53 @@ export class Frame extends View {
 
 // @public
 export interface GestureEventData extends EventData {
-  android: any;
-  ios: any /* UIGestureRecognizer */;
-  type: GestureTypes;
-  view: View;
+    android: any
+    ios: any /* UIGestureRecognizer */;
+    type: GestureTypes;
+    view: View;
 }
 
 // @public
 export interface GestureEventDataWithState extends GestureEventData {
-  // (undocumented)
-  state: number;
+    // (undocumented)
+    state: number;
 }
 
 // @public
 export class GesturesObserver {
-  constructor(
-    target: View,
-    callback: (args: GestureEventData) => void,
-    context: any
-  );
+    constructor(target: View, callback: (args: GestureEventData) => void, context: any);
 
-  androidOnTouchEvent: (
-    motionEvent: any /* android.view.MotionEvent */
-  ) => void;
+    androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
 
-  callback: (args: GestureEventData) => void;
+    callback: (args: GestureEventData) => void;
 
-  context: any;
+    context: any;
 
-  disconnect();
+    disconnect();
 
-  observe(type: GestureTypes);
+    observe(type: GestureTypes);
 
-  type: GestureTypes;
+    type: GestureTypes;
 }
 
 // @public
 export enum GestureStateTypes {
-  began,
-  cancelled,
-  changed,
-  ended
+    began,
+    cancelled,
+    changed,
+    ended
 }
 
 // @public
 export enum GestureTypes {
-  doubleTap,
-  longPress,
-  pan,
-  pinch,
-  rotation,
-  swipe,
-  tap,
-  touch
+    doubleTap,
+    longPress,
+    pan,
+    pinch,
+    rotation,
+    swipe,
+    tap,
+    touch
 }
 
 // @public
@@ -1640,10 +1634,10 @@ export class Page extends ContentView {
 
 // @public
 export interface PanGestureEventData extends GestureEventDataWithState {
-  // (undocumented)
-  deltaX: number;
-  // (undocumented)
-  deltaY: number;
+    // (undocumented)
+    deltaX: number;
+    // (undocumented)
+    deltaY: number;
 }
 
 // @public
@@ -1692,14 +1686,14 @@ export module path {
 
 // @public
 export interface PinchGestureEventData extends GestureEventDataWithState {
-  // (undocumented)
-  getFocusX(): number;
+    // (undocumented)
+    getFocusX(): number;
 
-  // (undocumented)
-  getFocusY(): number;
+    // (undocumented)
+    getFocusY(): number;
 
-  // (undocumented)
-  scale: number;
+    // (undocumented)
+    scale: number;
 }
 
 // @public
@@ -1763,8 +1757,8 @@ export class Repeater extends CustomLayoutView {
 
 // @public
 export interface RotationGestureEventData extends GestureEventDataWithState {
-  // (undocumented)
-  rotation: number;
+    // (undocumented)
+    rotation: number;
 }
 
 // @public
@@ -2166,16 +2160,16 @@ export class Style extends Observable {
 
 // @public
 export enum SwipeDirection {
-  down,
-  left,
-  right,
-  up
+    down,
+    left,
+    right,
+    up
 }
 
 // @public
 export interface SwipeGestureEventData extends GestureEventData {
-  // (undocumented)
-  direction: SwipeDirection;
+    // (undocumented)
+    direction: SwipeDirection;
 }
 
 // @public
@@ -2400,13 +2394,6 @@ export class TabViewItem extends ViewBase {
 }
 
 // @public
-export interface TapGestureEventData extends GestureEventData {
-  getPointerCount(): number;
-  getX(): number;
-  getY(): number;
-}
-
-// @public
 export interface Template {
     (): View;
 }
@@ -2525,11 +2512,22 @@ export interface TimerInfo {
 }
 
 // @public
+export interface TapGestureEventData extends GestureEventData {
+    getPointerCount(): number;
+    
+    getX(): number;
+    
+    getY(): number
+}
+
+// @public
 export interface TouchGestureEventData extends TapGestureEventData {
-  action: "up" | "move" | "down" | "cancel";
-  // Warning: (ae-forgotten-export) The symbol "Pointer" needs to be exported by the entry point index.d.ts
-  getActivePointers(): Array<Pointer>;
-  getAllPointers(): Array<Pointer>;
+    action: "up" | "move" | "down" | "cancel";
+
+    // Warning: (ae-forgotten-export) The symbol "Pointer" needs to be exported by the entry point index.d.ts
+    getActivePointers(): Array<Pointer>;
+
+    getAllPointers(): Array<Pointer>;
 }
 
 // @public (undocumented)
