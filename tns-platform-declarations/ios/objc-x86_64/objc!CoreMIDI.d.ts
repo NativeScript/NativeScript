@@ -388,7 +388,7 @@ interface MIDIPacketList {
 }
 declare var MIDIPacketList: interop.StructType<MIDIPacketList>;
 
-declare function MIDIPacketListAdd(pktlist: interop.Pointer | interop.Reference<MIDIPacketList>, listSize: number, curPacket: interop.Pointer | interop.Reference<MIDIPacket>, time: number, nData: number, data: string): interop.Pointer | interop.Reference<MIDIPacket>;
+declare function MIDIPacketListAdd(pktlist: interop.Pointer | interop.Reference<MIDIPacketList>, listSize: number, curPacket: interop.Pointer | interop.Reference<MIDIPacket>, time: number, nData: number, data: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<MIDIPacket>;
 
 declare function MIDIPacketListInit(pktlist: interop.Pointer | interop.Reference<MIDIPacketList>): interop.Pointer | interop.Reference<MIDIPacket>;
 

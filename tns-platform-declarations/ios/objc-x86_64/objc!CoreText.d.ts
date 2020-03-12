@@ -75,7 +75,7 @@ declare const enum CTFontCollectionCopyOptions {
 	kCTFontCollectionCopyStandardSort = 2
 }
 
-declare function CTFontCollectionCreateCopyWithFontDescriptors(original: any, queryDescriptors: NSArray<any>, options: NSDictionary<any, any>): any;
+declare function CTFontCollectionCreateCopyWithFontDescriptors(original: any, queryDescriptors: NSArray<any> | any[], options: NSDictionary<any, any>): any;
 
 declare function CTFontCollectionCreateFromAvailableFonts(options: NSDictionary<any, any>): any;
 
@@ -85,7 +85,7 @@ declare function CTFontCollectionCreateMatchingFontDescriptorsSortedWithCallback
 
 declare function CTFontCollectionCreateMatchingFontDescriptorsWithOptions(collection: any, options: NSDictionary<any, any>): NSArray<any>;
 
-declare function CTFontCollectionCreateWithFontDescriptors(queryDescriptors: NSArray<any>, options: NSDictionary<any, any>): any;
+declare function CTFontCollectionCreateWithFontDescriptors(queryDescriptors: NSArray<any> | any[], options: NSDictionary<any, any>): any;
 
 declare function CTFontCollectionGetTypeID(): number;
 
@@ -95,7 +95,7 @@ declare function CTFontCopyAvailableTables(font: UIFont, options: CTFontTableOpt
 
 declare function CTFontCopyCharacterSet(font: UIFont): NSCharacterSet;
 
-declare function CTFontCopyDefaultCascadeListForLanguages(font: UIFont, languagePrefList: NSArray<any>): NSArray<any>;
+declare function CTFontCopyDefaultCascadeListForLanguages(font: UIFont, languagePrefList: NSArray<any> | any[]): NSArray<any>;
 
 declare function CTFontCopyDisplayName(font: UIFont): string;
 
@@ -177,7 +177,7 @@ declare function CTFontDescriptorCreateWithNameAndSize(name: string, size: numbe
 
 declare function CTFontDescriptorGetTypeID(): number;
 
-declare function CTFontDescriptorMatchFontDescriptorsWithProgressHandler(descriptors: NSArray<any>, mandatoryAttributes: NSSet<any>, progressBlock: (p1: CTFontDescriptorMatchingState, p2: NSDictionary<any, any>) => boolean): boolean;
+declare function CTFontDescriptorMatchFontDescriptorsWithProgressHandler(descriptors: NSArray<any> | any[], mandatoryAttributes: NSSet<any>, progressBlock: (p1: CTFontDescriptorMatchingState, p2: NSDictionary<any, any>) => boolean): boolean;
 
 declare const enum CTFontDescriptorMatchingState {
 
@@ -319,19 +319,19 @@ declare const enum CTFontManagerError {
 	kCTFontManagerErrorInvalidFilePath = 306
 }
 
-declare function CTFontManagerRegisterFontDescriptors(fontDescriptors: NSArray<any>, scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+declare function CTFontManagerRegisterFontDescriptors(fontDescriptors: NSArray<any> | any[], scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
-declare function CTFontManagerRegisterFontURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+declare function CTFontManagerRegisterFontURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
 declare function CTFontManagerRegisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
-declare function CTFontManagerRegisterFontsForURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
+declare function CTFontManagerRegisterFontsForURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
 
-declare function CTFontManagerRegisterFontsWithAssetNames(fontAssetNames: NSArray<any>, bundle: any, scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+declare function CTFontManagerRegisterFontsWithAssetNames(fontAssetNames: NSArray<any> | any[], bundle: any, scope: CTFontManagerScope, enabled: boolean, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
 declare function CTFontManagerRegisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
-declare function CTFontManagerRequestFonts(fontDescriptors: NSArray<any>, completionHandler: (p1: NSArray<any>) => void): void;
+declare function CTFontManagerRequestFonts(fontDescriptors: NSArray<any> | any[], completionHandler: (p1: NSArray<any>) => void): void;
 
 declare const enum CTFontManagerScope {
 
@@ -346,13 +346,13 @@ declare const enum CTFontManagerScope {
 	kCTFontManagerScopeUser = 2
 }
 
-declare function CTFontManagerUnregisterFontDescriptors(fontDescriptors: NSArray<any>, scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+declare function CTFontManagerUnregisterFontDescriptors(fontDescriptors: NSArray<any> | any[], scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
-declare function CTFontManagerUnregisterFontURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
+declare function CTFontManagerUnregisterFontURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, registrationHandler: (p1: NSArray<any>, p2: boolean) => boolean): void;
 
 declare function CTFontManagerUnregisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
-declare function CTFontManagerUnregisterFontsForURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
+declare function CTFontManagerUnregisterFontsForURLs(fontURLs: NSArray<any> | any[], scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
 
 declare function CTFontManagerUnregisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 

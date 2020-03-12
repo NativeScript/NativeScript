@@ -3872,7 +3872,7 @@ declare function NSFullUserName(): string;
 
 declare var NSGenericException: string;
 
-declare function NSGetSizeAndAlignment(typePtr: string, sizep: interop.Pointer | interop.Reference<number>, alignp: interop.Pointer | interop.Reference<number>): string;
+declare function NSGetSizeAndAlignment(typePtr: string | interop.Pointer | interop.Reference<any>, sizep: interop.Pointer | interop.Reference<number>, alignp: interop.Pointer | interop.Reference<number>): string;
 
 declare function NSGetUncaughtExceptionHandler(): interop.Pointer | interop.Reference<interop.FunctionReference<(p1: NSException) => void>>;
 

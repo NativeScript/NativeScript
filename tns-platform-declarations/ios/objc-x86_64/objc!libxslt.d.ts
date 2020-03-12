@@ -168,9 +168,9 @@ declare var xsltEngineVersion: string;
 
 declare var xsltExtMarker: string;
 
-declare function xsltExtModuleFunctionLookup(name: string, URI: string): interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>;
+declare function xsltExtModuleFunctionLookup(name: string | interop.Pointer | interop.Reference<any>, URI: string | interop.Pointer | interop.Reference<any>): interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>;
 
-declare function xsltFormatNumberConversion(self: interop.Pointer | interop.Reference<_xsltDecimalFormat>, format: string, number: number, result: interop.Pointer | interop.Reference<string>): xmlXPathError;
+declare function xsltFormatNumberConversion(self: interop.Pointer | interop.Reference<_xsltDecimalFormat>, format: string | interop.Pointer | interop.Reference<any>, number: number, result: interop.Pointer | interop.Reference<string>): xmlXPathError;
 
 declare function xsltFormatNumberFunction(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>, nargs: number): void;
 
@@ -204,11 +204,11 @@ declare function xsltGetDebuggerStatus(): number;
 
 declare function xsltGetDefaultSecurityPrefs(): interop.Pointer | interop.Reference<any>;
 
-declare function xsltGetNsProp(node: interop.Pointer | interop.Reference<_xmlNode>, name: string, nameSpace: string): string;
+declare function xsltGetNsProp(node: interop.Pointer | interop.Reference<_xmlNode>, name: string | interop.Pointer | interop.Reference<any>, nameSpace: string | interop.Pointer | interop.Reference<any>): string;
 
 declare function xsltGetQNameURI(node: interop.Pointer | interop.Reference<_xmlNode>, name: interop.Pointer | interop.Reference<string>): string;
 
-declare function xsltGetUTF8Char(utf: string, len: interop.Pointer | interop.Reference<number>): number;
+declare function xsltGetUTF8Char(utf: string | interop.Pointer | interop.Reference<any>, len: interop.Pointer | interop.Reference<number>): number;
 
 declare function xsltGetXIncludeDefault(): number;
 
@@ -216,7 +216,7 @@ declare function xsltInit(): void;
 
 declare function xsltInitGlobals(): void;
 
-declare function xsltIsBlank(str: string): number;
+declare function xsltIsBlank(str: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function xsltKeyFunction(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>, nargs: number): void;
 
@@ -233,17 +233,17 @@ declare const enum xsltLoadType {
 	XSLT_LOAD_DOCUMENT = 2
 }
 
-declare function xsltLocaleStrcmp(locale: interop.Pointer | interop.Reference<any>, str1: string, str2: string): number;
+declare function xsltLocaleStrcmp(locale: interop.Pointer | interop.Reference<any>, str1: string | interop.Pointer | interop.Reference<any>, str2: string | interop.Pointer | interop.Reference<any>): number;
 
 declare var xsltMaxDepth: number;
 
 declare var xsltMaxVars: number;
 
-declare function xsltNewLocale(langName: string): interop.Pointer | interop.Reference<any>;
+declare function xsltNewLocale(langName: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function xsltNewSecurityPrefs(): interop.Pointer | interop.Reference<any>;
 
-declare function xsltNormalizeCompSteps(payload: interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>, name: string): void;
+declare function xsltNormalizeCompSteps(payload: interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): void;
 
 declare const enum xsltOutputType {
 
@@ -258,7 +258,7 @@ declare function xsltRegisterAllExtras(): void;
 
 declare function xsltRegisterAllFunctions(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>): void;
 
-declare function xsltRegisterExtModuleFunction(name: string, URI: string, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>): number;
+declare function xsltRegisterExtModuleFunction(name: string | interop.Pointer | interop.Reference<any>, URI: string | interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>): number;
 
 declare function xsltRegisterTestModule(): void;
 
@@ -289,9 +289,9 @@ declare function xsltSetLoaderFunc(f: interop.FunctionReference<(p1: string, p2:
 
 declare function xsltSetXIncludeDefault(xinclude: number): void;
 
-declare function xsltSplitQName(dict: interop.Pointer | interop.Reference<any>, name: string, prefix: interop.Pointer | interop.Reference<string>): string;
+declare function xsltSplitQName(dict: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, prefix: interop.Pointer | interop.Reference<string>): string;
 
-declare function xsltStrxfrm(locale: interop.Pointer | interop.Reference<any>, string: string): string;
+declare function xsltStrxfrm(locale: interop.Pointer | interop.Reference<any>, string: string | interop.Pointer | interop.Reference<any>): string;
 
 declare const enum xsltStyleType {
 
@@ -357,14 +357,14 @@ declare function xsltUninit(): void;
 
 declare function xsltUnparsedEntityURIFunction(ctxt: interop.Pointer | interop.Reference<_xmlXPathParserContext>, nargs: number): void;
 
-declare function xsltUnregisterExtModule(URI: string): number;
+declare function xsltUnregisterExtModule(URI: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xsltUnregisterExtModuleElement(name: string, URI: string): number;
+declare function xsltUnregisterExtModuleElement(name: string | interop.Pointer | interop.Reference<any>, URI: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xsltUnregisterExtModuleFunction(name: string, URI: string): number;
+declare function xsltUnregisterExtModuleFunction(name: string | interop.Pointer | interop.Reference<any>, URI: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xsltUnregisterExtModuleTopLevel(name: string, URI: string): number;
+declare function xsltUnregisterExtModuleTopLevel(name: string | interop.Pointer | interop.Reference<any>, URI: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function xsltXPathFunctionLookup(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, name: string, ns_uri: string): interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>;
+declare function xsltXPathFunctionLookup(ctxt: interop.Pointer | interop.Reference<_xmlXPathContext>, name: string | interop.Pointer | interop.Reference<any>, ns_uri: string | interop.Pointer | interop.Reference<any>): interop.FunctionReference<(p1: interop.Pointer | interop.Reference<_xmlXPathParserContext>, p2: number) => void>;
 
-declare function xsltXPathVariableLookup(ctxt: interop.Pointer | interop.Reference<any>, name: string, ns_uri: string): interop.Pointer | interop.Reference<_xmlXPathObject>;
+declare function xsltXPathVariableLookup(ctxt: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, ns_uri: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<_xmlXPathObject>;

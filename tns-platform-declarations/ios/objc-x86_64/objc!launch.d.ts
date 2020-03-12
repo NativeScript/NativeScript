@@ -1,5 +1,5 @@
 
-declare function launch_activate_socket(name: string, fds: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, cnt: interop.Pointer | interop.Reference<number>): number;
+declare function launch_activate_socket(name: string | interop.Pointer | interop.Reference<any>, fds: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, cnt: interop.Pointer | interop.Reference<number>): number;
 
 declare function launch_data_alloc(type: launch_data_type_t): interop.Pointer | interop.Reference<any>;
 
@@ -13,13 +13,13 @@ declare function launch_data_copy(ld: interop.Pointer | interop.Reference<any>):
 
 declare function launch_data_dict_get_count(ldict: interop.Pointer | interop.Reference<any>): number;
 
-declare function launch_data_dict_insert(ldict: interop.Pointer | interop.Reference<any>, lval: interop.Pointer | interop.Reference<any>, key: string): boolean;
+declare function launch_data_dict_insert(ldict: interop.Pointer | interop.Reference<any>, lval: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>): boolean;
 
 declare function launch_data_dict_iterate(ldict: interop.Pointer | interop.Reference<any>, iterator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: string, p3: interop.Pointer | interop.Reference<any>) => void>, ctx: interop.Pointer | interop.Reference<any>): void;
 
-declare function launch_data_dict_lookup(ldict: interop.Pointer | interop.Reference<any>, key: string): interop.Pointer | interop.Reference<any>;
+declare function launch_data_dict_lookup(ldict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function launch_data_dict_remove(ldict: interop.Pointer | interop.Reference<any>, key: string): boolean;
+declare function launch_data_dict_remove(ldict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>): boolean;
 
 declare function launch_data_free(ld: interop.Pointer | interop.Reference<any>): void;
 
@@ -55,7 +55,7 @@ declare function launch_data_new_opaque(bytes: interop.Pointer | interop.Referen
 
 declare function launch_data_new_real(val: number): interop.Pointer | interop.Reference<any>;
 
-declare function launch_data_new_string(val: string): interop.Pointer | interop.Reference<any>;
+declare function launch_data_new_string(val: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function launch_data_set_bool(ld: interop.Pointer | interop.Reference<any>, val: boolean): boolean;
 
@@ -69,7 +69,7 @@ declare function launch_data_set_opaque(ld: interop.Pointer | interop.Reference<
 
 declare function launch_data_set_real(ld: interop.Pointer | interop.Reference<any>, val: number): boolean;
 
-declare function launch_data_set_string(ld: interop.Pointer | interop.Reference<any>, val: string): boolean;
+declare function launch_data_set_string(ld: interop.Pointer | interop.Reference<any>, val: string | interop.Pointer | interop.Reference<any>): boolean;
 
 declare const enum launch_data_type_t {
 
