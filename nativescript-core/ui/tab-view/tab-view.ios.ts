@@ -63,13 +63,12 @@ class UITabBarControllerImpl extends UITabBarController {
 
     public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
         super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
-        UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
-            .call(coordinator, null, () => {
-                const owner = this._owner.get();
-                if (owner && owner.items) {
-                    owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions());
-                }
-            });
+        coordinator.animateAlongsideTransitionCompletion(null, () => {
+            const owner = this._owner.get();
+            if (owner && owner.items) {
+                owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions());
+            }
+        });
     }
 
     // Mind implementation for other controllers

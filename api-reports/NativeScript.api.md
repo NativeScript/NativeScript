@@ -1240,6 +1240,9 @@ export class iOSApplication {
 }
 
 // @public
+export type IOSTabBarItemsAlignment = "leading" | "justified" | "center" | "centerSelected";
+
+// @public
 export const isAndroid: boolean;
 
 // @public
@@ -2273,6 +2276,8 @@ export class Tabs extends TabNavigationBase {
     android: any /* android.view.View */;
 
     ios: any /* UITabBarController */;
+
+    iOSTabBarItemsAlignment: IOSTabBarItemsAlignment;
 
     items: Array<TabContentItem>;
 

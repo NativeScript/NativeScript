@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Contains the GesturesObserver class, which lets you observe and respond to user gestures.
  * @module "ui/gestures"
  */ /** */
