@@ -8793,6 +8793,8 @@ interface rpcent {
 }
 declare var rpcent: interop.StructType<rpcent>;
 
+declare function rpmatch(p1: string): number;
+
 declare function rresvport(p1: interop.Pointer | interop.Reference<number>): number;
 
 declare function rresvport_af(p1: interop.Pointer | interop.Reference<number>, p2: number): number;

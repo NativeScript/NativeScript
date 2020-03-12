@@ -298,6 +298,8 @@ declare const enum CTFontManagerError {
 
 	kCTFontManagerErrorAlreadyRegistered = 105,
 
+	kCTFontManagerErrorExceededResourceLimit = 106,
+
 	kCTFontManagerErrorNotRegistered = 201,
 
 	kCTFontManagerErrorInUse = 202,
@@ -624,7 +626,7 @@ declare const enum CTFrameProgression {
 
 declare function CTFramesetterCreateFrame(framesetter: any, stringRange: CFRange, path: any, frameAttributes: NSDictionary<any, any>): any;
 
-declare function CTFramesetterCreateWithAttributedString(string: NSAttributedString): any;
+declare function CTFramesetterCreateWithAttributedString(attrString: NSAttributedString): any;
 
 declare function CTFramesetterCreateWithTypesetter(typesetter: any): any;
 

@@ -345,6 +345,13 @@ declare const OBJC_SYNC_SUCCESS: number;
 
 declare const OBJC_WAIT_UNTIL_DONE: number;
 
+declare class Protocol extends NSObject {
+
+	static alloc(): Protocol; // inherited from NSObject
+
+	static new(): Protocol; // inherited from NSObject
+}
+
 declare function _objc_flush_caches(cls: typeof NSObject): void;
 
 declare function _objc_msgForward(): void;

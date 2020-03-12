@@ -791,6 +791,8 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 
 	static openMapsWithItemsLaunchOptions(mapItems: NSArray<MKMapItem> | MKMapItem[], launchOptions: NSDictionary<string, any>): boolean;
 
+	static openMapsWithItemsLaunchOptionsFromSceneCompletionHandler(mapItems: NSArray<MKMapItem> | MKMapItem[], launchOptions: NSDictionary<string, any>, scene: UIScene, completion: (p1: boolean) => void): void;
+
 	readonly isCurrentLocation: boolean;
 
 	name: string;
@@ -850,6 +852,8 @@ declare class MKMapItem extends NSObject implements NSItemProviderReading, NSIte
 	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
 
 	openInMapsWithLaunchOptions(launchOptions: NSDictionary<string, any>): boolean;
+
+	openInMapsWithLaunchOptionsFromSceneCompletionHandler(launchOptions: NSDictionary<string, any>, scene: UIScene, completion: (p1: boolean) => void): void;
 
 	performSelector(aSelector: string): any;
 

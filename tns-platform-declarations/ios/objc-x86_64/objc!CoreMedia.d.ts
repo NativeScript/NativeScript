@@ -1197,6 +1197,8 @@ declare var kCMMetadataIdentifier_QuickTimeMetadataDirection_Facing: string;
 
 declare var kCMMetadataIdentifier_QuickTimeMetadataLivePhotoStillImageTransform: string;
 
+declare var kCMMetadataIdentifier_QuickTimeMetadataLivePhotoStillImageTransformReferenceDimensions: string;
+
 declare var kCMMetadataIdentifier_QuickTimeMetadataLocation_ISO6709: string;
 
 declare var kCMMetadataIdentifier_QuickTimeMetadataPreferredAffineTransform: string;

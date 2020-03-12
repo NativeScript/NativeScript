@@ -2973,7 +2973,11 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 
 	applicationShouldRestoreApplicationState?(application: UIApplication, coder: NSCoder): boolean;
 
+	applicationShouldRestoreSecureApplicationState?(application: UIApplication, coder: NSCoder): boolean;
+
 	applicationShouldSaveApplicationState?(application: UIApplication, coder: NSCoder): boolean;
+
+	applicationShouldSaveSecureApplicationState?(application: UIApplication, coder: NSCoder): boolean;
 
 	applicationSignificantTimeChange?(application: UIApplication): void;
 
@@ -4523,8 +4527,6 @@ declare class UICollectionViewController extends UIViewController implements UIC
 
 	collectionViewViewForSupplementaryElementOfKindAtIndexPath(collectionView: UICollectionView, kind: string, indexPath: NSIndexPath): UICollectionReusableView;
 
-	collectionViewWillCommitMenuWithAnimator(collectionView: UICollectionView, animator: UIContextMenuInteractionCommitAnimating): void;
-
 	collectionViewWillDisplayCellForItemAtIndexPath(collectionView: UICollectionView, cell: UICollectionViewCell, indexPath: NSIndexPath): void;
 
 	collectionViewWillDisplaySupplementaryViewForElementKindAtIndexPath(collectionView: UICollectionView, view: UICollectionReusableView, elementKind: string, indexPath: NSIndexPath): void;
@@ -4673,8 +4675,6 @@ interface UICollectionViewDelegate extends UIScrollViewDelegate {
 	collectionViewTargetIndexPathForMoveFromItemAtIndexPathToProposedIndexPath?(collectionView: UICollectionView, originalIndexPath: NSIndexPath, proposedIndexPath: NSIndexPath): NSIndexPath;
 
 	collectionViewTransitionLayoutForOldLayoutNewLayout?(collectionView: UICollectionView, fromLayout: UICollectionViewLayout, toLayout: UICollectionViewLayout): UICollectionViewTransitionLayout;
-
-	collectionViewWillCommitMenuWithAnimator?(collectionView: UICollectionView, animator: UIContextMenuInteractionCommitAnimating): void;
 
 	collectionViewWillDisplayCellForItemAtIndexPath?(collectionView: UICollectionView, cell: UICollectionViewCell, indexPath: NSIndexPath): void;
 
@@ -5337,9 +5337,13 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 
 	static colorWithRedGreenBlueAlpha(red: number, green: number, blue: number, alpha: number): UIColor;
 
+	static colorWithUserInterfaceStyleDarkColorDefaultColor(darkColor: UIColor, defaultColor: UIColor): UIColor;
+
 	static colorWithWhiteAlpha(white: number, alpha: number): UIColor;
 
 	static itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+
+	static mdc_blendColorWithBackgroundColor(color: UIColor, backgroundColor: UIColor): UIColor;
 
 	static new(): UIColor; // inherited from NSObject
 
@@ -5538,6 +5542,14 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
 	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+
+	mdc_resolvedColorWithElevation(elevation: number): UIColor;
+
+	mdc_resolvedColorWithTraitCollection(traitCollection: UITraitCollection): UIColor;
+
+	mdc_resolvedColorWithTraitCollectionElevation(traitCollection: UITraitCollection, elevation: number): UIColor;
+
+	mdc_resolvedColorWithTraitCollectionPreviousTraitCollectionElevation(traitCollection: UITraitCollection, previousTraitCollection: UITraitCollection, elevation: number): UIColor;
 
 	performSelector(aSelector: string): any;
 
@@ -5775,21 +5787,15 @@ interface UIContextMenuInteractionDelegate extends NSObjectProtocol {
 
 	contextMenuInteractionConfigurationForMenuAtLocation(interaction: UIContextMenuInteraction, location: CGPoint): UIContextMenuConfiguration;
 
-	contextMenuInteractionDidEnd?(interaction: UIContextMenuInteraction): void;
-
 	contextMenuInteractionPreviewForDismissingMenuWithConfiguration?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration): UITargetedPreview;
 
 	contextMenuInteractionPreviewForHighlightingMenuWithConfiguration?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration): UITargetedPreview;
-
-	contextMenuInteractionWillCommitWithAnimator?(interaction: UIContextMenuInteraction, animator: UIContextMenuInteractionCommitAnimating): void;
 
 	contextMenuInteractionWillDisplayMenuForConfigurationAnimator?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating): void;
 
 	contextMenuInteractionWillEndForConfigurationAnimator?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating): void;
 
 	contextMenuInteractionWillPerformPreviewActionForMenuWithConfigurationAnimator?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating): void;
-
-	contextMenuInteractionWillPresent?(interaction: UIContextMenuInteraction): void;
 }
 declare var UIContextMenuInteractionDelegate: {
 
@@ -7714,6 +7720,10 @@ declare class UIFont extends NSObject implements NSCopying {
 
 	static italicSystemFontOfSize(fontSize: number): UIFont;
 
+	static mdc_preferredFontForMaterialTextStyle(style: MDCFontTextStyle): UIFont;
+
+	static mdc_standardFontForMaterialTextStyle(style: MDCFontTextStyle): UIFont;
+
 	static monospacedDigitSystemFontOfSizeWeight(fontSize: number, weight: number): UIFont;
 
 	static monospacedSystemFontOfSizeWeight(fontSize: number, weight: number): UIFont;
@@ -7764,6 +7774,8 @@ declare class UIFont extends NSObject implements NSCopying {
 
 	fontWithSize(fontSize: number): UIFont;
 
+	mdc_fontSizedForMaterialTextStyleScaledForDynamicType(style: MDCFontTextStyle, scaled: boolean): UIFont;
+
 	mdc_isSimplyEqual(font: UIFont): boolean;
 
 	mdc_scaledFontAtDefaultSize(): UIFont;
@@ -7784,6 +7796,10 @@ declare class UIFontDescriptor extends NSObject implements NSCopying, NSSecureCo
 	static fontDescriptorWithNameMatrix(fontName: string, matrix: CGAffineTransform): UIFontDescriptor;
 
 	static fontDescriptorWithNameSize(fontName: string, size: number): UIFontDescriptor;
+
+	static mdc_preferredFontDescriptorForMaterialTextStyle(style: MDCFontTextStyle): UIFontDescriptor;
+
+	static mdc_standardFontDescriptorForMaterialTextStyle(style: MDCFontTextStyle): UIFontDescriptor;
 
 	static new(): UIFontDescriptor; // inherited from NSObject
 
@@ -15521,8 +15537,6 @@ declare class UITableViewController extends UIViewController implements UITableV
 
 	tableViewWillBeginEditingRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): void;
 
-	tableViewWillCommitMenuWithAnimator(tableView: UITableView, animator: UIContextMenuInteractionCommitAnimating): void;
-
 	tableViewWillDeselectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath;
 
 	tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath): void;
@@ -15663,8 +15677,6 @@ interface UITableViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 	tableViewViewForHeaderInSection?(tableView: UITableView, section: number): UIView;
 
 	tableViewWillBeginEditingRowAtIndexPath?(tableView: UITableView, indexPath: NSIndexPath): void;
-
-	tableViewWillCommitMenuWithAnimator?(tableView: UITableView, animator: UIContextMenuInteractionCommitAnimating): void;
 
 	tableViewWillDeselectRowAtIndexPath?(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath;
 
@@ -18329,6 +18341,10 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	maskView: UIView;
 
+	readonly mdc_absoluteElevation: number;
+
+	readonly mdc_baseElevation: number;
+
 	readonly mdf_effectiveUserInterfaceLayoutDirection: UIUserInterfaceLayoutDirection;
 
 	mdf_semanticContentAttribute: UISemanticContentAttribute;
@@ -18550,6 +18566,8 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	layoutSublayersOfLayer(layer: CALayer): void;
 
 	layoutSubviews(): void;
+
+	mdc_elevationDidChange(): void;
 
 	needsUpdateConstraints(): boolean;
 
