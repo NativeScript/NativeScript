@@ -881,6 +881,11 @@ export class Tabs extends TabsBase {
     }
 
     private isSelectedAndHightlightedItem(tabStripItem: TabStripItem): boolean {
+        // to find out whether the current tab strip item is active (has style with :active selector applied)
+        // we need to check whether its _visualState is equal to "highlighted" as when changing tabs
+        // we first go through setTabBarItemBackgroundColor thice, once before setting the "highlighted" state
+        // and once after that, but if the "highlighted" state is not set we cannot get the backgroundColor
+        // set using :active selector
         return (tabStripItem._index === this.selectedIndex && tabStripItem["_visualState"] === "highlighted");
     }
 
@@ -891,6 +896,14 @@ export class Tabs extends TabsBase {
 
         let newColor = value instanceof Color ? value.ios : value;
         const itemSelectedAndHighlighted = this.isSelectedAndHightlightedItem(tabStripItem);
+
+        // As we cannot implement selected item background color in Tabs we are using the Indicator for this
+        // To be able to detect that there are two different background colors (one for selected and one for not selected item)
+        // we are checking whether the current item is not selected and higlighted and we store the value of its
+        // background color to _defaultItemBackgroundColor and later if we need to process a selected and highlighted item
+        // we are comparing it's backgroun color to the default one and if there's a difference
+        // we are changing the selectionIndicatorTemplate from underline to the whole item
+        // in that mode we are not able to show the indicator as it is used for the background of the selected item
 
         if (!this._defaultItemBackgroundColor && !itemSelectedAndHighlighted) {
             this._defaultItemBackgroundColor = newColor;
