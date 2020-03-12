@@ -785,7 +785,17 @@ export class Tabs extends TabsBase {
     }
 
     private getIconRenderingMode(): UIImageRenderingMode {
-        return UIImageRenderingMode.AlwaysTemplate;
+        switch (this.tabStrip && this.tabStrip.iosIconRenderingMode) {
+            case "alwaysOriginal":
+                return UIImageRenderingMode.AlwaysOriginal;
+            case "alwaysTemplate":
+                return UIImageRenderingMode.AlwaysTemplate;
+            case "automatic":
+            default:
+                const hasItemColor = this._selectedItemColor || this._unSelectedItemColor;
+
+                return hasItemColor ? UIImageRenderingMode.AlwaysTemplate : UIImageRenderingMode.AlwaysOriginal;
+        }
     }
 
     private getIcon(tabStripItem: TabStripItem, color?: Color): UIImage {
@@ -822,7 +832,7 @@ export class Tabs extends TabsBase {
                     image = this.getFixedSizeIcon(image);
                 }
 
-                let renderingMode: UIImageRenderingMode = UIImageRenderingMode.AlwaysTemplate;
+                let renderingMode: UIImageRenderingMode = UIImageRenderingMode.Automatic;
                 if (!isFontIcon) {
                     renderingMode = this.getIconRenderingMode();
                 }
