@@ -673,7 +673,6 @@ declare class CAMediaTimingFunction extends NSObject implements NSSecureCoding {
 
 	static functionWithName(name: string): CAMediaTimingFunction;
 
-	static mdc_functionWithType(type: MDCAnimationTimingFunction): CAMediaTimingFunction;
 
 	static new(): CAMediaTimingFunction; // inherited from NSObject
 

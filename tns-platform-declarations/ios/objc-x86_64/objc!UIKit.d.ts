@@ -2748,9 +2748,7 @@ declare class UIApplication extends UIResponder {
 
 	static alloc(): UIApplication; // inherited from NSObject
 
-	static mdc_isAppExtension(): boolean;
 
-	static mdc_safeSharedApplication(): UIApplication;
 
 	static new(): UIApplication; // inherited from NSObject
 
@@ -5343,7 +5341,6 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 
 	static itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
-	static mdc_blendColorWithBackgroundColor(color: UIColor, backgroundColor: UIColor): UIColor;
 
 	static new(): UIColor; // inherited from NSObject
 
@@ -5543,13 +5540,9 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 
 	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
 
-	mdc_resolvedColorWithElevation(elevation: number): UIColor;
 
-	mdc_resolvedColorWithTraitCollection(traitCollection: UITraitCollection): UIColor;
 
-	mdc_resolvedColorWithTraitCollectionElevation(traitCollection: UITraitCollection, elevation: number): UIColor;
 
-	mdc_resolvedColorWithTraitCollectionPreviousTraitCollectionElevation(traitCollection: UITraitCollection, previousTraitCollection: UITraitCollection, elevation: number): UIColor;
 
 	performSelector(aSelector: string): any;
 
@@ -7720,9 +7713,7 @@ declare class UIFont extends NSObject implements NSCopying {
 
 	static italicSystemFontOfSize(fontSize: number): UIFont;
 
-	static mdc_preferredFontForMaterialTextStyle(style: MDCFontTextStyle): UIFont;
 
-	static mdc_standardFontForMaterialTextStyle(style: MDCFontTextStyle): UIFont;
 
 	static monospacedDigitSystemFontOfSizeWeight(fontSize: number, weight: number): UIFont;
 
@@ -7754,7 +7745,6 @@ declare class UIFont extends NSObject implements NSCopying {
 
 	readonly lineHeight: number;
 
-	mdc_scalingCurve: NSDictionary<string, number>;
 
 	readonly pointSize: number;
 
@@ -7774,17 +7764,11 @@ declare class UIFont extends NSObject implements NSCopying {
 
 	fontWithSize(fontSize: number): UIFont;
 
-	mdc_fontSizedForMaterialTextStyleScaledForDynamicType(style: MDCFontTextStyle, scaled: boolean): UIFont;
 
-	mdc_isSimplyEqual(font: UIFont): boolean;
 
-	mdc_scaledFontAtDefaultSize(): UIFont;
 
-	mdc_scaledFontForCurrentSizeCategory(): UIFont;
 
-	mdc_scaledFontForSizeCategory(sizeCategory: string): UIFont;
 
-	mdc_scaledFontForTraitEnvironment(traitEnvironment: UITraitEnvironment): UIFont;
 }
 
 declare class UIFontDescriptor extends NSObject implements NSCopying, NSSecureCoding {
@@ -7797,9 +7781,7 @@ declare class UIFontDescriptor extends NSObject implements NSCopying, NSSecureCo
 
 	static fontDescriptorWithNameSize(fontName: string, size: number): UIFontDescriptor;
 
-	static mdc_preferredFontDescriptorForMaterialTextStyle(style: MDCFontTextStyle): UIFontDescriptor;
 
-	static mdc_standardFontDescriptorForMaterialTextStyle(style: MDCFontTextStyle): UIFontDescriptor;
 
 	static new(): UIFontDescriptor; // inherited from NSObject
 
@@ -18215,7 +18197,6 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	static commitAnimations(): void;
 
-	static mdc_animateWithTimingFunctionDurationDelayOptionsAnimationsCompletion(timingFunction: CAMediaTimingFunction, duration: number, delay: number, options: UIViewAnimationOptions, animations: () => void, completion: (p1: boolean) => void): void;
 
 	static mdf_userInterfaceLayoutDirectionForSemanticContentAttribute(semanticContentAttribute: UISemanticContentAttribute): UIUserInterfaceLayoutDirection;
 
@@ -18341,9 +18322,7 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	maskView: UIView;
 
-	readonly mdc_absoluteElevation: number;
 
-	readonly mdc_baseElevation: number;
 
 	readonly mdf_effectiveUserInterfaceLayoutDirection: UIUserInterfaceLayoutDirection;
 
@@ -18567,7 +18546,6 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	layoutSubviews(): void;
 
-	mdc_elevationDidChange(): void;
 
 	needsUpdateConstraints(): boolean;
 
