@@ -127,13 +127,13 @@ export class GesturesObserver extends GesturesObserverBase {
 
             if (type & GestureTypes.tap) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.tap, args => {
-                  this._executeCallback(_getTapData(args))
+                  this._executeCallback(_getTapData(args));
                 }));
             }
 
             if (type & GestureTypes.doubleTap) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.doubleTap, args => {
-                  this._executeCallback(_getTapData(args))
+                  this._executeCallback(_getTapData(args));
                 }));
             }
 
@@ -319,7 +319,7 @@ function _getTapData(args: GestureEventData): TapGestureEventData {
     getPointerCount: () => recognizer.numberOfTouches,
     getX: () => layout.toDeviceIndependentPixels(center.x),
     getY: () => layout.toDeviceIndependentPixels(center.y)
-  }
+  };
 }
 
 function _getPinchData(args: GestureEventData): PinchGestureEventData {

@@ -372,7 +372,6 @@ export class GesturesObserver extends GesturesObserverBase {
     }
 }
 
-
 function _getTapArgs(type: GestureTypes, view: View, e: android.view.MotionEvent): TapGestureEventData {
   return <TapGestureEventData>{
     type: type,
@@ -384,7 +383,7 @@ function _getTapArgs(type: GestureTypes, view: View, e: android.view.MotionEvent
     getPointerCount: () => e.getPointerCount(),
     getX: () => layout.toDeviceIndependentPixels(e.getX()),
     getY: () => layout.toDeviceIndependentPixels(e.getY())
-  }
+  };
 }
 
 function _getLongPressArgs(type: GestureTypes, view: View, state: GestureStateTypes, e: android.view.MotionEvent): GestureEventDataWithState {
