@@ -870,17 +870,17 @@ export class Frame extends View {
 
 // @public
 export interface GestureEventData extends EventData {
-    android: any
-    ios: any /* UIGestureRecognizer */;
-    type: GestureTypes;
-    view: View;
-}
+     android: any
+     ios: any /* UIGestureRecognizer */;
+     type: GestureTypes;
+     view: View;
+ }
 
 // @public
 export interface GestureEventDataWithState extends GestureEventData {
     // (undocumented)
     state: number;
-}
+ }
 
 // @public
 export class GesturesObserver {
@@ -897,7 +897,7 @@ export class GesturesObserver {
     observe(type: GestureTypes);
 
     type: GestureTypes;
-}
+ }
 
 // @public
 export enum GestureStateTypes {
@@ -905,7 +905,7 @@ export enum GestureStateTypes {
     cancelled,
     changed,
     ended
-}
+ }
 
 // @public
 export enum GestureTypes {
@@ -917,7 +917,7 @@ export enum GestureTypes {
     swipe,
     tap,
     touch
-}
+ }
 
 // @public
 export class GridLayout extends LayoutBase {
@@ -1011,49 +1011,49 @@ export const Http: {
 
 // @public
 export interface HttpContent {
-  raw: any;
+    raw: any;
 
-  toArrayBuffer: () => ArrayBuffer;
+    toArrayBuffer: () => ArrayBuffer;
 
-  toFile: (destinationFilePath?: string) => File;
+    toFile: (destinationFilePath?: string) => File;
 
-  toImage: () => Promise<ImageSource>;
+    toImage: () => Promise<ImageSource>;
 
-  toJSON: (encoding?: HttpResponseEncoding) => any;
+    toJSON: (encoding?: HttpResponseEncoding) => any;
 
-  toString: (encoding?: HttpResponseEncoding) => string;
+    toString: (encoding?: HttpResponseEncoding) => string;
 }
 
 // @public
 export interface HttpRequestOptions {
-  content?: string | FormData | ArrayBuffer;
+    content?: string | FormData | ArrayBuffer;
 
-  dontFollowRedirects?: boolean;
+    dontFollowRedirects?: boolean;
 
-  headers?: any;
+    headers?: any;
 
-  method: string;
+    method: string;
 
-  timeout?: number;
+    timeout?: number;
 
-  url: string;
+    url: string;
 }
 
 // @public
 export interface HttpResponse {
-  content?: HttpContent;
+    content?: HttpContent;
 
-  headers: Headers;
+    headers: Headers;
 
-  statusCode: number;
+    statusCode: number;
 }
 
 // @public (undocumented)
 export enum HttpResponseEncoding {
-  // (undocumented)
-  GBK,
-  // (undocumented)
-  UTF8
+    // (undocumented)
+    GBK,
+    // (undocumented)
+    UTF8
 }
 
 // @public
@@ -1646,7 +1646,7 @@ export interface PanGestureEventData extends GestureEventDataWithState {
     deltaX: number;
     // (undocumented)
     deltaY: number;
-}
+ }
 
 // @public
 export interface ParserEvent {
@@ -1702,7 +1702,7 @@ export interface PinchGestureEventData extends GestureEventDataWithState {
 
     // (undocumented)
     scale: number;
-}
+ }
 
 // @public
 export class Placeholder extends View {
@@ -1767,7 +1767,7 @@ export class Repeater extends CustomLayoutView {
 export interface RotationGestureEventData extends GestureEventDataWithState {
     // (undocumented)
     rotation: number;
-}
+ }
 
 // @public
 export module Screen {
@@ -2172,13 +2172,13 @@ export enum SwipeDirection {
     left,
     right,
     up
-}
+ }
 
 // @public
 export interface SwipeGestureEventData extends GestureEventData {
     // (undocumented)
     direction: SwipeDirection;
-}
+ }
 
 // @public
 export class Switch extends View {
@@ -2404,6 +2404,15 @@ export class TabViewItem extends ViewBase {
 }
 
 // @public
+export interface TapGestureEventData extends GestureEventData {
+    getPointerCount(): number;
+
+    getX(): number;
+    
+    getY(): number;
+ }
+
+// @public
 export interface Template {
     (): View;
 }
@@ -2522,23 +2531,12 @@ export interface TimerInfo {
 }
 
 // @public
-export interface TapGestureEventData extends GestureEventData {
-    getPointerCount(): number;
-    
-    getX(): number;
-    
-    getY(): number
-}
-
-// @public
 export interface TouchGestureEventData extends TapGestureEventData {
     action: "up" | "move" | "down" | "cancel";
-
     // Warning: (ae-forgotten-export) The symbol "Pointer" needs to be exported by the entry point index.d.ts
     getActivePointers(): Array<Pointer>;
-
     getAllPointers(): Array<Pointer>;
-}
+ }
 
 // @public (undocumented)
 export const Trace: {
