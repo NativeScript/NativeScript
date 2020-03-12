@@ -669,11 +669,8 @@ export class Tabs extends TabsBase {
             tabItemSpec.backgroundColor = backgroundColor ? backgroundColor.android : this.getTabBarBackgroundArgbColor();
 
             // COLOR
-            let color = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
-            if (!color) {
-                color = nestedLabel.style.color;
-            }
-
+            let rowColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
+            const color = rowColor || nestedLabel.style.color;
             tabItemSpec.color = color && color.android;
 
             // FONT
@@ -686,7 +683,7 @@ export class Tabs extends TabsBase {
             // ICON
             const iconSource = tabStripItem.image && tabStripItem.image.src;
             if (iconSource) {
-                const icon = this.getIcon(tabStripItem, color);
+                const icon = this.getIcon(tabStripItem, rowColor);
 
                 if (icon) {
                     // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
