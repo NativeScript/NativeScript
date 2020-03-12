@@ -150,6 +150,22 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         // overridden by inheritors
     }
 
+    public getTabBarSelectedItemColor(): any {
+        // overridden by inheritors
+    }
+
+    public setTabBarSelectedItemColor(value: any) {
+        // overridden by inheritors
+    }
+
+    public getTabBarUnSelectedItemColor(): any {
+        // overridden by inheritors
+    }
+
+    public setTabBarUnSelectedItemColor(value: any) {
+        // overridden by inheritors
+    }
+
     public getTabBarColor(): any {
         // overridden by inheritors
         return null;
