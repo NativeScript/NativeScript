@@ -154,25 +154,25 @@ export class TabNavigationBase extends View {
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    getTabBarSelectedItemColor(): any
+    getTabBarSelectedItemColor(): Color
 
     /**
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    setTabBarSelectedItemColor(value: any)
+    setTabBarSelectedItemColor(value: Color)
 
     /**
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    getTabBarUnSelectedItemColor(): any
+    getTabBarUnSelectedItemColor(): Color
 
     /**
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    setTabBarUnSelectedItemColor(value: any)
+    setTabBarUnSelectedItemColor(value: Color)
 
     /**
      * @private
