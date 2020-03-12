@@ -461,7 +461,6 @@ export class Tabs extends TabsBase {
     private _iconsCache = {};
     private _backgroundIndicatorColor: UIColor;
     public _defaultItemBackgroundColor: UIColor;
-
     private _selectedItemColor: Color;
     private _unSelectedItemColor: Color;
 
@@ -916,12 +915,9 @@ export class Tabs extends TabsBase {
     public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
         let image: UIImage;
 
-        if (!this._unSelectedItemColor && !this._selectedItemColor) {
-            image = this.getIcon(tabStripItem);
-        } else {
-            const isSelected = this.isSelectedAndHightlightedItem(tabStripItem);
-            image = this.getIcon(tabStripItem, isSelected ? this._selectedItemColor : this._unSelectedItemColor);
-        }
+        // if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
+        const tabStripColor = (this.selectedIndex === tabStripItem._index) ? this._selectedItemColor : this._unSelectedItemColor;
+        image = this.getIcon(tabStripItem, tabStripColor);
 
         tabStripItem.nativeView.image = image;
     }

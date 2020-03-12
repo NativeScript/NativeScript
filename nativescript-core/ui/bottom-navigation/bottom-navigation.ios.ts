@@ -257,7 +257,6 @@ export class BottomNavigation extends TabNavigationBase {
     private _delegate: UITabBarControllerDelegateImpl;
     private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
     private _iconsCache = {};
-
     private _selectedItemColor: Color;
     private _unSelectedItemColor: Color;
 
@@ -743,6 +742,7 @@ export class BottomNavigation extends TabNavigationBase {
         const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
         let attributes: any = { [NSFontAttributeName]: font };
 
+        // if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
         if (!this._selectedItemColor && !this._unSelectedItemColor) {
             if (textColor) {
                 attributes[UITextAttributeTextColor] = textColor;
