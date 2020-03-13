@@ -576,6 +576,7 @@ export class BottomNavigation extends TabNavigationBase {
         items.forEach((item, i, arr) => {
             const textView = this._bottomNavigationBar.getTextViewForItemAt(i);
             item.setNativeView(textView);
+            this._setItemColor(item);
         });
     }
 

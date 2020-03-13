@@ -639,6 +639,7 @@ export class Tabs extends TabsBase {
         items.forEach((item, i, arr) => {
             const tv = tabsBar.getTextViewForItemAt(i);
             item.setNativeView(tv);
+            this._setItemColor(item);
         });
     }
 

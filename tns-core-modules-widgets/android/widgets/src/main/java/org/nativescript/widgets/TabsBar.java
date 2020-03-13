@@ -272,9 +272,6 @@ public class TabsBar extends HorizontalScrollView {
         } else if (tabItem.iconDrawable != null) {
             imgView.setImageDrawable(tabItem.iconDrawable);
             imgView.setVisibility(VISIBLE);
-            if (tabItem.color != 0) {
-                imgView.setColorFilter(tabItem.color);
-            }
         } else {
             imgView.setVisibility(GONE);
         }
