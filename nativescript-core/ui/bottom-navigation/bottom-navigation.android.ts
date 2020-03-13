@@ -754,10 +754,10 @@ export class BottomNavigation extends TabNavigationBase {
         tabStripItem.nativeViewProtected.setTextColor(itemColor.android);
 
         // set icon color
-        this._setIconColor(tabStripItem, itemColor);
+        this.setIconColor(tabStripItem, itemColor);
     }
 
-    private _setIconColor(tabStripItem: TabStripItem, color?: Color) {
+    private setIconColor(tabStripItem: TabStripItem, color?: Color) {
         const tabBarItem = this._bottomNavigationBar.getViewForItemAt(tabStripItem._index);
 
         const drawableInfo = this.getIconInfo(tabStripItem, color);

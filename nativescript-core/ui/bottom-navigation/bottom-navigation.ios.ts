@@ -374,7 +374,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        this.setViewTextAttributes(tabStripItem.nativeView, tabStripItem.label);
+        this.setViewAttributes(tabStripItem.nativeView, tabStripItem.label);
     }
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
@@ -387,7 +387,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        this.setViewTextAttributes(tabStripItem.nativeView, tabStripItem.label);
+        this.setViewAttributes(tabStripItem.nativeView, tabStripItem.label);
     }
 
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
@@ -541,7 +541,7 @@ export class BottomNavigation extends TabNavigationBase {
                 const tabBarItem = this.createTabBarItem(tabStripItem, i);
                 updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
 
-                this.setViewTextAttributes(tabBarItem, tabStripItem.label);
+                this.setViewAttributes(tabBarItem, tabStripItem.label);
 
                 controller.tabBarItem = tabBarItem;
                 tabStripItem._index = i;
@@ -551,7 +551,7 @@ export class BottomNavigation extends TabNavigationBase {
             controllers.addObject(controller);
         });
 
-        this._setItemImages();
+        this.setItemImages();
 
         this._ios.viewControllers = controllers;
         this._ios.customizableViewControllers = null;
@@ -560,7 +560,7 @@ export class BottomNavigation extends TabNavigationBase {
         this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
     }
 
-    private _setItemImages() {
+    private setItemImages() {
         if (this._selectedItemColor || this._unSelectedItemColor) {
             if (this.tabStrip && this.tabStrip.items) {
                 this.tabStrip.items.forEach(item => {
@@ -730,7 +730,7 @@ export class BottomNavigation extends TabNavigationBase {
         selectedIndexProperty.coerce(this);
     }
 
-    private setViewTextAttributes(item: UITabBarItem, view: View): any {
+    private setViewAttributes(item: UITabBarItem, view: View): any {
         if (!view) {
             return null;
         }

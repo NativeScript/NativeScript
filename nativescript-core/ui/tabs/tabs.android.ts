@@ -846,10 +846,10 @@ export class Tabs extends TabsBase {
         tabStripItem.nativeViewProtected.setTextColor(itemColor.android);
 
         // set icon color
-        this._setIconColor(tabStripItem, itemColor);
+        this.setIconColor(tabStripItem, itemColor);
     }
 
-    private _setIconColor(tabStripItem: TabStripItem, color?: Color) {
+    private setIconColor(tabStripItem: TabStripItem, color?: Color) {
         const tabBarItem = this._tabsBar.getViewForItemAt(tabStripItem._index);
 
         const drawable = this.getIcon(tabStripItem, color);
