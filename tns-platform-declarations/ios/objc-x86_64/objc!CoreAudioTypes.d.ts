@@ -85,15 +85,15 @@ declare const enum AudioChannelBitmap {
 
 	kAudioChannelBit_TopBackRight = 131072,
 
-	kAudioChannelBit_LeftTopFront = 262144,
+	kAudioChannelBit_LeftTopFront = 4096,
 
-	kAudioChannelBit_CenterTopFront = 524288,
+	kAudioChannelBit_CenterTopFront = 8192,
 
-	kAudioChannelBit_RightTopFront = 1048576,
+	kAudioChannelBit_RightTopFront = 16384,
 
 	kAudioChannelBit_LeftTopMiddle = 2097152,
 
-	kAudioChannelBit_CenterTopMiddle = 4194304,
+	kAudioChannelBit_CenterTopMiddle = 2048,
 
 	kAudioChannelBit_RightTopMiddle = 8388608,
 
