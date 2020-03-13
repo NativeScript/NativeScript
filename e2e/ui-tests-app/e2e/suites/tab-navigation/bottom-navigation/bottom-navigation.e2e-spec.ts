@@ -309,6 +309,7 @@ describe(`${suite}-${spec}-suite`, async function () {
         await bottomNavigationBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
+        // go through the tabs and check that they are loaded
         await bottomNavigationBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 

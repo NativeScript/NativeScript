@@ -286,6 +286,7 @@ describe(`${imagePrefix}-suite`, async function () {
 
     it(`${imagePrefix}-frame-in-tabs`, async function () {
         await tabsViewBasePage.navigateToSample("frame-in-tabs");
+        await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
         // go through the tabs and check that they are loaded
@@ -307,6 +308,7 @@ describe(`${imagePrefix}-suite`, async function () {
         await tabsViewBasePage.refreshTabItems();
         await driver.imageHelper.compareScreen();
 
+        // go through the tabs and check that they are loaded
         await tabsViewBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 
