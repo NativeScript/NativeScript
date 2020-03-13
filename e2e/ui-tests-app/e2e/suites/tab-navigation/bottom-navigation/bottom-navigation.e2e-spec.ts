@@ -303,4 +303,19 @@ describe(`${suite}-${spec}-suite`, async function () {
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
+
+    it(`${spec}-item-color`, async function () {
+        await bottomNavigationBasePage.navigateToSample("item-color");
+        await bottomNavigationBasePage.refreshTabItems();
+        await driver.imageHelper.compareScreen();
+
+        await bottomNavigationBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        await bottomNavigationBasePage.tabOnItem(2);
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await bottomNavigationBasePage.navigateBackToSuitMainPage();
+    });
 });
