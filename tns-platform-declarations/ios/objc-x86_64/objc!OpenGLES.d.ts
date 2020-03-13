@@ -87,9 +87,9 @@ declare function glBeginQueryEXT(target: number, id: number): void;
 
 declare function glBeginTransformFeedback(primitiveMode: number): void;
 
-declare function glBindAttribLocation(program: number, index: number, name: string): void;
+declare function glBindAttribLocation(program: number, index: number, name: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glBindAttribLocationFunction(program: number, index: number, name: string): void;
+declare function glBindAttribLocationFunction(program: number, index: number, name: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function glBindBuffer(target: number, buffer: number): void;
 
@@ -557,17 +557,17 @@ declare function glGenerateMipmapFunction(target: number): void;
 
 declare function glGenerateMipmapOES(target: number): void;
 
-declare function glGetActiveAttrib(program: number, index: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, type: interop.Pointer | interop.Reference<number>, name: string): void;
+declare function glGetActiveAttrib(program: number, index: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, type: interop.Pointer | interop.Reference<number>, name: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetActiveAttribFunction(program: number, index: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, type: interop.Pointer | interop.Reference<number>, name: string): void;
+declare function glGetActiveAttribFunction(program: number, index: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, type: interop.Pointer | interop.Reference<number>, name: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetActiveUniform(program: number, index: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, type: interop.Pointer | interop.Reference<number>, name: string): void;
+declare function glGetActiveUniform(program: number, index: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, type: interop.Pointer | interop.Reference<number>, name: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetActiveUniformBlockName(program: number, uniformBlockIndex: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, uniformBlockName: string): void;
+declare function glGetActiveUniformBlockName(program: number, uniformBlockIndex: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, uniformBlockName: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function glGetActiveUniformBlockiv(program: number, uniformBlockIndex: number, pname: number, params: interop.Pointer | interop.Reference<number>): void;
 
-declare function glGetActiveUniformFunction(program: number, index: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, type: interop.Pointer | interop.Reference<number>, name: string): void;
+declare function glGetActiveUniformFunction(program: number, index: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, type: interop.Pointer | interop.Reference<number>, name: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function glGetActiveUniformsiv(program: number, uniformCount: number, uniformIndices: interop.Pointer | interop.Reference<number>, pname: number, params: interop.Pointer | interop.Reference<number>): void;
 
@@ -575,15 +575,15 @@ declare function glGetAttachedShaders(program: number, maxcount: number, count: 
 
 declare function glGetAttachedShadersFunction(program: number, maxcount: number, count: interop.Pointer | interop.Reference<number>, shaders: interop.Pointer | interop.Reference<number>): void;
 
-declare function glGetAttribLocation(program: number, name: string): number;
+declare function glGetAttribLocation(program: number, name: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function glGetAttribLocationFunction(program: number, name: string): number;
+declare function glGetAttribLocationFunction(program: number, name: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function glGetBooleanv(pname: number, params: string): void;
+declare function glGetBooleanv(pname: number, params: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetBooleanvFunction(pname: number, params: string): void;
+declare function glGetBooleanvFunction(pname: number, params: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetBooleanvFunction2(pname: number, params: string): void;
+declare function glGetBooleanvFunction2(pname: number, params: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function glGetBufferParameteri64v(target: number, pname: number, params: interop.Pointer | interop.Reference<number>): void;
 
@@ -617,7 +617,7 @@ declare function glGetFloatvFunction(pname: number, params: interop.Pointer | in
 
 declare function glGetFloatvFunction2(pname: number, params: interop.Pointer | interop.Reference<number>): void;
 
-declare function glGetFragDataLocation(program: number, name: string): number;
+declare function glGetFragDataLocation(program: number, name: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function glGetFramebufferAttachmentParameteriv(target: number, attachment: number, pname: number, params: interop.Pointer | interop.Reference<number>): void;
 
@@ -649,23 +649,23 @@ declare function glGetMaterialfv(face: number, pname: number, params: interop.Po
 
 declare function glGetMaterialxv(face: number, pname: number, params: interop.Pointer | interop.Reference<number>): void;
 
-declare function glGetObjectLabelEXT(type: number, object: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, label: string): void;
+declare function glGetObjectLabelEXT(type: number, object: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, label: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetObjectLabelEXTFunction(type: number, object: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, label: string): void;
+declare function glGetObjectLabelEXTFunction(type: number, object: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, label: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetObjectLabelEXTFunction2(type: number, object: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, label: string): void;
+declare function glGetObjectLabelEXTFunction2(type: number, object: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, label: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function glGetPointerv(pname: number, params: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
 declare function glGetProgramBinary(program: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, binaryFormat: interop.Pointer | interop.Reference<number>, binary: interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetProgramInfoLog(program: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, infolog: string): void;
+declare function glGetProgramInfoLog(program: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, infolog: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetProgramInfoLogFunction(program: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, infolog: string): void;
+declare function glGetProgramInfoLogFunction(program: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, infolog: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetProgramPipelineInfoLogEXT(pipeline: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, infoLog: string): void;
+declare function glGetProgramPipelineInfoLogEXT(pipeline: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, infoLog: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetProgramPipelineInfoLogEXTFunction(pipeline: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, infoLog: string): void;
+declare function glGetProgramPipelineInfoLogEXTFunction(pipeline: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, infoLog: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function glGetProgramPipelineivEXT(pipeline: number, pname: number, params: interop.Pointer | interop.Reference<number>): void;
 
@@ -693,17 +693,17 @@ declare function glGetSamplerParameterfv(sampler: number, pname: number, params:
 
 declare function glGetSamplerParameteriv(sampler: number, pname: number, params: interop.Pointer | interop.Reference<number>): void;
 
-declare function glGetShaderInfoLog(shader: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, infolog: string): void;
+declare function glGetShaderInfoLog(shader: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, infolog: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetShaderInfoLogFunction(shader: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, infolog: string): void;
+declare function glGetShaderInfoLogFunction(shader: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, infolog: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function glGetShaderPrecisionFormat(shadertype: number, precisiontype: number, range: interop.Pointer | interop.Reference<number>, precision: interop.Pointer | interop.Reference<number>): void;
 
 declare function glGetShaderPrecisionFormatFunction(shadertype: number, precisiontype: number, range: interop.Pointer | interop.Reference<number>, precision: interop.Pointer | interop.Reference<number>): void;
 
-declare function glGetShaderSource(shader: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, source: string): void;
+declare function glGetShaderSource(shader: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, source: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetShaderSourceFunction(shader: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, source: string): void;
+declare function glGetShaderSourceFunction(shader: number, bufsize: number, length: interop.Pointer | interop.Reference<number>, source: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function glGetShaderiv(shader: number, pname: number, params: interop.Pointer | interop.Reference<number>): void;
 
@@ -741,15 +741,15 @@ declare function glGetTexParameterivFunction2(target: number, pname: number, par
 
 declare function glGetTexParameterxv(target: number, pname: number, params: interop.Pointer | interop.Reference<number>): void;
 
-declare function glGetTransformFeedbackVarying(program: number, index: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, type: interop.Pointer | interop.Reference<number>, name: string): void;
+declare function glGetTransformFeedbackVarying(program: number, index: number, bufSize: number, length: interop.Pointer | interop.Reference<number>, size: interop.Pointer | interop.Reference<number>, type: interop.Pointer | interop.Reference<number>, name: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glGetUniformBlockIndex(program: number, uniformBlockName: string): number;
+declare function glGetUniformBlockIndex(program: number, uniformBlockName: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function glGetUniformIndices(program: number, uniformCount: number, uniformNames: interop.Pointer | interop.Reference<string>, uniformIndices: interop.Pointer | interop.Reference<number>): void;
 
-declare function glGetUniformLocation(program: number, name: string): number;
+declare function glGetUniformLocation(program: number, name: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function glGetUniformLocationFunction(program: number, name: string): number;
+declare function glGetUniformLocationFunction(program: number, name: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function glGetUniformfv(program: number, location: number, params: interop.Pointer | interop.Reference<number>): void;
 
@@ -783,11 +783,11 @@ declare function glHintFunction(target: number, mode: number): void;
 
 declare function glHintFunction2(target: number, mode: number): void;
 
-declare function glInsertEventMarkerEXT(length: number, marker: string): void;
+declare function glInsertEventMarkerEXT(length: number, marker: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glInsertEventMarkerEXTFunction(length: number, marker: string): void;
+declare function glInsertEventMarkerEXTFunction(length: number, marker: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glInsertEventMarkerEXTFunction2(length: number, marker: string): void;
+declare function glInsertEventMarkerEXTFunction2(length: number, marker: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function glInvalidateFramebuffer(target: number, numAttachments: number, attachments: interop.Pointer | interop.Reference<number>): void;
 
@@ -853,11 +853,11 @@ declare function glIsVertexArrayOES(array: number): number;
 
 declare function glIsVertexArrayOESFunction(array: number): number;
 
-declare function glLabelObjectEXT(type: number, object: number, length: number, label: string): void;
+declare function glLabelObjectEXT(type: number, object: number, length: number, label: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glLabelObjectEXTFunction(type: number, object: number, length: number, label: string): void;
+declare function glLabelObjectEXTFunction(type: number, object: number, length: number, label: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glLabelObjectEXTFunction2(type: number, object: number, length: number, label: string): void;
+declare function glLabelObjectEXTFunction2(type: number, object: number, length: number, label: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function glLightModelf(pname: number, param: number): void;
 
@@ -1087,11 +1087,11 @@ declare function glProgramUniformMatrix4x2fvEXT(program: number, location: numbe
 
 declare function glProgramUniformMatrix4x3fvEXT(program: number, location: number, count: number, transpose: number, value: interop.Pointer | interop.Reference<number>): void;
 
-declare function glPushGroupMarkerEXT(length: number, marker: string): void;
+declare function glPushGroupMarkerEXT(length: number, marker: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glPushGroupMarkerEXTFunction(length: number, marker: string): void;
+declare function glPushGroupMarkerEXTFunction(length: number, marker: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function glPushGroupMarkerEXTFunction2(length: number, marker: string): void;
+declare function glPushGroupMarkerEXTFunction2(length: number, marker: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function glPushMatrix(): void;
 
