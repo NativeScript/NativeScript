@@ -107,6 +107,14 @@ function initializeNativeClasses() {
                 this.owner._originalBackground = this.owner.backgroundColor || new Color("White");
                 this.owner.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
                 this.backgroundBitmap = null;
+
+                let thisView = this.getView();
+                if (thisView) {
+                    let thisViewParent = thisView.getParent();
+                    if (thisViewParent && thisViewParent instanceof android.view.ViewGroup) {
+                        thisViewParent.removeView(thisView);
+                    }
+                }
             }
 
             super.onDestroyView();
