@@ -7,9 +7,9 @@ declare function CMAudioFormatDescriptionCreate(allocator: any, asbd: interop.Po
 
 declare function CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionBlockBuffer(allocator: any, soundDescriptionBlockBuffer: any, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionData(allocator: any, soundDescriptionData: string, size: number, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionData(allocator: any, soundDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMAudioFormatDescriptionCreateSummary(allocator: any, formatDescriptionArray: NSArray<any>, flags: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCreateSummary(allocator: any, formatDescriptionArray: NSArray<any> | any[], flags: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMAudioFormatDescriptionEqual(formatDescription: any, otherFormatDescription: any, equalityMask: number, equalityMaskOut: interop.Pointer | interop.Reference<number>): boolean;
 
@@ -182,7 +182,7 @@ declare function CMClosedCaptionFormatDescriptionCopyAsBigEndianClosedCaptionDes
 
 declare function CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCaptionDescriptionBlockBuffer(allocator: any, closedCaptionDescriptionBlockBuffer: any, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCaptionDescriptionData(allocator: any, closedCaptionDescriptionData: string, size: number, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCaptionDescriptionData(allocator: any, closedCaptionDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMCopyDictionaryOfAttachments(allocator: any, target: any, attachmentMode: number): NSDictionary<any, any>;
 
@@ -238,7 +238,7 @@ declare function CMMetadataDataTypeRegistryGetConformingDataTypes(dataType: stri
 
 declare function CMMetadataDataTypeRegistryGetDataTypeDescription(dataType: string): string;
 
-declare function CMMetadataDataTypeRegistryRegisterDataType(dataType: string, description: string, conformingDataTypes: NSArray<any>): number;
+declare function CMMetadataDataTypeRegistryRegisterDataType(dataType: string, description: string, conformingDataTypes: NSArray<any> | any[]): number;
 
 declare function CMMetadataFormatDescriptionCopyAsBigEndianMetadataDescriptionBlockBuffer(allocator: any, metadataFormatDescription: any, flavor: any, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
 
@@ -246,13 +246,13 @@ declare function CMMetadataFormatDescriptionCreateByMergingMetadataFormatDescrip
 
 declare function CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescriptionBlockBuffer(allocator: any, metadataDescriptionBlockBuffer: any, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescriptionData(allocator: any, metadataDescriptionData: string, size: number, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescriptionData(allocator: any, metadataDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMMetadataFormatDescriptionCreateWithKeys(allocator: any, metadataType: number, keys: NSArray<any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateWithKeys(allocator: any, metadataType: number, keys: NSArray<any> | any[], formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMMetadataFormatDescriptionCreateWithMetadataFormatDescriptionAndMetadataSpecifications(allocator: any, sourceDescription: any, metadataSpecifications: NSArray<any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateWithMetadataFormatDescriptionAndMetadataSpecifications(allocator: any, sourceDescription: any, metadataSpecifications: NSArray<any> | any[], formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMMetadataFormatDescriptionCreateWithMetadataSpecifications(allocator: any, metadataType: number, metadataSpecifications: NSArray<any>, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateWithMetadataSpecifications(allocator: any, metadataType: number, metadataSpecifications: NSArray<any> | any[], formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMMetadataFormatDescriptionGetIdentifiers(desc: any): NSArray<any>;
 
@@ -385,29 +385,29 @@ declare function CMSimpleQueueGetTypeID(): number;
 
 declare function CMSimpleQueueReset(queue: any): number;
 
-declare function CMSwapBigEndianClosedCaptionDescriptionToHost(closedCaptionDescriptionData: string, closedCaptionDescriptionSize: number): number;
+declare function CMSwapBigEndianClosedCaptionDescriptionToHost(closedCaptionDescriptionData: string | interop.Pointer | interop.Reference<any>, closedCaptionDescriptionSize: number): number;
 
-declare function CMSwapBigEndianImageDescriptionToHost(imageDescriptionData: string, imageDescriptionSize: number): number;
+declare function CMSwapBigEndianImageDescriptionToHost(imageDescriptionData: string | interop.Pointer | interop.Reference<any>, imageDescriptionSize: number): number;
 
-declare function CMSwapBigEndianMetadataDescriptionToHost(metadataDescriptionData: string, metadataDescriptionSize: number): number;
+declare function CMSwapBigEndianMetadataDescriptionToHost(metadataDescriptionData: string | interop.Pointer | interop.Reference<any>, metadataDescriptionSize: number): number;
 
-declare function CMSwapBigEndianSoundDescriptionToHost(soundDescriptionData: string, soundDescriptionSize: number): number;
+declare function CMSwapBigEndianSoundDescriptionToHost(soundDescriptionData: string | interop.Pointer | interop.Reference<any>, soundDescriptionSize: number): number;
 
-declare function CMSwapBigEndianTextDescriptionToHost(textDescriptionData: string, textDescriptionSize: number): number;
+declare function CMSwapBigEndianTextDescriptionToHost(textDescriptionData: string | interop.Pointer | interop.Reference<any>, textDescriptionSize: number): number;
 
-declare function CMSwapBigEndianTimeCodeDescriptionToHost(timeCodeDescriptionData: string, timeCodeDescriptionSize: number): number;
+declare function CMSwapBigEndianTimeCodeDescriptionToHost(timeCodeDescriptionData: string | interop.Pointer | interop.Reference<any>, timeCodeDescriptionSize: number): number;
 
-declare function CMSwapHostEndianClosedCaptionDescriptionToBig(closedCaptionDescriptionData: string, closedCaptionDescriptionSize: number): number;
+declare function CMSwapHostEndianClosedCaptionDescriptionToBig(closedCaptionDescriptionData: string | interop.Pointer | interop.Reference<any>, closedCaptionDescriptionSize: number): number;
 
-declare function CMSwapHostEndianImageDescriptionToBig(imageDescriptionData: string, imageDescriptionSize: number): number;
+declare function CMSwapHostEndianImageDescriptionToBig(imageDescriptionData: string | interop.Pointer | interop.Reference<any>, imageDescriptionSize: number): number;
 
-declare function CMSwapHostEndianMetadataDescriptionToBig(metadataDescriptionData: string, metadataDescriptionSize: number): number;
+declare function CMSwapHostEndianMetadataDescriptionToBig(metadataDescriptionData: string | interop.Pointer | interop.Reference<any>, metadataDescriptionSize: number): number;
 
-declare function CMSwapHostEndianSoundDescriptionToBig(soundDescriptionData: string, soundDescriptionSize: number): number;
+declare function CMSwapHostEndianSoundDescriptionToBig(soundDescriptionData: string | interop.Pointer | interop.Reference<any>, soundDescriptionSize: number): number;
 
-declare function CMSwapHostEndianTextDescriptionToBig(textDescriptionData: string, textDescriptionSize: number): number;
+declare function CMSwapHostEndianTextDescriptionToBig(textDescriptionData: string | interop.Pointer | interop.Reference<any>, textDescriptionSize: number): number;
 
-declare function CMSwapHostEndianTimeCodeDescriptionToBig(timeCodeDescriptionData: string, timeCodeDescriptionSize: number): number;
+declare function CMSwapHostEndianTimeCodeDescriptionToBig(timeCodeDescriptionData: string | interop.Pointer | interop.Reference<any>, timeCodeDescriptionSize: number): number;
 
 declare function CMSyncConvertTime(time: CMTime, fromClockOrTimebase: any, toClockOrTimebase: any): CMTime;
 
@@ -423,9 +423,9 @@ declare function CMTextFormatDescriptionCopyAsBigEndianTextDescriptionBlockBuffe
 
 declare function CMTextFormatDescriptionCreateFromBigEndianTextDescriptionBlockBuffer(allocator: any, textDescriptionBlockBuffer: any, flavor: any, mediaType: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTextFormatDescriptionCreateFromBigEndianTextDescriptionData(allocator: any, textDescriptionData: string, size: number, flavor: any, mediaType: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTextFormatDescriptionCreateFromBigEndianTextDescriptionData(allocator: any, textDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, flavor: any, mediaType: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTextFormatDescriptionGetDefaultStyle(desc: any, localFontIDOut: interop.Pointer | interop.Reference<number>, boldOut: string, italicOut: string, underlineOut: string, fontSizeOut: interop.Pointer | interop.Reference<number>, colorComponentsOut: interop.Reference<number>): number;
+declare function CMTextFormatDescriptionGetDefaultStyle(desc: any, localFontIDOut: interop.Pointer | interop.Reference<number>, boldOut: string | interop.Pointer | interop.Reference<any>, italicOut: string | interop.Pointer | interop.Reference<any>, underlineOut: string | interop.Pointer | interop.Reference<any>, fontSizeOut: interop.Pointer | interop.Reference<number>, colorComponentsOut: interop.Reference<number>): number;
 
 declare function CMTextFormatDescriptionGetDefaultTextBox(desc: any, originIsAtTopLeft: boolean, heightOfTextTrack: number, defaultTextBoxOut: interop.Pointer | interop.Reference<CGRect>): number;
 
@@ -455,7 +455,7 @@ declare function CMTimeCodeFormatDescriptionCreate(allocator: any, timeCodeForma
 
 declare function CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescriptionBlockBuffer(allocator: any, timeCodeDescriptionBlockBuffer: any, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescriptionData(allocator: any, timeCodeDescriptionData: string, size: number, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescriptionData(allocator: any, timeCodeDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMTimeCodeFormatDescriptionGetFrameDuration(timeCodeFormatDescription: any): CMTime;
 
@@ -657,7 +657,7 @@ declare function CMVideoFormatDescriptionCreateForImageBuffer(allocator: any, im
 
 declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionBlockBuffer(allocator: any, imageDescriptionBlockBuffer: any, stringEncoding: number, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionData(allocator: any, imageDescriptionData: string, size: number, stringEncoding: number, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionData(allocator: any, imageDescriptionData: string | interop.Pointer | interop.Reference<any>, size: number, stringEncoding: number, flavor: any, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMVideoFormatDescriptionCreateFromH264ParameterSets(allocator: any, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<string>, parameterSetSizes: interop.Pointer | interop.Reference<number>, NALUnitHeaderLength: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
@@ -1196,6 +1196,8 @@ declare const kCMMetadataIdentifierError_RequiredParameterMissing: number;
 declare var kCMMetadataIdentifier_QuickTimeMetadataDirection_Facing: string;
 
 declare var kCMMetadataIdentifier_QuickTimeMetadataLivePhotoStillImageTransform: string;
+
+declare var kCMMetadataIdentifier_QuickTimeMetadataLivePhotoStillImageTransformReferenceDimensions: string;
 
 declare var kCMMetadataIdentifier_QuickTimeMetadataLocation_ISO6709: string;
 

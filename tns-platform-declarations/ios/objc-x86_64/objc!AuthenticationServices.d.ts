@@ -52,6 +52,8 @@ declare const enum ASAuthorizationAppleIDButtonType {
 
 	Continue = 1,
 
+	SignUp = 2,
+
 	Default = 0
 }
 

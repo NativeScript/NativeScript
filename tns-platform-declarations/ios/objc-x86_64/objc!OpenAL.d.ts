@@ -33,7 +33,7 @@ declare function alGenSources(n: number, sources: interop.Pointer | interop.Refe
 
 declare function alGetBoolean(param: number): number;
 
-declare function alGetBooleanv(param: number, data: string): void;
+declare function alGetBooleanv(param: number, data: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function alGetBuffer3f(bid: number, param: number, value1: interop.Pointer | interop.Reference<number>, value2: interop.Pointer | interop.Reference<number>, value3: interop.Pointer | interop.Reference<number>): void;
 
@@ -51,7 +51,7 @@ declare function alGetDouble(param: number): number;
 
 declare function alGetDoublev(param: number, data: interop.Pointer | interop.Reference<number>): void;
 
-declare function alGetEnumValue(ename: string): number;
+declare function alGetEnumValue(ename: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function alGetError(): number;
 
@@ -75,7 +75,7 @@ declare function alGetListeneri(param: number, value: interop.Pointer | interop.
 
 declare function alGetListeneriv(param: number, values: interop.Pointer | interop.Reference<number>): void;
 
-declare function alGetProcAddress(fname: string): interop.Pointer | interop.Reference<any>;
+declare function alGetProcAddress(fname: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function alGetSource3f(sid: number, param: number, value1: interop.Pointer | interop.Reference<number>, value2: interop.Pointer | interop.Reference<number>, value3: interop.Pointer | interop.Reference<number>): void;
 
@@ -95,7 +95,7 @@ declare function alIsBuffer(bid: number): number;
 
 declare function alIsEnabled(capability: number): number;
 
-declare function alIsExtensionPresent(extname: string): number;
+declare function alIsExtensionPresent(extname: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function alIsSource(sid: number): number;
 
@@ -147,7 +147,7 @@ declare function alSpeedOfSound(value: number): void;
 
 declare function alcCaptureCloseDevice(device: interop.Pointer | interop.Reference<any>): number;
 
-declare function alcCaptureOpenDevice(devicename: string, frequency: number, format: number, buffersize: number): interop.Pointer | interop.Reference<any>;
+declare function alcCaptureOpenDevice(devicename: string | interop.Pointer | interop.Reference<any>, frequency: number, format: number, buffersize: number): interop.Pointer | interop.Reference<any>;
 
 declare function alcCaptureSamples(device: interop.Pointer | interop.Reference<any>, buffer: interop.Pointer | interop.Reference<any>, samples: number): void;
 
@@ -165,21 +165,21 @@ declare function alcGetContextsDevice(context: interop.Pointer | interop.Referen
 
 declare function alcGetCurrentContext(): interop.Pointer | interop.Reference<any>;
 
-declare function alcGetEnumValue(device: interop.Pointer | interop.Reference<any>, enumname: string): number;
+declare function alcGetEnumValue(device: interop.Pointer | interop.Reference<any>, enumname: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function alcGetError(device: interop.Pointer | interop.Reference<any>): number;
 
 declare function alcGetIntegerv(device: interop.Pointer | interop.Reference<any>, param: number, size: number, data: interop.Pointer | interop.Reference<number>): void;
 
-declare function alcGetProcAddress(device: interop.Pointer | interop.Reference<any>, funcname: string): interop.Pointer | interop.Reference<any>;
+declare function alcGetProcAddress(device: interop.Pointer | interop.Reference<any>, funcname: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function alcGetString(device: interop.Pointer | interop.Reference<any>, param: number): string;
 
-declare function alcIsExtensionPresent(device: interop.Pointer | interop.Reference<any>, extname: string): number;
+declare function alcIsExtensionPresent(device: interop.Pointer | interop.Reference<any>, extname: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function alcMakeContextCurrent(context: interop.Pointer | interop.Reference<any>): number;
 
-declare function alcOpenDevice(devicename: string): interop.Pointer | interop.Reference<any>;
+declare function alcOpenDevice(devicename: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function alcProcessContext(context: interop.Pointer | interop.Reference<any>): void;
 

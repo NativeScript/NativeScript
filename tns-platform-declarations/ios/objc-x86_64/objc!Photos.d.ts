@@ -66,6 +66,8 @@ declare class PHAsset extends PHObject {
 
 	readonly sourceType: PHAssetSourceType;
 
+	readonly syncFailureHidden: boolean;
+
 	canPerformEditOperation(editOperation: PHAssetEditOperation): boolean;
 
 	cancelContentEditingInputRequest(requestID: number): void;
@@ -464,29 +466,6 @@ declare class PHChangeRequest extends NSObject {
 	static alloc(): PHChangeRequest; // inherited from NSObject
 
 	static new(): PHChangeRequest; // inherited from NSObject
-}
-
-declare class PHCloudIdentifier extends NSObject implements NSSecureCoding {
-
-	static alloc(): PHCloudIdentifier; // inherited from NSObject
-
-	static new(): PHCloudIdentifier; // inherited from NSObject
-
-	readonly stringValue: string;
-
-	static readonly notFoundIdentifier: PHCloudIdentifier;
-
-	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { stringValue: string; });
-
-	encodeWithCoder(coder: NSCoder): void;
-
-	initWithCoder(coder: NSCoder): this;
-
-	initWithStringValue(stringValue: string): this;
 }
 
 declare class PHCollection extends PHObject {
@@ -925,6 +904,15 @@ declare class PHLivePhotoEditingContext extends NSObject {
 	saveLivePhotoToOutputOptionsCompletionHandler(output: PHContentEditingOutput, options: NSDictionary<string, any>, handler: (p1: boolean, p2: NSError) => void): void;
 }
 
+declare const enum PHLivePhotoEditingErrorCode {
+
+	Unknown = 0,
+
+	Aborted = 1
+}
+
+declare var PHLivePhotoEditingErrorDomain: string;
+
 interface PHLivePhotoFrame {
 
 	image: CIImage;
@@ -974,8 +962,6 @@ declare class PHLivePhotoRequestOptions extends NSObject implements NSCopying {
 
 declare var PHLivePhotoShouldRenderAtPlaybackTime: string;
 
-declare var PHLocalIdentifierNotFound: string;
-
 declare class PHObject extends NSObject implements NSCopying {
 
 	static alloc(): PHObject; // inherited from NSObject
@@ -1023,10 +1009,6 @@ declare class PHPhotoLibrary extends NSObject {
 
 	readonly unavailabilityReason: NSError;
 
-	cloudIdentifiersForLocalIdentifiers(localIdentifiers: NSArray<string> | string[]): NSArray<PHCloudIdentifier>;
-
-	localIdentifiersForCloudIdentifiers(cloudIdentifiers: NSArray<PHCloudIdentifier> | PHCloudIdentifier[]): NSArray<string>;
-
 	performChangesAndWaitError(changeBlock: () => void): boolean;
 
 	performChangesCompletionHandler(changeBlock: () => void, completionHandler: (p1: boolean, p2: NSError) => void): void;
@@ -1069,36 +1051,6 @@ declare const PHPhotosErrorRelinquishingLibraryBundleToWriter: number;
 declare const PHPhotosErrorSwitchingSystemPhotoLibrary: number;
 
 declare const PHPhotosErrorUserCancelled: number;
-
-declare class PHProject extends PHAssetCollection {
-
-	static alloc(): PHProject; // inherited from NSObject
-
-	static new(): PHProject; // inherited from NSObject
-
-	readonly hasProjectPreview: boolean;
-
-	readonly projectExtensionData: NSData;
-}
-
-declare class PHProjectChangeRequest extends PHChangeRequest {
-
-	static alloc(): PHProjectChangeRequest; // inherited from NSObject
-
-	static new(): PHProjectChangeRequest; // inherited from NSObject
-
-	projectExtensionData: NSData;
-
-	title: string;
-
-	constructor(o: { project: PHProject; });
-
-	initWithProject(project: PHProject): this;
-
-	removeAssets(assets: NSFastEnumeration): void;
-
-	setProjectPreviewImage(previewImage: UIImage): void;
-}
 
 declare class PHVideoRequestOptions extends NSObject {
 

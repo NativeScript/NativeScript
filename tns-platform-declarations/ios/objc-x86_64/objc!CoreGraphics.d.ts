@@ -217,7 +217,7 @@ declare function CGColorSpaceCreateDeviceRGB(): any;
 
 declare function CGColorSpaceCreateICCBased(nComponents: number, range: interop.Pointer | interop.Reference<number>, profile: any, alternate: any): any;
 
-declare function CGColorSpaceCreateIndexed(baseSpace: any, lastIndex: number, colorTable: string): any;
+declare function CGColorSpaceCreateIndexed(baseSpace: any, lastIndex: number, colorTable: string | interop.Pointer | interop.Reference<any>): any;
 
 declare function CGColorSpaceCreateLab(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number>, range: interop.Reference<number>): any;
 
@@ -235,7 +235,7 @@ declare function CGColorSpaceCreateWithPropertyList(plist: any): any;
 
 declare function CGColorSpaceGetBaseColorSpace(space: any): any;
 
-declare function CGColorSpaceGetColorTable(space: any, table: string): void;
+declare function CGColorSpaceGetColorTable(space: any, table: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function CGColorSpaceGetColorTableCount(space: any): number;
 
@@ -410,7 +410,7 @@ declare function CGContextSaveGState(c: any): void;
 
 declare function CGContextScaleCTM(c: any, sx: number, sy: number): void;
 
-declare function CGContextSelectFont(c: any, name: string, size: number, textEncoding: CGTextEncoding): void;
+declare function CGContextSelectFont(c: any, name: string | interop.Pointer | interop.Reference<any>, size: number, textEncoding: CGTextEncoding): void;
 
 declare function CGContextSetAllowsAntialiasing(c: any, allowsAntialiasing: boolean): void;
 
@@ -502,9 +502,9 @@ declare function CGContextShowGlyphsAtPositions(c: any, glyphs: interop.Pointer 
 
 declare function CGContextShowGlyphsWithAdvances(c: any, glyphs: interop.Pointer | interop.Reference<number>, advances: interop.Pointer | interop.Reference<CGSize>, count: number): void;
 
-declare function CGContextShowText(c: any, string: string, length: number): void;
+declare function CGContextShowText(c: any, string: string | interop.Pointer | interop.Reference<any>, length: number): void;
 
-declare function CGContextShowTextAtPoint(c: any, x: number, y: number, string: string, length: number): void;
+declare function CGContextShowTextAtPoint(c: any, x: number, y: number, string: string | interop.Pointer | interop.Reference<any>, length: number): void;
 
 declare function CGContextStrokeEllipseInRect(c: any, rect: CGRect): void;
 
@@ -548,7 +548,7 @@ declare function CGDataProviderCreateWithCFData(data: NSData): any;
 
 declare function CGDataProviderCreateWithData(info: interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>, size: number, releaseData: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>): any;
 
-declare function CGDataProviderCreateWithFilename(filename: string): any;
+declare function CGDataProviderCreateWithFilename(filename: string | interop.Pointer | interop.Reference<any>): any;
 
 declare function CGDataProviderCreateWithURL(url: NSURL): any;
 
@@ -694,7 +694,7 @@ declare const enum CGGlyphDeprecatedEnum {
 
 declare function CGGradientCreateWithColorComponents(space: any, components: interop.Pointer | interop.Reference<number>, locations: interop.Pointer | interop.Reference<number>, count: number): any;
 
-declare function CGGradientCreateWithColors(space: any, colors: NSArray<any>, locations: interop.Pointer | interop.Reference<number>): any;
+declare function CGGradientCreateWithColors(space: any, colors: NSArray<any> | any[], locations: interop.Pointer | interop.Reference<number>): any;
 
 declare const enum CGGradientDrawingOptions {
 
@@ -880,7 +880,7 @@ declare function CGPDFArrayApplyBlock(array: interop.Pointer | interop.Reference
 
 declare function CGPDFArrayGetArray(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
-declare function CGPDFArrayGetBoolean(array: interop.Pointer | interop.Reference<any>, index: number, value: string): boolean;
+declare function CGPDFArrayGetBoolean(array: interop.Pointer | interop.Reference<any>, index: number, value: string | interop.Pointer | interop.Reference<any>): boolean;
 
 declare function CGPDFArrayGetCount(array: interop.Pointer | interop.Reference<any>): number;
 
@@ -917,7 +917,7 @@ declare function CGPDFContentStreamCreateWithPage(page: any): interop.Pointer | 
 
 declare function CGPDFContentStreamCreateWithStream(stream: interop.Pointer | interop.Reference<any>, streamResources: interop.Pointer | interop.Reference<any>, parent: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function CGPDFContentStreamGetResource(cs: interop.Pointer | interop.Reference<any>, category: string, name: string): interop.Pointer | interop.Reference<any>;
+declare function CGPDFContentStreamGetResource(cs: interop.Pointer | interop.Reference<any>, category: string | interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function CGPDFContentStreamGetStreams(cs: interop.Pointer | interop.Reference<any>): NSArray<any>;
 
@@ -962,25 +962,25 @@ declare function CGPDFDictionaryApplyBlock(dict: interop.Pointer | interop.Refer
 
 declare function CGPDFDictionaryApplyFunction(dict: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>, info: interop.Pointer | interop.Reference<any>): void;
 
-declare function CGPDFDictionaryGetArray(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetArray(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
-declare function CGPDFDictionaryGetBoolean(dict: interop.Pointer | interop.Reference<any>, key: string, value: string): boolean;
+declare function CGPDFDictionaryGetBoolean(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): boolean;
 
 declare function CGPDFDictionaryGetCount(dict: interop.Pointer | interop.Reference<any>): number;
 
-declare function CGPDFDictionaryGetDictionary(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetDictionary(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
-declare function CGPDFDictionaryGetInteger(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFDictionaryGetInteger(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<number>): boolean;
 
-declare function CGPDFDictionaryGetName(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<string>): boolean;
+declare function CGPDFDictionaryGetName(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<string>): boolean;
 
-declare function CGPDFDictionaryGetNumber(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFDictionaryGetNumber(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<number>): boolean;
 
-declare function CGPDFDictionaryGetObject(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetObject(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
-declare function CGPDFDictionaryGetStream(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetStream(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
-declare function CGPDFDictionaryGetString(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetString(dict: interop.Pointer | interop.Reference<any>, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
 declare function CGPDFDocumentAllowsCopying(document: any): boolean;
 
@@ -1016,7 +1016,7 @@ declare function CGPDFDocumentRelease(document: any): void;
 
 declare function CGPDFDocumentRetain(document: any): any;
 
-declare function CGPDFDocumentUnlockWithPassword(document: any, password: string): boolean;
+declare function CGPDFDocumentUnlockWithPassword(document: any, password: string | interop.Pointer | interop.Reference<any>): boolean;
 
 declare function CGPDFObjectGetType(object: interop.Pointer | interop.Reference<any>): CGPDFObjectType;
 
@@ -1049,7 +1049,7 @@ declare function CGPDFOperatorTableRelease(table: interop.Pointer | interop.Refe
 
 declare function CGPDFOperatorTableRetain(table: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function CGPDFOperatorTableSetCallback(table: interop.Pointer | interop.Reference<any>, name: string, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): void;
+declare function CGPDFOperatorTableSetCallback(table: interop.Pointer | interop.Reference<any>, name: string | interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function CGPDFPageGetBoxRect(page: any, box: CGPDFBox): CGRect;
 
@@ -1075,7 +1075,7 @@ declare function CGPDFScannerGetContentStream(scanner: interop.Pointer | interop
 
 declare function CGPDFScannerPopArray(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 
-declare function CGPDFScannerPopBoolean(scanner: interop.Pointer | interop.Reference<any>, value: string): boolean;
+declare function CGPDFScannerPopBoolean(scanner: interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): boolean;
 
 declare function CGPDFScannerPopDictionary(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
 

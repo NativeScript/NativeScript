@@ -196,7 +196,7 @@ declare var kNWErrorDomainTLS: string;
 
 declare function nw_advertise_descriptor_copy_txt_record_object(advertise_descriptor: NSObject): NSObject;
 
-declare function nw_advertise_descriptor_create_bonjour_service(name: string, type: string, domain: string): NSObject;
+declare function nw_advertise_descriptor_create_bonjour_service(name: string | interop.Pointer | interop.Reference<any>, type: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>): NSObject;
 
 declare function nw_advertise_descriptor_get_no_auto_rename(advertise_descriptor: NSObject): boolean;
 
@@ -206,7 +206,7 @@ declare function nw_advertise_descriptor_set_txt_record(advertise_descriptor: NS
 
 declare function nw_advertise_descriptor_set_txt_record_object(advertise_descriptor: NSObject, txt_record: NSObject): void;
 
-declare function nw_browse_descriptor_create_bonjour_service(type: string, domain: string): NSObject;
+declare function nw_browse_descriptor_create_bonjour_service(type: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>): NSObject;
 
 declare function nw_browse_descriptor_get_bonjour_service_domain(descriptor: NSObject): string;
 
@@ -332,7 +332,7 @@ declare function nw_content_context_copy_antecedent(context: NSObject): NSObject
 
 declare function nw_content_context_copy_protocol_metadata(context: NSObject, protocol: NSObject): NSObject;
 
-declare function nw_content_context_create(context_identifier: string): NSObject;
+declare function nw_content_context_create(context_identifier: string | interop.Pointer | interop.Reference<any>): NSObject;
 
 declare function nw_content_context_foreach_protocol_metadata(context: NSObject, foreach_block: (p1: NSObject, p2: NSObject) => void): void;
 
@@ -401,11 +401,11 @@ declare function nw_endpoint_copy_port_string(endpoint: NSObject): string;
 
 declare function nw_endpoint_create_address(address: interop.Pointer | interop.Reference<sockaddr>): NSObject;
 
-declare function nw_endpoint_create_bonjour_service(name: string, type: string, domain: string): NSObject;
+declare function nw_endpoint_create_bonjour_service(name: string | interop.Pointer | interop.Reference<any>, type: string | interop.Pointer | interop.Reference<any>, domain: string | interop.Pointer | interop.Reference<any>): NSObject;
 
-declare function nw_endpoint_create_host(hostname: string, port: string): NSObject;
+declare function nw_endpoint_create_host(hostname: string | interop.Pointer | interop.Reference<any>, port: string | interop.Pointer | interop.Reference<any>): NSObject;
 
-declare function nw_endpoint_create_url(url: string): NSObject;
+declare function nw_endpoint_create_url(url: string | interop.Pointer | interop.Reference<any>): NSObject;
 
 declare function nw_endpoint_get_address(endpoint: NSObject): interop.Pointer | interop.Reference<sockaddr>;
 
@@ -492,11 +492,11 @@ declare function nw_framer_copy_parameters(framer: NSObject): NSObject;
 
 declare function nw_framer_copy_remote_endpoint(framer: NSObject): NSObject;
 
-declare function nw_framer_create_definition(identifier: string, flags: number, start_handler: (p1: NSObject) => nw_framer_start_result_t): NSObject;
+declare function nw_framer_create_definition(identifier: string | interop.Pointer | interop.Reference<any>, flags: number, start_handler: (p1: NSObject) => nw_framer_start_result_t): NSObject;
 
 declare function nw_framer_create_options(framer_definition: NSObject): NSObject;
 
-declare function nw_framer_deliver_input(framer: NSObject, input_buffer: string, input_length: number, message: NSObject, is_complete: boolean): void;
+declare function nw_framer_deliver_input(framer: NSObject, input_buffer: string | interop.Pointer | interop.Reference<any>, input_length: number, message: NSObject, is_complete: boolean): void;
 
 declare function nw_framer_deliver_input_no_copy(framer: NSObject, input_length: number, message: NSObject, is_complete: boolean): boolean;
 
@@ -504,19 +504,19 @@ declare function nw_framer_mark_failed_with_error(framer: NSObject, error_code: 
 
 declare function nw_framer_mark_ready(framer: NSObject): void;
 
-declare function nw_framer_message_access_value(message: NSObject, key: string, access_value: (p1: interop.Pointer | interop.Reference<any>) => boolean): boolean;
+declare function nw_framer_message_access_value(message: NSObject, key: string | interop.Pointer | interop.Reference<any>, access_value: (p1: interop.Pointer | interop.Reference<any>) => boolean): boolean;
 
-declare function nw_framer_message_copy_object_value(message: NSObject, key: string): any;
+declare function nw_framer_message_copy_object_value(message: NSObject, key: string | interop.Pointer | interop.Reference<any>): any;
 
 declare function nw_framer_message_create(framer: NSObject): NSObject;
 
-declare function nw_framer_message_set_object_value(message: NSObject, key: string, value: any): void;
+declare function nw_framer_message_set_object_value(message: NSObject, key: string | interop.Pointer | interop.Reference<any>, value: any): void;
 
-declare function nw_framer_message_set_value(message: NSObject, key: string, value: interop.Pointer | interop.Reference<any>, dispose_value: (p1: interop.Pointer | interop.Reference<any>) => void): void;
+declare function nw_framer_message_set_value(message: NSObject, key: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, dispose_value: (p1: interop.Pointer | interop.Reference<any>) => void): void;
 
-declare function nw_framer_parse_input(framer: NSObject, minimum_incomplete_length: number, maximum_length: number, temp_buffer: string, parse: (p1: string, p2: number, p3: boolean) => number): boolean;
+declare function nw_framer_parse_input(framer: NSObject, minimum_incomplete_length: number, maximum_length: number, temp_buffer: string | interop.Pointer | interop.Reference<any>, parse: (p1: string, p2: number, p3: boolean) => number): boolean;
 
-declare function nw_framer_parse_output(framer: NSObject, minimum_incomplete_length: number, maximum_length: number, temp_buffer: string, parse: (p1: string, p2: number, p3: boolean) => number): boolean;
+declare function nw_framer_parse_output(framer: NSObject, minimum_incomplete_length: number, maximum_length: number, temp_buffer: string | interop.Pointer | interop.Reference<any>, parse: (p1: string, p2: number, p3: boolean) => number): boolean;
 
 declare function nw_framer_pass_through_input(framer: NSObject): void;
 
@@ -545,7 +545,7 @@ declare const enum nw_framer_start_result_t {
 	nw_framer_start_result_will_mark_ready = 2
 }
 
-declare function nw_framer_write_output(framer: NSObject, output_buffer: string, output_length: number): void;
+declare function nw_framer_write_output(framer: NSObject, output_buffer: string | interop.Pointer | interop.Reference<any>, output_length: number): void;
 
 declare function nw_framer_write_output_data(framer: NSObject, output_data: NSObject): void;
 
@@ -629,7 +629,7 @@ declare function nw_listener_create(parameters: NSObject): NSObject;
 
 declare function nw_listener_create_with_connection(connection: NSObject, parameters: NSObject): NSObject;
 
-declare function nw_listener_create_with_port(port: string, parameters: NSObject): NSObject;
+declare function nw_listener_create_with_port(port: string | interop.Pointer | interop.Reference<any>, parameters: NSObject): NSObject;
 
 declare function nw_listener_get_new_connection_limit(listener: NSObject): number;
 
@@ -917,7 +917,7 @@ declare function nw_tls_create_options(): NSObject;
 
 declare function nw_txt_record_access_bytes(txt_record: NSObject, access_bytes: (p1: string, p2: number) => boolean): boolean;
 
-declare function nw_txt_record_access_key(txt_record: NSObject, key: string, access_value: (p1: string, p2: nw_txt_record_find_key_t, p3: string, p4: number) => boolean): boolean;
+declare function nw_txt_record_access_key(txt_record: NSObject, key: string | interop.Pointer | interop.Reference<any>, access_value: (p1: string, p2: nw_txt_record_find_key_t, p3: string, p4: number) => boolean): boolean;
 
 declare function nw_txt_record_apply(txt_record: NSObject, applier: (p1: string, p2: nw_txt_record_find_key_t, p3: string, p4: number) => boolean): boolean;
 
@@ -925,9 +925,9 @@ declare function nw_txt_record_copy(txt_record: NSObject): NSObject;
 
 declare function nw_txt_record_create_dictionary(): NSObject;
 
-declare function nw_txt_record_create_with_bytes(txt_bytes: string, txt_len: number): NSObject;
+declare function nw_txt_record_create_with_bytes(txt_bytes: string | interop.Pointer | interop.Reference<any>, txt_len: number): NSObject;
 
-declare function nw_txt_record_find_key(txt_record: NSObject, key: string): nw_txt_record_find_key_t;
+declare function nw_txt_record_find_key(txt_record: NSObject, key: string | interop.Pointer | interop.Reference<any>): nw_txt_record_find_key_t;
 
 declare const enum nw_txt_record_find_key_t {
 
@@ -948,9 +948,9 @@ declare function nw_txt_record_is_dictionary(txt_record: NSObject): boolean;
 
 declare function nw_txt_record_is_equal(left: NSObject, right: NSObject): boolean;
 
-declare function nw_txt_record_remove_key(txt_record: NSObject, key: string): boolean;
+declare function nw_txt_record_remove_key(txt_record: NSObject, key: string | interop.Pointer | interop.Reference<any>): boolean;
 
-declare function nw_txt_record_set_key(txt_record: NSObject, key: string, value: string, value_len: number): boolean;
+declare function nw_txt_record_set_key(txt_record: NSObject, key: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>, value_len: number): boolean;
 
 declare function nw_udp_create_metadata(): NSObject;
 
@@ -1016,9 +1016,9 @@ declare const enum nw_ws_opcode_t {
 	nw_ws_opcode_pong = 10
 }
 
-declare function nw_ws_options_add_additional_header(options: NSObject, name: string, value: string): void;
+declare function nw_ws_options_add_additional_header(options: NSObject, name: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function nw_ws_options_add_subprotocol(options: NSObject, subprotocol: string): void;
+declare function nw_ws_options_add_subprotocol(options: NSObject, subprotocol: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function nw_ws_options_set_auto_reply_ping(options: NSObject, auto_reply_ping: boolean): void;
 
@@ -1032,9 +1032,9 @@ declare function nw_ws_request_enumerate_additional_headers(request: NSObject, e
 
 declare function nw_ws_request_enumerate_subprotocols(request: NSObject, enumerator: (p1: string) => boolean): boolean;
 
-declare function nw_ws_response_add_additional_header(response: NSObject, name: string, value: string): void;
+declare function nw_ws_response_add_additional_header(response: NSObject, name: string | interop.Pointer | interop.Reference<any>, value: string | interop.Pointer | interop.Reference<any>): void;
 
-declare function nw_ws_response_create(status: nw_ws_response_status_t, selected_subprotocol: string): NSObject;
+declare function nw_ws_response_create(status: nw_ws_response_status_t, selected_subprotocol: string | interop.Pointer | interop.Reference<any>): NSObject;
 
 declare function nw_ws_response_enumerate_additional_headers(response: NSObject, enumerator: (p1: string, p2: string) => boolean): boolean;
 

@@ -23,13 +23,11 @@ declare class ICCameraDevice extends ICDevice {
 
 	readonly mediaFiles: NSArray<ICCameraItem>;
 
-	readonly mountPoint: string;
+	ptpEventHandler: (p1: NSData) => void;
 
 	readonly tetheredCaptureEnabled: boolean;
 
 	readonly timeOffset: number;
-
-	cancelDownload(): void;
 
 	filesOfType(fileUTType: string): NSArray<string>;
 
@@ -39,7 +37,7 @@ declare class ICCameraDevice extends ICDevice {
 
 	requestDownloadFileOptionsDownloadDelegateDidDownloadSelectorContextInfo(file: ICCameraFile, options: NSDictionary<string, any>, downloadDelegate: ICCameraDeviceDownloadDelegate, selector: string, contextInfo: interop.Pointer | interop.Reference<any>): void;
 
-	requestSyncClock(): void;
+	requestSendPTPCommandOutDataCompletion(ptpCommand: NSData, ptpData: NSData, completion: (p1: NSData, p2: NSData, p3: NSError) => void): void;
 }
 
 declare var ICCameraDeviceCanAcceptPTPCommands: string;
@@ -164,6 +162,8 @@ declare class ICCameraFile extends ICCameraItem {
 
 	requestMetadataDictionaryWithOptionsCompletion(options: NSDictionary<string, any>, completion: (p1: NSDictionary<any, any>, p2: NSError) => void): void;
 
+	requestReadDataAtOffsetLengthCompletion(offset: number, length: number, completion: (p1: NSData, p2: NSError) => void): void;
+
 	requestThumbnailDataWithOptionsCompletion(options: NSDictionary<string, any>, completion: (p1: NSData, p2: NSError) => void): void;
 }
 
@@ -189,8 +189,6 @@ declare class ICCameraItem extends NSObject {
 	readonly creationDate: Date;
 
 	readonly device: ICCameraDevice;
-
-	readonly fileSystemPath: string;
 
 	readonly inTemporaryStore: boolean;
 
@@ -531,7 +529,9 @@ declare const enum ICReturnCodeOffset {
 
 	DeviceOffset = -21350,
 
-	DeviceConnection = -21400
+	DeviceConnection = -21400,
+
+	ObjectOffset = -21450
 }
 
 declare const enum ICReturnConnectionErrorCode {
@@ -546,9 +546,16 @@ declare const enum ICReturnConnectionErrorCode {
 
 	EjectFailed = -21354,
 
-	FailedToOpen = -21400,
+	FailedToOpen = -21355,
 
-	FailedToOpenDevice = -21401
+	FailedToOpenDevice = -21356
+}
+
+declare const enum ICReturnDownloadErrorCode {
+
+	PathInvalid = -21100,
+
+	FileWritable = -21101
 }
 
 declare const enum ICReturnMetadataErrorCode {
@@ -560,6 +567,22 @@ declare const enum ICReturnMetadataErrorCode {
 	Canceled = -21052,
 
 	Invalid = -21053
+}
+
+declare const enum ICReturnObjectErrorCode {
+
+	CodeObjectDoesNotExist = -21450,
+
+	CodeObjectDataOffsetInvalid = -21451,
+
+	CodeObjectCouldNotBeRead = -21452,
+
+	CodeObjectDataEmpty = -21453
+}
+
+declare const enum ICReturnPTPDeviceErrorCode {
+
+	FailedToSendCommand = -21100
 }
 
 declare const enum ICReturnThumbnailErrorCode {
