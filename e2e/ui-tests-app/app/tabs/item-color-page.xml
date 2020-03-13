@@ -3,7 +3,7 @@
   <ActionBar title="Tabs item-color" icon="" class="action-bar">
   </ActionBar>
 
-  <Tabs>
+  <Tabs automationText="tabNavigation">
     <TabStrip selectedItemColor="red" unSelectedItemColor="green">
         <TabStripItem>
             <Label text="First"/>
