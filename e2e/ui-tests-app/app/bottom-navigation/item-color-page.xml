@@ -1,6 +1,6 @@
 <Page class="page">
 
-  <ActionBar title="BottomNavigation selected-item" icon="" class="action-bar">
+  <ActionBar title="BottomNavigation item-color" icon="" class="action-bar">
   </ActionBar>
 
   <BottomNavigation>
