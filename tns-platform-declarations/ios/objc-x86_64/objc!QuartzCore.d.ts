@@ -673,6 +673,7 @@ declare class CAMediaTimingFunction extends NSObject implements NSSecureCoding {
 
 	static functionWithName(name: string): CAMediaTimingFunction;
 
+
 	static new(): CAMediaTimingFunction; // inherited from NSObject
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding

@@ -1612,6 +1612,8 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 
 	static dataWithContentsOfFile(path: string): NSData;
 
+	static dataWithContentsOfFileCompletion(path: string, callback: (p1: NSData) => void): void;
+
 	static dataWithContentsOfFileOptionsError(path: string, readOptionsMask: NSDataReadingOptions): NSData;
 
 	static dataWithContentsOfMappedFile(path: string): any;
@@ -1751,6 +1753,8 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 	subdataWithRange(range: NSRange): NSData;
 
 	writeToFileAtomically(path: string, useAuxiliaryFile: boolean): boolean;
+
+	writeToFileAtomicallyCompletion(path: string, atomically: boolean, callback: () => void): void;
 
 	writeToFileOptionsError(path: string, writeOptionsMask: NSDataWritingOptions): boolean;
 
@@ -3868,7 +3872,7 @@ declare function NSFullUserName(): string;
 
 declare var NSGenericException: string;
 
-declare function NSGetSizeAndAlignment(typePtr: string, sizep: interop.Pointer | interop.Reference<number>, alignp: interop.Pointer | interop.Reference<number>): string;
+declare function NSGetSizeAndAlignment(typePtr: string | interop.Pointer | interop.Reference<any>, sizep: interop.Pointer | interop.Reference<number>, alignp: interop.Pointer | interop.Reference<number>): string;
 
 declare function NSGetUncaughtExceptionHandler(): interop.Pointer | interop.Reference<interop.FunctionReference<(p1: NSException) => void>>;
 
@@ -8770,6 +8774,8 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	static stringWithContentsOfFile(path: string): any;
 
+	static stringWithContentsOfFileEncodingCompletion(path: string, enc: number, callback: (p1: string, p2: NSError) => void): void;
+
 	static stringWithContentsOfFileEncodingError(path: string, enc: number): NSString;
 
 	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>): NSString;
@@ -9173,6 +9179,8 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	variantFittingPresentationWidth(width: number): string;
 
 	writeToFileAtomically(path: string, useAuxiliaryFile: boolean): boolean;
+
+	writeToFileAtomicallyEncodingCompletion(path: string, atomically: boolean, enc: number, callback: (p1: NSError) => void): void;
 
 	writeToFileAtomicallyEncodingError(path: string, useAuxiliaryFile: boolean, enc: number): boolean;
 

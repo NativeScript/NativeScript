@@ -2748,9 +2748,7 @@ declare class UIApplication extends UIResponder {
 
 	static alloc(): UIApplication; // inherited from NSObject
 
-	static mdc_isAppExtension(): boolean;
 
-	static mdc_safeSharedApplication(): UIApplication;
 
 	static new(): UIApplication; // inherited from NSObject
 
@@ -2973,7 +2971,11 @@ interface UIApplicationDelegate extends NSObjectProtocol {
 
 	applicationShouldRestoreApplicationState?(application: UIApplication, coder: NSCoder): boolean;
 
+	applicationShouldRestoreSecureApplicationState?(application: UIApplication, coder: NSCoder): boolean;
+
 	applicationShouldSaveApplicationState?(application: UIApplication, coder: NSCoder): boolean;
+
+	applicationShouldSaveSecureApplicationState?(application: UIApplication, coder: NSCoder): boolean;
 
 	applicationSignificantTimeChange?(application: UIApplication): void;
 
@@ -4523,8 +4525,6 @@ declare class UICollectionViewController extends UIViewController implements UIC
 
 	collectionViewViewForSupplementaryElementOfKindAtIndexPath(collectionView: UICollectionView, kind: string, indexPath: NSIndexPath): UICollectionReusableView;
 
-	collectionViewWillCommitMenuWithAnimator(collectionView: UICollectionView, animator: UIContextMenuInteractionCommitAnimating): void;
-
 	collectionViewWillDisplayCellForItemAtIndexPath(collectionView: UICollectionView, cell: UICollectionViewCell, indexPath: NSIndexPath): void;
 
 	collectionViewWillDisplaySupplementaryViewForElementKindAtIndexPath(collectionView: UICollectionView, view: UICollectionReusableView, elementKind: string, indexPath: NSIndexPath): void;
@@ -4673,8 +4673,6 @@ interface UICollectionViewDelegate extends UIScrollViewDelegate {
 	collectionViewTargetIndexPathForMoveFromItemAtIndexPathToProposedIndexPath?(collectionView: UICollectionView, originalIndexPath: NSIndexPath, proposedIndexPath: NSIndexPath): NSIndexPath;
 
 	collectionViewTransitionLayoutForOldLayoutNewLayout?(collectionView: UICollectionView, fromLayout: UICollectionViewLayout, toLayout: UICollectionViewLayout): UICollectionViewTransitionLayout;
-
-	collectionViewWillCommitMenuWithAnimator?(collectionView: UICollectionView, animator: UIContextMenuInteractionCommitAnimating): void;
 
 	collectionViewWillDisplayCellForItemAtIndexPath?(collectionView: UICollectionView, cell: UICollectionViewCell, indexPath: NSIndexPath): void;
 
@@ -5337,9 +5335,12 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 
 	static colorWithRedGreenBlueAlpha(red: number, green: number, blue: number, alpha: number): UIColor;
 
+	static colorWithUserInterfaceStyleDarkColorDefaultColor(darkColor: UIColor, defaultColor: UIColor): UIColor;
+
 	static colorWithWhiteAlpha(white: number, alpha: number): UIColor;
 
 	static itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
+
 
 	static new(): UIColor; // inherited from NSObject
 
@@ -5538,6 +5539,10 @@ declare class UIColor extends NSObject implements NSCopying, NSItemProviderReadi
 	itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: string): NSItemProviderRepresentationVisibility;
 
 	loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: string, completionHandler: (p1: NSData, p2: NSError) => void): NSProgress;
+
+
+
+
 
 	performSelector(aSelector: string): any;
 
@@ -5775,21 +5780,15 @@ interface UIContextMenuInteractionDelegate extends NSObjectProtocol {
 
 	contextMenuInteractionConfigurationForMenuAtLocation(interaction: UIContextMenuInteraction, location: CGPoint): UIContextMenuConfiguration;
 
-	contextMenuInteractionDidEnd?(interaction: UIContextMenuInteraction): void;
-
 	contextMenuInteractionPreviewForDismissingMenuWithConfiguration?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration): UITargetedPreview;
 
 	contextMenuInteractionPreviewForHighlightingMenuWithConfiguration?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration): UITargetedPreview;
-
-	contextMenuInteractionWillCommitWithAnimator?(interaction: UIContextMenuInteraction, animator: UIContextMenuInteractionCommitAnimating): void;
 
 	contextMenuInteractionWillDisplayMenuForConfigurationAnimator?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating): void;
 
 	contextMenuInteractionWillEndForConfigurationAnimator?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionAnimating): void;
 
 	contextMenuInteractionWillPerformPreviewActionForMenuWithConfigurationAnimator?(interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, animator: UIContextMenuInteractionCommitAnimating): void;
-
-	contextMenuInteractionWillPresent?(interaction: UIContextMenuInteraction): void;
 }
 declare var UIContextMenuInteractionDelegate: {
 
@@ -7714,6 +7713,8 @@ declare class UIFont extends NSObject implements NSCopying {
 
 	static italicSystemFontOfSize(fontSize: number): UIFont;
 
+
+
 	static monospacedDigitSystemFontOfSizeWeight(fontSize: number, weight: number): UIFont;
 
 	static monospacedSystemFontOfSizeWeight(fontSize: number, weight: number): UIFont;
@@ -7744,7 +7745,6 @@ declare class UIFont extends NSObject implements NSCopying {
 
 	readonly lineHeight: number;
 
-	mdc_scalingCurve: NSDictionary<string, number>;
 
 	readonly pointSize: number;
 
@@ -7764,15 +7764,11 @@ declare class UIFont extends NSObject implements NSCopying {
 
 	fontWithSize(fontSize: number): UIFont;
 
-	mdc_isSimplyEqual(font: UIFont): boolean;
 
-	mdc_scaledFontAtDefaultSize(): UIFont;
 
-	mdc_scaledFontForCurrentSizeCategory(): UIFont;
 
-	mdc_scaledFontForSizeCategory(sizeCategory: string): UIFont;
 
-	mdc_scaledFontForTraitEnvironment(traitEnvironment: UITraitEnvironment): UIFont;
+
 }
 
 declare class UIFontDescriptor extends NSObject implements NSCopying, NSSecureCoding {
@@ -7784,6 +7780,8 @@ declare class UIFontDescriptor extends NSObject implements NSCopying, NSSecureCo
 	static fontDescriptorWithNameMatrix(fontName: string, matrix: CGAffineTransform): UIFontDescriptor;
 
 	static fontDescriptorWithNameSize(fontName: string, size: number): UIFontDescriptor;
+
+
 
 	static new(): UIFontDescriptor; // inherited from NSObject
 
@@ -15521,8 +15519,6 @@ declare class UITableViewController extends UIViewController implements UITableV
 
 	tableViewWillBeginEditingRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): void;
 
-	tableViewWillCommitMenuWithAnimator(tableView: UITableView, animator: UIContextMenuInteractionCommitAnimating): void;
-
 	tableViewWillDeselectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath;
 
 	tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath): void;
@@ -15663,8 +15659,6 @@ interface UITableViewDelegate extends NSObjectProtocol, UIScrollViewDelegate {
 	tableViewViewForHeaderInSection?(tableView: UITableView, section: number): UIView;
 
 	tableViewWillBeginEditingRowAtIndexPath?(tableView: UITableView, indexPath: NSIndexPath): void;
-
-	tableViewWillCommitMenuWithAnimator?(tableView: UITableView, animator: UIContextMenuInteractionCommitAnimating): void;
 
 	tableViewWillDeselectRowAtIndexPath?(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath;
 
@@ -18203,7 +18197,6 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	static commitAnimations(): void;
 
-	static mdc_animateWithTimingFunctionDurationDelayOptionsAnimationsCompletion(timingFunction: CAMediaTimingFunction, duration: number, delay: number, options: UIViewAnimationOptions, animations: () => void, completion: (p1: boolean) => void): void;
 
 	static mdf_userInterfaceLayoutDirectionForSemanticContentAttribute(semanticContentAttribute: UISemanticContentAttribute): UIUserInterfaceLayoutDirection;
 
@@ -18328,6 +18321,8 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	readonly leftAnchor: NSLayoutXAxisAnchor;
 
 	maskView: UIView;
+
+
 
 	readonly mdf_effectiveUserInterfaceLayoutDirection: UIUserInterfaceLayoutDirection;
 
@@ -18550,6 +18545,7 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 	layoutSublayersOfLayer(layer: CALayer): void;
 
 	layoutSubviews(): void;
+
 
 	needsUpdateConstraints(): boolean;
 
