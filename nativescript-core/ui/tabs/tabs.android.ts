@@ -880,7 +880,7 @@ export class Tabs extends TabsBase {
             return;
         }
 
-        this._setIconColor(tabStripItem);
+        this.setIconColor(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
