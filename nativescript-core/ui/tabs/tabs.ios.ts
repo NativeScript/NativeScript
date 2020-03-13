@@ -550,10 +550,12 @@ export class Tabs extends TabsBase {
         if (tabStripItems) {
             if (tabStripItems[newIndex]) {
                 tabStripItems[newIndex]._emit(TabStripItem.selectEvent);
+                this.setIconColor(tabStripItems[newIndex]);
             }
 
             if (tabStripItems[oldIndex]) {
                 tabStripItems[oldIndex]._emit(TabStripItem.unselectEvent);
+                this.setIconColor(tabStripItems[oldIndex]);
             }
         }
 
@@ -716,7 +718,7 @@ export class Tabs extends TabsBase {
             viewControllers.push(controller);
         });
 
-        this._setItemImages();
+        this.setItemImages();
 
         this.viewControllers = viewControllers;
         this.tabBarItems = tabBarItems;
@@ -732,7 +734,7 @@ export class Tabs extends TabsBase {
         }
     }
 
-    private _setItemImages() {
+    private setItemImages() {
         if (this._selectedItemColor || this._unSelectedItemColor) {
             if (this.tabStrip && this.tabStrip.items) {
                 this.tabStrip.items.forEach(item => {
@@ -935,7 +937,22 @@ export class Tabs extends TabsBase {
         this.setViewTextAttributes(tabStripItem.label);
     }
 
-    public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
+    private setItemColors(): void {
+        if (this._selectedItemColor) {
+            this.viewController.tabBar.selectedItemTintColor = this._selectedItemColor.ios;
+        }
+        if (this._unSelectedItemColor) {
+            this.viewController.tabBar.unselectedItemTintColor = this._unSelectedItemColor.ios;
+        }
+    }
+
+    private setIconColor(tabStripItem: TabStripItem, forceReload: boolean = false): void {
+        // if there is no change in the css color and there is no item color set
+        // we don't need to reload the icon
+        if (!forceReload && !this._selectedItemColor && !this._unSelectedItemColor) {
+            return;
+        }
+
         let image: UIImage;
 
         // if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
@@ -943,6 +960,10 @@ export class Tabs extends TabsBase {
         image = this.getIcon(tabStripItem, tabStripColor);
 
         tabStripItem.nativeView.image = image;
+    }
+
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
+        this.setIconColor(tabStripItem, true);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
