@@ -598,8 +598,8 @@ export class BottomNavigation extends TabNavigationBase {
             tabItemSpec.backgroundColor = backgroundColor ? backgroundColor.android : this.getTabBarBackgroundArgbColor();
 
             // COLOR
-            let rowColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
-            const color = rowColor || titleLabel.style.color;
+            let itemColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
+            const color = itemColor || titleLabel.style.color;
             tabItemSpec.color = color && color.android;
 
             // FONT
@@ -612,7 +612,7 @@ export class BottomNavigation extends TabNavigationBase {
             // ICON
             const iconSource = tabStripItem.image && tabStripItem.image.src;
             if (iconSource) {
-                const iconInfo = this.getIconInfo(tabStripItem, rowColor);
+                const iconInfo = this.getIconInfo(tabStripItem, itemColor);
 
                 if (iconInfo) {
                     // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
