@@ -246,7 +246,7 @@ declare function dispatch_io_create(type: number, fd: number, queue: NSObject, c
 
 declare function dispatch_io_create_with_io(type: number, io: NSObject, queue: NSObject, cleanup_handler: (p1: number) => void): NSObject;
 
-declare function dispatch_io_create_with_path(type: number, path: string, oflag: number, mode: number, queue: NSObject, cleanup_handler: (p1: number) => void): NSObject;
+declare function dispatch_io_create_with_path(type: number, path: string | interop.Pointer | interop.Reference<any>, oflag: number, mode: number, queue: NSObject, cleanup_handler: (p1: number) => void): NSObject;
 
 declare function dispatch_io_get_descriptor(channel: NSObject): number;
 
@@ -272,9 +272,9 @@ declare function dispatch_queue_attr_make_with_autorelease_frequency(attr: NSObj
 
 declare function dispatch_queue_attr_make_with_qos_class(attr: NSObject, qos_class: qos_class_t, relative_priority: number): NSObject;
 
-declare function dispatch_queue_create(label: string, attr: NSObject): NSObject;
+declare function dispatch_queue_create(label: string | interop.Pointer | interop.Reference<any>, attr: NSObject): NSObject;
 
-declare function dispatch_queue_create_with_target(label: string, attr: NSObject, target: NSObject): NSObject;
+declare function dispatch_queue_create_with_target(label: string | interop.Pointer | interop.Reference<any>, attr: NSObject, target: NSObject): NSObject;
 
 declare function dispatch_queue_get_label(queue: NSObject): string;
 
@@ -344,9 +344,9 @@ declare function dispatch_time(when: number, delta: number): number;
 
 declare function dispatch_walltime(when: interop.Pointer | interop.Reference<timespec>, delta: number): number;
 
-declare function dispatch_workloop_create(label: string): NSObject;
+declare function dispatch_workloop_create(label: string | interop.Pointer | interop.Reference<any>): NSObject;
 
-declare function dispatch_workloop_create_inactive(label: string): NSObject;
+declare function dispatch_workloop_create_inactive(label: string | interop.Pointer | interop.Reference<any>): NSObject;
 
 declare function dispatch_workloop_set_autorelease_frequency(workloop: NSObject, frequency: dispatch_autorelease_frequency_t): void;
 

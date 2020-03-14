@@ -87,7 +87,7 @@ declare function CVOpenGLESTextureIsFlipped(image: any): boolean;
 
 declare function CVPixelBufferCreate(allocator: any, width: number, height: number, pixelFormatType: number, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CVPixelBufferCreateResolvedAttributesDictionary(allocator: any, attributes: NSArray<any>, resolvedDictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+declare function CVPixelBufferCreateResolvedAttributesDictionary(allocator: any, attributes: NSArray<any> | any[], resolvedDictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
 
 declare function CVPixelBufferCreateWithBytes(allocator: any, width: number, height: number, pixelFormatType: number, baseAddress: interop.Pointer | interop.Reference<any>, bytesPerRow: number, releaseCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, releaseRefCon: interop.Pointer | interop.Reference<any>, pixelBufferAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
 

@@ -44,13 +44,13 @@ declare function CFAllocatorReallocate(allocator: any, ptr: interop.Pointer | in
 
 declare function CFAllocatorSetDefault(allocator: any): void;
 
-declare function CFArrayAppendArray(theArray: NSArray<any>, otherArray: NSArray<any>, otherRange: CFRange): void;
+declare function CFArrayAppendArray(theArray: NSArray<any> | any[], otherArray: NSArray<any> | any[], otherRange: CFRange): void;
 
-declare function CFArrayAppendValue(theArray: NSArray<any>, value: interop.Pointer | interop.Reference<any>): void;
+declare function CFArrayAppendValue(theArray: NSArray<any> | any[], value: interop.Pointer | interop.Reference<any>): void;
 
-declare function CFArrayApplyFunction(theArray: NSArray<any>, range: CFRange, applier: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): void;
+declare function CFArrayApplyFunction(theArray: NSArray<any> | any[], range: CFRange, applier: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): void;
 
-declare function CFArrayBSearchValues(theArray: NSArray<any>, range: CFRange, value: interop.Pointer | interop.Reference<any>, comparator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => CFComparisonResult>, context: interop.Pointer | interop.Reference<any>): number;
+declare function CFArrayBSearchValues(theArray: NSArray<any> | any[], range: CFRange, value: interop.Pointer | interop.Reference<any>, comparator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => CFComparisonResult>, context: interop.Pointer | interop.Reference<any>): number;
 
 interface CFArrayCallBacks {
 	version: number;
@@ -61,43 +61,43 @@ interface CFArrayCallBacks {
 }
 declare var CFArrayCallBacks: interop.StructType<CFArrayCallBacks>;
 
-declare function CFArrayContainsValue(theArray: NSArray<any>, range: CFRange, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function CFArrayContainsValue(theArray: NSArray<any> | any[], range: CFRange, value: interop.Pointer | interop.Reference<any>): boolean;
 
 declare function CFArrayCreate(allocator: any, values: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, numValues: number, callBacks: interop.Pointer | interop.Reference<CFArrayCallBacks>): NSArray<any>;
 
-declare function CFArrayCreateCopy(allocator: any, theArray: NSArray<any>): NSArray<any>;
+declare function CFArrayCreateCopy(allocator: any, theArray: NSArray<any> | any[]): NSArray<any>;
 
 declare function CFArrayCreateMutable(allocator: any, capacity: number, callBacks: interop.Pointer | interop.Reference<CFArrayCallBacks>): NSArray<any>;
 
-declare function CFArrayCreateMutableCopy(allocator: any, capacity: number, theArray: NSArray<any>): NSArray<any>;
+declare function CFArrayCreateMutableCopy(allocator: any, capacity: number, theArray: NSArray<any> | any[]): NSArray<any>;
 
-declare function CFArrayExchangeValuesAtIndices(theArray: NSArray<any>, idx1: number, idx2: number): void;
+declare function CFArrayExchangeValuesAtIndices(theArray: NSArray<any> | any[], idx1: number, idx2: number): void;
 
-declare function CFArrayGetCount(theArray: NSArray<any>): number;
+declare function CFArrayGetCount(theArray: NSArray<any> | any[]): number;
 
-declare function CFArrayGetCountOfValue(theArray: NSArray<any>, range: CFRange, value: interop.Pointer | interop.Reference<any>): number;
+declare function CFArrayGetCountOfValue(theArray: NSArray<any> | any[], range: CFRange, value: interop.Pointer | interop.Reference<any>): number;
 
-declare function CFArrayGetFirstIndexOfValue(theArray: NSArray<any>, range: CFRange, value: interop.Pointer | interop.Reference<any>): number;
+declare function CFArrayGetFirstIndexOfValue(theArray: NSArray<any> | any[], range: CFRange, value: interop.Pointer | interop.Reference<any>): number;
 
-declare function CFArrayGetLastIndexOfValue(theArray: NSArray<any>, range: CFRange, value: interop.Pointer | interop.Reference<any>): number;
+declare function CFArrayGetLastIndexOfValue(theArray: NSArray<any> | any[], range: CFRange, value: interop.Pointer | interop.Reference<any>): number;
 
 declare function CFArrayGetTypeID(): number;
 
-declare function CFArrayGetValueAtIndex(theArray: NSArray<any>, idx: number): interop.Pointer | interop.Reference<any>;
+declare function CFArrayGetValueAtIndex(theArray: NSArray<any> | any[], idx: number): interop.Pointer | interop.Reference<any>;
 
-declare function CFArrayGetValues(theArray: NSArray<any>, range: CFRange, values: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
+declare function CFArrayGetValues(theArray: NSArray<any> | any[], range: CFRange, values: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
-declare function CFArrayInsertValueAtIndex(theArray: NSArray<any>, idx: number, value: interop.Pointer | interop.Reference<any>): void;
+declare function CFArrayInsertValueAtIndex(theArray: NSArray<any> | any[], idx: number, value: interop.Pointer | interop.Reference<any>): void;
 
-declare function CFArrayRemoveAllValues(theArray: NSArray<any>): void;
+declare function CFArrayRemoveAllValues(theArray: NSArray<any> | any[]): void;
 
-declare function CFArrayRemoveValueAtIndex(theArray: NSArray<any>, idx: number): void;
+declare function CFArrayRemoveValueAtIndex(theArray: NSArray<any> | any[], idx: number): void;
 
-declare function CFArrayReplaceValues(theArray: NSArray<any>, range: CFRange, newValues: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, newCount: number): void;
+declare function CFArrayReplaceValues(theArray: NSArray<any> | any[], range: CFRange, newValues: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, newCount: number): void;
 
-declare function CFArraySetValueAtIndex(theArray: NSArray<any>, idx: number, value: interop.Pointer | interop.Reference<any>): void;
+declare function CFArraySetValueAtIndex(theArray: NSArray<any> | any[], idx: number, value: interop.Pointer | interop.Reference<any>): void;
 
-declare function CFArraySortValues(theArray: NSArray<any>, range: CFRange, comparator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => CFComparisonResult>, context: interop.Pointer | interop.Reference<any>): void;
+declare function CFArraySortValues(theArray: NSArray<any> | any[], range: CFRange, comparator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => CFComparisonResult>, context: interop.Pointer | interop.Reference<any>): void;
 
 declare function CFAttributedStringBeginEditing(aStr: NSAttributedString): void;
 
@@ -231,7 +231,7 @@ declare function CFBinaryHeapRemoveMinimumValue(heap: any): void;
 
 declare function CFBitVectorContainsBit(bv: any, range: CFRange, value: number): boolean;
 
-declare function CFBitVectorCreate(allocator: any, bytes: string, numBits: number): any;
+declare function CFBitVectorCreate(allocator: any, bytes: string | interop.Pointer | interop.Reference<any>, numBits: number): any;
 
 declare function CFBitVectorCreateCopy(allocator: any, bv: any): any;
 
@@ -245,7 +245,7 @@ declare function CFBitVectorFlipBits(bv: any, range: CFRange): void;
 
 declare function CFBitVectorGetBitAtIndex(bv: any, idx: number): number;
 
-declare function CFBitVectorGetBits(bv: any, range: CFRange, bytes: string): void;
+declare function CFBitVectorGetBits(bv: any, range: CFRange, bytes: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function CFBitVectorGetCount(bv: any): number;
 
@@ -287,13 +287,13 @@ declare function CFBundleCopyInfoDictionaryForURL(url: NSURL): NSDictionary<any,
 
 declare function CFBundleCopyInfoDictionaryInDirectory(bundleURL: NSURL): NSDictionary<any, any>;
 
-declare function CFBundleCopyLocalizationsForPreferences(locArray: NSArray<any>, prefArray: NSArray<any>): NSArray<any>;
+declare function CFBundleCopyLocalizationsForPreferences(locArray: NSArray<any> | any[], prefArray: NSArray<any> | any[]): NSArray<any>;
 
 declare function CFBundleCopyLocalizationsForURL(url: NSURL): NSArray<any>;
 
 declare function CFBundleCopyLocalizedString(bundle: any, key: string, value: string, tableName: string): string;
 
-declare function CFBundleCopyPreferredLocalizationsFromArray(locArray: NSArray<any>): NSArray<any>;
+declare function CFBundleCopyPreferredLocalizationsFromArray(locArray: NSArray<any> | any[]): NSArray<any>;
 
 declare function CFBundleCopyPrivateFrameworksURL(bundle: any): NSURL;
 
@@ -327,13 +327,13 @@ declare function CFBundleGetBundleWithIdentifier(bundleID: string): any;
 
 declare function CFBundleGetDataPointerForName(bundle: any, symbolName: string): interop.Pointer | interop.Reference<any>;
 
-declare function CFBundleGetDataPointersForNames(bundle: any, symbolNames: NSArray<any>, stbl: interop.Reference<interop.Pointer | interop.Reference<any>>): void;
+declare function CFBundleGetDataPointersForNames(bundle: any, symbolNames: NSArray<any> | any[], stbl: interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
 declare function CFBundleGetDevelopmentRegion(bundle: any): string;
 
 declare function CFBundleGetFunctionPointerForName(bundle: any, functionName: string): interop.Pointer | interop.Reference<any>;
 
-declare function CFBundleGetFunctionPointersForNames(bundle: any, functionNames: NSArray<any>, ftbl: interop.Reference<interop.Pointer | interop.Reference<any>>): void;
+declare function CFBundleGetFunctionPointersForNames(bundle: any, functionNames: NSArray<any> | any[], ftbl: interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
 declare function CFBundleGetIdentifier(bundle: any): string;
 
@@ -520,9 +520,9 @@ declare function CFCopyHomeDirectoryURL(): NSURL;
 
 declare function CFCopyTypeIDDescription(type_id: number): string;
 
-declare function CFDataAppendBytes(theData: NSData, bytes: string, length: number): void;
+declare function CFDataAppendBytes(theData: NSData, bytes: string | interop.Pointer | interop.Reference<any>, length: number): void;
 
-declare function CFDataCreate(allocator: any, bytes: string, length: number): NSData;
+declare function CFDataCreate(allocator: any, bytes: string | interop.Pointer | interop.Reference<any>, length: number): NSData;
 
 declare function CFDataCreateCopy(allocator: any, theData: NSData): NSData;
 
@@ -530,7 +530,7 @@ declare function CFDataCreateMutable(allocator: any, capacity: number): NSData;
 
 declare function CFDataCreateMutableCopy(allocator: any, capacity: number, theData: NSData): NSData;
 
-declare function CFDataCreateWithBytesNoCopy(allocator: any, bytes: string, length: number, bytesDeallocator: any): NSData;
+declare function CFDataCreateWithBytesNoCopy(allocator: any, bytes: string | interop.Pointer | interop.Reference<any>, length: number, bytesDeallocator: any): NSData;
 
 declare function CFDataDeleteBytes(theData: NSData, range: CFRange): void;
 
@@ -538,7 +538,7 @@ declare function CFDataFind(theData: NSData, dataToFind: NSData, searchRange: CF
 
 declare function CFDataGetBytePtr(theData: NSData): string;
 
-declare function CFDataGetBytes(theData: NSData, range: CFRange, buffer: string): void;
+declare function CFDataGetBytes(theData: NSData, range: CFRange, buffer: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function CFDataGetLength(theData: NSData): number;
 
@@ -548,7 +548,7 @@ declare function CFDataGetTypeID(): number;
 
 declare function CFDataIncreaseLength(theData: NSData, extraLength: number): void;
 
-declare function CFDataReplaceBytes(theData: NSData, range: CFRange, newBytes: string, newLength: number): void;
+declare function CFDataReplaceBytes(theData: NSData, range: CFRange, newBytes: string | interop.Pointer | interop.Reference<any>, newLength: number): void;
 
 declare const enum CFDataSearchFlags {
 
@@ -911,11 +911,11 @@ interface CFMachPortContext {
 }
 declare var CFMachPortContext: interop.StructType<CFMachPortContext>;
 
-declare function CFMachPortCreate(allocator: any, callout: interop.FunctionReference<(p1: NSMachPort, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<CFMachPortContext>, shouldFreeInfo: string): NSMachPort;
+declare function CFMachPortCreate(allocator: any, callout: interop.FunctionReference<(p1: NSMachPort, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<CFMachPortContext>, shouldFreeInfo: string | interop.Pointer | interop.Reference<any>): NSMachPort;
 
 declare function CFMachPortCreateRunLoopSource(allocator: any, port: NSMachPort, order: number): any;
 
-declare function CFMachPortCreateWithPort(allocator: any, portNum: number, callout: interop.FunctionReference<(p1: NSMachPort, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<CFMachPortContext>, shouldFreeInfo: string): NSMachPort;
+declare function CFMachPortCreateWithPort(allocator: any, portNum: number, callout: interop.FunctionReference<(p1: NSMachPort, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<CFMachPortContext>, shouldFreeInfo: string | interop.Pointer | interop.Reference<any>): NSMachPort;
 
 declare function CFMachPortGetContext(port: NSMachPort, context: interop.Pointer | interop.Reference<CFMachPortContext>): void;
 
@@ -942,7 +942,7 @@ interface CFMessagePortContext {
 }
 declare var CFMessagePortContext: interop.StructType<CFMessagePortContext>;
 
-declare function CFMessagePortCreateLocal(allocator: any, name: string, callout: interop.FunctionReference<(p1: NSMessagePort, p2: number, p3: NSData, p4: interop.Pointer | interop.Reference<any>) => NSData>, context: interop.Pointer | interop.Reference<CFMessagePortContext>, shouldFreeInfo: string): NSMessagePort;
+declare function CFMessagePortCreateLocal(allocator: any, name: string, callout: interop.FunctionReference<(p1: NSMessagePort, p2: number, p3: NSData, p4: interop.Pointer | interop.Reference<any>) => NSData>, context: interop.Pointer | interop.Reference<CFMessagePortContext>, shouldFreeInfo: string | interop.Pointer | interop.Reference<any>): NSMessagePort;
 
 declare function CFMessagePortCreateRemote(allocator: any, name: string): NSMessagePort;
 
@@ -1184,19 +1184,19 @@ declare function CFPreferencesCopyApplicationList(userName: string, hostName: st
 
 declare function CFPreferencesCopyKeyList(applicationID: string, userName: string, hostName: string): NSArray<any>;
 
-declare function CFPreferencesCopyMultiple(keysToFetch: NSArray<any>, applicationID: string, userName: string, hostName: string): NSDictionary<any, any>;
+declare function CFPreferencesCopyMultiple(keysToFetch: NSArray<any> | any[], applicationID: string, userName: string, hostName: string): NSDictionary<any, any>;
 
 declare function CFPreferencesCopyValue(key: string, applicationID: string, userName: string, hostName: string): any;
 
-declare function CFPreferencesGetAppBooleanValue(key: string, applicationID: string, keyExistsAndHasValidFormat: string): boolean;
+declare function CFPreferencesGetAppBooleanValue(key: string, applicationID: string, keyExistsAndHasValidFormat: string | interop.Pointer | interop.Reference<any>): boolean;
 
-declare function CFPreferencesGetAppIntegerValue(key: string, applicationID: string, keyExistsAndHasValidFormat: string): number;
+declare function CFPreferencesGetAppIntegerValue(key: string, applicationID: string, keyExistsAndHasValidFormat: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function CFPreferencesRemoveSuitePreferencesFromApp(applicationID: string, suiteID: string): void;
 
 declare function CFPreferencesSetAppValue(key: string, value: any, applicationID: string): void;
 
-declare function CFPreferencesSetMultiple(keysToSet: NSDictionary<any, any>, keysToRemove: NSArray<any>, applicationID: string, userName: string, hostName: string): void;
+declare function CFPreferencesSetMultiple(keysToSet: NSDictionary<any, any>, keysToRemove: NSArray<any> | any[], applicationID: string, userName: string, hostName: string): void;
 
 declare function CFPreferencesSetValue(key: string, value: any, applicationID: string, userName: string, hostName: string): void;
 
@@ -1254,7 +1254,7 @@ declare function CFReadStreamCopyError(stream: NSInputStream): NSError;
 
 declare function CFReadStreamCopyProperty(stream: NSInputStream, propertyName: any): any;
 
-declare function CFReadStreamCreateWithBytesNoCopy(alloc: any, bytes: string, length: number, bytesDeallocator: any): NSInputStream;
+declare function CFReadStreamCreateWithBytesNoCopy(alloc: any, bytes: string | interop.Pointer | interop.Reference<any>, length: number, bytesDeallocator: any): NSInputStream;
 
 declare function CFReadStreamCreateWithFile(alloc: any, fileURL: NSURL): NSInputStream;
 
@@ -1270,7 +1270,7 @@ declare function CFReadStreamHasBytesAvailable(stream: NSInputStream): boolean;
 
 declare function CFReadStreamOpen(stream: NSInputStream): boolean;
 
-declare function CFReadStreamRead(stream: NSInputStream, buffer: string, bufferLength: number): number;
+declare function CFReadStreamRead(stream: NSInputStream, buffer: string | interop.Pointer | interop.Reference<any>, bufferLength: number): number;
 
 declare function CFReadStreamScheduleWithRunLoop(stream: NSInputStream, runLoop: any, runLoopMode: any): void;
 
@@ -1670,11 +1670,11 @@ declare const enum CFStreamStatus {
 
 declare function CFStringAppend(theString: string, appendedString: string): void;
 
-declare function CFStringAppendCString(theString: string, cStr: string, encoding: number): void;
+declare function CFStringAppendCString(theString: string, cStr: string | interop.Pointer | interop.Reference<any>, encoding: number): void;
 
 declare function CFStringAppendCharacters(theString: string, chars: interop.Pointer | interop.Reference<number>, numChars: number): void;
 
-declare function CFStringAppendPascalString(theString: string, pStr: string, encoding: number): void;
+declare function CFStringAppendPascalString(theString: string, pStr: string | interop.Pointer | interop.Reference<any>, encoding: number): void;
 
 declare const enum CFStringBuiltInEncodings {
 
@@ -1752,7 +1752,7 @@ declare function CFStringCreateArrayBySeparatingStrings(alloc: any, theString: s
 
 declare function CFStringCreateArrayWithFindResults(alloc: any, theString: string, stringToFind: string, rangeToSearch: CFRange, compareOptions: CFStringCompareFlags): NSArray<any>;
 
-declare function CFStringCreateByCombiningStrings(alloc: any, theArray: NSArray<any>, separatorString: string): string;
+declare function CFStringCreateByCombiningStrings(alloc: any, theArray: NSArray<any> | any[], separatorString: string): string;
 
 declare function CFStringCreateCopy(alloc: any, theString: string): string;
 
@@ -1766,23 +1766,23 @@ declare function CFStringCreateMutableCopy(alloc: any, maxLength: number, theStr
 
 declare function CFStringCreateMutableWithExternalCharactersNoCopy(alloc: any, chars: interop.Pointer | interop.Reference<number>, numChars: number, capacity: number, externalCharactersAllocator: any): string;
 
-declare function CFStringCreateWithBytes(alloc: any, bytes: string, numBytes: number, encoding: number, isExternalRepresentation: boolean): string;
+declare function CFStringCreateWithBytes(alloc: any, bytes: string | interop.Pointer | interop.Reference<any>, numBytes: number, encoding: number, isExternalRepresentation: boolean): string;
 
-declare function CFStringCreateWithBytesNoCopy(alloc: any, bytes: string, numBytes: number, encoding: number, isExternalRepresentation: boolean, contentsDeallocator: any): string;
+declare function CFStringCreateWithBytesNoCopy(alloc: any, bytes: string | interop.Pointer | interop.Reference<any>, numBytes: number, encoding: number, isExternalRepresentation: boolean, contentsDeallocator: any): string;
 
-declare function CFStringCreateWithCString(alloc: any, cStr: string, encoding: number): string;
+declare function CFStringCreateWithCString(alloc: any, cStr: string | interop.Pointer | interop.Reference<any>, encoding: number): string;
 
-declare function CFStringCreateWithCStringNoCopy(alloc: any, cStr: string, encoding: number, contentsDeallocator: any): string;
+declare function CFStringCreateWithCStringNoCopy(alloc: any, cStr: string | interop.Pointer | interop.Reference<any>, encoding: number, contentsDeallocator: any): string;
 
 declare function CFStringCreateWithCharacters(alloc: any, chars: interop.Pointer | interop.Reference<number>, numChars: number): string;
 
 declare function CFStringCreateWithCharactersNoCopy(alloc: any, chars: interop.Pointer | interop.Reference<number>, numChars: number, contentsDeallocator: any): string;
 
-declare function CFStringCreateWithFileSystemRepresentation(alloc: any, buffer: string): string;
+declare function CFStringCreateWithFileSystemRepresentation(alloc: any, buffer: string | interop.Pointer | interop.Reference<any>): string;
 
-declare function CFStringCreateWithPascalString(alloc: any, pStr: string, encoding: number): string;
+declare function CFStringCreateWithPascalString(alloc: any, pStr: string | interop.Pointer | interop.Reference<any>, encoding: number): string;
 
-declare function CFStringCreateWithPascalStringNoCopy(alloc: any, pStr: string, encoding: number, contentsDeallocator: any): string;
+declare function CFStringCreateWithPascalStringNoCopy(alloc: any, pStr: string | interop.Pointer | interop.Reference<any>, encoding: number, contentsDeallocator: any): string;
 
 declare function CFStringCreateWithSubstring(alloc: any, str: string, range: CFRange): string;
 
@@ -2061,9 +2061,9 @@ declare function CFStringFindWithOptionsAndLocale(theString: string, stringToFin
 
 declare function CFStringFold(theString: string, theFlags: CFStringCompareFlags, theLocale: NSLocale): void;
 
-declare function CFStringGetBytes(theString: string, range: CFRange, encoding: number, lossByte: number, isExternalRepresentation: boolean, buffer: string, maxBufLen: number, usedBufLen: interop.Pointer | interop.Reference<number>): number;
+declare function CFStringGetBytes(theString: string, range: CFRange, encoding: number, lossByte: number, isExternalRepresentation: boolean, buffer: string | interop.Pointer | interop.Reference<any>, maxBufLen: number, usedBufLen: interop.Pointer | interop.Reference<number>): number;
 
-declare function CFStringGetCString(theString: string, buffer: string, bufferSize: number, encoding: number): boolean;
+declare function CFStringGetCString(theString: string, buffer: string | interop.Pointer | interop.Reference<any>, bufferSize: number, encoding: number): boolean;
 
 declare function CFStringGetCStringPtr(theString: string, encoding: number): string;
 
@@ -2077,7 +2077,7 @@ declare function CFStringGetDoubleValue(str: string): number;
 
 declare function CFStringGetFastestEncoding(theString: string): number;
 
-declare function CFStringGetFileSystemRepresentation(string: string, buffer: string, maxBufLen: number): boolean;
+declare function CFStringGetFileSystemRepresentation(string: string, buffer: string | interop.Pointer | interop.Reference<any>, maxBufLen: number): boolean;
 
 declare function CFStringGetHyphenationLocationBeforeIndex(string: string, location: number, limitRange: CFRange, options: number, locale: NSLocale, character: interop.Pointer | interop.Reference<number>): number;
 
@@ -2099,7 +2099,7 @@ declare function CFStringGetNameOfEncoding(encoding: number): string;
 
 declare function CFStringGetParagraphBounds(string: string, range: CFRange, parBeginIndex: interop.Pointer | interop.Reference<number>, parEndIndex: interop.Pointer | interop.Reference<number>, contentsEndIndex: interop.Pointer | interop.Reference<number>): void;
 
-declare function CFStringGetPascalString(theString: string, buffer: string, bufferSize: number, encoding: number): boolean;
+declare function CFStringGetPascalString(theString: string, buffer: string | interop.Pointer | interop.Reference<any>, bufferSize: number, encoding: number): boolean;
 
 declare function CFStringGetPascalStringPtr(theString: string, encoding: number): string;
 
@@ -2163,7 +2163,7 @@ declare function CFStringTokenizerCopyCurrentTokenAttribute(tokenizer: any, attr
 
 declare function CFStringTokenizerCreate(alloc: any, string: string, range: CFRange, options: number, locale: NSLocale): any;
 
-declare function CFStringTokenizerGetCurrentSubTokens(tokenizer: any, ranges: interop.Pointer | interop.Reference<CFRange>, maxRangeLength: number, derivedSubTokens: NSArray<any>): number;
+declare function CFStringTokenizerGetCurrentSubTokens(tokenizer: any, ranges: interop.Pointer | interop.Reference<CFRange>, maxRangeLength: number, derivedSubTokens: NSArray<any> | any[]): number;
 
 declare function CFStringTokenizerGetCurrentTokenRange(tokenizer: any): CFRange;
 
@@ -2387,7 +2387,7 @@ declare function CFURLCopyPathExtension(url: NSURL): string;
 
 declare function CFURLCopyQueryString(anURL: NSURL, charactersToLeaveEscaped: string): string;
 
-declare function CFURLCopyResourcePropertiesForKeys(url: NSURL, keys: NSArray<any>, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSDictionary<any, any>>;
+declare function CFURLCopyResourcePropertiesForKeys(url: NSURL, keys: NSArray<any> | any[], error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSDictionary<any, any>>;
 
 declare function CFURLCopyResourcePropertyForKey(url: NSURL, key: string, propertyValueTypeRefPtr: interop.Pointer | interop.Reference<any>, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
@@ -2395,17 +2395,17 @@ declare function CFURLCopyResourceSpecifier(anURL: NSURL): string;
 
 declare function CFURLCopyScheme(anURL: NSURL): string;
 
-declare function CFURLCopyStrictPath(anURL: NSURL, isAbsolute: string): string;
+declare function CFURLCopyStrictPath(anURL: NSURL, isAbsolute: string | interop.Pointer | interop.Reference<any>): string;
 
 declare function CFURLCopyUserName(anURL: NSURL): string;
 
-declare function CFURLCreateAbsoluteURLWithBytes(alloc: any, relativeURLBytes: string, length: number, encoding: number, baseURL: NSURL, useCompatibilityMode: boolean): NSURL;
+declare function CFURLCreateAbsoluteURLWithBytes(alloc: any, relativeURLBytes: string | interop.Pointer | interop.Reference<any>, length: number, encoding: number, baseURL: NSURL, useCompatibilityMode: boolean): NSURL;
 
-declare function CFURLCreateBookmarkData(allocator: any, url: NSURL, options: CFURLBookmarkCreationOptions, resourcePropertiesToInclude: NSArray<any>, relativeToURL: NSURL, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSData>;
+declare function CFURLCreateBookmarkData(allocator: any, url: NSURL, options: CFURLBookmarkCreationOptions, resourcePropertiesToInclude: NSArray<any> | any[], relativeToURL: NSURL, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSData>;
 
 declare function CFURLCreateBookmarkDataFromFile(allocator: any, fileURL: NSURL, errorRef: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSData>;
 
-declare function CFURLCreateByResolvingBookmarkData(allocator: any, bookmark: NSData, options: CFURLBookmarkResolutionOptions, relativeToURL: NSURL, resourcePropertiesToInclude: NSArray<any>, isStale: string, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSURL>;
+declare function CFURLCreateByResolvingBookmarkData(allocator: any, bookmark: NSData, options: CFURLBookmarkResolutionOptions, relativeToURL: NSURL, resourcePropertiesToInclude: NSArray<any> | any[], isStale: string | interop.Pointer | interop.Reference<any>, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSURL>;
 
 declare function CFURLCreateCopyAppendingPathComponent(allocator: any, url: NSURL, pathComponent: string, isDirectory: boolean): NSURL;
 
@@ -2417,7 +2417,7 @@ declare function CFURLCreateCopyDeletingPathExtension(allocator: any, url: NSURL
 
 declare function CFURLCreateData(allocator: any, url: NSURL, encoding: number, escapeWhitespace: boolean): NSData;
 
-declare function CFURLCreateDataAndPropertiesFromResource(alloc: any, url: NSURL, resourceData: interop.Pointer | interop.Reference<NSData>, properties: interop.Pointer | interop.Reference<NSDictionary<any, any>>, desiredProperties: NSArray<any>, errorCode: interop.Pointer | interop.Reference<number>): boolean;
+declare function CFURLCreateDataAndPropertiesFromResource(alloc: any, url: NSURL, resourceData: interop.Pointer | interop.Reference<NSData>, properties: interop.Pointer | interop.Reference<NSDictionary<any, any>>, desiredProperties: NSArray<any> | any[], errorCode: interop.Pointer | interop.Reference<number>): boolean;
 
 declare function CFURLCreateFilePathURL(allocator: any, url: NSURL, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSURL>;
 
@@ -2425,13 +2425,13 @@ declare function CFURLCreateFileReferenceURL(allocator: any, url: NSURL, error: 
 
 declare function CFURLCreateFromFSRef(allocator: any, fsRef: interop.Pointer | interop.Reference<any>): NSURL;
 
-declare function CFURLCreateFromFileSystemRepresentation(allocator: any, buffer: string, bufLen: number, isDirectory: boolean): NSURL;
+declare function CFURLCreateFromFileSystemRepresentation(allocator: any, buffer: string | interop.Pointer | interop.Reference<any>, bufLen: number, isDirectory: boolean): NSURL;
 
-declare function CFURLCreateFromFileSystemRepresentationRelativeToBase(allocator: any, buffer: string, bufLen: number, isDirectory: boolean, baseURL: NSURL): NSURL;
+declare function CFURLCreateFromFileSystemRepresentationRelativeToBase(allocator: any, buffer: string | interop.Pointer | interop.Reference<any>, bufLen: number, isDirectory: boolean, baseURL: NSURL): NSURL;
 
 declare function CFURLCreatePropertyFromResource(alloc: any, url: NSURL, property: string, errorCode: interop.Pointer | interop.Reference<number>): any;
 
-declare function CFURLCreateResourcePropertiesForKeysFromBookmarkData(allocator: any, resourcePropertiesToReturn: NSArray<any>, bookmark: NSData): interop.Unmanaged<NSDictionary<any, any>>;
+declare function CFURLCreateResourcePropertiesForKeysFromBookmarkData(allocator: any, resourcePropertiesToReturn: NSArray<any> | any[], bookmark: NSData): interop.Unmanaged<NSDictionary<any, any>>;
 
 declare function CFURLCreateResourcePropertyForKeyFromBookmarkData(allocator: any, resourcePropertyKey: string, bookmark: NSData): interop.Unmanaged<any>;
 
@@ -2441,7 +2441,7 @@ declare function CFURLCreateStringByReplacingPercentEscapes(allocator: any, orig
 
 declare function CFURLCreateStringByReplacingPercentEscapesUsingEncoding(allocator: any, origString: string, charsToLeaveEscaped: string, encoding: number): string;
 
-declare function CFURLCreateWithBytes(allocator: any, URLBytes: string, length: number, encoding: number, baseURL: NSURL): NSURL;
+declare function CFURLCreateWithBytes(allocator: any, URLBytes: string | interop.Pointer | interop.Reference<any>, length: number, encoding: number, baseURL: NSURL): NSURL;
 
 declare function CFURLCreateWithFileSystemPath(allocator: any, filePath: string, pathStyle: CFURLPathStyle, isDirectory: boolean): NSURL;
 
@@ -2451,9 +2451,9 @@ declare function CFURLCreateWithString(allocator: any, URLString: string, baseUR
 
 declare function CFURLDestroyResource(url: NSURL, errorCode: interop.Pointer | interop.Reference<number>): boolean;
 
-declare function CFURLEnumeratorCreateForDirectoryURL(alloc: any, directoryURL: NSURL, option: CFURLEnumeratorOptions, propertyKeys: NSArray<any>): any;
+declare function CFURLEnumeratorCreateForDirectoryURL(alloc: any, directoryURL: NSURL, option: CFURLEnumeratorOptions, propertyKeys: NSArray<any> | any[]): any;
 
-declare function CFURLEnumeratorCreateForMountedVolumes(alloc: any, option: CFURLEnumeratorOptions, propertyKeys: NSArray<any>): any;
+declare function CFURLEnumeratorCreateForMountedVolumes(alloc: any, option: CFURLEnumeratorOptions, propertyKeys: NSArray<any> | any[]): any;
 
 declare function CFURLEnumeratorGetDescendentLevel(enumerator: any): number;
 
@@ -2520,11 +2520,11 @@ declare function CFURLGetBaseURL(anURL: NSURL): NSURL;
 
 declare function CFURLGetByteRangeForComponent(url: NSURL, component: CFURLComponentType, rangeIncludingSeparators: interop.Pointer | interop.Reference<CFRange>): CFRange;
 
-declare function CFURLGetBytes(url: NSURL, buffer: string, bufferLength: number): number;
+declare function CFURLGetBytes(url: NSURL, buffer: string | interop.Pointer | interop.Reference<any>, bufferLength: number): number;
 
 declare function CFURLGetFSRef(url: NSURL, fsRef: interop.Pointer | interop.Reference<any>): boolean;
 
-declare function CFURLGetFileSystemRepresentation(url: NSURL, resolveAgainstBase: boolean, buffer: string, maxBufLen: number): boolean;
+declare function CFURLGetFileSystemRepresentation(url: NSURL, resolveAgainstBase: boolean, buffer: string | interop.Pointer | interop.Reference<any>, maxBufLen: number): boolean;
 
 declare function CFURLGetPortNumber(anURL: NSURL): number;
 
@@ -2609,7 +2609,7 @@ declare function CFWriteStreamCopyProperty(stream: NSOutputStream, propertyName:
 
 declare function CFWriteStreamCreateWithAllocatedBuffers(alloc: any, bufferAllocator: any): NSOutputStream;
 
-declare function CFWriteStreamCreateWithBuffer(alloc: any, buffer: string, bufferCapacity: number): NSOutputStream;
+declare function CFWriteStreamCreateWithBuffer(alloc: any, buffer: string | interop.Pointer | interop.Reference<any>, bufferCapacity: number): NSOutputStream;
 
 declare function CFWriteStreamCreateWithFile(alloc: any, fileURL: NSURL): NSOutputStream;
 
@@ -2631,7 +2631,7 @@ declare function CFWriteStreamSetProperty(stream: NSOutputStream, propertyName: 
 
 declare function CFWriteStreamUnscheduleFromRunLoop(stream: NSOutputStream, runLoop: any, runLoopMode: any): void;
 
-declare function CFWriteStreamWrite(stream: NSOutputStream, buffer: string, bufferLength: number): number;
+declare function CFWriteStreamWrite(stream: NSOutputStream, buffer: string | interop.Pointer | interop.Reference<any>, bufferLength: number): number;
 
 interface IUnknownVTbl {
 	_reserved: interop.Pointer | interop.Reference<any>;
@@ -2652,7 +2652,7 @@ declare const enum __CFByteOrder {
 
 declare function __CFRangeMake(loc: number, len: number): CFRange;
 
-declare function __CFStringMakeConstantString(cStr: string): string;
+declare function __CFStringMakeConstantString(cStr: string | interop.Pointer | interop.Reference<any>): string;
 
 declare var kCFAbsoluteTimeIntervalSince1904: number;
 

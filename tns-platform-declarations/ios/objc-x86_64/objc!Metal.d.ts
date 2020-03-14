@@ -1465,9 +1465,9 @@ declare const enum MTLGPUFamily {
 
 	Common3 = 3003,
 
-	iOSMac1 = 4001,
+	MacCatalyst1 = 4001,
 
-	iOSMac2 = 4002
+	MacCatalyst2 = 4002
 }
 
 declare const enum MTLHazardTrackingMode {
