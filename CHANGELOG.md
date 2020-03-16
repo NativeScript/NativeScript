@@ -12,8 +12,10 @@
 
 ### Features
 
+* **tabs:** Tabs styling improvements ([4589431](https://github.com/NativeScript/NativeScript/commit/458943111e909fcdad47d12e7ee4bcd9732f4e90))
+* **tabs:** Added selectedItemColor and unSelectedItemColor to the TabStrip ([243dc98](https://github.com/NativeScript/NativeScript/commit/243dc98005d43617872da5cfc010e76178aa7f97))
 * **gestures:** add locationX and locationY to double tap event data ([5ff78e2](https://github.com/NativeScript/NativeScript/commit/5ff78e2ad2612259bff36d3aaf5a0292309f5a78))
-
+* **tabs:** Added iconClass property to TabStripItem ([270988d](https://github.com/NativeScript/NativeScript/commit/270988d26e1eeab97b4e5781451388e3a0a347e3))
 
 
 ## [6.4.2](https://github.com/NativeScript/NativeScript/compare/6.4.1...6.4.2) (2020-02-27)
