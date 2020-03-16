@@ -2336,6 +2336,8 @@ export class TabStrip extends View {
 
 // @public
 export class TabStripItem extends View {
+    iconClass: string;
+
     iconSource: string;
 
     image: Image;
