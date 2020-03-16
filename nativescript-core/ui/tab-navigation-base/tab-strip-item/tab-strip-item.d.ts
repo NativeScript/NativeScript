@@ -17,6 +17,11 @@ export class TabStripItem extends View {
     title: string;
 
     /**
+     * Gets or sets the CSS class name of the icon in the tab strip entry.
+     */
+    iconClass: string;
+
+    /**
      * Gets or sets the icon source of the tab strip entry.
      */
     iconSource: string;
