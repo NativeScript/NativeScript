@@ -1,3 +1,21 @@
+# [6.5.0](https://github.com/NativeScript/NativeScript/compare/6.4.2...6.5.0) (2020-03-18)
+
+
+### Bug Fixes
+
+* Fix issue for view not being removed from its parent ([#8432](https://github.com/NativeScript/NativeScript/issues/8432)) ([e081340](https://github.com/NativeScript/NativeScript/commit/e081340665605c54530587cc0cce9bc339585557))
+* **d.ts:** Update iOS typings iOS 13.2 ([#8430](https://github.com/NativeScript/NativeScript/issues/8430)) ([18a9b1a](https://github.com/NativeScript/NativeScript/commit/18a9b1aea89ee9defee990ace7d2409327a47a28))
+* added null guard ([9d4e482](https://github.com/NativeScript/NativeScript/commit/9d4e482b3896d7c8ac98ef01acbc8b8bd0780f8e))
+* **bottom-nav:** align text with different icons ([9830be7](https://github.com/NativeScript/NativeScript/commit/9830be7230355638ace604145a3e3fad393c2a93))
+* **tabs:** delay loadView when animation runs ([#8353](https://github.com/NativeScript/NativeScript/issues/8353)) ([e649a6c](https://github.com/NativeScript/NativeScript/commit/e649a6cfd618c86a1dc7fa84e3197dfb78c3bc74))
+
+
+### Features
+
+* **gestures:** add locationX and locationY to double tap event data ([5ff78e2](https://github.com/NativeScript/NativeScript/commit/5ff78e2ad2612259bff36d3aaf5a0292309f5a78))
+
+
+
 ## [6.4.2](https://github.com/NativeScript/NativeScript/compare/6.4.1...6.4.2) (2020-02-27)
 
 
