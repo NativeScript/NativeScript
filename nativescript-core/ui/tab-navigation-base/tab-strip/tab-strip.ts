@@ -17,6 +17,8 @@ export const traceCategory = "TabView";
 // Place this on top because the webpack ts-loader doesn't work when export
 // is after reference
 export const highlightColorProperty = new Property<TabStrip, Color>({ name: "highlightColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+export const selectedItemColorProperty = new Property<TabStrip, Color>({ name: "selectedItemColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+export const unSelectedItemColorProperty = new Property<TabStrip, Color>({ name: "unSelectedItemColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 
 @CSSType("TabStrip")
 export class TabStrip extends View implements TabStripDefinition, AddChildFromBuilder, AddArrayFromBuilder {
@@ -25,6 +27,8 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
     public isIconSizeFixed: boolean;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
     public highlightColor: Color;
+    public selectedItemColor: Color;
+    public unSelectedItemColor: Color;
     public _hasImage: boolean;
     public _hasTitle: boolean;
 
@@ -127,6 +131,28 @@ export class TabStrip extends View implements TabStripDefinition, AddChildFromBu
 
         return parent && parent.setTabBarHighlightColor(value);
     }
+
+    [selectedItemColorProperty.getDefault](): Color {
+        const parent = <TabNavigationBase>this.parent;
+
+        return parent && parent.getTabBarSelectedItemColor();
+    }
+    [selectedItemColorProperty.setNative](value: Color) {
+        const parent = <TabNavigationBase>this.parent;
+
+        return parent && parent.setTabBarSelectedItemColor(value);
+    }
+
+    [unSelectedItemColorProperty.getDefault](): Color {
+        const parent = <TabNavigationBase>this.parent;
+
+        return parent && parent.getTabBarUnSelectedItemColor();
+    }
+    [unSelectedItemColorProperty.setNative](value: Color) {
+        const parent = <TabNavigationBase>this.parent;
+
+        return parent && parent.setTabBarUnSelectedItemColor(value);
+    }
 }
 
 export interface TabStrip {
@@ -150,3 +176,5 @@ export const isIconSizeFixedProperty = new Property<TabStrip, boolean>({
 isIconSizeFixedProperty.register(TabStrip);
 
 highlightColorProperty.register(TabStrip);
+selectedItemColorProperty.register(TabStrip);
+unSelectedItemColorProperty.register(TabStrip);

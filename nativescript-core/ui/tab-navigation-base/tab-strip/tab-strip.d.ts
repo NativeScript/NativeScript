@@ -33,6 +33,16 @@ export class TabStrip extends View {
     highlightColor: Color;
 
     /**
+     * Gets or sets the color of the selected item in the tab strip.
+     */
+    selectedItemColor: Color;
+
+    /**
+     * Gets or sets the color of the non-selected items in the tab strip.
+     */
+    unSelectedItemColor: Color;
+
+    /**
      * @private
      */
     _hasImage: boolean;
@@ -73,3 +83,5 @@ export interface TabStripItemEventData extends EventData {
 
 export const iosIconRenderingModeProperty: Property<TabStrip, "automatic" | "alwaysOriginal" | "alwaysTemplate">;
 export const isIconSizeFixedProperty: Property<TabStrip, boolean>;
+export const selectedItemColorProperty: Property<TabStrip, Color>;
+export const unSelectedItemColorProperty: Property<TabStrip, Color>;

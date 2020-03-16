@@ -461,6 +461,8 @@ export class Tabs extends TabsBase {
     private _iconsCache = {};
     private _backgroundIndicatorColor: UIColor;
     public _defaultItemBackgroundColor: UIColor;
+    private _selectedItemColor: Color;
+    private _unSelectedItemColor: Color;
 
     constructor() {
         super();
@@ -548,10 +550,12 @@ export class Tabs extends TabsBase {
         if (tabStripItems) {
             if (tabStripItems[newIndex]) {
                 tabStripItems[newIndex]._emit(TabStripItem.selectEvent);
+                this.setIconColor(tabStripItems[newIndex]);
             }
 
             if (tabStripItems[oldIndex]) {
                 tabStripItems[oldIndex]._emit(TabStripItem.unselectEvent);
+                this.setIconColor(tabStripItems[oldIndex]);
             }
         }
 
@@ -702,7 +706,7 @@ export class Tabs extends TabsBase {
                 const tabBarItem = this.createTabBarItem(tabStripItem, i);
                 updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
 
-                setViewTextAttributes(this._ios.tabBar, tabStripItem.label, i === this.selectedIndex);
+                this.setViewTextAttributes(tabStripItem.label, i === this.selectedIndex);
 
                 controller.tabBarItem = tabBarItem;
                 tabStripItem._index = i;
@@ -714,6 +718,8 @@ export class Tabs extends TabsBase {
             viewControllers.push(controller);
         });
 
+        this.setItemImages();
+
         this.viewControllers = viewControllers;
         this.tabBarItems = tabBarItems;
 
@@ -724,6 +730,23 @@ export class Tabs extends TabsBase {
             this.viewController.tabBar.sizeToFit();
             if (this.selectedIndex) {
                 this.viewController.tabBar.setSelectedItemAnimated(this.tabBarItems[this.selectedIndex], false);
+            }
+        }
+    }
+
+    private setItemImages() {
+        if (this._selectedItemColor || this._unSelectedItemColor) {
+            if (this.tabStrip && this.tabStrip.items) {
+                this.tabStrip.items.forEach(item => {
+                    if (this._unSelectedItemColor && item.nativeView) {
+                        item.nativeView.image = this.getIcon(item, this._unSelectedItemColor);
+                    }
+                    if (this._selectedItemColor && item.nativeView) {
+                        if (this.selectedIndex === item._index) {
+                            item.nativeView.image = this.getIcon(item, this._selectedItemColor);
+                        }
+                    }
+                });
             }
         }
     }
@@ -764,11 +787,20 @@ export class Tabs extends TabsBase {
     }
 
     private getIconRenderingMode(): UIImageRenderingMode {
-        // MDCTabBar doesn't work with rendering mode AlwaysTemplate
-        return UIImageRenderingMode.AlwaysOriginal;
+        switch (this.tabStrip && this.tabStrip.iosIconRenderingMode) {
+            case "alwaysOriginal":
+                return UIImageRenderingMode.AlwaysOriginal;
+            case "alwaysTemplate":
+                return UIImageRenderingMode.AlwaysTemplate;
+            case "automatic":
+            default:
+                const hasItemColor = this._selectedItemColor || this._unSelectedItemColor;
+
+                return hasItemColor ? UIImageRenderingMode.AlwaysTemplate : UIImageRenderingMode.AlwaysOriginal;
+        }
     }
 
-    private getIcon(tabStripItem: TabStripItem): UIImage {
+    private getIcon(tabStripItem: TabStripItem, color?: Color): UIImage {
         // Image and Label children of TabStripItem
         // take priority over its `iconSource` and `title` properties
         const iconSource = tabStripItem.image && tabStripItem.image.src;
@@ -778,7 +810,9 @@ export class Tabs extends TabsBase {
 
         const target = tabStripItem.image;
         const font = target.style.fontInternal;
-        const color = target.style.color;
+        if (!color) {
+            color = target.style.color;
+        }
         const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
 
         let isFontIcon = false;
@@ -800,16 +834,13 @@ export class Tabs extends TabsBase {
                     image = this.getFixedSizeIcon(image);
                 }
 
-                let renderingMode: UIImageRenderingMode = UIImageRenderingMode.AlwaysOriginal;
+                let renderingMode: UIImageRenderingMode = UIImageRenderingMode.Automatic;
                 if (!isFontIcon) {
                     renderingMode = this.getIconRenderingMode();
                 }
                 const originalRenderedImage = image.imageWithRenderingMode(renderingMode);
                 this._iconsCache[iconTag] = originalRenderedImage;
                 image = originalRenderedImage;
-            } else {
-                // TODO
-                // traceMissingIcon(iconSource);
             }
         }
 
@@ -862,6 +893,11 @@ export class Tabs extends TabsBase {
     }
 
     private isSelectedAndHightlightedItem(tabStripItem: TabStripItem): boolean {
+        // to find out whether the current tab strip item is active (has style with :active selector applied)
+        // we need to check whether its _visualState is equal to "highlighted" as when changing tabs
+        // we first go through setTabBarItemBackgroundColor thice, once before setting the "highlighted" state
+        // and once after that, but if the "highlighted" state is not set we cannot get the backgroundColor
+        // set using :active selector
         return (tabStripItem._index === this.selectedIndex && tabStripItem["_visualState"] === "highlighted");
     }
 
@@ -872,6 +908,14 @@ export class Tabs extends TabsBase {
 
         let newColor = value instanceof Color ? value.ios : value;
         const itemSelectedAndHighlighted = this.isSelectedAndHightlightedItem(tabStripItem);
+
+        // As we cannot implement selected item background color in Tabs we are using the Indicator for this
+        // To be able to detect that there are two different background colors (one for selected and one for not selected item)
+        // we are checking whether the current item is not selected and higlighted and we store the value of its
+        // background color to _defaultItemBackgroundColor and later if we need to process a selected and highlighted item
+        // we are comparing it's backgroun color to the default one and if there's a difference
+        // we are changing the selectionIndicatorTemplate from underline to the whole item
+        // in that mode we are not able to show the indicator as it is used for the background of the selected item
 
         if (!this._defaultItemBackgroundColor && !itemSelectedAndHighlighted) {
             this._defaultItemBackgroundColor = newColor;
@@ -890,18 +934,40 @@ export class Tabs extends TabsBase {
     }
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        setViewTextAttributes(this._ios.tabBar, tabStripItem.label);
+        this.setViewTextAttributes(tabStripItem.label);
+    }
+
+    private setItemColors(): void {
+        if (this._selectedItemColor) {
+            this.viewController.tabBar.selectedItemTintColor = this._selectedItemColor.ios;
+        }
+        if (this._unSelectedItemColor) {
+            this.viewController.tabBar.unselectedItemTintColor = this._unSelectedItemColor.ios;
+        }
+    }
+
+    private setIconColor(tabStripItem: TabStripItem, forceReload: boolean = false): void {
+        // if there is no change in the css color and there is no item color set
+        // we don't need to reload the icon
+        if (!forceReload && !this._selectedItemColor && !this._unSelectedItemColor) {
+            return;
+        }
+
+        let image: UIImage;
+
+        // if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
+        const tabStripColor = (this.selectedIndex === tabStripItem._index) ? this._selectedItemColor : this._unSelectedItemColor;
+        image = this.getIcon(tabStripItem, tabStripColor);
+
+        tabStripItem.nativeView.image = image;
     }
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        const image = this.getIcon(tabStripItem);
-
-        tabStripItem.nativeView.image = image;
-        tabStripItem.nativeView.selectedImage = image;
+        this.setIconColor(tabStripItem, true);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        setViewTextAttributes(this._ios.tabBar, tabStripItem.label);
+        this.setViewTextAttributes(tabStripItem.label);
     }
 
     public getTabBarFontInternal(): UIFont {
@@ -956,6 +1022,22 @@ export class Tabs extends TabsBase {
     public setTabBarHighlightColor(value: UIColor | Color) {
         const nativeColor = value instanceof Color ? value.ios : value;
         this._ios.tabBar.tintColor = nativeColor;
+    }
+
+    public getTabBarSelectedItemColor(): Color {
+        return this._selectedItemColor;
+    }
+
+    public setTabBarSelectedItemColor(value: Color) {
+        this._selectedItemColor = value;
+    }
+
+    public getTabBarUnSelectedItemColor(): Color {
+        return this._unSelectedItemColor;
+    }
+
+    public setTabBarUnSelectedItemColor(value: Color) {
+        this._unSelectedItemColor = value;
     }
 
     private visitFrames(view: ViewBase, operation: (frame: Frame) => {}) {
@@ -1082,28 +1164,37 @@ export class Tabs extends TabsBase {
 
         this.viewController.tabBar.alignment = alignment;
     }
-}
 
-function setViewTextAttributes(tabBar: MDCTabBar, view: View, setSelected: boolean = false): any {
-    if (!view) {
-        return null;
-    }
+    private setViewTextAttributes(view: View, setSelected: boolean = false): any {
+        if (!view) {
+            return null;
+        }
 
-    const defaultTabItemFontSize = 10;
-    const tabItemFontSize = view.style.fontSize || defaultTabItemFontSize;
-    const font: UIFont = view.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+        const defaultTabItemFontSize = 10;
+        const tabItemFontSize = view.style.fontSize || defaultTabItemFontSize;
+        const font: UIFont = view.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
 
-    tabBar.unselectedItemTitleFont = font;
-    tabBar.selectedItemTitleFont = font;
+        this.viewController.tabBar.unselectedItemTitleFont = font;
+        this.viewController.tabBar.selectedItemTitleFont = font;
 
-    const tabItemTextColor = view.style.color;
-    const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
-    if (textColor) {
-        tabBar.setTitleColorForState(textColor, MDCTabBarItemState.Normal);
-        if (setSelected) {
-            tabBar.setTitleColorForState(textColor, MDCTabBarItemState.Selected);
+        const tabItemTextColor = view.style.color;
+        const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
+
+        if (textColor) {
+            this.viewController.tabBar.setTitleColorForState(textColor, MDCTabBarItemState.Normal);
+            this.viewController.tabBar.setImageTintColorForState(textColor, MDCTabBarItemState.Normal);
+
+            if (setSelected) {
+                this.viewController.tabBar.setTitleColorForState(textColor, MDCTabBarItemState.Selected);
+                this.viewController.tabBar.setImageTintColorForState(textColor, MDCTabBarItemState.Selected);
+            }
+        }
+
+        if (this._selectedItemColor) {
+            this.viewController.tabBar.selectedItemTintColor = this._selectedItemColor.ios;
+        }
+        if (this._unSelectedItemColor) {
+            this.viewController.tabBar.unselectedItemTintColor = this._unSelectedItemColor.ios;
         }
     }
-
-    tabBar.inkColor = UIColor.clearColor;
 }
