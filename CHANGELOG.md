@@ -1,3 +1,20 @@
+## [6.4.2](https://github.com/NativeScript/NativeScript/compare/6.4.1...6.4.2) (2020-02-27)
+
+
+### Bug Fixes
+
+* **ios:** Ensure ObserverClass is initialized ([#8365](https://github.com/NativeScript/NativeScript/issues/8365)) ([06b9ecf](https://github.com/NativeScript/NativeScript/commit/06b9ecf))
+* **tabs:** Tabs animation and selected index fixes ([#8377](https://github.com/NativeScript/NativeScript/issues/8377)) ([acaabb](https://github.com/NativeScript/NativeScript/commit/acaabb))
+* XHR readystatechange event ([cff125d](https://github.com/NativeScript/NativeScript/commit/cff125d))
+* guard cachedDrawable ([#8320](https://github.com/NativeScript/NativeScript/issues/8320)) ([dd11158](https://github.com/NativeScript/NativeScript/commit/dd11158))
+
+
+### Features
+
+* Add .kt extension to  known extensions map ([#8363](https://github.com/NativeScript/NativeScript/issues/8363)) ([398457c](https://github.com/NativeScript/NativeScript/commit/398457c))
+
+
+
 ## 6.4.1 (2020-02-17)
 
 
