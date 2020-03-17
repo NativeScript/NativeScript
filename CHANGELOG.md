@@ -1,3 +1,22 @@
+# [6.5.0](https://github.com/NativeScript/NativeScript/compare/6.4.2...6.5.0) (2020-03-18)
+
+
+### Bug Fixes
+
+* Fix issue for view not being removed from its parent ([#8432](https://github.com/NativeScript/NativeScript/issues/8432)) ([e081340](https://github.com/NativeScript/NativeScript/commit/e081340665605c54530587cc0cce9bc339585557))
+* **d.ts:** Update iOS typings iOS 13.2 ([#8430](https://github.com/NativeScript/NativeScript/issues/8430)) ([18a9b1a](https://github.com/NativeScript/NativeScript/commit/18a9b1aea89ee9defee990ace7d2409327a47a28))
+* **bottom-nav:** Android TabStripItems not aligned correctly when one of the image is smaller ([#8414](https://github.com/NativeScript/NativeScript/issues/8414))([9830be7](https://github.com/NativeScript/NativeScript/commit/9830be7230355638ace604145a3e3fad393c2a93))
+* **tabs:** delay loadView when animation runs ([#8353](https://github.com/NativeScript/NativeScript/issues/8353)) ([e649a6c](https://github.com/NativeScript/NativeScript/commit/e649a6cfd618c86a1dc7fa84e3197dfb78c3bc74))
+
+
+### Features
+
+* **tabs:** Tabs styling improvements ([#8366](https://github.com/NativeScript/NativeScript/pull/8366))([4589431](https://github.com/NativeScript/NativeScript/commit/458943111e909fcdad47d12e7ee4bcd9732f4e90))
+* **tabs:** Added selectedItemColor and unSelectedItemColor to the TabStrip ([#8435](https://github.com/NativeScript/NativeScript/issues/8435))([243dc98](https://github.com/NativeScript/NativeScript/commit/243dc98005d43617872da5cfc010e76178aa7f97))
+* **gestures:** add locationX and locationY to double tap event data ([#8338](https://github.com/NativeScript/NativeScript/pull/8338))([5ff78e2](https://github.com/NativeScript/NativeScript/commit/5ff78e2ad2612259bff36d3aaf5a0292309f5a78))
+* **tabs:** Added iconClass property to TabStripItem ([#8439](https://github.com/NativeScript/NativeScript/issues/8439))([270988d](https://github.com/NativeScript/NativeScript/commit/270988d26e1eeab97b4e5781451388e3a0a347e3))
+
+
 ## [6.4.2](https://github.com/NativeScript/NativeScript/compare/6.4.1...6.4.2) (2020-02-27)
 
 

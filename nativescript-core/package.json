@@ -41,12 +41,14 @@
             "ios": "6.0.0",
             "android": "6.0.0"
         },
-        "hooks": [{
-            "name": "nativescript-core",
-            "type": "before-checkForChanges",
-            "script": "cli-hooks/before-checkForChanges.js",
-            "inject": true
-        }]
+        "hooks": [
+            {
+                "name": "nativescript-core",
+                "type": "before-checkForChanges",
+                "script": "cli-hooks/before-checkForChanges.js",
+                "inject": true
+            }
+        ]
     },
     "snapshot": {
         "android": {
