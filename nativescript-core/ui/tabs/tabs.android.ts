@@ -300,10 +300,12 @@ function initializeNativeClasses() {
 
             if (position >= 0 && tabStripItems && tabStripItems[position]) {
                 tabStripItems[position]._emit(TabStripItem.selectEvent);
+                owner._setItemColor(tabStripItems[position]);
             }
 
             if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
                 tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+                owner._setItemColor(tabStripItems[prevPosition]);
             }
         }
 
@@ -374,6 +376,8 @@ export class Tabs extends TabsBase {
     private _androidViewId: number = -1;
     public _originalBackground: any;
     private _textTransform: TextTransform = "uppercase";
+    private _selectedItemColor: Color;
+    private _unSelectedItemColor: Color;
 
     constructor() {
         super();
@@ -635,6 +639,7 @@ export class Tabs extends TabsBase {
         items.forEach((item, i, arr) => {
             const tv = tabsBar.getTextViewForItemAt(i);
             item.setNativeView(tv);
+            this._setItemColor(item);
         });
     }
 
@@ -667,10 +672,9 @@ export class Tabs extends TabsBase {
             tabItemSpec.backgroundColor = backgroundColor ? backgroundColor.android : this.getTabBarBackgroundArgbColor();
 
             // COLOR
-            const color = nestedLabel.style.color;
-            if (color) {
-                tabItemSpec.color = color.android;
-            }
+            let itemColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
+            const color = itemColor || nestedLabel.style.color;
+            tabItemSpec.color = color && color.android;
 
             // FONT
             const fontInternal = nestedLabel.style.fontInternal;
@@ -682,7 +686,7 @@ export class Tabs extends TabsBase {
             // ICON
             const iconSource = tabStripItem.image && tabStripItem.image.src;
             if (iconSource) {
-                const icon = this.getIcon(tabStripItem);
+                const icon = this.getIcon(tabStripItem, itemColor);
 
                 if (icon) {
                     // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
@@ -698,7 +702,7 @@ export class Tabs extends TabsBase {
         return tabItemSpec;
     }
 
-    private getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
+    private getIcon(tabStripItem: TabStripItem, color?: Color): android.graphics.drawable.BitmapDrawable {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
         if (!iconSource) {
             return null;
@@ -709,7 +713,9 @@ export class Tabs extends TabsBase {
             const fontIconCode = iconSource.split("//")[1];
             const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
             const font = target.style.fontInternal;
-            const color = target.style.color;
+            if (!color) {
+                color = target.style.color;
+            }
             is = ImageSource.fromFontIconCodeSync(fontIconCode, font, color);
         } else {
             is = ImageSource.fromFileOrResourceSync(iconSource);
@@ -801,6 +807,22 @@ export class Tabs extends TabsBase {
         this._tabsBar.setSelectedIndicatorColors([color]);
     }
 
+    public getTabBarSelectedItemColor(): Color {
+        return this._selectedItemColor;
+    }
+
+    public setTabBarSelectedItemColor(value: Color) {
+        this._selectedItemColor = value;
+    }
+
+    public getTabBarUnSelectedItemColor(): Color {
+        return this._unSelectedItemColor;
+    }
+
+    public setTabBarUnSelectedItemColor(value: Color) {
+        this._unSelectedItemColor = value;
+    }
+
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
@@ -815,21 +837,51 @@ export class Tabs extends TabsBase {
         this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
-    public setTabBarItemColor(tabStripItem: TabStripItem, value: number | Color): void {
-        if (typeof value === "number") {
-            tabStripItem.nativeViewProtected.setTextColor(value);
-        } else {
-            tabStripItem.nativeViewProtected.setTextColor(value.android);
+    public _setItemColor(tabStripItem: TabStripItem) {
+        const itemColor = (tabStripItem._index === this.selectedIndex) ? this._selectedItemColor : this._unSelectedItemColor;
+        if (!itemColor) {
+            return;
+        }
+
+        // set label color
+        tabStripItem.nativeViewProtected.setTextColor(itemColor.android);
+
+        // set icon color
+        this.setIconColor(tabStripItem, itemColor);
+    }
+
+    private setIconColor(tabStripItem: TabStripItem, color?: Color) {
+        const tabBarItem = this._tabsBar.getViewForItemAt(tabStripItem._index);
+
+        const drawable = this.getIcon(tabStripItem, color);
+        const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
+        imgView.setImageDrawable(drawable);
+        if (color) {
+            imgView.setColorFilter(color.android);
         }
     }
 
-    public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
-        const index = tabStripItem._index;
-        const tabBarItem = this._tabsBar.getViewForItemAt(index);
-        const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
-        const drawable = this.getIcon(tabStripItem);
+    public setTabBarItemColor(tabStripItem: TabStripItem, value: number | Color): void {
+        const itemColor = (tabStripItem._index === this.selectedIndex) ? this._selectedItemColor : this._unSelectedItemColor;
+        if (itemColor) {
+            // the itemColor is set through the selectedItemColor and unSelectedItemColor properties
+            // so it does not respect the css color
+            return;
+        }
 
-        imgView.setImageDrawable(drawable);
+        const androidColor = value instanceof Color ? value.android : value;
+        tabStripItem.nativeViewProtected.setTextColor(androidColor);
+    }
+
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
+        const itemColor = (tabStripItem._index === this.selectedIndex) ? this._selectedItemColor : this._unSelectedItemColor;
+        if (itemColor) {
+            // the itemColor is set through the selectedItemColor and unSelectedItemColor properties
+            // so it does not respect the css color
+            return;
+        }
+
+        this.setIconColor(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
