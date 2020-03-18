@@ -436,6 +436,8 @@ declare const enum ARErrorCode {
 
 	CollaborationDataUnavailable = 304,
 
+	InvalidCollaborationData = 304,
+
 	InsufficientFeatures = 400,
 
 	ObjectMergeFailed = 401,

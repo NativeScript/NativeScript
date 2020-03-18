@@ -1,21 +1,21 @@
 
-declare function adler32(adler: number, buf: string, len: number): number;
+declare function adler32(adler: number, buf: string | interop.Pointer | interop.Reference<any>, len: number): number;
 
 declare function adler32_combine(p1: number, p2: number, p3: number): number;
 
-declare function adler32_z(adler: number, buf: string, len: number): number;
+declare function adler32_z(adler: number, buf: string | interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function compress(dest: string, destLen: interop.Pointer | interop.Reference<number>, source: string, sourceLen: number): number;
+declare function compress(dest: string | interop.Pointer | interop.Reference<any>, destLen: interop.Pointer | interop.Reference<number>, source: string | interop.Pointer | interop.Reference<any>, sourceLen: number): number;
 
-declare function compress2(dest: string, destLen: interop.Pointer | interop.Reference<number>, source: string, sourceLen: number, level: number): number;
+declare function compress2(dest: string | interop.Pointer | interop.Reference<any>, destLen: interop.Pointer | interop.Reference<number>, source: string | interop.Pointer | interop.Reference<any>, sourceLen: number, level: number): number;
 
 declare function compressBound(sourceLen: number): number;
 
-declare function crc32(crc: number, buf: string, len: number): number;
+declare function crc32(crc: number, buf: string | interop.Pointer | interop.Reference<any>, len: number): number;
 
 declare function crc32_combine(p1: number, p2: number, p3: number): number;
 
-declare function crc32_z(adler: number, buf: string, len: number): number;
+declare function crc32_z(adler: number, buf: string | interop.Pointer | interop.Reference<any>, len: number): number;
 
 declare function deflate(strm: interop.Pointer | interop.Reference<z_stream>, flush: number): number;
 
@@ -25,11 +25,11 @@ declare function deflateCopy(dest: interop.Pointer | interop.Reference<z_stream>
 
 declare function deflateEnd(strm: interop.Pointer | interop.Reference<z_stream>): number;
 
-declare function deflateGetDictionary(strm: interop.Pointer | interop.Reference<z_stream>, dictionary: string, dictLength: interop.Pointer | interop.Reference<number>): number;
+declare function deflateGetDictionary(strm: interop.Pointer | interop.Reference<z_stream>, dictionary: string | interop.Pointer | interop.Reference<any>, dictLength: interop.Pointer | interop.Reference<number>): number;
 
-declare function deflateInit2_(strm: interop.Pointer | interop.Reference<z_stream>, level: number, method: number, windowBits: number, memLevel: number, strategy: number, version: string, stream_size: number): number;
+declare function deflateInit2_(strm: interop.Pointer | interop.Reference<z_stream>, level: number, method: number, windowBits: number, memLevel: number, strategy: number, version: string | interop.Pointer | interop.Reference<any>, stream_size: number): number;
 
-declare function deflateInit_(strm: interop.Pointer | interop.Reference<z_stream>, level: number, version: string, stream_size: number): number;
+declare function deflateInit_(strm: interop.Pointer | interop.Reference<z_stream>, level: number, version: string | interop.Pointer | interop.Reference<any>, stream_size: number): number;
 
 declare function deflateParams(strm: interop.Pointer | interop.Reference<z_stream>, level: number, strategy: number): number;
 
@@ -41,7 +41,7 @@ declare function deflateReset(strm: interop.Pointer | interop.Reference<z_stream
 
 declare function deflateResetKeep(p1: interop.Pointer | interop.Reference<z_stream>): number;
 
-declare function deflateSetDictionary(strm: interop.Pointer | interop.Reference<z_stream>, dictionary: string, dictLength: number): number;
+declare function deflateSetDictionary(strm: interop.Pointer | interop.Reference<z_stream>, dictionary: string | interop.Pointer | interop.Reference<any>, dictLength: number): number;
 
 declare function deflateSetHeader(strm: interop.Pointer | interop.Reference<z_stream>, head: interop.Pointer | interop.Reference<gz_header>): number;
 
@@ -85,7 +85,7 @@ declare function gzclose_w(file: interop.Pointer | interop.Reference<gzFile_s>):
 
 declare function gzdirect(file: interop.Pointer | interop.Reference<gzFile_s>): number;
 
-declare function gzdopen(fd: number, mode: string): interop.Pointer | interop.Reference<gzFile_s>;
+declare function gzdopen(fd: number, mode: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<gzFile_s>;
 
 declare function gzeof(file: interop.Pointer | interop.Reference<gzFile_s>): number;
 
@@ -101,15 +101,15 @@ declare function gzgetc(file: interop.Pointer | interop.Reference<gzFile_s>): nu
 
 declare function gzgetc_(file: interop.Pointer | interop.Reference<gzFile_s>): number;
 
-declare function gzgets(file: interop.Pointer | interop.Reference<gzFile_s>, buf: string, len: number): string;
+declare function gzgets(file: interop.Pointer | interop.Reference<gzFile_s>, buf: string | interop.Pointer | interop.Reference<any>, len: number): string;
 
 declare function gzoffset(p1: interop.Pointer | interop.Reference<gzFile_s>): number;
 
-declare function gzopen(p1: string, p2: string): interop.Pointer | interop.Reference<gzFile_s>;
+declare function gzopen(p1: string | interop.Pointer | interop.Reference<any>, p2: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<gzFile_s>;
 
 declare function gzputc(file: interop.Pointer | interop.Reference<gzFile_s>, c: number): number;
 
-declare function gzputs(file: interop.Pointer | interop.Reference<gzFile_s>, s: string): number;
+declare function gzputs(file: interop.Pointer | interop.Reference<gzFile_s>, s: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function gzread(file: interop.Pointer | interop.Reference<gzFile_s>, buf: interop.Pointer | interop.Reference<any>, len: number): number;
 
@@ -131,7 +131,7 @@ declare function inflateBack(strm: interop.Pointer | interop.Reference<z_stream>
 
 declare function inflateBackEnd(strm: interop.Pointer | interop.Reference<z_stream>): number;
 
-declare function inflateBackInit_(strm: interop.Pointer | interop.Reference<z_stream>, windowBits: number, window: string, version: string, stream_size: number): number;
+declare function inflateBackInit_(strm: interop.Pointer | interop.Reference<z_stream>, windowBits: number, window: string | interop.Pointer | interop.Reference<any>, version: string | interop.Pointer | interop.Reference<any>, stream_size: number): number;
 
 declare function inflateCodesUsed(p1: interop.Pointer | interop.Reference<z_stream>): number;
 
@@ -139,13 +139,13 @@ declare function inflateCopy(dest: interop.Pointer | interop.Reference<z_stream>
 
 declare function inflateEnd(strm: interop.Pointer | interop.Reference<z_stream>): number;
 
-declare function inflateGetDictionary(strm: interop.Pointer | interop.Reference<z_stream>, dictionary: string, dictLength: interop.Pointer | interop.Reference<number>): number;
+declare function inflateGetDictionary(strm: interop.Pointer | interop.Reference<z_stream>, dictionary: string | interop.Pointer | interop.Reference<any>, dictLength: interop.Pointer | interop.Reference<number>): number;
 
 declare function inflateGetHeader(strm: interop.Pointer | interop.Reference<z_stream>, head: interop.Pointer | interop.Reference<gz_header>): number;
 
-declare function inflateInit2_(strm: interop.Pointer | interop.Reference<z_stream>, windowBits: number, version: string, stream_size: number): number;
+declare function inflateInit2_(strm: interop.Pointer | interop.Reference<z_stream>, windowBits: number, version: string | interop.Pointer | interop.Reference<any>, stream_size: number): number;
 
-declare function inflateInit_(strm: interop.Pointer | interop.Reference<z_stream>, version: string, stream_size: number): number;
+declare function inflateInit_(strm: interop.Pointer | interop.Reference<z_stream>, version: string | interop.Pointer | interop.Reference<any>, stream_size: number): number;
 
 declare function inflateMark(strm: interop.Pointer | interop.Reference<z_stream>): number;
 
@@ -157,7 +157,7 @@ declare function inflateReset2(strm: interop.Pointer | interop.Reference<z_strea
 
 declare function inflateResetKeep(p1: interop.Pointer | interop.Reference<z_stream>): number;
 
-declare function inflateSetDictionary(strm: interop.Pointer | interop.Reference<z_stream>, dictionary: string, dictLength: number): number;
+declare function inflateSetDictionary(strm: interop.Pointer | interop.Reference<z_stream>, dictionary: string | interop.Pointer | interop.Reference<any>, dictLength: number): number;
 
 declare function inflateSync(strm: interop.Pointer | interop.Reference<z_stream>): number;
 
@@ -167,9 +167,9 @@ declare function inflateUndermine(p1: interop.Pointer | interop.Reference<z_stre
 
 declare function inflateValidate(p1: interop.Pointer | interop.Reference<z_stream>, p2: number): number;
 
-declare function uncompress(dest: string, destLen: interop.Pointer | interop.Reference<number>, source: string, sourceLen: number): number;
+declare function uncompress(dest: string | interop.Pointer | interop.Reference<any>, destLen: interop.Pointer | interop.Reference<number>, source: string | interop.Pointer | interop.Reference<any>, sourceLen: number): number;
 
-declare function uncompress2(dest: string, destLen: interop.Pointer | interop.Reference<number>, source: string, sourceLen: interop.Pointer | interop.Reference<number>): number;
+declare function uncompress2(dest: string | interop.Pointer | interop.Reference<any>, destLen: interop.Pointer | interop.Reference<number>, source: string | interop.Pointer | interop.Reference<any>, sourceLen: interop.Pointer | interop.Reference<number>): number;
 
 declare function zError(p1: number): string;
 

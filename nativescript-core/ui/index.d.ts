@@ -34,7 +34,7 @@ export { TabNavigationBase } from "./tab-navigation-base/tab-navigation-base";
 export { TabStrip, TabStripItemEventData } from "./tab-navigation-base/tab-strip";
 export { TabStripItem } from "./tab-navigation-base/tab-strip-item";
 export { TabView, TabViewItem } from "./tab-view";
-export { Tabs } from "./tabs";
+export { Tabs, IOSTabBarItemsAlignment } from "./tabs";
 export { TextBase } from "./text-base";
 export { FormattedString } from "./text-base/formatted-string";
 export { Span } from "./text-base/span";

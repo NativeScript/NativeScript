@@ -284,21 +284,38 @@ describe(`${imagePrefix}-suite`, async function () {
         await tabsViewBasePage.navigateBackToSuitMainPage();
     });
 
-    // it(`${imagePrefix}-frame-in-tabs`, async function () {
-    //     await tabsViewBasePage.navigateToSample("frame-in-tabs");
-    //     await driver.imageHelper.compareScreen();
+    it(`${imagePrefix}-frame-in-tabs`, async function () {
+        await tabsViewBasePage.navigateToSample("frame-in-tabs");
+        await tabsViewBasePage.refreshTabItems();
+        await driver.imageHelper.compareScreen();
 
-    //     // go through the tabs and check that they are loaded
-    //     await tabsViewBasePage.tabOnItem(1);
-    //     await driver.imageHelper.compareScreen();
+        // go through the tabs and check that they are loaded
+        await tabsViewBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
 
-    //     await tabsViewBasePage.tabOnItem(2);
-    //     await driver.imageHelper.compareScreen();
+        await tabsViewBasePage.tabOnItem(2);
+        await driver.imageHelper.compareScreen();
 
-    //     await tabsViewBasePage.tabOnItem(3);
-    //     await driver.imageHelper.compareScreen();
+        await tabsViewBasePage.tabOnItem(3);
+        await driver.imageHelper.compareScreen();
 
-    //     assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
-    //     await tabsViewBasePage.navigateBackToSuitMainPage();
-    // });
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await tabsViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-item-color`, async function () {
+        await tabsViewBasePage.navigateToSample("item-color");
+        await tabsViewBasePage.refreshTabItems();
+        await driver.imageHelper.compareScreen();
+
+        // go through the tabs and check that they are loaded
+        await tabsViewBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        await tabsViewBasePage.tabOnItem(2);
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await tabsViewBasePage.navigateBackToSuitMainPage();
+    });
 });
