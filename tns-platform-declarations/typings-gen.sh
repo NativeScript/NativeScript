@@ -40,6 +40,8 @@ rm ios/objc-x86_64/*
 
 echo "Deleting Material Components typings..."
 rm ios-typings-prj/typings/x86_64/objc\!MaterialComponents.d.ts
+# Remove methods attached to other modules via extensions (UIKit, QuartzCore)
+perl -pi -e 's/.*\s(mdc_|MDCFontTextStyle|MDCAnimationTimingFunction).*\s*//g' ios-typings-prj/typings/x86_64/*.d.ts
 
 echo "Moving generated typings to ios/objc-x86_64..."
 mv ios-typings-prj/typings/x86_64/* ios/objc-x86_64/

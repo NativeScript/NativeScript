@@ -49,6 +49,16 @@ export class Tabs extends TabNavigationBase {
      */
     tabsPosition: "top" | "bottom";
 
+     /**
+     * Gets or set the MDCTabBarAlignment of the tab bar icons in iOS. Defaults to "justified"
+     * Valid values are:
+     *  - leading
+     *  - justified
+     *  - center
+     *  - centerSelected
+     */
+    iOSTabBarItemsAlignment: IOSTabBarItemsAlignment;
+
     /**
      * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.
      */
@@ -81,3 +91,12 @@ export class Tabs extends TabNavigationBase {
 export const itemsProperty: Property<Tabs, TabContentItem[]>;
 export const tabStripProperty: Property<Tabs, TabStrip>
 export const selectedIndexProperty: Property<Tabs, number>;
+
+/**
+ * IOS Alignment of the Tabs TabStrip to use.
+ *  - `leading` - tab items are aligned to the left
+ *  - `justified` - tab strip is split equally to all the tab items
+ *  - `center` - tabs items are aligned in the center
+ *  - `centerSelected` - tab items move to make the selected tab in the center
+ */
+export type IOSTabBarItemsAlignment = "leading" | "justified" | "center" | "centerSelected";

@@ -9,7 +9,7 @@ declare function VTCompressionSessionEncodeFrame(session: any, imageBuffer: any,
 
 declare function VTCompressionSessionEncodeFrameWithOutputHandler(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>, outputHandler: (p1: number, p2: VTEncodeInfoFlags, p3: any) => void): number;
 
-declare function VTCompressionSessionEndPass(session: any, furtherPassesRequestedOut: string, reserved: interop.Pointer | interop.Reference<number>): number;
+declare function VTCompressionSessionEndPass(session: any, furtherPassesRequestedOut: string | interop.Pointer | interop.Reference<any>, reserved: interop.Pointer | interop.Reference<number>): number;
 
 declare function VTCompressionSessionGetPixelBufferPool(session: any): any;
 

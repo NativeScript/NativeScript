@@ -1,5 +1,5 @@
 
-declare function CFFTPCreateParsedResourceListing(alloc: any, buffer: string, bufferLength: number, parsed: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
+declare function CFFTPCreateParsedResourceListing(alloc: any, buffer: string | interop.Pointer | interop.Reference<any>, bufferLength: number, parsed: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
 
 declare function CFHTTPAuthenticationAppliesToRequest(auth: any, request: any): boolean;
 
@@ -23,7 +23,7 @@ declare function CFHTTPAuthenticationRequiresUserNameAndPassword(auth: any): boo
 
 declare function CFHTTPMessageAddAuthentication(request: any, authenticationFailureResponse: any, username: string, password: string, authenticationScheme: string, forProxy: boolean): boolean;
 
-declare function CFHTTPMessageAppendBytes(message: any, newBytes: string, numBytes: number): boolean;
+declare function CFHTTPMessageAppendBytes(message: any, newBytes: string | interop.Pointer | interop.Reference<any>, numBytes: number): boolean;
 
 declare function CFHTTPMessageApplyCredentialDictionary(request: any, auth: any, dict: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
 
@@ -82,11 +82,11 @@ declare function CFHostCreateWithAddress(allocator: any, addr: NSData): interop.
 
 declare function CFHostCreateWithName(allocator: any, hostname: string): interop.Unmanaged<any>;
 
-declare function CFHostGetAddressing(theHost: any, hasBeenResolved: string): interop.Unmanaged<NSArray<any>>;
+declare function CFHostGetAddressing(theHost: any, hasBeenResolved: string | interop.Pointer | interop.Reference<any>): interop.Unmanaged<NSArray<any>>;
 
-declare function CFHostGetNames(theHost: any, hasBeenResolved: string): interop.Unmanaged<NSArray<any>>;
+declare function CFHostGetNames(theHost: any, hasBeenResolved: string | interop.Pointer | interop.Reference<any>): interop.Unmanaged<NSArray<any>>;
 
-declare function CFHostGetReachability(theHost: any, hasBeenResolved: string): interop.Unmanaged<NSData>;
+declare function CFHostGetReachability(theHost: any, hasBeenResolved: string | interop.Pointer | interop.Reference<any>): interop.Unmanaged<NSData>;
 
 declare function CFHostGetTypeID(): number;
 

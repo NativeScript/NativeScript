@@ -1240,6 +1240,9 @@ export class iOSApplication {
 }
 
 // @public
+export type IOSTabBarItemsAlignment = "leading" | "justified" | "center" | "centerSelected";
+
+// @public
 export const isAndroid: boolean;
 
 // @public
@@ -2222,7 +2225,11 @@ export class TabNavigationBase extends View {
 
     getTabBarItemTextTransform(tabStripItem: TabStripItem): any
 
+    getTabBarSelectedItemColor(): Color
+
     getTabBarTextTransform(): any
+
+    getTabBarUnSelectedItemColor(): Color
 
     ios: any /* UITabBarController */;
 
@@ -2263,7 +2270,11 @@ export class TabNavigationBase extends View {
 
     setTabBarItemTitle(tabStripItem: TabStripItem, value: any): any
 
+    setTabBarSelectedItemColor(value: Color)
+
     setTabBarTextTransform(value: any): void
+
+    setTabBarUnSelectedItemColor(value: Color)
 
     tabStrip: TabStrip;
 }
@@ -2273,6 +2284,8 @@ export class Tabs extends TabNavigationBase {
     android: any /* android.view.View */;
 
     ios: any /* UITabBarController */;
+
+    iOSTabBarItemsAlignment: IOSTabBarItemsAlignment;
 
     items: Array<TabContentItem>;
 
@@ -2315,10 +2328,16 @@ export class TabStrip extends View {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     on(event: "itemTap", callback: (args: TabStripItemEventData) => void, thisArg?: any);
+
+    selectedItemColor: Color;
+
+    unSelectedItemColor: Color;
 }
 
 // @public
 export class TabStripItem extends View {
+    iconClass: string;
+
     iconSource: string;
 
     image: Image;

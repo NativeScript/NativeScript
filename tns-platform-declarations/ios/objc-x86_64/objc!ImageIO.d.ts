@@ -1,4 +1,21 @@
 
+declare function CGAnimateImageAtURLWithBlock(url: NSURL, options: NSDictionary<any, any>, block: (p1: number, p2: any, p3: interop.Pointer | interop.Reference<boolean>) => void): number;
+
+declare function CGAnimateImageDataWithBlock(data: NSData, options: NSDictionary<any, any>, block: (p1: number, p2: any, p3: interop.Pointer | interop.Reference<boolean>) => void): number;
+
+declare const enum CGImageAnimationStatus {
+
+	kCGImageAnimationStatus_ParameterError = -22140,
+
+	kCGImageAnimationStatus_CorruptInputImage = -22141,
+
+	kCGImageAnimationStatus_UnsupportedFormat = -22142,
+
+	kCGImageAnimationStatus_IncompleteInputImage = -22143,
+
+	kCGImageAnimationStatus_AllocationFailure = -22144
+}
+
 declare function CGImageDestinationAddAuxiliaryDataInfo(idst: any, auxiliaryImageDataType: string, auxiliaryDataInfoDictionary: NSDictionary<any, any>): void;
 
 declare function CGImageDestinationAddImage(idst: any, image: any, properties: NSDictionary<any, any>): void;
@@ -176,6 +193,12 @@ declare function CGImageSourceUpdateData(isrc: any, data: NSData, final: boolean
 declare function CGImageSourceUpdateDataProvider(isrc: any, provider: any, final: boolean): void;
 
 declare var kCFErrorDomainCGImageMetadata: string;
+
+declare var kCGImageAnimationDelayTime: string;
+
+declare var kCGImageAnimationLoopCount: string;
+
+declare var kCGImageAnimationStartIndex: string;
 
 declare var kCGImageAuxiliaryDataInfoData: string;
 
@@ -563,6 +586,8 @@ declare var kCGImagePropertyExifColorSpace: string;
 
 declare var kCGImagePropertyExifComponentsConfiguration: string;
 
+declare var kCGImagePropertyExifCompositeImage: string;
+
 declare var kCGImagePropertyExifCompressedBitsPerPixel: string;
 
 declare var kCGImagePropertyExifContrast: string;
@@ -668,6 +693,10 @@ declare var kCGImagePropertyExifSensitivityType: string;
 declare var kCGImagePropertyExifSharpness: string;
 
 declare var kCGImagePropertyExifShutterSpeedValue: string;
+
+declare var kCGImagePropertyExifSourceExposureTimesOfCompositeImage: string;
+
+declare var kCGImagePropertyExifSourceImageNumberOfCompositeImage: string;
 
 declare var kCGImagePropertyExifSpatialFrequencyResponse: string;
 

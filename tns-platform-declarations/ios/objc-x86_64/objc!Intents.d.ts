@@ -3528,6 +3528,8 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly sender: INPerson;
 
+	readonly serviceName: string;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -3535,6 +3537,8 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 	constructor(o: { identifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; });
 
 	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; });
+
+	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; groupName: INSpeakableString; messageType: INMessageType; serviceName: string; });
 
 	constructor(o: { identifier: string; conversationIdentifier: string; content: string; dateSent: Date; sender: INPerson; recipients: NSArray<INPerson> | INPerson[]; messageType: INMessageType; });
 
@@ -3547,6 +3551,8 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 	initWithIdentifierContentDateSentSenderRecipients(identifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[]): this;
 
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType): this;
+
+	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsGroupNameMessageTypeServiceName(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], groupName: INSpeakableString, messageType: INMessageType, serviceName: string): this;
 
 	initWithIdentifierConversationIdentifierContentDateSentSenderRecipientsMessageType(identifier: string, conversationIdentifier: string, content: string, dateSent: Date, sender: INPerson, recipients: NSArray<INPerson> | INPerson[], messageType: INMessageType): this;
 }
@@ -8569,7 +8575,9 @@ declare const enum INStartCallIntentResponseCode {
 
 	FailureAppConfigurationRequired = 10,
 
-	FailureCallInProgress = 11
+	FailureCallInProgress = 11,
+
+	FailureCallRinging = 12
 }
 
 declare class INStartPhotoPlaybackIntent extends INIntent {
@@ -9532,13 +9540,21 @@ declare const enum INUpdateMediaAffinityMediaItemUnsupportedReason {
 	RestrictedContent = 6
 }
 
-declare class INUserContext extends NSObject {
+declare class INUserContext extends NSObject implements NSSecureCoding {
 
 	static alloc(): INUserContext; // inherited from NSObject
 
 	static new(): INUserContext; // inherited from NSObject
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	becomeCurrent(): void;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 interface INVisualCodeDomainHandling extends INGetVisualCodeIntentHandling {

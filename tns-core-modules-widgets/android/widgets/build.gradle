@@ -71,9 +71,9 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    
+
     if(project.hasProperty("useAndroidX")) {
-        println 'Using androix'
+        println 'Using android X'
         def androidxVersion = computeAndroidXVersion()
         implementation 'androidx.viewpager:viewpager:' + androidxVersion
         implementation 'androidx.fragment:fragment:' + androidxVersion

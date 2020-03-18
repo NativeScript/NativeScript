@@ -1116,7 +1116,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
                 setPercent = options.setPercent || percentNotSupported;
                 options = null;
             }
-            if (length == "auto") { // tslint:disable-line
+            if (length == "auto" || !length) { // tslint:disable-line
                 setPixels(this.nativeViewProtected, auto);
             } else if (typeof length === "number") {
                 setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length)));

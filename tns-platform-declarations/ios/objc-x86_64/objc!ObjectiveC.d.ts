@@ -345,6 +345,13 @@ declare const OBJC_SYNC_SUCCESS: number;
 
 declare const OBJC_WAIT_UNTIL_DONE: number;
 
+declare class Protocol extends NSObject {
+
+	static alloc(): Protocol; // inherited from NSObject
+
+	static new(): Protocol; // inherited from NSObject
+}
+
 declare function _objc_flush_caches(cls: typeof NSObject): void;
 
 declare function _objc_msgForward(): void;
@@ -353,11 +360,11 @@ declare function _objc_msgForward_stret(): void;
 
 declare function _objc_realizeClassFromSwift(cls: typeof NSObject, previously: interop.Pointer | interop.Reference<any>): typeof NSObject;
 
-declare function class_addIvar(cls: typeof NSObject, name: string, size: number, alignment: number, types: string): boolean;
+declare function class_addIvar(cls: typeof NSObject, name: string | interop.Pointer | interop.Reference<any>, size: number, alignment: number, types: string | interop.Pointer | interop.Reference<any>): boolean;
 
-declare function class_addMethod(cls: typeof NSObject, name: string, imp: interop.FunctionReference<() => void>, types: string): boolean;
+declare function class_addMethod(cls: typeof NSObject, name: string, imp: interop.FunctionReference<() => void>, types: string | interop.Pointer | interop.Reference<any>): boolean;
 
-declare function class_addProperty(cls: typeof NSObject, name: string, attributes: interop.Pointer | interop.Reference<objc_property_attribute_t>, attributeCount: number): boolean;
+declare function class_addProperty(cls: typeof NSObject, name: string | interop.Pointer | interop.Reference<any>, attributes: interop.Pointer | interop.Reference<objc_property_attribute_t>, attributeCount: number): boolean;
 
 declare function class_addProtocol(cls: typeof NSObject, protocol: any /* Protocol */): boolean;
 
@@ -377,7 +384,7 @@ declare function class_createInstanceFunction(cls: typeof NSObject, extraBytes: 
 
 declare function class_getClassMethod(cls: typeof NSObject, name: string): interop.Pointer | interop.Reference<any>;
 
-declare function class_getClassVariable(cls: typeof NSObject, name: string): interop.Pointer | interop.Reference<any>;
+declare function class_getClassVariable(cls: typeof NSObject, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function class_getImageName(cls: typeof NSObject): string;
 
@@ -385,7 +392,7 @@ declare function class_getInstanceMethod(cls: typeof NSObject, name: string): in
 
 declare function class_getInstanceSize(cls: typeof NSObject): number;
 
-declare function class_getInstanceVariable(cls: typeof NSObject, name: string): interop.Pointer | interop.Reference<any>;
+declare function class_getInstanceVariable(cls: typeof NSObject, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function class_getIvarLayout(cls: typeof NSObject): string;
 
@@ -395,7 +402,7 @@ declare function class_getMethodImplementation_stret(cls: typeof NSObject, name:
 
 declare function class_getName(cls: typeof NSObject): string;
 
-declare function class_getProperty(cls: typeof NSObject, name: string): interop.Pointer | interop.Reference<any>;
+declare function class_getProperty(cls: typeof NSObject, name: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function class_getSuperclass(cls: typeof NSObject): typeof NSObject;
 
@@ -407,21 +414,21 @@ declare function class_isMetaClass(cls: typeof NSObject): boolean;
 
 declare function class_lookupMethod(cls: typeof NSObject, sel: string): interop.FunctionReference<() => void>;
 
-declare function class_replaceMethod(cls: typeof NSObject, name: string, imp: interop.FunctionReference<() => void>, types: string): interop.FunctionReference<() => void>;
+declare function class_replaceMethod(cls: typeof NSObject, name: string, imp: interop.FunctionReference<() => void>, types: string | interop.Pointer | interop.Reference<any>): interop.FunctionReference<() => void>;
 
-declare function class_replaceProperty(cls: typeof NSObject, name: string, attributes: interop.Pointer | interop.Reference<objc_property_attribute_t>, attributeCount: number): void;
+declare function class_replaceProperty(cls: typeof NSObject, name: string | interop.Pointer | interop.Reference<any>, attributes: interop.Pointer | interop.Reference<objc_property_attribute_t>, attributeCount: number): void;
 
 declare function class_respondsToMethod(cls: typeof NSObject, sel: string): boolean;
 
 declare function class_respondsToSelector(cls: typeof NSObject, sel: string): boolean;
 
-declare function class_setIvarLayout(cls: typeof NSObject, layout: string): void;
+declare function class_setIvarLayout(cls: typeof NSObject, layout: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function class_setSuperclass(cls: typeof NSObject, newSuper: typeof NSObject): typeof NSObject;
 
 declare function class_setVersion(cls: typeof NSObject, version: number): void;
 
-declare function class_setWeakIvarLayout(cls: typeof NSObject, layout: string): void;
+declare function class_setWeakIvarLayout(cls: typeof NSObject, layout: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function imp_getBlock(anImp: interop.FunctionReference<() => void>): any;
 
@@ -441,7 +448,7 @@ declare function method_copyReturnType(m: interop.Pointer | interop.Reference<an
 
 declare function method_exchangeImplementations(m1: interop.Pointer | interop.Reference<any>, m2: interop.Pointer | interop.Reference<any>): void;
 
-declare function method_getArgumentType(m: interop.Pointer | interop.Reference<any>, index: number, dst: string, dst_len: number): void;
+declare function method_getArgumentType(m: interop.Pointer | interop.Reference<any>, index: number, dst: string | interop.Pointer | interop.Reference<any>, dst_len: number): void;
 
 declare function method_getDescription(m: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<objc_method_description>;
 
@@ -451,7 +458,7 @@ declare function method_getName(m: interop.Pointer | interop.Reference<any>): st
 
 declare function method_getNumberOfArguments(m: interop.Pointer | interop.Reference<any>): number;
 
-declare function method_getReturnType(m: interop.Pointer | interop.Reference<any>, dst: string, dst_len: number): void;
+declare function method_getReturnType(m: interop.Pointer | interop.Reference<any>, dst: string | interop.Pointer | interop.Reference<any>, dst_len: number): void;
 
 declare function method_getTypeEncoding(m: interop.Pointer | interop.Reference<any>): string;
 
@@ -476,9 +483,9 @@ declare const enum objc_AssociationPolicy {
 
 declare function objc_addLoadImageFunc(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_header>) => void>): void;
 
-declare function objc_allocateClassPair(superclass: typeof NSObject, name: string, extraBytes: number): typeof NSObject;
+declare function objc_allocateClassPair(superclass: typeof NSObject, name: string | interop.Pointer | interop.Reference<any>, extraBytes: number): typeof NSObject;
 
-declare function objc_allocateProtocol(name: string): any /* Protocol */;
+declare function objc_allocateProtocol(name: string | interop.Pointer | interop.Reference<any>): any /* Protocol */;
 
 declare function objc_begin_catch(exc_buf: interop.Pointer | interop.Reference<any>): any;
 
@@ -486,7 +493,7 @@ declare function objc_constructInstance(cls: typeof NSObject, bytes: interop.Poi
 
 declare function objc_copyClassList(outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<typeof NSObject>;
 
-declare function objc_copyClassNamesForImage(image: string, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<string>;
+declare function objc_copyClassNamesForImage(image: string | interop.Pointer | interop.Reference<any>, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<string>;
 
 declare function objc_copyImageNames(outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<string>;
 
@@ -496,7 +503,7 @@ declare function objc_destructInstance(obj: any): interop.Pointer | interop.Refe
 
 declare function objc_disposeClassPair(cls: typeof NSObject): void;
 
-declare function objc_duplicateClass(original: typeof NSObject, name: string, extraBytes: number): typeof NSObject;
+declare function objc_duplicateClass(original: typeof NSObject, name: string | interop.Pointer | interop.Reference<any>, extraBytes: number): typeof NSObject;
 
 declare function objc_end_catch(): void;
 
@@ -508,21 +515,21 @@ declare function objc_exception_throw(exception: any): void;
 
 declare function objc_getAssociatedObject(object: any, key: interop.Pointer | interop.Reference<any>): any;
 
-declare function objc_getClass(name: string): any;
+declare function objc_getClass(name: string | interop.Pointer | interop.Reference<any>): any;
 
 declare function objc_getClassList(buffer: interop.Pointer | interop.Reference<typeof NSObject>, bufferCount: number): number;
 
-declare function objc_getFutureClass(name: string): typeof NSObject;
+declare function objc_getFutureClass(name: string | interop.Pointer | interop.Reference<any>): typeof NSObject;
 
-declare function objc_getMetaClass(name: string): any;
+declare function objc_getMetaClass(name: string | interop.Pointer | interop.Reference<any>): any;
 
-declare function objc_getProtocol(name: string): any /* Protocol */;
+declare function objc_getProtocol(name: string | interop.Pointer | interop.Reference<any>): any /* Protocol */;
 
-declare function objc_getRequiredClass(name: string): typeof NSObject;
+declare function objc_getRequiredClass(name: string | interop.Pointer | interop.Reference<any>): typeof NSObject;
 
 declare function objc_loadWeak(location: interop.Pointer | interop.Reference<any>): any;
 
-declare function objc_lookUpClass(name: string): typeof NSObject;
+declare function objc_lookUpClass(name: string | interop.Pointer | interop.Reference<any>): typeof NSObject;
 
 interface objc_method_description {
 	name: string;
@@ -601,7 +608,7 @@ declare function object_getClassName(obj: any): string;
 
 declare function object_getIndexedIvars(obj: any): interop.Pointer | interop.Reference<any>;
 
-declare function object_getInstanceVariable(obj: any, name: string, outValue: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+declare function object_getInstanceVariable(obj: any, name: string | interop.Pointer | interop.Reference<any>, outValue: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function object_getIvar(obj: any, ivar: interop.Pointer | interop.Reference<any>): any;
 
@@ -609,9 +616,9 @@ declare function object_isClass(obj: any): boolean;
 
 declare function object_setClass(obj: any, cls: typeof NSObject): typeof NSObject;
 
-declare function object_setInstanceVariable(obj: any, name: string, value: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function object_setInstanceVariable(obj: any, name: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function object_setInstanceVariableWithStrongDefault(obj: any, name: string, value: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+declare function object_setInstanceVariableWithStrongDefault(obj: any, name: string | interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function object_setIvar(obj: any, ivar: interop.Pointer | interop.Reference<any>, value: any): void;
 
@@ -619,15 +626,15 @@ declare function object_setIvarWithStrongDefault(obj: any, ivar: interop.Pointer
 
 declare function property_copyAttributeList(property: interop.Pointer | interop.Reference<any>, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<objc_property_attribute_t>;
 
-declare function property_copyAttributeValue(property: interop.Pointer | interop.Reference<any>, attributeName: string): string;
+declare function property_copyAttributeValue(property: interop.Pointer | interop.Reference<any>, attributeName: string | interop.Pointer | interop.Reference<any>): string;
 
 declare function property_getAttributes(property: interop.Pointer | interop.Reference<any>): string;
 
 declare function property_getName(property: interop.Pointer | interop.Reference<any>): string;
 
-declare function protocol_addMethodDescription(proto: any /* Protocol */, name: string, types: string, isRequiredMethod: boolean, isInstanceMethod: boolean): void;
+declare function protocol_addMethodDescription(proto: any /* Protocol */, name: string, types: string | interop.Pointer | interop.Reference<any>, isRequiredMethod: boolean, isInstanceMethod: boolean): void;
 
-declare function protocol_addProperty(proto: any /* Protocol */, name: string, attributes: interop.Pointer | interop.Reference<objc_property_attribute_t>, attributeCount: number, isRequiredProperty: boolean, isInstanceProperty: boolean): void;
+declare function protocol_addProperty(proto: any /* Protocol */, name: string | interop.Pointer | interop.Reference<any>, attributes: interop.Pointer | interop.Reference<objc_property_attribute_t>, attributeCount: number, isRequiredProperty: boolean, isInstanceProperty: boolean): void;
 
 declare function protocol_addProtocol(proto: any /* Protocol */, addition: any /* Protocol */): void;
 
@@ -645,7 +652,7 @@ declare function protocol_getMethodDescription(proto: any /* Protocol */, aSel: 
 
 declare function protocol_getName(proto: any /* Protocol */): string;
 
-declare function protocol_getProperty(proto: any /* Protocol */, name: string, isRequiredProperty: boolean, isInstanceProperty: boolean): interop.Pointer | interop.Reference<any>;
+declare function protocol_getProperty(proto: any /* Protocol */, name: string | interop.Pointer | interop.Reference<any>, isRequiredProperty: boolean, isInstanceProperty: boolean): interop.Pointer | interop.Reference<any>;
 
 declare function protocol_isEqual(proto: any /* Protocol */, other: any /* Protocol */): boolean;
 
@@ -653,12 +660,12 @@ declare function sel_getName(sel: string): string;
 
 declare function sel_getNameFunction(sel: string): string;
 
-declare function sel_getUid(str: string): string;
+declare function sel_getUid(str: string | interop.Pointer | interop.Reference<any>): string;
 
 declare function sel_isEqual(lhs: string, rhs: string): boolean;
 
 declare function sel_isMapped(sel: string): boolean;
 
-declare function sel_registerName(str: string): string;
+declare function sel_registerName(str: string | interop.Pointer | interop.Reference<any>): string;
 
-declare function sel_registerNameFunction(str: string): string;
+declare function sel_registerNameFunction(str: string | interop.Pointer | interop.Reference<any>): string;
