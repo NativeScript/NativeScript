@@ -50,6 +50,9 @@ export class DatePicker extends DatePickerBase {
         comps.year = value.getFullYear();
         comps.month = value.getMonth() + 1;
         comps.day = value.getDate();
+        this.year = comps.year;
+        this.month = comps.month;
+        this.day = comps.day;
         picker.setDateAnimated(NSCalendar.currentCalendar.dateFromComponents(comps), false);
     }
 

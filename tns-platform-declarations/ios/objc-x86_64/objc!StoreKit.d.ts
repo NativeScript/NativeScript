@@ -8,6 +8,19 @@ declare class SKAdNetwork extends NSObject {
 	static registerAppForAdNetworkAttribution(): void;
 }
 
+declare class SKArcadeService extends NSObject {
+
+	static alloc(): SKArcadeService; // inherited from NSObject
+
+	static arcadeSubscriptionStatusWithNonceResultHandler(nonce: number, resultHandler: (p1: NSData, p2: number, p3: NSData, p4: number, p5: NSError) => void): void;
+
+	static new(): SKArcadeService; // inherited from NSObject
+
+	static registerArcadeAppWithRandomFromLibRandomFromLibLengthResultHandler(randomFromLib: NSData, randomFromLibLength: number, resultHandler: (p1: NSData, p2: number, p3: NSData, p4: number, p5: NSError) => void): void;
+
+	static repairArcadeApp(): void;
+}
+
 declare const enum SKCloudServiceAuthorizationStatus {
 
 	NotDetermined = 0,

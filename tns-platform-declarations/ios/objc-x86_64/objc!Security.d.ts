@@ -93,7 +93,7 @@ declare function SSLCopyDistinguishedNames(context: any, names: interop.Pointer 
 
 declare function SSLCopyPeerTrust(context: any, trust: interop.Pointer | interop.Reference<any>): number;
 
-declare function SSLCopyRequestedPeerName(context: any, peerName: string, peerNameLen: interop.Pointer | interop.Reference<number>): number;
+declare function SSLCopyRequestedPeerName(context: any, peerName: string | interop.Pointer | interop.Reference<any>, peerNameLen: interop.Pointer | interop.Reference<number>): number;
 
 declare function SSLCopyRequestedPeerNameLength(ctx: any, peerNameLen: interop.Pointer | interop.Reference<number>): number;
 
@@ -119,7 +119,7 @@ declare function SSLGetNumberEnabledCiphers(context: any, numCiphers: interop.Po
 
 declare function SSLGetNumberSupportedCiphers(context: any, numCiphers: interop.Pointer | interop.Reference<number>): number;
 
-declare function SSLGetPeerDomainName(context: any, peerName: string, peerNameLen: interop.Pointer | interop.Reference<number>): number;
+declare function SSLGetPeerDomainName(context: any, peerName: string | interop.Pointer | interop.Reference<any>, peerNameLen: interop.Pointer | interop.Reference<number>): number;
 
 declare function SSLGetPeerDomainNameLength(context: any, peerNameLen: interop.Pointer | interop.Reference<number>): number;
 
@@ -129,7 +129,7 @@ declare function SSLGetProtocolVersionMax(context: any, maxVersion: interop.Poin
 
 declare function SSLGetProtocolVersionMin(context: any, minVersion: interop.Pointer | interop.Reference<SSLProtocol>): number;
 
-declare function SSLGetSessionOption(context: any, option: SSLSessionOption, value: string): number;
+declare function SSLGetSessionOption(context: any, option: SSLSessionOption, value: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function SSLGetSessionState(context: any, state: interop.Pointer | interop.Reference<SSLSessionState>): number;
 
@@ -213,9 +213,9 @@ declare const enum SSLSessionState {
 	kSSLAborted = 4
 }
 
-declare function SSLSetALPNProtocols(context: any, protocols: NSArray<any>): number;
+declare function SSLSetALPNProtocols(context: any, protocols: NSArray<any> | any[]): number;
 
-declare function SSLSetCertificate(context: any, certRefs: NSArray<any>): number;
+declare function SSLSetCertificate(context: any, certRefs: NSArray<any> | any[]): number;
 
 declare function SSLSetClientSideAuthenticate(context: any, auth: SSLAuthenticate): number;
 
@@ -225,7 +225,7 @@ declare function SSLSetDatagramHelloCookie(dtlsContext: any, cookie: interop.Poi
 
 declare function SSLSetEnabledCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number>, numCiphers: number): number;
 
-declare function SSLSetEncryptionCertificate(context: any, certRefs: NSArray<any>): number;
+declare function SSLSetEncryptionCertificate(context: any, certRefs: NSArray<any> | any[]): number;
 
 declare function SSLSetError(context: any, status: number): number;
 
@@ -235,7 +235,7 @@ declare function SSLSetMaxDatagramRecordSize(dtlsContext: any, maxSize: number):
 
 declare function SSLSetOCSPResponse(context: any, response: NSData): number;
 
-declare function SSLSetPeerDomainName(context: any, peerName: string, peerNameLen: number): number;
+declare function SSLSetPeerDomainName(context: any, peerName: string | interop.Pointer | interop.Reference<any>, peerNameLen: number): number;
 
 declare function SSLSetPeerID(context: any, peerID: interop.Pointer | interop.Reference<any>, peerIDLen: number): number;
 
@@ -412,9 +412,9 @@ declare function SecKeyCreateSignature(key: any, algorithm: any, dataToSign: NSD
 
 declare function SecKeyCreateWithData(keyData: NSData, attributes: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): any;
 
-declare function SecKeyDecrypt(key: any, padding: SecPadding, cipherText: string, cipherTextLen: number, plainText: string, plainTextLen: interop.Pointer | interop.Reference<number>): number;
+declare function SecKeyDecrypt(key: any, padding: SecPadding, cipherText: string | interop.Pointer | interop.Reference<any>, cipherTextLen: number, plainText: string | interop.Pointer | interop.Reference<any>, plainTextLen: interop.Pointer | interop.Reference<number>): number;
 
-declare function SecKeyEncrypt(key: any, padding: SecPadding, plainText: string, plainTextLen: number, cipherText: string, cipherTextLen: interop.Pointer | interop.Reference<number>): number;
+declare function SecKeyEncrypt(key: any, padding: SecPadding, plainText: string | interop.Pointer | interop.Reference<any>, plainTextLen: number, cipherText: string | interop.Pointer | interop.Reference<any>, cipherTextLen: interop.Pointer | interop.Reference<number>): number;
 
 declare function SecKeyGeneratePair(parameters: NSDictionary<any, any>, publicKey: interop.Pointer | interop.Reference<any>, privateKey: interop.Pointer | interop.Reference<any>): number;
 
@@ -437,9 +437,9 @@ declare const enum SecKeyOperationType {
 	kSecKeyOperationTypeKeyExchange = 4
 }
 
-declare function SecKeyRawSign(key: any, padding: SecPadding, dataToSign: string, dataToSignLen: number, sig: string, sigLen: interop.Pointer | interop.Reference<number>): number;
+declare function SecKeyRawSign(key: any, padding: SecPadding, dataToSign: string | interop.Pointer | interop.Reference<any>, dataToSignLen: number, sig: string | interop.Pointer | interop.Reference<any>, sigLen: interop.Pointer | interop.Reference<number>): number;
 
-declare function SecKeyRawVerify(key: any, padding: SecPadding, signedData: string, signedDataLen: number, sig: string, sigLen: number): number;
+declare function SecKeyRawVerify(key: any, padding: SecPadding, signedData: string | interop.Pointer | interop.Reference<any>, signedDataLen: number, sig: string | interop.Pointer | interop.Reference<any>, sigLen: number): number;
 
 declare function SecKeyVerifySignature(key: any, algorithm: any, signedData: NSData, signature: NSData, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
@@ -512,7 +512,7 @@ declare function SecTrustGetCertificateAtIndex(trust: any, ix: number): any;
 
 declare function SecTrustGetCertificateCount(trust: any): number;
 
-declare function SecTrustGetNetworkFetchAllowed(trust: any, allowFetch: string): number;
+declare function SecTrustGetNetworkFetchAllowed(trust: any, allowFetch: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function SecTrustGetTrustResult(trust: any, result: interop.Pointer | interop.Reference<SecTrustResultType>): number;
 
@@ -539,7 +539,7 @@ declare const enum SecTrustResultType {
 	kSecTrustResultOtherError = 7
 }
 
-declare function SecTrustSetAnchorCertificates(trust: any, anchorCertificates: NSArray<any>): number;
+declare function SecTrustSetAnchorCertificates(trust: any, anchorCertificates: NSArray<any> | any[]): number;
 
 declare function SecTrustSetAnchorCertificatesOnly(trust: any, anchorCertificatesOnly: boolean): number;
 
@@ -551,7 +551,7 @@ declare function SecTrustSetOCSPResponse(trust: any, responseData: any): number;
 
 declare function SecTrustSetPolicies(trust: any, policies: any): number;
 
-declare function SecTrustSetSignedCertificateTimestamps(trust: any, sctArray: NSArray<any>): number;
+declare function SecTrustSetSignedCertificateTimestamps(trust: any, sctArray: NSArray<any> | any[]): number;
 
 declare function SecTrustSetVerifyDate(trust: any, verifyDate: Date): number;
 
@@ -2279,7 +2279,7 @@ declare function sec_identity_copy_ref(identity: NSObject): interop.Unmanaged<an
 
 declare function sec_identity_create(identity: any): NSObject;
 
-declare function sec_identity_create_with_certificates(identity: any, certificates: NSArray<any>): NSObject;
+declare function sec_identity_create_with_certificates(identity: any, certificates: NSArray<any> | any[]): NSObject;
 
 declare function sec_protocol_metadata_access_distinguished_names(metadata: NSObject, handler: (p1: NSObject) => void): boolean;
 
@@ -2295,9 +2295,9 @@ declare function sec_protocol_metadata_challenge_parameters_are_equal(metadataA:
 
 declare function sec_protocol_metadata_copy_peer_public_key(metadata: NSObject): NSObject;
 
-declare function sec_protocol_metadata_create_secret(metadata: NSObject, label_len: number, label: string, exporter_length: number): NSObject;
+declare function sec_protocol_metadata_create_secret(metadata: NSObject, label_len: number, label: string | interop.Pointer | interop.Reference<any>, exporter_length: number): NSObject;
 
-declare function sec_protocol_metadata_create_secret_with_context(metadata: NSObject, label_len: number, label: string, context_len: number, context: string, exporter_length: number): NSObject;
+declare function sec_protocol_metadata_create_secret_with_context(metadata: NSObject, label_len: number, label: string | interop.Pointer | interop.Reference<any>, context_len: number, context: string | interop.Pointer | interop.Reference<any>, exporter_length: number): NSObject;
 
 declare function sec_protocol_metadata_get_early_data_accepted(metadata: NSObject): boolean;
 
@@ -2317,7 +2317,7 @@ declare function sec_protocol_metadata_peers_are_equal(metadataA: NSObject, meta
 
 declare function sec_protocol_options_add_pre_shared_key(options: NSObject, psk: NSObject, psk_identity: NSObject): void;
 
-declare function sec_protocol_options_add_tls_application_protocol(options: NSObject, application_protocol: string): void;
+declare function sec_protocol_options_add_tls_application_protocol(options: NSObject, application_protocol: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function sec_protocol_options_add_tls_ciphersuite(options: NSObject, ciphersuite: number): void;
 
@@ -2371,7 +2371,7 @@ declare function sec_protocol_options_set_tls_resumption_enabled(options: NSObje
 
 declare function sec_protocol_options_set_tls_sct_enabled(options: NSObject, sct_enabled: boolean): void;
 
-declare function sec_protocol_options_set_tls_server_name(options: NSObject, server_name: string): void;
+declare function sec_protocol_options_set_tls_server_name(options: NSObject, server_name: string | interop.Pointer | interop.Reference<any>): void;
 
 declare function sec_protocol_options_set_tls_tickets_enabled(options: NSObject, tickets_enabled: boolean): void;
 

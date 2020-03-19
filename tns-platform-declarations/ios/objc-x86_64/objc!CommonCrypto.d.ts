@@ -32,19 +32,19 @@ declare function CCHmacInit(ctx: interop.Pointer | interop.Reference<CCHmacConte
 
 declare function CCHmacUpdate(ctx: interop.Pointer | interop.Reference<CCHmacContext>, data: interop.Pointer | interop.Reference<any>, dataLength: number): void;
 
-declare function CCKeyDerivationPBKDF(algorithm: number, password: string, passwordLen: number, salt: string, saltLen: number, prf: number, rounds: number, derivedKey: string, derivedKeyLen: number): number;
+declare function CCKeyDerivationPBKDF(algorithm: number, password: string | interop.Pointer | interop.Reference<any>, passwordLen: number, salt: string | interop.Pointer | interop.Reference<any>, saltLen: number, prf: number, rounds: number, derivedKey: string | interop.Pointer | interop.Reference<any>, derivedKeyLen: number): number;
 
 declare function CCRandomGenerateBytes(bytes: interop.Pointer | interop.Reference<any>, count: number): number;
 
-declare function CCSymmetricKeyUnwrap(algorithm: number, iv: string, ivLen: number, kek: string, kekLen: number, wrappedKey: string, wrappedKeyLen: number, rawKey: string, rawKeyLen: interop.Pointer | interop.Reference<number>): number;
+declare function CCSymmetricKeyUnwrap(algorithm: number, iv: string | interop.Pointer | interop.Reference<any>, ivLen: number, kek: string | interop.Pointer | interop.Reference<any>, kekLen: number, wrappedKey: string | interop.Pointer | interop.Reference<any>, wrappedKeyLen: number, rawKey: string | interop.Pointer | interop.Reference<any>, rawKeyLen: interop.Pointer | interop.Reference<number>): number;
 
-declare function CCSymmetricKeyWrap(algorithm: number, iv: string, ivLen: number, kek: string, kekLen: number, rawKey: string, rawKeyLen: number, wrappedKey: string, wrappedKeyLen: interop.Pointer | interop.Reference<number>): number;
+declare function CCSymmetricKeyWrap(algorithm: number, iv: string | interop.Pointer | interop.Reference<any>, ivLen: number, kek: string | interop.Pointer | interop.Reference<any>, kekLen: number, rawKey: string | interop.Pointer | interop.Reference<any>, rawKeyLen: number, wrappedKey: string | interop.Pointer | interop.Reference<any>, wrappedKeyLen: interop.Pointer | interop.Reference<number>): number;
 
 declare function CCSymmetricUnwrappedSize(algorithm: number, wrappedKeyLen: number): number;
 
 declare function CCSymmetricWrappedSize(algorithm: number, rawKeyLen: number): number;
 
-declare function CC_MD2(data: interop.Pointer | interop.Reference<any>, len: number, md: string): string;
+declare function CC_MD2(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
 
 interface CC_MD2_CTX {
 	num: number;
@@ -54,13 +54,13 @@ interface CC_MD2_CTX {
 }
 declare var CC_MD2_CTX: interop.StructType<CC_MD2_CTX>;
 
-declare function CC_MD2_Final(md: string, c: interop.Pointer | interop.Reference<CC_MD2_CTX>): number;
+declare function CC_MD2_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_MD2_CTX>): number;
 
 declare function CC_MD2_Init(c: interop.Pointer | interop.Reference<CC_MD2_CTX>): number;
 
 declare function CC_MD2_Update(c: interop.Pointer | interop.Reference<CC_MD2_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function CC_MD4(data: interop.Pointer | interop.Reference<any>, len: number, md: string): string;
+declare function CC_MD4(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
 
 interface CC_MD4_CTX {
 	A: number;
@@ -74,13 +74,13 @@ interface CC_MD4_CTX {
 }
 declare var CC_MD4_CTX: interop.StructType<CC_MD4_CTX>;
 
-declare function CC_MD4_Final(md: string, c: interop.Pointer | interop.Reference<CC_MD4_CTX>): number;
+declare function CC_MD4_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_MD4_CTX>): number;
 
 declare function CC_MD4_Init(c: interop.Pointer | interop.Reference<CC_MD4_CTX>): number;
 
 declare function CC_MD4_Update(c: interop.Pointer | interop.Reference<CC_MD4_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function CC_MD5(data: interop.Pointer | interop.Reference<any>, len: number, md: string): string;
+declare function CC_MD5(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
 
 interface CC_MD5_CTX {
 	A: number;
@@ -94,13 +94,13 @@ interface CC_MD5_CTX {
 }
 declare var CC_MD5_CTX: interop.StructType<CC_MD5_CTX>;
 
-declare function CC_MD5_Final(md: string, c: interop.Pointer | interop.Reference<CC_MD5_CTX>): number;
+declare function CC_MD5_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_MD5_CTX>): number;
 
 declare function CC_MD5_Init(c: interop.Pointer | interop.Reference<CC_MD5_CTX>): number;
 
 declare function CC_MD5_Update(c: interop.Pointer | interop.Reference<CC_MD5_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function CC_SHA1(data: interop.Pointer | interop.Reference<any>, len: number, md: string): string;
+declare function CC_SHA1(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
 
 interface CC_SHA1_CTX {
 	h0: number;
@@ -115,21 +115,21 @@ interface CC_SHA1_CTX {
 }
 declare var CC_SHA1_CTX: interop.StructType<CC_SHA1_CTX>;
 
-declare function CC_SHA1_Final(md: string, c: interop.Pointer | interop.Reference<CC_SHA1_CTX>): number;
+declare function CC_SHA1_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_SHA1_CTX>): number;
 
 declare function CC_SHA1_Init(c: interop.Pointer | interop.Reference<CC_SHA1_CTX>): number;
 
 declare function CC_SHA1_Update(c: interop.Pointer | interop.Reference<CC_SHA1_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function CC_SHA224(data: interop.Pointer | interop.Reference<any>, len: number, md: string): string;
+declare function CC_SHA224(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
 
-declare function CC_SHA224_Final(md: string, c: interop.Pointer | interop.Reference<CC_SHA256_CTX>): number;
+declare function CC_SHA224_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_SHA256_CTX>): number;
 
 declare function CC_SHA224_Init(c: interop.Pointer | interop.Reference<CC_SHA256_CTX>): number;
 
 declare function CC_SHA224_Update(c: interop.Pointer | interop.Reference<CC_SHA256_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function CC_SHA256(data: interop.Pointer | interop.Reference<any>, len: number, md: string): string;
+declare function CC_SHA256(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
 
 interface CC_SHA256_CTX {
 	count: interop.Reference<number>;
@@ -138,21 +138,21 @@ interface CC_SHA256_CTX {
 }
 declare var CC_SHA256_CTX: interop.StructType<CC_SHA256_CTX>;
 
-declare function CC_SHA256_Final(md: string, c: interop.Pointer | interop.Reference<CC_SHA256_CTX>): number;
+declare function CC_SHA256_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_SHA256_CTX>): number;
 
 declare function CC_SHA256_Init(c: interop.Pointer | interop.Reference<CC_SHA256_CTX>): number;
 
 declare function CC_SHA256_Update(c: interop.Pointer | interop.Reference<CC_SHA256_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function CC_SHA384(data: interop.Pointer | interop.Reference<any>, len: number, md: string): string;
+declare function CC_SHA384(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
 
-declare function CC_SHA384_Final(md: string, c: interop.Pointer | interop.Reference<CC_SHA512_CTX>): number;
+declare function CC_SHA384_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_SHA512_CTX>): number;
 
 declare function CC_SHA384_Init(c: interop.Pointer | interop.Reference<CC_SHA512_CTX>): number;
 
 declare function CC_SHA384_Update(c: interop.Pointer | interop.Reference<CC_SHA512_CTX>, data: interop.Pointer | interop.Reference<any>, len: number): number;
 
-declare function CC_SHA512(data: interop.Pointer | interop.Reference<any>, len: number, md: string): string;
+declare function CC_SHA512(data: interop.Pointer | interop.Reference<any>, len: number, md: string | interop.Pointer | interop.Reference<any>): string;
 
 interface CC_SHA512_CTX {
 	count: interop.Reference<number>;
@@ -161,7 +161,7 @@ interface CC_SHA512_CTX {
 }
 declare var CC_SHA512_CTX: interop.StructType<CC_SHA512_CTX>;
 
-declare function CC_SHA512_Final(md: string, c: interop.Pointer | interop.Reference<CC_SHA512_CTX>): number;
+declare function CC_SHA512_Final(md: string | interop.Pointer | interop.Reference<any>, c: interop.Pointer | interop.Reference<CC_SHA512_CTX>): number;
 
 declare function CC_SHA512_Init(c: interop.Pointer | interop.Reference<CC_SHA512_CTX>): number;
 
