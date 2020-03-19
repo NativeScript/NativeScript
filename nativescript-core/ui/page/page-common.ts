@@ -138,7 +138,7 @@ export class PageBase extends ContentView implements PageDefinition {
 
     public eachChildView(callback: (child: View) => boolean) {
         super.eachChildView(callback);
-        if (this.actionBar) {
+        if (this.hasActionBar) {
             callback(this.actionBar);
         }
     }
