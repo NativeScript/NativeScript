@@ -1924,29 +1924,29 @@ export class Slider extends View {
 
 // @public
 export class Span extends ViewBase {
-     public backgroundColor: Color;
+    public backgroundColor: Color;
 
-     public color: Color;
+    public color: Color;
 
-     public fontFamily: string;
+    public fontFamily: string;
 
-     public fontSize: number;
+    public fontSize: number;
 
-     public fontStyle: FontStyle;
+    public fontStyle: FontStyle;
 
-     public fontWeight: FontWeight;
+    public fontWeight: FontWeight;
 
-     public static linkTapEvent: string;
+    public static linkTapEvent: string;
 
-     // (undocumented)
-     _setTextInternal(value: string): void;
+    // (undocumented)
+    _setTextInternal(value: string): void;
 
-     public readonly tappable: boolean;
+    public readonly tappable: boolean;
 
-     public text: string;
+    public text: string;
 
-     public textDecoration: TextDecoration;
-     //@endprivate
+    public textDecoration: TextDecoration;
+    //@endprivate
  }
 
 // @public
@@ -2426,7 +2426,7 @@ export interface TapGestureEventData extends GestureEventData {
     getPointerCount(): number;
 
     getX(): number;
-    
+
     getY(): number;
  }
 
