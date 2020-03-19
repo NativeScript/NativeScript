@@ -10,7 +10,7 @@ export { View, Template, KeyedTemplate, ShownModallyData } from "./core/view";
 export { DatePicker } from "./date-picker";
 export { EditableTextBase } from "./editable-text-base";
 export { Frame, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry } from "./frame";
-export { GestureEventData, GestureEventDataWithState, GestureStateTypes, GestureTypes, GesturesObserver, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeDirection, SwipeGestureEventData, TouchGestureEventData } from "./gestures";
+export { GestureEventData, GestureEventDataWithState, GestureStateTypes, GestureTypes, GesturesObserver, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeDirection, SwipeGestureEventData, TouchGestureEventData } from "./gestures";
 export { HtmlView } from "./html-view";
 export { Image } from "./image";
 export { Cache as ImageCache, DownloadError, DownloadRequest, DownloadedData } from "./image-cache";
