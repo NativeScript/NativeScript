@@ -15,10 +15,101 @@ export * from "./text-base-common";
 
 const majorVersion = ios.MajorVersion;
 
+class UILabelClickHandlerImpl extends NSObject {
+    private _owner: WeakRef<TextBase>;
+
+    public static initWithOwner(owner: WeakRef<TextBase>): UILabelClickHandlerImpl {
+        let handler = <UILabelClickHandlerImpl>UILabelClickHandlerImpl.new();
+        handler._owner = owner;
+
+        return handler;
+    }
+
+    public linkTap(tapGesture: UITapGestureRecognizer) {
+        let owner = this._owner.get();
+        if (owner) {
+            // https://stackoverflow.com/a/35789589
+            let label = <UILabel>owner.nativeTextViewProtected;
+            let layoutManager = NSLayoutManager.alloc().init();
+            let textContainer = NSTextContainer.alloc().initWithSize(CGSizeZero);
+            let textStorage = NSTextStorage.alloc().initWithAttributedString(owner.nativeTextViewProtected["attributedText"]);
+
+            layoutManager.addTextContainer(textContainer);
+            textStorage.addLayoutManager(layoutManager);
+
+            textContainer.lineFragmentPadding = 0;
+            textContainer.lineBreakMode = label.lineBreakMode;
+            textContainer.maximumNumberOfLines = label.numberOfLines;
+            let labelSize = label.bounds.size;
+            textContainer.size = labelSize;
+
+            let locationOfTouchInLabel = tapGesture.locationInView(label);
+            let textBoundingBox = layoutManager.usedRectForTextContainer(textContainer);
+
+            let textContainerOffset = CGPointMake((labelSize.width - textBoundingBox.size.width) * 0.5 - textBoundingBox.origin.x,
+                    (labelSize.height - textBoundingBox.size.height) * 0.5 - textBoundingBox.origin.y);
+
+            let locationOfTouchInTextContainer = CGPointMake(locationOfTouchInLabel.x - textContainerOffset.x,
+                    locationOfTouchInLabel.y - textContainerOffset.y);
+
+            let indexOfCharacter = layoutManager.characterIndexForPointInTextContainerFractionOfDistanceBetweenInsertionPoints(
+                    locationOfTouchInTextContainer, textContainer, null);
+
+            let span: Span = null;
+            // try to find the corresponding span using the spanRanges
+            for (let i = 0; i < owner._spanRanges.length; i++) {
+                let range = owner._spanRanges[i];
+                if ((range.location <= indexOfCharacter) && (range.location + range.length) > indexOfCharacter) {
+                    if (owner.formattedText && owner.formattedText.spans.length > i) {
+                        span = owner.formattedText.spans.getItem(i);
+                    }
+                    break;
+                }
+            }
+
+            if (span && span.tappable) {
+                // if the span is found and tappable emit the linkTap event
+                span._emit(Span.linkTapEvent);
+            }
+        }
+    }
+
+    public static ObjCExposedMethods = {
+        "linkTap": { returns: interop.types.void, params: [interop.types.id] }
+    };
+}
+
 export class TextBase extends TextBaseCommon {
 
     public nativeViewProtected: UITextField | UITextView | UILabel | UIButton;
     public nativeTextViewProtected: UITextField | UITextView | UILabel | UIButton;
+    private _tappable: boolean = false;
+    private _tapGestureRecognizer: UITapGestureRecognizer;
+    public _spanRanges: NSRange[];
+
+    public initNativeView(): void {
+        super.initNativeView();
+        this._setTappableState(false);
+    }
+
+    _setTappableState(tappable: boolean) {
+        if (this._tappable !== tappable) {
+            this._tappable = tappable;
+            if (this._tappable) {
+                const tapHandler = UILabelClickHandlerImpl.initWithOwner(new WeakRef(this));
+                // associate handler with menuItem or it will get collected by JSC.
+                (<any>this).handler = tapHandler;
+
+                this._tapGestureRecognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, "linkTap");
+                this.nativeViewProtected.userInteractionEnabled = true;
+                this.nativeViewProtected.addGestureRecognizer(this._tapGestureRecognizer);
+            }
+            else {
+                this.nativeViewProtected.userInteractionEnabled = false;
+                this.nativeViewProtected.removeGestureRecognizer(this._tapGestureRecognizer);
+            }
+        }
+    }
 
     [textProperty.getDefault](): number | symbol {
         return resetSymbol;
@@ -35,6 +126,7 @@ export class TextBase extends TextBaseCommon {
 
     [formattedTextProperty.setNative](value: FormattedString) {
         this._setNativeText();
+        this._setTappableState(isStringTappable(value));
         textProperty.nativeValueChange(this, !value ? "" : value.toString());
         this._requestLayoutOnTextChanged();
     }
@@ -253,6 +345,7 @@ export class TextBase extends TextBaseCommon {
 
     createNSMutableAttributedString(formattedString: FormattedString): NSMutableAttributedString {
         let mas = NSMutableAttributedString.alloc().init();
+        this._spanRanges = [];
         if (formattedString && formattedString.parent) {
             for (let i = 0, spanStart = 0, length = formattedString.spans.length; i < length; i++) {
                 const span = formattedString.spans.getItem(i);
@@ -265,6 +358,7 @@ export class TextBase extends TextBaseCommon {
 
                 const nsAttributedString = this.createMutableStringForSpan(span, spanText);
                 mas.insertAttributedStringAtIndex(nsAttributedString, spanStart);
+                this._spanRanges.push({location: spanStart, length: spanText.length});
                 spanStart += spanText.length;
             }
         }
@@ -348,4 +442,18 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
 
 function NSStringFromNSAttributedString(source: NSAttributedString | string): NSString {
     return NSString.stringWithString(source instanceof NSAttributedString && source.string || <string>source);
+}
+
+function isStringTappable(formattedString: FormattedString) {
+    if (!formattedString) {
+        return false;
+    }
+    for (let i = 0, length = formattedString.spans.length; i < length; i++) {
+        const span = formattedString.spans.getItem(i);
+        if (span.tappable) {
+            return true;
+        }
+    }
+
+    return false;
 }

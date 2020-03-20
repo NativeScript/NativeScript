@@ -1936,14 +1936,18 @@ export class Span extends ViewBase {
 
     public fontWeight: FontWeight;
 
+    public static linkTapEvent: string;
+
     // (undocumented)
     _setTextInternal(value: string): void;
+
+    public readonly tappable: boolean;
 
     public text: string;
 
     public textDecoration: TextDecoration;
     //@endprivate
-}
+ }
 
 // @public
 export class StackLayout extends LayoutBase {
@@ -2422,7 +2426,7 @@ export interface TapGestureEventData extends GestureEventData {
     getPointerCount(): number;
 
     getX(): number;
-    
+
     getY(): number;
  }
 
