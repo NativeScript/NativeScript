@@ -36,6 +36,11 @@ let BottomNavigationBar: any;
 let AttachStateChangeListener: any;
 let appResources: android.content.res.Resources;
 
+class IconInfo {
+    drawable: android.graphics.drawable.BitmapDrawable;
+    height: number;
+}
+
 function makeFragmentName(viewId: number, id: number): string {
     return "android:bottomnavigation:" + viewId + ":" + id;
 }
@@ -102,6 +107,14 @@ function initializeNativeClasses() {
                 this.owner._originalBackground = this.owner.backgroundColor || new Color("White");
                 this.owner.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
                 this.backgroundBitmap = null;
+
+                let thisView = this.getView();
+                if (thisView) {
+                    let thisViewParent = thisView.getParent();
+                    if (thisViewParent && thisViewParent instanceof android.view.ViewGroup) {
+                        thisViewParent.removeView(thisView);
+                    }
+                }
             }
 
             super.onDestroyView();
@@ -156,13 +169,13 @@ function initializeNativeClasses() {
 
             if (position >= 0 && tabStripItems && tabStripItems[position]) {
                 tabStripItems[position]._emit(TabStripItem.selectEvent);
+                owner._setItemColor(tabStripItems[position]);
             }
 
             if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
                 tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+                owner._setItemColor(tabStripItems[prevPosition]);
             }
-
-            owner.selectedIndex = position;
         }
 
         public onTap(position: number): boolean {
@@ -243,6 +256,9 @@ export class BottomNavigation extends TabNavigationBase {
     private _currentTransaction: androidx.fragment.app.FragmentTransaction;
     private _attachedToWindow = false;
     public _originalBackground: any;
+    private _textTransform: TextTransform = "none";
+    private _selectedItemColor: Color;
+    private _unSelectedItemColor: Color;
 
     constructor() {
         super();
@@ -391,7 +407,7 @@ export class BottomNavigation extends TabNavigationBase {
         if (this._manager && this._manager.isDestroyed()) {
             return;
         }
-        
+
         this._attachedToWindow = true;
         this.changeTab(this.selectedIndex);
     }
@@ -515,6 +531,7 @@ export class BottomNavigation extends TabNavigationBase {
             }
 
             this._currentFragment = fragment;
+            this.selectedIndex = position;
 
             const tabItems = this.items;
             const tabItem = tabItems ? tabItems[position] : null;
@@ -559,7 +576,20 @@ export class BottomNavigation extends TabNavigationBase {
         items.forEach((item, i, arr) => {
             const textView = this._bottomNavigationBar.getTextViewForItemAt(i);
             item.setNativeView(textView);
+            this._setItemColor(item);
         });
+    }
+
+    private getItemLabelTextTransform(tabStripItem: TabStripItem): TextTransform {
+        const nestedLabel = tabStripItem.label;
+        let textTransform: TextTransform = null;
+        if (nestedLabel && nestedLabel.style.textTransform !== "initial") {
+            textTransform = nestedLabel.style.textTransform;
+        } else if (tabStripItem.style.textTransform !== "initial") {
+            textTransform = tabStripItem.style.textTransform;
+        }
+
+        return textTransform || this._textTransform;
     }
 
     private createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
@@ -570,10 +600,8 @@ export class BottomNavigation extends TabNavigationBase {
             let title = titleLabel.text;
 
             // TEXT-TRANSFORM
-            const textTransform = titleLabel.style.textTransform;
-            if (textTransform) {
-                title = getTransformedText(title, textTransform);
-            }
+            const textTransform = this.getItemLabelTextTransform(tabStripItem);
+            title = getTransformedText(title, textTransform);
             tabItemSpec.title = title;
 
             // BACKGROUND-COLOR
@@ -581,10 +609,9 @@ export class BottomNavigation extends TabNavigationBase {
             tabItemSpec.backgroundColor = backgroundColor ? backgroundColor.android : this.getTabBarBackgroundArgbColor();
 
             // COLOR
-            const color = titleLabel.style.color;
-            if (color) {
-                tabItemSpec.color = color.android;
-            }
+            let itemColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
+            const color = itemColor || titleLabel.style.color;
+            tabItemSpec.color = color && color.android;
 
             // FONT
             const fontInternal = titleLabel.style.fontInternal;
@@ -596,12 +623,13 @@ export class BottomNavigation extends TabNavigationBase {
             // ICON
             const iconSource = tabStripItem.image && tabStripItem.image.src;
             if (iconSource) {
-                const icon = this.getIcon(tabStripItem);
+                const iconInfo = this.getIconInfo(tabStripItem, itemColor);
 
-                if (icon) {
+                if (iconInfo) {
                     // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                     // tslint:disable-next-line:deprecation
-                    tabItemSpec.iconDrawable = icon;
+                    tabItemSpec.iconDrawable = iconInfo.drawable;
+                    tabItemSpec.imageHeight = iconInfo.height;
                 } else {
                     // TODO:
                     // traceMissingIcon(iconSource);
@@ -612,35 +640,49 @@ export class BottomNavigation extends TabNavigationBase {
         return tabItemSpec;
     }
 
-    private getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
+    private getOriginalIcon(tabStripItem: TabStripItem, color?: Color): android.graphics.Bitmap {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
+        if (!iconSource) {
+            return null;
+        }
 
         let is: ImageSource;
         if (isFontIconURI(iconSource)) {
             const fontIconCode = iconSource.split("//")[1];
             const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
             const font = target.style.fontInternal;
-            const color = target.style.color;
+            if (!color) {
+                color = target.style.color;
+            }
             is = ImageSource.fromFontIconCodeSync(fontIconCode, font, color);
         } else {
             is = ImageSource.fromFileOrResourceSync(iconSource);
         }
 
-        let imageDrawable: android.graphics.drawable.BitmapDrawable;
-        if (is && is.android) {
-            let image = is.android;
+        return is && is.android;
+    }
 
+    private getDrawableInfo(image: android.graphics.Bitmap): IconInfo {
+        if (image) {
             if (this.tabStrip && this.tabStrip.isIconSizeFixed) {
                 image = this.getFixedSizeIcon(image);
             }
 
-            imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
-        } else {
-            // TODO
-            // traceMissingIcon(iconSource);
+            let imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
+
+            return {
+                drawable: imageDrawable,
+                height: image.getHeight()
+            };
         }
 
-        return imageDrawable;
+        return new IconInfo();
+    }
+
+    private getIconInfo(tabStripItem: TabStripItem, color?: Color): IconInfo {
+        let originalIcon = this.getOriginalIcon(tabStripItem, color);
+
+        return this.getDrawableInfo(originalIcon);
     }
 
     private getFixedSizeIcon(image: android.graphics.Bitmap): android.graphics.Bitmap {
@@ -673,6 +715,22 @@ export class BottomNavigation extends TabNavigationBase {
         }
     }
 
+    public getTabBarSelectedItemColor(): Color {
+        return this._selectedItemColor;
+    }
+
+    public setTabBarSelectedItemColor(value: Color) {
+        this._selectedItemColor = value;
+    }
+
+    public getTabBarUnSelectedItemColor(): Color {
+        return this._unSelectedItemColor;
+    }
+
+    public setTabBarUnSelectedItemColor(value: Color) {
+        this._unSelectedItemColor = value;
+    }
+
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
@@ -687,25 +745,58 @@ export class BottomNavigation extends TabNavigationBase {
         this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
-    public setTabBarItemColor(tabStripItem: TabStripItem, value: number | Color): void {
-        if (typeof value === "number") {
-            tabStripItem.nativeViewProtected.setTextColor(value);
-        } else {
-            tabStripItem.nativeViewProtected.setTextColor(value.android);
+    public _setItemColor(tabStripItem: TabStripItem) {
+        const itemColor = (tabStripItem._index === this.selectedIndex) ? this._selectedItemColor : this._unSelectedItemColor;
+        if (!itemColor) {
+            return;
+        }
+
+        // set label color
+        tabStripItem.nativeViewProtected.setTextColor(itemColor.android);
+
+        // set icon color
+        this.setIconColor(tabStripItem, itemColor);
+    }
+
+    private setIconColor(tabStripItem: TabStripItem, color?: Color) {
+        const tabBarItem = this._bottomNavigationBar.getViewForItemAt(tabStripItem._index);
+
+        const drawableInfo = this.getIconInfo(tabStripItem, color);
+        const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
+        imgView.setImageDrawable(drawableInfo.drawable);
+        if (color) {
+            imgView.setColorFilter(color.android);
         }
     }
 
-    public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
-        const index = tabStripItem._index;
-        const tabBarItem = this._bottomNavigationBar.getViewForItemAt(index);
-        const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
-        const drawable = this.getIcon(tabStripItem);
+    public setTabBarItemColor(tabStripItem: TabStripItem, value: number | Color): void {
+        const itemColor = (tabStripItem._index === this.selectedIndex) ? this._selectedItemColor : this._unSelectedItemColor;
+        if (itemColor) {
+            // the itemColor is set through the selectedItemColor and unSelectedItemColor properties
+            // so it does not respect the css color
+            return;
+        }
 
-        imgView.setImageDrawable(drawable);
+        const androidColor = value instanceof Color ? value.android : value;
+        tabStripItem.nativeViewProtected.setTextColor(androidColor);
+    }
+
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
+        const itemColor = (tabStripItem._index === this.selectedIndex) ? this._selectedItemColor : this._unSelectedItemColor;
+        if (itemColor) {
+            // the itemColor is set through the selectedItemColor and unSelectedItemColor properties
+            // so it does not respect the css color
+            return;
+        }
+
+        this.setIconColor(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        if (value.fontSize) {
+            tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        }
+
         tabStripItem.nativeViewProtected.setTypeface(value.getAndroidTypeface());
     }
 
@@ -713,6 +804,24 @@ export class BottomNavigation extends TabNavigationBase {
         const titleLabel = tabStripItem.label;
         const title = getTransformedText(titleLabel.text, value);
         tabStripItem.nativeViewProtected.setText(title);
+    }
+
+    public getTabBarTextTransform(): TextTransform {
+        return this._textTransform;
+    }
+
+    public setTabBarTextTransform(value: TextTransform): void {
+        let items = this.tabStrip && this.tabStrip.items;
+        if (items) {
+            items.forEach((tabStripItem) => {
+                if (tabStripItem.label && tabStripItem.nativeViewProtected) {
+                    const nestedLabel = tabStripItem.label;
+                    const title = getTransformedText(nestedLabel.text, value);
+                    tabStripItem.nativeViewProtected.setText(title);
+                }
+            });
+        }
+        this._textTransform = value;
     }
 
     [selectedIndexProperty.setNative](value: number) {

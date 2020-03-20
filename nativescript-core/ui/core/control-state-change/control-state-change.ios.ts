@@ -22,7 +22,7 @@ export class ControlStateChangeListener implements ControlStateChangeListenerDef
     private _callback: (state: string) => void;
 
     constructor(control: UIControl, callback: (state: string) => void) {
-        this._observer = ObserverClass.alloc();
+        this._observer = ObserverClass.alloc().init();
         this._observer["_owner"] = this;
         this._control = control;
         this._callback = callback;

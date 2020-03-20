@@ -1,5 +1,5 @@
 <Page>
-  <Tabs id="tabs" automationText="tabNavigation"  >
+  <Tabs id="tabs" automationText="tabNavigation" iOSTabBarItemsAlignment="leading">
 
     <TabStrip>
 

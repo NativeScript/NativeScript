@@ -177,7 +177,7 @@ export class XMLHttpRequest {
     }
 
     public addEventListener(eventName: string, handler: Function) {
-        if (["abort", "error", "load", "loadend", "loadstart", "progress"].indexOf(eventName) === -1) {
+        if (["abort", "error", "load", "loadend", "loadstart", "progress", "readystatechange"].indexOf(eventName) === -1) {
             throw new Error("Event not supported: " + eventName);
         }
 
