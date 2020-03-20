@@ -2500,6 +2500,8 @@ export class TextBase extends View implements AddChildFromBuilder {
 export class TextField extends EditableTextBase {
     android: any /* android.widget.EditText */;
 
+    closeOnReturn: boolean;
+
     ios: any /* UITextField */;
 
     // (undocumented)

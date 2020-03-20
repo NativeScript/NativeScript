@@ -5,9 +5,9 @@ import { Page } from "@nativescript/core/ui/page";
 import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
 import { Color } from "@nativescript/core/color";
 import {
-    getNativeText, getNativeHint, typeTextNatively, getNativeSecure,
+    getNativeText, getNativeHint, typeTextNatively, typeTextNativelyWithReturn, getNativeSecure,
     getNativeFontSize, getNativeColor, getNativeBackgroundColor,
-    getNativeTextAlignment, getNativePlaceholderColor
+    getNativeTextAlignment, getNativePlaceholderColor, getNativeFocus
 } from "./text-field-tests-native";
 import { FormattedString } from "@nativescript/core/text/formatted-string";
 import { Span } from "@nativescript/core/text/span";
@@ -397,6 +397,100 @@ export var testBindSecureToBindingConext = function () {
         model.set("secure", false);
         TKUnit.assert(textField.secure === false, "Actual: " + textField.secure + "; Expected: " + false);
         TKUnit.assert(getNativeSecure(textField) === false, "Actual: " + getNativeSecure(textField) + "; Expected: " + false);
+    });
+};
+
+// iOS only
+export var testBindCloseOnReturnToBindingConext = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
+        if (!isIOS) {
+            TKUnit.assert(true === true);
+
+            return;
+        }
+        var textField = <TextField>views[0];
+        var page = <Page>views[1];
+
+        var model = new Observable();
+        model.set("closeOnReturn", false);
+        page.bindingContext = model;
+
+        var options: BindingOptions = {
+            sourceProperty: "closeOnReturn",
+            targetProperty: "closeOnReturn"
+        };
+
+        textField.bind(options);
+        TKUnit.assert(textField.closeOnReturn === false, "Actual: " + textField.closeOnReturn + "; Expected: " + false);
+        typeTextNativelyWithReturn(textField, "Should not close textfield");
+        TKUnit.assert(getNativeFocus(textField) === true, "Actual: " + getNativeFocus(textField) + "; Expected: " + true);
+
+        model.set("closeOnReturn", true);
+        TKUnit.assert(textField.closeOnReturn === true, "Actual: " + textField.closeOnReturn + "; Expected: " + true);
+        typeTextNativelyWithReturn(textField, "Should close textfield");
+        TKUnit.assert(getNativeFocus(textField) === false, "Actual: " + getNativeFocus(textField) + "; Expected: " + false);
+    });
+};
+
+// iOS only
+export var testDontCloseOnReturn = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
+        if (!isIOS) {
+            TKUnit.assert(true === true);
+
+            return;
+        }
+        var textField = <TextField>views[0];
+
+        // >> setting-closeOnReturn-property
+        textField.closeOnReturn = false;
+        // << setting-closeOnReturn-property
+
+        typeTextNativelyWithReturn(textField, "Should not close textfield");
+
+        var expectedValue = true;
+        var actualValue = getNativeFocus(textField);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+};
+
+// iOS only
+export var testCloseOnReturn = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
+        if (!isIOS) {
+            TKUnit.assert(true === true);
+
+            return;
+        }
+        var textField = <TextField>views[0];
+
+        // >> setting-closeOnReturn-property
+        textField.closeOnReturn = true;
+        // << setting-closeOnReturn-property
+
+        typeTextNativelyWithReturn(textField, "Should close textfield");
+
+        var expectedValue = false;
+        var actualValue = getNativeFocus(textField);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    });
+};
+
+// iOS only
+export var testCloseOnReturnByDefault = function () {
+    helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
+        if (!isIOS) {
+            TKUnit.assert(true === true);
+
+            return;
+        }
+        var textField = <TextField>views[0];
+
+        typeTextNativelyWithReturn(textField, "Should close textfield by default");
+
+        var expectedValue = false;
+        var actualValue = getNativeFocus(textField);
+        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
 };
 
