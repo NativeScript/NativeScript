@@ -1,0 +1,13 @@
+{
+  "whitelist-plugins-usages": true,
+  "$comment": "Whitelist native constants used by core modules because {N} webpack's typescript transpiler is configured not to remove them like tsc does",
+  "whitelist": [
+    "CoreFoundation.CFStringEncodingExt:kCF*",
+    "MaterialComponents.MDCTabBarAlignment:*",
+    "MaterialComponents.MDCTabBarItemAppearance:*",
+    "Photos.PhotosTypes:*",
+    "WebKit.WKNavigationAction:*"
+  ],
+  "blacklist": [
+  ]
+}

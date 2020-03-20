@@ -22,7 +22,7 @@ declare function MACaptionAppearanceCopySelectedLanguages(domain: MACaptionAppea
 
 declare function MACaptionAppearanceCopyWindowColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
 
-declare function MACaptionAppearanceDidDisplayCaptions(strings: NSArray<any>): void;
+declare function MACaptionAppearanceDidDisplayCaptions(strings: NSArray<any> | any[]): void;
 
 declare const enum MACaptionAppearanceDisplayType {
 

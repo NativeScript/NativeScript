@@ -7,7 +7,7 @@ declare function CNMarkPortalOffline(interfaceName: string): boolean;
 
 declare function CNMarkPortalOnline(interfaceName: string): boolean;
 
-declare function CNSetSupportedSSIDs(ssidArray: NSArray<any>): boolean;
+declare function CNSetSupportedSSIDs(ssidArray: NSArray<any> | any[]): boolean;
 
 declare function SCCopyLastError(): NSError;
 
@@ -90,7 +90,7 @@ declare function SCNetworkReachabilityCreateWithAddress(allocator: any, address:
 
 declare function SCNetworkReachabilityCreateWithAddressPair(allocator: any, localAddress: interop.Pointer | interop.Reference<sockaddr>, remoteAddress: interop.Pointer | interop.Reference<sockaddr>): any;
 
-declare function SCNetworkReachabilityCreateWithName(allocator: any, nodename: string): any;
+declare function SCNetworkReachabilityCreateWithName(allocator: any, nodename: string | interop.Pointer | interop.Reference<any>): any;
 
 declare const enum SCNetworkReachabilityFlags {
 

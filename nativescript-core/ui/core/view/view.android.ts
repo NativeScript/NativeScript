@@ -156,6 +156,8 @@ function initializeDialogFragment() {
             const ownerId = this.getArguments().getInt(DOMID);
             const options = getModalOptions(ownerId);
             this.owner = options.owner;
+            // Set owner._dialogFragment to this in case the DialogFragment was recreated after app suspend
+            this.owner._dialogFragment = this;
             this._fullscreen = options.fullscreen;
             this._animated = options.animated;
             this._cancelable = options.cancelable;
@@ -381,11 +383,13 @@ export class View extends ViewCommon {
     @profile
     public onUnloaded() {
         if (this.touchListenerIsSet) {
-            this.nativeViewProtected.setOnTouchListener(null);
             this.touchListenerIsSet = false;
-            this.nativeViewProtected.setClickable(this._isClickable);
+            if (this.nativeViewProtected) {
+                this.nativeViewProtected.setOnTouchListener(null);
+                this.nativeViewProtected.setClickable(this._isClickable);
+            }
         }
-
+        
         this._manager = null;
         this._rootManager = null;
         super.onUnloaded();
@@ -829,6 +833,11 @@ export class View extends ViewCommon {
         stateListAnimator.addState([statePressed, stateEnabled], pressedSet);
         stateListAnimator.addState([stateEnabled], notPressedSet);
         stateListAnimator.addState([], defaultSet);
+
+        const currentAnimator = nativeView.getStateListAnimator();
+        if (currentAnimator) {
+            currentAnimator.jumpToCurrentState();
+        }
         nativeView.setStateListAnimator(stateListAnimator);
     }
 
@@ -1107,7 +1116,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
                 setPercent = options.setPercent || percentNotSupported;
                 options = null;
             }
-            if (length == "auto") { // tslint:disable-line
+            if (length == "auto" || !length) { // tslint:disable-line
                 setPixels(this.nativeViewProtected, auto);
             } else if (typeof length === "number") {
                 setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length)));

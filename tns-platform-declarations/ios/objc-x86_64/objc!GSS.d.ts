@@ -350,7 +350,7 @@ declare function gss_iter_creds(min_stat: interop.Pointer | interop.Reference<nu
 
 declare function gss_iter_creds_f(min_stat: interop.Pointer | interop.Reference<number>, flags: number, mech: interop.Pointer | interop.Reference<gss_OID_desc>, userctx: interop.Pointer | interop.Reference<any>, useriter: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<gss_OID_desc>, p3: interop.Pointer | interop.Reference<any>) => void>): number;
 
-declare function gss_krb5_ccache_name(minor_status: interop.Pointer | interop.Reference<number>, name: string, out_name: interop.Pointer | interop.Reference<string>): number;
+declare function gss_krb5_ccache_name(minor_status: interop.Pointer | interop.Reference<number>, name: string | interop.Pointer | interop.Reference<any>, out_name: interop.Pointer | interop.Reference<string>): number;
 
 interface gss_krb5_cfx_keydata_t {
 	have_acceptor_subkey: number;
@@ -432,7 +432,7 @@ declare function gss_unseal(minor_status: interop.Pointer | interop.Reference<nu
 
 declare function gss_unwrap(minor_status: interop.Pointer | interop.Reference<number>, context_handle: interop.Pointer | interop.Reference<any>, input_message_buffer: interop.Pointer | interop.Reference<gss_buffer_desc>, output_message_buffer: interop.Pointer | interop.Reference<gss_buffer_desc>, conf_state: interop.Pointer | interop.Reference<number>, qop_state: interop.Pointer | interop.Reference<number>): number;
 
-declare function gss_userok(name: interop.Pointer | interop.Reference<any>, user: string): number;
+declare function gss_userok(name: interop.Pointer | interop.Reference<any>, user: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function gss_verify(minor_status: interop.Pointer | interop.Reference<number>, context_handle: interop.Pointer | interop.Reference<any>, message_buffer: interop.Pointer | interop.Reference<gss_buffer_desc>, token_buffer: interop.Pointer | interop.Reference<gss_buffer_desc>, qop_state: interop.Pointer | interop.Reference<number>): number;
 
@@ -444,6 +444,6 @@ declare function gss_wrap_size_limit(minor_status: interop.Pointer | interop.Ref
 
 declare function gsskrb5_extract_authz_data_from_sec_context(minor_status: interop.Pointer | interop.Reference<number>, context_handle: interop.Pointer | interop.Reference<any>, ad_type: number, ad_data: interop.Pointer | interop.Reference<gss_buffer_desc>): number;
 
-declare function gsskrb5_register_acceptor_identity(identity: string): number;
+declare function gsskrb5_register_acceptor_identity(identity: string | interop.Pointer | interop.Reference<any>): number;
 
-declare function krb5_gss_register_acceptor_identity(identity: string): number;
+declare function krb5_gss_register_acceptor_identity(identity: string | interop.Pointer | interop.Reference<any>): number;

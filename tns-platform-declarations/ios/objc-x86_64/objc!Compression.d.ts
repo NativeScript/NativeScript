@@ -12,11 +12,11 @@ declare const enum compression_algorithm {
 	COMPRESSION_LZFSE = 2049
 }
 
-declare function compression_decode_buffer(dst_buffer: string, dst_size: number, src_buffer: string, src_size: number, scratch_buffer: interop.Pointer | interop.Reference<any>, algorithm: compression_algorithm): number;
+declare function compression_decode_buffer(dst_buffer: string | interop.Pointer | interop.Reference<any>, dst_size: number, src_buffer: string | interop.Pointer | interop.Reference<any>, src_size: number, scratch_buffer: interop.Pointer | interop.Reference<any>, algorithm: compression_algorithm): number;
 
 declare function compression_decode_scratch_buffer_size(algorithm: compression_algorithm): number;
 
-declare function compression_encode_buffer(dst_buffer: string, dst_size: number, src_buffer: string, src_size: number, scratch_buffer: interop.Pointer | interop.Reference<any>, algorithm: compression_algorithm): number;
+declare function compression_encode_buffer(dst_buffer: string | interop.Pointer | interop.Reference<any>, dst_size: number, src_buffer: string | interop.Pointer | interop.Reference<any>, src_size: number, scratch_buffer: interop.Pointer | interop.Reference<any>, algorithm: compression_algorithm): number;
 
 declare function compression_encode_scratch_buffer_size(algorithm: compression_algorithm): number;
 
