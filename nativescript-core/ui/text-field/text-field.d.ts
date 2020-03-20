@@ -27,4 +27,9 @@ export class TextField extends EditableTextBase {
      * Gets or sets if a text field is for password entry.
      */
     secure: boolean;
+
+    /**
+     * Gets or sets if a text field should dismiss on return.
+     */
+    closeOnReturn: boolean;
 }
