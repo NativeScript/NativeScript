@@ -18,6 +18,7 @@ export function loadExamples() {
     examples.set("issue-4287", "button/issue-4287-page");
     examples.set("issue-4385", "button/issue-4385-page");
     examples.set("highlight-4740", "button/highlight-4740/highlight-4740-page");
+    examples.set("tappable-span", "button/tappable-span-page");
 
     return examples;
 }
