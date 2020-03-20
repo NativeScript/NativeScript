@@ -7,9 +7,13 @@ export * from "../editable-text-base";
 export class TextFieldBase extends EditableTextBase implements TextFieldDefinition {
     public static returnPressEvent = "returnPress";
     public secure: boolean;
+    public closeOnReturn: boolean;
 }
 
 TextFieldBase.prototype.recycleNativeView = "auto";
 
 export const secureProperty = new Property<TextFieldBase, boolean>({ name: "secure", defaultValue: false, valueConverter: booleanConverter });
 secureProperty.register(TextFieldBase);
+
+export const closeOnReturnProperty = new Property<TextFieldBase, boolean>({ name: "closeOnReturn", defaultValue: true, valueConverter: booleanConverter });
+closeOnReturnProperty.register(TextFieldBase);

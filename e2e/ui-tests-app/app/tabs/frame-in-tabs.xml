@@ -1,0 +1,24 @@
+<Page class="page">
+    <StackLayout>
+        <Tabs highlightColor="red" offscreenTabLimit="1" automationText="tabNavigation">
+            <TabStrip highlightColor="green" itemTap="onItemTap">
+                <TabStripItem title="1"></TabStripItem>
+                <TabStripItem title="2"></TabStripItem>
+                <TabStripItem title="3"></TabStripItem>
+                <TabStripItem title="4"></TabStripItem>
+            </TabStrip>
+            <TabContentItem>
+                <Frame defaultPage="tabs/frame-in-tabs-inner-page-1"></Frame>
+            </TabContentItem>
+            <TabContentItem>
+                <Frame defaultPage="tabs/frame-in-tabs-inner-page-2"></Frame>
+            </TabContentItem>
+            <TabContentItem>
+                <Frame defaultPage="tabs/frame-in-tabs-inner-page-3"></Frame>
+            </TabContentItem>
+            <TabContentItem>
+                <Frame defaultPage="tabs/frame-in-tabs-inner-page-4"></Frame>
+            </TabContentItem>
+        </Tabs>
+    </StackLayout>
+</Page>

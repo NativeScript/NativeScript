@@ -6,8 +6,6 @@ import {
 export { ios };
 export * from "./utils-common";
 
-let mainScreenScale;
-
 export function openFile(filePath: string): boolean {
     try {
         const appPath = ios.getCurrentAppPath();
@@ -47,5 +45,3 @@ export function openUrl(location: string): boolean {
 
     return false;
 }
-
-mainScreenScale = UIScreen.mainScreen.scale;

@@ -4,7 +4,7 @@
  */ /** */
 
 import {
-    View, ViewBase, Property, CoercibleProperty, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData
+    View, ViewBase, Property, CoercibleProperty, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, Color
 } from "../../core/view";
 import { TabStrip } from "../tab-strip";
 import { TabStripItem } from "../tab-strip-item";
@@ -149,6 +149,30 @@ export class TabNavigationBase extends View {
      * Method is intended to be overridden by inheritors and used as "protected"
      */
     setTabBarHighlightColor(value: any)
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    getTabBarSelectedItemColor(): Color
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarSelectedItemColor(value: Color)
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    getTabBarUnSelectedItemColor(): Color
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarUnSelectedItemColor(value: Color)
 
     /**
      * @private

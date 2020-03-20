@@ -334,6 +334,8 @@ declare class CBManager extends NSObject {
 	readonly authorization: CBManagerAuthorization;
 
 	readonly state: CBManagerState;
+
+	static readonly authorization: CBManagerAuthorization;
 }
 
 declare const enum CBManagerAuthorization {

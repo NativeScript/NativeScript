@@ -442,13 +442,17 @@ declare class MDCTabBar extends UIView implements UIBarPositioning {
 
 	delegate: MDCTabBarDelegate;
 
-	displaysUppercaseTitles: boolean;
+    displaysUppercaseTitles: boolean;
 
-	inkColor: UIColor;
+    enableRippleBehavior: boolean;
 
-	itemAppearance: MDCTabBarItemAppearance;
+    inkColor: UIColor;
 
-	items: NSArray<UITabBarItem>;
+    itemAppearance: MDCTabBarItemAppearance;
+
+    items: NSArray<UITabBarItem>;
+
+    rippleColor: UIColor;
 
 	selectedItem: UITabBarItem;
 

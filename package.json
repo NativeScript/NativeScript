@@ -36,7 +36,7 @@
     "tslint": "^5.4.3",
     "typedoc": "^0.13.0",
     "typedoc-plugin-external-module-name": "git://github.com/PanayotCankov/typedoc-plugin-external-module-name.git#with-js",
-    "typescript": "^3.1.6"
+    "typescript": "^3.7.5"
   },
   "scripts": {
     "setup": "npm run build-core && npm run build-compat && npm run setup-link",

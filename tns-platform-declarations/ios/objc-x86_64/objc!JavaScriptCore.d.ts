@@ -244,7 +244,7 @@ declare function JSStringCreateWithCFString(string: string): interop.Pointer | i
 
 declare function JSStringCreateWithCharacters(chars: interop.Pointer | interop.Reference<number>, numChars: number): interop.Pointer | interop.Reference<any>;
 
-declare function JSStringCreateWithUTF8CString(string: string): interop.Pointer | interop.Reference<any>;
+declare function JSStringCreateWithUTF8CString(string: string | interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function JSStringGetCharactersPtr(string: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<number>;
 
@@ -252,11 +252,11 @@ declare function JSStringGetLength(string: interop.Pointer | interop.Reference<a
 
 declare function JSStringGetMaximumUTF8CStringSize(string: interop.Pointer | interop.Reference<any>): number;
 
-declare function JSStringGetUTF8CString(string: interop.Pointer | interop.Reference<any>, buffer: string, bufferSize: number): number;
+declare function JSStringGetUTF8CString(string: interop.Pointer | interop.Reference<any>, buffer: string | interop.Pointer | interop.Reference<any>, bufferSize: number): number;
 
 declare function JSStringIsEqual(a: interop.Pointer | interop.Reference<any>, b: interop.Pointer | interop.Reference<any>): boolean;
 
-declare function JSStringIsEqualToUTF8CString(a: interop.Pointer | interop.Reference<any>, b: string): boolean;
+declare function JSStringIsEqualToUTF8CString(a: interop.Pointer | interop.Reference<any>, b: string | interop.Pointer | interop.Reference<any>): boolean;
 
 declare function JSStringRelease(string: interop.Pointer | interop.Reference<any>): void;
 

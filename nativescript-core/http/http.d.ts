@@ -57,6 +57,18 @@ export function getFile(url: string, destinationFilePath?: string): Promise<File
 export function getFile(options: HttpRequestOptions, destinationFilePath?: string): Promise<File>;
 
 /**
+ * Downloads the content from the specified URL as binary and returns an ArrayBuffer.
+ * @param url The URL to request from.
+ */
+export function getBinary(url: string): Promise<ArrayBuffer>;
+
+/**
+ * Downloads the content from the specified URL as binary and returns an ArrayBuffer.
+ * @param options An object that specifies various request options.
+ */
+export function getBinary(options: HttpRequestOptions): Promise<ArrayBuffer>;
+
+/**
  * Makes a generic http request using the provided options and returns a HttpResponse Object.
  * @param options An object that specifies various request options.
  */
@@ -84,7 +96,7 @@ export interface HttpRequestOptions {
   /**
    * Gets or sets the request body.
    */
-  content?: string | FormData;
+  content?: string | FormData | ArrayBuffer;
 
   /**
    * Gets or sets the request timeout in milliseconds.
@@ -131,6 +143,11 @@ export interface HttpContent {
    * Gets the response body as raw data.
    */
   raw: any;
+
+  /**
+   * Gets the response body as ArrayBuffer
+   */
+  toArrayBuffer: () => ArrayBuffer;
 
   /**
    * Gets the response body as string.

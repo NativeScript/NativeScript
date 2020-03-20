@@ -14,6 +14,7 @@ const modulesLoadedForUI = new Set<string>();
 const defaultExtensionMap: ExtensionMap = {
     ".js": ".js",
     ".ts": ".js",
+    ".kt": ".js",
     ".css": ".css",
     ".scss": ".css",
     ".less": ".css",
