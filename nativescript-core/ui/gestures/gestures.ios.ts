@@ -1,9 +1,13 @@
 // Definitions.
-import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
+
+import { GestureEventData, TapGestureEventData, GestureEventDataWithState, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
 import { View, EventData } from "../core/view";
 
 // Types.
 import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection } from "./gestures-common";
+
+// Import layout from utils directly to avoid circular references
+import { layout } from "../../utils/utils";
 
 export * from "./gestures-common";
 
@@ -123,11 +127,15 @@ export class GesturesObserver extends GesturesObserverBase {
             const nativeView = <UIView>target.nativeViewProtected;
 
             if (type & GestureTypes.tap) {
-                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.tap));
+                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.tap, args => {
+                  this._executeCallback(_getTapData(args));
+                }));
             }
 
             if (type & GestureTypes.doubleTap) {
-                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.doubleTap));
+                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.doubleTap, args => {
+                  this._executeCallback(_getTapData(args));
+                }));
             }
 
             if (type & GestureTypes.pinch) {
@@ -167,7 +175,9 @@ export class GesturesObserver extends GesturesObserverBase {
             }
 
             if (type & GestureTypes.longPress) {
-                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.longPress));
+                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.longPress, args => {
+                    this._executeCallback(_getLongPressData(args));
+                }));
             }
 
             if (type & GestureTypes.touch) {
@@ -296,6 +306,23 @@ function _getSwipeDirection(direction: UISwipeGestureRecognizerDirection): Swipe
     }
 }
 
+function _getTapData(args: GestureEventData): TapGestureEventData {
+  const recognizer = <UITapGestureRecognizer>args.ios;
+  const center = recognizer.locationInView(args.view.nativeViewProtected);
+
+  return <TapGestureEventData>{
+    type: args.type,
+    view: args.view,
+    ios: args.ios,
+    android: undefined,
+    eventName: args.eventName,
+    object: args.object,
+    getPointerCount: () => recognizer.numberOfTouches,
+    getX: () => layout.toDeviceIndependentPixels(center.x),
+    getY: () => layout.toDeviceIndependentPixels(center.y)
+  };
+}
+
 function _getPinchData(args: GestureEventData): PinchGestureEventData {
     const recognizer = <UIPinchGestureRecognizer>args.ios;
     const center = recognizer.locationInView(args.view.nativeViewProtected);
@@ -353,6 +380,20 @@ function _getRotationData(args: GestureEventData): RotationGestureEventData {
         ios: args.ios,
         android: undefined,
         rotation: recognizer.rotation * (180.0 / Math.PI),
+        object: args.view,
+        eventName: toString(args.type),
+        state: getState(recognizer)
+    };
+}
+
+function _getLongPressData(args: GestureEventData): GestureEventDataWithState {
+    const recognizer = <UILongPressGestureRecognizer>args.ios;
+
+    return <GestureEventDataWithState>{
+        type: args.type,
+        view: args.view,
+        ios: args.ios,
+        android: undefined,
         object: args.view,
         eventName: toString(args.type),
         state: getState(recognizer)
@@ -427,7 +468,7 @@ class Pointer implements Pointer {
     }
 
     getY(): number {
-        return this.location.y;
+      return this.location.y;
     }
 }
 

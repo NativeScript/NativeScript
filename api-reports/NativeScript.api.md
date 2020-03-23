@@ -243,7 +243,8 @@ export interface AnimationDefinition {
 
     opacity?: number;
 
-    rotate?: number;
+    // Warning: (ae-forgotten-export) The symbol "Point3D" needs to be exported by the entry point index.d.ts
+    rotate?: number | Point3D;
 
     scale?: Pair;
 
@@ -413,6 +414,7 @@ export class Color {
     public b: number;
     public equals(value: Color): boolean;
     public static equals(value1: Color, value2: Color): boolean;
+    public static fromIosColor(value: any /* UIColor */): Color;
     public g: number;
     public hex: string;
     ios: any /* UIColor */;
@@ -770,6 +772,9 @@ export class Frame extends View {
 
     animated: boolean;
 
+    // (undocumented)
+    _animationInProgress: boolean;
+
     backStack: Array<BackstackEntry>;
 
     canGoBack(): boolean;
@@ -865,54 +870,54 @@ export class Frame extends View {
 
 // @public
 export interface GestureEventData extends EventData {
-    android: any
-    ios: any /* UIGestureRecognizer */;
-    type: GestureTypes;
-    view: View;
-}
+     android: any
+     ios: any /* UIGestureRecognizer */;
+     type: GestureTypes;
+     view: View;
+ }
 
 // @public
 export interface GestureEventDataWithState extends GestureEventData {
-    // (undocumented)
-    state: number;
-}
+     // (undocumented)
+     state: number;
+ }
 
 // @public
 export class GesturesObserver {
-    constructor(target: View, callback: (args: GestureEventData) => void, context: any);
+     constructor(target: View, callback: (args: GestureEventData) => void, context: any);
 
-    androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
+     androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
 
-    callback: (args: GestureEventData) => void;
+     callback: (args: GestureEventData) => void;
 
-    context: any;
+     context: any;
 
-    disconnect();
+     disconnect();
 
-    observe(type: GestureTypes);
+     observe(type: GestureTypes);
 
-    type: GestureTypes;
-}
+     type: GestureTypes;
+ }
 
 // @public
 export enum GestureStateTypes {
-    began,
-    cancelled,
-    changed,
-    ended
-}
+     began,
+     cancelled,
+     changed,
+     ended
+ }
 
 // @public
 export enum GestureTypes {
-    doubleTap,
-    longPress,
-    pan,
-    pinch,
-    rotation,
-    swipe,
-    tap,
-    touch
-}
+     doubleTap,
+     longPress,
+     pan,
+     pinch,
+     rotation,
+     swipe,
+     tap,
+     touch
+ }
 
 // @public
 export class GridLayout extends LayoutBase {
@@ -1008,6 +1013,8 @@ export const Http: {
 export interface HttpContent {
   raw: any;
 
+  toArrayBuffer: () => ArrayBuffer;
+
   toFile: (destinationFilePath?: string) => File;
 
   toImage: () => Promise<ImageSource>;
@@ -1019,7 +1026,7 @@ export interface HttpContent {
 
 // @public
 export interface HttpRequestOptions {
-  content?: string | FormData;
+  content?: string | FormData | ArrayBuffer;
 
   dontFollowRedirects?: boolean;
 
@@ -1231,6 +1238,9 @@ export class iOSApplication {
     /* tslint:enable */
     window: any /* UIWindow */;
 }
+
+// @public
+export type IOSTabBarItemsAlignment = "leading" | "justified" | "center" | "centerSelected";
 
 // @public
 export const isAndroid: boolean;
@@ -1632,11 +1642,11 @@ export class Page extends ContentView {
 
 // @public
 export interface PanGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    deltaX: number;
-    // (undocumented)
-    deltaY: number;
-}
+     // (undocumented)
+     deltaX: number;
+     // (undocumented)
+     deltaY: number;
+ }
 
 // @public
 export interface ParserEvent {
@@ -1684,15 +1694,15 @@ export module path {
 
 // @public
 export interface PinchGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    getFocusX(): number;
+     // (undocumented)
+     getFocusX(): number;
 
-    // (undocumented)
-    getFocusY(): number;
+     // (undocumented)
+     getFocusY(): number;
 
-    // (undocumented)
-    scale: number;
-}
+     // (undocumented)
+     scale: number;
+ }
 
 // @public
 export class Placeholder extends View {
@@ -1755,9 +1765,9 @@ export class Repeater extends CustomLayoutView {
 
 // @public
 export interface RotationGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    rotation: number;
-}
+     // (undocumented)
+     rotation: number;
+ }
 
 // @public
 export module Screen {
@@ -1926,14 +1936,18 @@ export class Span extends ViewBase {
 
     public fontWeight: FontWeight;
 
+    public static linkTapEvent: string;
+
     // (undocumented)
     _setTextInternal(value: string): void;
+
+    public readonly tappable: boolean;
 
     public text: string;
 
     public textDecoration: TextDecoration;
     //@endprivate
-}
+ }
 
 // @public
 export class StackLayout extends LayoutBase {
@@ -2085,6 +2099,8 @@ export class Style extends Observable {
     // (undocumented)
     public paddingTop: Length;
     // (undocumented)
+    public perspective: number;
+    // (undocumented)
     public placeholderColor: Color;
     // Warning: (ae-forgotten-export) The symbol "PropertyBagClass" needs to be exported by the entry point index.d.ts
     public readonly PropertyBag: PropertyBagClass;
@@ -2092,6 +2108,10 @@ export class Style extends Observable {
     public resetUnscopedCssVariables(): void;
     // (undocumented)
     public rotate: number;
+    // (undocumented)
+    public rotateX: number;
+    // (undocumented)
+    public rotateY: number;
     // (undocumented)
     public scaleX: number;
     // (undocumented)
@@ -2152,17 +2172,17 @@ export class Style extends Observable {
 
 // @public
 export enum SwipeDirection {
-    down,
-    left,
-    right,
-    up
-}
+     down,
+     left,
+     right,
+     up
+ }
 
 // @public
 export interface SwipeGestureEventData extends GestureEventData {
-    // (undocumented)
-    direction: SwipeDirection;
-}
+     // (undocumented)
+     direction: SwipeDirection;
+ }
 
 // @public
 export class Switch extends View {
@@ -2189,6 +2209,8 @@ export class TabContentItem extends ContentView {
 export class TabNavigationBase extends View {
     android: any /* android.view.View */;
 
+    getTabBarBackgroundArgbColor(): any
+
     getTabBarBackgroundColor(): any
 
     getTabBarColor(): any
@@ -2207,7 +2229,11 @@ export class TabNavigationBase extends View {
 
     getTabBarItemTextTransform(tabStripItem: TabStripItem): any
 
+    getTabBarSelectedItemColor(): Color
+
     getTabBarTextTransform(): any
+
+    getTabBarUnSelectedItemColor(): Color
 
     ios: any /* UITabBarController */;
 
@@ -2248,7 +2274,11 @@ export class TabNavigationBase extends View {
 
     setTabBarItemTitle(tabStripItem: TabStripItem, value: any): any
 
+    setTabBarSelectedItemColor(value: Color)
+
     setTabBarTextTransform(value: any): void
+
+    setTabBarUnSelectedItemColor(value: Color)
 
     tabStrip: TabStrip;
 }
@@ -2258,6 +2288,8 @@ export class Tabs extends TabNavigationBase {
     android: any /* android.view.View */;
 
     ios: any /* UITabBarController */;
+
+    iOSTabBarItemsAlignment: IOSTabBarItemsAlignment;
 
     items: Array<TabContentItem>;
 
@@ -2300,10 +2332,16 @@ export class TabStrip extends View {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     on(event: "itemTap", callback: (args: TabStripItemEventData) => void, thisArg?: any);
+
+    selectedItemColor: Color;
+
+    unSelectedItemColor: Color;
 }
 
 // @public
 export class TabStripItem extends View {
+    iconClass: string;
+
     iconSource: string;
 
     image: Image;
@@ -2384,6 +2422,14 @@ export class TabViewItem extends ViewBase {
 }
 
 // @public
+export interface TapGestureEventData extends GestureEventData {
+    getPointerCount(): number;
+    getX(): number;
+    getY(): number;
+
+ }
+
+// @public
 export interface Template {
     (): View;
 }
@@ -2453,12 +2499,16 @@ export class TextBase extends View implements AddChildFromBuilder {
 export class TextField extends EditableTextBase {
     android: any /* android.widget.EditText */;
 
+    closeOnReturn: boolean;
+
     ios: any /* UITextField */;
 
     // (undocumented)
     public static returnPressEvent: string;
 
     secure: boolean;
+
+    secureWithoutAutofill: boolean;
 }
 
 // @public
@@ -2466,6 +2516,8 @@ export class TextView extends EditableTextBase {
     android: any /* android.widget.EditText */;
 
     ios: any /* UITextView */;
+
+    maxLines: number;
 }
 
 // @public
@@ -2500,20 +2552,12 @@ export interface TimerInfo {
 }
 
 // @public
-export interface TouchGestureEventData extends GestureEventData {
-    action: "up" | "move" | "down" | "cancel";
-
-    // Warning: (ae-forgotten-export) The symbol "Pointer" needs to be exported by the entry point index.d.ts
-    getActivePointers(): Array<Pointer>;
-
-    getAllPointers(): Array<Pointer>;
-
-    getPointerCount(): number;
-
-    getX(): number;
-
-    getY(): number;
-}
+export interface TouchGestureEventData extends TapGestureEventData {
+     action: "up" | "move" | "down" | "cancel";
+     // Warning: (ae-forgotten-export) The symbol "Pointer" needs to be exported by the entry point index.d.ts
+     getActivePointers(): Array<Pointer>;
+     getAllPointers(): Array<Pointer>;
+ }
 
 // @public (undocumented)
 export const Trace: {
@@ -2701,12 +2745,15 @@ export abstract class View extends ViewBase {
     opacity: number;
     originX: number;
     originY: number;
+    perspective: number;
     // (undocumented)
     _redrawNativeBackground(value: any): void;
     // (undocumented)
     _removeAnimation(animation: Animation): boolean;
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number;
     rotate: number;
+    rotateX: number;
+    rotateY: number;
     scaleX: number;
     scaleY: number;
     _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): { boundsChanged: boolean, sizeChanged: boolean };
@@ -2916,6 +2963,7 @@ export abstract class ViewBase extends Observable {
     // (undocumented)
     _setupAsRootView(context: any): void;
     _setupUI(context: any /* android.content.Context */, atIndex?: number): void;
+    _shouldDelayLayout(): boolean;
     showModal(moduleName: string, modalOptions: ShowModalOptions): ViewBase;
     showModal(view: ViewBase, modalOptions: ShowModalOptions): ViewBase;
     public readonly style: Style;

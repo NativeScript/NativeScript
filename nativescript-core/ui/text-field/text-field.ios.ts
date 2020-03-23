@@ -66,7 +66,9 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
         // Called when the user presses the return button.
         const owner = this._owner.get();
         if (owner) {
-            owner.dismissSoftInput();
+            if (owner.closeOnReturn) {
+                owner.dismissSoftInput();
+            }
             owner.notify({ eventName: TextField.returnPressEvent, object: owner });
         }
 
@@ -76,6 +78,14 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
         const owner = this._owner.get();
         if (owner) {
+            if (owner.secureWithoutAutofill && !textField.secureTextEntry) {
+                /**
+                 * Helps avoid iOS 12+ autofill strong password suggestion prompt
+                 * Discussed in several circles but for example:
+                 * https://github.com/expo/expo/issues/2571#issuecomment-473347380
+                 */
+                textField.secureTextEntry = true;
+            }
             const delta = replacementString.length - range.length;
             if (delta > 0) {
                 if (textField.text.length + delta > owner.maxLength) {

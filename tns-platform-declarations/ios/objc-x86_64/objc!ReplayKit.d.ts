@@ -263,6 +263,8 @@ declare const enum RPRecordingErrorCode {
 
 	RecordingInvalidSession = -5832,
 
+	FailedToStartCaptureStack = -5833,
+
 	CodeSuccessful = 0
 }
 

@@ -26,6 +26,7 @@ import { sanitizeModuleName } from "../../builder/module-name-sanitizer";
 import { StyleScope } from "../../styling/style-scope";
 import { LinearGradient } from "../../styling/linear-gradient";
 import { BackgroundRepeat } from "../../styling/style-properties";
+import { TextTransform } from "../../text-base";
 
 export * from "../../styling/style-properties";
 export * from "../view-base";
@@ -695,6 +696,34 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
     set rotate(value: number) {
         this.style.rotate = value;
+    }
+
+    get rotateX(): number {
+        return this.style.rotateX;
+    }
+    set rotateX(value: number) {
+        this.style.rotateX = value;
+    }
+
+    get rotateY(): number {
+        return this.style.rotateY;
+    }
+    set rotateY(value: number) {
+        this.style.rotateY = value;
+    }
+
+    get perspective(): number {
+        return this.style.perspective;
+    }
+    set perspective(value: number) {
+        this.style.perspective = value;
+    }
+
+    get textTransform(): TextTransform {
+        return this.style.textTransform;
+    }
+    set textTransform(value: TextTransform) {
+        this.style.textTransform = value;
     }
 
     get translateX(): dip {

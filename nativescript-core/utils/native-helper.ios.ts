@@ -4,6 +4,8 @@ import {
     write as traceWrite
 } from "../trace";
 
+const radToDeg = Math.PI / 180;
+
 function isOrientationLandscape(orientation: number) {
     return orientation === UIDeviceOrientation.LandscapeLeft /* 3 */ ||
         orientation === UIDeviceOrientation.LandscapeRight /* 4 */;
@@ -114,23 +116,39 @@ export module ios {
 
     }
 
+    export function applyRotateTransform(transform: CATransform3D, x: number, y: number, z: number): CATransform3D {
+        if (x) {
+            transform = CATransform3DRotate(transform, x * radToDeg, 1, 0, 0);
+        }
+
+        if (y) {
+            transform = CATransform3DRotate(transform, y * radToDeg, 0, 1, 0);
+        }
+
+        if (z) {
+            transform = CATransform3DRotate(transform, z * radToDeg, 0, 0, 1);
+        }
+
+        return transform;
+    }
+
     export class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
         public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
-    
+
         public getViewController(): UIViewController {
             const app = UIApplication.sharedApplication;
-    
+
             return app.keyWindow.rootViewController;
         }
-    
+
         public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
             return this.getViewController();
         }
-    
+
         public documentInteractionControllerViewForPreview(controller: UIDocumentInteractionController) {
             return this.getViewController().view;
         }
-    
+
         public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
             return this.getViewController().view.frame;
         }

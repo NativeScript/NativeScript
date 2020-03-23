@@ -22,12 +22,13 @@ export {
   GestureStateTypes,
   GestureTypes,
   GesturesObserver,
+  TapGestureEventData,
   PanGestureEventData,
   PinchGestureEventData,
   RotationGestureEventData,
   SwipeDirection,
   SwipeGestureEventData,
-  TouchGestureEventData
+  TouchGestureEventData,
 } from "./gestures";
 
 export { HtmlView } from "./html-view";

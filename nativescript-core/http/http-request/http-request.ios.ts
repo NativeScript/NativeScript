@@ -95,6 +95,9 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 
             if (types.isString(options.content) || options.content instanceof FormData) {
                 urlRequest.HTTPBody = NSString.stringWithString(options.content.toString()).dataUsingEncoding(4);
+            } else if (options.content instanceof ArrayBuffer) {
+                const buffer = options.content as ArrayBuffer;
+                urlRequest.HTTPBody = NSData.dataWithData(buffer as any);
             }
 
             if (types.isNumber(options.timeout)) {
@@ -142,7 +145,15 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
                         resolve({
                             content: {
                                 raw: data,
-                                toString: (encoding?: any) => NSDataToString(data, encoding),
+                                toArrayBuffer: () => interop.bufferFromData(data),
+                                toString: (encoding?: any) => {
+                                    const str = NSDataToString(data, encoding);
+                                    if (typeof str === "string") {
+                                        return str;
+                                    } else {
+                                        throw new Error("Response content may not be converted to string");
+                                    }
+                                },
                                 toJSON: (encoding?: any) => parseJSON(NSDataToString(data, encoding)),
                                 toImage: () => {
                                     ensureImageSource();

@@ -6,15 +6,13 @@ import {
 export { ios };
 export * from "./utils-common";
 
-let mainScreenScale;
-
 export function openFile(filePath: string): boolean {
     try {
         const appPath = ios.getCurrentAppPath();
         const path = filePath.replace("~", appPath);
 
         const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
-        controller.delegate = <UIDocumentInteractionControllerDelegate> new ios.UIDocumentInteractionControllerDelegateImpl();
+        controller.delegate = <UIDocumentInteractionControllerDelegate>new ios.UIDocumentInteractionControllerDelegateImpl();
 
         return controller.presentPreviewAnimated(true);
     }
@@ -47,5 +45,3 @@ export function openUrl(location: string): boolean {
 
     return false;
 }
-
-mainScreenScale = UIScreen.mainScreen.scale;

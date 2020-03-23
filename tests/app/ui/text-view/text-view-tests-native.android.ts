@@ -63,3 +63,7 @@ export function typeTextNatively(textView: textViewModule.TextView, text: string
     textView.android.setText(text);
     textView.android.clearFocus();
 }
+
+export function getNativeMaxLines(textView: textViewModule.TextView): number {
+    return textView.android.getMaxLines();
+}

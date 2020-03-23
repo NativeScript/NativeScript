@@ -46,6 +46,8 @@ allTests["PLATFORM"] = platformTests;
 import * as fsTests from "./file-system/file-system-tests";
 allTests["FILE-SYSTEM"] = fsTests;
 
+// Disabled tests as they have external dependencies
+// TODO: find a way to run these tests locally, but don't run them on the CI as they are flaky
 // import * as httpTests from "./http/http-tests";
 // allTests["HTTP"] = httpTests;
 
