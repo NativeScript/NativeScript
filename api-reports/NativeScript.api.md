@@ -878,45 +878,45 @@ export interface GestureEventData extends EventData {
 
 // @public
 export interface GestureEventDataWithState extends GestureEventData {
-    // (undocumented)
-    state: number;
+     // (undocumented)
+     state: number;
  }
 
 // @public
 export class GesturesObserver {
-    constructor(target: View, callback: (args: GestureEventData) => void, context: any);
+     constructor(target: View, callback: (args: GestureEventData) => void, context: any);
 
-    androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
+     androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
 
-    callback: (args: GestureEventData) => void;
+     callback: (args: GestureEventData) => void;
 
-    context: any;
+     context: any;
 
-    disconnect();
+     disconnect();
 
-    observe(type: GestureTypes);
+     observe(type: GestureTypes);
 
-    type: GestureTypes;
+     type: GestureTypes;
  }
 
 // @public
 export enum GestureStateTypes {
-    began,
-    cancelled,
-    changed,
-    ended
+     began,
+     cancelled,
+     changed,
+     ended
  }
 
 // @public
 export enum GestureTypes {
-    doubleTap,
-    longPress,
-    pan,
-    pinch,
-    rotation,
-    swipe,
-    tap,
-    touch
+     doubleTap,
+     longPress,
+     pan,
+     pinch,
+     rotation,
+     swipe,
+     tap,
+     touch
  }
 
 // @public
@@ -1011,49 +1011,49 @@ export const Http: {
 
 // @public
 export interface HttpContent {
-    raw: any;
+  raw: any;
 
-    toArrayBuffer: () => ArrayBuffer;
+  toArrayBuffer: () => ArrayBuffer;
 
-    toFile: (destinationFilePath?: string) => File;
+  toFile: (destinationFilePath?: string) => File;
 
-    toImage: () => Promise<ImageSource>;
+  toImage: () => Promise<ImageSource>;
 
-    toJSON: (encoding?: HttpResponseEncoding) => any;
+  toJSON: (encoding?: HttpResponseEncoding) => any;
 
-    toString: (encoding?: HttpResponseEncoding) => string;
+  toString: (encoding?: HttpResponseEncoding) => string;
 }
 
 // @public
 export interface HttpRequestOptions {
-    content?: string | FormData | ArrayBuffer;
+  content?: string | FormData | ArrayBuffer;
 
-    dontFollowRedirects?: boolean;
+  dontFollowRedirects?: boolean;
 
-    headers?: any;
+  headers?: any;
 
-    method: string;
+  method: string;
 
-    timeout?: number;
+  timeout?: number;
 
-    url: string;
+  url: string;
 }
 
 // @public
 export interface HttpResponse {
-    content?: HttpContent;
+  content?: HttpContent;
 
-    headers: Headers;
+  headers: Headers;
 
-    statusCode: number;
+  statusCode: number;
 }
 
 // @public (undocumented)
 export enum HttpResponseEncoding {
-    // (undocumented)
-    GBK,
-    // (undocumented)
-    UTF8
+  // (undocumented)
+  GBK,
+  // (undocumented)
+  UTF8
 }
 
 // @public
@@ -1642,10 +1642,10 @@ export class Page extends ContentView {
 
 // @public
 export interface PanGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    deltaX: number;
-    // (undocumented)
-    deltaY: number;
+     // (undocumented)
+     deltaX: number;
+     // (undocumented)
+     deltaY: number;
  }
 
 // @public
@@ -1694,14 +1694,14 @@ export module path {
 
 // @public
 export interface PinchGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    getFocusX(): number;
+     // (undocumented)
+     getFocusX(): number;
 
-    // (undocumented)
-    getFocusY(): number;
+     // (undocumented)
+     getFocusY(): number;
 
-    // (undocumented)
-    scale: number;
+     // (undocumented)
+     scale: number;
  }
 
 // @public
@@ -1765,8 +1765,8 @@ export class Repeater extends CustomLayoutView {
 
 // @public
 export interface RotationGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    rotation: number;
+     // (undocumented)
+     rotation: number;
  }
 
 // @public
@@ -2172,16 +2172,16 @@ export class Style extends Observable {
 
 // @public
 export enum SwipeDirection {
-    down,
-    left,
-    right,
-    up
+     down,
+     left,
+     right,
+     up
  }
 
 // @public
 export interface SwipeGestureEventData extends GestureEventData {
-    // (undocumented)
-    direction: SwipeDirection;
+     // (undocumented)
+     direction: SwipeDirection;
  }
 
 // @public
@@ -2424,10 +2424,9 @@ export class TabViewItem extends ViewBase {
 // @public
 export interface TapGestureEventData extends GestureEventData {
     getPointerCount(): number;
-
     getX(): number;
-
     getY(): number;
+
  }
 
 // @public
@@ -2508,6 +2507,8 @@ export class TextField extends EditableTextBase {
     public static returnPressEvent: string;
 
     secure: boolean;
+
+    secureWithoutAutofill: boolean;
 }
 
 // @public
@@ -2552,10 +2553,10 @@ export interface TimerInfo {
 
 // @public
 export interface TouchGestureEventData extends TapGestureEventData {
-    action: "up" | "move" | "down" | "cancel";
-    // Warning: (ae-forgotten-export) The symbol "Pointer" needs to be exported by the entry point index.d.ts
-    getActivePointers(): Array<Pointer>;
-    getAllPointers(): Array<Pointer>;
+     action: "up" | "move" | "down" | "cancel";
+     // Warning: (ae-forgotten-export) The symbol "Pointer" needs to be exported by the entry point index.d.ts
+     getActivePointers(): Array<Pointer>;
+     getAllPointers(): Array<Pointer>;
  }
 
 // @public (undocumented)
