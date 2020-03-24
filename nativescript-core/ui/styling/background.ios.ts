@@ -204,18 +204,23 @@ function parsePosition(pos: string): { x: CSSValue, y: CSSValue } {
         return { x: values[0], y: values[1] };
     }
 
-    if (values.length === 1 && values[0].type === "ident") {
-        const val = values[0].string.toLocaleLowerCase();
-        const center = { type: "ident", string: "center" };
+    if (values.length === 1) {
+      const center = { type: "ident", string: "center" };
 
-        // If you only one keyword is specified, the other value is "center"
-        if (val === "left" || val === "right") {
-            return { x: values[0], y: center };
-        } else if (val === "top" || val === "bottom") {
-            return { x: center, y: values[0] };
-        } else if (val === "center") {
-            return { x: center, y: center };
-        }
+      if (values[0].type === "ident") {
+          const val = values[0].string.toLocaleLowerCase();
+
+          // If you only one keyword is specified, the other value is "center"
+          if (val === "left" || val === "right") {
+              return { x: values[0], y: center };
+          } else if (val === "top" || val === "bottom") {
+              return { x: center, y: values[0] };
+          } else if (val === "center") {
+              return { x: center, y: center };
+          }
+      } else if (values[0].type === "number") {
+        return {x: values[0], y: center};
+      }
     }
 
     return null;
@@ -322,6 +327,18 @@ function getDrawParams(this: void, image: UIImage, background: BackgroundDefinit
                 } else if (v.y.string.toLowerCase() === "bottom") {
                     res.posY = spaceY;
                 }
+            } else if (v.x.type === "number" && v.y.type === "ident") {
+              if (v.x.unit === "%") {
+                res.posX = spaceX * v.x.value / 100;
+              } else if (v.x.unit === "px" || v.x.unit === "") {
+                res.posX = v.x.value;
+              }
+
+              if (v.y.string.toLowerCase() === "center") {
+                  res.posY = spaceY / 2;
+              } else if (v.y.string.toLowerCase() === "bottom") {
+                  res.posY = spaceY;
+              }
             }
         }
     }
