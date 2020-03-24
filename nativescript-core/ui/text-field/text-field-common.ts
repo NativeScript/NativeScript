@@ -8,6 +8,8 @@ export class TextFieldBase extends EditableTextBase implements TextFieldDefiniti
     public static returnPressEvent = "returnPress";
     public secure: boolean;
     public closeOnReturn: boolean;
+    // iOS only (to avoid 12+ suggested strong password handling)
+    public secureWithoutAutofill: boolean;
 }
 
 TextFieldBase.prototype.recycleNativeView = "auto";
