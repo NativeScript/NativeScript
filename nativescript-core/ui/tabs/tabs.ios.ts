@@ -1030,6 +1030,7 @@ export class Tabs extends TabsBase {
 
     public setTabBarSelectedItemColor(value: Color) {
         this._selectedItemColor = value;
+        this.setItemColors();
     }
 
     public getTabBarUnSelectedItemColor(): Color {
@@ -1038,6 +1039,7 @@ export class Tabs extends TabsBase {
 
     public setTabBarUnSelectedItemColor(value: Color) {
         this._unSelectedItemColor = value;
+        this.setItemColors();
     }
 
     private visitFrames(view: ViewBase, operation: (frame: Frame) => {}) {

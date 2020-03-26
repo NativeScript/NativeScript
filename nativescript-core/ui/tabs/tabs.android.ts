@@ -796,6 +796,17 @@ export class Tabs extends TabsBase {
         } else {
             this._tabsBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
         }
+
+        this.updateTabStripItems();
+    }
+
+    private updateTabStripItems(): void {
+        this.tabStrip.items.forEach((tabStripItem: TabStripItem) => {
+            if (tabStripItem.nativeView) {
+                const tabItemSpec = this.createTabItemSpec(tabStripItem);
+                this.updateAndroidItemAt(tabStripItem._index, tabItemSpec);
+            }
+        });
     }
 
     public getTabBarHighlightColor(): number {
@@ -807,12 +818,21 @@ export class Tabs extends TabsBase {
         this._tabsBar.setSelectedIndicatorColors([color]);
     }
 
+    private setItemsColors(items: Array<TabStripItem>): void {
+        items.forEach((item) => {
+            if (item.nativeView) {
+                this._setItemColor(item);
+            }
+        });
+    }
+
     public getTabBarSelectedItemColor(): Color {
         return this._selectedItemColor;
     }
 
     public setTabBarSelectedItemColor(value: Color) {
         this._selectedItemColor = value;
+        this.setItemsColors(this.tabStrip.items);
     }
 
     public getTabBarUnSelectedItemColor(): Color {
@@ -821,6 +841,7 @@ export class Tabs extends TabsBase {
 
     public setTabBarUnSelectedItemColor(value: Color) {
         this._unSelectedItemColor = value;
+        this.setItemsColors(this.tabStrip.items);
     }
 
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
