@@ -72,7 +72,7 @@ nativescript-core/css/system-classes.js*
 nativescript-core/nativescript-core.d.ts
 
 .vs/
-e2e/
+e2e/*
 !e2e/animation
 !e2e/config
 !e2e/cuteness.io
