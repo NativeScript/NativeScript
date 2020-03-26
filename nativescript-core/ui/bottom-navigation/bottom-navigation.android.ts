@@ -713,6 +713,25 @@ export class BottomNavigation extends TabNavigationBase {
         } else {
             this._bottomNavigationBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
         }
+
+        this.updateTabStripItems();
+    }
+
+    private updateTabStripItems(): void {
+        this.tabStrip.items.forEach((tabStripItem: TabStripItem) => {
+            if (tabStripItem.nativeView) {
+                const tabItemSpec = this.createTabItemSpec(tabStripItem);
+                this.updateAndroidItemAt(tabStripItem._index, tabItemSpec);
+            }
+        });
+    }
+
+    private setItemsColors(items: Array<TabStripItem>): void {
+        items.forEach((item) => {
+            if (item.nativeView) {
+                this._setItemColor(item);
+            }
+        });
     }
 
     public getTabBarSelectedItemColor(): Color {
@@ -721,6 +740,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarSelectedItemColor(value: Color) {
         this._selectedItemColor = value;
+        this.setItemsColors(this.tabStrip.items);
     }
 
     public getTabBarUnSelectedItemColor(): Color {
@@ -729,6 +749,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarUnSelectedItemColor(value: Color) {
         this._unSelectedItemColor = value;
+        this.setItemsColors(this.tabStrip.items);
     }
 
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {

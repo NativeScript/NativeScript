@@ -319,4 +319,34 @@ describe(`${suite}-${spec}-suite`, async function () {
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
         await bottomNavigationBasePage.navigateBackToSuitMainPage();
     });
+
+    it(`${spec}-dynamic-color-change`, async function () {
+        await bottomNavigationBasePage.navigateToSample("dynamic-color-change");
+        await bottomNavigationBasePage.refreshTabItems();
+        await driver.imageHelper.compareScreen();
+
+        // go through the tabs and check that they are loaded
+        await bottomNavigationBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        await bottomNavigationBasePage.tabOnItem(2);
+        await driver.imageHelper.compareScreen();
+
+        await bottomNavigationBasePage.tabOnItem(0);
+        await driver.imageHelper.compareScreen();
+
+        const changeStyleBtn = await driver.waitForElement("changeStyle");
+        console.log(changeStyleBtn);
+        await changeStyleBtn.click();
+        await driver.imageHelper.compareScreen();
+
+        await bottomNavigationBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        await bottomNavigationBasePage.tabOnItem(2);
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await bottomNavigationBasePage.navigateBackToSuitMainPage();
+    });
 });
