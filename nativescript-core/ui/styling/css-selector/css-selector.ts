@@ -187,13 +187,13 @@ export class AttributeSelector extends SimpleSelector {
             }
 
             if (test === "~=") { // Includes
-                const words = value.split(" ");
+                const words = attr.split(" ");
 
-                return words && words.indexOf(attr) !== -1;
+                return words && words.indexOf(value) !== -1;
             }
 
             if (test === "|=") { // DashMatch
-                return attr.startsWith(value) || attr.startsWith(value + "-");
+                return attr === value || attr.startsWith(value + "-");
             }
         };
     }
