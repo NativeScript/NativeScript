@@ -432,10 +432,17 @@ export abstract class ViewBase extends Observable {
      * @private
      */
     public recycleNativeView: "always" | "never" | "auto";
+    
     /**
      * @private
      */
     public _isPaddingRelative: boolean;
+
+    /**
+     * @private
+     */
+    public _ignoreFlexMinWidthHeightReset: boolean;
+
     public _styleScope: any;
 
     /**

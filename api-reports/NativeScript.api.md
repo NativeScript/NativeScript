@@ -2896,6 +2896,8 @@ export abstract class ViewBase extends Observable {
     public _goToVisualState(state: string): void;
     public id: string;
     // (undocumented)
+    public _ignoreFlexMinWidthHeightReset: boolean;
+    // (undocumented)
     _inheritStyleScope(styleScope: any /* StyleScope */): void;
     initNativeView(): void;
     // (undocumented)
