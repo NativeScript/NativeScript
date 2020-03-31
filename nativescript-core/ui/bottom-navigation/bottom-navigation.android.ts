@@ -768,7 +768,6 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public _setItemColor(tabStripItem: TabStripItem) {
-        console.log("_setItemColor", tabStripItem._index);
         const itemColor = (tabStripItem._index === this.selectedIndex) ? this._selectedItemColor : this._unSelectedItemColor;
         if (!itemColor) {
             return;
