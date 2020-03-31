@@ -711,7 +711,7 @@ export class BottomNavigation extends TabNavigationBase {
         if (value instanceof Color) {
             this._bottomNavigationBar.setBackgroundColor(value.android);
         } else {
-            this._bottomNavigationBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
+            this._bottomNavigationBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources()));
         }
 
         this.updateTabStripItems();

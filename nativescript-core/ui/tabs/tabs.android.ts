@@ -794,7 +794,7 @@ export class Tabs extends TabsBase {
         if (value instanceof Color) {
             this._tabsBar.setBackgroundColor(value.android);
         } else {
-            this._tabsBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
+            this._tabsBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources()));
         }
 
         this.updateTabStripItems();
