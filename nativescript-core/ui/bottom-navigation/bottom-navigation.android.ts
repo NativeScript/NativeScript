@@ -176,6 +176,8 @@ function initializeNativeClasses() {
                 tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
                 owner._setItemColor(tabStripItems[prevPosition]);
             }
+
+            owner._setItemsColors(owner.tabStrip.items);
         }
 
         public onTap(position: number): boolean {
@@ -726,7 +728,7 @@ export class BottomNavigation extends TabNavigationBase {
         });
     }
 
-    private setItemsColors(items: Array<TabStripItem>): void {
+    public _setItemsColors(items: Array<TabStripItem>): void {
         items.forEach((item) => {
             if (item.nativeView) {
                 this._setItemColor(item);
@@ -740,7 +742,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarSelectedItemColor(value: Color) {
         this._selectedItemColor = value;
-        this.setItemsColors(this.tabStrip.items);
+        this._setItemsColors(this.tabStrip.items);
     }
 
     public getTabBarUnSelectedItemColor(): Color {
@@ -749,7 +751,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarUnSelectedItemColor(value: Color) {
         this._unSelectedItemColor = value;
-        this.setItemsColors(this.tabStrip.items);
+        this._setItemsColors(this.tabStrip.items);
     }
 
     private updateItem(tabStripItem: TabStripItem): void {
@@ -768,6 +770,7 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public _setItemColor(tabStripItem: TabStripItem) {
+        console.log("_setItemColor", tabStripItem._index);
         const itemColor = (tabStripItem._index === this.selectedIndex) ? this._selectedItemColor : this._unSelectedItemColor;
         if (!itemColor) {
             return;
