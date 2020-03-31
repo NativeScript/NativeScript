@@ -169,12 +169,10 @@ function initializeNativeClasses() {
 
             if (position >= 0 && tabStripItems && tabStripItems[position]) {
                 tabStripItems[position]._emit(TabStripItem.selectEvent);
-                owner._setItemColor(tabStripItems[position]);
             }
 
             if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
                 tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
-                owner._setItemColor(tabStripItems[prevPosition]);
             }
 
             owner._setItemsColors(owner.tabStrip.items);
