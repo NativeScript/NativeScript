@@ -550,12 +550,12 @@ export class Tabs extends TabsBase {
         if (tabStripItems) {
             if (tabStripItems[newIndex]) {
                 tabStripItems[newIndex]._emit(TabStripItem.selectEvent);
-                this.setIconColor(tabStripItems[newIndex]);
+                this.updateItemColors(tabStripItems[newIndex]);
             }
 
             if (tabStripItems[oldIndex]) {
                 tabStripItems[oldIndex]._emit(TabStripItem.unselectEvent);
-                this.setIconColor(tabStripItems[oldIndex]);
+                this.updateItemColors(tabStripItems[oldIndex]);
             }
         }
 
@@ -751,15 +751,19 @@ export class Tabs extends TabsBase {
         }
     }
 
-    private updateItem(tabStripItem: TabStripItem): void {
-        const tabBarItem = this.createTabBarItem(tabStripItem, tabStripItem._index);
-        const tabBarItemController = this._ios.viewControllers[tabStripItem._index];
-        updateTitleAndIconPositions(tabStripItem, tabBarItem, tabBarItemController);
+    private updateAllItemsColors() {
+        this._defaultItemBackgroundColor = null;
+        this.setItemColors();
+        if (this.tabStrip && this.tabStrip.items) {
+            this.tabStrip.items.forEach(tabStripItem => {
+                this.updateItemColors(tabStripItem);
+            });
+        }
+    }
 
-        this.setViewTextAttributes(tabStripItem.label);
-
-        tabBarItemController.tabBarItem = tabBarItem;
-        tabStripItem.setNativeView(tabBarItem);
+    private updateItemColors(tabStripItem: TabStripItem): void {
+        updateBackgroundPositions(this.tabStrip, tabStripItem);
+        this.setIconColor(tabStripItem, true);
     }
 
     private createTabBarItem(item: TabStripItem, index: number): UITabBarItem {
@@ -881,6 +885,7 @@ export class Tabs extends TabsBase {
 
     public setTabBarBackgroundColor(value: UIColor | Color): void {
         this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+        this.updateAllItemsColors();
     }
 
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
@@ -978,7 +983,7 @@ export class Tabs extends TabsBase {
     }
 
     public setTabBarIconSource(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        this.updateItem(tabStripItem);
+        this.updateItemColors(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
@@ -1045,7 +1050,7 @@ export class Tabs extends TabsBase {
 
     public setTabBarSelectedItemColor(value: Color) {
         this._selectedItemColor = value;
-        this.setItemColors();
+        this.updateAllItemsColors();
     }
 
     public getTabBarUnSelectedItemColor(): Color {
@@ -1054,7 +1059,7 @@ export class Tabs extends TabsBase {
 
     public setTabBarUnSelectedItemColor(value: Color) {
         this._unSelectedItemColor = value;
-        this.setItemColors();
+        this.updateAllItemsColors();
     }
 
     private visitFrames(view: ViewBase, operation: (frame: Frame) => {}) {
