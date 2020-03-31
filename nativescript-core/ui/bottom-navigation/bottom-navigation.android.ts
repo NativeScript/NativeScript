@@ -752,18 +752,19 @@ export class BottomNavigation extends TabNavigationBase {
         this.setItemsColors(this.tabStrip.items);
     }
 
-    public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
+    private updateItem(tabStripItem: TabStripItem): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
         const tabItemSpec = this.createTabItemSpec(tabStripItem);
         this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
+    public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
+        this.updateItem(tabStripItem);
+    }
+
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
-        // TODO: Should figure out a way to do it directly with the the nativeView
-        const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
-        const tabItemSpec = this.createTabItemSpec(tabStripItem);
-        this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
+        this.updateItem(tabStripItem);
     }
 
     public _setItemColor(tabStripItem: TabStripItem) {
@@ -811,6 +812,10 @@ export class BottomNavigation extends TabNavigationBase {
         }
 
         this.setIconColor(tabStripItem);
+    }
+
+    public setTabBarIconSource(tabStripItem: TabStripItem, value: number | Color): void {
+        this.updateItem(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {

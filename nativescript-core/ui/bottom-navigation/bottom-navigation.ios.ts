@@ -377,6 +377,15 @@ export class BottomNavigation extends TabNavigationBase {
         this.setViewAttributes(tabStripItem.nativeView, tabStripItem.label);
     }
 
+    private setItemColors(): void {
+        if (this._selectedItemColor) {
+            this.viewController.tabBar.selectedImageTintColor = this._selectedItemColor.ios;
+        }
+        if (this._unSelectedItemColor) {
+            this.viewController.tabBar.unselectedItemTintColor = this._unSelectedItemColor.ios;
+        }
+    }
+
     public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
         if (!this._unSelectedItemColor && !this._selectedItemColor) {
             const image = this.getIcon(tabStripItem);
@@ -384,6 +393,10 @@ export class BottomNavigation extends TabNavigationBase {
             tabStripItem.nativeView.image = image;
             tabStripItem.nativeView.selectedImage = image;
         }
+    }
+
+    public setTabBarIconSource(tabStripItem: TabStripItem, value: UIColor | Color): void {
+        this.updateItem(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
@@ -410,6 +423,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarSelectedItemColor(value: Color) {
         this._selectedItemColor = value;
+        this.setItemColors();
     }
 
     public getTabBarUnSelectedItemColor(): Color {
@@ -418,6 +432,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarUnSelectedItemColor(value: Color) {
         this._unSelectedItemColor = value;
+        this.setItemColors();
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -575,6 +590,17 @@ export class BottomNavigation extends TabNavigationBase {
                 });
             }
         }
+    }
+
+    private updateItem(tabStripItem: TabStripItem): void {
+        const tabBarItem = this.createTabBarItem(tabStripItem, tabStripItem._index);
+        const tabBarItemController = this._ios.viewControllers[tabStripItem._index];
+        updateTitleAndIconPositions(tabStripItem, tabBarItem, tabBarItemController);
+
+        this.setViewAttributes(tabBarItem, tabStripItem.label);
+
+        tabBarItemController.tabBarItem = tabBarItem;
+        tabStripItem.setNativeView(tabBarItem);
     }
 
     private createTabBarItem(item: TabStripItem, index: number): UITabBarItem {

@@ -214,6 +214,12 @@ export class TabNavigationBase extends View {
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
+    setTabBarIconSource(tabStripItem: TabStripItem, value: any): void
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
     getTabBarItemFontSize(tabStripItem: TabStripItem): any
 
     /**

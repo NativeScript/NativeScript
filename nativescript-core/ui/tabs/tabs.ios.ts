@@ -751,6 +751,17 @@ export class Tabs extends TabsBase {
         }
     }
 
+    private updateItem(tabStripItem: TabStripItem): void {
+        const tabBarItem = this.createTabBarItem(tabStripItem, tabStripItem._index);
+        const tabBarItemController = this._ios.viewControllers[tabStripItem._index];
+        updateTitleAndIconPositions(tabStripItem, tabBarItem, tabBarItemController);
+
+        this.setViewTextAttributes(tabStripItem.label);
+
+        tabBarItemController.tabBarItem = tabBarItem;
+        tabStripItem.setNativeView(tabBarItem);
+    }
+
     private createTabBarItem(item: TabStripItem, index: number): UITabBarItem {
         let image: UIImage;
         let title: string;
@@ -964,6 +975,10 @@ export class Tabs extends TabsBase {
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
         this.setIconColor(tabStripItem, true);
+    }
+
+    public setTabBarIconSource(tabStripItem: TabStripItem, value: UIColor | Color): void {
+        this.updateItem(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
