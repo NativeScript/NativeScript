@@ -48,7 +48,7 @@ import android.widget.TextView;
  * complete control over which color is used for any individual position.
  * <p>
  */
-public class TabsBar extends HorizontalScrollView {
+public class TabsBar extends HorizontalScrollView implements TabbableBar {
     /**
      * Allows complete control over the colors drawn in the tab layout. Set with
      * {@link #setCustomTabColorizer(TabColorizer)}.

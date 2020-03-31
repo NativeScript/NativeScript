@@ -1,39 +1,20 @@
 ﻿/**
- * Contains the BottomNavigation class, which represents a tab navigation widget with static tabs at the bottom.
- * @module "ui/tab-navigation/bottom-navigation"
+ * Contains the TabNavigationBase class, which serves as the base class for tab navigation.
+ * @module "ui/tabbable-component/tabbable-component"
  */ /** */
+ import { SelectedIndexChangedEventData, TabNavigationBase } from "../tab-navigation-base/tab-navigation-base";
 
-import { TabbableComponent } from "../tabbable-component";
-import { TabContentItem } from "../tab-navigation-base/tab-content-item";
+
+import { TabContentItem } from "../tab-navigation-base/tab-content-item/tab-content-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
-import { Property, CoercibleProperty, EventData } from "../core/view";
-
-export * from "../tab-navigation-base/tab-content-item";
-export * from "../tab-navigation-base/tab-navigation-base";
-export * from "../tab-navigation-base/tab-strip";
-export * from "../tab-navigation-base/tab-strip-item";
-
-/**
- * Defines the data for the TabView.selectedIndexChanged event.
- */
-export interface SelectedIndexChangedEventData extends EventData {
-    /**
-     * The old selected index.
-     */
-    oldIndex: number;
-
-    /**
-     * The new selected index.
-     */
-    newIndex: number;
-}
+import { Property, CoercibleProperty, EventData } from "../core/view/view";
 
 /**
  * Represents a tab navigation widget with static tabs at the bottom.
  */
-export class BottomNavigation extends TabbableComponent {
+export abstract class TabbableComponent extends TabNavigationBase {
     /**
-     * Gets or sets the items of the BottomNavigation.
+     * Gets or sets the items of the tab navigation.
      */
     items: Array<TabContentItem>;
 
@@ -75,7 +56,3 @@ export class BottomNavigation extends TabbableComponent {
      */
     on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
 }
-
-export const itemsProperty: Property<BottomNavigation, TabContentItem[]>;
-export const tabStripProperty: Property<BottomNavigation, TabStrip>
-export const selectedIndexProperty: CoercibleProperty<BottomNavigation, number>;

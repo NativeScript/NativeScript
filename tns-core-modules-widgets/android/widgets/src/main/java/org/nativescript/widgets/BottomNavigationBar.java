@@ -32,7 +32,7 @@ import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class BottomNavigationBar extends LinearLayout {
+public class BottomNavigationBar extends LinearLayout implements TabbableBar {
     /**
      * Allows complete control over the colors drawn in the tab layout. Set with
      * {@link #setCustomTabColorizer(TabColorizer)}.

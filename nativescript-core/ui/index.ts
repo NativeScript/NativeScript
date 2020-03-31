@@ -56,6 +56,7 @@ export { Style, CommonLayoutParams } from "./styling/style";
 export { Switch } from "./switch";
 export { TabContentItem } from "./tab-navigation-base/tab-content-item";
 export { TabNavigationBase } from "./tab-navigation-base/tab-navigation-base";
+export { TabbableComponent } from "./tabbable-component";
 export { TabStrip, TabStripItemEventData } from "./tab-navigation-base/tab-strip";
 export { TabStripItem } from "./tab-navigation-base/tab-strip-item";
 export { TabView, TabViewItem } from "./tab-view";

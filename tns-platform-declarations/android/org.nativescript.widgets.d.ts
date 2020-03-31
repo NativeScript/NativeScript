@@ -410,7 +410,21 @@
                 getItemCount(): number;
             }
 
-            export class TabsBar extends android.widget.HorizontalScrollView {
+            export interface TabbableBar extends android.view.ViewGroup {
+                setTabTextColor(color: number): void;
+                getTabTextColor(): number;
+                setSelectedTabTextColor(color: number): void;
+                getSelectedTabTextColor(): number;
+                setTabTextFontSize(fontSize: number): void;
+                getTabTextFontSize(): number;
+
+                updateItemAt(position: number, itemSpec: TabItemSpec): void;
+                getTextViewForItemAt(index: number): android.widget.TextView;
+                getViewForItemAt(index: number): android.widget.LinearLayout;
+                getItemCount(): number;
+            }
+
+            export class TabsBar extends android.widget.HorizontalScrollView implements TabbableBar {
                 constructor(context: android.content.Context);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet, defStyle: number);
@@ -432,7 +446,7 @@
                 getItemCount(): number;
             }
 
-            export class BottomNavigationBar extends android.widget.LinearLayout {
+            export class BottomNavigationBar extends android.widget.LinearLayout implements TabbableBar {
                 constructor(context: android.content.Context);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet, defStyle: number);

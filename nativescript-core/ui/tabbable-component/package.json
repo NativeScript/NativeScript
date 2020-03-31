@@ -1,0 +1,5 @@
+{
+  "name": "tabbable-component",
+  "main": "tabbable-component",
+  "types": "tabbable-component.d.ts"
+}

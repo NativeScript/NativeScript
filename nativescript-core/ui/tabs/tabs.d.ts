@@ -5,9 +5,8 @@
 
 import { EventData, Property } from "../core/view";
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
-import {
-    SelectedIndexChangedEventData, TabNavigationBase
-} from "../tab-navigation-base/tab-navigation-base";
+import { SelectedIndexChangedEventData } from "../tab-navigation-base/tab-navigation-base";
+import { TabbableComponent } from "../tabbable-component";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
 
 export * from "../tab-navigation-base/tab-content-item";
@@ -18,7 +17,7 @@ export * from "../tab-navigation-base/tab-strip-item";
 /**
  * Represents a swipeable tabs view.
  */
-export class Tabs extends TabNavigationBase {
+export class Tabs extends TabbableComponent {
     /**
      * Gets or sets the items of the Tabs.
      */

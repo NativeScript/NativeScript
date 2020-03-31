@@ -2,14 +2,9 @@
 import { Tabs as TabsDefinition } from ".";
 
 // Requires
-import { TabNavigationBase } from "../tab-navigation-base/tab-navigation-base";
 import { CSSType, booleanConverter } from "../core/view";
 import { Property } from "../core/properties";
-
-export * from "../tab-navigation-base/tab-content-item";
-export * from "../tab-navigation-base/tab-navigation-base";
-export * from "../tab-navigation-base/tab-strip";
-export * from "../tab-navigation-base/tab-strip-item";
+import { TabbableComponent } from "../tabbable-component/tabbable-component.android";
 
 export const traceCategory = "TabView";
 
@@ -18,7 +13,7 @@ export module knownCollections {
 }
 
 @CSSType("Tabs")
-export class TabsBase extends TabNavigationBase implements TabsDefinition {
+export abstract class TabsBase extends TabbableComponent implements TabsDefinition {
     public swipeEnabled: boolean;
     public offscreenTabLimit: number;
     public tabsPosition: "top" | "bottom";

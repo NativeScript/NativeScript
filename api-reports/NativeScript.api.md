@@ -332,7 +332,7 @@ export interface BackstackEntry {
 }
 
 // @public
-export class BottomNavigation extends TabNavigationBase {
+export class BottomNavigation extends TabbableComponent {
     android: any /* android.view.View */;
 
     ios: any /* UITabBarController */;
@@ -2196,6 +2196,26 @@ export class Switch extends View {
 }
 
 // @public
+export abstract class TabbableComponent extends TabNavigationBase {
+    android: any /* android.view.View */;
+
+    ios: any /* UITabBarController */;
+
+    items: Array<TabContentItem>;
+
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+
+    // Warning: (ae-forgotten-export) The symbol "SelectedIndexChangedEventData" needs to be exported by the entry point index.d.ts
+    on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData_2) => void, thisArg?: any);
+
+    selectedIndex: number;
+
+    public static selectedIndexChangedEvent: string;
+
+    tabStrip: TabStrip;
+}
+
+// @public
 export class TabContentItem extends ContentView {
     // (undocumented)
     canBeLoaded?: boolean;
@@ -2237,7 +2257,6 @@ export class TabNavigationBase extends View {
 
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
-    // Warning: (ae-forgotten-export) The symbol "SelectedIndexChangedEventData" needs to be exported by the entry point index.d.ts
     on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData_2) => void, thisArg?: any);
 
     onItemsChanged(oldItems: TabContentItem[], newItems: TabContentItem[]): void;
@@ -2282,7 +2301,7 @@ export class TabNavigationBase extends View {
 }
 
 // @public
-export class Tabs extends TabNavigationBase {
+export class Tabs extends TabbableComponent {
     android: any /* android.view.View */;
 
     ios: any /* UITabBarController */;

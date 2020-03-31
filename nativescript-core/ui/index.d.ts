@@ -29,6 +29,7 @@ export { SegmentedBar, SegmentedBarItem } from "./segmented-bar";
 export { Slider } from "./slider";
 export { Style, CommonLayoutParams } from "./styling/style";
 export { Switch } from "./switch";
+export { TabbableComponent } from "./tabbable-component";
 export { TabContentItem } from "./tab-navigation-base/tab-content-item";
 export { TabNavigationBase } from "./tab-navigation-base/tab-navigation-base";
 export { TabStrip, TabStripItemEventData } from "./tab-navigation-base/tab-strip";
