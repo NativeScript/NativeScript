@@ -334,15 +334,34 @@ describe(`${imagePrefix}-suite`, async function () {
         await tabsViewBasePage.tabOnItem(0);
         await driver.imageHelper.compareScreen();
 
+        // change icon sources and check the result
+        const changeIconSource = await driver.waitForElement("changeIconSource");
+        await changeIconSource.click();
+        await driver.imageHelper.compareScreen();
+
         const changeStyleBtn = await driver.waitForElement("changeStyle");
-        console.log(changeStyleBtn);
         await changeStyleBtn.click();
+        await driver.imageHelper.compareScreen();
+
+        // change icon sources again
+        await changeIconSource.click();
         await driver.imageHelper.compareScreen();
 
         await tabsViewBasePage.tabOnItem(1);
         await driver.imageHelper.compareScreen();
 
+        // change style again
+        await changeStyleBtn.click();
+        await driver.imageHelper.compareScreen();
+
         await tabsViewBasePage.tabOnItem(2);
+        await driver.imageHelper.compareScreen();
+
+        await changeIconSource.click();
+        await driver.imageHelper.compareScreen();
+
+        // change style again
+        await changeStyleBtn.click();
         await driver.imageHelper.compareScreen();
 
         assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
