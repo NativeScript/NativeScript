@@ -104,7 +104,7 @@ export class TextBase extends TextBaseCommon {
         initializeTextTransformation();
         const nativeView = this.nativeTextViewProtected;
         this._defaultTransformationMethod = nativeView.getTransformationMethod();
-        this._defaultMovementMethod = this.nativeView.getMovementMethod();
+        this._defaultMovementMethod = nativeView.getMovementMethod();
         this._minHeight = nativeView.getMinHeight();
         this._maxHeight = nativeView.getMaxHeight();
         this._minLines = nativeView.getMinLines();
