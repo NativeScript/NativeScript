@@ -870,54 +870,54 @@ export class Frame extends View {
 
 // @public
 export interface GestureEventData extends EventData {
-    android: any
-    ios: any /* UIGestureRecognizer */;
-    type: GestureTypes;
-    view: View;
-}
+     android: any
+     ios: any /* UIGestureRecognizer */;
+     type: GestureTypes;
+     view: View;
+ }
 
 // @public
 export interface GestureEventDataWithState extends GestureEventData {
-    // (undocumented)
-    state: number;
-}
+     // (undocumented)
+     state: number;
+ }
 
 // @public
 export class GesturesObserver {
-    constructor(target: View, callback: (args: GestureEventData) => void, context: any);
+     constructor(target: View, callback: (args: GestureEventData) => void, context: any);
 
-    androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
+     androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
 
-    callback: (args: GestureEventData) => void;
+     callback: (args: GestureEventData) => void;
 
-    context: any;
+     context: any;
 
-    disconnect();
+     disconnect();
 
-    observe(type: GestureTypes);
+     observe(type: GestureTypes);
 
-    type: GestureTypes;
-}
+     type: GestureTypes;
+ }
 
 // @public
 export enum GestureStateTypes {
-    began,
-    cancelled,
-    changed,
-    ended
-}
+     began,
+     cancelled,
+     changed,
+     ended
+ }
 
 // @public
 export enum GestureTypes {
-    doubleTap,
-    longPress,
-    pan,
-    pinch,
-    rotation,
-    swipe,
-    tap,
-    touch
-}
+     doubleTap,
+     longPress,
+     pan,
+     pinch,
+     rotation,
+     swipe,
+     tap,
+     touch
+ }
 
 // @public
 export class GridLayout extends LayoutBase {
@@ -1642,11 +1642,11 @@ export class Page extends ContentView {
 
 // @public
 export interface PanGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    deltaX: number;
-    // (undocumented)
-    deltaY: number;
-}
+     // (undocumented)
+     deltaX: number;
+     // (undocumented)
+     deltaY: number;
+ }
 
 // @public
 export interface ParserEvent {
@@ -1694,15 +1694,15 @@ export module path {
 
 // @public
 export interface PinchGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    getFocusX(): number;
+     // (undocumented)
+     getFocusX(): number;
 
-    // (undocumented)
-    getFocusY(): number;
+     // (undocumented)
+     getFocusY(): number;
 
-    // (undocumented)
-    scale: number;
-}
+     // (undocumented)
+     scale: number;
+ }
 
 // @public
 export class Placeholder extends View {
@@ -1765,9 +1765,9 @@ export class Repeater extends CustomLayoutView {
 
 // @public
 export interface RotationGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    rotation: number;
-}
+     // (undocumented)
+     rotation: number;
+ }
 
 // @public
 export module Screen {
@@ -1936,14 +1936,18 @@ export class Span extends ViewBase {
 
     public fontWeight: FontWeight;
 
+    public static linkTapEvent: string;
+
     // (undocumented)
     _setTextInternal(value: string): void;
+
+    public readonly tappable: boolean;
 
     public text: string;
 
     public textDecoration: TextDecoration;
     //@endprivate
-}
+ }
 
 // @public
 export class StackLayout extends LayoutBase {
@@ -2168,17 +2172,17 @@ export class Style extends Observable {
 
 // @public
 export enum SwipeDirection {
-    down,
-    left,
-    right,
-    up
-}
+     down,
+     left,
+     right,
+     up
+ }
 
 // @public
 export interface SwipeGestureEventData extends GestureEventData {
-    // (undocumented)
-    direction: SwipeDirection;
-}
+     // (undocumented)
+     direction: SwipeDirection;
+ }
 
 // @public
 export class Switch extends View {
@@ -2418,6 +2422,14 @@ export class TabViewItem extends ViewBase {
 }
 
 // @public
+export interface TapGestureEventData extends GestureEventData {
+    getPointerCount(): number;
+    getX(): number;
+    getY(): number;
+
+ }
+
+// @public
 export interface Template {
     (): View;
 }
@@ -2487,12 +2499,16 @@ export class TextBase extends View implements AddChildFromBuilder {
 export class TextField extends EditableTextBase {
     android: any /* android.widget.EditText */;
 
+    closeOnReturn: boolean;
+
     ios: any /* UITextField */;
 
     // (undocumented)
     public static returnPressEvent: string;
 
     secure: boolean;
+
+    secureWithoutAutofill: boolean;
 }
 
 // @public
@@ -2536,20 +2552,12 @@ export interface TimerInfo {
 }
 
 // @public
-export interface TouchGestureEventData extends GestureEventData {
-    action: "up" | "move" | "down" | "cancel";
-
-    // Warning: (ae-forgotten-export) The symbol "Pointer" needs to be exported by the entry point index.d.ts
-    getActivePointers(): Array<Pointer>;
-
-    getAllPointers(): Array<Pointer>;
-
-    getPointerCount(): number;
-
-    getX(): number;
-
-    getY(): number;
-}
+export interface TouchGestureEventData extends TapGestureEventData {
+     action: "up" | "move" | "down" | "cancel";
+     // Warning: (ae-forgotten-export) The symbol "Pointer" needs to be exported by the entry point index.d.ts
+     getActivePointers(): Array<Pointer>;
+     getAllPointers(): Array<Pointer>;
+ }
 
 // @public (undocumented)
 export const Trace: {
@@ -2887,6 +2895,8 @@ export abstract class ViewBase extends Observable {
     // (undocumented)
     public _goToVisualState(state: string): void;
     public id: string;
+    // (undocumented)
+    public _ignoreFlexMinWidthHeightReset: boolean;
     // (undocumented)
     _inheritStyleScope(styleScope: any /* StyleScope */): void;
     initNativeView(): void;

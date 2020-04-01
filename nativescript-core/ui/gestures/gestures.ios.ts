@@ -1,9 +1,13 @@
 // Definitions.
-import { DoubleTapGestureEventData, GestureEventData, GestureEventDataWithState, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
+
+import { GestureEventData, TapGestureEventData, GestureEventDataWithState, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
 import { View, EventData } from "../core/view";
 
 // Types.
 import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection } from "./gestures-common";
+
+// Import layout from utils directly to avoid circular references
+import { layout } from "../../utils/utils";
 
 export * from "./gestures-common";
 
@@ -123,12 +127,14 @@ export class GesturesObserver extends GesturesObserverBase {
             const nativeView = <UIView>target.nativeViewProtected;
 
             if (type & GestureTypes.tap) {
-                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.tap));
+                nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.tap, args => {
+                  this._executeCallback(_getTapData(args));
+                }));
             }
 
             if (type & GestureTypes.doubleTap) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.doubleTap, args => {
-                    this._executeCallback(_getDoubleTapData(args));
+                  this._executeCallback(_getTapData(args));
                 }));
             }
 
@@ -300,20 +306,21 @@ function _getSwipeDirection(direction: UISwipeGestureRecognizerDirection): Swipe
     }
 }
 
-function _getDoubleTapData(args: GestureEventData): DoubleTapGestureEventData {
-    const recognizer = <UITapGestureRecognizer>args.ios;
-    const location: CGPoint = recognizer.locationInView(args.view.nativeViewProtected);
+function _getTapData(args: GestureEventData): TapGestureEventData {
+  const recognizer = <UITapGestureRecognizer>args.ios;
+  const center = recognizer.locationInView(args.view.nativeViewProtected);
 
-    return <DoubleTapGestureEventData>{
-        type: args.type,
-        view: args.view,
-        ios: args.ios,
-        android: undefined,
-        getX: () => location.x,
-        getY: () => location.y,
-        object: args.view,
-        eventName: toString(args.type)
-    };
+  return <TapGestureEventData>{
+    type: args.type,
+    view: args.view,
+    ios: args.ios,
+    android: undefined,
+    eventName: args.eventName,
+    object: args.object,
+    getPointerCount: () => recognizer.numberOfTouches,
+    getX: () => layout.toDeviceIndependentPixels(center.x),
+    getY: () => layout.toDeviceIndependentPixels(center.y)
+  };
 }
 
 function _getPinchData(args: GestureEventData): PinchGestureEventData {
@@ -461,7 +468,7 @@ class Pointer implements Pointer {
     }
 
     getY(): number {
-        return this.location.y;
+      return this.location.y;
     }
 }
 

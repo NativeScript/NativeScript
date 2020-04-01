@@ -10,4 +10,7 @@ export declare function getNativeColor(textField: textFieldModule.TextField): co
 export declare function getNativePlaceholderColor(textField: textFieldModule.TextField): colorModule.Color;
 export declare function getNativeBackgroundColor(textField: textFieldModule.TextField): colorModule.Color;
 export declare function getNativeTextAlignment(textField: textFieldModule.TextField): string;
+export declare function getNativeFocus(textField: textFieldModule.TextField): boolean;
 export declare function typeTextNatively(textField: textFieldModule.TextField, text: string): void;
+export declare function typeTextNativelyWithReturn(textField: textFieldModule.TextField, text: string): void;
+

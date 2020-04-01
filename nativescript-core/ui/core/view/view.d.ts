@@ -796,11 +796,11 @@ export class CustomLayoutView extends ContainerView {
     /**
      * @private
      */
-    _setChildMinWidthNative(child: View): void;
+    _setChildMinWidthNative(child: View, value: Length): void;
     /**
      * @private
      */
-    _setChildMinHeightNative(child: View): void;
+    _setChildMinHeightNative(child: View, value: Length): void;
     //@endprivate
 }
 
