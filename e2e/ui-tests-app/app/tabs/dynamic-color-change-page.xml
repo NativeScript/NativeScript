@@ -5,7 +5,7 @@
         <Button text="Change Icon source dynamically" id="changeIconSource" automationText="changeIconSource" tap="onChangeIconSourceTap" />
     </StackLayout>
     <GridLayout row="1">
-        <Tabs automationText="tabs" id="tabs" >
+        <Tabs automationText="tabNavigation" id="tabs" >
             <TabStrip class="tabsClass0">
                 <TabStripItem>
                     <Label text="Home"></Label>
