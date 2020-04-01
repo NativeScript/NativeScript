@@ -1170,7 +1170,7 @@ fontFamilyProperty.register(Style);
 
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
     name: "fontSize", cssName: "font-size", affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
-        if(target.view['handleFontSize'] === true) {
+        if (target.viewRef["handleFontSize"] === true) {
             return;
         }
         let currentFont = target.fontInternal || Font.default;
