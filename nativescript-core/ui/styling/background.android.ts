@@ -91,8 +91,6 @@ export module ad {
             }
 
             nativeView.setBackground(defaultDrawable);
-            // TODO: Do we need to clear the drawable here? Can't we just reuse it again?
-            androidView._cachedDrawable = undefined;
         }
 
         // TODO: Can we move BorderWidths as separate native setter?
