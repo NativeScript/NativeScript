@@ -250,7 +250,6 @@ public class TabsBar extends HorizontalScrollView {
         textView.setGravity(Gravity.CENTER);
         textView.setMaxWidth((int) (TEXT_MAX_WIDTH * density));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, TAB_VIEW_TEXT_SIZE_SP);
-        textView.setTypeface(Typeface.DEFAULT_BOLD);
         textView.setEllipsize(TextUtils.TruncateAt.END);
         textView.setMaxLines(2);
         textView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));

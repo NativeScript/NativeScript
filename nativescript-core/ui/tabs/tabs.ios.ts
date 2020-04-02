@@ -809,7 +809,7 @@ export class Tabs extends TabsBase {
         }
 
         const target = tabStripItem.image;
-        const font = target.style.fontInternal;
+        const font = target.style.fontInternal || Font.default;
         if (!color) {
             color = target.style.color;
         }
@@ -977,7 +977,7 @@ export class Tabs extends TabsBase {
     public setTabBarFontInternal(value: Font): void {
         const defaultTabItemFontSize = 10;
         const tabItemFontSize = this.tabStrip.style.fontSize || defaultTabItemFontSize;
-        const font: UIFont = this.tabStrip.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+        const font: UIFont = (this.tabStrip.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
 
         this._ios.tabBar.unselectedItemTitleFont = font;
         this._ios.tabBar.selectedItemTitleFont = font;
@@ -1172,7 +1172,7 @@ export class Tabs extends TabsBase {
 
         const defaultTabItemFontSize = 10;
         const tabItemFontSize = view.style.fontSize || defaultTabItemFontSize;
-        const font: UIFont = view.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+        const font: UIFont = (view.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
 
         this.viewController.tabBar.unselectedItemTitleFont = font;
         this.viewController.tabBar.selectedItemTitleFont = font;

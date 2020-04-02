@@ -1,4 +1,5 @@
 import { Tabs } from "@nativescript/core/ui/tabs";
+import { Font } from "@nativescript/core/ui/styling/font";
 
 // TODO: Should we add getCount to UIPageViewController???
 export function getNativeTabCount(tabView: Tabs): number {
@@ -39,5 +40,5 @@ export function getNativeFont(tabView: Tabs): UIFont {
 }
 
 export function getOriginalFont(tabView: Tabs): UIFont {
-    return tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(10));
+    return (tabView.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(10));
 }
