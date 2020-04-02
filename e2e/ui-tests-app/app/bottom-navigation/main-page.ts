@@ -27,6 +27,7 @@ export function loadExamples() {
     examples.set("custom-tabstrip", "bottom-navigation/custom-tabstrip-page");
     examples.set("reselect", "bottom-navigation/reselect-page");
     examples.set("item-color", "bottom-navigation/item-color-page");
+    examples.set("dynamic-color-change", "bottom-navigation/dynamic-color-change-page");
 
     return examples;
 }

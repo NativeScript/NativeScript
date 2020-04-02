@@ -463,10 +463,7 @@ export var testCloseOnReturn = function () {
             return;
         }
         var textField = <TextField>views[0];
-
-        // >> setting-closeOnReturn-property
         textField.closeOnReturn = true;
-        // << setting-closeOnReturn-property
 
         typeTextNativelyWithReturn(textField, "Should close textfield");
 
