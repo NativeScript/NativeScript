@@ -10,14 +10,17 @@ TabStripItem:active {
     background-color: magenta;
 }
 
-.defaultCssClass {
+.tabsClass0 {
+}
+
+.tabsClass1 {
     background-color: #79d2a6;
     highlight-color: green;
     selected-item-color: yellow;
     un-selected-item-color: blue;
 }
 
-.newTabsClass {
+.tabsClass2 {
     background-color: orangered;
     highlight-color: lightgreen;
     selected-item-color: whitesmoke;

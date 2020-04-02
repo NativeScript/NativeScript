@@ -2,10 +2,11 @@
   <GridLayout rows="auto,*">
     <StackLayout row="0" >
         <Button text="Change TabStrip styles dynamically" id="changeStyle" automationText="changeStyle" tap="onButtonTap" />
+        <Button text="Change Icon source dynamically" id="changeIconSource" automationText="changeIconSource" tap="onChangeIconSourceTap" />
     </StackLayout>
     <GridLayout row="1">
         <BottomNavigation automationText="tabNavigation" id="bottomNavigation" >
-            <TabStrip class="defaultCssClass">
+            <TabStrip class="tabsClass0">
                 <TabStripItem>
                     <Label text="Home"></Label>
                     <Image src="font://&#xF10B;" class="font-awesome font-size"></Image>
