@@ -1,0 +1,44 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+  <GridLayout rows="auto,*">
+    <StackLayout row="0" >
+        <Button text="Change TabStrip styles dynamically" id="changeStyle" automationText="changeStyle" tap="onButtonTap" />
+        <Button text="Change Icon source dynamically" id="changeIconSource" automationText="changeIconSource" tap="onChangeIconSourceTap" />
+    </StackLayout>
+    <GridLayout row="1">
+        <BottomNavigation automationText="tabNavigation" id="bottomNavigation" >
+            <TabStrip class="tabsClass0">
+                <TabStripItem>
+                    <Label text="Home"></Label>
+                    <Image src="font://&#xF10B;" class="font-awesome font-size"></Image>
+                </TabStripItem>
+                <TabStripItem>
+                    <Label text="Favorites"></Label>
+                    <Image src="res://add_to_fav"></Image>
+                </TabStripItem>
+                <TabStripItem>
+                    <Label text="Up"></Label>
+                    <Image src="res://up"></Image>
+                </TabStripItem>
+            </TabStrip>
+            <TabContentItem>
+                <GridLayout>
+                    <Label text="Home Page" class="h2 text-center">
+                    </Label>
+                </GridLayout>
+            </TabContentItem>
+            <TabContentItem>
+                <GridLayout>
+                    <Label text="Favorites Page" class="h2 text-center">
+                    </Label>
+                </GridLayout>
+            </TabContentItem>
+            <TabContentItem>
+                <GridLayout>
+                    <Label text="Up Page" class="h2 text-center">
+                    </Label>
+                </GridLayout>
+            </TabContentItem>
+        </BottomNavigation>
+    </GridLayout>
+  </GridLayout>
+</Page>

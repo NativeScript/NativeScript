@@ -203,6 +203,10 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         // overridden by inheritors
     }
 
+    public setTabBarIconSource(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
     public getTabBarItemFontSize(tabStripItem: TabStripItem): any {
         // overridden by inheritors
         return null;
