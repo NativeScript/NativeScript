@@ -1,0 +1,19 @@
+﻿<Page>
+  <StackLayout style="font-size: 50">
+    <Label automationText="formattedText" id="formattedText" textWrap="true" style="text-transform: capitalize;">
+      <Label.formattedText>
+        <FormattedString>
+          <FormattedString.spans>
+            <Span text="The quick brown " style="font-weight: bold; color: green;" />
+            <Span text="fox" style="font-weight: italic; color: green;" linkTap="foxTap"/>
+            <Span text=" jumps over the lazy " style="font-weight: bold; color: red;" />
+            <Span text="dog" style="font-weight: bold; color: blue;" linkTap="dogTap"/>
+            <Span text="." style="font-weight: bold; color: green;" />
+          </FormattedString.spans>
+        </FormattedString>
+      </Label.formattedText>
+    </Label>
+    <Label id="foxTapped" text="Fox tapped" visibility="hidden" color="green"/>
+    <Label id="dogTapped" text="Dog tapped" visibility="hidden" color="blue"/>
+  </StackLayout>
+</Page>
