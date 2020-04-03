@@ -6,12 +6,10 @@ import {
 export { ios };
 export * from "./utils-common";
 
-declare var UIImagePickerControllerSourceType: any;
-
 export function openFile(filePath: string): boolean {
     try {
         const appPath = ios.getCurrentAppPath();
-        const path = filePath.replace("~", appPath);
+        let path = ios.isRealDevice() ? filePath.replace("~", appPath) : filePath;
 
         const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
         controller.delegate = <UIDocumentInteractionControllerDelegate>new ios.UIDocumentInteractionControllerDelegateImpl();
@@ -48,14 +46,6 @@ export function openUrl(location: string): boolean {
     return false;
 }
 
-export function isRealDevice() {
-    try {
-        // https://stackoverflow.com/a/5093092/4936697
-        const sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera;
-        const mediaTypes = UIImagePickerController.availableMediaTypesForSourceType(sourceType);
-
-        return mediaTypes;
-    } catch (e) {
-        return true;
-    }
+export function isRealDevice(): boolean {
+    return ios.isRealDevice();
 }

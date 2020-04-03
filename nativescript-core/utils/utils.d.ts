@@ -349,6 +349,6 @@ export function hasDuplicates(arr: Array<any>): boolean;
 export function eliminateDuplicates(arr: Array<any>): Array<any>;
 
 /**
- * Checks whether the application is running on real device or simulator/emulator.
+ * Checks whether the application is running on real device and not on simulator/emulator.
  */
 export function isRealDevice(): boolean;
