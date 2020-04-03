@@ -359,6 +359,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarBackgroundColor(value: UIColor | Color): void {
         this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+        this.updateAllItemsColors();
     }
 
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
@@ -377,13 +378,33 @@ export class BottomNavigation extends TabNavigationBase {
         this.setViewAttributes(tabStripItem.nativeView, tabStripItem.label);
     }
 
-    public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        if (!this._unSelectedItemColor && !this._selectedItemColor) {
-            const image = this.getIcon(tabStripItem);
+    private setItemColors(): void {
+        if (this._selectedItemColor) {
+            this.viewController.tabBar.selectedImageTintColor = this._selectedItemColor.ios;
+        }
+        if (this._unSelectedItemColor) {
+            this.viewController.tabBar.unselectedItemTintColor = this._unSelectedItemColor.ios;
+        }
+    }
+
+    private setIconColor(tabStripItem: TabStripItem, forceReload: boolean = false): void {
+        if (forceReload || (!this._unSelectedItemColor && !this._selectedItemColor)) {
+            // if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
+            const tabStripColor = (this.selectedIndex === tabStripItem._index) ? this._selectedItemColor : this._unSelectedItemColor;
+
+            const image = this.getIcon(tabStripItem, tabStripColor);
 
             tabStripItem.nativeView.image = image;
             tabStripItem.nativeView.selectedImage = image;
         }
+    }
+
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
+        this.setIconColor(tabStripItem);
+    }
+
+    public setTabBarIconSource(tabStripItem: TabStripItem, value: UIColor | Color): void {
+        this.updateItemColors(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
@@ -410,6 +431,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarSelectedItemColor(value: Color) {
         this._selectedItemColor = value;
+        this.updateAllItemsColors();
     }
 
     public getTabBarUnSelectedItemColor(): Color {
@@ -418,6 +440,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarUnSelectedItemColor(value: Color) {
         this._unSelectedItemColor = value;
+        this.updateAllItemsColors();
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -577,6 +600,20 @@ export class BottomNavigation extends TabNavigationBase {
         }
     }
 
+    public updateAllItemsColors() {
+        this.setItemColors();
+        if (this.tabStrip && this.tabStrip.items) {
+            this.tabStrip.items.forEach(tabStripItem => {
+                this.updateItemColors(tabStripItem);
+            });
+        }
+    }
+
+    private updateItemColors(tabStripItem: TabStripItem): void {
+        updateBackgroundPositions(this.tabStrip, tabStripItem);
+        this.setIconColor(tabStripItem, true);
+    }
+
     private createTabBarItem(item: TabStripItem, index: number): UITabBarItem {
         let image: UIImage;
         let title: string;
@@ -617,7 +654,7 @@ export class BottomNavigation extends TabNavigationBase {
         }
 
         const target = tabStripItem.image;
-        const font = target.style.fontInternal;
+        const font = target.style.fontInternal || Font.default;
         if (!color) {
             color = target.style.color;
         }
@@ -737,7 +774,7 @@ export class BottomNavigation extends TabNavigationBase {
 
         const defaultTabItemFontSize = 10;
         const tabItemFontSize = view.style.fontSize || defaultTabItemFontSize;
-        const font: UIFont = view.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+        const font: UIFont = (view.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
         const tabItemTextColor = view.style.color;
         const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
         let attributes: any = { [NSFontAttributeName]: font };

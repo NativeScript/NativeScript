@@ -2262,6 +2262,8 @@ export class TabNavigationBase extends View {
 
     setTabBarIconColor(tabStripItem: TabStripItem, value: any): void
 
+    setTabBarIconSource(tabStripItem: TabStripItem, value: any): void
+
     setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: any): void
 
     setTabBarItemColor(tabStripItem: TabStripItem, value: any): void

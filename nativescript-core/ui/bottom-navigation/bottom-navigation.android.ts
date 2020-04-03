@@ -169,13 +169,13 @@ function initializeNativeClasses() {
 
             if (position >= 0 && tabStripItems && tabStripItems[position]) {
                 tabStripItems[position]._emit(TabStripItem.selectEvent);
-                owner._setItemColor(tabStripItems[position]);
             }
 
             if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
                 tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
-                owner._setItemColor(tabStripItems[prevPosition]);
             }
+
+            owner._setItemsColors(owner.tabStrip.items);
         }
 
         public onTap(position: number): boolean {
@@ -711,8 +711,27 @@ export class BottomNavigation extends TabNavigationBase {
         if (value instanceof Color) {
             this._bottomNavigationBar.setBackgroundColor(value.android);
         } else {
-            this._bottomNavigationBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
+            this._bottomNavigationBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources()));
         }
+
+        this.updateTabStripItems();
+    }
+
+    private updateTabStripItems(): void {
+        this.tabStrip.items.forEach((tabStripItem: TabStripItem) => {
+            if (tabStripItem.nativeView) {
+                const tabItemSpec = this.createTabItemSpec(tabStripItem);
+                this.updateAndroidItemAt(tabStripItem._index, tabItemSpec);
+            }
+        });
+    }
+
+    public _setItemsColors(items: Array<TabStripItem>): void {
+        items.forEach((item) => {
+            if (item.nativeView) {
+                this._setItemColor(item);
+            }
+        });
     }
 
     public getTabBarSelectedItemColor(): Color {
@@ -721,6 +740,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarSelectedItemColor(value: Color) {
         this._selectedItemColor = value;
+        this._setItemsColors(this.tabStrip.items);
     }
 
     public getTabBarUnSelectedItemColor(): Color {
@@ -729,20 +749,22 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarUnSelectedItemColor(value: Color) {
         this._unSelectedItemColor = value;
+        this._setItemsColors(this.tabStrip.items);
+    }
+
+    private updateItem(tabStripItem: TabStripItem): void {
+        // TODO: Should figure out a way to do it directly with the the nativeView
+        const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
+        const tabItemSpec = this.createTabItemSpec(tabStripItem);
+        this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
     }
 
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
-        // TODO: Should figure out a way to do it directly with the the nativeView
-        const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
-        const tabItemSpec = this.createTabItemSpec(tabStripItem);
-        this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
+        this.updateItem(tabStripItem);
     }
 
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
-        // TODO: Should figure out a way to do it directly with the the nativeView
-        const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
-        const tabItemSpec = this.createTabItemSpec(tabStripItem);
-        this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
+        this.updateItem(tabStripItem);
     }
 
     public _setItemColor(tabStripItem: TabStripItem) {
@@ -790,6 +812,10 @@ export class BottomNavigation extends TabNavigationBase {
         }
 
         this.setIconColor(tabStripItem);
+    }
+
+    public setTabBarIconSource(tabStripItem: TabStripItem, value: number | Color): void {
+        this.updateItem(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {

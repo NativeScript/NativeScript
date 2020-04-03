@@ -178,7 +178,6 @@ public class BottomNavigationBar extends LinearLayout {
         titleTextView.setGravity(Gravity.CENTER);
         titleTextView.setMaxWidth((int) (ITEM_TEXT_MAX_WIDTH * density));
         titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, ITEM_TEXT_SIZE_SP);
-        titleTextView.setTypeface(Typeface.DEFAULT_BOLD);
         titleTextView.setEllipsize(TextUtils.TruncateAt.END);
         titleTextView.setMaxLines(1);
         titleTextView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));

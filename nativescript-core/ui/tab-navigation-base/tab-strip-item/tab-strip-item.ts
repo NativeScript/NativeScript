@@ -162,7 +162,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
 
-            return tabStripParent && tabStripParent.setTabBarIconColor(this, args.value);
+            return tabStripParent && tabStripParent.setTabBarIconSource(this, args.value);
         });
         this.image.on("srcChange", this._imageSrcHandler);
     }
