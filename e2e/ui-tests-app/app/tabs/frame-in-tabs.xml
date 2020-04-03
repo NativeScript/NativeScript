@@ -1,6 +1,6 @@
 <Page class="page">
     <StackLayout>
-        <Tabs highlightColor="red" offscreenTabLimit="1">
+        <Tabs highlightColor="red" offscreenTabLimit="1" automationText="tabNavigation">
             <TabStrip highlightColor="green" itemTap="onItemTap">
                 <TabStripItem title="1"></TabStripItem>
                 <TabStripItem title="2"></TabStripItem>

@@ -59,8 +59,17 @@ export function getNativeTextAlignment(textField: textFieldModule.TextField): st
     return "unexpected value";
 }
 
+export function getNativeFocus(textField: textFieldModule.TextField): boolean {
+    //
+    return true;
+}
+
 export function typeTextNatively(textField: textFieldModule.TextField, text: string): void {
     textField.android.requestFocus();
     textField.android.setText(text);
     textField.android.clearFocus();
+}
+
+export function typeTextNativelyWithReturn(textField: textFieldModule.TextField, text: string): void {
+    //
 }

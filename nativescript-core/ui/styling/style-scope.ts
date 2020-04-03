@@ -801,7 +801,7 @@ export class StyleScope {
         }
 
         if (toMerge.length > 0) {
-            this._mergedCssSelectors = toMerge.filter(m => !!m).reduce((merged, next) => merged.concat(next), []);
+            this._mergedCssSelectors = toMerge.reduce((merged, next) => merged.concat(next || []), []);
             this._applyKeyframesOnSelectors();
             this._selectors = new SelectorsMap(this._mergedCssSelectors);
         }

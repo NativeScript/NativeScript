@@ -718,6 +718,18 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
                     } else if ("bottom".equals(vy.getString().toLowerCase(Locale.ENGLISH))) {
                         res.posY = spaceY;
                     }
+                } else if ("number".equals(vx.getType()) && "ident".equals(vy.getType())) {
+                    if ("%".equals(vx.getUnit())) {
+                        res.posX = spaceX * vx.getValue() / 100;
+                    } else if ("px".equals(vx.getUnit()) || vx.getUnit() == null || vx.getUnit().isEmpty()) {
+                        res.posX = vx.getValue();
+                    }
+
+                    if ("center".equals(vy.getString().toLowerCase(Locale.ENGLISH))) {
+                        res.posY = spaceY / 2;
+                    } else if ("bottom".equals(vy.getString().toLowerCase(Locale.ENGLISH))) {
+                        res.posY = spaceY;
+                    }
                 }
             }
         }
@@ -731,17 +743,22 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
         }
 
         CSSValue[] result = null;
-        if (values.length == 1 && "ident".equals(values[0].getType())) {
-            String val = values[0].getString().toLowerCase(Locale.ENGLISH);
+        if (values.length == 1) {
+            // If you only one keyword is specified, the other value is "center"
             CSSValue center = new CSSValue("ident", "center", null, 0);
 
-            // If you only one keyword is specified, the other value is "center"
-            if ("left".equals(val) || "right".equals(val)) {
+            if ("ident".equals(values[0].getType())) {
+                String val = values[0].getString().toLowerCase(Locale.ENGLISH);
+
+                if ("left".equals(val) || "right".equals(val)) {
+                    result = new CSSValue[]{values[0], center};
+                } else if ("top".equals(val) || "bottom".equals(val)) {
+                    result = new CSSValue[]{center, values[0]};
+                } else if ("center".equals(val)) {
+                    result = new CSSValue[]{center, center};
+                }
+            } else if ("number".equals(values[0].getType())) {
                 result = new CSSValue[]{values[0], center};
-            } else if ("top".equals(val) || "bottom".equals(val)) {
-                result = new CSSValue[]{center, values[0]};
-            } else if ("center".equals(val)) {
-                result = new CSSValue[]{center, center};
             }
         }
 
