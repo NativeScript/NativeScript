@@ -9,7 +9,7 @@ export * from "./utils-common";
 export function openFile(filePath: string): boolean {
     try {
         const appPath = ios.getCurrentAppPath();
-        const path = filePath.replace("~", appPath);
+        let path = ios.isRealDevice() ? filePath.replace("~", appPath) : filePath;
 
         const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
         controller.delegate = <UIDocumentInteractionControllerDelegate>new ios.UIDocumentInteractionControllerDelegateImpl();
@@ -44,4 +44,8 @@ export function openUrl(location: string): boolean {
     }
 
     return false;
+}
+
+export function isRealDevice(): boolean {
+    return ios.isRealDevice();
 }

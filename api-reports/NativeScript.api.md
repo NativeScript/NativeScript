@@ -1947,7 +1947,7 @@ export class Span extends ViewBase {
 
     public textDecoration: TextDecoration;
     //@endprivate
- }
+}
 
 // @public
 export class StackLayout extends LayoutBase {
@@ -2428,8 +2428,7 @@ export interface TapGestureEventData extends GestureEventData {
     getPointerCount(): number;
     getX(): number;
     getY(): number;
-
- }
+}
 
 // @public
 export interface Template {
@@ -2623,6 +2622,7 @@ export const Utils: {
     getModuleName: typeof getModuleName;
     openFile: typeof openFile;
     openUrl: typeof openUrl;
+    isRealDevice: typeof isRealDevice;
     layout: typeof layout;
     android: typeof ad;
     ios: typeof ios;
@@ -3116,9 +3116,10 @@ export class XmlParser {
 // nativescript-core/index.d.ts:114:5 - (ae-forgotten-export) The symbol "getModuleName" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:115:5 - (ae-forgotten-export) The symbol "openFile" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:116:5 - (ae-forgotten-export) The symbol "openUrl" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:117:5 - (ae-forgotten-export) The symbol "layout" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:118:5 - (ae-forgotten-export) The symbol "ad" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:119:5 - (ae-forgotten-export) The symbol "ios" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:117:5 - (ae-forgotten-export) The symbol "isRealDevice" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:118:5 - (ae-forgotten-export) The symbol "layout" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:119:5 - (ae-forgotten-export) The symbol "ad" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:120:5 - (ae-forgotten-export) The symbol "ios" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:179:26 - (ae-forgotten-export) The symbol "Property" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:179:26 - (ae-forgotten-export) The symbol "CssProperty" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:179:26 - (ae-forgotten-export) The symbol "CssAnimationProperty" needs to be exported by the entry point index.d.ts

@@ -4,6 +4,8 @@ import {
     write as traceWrite
 } from "../trace";
 
+declare var UIImagePickerControllerSourceType: any;
+
 const radToDeg = Math.PI / 180;
 
 function isOrientationLandscape(orientation: number) {
@@ -14,7 +16,7 @@ function isOrientationLandscape(orientation: number) {
 function openFileAtRootModule(filePath: string): boolean {
     try {
         const appPath = ios.getCurrentAppPath();
-        const path = filePath.replace("~", appPath);
+        let path = ios.isRealDevice() ? filePath.replace("~", appPath) : filePath;
 
         const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
         controller.delegate = new ios.UIDocumentInteractionControllerDelegateImpl();
@@ -151,6 +153,18 @@ export module ios {
 
         public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
             return this.getViewController().view.frame;
+        }
+    }
+
+    export function isRealDevice() {
+        try {
+            // https://stackoverflow.com/a/5093092/4936697
+            const sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera;
+            const mediaTypes = UIImagePickerController.availableMediaTypesForSourceType(sourceType);
+
+            return mediaTypes;
+        } catch (e) {
+            return true;
         }
     }
 }

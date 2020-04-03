@@ -182,3 +182,7 @@ Please ensure you have your manifest correctly configured with the FileProvider.
         return false;
     }
 }
+
+export function isRealDevice(): boolean {
+    return ad.isRealDevice();
+}
