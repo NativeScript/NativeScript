@@ -3,6 +3,7 @@ import {
     categories as traceCategories,
     write as traceWrite
 } from "../trace";
+import { isRealDevice } from "./utils";
 
 const radToDeg = Math.PI / 180;
 
@@ -14,13 +15,7 @@ function isOrientationLandscape(orientation: number) {
 function openFileAtRootModule(filePath: string): boolean {
     try {
         const appPath = ios.getCurrentAppPath();
-
-        let path = "";
-        if (new UIDevice().model === "iPhone Simulator") {
-            path = filePath;
-        } else {
-            path = filePath.replace("~", appPath);
-        }
+        let path = isRealDevice() ? filePath.replace("~", appPath) : filePath;
 
         const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
         controller.delegate = new ios.UIDocumentInteractionControllerDelegateImpl();

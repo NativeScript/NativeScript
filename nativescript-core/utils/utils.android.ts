@@ -182,3 +182,8 @@ Please ensure you have your manifest correctly configured with the FileProvider.
         return false;
     }
 }
+
+export function isRealDevice() {
+    const fingerprint = android.os.Build.FINGERPRINT;
+    this._isSimulator = fingerprint != null && (fingerprint.indexOf("vbox") > -1 || fingerprint.indexOf("generic") > -1);
+}

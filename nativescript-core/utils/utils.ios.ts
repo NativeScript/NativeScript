@@ -6,6 +6,8 @@ import {
 export { ios };
 export * from "./utils-common";
 
+declare var UIImagePickerControllerSourceType: any;
+
 export function openFile(filePath: string): boolean {
     try {
         const appPath = ios.getCurrentAppPath();
@@ -44,4 +46,16 @@ export function openUrl(location: string): boolean {
     }
 
     return false;
+}
+
+export function isRealDevice() {
+    try {
+        // https://stackoverflow.com/a/5093092/4936697
+        const sourceType = UIImagePickerControllerSourceType.UIImagePickerControllerSourceTypeCamera;
+        const mediaTypes = UIImagePickerController.availableMediaTypesForSourceType(sourceType);
+
+        return mediaTypes;
+    } catch (e) {
+        return true;
+    }
 }

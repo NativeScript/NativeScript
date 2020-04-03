@@ -98,7 +98,7 @@ import {
     GC, isFontIconURI, isDataURI, isFileOrResourcePath,
     executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject,
     getModuleName,
-    openFile, openUrl,
+    openFile, openUrl, isRealDevice,
     layout, ad as androidUtils, ios as iosUtils
 } from "./utils/utils";
 
@@ -107,7 +107,7 @@ export const Utils = {
     executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject,
 
     getModuleName,
-    openFile, openUrl,
+    openFile, openUrl, isRealDevice,
 
     layout, android: androidUtils, ios: iosUtils
 };
