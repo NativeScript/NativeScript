@@ -14,7 +14,13 @@ function isOrientationLandscape(orientation: number) {
 function openFileAtRootModule(filePath: string): boolean {
     try {
         const appPath = ios.getCurrentAppPath();
-        const path = filePath.replace("~", appPath);
+
+        let path = "";
+        if (new UIDevice().model === "iPhone Simulator") {
+            path = filePath;
+        } else {
+            path = filePath.replace("~", appPath);
+        }
 
         const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
         controller.delegate = new ios.UIDocumentInteractionControllerDelegateImpl();
