@@ -1,15 +1,14 @@
-﻿import { Visibility } from "tns-core-modules/ui/styling/style-properties";
-import { Label } from "tns-core-modules/ui/label";
+﻿import { Label } from "tns-core-modules/ui/label";
 import { EventData, TextBase } from "tns-core-modules/ui/text-base";
 import { Page } from "tns-core-modules/ui/page";
 
 export function foxTap(args: EventData) {
     let page = <Page>(<any>args.object).page;
     let foxTapped = page.getViewById<Label>("foxTapped");
-    foxTapped.visibility = Visibility.VISIBLE;
+    foxTapped.visibility = "visible";
 
     setTimeout(() => {
-        foxTapped.visibility = Visibility.HIDDEN;
+        foxTapped.visibility = "hidden";
     }, 1000);
 
     console.log("foxTap");
@@ -18,10 +17,10 @@ export function foxTap(args: EventData) {
 export function dogTap(args: EventData) {
     let page = <Page>(<any>args.object).page;
     let dogTapped = page.getViewById<Label>("dogTapped");
-    dogTapped.visibility = Visibility.VISIBLE;
+    dogTapped.visibility = "visible";
 
     setTimeout(() => {
-        dogTapped.visibility = Visibility.HIDDEN;
+        dogTapped.visibility = "hidden";
     }, 1000);
 
     console.log("dogTap");
