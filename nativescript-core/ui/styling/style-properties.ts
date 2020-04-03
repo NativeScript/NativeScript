@@ -1154,12 +1154,12 @@ opacityProperty.register(Style);
 export const colorProperty = new InheritedCssProperty<Style, Color>({ name: "color", cssName: "color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 colorProperty.register(Style);
 
-export const fontInternalProperty = new CssProperty<Style, Font>({ name: "fontInternal", cssName: "_fontInternal", defaultValue: Font.default });
+export const fontInternalProperty = new CssProperty<Style, Font>({ name: "fontInternal", cssName: "_fontInternal" });
 fontInternalProperty.register(Style);
 
 export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
     name: "fontFamily", cssName: "font-family", affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
-        let currentFont = target.fontInternal;
+        let currentFont = target.fontInternal || Font.default;
         if (currentFont.fontFamily !== newValue) {
             const newFont = currentFont.withFontFamily(newValue);
             target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
@@ -1170,7 +1170,10 @@ fontFamilyProperty.register(Style);
 
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
     name: "fontSize", cssName: "font-size", affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
-        let currentFont = target.fontInternal;
+        if (target.viewRef["handleFontSize"] === true) {
+            return;
+        }
+        let currentFont = target.fontInternal || Font.default;
         if (currentFont.fontSize !== newValue) {
             const newFont = currentFont.withFontSize(newValue);
             target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
@@ -1182,7 +1185,7 @@ fontSizeProperty.register(Style);
 
 export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
     name: "fontStyle", cssName: "font-style", affectsLayout: isIOS, defaultValue: FontStyle.NORMAL, valueConverter: FontStyle.parse, valueChanged: (target, oldValue, newValue) => {
-        let currentFont = target.fontInternal;
+        let currentFont = target.fontInternal || Font.default;
         if (currentFont.fontStyle !== newValue) {
             const newFont = currentFont.withFontStyle(newValue);
             target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
@@ -1193,7 +1196,7 @@ fontStyleProperty.register(Style);
 
 export const fontWeightProperty = new InheritedCssProperty<Style, FontWeight>({
     name: "fontWeight", cssName: "font-weight", affectsLayout: isIOS, defaultValue: FontWeight.NORMAL, valueConverter: FontWeight.parse, valueChanged: (target, oldValue, newValue) => {
-        let currentFont = target.fontInternal;
+        let currentFont = target.fontInternal || Font.default;
         if (currentFont.fontWeight !== newValue) {
             const newFont = currentFont.withFontWeight(newValue);
             target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
