@@ -1,3 +1,12 @@
+## [6.5.1](https://github.com/NativeScript/NativeScript/compare/6.5.0...6.5.1) (2020-03-30)
+
+
+### Bug Fixes
+
+* **tabs:** dynamic styling colors fixed ([#8460](https://github.com/NativeScript/NativeScript/issues/8460)) ([0a7bee6](https://github.com/NativeScript/NativeScript/commit/0a7bee6))
+
+
+
 # [6.5.0](https://github.com/NativeScript/NativeScript/compare/6.4.2...6.5.0) (2020-03-18)
 
 

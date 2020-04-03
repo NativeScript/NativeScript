@@ -1,0 +1,28 @@
+.font-awesome {
+    font-family: "FontAwesome";
+}
+
+.font-size {
+    font-size: 36;
+}
+
+TabStripItem:active {
+    background-color: magenta;
+}
+
+.tabsClass0 {
+}
+
+.tabsClass1 {
+    background-color: #79d2a6;
+    highlight-color: green;
+    selected-item-color: yellow;
+    un-selected-item-color: blue;
+}
+
+.tabsClass2 {
+    background-color: orangered;
+    highlight-color: lightgreen;
+    selected-item-color: whitesmoke;
+    un-selected-item-color: pink;
+}
