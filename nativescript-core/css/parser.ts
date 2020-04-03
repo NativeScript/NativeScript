@@ -804,10 +804,16 @@ export function parseUniversalSelector(text: string, start: number = 0): Parsed<
     return { start, end, value: { type: "*" } };
 }
 
-const simpleIdentifierSelectorRegEx = /(#|\.|:|\b)([_-\w][_-\w\d\\/]*)/gy;
+const simpleIdentifierSelectorRegEx = /(#|\.|:|\b)((?:[\w_-]|\\.)(?:[\w\d_-]|\\.)*)/gyu;
+const unicodeEscapeRegEx = /\\([0-9a-fA-F]{1,5}\s|[0-9a-fA-F]{6})/g;
 export function parseSimpleIdentifierSelector(text: string, start: number = 0): Parsed<TypeSelector | ClassSelector | IdSelector | PseudoClassSelector> {
     simpleIdentifierSelectorRegEx.lastIndex = start;
-    const result = simpleIdentifierSelectorRegEx.exec(text);
+    const result = simpleIdentifierSelectorRegEx.exec(
+        text.replace(
+            unicodeEscapeRegEx,
+            (_, c) => "\\" + String.fromCodePoint(parseInt(c.trim(), 16))
+        )
+    );
     if (!result) {
         return null;
     }
