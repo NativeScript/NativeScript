@@ -654,7 +654,7 @@ export class BottomNavigation extends TabNavigationBase {
         }
 
         const target = tabStripItem.image;
-        const font = target.style.fontInternal;
+        const font = target.style.fontInternal || Font.default;
         if (!color) {
             color = target.style.color;
         }
@@ -774,7 +774,7 @@ export class BottomNavigation extends TabNavigationBase {
 
         const defaultTabItemFontSize = 10;
         const tabItemFontSize = view.style.fontSize || defaultTabItemFontSize;
-        const font: UIFont = view.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+        const font: UIFont = (view.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
         const tabItemTextColor = view.style.color;
         const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
         let attributes: any = { [NSFontAttributeName]: font };

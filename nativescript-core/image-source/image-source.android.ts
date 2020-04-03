@@ -176,6 +176,7 @@ export class ImageSource implements ImageSourceDefinition {
     }
 
     static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource {
+        font = font || Font.default;
         const paint = new android.graphics.Paint();
         paint.setTypeface(font.getAndroidTypeface());
         paint.setAntiAlias(true);
