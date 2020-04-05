@@ -284,21 +284,87 @@ describe(`${imagePrefix}-suite`, async function () {
         await tabsViewBasePage.navigateBackToSuitMainPage();
     });
 
-    // it(`${imagePrefix}-frame-in-tabs`, async function () {
-    //     await tabsViewBasePage.navigateToSample("frame-in-tabs");
-    //     await driver.imageHelper.compareScreen();
+    it(`${imagePrefix}-frame-in-tabs`, async function () {
+        await tabsViewBasePage.navigateToSample("frame-in-tabs");
+        await tabsViewBasePage.refreshTabItems();
+        await driver.imageHelper.compareScreen();
 
-    //     // go through the tabs and check that they are loaded
-    //     await tabsViewBasePage.tabOnItem(1);
-    //     await driver.imageHelper.compareScreen();
+        // go through the tabs and check that they are loaded
+        await tabsViewBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
 
-    //     await tabsViewBasePage.tabOnItem(2);
-    //     await driver.imageHelper.compareScreen();
+        await tabsViewBasePage.tabOnItem(2);
+        await driver.imageHelper.compareScreen();
 
-    //     await tabsViewBasePage.tabOnItem(3);
-    //     await driver.imageHelper.compareScreen();
+        await tabsViewBasePage.tabOnItem(3);
+        await driver.imageHelper.compareScreen();
 
-    //     assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
-    //     await tabsViewBasePage.navigateBackToSuitMainPage();
-    // });
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await tabsViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-item-color`, async function () {
+        await tabsViewBasePage.navigateToSample("item-color");
+        await tabsViewBasePage.refreshTabItems();
+        await driver.imageHelper.compareScreen();
+
+        // go through the tabs and check that they are loaded
+        await tabsViewBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        await tabsViewBasePage.tabOnItem(2);
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await tabsViewBasePage.navigateBackToSuitMainPage();
+    });
+
+    it(`${spec}-dynamic-color-change`, async function () {
+        await tabsViewBasePage.navigateToSample("dynamic-color-change");
+        await tabsViewBasePage.refreshTabItems();
+        await driver.imageHelper.compareScreen();
+
+        // go through the tabs and check that they are loaded
+        await tabsViewBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        await tabsViewBasePage.tabOnItem(2);
+        await driver.imageHelper.compareScreen();
+
+        await tabsViewBasePage.tabOnItem(0);
+        await driver.imageHelper.compareScreen();
+
+        // change icon sources and check the result
+        const changeIconSource = await driver.waitForElement("changeIconSource");
+        await changeIconSource.click();
+        await driver.imageHelper.compareScreen();
+
+        const changeStyleBtn = await driver.waitForElement("changeStyle");
+        await changeStyleBtn.click();
+        await driver.imageHelper.compareScreen();
+
+        // change icon sources again
+        await changeIconSource.click();
+        await driver.imageHelper.compareScreen();
+
+        await tabsViewBasePage.tabOnItem(1);
+        await driver.imageHelper.compareScreen();
+
+        // change style again
+        await changeStyleBtn.click();
+        await driver.imageHelper.compareScreen();
+
+        await tabsViewBasePage.tabOnItem(2);
+        await driver.imageHelper.compareScreen();
+
+        await changeIconSource.click();
+        await driver.imageHelper.compareScreen();
+
+        // change style again
+        await changeStyleBtn.click();
+        await driver.imageHelper.compareScreen();
+
+        assert.isTrue(driver.imageHelper.hasImageComparisonPassed());
+        await tabsViewBasePage.navigateBackToSuitMainPage();
+    });
 });

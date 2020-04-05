@@ -587,7 +587,7 @@ function getTitleAttributesForStates(tabView: TabView): TabStates {
 
     const defaultTabItemFontSize = 10;
     const tabItemFontSize = tabView.style.tabTextFontSize || defaultTabItemFontSize;
-    const font: UIFont = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+    const font: UIFont = (tabView.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
     const tabItemTextColor = tabView.style.tabTextColor;
     const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
     result.normalState = { [NSFontAttributeName]: font };

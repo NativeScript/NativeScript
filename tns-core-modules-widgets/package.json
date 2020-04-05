@@ -1,24 +1,24 @@
 {
-  "name": "tns-core-modules-widgets",
-  "version": "6.5.0",
-  "description": "Native widgets used in the NativeScript framework.",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/NativeScript/NativeScript"
-  },
-  "author": "NativeScript team",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/NativeScript/NativeScript/issues"
-  },
-  "homepage": "https://github.com/NativeScript/NativeScript/blob/master/tns-core-modules-widgets#readme",
-  "nativescript": {
-    "platforms": {
-      "ios": "6.0.0",
-      "android": "6.0.0"
+    "name": "tns-core-modules-widgets",
+    "version": "6.6.0",
+    "description": "Native widgets used in the NativeScript framework.",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NativeScript/NativeScript"
+    },
+    "author": "NativeScript team",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/NativeScript/NativeScript/issues"
+    },
+    "homepage": "https://github.com/NativeScript/NativeScript/blob/master/tns-core-modules-widgets#readme",
+    "nativescript": {
+        "platforms": {
+            "ios": "6.0.0",
+            "android": "6.0.0"
+        }
     }
-  }
 }

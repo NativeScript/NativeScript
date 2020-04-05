@@ -7,7 +7,9 @@ import {
     flexShrinkProperty, FlexShrink,
     flexWrapBeforeProperty, FlexWrapBefore,
     alignSelfProperty, AlignSelf,
-    flexDirectionProperty, flexWrapProperty, justifyContentProperty, alignItemsProperty, alignContentProperty
+    flexDirectionProperty, flexWrapProperty, justifyContentProperty, alignItemsProperty, alignContentProperty,
+    minWidthProperty, minHeightProperty,
+    CssProperty
 } from "./flexbox-layout-common";
 
 export * from "./flexbox-layout-common";
@@ -137,6 +139,11 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     public _updateNativeLayoutParams(child: View): void {
         super._updateNativeLayoutParams(child);
 
+        // NOTE: If minWidth/Height is not set, the next code will clear the default native values for minWidth/Height.
+        // Flex box will not respect the button default min width. Keeping this behavior for back-compatibility.
+        this._setChildMinWidthNative(child, child.minWidth);
+        this._setChildMinHeightNative(child, child.minHeight);
+
         const lp = <org.nativescript.widgets.FlexboxLayout.LayoutParams>child.nativeViewProtected.getLayoutParams();
         const style = child.style;
         lp.order = style.order;
@@ -147,22 +154,30 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         child.nativeViewProtected.setLayoutParams(lp);
     }
 
-    public _setChildMinWidthNative(child: View): void {
-        child._setMinWidthNative(0);
+    public _setChildMinWidthNative(child: View, value: Length): void {
+        // Check needed to maintain back-compat after https://github.com/NativeScript/NativeScript/pull/7804
+        if (!child._ignoreFlexMinWidthHeightReset) {
+            child._setMinWidthNative(0);
+        }
+
         const nativeView = child.nativeViewProtected;
         const lp = nativeView.getLayoutParams();
         if (lp instanceof widgetLayoutParams) {
-            lp.minWidth = Length.toDevicePixels(child.style.minWidth, 0);
+            lp.minWidth = Length.toDevicePixels(value, 0);
             nativeView.setLayoutParams(lp);
         }
     }
 
-    public _setChildMinHeightNative(child: View): void {
-        child._setMinHeightNative(0);
+    public _setChildMinHeightNative(child: View, value: Length): void {
+        // Check needed to maintain back-compat after https://github.com/NativeScript/NativeScript/pull/7804
+        if (!child._ignoreFlexMinWidthHeightReset) {
+            child._setMinHeightNative(0);
+        }
+
         const nativeView = child.nativeViewProtected;
         const lp = nativeView.getLayoutParams();
         if (lp instanceof widgetLayoutParams) {
-            lp.minHeight = Length.toDevicePixels(child.style.minHeight, 0);
+            lp.minHeight = Length.toDevicePixels(value, 0);
             nativeView.setLayoutParams(lp);
         }
     }

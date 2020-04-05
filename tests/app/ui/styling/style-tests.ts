@@ -200,25 +200,32 @@ export function test_class_selector() {
 
 export function test_class_selector_with_escape_characters() {
     let page = helper.getClearCurrentPage();
-    let btnWithClass1: buttonModule.Button;
-    let btnWithClass2: buttonModule.Button;
-
-    page.css = ".test-1 { color: red; } .test-1\\/2 { color: blue }";
-
-    //// Will be styled
-    btnWithClass1 = new buttonModule.Button();
-    btnWithClass1.className = "test-1";
-
-    btnWithClass2 = new buttonModule.Button();
-    btnWithClass2.className = "test-1/2";
+    page.css = `
+        .test-1 { color: red; }
+        .test-1\\/2, .test-1\\:2, .\\61 f, .\\1F642 { color: blue }
+    `;
 
     const stack = new stackModule.StackLayout();
     page.content = stack;
-    stack.addChild(btnWithClass1);
-    stack.addChild(btnWithClass2);
 
-    helper.assertViewColor(btnWithClass1, "#FF0000");
-    helper.assertViewColor(btnWithClass2, "#0000FF");
+    let btn: buttonModule.Button = new buttonModule.Button();
+    stack.addChild(btn);
+
+    //// Will be styled
+    btn.className = "test-1";
+    helper.assertViewColor(btn, "#FF0000");
+
+    btn.className = "test-1/2";
+    helper.assertViewColor(btn, "#0000FF");
+
+    btn.className = "test-1:2";
+    helper.assertViewColor(btn, "#0000FF");
+
+    btn.className = "af";
+    helper.assertViewColor(btn, "#0000FF");
+
+    btn.className = "\u{1F642}";
+    helper.assertViewColor(btn, "#0000FF");
 }
 
 export function test_multiple_class_selector() {

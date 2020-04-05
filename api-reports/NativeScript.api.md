@@ -870,54 +870,54 @@ export class Frame extends View {
 
 // @public
 export interface GestureEventData extends EventData {
-    android: any
-    ios: any /* UIGestureRecognizer */;
-    type: GestureTypes;
-    view: View;
-}
+     android: any
+     ios: any /* UIGestureRecognizer */;
+     type: GestureTypes;
+     view: View;
+ }
 
 // @public
 export interface GestureEventDataWithState extends GestureEventData {
-    // (undocumented)
-    state: number;
-}
+     // (undocumented)
+     state: number;
+ }
 
 // @public
 export class GesturesObserver {
-    constructor(target: View, callback: (args: GestureEventData) => void, context: any);
+     constructor(target: View, callback: (args: GestureEventData) => void, context: any);
 
-    androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
+     androidOnTouchEvent: (motionEvent: any /* android.view.MotionEvent */) => void;
 
-    callback: (args: GestureEventData) => void;
+     callback: (args: GestureEventData) => void;
 
-    context: any;
+     context: any;
 
-    disconnect();
+     disconnect();
 
-    observe(type: GestureTypes);
+     observe(type: GestureTypes);
 
-    type: GestureTypes;
-}
+     type: GestureTypes;
+ }
 
 // @public
 export enum GestureStateTypes {
-    began,
-    cancelled,
-    changed,
-    ended
-}
+     began,
+     cancelled,
+     changed,
+     ended
+ }
 
 // @public
 export enum GestureTypes {
-    doubleTap,
-    longPress,
-    pan,
-    pinch,
-    rotation,
-    swipe,
-    tap,
-    touch
-}
+     doubleTap,
+     longPress,
+     pan,
+     pinch,
+     rotation,
+     swipe,
+     tap,
+     touch
+ }
 
 // @public
 export class GridLayout extends LayoutBase {
@@ -1642,11 +1642,11 @@ export class Page extends ContentView {
 
 // @public
 export interface PanGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    deltaX: number;
-    // (undocumented)
-    deltaY: number;
-}
+     // (undocumented)
+     deltaX: number;
+     // (undocumented)
+     deltaY: number;
+ }
 
 // @public
 export interface ParserEvent {
@@ -1694,15 +1694,15 @@ export module path {
 
 // @public
 export interface PinchGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    getFocusX(): number;
+     // (undocumented)
+     getFocusX(): number;
 
-    // (undocumented)
-    getFocusY(): number;
+     // (undocumented)
+     getFocusY(): number;
 
-    // (undocumented)
-    scale: number;
-}
+     // (undocumented)
+     scale: number;
+ }
 
 // @public
 export class Placeholder extends View {
@@ -1765,9 +1765,9 @@ export class Repeater extends CustomLayoutView {
 
 // @public
 export interface RotationGestureEventData extends GestureEventDataWithState {
-    // (undocumented)
-    rotation: number;
-}
+     // (undocumented)
+     rotation: number;
+ }
 
 // @public
 export module Screen {
@@ -1936,8 +1936,12 @@ export class Span extends ViewBase {
 
     public fontWeight: FontWeight;
 
+    public static linkTapEvent: string;
+
     // (undocumented)
     _setTextInternal(value: string): void;
+
+    public readonly tappable: boolean;
 
     public text: string;
 
@@ -2168,17 +2172,17 @@ export class Style extends Observable {
 
 // @public
 export enum SwipeDirection {
-    down,
-    left,
-    right,
-    up
-}
+     down,
+     left,
+     right,
+     up
+ }
 
 // @public
 export interface SwipeGestureEventData extends GestureEventData {
-    // (undocumented)
-    direction: SwipeDirection;
-}
+     // (undocumented)
+     direction: SwipeDirection;
+ }
 
 // @public
 export class Switch extends View {
@@ -2225,7 +2229,11 @@ export class TabNavigationBase extends View {
 
     getTabBarItemTextTransform(tabStripItem: TabStripItem): any
 
+    getTabBarSelectedItemColor(): Color
+
     getTabBarTextTransform(): any
+
+    getTabBarUnSelectedItemColor(): Color
 
     ios: any /* UITabBarController */;
 
@@ -2254,6 +2262,8 @@ export class TabNavigationBase extends View {
 
     setTabBarIconColor(tabStripItem: TabStripItem, value: any): void
 
+    setTabBarIconSource(tabStripItem: TabStripItem, value: any): void
+
     setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: any): void
 
     setTabBarItemColor(tabStripItem: TabStripItem, value: any): void
@@ -2266,7 +2276,11 @@ export class TabNavigationBase extends View {
 
     setTabBarItemTitle(tabStripItem: TabStripItem, value: any): any
 
+    setTabBarSelectedItemColor(value: Color)
+
     setTabBarTextTransform(value: any): void
+
+    setTabBarUnSelectedItemColor(value: Color)
 
     tabStrip: TabStrip;
 }
@@ -2320,10 +2334,16 @@ export class TabStrip extends View {
     on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
     on(event: "itemTap", callback: (args: TabStripItemEventData) => void, thisArg?: any);
+
+    selectedItemColor: Color;
+
+    unSelectedItemColor: Color;
 }
 
 // @public
 export class TabStripItem extends View {
+    iconClass: string;
+
     iconSource: string;
 
     image: Image;
@@ -2404,6 +2424,13 @@ export class TabViewItem extends ViewBase {
 }
 
 // @public
+export interface TapGestureEventData extends GestureEventData {
+    getPointerCount(): number;
+    getX(): number;
+    getY(): number;
+}
+
+// @public
 export interface Template {
     (): View;
 }
@@ -2473,12 +2500,16 @@ export class TextBase extends View implements AddChildFromBuilder {
 export class TextField extends EditableTextBase {
     android: any /* android.widget.EditText */;
 
+    closeOnReturn: boolean;
+
     ios: any /* UITextField */;
 
     // (undocumented)
     public static returnPressEvent: string;
 
     secure: boolean;
+
+    secureWithoutAutofill: boolean;
 }
 
 // @public
@@ -2522,20 +2553,12 @@ export interface TimerInfo {
 }
 
 // @public
-export interface TouchGestureEventData extends GestureEventData {
-    action: "up" | "move" | "down" | "cancel";
-
-    // Warning: (ae-forgotten-export) The symbol "Pointer" needs to be exported by the entry point index.d.ts
-    getActivePointers(): Array<Pointer>;
-
-    getAllPointers(): Array<Pointer>;
-
-    getPointerCount(): number;
-
-    getX(): number;
-
-    getY(): number;
-}
+export interface TouchGestureEventData extends TapGestureEventData {
+     action: "up" | "move" | "down" | "cancel";
+     // Warning: (ae-forgotten-export) The symbol "Pointer" needs to be exported by the entry point index.d.ts
+     getActivePointers(): Array<Pointer>;
+     getAllPointers(): Array<Pointer>;
+ }
 
 // @public (undocumented)
 export const Trace: {
@@ -2599,6 +2622,7 @@ export const Utils: {
     getModuleName: typeof getModuleName;
     openFile: typeof openFile;
     openUrl: typeof openUrl;
+    isRealDevice: typeof isRealDevice;
     layout: typeof layout;
     android: typeof ad;
     ios: typeof ios;
@@ -2874,6 +2898,8 @@ export abstract class ViewBase extends Observable {
     public _goToVisualState(state: string): void;
     public id: string;
     // (undocumented)
+    public _ignoreFlexMinWidthHeightReset: boolean;
+    // (undocumented)
     _inheritStyleScope(styleScope: any /* StyleScope */): void;
     initNativeView(): void;
     // (undocumented)
@@ -3090,9 +3116,10 @@ export class XmlParser {
 // nativescript-core/index.d.ts:114:5 - (ae-forgotten-export) The symbol "getModuleName" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:115:5 - (ae-forgotten-export) The symbol "openFile" needs to be exported by the entry point index.d.ts
 // nativescript-core/index.d.ts:116:5 - (ae-forgotten-export) The symbol "openUrl" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:117:5 - (ae-forgotten-export) The symbol "layout" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:118:5 - (ae-forgotten-export) The symbol "ad" needs to be exported by the entry point index.d.ts
-// nativescript-core/index.d.ts:119:5 - (ae-forgotten-export) The symbol "ios" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:117:5 - (ae-forgotten-export) The symbol "isRealDevice" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:118:5 - (ae-forgotten-export) The symbol "layout" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:119:5 - (ae-forgotten-export) The symbol "ad" needs to be exported by the entry point index.d.ts
+// nativescript-core/index.d.ts:120:5 - (ae-forgotten-export) The symbol "ios" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:179:26 - (ae-forgotten-export) The symbol "Property" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:179:26 - (ae-forgotten-export) The symbol "CssProperty" needs to be exported by the entry point index.d.ts
 // nativescript-core/ui/core/view-base/view-base.d.ts:179:26 - (ae-forgotten-export) The symbol "CssAnimationProperty" needs to be exported by the entry point index.d.ts

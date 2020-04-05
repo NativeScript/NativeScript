@@ -160,7 +160,7 @@ public class TabLayout extends HorizontalScrollView {
      * {@link TabLayout} you are required to set any
      * {@link ViewPager.OnPageChangeListener} through this method. This is so
      * that the layout can update it's scroll position correctly.
-     * 
+     *
      * @see ViewPager#setOnPageChangeListener(ViewPager.OnPageChangeListener)
      */
     public void setOnPageChangeListener(ViewPager.OnPageChangeListener listener) {
@@ -196,25 +196,25 @@ public class TabLayout extends HorizontalScrollView {
         TextView textView = (TextView)ll.getChildAt(1);
         this.setupItem(ll, textView, imgView, tabItem);
     }
-  
+
     /**
      * Gets the TextView for tab item at index
      */
     public TextView getTextViewForItemAt(int index){
         LinearLayout ll = this.getViewForItemAt(index);
-        return  (ll != null) ? (TextView)ll.getChildAt(1) : null;       
+        return  (ll != null) ? (TextView)ll.getChildAt(1) : null;
     }
-    
+
     /**
      * Gets the LinearLayout container for tab item at index
      */
     public LinearLayout getViewForItemAt(int index){
         LinearLayout result = null;
-        
+
         if(this.mTabStrip.getChildCount() > index){
             result = (LinearLayout)this.mTabStrip.getChildAt(index);
         }
-        
+
         return result;
     }
 
@@ -263,10 +263,10 @@ public class TabLayout extends HorizontalScrollView {
         ll.addView(textView);
         return ll;
     }
-    
+
     private void setupItem(LinearLayout ll, TextView textView,ImageView imgView, TabItemSpec tabItem){
         float density = getResources().getDisplayMetrics().density;
-        
+
         if (tabItem.iconId != 0) {
             imgView.setImageResource(tabItem.iconId);
             imgView.setVisibility(VISIBLE);
@@ -293,7 +293,7 @@ public class TabLayout extends HorizontalScrollView {
         } else {
             ll.setMinimumHeight((int) (SMALL_MIN_HEIGHT * density));
         }
-        
+
         if (mDistributeEvenly) {
             LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) ll.getLayoutParams();
             lp.width = 0;

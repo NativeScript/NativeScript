@@ -83,6 +83,11 @@ export module ad {
          */
         export function getPaletteColor(name: string, context: any /* android.content.Context */): number;
     }
+
+    /**
+     * Checks whether the application is running on real device and not on emulator.
+     */
+    export function isRealDevice(): boolean;
 }
 /**
  * Module with ios specific utilities.
@@ -156,7 +161,7 @@ export module ios {
     export function getVisibleViewController(rootViewController: any/* UIViewController*/): any/* UIViewController*/;
 
     /**
-     * 
+     *
      * @param transform Applies a rotation transform over X,Y and Z axis
      * @param x Rotation over X axis in degrees
      * @param y Rotation over Y axis in degrees
@@ -165,4 +170,9 @@ export module ios {
     export function applyRotateTransform(transform: any /* CATransform3D*/, x: number, y: number, z: number): any /* CATransform3D*/;
 
     export class UIDocumentInteractionControllerDelegateImpl { }
+
+    /**
+     * Checks whether the application is running on real device and not on simulator.
+     */
+    export function isRealDevice(): boolean;
 }

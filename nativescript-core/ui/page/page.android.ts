@@ -45,17 +45,30 @@ export class Page extends PageBase {
     @profile
     public onLoaded() {
         super.onLoaded();
-        if (this.actionBarHidden !== undefined) {
+        if (!this.hasActionBar && this.actionBarHidden !== true) {
+            // ensure actionBar is created
+            // but we only need to do that if the actionBarHidden is not hidden
+            this.actionBar = new ActionBar();
+        }
+        if (this.hasActionBar) {
             this.updateActionBar();
         }
     }
 
     private updateActionBar() {
-        this.actionBar.update();
+        // the test is actually to ensure the actionBar is created
+        // it will be created if not
+        if (this.actionBar) {
+            this.actionBar.update();
+        }
     }
 
     [actionBarHiddenProperty.setNative](value: boolean) {
-        this.updateActionBar();
+        // in case the actionBar is not created and actionBarHidden is changed to true
+        // the actionBar will be created by updateActionBar
+        if (!value || this.hasActionBar) {
+            this.updateActionBar();
+        }
     }
 
     [statusBarStyleProperty.getDefault](): { color: number, systemUiVisibility: number } {

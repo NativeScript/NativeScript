@@ -153,4 +153,10 @@ export module ad {
             return result;
         }
     }
+
+    export function isRealDevice(): boolean {
+        const fingerprint = android.os.Build.FINGERPRINT;
+
+        return fingerprint != null && (fingerprint.indexOf("vbox") > -1 || fingerprint.indexOf("generic") > -1);
+    }
 }

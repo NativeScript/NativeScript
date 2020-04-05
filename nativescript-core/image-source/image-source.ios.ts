@@ -165,6 +165,7 @@ export class ImageSource implements ImageSourceDefinition {
     }
 
     static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource {
+        font = font || Font.default;
         let fontSize = layout.toDevicePixels(font.fontSize);
         if (!fontSize) {
             // TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar

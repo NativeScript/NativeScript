@@ -1,4 +1,5 @@
 import tabViewModule = require("@nativescript/core/ui/tab-view");
+import { Font } from "@nativescript/core/ui/styling/font";
 
 export function getNativeTabCount(tabView: tabViewModule.TabView): number {
     if (!tabView.ios.viewControllers) {
@@ -30,5 +31,5 @@ export function getNativeFont(tabView: tabViewModule.TabView): UIFont {
 }
 
 export function getOriginalFont(tabView: tabViewModule.TabView): UIFont {
-    return tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(10));
+    return (tabView.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(10));
 }

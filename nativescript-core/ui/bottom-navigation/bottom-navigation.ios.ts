@@ -257,6 +257,8 @@ export class BottomNavigation extends TabNavigationBase {
     private _delegate: UITabBarControllerDelegateImpl;
     private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
     private _iconsCache = {};
+    private _selectedItemColor: Color;
+    private _unSelectedItemColor: Color;
 
     constructor() {
         super();
@@ -357,6 +359,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarBackgroundColor(value: UIColor | Color): void {
         this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+        this.updateAllItemsColors();
     }
 
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
@@ -372,18 +375,40 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        setViewTextAttributes(tabStripItem.nativeView, tabStripItem.label, this.viewController.tabBar);
+        this.setViewAttributes(tabStripItem.nativeView, tabStripItem.label);
+    }
+
+    private setItemColors(): void {
+        if (this._selectedItemColor) {
+            this.viewController.tabBar.selectedImageTintColor = this._selectedItemColor.ios;
+        }
+        if (this._unSelectedItemColor) {
+            this.viewController.tabBar.unselectedItemTintColor = this._unSelectedItemColor.ios;
+        }
+    }
+
+    private setIconColor(tabStripItem: TabStripItem, forceReload: boolean = false): void {
+        if (forceReload || (!this._unSelectedItemColor && !this._selectedItemColor)) {
+            // if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
+            const tabStripColor = (this.selectedIndex === tabStripItem._index) ? this._selectedItemColor : this._unSelectedItemColor;
+
+            const image = this.getIcon(tabStripItem, tabStripColor);
+
+            tabStripItem.nativeView.image = image;
+            tabStripItem.nativeView.selectedImage = image;
+        }
     }
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        const image = this.getIcon(tabStripItem);
+        this.setIconColor(tabStripItem);
+    }
 
-        tabStripItem.nativeView.image = image;
-        tabStripItem.nativeView.selectedImage = image;
+    public setTabBarIconSource(tabStripItem: TabStripItem, value: UIColor | Color): void {
+        this.updateItemColors(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        setViewTextAttributes(tabStripItem.nativeView, tabStripItem.label, this.viewController.tabBar);
+        this.setViewAttributes(tabStripItem.nativeView, tabStripItem.label);
     }
 
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
@@ -398,6 +423,24 @@ export class BottomNavigation extends TabNavigationBase {
     public setTabBarHighlightColor(value: UIColor | Color) {
         const nativeColor = value instanceof Color ? value.ios : value;
         this._ios.tabBar.tintColor = nativeColor;
+    }
+
+    public getTabBarSelectedItemColor(): Color {
+        return this._selectedItemColor;
+    }
+
+    public setTabBarSelectedItemColor(value: Color) {
+        this._selectedItemColor = value;
+        this.updateAllItemsColors();
+    }
+
+    public getTabBarUnSelectedItemColor(): Color {
+        return this._unSelectedItemColor;
+    }
+
+    public setTabBarUnSelectedItemColor(value: Color) {
+        this._unSelectedItemColor = value;
+        this.updateAllItemsColors();
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -521,7 +564,7 @@ export class BottomNavigation extends TabNavigationBase {
                 const tabBarItem = this.createTabBarItem(tabStripItem, i);
                 updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
 
-                setViewTextAttributes(tabBarItem, tabStripItem.label, this.viewController.tabBar);
+                this.setViewAttributes(tabBarItem, tabStripItem.label);
 
                 controller.tabBarItem = tabBarItem;
                 tabStripItem._index = i;
@@ -531,11 +574,44 @@ export class BottomNavigation extends TabNavigationBase {
             controllers.addObject(controller);
         });
 
+        this.setItemImages();
+
         this._ios.viewControllers = controllers;
         this._ios.customizableViewControllers = null;
 
         // When we set this._ios.viewControllers, someone is clearing the moreNavigationController.delegate, so we have to reassign it each time here.
         this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
+    }
+
+    private setItemImages() {
+        if (this._selectedItemColor || this._unSelectedItemColor) {
+            if (this.tabStrip && this.tabStrip.items) {
+                this.tabStrip.items.forEach(item => {
+                    if (this._unSelectedItemColor && item.nativeView) {
+                        item.nativeView.image = this.getIcon(item, this._unSelectedItemColor);
+                        item.nativeView.tintColor = this._unSelectedItemColor;
+                    }
+                    if (this._selectedItemColor && item.nativeView) {
+                        item.nativeView.selectedImage = this.getIcon(item, this._selectedItemColor);
+                        item.nativeView.tintColor = this._selectedItemColor;
+                    }
+                });
+            }
+        }
+    }
+
+    public updateAllItemsColors() {
+        this.setItemColors();
+        if (this.tabStrip && this.tabStrip.items) {
+            this.tabStrip.items.forEach(tabStripItem => {
+                this.updateItemColors(tabStripItem);
+            });
+        }
+    }
+
+    private updateItemColors(tabStripItem: TabStripItem): void {
+        updateBackgroundPositions(this.tabStrip, tabStripItem);
+        this.setIconColor(tabStripItem, true);
     }
 
     private createTabBarItem(item: TabStripItem, index: number): UITabBarItem {
@@ -569,7 +645,7 @@ export class BottomNavigation extends TabNavigationBase {
         }
     }
 
-    private getIcon(tabStripItem: TabStripItem): UIImage {
+    private getIcon(tabStripItem: TabStripItem, color?: Color): UIImage {
         // Image and Label children of TabStripItem
         // take priority over its `iconSource` and `title` properties
         const iconSource = tabStripItem.image && tabStripItem.image.src;
@@ -578,8 +654,10 @@ export class BottomNavigation extends TabNavigationBase {
         }
 
         const target = tabStripItem.image;
-        const font = target.style.fontInternal;
-        const color = target.style.color;
+        const font = target.style.fontInternal || Font.default;
+        if (!color) {
+            color = target.style.color;
+        }
         const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
 
         let isFontIcon = false;
@@ -688,33 +766,40 @@ export class BottomNavigation extends TabNavigationBase {
         this.setViewControllers(this.items);
         selectedIndexProperty.coerce(this);
     }
-}
 
-function setViewTextAttributes(item: UITabBarItem, view: View, tabBar: UITabBar): any {
-    if (!view) {
-        return null;
-    }
+    private setViewAttributes(item: UITabBarItem, view: View): any {
+        if (!view) {
+            return null;
+        }
 
-    const defaultTabItemFontSize = 10;
-    const tabItemFontSize = view.style.fontSize || defaultTabItemFontSize;
-    const font: UIFont = view.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
-    const tabItemTextColor = view.style.color;
-    const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
-    let attributes: any = { [NSFontAttributeName]: font };
-    if (textColor) {
-        attributes[UITextAttributeTextColor] = textColor;
-        attributes[NSForegroundColorAttributeName] = textColor;
-    }
+        const defaultTabItemFontSize = 10;
+        const tabItemFontSize = view.style.fontSize || defaultTabItemFontSize;
+        const font: UIFont = (view.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+        const tabItemTextColor = view.style.color;
+        const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
+        let attributes: any = { [NSFontAttributeName]: font };
 
-    item.setTitleTextAttributesForState(attributes, UIControlState.Selected);
-    item.setTitleTextAttributesForState(attributes, UIControlState.Normal);
+        // if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
+        if (!this._selectedItemColor && !this._unSelectedItemColor) {
+            if (textColor) {
+                attributes[UITextAttributeTextColor] = textColor;
+                attributes[NSForegroundColorAttributeName] = textColor;
+            }
+        } else {
+            this.viewController.tabBar.unselectedItemTintColor = this._unSelectedItemColor && this._unSelectedItemColor.ios;
+            this.viewController.tabBar.selectedImageTintColor = this._selectedItemColor && this._selectedItemColor.ios;
+        }
 
-    // there's a bug when setting the item color on ios 13 if there's no background set to the tabstrip
-    // https://books.google.bg/books?id=99_BDwAAQBAJ&q=tabBar.unselectedItemTintColor
-    // to fix the above issue we are applying the selected fix only for the case, when there is no background set
-    // in that case we have the following known issue:
-    // we will set the color to all unselected items, so you won't be able to set different colors for the different not selected items
-    if (!tabBar.barTintColor && attributes[UITextAttributeTextColor] && (majorVersion > 9)) {
-        tabBar.unselectedItemTintColor = attributes[UITextAttributeTextColor];
+        item.setTitleTextAttributesForState(attributes, UIControlState.Selected);
+        item.setTitleTextAttributesForState(attributes, UIControlState.Normal);
+
+        // there's a bug when setting the item color on ios 13 if there's no background set to the tabstrip
+        // https://books.google.bg/books?id=99_BDwAAQBAJ&q=tabBar.unselectedItemTintColor
+        // to fix the above issue we are applying the selected fix only for the case, when there is no background set
+        // in that case we have the following known issue:
+        // // we will set the color to all unselected items, so you won't be able to set different colors for the different not selected items
+        if (!this.viewController.tabBar.barTintColor && attributes[UITextAttributeTextColor] && (majorVersion > 9)) {
+            this.viewController.tabBar.unselectedItemTintColor = attributes[UITextAttributeTextColor];
+        }
     }
 }
