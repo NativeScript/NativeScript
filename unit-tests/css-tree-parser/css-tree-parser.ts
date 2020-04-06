@@ -11,6 +11,16 @@ describe("css-tree parser compatible with rework ", () => {
         assert.deepEqual(cssTreeAST, reworkAST);
     });
 
+    it("empty rule", () => {
+        const css = `.test {
+            color: red;
+            ;
+        }`;
+        const reworkAST = reworkCssParse(css, { source: "file.css" });
+        const cssTreeAST = cssTreeParse(css, "file.css");
+        assert.deepEqual(cssTreeAST, reworkAST);
+    });
+
     it("@keyframes", () => {
         const testCase = ".test { animation-name: test; } @keyframes test { from { background-color: red; } to { background-color: blue; } } .test { color: red; }";
         const reworkAST = reworkCssParse(testCase, { source: "file.css" });
