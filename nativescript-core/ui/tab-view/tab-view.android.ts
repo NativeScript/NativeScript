@@ -736,7 +736,7 @@ export class TabView extends TabViewBase {
 
         if (value instanceof Color) {
             this._tabLayout.setBackgroundColor(value.android);
-            this.nativeViewProtected.viewPager.setBackgroundColor(value.android);
+            this._viewPager.setBackgroundColor(value.android);
         } else {
             this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources()));
         }
