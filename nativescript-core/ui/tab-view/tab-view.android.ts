@@ -730,6 +730,8 @@ export class TabView extends TabViewBase {
         return this._tabLayout.getBackground();
     }
     [tabBackgroundColorProperty.setNative](value: android.graphics.drawable.Drawable | Color) {
+        this._originalBackground = null;
+
         if (value instanceof Color) {
             this._tabLayout.setBackgroundColor(value.android);
         } else {

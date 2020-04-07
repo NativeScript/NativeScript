@@ -783,7 +783,9 @@ export class Tabs extends TabsBase {
     // }
 
     public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
-        this._tabsBar.updateItemAt(index, spec);
+        if (index < this._tabsBar.getItemCount()) {
+            this._tabsBar.updateItemAt(index, spec);
+        }
     }
 
     public getTabBarBackgroundColor(): android.graphics.drawable.Drawable {
@@ -791,6 +793,8 @@ export class Tabs extends TabsBase {
     }
 
     public setTabBarBackgroundColor(value: android.graphics.drawable.Drawable | Color): void {
+        this._originalBackground = null;
+
         if (value instanceof Color) {
             this._tabsBar.setBackgroundColor(value.android);
         } else {
