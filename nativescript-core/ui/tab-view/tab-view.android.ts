@@ -698,7 +698,9 @@ export class TabView extends TabViewBase {
     }
 
     public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
-        this._tabLayout.updateItemAt(index, spec);
+        if (index < this._tabLayout.getItemCount()) {
+            this._tabLayout.updateItemAt(index, spec);
+        }
     }
 
     [androidOffscreenTabLimitProperty.getDefault](): number {
