@@ -25,10 +25,9 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     }
 
     public textFieldShouldBeginEditing(textField: UITextField): boolean {
-        this.firstEdit = true;
         const owner = this._owner.get();
         if (owner) {
-            return owner.editable;
+            return owner.textFieldShouldBeginEditing(textField);
         }
 
         return true;
@@ -37,26 +36,21 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldDidBeginEditing(textField: UITextField): void {
         const owner = this._owner.get();
         if (owner) {
-            owner.notify({ eventName: TextField.focusEvent, object: owner });
+            owner.textFieldDidBeginEditing(textField);
         }
     }
 
     public textFieldDidEndEditing(textField: UITextField) {
         const owner = this._owner.get();
         if (owner) {
-            if (owner.updateTextTrigger === "focusLost") {
-                textProperty.nativeValueChange(owner, textField.text);
-            }
-
-            owner.dismissSoftInput();
+            owner.textFieldDidEndEditing(textField);
         }
     }
 
     public textFieldShouldClear(textField: UITextField) {
-        this.firstEdit = false;
         const owner = this._owner.get();
         if (owner) {
-            textProperty.nativeValueChange(owner, "");
+            return owner.textFieldShouldClear(textField);
         }
 
         return true;
@@ -66,10 +60,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
         // Called when the user presses the return button.
         const owner = this._owner.get();
         if (owner) {
-            if (owner.closeOnReturn) {
-                owner.dismissSoftInput();
-            }
-            owner.notify({ eventName: TextField.returnPressEvent, object: owner });
+            return owner.textFieldShouldReturn(textField);
         }
 
         return true;
@@ -78,40 +69,9 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
         const owner = this._owner.get();
         if (owner) {
-            if (owner.secureWithoutAutofill && !textField.secureTextEntry) {
-                /**
-                 * Helps avoid iOS 12+ autofill strong password suggestion prompt
-                 * Discussed in several circles but for example:
-                 * https://github.com/expo/expo/issues/2571#issuecomment-473347380
-                 */
-                textField.secureTextEntry = true;
-            }
-            const delta = replacementString.length - range.length;
-            if (delta > 0) {
-                if (textField.text.length + delta > owner.maxLength) {
-                    return false;
-                }
-            }
-
-            if (owner.updateTextTrigger === "textChanged") {
-                if (textField.secureTextEntry && this.firstEdit) {
-                    textProperty.nativeValueChange(owner, replacementString);
-                }
-                else {
-                    if (range.location <= textField.text.length) {
-                        const newText = NSString.stringWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
-                        textProperty.nativeValueChange(owner, newText);
-                    }
-                }
-            }
-
-            if (owner.formattedText) {
-                _updateCharactersInRangeReplacementString(owner.formattedText, range.location, range.length, replacementString);
-            }
+            return owner.textFieldShouldChangeCharactersInRangeReplacementString(textField, range, replacementString);
         }
-
-        this.firstEdit = false;
-
+        
         return true;
     }
 }
@@ -184,6 +144,80 @@ export class TextField extends TextFieldBase {
 
     get ios(): UITextField {
         return this.nativeViewProtected;
+    }
+
+    private firstEdit: boolean;
+
+    public textFieldShouldBeginEditing(textField: UITextField): boolean {
+        this.firstEdit = true;
+        
+        return this.editable;
+    }
+
+    public textFieldDidBeginEditing(textField: UITextField): void {
+        this.notify({ eventName: TextField.focusEvent, object: this });
+    }
+
+    public textFieldDidEndEditing(textField: UITextField) {
+        if (this.updateTextTrigger === "focusLost") {
+            textProperty.nativeValueChange(this, textField.text);
+        }
+
+        this.dismissSoftInput();
+    }
+
+    public textFieldShouldClear(textField: UITextField) {
+        this.firstEdit = false;
+        textProperty.nativeValueChange(this, "");
+
+        return true;
+    }
+
+    public textFieldShouldReturn(textField: UITextField): boolean {
+        // Called when the user presses the return button.
+        if (this.closeOnReturn) {
+            this.dismissSoftInput();
+        }
+        this.notify({ eventName: TextField.returnPressEvent, object: this });
+
+        return true;
+    }
+
+    public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
+        if (this.secureWithoutAutofill && !textField.secureTextEntry) {
+            /**
+             * Helps avoid iOS 12+ autofill strong password suggestion prompt
+             * Discussed in several circles but for example:
+             * https://github.com/expo/expo/issues/2571#issuecomment-473347380
+             */
+            textField.secureTextEntry = true;
+        }
+        const delta = replacementString.length - range.length;
+        if (delta > 0) {
+            if (textField.text.length + delta > this.maxLength) {
+                return false;
+            }
+        }
+
+        if (this.updateTextTrigger === "textChanged") {
+            if (textField.secureTextEntry && this.firstEdit) {
+                textProperty.nativeValueChange(this, replacementString);
+            }
+            else {
+                if (range.location <= textField.text.length) {
+                    const newText = NSString.stringWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
+                    textProperty.nativeValueChange(this, newText);
+                }
+            }
+        }
+
+        if (this.formattedText) {
+            _updateCharactersInRangeReplacementString(this.formattedText, range.location, range.length, replacementString);
+        }
+
+        this.firstEdit = false;
+
+        return true;
     }
 
     [hintProperty.getDefault](): string {
