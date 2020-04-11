@@ -27,7 +27,7 @@ export class Color implements definition.Color {
                     this._name = arg;
                     this._argb = this._argbFromString(hex);
                 } else if (HEX_REGEX.test(arg)) {
-                    // The parameter is a "#AARRGGBB" formatted string
+                    // The parameter is a "#RRGGBBAA" formatted string
                     const hex = this._normalizeHex(arg);
                     this._argb = this._argbFromString(hex);
                 } else {
@@ -93,7 +93,7 @@ export class Color implements definition.Color {
         let intVal = parseInt(hex, 16);
         if (hex.length === 6) {
             // add the alpha component since the provided string is RRGGBB
-            intVal = (intVal & 0x00FFFFFF) + 0xFF000000;
+            intVal = (intVal & 0xFFFFFF00) + 0x000000FF;
         }
 
         return intVal;
