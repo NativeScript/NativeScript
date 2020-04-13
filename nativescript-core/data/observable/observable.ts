@@ -66,7 +66,7 @@ export class Observable implements ObservableDefinition {
         this.notifyPropertyChange(name, value, oldValue);
 
         const specificPropertyChangeEventName = name + "Change";
-        if(this.hasListeners(specificPropertyChangeEventName)) {
+        if (this.hasListeners(specificPropertyChangeEventName)) {
             const eventData = this._createPropertyChangeData(name, value, oldValue);
             eventData.eventName = specificPropertyChangeEventName;
             this.notify(eventData);
