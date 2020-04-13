@@ -227,9 +227,13 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
             this._keyListenerCache = listener;
         }
 
-        // clear the listener if editable is false
+        // clear these fields instead of clearing listener.
+        // this allows input Type to be changed even after editable is false.
         if (!this.editable) {
-            nativeView.setKeyListener(null);
+            nativeView.setFocusable(false);
+            nativeView.setFocusableInTouchMode(false);
+            nativeView.setLongClickable(false);
+            nativeView.setClickable(false);
         }
     }
 
