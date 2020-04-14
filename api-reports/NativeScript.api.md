@@ -1503,6 +1503,8 @@ export class Observable {
     removeEventListener(eventNames: string, callback?: any, thisArg?: any);
 
     set(name: string, value: any): void;
+
+    setProperty(name: string, value: any): void;
     //@endprivate
 }
 
@@ -2425,10 +2427,11 @@ export class TabViewItem extends ViewBase {
 
 // @public
 export interface TapGestureEventData extends GestureEventData {
-    getPointerCount(): number;
+   getPointerCount(): number;
     getX(): number;
     getY(): number;
-}
+
+ }
 
 // @public
 export interface Template {
