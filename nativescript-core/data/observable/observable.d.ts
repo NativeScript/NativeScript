@@ -130,6 +130,11 @@ export class Observable {
     set(name: string, value: any): void;
 
     /**
+     * Updates the specified property with the provided value and raises a property change event and a specific change event based on the property name.
+     */
+    setProperty(name: string, value: any): void;
+
+    /**
      * Gets the value of the specified property.
      */
     get(name: string): any;
