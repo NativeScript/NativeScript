@@ -301,8 +301,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         const label = this.testView;
 
         const fontSize = 14;
-        const color = "#FFFF0000";
-        const backgroundColor = "#FF00FF00";
+        const color = "#FF0000FF";
+        const backgroundColor = "#00FF00FF";
         const testCss = [".title {background-color: ", backgroundColor, "; ",
             "color: ", color, "; ",
             "font-size: ", fontSize, ";}"].join("");
@@ -580,7 +580,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         let view = this.testView;
         let page = this.testPage;
         this.waitUntilTestElementIsLoaded();
-        let expectedColor = "#FFFF0000";
+        let expectedColor = "#FF0000FF";
         let expectedNormalizedColor = "#FF0000";
 
         page.css = "label:disabled { background-color: " + expectedColor + "; }";

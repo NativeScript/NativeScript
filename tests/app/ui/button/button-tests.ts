@@ -185,7 +185,7 @@ var _testNativeFontSizeFromLocal = function (views: Array<viewModule.View>) {
     helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromLocal");
 };
 
-var actualColorHex = "#ffff0000";
+var actualColorHex = "#ff0000ff";
 var expectedNormalizedColorHex = "#FF0000";
 var _testLocalColorFromCss = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -213,7 +213,7 @@ var _testNativeColorFromLocal = function (views: Array<viewModule.View>) {
     TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
 };
 
-var actualBackgroundColorHex = "#FF00FF00";
+var actualBackgroundColorHex = "#00FF00FF";
 var expectedNormalizedBackgroundColorHex = "#00FF00";
 var _testLocalBackgroundColorFromCss = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
@@ -272,7 +272,7 @@ export var test_StateHighlighted_also_fires_pressedState = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
         var view = <buttonModule.Button>views[0];
         var page = <pagesModule.Page>views[1];
-        var expectedColor = "#FFFF0000";
+        var expectedColor = "#FF0000FF";
         var expectedNormalizedColor = "#FF0000";
         page.css = "button:pressed { background-color: " + expectedColor + "; }";
 
@@ -289,7 +289,7 @@ export var test_StateHighlighted_also_fires_activeState = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
         var view = <buttonModule.Button>views[0];
         var page = <pagesModule.Page>views[1];
-        var expectedColor = "#FFFF0000";
+        var expectedColor = "#FF0000FF";
         var expectedNormalizedColor = "#FF0000";
         page.css = "button:active { background-color: " + expectedColor + "; }";
 
@@ -306,7 +306,7 @@ export var test_applying_disabled_visual_State_when_button_is_disable = function
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
         var view = <buttonModule.Button>views[0];
         var page = <pagesModule.Page>views[1];
-        var expectedColor = "#FFFF0000";
+        var expectedColor = "#FF0000FF";
         var expectedNormalizedColor = "#FF0000";
         page.css = "button:disabled { background-color: " + expectedColor + "; }";
 

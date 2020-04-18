@@ -5,7 +5,7 @@
       "version": "next"
     },
     "tns-ios": {
-      "version": "next"
+      "version": "6.5.0-2020-03-12-133513-01"
     }
   },
   "main": "app.js",

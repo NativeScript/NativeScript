@@ -339,7 +339,7 @@ export function test_cssShouldBeAppliedToAllNestedElements() {
     const stackLayout = new StackLayout();
     stackLayout.addChild(label);
     testPage.content = stackLayout;
-    testPage.css = "stackLayout {background-color: #FFFF0000;} label {background-color: #FF00FF00;}";
+    testPage.css = "stackLayout {background-color: #FF0000FF;} label {background-color: #00FF00FF;}";
 
     const pageFactory = function () {
         return testPage;
@@ -361,7 +361,7 @@ export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
     const stackLayout = new StackLayout();
     stackLayout.addChild(label);
     testPage.content = stackLayout;
-    testPage.css = "stackLayout {background-color: #FFFF0000;} label {background-color: #FF00FF00;}";
+    testPage.css = "stackLayout {background-color: #FF0000FF;} label {background-color: #00FF00FF;}";
 
     const pageFactory = function () {
         return testPage;
@@ -372,7 +372,7 @@ export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
     TKUnit.assertEqual(label.style.backgroundColor.hex, "#00FF00");
     TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#FF0000");
 
-    testPage.css = "stackLayout {background-color: #FF0000FF;} label {background-color: #FFFF0000;}";
+    testPage.css = "stackLayout {background-color: #0000FFFF;} label {background-color: #FF0000FF;}";
     TKUnit.assertEqual(label.style.backgroundColor.hex, "#FF0000");
     TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#0000FF");
 }
