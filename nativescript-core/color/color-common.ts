@@ -63,7 +63,7 @@ export class Color implements definition.Color {
         if (this.a === 0xFF) {
             return ("#" + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b)).toUpperCase();
         } else {
-            return ("#" + this._componentToHex(this.a) + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b)).toUpperCase();
+            return ("#" + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b) + this._componentToHex(this.a)).toUpperCase();
         }
     }
 
@@ -93,7 +93,12 @@ export class Color implements definition.Color {
         let intVal = parseInt(hex, 16);
         if (hex.length === 6) {
             // add the alpha component since the provided string is RRGGBB
-            intVal = (intVal & 0xFFFFFF00) + 0x000000FF;
+            intVal = (intVal & 0x00FFFFFF) + 0xFF000000;
+        } else {
+            // the new format is #RRGGBBAA 
+            // we need to shift the alpha value to 0x01000000 position
+            const a = (intVal / 0x00000001) & 0xFF;
+            intVal = (intVal >>> 8)  + (a & 0xFF) * 0x01000000;
         }
 
         return intVal;
