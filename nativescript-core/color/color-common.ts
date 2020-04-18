@@ -26,7 +26,9 @@ export class Color implements definition.Color {
                     const hex = knownColors.getKnownColor(arg);
                     this._name = arg;
                     this._argb = this._argbFromString(hex);
-                } else if (HEX_REGEX.test(arg)) {
+                } else if (arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
+                    //we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
+                    //strange that it would not be. And if it is not a thrown error seems best
                     // The parameter is a "#RRGGBBAA" formatted string
                     const hex = this._normalizeHex(arg);
                     this._argb = this._argbFromString(hex);
@@ -148,7 +150,8 @@ export class Color implements definition.Color {
     }
 
     private _normalizeHex(hexStr: string): string {
-        if (hexStr.charAt(0) === SHARP && hexStr.length === 4) {
+        // we expect this to already has a # as first char as it is supposed to be tested before
+        if (hexStr.length === 4) {
             // Duplicate each char after the #, so "#123" becomes "#112233"
             hexStr = hexStr.charAt(0)
                 + hexStr.charAt(1) + hexStr.charAt(1)
