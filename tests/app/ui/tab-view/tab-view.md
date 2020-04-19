@@ -55,9 +55,9 @@ export function onSelectedIndexChanged(args) {...}
 
 For the TabView component could be set three different styling properties
 
-* `selectedTabTextColor` (coresponding CSS property `selected-tab-text-color `) - change the color of the text, while selecting some of the tabs.
-* `tabBackgroundColor` (coresponding CSS property `tab-background-color`) - changing the background of the tabs.
-* `textTransform` (coresponding CSS property `text-transform`) - setting up textTransform individual for every `TabViewItem`. Value options: `capitalize`, `lowercase`, `none`, `uppercase`.
+* `selectedTabTextColor` (corresponding CSS property `selected-tab-text-color `) - change the color of the text, while selecting some of the tabs.
+* `tabBackgroundColor` (corresponding CSS property `tab-background-color`) - changing the background of the tabs.
+* `textTransform` (corresponding CSS property `text-transform`) - setting up textTransform individual for every `TabViewItem`. Value options: `capitalize`, `lowercase`, `none`, `uppercase`.
 
 ```XML
 <TabView selectedTabTextColor="#00FF00" tabBackgroundColor="#FF0000">
@@ -71,7 +71,7 @@ For the TabView component could be set three different styling properties
 
 ```
 
-* `androidSelectedTabHighlightColor`<sup>android specific property</sup> (coresponding CSS property `android-selected-tab-highlight-color`) - setup underline color of the `Tab`s in Android.
+* `androidSelectedTabHighlightColor`<sup>android specific property</sup> (corresponding CSS property `android-selected-tab-highlight-color`) - setup underline color of the `Tab`s in Android.
 
 ```XML
 <TabView androidSelectedTabHighlightColor="red">

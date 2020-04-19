@@ -57,6 +57,22 @@ export class Observable implements ObservableDefinition {
         this.notifyPropertyChange(name, newValue, oldValue);
     }
 
+    public setProperty(name: string, value: any) {
+        const oldValue = this[name];
+        if (this[name] === value) {
+            return;
+        }
+        this[name] = value;
+        this.notifyPropertyChange(name, value, oldValue);
+
+        const specificPropertyChangeEventName = name + "Change";
+        if (this.hasListeners(specificPropertyChangeEventName)) {
+            const eventData = this._createPropertyChangeData(name, value, oldValue);
+            eventData.eventName = specificPropertyChangeEventName;
+            this.notify(eventData);
+        }
+    }
+
     public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
         this.addEventListener(eventNames, callback, thisArg);
     }

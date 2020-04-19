@@ -39,7 +39,7 @@ function transformAst(node, css, type = null) {
         return {
             type: "stylesheet",
             stylesheet: {
-                rules: node.children.map(child => transformAst(child, css)).toArray(),
+                rules: node.children.map(child => transformAst(child, css)).filter(child => child !== null).toArray(),
                 parsingErrors: []
             }
         };
@@ -78,7 +78,7 @@ function transformAst(node, css, type = null) {
     }
 
     if (node.type === "Block") {
-        return node.children.map(child => transformAst(child, css, type)).toArray();
+        return node.children.map(child => transformAst(child, css, type)).filter(child => child !== null).toArray();
     }
 
     if (node.type === "Rule") {
@@ -114,6 +114,10 @@ function transformAst(node, css, type = null) {
             value: node.value.value ? node.value.value.trim() : "",
             position: mapPosition(node, css)
         };
+    }
+
+    if (node.type === "Raw") {
+        return null;
     }
 
     throw Error(`Unknown node type ${node.type}`);
