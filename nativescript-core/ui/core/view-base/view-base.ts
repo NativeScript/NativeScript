@@ -196,6 +196,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     public _domId: number;
     public _context: any;
+    public _readyForRequestLayout: boolean;
     public _isAddedToNativeVisualTree: boolean;
     public _cssState: ssm.CssState = new ssm.CssState(new WeakRef(this));
     public _styleScope: ssm.StyleScope;
@@ -344,8 +345,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         if (this._isLoaded) {
             return;
         }
-
-        this._isLoaded = true;
         this._cssState.onLoaded();
         this._resumeNativeUpdates(SuspendType.Loaded);
 
@@ -354,6 +353,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
             return true;
         });
+        this._isLoaded = true;
 
         this._emit("loaded");
     }
@@ -570,15 +570,16 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             setTimeout(() => this.performLayout(currentRun), currentRun);
             currentRun++;
         } else {
-            this.parent.requestLayout();
+            this.parent.requestLayout(true);
         }
     }
 
     @profile
-    public requestLayout(): void {
+    public requestLayout(calledFromChild = false): void {
         // Default implementation for non View instances (like TabViewItem).
         const parent = this.parent;
-        if (parent) {
+        if (parent && (!calledFromChild || this.style.width === "auto" || this.style.height === "auto" || parent.style.width === "auto" || parent.style.height === "auto")) {
+            // if parent view depends on child view we need to force call requestLayout on parent
             this.performLayout();
         }
     }
@@ -775,19 +776,31 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
 
         this.setNativeView(nativeView);
-
+        this._readyForRequestLayout = false;
         if (this.parent) {
             const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
             this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
+            this._readyForRequestLayout = this.parent._readyForRequestLayout;
         }
 
         this._resumeNativeUpdates(SuspendType.UISetup);
 
         this.eachChild((child) => {
+            child._readyForRequestLayout = this._readyForRequestLayout;
             child._setupUI(context);
 
             return true;
         });
+    }
+    set readyForRequestLayout(value: boolean) {
+        this._readyForRequestLayout = value;
+        this.eachChild((child) => {
+            child._readyForRequestLayout = value;
+            return true;
+        });
+    }
+    get readyForRequestLayout() {
+        return this._readyForRequestLayout;
     }
 
     setNativeView(value: any): void {

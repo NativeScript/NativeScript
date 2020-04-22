@@ -501,11 +501,19 @@ export class View extends ViewCommon {
     }
 
     @profile
-    public requestLayout(): void {
-        super.requestLayout();
-        if (this.nativeViewProtected) {
-            this.nativeViewProtected.requestLayout();
+    public requestLayout(calledFromChild?: boolean): void {
+        if (!this.isLoaded) {
+            return;
         }
+        const willBeCalledOnParent = (!calledFromChild || ((this.width === "auto" || this.height === "auto")));
+        if (!willBeCalledOnParent) {
+            if (this.nativeViewProtected) {
+                this.nativeViewProtected.requestLayout();
+            }
+        } else {
+            super.requestLayout(calledFromChild);
+        }
+        
     }
 
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {

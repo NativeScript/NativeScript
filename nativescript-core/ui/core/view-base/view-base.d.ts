@@ -103,6 +103,9 @@ export interface ShowModalOptions {
 }
 
 export abstract class ViewBase extends Observable {
+
+    readyForRequestLayout: boolean;
+    
     // Dynamic properties.
     left: Length;
     top: Length;
@@ -310,7 +313,7 @@ export abstract class ViewBase extends Observable {
     /**
      * Invalidates the layout of the view and triggers a new layout pass.
      */
-    public requestLayout(): void;
+    public requestLayout(calledFromChild?:boolean): void;
 
     /**
      * Iterates over children of type ViewBase.
