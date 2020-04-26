@@ -1,6 +1,9 @@
 <Page xmlns="http://www.nativescript.org/tns.xsd" loaded="onLoaded">
+    <Page.actionBar>
+        <ActionBar title="focus blur events"/>
+    </Page.actionBar>
     <StackLayout>
-        <TextField id="textField" />
-        <TextView id="textView" />
+        <TextField id="textField" hint="text field"/>
+        <TextView id="textView"  hint="text view"/>
     </StackLayout>
 </Page>
