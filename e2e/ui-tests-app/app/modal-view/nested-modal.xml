@@ -4,10 +4,6 @@
   loaded="onLoaded" unloaded="onUnloaded" backgroundColor="Red">
   <StackLayout backgroundColor="PaleGreen" margin="10">
     <Label text="{{ context }}"/>
-    <TextField hint="username" text="{{ username }}"/>
-    <TextField hint="password" text="{{ password }}" secure="true"/>
-    <Button text="Login" tap="{{ onLoginButtonTap }}"/>
-    <Button text="Show Alert" tap="{{ showAlert }}"/>
-    <Button text="Open Nested Modal" tap="{{ openNestedModal }}"/>
+    <Button text="Show Alert" tap="{{ onTap }}"/>
   </StackLayout>
 </Page>
