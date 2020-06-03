@@ -201,41 +201,40 @@ export function login(...args: any[]): Promise<LoginResult> {
 
 function showUIAlertController(alertController: UIAlertController) {
     let viewController = ios.rootController;
-    if (!viewController) {
-        traceWrite(`No root controller found to open dialog.`, traceCategories.Error, traceMessageType.warn);
-        return;
-    }
-
-    while (viewController.presentedViewController) {
+   
+    while (viewController && viewController.presentedViewController) {
         viewController = viewController.presentedViewController;
     }
 
-    if (viewController) {
-        if (alertController.popoverPresentationController) {
-            alertController.popoverPresentationController.sourceView = viewController.view;
-            alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
-            alertController.popoverPresentationController.permittedArrowDirections = 0;
-        }
-
-        let color = getButtonColors().color;
-        if (color) {
-            alertController.view.tintColor = color.ios;
-        }
-
-        let lblColor = getLabelColor();
-        if (lblColor) {
-            if (alertController.title) {
-                let title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-                alertController.setValueForKey(title, "attributedTitle");
-            }
-            if (alertController.message) {
-                let message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-                alertController.setValueForKey(message, "attributedMessage");
-            }
-        }
-
-        viewController.presentModalViewControllerAnimated(alertController, true);
+    if (!viewController) {
+      traceWrite(`No root controller found to open dialog.`, traceCategories.Error, traceMessageType.warn);
+      return;
     }
+
+    if (alertController.popoverPresentationController) {
+        alertController.popoverPresentationController.sourceView = viewController.view;
+        alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
+        alertController.popoverPresentationController.permittedArrowDirections = 0;
+    }
+
+    let color = getButtonColors().color;
+    if (color) {
+        alertController.view.tintColor = color.ios;
+    }
+
+    let lblColor = getLabelColor();
+    if (lblColor) {
+        if (alertController.title) {
+            let title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+            alertController.setValueForKey(title, "attributedTitle");
+        }
+        if (alertController.message) {
+            let message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+            alertController.setValueForKey(message, "attributedMessage");
+        }
+    }
+
+    viewController.presentModalViewControllerAnimated(alertController, true);
 }
 
 export function action(): Promise<string> {
