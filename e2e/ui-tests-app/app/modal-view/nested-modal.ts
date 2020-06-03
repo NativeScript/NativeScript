@@ -9,7 +9,7 @@ export function onShowingModally(args: ShownModallyData) {
     page.bindingContext = fromObject({
         context: args.context,
         onTap: function () {
-            alert('it works!')
+            alert("it works!");
         }
     });
 }

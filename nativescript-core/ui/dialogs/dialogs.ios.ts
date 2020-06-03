@@ -208,6 +208,7 @@ function showUIAlertController(alertController: UIAlertController) {
 
     if (!viewController) {
       traceWrite(`No root controller found to open dialog.`, traceCategories.Error, traceMessageType.warn);
+      
       return;
     }
 

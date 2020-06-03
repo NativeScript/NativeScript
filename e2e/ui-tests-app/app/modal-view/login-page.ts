@@ -15,14 +15,14 @@ export function onShowingModally(args: ShownModallyData) {
             args.closeCallback(this.username, this.password);
         },
         showAlert: function () {
-          alert('showing alert!')
+          alert("showing alert!");
           args.closeCallback();
       },
       openNestedModal: function () {
           page.showModal("modal-view/nested-modal", {
             context: "First",
             closeCallback: () => {
-                
+              console.log("login-page.openNestedModal");
             }
         });
       }
