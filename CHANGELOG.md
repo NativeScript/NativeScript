@@ -1,3 +1,12 @@
+## [6.5.4](https://github.com/NativeScript/NativeScript/compare/6.5.3...6.5.4) (2020-06-04)
+
+
+### Bug Fixes
+
+* **core:** pin typescript to 3.8.3 to avoid __exportStar issue ([#8612](https://github.com/NativeScript/NativeScript/issues/8612)) ([8931295](https://github.com/NativeScript/NativeScript/commit/8931295ab54e1522848ba4d3986f9ba02926644c))
+
+
+
 ## [6.5.3](https://github.com/NativeScript/NativeScript/compare/6.5.2...6.5.3) (2020-06-04)
 
 
