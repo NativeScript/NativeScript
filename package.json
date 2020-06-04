@@ -2,6 +2,7 @@
   "name": "NativeScript",
   "description": "Telerik NativeScript Core Modules",
   "homepage": "https://www.nativescript.org",
+  "version": "6.5.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/NativeScript/NativeScript"
@@ -14,6 +15,7 @@
     "@types/mocha": "^2.2.42",
     "@types/node": "~10.12.18",
     "chai": "^4.1.2",
+    "conventional-changelog-cli": "^2.0.34",
     "css": "^2.2.1",
     "css-tree": "^1.0.0-alpha.37",
     "gonzales": "^1.0.7",
@@ -52,6 +54,7 @@
     "typedoc": "npm run api-extractor && typedoc --tsconfig tsconfig.typedoc.json",
     "typedoc-dev": "npm run typedoc && cd bin/dist/apiref && npx http-server",
     "build-core": "sh ./build/build-core.sh",
-    "build-compat": "sh ./build/build-compat.sh"
+    "build-compat": "sh ./build/build-compat.sh",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
   }
 }

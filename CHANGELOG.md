@@ -1,3 +1,29 @@
+## [6.5.3](https://github.com/NativeScript/NativeScript/compare/6.5.2...6.5.3) (2020-06-04)
+
+
+### Bug Fixes
+
+* **ios:** dialog handling with top view controller ([#8609](https://github.com/NativeScript/NativeScript/issues/8609)) ([b015eee](https://github.com/NativeScript/NativeScript/commit/b015eeed515b2b42f89bbe3e25a987fa3230706c))
+
+
+## [6.5.2](https://github.com/NativeScript/NativeScript/compare/6.5.1...6.5.2) (2020-05-28)
+
+### Features
+
+* setProperty on Observable ([#8521](https://github.com/NativeScript/NativeScript/pull/8521))([7cf3c97](https://github.com/NativeScript/NativeScript/commit/7cf3c97))
+ 
+### Bug Fixes
+
+* fix ios hmr ([#8559](https://github.com/NativeScript/NativeScript/pull/8559)) ([446163d](https://github.com/NativeScript/NativeScript/commit/446163d))
+* the css parser should handle empty nodes ([#8503](https://github.com/NativeScript/NativeScript/pull/8503)) ([f7ab4ba](https://github.com/NativeScript/NativeScript/commit/f7ab4ba))
+* parse css selectors with escape sequences (for real) ([#8496](https://github.com/NativeScript/NativeScript/pull/8496)) ([50eb372](https://github.com/NativeScript/NativeScript/commit/50eb372))
+* do not clear androidView._cachedDrawable ([#8475](https://github.com/NativeScript/NativeScript/pull/8475)) ([e421129](https://github.com/NativeScript/NativeScript/commit/e421129))
+* call to nativeView ([#8488](https://github.com/NativeScript/NativeScript/pull/8488)) ([2b06adc](https://github.com/NativeScript/NativeScript/commit/2b06adc))
+* dont default to Font.default ([#8401](https://github.com/NativeScript/NativeScript/pull/8401)) ([ad9daa8](https://github.com/NativeScript/NativeScript/commit/ad9daa8))
+* **tabs:** dynamic styling fixes ([#8479](https://github.com/NativeScript/NativeScript/pull/8479)) ([fc8f769](https://github.com/NativeScript/NativeScript/commit/fc8f769))
+* **android/TextField** dont default to Font.default ([#8525](https://github.com/NativeScript/NativeScript/pull/8525)) ([50e58fa](https://github.com/NativeScript/NativeScript/commit/50e58fa))
+
+
 ## [6.5.1](https://github.com/NativeScript/NativeScript/compare/6.5.0...6.5.1) (2020-03-30)
 
 
