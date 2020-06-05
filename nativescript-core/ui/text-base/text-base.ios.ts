@@ -141,13 +141,7 @@ export class TextBase extends TextBaseCommon {
     }
     [colorProperty.setNative](value: Color | UIColor) {
         const color = value instanceof Color ? value.ios : value;
-        const nativeView = this.nativeTextViewProtected;
-        if (nativeView instanceof UIButton) {
-            nativeView.setTitleColorForState(color, UIControlState.Normal);
-            nativeView.titleLabel.textColor = color;
-        } else {
-            nativeView.textColor = color;
-        }
+        this._setColor(color);
     }
 
     [fontInternalProperty.getDefault](): UIFont {
@@ -217,6 +211,16 @@ export class TextBase extends TextBaseCommon {
             this.setFormattedTextDecorationAndTransform();
         } else {
             this.setTextDecorationAndTransform();
+        }
+    }
+
+    _setColor(color: UIColor): void {
+        const nativeView = this.nativeTextViewProtected;
+        if (nativeView instanceof UIButton) {
+            nativeView.setTitleColorForState(color, UIControlState.Normal);
+            nativeView.titleLabel.textColor = color;
+        } else {
+            nativeView.textColor = color;
         }
     }
 
@@ -306,14 +310,6 @@ export class TextBase extends TextBaseCommon {
             dict.set(NSParagraphStyleAttributeName, paragraphStyle);
         }
 
-        if (dict.size > 0 || isTextView) {
-            if (style.color) {
-                dict.set(NSForegroundColorAttributeName, style.color.ios);
-            } else if (majorVersion >= 13 && UIColor.labelColor) {
-                dict.set(NSForegroundColorAttributeName, UIColor.labelColor);
-            }
-        }
-
         const text = this.text;
         const string = (text === undefined || text === null) ? "" : text.toString();
         const source = getTransformedText(string, this.textTransform);
@@ -340,6 +336,10 @@ export class TextBase extends TextBaseCommon {
                 this.nativeTextViewProtected.attributedText = undefined;
                 this.nativeTextViewProtected.text = source;
             }
+        }
+
+        if (!style.color && majorVersion >= 13 && UIColor.labelColor) {
+            this._setColor(UIColor.labelColor);
         }
     }
 
