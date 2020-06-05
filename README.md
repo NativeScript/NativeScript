@@ -65,7 +65,7 @@ The NativeScript framework consists of a number of components, all of which are 
 - **[CLI](//github.com/NativeScript/nativescript-cli)**
     [![npm](https://img.shields.io/npm/dm/nativescript.svg)](https://www.npmjs.com/package/nativescript) 
     - This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using the NativeScript framework. The CLI is written in TypeScript.
-- **[Docs](//github.com/NativeScript/docs)**
+- **[Docs](//github.com/NativeScript/docs)** [![Docs](https://img.shields.io/badge/Docs-NativeScript-brightgreen)](https://docs.nativescript.org/)
     - This repo contains the NativeScript framework documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
 
 In addition to the code that makes up the NativeScript framework itself, we also provide a number of [open-source sample apps](https://www.nativescript.org/app-samples-with-code) that you can reference while building your NativeScript application.
