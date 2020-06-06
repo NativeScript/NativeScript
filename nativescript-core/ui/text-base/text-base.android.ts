@@ -532,13 +532,13 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
         ssb.setSpan(new android.text.style.ForegroundColorSpan(color.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
-    let backgroundColor: Color = getClosestPropertyValue(backgroundColorProperty, span);
+    const backgroundColor: Color = getClosestPropertyValue(backgroundColorProperty, span);
 
     if (backgroundColor) {
         ssb.setSpan(new android.text.style.BackgroundColorSpan(backgroundColor.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
-    let textDecoration: TextDecoration = getClosestPropertyValue(textDecorationProperty, span);
+    const textDecoration: TextDecoration = getClosestPropertyValue(textDecorationProperty, span);
 
     if (textDecoration) {
         const underline = textDecoration.indexOf("underline") !== -1;
