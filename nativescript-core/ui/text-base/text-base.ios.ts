@@ -281,12 +281,15 @@ export class TextBase extends TextBaseCommon {
                 throw new Error(`Invalid text decoration value: ${style.textDecoration}. Valid values are: 'none', 'underline', 'line-through', 'underline line-through'.`);
         }
 
-        if (style.letterSpacing !== 0) {
+        if (style.letterSpacing !== 0 && this.nativeTextViewProtected.font) {
             const kern = style.letterSpacing * this.nativeTextViewProtected.font.pointSize
             dict.set(NSKernAttributeName, kern);
-            if (this.nativeTextViewProtected instanceof UITextField) {
-                this.nativeTextViewProtected.defaultTextAttributes.setObjectForKey(kern, NSKernAttributeName);
-            }
+        }
+
+        if (style.color) {
+            dict.set(NSForegroundColorAttributeName, style.color.ios);
+        } else if (majorVersion >= 13 && UIColor.labelColor) {
+            dict.set(NSForegroundColorAttributeName, UIColor.labelColor);
         }
 
         const isTextView = this.nativeTextViewProtected instanceof UITextView;
@@ -311,19 +314,9 @@ export class TextBase extends TextBaseCommon {
             dict.set(NSParagraphStyleAttributeName, paragraphStyle);
         }
 
+        const source = getTransformedText(this.text ? this.text.toString() : "", this.textTransform);
         if (dict.size > 0 || isTextView) {
-            if (style.color) {
-                dict.set(NSForegroundColorAttributeName, style.color.ios);
-            } else if (majorVersion >= 13 && UIColor.labelColor) {
-                dict.set(NSForegroundColorAttributeName, UIColor.labelColor);
-            }
-        }
-
-        const text = this.text;
-        const string = (text === undefined || text === null) ? "" : text.toString();
-        const source = getTransformedText(string, this.textTransform);
-        if (dict.size > 0 || isTextView) {
-            if (isTextView) {
+            if (isTextView && this.nativeTextViewProtected.font) {
                 // UITextView's font seems to change inside.
                 dict.set(NSFontAttributeName, this.nativeTextViewProtected.font);
             }
