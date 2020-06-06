@@ -37,13 +37,12 @@ Below is a common NativeScript architecture diagram. In more detail, read the [H
 ## Quick Links
 
 - [NativeScript home page](https://nativescript.org)
-- [NativeScript code samples](https://docs.nativescript.org/angular/code-samples/overview)
+- [NativeScript code samples](https://market.nativescript.org/?tab=samples&framework=all_frameworks&category=all_samples)
 - [Install NativeScript demo mobile app](https://www.nativescript.org/nativescript-example-application)
 - [NativeScript playground](https://play.nativescript.org)
-- [NativeScript and Angular](https://docs.nativescript.org/angular/tutorial/ng-chapter-0)
+- [NativeScript and Angular](https://play.nativescript.org/?template=play-ng&tutorial=getting-started-ng)
 - [@NativeScript on Twitter](http://twitter.com/NativeScript)
-- [NativeScript community Slack channel](http://developer.telerik.com/wp-login.php?action=slack-invitation)
-- [NativeScript community forum](https://discourse.nativescript.org/)
+- [NativeScript community Slack channel](https://www.nativescript.org/slack-invitation-form)
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
 - [NativeScript documentation](https://docs.nativescript.org/)
 - [NativeScript marketplace](https://market.nativescript.org/)
