@@ -1,5 +1,5 @@
 // Types
-import { TextTransformation, TextDecoration, TextAlignment, TextTransform, WhiteSpace } from "./text-base-common";
+import { TextTransformation, TextDecoration, TextAlignment, TextTransform, WhiteSpace, getClosestPropertyValue } from "./text-base-common";
 
 // Requires
 import { Font } from "../styling/font";
@@ -496,18 +496,6 @@ class BaselineAdjustedSpan extends android.text.style.MetricAffectingSpan {
         if (this.align === "sub") {
             return paint.baselineShift = (metrics.descent - metrics.ascent) * .4;
         }
-    }
-}
-
-function getClosestPropertyValue(property: any, span: Span) {
-    if ((<Property<any, any>>property).isSet(span.style)) {
-        return span.style[property.name];
-    } else if ((<Property<any, any>>property).isSet(span.parent.style)) {
-        // parent is FormattedString
-        return span.parent.style[property.name];
-    } else if ((<Property<any, any>>property).isSet(span.parent.parent.style)) {
-        // parent.parent is TextBase
-        return span.parent.parent.style[property.name];
     }
 }
 

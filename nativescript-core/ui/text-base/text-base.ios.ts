@@ -1,5 +1,5 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform, layout } from "./text-base-common";
+import { TextDecoration, TextAlignment, TextTransform, layout, getClosestPropertyValue } from "./text-base-common";
 
 // Requires
 import { Font } from "../styling/font";
@@ -407,18 +407,17 @@ export class TextBase extends TextBaseCommon {
 
     createMutableStringForSpan(span: Span, text: string): NSMutableAttributedString {
         const viewFont = this.nativeTextViewProtected.font;
-        let attrDict = <{ key: string, value: any }>{};
+        const attrDict = <{ key: string, value: any }>{};
         const style = span.style;
         const align = style.verticalAlignment;
 
-        let font = new Font(style.fontFamily, style.fontSize, style.fontStyle, style.fontWeight);
-        let iosFont = font.getUIFont(viewFont);
+        const font = new Font(style.fontFamily, style.fontSize, style.fontStyle, style.fontWeight);
+        const iosFont = font.getUIFont(viewFont);
 
         attrDict[NSFontAttributeName] = iosFont;
 
-        const color = span.color;
-        if (color) {
-            attrDict[NSForegroundColorAttributeName] = color.ios;
+        if (span.color) {
+            attrDict[NSForegroundColorAttributeName] = span.color.ios;
         }
 
         // We don't use isSet function here because defaultValue for backgroundColor is null.
@@ -429,7 +428,7 @@ export class TextBase extends TextBaseCommon {
             attrDict[NSBackgroundColorAttributeName] = backgroundColor.ios;
         }
 
-        let textDecoration: TextDecoration = getClosestPropertyValue(textDecorationProperty, span);
+        const textDecoration: TextDecoration = getClosestPropertyValue(textDecorationProperty, span);
 
         if (textDecoration) {
             const underline = textDecoration.indexOf("underline") !== -1;
@@ -448,18 +447,6 @@ export class TextBase extends TextBaseCommon {
         }
 
         return NSMutableAttributedString.alloc().initWithStringAttributes(text, <any>attrDict);
-    }
-}
-
-function getClosestPropertyValue(property: any, span: Span) {
-    if ((<Property<any, any>>property).isSet(span.style)) {
-        return span.style[property.name];
-    } else if ((<Property<any, any>>property).isSet(span.parent.style)) {
-        // parent is FormattedString
-        return span.parent.style[property.name];
-    } else if ((<Property<any, any>>property).isSet(span.parent.parent.style)) {
-        // parent.parent is TextBase
-        return span.parent.parent.style[property.name];
     }
 }
 

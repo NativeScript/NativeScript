@@ -201,6 +201,18 @@ function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: Form
     }
 }
 
+export function getClosestPropertyValue<T>(property: CssProperty<any, T>, span: Span): T {
+  if (property.isSet(span.style)) {
+      return span.style[property.name];
+  } else if (property.isSet(span.parent.style)) {
+      // parent is FormattedString
+      return span.parent.style[property.name];
+  } else if (property.isSet(span.parent.parent.style)) {
+      // parent.parent is TextBase
+      return span.parent.parent.style[property.name];
+  }
+}
+
 const textAlignmentConverter = makeParser<TextAlignment>(makeValidator<TextAlignment>("initial", "left", "center", "right"));
 export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({ name: "textAlignment", cssName: "text-align", defaultValue: "initial", valueConverter: textAlignmentConverter });
 textAlignmentProperty.register(Style);
