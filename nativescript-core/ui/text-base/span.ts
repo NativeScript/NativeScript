@@ -65,7 +65,7 @@ export class Span extends ViewBase implements SpanDefinition {
     }
     set text(value: string) {
         if (this._text !== value) {
-            this._text = value;
+            this._text = value && value.replace("\\n", "\n").replace("\\t", "\t");
             this.notifyPropertyChange("text", value);
         }
     }
