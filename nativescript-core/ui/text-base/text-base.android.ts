@@ -11,7 +11,6 @@ import {
     whiteSpaceProperty, lineHeightProperty, FormattedString, layout, Span, Color, isBold, resetSymbol
 } from "./text-base-common";
 import { isString } from "../../utils/types";
-import { Property } from "../core/properties/properties";
 
 export * from "./text-base-common";
 
