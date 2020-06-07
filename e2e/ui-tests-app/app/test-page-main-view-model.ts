@@ -23,7 +23,7 @@ export class TestPageMainViewModel extends Observable {
         console.log(" EXAMPLE: " + selectedExample);
         if (this._examples.has(selectedExample)) {
             this.navigateToExample(this._examples.get(selectedExample));
-        } else if (selectedExample.indexOf("/") > 0) {
+        } else if (selectedExample && selectedExample.indexOf("/") > 0) {
             this.navigateToExample(selectedExample);
         }
     }

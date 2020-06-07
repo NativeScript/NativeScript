@@ -3,7 +3,7 @@ import { TextTransformation, TextDecoration, TextAlignment, TextTransform, White
 
 // Requires
 import { Font } from "../styling/font";
-import { backgroundColorProperty } from "../styling/style-properties";
+import { backgroundColorProperty, VerticalAlignment } from "../styling/style-properties";
 import {
     TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
     textProperty, textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty,
@@ -444,9 +444,9 @@ function createSpannableStringBuilder(formattedString: FormattedString, defaultF
 
 class BaselineAdjustedSpan extends android.text.style.MetricAffectingSpan {
     fontSize: number;
-    align: string | number = "baseline";
+    align: VerticalAlignment = "baseline";
 
-    constructor(fontSize: number, align?: string | number) {
+    constructor(fontSize: number, align?: VerticalAlignment) {
         super();
 
         this.align = align;
@@ -464,7 +464,7 @@ class BaselineAdjustedSpan extends android.text.style.MetricAffectingSpan {
     updateState(paint: android.text.TextPaint) {
         const metrics = paint.getFontMetrics();
 
-        if (!this.align || this.align === "baseline") {
+        if (!this.align || ["baseline", "stretch"].includes(this.align)) {
             return;
         }
 

@@ -3,6 +3,7 @@ import { TextDecoration, TextAlignment, TextTransform, layout, getClosestPropert
 
 // Requires
 import { Font } from "../styling/font";
+import { VerticalAlignment } from "../styling/style-properties";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, lineHeightProperty,
@@ -216,12 +217,11 @@ export class TextBase extends TextBaseCommon {
     }
 
     _setColor(color: UIColor): void {
-        const nativeView = this.nativeTextViewProtected;
-        if (nativeView instanceof UIButton) {
-            nativeView.setTitleColorForState(color, UIControlState.Normal);
-            nativeView.titleLabel.textColor = color;
+        if (this.nativeTextViewProtected instanceof UIButton) {
+            this.nativeTextViewProtected.setTitleColorForState(color, UIControlState.Normal);
+            this.nativeTextViewProtected.titleLabel.textColor = color;
         } else {
-            nativeView.textColor = color;
+            this.nativeTextViewProtected.textColor = color;
         }
     }
 
@@ -286,7 +286,7 @@ export class TextBase extends TextBaseCommon {
         }
 
         if (style.letterSpacing !== 0 && this.nativeTextViewProtected.font) {
-            const kern = style.letterSpacing * this.nativeTextViewProtected.font.pointSize
+            const kern = style.letterSpacing * this.nativeTextViewProtected.font.pointSize;
             dict.set(NSKernAttributeName, kern);
         }
 
@@ -372,8 +372,8 @@ export class TextBase extends TextBaseCommon {
         return mas;
     }
 
-    getBaselineOffset(font: UIFont, align?: string | number): number {
-        if (!align || align === "baseline") {
+    getBaselineOffset(font: UIFont, align?: VerticalAlignment): number {
+        if (!align || ["stretch", "baseline"].includes(align)) {
             return 0;
         }
 
