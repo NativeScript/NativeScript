@@ -1,5 +1,5 @@
 /// <reference path="./nativescript-error.d.ts" />
-declare var global: NodeJS.Global;
+declare var global: NodeJS.Global & typeof globalThis;
 
 interface ModuleResolver {
     /**
