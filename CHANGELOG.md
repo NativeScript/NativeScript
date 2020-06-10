@@ -1,3 +1,19 @@
+## [6.5.5](https://github.com/NativeScript/NativeScript/compare/6.5.4...6.5.5) (2020-06-10)
+
+
+### Bug Fixes
+
+* **text-base:** apply letter spacing in ios text field ([#8618](https://github.com/NativeScript/NativeScript/issues/8618)) ([e2a9af2](https://github.com/NativeScript/NativeScript/commit/e2a9af2bc74d0198882a9c1a57b7785d37ba947c))
+* **text-base:** letter spacing for textfield ([#8627](https://github.com/NativeScript/NativeScript/issues/8627)) ([eb4c61f](https://github.com/NativeScript/NativeScript/commit/eb4c61fc413c9a2ee6a9ef6aef10a234644516df))
+* **text-base:** update text color for ios ([#8617](https://github.com/NativeScript/NativeScript/issues/8617)) ([d3549ac](https://github.com/NativeScript/NativeScript/commit/d3549ac115ecd39967790eaca2ea85bb1b291bbc))
+
+
+### Features
+
+* **text-base:** Add Span vertical-align support ([#8257](https://github.com/NativeScript/NativeScript/issues/8257)) ([faa0181](https://github.com/NativeScript/NativeScript/commit/faa0181b9c95b0e0ca55e922f09bde804ac6537f))
+
+
+
 ## [6.5.4](https://github.com/NativeScript/NativeScript/compare/6.5.3...6.5.4) (2020-06-04)
 
 
