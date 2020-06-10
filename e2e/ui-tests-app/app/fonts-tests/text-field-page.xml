@@ -6,6 +6,8 @@
     <TextField text="left"    style="text-align: left" />
     <TextField text="center"  style="text-align: center" />
     <TextField text="right"   style="text-align: right" />
+    <!-- Text must not be predefined in the letter spacing test -->
+    <TextField style="letter-spacing: 0.9em;" />
 
     <WrapLayout>
       <TextField text="normal" />

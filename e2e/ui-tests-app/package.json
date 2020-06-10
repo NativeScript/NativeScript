@@ -35,6 +35,7 @@
   "gitHead": "8ab7726d1ee9991706069c1359c552e67ee0d1a4",
   "readme": "NativeScript Application",
   "scripts": {
+    "clean": "npx rimraf hooks node_modules platforms package-lock.json",
     "e2e": "tsc -p e2e && mocha --opts ../config/mocha.opts --recursive e2e --appiumCapsLocation ../config/appium.capabilities.json",
     "e2e-debug": "./node_modules/.bin/ns-dev-appium --startSession",
     "e2e-watch": "tsc -p e2e --watch",
