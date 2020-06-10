@@ -288,6 +288,9 @@ export class TextBase extends TextBaseCommon {
         if (style.letterSpacing !== 0 && this.nativeTextViewProtected.font) {
             const kern = style.letterSpacing * this.nativeTextViewProtected.font.pointSize;
             dict.set(NSKernAttributeName, kern);
+            if (this.nativeTextViewProtected instanceof UITextField) {
+              this.nativeTextViewProtected.defaultTextAttributes.setValueForKey(kern, NSKernAttributeName);
+            }
         }
 
         if (style.color) {
