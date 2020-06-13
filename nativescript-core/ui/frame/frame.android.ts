@@ -361,6 +361,25 @@ export class Frame extends FrameBase {
         }
     }
 
+    public onBackPressed(): boolean {
+        if (this.canGoBack()) {
+            this.goBack();
+
+            return true;
+        }
+
+        if (!this.navigationQueueIsEmpty()) {
+            const manager = this._getFragmentManager();
+            if (manager) {
+                manager.executePendingTransactions();
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // HACK: This @profile decorator creates a circular dependency
     // HACK: because the function parameter type is evaluated with 'typeof'
     @profile
