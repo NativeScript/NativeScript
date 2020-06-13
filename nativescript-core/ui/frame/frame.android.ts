@@ -1229,8 +1229,9 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             cancel: false,
         };
         view.notify(viewArgs);
-        
-        if (!viewArgs.cancel && !view.onBackPressed()) {
+
+        // In the case of Frame, use this callback only if it was overridden, since the original will cause navigation issues
+        if (view.onBackPressed === Frame.prototype.onBackPressed || !viewArgs.cancel && !view.onBackPressed()) {
             callSuper = view instanceof Frame ? !FrameBase.goBack() : true;
         }
 
