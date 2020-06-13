@@ -401,7 +401,18 @@ export class View extends ViewCommon {
         // Delegate back navigation handling to the topmost Frame
         // when it's a child of the current View.
         if (topmostFrame && topmostFrame._hasAncestorView(this)) {
-            return topmostFrame.onBackPressed();
+            if (topmostFrame.canGoBack()) {
+                topmostFrame.goBack();
+                return true;
+            }
+
+            if (!topmostFrame.navigationQueueIsEmpty()) {
+                const manager = topmostFrame._getFragmentManager();
+                if (manager) {
+                    manager.executePendingTransactions();
+                    return true;
+                }
+            }
         }
 
         return false;
