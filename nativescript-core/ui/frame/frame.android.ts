@@ -1221,20 +1221,18 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
         const view = this._rootView;
         let callSuper = false;
-        if (view instanceof Frame) {
-            callSuper = !FrameBase.goBack();
-        } else {
-            const viewArgs = <application.AndroidActivityBackPressedEventData>{
-                eventName: "activityBackPressed",
-                object: view,
-                activity: activity,
-                cancel: false,
-            };
-            view.notify(viewArgs);
+        
+        const viewArgs = <application.AndroidActivityBackPressedEventData>{
+            eventName: "activityBackPressed",
+            object: view,
+            activity: activity,
+            cancel: false,
+        };
+        view.notify(viewArgs);
 
-            if (!viewArgs.cancel && !view.onBackPressed()) {
-                callSuper = true;
-            }
+        // In the case of Frame, use this callback only if it was overridden, since the original will cause navigation issues
+        if (!viewArgs.cancel && (view.onBackPressed === Frame.prototype.onBackPressed || !view.onBackPressed())) {
+            callSuper = view instanceof Frame ? !FrameBase.goBack() : true;
         }
 
         if (callSuper) {
