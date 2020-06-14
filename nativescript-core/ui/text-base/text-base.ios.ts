@@ -365,10 +365,10 @@ export class TextBase extends TextBaseCommon {
                     spanText = getTransformedText(spanText, textTransform);
                 }
 
-                const nsAttributedString = this.createMutableStringForSpan(span, spanText);
+                const nsAttributedString = this.createStringForSpan(span, spanText);
                 mas.insertAttributedStringAtIndex(nsAttributedString, spanStart);
-                this._spanRanges.push({location: spanStart, length: spanText.length});
-                spanStart += spanText.length;
+                this._spanRanges.push({location: spanStart, length: nsAttributedString.length});
+                spanStart += nsAttributedString.length;
             }
         }
 
@@ -409,7 +409,7 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    createMutableStringForSpan(span: Span, text: string): NSMutableAttributedString {
+    createStringForSpan(span: Span, text: string): NSAttributedString {
         const viewFont = this.nativeTextViewProtected.font;
         const attrDict = <{ key: string, value: any }>{};
         const style = span.style;
@@ -417,6 +417,19 @@ export class TextBase extends TextBaseCommon {
 
         const font = new Font(style.fontFamily, style.fontSize, style.fontStyle, style.fontWeight);
         const iosFont = font.getUIFont(viewFont);
+
+        const imageSrc = span.imageSrc;
+        if (imageSrc && imageSrc !== "") {
+            const txtAttachment = NSTextAttachment.alloc().init();
+            var img = UIImage.imageWithContentsOfFile(imageSrc);
+            if (style.imageHeight) {
+                const scaleFactor = img.size.height / style.imageHeight;
+                img = UIImage.imageWithCGImageScaleOrientation(img.CGImage, scaleFactor, UIImageOrientationUp);
+            }
+            txtAttachment.image = img;
+
+            return NSAttributedString.attributedStringWithAttachment(txtAttachment);
+        }
 
         attrDict[NSFontAttributeName] = iosFont;
 

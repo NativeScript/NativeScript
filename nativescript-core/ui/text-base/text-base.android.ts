@@ -10,8 +10,10 @@ import {
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length,
     whiteSpaceProperty, lineHeightProperty, FormattedString, layout, Span, Color, isBold, resetSymbol
 } from "./text-base-common";
+import { Length } from "../core/view";
 import { isString } from "../../utils/types";
 
+import * as platform from "../../platform";
 export * from "./text-base-common";
 
 let TextTransformation: TextTransformation;
@@ -554,6 +556,23 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
 
     if (align) {
       ssb.setSpan(new BaselineAdjustedSpan(defaultFontSize * layout.getDisplayDensity(), align), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
+    const imageSrc = span.imageSrc;
+    if (imageSrc && imageSrc !== "") {
+        const drawable = android.graphics.drawable.Drawable.createFromPath(imageSrc);
+        if (drawable != null) {
+            const screen = platform.screen.mainScreen;
+            var height = drawable.getMinimumHeight();
+            var width = drawable.getMinimumWidth();
+            if (spanStyle.imageHeight) {
+                const w_h_ratio = width / height;
+                height = Math.min(Length.toDevicePixels(spanStyle.imageHeight, 0), screen.heightPixels);
+                width = height * w_h_ratio;
+            }
+            drawable.setBounds(0, 0, width, height);
+            ssb.setSpan(new android.text.style.ImageSpan(drawable, android.text.style.DynamicDrawableSpan.ALIGN_CENTER), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
     }
 
     const tappable = span.tappable;

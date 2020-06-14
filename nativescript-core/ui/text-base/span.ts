@@ -60,6 +60,23 @@ export class Span extends ViewBase implements SpanDefinition {
         this.style.backgroundColor = value;
     }
 
+    get imageHeight(): number {
+        return this.style.imageHeight;
+    }
+    set imageHeight(value: number) {
+        this.style.imageHeight = value;
+    }
+
+    get imageSrc(): string {
+        return this._imageSrc;
+    }
+    set imageSrc(value: string) {
+        if (this._imageSrc !== value) {
+            this._imageSrc = value;
+            this.notifyPropertyChange("imageSrc", value);
+        }
+    }
+
     get text(): string {
         return this._text;
     }
