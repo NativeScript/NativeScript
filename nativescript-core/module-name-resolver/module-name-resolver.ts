@@ -44,6 +44,8 @@ export class ModuleNameResolver implements ModuleNameResolverDefinition {
             registerModulesFromFileSystem(path);
         }
 
+        // This is a dirty way for loading script and style files in the case of qualifier-based pages
+        path = path.split(".", path.startsWith(".") ? 2 : 1).join(".");
         let candidates = this.getCandidates(path, ext);
         result = findMatch(path, ext, candidates, this.context);
 
