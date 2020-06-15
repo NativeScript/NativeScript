@@ -85,6 +85,7 @@ const platformQualifier: QualifierSpec = {
     },
     getMatchValue(value: string, context: PlatformContext): number {
         const val = value.substr(1);
+
         return val === context.os.toLowerCase() ? 1 : -1;
     }
 };
@@ -129,9 +130,11 @@ function checkQualifiers(path: string, context: PlatformContext): number {
             }
 
             result += (supportedQualifiers.length - i) * PRIORITY_STEP;
+
             return result;
         }
     }
+
     return result;
 }
 
@@ -148,6 +151,7 @@ export function stripQualifiers(path: string): string {
             }
         }
     }
+
     return path;
 }
 
