@@ -1,7 +1,7 @@
 import { ModuleNameResolver as ModuleNameResolverDefinition, ModuleListProvider } from "./";
 import { screen, device } from "../platform/platform";
 import * as appCommonModule from "../application/application-common";
-import { PlatformContext, findMatch } from "./qualifier-matcher";
+import { PlatformContext, findMatch, stripQualifiers } from "./qualifier-matcher";
 import { registerModulesFromFileSystem } from "./non-bundle-workflow-compat";
 import {
     isEnabled as traceEnabled,
@@ -44,8 +44,9 @@ export class ModuleNameResolver implements ModuleNameResolverDefinition {
             registerModulesFromFileSystem(path);
         }
 
-        // This is a dirty way for loading script and style files in the case of qualifier-based pages
-        path = path.split(".", path.startsWith(".") ? 2 : 1).join(".");
+        // This call will return a clean path without qualifiers
+        path = stripQualifiers(path);
+
         let candidates = this.getCandidates(path, ext);
         result = findMatch(path, ext, candidates, this.context);
 
