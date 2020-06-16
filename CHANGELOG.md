@@ -1,3 +1,18 @@
+## [6.5.6](https://github.com/NativeScript/NativeScript/compare/6.5.5...6.5.6) (2020-06-16)
+
+
+### Bug Fixes
+
+* **ios:** gesture handling resilience when views are destroyed quickly ([#8645](https://github.com/NativeScript/NativeScript/issues/8645)) ([9afa15f](https://github.com/NativeScript/NativeScript/commit/9afa15fa710984c2769d42b1d9accf04d2ad52a8))
+* **text-base:** apply dynamic text color change on button for ios ([#8635](https://github.com/NativeScript/NativeScript/issues/8635)) ([5cacc25](https://github.com/NativeScript/NativeScript/commit/5cacc25aa728b9ba869b7c7e4a8c0f361eb58583))
+
+
+### Features
+
+* **android:** Implementing 'onBackPressed' for frame-root ([#8634](https://github.com/NativeScript/NativeScript/issues/8634)) ([c73952f](https://github.com/NativeScript/NativeScript/commit/c73952f364dd76c0c65f20fe11247b9245cb80fd))
+
+
+
 ## [6.5.5](https://github.com/NativeScript/NativeScript/compare/6.5.4...6.5.5) (2020-06-10)
 
 

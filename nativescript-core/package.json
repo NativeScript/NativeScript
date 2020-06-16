@@ -3,7 +3,7 @@
     "main": "index",
     "types": "index.d.ts",
     "description": "Telerik NativeScript Core Modules",
-    "version": "6.5.5",
+    "version": "6.5.6",
     "homepage": "https://www.nativescript.org",
     "repository": {
         "type": "git",
