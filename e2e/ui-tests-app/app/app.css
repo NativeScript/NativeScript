@@ -21,3 +21,22 @@
     color: yellow;
     margin-left: 30;
 }
+
+.ui-tests-app-issue-ng-1453-yellow {
+    color: yellow;
+    background-color: black;
+}
+
+.ui-tests-app-issue-ng-1453-pink {
+    color: pink;
+}
+
+.ui-tests-app-issue-ng-1453-base {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14;
+  text-align: center;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
