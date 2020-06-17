@@ -16,15 +16,15 @@ import android.widget.FrameLayout;
  *
  */
 public abstract class LayoutBase extends ViewGroup {
+    private boolean passThroughParent;
 
 	public LayoutBase(Context context) {
 		super(context);
 	}
 
-    private boolean passThroughParent;
-
-    public boolean getPassThroughParent() { return this.passThroughParent; }
-    public void setPassThroughParent(boolean value) { this.passThroughParent = value; }
+    public LayoutBase(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+    }
 
     @Override
     protected LayoutParams generateDefaultLayoutParams() {
@@ -91,4 +91,12 @@ public abstract class LayoutBase extends ViewGroup {
         
         return gravity;
 	}
+
+    public boolean getPassThroughParent() {
+        return this.passThroughParent;
+    }
+
+    public void setPassThroughParent(boolean value) {
+        this.passThroughParent = value;
+    }
 }
