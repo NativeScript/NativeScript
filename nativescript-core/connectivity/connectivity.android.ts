@@ -1,17 +1,18 @@
-import { getNativeApplication, android as androidApp } from "../application";
-
+import { android as androidApp, getNativeApplication } from '../application';
 export enum connectionType {
     none = 0,
     wifi = 1,
     mobile = 2,
     ethernet = 3,
-    bluetooth = 4
+    bluetooth = 4,
+    vpn = 5
 }
 
-const wifi = "wifi";
-const mobile = "mobile";
-const ethernet = "ethernet";
-const bluetooth = "bluetooth";
+const wifi = 'wifi';
+const mobile = 'mobile';
+const ethernet = 'ethernet';
+const bluetooth = 'bluetooth';
+const vpn = 'vpn';
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
@@ -27,33 +28,74 @@ function getActiveNetworkInfo(): android.net.NetworkInfo {
     return connectivityManager.getActiveNetworkInfo();
 }
 
-export function getConnectionType(): number {
-    let activeNetworkInfo = getActiveNetworkInfo();
-    if (!activeNetworkInfo || !activeNetworkInfo.isConnected()) {
+function getNetworkCapabilities() {
+    const connectivityManager = getConnectivityManager() as any;
+    const network = connectivityManager.getActiveNetwork();
+    const capabilities = connectivityManager.getNetworkCapabilities(network);
+    if (capabilities == null) {
         return connectionType.none;
     }
 
-    let type = activeNetworkInfo.getTypeName().toLowerCase();
-    if (type.indexOf(wifi) !== -1) {
+    const NetworkCapabilities = (android as any).net.NetworkCapabilities;
+
+    if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
         return connectionType.wifi;
     }
 
-    if (type.indexOf(mobile) !== -1) {
+    if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
         return connectionType.mobile;
     }
 
-    if (type.indexOf(ethernet) !== -1) {
+    if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
         return connectionType.ethernet;
     }
 
-    if (type.indexOf(bluetooth) !== -1) {
+    if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)) {
         return connectionType.bluetooth;
+    }
+
+    if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+        return connectionType.vpn;
     }
 
     return connectionType.none;
 }
 
-export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
+export function getConnectionType(): number {
+    if (android.os.Build.VERSION.SDK_INT >= 28) {
+        return getNetworkCapabilities();
+    } else {
+        let activeNetworkInfo = getActiveNetworkInfo();
+        if (!activeNetworkInfo || !activeNetworkInfo.isConnected()) {
+            return connectionType.none;
+        }
+
+        let type = activeNetworkInfo.getTypeName().toLowerCase();
+        if (type.indexOf(wifi) !== -1) {
+            return connectionType.wifi;
+        }
+
+        if (type.indexOf(mobile) !== -1) {
+            return connectionType.mobile;
+        }
+
+        if (type.indexOf(ethernet) !== -1) {
+            return connectionType.ethernet;
+        }
+
+        if (type.indexOf(bluetooth) !== -1) {
+            return connectionType.bluetooth;
+        }
+
+        if (type.indexOf(vpn) !== -1) {
+            return connectionType.vpn;
+        }
+    }
+
+    return connectionType.none;
+}
+
+function startMonitoringLegacy(connectionTypeChangedCallback) {
     let onReceiveCallback = function onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
         let newConnectionType = getConnectionType();
         connectionTypeChangedCallback(newConnectionType);
@@ -62,6 +104,54 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
     androidApp.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, zoneCallback);
 }
 
+let callback;
+
+export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
+    if (android.os.Build.VERSION.SDK_INT >= 28) {
+        const manager = getConnectivityManager() as any;
+        if (manager) {
+            const notifyCallback = () => {
+                let newConnectionType = getConnectionType();
+                let zoneCallback = <any>zonedCallback(connectionTypeChangedCallback);
+                zoneCallback(newConnectionType);
+            };
+            const ConnectivityManager = (android as any).net.ConnectivityManager;
+            const networkCallback = ConnectivityManager.NetworkCallback.extend({
+                onAvailable(network) {
+                    notifyCallback();
+                },
+                onBlockedStatusChanged(network, blocked: boolean) {
+                },
+                onCapabilitiesChanged(network, networkCapabilities) {
+                    notifyCallback();
+                },
+                onLinkPropertiesChanged(network, linkProperties) {
+                },
+                onLosing(network, maxMsToLive: number) {
+                },
+                onLost(network) {
+                    notifyCallback();
+                },
+                onUnavailable() {
+                    notifyCallback();
+                }
+            });
+            callback = new networkCallback();
+            manager.registerDefaultNetworkCallback(callback);
+        }
+
+    } else {
+        startMonitoringLegacy(connectionTypeChangedCallback);
+    }
+}
+
 export function stopMonitoring(): void {
-    androidApp.unregisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
+    if (android.os.Build.VERSION.SDK_INT >= 28) {
+        const manager = getConnectivityManager() as any;
+        if (manager && callback) {
+            manager.unregisterNetworkCallback(callback);
+        }
+    } else {
+        androidApp.unregisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
+    }
 }
