@@ -1,3 +1,12 @@
+## [6.5.7](https://github.com/NativeScript/NativeScript/compare/6.5.6...6.5.7) (2020-06-17)
+
+
+### Bug Fixes
+
+* **span:** value handling for strings and numbers ([#8651](https://github.com/NativeScript/NativeScript/issues/8651)) ([0ca838e](https://github.com/NativeScript/NativeScript/commit/0ca838ed0ced845b5a02300d31cbd1256e597a9d))
+
+
+
 ## [6.5.6](https://github.com/NativeScript/NativeScript/compare/6.5.5...6.5.6) (2020-06-16)
 
 
