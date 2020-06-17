@@ -59,7 +59,7 @@ function _getConnectionTypeFromFlags(flags: number): number {
     const nsDict = cfDict.takeUnretainedValue();
     const keys = nsDict.objectForKey("__SCOPED__");
 
-    if(isVPNConnected(keys)){
+    if (isVPNConnected(keys)) {
         return connectionType.vpn;
     }
 
@@ -68,16 +68,15 @@ function _getConnectionTypeFromFlags(flags: number): number {
       with multiple connections fails to detect switch, require key added
       to Info.plist.
      */
-    if(isBluetoothConnected(keys)){
+    if (isBluetoothConnected(keys)) {
         return connectionType.bluetooth;
     }
 
     return connectionType.wifi;
 }
 
-
-function isBluetoothConnected(keys){
-    if(!keys){
+function isBluetoothConnected (keys) {
+    if (!keys) {
         return false;
     }
     const allKeys = keys.allKeys;
@@ -92,11 +91,12 @@ function isBluetoothConnected(keys){
             break;
         }
     }
+
     return isBlueTooth;
 }
 
 function isVPNConnected(keys) {
-    if(!keys){
+    if (!keys) {
         return false;
     }
     const allKeys = keys.allKeys;
@@ -116,6 +116,7 @@ function isVPNConnected(keys) {
             break;
         }
     }
+
     return isVPN;
 }
 

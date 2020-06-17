@@ -1,4 +1,4 @@
-import { android as androidApp, getNativeApplication } from '../application';
+import { android as androidApp, getNativeApplication } from "../application";
 export enum connectionType {
     none = 0,
     wifi = 1,
@@ -8,11 +8,11 @@ export enum connectionType {
     vpn = 5
 }
 
-const wifi = 'wifi';
-const mobile = 'mobile';
-const ethernet = 'ethernet';
-const bluetooth = 'bluetooth';
-const vpn = 'vpn';
+const wifi = "wifi";
+const mobile = "mobile";
+const ethernet = "ethernet";
+const bluetooth = "bluetooth";
+const vpn = "vpn";
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
@@ -121,13 +121,16 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
                     notifyCallback();
                 },
                 onBlockedStatusChanged(network, blocked: boolean) {
+                    // NOOP
                 },
                 onCapabilitiesChanged(network, networkCapabilities) {
                     notifyCallback();
                 },
                 onLinkPropertiesChanged(network, linkProperties) {
+                    // NOOP
                 },
                 onLosing(network, maxMsToLive: number) {
+                    // NOOP
                 },
                 onLost(network) {
                     notifyCallback();
