@@ -2,6 +2,9 @@ export enum connectionType {
     none = 0,
     wifi = 1,
     mobile = 2,
+    ethernet = 3,
+    bluetooth = 4,
+    vpn = 5
 }
 
 // Get Connection Type
@@ -52,7 +55,68 @@ function _getConnectionTypeFromFlags(flags: number): number {
         return connectionType.mobile;
     }
 
+    const cfDict = CFNetworkCopySystemProxySettings();
+    const nsDict = cfDict.takeUnretainedValue();
+    const keys = nsDict.objectForKey("__SCOPED__");
+
+    if(isVPNConnected(keys)){
+        return connectionType.vpn;
+    }
+
+    /*
+    TODO try improving with CBCentralManager since toggling bluetooth
+      with multiple connections fails to detect switch, require key added
+      to Info.plist.
+     */
+    if(isBluetoothConnected(keys)){
+        return connectionType.bluetooth;
+    }
+
     return connectionType.wifi;
+}
+
+
+function isBluetoothConnected(keys){
+    if(!keys){
+        return false;
+    }
+    const allKeys = keys.allKeys;
+    const size = allKeys.count;
+    let isBlueTooth = false;
+    for (let i = 0; i < size; i++) {
+        const key = allKeys.objectAtIndex(i);
+        if (
+            key === "en4"
+        ) {
+            isBlueTooth = true;
+            break;
+        }
+    }
+    return isBlueTooth;
+}
+
+function isVPNConnected(keys) {
+    if(!keys){
+        return false;
+    }
+    const allKeys = keys.allKeys;
+    const size = allKeys.count;
+    let isVPN = false;
+    for (let i = 0; i < size; i++) {
+        const key = allKeys.objectAtIndex(i);
+        if (
+            key === "tap" ||
+            key === "tun" ||
+            key === "ppp" ||
+            key === "ipsec" ||
+            key === "ipsec0" ||
+            key === "utun1"
+        ) {
+            isVPN = true;
+            break;
+        }
+    }
+    return isVPN;
 }
 
 export function getConnectionType(): number {
@@ -65,6 +129,7 @@ function _reachabilityCallback(target: any, flags: number, info: any) {
         const newConnectionType = _getConnectionTypeFromFlags(flags);
         _connectionTypeChangedCallback(newConnectionType);
     }
+
 }
 
 const _reachabilityCallbackFunctionRef = new interop.FunctionReference(_reachabilityCallback);
