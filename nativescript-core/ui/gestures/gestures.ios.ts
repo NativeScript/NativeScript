@@ -128,55 +128,75 @@ export class GesturesObserver extends GesturesObserverBase {
 
             if (type & GestureTypes.tap) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.tap, args => {
-                  this._executeCallback(_getTapData(args));
+                    if (args.view) {
+                        this._executeCallback(_getTapData(args));
+                    }
                 }));
             }
 
             if (type & GestureTypes.doubleTap) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.doubleTap, args => {
-                  this._executeCallback(_getTapData(args));
+                    if (args.view) {
+                        this._executeCallback(_getTapData(args));
+                    }
                 }));
             }
 
             if (type & GestureTypes.pinch) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.pinch, args => {
-                    this._executeCallback(_getPinchData(args));
+                    if (args.view) {
+                        this._executeCallback(_getPinchData(args));
+                    }
                 }));
             }
 
             if (type & GestureTypes.pan) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.pan, args => {
-                    this._executeCallback(_getPanData(args, target.nativeViewProtected));
+                    if (args.view) {
+                        this._executeCallback(_getPanData(args, target.nativeViewProtected));
+                    }
                 }));
             }
 
             if (type & GestureTypes.swipe) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.swipe, args => {
-                    this._executeCallback(_getSwipeData(args));
+                    if (args.view) {
+                        this._executeCallback(_getSwipeData(args));
+                    }
                 }, UISwipeGestureRecognizerDirection.Down));
 
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.swipe, args => {
-                    this._executeCallback(_getSwipeData(args));
+                    if (args.view) {
+                        this._executeCallback(_getSwipeData(args));
+                    }
                 }, UISwipeGestureRecognizerDirection.Left));
 
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.swipe, args => {
-                    this._executeCallback(_getSwipeData(args));
+                    if (args.view) {
+                        this._executeCallback(_getSwipeData(args));
+                    }
                 }, UISwipeGestureRecognizerDirection.Right));
 
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.swipe, args => {
-                    this._executeCallback(_getSwipeData(args));
+                    if (args.view) {
+                        this._executeCallback(_getSwipeData(args));
+                    }
                 }, UISwipeGestureRecognizerDirection.Up));
             }
 
             if (type & GestureTypes.rotation) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.rotation, args => {
-                    this._executeCallback(_getRotationData(args));
+                    if (args.view) {
+                        this._executeCallback(_getRotationData(args));
+                    }
                 }));
             }
 
             if (type & GestureTypes.longPress) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.longPress, args => {
-                    this._executeCallback(_getLongPressData(args));
+                    if (args.view) {
+                        this._executeCallback(_getLongPressData(args));
+                    }
                 }));
             }
 

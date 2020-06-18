@@ -61,7 +61,7 @@ export class View extends ViewCommon implements ViewDefinition {
         this._privateFlags |= PFLAG_FORCE_LAYOUT;
 
         const nativeView = this.nativeViewProtected;
-        if (nativeView) {
+        if (nativeView && nativeView.setNeedsLayout) {
             nativeView.setNeedsLayout();
         }
 

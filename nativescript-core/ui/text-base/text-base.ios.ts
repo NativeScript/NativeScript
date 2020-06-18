@@ -1,15 +1,17 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform } from "./text-base-common";
+import { TextDecoration, TextAlignment, TextTransform, layout, getClosestPropertyValue } from "./text-base-common";
 
 // Requires
 import { Font } from "../styling/font";
+import { VerticalAlignment } from "../styling/style-properties";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, lineHeightProperty,
-    FormattedString, Span, Color, isBold, resetSymbol
+    FormattedString, Span, Color, resetSymbol
 } from "./text-base-common";
 import { isString } from "../../utils/types";
 import { ios } from "../../utils/utils";
+import { Property } from "../core/properties/properties";
 
 export * from "./text-base-common";
 
@@ -141,13 +143,7 @@ export class TextBase extends TextBaseCommon {
     }
     [colorProperty.setNative](value: Color | UIColor) {
         const color = value instanceof Color ? value.ios : value;
-        const nativeView = this.nativeTextViewProtected;
-        if (nativeView instanceof UIButton) {
-            nativeView.setTitleColorForState(color, UIControlState.Normal);
-            nativeView.titleLabel.textColor = color;
-        } else {
-            nativeView.textColor = color;
-        }
+        this._setColor(color);
     }
 
     [fontInternalProperty.getDefault](): UIFont {
@@ -220,6 +216,15 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
+    _setColor(color: UIColor): void {
+        if (this.nativeTextViewProtected instanceof UIButton) {
+            this.nativeTextViewProtected.setTitleColorForState(color, UIControlState.Normal);
+            this.nativeTextViewProtected.titleLabel.textColor = color;
+        } else {
+            this.nativeTextViewProtected.textColor = color;
+        }
+    }
+
     setFormattedTextDecorationAndTransform() {
         const attrText = this.createNSMutableAttributedString(this.formattedText);
         // TODO: letterSpacing should be applied per Span.
@@ -229,7 +234,7 @@ export class TextBase extends TextBaseCommon {
 
         if (this.style.lineHeight) {
             const paragraphStyle = NSMutableParagraphStyle.alloc().init();
-            paragraphStyle.lineSpacing = this.lineHeight;
+            paragraphStyle.minimumLineHeight = this.lineHeight;
             // make sure a possible previously set text alignment setting is not lost when line height is specified
             if (this.nativeTextViewProtected instanceof UIButton) {
                 paragraphStyle.alignment = (<UIButton>this.nativeTextViewProtected).titleLabel.textAlignment;
@@ -280,8 +285,12 @@ export class TextBase extends TextBaseCommon {
                 throw new Error(`Invalid text decoration value: ${style.textDecoration}. Valid values are: 'none', 'underline', 'line-through', 'underline line-through'.`);
         }
 
-        if (style.letterSpacing !== 0) {
-            dict.set(NSKernAttributeName, style.letterSpacing * this.nativeTextViewProtected.font.pointSize);
+        if (style.letterSpacing !== 0 && this.nativeTextViewProtected.font) {
+            const kern = style.letterSpacing * this.nativeTextViewProtected.font.pointSize;
+            dict.set(NSKernAttributeName, kern);
+            if (this.nativeTextViewProtected instanceof UITextField) {
+              this.nativeTextViewProtected.defaultTextAttributes.setValueForKey(kern, NSKernAttributeName);
+            }
         }
 
         const isTextView = this.nativeTextViewProtected instanceof UITextView;
@@ -306,19 +315,9 @@ export class TextBase extends TextBaseCommon {
             dict.set(NSParagraphStyleAttributeName, paragraphStyle);
         }
 
+        const source = getTransformedText(this.text ? this.text.toString() : "", this.textTransform);
         if (dict.size > 0 || isTextView) {
-            if (style.color) {
-                dict.set(NSForegroundColorAttributeName, style.color.ios);
-            } else if (majorVersion >= 13 && UIColor.labelColor) {
-                dict.set(NSForegroundColorAttributeName, UIColor.labelColor);
-            }
-        }
-
-        const text = this.text;
-        const string = (text === undefined || text === null) ? "" : text.toString();
-        const source = getTransformedText(string, this.textTransform);
-        if (dict.size > 0 || isTextView) {
-            if (isTextView) {
+            if (isTextView && this.nativeTextViewProtected.font) {
                 // UITextView's font seems to change inside.
                 dict.set(NSFontAttributeName, this.nativeTextViewProtected.font);
             }
@@ -340,6 +339,10 @@ export class TextBase extends TextBaseCommon {
                 this.nativeTextViewProtected.attributedText = undefined;
                 this.nativeTextViewProtected.text = source;
             }
+        }
+
+        if (!style.color && majorVersion >= 13 && UIColor.labelColor) {
+            this._setColor(UIColor.labelColor);
         }
     }
 
@@ -366,57 +369,79 @@ export class TextBase extends TextBaseCommon {
         return mas;
     }
 
-    createMutableStringForSpan(span: Span, text: string): NSMutableAttributedString {
-        const viewFont = this.nativeTextViewProtected.font;
-        let attrDict = <{ key: string, value: any }>{};
-        const style = span.style;
-        const bold = isBold(style.fontWeight);
-        const italic = style.fontStyle === "italic";
-
-        let fontFamily = span.fontFamily;
-        let fontSize = span.fontSize;
-
-        if (bold || italic || fontFamily || fontSize) {
-            let font = new Font(style.fontFamily, style.fontSize, style.fontStyle, style.fontWeight);
-            let iosFont = font.getUIFont(viewFont);
-            attrDict[NSFontAttributeName] = iosFont;
+    getBaselineOffset(font: UIFont, align?: VerticalAlignment): number {
+        if (!align || ["stretch", "baseline"].includes(align)) {
+            return 0;
         }
 
-        const color = span.color;
-        if (color) {
-            attrDict[NSForegroundColorAttributeName] = color.ios;
+        if (align === "top") {
+            return -this.fontSize - font.descender - font.ascender - font.leading / 2;
+        }
+
+        if (align === "bottom") {
+            return font.descender + font.leading / 2;
+        }
+
+        if (align === "text-top") {
+            return -this.fontSize - font.descender - font.ascender;
+        }
+
+        if (align === "text-bottom") {
+            return font.descender;
+        }
+
+        if (align === "middle") {
+            return (font.descender - font.ascender) / 2 - font.descender;
+        }
+
+        if (align === "super") {
+            return -this.fontSize * .4;
+        }
+
+        if (align === "sub") {
+            return (font.descender - font.ascender) * .4;
+        }
+    }
+
+    createMutableStringForSpan(span: Span, text: string): NSMutableAttributedString {
+        const viewFont = this.nativeTextViewProtected.font;
+        const attrDict = <{ key: string, value: any }>{};
+        const style = span.style;
+        const align = style.verticalAlignment;
+
+        const font = new Font(style.fontFamily, style.fontSize, style.fontStyle, style.fontWeight);
+        const iosFont = font.getUIFont(viewFont);
+
+        attrDict[NSFontAttributeName] = iosFont;
+
+        if (span.color) {
+            attrDict[NSForegroundColorAttributeName] = span.color.ios;
         }
 
         // We don't use isSet function here because defaultValue for backgroundColor is null.
         const backgroundColor = <Color>(style.backgroundColor
             || (<FormattedString>span.parent).backgroundColor
-            || (<TextBase>(<FormattedString>span.parent).parent).backgroundColor);
+            || (<TextBase>span.parent.parent).backgroundColor);
         if (backgroundColor) {
             attrDict[NSBackgroundColorAttributeName] = backgroundColor.ios;
         }
 
-        let valueSource: typeof style;
-        if (textDecorationProperty.isSet(style)) {
-            valueSource = style;
-        } else if (textDecorationProperty.isSet(span.parent.style)) {
-            // span.parent is FormattedString
-            valueSource = span.parent.style;
-        } else if (textDecorationProperty.isSet(span.parent.parent.style)) {
-            // span.parent.parent is TextBase
-            valueSource = span.parent.parent.style;
-        }
+        const textDecoration: TextDecoration = getClosestPropertyValue(textDecorationProperty, span);
 
-        if (valueSource) {
-            const textDecorations = valueSource.textDecoration;
-            const underline = textDecorations.indexOf("underline") !== -1;
+        if (textDecoration) {
+            const underline = textDecoration.indexOf("underline") !== -1;
             if (underline) {
                 attrDict[NSUnderlineStyleAttributeName] = underline;
             }
 
-            const strikethrough = textDecorations.indexOf("line-through") !== -1;
+            const strikethrough = textDecoration.indexOf("line-through") !== -1;
             if (strikethrough) {
                 attrDict[NSStrikethroughStyleAttributeName] = strikethrough;
             }
+        }
+
+        if (align) {
+            attrDict[NSBaselineOffsetAttributeName] = this.getBaselineOffset(iosFont, align);
         }
 
         return NSMutableAttributedString.alloc().initWithStringAttributes(text, <any>attrDict);

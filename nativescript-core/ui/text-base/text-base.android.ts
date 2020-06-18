@@ -1,9 +1,9 @@
 // Types
-import { TextTransformation, TextDecoration, TextAlignment, TextTransform, WhiteSpace } from "./text-base-common";
+import { TextTransformation, TextDecoration, TextAlignment, TextTransform, WhiteSpace, getClosestPropertyValue } from "./text-base-common";
 
 // Requires
 import { Font } from "../styling/font";
-import { backgroundColorProperty } from "../styling/style-properties";
+import { backgroundColorProperty, VerticalAlignment } from "../styling/style-properties";
 import {
     TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
     textProperty, textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty,
@@ -33,7 +33,7 @@ function initializeTextTransformation(): void {
             // NOTE: Do we need to transform the new text here?
             const formattedText = this.textBase.formattedText;
             if (formattedText) {
-                return createSpannableStringBuilder(formattedText);
+                return createSpannableStringBuilder(formattedText, (<android.widget.TextView>view).getTextSize());
             }
             else {
                 const text = this.textBase.text;
@@ -170,7 +170,7 @@ export class TextBase extends TextBaseCommon {
             return;
         }
 
-        const spannableStringBuilder = createSpannableStringBuilder(value);
+        const spannableStringBuilder = createSpannableStringBuilder(value, this.style.fontSize);
         nativeView.setText(<any>spannableStringBuilder);
         this._setTappableState(isStringTappable(value));
 
@@ -265,10 +265,11 @@ export class TextBase extends TextBaseCommon {
     }
 
     [lineHeightProperty.getDefault](): number {
-        return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
+        return this.nativeTextViewProtected.getLineHeight() / layout.getDisplayDensity();
     }
     [lineHeightProperty.setNative](value: number) {
-        this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
+        const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
+        this.nativeTextViewProtected.setLineSpacing(Math.max(value - fontHeight, 0) * layout.getDisplayDensity(), 1);
     }
 
     [fontInternalProperty.getDefault](): android.graphics.Typeface {
@@ -348,7 +349,7 @@ export class TextBase extends TextBaseCommon {
 
         let transformedText: any;
         if (this.formattedText) {
-            transformedText = createSpannableStringBuilder(this.formattedText);
+            transformedText = createSpannableStringBuilder(this.formattedText, this.style.fontSize);
         } else {
             const text = this.text;
             const stringValue = (text === null || text === undefined) ? "" : text.toString();
@@ -415,7 +416,7 @@ function isStringTappable(formattedString: FormattedString) {
     return false;
 }
 
-function createSpannableStringBuilder(formattedString: FormattedString): android.text.SpannableStringBuilder {
+function createSpannableStringBuilder(formattedString: FormattedString, defaultFontSize: number): android.text.SpannableStringBuilder {
     if (!formattedString || !formattedString.parent) {
         return null;
     }
@@ -433,7 +434,7 @@ function createSpannableStringBuilder(formattedString: FormattedString): android
         spanLength = spanText.length;
         if (spanLength > 0) {
             ssb.insert(spanStart, spanText);
-            setSpanModifiers(ssb, span, spanStart, spanStart + spanLength);
+            setSpanModifiers(ssb, span, spanStart, spanStart + spanLength, defaultFontSize);
             spanStart += spanLength;
         }
     }
@@ -441,10 +442,67 @@ function createSpannableStringBuilder(formattedString: FormattedString): android
     return ssb;
 }
 
-function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, start: number, end: number): void {
+class BaselineAdjustedSpan extends android.text.style.MetricAffectingSpan {
+    fontSize: number;
+    align: VerticalAlignment = "baseline";
+
+    constructor(fontSize: number, align?: VerticalAlignment) {
+        super();
+
+        this.align = align;
+        this.fontSize = fontSize;
+    }
+
+    updateDrawState(paint: android.text.TextPaint) {
+        this.updateState(paint);
+    }
+
+    updateMeasureState(paint: android.text.TextPaint) {
+        this.updateState(paint);
+    }
+
+    updateState(paint: android.text.TextPaint) {
+        const metrics = paint.getFontMetrics();
+
+        if (!this.align || ["baseline", "stretch"].includes(this.align)) {
+            return;
+        }
+
+        if (this.align === "top") {
+            return paint.baselineShift = -this.fontSize - metrics.bottom - metrics.top;
+        }
+
+        if (this.align === "bottom") {
+            return paint.baselineShift = metrics.bottom;
+        }
+
+        if (this.align === "text-top") {
+            return paint.baselineShift = -this.fontSize - metrics.descent - metrics.ascent;
+        }
+
+        if (this.align === "text-bottom") {
+            return paint.baselineShift = metrics.bottom - metrics.descent;
+        }
+
+        if (this.align === "middle") {
+            return paint.baselineShift = (metrics.descent - metrics.ascent) / 2 - metrics.descent;
+        }
+
+        if (this.align === "super") {
+            return paint.baselineShift = -this.fontSize * .4;
+        }
+
+        if (this.align === "sub") {
+            return paint.baselineShift = (metrics.descent - metrics.ascent) * .4;
+        }
+    }
+}
+
+function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, start: number, end: number, defaultFontSize: number): void {
     const spanStyle = span.style;
     const bold = isBold(spanStyle.fontWeight);
     const italic = spanStyle.fontStyle === "italic";
+    const align = spanStyle.verticalAlignment;
 
     if (bold && italic) {
         ssb.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD_ITALIC), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -474,43 +532,28 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
         ssb.setSpan(new android.text.style.ForegroundColorSpan(color.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
-    let backgroundColor: Color;
-    if (backgroundColorProperty.isSet(spanStyle)) {
-        backgroundColor = spanStyle.backgroundColor;
-    } else if (backgroundColorProperty.isSet(span.parent.style)) {
-        // parent is FormattedString
-        backgroundColor = span.parent.style.backgroundColor;
-    } else if (backgroundColorProperty.isSet(span.parent.parent.style)) {
-        // parent.parent is TextBase
-        backgroundColor = span.parent.parent.style.backgroundColor;
-    }
+    const backgroundColor: Color = getClosestPropertyValue(backgroundColorProperty, span);
 
     if (backgroundColor) {
         ssb.setSpan(new android.text.style.BackgroundColorSpan(backgroundColor.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
-    let valueSource: typeof spanStyle;
-    if (textDecorationProperty.isSet(spanStyle)) {
-        valueSource = spanStyle;
-    } else if (textDecorationProperty.isSet(span.parent.style)) {
-        // span.parent is FormattedString
-        valueSource = span.parent.style;
-    } else if (textDecorationProperty.isSet(span.parent.parent.style)) {
-        // span.parent.parent is TextBase
-        valueSource = span.parent.parent.style;
-    }
+    const textDecoration: TextDecoration = getClosestPropertyValue(textDecorationProperty, span);
 
-    if (valueSource) {
-        const textDecorations = valueSource.textDecoration;
-        const underline = textDecorations.indexOf("underline") !== -1;
+    if (textDecoration) {
+        const underline = textDecoration.indexOf("underline") !== -1;
         if (underline) {
             ssb.setSpan(new android.text.style.UnderlineSpan(), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
-        const strikethrough = textDecorations.indexOf("line-through") !== -1;
+        const strikethrough = textDecoration.indexOf("line-through") !== -1;
         if (strikethrough) {
             ssb.setSpan(new android.text.style.StrikethroughSpan(), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
+    }
+
+    if (align) {
+      ssb.setSpan(new BaselineAdjustedSpan(defaultFontSize * layout.getDisplayDensity(), align), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     const tappable = span.tappable;

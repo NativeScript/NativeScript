@@ -1,11 +1,11 @@
 ﻿/**
  * iOS specific dialogs functions implementation.
  */
-import { ios as iosView } from "../core/view";
+import { ios as iosView, traceCategories, traceWrite, traceMessageType } from "../core/view";
 import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
 import { getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, ALERT, OK, CONFIRM, CANCEL, PROMPT, parseLoginOptions } from "./dialogs-common";
 import { isString, isDefined, isFunction } from "../../utils/types";
-import { getRootView } from "../../application";
+import { getRootView, ios } from "../../application";
 
 export * from "./dialogs-common";
 
@@ -200,54 +200,42 @@ export function login(...args: any[]): Promise<LoginResult> {
 }
 
 function showUIAlertController(alertController: UIAlertController) {
-    let currentView = getCurrentPage() || getRootView();
+    let viewController = ios.rootController;
+   
+    while (viewController && viewController.presentedViewController) {
+        viewController = viewController.presentedViewController;
+    }
 
-    if (currentView) {
-        currentView = currentView.modal || currentView;
+    if (!viewController) {
+      traceWrite(`No root controller found to open dialog.`, traceCategories.Error, traceMessageType.warn);
+      
+      return;
+    }
 
-        //get to the top most view controller on the stack
-        while (currentView && currentView.modal) {
-            currentView = currentView.modal;
+    if (alertController.popoverPresentationController) {
+        alertController.popoverPresentationController.sourceView = viewController.view;
+        alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
+        alertController.popoverPresentationController.permittedArrowDirections = 0;
+    }
+
+    let color = getButtonColors().color;
+    if (color) {
+        alertController.view.tintColor = color.ios;
+    }
+
+    let lblColor = getLabelColor();
+    if (lblColor) {
+        if (alertController.title) {
+            let title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+            alertController.setValueForKey(title, "attributedTitle");
         }
-        
-        let viewController: UIViewController = currentView.ios;
-
-        if (viewController.presentedViewController) {
-            viewController = viewController.presentedViewController;
-        }
-
-        if (!(currentView.ios instanceof UIViewController)) {
-            const parentWithController = iosView.getParentWithViewController(currentView);
-            viewController = parentWithController ? parentWithController.viewController : undefined;
-        }
-
-        if (viewController) {
-            if (alertController.popoverPresentationController) {
-                alertController.popoverPresentationController.sourceView = viewController.view;
-                alertController.popoverPresentationController.sourceRect = CGRectMake(viewController.view.bounds.size.width / 2.0, viewController.view.bounds.size.height / 2.0, 1.0, 1.0);
-                alertController.popoverPresentationController.permittedArrowDirections = 0;
-            }
-
-            let color = getButtonColors().color;
-            if (color) {
-                alertController.view.tintColor = color.ios;
-            }
-
-            let lblColor = getLabelColor();
-            if (lblColor) {
-                if (alertController.title) {
-                    let title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-                    alertController.setValueForKey(title, "attributedTitle");
-                }
-                if (alertController.message) {
-                    let message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
-                    alertController.setValueForKey(message, "attributedMessage");
-                }
-            }
-
-            viewController.presentModalViewControllerAnimated(alertController, true);
+        if (alertController.message) {
+            let message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+            alertController.setValueForKey(message, "attributedMessage");
         }
     }
+
+    viewController.presentModalViewControllerAnimated(alertController, true);
 }
 
 export function action(): Promise<string> {

@@ -1,5 +1,6 @@
 import { Page, ShownModallyData } from "tns-core-modules/ui/page";
 import { EventData, fromObject } from "tns-core-modules/data/observable";
+import { alert } from "tns-core-modules/ui/dialogs";
 
 export function onShowingModally(args: ShownModallyData) {
     console.log("login-page.onShowingModally, context: " + args.context);
@@ -12,7 +13,19 @@ export function onShowingModally(args: ShownModallyData) {
         onLoginButtonTap: function () {
             console.log("login-page.onLoginButtonTap");
             args.closeCallback(this.username, this.password);
-        }
+        },
+        showAlert: function () {
+          alert("showing alert!");
+          args.closeCallback();
+      },
+      openNestedModal: function () {
+          page.showModal("modal-view/nested-modal", {
+            context: "First",
+            closeCallback: () => {
+              console.log("login-page.openNestedModal");
+            }
+        });
+      }
     });
 }
 

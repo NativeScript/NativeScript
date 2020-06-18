@@ -1,3 +1,78 @@
+## [6.5.7](https://github.com/NativeScript/NativeScript/compare/6.5.6...6.5.7) (2020-06-17)
+
+
+### Bug Fixes
+
+* **span:** value handling for strings and numbers ([#8651](https://github.com/NativeScript/NativeScript/issues/8651)) ([0ca838e](https://github.com/NativeScript/NativeScript/commit/0ca838ed0ced845b5a02300d31cbd1256e597a9d))
+
+
+
+## [6.5.6](https://github.com/NativeScript/NativeScript/compare/6.5.5...6.5.6) (2020-06-16)
+
+
+### Bug Fixes
+
+* **ios:** gesture handling resilience when views are destroyed quickly ([#8645](https://github.com/NativeScript/NativeScript/issues/8645)) ([9afa15f](https://github.com/NativeScript/NativeScript/commit/9afa15fa710984c2769d42b1d9accf04d2ad52a8))
+* **text-base:** apply dynamic text color change on button for ios ([#8635](https://github.com/NativeScript/NativeScript/issues/8635)) ([5cacc25](https://github.com/NativeScript/NativeScript/commit/5cacc25aa728b9ba869b7c7e4a8c0f361eb58583))
+
+
+### Features
+
+* **android:** Implementing 'onBackPressed' for frame-root ([#8634](https://github.com/NativeScript/NativeScript/issues/8634)) ([c73952f](https://github.com/NativeScript/NativeScript/commit/c73952f364dd76c0c65f20fe11247b9245cb80fd))
+
+
+
+## [6.5.5](https://github.com/NativeScript/NativeScript/compare/6.5.4...6.5.5) (2020-06-10)
+
+
+### Bug Fixes
+
+* **text-base:** apply letter spacing in ios text field ([#8618](https://github.com/NativeScript/NativeScript/issues/8618)) ([e2a9af2](https://github.com/NativeScript/NativeScript/commit/e2a9af2bc74d0198882a9c1a57b7785d37ba947c))
+* **text-base:** letter spacing for textfield ([#8627](https://github.com/NativeScript/NativeScript/issues/8627)) ([eb4c61f](https://github.com/NativeScript/NativeScript/commit/eb4c61fc413c9a2ee6a9ef6aef10a234644516df))
+* **text-base:** update text color for ios ([#8617](https://github.com/NativeScript/NativeScript/issues/8617)) ([d3549ac](https://github.com/NativeScript/NativeScript/commit/d3549ac115ecd39967790eaca2ea85bb1b291bbc))
+
+
+### Features
+
+* **text-base:** Add Span vertical-align support ([#8257](https://github.com/NativeScript/NativeScript/issues/8257)) ([faa0181](https://github.com/NativeScript/NativeScript/commit/faa0181b9c95b0e0ca55e922f09bde804ac6537f))
+
+
+
+## [6.5.4](https://github.com/NativeScript/NativeScript/compare/6.5.3...6.5.4) (2020-06-04)
+
+
+### Bug Fixes
+
+* **core:** pin typescript to 3.8.3 to avoid __exportStar issue ([#8612](https://github.com/NativeScript/NativeScript/issues/8612)) ([8931295](https://github.com/NativeScript/NativeScript/commit/8931295ab54e1522848ba4d3986f9ba02926644c))
+
+
+
+## [6.5.3](https://github.com/NativeScript/NativeScript/compare/6.5.2...6.5.3) (2020-06-04)
+
+
+### Bug Fixes
+
+* **ios:** dialog handling with top view controller ([#8609](https://github.com/NativeScript/NativeScript/issues/8609)) ([b015eee](https://github.com/NativeScript/NativeScript/commit/b015eeed515b2b42f89bbe3e25a987fa3230706c))
+
+
+## [6.5.2](https://github.com/NativeScript/NativeScript/compare/6.5.1...6.5.2) (2020-05-28)
+
+### Features
+
+* setProperty on Observable ([#8521](https://github.com/NativeScript/NativeScript/pull/8521))([7cf3c97](https://github.com/NativeScript/NativeScript/commit/7cf3c97))
+ 
+### Bug Fixes
+
+* fix ios hmr ([#8559](https://github.com/NativeScript/NativeScript/pull/8559)) ([446163d](https://github.com/NativeScript/NativeScript/commit/446163d))
+* the css parser should handle empty nodes ([#8503](https://github.com/NativeScript/NativeScript/pull/8503)) ([f7ab4ba](https://github.com/NativeScript/NativeScript/commit/f7ab4ba))
+* parse css selectors with escape sequences (for real) ([#8496](https://github.com/NativeScript/NativeScript/pull/8496)) ([50eb372](https://github.com/NativeScript/NativeScript/commit/50eb372))
+* do not clear androidView._cachedDrawable ([#8475](https://github.com/NativeScript/NativeScript/pull/8475)) ([e421129](https://github.com/NativeScript/NativeScript/commit/e421129))
+* call to nativeView ([#8488](https://github.com/NativeScript/NativeScript/pull/8488)) ([2b06adc](https://github.com/NativeScript/NativeScript/commit/2b06adc))
+* dont default to Font.default ([#8401](https://github.com/NativeScript/NativeScript/pull/8401)) ([ad9daa8](https://github.com/NativeScript/NativeScript/commit/ad9daa8))
+* **tabs:** dynamic styling fixes ([#8479](https://github.com/NativeScript/NativeScript/pull/8479)) ([fc8f769](https://github.com/NativeScript/NativeScript/commit/fc8f769))
+* **android/TextField** dont default to Font.default ([#8525](https://github.com/NativeScript/NativeScript/pull/8525)) ([50e58fa](https://github.com/NativeScript/NativeScript/commit/50e58fa))
+
+
 ## [6.5.1](https://github.com/NativeScript/NativeScript/compare/6.5.0...6.5.1) (2020-03-30)
 
 
