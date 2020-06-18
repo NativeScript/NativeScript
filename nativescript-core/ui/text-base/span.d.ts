@@ -52,7 +52,7 @@ export class Span extends ViewBase {
     public imageHeight: number;
 
     /**
-     * Gets or sets the image source for the span.
+     * Gets or sets the image source for the span. Image is displayed instead of text. The image must be a local file.
      */
     public imageSrc: string;
 
