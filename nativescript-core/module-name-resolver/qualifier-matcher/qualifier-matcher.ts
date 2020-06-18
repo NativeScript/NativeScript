@@ -5,17 +5,20 @@ const MIN_H: string = "minH";
 const PRIORITY_STEP = 10000;
 
 interface QualifierSpec {
-    isMatch(value: string): boolean;
+    isMatch(path: string): boolean;
+    getMatchOccurences(path: string): Array<string>;
     getMatchValue(value: string, context: PlatformContext): number;
 }
 
 const minWidthHeightQualifier: QualifierSpec = {
-    isMatch: function (value: string): boolean {
-        return value.indexOf(MIN_WH) === 0;
-
+    isMatch: function (path: string): boolean {
+        return (new RegExp(`.${MIN_WH}\\d+`).test(path));
+    },
+    getMatchOccurences: function (path: string): Array<string> {
+        return path.match(new RegExp(`.${MIN_WH}\\d+`));
     },
     getMatchValue(value: string, context: PlatformContext): number {
-        const numVal = parseInt(value.substr(MIN_WH.length));
+        const numVal = parseInt(value.substr(MIN_WH.length + 1));
         if (isNaN(numVal)) {
             return -1;
         }
@@ -30,12 +33,14 @@ const minWidthHeightQualifier: QualifierSpec = {
 };
 
 const minWidthQualifier: QualifierSpec = {
-    isMatch: function (value: string): boolean {
-        return value.indexOf(MIN_W) === 0 && value.indexOf(MIN_WH) < 0;
-
+    isMatch: function (path: string): boolean {
+        return (new RegExp(`.${MIN_W}\\d+`).test(path)) && !(new RegExp(`.${MIN_WH}\\d+`).test(path));
+    },
+    getMatchOccurences: function (path: string): Array<string> {
+        return path.match(new RegExp(`.${MIN_W}\\d+`));
     },
     getMatchValue(value: string, context: PlatformContext): number {
-        const numVal = parseInt(value.substr(MIN_W.length));
+        const numVal = parseInt(value.substr(MIN_W.length + 1));
         if (isNaN(numVal)) {
             return -1;
         }
@@ -50,12 +55,14 @@ const minWidthQualifier: QualifierSpec = {
 };
 
 const minHeightQualifier: QualifierSpec = {
-    isMatch: function (value: string): boolean {
-        return value.indexOf(MIN_H) === 0 && value.indexOf(MIN_WH) < 0;
-
+    isMatch: function (path: string): boolean {
+        return (new RegExp(`.${MIN_H}\\d+`).test(path)) && !(new RegExp(`.${MIN_WH}\\d+`).test(path));
+    },
+    getMatchOccurences: function (path: string): Array<string> {
+        return path.match(new RegExp(`.${MIN_H}\\d+`));
     },
     getMatchValue(value: string, context: PlatformContext): number {
-        const numVal = parseInt(value.substr(MIN_H.length));
+        const numVal = parseInt(value.substr(MIN_H.length + 1));
         if (isNaN(numVal)) {
             return -1;
         }
@@ -70,26 +77,31 @@ const minHeightQualifier: QualifierSpec = {
 };
 
 const platformQualifier: QualifierSpec = {
-    isMatch: function (value: string): boolean {
-        return value === "android" ||
-            value === "ios";
-
+    isMatch: function (path: string): boolean {
+        return path.includes(".android") || path.includes(".ios");
+    },
+    getMatchOccurences: function (path: string): Array<string> {
+        return [".android", ".ios"];
     },
     getMatchValue(value: string, context: PlatformContext): number {
-        return value === context.os.toLowerCase() ? 1 : -1;
+        const val = value.substr(1);
+
+        return val === context.os.toLowerCase() ? 1 : -1;
     }
 };
 
 const orientationQualifier: QualifierSpec = {
-    isMatch: function (value: string): boolean {
-        return value === "land" ||
-            value === "port";
-
+    isMatch: function (path: string): boolean {
+        return path.includes(".land") || path.includes(".port");
+    },
+    getMatchOccurences: function (path: string): Array<string> {
+        return [".land", ".port"];
     },
     getMatchValue(value: string, context: PlatformContext): number {
+        const val = value.substr(1);
         const isLandscape: number = (context.width > context.height) ? 1 : -1;
 
-        return (value === "land") ? isLandscape : -isLandscape;
+        return (val === "land") ? isLandscape : -isLandscape;
     }
 };
 
@@ -102,51 +114,63 @@ const supportedQualifiers: Array<QualifierSpec> = [
     platformQualifier
 ];
 
-function checkQualifiers(qualifiers: Array<string>, context: PlatformContext): number {
+function checkQualifiers(path: string, context: PlatformContext): number {
     let result = 0;
-    let value: number;
-    for (let i = 0; i < qualifiers.length; i++) {
-        if (qualifiers[i]) {
-            value = checkQualifier(qualifiers[i], context);
-            if (value < 0) {
+    for (let i = 0; i < supportedQualifiers.length; i++) {
+        let qualifier = supportedQualifiers[i];
+        if (qualifier.isMatch(path))
+        {
+            let occurences = qualifier.getMatchOccurences(path);
+            // Always get the last qualifier among identical occurences
+            result = qualifier.getMatchValue(occurences[occurences.length - 1], context);
+            if (result < 0)
+            {
                 // Non of the supported qualifiers matched this or the match was not satisfied
                 return -1;
             }
 
-            result += value;
+            result += (supportedQualifiers.length - i) * PRIORITY_STEP;
+
+            return result;
         }
     }
 
     return result;
 }
 
-function checkQualifier(value: string, context: PlatformContext) {
-    let result: number;
+export function stripQualifiers(path: string): string {
+    // Strip qualifiers from path if any
     for (let i = 0; i < supportedQualifiers.length; i++) {
-        if (supportedQualifiers[i].isMatch(value)) {
-            result = supportedQualifiers[i].getMatchValue(value, context);
-            if (result > 0) {
-                result += (supportedQualifiers.length - i) * PRIORITY_STEP;
+        let qualifier = supportedQualifiers[i];
+        if (qualifier.isMatch(path))
+        {
+            let occurences = qualifier.getMatchOccurences(path);
+            for (let j = 0; j < occurences.length; j++)
+            {
+                path = path.replace(occurences[j], "");
             }
-
-            return result;
         }
     }
 
-    return -1;
+    return path;
 }
 
 export function findMatch(path: string, ext: string, candidates: Array<string>, context: PlatformContext): string {
+    let fullPath: string = ext ? (path + ext) : path;
     let bestValue = -1;
     let result: string = null;
 
     for (let i = 0; i < candidates.length; i++) {
         const filePath = candidates[i];
-        const qualifiersStr: string = filePath.substr(path.length, filePath.length - path.length - (ext ? ext.length : 0));
 
-        const qualifiers = qualifiersStr.split(".");
+        // Check if candidate is correct for given path
+        const cleanFilePath: string = stripQualifiers(filePath);
+        if (cleanFilePath !== fullPath)
+        {
+            continue;
+        }
 
-        const value = checkQualifiers(qualifiers, context);
+        const value = checkQualifiers(filePath, context);
 
         if (value >= 0 && value > bestValue) {
             bestValue = value;
