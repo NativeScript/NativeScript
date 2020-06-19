@@ -1,7 +1,7 @@
 import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty,
-    autocapitalizationTypeProperty, autocorrectProperty, FormattedString
+    autocapitalizationTypeProperty, autocorrectProperty, FormattedString, Span
 } from "./editable-text-base-common";
 
 export * from "./editable-text-base-common";
@@ -198,12 +198,27 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 export function _updateCharactersInRangeReplacementString(formattedText: FormattedString, rangeLocation: number, rangeLength: number, replacementString: string): void {
     let deletingText = !replacementString;
     let currentLocation = 0;
-    for (let i = 0, length = formattedText.spans.length; i < length; i++) {
+    const numSpans = formattedText.spans.length;
+    for (let i = 0; i < numSpans; i++) {
         let span = formattedText.spans.getItem(i);
         if (currentLocation <= rangeLocation && rangeLocation < (currentLocation + span.text.length)) {
-            let newText = splice(span.text, rangeLocation - currentLocation, deletingText ? rangeLength : 0, replacementString);
-            span._setTextInternal(newText);
-
+            // if span has an image do not update the underlying text of it -> add it to the next span
+            // because the text of the image span is not shown
+            if (span.imageSrc != undefined) {
+                if (i + 1 < numSpans) {
+                    const nextSpan = formattedText.spans.getItem(i+1);
+                    const newText = replacementString + span.text;
+                    nextSpan._setTextInternal(newText);
+                } else {
+                    // if the image span is the last one, add a new span
+                    const newSpan = new Span();
+                    formattedText.spans.push(newSpan);
+                    newSpan._setTextInternal(replacementString);
+                }
+            } else {
+                const newText = splice(span.text, rangeLocation - currentLocation, deletingText ? rangeLength : 0, replacementString);
+                span._setTextInternal(newText);
+            }
             return;
         }
         currentLocation += span.text.length;
