@@ -12,4 +12,4 @@ export interface PlatformContext {
 
 export function findMatch(path: string, ext: string, candidates: Array<string>, context: PlatformContext): string;
 
-export function stripQualifiers(path: string): string
+export function stripQualifiers(path: string): string;
