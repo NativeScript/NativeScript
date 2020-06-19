@@ -81,7 +81,7 @@ const platformQualifier: QualifierSpec = {
         return path.includes(".android") || path.includes(".ios");
     },
     getMatchOccurences: function (path: string): Array<string> {
-        return path.match(new RegExp(".android|.ios", "g"));
+        return path.match(new RegExp("\\.android|\\.ios", "g"));
     },
     getMatchValue(value: string, context: PlatformContext): number {
         const val = value.substr(1);
@@ -92,7 +92,7 @@ const platformQualifier: QualifierSpec = {
 
 const orientationQualifier: QualifierSpec = {
     isMatch: function (path: string): boolean {
-        return path.includes(".land") || path.includes(".port");
+        return path.includes("\\.land") || path.includes("\\.port");
     },
     getMatchOccurences: function (path: string): Array<string> {
         return path.match(new RegExp(".land|.port", "g"));
