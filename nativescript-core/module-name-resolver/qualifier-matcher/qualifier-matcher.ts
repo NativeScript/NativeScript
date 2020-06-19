@@ -92,10 +92,10 @@ const platformQualifier: QualifierSpec = {
 
 const orientationQualifier: QualifierSpec = {
     isMatch: function (path: string): boolean {
-        return path.includes("\\.land") || path.includes("\\.port");
+        return path.includes(".land") || path.includes(".port");
     },
     getMatchOccurences: function (path: string): Array<string> {
-        return path.match(new RegExp(".land|.port", "g"));
+        return path.match(new RegExp("\\.land|\\.port", "g"));
     },
     getMatchValue(value: string, context: PlatformContext): number {
         const val = value.substr(1);
