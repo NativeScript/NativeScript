@@ -78,6 +78,7 @@ export module Visibility {
     export const visible: string = "visible";
     export const collapse: string = "collapse";
     export const collapsed: string = "collapsed";
+    export const hidden: string = "hidden";
 }
 
 export module FontAttributes {
