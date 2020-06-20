@@ -1,3 +1,13 @@
+## [6.5.8](https://github.com/NativeScript/NativeScript/compare/6.5.7...6.5.8) (2020-06-20)
+
+
+### Bug Fixes
+
+* **enums:** add Visibility.hidden ([#8655](https://github.com/NativeScript/NativeScript/issues/8655)) ([41a21ea](https://github.com/NativeScript/NativeScript/commit/41a21ea91651acef150605ecaa9d62e6093ec815)), closes [#8653](https://github.com/NativeScript/NativeScript/issues/8653)
+* **module-name-resolver:** livesync page qualifier handling ([#8637](https://github.com/NativeScript/NativeScript/issues/8637)) ([4f64bac](https://github.com/NativeScript/NativeScript/commit/4f64bace62627a9c8e2a59a38bd53bbe1250a2ac))
+
+
+
 ## [6.5.7](https://github.com/NativeScript/NativeScript/compare/6.5.6...6.5.7) (2020-06-17)
 
 
