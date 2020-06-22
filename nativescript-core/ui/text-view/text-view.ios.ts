@@ -88,7 +88,7 @@ class NoScrollAnimationUITextView extends UITextView {
 export class TextView extends TextViewBaseCommon {
     nativeViewProtected: UITextView;
     private _delegate: UITextViewDelegateImpl;
-    private _isShowingHint: boolean;
+    _isShowingHint: boolean;
     public _isEditing: boolean;
 
     private _hintColor = (majorVersion <= 12 || !UIColor.placeholderTextColor) ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
@@ -129,7 +129,9 @@ export class TextView extends TextViewBaseCommon {
     }
 
     public textViewShouldBeginEditing(textView: UITextView): boolean {
-        this.showText();
+        if (this._isShowingHint) {
+            this.showText();
+        }
 
         return true;
     }
