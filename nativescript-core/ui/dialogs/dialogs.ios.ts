@@ -272,15 +272,11 @@ export function action(): Promise<string> {
             let alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.ActionSheet);
 
             if (options.actions) {
-                let dialogType = UIAlertActionStyle.Default;
-
                 for (i = 0; i < options.actions.length; i++) {
                     action = options.actions[i];
-
-                    if(options.destructiveActionsIndexes && options.destructiveActionsIndexes.indexOf(i) !== -1) {
-                        dialogType = UIAlertActionStyle.Destructive;
-                    }
                     if (isString(action)) {
+                        const thisActionIsDestructive = options.destructiveActionsIndexes && options.destructiveActionsIndexes.indexOf(i) !== -1;
+                        const dialogType = thisActionIsDestructive? UIAlertActionStyle.Destructive : UIAlertActionStyle.Default;
                         alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(action, dialogType, (arg: UIAlertAction) => {
                             resolve(arg.title);
                         }));
