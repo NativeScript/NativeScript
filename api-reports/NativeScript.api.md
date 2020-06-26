@@ -1198,6 +1198,8 @@ export class ImageSource {
     // @deprecated (undocumented)
     loadFromResource(name: string): boolean;
 
+    resize(maxSize: number, options?: any): ImageSource;
+
     rotationAngle: number;
 
     saveToFile(path: string, format: "png" | "jpeg" | "jpg", quality?: number): boolean;
