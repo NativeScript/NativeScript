@@ -1,3 +1,37 @@
+## [6.5.8](https://github.com/NativeScript/NativeScript/compare/6.5.7...6.5.8) (2020-06-20)
+
+
+### Bug Fixes
+
+* **enums:** add Visibility.hidden ([#8655](https://github.com/NativeScript/NativeScript/issues/8655)) ([41a21ea](https://github.com/NativeScript/NativeScript/commit/41a21ea91651acef150605ecaa9d62e6093ec815)), closes [#8653](https://github.com/NativeScript/NativeScript/issues/8653)
+* **module-name-resolver:** livesync page qualifier handling ([#8637](https://github.com/NativeScript/NativeScript/issues/8637)) ([4f64bac](https://github.com/NativeScript/NativeScript/commit/4f64bace62627a9c8e2a59a38bd53bbe1250a2ac))
+
+
+
+## [6.5.7](https://github.com/NativeScript/NativeScript/compare/6.5.6...6.5.7) (2020-06-17)
+
+
+### Bug Fixes
+
+* **span:** value handling for strings and numbers ([#8651](https://github.com/NativeScript/NativeScript/issues/8651)) ([0ca838e](https://github.com/NativeScript/NativeScript/commit/0ca838ed0ced845b5a02300d31cbd1256e597a9d))
+
+
+
+## [6.5.6](https://github.com/NativeScript/NativeScript/compare/6.5.5...6.5.6) (2020-06-16)
+
+
+### Bug Fixes
+
+* **ios:** gesture handling resilience when views are destroyed quickly ([#8645](https://github.com/NativeScript/NativeScript/issues/8645)) ([9afa15f](https://github.com/NativeScript/NativeScript/commit/9afa15fa710984c2769d42b1d9accf04d2ad52a8))
+* **text-base:** apply dynamic text color change on button for ios ([#8635](https://github.com/NativeScript/NativeScript/issues/8635)) ([5cacc25](https://github.com/NativeScript/NativeScript/commit/5cacc25aa728b9ba869b7c7e4a8c0f361eb58583))
+
+
+### Features
+
+* **android:** Implementing 'onBackPressed' for frame-root ([#8634](https://github.com/NativeScript/NativeScript/issues/8634)) ([c73952f](https://github.com/NativeScript/NativeScript/commit/c73952f364dd76c0c65f20fe11247b9245cb80fd))
+
+
+
 ## [6.5.5](https://github.com/NativeScript/NativeScript/compare/6.5.4...6.5.5) (2020-06-10)
 
 

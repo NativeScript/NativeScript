@@ -1,7 +1,7 @@
 import { ModuleNameResolver as ModuleNameResolverDefinition, ModuleListProvider } from "./";
 import { screen, device } from "../platform/platform";
 import * as appCommonModule from "../application/application-common";
-import { PlatformContext, findMatch } from "./qualifier-matcher";
+import { PlatformContext, findMatch, stripQualifiers } from "./qualifier-matcher";
 import { registerModulesFromFileSystem } from "./non-bundle-workflow-compat";
 import {
     isEnabled as traceEnabled,
@@ -43,6 +43,9 @@ export class ModuleNameResolver implements ModuleNameResolverDefinition {
         if (!global.TNS_WEBPACK) {
             registerModulesFromFileSystem(path);
         }
+
+        // This call will return a clean path without qualifiers
+        path = stripQualifiers(path);
 
         let candidates = this.getCandidates(path, ext);
         result = findMatch(path, ext, candidates, this.context);

@@ -293,12 +293,6 @@ export class TextBase extends TextBaseCommon {
             }
         }
 
-        if (style.color) {
-            dict.set(NSForegroundColorAttributeName, style.color.ios);
-        } else if (majorVersion >= 13 && UIColor.labelColor) {
-            dict.set(NSForegroundColorAttributeName, UIColor.labelColor);
-        }
-
         const isTextView = this.nativeTextViewProtected instanceof UITextView;
         if (style.lineHeight) {
             const paragraphStyle = NSMutableParagraphStyle.alloc().init();
