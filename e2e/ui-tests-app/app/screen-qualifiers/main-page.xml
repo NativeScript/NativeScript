@@ -1,0 +1,10 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded">
+    <ActionBar>
+        <Label text="Screen Qualifiers"></Label>
+    </ActionBar>
+
+    <StackLayout>
+    	<Label text="{{ currentDate }}" fontSize="20"/>
+        <Label text="Default Page" backgroundColor="yellow" fontSize="20"/>
+    </StackLayout>
+</Page>

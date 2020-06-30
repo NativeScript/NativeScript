@@ -10,6 +10,8 @@ import { getNativeApplication } from "../application";
 import { Font } from "../ui/styling/font";
 import { Color } from "../color";
 
+import { getScaledDimensions } from "./image-source-common";
+
 export { isFileOrResourcePath };
 
 let http: typeof httpModule;
@@ -336,6 +338,18 @@ export class ImageSource implements ImageSourceDefinition {
         outputStream.close();
 
         return outputStream.toString();
+    }
+
+    public resize(maxSize: number, options?: any): ImageSource {
+        const dim = getScaledDimensions(this.android.getWidth(), this.android.getHeight(), maxSize);
+        const bm: android.graphics.Bitmap = android.graphics.Bitmap.createScaledBitmap(
+            this.android,
+            dim.width,
+            dim.height,
+            options && options.filter
+        );
+        
+        return new ImageSource(bm);
     }
 }
 

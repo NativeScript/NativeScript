@@ -1,0 +1,20 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="onLoaded" class="page">
+
+    <Page.actionBar>
+        <ActionBar title="My App" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <ListView items="{{ languageData }}" separatorColor="red">
+        <ListView.itemTemplate>
+            <StackLayout columns="*,40" rows="*,*">
+                <!-- It works if not an expression -->
+                <Label row="1" text="{{ $parents['Page'].prefix }}"
+                    class="font-weight-bold" fontSize="16" />
+                <!-- Until component gets loaded, $parents['Page'].prefix will return undefined -->
+                <Label row="1" text="{{ $parents['Page'].prefix + name }}"
+                    class="font-weight-bold" fontSize="16" />
+            </StackLayout>
+        </ListView.itemTemplate>
+    </ListView>
+</Page>
