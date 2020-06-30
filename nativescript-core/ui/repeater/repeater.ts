@@ -1,6 +1,6 @@
 import { Repeater as RepeaterDefinition, ItemsSource } from ".";
 import { Label } from "../label";
-import { LayoutBase, CustomLayoutView, View, Template, Property, layout, CSSType } from "../layouts/layout-base";
+import { LayoutBase, CustomLayoutView, View, Template, KeyedTemplate, Property, layout, CSSType } from "../layouts/layout-base";
 import { StackLayout } from "../layouts/stack-layout";
 import { ObservableArray, ChangedData } from "../../data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "../core/weak-event-listener";
@@ -9,8 +9,13 @@ import { profile } from "../../profiling";
 
 export * from "../layouts/layout-base";
 
+// TODO: Think of a way to register these instead of relying on hardcoded values.
 export module knownTemplates {
     export const itemTemplate = "itemTemplate";
+}
+
+export module knownMultiTemplates {
+    export const itemTemplates = "itemTemplates";
 }
 
 @CSSType("Repeater")
@@ -19,15 +24,21 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
     public ios;
     public android;
 
+    // TODO: get rid of such hacks.
+    public static knownFunctions = ["itemTemplateSelector"]; //See component-builder.ts isKnownFunction
+
+    public items: any[] | ItemsSource;
+    public itemTemplate: string | Template;
+    public itemTemplates: string | Array<KeyedTemplate>;
+    public itemsLayout: LayoutBase;
+
+    private _itemTemplateSelector: (item: any, index: number, items: any) => string;
+
     constructor() {
         super();
         // TODO: Do we need this as property?
         this.itemsLayout = new StackLayout();
     }
-
-    public items: any[] | ItemsSource;
-    public itemTemplate: string | Template;
-    public itemsLayout: LayoutBase;
 
     @profile
     public onLoaded() {
@@ -36,6 +47,20 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
         }
 
         super.onLoaded();
+    }
+
+    get itemTemplateSelector(): string | ((item: any, index: number, items: any) => string) {
+        return this._itemTemplateSelector;
+    }
+    set itemTemplateSelector(value: string | ((item: any, index: number, items: any) => string)) {
+        if (typeof value === "string") {
+            this._itemTemplateSelector = (item: any, index: number, items: any) => {
+                return value;
+            };
+        }
+        else if (typeof value === "function") {
+            this._itemTemplateSelector = value;
+        }
     }
 
     public _requestRefresh() {
@@ -56,8 +81,26 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
 
         const length = this.items.length;
         for (let i = 0; i < length; i++) {
-            const viewToAdd = this.itemTemplate ? Builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
             const dataItem = this._getDataItem(i);
+            let viewToAdd = null;
+
+            if (this._itemTemplateSelector && this.itemTemplates) {
+                const key = this._itemTemplateSelector(dataItem, i, this.items);
+                const length2 = this.itemTemplates.length;
+                for (let j = 0; j < length2; j++) {
+                    const template = <KeyedTemplate>this.itemTemplates[j];
+                    if (template.key === key) {
+                        viewToAdd = template.createView();
+                        break;
+                    }
+                }
+            }
+            
+            if (!viewToAdd)
+            {
+                viewToAdd = this.itemTemplate ? Builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
+            }
+            
             viewToAdd.bindingContext = dataItem;
             this.itemsLayout.addChild(viewToAdd);
         }
@@ -131,7 +174,7 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
 Repeater.prototype.recycleNativeView = "auto";
 
 /**
- * Represents the item template property of each ListView instance.
+ * Represents the item template property of each Repeater instance.
  */
 export const itemTemplateProperty = new Property<Repeater, string | Template>({
     name: "itemTemplate", affectsLayout: true, valueChanged: (target) => {
@@ -141,7 +184,23 @@ export const itemTemplateProperty = new Property<Repeater, string | Template>({
 itemTemplateProperty.register(Repeater);
 
 /**
- * Represents the property backing the items property of each ListView instance.
+ * Represents the items template property of each Repeater instance.
+ */
+export const itemTemplatesProperty = new Property<Repeater, string | Array<KeyedTemplate>>({
+    name: "itemTemplates", affectsLayout: true, valueConverter: (value) => {
+        if (typeof value === "string") {
+            return Builder.parseMultipleTemplates(value);
+        }
+
+        return value;
+    }, valueChanged: (target) => {
+        target._requestRefresh();
+    }
+});
+itemTemplatesProperty.register(Repeater);
+
+/**
+ * Represents the property backing the items property of each Repeater instance.
  */
 export const itemsProperty = new Property<Repeater, any[] | ItemsSource>({
     name: "items", affectsLayout: true, valueChanged: (target, oldValue, newValue) => {

@@ -3,7 +3,17 @@
  * @module "ui/repeater"
  */ /** */
 
-import { LayoutBase, CustomLayoutView, Template, Property } from "../layouts/layout-base";
+import { LayoutBase, CustomLayoutView, Template, KeyedTemplate, Property } from "../layouts/layout-base";
+
+/**
+ * Known template names.
+ */
+export module knownTemplates {
+    /**
+     * The item template.
+     */
+    export const itemTemplate: string;
+}
 
 /**
  * Represents a UI Repeater component.
@@ -19,6 +29,16 @@ export class Repeater extends CustomLayoutView {
      * Gets or set the item template of the Repeater.
      */
     itemTemplate: string | Template;
+
+    /**
+     * Gets or set the list of item templates for the item template selector
+     */
+    itemTemplates: string | Array<KeyedTemplate>;
+
+    /**
+     * A function that returns the appropriate ket template based on the data item.
+     */
+    itemTemplateSelector: string | ((item: any, index: number, items: any) => string);
 
     /**
      * Gets or set the items layout of the Repeater. Default value is StackLayout with orientation="vertical".
@@ -45,6 +65,11 @@ export const itemsProperty: Property<Repeater, any[] | ItemsSource>;
  * Represents the item template property.
  */
 export const itemTemplateProperty: Property<Repeater, string | Template>;
+
+/**
+ * Represents the items template property of each ListView instance.
+ */
+export const itemTemplatesProperty: Property<Repeater, string | Array<KeyedTemplate>>;
 
 /**
  * Represents the items layout property of each Repeater instance.
