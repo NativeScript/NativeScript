@@ -295,3 +295,13 @@ export function testLoadFromFontIconCode() {
     TKUnit.assert(img.width !== null, "img.width");
     TKUnit.assert(img.height !== null, "img.width");
 }
+
+export function testResize() {
+    const img = ImageSource.fromFileSync(imagePath);
+
+    const newSize = Math.floor(Math.max(img.width, img.height) / 2);
+
+    const resized = img.resize(newSize);
+
+    TKUnit.assert(resized.width === newSize || resized.height === newSize, "Image not resized correctly");
+}

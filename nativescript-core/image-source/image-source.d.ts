@@ -209,6 +209,19 @@ export class ImageSource {
      * @param quality Optional parameter, specifying the quality of the encoding. Defaults to the maximum available quality. Quality varies on a scale of 0 to 100.
      */
     toBase64String(format: "png" | "jpeg" | "jpg", quality?: number): string;
+
+    /**
+     * Returns a new ImageSource that is a resized version of this image with the same aspect ratio, but the max dimension set to the provided maxSize.
+     * @param maxSize The maximum pixel dimension of the resulting image.
+     * @param options Optional parameter, Only used for android, options.filter is a boolean which
+     *     determines whether or not bilinear filtering should be used when scaling the bitmap.
+     *     If this is true then bilinear filtering will be used when scaling which has
+     *     better image quality at the cost of worse performance. If this is false then
+     *     nearest-neighbor scaling is used instead which will have worse image quality
+     *     but is faster. Recommended default is to set filter to 'true' as the cost of
+     *     bilinear filtering is typically minimal and the improved image quality is significant.
+     */
+    resize(maxSize: number, options?: any): ImageSource;
 }
 
 /**
