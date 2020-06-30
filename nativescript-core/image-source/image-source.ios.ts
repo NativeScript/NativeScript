@@ -9,6 +9,8 @@ import { Color } from "../color";
 import { path as fsPath, knownFolders } from "../file-system";
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from "../utils/utils";
 
+import { getScaledDimensions } from "./image-source-common";
+
 export { isFileOrResourcePath };
 
 let http: typeof httpModule;
@@ -335,6 +337,24 @@ export class ImageSource implements ImageSourceDefinition {
 
         return res;
 
+    }
+
+    public resize(maxSize: number, options?: any): ImageSource {
+        const size: CGSize = this.ios.size;
+        const dim = getScaledDimensions(
+            size.width,
+            size.height,
+            maxSize
+        );
+    
+        const newSize: CGSize = CGSizeMake(dim.width, dim.height);
+        UIGraphicsBeginImageContextWithOptions(newSize, true, this.ios.scale);
+        this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
+
+        const resizedImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+
+        return new ImageSource(resizedImage);
     }
 }
 
