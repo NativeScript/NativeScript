@@ -22,6 +22,7 @@ export function loadExamples() {
     examples.set("width-percent", "list-view/width-percent-page");
     examples.set("item-re-layout", "list-view/item-re-layout-page");
     examples.set("safe-area", "list-view/safe-area-page");
+    examples.set("parents-expression", "list-view/parents-expression-page");
 
     return examples;
 }

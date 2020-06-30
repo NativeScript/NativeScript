@@ -469,29 +469,50 @@ export class Binding {
         let parentViewAndIndex: { view: ViewBase, index: number };
         let parentView;
         let addedProps = newProps || [];
-        if (expression.indexOf(bc.bindingValueKey) > -1) {
+        let expressionCP = expression;
+        if (expressionCP.indexOf(bc.bindingValueKey) > -1) {
             model[bc.bindingValueKey] = model;
             addedProps.push(bc.bindingValueKey);
         }
 
-        if (expression.indexOf(bc.parentValueKey) > -1) {
-            parentView = this.getParentView(this.target.get(), bc.parentValueKey).view;
-            if (parentView) {
-                model[bc.parentValueKey] = parentView.bindingContext;
-                addedProps.push(bc.parentValueKey);
-            }
-        }
+        let success: boolean = true;
 
-        let parentsArray = expression.match(parentsRegex);
+        let parentsArray = expressionCP.match(parentsRegex);
         if (parentsArray) {
             for (let i = 0; i < parentsArray.length; i++) {
+                // This prevents later checks to mistake $parents[] for $parent
+                expressionCP = expressionCP.replace(parentsArray[i], "");
                 parentViewAndIndex = this.getParentView(this.target.get(), parentsArray[i]);
                 if (parentViewAndIndex.view) {
                     model[bc.parentsValueKey] = model[bc.parentsValueKey] || {};
                     model[bc.parentsValueKey][parentViewAndIndex.index] = parentViewAndIndex.view.bindingContext;
                     addedProps.push(bc.parentsValueKey);
                 }
+                else
+                {
+                    success = false;
+                }
             }
+        }
+
+        if (expressionCP.indexOf(bc.parentValueKey) > -1) {
+            parentView = this.getParentView(this.target.get(), bc.parentValueKey).view;
+            if (parentView) {
+                model[bc.parentValueKey] = parentView.bindingContext;
+                addedProps.push(bc.parentValueKey);
+            }
+            else
+            {
+                success = false;
+            }
+        }
+
+        // For expressions, there are also cases when binding must be updated after component is loaded (e.g. ListView)
+        if (!success)
+        {
+            let targetInstance = this.target.get();
+            targetInstance.off("loaded", this.loadedHandlerVisualTreeBinding, this);
+            targetInstance.on("loaded", this.loadedHandlerVisualTreeBinding, this);
         }
     }
 
