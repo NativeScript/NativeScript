@@ -10,5 +10,5 @@ export function pageLoaded(args: EventData) {
 
 export function getOddEvenTemplate(item: number, index: number, items: ObservableArray<number>): string
 {
-    return index % 2 == 0 ? "even" : "";
+    return index % 2 === 0 ? "even" : "";
 }
