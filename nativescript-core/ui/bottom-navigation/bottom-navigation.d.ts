@@ -8,11 +8,6 @@ import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
 import { Property, CoercibleProperty, EventData } from "../core/view";
 
-export * from "../tab-navigation-base/tab-content-item";
-export * from "../tab-navigation-base/tab-navigation-base";
-export * from "../tab-navigation-base/tab-strip";
-export * from "../tab-navigation-base/tab-strip-item";
-
 /**
  * Defines the data for the TabView.selectedIndexChanged event.
  */

@@ -16,8 +16,6 @@ import { Style } from "../../styling/style";
 
 import { profile } from "../../../profiling";
 
-export { Style };
-
 export const unsetValue: any = new Object();
 
 let cssPropertyNames: string[] = [];

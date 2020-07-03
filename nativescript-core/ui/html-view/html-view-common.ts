@@ -1,9 +1,7 @@
-﻿import { Color } from "../../color";
-import { Style, CssProperty } from "../core/properties";
+﻿import { Style, CssProperty } from "../core/properties";
 import { View, Property, CSSType } from "../core/view";
+import { Color } from "../../color";
 import { HtmlView as HtmlViewDefinition } from ".";
-
-export * from "../core/view";
 
 @CSSType("HtmlView")
 export class HtmlViewBase extends View implements HtmlViewDefinition {

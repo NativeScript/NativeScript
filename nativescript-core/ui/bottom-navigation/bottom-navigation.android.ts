@@ -19,11 +19,6 @@ import { getTransformedText } from "../text-base";
 // TODO: Impl trace
 // import { isEnabled as traceEnabled, write as traceWrite } from "../../../trace";
 
-export * from "../tab-navigation-base/tab-content-item";
-export * from "../tab-navigation-base/tab-navigation-base";
-export * from "../tab-navigation-base/tab-strip";
-export * from "../tab-navigation-base/tab-strip-item";
-
 const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 8;
 

@@ -5,7 +5,6 @@ import { File, knownFolders, path } from "../../file-system";
 
 export { File, knownFolders, path };
 export * from "./web-view-interfaces";
-export * from "../core/view";
 
 export const srcProperty = new Property<WebViewBase, string>({ name: "src" });
 

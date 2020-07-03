@@ -21,11 +21,6 @@ import * as types from "../../../utils/types";
 import * as bindableResources from "./bindable-resources";
 import * as polymerExpressions from "../../../js-libs/polymer-expressions";
 
-export {
-    Observable, WrappedValue, PropertyChangeData, EventData,
-    traceEnabled, traceWrite, traceError, traceCategories, traceNotifyEvent, traceMessageType, isCategorySet
-};
-
 const contextKey = "context";
 // this regex is used to get parameters inside [] for example:
 // from $parents['ListView'] will return 'ListView'

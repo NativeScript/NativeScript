@@ -1,8 +1,6 @@
 ﻿import { EditableTextBase as EditableTextBaseDefinition, KeyboardType, ReturnKeyType, UpdateTextTrigger, AutocapitalizationType } from ".";
 import { TextBase, Property, CssProperty, Style, Color, booleanConverter, makeValidator, makeParser, PseudoClassHandler } from "../text-base";
 
-export * from "../text-base";
-
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
     public static blurEvent = "blur";
     public static focusEvent = "focus";

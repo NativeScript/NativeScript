@@ -13,7 +13,7 @@ export { DatePicker } from "./date-picker";
 // import { action, alert, confirm, login, prompt } from "./dialogs";
 // export const nsDialogs = { action, alert, confirm, login, prompt };
 
-export { EditableTextBase } from "./editable-text-base";
+export * from "./editable-text-base";
 export { Frame, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry } from "./frame";
 
 export {

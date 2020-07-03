@@ -28,10 +28,6 @@ import { LinearGradient } from "../../styling/linear-gradient";
 import { BackgroundRepeat } from "../../styling/style-properties";
 import { TextTransform } from "../../text-base";
 
-export * from "../../styling/style-properties";
-export * from "../view-base";
-export { LinearGradient };
-
 import * as am from "../../animation";
 
 let animationModule: typeof am;

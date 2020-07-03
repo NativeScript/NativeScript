@@ -10,20 +10,13 @@ import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, 
 import { getSystemCssClasses, MODAL_ROOT_VIEW_CSS_CLASS, ROOT_VIEW_CSS_CLASS } from "../../../css/system-classes";
 import { Source } from "../../../utils/debug";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories } from "../bindable";
-import { isIOS, isAndroid } from "../../../platform";
-import { layout } from "../../../utils/utils";
+import { isAndroid } from "../../../platform";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
 
 // TODO: Remove this import!
-import * as types from "../../../utils/types";
-
-import { Color } from "../../../color";
+import { getClass } from "../../../utils/types";
 
 import { profile } from "../../../profiling";
-
-export { isIOS, isAndroid, layout, Color };
-export * from "../bindable";
-export * from "../properties";
 
 import * as dnm from "../../../debugger/dom-node";
 import * as ssm from "../../styling/style-scope";
@@ -278,7 +271,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     // TODO: Use Type.prototype.typeName instead.
     get typeName(): string {
-        return types.getClass(this);
+        return getClass(this);
     }
 
     get style(): Style {

@@ -9,7 +9,7 @@ export {
 
     AndroidActivityEventData, AndroidActivityBundleEventData,
     AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData,
-    AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData,
+    AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData
 } from "./application";
 
 // Export all methods and fields from "application" as Application
@@ -19,7 +19,6 @@ import {
 
     getMainEntry, getRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss,
     on, off, run, orientation, getNativeApplication, hasLaunched,
-
     android, ios,
 } from "./application";
 export const Application = {
@@ -29,7 +28,7 @@ export const Application = {
     getMainEntry, getRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss,
     on, off, run, orientation, getNativeApplication, hasLaunched,
 
-    android, ios,
+    android: android, ios: ios,
 };
 
 // Export all methods from "application-settings" as ApplicationSettings

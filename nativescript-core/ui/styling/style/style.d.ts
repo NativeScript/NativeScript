@@ -2,8 +2,8 @@
  * @module "ui/styling/style"
  */ /** */
 
-import { Length, PercentLength, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment, dip } from "../../core/view";
 import { Color } from "../../../color";
+import { Length, PercentLength, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment, dip } from "../../core/view";
 import { Background } from "../background";
 import { Font, FontStyle, FontWeight } from "../font";
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";

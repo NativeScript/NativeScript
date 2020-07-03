@@ -1,8 +1,6 @@
 import { TimePicker as TimePickerDefinition } from ".";
 import { View, Property, CSSType } from "../core/view";
 
-export * from "../core/view";
-
 interface Time {
     hour: number;
     minute: number;

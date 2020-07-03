@@ -1,7 +1,7 @@
 /// <reference path="./tns-core-modules.d.ts" />
 
 export { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, iOSApplication, AndroidApplication, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, } from "./application";
-import { getMainEntry, getRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched } from "./application";
+import { getMainEntry, getRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, AndroidApplication, iOSApplication } from "./application";
 export declare const Application: {
     launchEvent: string;
     displayedEvent: string;
@@ -25,8 +25,8 @@ export declare const Application: {
     orientation: typeof orientation;
     getNativeApplication: typeof getNativeApplication;
     hasLaunched: typeof hasLaunched;
-    android: import("./application/application").AndroidApplication;
-    ios: import("./application/application").iOSApplication;
+    android: AndroidApplication;
+    ios: iOSApplication;
 };
 import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from "./application-settings";
 export declare const ApplicationSettings: {

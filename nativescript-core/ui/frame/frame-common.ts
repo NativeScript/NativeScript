@@ -12,7 +12,6 @@ import { sanitizeModuleName } from "../builder/module-name-sanitizer";
 import { profile } from "../../profiling";
 
 export * from "./frame-interfaces";
-export * from "../core/view";
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
     let entry: NavigationEntry;

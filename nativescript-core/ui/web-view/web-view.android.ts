@@ -1,4 +1,5 @@
-import { WebViewBase, knownFolders, traceEnabled, traceWrite, traceCategories, WebViewClient } from "./web-view-common";
+import { WebViewBase, knownFolders, WebViewClient } from "./web-view-common";
+import { isEnabled, write, categories } from '../../trace';
 
 export * from "./web-view-common";
 
@@ -18,8 +19,8 @@ function initializeWebViewClient(): void {
         }
 
         public shouldOverrideUrlLoading(view: android.webkit.WebView, url: string) {
-            if (traceEnabled()) {
-                traceWrite("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", traceCategories.Debug);
+            if (isEnabled()) {
+              write("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", categories.Debug);
             }
 
             return false;
@@ -29,8 +30,8 @@ function initializeWebViewClient(): void {
             super.onPageStarted(view, url, favicon);
             const owner = this.owner;
             if (owner) {
-                if (traceEnabled()) {
-                    traceWrite("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", traceCategories.Debug);
+                if (isEnabled()) {
+                    write("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", categories.Debug);
                 }
                 owner._onLoadStarted(url, undefined);
             }
@@ -40,8 +41,8 @@ function initializeWebViewClient(): void {
             super.onPageFinished(view, url);
             const owner = this.owner;
             if (owner) {
-                if (traceEnabled()) {
-                    traceWrite("WebViewClientClass.onPageFinished(" + url + ")", traceCategories.Debug);
+                if (isEnabled()) {
+                    write("WebViewClientClass.onPageFinished(" + url + ")", categories.Debug);
                 }
                 owner._onLoadFinished(url, undefined);
             }
@@ -59,8 +60,8 @@ function initializeWebViewClient(): void {
 
                 const owner = this.owner;
                 if (owner) {
-                    if (traceEnabled()) {
-                        traceWrite("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", traceCategories.Debug);
+                    if (isEnabled()) {
+                        write("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", categories.Debug);
                     }
                     owner._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
                 }
@@ -75,8 +76,8 @@ function initializeWebViewClient(): void {
 
                 const owner = this.owner;
                 if (owner) {
-                    if (traceEnabled()) {
-                        traceWrite("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", traceCategories.Debug);
+                    if (isEnabled()) {
+                        write("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", categories.Debug);
                     }
                     owner._onLoadFinished(error.getUrl && error.getUrl(), error.getDescription() + "(" + error.getErrorCode() + ")");
                 }
