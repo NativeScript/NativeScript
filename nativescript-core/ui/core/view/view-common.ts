@@ -1,13 +1,19 @@
 // Definitions.
 import {
-    View as ViewDefinition, Point, Size, Color, dip,
+    View as ViewDefinition, Point, Size, dip,
     ShownModallyData
 } from ".";
 
 import {
-    booleanConverter, EventData, getEventOrGestureName, InheritedProperty, layout,
-    Property, ShowModalOptions, traceCategories, traceEnabled, traceWrite, ViewBase
+    booleanConverter,
+    ShowModalOptions, ViewBase
 } from "../view-base";
+import { getEventOrGestureName } from "../bindable";
+import { layout } from "../../../utils/utils";
+import { Color } from "../../../color";
+import { Property, InheritedProperty } from "../properties";
+import { EventData } from "../../../data/observable";
+import { Trace } from "../../../trace";
 import { ViewHelper } from "./view-helper";
 
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
@@ -168,8 +174,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public _onLivesync(context?: ModuleContext): boolean {
-        if (traceEnabled()) {
-            traceWrite(`${this}._onLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
+        if (Trace.isEnabled()) {
+            Trace.write(`${this}._onLivesync(${JSON.stringify(context)})`, Trace.categories.Livesync);
         }
 
         if (this._closeAllModalViewsInternal()) {
@@ -193,14 +199,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public _handleLivesync(context?: ModuleContext): boolean {
-        if (traceEnabled()) {
-            traceWrite(`${this}._handleLivesync(${JSON.stringify(context)})`, traceCategories.Livesync);
+        if (Trace.isEnabled()) {
+            Trace.write(`${this}._handleLivesync(${JSON.stringify(context)})`, Trace.categories.Livesync);
         }
 
         // Handle local CSS
         if (viewMatchesModuleContext(this, context, ["style"])) {
-            if (traceEnabled()) {
-                traceWrite(`Change Handled: Changing CSS for ${this}`, traceCategories.Livesync);
+            if (Trace.isEnabled()) {
+                Trace.write(`Change Handled: Changing CSS for ${this}`, Trace.categories.Livesync);
             }
 
             // Always load styles with ".css" extension. Even when changes are in ".scss" ot ".less" files
@@ -216,8 +222,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             this.page &&
             this.page.frame) {
 
-            if (traceEnabled()) {
-                traceWrite(`Change Handled: Changing ${context.type} for ${this} inside ${this.page}`, traceCategories.Livesync);
+            if (Trace.isEnabled()) {
+                Trace.write(`Change Handled: Changing ${context.type} for ${this} inside ${this.page}`, Trace.categories.Livesync);
             }
 
             return this.page.frame._handleLivesync({ type: context.type, path: this.page._moduleName });
@@ -818,8 +824,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public setMeasuredDimension(measuredWidth: number, measuredHeight: number): void {
         this._measuredWidth = measuredWidth;
         this._measuredHeight = measuredHeight;
-        if (traceEnabled()) {
-            traceWrite(this + " :setMeasuredDimension: " + measuredWidth + ", " + measuredHeight, traceCategories.Layout);
+        if (Trace.isEnabled()) {
+            Trace.write(this + " :setMeasuredDimension: " + measuredWidth + ", " + measuredHeight, Trace.categories.Layout);
         }
     }
 

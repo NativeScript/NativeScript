@@ -1,8 +1,4 @@
-﻿/**
- * @module "js-libs/esprima"
- */ /** */
-
-/* tslint:disable */
+﻿/* tslint:disable */
 
 // Type definitions for Esprima v1.2.0
 // Project: http://esprima.org

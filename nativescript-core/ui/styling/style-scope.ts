@@ -26,9 +26,7 @@ import {
     Node,
 } from "./css-selector";
 import {
-    write as traceWrite,
-    categories as traceCategories,
-    messageType as traceMessageType,
+    Trace
 } from "../../trace";
 import { File, knownFolders, path } from "../../file-system";
 import * as application from "../../application";
@@ -81,7 +79,7 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
     try {
         value = _evaluateCssCalcExpression(value);
     } catch (e) {
-        traceWrite(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
+        Trace.write(`Failed to evaluate css-calc for property [${property}] for expression [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
 
         return unsetValue;
     }
@@ -135,7 +133,7 @@ class CSSSource {
                 return CSSSource.fromDetect(cssOrAst, keyframes, resolvedModuleName);
             }
         } catch (e) {
-            traceWrite(`Could not load CSS from ${uri}: ${e}`, traceCategories.Error, traceMessageType.error);
+            Trace.write(`Could not load CSS from ${uri}: ${e}`, Trace.categories.Error, Trace.messageType.error);
         }
 
         return CSSSource.fromFile(appRelativeUri, keyframes);
@@ -148,7 +146,7 @@ class CSSSource {
 
         const appPath = knownFolders.currentApp().path;
         if (!uri.startsWith(appPath)) {
-            traceWrite(`${uri} does not start with ${appPath}`, traceCategories.Error, traceMessageType.error);
+            Trace.write(`${uri} does not start with ${appPath}`, Trace.categories.Error, Trace.messageType.error);
 
             return uri;
         }
@@ -222,7 +220,7 @@ class CSSSource {
                 this._selectors = [];
             }
         } catch (e) {
-            traceWrite("Css styling failed: " + e, traceCategories.Error, traceMessageType.error);
+            Trace.write("Css styling failed: " + e, Trace.categories.Error, Trace.messageType.error);
             this._selectors = [];
         }
     }
@@ -401,7 +399,7 @@ export class CssState {
     static emptyChangeMap: Readonly<ChangeMap<ViewBase>> = Object.freeze(new Map());
     static emptyPropertyBag: Readonly<{}> = Object.freeze({});
     static emptyAnimationArray: ReadonlyArray<kam.KeyframeAnimation> = Object.freeze([]);
-    static emptyMatch: Readonly<SelectorsMatch<ViewBase>> = { selectors: [], changeMap: new Map() };
+    static emptyMatch: Readonly<SelectorsMatch<ViewBase>> = { selectors: [], changeMap: new Map(), addAttribute: () => {}, addPseudoClass: () => {}, properties: null};
 
     _onDynamicStateChangeHandler: () => void;
     _appliedChangeMap: Readonly<ChangeMap<ViewBase>>;
@@ -436,7 +434,7 @@ export class CssState {
     public isSelectorsLatestVersionApplied(): boolean {
         const view = this.viewRef.get();
         if (!view) {
-            traceWrite(`isSelectorsLatestVersionApplied returns default value "false" because "this.viewRef" cleared.`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`isSelectorsLatestVersionApplied returns default value "false" because "this.viewRef" cleared.`, Trace.categories.Style, Trace.messageType.warn);
 
             return false;
         }
@@ -473,7 +471,7 @@ export class CssState {
     private updateDynamicState(): void {
         const view = this.viewRef.get();
         if (!view) {
-            traceWrite(`updateDynamicState not executed to view because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`updateDynamicState not executed to view because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 
             return;
         }
@@ -505,7 +503,7 @@ export class CssState {
         if (this._playsKeyframeAnimations = animations.length > 0) {
             const view = this.viewRef.get();
             if (!view) {
-                traceWrite(`KeyframeAnimations cannot play because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+                Trace.write(`KeyframeAnimations cannot play because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 
                 return;
             }
@@ -538,7 +536,7 @@ export class CssState {
             view.style["keyframe:backgroundColor"] = unsetValue;
             view.style["keyframe:opacity"] = unsetValue;
         } else {
-            traceWrite(`KeyframeAnimations cannot be stopped because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+            Trace.write(`KeyframeAnimations cannot be stopped because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
         }
 
         this._playsKeyframeAnimations = false;
@@ -553,7 +551,7 @@ export class CssState {
     private setPropertyValues(matchingSelectors: SelectorCore[]): void {
         const view = this.viewRef.get();
         if (!view) {
-            traceWrite(`${matchingSelectors} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${matchingSelectors} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 
             return;
         }
@@ -625,7 +623,7 @@ export class CssState {
                     view[camelCasedProperty] = value;
                 }
             } catch (e) {
-                traceWrite(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, traceCategories.Error, traceMessageType.error);
+                Trace.write(`Failed to apply property [${property}] with value [${value}] to ${view}. ${e.stack}`, Trace.categories.Error, Trace.messageType.error);
             }
         }
 
@@ -676,7 +674,7 @@ export class CssState {
     toString(): string {
         const view = this.viewRef.get();
         if (!view) {
-            traceWrite(`toString() of CssState cannot execute correctly because ".viewRef" is cleared`, traceCategories.Animation, traceMessageType.warn);
+            Trace.write(`toString() of CssState cannot execute correctly because ".viewRef" is cleared`, Trace.categories.Animation, Trace.messageType.warn);
 
             return "";
         }
@@ -691,7 +689,7 @@ CssState.prototype._matchInvalid = true;
 
 export class StyleScope {
 
-    private _selectors: SelectorsMap;
+    private _selectors: SelectorsMap<any>;
     private _css: string = "";
     private _mergedCssSelectors: RuleSet[];
     private _localCssSelectors: RuleSet[] = [];
@@ -932,7 +930,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
                 view[property] = value;
             }
         } catch (e) {
-            traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
+            Trace.write(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, Trace.categories.Error, Trace.messageType.error);
         }
     });
 

@@ -1,7 +1,3 @@
-/**
- * @module "ui/animation/keyframe-animation"
- */ /** */
-
 import { View } from "../core/view";
 
 export declare const ANIMATION_PROPERTIES;

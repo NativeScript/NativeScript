@@ -1,7 +1,3 @@
-/**
- * @module "ui/styling/gradient"
- */ /** */
-
 import { LengthPercentUnit } from "./style-properties";
 import { Color } from "../../color";
 import { LinearGradient as LinearGradientDefinition } from "../../css/parser";

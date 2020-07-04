@@ -1,8 +1,7 @@
-/**
- * @module "ui/layouts/flexbox-layout"
- */ /** */
-
-import { LayoutBase, View, Style, CssProperty } from "../layout-base";
+import { LayoutBase } from "../layout-base";
+import { Style } from '../../styling/style';
+import { CssProperty } from "../../core/properties";
+import { View } from '../../core/view';
 
 export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
 export type FlexWrap = "nowrap" | "wrap" | "wrap-reverse";

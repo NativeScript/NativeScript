@@ -1,15 +1,17 @@
 // Definitions.
-import { ViewBase as ViewBaseDefinition } from ".";
 import {
-    AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order
+  AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order
 } from "../../layouts/flexbox-layout";
 import { Page } from "../../page";
 
 // Types.
-import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from "../properties";
+import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from "../properties";
 import { getSystemCssClasses, MODAL_ROOT_VIEW_CSS_CLASS, ROOT_VIEW_CSS_CLASS } from "../../../css/system-classes";
 import { Source } from "../../../utils/debug";
-import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories } from "../bindable";
+import { Binding, BindingOptions } from "../bindable";
+import { Trace } from "../../../trace";
+import { Observable, PropertyChangeData, WrappedValue } from "../../../data/observable";
+import { Style } from "../../styling/style";
 import { isAndroid } from "../../../platform";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
 
@@ -20,6 +22,7 @@ import { profile } from "../../../profiling";
 
 import * as dnm from "../../../debugger/dom-node";
 import * as ssm from "../../styling/style-scope";
+import { ViewBase as ViewBaseDefinition } from ".";
 
 let domNodeModule: typeof dnm;
 
@@ -582,8 +585,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     @profile
     public _addView(view: ViewBase, atIndex?: number) {
-        if (traceEnabled()) {
-            traceWrite(`${this}._addView(${view}, ${atIndex})`, traceCategories.ViewHierarchy);
+        if (Trace.isEnabled()) {
+            Trace.write(`${this}._addView(${view}, ${atIndex})`, Trace.categories.ViewHierarchy);
         }
 
         if (!view) {
@@ -639,8 +642,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
      * Core logic for removing a child view from this instance. Used by the framework to handle lifecycle events more centralized. Do not use outside the UI Stack implementation.
      */
     public _removeView(view: ViewBase) {
-        if (traceEnabled()) {
-            traceWrite(`${this}._removeView(${view})`, traceCategories.ViewHierarchy);
+        if (Trace.isEnabled()) {
+            Trace.write(`${this}._removeView(${view})`, Trace.categories.ViewHierarchy);
         }
 
         if (view.parent !== this) {
@@ -881,8 +884,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     public _goToVisualState(state: string) {
-        if (traceEnabled()) {
-            traceWrite(this + " going to state: " + state, traceCategories.Style);
+        if (Trace.isEnabled()) {
+            Trace.write(this + " going to state: " + state, Trace.categories.Style);
         }
 
         if (state === this._visualState) {

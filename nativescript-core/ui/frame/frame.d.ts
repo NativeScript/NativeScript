@@ -1,13 +1,8 @@
-﻿/**
- * Contains the Frame class, which represents the logical View unit that is responsible for navigation within an application.
- * @module "ui/frame"
- */ /** */
-
-import { NavigationType } from "./frame-common";
-import { Page, View, Observable, EventData } from "../page";
+﻿import { NavigationType } from "./frame-common";
+import { Page } from "../page";
+import { Observable, EventData } from "../../data/observable";
+import { View } from "../core/view";
 import { Transition } from "../transition";
-
-export * from "../page";
 
 /**
  * Represents the logical View unit that is responsible for navigation within an application.

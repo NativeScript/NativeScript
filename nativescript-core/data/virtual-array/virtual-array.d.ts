@@ -1,11 +1,5 @@
-﻿/**
- * Contains the VirtualArray class, which is an advanced array like class that helps loading items on demand.
- * @module "data/virtual-array"
- */ /** */
-
-import { Observable, EventData } from "../observable";
+﻿import { Observable, EventData } from "../observable";
 import { ObservableArray, ChangedData, ChangeType } from "../observable-array";
-export { ChangedData, ChangeType } from "../observable-array";
 
 /**
  * Advanced array like class that helps loading items on demand.

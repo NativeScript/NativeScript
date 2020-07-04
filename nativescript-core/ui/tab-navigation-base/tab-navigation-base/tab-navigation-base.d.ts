@@ -1,15 +1,13 @@
-﻿/**
- * Contains the TabNavigationBase class, which serves as the base class for tab navigation.
- * @module "ui/tab-navigation/tab-navigation-base"
- */ /** */
-
-import {
-    View, ViewBase, Property, CoercibleProperty, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, Color
+﻿import {
+    View, AddArrayFromBuilder, AddChildFromBuilder
 } from "../../core/view";
+import { isIOS } from "../../../platform";
 import { TabStrip } from "../tab-strip";
 import { TabStripItem } from "../tab-strip-item";
 import { TabContentItem } from "../tab-content-item";
-
+import { Property, CoercibleProperty } from "../../core/properties";
+import { EventData } from "../../../data/observable";
+import { Color } from "../../../color";
 /**
  * Defines the data for the tab navigation selectedIndexChanged event.
  */

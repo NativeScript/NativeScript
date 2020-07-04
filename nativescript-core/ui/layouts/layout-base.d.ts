@@ -1,10 +1,6 @@
-﻿/**
- * @module "ui/layouts/layout-base"
- */ /** */
-
-import { View, CustomLayoutView, Property, Length } from "../core/view";
-
-export * from "../core/view";
+﻿import { View, CustomLayoutView } from "../core/view";
+import { Property } from "../core/properties";
+import { Length } from "../styling/style-properties";
 
 /**
  * Base class for all views that supports children positioning.

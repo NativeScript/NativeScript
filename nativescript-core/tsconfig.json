@@ -20,12 +20,7 @@
             "chai",
             "mocha"
         ],
-        "baseUrl": ".",
-        "paths": {
-            "@nativescript/core/*": [
-                "nativescript-core/*"
-            ]
-        }
+        "baseUrl": "."
     },
     "include": [
         "**/*.ts"

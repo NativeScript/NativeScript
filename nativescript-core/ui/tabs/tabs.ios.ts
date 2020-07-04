@@ -278,8 +278,8 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
 
     public pageViewControllerViewControllerBeforeViewController(pageViewController: UIPageViewController, viewController: UIViewController): UIViewController {
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
         // }
 
         const owner = this._owner.get();
@@ -305,8 +305,8 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
 
     public pageViewControllerViewControllerAfterViewController(pageViewController: UIPageViewController, viewController: UIViewController): UIViewController {
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
         // }
 
         const owner = this._owner.get();
@@ -333,8 +333,8 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
 
     public presentationCountForPageViewController(pageViewController: UIPageViewController): number {
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
         // }
 
         return 0;
@@ -342,8 +342,8 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
 
     public presentationIndexForPageViewController(pageViewController: UIPageViewController): number {
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
         // }
 
         return 0;
@@ -631,15 +631,15 @@ export class Tabs extends TabsBase {
     public _onViewControllerShown(viewController: UIViewController) {
         // This method could be called with the moreNavigationController or its list controller, so we have to check.
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView._onViewControllerShown(" + viewController + ");", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView._onViewControllerShown(" + viewController + ");", Trace.categories.Debug);
         // }
         if (this._ios.viewControllers && this._ios.viewControllers.containsObject(viewController)) {
             this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);
         } else {
             // TODO
-            // if (traceEnabled()) {
-            //     traceWrite("TabView._onViewControllerShown: viewController is not one of our viewControllers", traceCategories.Debug);
+            // if (Trace.isEnabled()) {
+            //     Trace.write("TabView._onViewControllerShown: viewController is not one of our viewControllers", Trace.categories.Debug);
             // }
         }
     }
@@ -1084,8 +1084,8 @@ export class Tabs extends TabsBase {
 
     [selectedIndexProperty.setNative](value: number) {
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", Trace.categories.Debug);
         // }
 
         if (value > -1) {

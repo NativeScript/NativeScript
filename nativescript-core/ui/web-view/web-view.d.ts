@@ -1,9 +1,10 @@
 ﻿/**
  * Contains the WebView class, which represents a standard browser widget.
- * @module "ui/web-view"
- */ /** */
+ */
 
-import { View, Property, EventData } from "../core/view";
+import { View } from "../core/view";
+import { Property } from "../core/properties"; 
+import { EventData } from "../../data/observable";
 
 /**
  * Represents the observable property backing the Url property of each WebView instance.

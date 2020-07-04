@@ -1,5 +1,7 @@
-import { WebViewBase, knownFolders, WebViewClient } from "./web-view-common";
-import { isEnabled, write, categories } from '../../trace';
+import { WebViewBase, WebViewClient } from "./web-view-common";
+import { Trace } from '../../trace';
+import { knownFolders } from "../../file-system";
+
 
 export * from "./web-view-common";
 
@@ -19,8 +21,8 @@ function initializeWebViewClient(): void {
         }
 
         public shouldOverrideUrlLoading(view: android.webkit.WebView, url: string) {
-            if (isEnabled()) {
-              write("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", categories.Debug);
+            if (Trace.isEnabled()) {
+              Trace.write("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", Trace.categories.Debug);
             }
 
             return false;
@@ -30,8 +32,8 @@ function initializeWebViewClient(): void {
             super.onPageStarted(view, url, favicon);
             const owner = this.owner;
             if (owner) {
-                if (isEnabled()) {
-                    write("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", categories.Debug);
+                if (Trace.isEnabled()) {
+                    Trace.write("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", Trace.categories.Debug);
                 }
                 owner._onLoadStarted(url, undefined);
             }
@@ -41,8 +43,8 @@ function initializeWebViewClient(): void {
             super.onPageFinished(view, url);
             const owner = this.owner;
             if (owner) {
-                if (isEnabled()) {
-                    write("WebViewClientClass.onPageFinished(" + url + ")", categories.Debug);
+                if (Trace.isEnabled()) {
+                    Trace.write("WebViewClientClass.onPageFinished(" + url + ")", Trace.categories.Debug);
                 }
                 owner._onLoadFinished(url, undefined);
             }
@@ -60,8 +62,8 @@ function initializeWebViewClient(): void {
 
                 const owner = this.owner;
                 if (owner) {
-                    if (isEnabled()) {
-                        write("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", categories.Debug);
+                    if (Trace.isEnabled()) {
+                        Trace.write("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", Trace.categories.Debug);
                     }
                     owner._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
                 }
@@ -76,8 +78,8 @@ function initializeWebViewClient(): void {
 
                 const owner = this.owner;
                 if (owner) {
-                    if (isEnabled()) {
-                        write("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", categories.Debug);
+                    if (Trace.isEnabled()) {
+                        Trace.write("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", Trace.categories.Debug);
                     }
                     owner._onLoadFinished(error.getUrl && error.getUrl(), error.getDescription() + "(" + error.getErrorCode() + ")");
                 }
@@ -85,7 +87,7 @@ function initializeWebViewClient(): void {
         }
     }
 
-    WebViewClient = WebViewClientImpl;
+    WebViewClient = <any>WebViewClientImpl;
 }
 
 export class WebView extends WebViewBase {
@@ -103,7 +105,7 @@ export class WebView extends WebViewBase {
         super.initNativeView();
         initializeWebViewClient();
         const nativeView = this.nativeViewProtected;
-        const client = new WebViewClient(this);
+        const client = new WebViewClient(<any>this);
         nativeView.setWebViewClient(client);
         (<any>nativeView).client = client;
     }

@@ -212,7 +212,7 @@ export class AndroidApplication extends Observable {
 }
 
 // @public
-export class Animation {
+class Animation_2 {
     constructor(animationDefinitions: Array<AnimationDefinition>, playSequentially?: boolean);
     // (undocumented)
     public cancel: () => void;
@@ -225,6 +225,8 @@ export class Animation {
     // (undocumented)
     public _resolveAnimationCurve(curve: any): any;
 }
+
+export { Animation_2 as Animation }
 
 // @public
 export interface AnimationDefinition {
@@ -276,12 +278,12 @@ export const Application: {
     addCss: typeof addCss;
     on: typeof on;
     off: typeof off;
-    run: typeof run;
-    orientation: typeof orientation;
+    run: typeof run_2;
+    orientation: typeof orientation_2;
     getNativeApplication: typeof getNativeApplication;
     hasLaunched: typeof hasLaunched;
-    android: import("./application/application").AndroidApplication;
-    ios: import("./application/application").iOSApplication;
+    android: AndroidApplication;
+    ios: iOSApplication;
 };
 
 // @public
@@ -300,7 +302,7 @@ export const ApplicationSettings: {
     clear: typeof clear;
     flush: typeof flush;
     hasKey: typeof hasKey;
-    remove: typeof remove;
+    remove: typeof remove_2;
     setString: typeof setString;
     getString: typeof getString;
     getAllKeys: typeof getAllKeys;
@@ -620,12 +622,12 @@ export interface EventData {
 }
 
 // @public
-export class File extends FileSystemEntity {
+class File_2 extends FileSystemEntity {
     static exists(path: string): boolean;
 
     extension: string;
 
-    static fromPath(path: string): File;
+    static fromPath(path: string): File_2;
 
     isLocked: boolean;
 
@@ -647,6 +649,8 @@ export class File extends FileSystemEntity {
 
     writeTextSync(content: string, onError?: (error: any) => any, encoding?: string): void;
 }
+
+export { File_2 as File }
 
 // @public
 export class FileSystemEntity {
@@ -731,7 +735,7 @@ export class Folder extends FileSystemEntity {
 
     getEntitiesSync(onError?: (error: any) => any): Array<FileSystemEntity>;
 
-    getFile(name: string): File;
+    getFile(name: string): File_2;
 
     getFolder(name: string): Folder;
 
@@ -852,7 +856,7 @@ export class Frame extends View {
     // Warning: (ae-forgotten-export) The symbol "NavigationType" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    setCurrent(entry: BackstackEntry, navigationType: NavigationType): void;
+    setCurrent(entry: BackstackEntry, navigationType: NavigationType_2): void;
 
     // (undocumented)
     static _stack(): Array<Frame>;
@@ -865,7 +869,7 @@ export class Frame extends View {
     _updateActionBar(page?: Page, disableNavBarAnimation?: boolean);
 
     // (undocumented)
-    _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void;
+    _updateBackstack(entry: BackstackEntry, navigationType: NavigationType_2): void;
 }
 
 // @public
@@ -989,7 +993,9 @@ export namespace GridUnitType {
 }
 
 // @public (undocumented)
-export type Headers = { [key: string]: string | string[] };
+type Headers_2 = { [key: string]: string | string[] };
+
+export { Headers_2 as Headers }
 
 // @public
 export class HtmlView extends View {
@@ -1015,7 +1021,7 @@ export interface HttpContent {
 
   toArrayBuffer: () => ArrayBuffer;
 
-  toFile: (destinationFilePath?: string) => File;
+  toFile: (destinationFilePath?: string) => File_2;
 
   toImage: () => Promise<ImageSource>;
 
@@ -1043,7 +1049,7 @@ export interface HttpRequestOptions {
 export interface HttpResponse {
   content?: HttpContent;
 
-  headers: Headers;
+  headers: Headers_2;
 
   statusCode: number;
 }
@@ -1057,7 +1063,7 @@ export enum HttpResponseEncoding {
 }
 
 // @public
-export class Image extends View {
+class Image_2 extends View {
     android: any /* android.widget.ImageView */;
 
     decodeHeight: Length;
@@ -1079,6 +1085,8 @@ export class Image extends View {
 
     tintColor: Color;
 }
+
+export { Image_2 as Image }
 
 // @public (undocumented)
 export class ImageAsset extends Observable {
@@ -1437,7 +1445,7 @@ export interface NavigationContext {
     // (undocumented)
     isBackNavigation: boolean;
     // (undocumented)
-    navigationType: NavigationType;
+    navigationType: NavigationType_2;
 }
 
 // @public
@@ -1666,7 +1674,7 @@ export interface ParserEvent {
     namespace?: string;
 
     // Warning: (ae-forgotten-export) The symbol "Position" needs to be exported by the entry point index.d.ts
-    position: Position;
+    position: Position_2;
 
     prefix?: string;
 
@@ -1721,10 +1729,10 @@ export class Placeholder extends View {
 export const Profiling: {
     enable: typeof enable;
     disable: typeof disable;
-    time: typeof time;
+    time: typeof time_2;
     uptime: typeof uptime;
     start: typeof start;
-    stop: typeof stop;
+    stop: typeof stop_2;
     isRunning: typeof isRunning;
     dumpProfiles: typeof dumpProfiles;
     resetProfiles: typeof resetProfiles;
@@ -1774,10 +1782,12 @@ export interface RotationGestureEventData extends GestureEventDataWithState {
  }
 
 // @public
-export module Screen {
+module Screen_2 {
     const // Warning: (ae-forgotten-export) The symbol "ScreenMetrics" needs to be exported by the entry point index.d.ts
     mainScreen: ScreenMetrics;
 }
+
+export { Screen_2 as Screen }
 
 // @public (undocumented)
 export interface ScrollEventData extends EventData {
@@ -2350,7 +2360,7 @@ export class TabStripItem extends View {
 
     iconSource: string;
 
-    image: Image;
+    image: Image_2;
 
     // (undocumented)
     _index: number;
@@ -2575,7 +2585,7 @@ export const Trace: {
     removeWriter: typeof removeWriter;
     clearWriters: typeof clearWriters;
     setErrorHandler: typeof setErrorHandler;
-    write: typeof write;
+    write: typeof write_2;
     error: typeof error;
     enable: typeof enable_2;
     disable: typeof disable_2;
@@ -2666,7 +2676,7 @@ export abstract class View extends ViewBase {
     color: Color;
     // (undocumented)
     public static combineMeasuredStates(curState: number, newState): number;
-    public createAnimation(options: AnimationDefinition): Animation;
+    public createAnimation(options: AnimationDefinition): Animation_2;
     css: string;
     // (undocumented)
     cssClasses: Set<string>;
@@ -2691,9 +2701,9 @@ export abstract class View extends ViewBase {
     // (undocumented)
     public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
     // Warning: (ae-forgotten-export) The symbol "Point" needs to be exported by the entry point index.d.ts
-    public getLocationInWindow(): Point;
-    public getLocationOnScreen(): Point;
-    public getLocationRelativeTo(otherView: View): Point;
+    public getLocationInWindow(): Point_2;
+    public getLocationOnScreen(): Point_2;
+    public getLocationRelativeTo(otherView: View): Point_2;
     public getMeasuredHeight(): number;
     // (undocumented)
     public getMeasuredState(): number;
@@ -2756,7 +2766,7 @@ export abstract class View extends ViewBase {
     // (undocumented)
     _redrawNativeBackground(value: any): void;
     // (undocumented)
-    _removeAnimation(animation: Animation): boolean;
+    _removeAnimation(animation: Animation_2): boolean;
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number;
     rotate: number;
     rotateX: number;
@@ -3043,7 +3053,7 @@ export class WrapLayout extends LayoutBase {
 // @public
 export class XmlParser {
 
-    constructor(onEvent: (event: ParserEvent) => void, onError?: (error: Error, position: Position) => void, processNamespaces?: boolean, angularSyntax?: boolean);
+    constructor(onEvent: (event: ParserEvent) => void, onError?: (error: Error, position: Position_2) => void, processNamespaces?: boolean, angularSyntax?: boolean);
 
     parse(xmlString: string): void;
 }

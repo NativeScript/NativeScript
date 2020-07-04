@@ -1,7 +1,3 @@
-/**
- * @module "utils/utils"
- */ /** */
-
 import { dip, px } from "../ui/core/view";
 
 export * from "./mainthread-helper"

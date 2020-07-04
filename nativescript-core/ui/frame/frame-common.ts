@@ -2,11 +2,15 @@
 import { Frame as FrameDefinition } from ".";
 import { BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, NavigationType } from "./frame-interfaces";
 import { Page } from "../page";
-import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, Property, CSSType } from "../core/view";
+import { View, CustomLayoutView, CSSType } from "../core/view";
+import { Property } from "../core/properties";
+import { isIOS, isAndroid } from "../../platform";
+import { Trace } from "../../trace";
 
 // Requires.
 import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from "./frame-stack";
-import { getAncestor, viewMatchesModuleContext } from "../core/view/view-common";
+import { viewMatchesModuleContext } from "../core/view/view-common";
+import { getAncestor } from "../core/view-base";
 import { Builder } from "../builder";
 import { sanitizeModuleName } from "../builder/module-name-sanitizer";
 import { profile } from "../../profiling";
@@ -162,8 +166,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
      * @param to The backstack entry to navigate back to.
      */
     public goBack(backstackEntry?: BackstackEntry): void {
-        if (traceEnabled()) {
-            traceWrite(`GO BACK`, traceCategories.Navigation);
+        if (Trace.isEnabled()) {
+            Trace.write(`GO BACK`, Trace.categories.Navigation);
         }
 
         if (!this.canGoBack()) {
@@ -201,8 +205,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public navigate(param: any) {
-        if (traceEnabled()) {
-            traceWrite(`NAVIGATE`, traceCategories.Navigation);
+        if (Trace.isEnabled()) {
+            Trace.write(`NAVIGATE`, Trace.categories.Navigation);
         }
 
         this._pushInFrameStack();
@@ -355,7 +359,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _updateActionBar(page?: Page, disableNavBarAnimation?: boolean) {
-        //traceWrite("calling _updateActionBar on Frame", traceCategories.Navigation);
+        //Trace.write("calling _updateActionBar on Frame", Trace.categories.Navigation);
     }
 
     protected _processNextNavigationEntry() {
@@ -399,14 +403,14 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
-        if (traceEnabled()) {
-            traceWrite(`GO BACK CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, traceCategories.Navigation);
+        if (Trace.isEnabled()) {
+            Trace.write(`GO BACK CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, Trace.categories.Navigation);
         }
     }
 
     public _navigateCore(backstackEntry: BackstackEntry) {
-        if (traceEnabled()) {
-            traceWrite(`NAVIGATE CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, traceCategories.Navigation);
+        if (Trace.isEnabled()) {
+            Trace.write(`NAVIGATE CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, Trace.categories.Navigation);
         }
     }
 
@@ -617,7 +621,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         if (this.currentPage &&
             viewMatchesModuleContext(this.currentPage, context, ["markup", "script"])) {
 
-            traceWrite(`Change Handled: Replacing page ${context.path}`, traceCategories.Livesync);
+            Trace.write(`Change Handled: Replacing page ${context.path}`, Trace.categories.Livesync);
 
             this.replacePage(context.path);
 
@@ -631,8 +635,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         // Reset activity/window content when:
         // + Changes are not handled on View
         // + There is no ModuleContext
-        if (traceEnabled()) {
-            traceWrite(`${this}._onLivesync()`, traceCategories.Livesync);
+        if (Trace.isEnabled()) {
+            Trace.write(`${this}._onLivesync()`, Trace.categories.Livesync);
         }
 
         if (!this._currentEntry || !this._currentEntry.entry) {

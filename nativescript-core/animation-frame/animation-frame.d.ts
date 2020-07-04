@@ -1,9 +1,4 @@
 /**
- * Allows you to create, cancel and react to listeners to animation frames.
- * @module "animation-frame"
- */ /** */
-
-/**
  * Callback called on frame rendered
  * @argument time Time of the current frame in milliseconds
  */

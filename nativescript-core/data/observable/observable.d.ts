@@ -1,9 +1,4 @@
 ﻿/**
- * Contains the Observable class, which represents an observable object, or "data" in the model-view paradigm.
- * @module "data/observable"
- */ /** */
-
-/**
  * Base event data.
  */
 export interface EventData {

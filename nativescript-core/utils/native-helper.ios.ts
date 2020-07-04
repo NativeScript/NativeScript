@@ -1,7 +1,5 @@
 import {
-    messageType as traceMessageType,
-    categories as traceCategories,
-    write as traceWrite
+    Trace
 } from "../trace";
 
 declare var UIImagePickerControllerSourceType: any;
@@ -24,7 +22,7 @@ function openFileAtRootModule(filePath: string): boolean {
         return controller.presentPreviewAnimated(true);
     }
     catch (e) {
-        traceWrite("Error in openFile", traceCategories.Error, traceMessageType.error);
+        Trace.write("Error in openFile", Trace.categories.Error, Trace.messageType.error);
     }
 
     return false;

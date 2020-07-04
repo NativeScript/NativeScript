@@ -1,11 +1,6 @@
-﻿/**
- * Contains the application abstraction with all related methods.
- * @module "application"
- */ /** */
-
-/// <reference path="../tns-core-modules.d.ts" />
-
-import { NavigationEntry, View, Observable, EventData } from "../ui/frame";
+﻿import { NavigationEntry } from "../ui/frame";
+import { View } from '../ui/core/view';
+import { Observable, EventData } from '../data/observable';
 
 /**
  * String value used when hooking to launch event.

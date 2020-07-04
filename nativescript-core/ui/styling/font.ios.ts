@@ -1,5 +1,5 @@
 import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyle, FontWeight } from "./font-common";
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "../../trace";
+import { Trace } from "../../trace";
 import { device } from "../../platform";
 import * as fs from "../../file-system";
 export * from "./font-common";
@@ -193,8 +193,8 @@ export module ios {
 
         const error = new interop.Reference<NSError>();
         if (!CTFontManagerRegisterGraphicsFont(font, error)) {
-            if (traceEnabled()) {
-                traceWrite("Error occur while registering font: " + CFErrorCopyDescription(<NSError>error.value), traceCategories.Error, traceMessageType.error);
+            if (Trace.isEnabled()) {
+                Trace.write("Error occur while registering font: " + CFErrorCopyDescription(<NSError>error.value), Trace.categories.Error, Trace.messageType.error);
             }
         }
     }

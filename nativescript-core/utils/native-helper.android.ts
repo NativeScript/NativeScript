@@ -1,8 +1,6 @@
 import { getNativeApplication, android as androidApp } from "../application";
 import {
-    messageType as traceMessageType,
-    categories as traceCategories,
-    write as traceWrite
+    Trace
 } from "../trace";
 
 // We are using "ad" here to avoid namespace collision with the global android object
@@ -145,7 +143,7 @@ export module ad {
                 }
             }
             catch (ex) {
-                traceWrite("Cannot get pallete color: " + name, traceCategories.Error, traceMessageType.error);
+                Trace.write("Cannot get pallete color: " + name, Trace.categories.Error, Trace.messageType.error);
             }
 
             attrCache.set(name, result);

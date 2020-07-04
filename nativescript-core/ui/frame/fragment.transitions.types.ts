@@ -1,7 +1,3 @@
-/**
- * @module "ui/fragment.transition.types"
- * @private
- */ /** */
 //@private
 export const enum AnimationType {
     enterFakeResourceId = -10,

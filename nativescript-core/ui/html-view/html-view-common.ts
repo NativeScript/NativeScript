@@ -1,5 +1,7 @@
-﻿import { Style, CssProperty } from "../core/properties";
-import { View, Property, CSSType } from "../core/view";
+﻿import { CssProperty } from "../core/properties";
+import { View, CSSType } from "../core/view";
+import { Property } from "../core/properties";
+import { Style } from "../styling/style";
 import { Color } from "../../color";
 import { HtmlView as HtmlViewDefinition } from ".";
 

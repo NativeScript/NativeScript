@@ -1,5 +1,7 @@
 import { Button as ButtonDefinition } from ".";
-import { TextBase, booleanConverter, CSSType } from "../text-base";
+import { TextBase } from "../text-base";
+import { CSSType } from "../core/view";
+import { booleanConverter } from "../core/view-base";
 
 @CSSType("Button")
 export abstract class ButtonBase extends TextBase implements ButtonDefinition {

@@ -1,10 +1,13 @@
-﻿import { ListPicker as ListPickerDefinition, ItemsSource } from ".";
-import { View, Property, CoercibleProperty, CSSType } from "../core/view";
+﻿import { View, CSSType } from "../core/view";
+import { Property, CoercibleProperty } from "../core/properties";
 
-export * from "../core/view";
+export interface ItemsSource {
+  length: number;
+  getItem(index: number): any;
+}
 
 @CSSType("ListPicker")
-export class ListPickerBase extends View implements ListPickerDefinition {
+export class ListPickerBase extends View {
 
     public selectedIndex: number;
     public items: any[] | ItemsSource;

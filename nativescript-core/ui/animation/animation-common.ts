@@ -12,12 +12,10 @@ import {
 // Requires.
 import { Color } from "../../color";
 import {
-    isEnabled as traceEnabled, write as traceWrite,
-    categories as traceCategories, messageType as traceType
+    Trace
 } from "../../trace";
 import { PercentLength } from "../styling/style-properties";
 
-export { Color, traceEnabled, traceWrite, traceCategories, traceType };
 export * from "./animation-interfaces";
 
 export module Properties {
@@ -57,8 +55,8 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
             throw new Error("No animation definitions specified");
         }
 
-        if (traceEnabled()) {
-            traceWrite("Analyzing " + animationDefinitions.length + " animation definitions...", traceCategories.Animation);
+        if (Trace.isEnabled()) {
+            Trace.write("Analyzing " + animationDefinitions.length + " animation definitions...", Trace.categories.Animation);
         }
 
         this._propertyAnimations = new Array<PropertyAnimation>();
@@ -72,8 +70,8 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
         if (this._propertyAnimations.length === 0) {
             throw new Error("Nothing to animate.");
         }
-        if (traceEnabled()) {
-            traceWrite("Created " + this._propertyAnimations.length + " individual property animations.", traceCategories.Animation);
+        if (Trace.isEnabled()) {
+            Trace.write("Created " + this._propertyAnimations.length + " individual property animations.", Trace.categories.Animation);
         }
 
         this._playSequentially = playSequentially;
@@ -83,7 +81,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
     protected _rejectAlreadyPlaying(): AnimationPromiseDefinition {
         const reason = "Animation is already playing.";
-        traceWrite(reason, traceCategories.Animation, traceType.warn);
+        Trace.write(reason, Trace.categories.Animation, Trace.messageType.warn);
 
         return <AnimationPromiseDefinition>new Promise<void>((resolve, reject) => {
             reject(reason);

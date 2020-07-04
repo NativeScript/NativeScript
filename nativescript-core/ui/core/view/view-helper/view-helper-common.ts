@@ -8,9 +8,7 @@ import {
 // Requires
 import { layout } from "../../../../utils/utils";
 import {
-    isEnabled as traceEnabled,
-    categories as traceCategories,
-    write as traceWrite
+    Trace
 } from "../../../../trace";
 
 export class ViewHelper {
@@ -39,8 +37,8 @@ export class ViewHelper {
             const childWidthMeasureSpec = ViewHelper.getMeasureSpec(widthMeasureSpec, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === "stretch");
             const childHeightMeasureSpec = ViewHelper.getMeasureSpec(heightMeasureSpec, verticalMargins, child.effectiveHeight, style.verticalAlignment === "stretch");
 
-            if (traceEnabled()) {
-                traceWrite(`${child.parent} :measureChild: ${child} ${layout.measureSpecToString(childWidthMeasureSpec)}, ${layout.measureSpecToString(childHeightMeasureSpec)}}`, traceCategories.Layout);
+            if (Trace.isEnabled()) {
+                Trace.write(`${child.parent} :measureChild: ${child} ${layout.measureSpecToString(childWidthMeasureSpec)}, ${layout.measureSpecToString(childHeightMeasureSpec)}}`, Trace.categories.Layout);
             }
 
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
@@ -131,8 +129,8 @@ export class ViewHelper {
         childLeft = Math.round(childLeft);
         childTop = Math.round(childTop);
 
-        if (traceEnabled()) {
-            traceWrite(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, traceCategories.Layout);
+        if (Trace.isEnabled()) {
+            Trace.write(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, Trace.categories.Layout);
         }
 
         child.layout(childLeft, childTop, childRight, childBottom, setFrame);

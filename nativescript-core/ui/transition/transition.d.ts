@@ -1,8 +1,4 @@
-﻿/**
- * @module "ui/transition"
- */ /** */
-
-export module AndroidTransitionType {
+﻿export module AndroidTransitionType {
     export const enter: string;
     export const exit: string;
     export const popEnter: string;

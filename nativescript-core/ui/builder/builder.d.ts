@@ -1,8 +1,4 @@
-﻿/**
- * @module "ui/builder"
- */ /** */
-
-import { View, Template, KeyedTemplate } from "../core/view";
+﻿import { View, Template, KeyedTemplate } from "../core/view";
 import { Page } from "../page";
 import { NavigationEntry } from "../frame";
 

@@ -1,20 +1,33 @@
 // Types
-import { TextBase as TextBaseDefinition } from ".";
-import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "./text-base-interfaces";
-import { Length, ViewBase } from "../core/view";
-import { FontStyle, FontWeight } from "../styling/font-interfaces";
 import { PropertyChangeData } from "../../data/observable/observable-interfaces";
+import { ViewBase } from "../core/view-base";
+import { FontStyle, FontWeight } from "../styling/font-interfaces";
 
 // Requires.
-import { FormattedString, Span } from "./formatted-string";
+import { FormattedString } from "./formatted-string";
+import { Span } from "./span";
 import { 
-    View, Property, CssProperty, InheritedCssProperty, Style, isAndroid, isIOS, Observable, 
-    makeValidator, makeParser 
+  View
 } from "../core/view";
+import { 
+  Property, CssProperty, InheritedCssProperty, 
+  makeValidator, makeParser 
+} from "../core/properties";
+import { 
+  Style
+} from "../styling/style";
+import { 
+  Length
+} from "../styling/style-properties";
+import { 
+  isAndroid, isIOS, 
+} from "../../platform";
+import { Observable } from "../../data/observable";
 
-export { FormattedString, Span };
+import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "./text-base-interfaces";
+import { TextBase as TextBaseDefinition } from ".";
+
 export * from "./text-base-interfaces";
-export * from "../core/view";
 
 const CHILD_SPAN = "Span";
 const CHILD_FORMATTED_TEXT = "formattedText";

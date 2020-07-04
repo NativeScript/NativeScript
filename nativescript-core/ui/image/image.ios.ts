@@ -1,7 +1,10 @@
 import {
-    ImageSource, ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty, layout, Color,
-    traceEnabled, traceWrite, traceCategories
+    ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty
 } from "./image-common";
+import { ImageSource } from "../../image-source";
+import { Color } from "../../color";
+import { Trace } from "../../trace";
+import { layout } from "../../utils/utils";
 
 export * from "./image-common";
 
@@ -76,10 +79,10 @@ export class Image extends ImageBase {
             measureWidth = finiteWidth ? Math.min(resultW, width) : resultW;
             measureHeight = finiteHeight ? Math.min(resultH, height) : resultH;
 
-            if (traceEnabled()) {
-                traceWrite("Image stretch: " + this.stretch +
+            if (Trace.isEnabled()) {
+                Trace.write("Image stretch: " + this.stretch +
                     ", nativeWidth: " + nativeWidth +
-                    ", nativeHeight: " + nativeHeight, traceCategories.Layout);
+                    ", nativeHeight: " + nativeHeight, Trace.categories.Layout);
             }
         }
 

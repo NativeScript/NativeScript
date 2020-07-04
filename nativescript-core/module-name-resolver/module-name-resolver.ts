@@ -4,9 +4,7 @@ import * as appCommonModule from "../application/application-common";
 import { PlatformContext, findMatch, stripQualifiers } from "./qualifier-matcher";
 import { registerModulesFromFileSystem } from "./non-bundle-workflow-compat";
 import {
-    isEnabled as traceEnabled,
-    write as traceWrite,
-    categories as traceCategories
+    Trace
 } from "../trace";
 
 export class ModuleNameResolver implements ModuleNameResolverDefinition {
@@ -23,8 +21,8 @@ export class ModuleNameResolver implements ModuleNameResolverDefinition {
             this._cache[key] = result;
         }
 
-        if (traceEnabled()) {
-            traceWrite(`path: '${path}' with ext: '${ext}' resolved: '${result}'`, traceCategories.ModuleNameResolver);
+        if (Trace.isEnabled()) {
+            Trace.write(`path: '${path}' with ext: '${ext}' resolved: '${result}'`, Trace.categories.ModuleNameResolver);
         }
 
         return result;
@@ -81,7 +79,7 @@ export function resolveModuleName(path: string, ext: string): string {
 }
 
 function resolveModuleSnapshot(path, ext) {
-    traceWrite(`Resolving module in SNAPSHOT context - path: '${path}' with ext: '${ext}'`, traceCategories.ModuleNameResolver);
+    Trace.write(`Resolving module in SNAPSHOT context - path: '${path}' with ext: '${ext}'`, Trace.categories.ModuleNameResolver);
 
     // Platform module when in snapshot. So resolve modules with default android phone.
     // NB: The only module name that should ever be resolved while in snapshot is app.css, because it is

@@ -1,9 +1,5 @@
-/**
- * Contains the GesturesObserver class, which lets you observe and respond to user gestures.
- * @module "ui/gestures"
- */ /** */
-
- import { View, EventData } from "../core/view";
+import { View } from "../core/view";
+import { EventData } from "../../data/observable";
 
  /**
   * Defines an enum with supported gesture types.

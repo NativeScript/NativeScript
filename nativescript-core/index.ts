@@ -1,4 +1,8 @@
-/// <reference path="./tns-core-modules.d.ts" />
+// apply polyfills first
+import { initGlobal, hasInitGlobal } from './globals';
+if (!hasInitGlobal) {
+  initGlobal();
+}
 
 // Export all interfaces from "application" module
 export {

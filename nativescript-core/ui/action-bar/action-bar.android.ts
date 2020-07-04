@@ -1,9 +1,13 @@
 import { AndroidActionItemSettings, AndroidActionBarSettings as AndroidActionBarSettingsDefinition, ActionItem as ActionItemDefinition } from ".";
 import {
     ActionItemBase, ActionBarBase, isVisible,
-    View, layout, colorProperty, flatProperty, Color,
+    flatProperty,
     traceMissingIcon, androidContentInsetLeftProperty, androidContentInsetRightProperty
 } from "./action-bar-common";
+import { View} from '../core/view';
+import { Color} from '../../color';
+import { layout} from '../../utils/utils';
+import { colorProperty} from '../core/bindable';
 import { RESOURCE_PREFIX, isFontIconURI } from "../../utils/utils";
 import { ImageSource } from "../../image-source";
 import * as application from "../../application";

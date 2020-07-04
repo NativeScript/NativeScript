@@ -1,9 +1,4 @@
-﻿/**
- * Defines specific text related enumerations.
- * @module "text"
- */ /** */
-
-export * from "./text-common";
+﻿export * from "./text-common";
 
 /**
  * Defines the supported character encodings.

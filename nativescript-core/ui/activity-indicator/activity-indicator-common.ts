@@ -1,8 +1,6 @@
 ﻿import { ActivityIndicator as ActivityIndicatorDefinition } from ".";
 import { View, Property, booleanConverter, CSSType } from "../core/view";
 
-export * from "../core/view";
-
 @CSSType("ActivityIndicator")
 export class ActivityIndicatorBase extends View implements ActivityIndicatorDefinition {
     public busy: boolean;

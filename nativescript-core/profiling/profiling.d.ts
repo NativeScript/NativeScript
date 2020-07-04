@@ -1,8 +1,7 @@
 /**
  * Contains contains utility methods for profiling.
  * All methods in this module are experimental and may be changed in a non-major version.
- * @module "profiling"
- */ /** */
+ */
 
 interface TimerInfo {
     totalTime: number;

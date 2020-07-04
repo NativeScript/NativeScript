@@ -4,13 +4,14 @@ import { Font } from "../styling/font";
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty,
-    androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontSizeProperty, fontInternalProperty, layout, traceCategory, traceEnabled,
-    traceWrite, Color, traceMissingIcon
+    androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty, traceCategory, traceMissingIcon
 } from "./tab-view-common";
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { ImageSource } from "../../image-source";
-import { RESOURCE_PREFIX, ad } from "../../utils/utils";
+import { Trace } from "../../trace";
+import { Color } from "../../color";
+import { fontSizeProperty, fontInternalProperty } from "../styling/style-properties";
+import { RESOURCE_PREFIX, ad, layout } from "../../utils/utils";
 import { Frame } from "../frame";
 import * as application from "../../application";
 
@@ -375,8 +376,8 @@ export class TabViewItem extends TabViewItemBase {
 
         // TODO: can happen in a modal tabview scenario when the modal dialog fragment is already removed
         if (!tabFragment) {
-            if (traceEnabled()) {
-                traceWrite(`Could not get child fragment manager for tab item with index ${this.index}`, traceCategory);
+            if (Trace.isEnabled()) {
+                Trace.write(`Could not get child fragment manager for tab item with index ${this.index}`, traceCategory);
             }
 
             return (<any>tabView)._getRootFragmentManager();
@@ -468,8 +469,8 @@ export class TabView extends TabViewBase {
 
     public createNativeView() {
         initializeNativeClasses();
-        if (traceEnabled()) {
-            traceWrite("TabView._createUI(" + this + ");", traceCategory);
+        if (Trace.isEnabled()) {
+            Trace.write("TabView._createUI(" + this + ");", traceCategory);
         }
 
         const context: android.content.Context = this._context;
@@ -711,8 +712,8 @@ export class TabView extends TabViewBase {
     [selectedIndexProperty.setNative](value: number) {
         const smoothScroll = this.androidTabsPosition === "top";
 
-        if (traceEnabled()) {
-            traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
+        if (Trace.isEnabled()) {
+            Trace.write("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
         }
 
         this._viewPager.setCurrentItem(value, smoothScroll);

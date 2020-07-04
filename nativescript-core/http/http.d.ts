@@ -1,9 +1,4 @@
-﻿/**
- * Allows you to send web requests and receive the responses.
- * @module "http"
- */ /** */
-
-import { ImageSource } from "../image-source";
+﻿import { ImageSource } from "../image-source";
 import { File } from "../file-system";
 
 /**

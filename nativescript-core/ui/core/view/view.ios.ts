@@ -3,10 +3,12 @@ import { Point, View as ViewDefinition, dip } from ".";
 
 // Requires
 import {
-    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    traceEnabled, traceWrite, traceCategories, traceError, traceMessageType, ShowModalOptions
+    ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty
 } from "./view-common";
-import { ios } from "./view-helper";
+import { ShowModalOptions } from "../view-base";
+import { Trace } from "../../../trace";
+import { layout } from "../../../utils/utils";
+import { IOSHelper } from "./view-helper";
 import { ios as iosBackground, Background } from "../../styling/background";
 import { ios as iosUtils } from "../../../utils/utils";
 import { ios as iosNativeHelper } from "../../../utils/native-helper";
@@ -21,7 +23,7 @@ import {
 import { profile } from "../../../profiling";
 
 export * from "./view-common";
-export { ios };
+export { IOSHelper };
 
 const PFLAG_FORCE_LAYOUT = 1;
 const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
@@ -32,8 +34,8 @@ const majorVersion = iosUtils.MajorVersion;
 export class View extends ViewCommon implements ViewDefinition {
     nativeViewProtected: UIView;
     viewController: UIViewController;
-    private _popoverPresentationDelegate: ios.UIPopoverPresentationControllerDelegateImp;
-    private _adaptivePresentationDelegate: ios.UIAdaptivePresentationControllerDelegateImp;
+    private _popoverPresentationDelegate: IOSHelper.UIPopoverPresentationControllerDelegateImp;
+    private _adaptivePresentationDelegate: IOSHelper.UIAdaptivePresentationControllerDelegateImp;
 
     private _isLaidOut = false;
     private _hasTransfrom = false;
@@ -102,7 +104,7 @@ export class View extends ViewCommon implements ViewDefinition {
                 // on iOS 11+ it is possible to have a changed layout frame due to safe area insets
                 // get the frame and adjust the position, so that onLayout works correctly
                 const frame = this.nativeViewProtected.frame;
-                position = ios.getPositionFromFrame(frame);
+                position = IOSHelper.getPositionFromFrame(frame);
             }
 
             this.onLayout(position.left, position.top, position.right, position.bottom);
@@ -161,8 +163,8 @@ export class View extends ViewCommon implements ViewDefinition {
 
         let oldFrame = this._cachedFrame || nativeView.frame;
         if (!CGRectEqualToRect(oldFrame, frame)) {
-            if (traceEnabled()) {
-                traceWrite(this + " :_setNativeViewFrame: " + JSON.stringify(ios.getPositionFromFrame(frame)), traceCategories.Layout);
+            if (Trace.isEnabled()) {
+                Trace.write(this + " :_setNativeViewFrame: " + JSON.stringify(IOSHelper.getPositionFromFrame(frame)), Trace.categories.Layout);
             }
             this._cachedFrame = frame;
             let adjustedFrame = null;
@@ -215,7 +217,7 @@ export class View extends ViewCommon implements ViewDefinition {
         }
 
         const nativeView = this.nativeViewProtected;
-        const frame = ios.getFrameFromPosition({ left, top, right, bottom });
+        const frame = IOSHelper.getFrameFromPosition({ left, top, right, bottom });
         this._setNativeViewFrame(nativeView, frame);
     }
 
@@ -250,7 +252,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
     public focus(): boolean {
         if (this.ios) {
-            return this.ios.becomeFirstResponder();
+            return this.IOSHelper.becomeFirstResponder();
         }
 
         return false;
@@ -262,9 +264,9 @@ export class View extends ViewCommon implements ViewDefinition {
         }
 
         if (!this.iosOverflowSafeArea || !this.iosOverflowSafeAreaEnabled) {
-            return ios.shrinkToSafeArea(this, frame);
+            return IOSHelper.shrinkToSafeArea(this, frame);
         } else if (this.nativeViewProtected && this.nativeViewProtected.window) {
-            return ios.expandBeyondSafeArea(this, frame);
+            return IOSHelper.expandBeyondSafeArea(this, frame);
         }
 
         return null;
@@ -400,25 +402,25 @@ export class View extends ViewCommon implements ViewDefinition {
     }
 
     protected _showNativeModalView(parent: View, options: ShowModalOptions) {
-        const parentWithController = ios.getParentWithViewController(parent);
+        const parentWithController = IOSHelper.getParentWithViewController(parent);
         if (!parentWithController) {
-            traceWrite(`Could not find parent with viewController for ${parent} while showing modal view.`,
-                traceCategories.ViewHierarchy, traceMessageType.error);
+            Trace.write(`Could not find parent with viewController for ${parent} while showing modal view.`,
+                Trace.categories.ViewHierarchy, Trace.messageType.error);
 
             return;
         }
 
         const parentController = parentWithController.viewController;
         if (parentController.presentedViewController) {
-            traceWrite("Parent is already presenting view controller. Close the current modal page before showing another one!",
-                traceCategories.ViewHierarchy, traceMessageType.error);
+            Trace.write("Parent is already presenting view controller. Close the current modal page before showing another one!",
+                Trace.categories.ViewHierarchy, Trace.messageType.error);
 
             return;
         }
 
         if (!parentController.view || !parentController.view.window) {
-            traceWrite("Parent page is not part of the window hierarchy.",
-                traceCategories.ViewHierarchy, traceMessageType.error);
+            Trace.write("Parent page is not part of the window hierarchy.",
+                Trace.categories.ViewHierarchy, Trace.messageType.error);
 
             return;
         }
@@ -429,7 +431,7 @@ export class View extends ViewCommon implements ViewDefinition {
         let controller = this.viewController;
         if (!controller) {
             const nativeView = this.ios || this.nativeViewProtected;
-            controller = <UIViewController>ios.UILayoutViewController.initWithOwner(new WeakRef(this));
+            controller = <UIViewController>IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(this));
 
             if (nativeView instanceof UIView) {
                 controller.view.addSubview(nativeView);
@@ -444,13 +446,13 @@ export class View extends ViewCommon implements ViewDefinition {
             controller.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
             //check whether both height and width is provided and are positive numbers
             // set it has prefered content size to the controller presenting the dialog
-            if (options.ios && options.ios.width > 0 && options.ios.height > 0) {
-                controller.preferredContentSize = CGSizeMake(options.ios.width, options.ios.height);
+            if (options.ios && options.IOSHelper.width > 0 && options.IOSHelper.height > 0) {
+                controller.preferredContentSize = CGSizeMake(options.IOSHelper.width, options.IOSHelper.height);
             }
         }
 
-        if (options.ios && options.ios.presentationStyle) {
-            const presentationStyle = options.ios.presentationStyle;
+        if (options.ios && options.IOSHelper.presentationStyle) {
+            const presentationStyle = options.IOSHelper.presentationStyle;
             controller.modalPresentationStyle = presentationStyle;
 
             if (presentationStyle === UIModalPresentationStyle.Popover) {
@@ -490,7 +492,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
     protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
         if (!parent || !parent.viewController) {
-            traceError("Trying to hide modal view but no parent with viewController specified.");
+            Trace.error("Trying to hide modal view but no parent with viewController specified.");
 
             return;
         }
@@ -704,7 +706,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
     private _setupPopoverControllerDelegate(controller: UIViewController, parent: View) {
         const popoverPresentationController = controller.popoverPresentationController;
-        this._popoverPresentationDelegate = ios.UIPopoverPresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
+        this._popoverPresentationDelegate = IOSHelper.UIPopoverPresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
         popoverPresentationController.delegate = <UIPopoverPresentationControllerDelegate>this._popoverPresentationDelegate;
         const view = parent.nativeViewProtected;
         // Note: sourceView and sourceRect are needed to specify the anchor location for the popover.
@@ -714,7 +716,7 @@ export class View extends ViewCommon implements ViewDefinition {
     }
 
     private _setupAdaptiveControllerDelegate(controller: UIViewController) {
-        this._adaptivePresentationDelegate = ios.UIAdaptivePresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
+        this._adaptivePresentationDelegate = IOSHelper.UIAdaptivePresentationControllerDelegateImp.initWithOwnerAndCallback(new WeakRef(this), this._closeModalCallback);
         controller.presentationController.delegate = <UIAdaptivePresentationControllerDelegate>this._adaptivePresentationDelegate;
     }
 }

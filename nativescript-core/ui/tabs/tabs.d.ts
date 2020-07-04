@@ -1,9 +1,9 @@
 ﻿/**
  * Contains the Tabs class, which represents a tab navigation component.
- * @module "ui/tabs"
- */ /** */
+ */
 
-import { EventData, Property } from "../core/view";
+import { Property } from "../core/properties";
+import { EventData } from "../../data/observable";
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import {
     SelectedIndexChangedEventData, TabNavigationBase

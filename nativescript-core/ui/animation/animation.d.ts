@@ -1,8 +1,5 @@
-﻿/**
- * @module "ui/animation"
- */ /** */
-
-import { View, Color } from "../core/view";
+﻿import { View } from "../core/view";
+import { Color } from "../../color";
 import { PercentLength } from "../styling/style-properties";
 
 /**

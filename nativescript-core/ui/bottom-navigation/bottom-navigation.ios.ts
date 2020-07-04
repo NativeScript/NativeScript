@@ -110,8 +110,8 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 
     public tabBarControllerShouldSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): boolean {
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
         // }
 
         let owner = this._owner.get();
@@ -145,8 +145,8 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 
     public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView.delegate.DID_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView.delegate.DID_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
         // }
 
         const owner = this._owner.get();
@@ -172,8 +172,8 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 
     navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView.moreNavigationController.WILL_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView.moreNavigationController.WILL_show(" + navigationController + ", " + viewController + ", " + animated + ");", Trace.categories.Debug);
         // }
 
         let owner = this._owner.get();
@@ -187,8 +187,8 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 
     navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView.moreNavigationController.DID_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView.moreNavigationController.DID_show(" + navigationController + ", " + viewController + ", " + animated + ");", Trace.categories.Debug);
         // }
         // We don't need Edit button in More screen.
         navigationController.navigationBar.topItem.rightBarButtonItem = null;
@@ -454,15 +454,15 @@ export class BottomNavigation extends TabNavigationBase {
     public _onViewControllerShown(viewController: UIViewController) {
         // This method could be called with the moreNavigationController or its list controller, so we have to check.
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView._onViewControllerShown(" + viewController + ");", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView._onViewControllerShown(" + viewController + ");", Trace.categories.Debug);
         // }
         if (this._ios.viewControllers && this._ios.viewControllers.containsObject(viewController)) {
             this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);
         } else {
             // TODO
-            // if (traceEnabled()) {
-            //     traceWrite("TabView._onViewControllerShown: viewController is not one of our viewControllers", traceCategories.Debug);
+            // if (Trace.isEnabled()) {
+            //     Trace.write("TabView._onViewControllerShown: viewController is not one of our viewControllers", Trace.categories.Debug);
             // }
         }
     }
@@ -470,8 +470,8 @@ export class BottomNavigation extends TabNavigationBase {
     private _actionBarHiddenByTabView: boolean;
     public _handleTwoNavigationBars(backToMoreWillBeVisible: boolean) {
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite(`TabView._handleTwoNavigationBars(backToMoreWillBeVisible: ${backToMoreWillBeVisible})`, traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write(`TabView._handleTwoNavigationBars(backToMoreWillBeVisible: ${backToMoreWillBeVisible})`, Trace.categories.Debug);
         // }
 
         // The "< Back" and "< More" navigation bars should not be visible simultaneously.
@@ -489,8 +489,8 @@ export class BottomNavigation extends TabNavigationBase {
             this._actionBarHiddenByTabView = true;
 
             // TODO
-            // if (traceEnabled()) {
-            //     traceWrite(`TabView hid action bar`, traceCategories.Debug);
+            // if (Trace.isEnabled()) {
+            //     Trace.write(`TabView hid action bar`, Trace.categories.Debug);
             // }
             return;
         }
@@ -502,8 +502,8 @@ export class BottomNavigation extends TabNavigationBase {
             this._actionBarHiddenByTabView = undefined;
 
             // TODO
-            // if (traceEnabled()) {
-            //     traceWrite(`TabView restored action bar`, traceCategories.Debug);
+            // if (Trace.isEnabled()) {
+            //     Trace.write(`TabView restored action bar`, Trace.categories.Debug);
             // }
             return;
         }
@@ -729,8 +729,8 @@ export class BottomNavigation extends TabNavigationBase {
 
     [selectedIndexProperty.setNative](value: number) {
         // TODO
-        // if (traceEnabled()) {
-        //     traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", Trace.categories.Debug);
         // }
 
         if (value > -1) {

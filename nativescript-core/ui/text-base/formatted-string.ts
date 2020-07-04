@@ -2,12 +2,11 @@ import { FormattedString as FormattedStringDefinition } from "./formatted-string
 import { Span } from "./span";
 import { Observable, PropertyChangeData } from "../../data/observable";
 import { ObservableArray, ChangedData } from "../../data/observable-array";
-import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "../core/view";
+import { AddArrayFromBuilder, AddChildFromBuilder } from "../core/view";
+import { ViewBase } from "../core/view-base";
 import { Color } from "../../color";
 import { FontStyle, FontWeight } from "../styling/font";
 import { TextDecoration } from "../text-base";
-
-export { Span };
 
 export module knownCollections {
     export const spans = "spans";
@@ -106,7 +105,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
                 const span = (<ObservableArray<Span>>eventData.object).getItem(eventData.index + i);
 
                 // First add to logical tree so that inherited properties are set.
-                this._addView(span);
+                this._addView(<any>span);
 
                 // Then attach handlers - we skip the first nofitication because
                 // we raise change for the whole instance.

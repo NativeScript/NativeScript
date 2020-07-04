@@ -1,9 +1,4 @@
 ﻿/**
- * Allows creating colors to be used when styling the UI.
- * @module "color"
- */ /** */
-
-/**
  * Represents a color object. Stores all color components (alpha (opacity), red, green, blue) in a [0..255] range.
  */
 export class Color {

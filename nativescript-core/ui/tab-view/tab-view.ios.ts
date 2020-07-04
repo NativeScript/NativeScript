@@ -1,12 +1,16 @@
 import { TabViewItem as TabViewItemDefinition } from ".";
 import { Font } from "../styling/font";
 
-import { ios as iosView, ViewBase } from "../core/view";
+import { ios as iosView, View } from "../core/view";
+import { ViewBase } from "../core/view-base";
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
-    tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, traceMissingIcon
+    tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty, traceMissingIcon
 } from "./tab-view-common";
+import { layout } from '../../utils/utils';
+import { Color } from "../../color";
+import { Trace } from "../../trace";
+import { fontInternalProperty } from "../styling/style-properties";
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { ImageSource } from "../../image-source";
 import { profile } from "../../profiling";
@@ -99,8 +103,8 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
     }
 
     public tabBarControllerShouldSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): boolean {
-        if (traceEnabled()) {
-            traceWrite("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+        if (Trace.isEnabled()) {
+            Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
         }
 
         let owner = this._owner.get();
@@ -120,8 +124,8 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
     }
 
     public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
-        if (traceEnabled()) {
-            traceWrite("TabView.delegate.DID_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+        if (Trace.isEnabled()) {
+            Trace.write("TabView.delegate.DID_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
         }
 
         const owner = this._owner.get();
@@ -146,8 +150,8 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     }
 
     navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        if (traceEnabled()) {
-            traceWrite("TabView.moreNavigationController.WILL_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
+        if (Trace.isEnabled()) {
+            Trace.write("TabView.moreNavigationController.WILL_show(" + navigationController + ", " + viewController + ", " + animated + ");", Trace.categories.Debug);
         }
 
         let owner = this._owner.get();
@@ -160,8 +164,8 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     }
 
     navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        if (traceEnabled()) {
-            traceWrite("TabView.moreNavigationController.DID_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
+        if (Trace.isEnabled()) {
+            Trace.write("TabView.moreNavigationController.DID_show(" + navigationController + ", " + viewController + ", " + animated + ");", Trace.categories.Debug);
         }
         // We don't need Edit button in More screen.
         navigationController.navigationBar.topItem.rightBarButtonItem = null;
@@ -352,22 +356,22 @@ export class TabView extends TabViewBase {
 
     public _onViewControllerShown(viewController: UIViewController) {
         // This method could be called with the moreNavigationController or its list controller, so we have to check.
-        if (traceEnabled()) {
-            traceWrite("TabView._onViewControllerShown(" + viewController + ");", traceCategories.Debug);
+        if (Trace.isEnabled()) {
+            Trace.write("TabView._onViewControllerShown(" + viewController + ");", Trace.categories.Debug);
         }
         if (this._ios.viewControllers && this._ios.viewControllers.containsObject(viewController)) {
             this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);
         } else {
-            if (traceEnabled()) {
-                traceWrite("TabView._onViewControllerShown: viewController is not one of our viewControllers", traceCategories.Debug);
+            if (Trace.isEnabled()) {
+                Trace.write("TabView._onViewControllerShown: viewController is not one of our viewControllers", Trace.categories.Debug);
             }
         }
     }
 
     private _actionBarHiddenByTabView: boolean;
     public _handleTwoNavigationBars(backToMoreWillBeVisible: boolean) {
-        if (traceEnabled()) {
-            traceWrite(`TabView._handleTwoNavigationBars(backToMoreWillBeVisible: ${backToMoreWillBeVisible})`, traceCategories.Debug);
+        if (Trace.isEnabled()) {
+            Trace.write(`TabView._handleTwoNavigationBars(backToMoreWillBeVisible: ${backToMoreWillBeVisible})`, Trace.categories.Debug);
         }
 
         // The "< Back" and "< More" navigation bars should not be visible simultaneously.
@@ -383,8 +387,8 @@ export class TabView extends TabViewBase {
             page.actionBarHidden = true;
             page.frame.ios._disableNavBarAnimation = false;
             this._actionBarHiddenByTabView = true;
-            if (traceEnabled()) {
-                traceWrite(`TabView hid action bar`, traceCategories.Debug);
+            if (Trace.isEnabled()) {
+                Trace.write(`TabView hid action bar`, Trace.categories.Debug);
             }
 
             return;
@@ -395,8 +399,8 @@ export class TabView extends TabViewBase {
             page.actionBarHidden = false;
             page.frame.ios._disableNavBarAnimation = false;
             this._actionBarHiddenByTabView = undefined;
-            if (traceEnabled()) {
-                traceWrite(`TabView restored action bar`, traceCategories.Debug);
+            if (Trace.isEnabled()) {
+                Trace.write(`TabView restored action bar`, Trace.categories.Debug);
             }
 
             return;
@@ -504,8 +508,8 @@ export class TabView extends TabViewBase {
     }
 
     [selectedIndexProperty.setNative](value: number) {
-        if (traceEnabled()) {
-            traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);
+        if (Trace.isEnabled()) {
+            Trace.write("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", Trace.categories.Debug);
         }
 
         if (value > -1) {

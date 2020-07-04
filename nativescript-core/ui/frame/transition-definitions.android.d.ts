@@ -1,8 +1,3 @@
-/**
- * @module "ui/frame/transition-definitions.android
- * @private
- */ /** */
-
 // Definitions for Android API lvl 21 transitions
 declare module android {
     export module transition {

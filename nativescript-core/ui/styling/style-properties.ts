@@ -1,10 +1,13 @@
 // Types
 import {
-    unsetValue, Style,
+    unsetValue,
     CssProperty, CssAnimationProperty,
     ShorthandProperty, InheritedCssProperty,
     makeValidator, makeParser
 } from "../core/properties";
+import {
+  Style
+} from "../styling/style";
 import {
     Transformation,
     TransformationValue,
@@ -28,9 +31,7 @@ import {
     multiplyAffine2d,
 } from "../../matrix";
 import {
-    write as traceWrite,
-    categories as traceCategories,
-    messageType as traceMessageType,
+    Trace
 } from "../../trace";
 
 import * as parser from "../../css/parser";
@@ -201,7 +202,7 @@ export const minWidthProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectiveMinWidth = Length.toDevicePixels(newValue, 0);
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
     }, valueConverter: Length.parse
 });
@@ -214,7 +215,7 @@ export const minHeightProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectiveMinHeight = Length.toDevicePixels(newValue, 0);
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
     }, valueConverter: Length.parse
 });
@@ -300,7 +301,7 @@ export const paddingLeftProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
     }, valueConverter: Length.parse
 });
@@ -313,7 +314,7 @@ export const paddingRightProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectivePaddingRight = Length.toDevicePixels(newValue, 0);
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
     }, valueConverter: Length.parse
 });
@@ -326,7 +327,7 @@ export const paddingTopProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectivePaddingTop = Length.toDevicePixels(newValue, 0);
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
     }, valueConverter: Length.parse
 });
@@ -339,7 +340,7 @@ export const paddingBottomProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
     }, valueConverter: Length.parse
 });
@@ -955,7 +956,7 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectiveBorderTopWidth = value;
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
         const background = target.backgroundInternal.withBorderTopWidth(value);
         target.backgroundInternal = background;
@@ -975,7 +976,7 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectiveBorderRightWidth = value;
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
         const background = target.backgroundInternal.withBorderRightWidth(value);
         target.backgroundInternal = background;
@@ -995,7 +996,7 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectiveBorderBottomWidth = value;
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
         const background = target.backgroundInternal.withBorderBottomWidth(value);
         target.backgroundInternal = background;
@@ -1015,7 +1016,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectiveBorderLeftWidth = value;
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
         const background = target.backgroundInternal.withBorderLeftWidth(value);
         target.backgroundInternal = background;
@@ -1254,7 +1255,7 @@ export const visibilityProperty = new CssProperty<Style, Visibility>({
         if (view) {
             view.isCollapsed = (newValue === Visibility.COLLAPSE);
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
     }
 });

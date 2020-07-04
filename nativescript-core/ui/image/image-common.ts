@@ -1,10 +1,15 @@
 import { Image as ImageDefinition, Stretch } from ".";
-import { View, Property, InheritedCssProperty, Length, Style, Color, isIOS, booleanConverter, CSSType, traceEnabled, traceWrite, traceCategories } from "../core/view";
+import { View, CSSType } from "../core/view";
+import { booleanConverter } from "../core/view-base";
 import { ImageAsset } from "../../image-asset";
 import { ImageSource } from "../../image-source";
 import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from "../../utils/utils";
-export * from "../core/view";
-export { ImageSource, ImageAsset, isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX };
+import { Color } from "../../color";
+import { isIOS } from "../../platform";
+import { Style } from "../styling/style";
+import { Length } from "../styling/style-properties";
+import { Property, InheritedCssProperty,  } from "../core/properties";
+import { Trace } from "../../trace";
 
 @CSSType("Image")
 export abstract class ImageBase extends View implements ImageDefinition {
@@ -89,11 +94,11 @@ export abstract class ImageBase extends View implements ImageDefinition {
                 }, err => {
                     // catch: Response content may not be converted to an Image
                     this.isLoading = false;
-                    if (traceEnabled()) {
+                    if (Trace.isEnabled()) {
                         if (typeof err === "object" && err.message) {
                             err = err.message;
                         }
-                        traceWrite(err, traceCategories.Debug);
+                        Trace.write(err, Trace.categories.Debug);
                     }
                 });
             }

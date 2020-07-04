@@ -1,7 +1,5 @@
-﻿/**
- * @module "ui/layouts/stack-layout"
- */ /** */
-import { LayoutBase, Property } from "../layout-base";
+﻿import { LayoutBase } from "../layout-base";
+import { Property } from "../../core/properties";
 
 /**
  * A Layout that arranges its children horizontally or vertically. The direction can be set by orientation property.

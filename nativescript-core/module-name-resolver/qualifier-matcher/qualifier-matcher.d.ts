@@ -1,7 +1,6 @@
 ﻿/**
  * Provides ModuleNameResolver class used for loading files based on device capabilities.
- * @module "module-name-resolver/qualifier-matcher"
- */ /** */
+ */
 
 export interface PlatformContext {
     width: number;

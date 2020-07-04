@@ -1,10 +1,12 @@
 import { Font } from "../styling/font";
 import {
-    SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
-    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, fontSizeProperty,
-    isEnabledProperty, isUserInteractionEnabledProperty
+    SearchBarBase,
+    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty,
 } from "./search-bar-common";
+import { isUserInteractionEnabledProperty, isEnabledProperty } from "../core/view";
 import { ad } from "../../utils/utils";
+import { Color } from "../../color";
+import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty, fontSizeProperty } from "../styling/style-properties";
 
 export * from "./search-bar-common";
 

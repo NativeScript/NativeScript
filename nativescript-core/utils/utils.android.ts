@@ -2,9 +2,7 @@ import { ad } from "./native-helper";
 import { device } from "../platform";
 import { FileSystemAccess } from "../file-system/file-system-access";
 import {
-    write as traceWrite,
-    categories as traceCategories,
-    messageType as traceMessageType,
+    Trace
 } from "../trace";
 
 export { ad };
@@ -29,7 +27,7 @@ export function openUrl(location: string): boolean {
         context.startActivity(intent);
     } catch (e) {
         // We Don't do anything with an error.  We just output it
-        traceWrite("Error in OpenURL", traceCategories.Error, traceMessageType.error);
+        Trace.write("Error in OpenURL", Trace.categories.Error, Trace.messageType.error);
 
         return false;
     }
@@ -92,13 +90,13 @@ export function openFile(filePath: string): boolean {
     try {
         // Ensure external storage is available
         if (!isExternalStorageAvailable()) {
-            traceWrite(
+            Trace.write(
                 `
 External storage is unavailable (please check app permissions).
 Applications cannot access internal storage of other application on Android (see: https://developer.android.com/guide/topics/data/data-storage).
 `,
-                traceCategories.Error,
-                traceMessageType.error,
+                Trace.categories.Error,
+                Trace.messageType.error,
             );
 
             return false;
@@ -106,7 +104,7 @@ Applications cannot access internal storage of other application on Android (see
 
         // Ensure external storage is available
         if (isExternalStorageReadOnly()) {
-            traceWrite("External storage is read only", traceCategories.Error, traceMessageType.error);
+            Trace.write("External storage is read only", Trace.categories.Error, Trace.messageType.error);
 
             return false;
         }
@@ -122,9 +120,9 @@ Applications cannot access internal storage of other application on Android (see
         // Android SDK <28 only requires starting the chooser Intent straight forwardly
         const sdkVersion = parseInt(device.sdkVersion, 10);
         if (sdkVersion && sdkVersion < MIN_URI_SHARE_RESTRICTED_APK_VERSION) {
-            traceWrite(
+            Trace.write(
                 `detected sdk version ${sdkVersion} (< ${MIN_URI_SHARE_RESTRICTED_APK_VERSION}), using simple openFile`,
-                traceCategories.Debug
+                Trace.categories.Debug
             );
             intent.setDataAndType(android.net.Uri.fromFile(new java.io.File(filePath)), mimeType);
             context.startActivity(chooserIntent);
@@ -132,9 +130,9 @@ Applications cannot access internal storage of other application on Android (see
             return true;
         }
 
-        traceWrite(
+        Trace.write(
             `detected sdk version ${sdkVersion} (>= ${MIN_URI_SHARE_RESTRICTED_APK_VERSION}), using URI openFile`,
-            traceCategories.Debug
+            Trace.categories.Debug
         );
 
         // Android SDK 24+ introduced file system permissions changes that disallow
@@ -143,7 +141,7 @@ Applications cannot access internal storage of other application on Android (see
         // see: https://developer.android.com/reference/android/os/FileUriExposedException
         // see: https://github.com/NativeScript/NativeScript/issues/5661#issuecomment-456405380
         const providerName = `${context.getPackageName()}.provider`;
-        traceWrite(`fully-qualified provider name [${providerName}]`, traceCategories.Debug);
+        Trace.write(`fully-qualified provider name [${providerName}]`, Trace.categories.Debug);
 
         const apkURI = androidx.core.content.FileProvider.getUriForFile(
             context,
@@ -163,19 +161,19 @@ Applications cannot access internal storage of other application on Android (see
         return true;
     } catch (err) {
         const msg = err.message ? `: ${err.message}` : "";
-        traceWrite(`Error in openFile${msg}`, traceCategories.Error, traceMessageType.error);
+        Trace.write(`Error in openFile${msg}`, Trace.categories.Error, Trace.messageType.error);
 
         if (msg &&
             msg.includes("Attempt to invoke virtual method") &&
             msg.includes("android.content.pm.ProviderInfo.loadXmlMetaData") &&
             msg.includes("on a null object reference")) {
             // Alert user to possible fix
-            traceWrite(
+            Trace.write(
                 `
 Please ensure you have your manifest correctly configured with the FileProvider.
 (see: https://developer.android.com/reference/android/support/v4/content/FileProvider#ProviderDefinition)
 `,
-                traceCategories.Error,
+                Trace.categories.Error,
             );
         }
 

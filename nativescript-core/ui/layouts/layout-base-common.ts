@@ -1,7 +1,8 @@
 import { LayoutBase as LayoutBaseDefinition } from "./layout-base";
-import { View, CustomLayoutView, Property, AddChildFromBuilder, getViewById, Length, booleanConverter } from "../core/view";
-
-export * from "../core/view";
+import { View, CustomLayoutView, AddChildFromBuilder, } from "../core/view";
+import { booleanConverter, getViewById } from "../core/view-base";
+import { Property } from "../core/properties";
+import { Length } from "../styling/style-properties";
 
 export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefinition, AddChildFromBuilder {
 

@@ -1,5 +1,6 @@
 ﻿import { DatePicker as DatePickerDefinition } from ".";
-import { View, Property, CSSType } from "../core/view";
+import { View, CSSType } from "../core/view";
+import {Property } from "../core/properties";
 
 const defaultDate = new Date();
 const dateComparer = (x: Date, y: Date): boolean => (x <= y && x >= y);

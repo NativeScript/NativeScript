@@ -2,8 +2,8 @@ The trace module is used to track code execution and to receive notifications fo
 It is disabled by default and to enable it you will need to call its enable() method.
 
 ```js
-import * as trace from "trace";
-trace.enable();
+import { Trace } from "@nativescript/core";
+Trace.enable();
 ```
 
 The module writes its output through a collection of TraceWriter objects. By default there is one ConsoleWriter instance added to the module. There is a filtering functionality which is implemented by the `setCategories(string)` method. The method argument is a string containing one or more comma-delimited categories: `"Layout,VisualTreeEvents"`.
@@ -11,28 +11,28 @@ The module writes its output through a collection of TraceWriter objects. By def
 How to specify category(s):
 
 ```js
-import * as trace from "trace";
+import { Trace } from "@nativescript/core";
 // only the Layout messages are traced
-trace.setCategories(traceCategories.Layout);
+Trace.setCategories(Trace.categories.Layout);
 ```
 
 ```js
-import * as trace from "trace";
+import { Trace } from "@nativescript/core";
 // set Layout + VisualTreeEvents categories
-trace.setCategories(traceCategories.concat(traceCategories.Layout, traceCategories.VisualTreeEvents));
+Trace.setCategories(Trace.categories.concat(Trace.categories.Layout, Trace.categories.VisualTreeEvents));
 ```
 
 ```js
-import * as trace from "trace";
+import { Trace } from "@nativescript/core";
 // trace everything
-trace.setCategories(traceCategories.All);
+Trace.setCategories(Trace.categories.All);
 ```
 
 How to trace:
 
 ```js
-import * as trace from "trace";
-traceWrite("tracing message", traceCategories.Layout);
+import { Trace } from "@nativescript/core";
+Trace.write("tracing message", Trace.categories.Layout);
 ```
 
 The module also supports events notifications through the EventListener interface. You may call the `trace.notifyEvent` method and all registered listeners will receive a notification for the event.
@@ -40,9 +40,9 @@ The module also supports events notifications through the EventListener interfac
 How to create and register a listener:
 
 ```js
-import * as trace from "trace";
+import { Trace } from "@nativescript/core";
 
-class Listener implements trace.EventListener {
+class Listener implements Trace.EventListener {
     public filter: string;
     public receivedEvents: Array<{ sender: Object; name: string }> = [];
 
@@ -63,15 +63,14 @@ class Listener implements trace.EventListener {
 var listener = new Listener("_onAttached");
 
 // register the listener
-trace.addEventListener(listener);
+Trace.addEventListener(listener);
 ```
 
 How to raise events:
 
 ```js
-import * as trace from "trace";
-import * as view from "ui/core/view";
+import { Trace, View } from "@nativescript/core";
 
-var newView = new view.View();
-trace.notifyEvent(newView, "_viewCreated");
+var newView = new View();
+Trace.notifyEvent(newView, "_viewCreated");
 ```

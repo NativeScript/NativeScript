@@ -1,6 +1,6 @@
 import { ios } from "./native-helper";
 import {
-    write as traceWrite, categories as traceCategories, messageType as traceMessageType
+    Trace
 } from "../trace";
 
 export { ios };
@@ -17,7 +17,7 @@ export function openFile(filePath: string): boolean {
         return controller.presentPreviewAnimated(true);
     }
     catch (e) {
-        traceWrite("Error in openFile", traceCategories.Error, traceMessageType.error);
+        Trace.write("Error in openFile", Trace.categories.Error, Trace.messageType.error);
     }
 
     return false;
@@ -40,7 +40,7 @@ export function openUrl(location: string): boolean {
     }
     catch (e) {
         // We Don't do anything with an error.  We just output it
-        traceWrite("Error in OpenURL", traceCategories.Error, traceMessageType.error);
+        Trace.write("Error in OpenURL", Trace.categories.Error, Trace.messageType.error);
     }
 
     return false;

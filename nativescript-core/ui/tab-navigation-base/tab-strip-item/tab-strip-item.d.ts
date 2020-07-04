@@ -1,11 +1,7 @@
-﻿/**
- * Contains the TabStripItem class, which represents a tab strip entry for tab navigation.
- * @module "ui/tab-navigation/tab-strip-item"
- */ /** */
-
-import { View, EventData } from "../../core/view";
+﻿import { View } from "../../core/view";
 import { Image } from "../../image/image";
 import { Label } from "../../label/label";
+import { EventData } from "../../../data/observable"
 
 /**
  * Represents a tab strip entry.

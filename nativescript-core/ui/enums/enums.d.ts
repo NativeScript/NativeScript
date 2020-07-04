@@ -1,8 +1,4 @@
-﻿/**
- * @module "ui/enums"
- */ /** */
-
-import { CubicBezierAnimationCurve } from "../animation";
+﻿import { CubicBezierAnimationCurve } from "../animation";
 import {
     KeyboardType as BaseKeyboardType,
     ReturnKeyType as BaseReturnKeyType,

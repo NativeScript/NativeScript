@@ -19,17 +19,17 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "css-tree": "^1.0.0-alpha.37",
-        "nativescript-hook": "0.2.5",
+        "@nativescript/hook": "~1.0.0",
+        "css-tree": "^1.0.0-alpha.39",
         "reduce-css-calc": "^2.1.6",
-        "semver": "6.3.0",
-        "tns-core-modules-widgets": "6.5.10",
-        "tslib": "1.10.0"
+        "semver": "~7.3.2",
+        "tns-core-modules-widgets": "~6.5.2",
+        "tslib": "~2.0.0"
     },
     "devDependencies": {
-        "@types/chai": "~4.2.5",
-        "@types/node": "~10.12.18",
-        "tns-platform-declarations": "6.5.10"
+        "@types/chai": "~4.2.11",
+        "@types/node": "~14.0.14",
+        "tns-platform-declarations": "~6.5.8"
     },
     "scripts": {
         "version": "conventional-changelog -p angular -i ../CHANGELOG.md -s && git add ../CHANGELOG.md",
@@ -49,15 +49,5 @@
                 "inject": true
             }
         ]
-    },
-    "snapshot": {
-        "android": {
-            "tns-java-classes": {
-                "modules": [
-                    "ui/frame/activity",
-                    "ui/frame/fragment"
-                ]
-            }
-        }
     }
 }

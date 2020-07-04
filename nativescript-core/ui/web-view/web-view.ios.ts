@@ -1,8 +1,9 @@
 import { NavigationType } from ".";
-import { WebViewBase, knownFolders } from "./web-view-common";
+import { WebViewBase } from "./web-view-common";
 import { profile } from "../../profiling";
-import { isEnabled, write, categories } from '../../trace';
+import { Trace } from '../../trace';
 export * from "./web-view-common";
+import { knownFolders } from "../../file-system";
 
 class WKNavigationDelegateImpl extends NSObject
     implements WKNavigationDelegate {
@@ -39,22 +40,22 @@ class WKNavigationDelegateImpl extends NSObject
             }
             decisionHandler(WKNavigationActionPolicy.Allow);
 
-            if (isEnabled()) {
-                write("WKNavigationDelegateClass.webViewDecidePolicyForNavigationActionDecisionHandler(" + navigationAction.request.URL.absoluteString + ", " + navigationAction.navigationType + ")", categories.Debug);
+            if (Trace.isEnabled()) {
+                Trace.write("WKNavigationDelegateClass.webViewDecidePolicyForNavigationActionDecisionHandler(" + navigationAction.request.URL.absoluteString + ", " + navigationAction.navigationType + ")", Trace.categories.Debug);
             }
             owner._onLoadStarted(navigationAction.request.URL.absoluteString, navType);
         }
     }
 
     public webViewDidStartProvisionalNavigation(webView: WKWebView, navigation: WKNavigation): void {
-        if (isEnabled()) {
-            write("WKNavigationDelegateClass.webViewDidStartProvisionalNavigation(" + webView.URL + ")", categories.Debug);
+        if (Trace.isEnabled()) {
+            Trace.write("WKNavigationDelegateClass.webViewDidStartProvisionalNavigation(" + webView.URL + ")", Trace.categories.Debug);
         }
     }
 
     public webViewDidFinishNavigation(webView: WKWebView, navigation: WKNavigation): void {
-        if (isEnabled()) {
-            write("WKNavigationDelegateClass.webViewDidFinishNavigation(" + webView.URL + ")", categories.Debug);
+        if (Trace.isEnabled()) {
+            Trace.write("WKNavigationDelegateClass.webViewDidFinishNavigation(" + webView.URL + ")", Trace.categories.Debug);
         }
         const owner = this._owner.get();
         if (owner) {
@@ -73,8 +74,8 @@ class WKNavigationDelegateImpl extends NSObject
             if (webView.URL) {
                 src = webView.URL.absoluteString;
             }
-            if (isEnabled()) {
-                write("WKNavigationDelegateClass.webViewDidFailNavigationWithError(" + error.localizedDescription + ")", categories.Debug);
+            if (Trace.isEnabled()) {
+                Trace.write("WKNavigationDelegateClass.webViewDidFailNavigationWithError(" + error.localizedDescription + ")", Trace.categories.Debug);
             }
             owner._onLoadFinished(src, error.localizedDescription);
         }
@@ -87,8 +88,8 @@ class WKNavigationDelegateImpl extends NSObject
             if (webView.URL) {
                 src = webView.URL.absoluteString;
             }
-            if (isEnabled()) {
-                write("WKNavigationDelegateClass.webViewDidFailProvisionalNavigationWithError(" + error.localizedDescription + ")", categories.Debug);
+            if (Trace.isEnabled()) {
+                Trace.write("WKNavigationDelegateClass.webViewDidFailProvisionalNavigationWithError(" + error.localizedDescription + ")", Trace.categories.Debug);
             }
             owner._onLoadFinished(src, error.localizedDescription);
         }

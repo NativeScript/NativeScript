@@ -1,8 +1,4 @@
-﻿/**
- * @module "color/known-colors"
- */ /** */
-
-export const AliceBlue;
+﻿export const AliceBlue;
 export const AntiqueWhite;
 export const Aqua;
 export const Aquamarine;

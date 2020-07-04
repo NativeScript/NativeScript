@@ -1,5 +1,5 @@
 import { Font as FontBase, parseFontFamily, genericFontFamilies, FontWeight } from "./font-common";
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "../../trace";
+import { Trace } from "../../trace";
 import * as application from "../../application";
 import * as fs from "../../file-system";
 
@@ -67,8 +67,8 @@ function loadFontFromFile(fontFamily: string): android.graphics.Typeface {
             fontAssetPath = FONTS_BASE_PATH + fontFamily + ".otf";
         }
         else {
-            if (traceEnabled()) {
-                traceWrite("Could not find font file for " + fontFamily, traceCategories.Error, traceMessageType.error);
+            if (Trace.isEnabled()) {
+                Trace.write("Could not find font file for " + fontFamily, Trace.categories.Error, Trace.messageType.error);
             }
         }
 
@@ -77,8 +77,8 @@ function loadFontFromFile(fontFamily: string): android.graphics.Typeface {
                 fontAssetPath = fs.path.join(fs.knownFolders.currentApp().path, fontAssetPath);
                 result = android.graphics.Typeface.createFromFile(fontAssetPath);
             } catch (e) {
-                if (traceEnabled()) {
-                    traceWrite("Error loading font asset: " + fontAssetPath, traceCategories.Error, traceMessageType.error);
+                if (Trace.isEnabled()) {
+                    Trace.write("Error loading font asset: " + fontAssetPath, Trace.categories.Error, Trace.messageType.error);
                 }
             }
         }

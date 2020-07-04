@@ -1,8 +1,8 @@
-﻿/**
- * @module "ui/editor-text-base"
- */ /** */
-
-import { TextBase, Property, CssProperty, Style, Color, FormattedString } from "../text-base";
+﻿import { TextBase } from "../text-base";
+import { Color } from '../../color';
+import { FormattedString } from '../text-base/formatted-string';
+import { Style } from '../styling/style';
+import { Property, CssProperty } from "../core/properties";
 
 /**
  * Represents the base class for all editable text views.

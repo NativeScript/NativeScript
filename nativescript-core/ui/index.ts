@@ -7,11 +7,12 @@ export { Button } from "./button";
 export { ContentView } from "./content-view";
 export { ViewBase, ShowModalOptions } from "./core/view-base";
 export { View, Template, KeyedTemplate, ShownModallyData } from "./core/view";
+export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, } from "./core/properties";
 export { DatePicker } from "./date-picker";
 
 // No need go export dialogs, they are already export exported globally
-// import { action, alert, confirm, login, prompt } from "./dialogs";
-// export const nsDialogs = { action, alert, confirm, login, prompt };
+import { action, alert, confirm, login, prompt } from "./dialogs";
+export const Dialogs = { action, alert, confirm, login, prompt };
 
 export * from "./editable-text-base";
 export { Frame, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry } from "./frame";

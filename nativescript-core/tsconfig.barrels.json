@@ -6,14 +6,7 @@
         "outDir": "../temp/dts-out"
     },
     "files": [
-        "index.ts",
-        "ui/index.ts",
-        "ui/layouts/index.ts"
-    ],
-    "include": [
-        "index.ts",
-        "ui/index.ts",
-        "ui/layouts/index.ts"
+        "index.ts"
     ],
     "exclude": [
         "tns-core-modules/node_modules/"

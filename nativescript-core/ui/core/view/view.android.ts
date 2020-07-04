@@ -3,11 +3,13 @@ import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
 // Types.
 import {
-    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent,
+    ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
-    Color, EventData, ShowModalOptions
+    EventData, ShowModalOptions
 } from "./view-common";
+// import { layout} from "../../layouts"
+import { Trace } from "../../../trace";
+import { Color } from "../../../color";
 
 import {
     perspectiveProperty, Length, PercentLength, Visibility, HorizontalAlignment, VerticalAlignment,
@@ -1035,8 +1037,8 @@ export class CustomLayoutView extends ContainerView implements CustomLayoutViewD
         super._addViewToNativeVisualTree(child);
 
         if (this.nativeViewProtected && child.nativeViewProtected) {
-            if (traceEnabled()) {
-                traceWrite(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, traceCategories.VisualTreeEvents);
+            if (Trace.isEnabled()) {
+                Trace.write(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, Trace.categories.VisualTreeEvents);
             }
             this.nativeViewProtected.addView(child.nativeViewProtected, atIndex);
             if (child instanceof View) {
@@ -1068,9 +1070,9 @@ export class CustomLayoutView extends ContainerView implements CustomLayoutViewD
         const childView = child.nativeViewProtected;
         if (nativeView && childView) {
             nativeView.removeView(childView);
-            if (traceEnabled()) {
-                traceWrite(`${nativeView}.removeView(${childView})`, traceCategories.VisualTreeEvents);
-                traceNotifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
+            if (Trace.isEnabled()) {
+                Trace.write(`${nativeView}.removeView(${childView})`, Trace.categories.VisualTreeEvents);
+                Trace.notifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
             }
         }
     }

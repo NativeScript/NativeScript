@@ -1,12 +1,8 @@
-﻿/**
- * Contains the BottomNavigation class, which represents a tab navigation widget with static tabs at the bottom.
- * @module "ui/tab-navigation/bottom-navigation"
- */ /** */
-
-import { TabNavigationBase } from "../tab-navigation-base/tab-navigation-base";
+﻿import { TabNavigationBase } from "../tab-navigation-base/tab-navigation-base";
 import { TabContentItem } from "../tab-navigation-base/tab-content-item";
 import { TabStrip } from "../tab-navigation-base/tab-strip";
-import { Property, CoercibleProperty, EventData } from "../core/view";
+import { Property, CoercibleProperty } from "../core/properties";
+import { EventData } from "../../data/observable";
 
 /**
  * Defines the data for the TabView.selectedIndexChanged event.

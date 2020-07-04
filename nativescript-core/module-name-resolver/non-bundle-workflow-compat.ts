@@ -1,24 +1,22 @@
 import * as fs from "../file-system/file-system";
 import * as appCommonModule from "../application/application-common";
 import {
-    isEnabled as traceEnabled,
-    write as traceWrite,
-    categories as traceCategories
+    Trace
 } from "../trace";
 
 const cache = new Set<string>();
 let initialized = false;
 
 function register(name: string, loader: (name?: string) => void) {
-    if (traceEnabled()) {
-        traceWrite(`[Compat] Register module: ${name}`, traceCategories.ModuleNameResolver);
+    if (Trace.isEnabled()) {
+        Trace.write(`[Compat] Register module: ${name}`, Trace.categories.ModuleNameResolver);
     }
     global.registerModule(name, loader);
 
     if (name.startsWith("tns_modules")) {
         const nonTnsModulesName = name.substr("tns_modules".length + 1);
-        if (traceEnabled()) {
-            traceWrite(`[Compat] Register module: ${nonTnsModulesName}`, traceCategories.ModuleNameResolver);
+        if (Trace.isEnabled()) {
+            Trace.write(`[Compat] Register module: ${nonTnsModulesName}`, Trace.categories.ModuleNameResolver);
         }
         global.registerModule(nonTnsModulesName, loader);
     }
@@ -66,8 +64,8 @@ function processFolder(path: string): boolean {
     }
     cache.add(path);
 
-    if (traceEnabled()) {
-        traceWrite(`[Compat] Processing folder: ${path}`, traceCategories.ModuleNameResolver);
+    if (Trace.isEnabled()) {
+        Trace.write(`[Compat] Processing folder: ${path}`, Trace.categories.ModuleNameResolver);
     }
 
     let folderEmpty = true;

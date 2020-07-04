@@ -1,7 +1,3 @@
-/**
- * @module "image-asset"
- */ /** */
-
 import { Observable } from "../data/observable";
 
 export class ImageAsset extends Observable {

@@ -1,12 +1,15 @@
 import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
 import {
-    View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
-    Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, CSSType,
-    traceWrite, traceCategories, traceMessageType, booleanConverter
+    View, AddArrayFromBuilder, AddChildFromBuilder, CSSType
 } from "../core/view";
-
-export * from "../core/view";
+import { ViewBase, booleanConverter } from "../core/view-base";
+import { Style } from "../styling/style";
+import { EventData } from "../../data/observable";
+import { Color } from "../../color";
+import { isIOS } from "../../platform";
+import { Property, CssProperty, CoercibleProperty } from "../core/properties";
 import { TextTransform } from "../text-base";
+import { Trace } from "../../trace";
 
 export const traceCategory = "TabView";
 
@@ -208,7 +211,7 @@ export interface TabViewBase {
 }
 
 export function traceMissingIcon(icon: string) {
-    traceWrite("Could not load tab bar icon: " + icon, traceCategories.Error, traceMessageType.error);
+    Trace.write("Could not load tab bar icon: " + icon, Trace.categories.Error, Trace.messageType.error);
 }
 
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({

@@ -7,23 +7,16 @@ import {
 
 import { profile } from "../../profiling";
 
-export * from "../core/view";
-
 import {
     View,
-    ViewBase,
-    Property,
-    unsetValue,
-    booleanConverter,
-    horizontalAlignmentProperty,
-    verticalAlignmentProperty,
     CSSType,
-    traceWrite,
-    traceCategories,
-    traceMessageType
 } from "../core/view";
-import { ShorthandProperty, CssProperty, Style } from "../core/properties/properties";
-import { Length } from "../core/view";
+import { ViewBase, booleanConverter } from "../core/view-base";
+import { Trace } from "../../trace";
+import { ShorthandProperty, CssProperty, Property, unsetValue } from "../core/properties";
+import { Length, horizontalAlignmentProperty,
+  verticalAlignmentProperty } from "../styling/style-properties";
+import { Style } from '../styling/style';
 
 export module knownCollections {
     export const actionItems = "actionItems";
@@ -378,9 +371,9 @@ function onVisibilityChanged(item: ActionItemBase, oldValue: string, newValue: s
 }
 
 export function traceMissingIcon(icon: string) {
-    traceWrite("Could not load action bar icon: " + icon,
-        traceCategories.Error,
-        traceMessageType.error);
+    Trace.write("Could not load action bar icon: " + icon,
+        Trace.categories.Error,
+        Trace.messageType.error);
 }
 
 function convertToContentInset(this: void, value: string | Length): [CssProperty<any, any>, any][] {
@@ -436,7 +429,7 @@ export const androidContentInsetLeftProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectiveContentInsetLeft = Length.toDevicePixels(newValue);
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
     }, valueConverter: Length.parse
 });
@@ -450,7 +443,7 @@ export const androidContentInsetRightProperty = new CssProperty<Style, Length>({
         if (view) {
             view.effectiveContentInsetRight = Length.toDevicePixels(newValue);
         } else {
-            traceWrite(`${newValue} not set to view's property because ".viewRef" is cleared`, traceCategories.Style, traceMessageType.warn);
+            Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
         }
     }, valueConverter: Length.parse
 });

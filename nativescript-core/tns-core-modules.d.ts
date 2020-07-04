@@ -1,6 +1,3 @@
-/* tslint:disable:no-unused-variable */
-///<reference path="./module.d.ts" />
-
 declare enum RequestContext {
     "audio", "beacon", "cspreport", "download", "embed", "eventsource", "favicon", "fetch",
     "font", "form", "frame", "hyperlink", "iframe", "image", "imageset", "import",

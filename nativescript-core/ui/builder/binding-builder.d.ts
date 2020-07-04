@@ -1,9 +1,4 @@
-﻿/**
- * @module "ui/builder/binding-builder"
- * @private
- */ /** */
-
-//@private
+﻿//@private
 export module bindingConstants {
     export const sourceProperty: string;
     export const targetProperty: string;

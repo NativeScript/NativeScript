@@ -1,5 +1,8 @@
 ﻿import { TextField as TextFieldDefinition } from ".";
-import { EditableTextBase, Property, booleanConverter, CSSType } from "../editable-text-base";
+import { EditableTextBase } from "../editable-text-base";
+import { Property} from "../core/properties"
+import { CSSType} from "../core/view"
+import { booleanConverter} from "../core/view-base"
 
 @CSSType("TextField")
 export class TextFieldBase extends EditableTextBase implements TextFieldDefinition {

@@ -1,9 +1,4 @@
 /**
- * @module "system-classes"
- * This is an internal module.
- */ /** */
-
-/**
 * String value "ns-" used for CSS system class prefix.
 */
 export const CLASS_PREFIX: string;

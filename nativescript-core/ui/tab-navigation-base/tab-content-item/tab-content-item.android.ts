@@ -5,7 +5,8 @@ import { GridLayout } from "../../layouts/grid-layout";
 
 // Requires
 import { TabContentItemBase, traceCategory } from "./tab-content-item-common";
-import { View, traceWrite, traceMessageType } from "../../core/view";
+import { View } from "../../core/view";
+import { Trace } from "../../../trace";
 
 export * from "./tab-content-item-common";
 
@@ -49,7 +50,7 @@ export class TabContentItem extends TabContentItemBase {
         const fragmentManager = tabView._getFragmentManager();
 
         if (typeof this.index === "undefined") {
-            traceWrite(`Current TabContentItem index is not set`, traceCategory, traceMessageType.error);
+            Trace.write(`Current TabContentItem index is not set`, traceCategory, Trace.messageType.error);
         }
 
         for (let fragment of (<Array<any>>fragmentManager.getFragments().toArray())) {
@@ -61,8 +62,8 @@ export class TabContentItem extends TabContentItemBase {
 
         // TODO: can happen in a modal tabview scenario when the modal dialog fragment is already removed
         if (!tabFragment) {
-            // if (traceEnabled()) {
-            //     traceWrite(`Could not get child fragment manager for tab item with index ${this.index}`, traceCategory);
+            // if (Trace.isEnabled()) {
+            //     Trace.write(`Could not get child fragment manager for tab item with index ${this.index}`, traceCategory);
             // }
 
             // TODO: fix d.ts in view module

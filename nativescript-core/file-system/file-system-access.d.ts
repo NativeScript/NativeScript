@@ -1,8 +1,4 @@
 ﻿/**
- * @module "file-system/file-system-access"
- */ /** */
-
-/**
  * An utility class used to provide methods to access and work with the file system.
  */
 export class FileSystemAccess {

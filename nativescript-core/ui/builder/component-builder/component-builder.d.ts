@@ -1,7 +1,3 @@
-/**
- * @module "ui/builder/component-builder"
- */ /** */
-
 import { View } from "../../core/view";
 
 export interface ComponentModule {

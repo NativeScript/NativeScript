@@ -1,8 +1,6 @@
-﻿/**
- * @module "ui/layouts/dock-layout"
- */ /** */
-
-import { LayoutBase, View, Property } from "../layout-base";
+﻿import { LayoutBase } from "../layout-base";
+import { Property } from "../../core/properties";
+import { View } from '../../core/view';
 
 /**
  * A Layout that arranges its children at its outer edges, and allows its last child to take up the remaining space.

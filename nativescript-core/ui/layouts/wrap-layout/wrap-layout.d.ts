@@ -1,8 +1,6 @@
-﻿/**
- * @module "ui/layouts/wrap-layout"
- */ /** */
-
-import { LayoutBase, Property, Length } from "../layout-base";
+﻿import { LayoutBase } from "../layout-base";
+import { Length } from '../../styling/style-properties';
+import { Property } from "../../core/properties";
 
 /**
  * WrapLayout position children in rows or columns depending on orientation property

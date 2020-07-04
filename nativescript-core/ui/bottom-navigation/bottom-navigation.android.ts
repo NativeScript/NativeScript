@@ -8,8 +8,9 @@ import { TextTransform } from "../text-base";
 import * as application from "../../application";
 import { ImageSource } from "../../image-source";
 import { ad, isFontIconURI, layout, RESOURCE_PREFIX } from "../../utils/utils";
-import { Color, CSSType } from "../core/view";
-import { Frame, View } from "../frame";
+import { CSSType, View } from "../core/view";
+import { Color } from "../../color";
+import { Frame } from "../frame";
 import { Font } from "../styling/font";
 import {
     getIconSpecSize, itemsProperty, selectedIndexProperty, TabNavigationBase, tabStripProperty
@@ -17,7 +18,7 @@ import {
 import { getTransformedText } from "../text-base";
 
 // TODO: Impl trace
-// import { isEnabled as traceEnabled, write as traceWrite } from "../../../trace";
+// import { Trace } from "../../../trace";
 
 const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 8;
@@ -278,8 +279,8 @@ export class BottomNavigation extends TabNavigationBase {
 
     public createNativeView() {
         initializeNativeClasses();
-        // if (traceEnabled()) {
-        //     traceWrite("BottomNavigation._createUI(" + this + ");", traceCategory);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("BottomNavigation._createUI(" + this + ");", traceCategory);
         // }
 
         const context: android.content.Context = this._context;
@@ -848,8 +849,8 @@ export class BottomNavigation extends TabNavigationBase {
     [selectedIndexProperty.setNative](value: number) {
         // const smoothScroll = false;
 
-        // if (traceEnabled()) {
-        //     traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
+        // if (Trace.isEnabled()) {
+        //     Trace.write("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
         // }
 
         if (this.tabStrip) {

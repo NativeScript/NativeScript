@@ -1,6 +1,0 @@
-{
-  "name": "core",
-  "main": "globals-core",
-  "types": "globals-core.d.ts",
-  "nativescript": {}
-}

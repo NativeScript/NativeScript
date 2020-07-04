@@ -1,18 +1,11 @@
-/**
- * @module "ui/core/view"
- */ /** */
-
-/// <reference path="../../../tns-core-modules.d.ts" />
-
-import { ViewBase, Property, InheritedProperty, EventData, Color } from "../view-base";
+import { ViewBase } from "../view-base";
+import { Property, InheritedProperty } from '../properties';
+import { EventData } from '../../../data/observable';
+import { Color } from '../../../color';
 import { Animation, AnimationDefinition, AnimationPromise } from "../../animation";
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 import { GestureTypes, GestureEventData, GesturesObserver } from "../../gestures";
 import { LinearGradient } from "../../styling/gradient";
-
-export * from "../view-base";
-export * from "../../styling/style-properties";
-export { LinearGradient };
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 

@@ -1,8 +1,4 @@
-﻿/**
- * @module "ui/text-base/span"
- */ /** */
-
-import { Color } from "../../color";
+﻿import { Color } from "../../color";
 import { ViewBase } from "../core/view-base";
 import { FontStyle, FontWeight } from "../styling/font";
 import { TextDecoration } from "../text-base";

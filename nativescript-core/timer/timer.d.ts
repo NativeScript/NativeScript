@@ -1,9 +1,4 @@
 ﻿/**
- * Allows you to create, start, stop and react to timers.
- * @module "timer"
- */ /** */
-
-/**
  * Calls a function after a specified delay.
  * @param callback The function to be called.
  * @param milliseconds The time to wait before the function is called. Defaults to 0.

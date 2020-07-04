@@ -8,11 +8,12 @@ import {
     KeyframeAnimation as KeyframeAnimationDefinition,
 } from "./keyframe-animation";
 
-import { View, Color } from "../core/view";
+import { View } from "../core/view";
+import { Color } from "../../color";
 
 import { AnimationCurve } from "../enums";
 
-import { write as traceWrite, categories as traceCategories, messageType as traceType } from "../../trace";
+import { Trace } from "../../trace";
 
 // Types.
 import { unsetValue } from "../core/properties";
@@ -148,7 +149,7 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
 
     public cancel() {
         if (!this.isPlaying) {
-            traceWrite("Keyframe animation is already playing.", traceCategories.Animation, traceType.warn);
+            Trace.write("Keyframe animation is already playing.", Trace.categories.Animation, Trace.messageType.warn);
 
             return;
         }
@@ -169,7 +170,7 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
 
     public play(view: View): Promise<void> {
         if (this._isPlaying) {
-            traceWrite("Keyframe animation is already playing.", traceCategories.Animation, traceType.warn);
+            Trace.write("Keyframe animation is already playing.", Trace.categories.Animation, Trace.messageType.warn);
 
             return new Promise<void>(resolve => {
                 resolve();
@@ -262,9 +263,9 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
             animation.play(isLastIteration).then(() => {
                 this.animate(view, index + 1, iterations);
             }, (error: any) => {
-                traceWrite(typeof error === "string" ? error : error.message, traceCategories.Animation, traceType.warn);
+                Trace.write(typeof error === "string" ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);
             }).catch((error: any) => {
-                traceWrite(typeof error === "string" ? error : error.message, traceCategories.Animation, traceType.warn);
+                Trace.write(typeof error === "string" ? error : error.message, Trace.categories.Animation, Trace.messageType.warn);
             }); // tslint:disable-line
         }
     }

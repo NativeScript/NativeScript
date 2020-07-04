@@ -1,10 +1,4 @@
-﻿/**
- * @module "ui/transition"
- */ /** */
-
-import { NavigationTransition, BackstackEntry } from "../frame";
-// Types.
-import { Transition, AndroidTransitionType } from "../transition/transition";
+﻿import { NavigationTransition, BackstackEntry } from "../frame";
 
 /**
  * @private

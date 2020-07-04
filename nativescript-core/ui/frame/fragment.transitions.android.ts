@@ -1,5 +1,3 @@
-/// <reference path="transition-definitions.android.d.ts"/>
-
 // Definitions.
 import { NavigationType } from "./frame-common";
 import { NavigationTransition, BackstackEntry } from "../frame";
@@ -9,7 +7,7 @@ import { Transition, AndroidTransitionType } from "../transition/transition";
 import { FlipTransition } from "../transition/flip-transition";
 import { _resolveAnimationCurve } from "../animation";
 import lazy from "../../utils/lazy";
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";
+import {Trace } from "../../trace";
 
 interface TransitionListener {
     new(entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener;
@@ -220,27 +218,27 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
             onAnimationStart(animator: ExpandedAnimator): void {
                 const entry = animator.entry;
                 addToWaitingQueue(entry);
-                if (traceEnabled()) {
-                    traceWrite(`START ${animator.transitionType} for ${entry.fragmentTag}`, traceCategories.Transition);
+                if (Trace.isEnabled()) {
+                    Trace.write(`START ${animator.transitionType} for ${entry.fragmentTag}`, Trace.categories.Transition);
                 }
             }
 
             onAnimationRepeat(animator: ExpandedAnimator): void {
-                if (traceEnabled()) {
-                    traceWrite(`REPEAT ${animator.transitionType} for ${animator.entry.fragmentTag}`, traceCategories.Transition);
+                if (Trace.isEnabled()) {
+                    Trace.write(`REPEAT ${animator.transitionType} for ${animator.entry.fragmentTag}`, Trace.categories.Transition);
                 }
             }
 
             onAnimationEnd(animator: ExpandedAnimator): void {
-                if (traceEnabled()) {
-                    traceWrite(`END ${animator.transitionType} for ${animator.entry.fragmentTag}`, traceCategories.Transition);
+                if (Trace.isEnabled()) {
+                    Trace.write(`END ${animator.transitionType} for ${animator.entry.fragmentTag}`, Trace.categories.Transition);
                 }
                 transitionOrAnimationCompleted(animator.entry);
             }
 
             onAnimationCancel(animator: ExpandedAnimator): void {
-                if (traceEnabled()) {
-                    traceWrite(`CANCEL ${animator.transitionType} for ${animator.entry.fragmentTag}`, traceCategories.Transition);
+                if (Trace.isEnabled()) {
+                    Trace.write(`CANCEL ${animator.transitionType} for ${animator.entry.fragmentTag}`, Trace.categories.Transition);
                 }
             }
         }
@@ -258,9 +256,9 @@ function clearAnimationListener(animator: ExpandedAnimator, listener: android.an
 
     animator.removeListener(listener);
 
-    if (animator.entry && traceEnabled()) {
+    if (animator.entry && Trace.isEnabled()) {
         const entry = animator.entry;
-        traceWrite(`Clear ${animator.transitionType} - ${entry.transition} for ${entry.fragmentTag}`, traceCategories.Transition);
+        Trace.write(`Clear ${animator.transitionType} - ${entry.transition} for ${entry.fragmentTag}`, Trace.categories.Transition);
     }
 
     animator.entry = null;
@@ -332,36 +330,36 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
             public onTransitionStart(transition: androidx.transition.Transition): void {
                 const entry = this.entry;
                 addToWaitingQueue(entry);
-                if (traceEnabled()) {
-                    traceWrite(`START ${toShortString(transition)} transition for ${entry.fragmentTag}`, traceCategories.Transition);
+                if (Trace.isEnabled()) {
+                    Trace.write(`START ${toShortString(transition)} transition for ${entry.fragmentTag}`, Trace.categories.Transition);
                 }
             }
 
             onTransitionEnd(transition: androidx.transition.Transition): void {
                 const entry = this.entry;
-                if (traceEnabled()) {
-                    traceWrite(`END ${toShortString(transition)} transition for ${entry.fragmentTag}`, traceCategories.Transition);
+                if (Trace.isEnabled()) {
+                    Trace.write(`END ${toShortString(transition)} transition for ${entry.fragmentTag}`, Trace.categories.Transition);
                 }
 
                 transitionOrAnimationCompleted(entry);
             }
 
             onTransitionResume(transition: androidx.transition.Transition): void {
-                if (traceEnabled()) {
+                if (Trace.isEnabled()) {
                     const fragment = this.entry.fragmentTag;
-                    traceWrite(`RESUME ${toShortString(transition)} transition for ${fragment}`, traceCategories.Transition);
+                    Trace.write(`RESUME ${toShortString(transition)} transition for ${fragment}`, Trace.categories.Transition);
                 }
             }
 
             onTransitionPause(transition: androidx.transition.Transition): void {
-                if (traceEnabled()) {
-                    traceWrite(`PAUSE ${toShortString(transition)} transition for ${this.entry.fragmentTag}`, traceCategories.Transition);
+                if (Trace.isEnabled()) {
+                    Trace.write(`PAUSE ${toShortString(transition)} transition for ${this.entry.fragmentTag}`, Trace.categories.Transition);
                 }
             }
 
             onTransitionCancel(transition: androidx.transition.Transition): void {
-                if (traceEnabled()) {
-                    traceWrite(`CANCEL ${toShortString(transition)} transition for ${this.entry.fragmentTag}`, traceCategories.Transition);
+                if (Trace.isEnabled()) {
+                    Trace.write(`CANCEL ${toShortString(transition)} transition for ${this.entry.fragmentTag}`, Trace.categories.Transition);
                 }
             }
         }
@@ -394,8 +392,8 @@ function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: bo
             }
 
             fragment.setExitTransition(null);
-            if (traceEnabled()) {
-                traceWrite(`Cleared Exit ${exitTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
+            if (Trace.isEnabled()) {
+                Trace.write(`Cleared Exit ${exitTransition.getClass().getSimpleName()} transition for ${fragment}`, Trace.categories.Transition);
             }
         }
 
@@ -413,8 +411,8 @@ function clearExitAndReenterTransitions(entry: ExpandedEntry, removeListener: bo
             }
 
             fragment.setReenterTransition(null);
-            if (traceEnabled()) {
-                traceWrite(`Cleared Reenter ${reenterTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
+            if (Trace.isEnabled()) {
+                Trace.write(`Cleared Reenter ${reenterTransition.getClass().getSimpleName()} transition for ${fragment}`, Trace.categories.Transition);
             }
         }
 
@@ -445,8 +443,8 @@ function clearEntry(entry: ExpandedEntry, removeListener: boolean): void {
             }
 
             fragment.setEnterTransition(null);
-            if (traceEnabled()) {
-                traceWrite(`Cleared Enter ${enterTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
+            if (Trace.isEnabled()) {
+                Trace.write(`Cleared Enter ${enterTransition.getClass().getSimpleName()} transition for ${fragment}`, Trace.categories.Transition);
             }
         }
 
@@ -464,8 +462,8 @@ function clearEntry(entry: ExpandedEntry, removeListener: boolean): void {
             }
 
             fragment.setReturnTransition(null);
-            if (traceEnabled()) {
-                traceWrite(`Cleared Return ${returnTransition.getClass().getSimpleName()} transition for ${fragment}`, traceCategories.Transition);
+            if (Trace.isEnabled()) {
+                Trace.write(`Cleared Return ${returnTransition.getClass().getSimpleName()} transition for ${fragment}`, Trace.categories.Transition);
             }
         }
 
@@ -685,7 +683,7 @@ function toShortString(nativeTransition: androidx.transition.Transition): string
 }
 
 function printTransitions(entry: ExpandedEntry) {
-    if (entry && traceEnabled()) {
+    if (entry && Trace.isEnabled()) {
         let result = `${entry.fragmentTag} Transitions:`;
         if (entry.transitionName) {
             result += `transitionName=${entry.transitionName}, `;
@@ -697,7 +695,7 @@ function printTransitions(entry: ExpandedEntry) {
         result += `${fragment.getReenterTransition() ? " popEnter=" + toShortString(fragment.getReenterTransition()) : ""}`;
         result += `${fragment.getReturnTransition() ? " popExit=" + toShortString(fragment.getReturnTransition()) : ""}`;
 
-        traceWrite(result, traceCategories.Transition);
+        Trace.write(result, Trace.categories.Transition);
     }
 }
 

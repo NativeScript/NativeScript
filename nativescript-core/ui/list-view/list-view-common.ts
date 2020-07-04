@@ -1,11 +1,14 @@
 import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from ".";
-import { CoercibleProperty, CssProperty, Style, View, ContainerView, Template, KeyedTemplate, Length, Property, Color, Observable, EventData, CSSType } from "../core/view";
+import { View, ContainerView, Template, KeyedTemplate, CSSType } from "../core/view";
+import { Property, CoercibleProperty, CssProperty } from "../core/properties";
+import { Length } from "../styling/style-properties";
+import { Style } from "../styling/style";
+import { Color } from "../../color";
 import { Builder } from "../builder";
 import { Label } from "../label";
+import { Observable, EventData } from "../../data/observable";
 import { ObservableArray, ChangedData } from "../../data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "../core/weak-event-listener";
-
-export * from "../core/view";
 
 // TODO: Think of a way to register these instead of relying on hardcoded values.
 export module knownTemplates {

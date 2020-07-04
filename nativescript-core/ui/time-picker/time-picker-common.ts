@@ -1,5 +1,6 @@
 import { TimePicker as TimePickerDefinition } from ".";
-import { View, Property, CSSType } from "../core/view";
+import { View, CSSType } from "../core/view";
+import { Property } from "../core/properties";
 
 interface Time {
     hour: number;

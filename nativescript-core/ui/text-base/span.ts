@@ -1,8 +1,9 @@
 ﻿import { Color } from "../../color";
 import { Span as SpanDefinition } from "./span";
-import { ViewBase } from "../core/view";
+import { ViewBase } from "../core/view-base";
 import { FontStyle, FontWeight, } from "../styling/font";
-import { TextDecoration, EventData } from "../text-base";
+import { TextDecoration } from "../text-base";
+import { EventData } from "../../data/observable";
 
 export class Span extends ViewBase implements SpanDefinition {
     static linkTapEvent = "linkTap";

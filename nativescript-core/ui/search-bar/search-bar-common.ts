@@ -1,7 +1,8 @@
 ﻿import { SearchBar as SearchBarDefinition } from ".";
-import { View, Property, Color, isIOS, CSSType } from "../core/view";
-
-export * from "../core/view";
+import { View, CSSType } from "../core/view";
+import { Property } from "../core/properties";
+import { Color } from "../../color";
+import { isIOS } from "../../platform";
 
 @CSSType("SearchBar")
 export abstract class SearchBarBase extends View implements SearchBarDefinition {

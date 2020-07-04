@@ -1,10 +1,9 @@
-﻿/**
- * Contains the Image class, which represents an image widget.
- * @module "ui/image"
- */ /** */
-
-import { View, Property, InheritedCssProperty, Color, Style, Length } from "../core/view";
+﻿import { View } from "../core/view";
+import { Style } from "../styling/style"
 import { ImageSource } from "../../image-source";
+import { Color } from "../../color";
+import { Property, InheritedCssProperty } from "../core/properties";
+import { Length } from '../styling/style-properties';
 
 /**
  * Represents a class that provides functionality for loading and streching image(s).

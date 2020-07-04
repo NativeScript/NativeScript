@@ -1,15 +1,15 @@
-import { WebView as WebViewDefinition } from ".";
 import { LoadEventData, NavigationType } from "./web-view-interfaces";
-import { ContainerView, Property, EventData, CSSType } from "../core/view";
-import { File, knownFolders, path } from "../../file-system";
+import { ContainerView, CSSType } from "../core/view";
+import { Property } from "../core/properties";
+import { EventData } from "../../data/observable";
+import { knownFolders } from "../../file-system";
 
-export { File, knownFolders, path };
 export * from "./web-view-interfaces";
 
 export const srcProperty = new Property<WebViewBase, string>({ name: "src" });
 
 @CSSType("WebView")
-export abstract class WebViewBase extends ContainerView implements WebViewDefinition {
+export abstract class WebViewBase extends ContainerView {
     public static loadStartedEvent = "loadStarted";
     public static loadFinishedEvent = "loadFinished";
 
@@ -24,7 +24,7 @@ export abstract class WebViewBase extends ContainerView implements WebViewDefini
             error: error
         };
 
-        this.notify(args);
+        this.notify(<any>args);
     }
 
     public _onLoadStarted(url: string, navigationType: NavigationType) {
@@ -36,7 +36,7 @@ export abstract class WebViewBase extends ContainerView implements WebViewDefini
             error: undefined
         };
 
-        this.notify(args);
+        this.notify(<any>args);
     }
 
     abstract _loadUrl(src: string): void;
@@ -93,9 +93,9 @@ export abstract class WebViewBase extends ContainerView implements WebViewDefini
 // HACK: We declare all these 'on' statements, so that they can appear in the API reference
 // HACK: Do we need this? Is it useful? There are static fields to the WebViewBase class for the event names.
 export interface WebViewBase {
-    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
-    on(event: "loadFinished", callback: (args: LoadEventData) => void, thisArg?: any);
-    on(event: "loadStarted", callback: (args: LoadEventData) => void, thisArg?: any);
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+    on(event: "loadFinished", callback: (args: LoadEventData) => void, thisArg?: any): void;
+    on(event: "loadStarted", callback: (args: LoadEventData) => void, thisArg?: any): void;
 }
 
 srcProperty.register(WebViewBase);

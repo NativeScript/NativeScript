@@ -1,4 +1,3 @@
-/// <reference path="./nativescript-error.d.ts" />
 declare var global: NodeJS.Global;
 
 interface ModuleResolver {

@@ -1,10 +1,7 @@
-﻿/**
- * Contains the TabStrip class, which represents a tab strip for tab navigation.
- * @module "ui/tab-navigation/tab-strip"
- */ /** */
-
-import { Color } from "../../../color";
-import { EventData, Property, View } from "../../core/view";
+﻿import { Color } from "../../../color";
+import { View } from "../../core/view";
+import { EventData } from "../../../data/observable";
+import { Property } from "../../core/properties"
 import { TabStripItem } from "../tab-strip-item";
 
 /**

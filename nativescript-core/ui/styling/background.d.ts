@@ -1,9 +1,7 @@
-/**
- * @module "ui/styling/background"
- */ /** */
-
 import { Color } from "../../color";
-import { View, BackgroundRepeat, LinearGradient } from "../core/view";
+import { View } from "../core/view";
+import { BackgroundRepeat } from "../../css/parser";
+import { LinearGradient } from "../styling/linear-gradient";
 
 export class Background {
     public static default: Background;

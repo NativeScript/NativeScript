@@ -1,9 +1,4 @@
-﻿/**
- * Contains the Cache class, which handles image download requests and caches the already downloaded images.
- * @module "ui/image-cache"
- */ /** */
-
-import { Observable, EventData } from "../../data/observable";
+﻿import { Observable, EventData } from "../../data/observable";
 import { ImageSource } from "../../image-source";
 
 /**

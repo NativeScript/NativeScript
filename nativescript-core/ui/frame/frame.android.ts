@@ -10,9 +10,12 @@ import { Page } from "../page";
 import * as application from "../../application";
 
 import {
-    _stack, FrameBase, NavigationType, Observable,
-    traceCategories, traceEnabled, traceError, traceWrite, View, Color
+    _stack, FrameBase, NavigationType
 } from "./frame-common";
+import { Color } from "../../color";
+import { Trace } from "../../trace";
+import { View } from "../core/view";
+import { Observable } from "../../data/observable";
 
 import {
     _setAndroidFragmentTransitions, _getAnimatedEntries,
@@ -118,7 +121,7 @@ export class Frame extends FrameBase {
                 callbacks.resetActivityContent(activity);
             }
         } else {
-            traceError(`${activity}[CALLBACKS] is null or undefined`);
+            Trace.error(`${activity}[CALLBACKS] is null or undefined`);
         }
     }
 
@@ -747,8 +750,8 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
 
 function findPageForFragment(fragment: androidx.fragment.app.Fragment, frame: Frame) {
     const fragmentTag = fragment.getTag();
-    if (traceEnabled()) {
-        traceWrite(`Finding page for ${fragmentTag}.`, traceCategories.NativeLifecycle);
+    if (Trace.isEnabled()) {
+        Trace.write(`Finding page for ${fragmentTag}.`, Trace.categories.NativeLifecycle);
     }
 
     let entry: BackstackEntry;
@@ -829,8 +832,8 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
     @profile
     public onHiddenChanged(fragment: androidx.fragment.app.Fragment, hidden: boolean, superFunc: Function): void {
-        if (traceEnabled()) {
-            traceWrite(`${fragment}.onHiddenChanged(${hidden})`, traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write(`${fragment}.onHiddenChanged(${hidden})`, Trace.categories.NativeLifecycle);
         }
         superFunc.call(fragment, hidden);
     }
@@ -851,8 +854,8 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
     @profile
     public onCreate(fragment: androidx.fragment.app.Fragment, savedInstanceState: android.os.Bundle, superFunc: Function): void {
-        if (traceEnabled()) {
-            traceWrite(`${fragment}.onCreate(${savedInstanceState})`, traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write(`${fragment}.onCreate(${savedInstanceState})`, Trace.categories.NativeLifecycle);
         }
 
         superFunc.call(fragment, savedInstanceState);
@@ -872,27 +875,27 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
     @profile
     public onCreateView(fragment: androidx.fragment.app.Fragment, inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle, superFunc: Function): android.view.View {
-        if (traceEnabled()) {
-            traceWrite(`${fragment}.onCreateView(inflater, container, ${savedInstanceState})`, traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write(`${fragment}.onCreateView(inflater, container, ${savedInstanceState})`, Trace.categories.NativeLifecycle);
         }
 
         const entry = this.entry;
         if (!entry) {
-            traceError(`${fragment}.onCreateView: entry is null or undefined`);
+            Trace.error(`${fragment}.onCreateView: entry is null or undefined`);
 
             return null;
         }
 
         const page = entry.resolvedPage;
         if (!page) {
-            traceError(`${fragment}.onCreateView: entry has no resolvedPage`);
+            Trace.error(`${fragment}.onCreateView: entry has no resolvedPage`);
 
             return null;
         }
 
         const frame = this.frame;
         if (!frame) {
-            traceError(`${fragment}.onCreateView: this.frame is null or undefined`);
+            Trace.error(`${fragment}.onCreateView: this.frame is null or undefined`);
 
             return null;
         }
@@ -946,8 +949,8 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
     @profile
     public onSaveInstanceState(fragment: androidx.fragment.app.Fragment, outState: android.os.Bundle, superFunc: Function): void {
-        if (traceEnabled()) {
-            traceWrite(`${fragment}.onSaveInstanceState(${outState})`, traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write(`${fragment}.onSaveInstanceState(${outState})`, Trace.categories.NativeLifecycle);
         }
         superFunc.call(fragment, outState);
     }
@@ -955,8 +958,8 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     @profile
     public onDestroyView(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
         try {
-            if (traceEnabled()) {
-                traceWrite(`${fragment}.onDestroyView()`, traceCategories.NativeLifecycle);
+            if (Trace.isEnabled()) {
+                Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
             }
 
             const hasRemovingParent = fragment.getRemovingParentFragment();
@@ -974,15 +977,15 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
     @profile
     public onDestroy(fragment: androidx.fragment.app.Fragment, superFunc: Function): void {
-        if (traceEnabled()) {
-            traceWrite(`${fragment}.onDestroy()`, traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write(`${fragment}.onDestroy()`, Trace.categories.NativeLifecycle);
         }
 
         superFunc.call(fragment);
 
         const entry = this.entry;
         if (!entry) {
-            traceError(`${fragment}.onDestroy: entry is null or undefined`);
+            Trace.error(`${fragment}.onDestroy: entry is null or undefined`);
 
             return null;
         }
@@ -995,7 +998,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
         const page = entry.resolvedPage;
         if (!page) {
-            traceError(`${fragment}.onDestroy: entry has no resolvedPage`);
+            Trace.error(`${fragment}.onDestroy: entry has no resolvedPage`);
 
             return null;
         }
@@ -1064,8 +1067,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
     @profile
     public onCreate(activity: androidx.appcompat.app.AppCompatActivity, savedInstanceState: android.os.Bundle, intentOrSuperFunc: android.content.Intent | Function, superFunc?: Function): void {
-        if (traceEnabled()) {
-            traceWrite(`Activity.onCreate(${savedInstanceState})`, traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write(`Activity.onCreate(${savedInstanceState})`, Trace.categories.NativeLifecycle);
         }
 
         const intent: android.content.Intent = superFunc ? <android.content.Intent>intentOrSuperFunc : undefined;
@@ -1135,8 +1138,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     public onStart(activity: any, superFunc: Function): void {
         superFunc.call(activity);
 
-        if (traceEnabled()) {
-            traceWrite("NativeScriptActivity.onStart();", traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write("NativeScriptActivity.onStart();", Trace.categories.NativeLifecycle);
         }
 
         const rootView = this._rootView;
@@ -1149,8 +1152,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     public onStop(activity: any, superFunc: Function): void {
         superFunc.call(activity);
 
-        if (traceEnabled()) {
-            traceWrite("NativeScriptActivity.onStop();", traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write("NativeScriptActivity.onStop();", Trace.categories.NativeLifecycle);
         }
 
         const rootView = this._rootView;
@@ -1163,8 +1166,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     public onPostResume(activity: any, superFunc: Function): void {
         superFunc.call(activity);
 
-        if (traceEnabled()) {
-            traceWrite("NativeScriptActivity.onPostResume();", traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write("NativeScriptActivity.onPostResume();", Trace.categories.NativeLifecycle);
         }
 
         // NOTE: activity.onPostResume() is called when activity resume is complete and we can
@@ -1186,8 +1189,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     @profile
     public onDestroy(activity: any, superFunc: Function): void {
         try {
-            if (traceEnabled()) {
-                traceWrite("NativeScriptActivity.onDestroy();", traceCategories.NativeLifecycle);
+            if (Trace.isEnabled()) {
+                Trace.write("NativeScriptActivity.onDestroy();", Trace.categories.NativeLifecycle);
             }
 
             const rootView = this._rootView;
@@ -1204,8 +1207,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
     @profile
     public onBackPressed(activity: any, superFunc: Function): void {
-        if (traceEnabled()) {
-            traceWrite("NativeScriptActivity.onBackPressed;", traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write("NativeScriptActivity.onBackPressed;", Trace.categories.NativeLifecycle);
         }
 
         const args = <application.AndroidActivityBackPressedEventData>{
@@ -1248,8 +1251,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         grantResults: Array<number>,
         superFunc: Function
     ): void {
-        if (traceEnabled()) {
-            traceWrite("NativeScriptActivity.onRequestPermissionsResult;", traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write("NativeScriptActivity.onRequestPermissionsResult;", Trace.categories.NativeLifecycle);
         }
 
         application.android.notify(<application.AndroidActivityRequestPermissionsEventData>{
@@ -1271,8 +1274,8 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         superFunc: Function
     ): void {
         superFunc.call(activity, requestCode, resultCode, data);
-        if (traceEnabled()) {
-            traceWrite(`NativeScriptActivity.onActivityResult(${requestCode}, ${resultCode}, ${data})`, traceCategories.NativeLifecycle);
+        if (Trace.isEnabled()) {
+            Trace.write(`NativeScriptActivity.onActivityResult(${requestCode}, ${resultCode}, ${data})`, Trace.categories.NativeLifecycle);
         }
 
         application.android.notify(<application.AndroidActivityResultEventData>{
@@ -1310,10 +1313,10 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     ): void {
         let rootView = this._rootView;
 
-        if (traceEnabled()) {
-            traceWrite(
+        if (Trace.isEnabled()) {
+            Trace.write(
                 `Frame.setActivityContent rootView: ${rootView} shouldCreateRootFrame: false fireLaunchEvent: ${fireLaunchEvent}`,
-                traceCategories.NativeLifecycle
+                Trace.categories.NativeLifecycle
             );
         }
 

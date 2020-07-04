@@ -1,9 +1,4 @@
 ﻿/**
- * Contains connectivity utility methods.
- * @module "connectivity"
- */ /** */
-
-/**
  * Gets the type of connection.
  * Returns a value from the connectivity.connectionType enumeration.
  * To use this method on Android you need to have the android.permission.ACCESS_NETWORK_STATE permission added to the AndroidManifest.xml file.
