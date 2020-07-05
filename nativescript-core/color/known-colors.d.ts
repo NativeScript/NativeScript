@@ -141,4 +141,4 @@ export const Yellow;
 export const YellowGreen;
 
 export function isKnownName(name: string): boolean;
-export function getKnownColor(name: string): string
+export function getKnownColor(name: string): string;

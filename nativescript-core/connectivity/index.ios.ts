@@ -10,33 +10,33 @@ export enum connectionType {
 // Get Connection Type
 declare const sockaddr;
 function _createReachability(host?: string): any {
-    if (host) {
-        return SCNetworkReachabilityCreateWithName(null, host);
-    } else {
-        const zeroAddress = new interop.Reference<sockaddr>(sockaddr, {
-            sa_len: 16,
-            sa_family: 2
-        });
+	if (host) {
+		return SCNetworkReachabilityCreateWithName(null, host);
+	} else {
+		const zeroAddress = new interop.Reference<sockaddr>(sockaddr, {
+			sa_len: 16,
+			sa_family: 2,
+		});
 
-        return SCNetworkReachabilityCreateWithAddress(null, zeroAddress);
-    }
+		return SCNetworkReachabilityCreateWithAddress(null, zeroAddress);
+	}
 }
 
 function _getReachabilityFlags(host?: string): number {
-    const reachability = _createReachability(host);
-    const flagsRef = new interop.Reference<number>();
-    const gotFlags = SCNetworkReachabilityGetFlags(reachability, flagsRef);
-    if (!gotFlags) {
-        return null;
-    }
+	const reachability = _createReachability(host);
+	const flagsRef = new interop.Reference<number>();
+	const gotFlags = SCNetworkReachabilityGetFlags(reachability, flagsRef);
+	if (!gotFlags) {
+		return null;
+	}
 
-    return flagsRef.value;
+	return flagsRef.value;
 }
 
 function _getConnectionType(host?: string): number {
-    const flags = _getReachabilityFlags(host);
+	const flags = _getReachabilityFlags(host);
 
-    return _getConnectionTypeFromFlags(flags);
+	return _getConnectionTypeFromFlags(flags);
 }
 
 function _getConnectionTypeFromFlags(flags: number): number {
@@ -121,7 +121,7 @@ function isVPNConnected(keys) {
 }
 
 export function getConnectionType(): number {
-    return _getConnectionType();
+	return _getConnectionType();
 }
 
 // Start/Stop Monitoring
@@ -133,25 +133,43 @@ function _reachabilityCallback(target: any, flags: number, info: any) {
 
 }
 
-const _reachabilityCallbackFunctionRef = new interop.FunctionReference(_reachabilityCallback);
+const _reachabilityCallbackFunctionRef = new interop.FunctionReference(
+	_reachabilityCallback
+);
 
 let _monitorReachabilityRef: any;
 let _connectionTypeChangedCallback: (newConnectionType: number) => void;
 
-export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
-    if (!_monitorReachabilityRef) {
-        _monitorReachabilityRef = _createReachability();
-        _connectionTypeChangedCallback = <any>zonedCallback(connectionTypeChangedCallback);
-        SCNetworkReachabilitySetCallback(_monitorReachabilityRef, _reachabilityCallbackFunctionRef, null);
-        SCNetworkReachabilityScheduleWithRunLoop(_monitorReachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
-        _connectionTypeChangedCallback(_getConnectionType());
-    }
+export function startMonitoring(
+	connectionTypeChangedCallback: (newConnectionType: number) => void
+): void {
+	if (!_monitorReachabilityRef) {
+		_monitorReachabilityRef = _createReachability();
+		_connectionTypeChangedCallback = <any>(
+			zonedCallback(connectionTypeChangedCallback)
+		);
+		SCNetworkReachabilitySetCallback(
+			_monitorReachabilityRef,
+			_reachabilityCallbackFunctionRef,
+			null
+		);
+		SCNetworkReachabilityScheduleWithRunLoop(
+			_monitorReachabilityRef,
+			CFRunLoopGetCurrent(),
+			kCFRunLoopDefaultMode
+		);
+		_connectionTypeChangedCallback(_getConnectionType());
+	}
 }
 
 export function stopMonitoring(): void {
-    if (_monitorReachabilityRef) {
-        SCNetworkReachabilityUnscheduleFromRunLoop(_monitorReachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
-        _monitorReachabilityRef = undefined;
-        _connectionTypeChangedCallback = undefined;
-    }
+	if (_monitorReachabilityRef) {
+		SCNetworkReachabilityUnscheduleFromRunLoop(
+			_monitorReachabilityRef,
+			CFRunLoopGetCurrent(),
+			kCFRunLoopDefaultMode
+		);
+		_monitorReachabilityRef = undefined;
+		_connectionTypeChangedCallback = undefined;
+	}
 }

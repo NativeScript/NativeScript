@@ -1,13 +1,29 @@
-export { ActionBar, ActionItem, ActionItems, NavigationButton } from "./action-bar";
+export {
+	ActionBar,
+	ActionItem,
+	ActionItems,
+	NavigationButton,
+} from "./action-bar";
 export { ActivityIndicator } from "./activity-indicator";
 export { Animation, AnimationDefinition } from "./animation";
-export { BottomNavigation, SelectedIndexChangedEventData } from "./bottom-navigation";
+export {
+	BottomNavigation,
+	SelectedIndexChangedEventData,
+} from "./bottom-navigation";
 export { Builder, LoadOptions } from "./builder";
 export { Button } from "./button";
 export { ContentView } from "./content-view";
 export { ViewBase, ShowModalOptions } from "./core/view-base";
 export { View, Template, KeyedTemplate, ShownModallyData } from "./core/view";
-export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, } from "./core/properties";
+export {
+	Property,
+	CoercibleProperty,
+	InheritedProperty,
+	CssProperty,
+	InheritedCssProperty,
+	ShorthandProperty,
+	CssAnimationProperty,
+} from "./core/properties";
 export { DatePicker } from "./date-picker";
 
 // No need go export dialogs, they are already export exported globally
@@ -15,32 +31,49 @@ import { action, alert, confirm, login, prompt } from "./dialogs";
 export const Dialogs = { action, alert, confirm, login, prompt };
 
 export * from "./editable-text-base";
-export { Frame, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry } from "./frame";
+export {
+	Frame,
+	NavigationEntry,
+	NavigationContext,
+	NavigationTransition,
+	BackstackEntry,
+	ViewEntry,
+} from "./frame";
 
 export {
-  GestureEventData,
-  GestureEventDataWithState,
-  GestureStateTypes,
-  GestureTypes,
-  GesturesObserver,
-  TapGestureEventData,
-  PanGestureEventData,
-  PinchGestureEventData,
-  RotationGestureEventData,
-  SwipeDirection,
-  SwipeGestureEventData,
-  TouchGestureEventData,
+	GestureEventData,
+	GestureEventDataWithState,
+	GestureStateTypes,
+	GestureTypes,
+	GesturesObserver,
+	TapGestureEventData,
+	PanGestureEventData,
+	PinchGestureEventData,
+	RotationGestureEventData,
+	SwipeDirection,
+	SwipeGestureEventData,
+	TouchGestureEventData,
 } from "./gestures";
 
 export { HtmlView } from "./html-view";
 export { Image } from "./image";
-export { Cache as ImageCache, DownloadError, DownloadRequest, DownloadedData } from "./image-cache";
+export {
+	Cache as ImageCache,
+	DownloadError,
+	DownloadRequest,
+	DownloadedData,
+} from "./image-cache";
 export { Label } from "./label";
 
 export * from "./layouts"; // barrel export
 
 export { ListPicker } from "./list-picker";
-export { ListView, ItemEventData, TemplatedItemsView, ItemsSource } from "./list-view";
+export {
+	ListView,
+	ItemEventData,
+	TemplatedItemsView,
+	ItemsSource,
+} from "./list-view";
 export { Page, NavigatedData } from "./page";
 export { Placeholder, CreateViewEventData } from "./placeholder";
 export { Progress } from "./progress";
@@ -58,7 +91,10 @@ export { Style, CommonLayoutParams } from "./styling/style";
 export { Switch } from "./switch";
 export { TabContentItem } from "./tab-navigation-base/tab-content-item";
 export { TabNavigationBase } from "./tab-navigation-base/tab-navigation-base";
-export { TabStrip, TabStripItemEventData } from "./tab-navigation-base/tab-strip";
+export {
+	TabStrip,
+	TabStripItemEventData,
+} from "./tab-navigation-base/tab-strip";
 export { TabStripItem } from "./tab-navigation-base/tab-strip-item";
 export { TabView, TabViewItem } from "./tab-view";
 export { Tabs } from "./tabs";

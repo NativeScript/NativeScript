@@ -2,12 +2,12 @@
 import { Observable } from ".";
 
 export interface EventData {
-    eventName: string;
-    object: Observable;
+	eventName: string;
+	object: Observable;
 }
 
 export interface PropertyChangeData extends EventData {
-    propertyName: string;
-    value: any;
-    oldValue?: any;
+	propertyName: string;
+	value: any;
+	oldValue?: any;
 }

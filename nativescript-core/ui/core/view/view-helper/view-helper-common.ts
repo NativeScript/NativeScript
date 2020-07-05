@@ -1,205 +1,290 @@
 // Types
 import { View as ViewDefinition } from "..";
-import { 
-    HorizontalAlignment as HorizontalAlignmentDefinition,
-    VerticalAlignment as VerticalAlignmentDefinition 
+import {
+	HorizontalAlignment as HorizontalAlignmentDefinition,
+	VerticalAlignment as VerticalAlignmentDefinition,
 } from "../../../styling/style-properties";
 
 // Requires
 import { layout } from "../../../../utils/utils";
-import {
-    Trace
-} from "../../../../trace";
+import { Trace } from "../../../../trace";
 
 export class ViewHelper {
+	public static measureChild(
+		parent: ViewDefinition,
+		child: ViewDefinition,
+		widthMeasureSpec: number,
+		heightMeasureSpec: number
+	): { measuredWidth: number; measuredHeight: number } {
+		let measureWidth = 0;
+		let measureHeight = 0;
 
-    public static measureChild(parent: ViewDefinition, child: ViewDefinition, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
-        let measureWidth = 0;
-        let measureHeight = 0;
+		if (child && !child.isCollapsed) {
+			const widthSpec = parent
+				? parent._currentWidthMeasureSpec
+				: widthMeasureSpec;
+			const heightSpec = parent
+				? parent._currentHeightMeasureSpec
+				: heightMeasureSpec;
 
-        if (child && !child.isCollapsed) {
+			const width = layout.getMeasureSpecSize(widthSpec);
+			const widthMode = layout.getMeasureSpecMode(widthSpec);
 
-            const widthSpec = parent ? parent._currentWidthMeasureSpec : widthMeasureSpec;
-            const heightSpec = parent ? parent._currentHeightMeasureSpec : heightMeasureSpec;
+			const height = layout.getMeasureSpecSize(heightSpec);
+			const heightMode = layout.getMeasureSpecMode(heightSpec);
 
-            const width = layout.getMeasureSpecSize(widthSpec);
-            const widthMode = layout.getMeasureSpecMode(widthSpec);
+			child._updateEffectiveLayoutValues(
+				width,
+				widthMode,
+				height,
+				heightMode
+			);
 
-            const height = layout.getMeasureSpecSize(heightSpec);
-            const heightMode = layout.getMeasureSpecMode(heightSpec);
+			const style = child.style;
+			const horizontalMargins =
+				child.effectiveMarginLeft + child.effectiveMarginRight;
+			const verticalMargins =
+				child.effectiveMarginTop + child.effectiveMarginBottom;
 
-            child._updateEffectiveLayoutValues(width, widthMode, height, heightMode);
+			const childWidthMeasureSpec = ViewHelper.getMeasureSpec(
+				widthMeasureSpec,
+				horizontalMargins,
+				child.effectiveWidth,
+				style.horizontalAlignment === "stretch"
+			);
+			const childHeightMeasureSpec = ViewHelper.getMeasureSpec(
+				heightMeasureSpec,
+				verticalMargins,
+				child.effectiveHeight,
+				style.verticalAlignment === "stretch"
+			);
 
-            const style = child.style;
-            const horizontalMargins = child.effectiveMarginLeft + child.effectiveMarginRight;
-            const verticalMargins = child.effectiveMarginTop + child.effectiveMarginBottom;
+			if (Trace.isEnabled()) {
+				Trace.write(
+					`${
+						child.parent
+					} :measureChild: ${child} ${layout.measureSpecToString(
+						childWidthMeasureSpec
+					)}, ${layout.measureSpecToString(childHeightMeasureSpec)}}`,
+					Trace.categories.Layout
+				);
+			}
 
-            const childWidthMeasureSpec = ViewHelper.getMeasureSpec(widthMeasureSpec, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === "stretch");
-            const childHeightMeasureSpec = ViewHelper.getMeasureSpec(heightMeasureSpec, verticalMargins, child.effectiveHeight, style.verticalAlignment === "stretch");
+			child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+			measureWidth = Math.round(
+				child.getMeasuredWidth() + horizontalMargins
+			);
+			measureHeight = Math.round(
+				child.getMeasuredHeight() + verticalMargins
+			);
+		}
 
-            if (Trace.isEnabled()) {
-                Trace.write(`${child.parent} :measureChild: ${child} ${layout.measureSpecToString(childWidthMeasureSpec)}, ${layout.measureSpecToString(childHeightMeasureSpec)}}`, Trace.categories.Layout);
-            }
+		return { measuredWidth: measureWidth, measuredHeight: measureHeight };
+	}
 
-            child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
-            measureWidth = Math.round(child.getMeasuredWidth() + horizontalMargins);
-            measureHeight = Math.round(child.getMeasuredHeight() + verticalMargins);
-        }
+	public static layoutChild(
+		parent: ViewDefinition,
+		child: ViewDefinition,
+		left: number,
+		top: number,
+		right: number,
+		bottom: number,
+		setFrame: boolean = true
+	): void {
+		if (!child || child.isCollapsed) {
+			return;
+		}
 
-        return { measuredWidth: measureWidth, measuredHeight: measureHeight };
-    }
+		let childStyle = child.style;
 
-    public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number, setFrame: boolean = true): void {
-        if (!child || child.isCollapsed) {
-            return;
-        }
+		let childTop: number;
+		let childLeft: number;
 
-        let childStyle = child.style;
+		let childWidth = child.getMeasuredWidth();
+		let childHeight = child.getMeasuredHeight();
 
-        let childTop: number;
-        let childLeft: number;
+		let effectiveMarginTop = child.effectiveMarginTop;
+		let effectiveMarginBottom = child.effectiveMarginBottom;
 
-        let childWidth = child.getMeasuredWidth();
-        let childHeight = child.getMeasuredHeight();
+		let vAlignment: VerticalAlignmentDefinition;
+		if (
+			child.effectiveHeight >= 0 &&
+			childStyle.verticalAlignment === "stretch"
+		) {
+			vAlignment = "middle";
+		} else {
+			vAlignment = childStyle.verticalAlignment;
+		}
 
-        let effectiveMarginTop = child.effectiveMarginTop;
-        let effectiveMarginBottom = child.effectiveMarginBottom;
+		switch (vAlignment) {
+			case "top":
+				childTop = top + effectiveMarginTop;
+				break;
 
-        let vAlignment: VerticalAlignmentDefinition;
-        if (child.effectiveHeight >= 0 && childStyle.verticalAlignment === "stretch") {
-            vAlignment = "middle";
-        }
-        else {
-            vAlignment = childStyle.verticalAlignment;
-        }
+			case "middle":
+				childTop =
+					top +
+					(bottom -
+						top -
+						childHeight +
+						(effectiveMarginTop - effectiveMarginBottom)) /
+						2;
+				break;
 
-        switch (vAlignment) {
-            case "top":
-                childTop = top + effectiveMarginTop;
-                break;
+			case "bottom":
+				childTop = bottom - childHeight - effectiveMarginBottom;
+				break;
 
-            case "middle":
-                childTop = top + (bottom - top - childHeight + (effectiveMarginTop - effectiveMarginBottom)) / 2;
-                break;
+			case "stretch":
+			default:
+				childTop = top + effectiveMarginTop;
+				childHeight =
+					bottom - top - (effectiveMarginTop + effectiveMarginBottom);
+				break;
+		}
 
-            case "bottom":
-                childTop = bottom - childHeight - effectiveMarginBottom;
-                break;
+		let effectiveMarginLeft = child.effectiveMarginLeft;
+		let effectiveMarginRight = child.effectiveMarginRight;
 
-            case "stretch":
-            default:
-                childTop = top + effectiveMarginTop;
-                childHeight = bottom - top - (effectiveMarginTop + effectiveMarginBottom);
-                break;
-        }
+		let hAlignment: HorizontalAlignmentDefinition;
+		if (
+			child.effectiveWidth >= 0 &&
+			childStyle.horizontalAlignment === "stretch"
+		) {
+			hAlignment = "center";
+		} else {
+			hAlignment = childStyle.horizontalAlignment;
+		}
 
-        let effectiveMarginLeft = child.effectiveMarginLeft;
-        let effectiveMarginRight = child.effectiveMarginRight;
+		switch (hAlignment) {
+			case "left":
+				childLeft = left + effectiveMarginLeft;
+				break;
 
-        let hAlignment: HorizontalAlignmentDefinition;
-        if (child.effectiveWidth >= 0 && childStyle.horizontalAlignment === "stretch") {
-            hAlignment = "center";
-        }
-        else {
-            hAlignment = childStyle.horizontalAlignment;
-        }
+			case "center":
+				childLeft =
+					left +
+					(right -
+						left -
+						childWidth +
+						(effectiveMarginLeft - effectiveMarginRight)) /
+						2;
+				break;
 
-        switch (hAlignment) {
-            case "left":
-                childLeft = left + effectiveMarginLeft;
-                break;
+			case "right":
+				childLeft = right - childWidth - effectiveMarginRight;
+				break;
 
-            case "center":
-                childLeft = left + (right - left - childWidth + (effectiveMarginLeft - effectiveMarginRight)) / 2;
-                break;
+			case "stretch":
+			default:
+				childLeft = left + effectiveMarginLeft;
+				childWidth =
+					right - left - (effectiveMarginLeft + effectiveMarginRight);
+				break;
+		}
 
-            case "right":
-                childLeft = right - childWidth - effectiveMarginRight;
-                break;
+		let childRight = Math.round(childLeft + childWidth);
+		let childBottom = Math.round(childTop + childHeight);
+		childLeft = Math.round(childLeft);
+		childTop = Math.round(childTop);
 
-            case "stretch":
-            default:
-                childLeft = left + effectiveMarginLeft;
-                childWidth = right - left - (effectiveMarginLeft + effectiveMarginRight);
-                break;
-        }
+		if (Trace.isEnabled()) {
+			Trace.write(
+				child.parent +
+					" :layoutChild: " +
+					child +
+					" " +
+					childLeft +
+					", " +
+					childTop +
+					", " +
+					childRight +
+					", " +
+					childBottom,
+				Trace.categories.Layout
+			);
+		}
 
-        let childRight = Math.round(childLeft + childWidth);
-        let childBottom = Math.round(childTop + childHeight);
-        childLeft = Math.round(childLeft);
-        childTop = Math.round(childTop);
+		child.layout(childLeft, childTop, childRight, childBottom, setFrame);
+	}
 
-        if (Trace.isEnabled()) {
-            Trace.write(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, Trace.categories.Layout);
-        }
+	public static resolveSizeAndState(
+		size: number,
+		specSize: number,
+		specMode: number,
+		childMeasuredState: number
+	): number {
+		let result = size;
+		switch (specMode) {
+			case layout.UNSPECIFIED:
+				result = Math.ceil(size);
+				break;
 
-        child.layout(childLeft, childTop, childRight, childBottom, setFrame);
-    }
+			case layout.AT_MOST:
+				if (specSize < size) {
+					result =
+						Math.ceil(specSize) | layout.MEASURED_STATE_TOO_SMALL;
+				}
+				break;
 
-    public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
-        let result = size;
-        switch (specMode) {
-            case layout.UNSPECIFIED:
-                result = Math.ceil(size);
-                break;
+			case layout.EXACTLY:
+				result = Math.ceil(specSize);
+				break;
+		}
 
-            case layout.AT_MOST:
-                if (specSize < size) {
-                    result = Math.ceil(specSize) | layout.MEASURED_STATE_TOO_SMALL;
-                }
-                break;
+		return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
+	}
 
-            case layout.EXACTLY:
-                result = Math.ceil(specSize);
-                break;
-        }
+	public static combineMeasuredStates(curState: number, newState): number {
+		return curState | newState;
+	}
 
-        return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
-    }
+	private static getMeasureSpec(
+		parentSpec: number,
+		margins: number,
+		childLength: number,
+		stretched: boolean
+	): number {
+		const parentLength = layout.getMeasureSpecSize(parentSpec);
+		const parentSpecMode = layout.getMeasureSpecMode(parentSpec);
 
-    public static combineMeasuredStates(curState: number, newState): number {
-        return curState | newState;
-    }
+		let resultSize: number;
+		let resultMode: number;
 
-    private static getMeasureSpec(parentSpec: number, margins: number, childLength: number, stretched: boolean): number {
-        const parentLength = layout.getMeasureSpecSize(parentSpec);
-        const parentSpecMode = layout.getMeasureSpecMode(parentSpec);
+		// We want a specific size... let be it.
+		if (childLength >= 0) {
+			// If mode !== UNSPECIFIED we take the smaller of parentLength and childLength
+			// Otherwise we will need to clip the view but this is not possible in all Android API levels.
+			// TODO: remove Math.min(parentLength, childLength)
+			resultSize =
+				parentSpecMode === layout.UNSPECIFIED
+					? childLength
+					: Math.min(parentLength, childLength);
+			resultMode = layout.EXACTLY;
+		} else {
+			switch (parentSpecMode) {
+				// Parent has imposed an exact size on us
+				case layout.EXACTLY:
+					resultSize = Math.max(0, parentLength - margins);
+					// if stretched - nativeView wants to be our size. So be it.
+					// else - nativeView wants to determine its own size. It can't be bigger than us.
+					resultMode = stretched ? layout.EXACTLY : layout.AT_MOST;
+					break;
 
-        let resultSize: number;
-        let resultMode: number;
+				// Parent has imposed a maximum size on us
+				case layout.AT_MOST:
+					resultSize = Math.max(0, parentLength - margins);
+					resultMode = layout.AT_MOST;
+					break;
 
-        // We want a specific size... let be it.
-        if (childLength >= 0) {
-            // If mode !== UNSPECIFIED we take the smaller of parentLength and childLength
-            // Otherwise we will need to clip the view but this is not possible in all Android API levels.
-            // TODO: remove Math.min(parentLength, childLength)
-            resultSize = parentSpecMode === layout.UNSPECIFIED ? childLength : Math.min(parentLength, childLength);
-            resultMode = layout.EXACTLY;
-        }
-        else {
-            switch (parentSpecMode) {
-                // Parent has imposed an exact size on us
-                case layout.EXACTLY:
-                    resultSize = Math.max(0, parentLength - margins);
-                    // if stretched - nativeView wants to be our size. So be it.
-                    // else - nativeView wants to determine its own size. It can't be bigger than us.
-                    resultMode = stretched ? layout.EXACTLY : layout.AT_MOST;
-                    break;
+				// Equivalent to measure with Infinity.
+				case layout.UNSPECIFIED:
+					resultSize = 0;
+					resultMode = layout.UNSPECIFIED;
+					break;
+			}
+		}
 
-                // Parent has imposed a maximum size on us
-                case layout.AT_MOST:
-                    resultSize = Math.max(0, parentLength - margins);
-                    resultMode = layout.AT_MOST;
-                    break;
-
-                // Equivalent to measure with Infinity.
-                case layout.UNSPECIFIED:
-                    resultSize = 0;
-                    resultMode = layout.UNSPECIFIED;
-                    break;
-            }
-        }
-
-        return layout.makeMeasureSpec(resultSize, resultMode);
-    }
+		return layout.makeMeasureSpec(resultSize, resultMode);
+	}
 }

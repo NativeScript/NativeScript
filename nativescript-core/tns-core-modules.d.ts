@@ -1,14 +1,42 @@
 declare enum RequestContext {
-    "audio", "beacon", "cspreport", "download", "embed", "eventsource", "favicon", "fetch",
-    "font", "form", "frame", "hyperlink", "iframe", "image", "imageset", "import",
-    "internal", "location", "manifest", "object", "ping", "plugin", "prefetch", "script",
-    "serviceworker", "sharedworker", "subresource", "style", "track", "video", "worker",
-    "xmlhttprequest", "xslt"
+	"audio",
+	"beacon",
+	"cspreport",
+	"download",
+	"embed",
+	"eventsource",
+	"favicon",
+	"fetch",
+	"font",
+	"form",
+	"frame",
+	"hyperlink",
+	"iframe",
+	"image",
+	"imageset",
+	"import",
+	"internal",
+	"location",
+	"manifest",
+	"object",
+	"ping",
+	"plugin",
+	"prefetch",
+	"script",
+	"serviceworker",
+	"sharedworker",
+	"subresource",
+	"style",
+	"track",
+	"video",
+	"worker",
+	"xmlhttprequest",
+	"xslt",
 }
 
 // Extend the lib.dom.d.ts Body interface with `formData`
 interface Body {
-    formData(): Promise<FormData>;
+	formData(): Promise<FormData>;
 }
 
 declare type HeaderInit = Headers | Array<string>;
@@ -20,14 +48,14 @@ declare var require: NodeRequire;
 
 // Extend NodeRequire with the webpack's require context extension.
 interface RequireContext {
-    keys(): string[];
-    (id: string): any;
-    <T>(id: string): T;
-    resolve(id: string): string;
+	keys(): string[];
+	(id: string): any;
+	<T>(id: string): T;
+	resolve(id: string): string;
 }
 
 interface NodeRequire {
-    context(path: string, deep?: boolean, filter?: RegExp): RequireContext;
+	context(path: string, deep?: boolean, filter?: RegExp): RequireContext;
 }
 
 declare var __dirname: string;
@@ -38,8 +66,16 @@ declare var module: NodeModule;
 declare var exports: any;
 
 // Global functions
-declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
-declare function Experimental(target: Object, key?: string | symbol, value?: any): void;
+declare function Deprecated(
+	target: Object,
+	key?: string | symbol,
+	value?: any
+): void;
+declare function Experimental(
+	target: Object,
+	key?: string | symbol,
+	value?: any
+): void;
 
 /**
  * Decorates class that implements native Java interfaces.
@@ -148,9 +184,9 @@ declare function clearInterval(id: number): void;
 declare function zonedCallback(callback: Function): Function;
 
 declare class WeakRef<T> {
-    constructor(obj: T);
-    get(): T;
-    clear(): void;
+	constructor(obj: T);
+	get(): T;
+	clear(): void;
 }
 
 //Dialogs

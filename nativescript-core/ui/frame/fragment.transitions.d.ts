@@ -4,13 +4,14 @@
  * @private
  */
 export function _setAndroidFragmentTransitions(
-    animated: boolean,
-    navigationTransition: NavigationTransition,
-    currentEntry: BackstackEntry,
-    newEntry: BackstackEntry,
-    frameId: number,
-    fragmentTransaction: any,
-    isNestedDefaultTransition?: boolean): void;
+	animated: boolean,
+	navigationTransition: NavigationTransition,
+	currentEntry: BackstackEntry,
+	newEntry: BackstackEntry,
+	frameId: number,
+	fragmentTransaction: any,
+	isNestedDefaultTransition?: boolean
+): void;
 /**
  * @private
  */
@@ -26,7 +27,10 @@ export function _updateTransitions(entry: BackstackEntry): void;
  * Called once fragment is going to reappear from backstack.
  * Reverse transitions from entry to fragment if any.
  */
-export function _reverseTransitions(previousEntry: BackstackEntry, currentEntry: BackstackEntry): boolean;
+export function _reverseTransitions(
+	previousEntry: BackstackEntry,
+	currentEntry: BackstackEntry
+): boolean;
 /**
  * @private
  * Called when entry is removed from backstack (either back navigation or
@@ -44,11 +48,20 @@ export function _clearFragment(entry: BackstackEntry): void;
 /**
  * @private
  */
-export function _createIOSAnimatedTransitioning(navigationTransition: NavigationTransition, nativeCurve: any, operation: number, fromVC: any, toVC: any): any;
+export function _createIOSAnimatedTransitioning(
+	navigationTransition: NavigationTransition,
+	nativeCurve: any,
+	operation: number,
+	fromVC: any,
+	toVC: any
+): any;
 
 /**
  * @private
  * nativeTransition: androidx.transition.Transition
  */
-export function addNativeTransitionListener(entry: any, nativeTransition: any): any;
- //@endprivate
+export function addNativeTransitionListener(
+	entry: any,
+	nativeTransition: any
+): any;
+//@endprivate

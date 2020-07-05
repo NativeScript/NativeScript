@@ -68,7 +68,13 @@ export function round(px: px): px;
  * @param height the available hegiht
  * @param heightMode height mode - UNSPECIFIED, EXACTLY or AT_MOST
  */
-export function measureNativeView(nativeView: any /* UIView or android.view.View */, width: number, widthMode: number, height: number, heightMode: number): { width: number, height: number };
+export function measureNativeView(
+	nativeView: any /* UIView or android.view.View */,
+	width: number,
+	widthMode: number,
+	height: number,
+	heightMode: number
+): { width: number; height: number };
 
 /**
  * Prints user friendly version of the measureSpec.

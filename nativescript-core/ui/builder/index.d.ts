@@ -3,11 +3,11 @@ import { Page } from "../page";
 import { NavigationEntry } from "../frame";
 
 export interface LoadOptions {
-    path: string;
-    name: string;
-    attributes?: any;
-    exports?: any;
-    page?: Page;
+	path: string;
+	name: string;
+	attributes?: any;
+	exports?: any;
+	page?: Page;
 }
 
 /**
@@ -23,7 +23,10 @@ export function parse(value: string | Template, exports?: any): View;
 /**
  * @deprecated Use Builder.parseMultipleTemplates() instead.
  */
-export function parseMultipleTemplates(value: string, exports?: any): Array<KeyedTemplate>;
+export function parseMultipleTemplates(
+	value: string,
+	exports?: any
+): Array<KeyedTemplate>;
 
 /**
  * @deprecated Use Builder.load() instead.
@@ -35,33 +38,35 @@ export function load(fileName: string, exports?: any): View;
  */
 export function load(options: LoadOptions): View;
 
-
 export class Builder {
-    /**
-     * Creates view from navigation entry
-     * @param entry NavigationEntry
-     */
-    static createViewFromEntry(entry: NavigationEntry): View;
+	/**
+	 * Creates view from navigation entry
+	 * @param entry NavigationEntry
+	 */
+	static createViewFromEntry(entry: NavigationEntry): View;
 
-    static parse(value: string | Template, exports?: any): View;
+	static parse(value: string | Template, exports?: any): View;
 
-    /**
-     * Creates an array of KeyedTemplates from string
-     * @param value The xml of the template to be parsed
-     * @param exports Current context of the template
-     */
-    static parseMultipleTemplates(value: string, exports?: any): Array<KeyedTemplate>;
+	/**
+	 * Creates an array of KeyedTemplates from string
+	 * @param value The xml of the template to be parsed
+	 * @param exports Current context of the template
+	 */
+	static parseMultipleTemplates(
+		value: string,
+		exports?: any
+	): Array<KeyedTemplate>;
 
-    /**
-     * Loads component from module with context 
-     * @param moduleName the module name
-     * @param exports the context of the component to be loaded
-     */
-    static load(moduleName: string, exports?: any): View;
+	/**
+	 * Loads component from module with context
+	 * @param moduleName the module name
+	 * @param exports the context of the component to be loaded
+	 */
+	static load(moduleName: string, exports?: any): View;
 
-    /**
-     * Loads component from options
-     * @param options Load options
-     */
-    static load(options: LoadOptions): View;
+	/**
+	 * Loads component from options
+	 * @param options Load options
+	 */
+	static load(options: LoadOptions): View;
 }

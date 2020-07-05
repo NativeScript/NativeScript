@@ -1,4 +1,9 @@
 # Ignore artifacts:
+.github
+*.yml
+.vscode
+api-reports
+apps
 build
 coverage
 dist
@@ -11,3 +16,6 @@ tns-core-modules-widgets
 tns-platform-declarations
 temp
 unit-tests
+*.md
+*.json
+*.js

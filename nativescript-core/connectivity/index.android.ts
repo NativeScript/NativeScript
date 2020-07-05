@@ -16,16 +16,18 @@ const vpn = "vpn";
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
-    return getNativeApplication().getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+	return getNativeApplication()
+		.getApplicationContext()
+		.getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
 }
 
 function getActiveNetworkInfo(): android.net.NetworkInfo {
-    let connectivityManager = getConnectivityManager();
-    if (!connectivityManager) {
-        return null;
-    }
+	let connectivityManager = getConnectivityManager();
+	if (!connectivityManager) {
+		return null;
+	}
 
-    return connectivityManager.getActiveNetworkInfo();
+	return connectivityManager.getActiveNetworkInfo();
 }
 
 function getNetworkCapabilities() {

@@ -9,25 +9,25 @@ export function getConnectionType(): number;
  * Defines the different connection types.
  */
 export enum connectionType {
-    /**
-     * Denotes no connection.
-     */
-    none = 0,
+	/**
+	 * Denotes no connection.
+	 */
+	none = 0,
 
-    /**
-     * Denotes a WiFi connection.
-     */
-    wifi = 1,
+	/**
+	 * Denotes a WiFi connection.
+	 */
+	wifi = 1,
 
-    /**
-     * Denotes a mobile connection, i.e. cellular network or WAN.
-     */
-    mobile = 2,
+	/**
+	 * Denotes a mobile connection, i.e. cellular network or WAN.
+	 */
+	mobile = 2,
 
-    /**
-     * Denotes an ethernet connection
-     */
-    ethernet = 3,
+	/**
+	 * Denotes an ethernet connection
+	 */
+	ethernet = 3,
 
     /**
      * Denotes a bluetooth connection
@@ -44,7 +44,9 @@ export enum connectionType {
  * Starts monitoring the connection type.
  * @param connectionTypeChangedCallback A function that will be called when the connection type changes.
  */
-export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void;
+export function startMonitoring(
+	connectionTypeChangedCallback: (newConnectionType: number) => void
+): void;
 
 /**
  * Stops monitoring the connection type.

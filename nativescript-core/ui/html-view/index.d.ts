@@ -7,20 +7,20 @@ import { Property } from "../core/properties";
  * [android support](http://developer.android.com/reference/android/text/Html.html)
  */
 export class HtmlView extends View {
-    /**
-     * Gets the native [android widget](http://developer.android.com/reference/android/widget/TextView.html) that represents the user interface for this component. Valid only when running on Android OS.
-     */
-    android: any /* android.widget.TextView */;
+	/**
+	 * Gets the native [android widget](http://developer.android.com/reference/android/widget/TextView.html) that represents the user interface for this component. Valid only when running on Android OS.
+	 */
+	android: any /* android.widget.TextView */;
 
-    /**
-     * Gets the native [UITextView](https://developer.apple.com/documentation/uikit/uitextview) that represents the user interface for this component. Valid only when running on iOS.
-     */
-    ios: any /* UITextView */;
+	/**
+	 * Gets the native [UITextView](https://developer.apple.com/documentation/uikit/uitextview) that represents the user interface for this component. Valid only when running on iOS.
+	 */
+	ios: any /* UITextView */;
 
-    /**
-     * Gets or sets html string for the HtmlView.
-     */
-    html: string;
+	/**
+	 * Gets or sets html string for the HtmlView.
+	 */
+	html: string;
 }
 
 export const htmlProperty: Property<HtmlView, string>;

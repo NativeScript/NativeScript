@@ -1,13 +1,29 @@
 import { LayoutBase } from "../layout-base";
-import { Style } from '../../styling/style';
+import { Style } from "../../styling/style";
 import { CssProperty } from "../../core/properties";
-import { View } from '../../core/view';
+import { View } from "../../core/view";
 
 export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
 export type FlexWrap = "nowrap" | "wrap" | "wrap-reverse";
-export type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around";
-export type AlignItems = "flex-start" | "flex-end" | "center" | "baseline" | "stretch";
-export type AlignContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "stretch";
+export type JustifyContent =
+	| "flex-start"
+	| "flex-end"
+	| "center"
+	| "space-between"
+	| "space-around";
+export type AlignItems =
+	| "flex-start"
+	| "flex-end"
+	| "center"
+	| "baseline"
+	| "stretch";
+export type AlignContent =
+	| "flex-start"
+	| "flex-end"
+	| "center"
+	| "space-between"
+	| "space-around"
+	| "stretch";
 
 /**
  * A flex order integer.
@@ -32,26 +48,26 @@ export type FlexWrapBefore = boolean;
 export type AlignSelf = "auto" | AlignItems;
 
 export class FlexboxLayout extends LayoutBase {
-    public flexDirection: FlexDirection;
-    public flexWrap: FlexWrap;
-    public justifyContent: JustifyContent;
-    public alignItems: AlignItems;
-    public alignContent: AlignContent;
+	public flexDirection: FlexDirection;
+	public flexWrap: FlexWrap;
+	public justifyContent: JustifyContent;
+	public alignItems: AlignItems;
+	public alignContent: AlignContent;
 
-    public static setOrder(view: View, order: number);
-    public static getOrder(view: View): number;
+	public static setOrder(view: View, order: number);
+	public static getOrder(view: View): number;
 
-    public static setFlexGrow(view: View, grow: number);
-    public static getFlexGrow(view: View);
+	public static setFlexGrow(view: View, grow: number);
+	public static getFlexGrow(view: View);
 
-    public static setFlexShrink(view: View, shrink: number);
-    public static getFlexShrink(view: View): number;
+	public static setFlexShrink(view: View, shrink: number);
+	public static getFlexShrink(view: View): number;
 
-    public static setAlignSelf(view: View, align: AlignSelf);
-    public static getAlignSelf(view: View): AlignSelf;
+	public static setAlignSelf(view: View, align: AlignSelf);
+	public static getAlignSelf(view: View): AlignSelf;
 
-    public static setFlexWrapBefore(view: View, wrap: boolean);
-    public static getFlexWrapBefore(view: View): boolean;
+	public static setFlexWrapBefore(view: View, wrap: boolean);
+	public static getFlexWrapBefore(view: View): boolean;
 }
 
 export const flexDirectionProperty: CssProperty<Style, FlexDirection>;

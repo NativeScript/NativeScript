@@ -1,6 +1,4 @@
 {
-  "extends": [
-    "tslint:latest",
-    "tslint-config-prettier"
-  ]
+  "useTabs": true,
+  "tabWidth": 4
 }

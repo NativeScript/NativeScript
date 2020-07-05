@@ -4,8 +4,8 @@
  */
 
 interface TimerInfo {
-    totalTime: number;
-    count: number;
+	totalTime: number;
+	count: number;
 }
 
 /**
@@ -20,9 +20,9 @@ type InstrumentationMode = "counters" | "timeline" | "lifecycle";
  * Logging levels in order of verbosity.
  */
 export enum Level {
-    none,
-    lifecycle,
-    timeline,
+	none,
+	lifecycle,
+	timeline,
 }
 
 /**
@@ -114,7 +114,11 @@ export declare function profile<F extends Function>(name: string, fn: F): F;
 /**
  * Method decorator. It will intercept the method calls and start and pause a timer before and after the method call. Works only if profiling is enabled.
  */
-export declare function profile<T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>): TypedPropertyDescriptor<T> | void;
+export declare function profile<T>(
+	target: Object,
+	propertyKey: string | symbol,
+	descriptor: TypedPropertyDescriptor<T>
+): TypedPropertyDescriptor<T> | void;
 export function profile(): any;
 
 /**

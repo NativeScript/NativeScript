@@ -5,11 +5,11 @@ import { Property } from "../../core/properties";
  * A Layout that arranges its children horizontally or vertically. The direction can be set by orientation property.
  */
 export class StackLayout extends LayoutBase {
-    /**
-     * Gets or sets if layout should be horizontal or vertical.
-     * The default value is vertical.
-     */
-    orientation: Orientation;
+	/**
+	 * Gets or sets if layout should be horizontal or vertical.
+	 * The default value is vertical.
+	 */
+	orientation: Orientation;
 }
 
 export type Orientation = "horizontal" | "vertical";

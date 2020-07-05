@@ -7,4 +7,4 @@ export function dispatchToMainThread(func: Function);
 /**
  * @returns Boolean value indicating whether the current thread is the main thread
  */
-export function isMainThread(): boolean
+export function isMainThread(): boolean;
