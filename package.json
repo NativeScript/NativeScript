@@ -48,6 +48,8 @@
     "setup-link": "(cd nativescript-core && npm link) && (cd dist/tns-core-modules && npm uninstall @nativescript/core -S)",
     "setup-widgets": "(cd tns-core-modules-widgets && sh build.sh) && npm run dev-link-tns-core-modules-widgets",
     "build": "tsc -p nativescript-core/tsconfig.json",
+    "format": "npx prettier --write .",
+    "format-check": "npx prettier --check .",
     "tsc-core-watch": "tsc -p nativescript-core/tsconfig.json -w",
     "tslint": "tslint --project tsconfig.tslint.json --config build/tslint.json",
     "unit-test": "tsc -p unit-tests/tsconfig.json && mocha --opts unit-tests/mocha.opts",
