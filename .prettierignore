@@ -1,0 +1,13 @@
+# Ignore artifacts:
+build
+coverage
+dist
+e2e
+js-libs
+platforms
+tests
+tns-core-modules-package
+tns-core-modules-widgets
+tns-platform-declarations
+temp
+unit-tests

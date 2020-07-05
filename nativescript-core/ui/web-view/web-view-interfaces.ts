@@ -1,5 +1,5 @@
 ﻿import { WebView } from ".";
-import { EventData } from "../core/view";
+import { EventData } from "../../data/observable";
 
 export type NavigationType = "linkClicked" | "formSubmitted" | "backForward" | "reload" | "formResubmitted" | "other" | undefined;
 

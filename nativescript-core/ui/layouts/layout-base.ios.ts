@@ -1,6 +1,7 @@
 import {
-    LayoutBaseCommon, clipToBoundsProperty, isPassThroughParentEnabledProperty, View
+    LayoutBaseCommon, clipToBoundsProperty, isPassThroughParentEnabledProperty
 } from "./layout-base-common";
+import { View } from "../core/view";
 
 export * from "./layout-base-common";
 

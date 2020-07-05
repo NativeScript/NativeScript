@@ -134,7 +134,7 @@ class UIViewControllerImpl extends UIViewController {
         }
     }
 
-    @profile
+    @profile()
     public viewDidAppear(animated: boolean): void {
         super.viewDidAppear(animated);
 
@@ -191,7 +191,7 @@ class UIViewControllerImpl extends UIViewController {
         }
     }
 
-    @profile
+    @profile()
     public viewWillDisappear(animated: boolean): void {
         super.viewWillDisappear(animated);
 
@@ -221,7 +221,7 @@ class UIViewControllerImpl extends UIViewController {
         }
     }
 
-    @profile
+    @profile()
     public viewDidDisappear(animated: boolean): void {
         super.viewDidDisappear(animated);
 

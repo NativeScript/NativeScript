@@ -1,6 +1,11 @@
-import { ViewBase } from "../ui/core/view";
+import { ViewBase } from "../ui/core/view-base";
 import { CSSComputedStyleProperty } from "./css-agent";
 export declare function getNodeById(id: number): DOMNode;
+declare class WeakRef<T> {
+  constructor(obj: T);
+  get(): T;
+  clear(): void;
+}
 export declare class DOMNode {
     nodeId: any;
     nodeType: any;

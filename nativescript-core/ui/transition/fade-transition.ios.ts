@@ -1,4 +1,4 @@
-﻿import { Transition } from "./transition";
+﻿import { Transition } from ".";
 
 export class FadeTransition extends Transition {
     public animateIOSTransition(containerView: UIView, fromView: UIView, toView: UIView, operation: UINavigationControllerOperation, completion: (finished: boolean) => void): void {

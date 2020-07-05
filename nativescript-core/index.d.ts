@@ -80,23 +80,8 @@ export declare const Profiling: {
     stopCPUProfile: typeof stopCPUProfile;
 };
 export { encoding } from "./text";
-export { DefaultErrorHandler, ErrorHandler, TraceWriter } from "./trace";
-import { messageType, categories, setCategories, addCategories, addWriter, removeWriter, clearWriters, setErrorHandler, write, error, enable, disable, isEnabled } from "./trace";
-export declare const Trace: {
-    messageType: typeof messageType;
-    categories: typeof categories;
-    setCategories: typeof setCategories;
-    addCategories: typeof addCategories;
-    addWriter: typeof addWriter;
-    removeWriter: typeof removeWriter;
-    clearWriters: typeof clearWriters;
-    setErrorHandler: typeof setErrorHandler;
-    write: typeof write;
-    error: typeof error;
-    enable: typeof enable;
-    disable: typeof disable;
-    isEnabled: typeof isEnabled;
-};
+export * from "./trace";
+
 export * from "./ui";
 import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, ios as iosUtils } from "./utils/utils";
 export declare const Utils: {

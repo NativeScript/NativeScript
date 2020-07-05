@@ -1,4 +1,4 @@
-import * as fs from "../file-system/file-system";
+import * as fs from "../file-system";
 import * as appCommonModule from "../application/application-common";
 import {
     Trace

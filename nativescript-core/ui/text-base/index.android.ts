@@ -1,20 +1,28 @@
 // Types
-import { TextTransformation, TextDecoration, TextAlignment, TextTransform, WhiteSpace, getClosestPropertyValue } from "./text-base-common";
+import { TextDecoration, TextAlignment, TextTransform, WhiteSpace, getClosestPropertyValue } from "./text-base-common";
 
 // Requires
 import { Font } from "../styling/font";
 import { backgroundColorProperty, VerticalAlignment } from "../styling/style-properties";
 import {
-    TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
-    textProperty, textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length,
-    whiteSpaceProperty, lineHeightProperty, FormattedString, layout, Span, Color, isBold, resetSymbol
+    TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
+    textProperty, textTransformProperty, letterSpacingProperty,
+    whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol
 } from "./text-base-common";
+import { Color } from "../../color";
+import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from "../styling/style-properties";
+import { FormattedString } from "./formatted-string";
+import { Span } from "./span";
+import { layout } from "../../utils/utils";
 import { isString } from "../../utils/types";
 
 export * from "./text-base-common";
 
 let TextTransformation: TextTransformation;
+
+export interface TextTransformation {
+  new(owner: TextBase): any /* android.text.method.TransformationMethod */;
+}
 
 function initializeTextTransformation(): void {
     if (TextTransformation) {
@@ -545,7 +553,7 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
         ssb.setSpan(new android.text.style.ForegroundColorSpan(color.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
-    const backgroundColor: Color = getClosestPropertyValue(backgroundColorProperty, span);
+    const backgroundColor: Color = getClosestPropertyValue(<any>backgroundColorProperty, span);
 
     if (backgroundColor) {
         ssb.setSpan(new android.text.style.BackgroundColorSpan(backgroundColor.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);

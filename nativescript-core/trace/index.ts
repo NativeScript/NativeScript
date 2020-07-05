@@ -8,7 +8,7 @@ export interface TraceWriter {
 /**
  * An interface used to trace information about specific event.
  */
-export interface EventListener {
+export interface TraceEventListener {
   filter: string;
   on(object: Object, name: string, data?: any): void;
 }
@@ -16,15 +16,15 @@ export interface EventListener {
 /**
  * An interface used to for handling trace error
  */
-export interface ErrorHandler {
+export interface TraceErrorHandler {
   handlerError(error: Error): any;
 }
 
 let enabled = false;
 let _categories = {};
 let _writers: Array<TraceWriter> = [];
-let _eventListeners: Array<EventListener> = [];
-let _errorHandler: ErrorHandler;
+let _eventListeners: Array<TraceEventListener> = [];
+let _errorHandler: TraceErrorHandler;
 
 export namespace Trace {
   /**
@@ -147,7 +147,7 @@ export namespace Trace {
       return;
     }
 
-    let i, listener: EventListener, filters: Array<string>;
+    let i, listener: TraceEventListener, filters: Array<string>;
     for (i = 0; i < _eventListeners.length; i++) {
       listener = _eventListeners[i];
       if (listener.filter) {
@@ -163,11 +163,11 @@ export namespace Trace {
     }
   }
 
-  export function addEventListener(listener: EventListener) {
+  export function addEventListener(listener: TraceEventListener) {
     _eventListeners.push(listener);
   }
 
-  export function removeEventListener(listener: EventListener) {
+  export function removeEventListener(listener: TraceEventListener) {
     const index = _eventListeners.indexOf(listener);
     if (index >= 0) {
       _eventListeners.splice(index, 1);
@@ -266,18 +266,18 @@ export namespace Trace {
   // register a ConsoleWriter by default
   addWriter(new ConsoleWriter());
 
-  export class DefaultErrorHandler implements ErrorHandler {
+  export class DefaultErrorHandler implements TraceErrorHandler {
     handlerError(error) {
       throw error;
     }
   }
   setErrorHandler(new DefaultErrorHandler());
 
-  export function getErrorHandler(): ErrorHandler {
+  export function getErrorHandler(): TraceErrorHandler {
     return _errorHandler;
   }
 
-  export function setErrorHandler(handler: ErrorHandler) {
+  export function setErrorHandler(handler: TraceErrorHandler) {
     _errorHandler = handler;
   }
 

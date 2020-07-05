@@ -1,4 +1,4 @@
-import { Transition, AndroidTransitionType } from "./transition";
+import { Transition, AndroidTransitionType } from ".";
 
 //http://developer.android.com/training/animation/cardflip.html
 export class FlipTransition extends Transition {

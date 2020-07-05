@@ -202,7 +202,7 @@ itemTemplateProperty.register(ListViewBase);
 export const itemTemplatesProperty = new Property<ListViewBase, string | Array<KeyedTemplate>>({
     name: "itemTemplates", valueConverter: (value) => {
         if (typeof value === "string") {
-            return Builder.parseMultipleTemplates(value);
+            return Builder.parseMultipleTemplates(value, null);
         }
 
         return value;

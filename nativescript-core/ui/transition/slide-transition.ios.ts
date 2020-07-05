@@ -1,4 +1,4 @@
-﻿import { Transition } from "./transition";
+﻿import { Transition } from ".";
 import { screen } from "../../platform";
 
 let screenWidth = screen.mainScreen.widthDIPs;

@@ -64,7 +64,7 @@ export class Frame extends FrameBase {
 
     // !!! THIS PROFILE DECORATOR CREATES A CIRCULAR DEPENDENCY
     // !!! BECAUSE THE PARAMETER TYPE IS EVALUATED WITH TYPEOF
-    @profile
+    @profile()
     public _navigateCore(backstackEntry: any) {
         super._navigateCore(backstackEntry);
 
@@ -398,7 +398,7 @@ class UINavigationControllerImpl extends UINavigationController {
         return this._owner.get();
     }
 
-    @profile
+    @profile()
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
         const owner = this._owner.get();
@@ -407,7 +407,7 @@ class UINavigationControllerImpl extends UINavigationController {
         }
     }
 
-    @profile
+    @profile()
     public viewDidDisappear(animated: boolean): void {
         super.viewDidDisappear(animated);
         const owner = this._owner.get();
@@ -446,7 +446,7 @@ class UINavigationControllerImpl extends UINavigationController {
         });
     }
 
-    @profile
+    @profile()
     public pushViewControllerAnimated(viewController: UIViewController, animated: boolean): void {
         let navigationTransition = <NavigationTransition>viewController[TRANSITION];
         if (Trace.isEnabled()) {
@@ -465,7 +465,7 @@ class UINavigationControllerImpl extends UINavigationController {
         });
     }
 
-    @profile
+    @profile()
     public setViewControllersAnimated(viewControllers: NSArray<any>, animated: boolean): void {
         let viewController = viewControllers.lastObject;
         let navigationTransition = <NavigationTransition>viewController[TRANSITION];

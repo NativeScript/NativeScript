@@ -1,4 +1,4 @@
-import { Transition, AndroidTransitionType } from "./transition";
+import { Transition, AndroidTransitionType } from ".";
 
 export class FadeTransition extends Transition {
     public createAndroidAnimator(transitionType: string): android.animation.AnimatorSet {

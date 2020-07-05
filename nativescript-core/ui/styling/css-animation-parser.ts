@@ -11,13 +11,13 @@ import { timeConverter, animationTimingFunctionConverter } from "../styling/conv
 import { transformConverter } from "../styling/style-properties";
 
 const ANIMATION_PROPERTY_HANDLERS = Object.freeze({
-    "animation-name": (info, value) => info.name = value,
-    "animation-duration": (info, value) => info.duration = timeConverter(value),
-    "animation-delay": (info, value) => info.delay = timeConverter(value),
-    "animation-timing-function": (info, value) => info.curve = animationTimingFunctionConverter(value),
-    "animation-iteration-count": (info, value) => info.iterations = value === "infinite" ? Number.MAX_VALUE : parseFloat(value),
-    "animation-direction": (info, value) => info.isReverse = value === "reverse",
-    "animation-fill-mode": (info, value) => info.isForwards = value === "forwards"
+    "animation-name": (info: any, value: any) => info.name = value,
+    "animation-duration": (info: any, value: any) => info.duration = timeConverter(value),
+    "animation-delay": (info: any, value: any) => info.delay = timeConverter(value),
+    "animation-timing-function": (info: any, value: any) => info.curve = animationTimingFunctionConverter(value),
+    "animation-iteration-count": (info: any, value: any) => info.iterations = value === "infinite" ? Number.MAX_VALUE : parseFloat(value),
+    "animation-direction": (info: any, value: any) => info.isReverse = value === "reverse",
+    "animation-fill-mode": (info: any, value: any) => info.isForwards = value === "forwards"
 });
 
 export class CssAnimationParser {

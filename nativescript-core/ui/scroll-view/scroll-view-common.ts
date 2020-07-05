@@ -1,8 +1,10 @@
 ﻿import { ScrollView as ScrollViewDefinition, Orientation, ScrollEventData } from ".";
-import { ContentView, Property, makeParser, makeValidator, EventData, booleanConverter, CSSType } from "../content-view";
+import { ContentView } from "../content-view";
 import { profile } from "../../profiling";
-
-export * from "../content-view";
+import { Property, makeParser, makeValidator } from "../core/properties";
+import { CSSType } from "../core/view";
+import { booleanConverter } from "../core/view-base";
+import { EventData } from "../../data/observable";
 
 @CSSType("ScrollView")
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
@@ -31,7 +33,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
         }
     }
 
-    @profile
+    @profile()
     public onLoaded() {
         super.onLoaded();
 

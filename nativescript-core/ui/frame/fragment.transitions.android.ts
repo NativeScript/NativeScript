@@ -3,7 +3,7 @@ import { NavigationType } from "./frame-common";
 import { NavigationTransition, BackstackEntry } from "../frame";
 
 // Types.
-import { Transition, AndroidTransitionType } from "../transition/transition";
+import { Transition, AndroidTransitionType } from "../transition";
 import { FlipTransition } from "../transition/flip-transition";
 import { _resolveAnimationCurve } from "../animation";
 import lazy from "../../utils/lazy";

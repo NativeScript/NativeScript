@@ -1,12 +1,17 @@
 import {
-    ButtonBase, PseudoClassHandler,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
-    Length, zIndexProperty, textAlignmentProperty, TextAlignment, layout,
-    minWidthProperty, minHeightProperty
+    ButtonBase,
 } from "./button-common";
+import {
+  PseudoClassHandler,
+} from "../core/view";
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
+  Length, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
+import { textAlignmentProperty } from "../text-base";
+import { TextAlignment } from "../enums";
 import { profile } from "../../profiling";
 import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
 import { device } from "../../platform";
+import { layout } from "../../utils/utils";
 import lazy from "../../utils/lazy";
 
 export * from "./button-common";
@@ -58,7 +63,7 @@ export class Button extends ButtonBase {
     private _stateListAnimator: any;
     private _highlightedHandler: (args: TouchGestureEventData) => void;
 
-    @profile
+    @profile()
     public createNativeView() {
         if (!AndroidButton) {
             AndroidButton = android.widget.Button;

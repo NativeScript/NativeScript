@@ -115,21 +115,21 @@ export module ReturnKeyType {
 /**
  * Represents a text-align enumeration.
  */
-export module TextAlignment {
+export declare class TextAlignment {
     /**
      * Represents left text-align.
      */
-    export const left: BaseTextAlignment;
+    static left: BaseTextAlignment;
 
     /**
      * Represents center text-align.
      */
-    export const center: BaseTextAlignment;
+    static center: BaseTextAlignment;
 
     /**
      * Represents right text-align.
      */
-    export const right: BaseTextAlignment;
+    static right: BaseTextAlignment;
 }
 
 /**

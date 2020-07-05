@@ -1,10 +1,11 @@
 import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty,
-    autocapitalizationTypeProperty, autocorrectProperty, hintProperty, resetSymbol,
-    textProperty, placeholderColorProperty, Color, textTransformProperty, maxLengthProperty
+    autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
+    placeholderColorProperty, maxLengthProperty
 } from "./editable-text-base-common";
-
+import { textTransformProperty, textProperty, resetSymbol } from "../text-base";
+import { Color } from "../../color";
 import { ad } from "../../utils/utils";
 
 export * from "./editable-text-base-common";

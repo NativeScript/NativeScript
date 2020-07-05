@@ -41,7 +41,7 @@ readdirp(inputFolder, {
     } else if (shouldReplace) {
         console.log("[Cleared]", fullPath);
         try {
-            fs.writeFileSync(fullPath, newContent, "utf8");
+            fs.writeFileSync(fullPath, newContent || '', "utf8");
         } catch (error) {
             console.log("ERROR writing file: " + fullPath, error);
             process.exit(1);

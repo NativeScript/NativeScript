@@ -44,7 +44,7 @@ export class Page extends PageBase {
         return super._addViewToNativeVisualTree(child, atIndex);
     }
 
-    @profile
+    @profile()
     public onLoaded() {
         super.onLoaded();
         if (!this.hasActionBar && this.actionBarHidden !== true) {

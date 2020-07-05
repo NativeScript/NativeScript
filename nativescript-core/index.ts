@@ -80,22 +80,9 @@ export const Profiling = {
 
 export { encoding } from "./text";
 
-export { DefaultErrorHandler, ErrorHandler, TraceWriter } from "./trace";
-import {
-    messageType, categories, setCategories, addCategories,
-    addWriter, removeWriter, clearWriters,
-    setErrorHandler,
-    write, error, enable, disable, isEnabled
-} from "./trace";
+export * from "./trace";
 
-export const Trace = {
-    messageType, categories, setCategories, addCategories,
-    addWriter, removeWriter, clearWriters,
-    setErrorHandler,
-    write, error, enable, disable, isEnabled
-};
-
-export * from "./ui"; // Barrel export
+export * from "./ui";
 
 import {
     GC, isFontIconURI, isDataURI, isFileOrResourcePath,

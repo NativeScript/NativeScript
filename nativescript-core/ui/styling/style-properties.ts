@@ -12,7 +12,7 @@ import {
     Transformation,
     TransformationValue,
     TransformFunctionsInfo,
-} from "../animation/animation";
+} from "../animation";
 
 import { dip, px, percent } from "../core/view";
 
@@ -600,15 +600,15 @@ function convertToTransform(value: string): [CssProperty<any, any>, any][] {
     const { translate, rotate, scale } = transformConverter(value);
 
     return [
-        [translateXProperty, translate.x],
-        [translateYProperty, translate.y],
+        [<any>translateXProperty, translate.x],
+        [<any>translateYProperty, translate.y],
 
-        [scaleXProperty, scale.x],
-        [scaleYProperty, scale.y],
+        [<any>scaleXProperty, scale.x],
+        [<any>scaleYProperty, scale.y],
 
-        [rotateProperty, rotate.z],
-        [rotateXProperty, rotate.x],
-        [rotateYProperty, rotate.y],
+        [<any>rotateProperty, rotate.z],
+        [<any>rotateXProperty, rotate.x],
+        [<any>rotateYProperty, rotate.y],
     ];
 }
 
@@ -775,14 +775,14 @@ function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>
         const backgroundPosition = backgrounds.position ? backgrounds.position.text : unsetValue;
 
         return [
-            [backgroundColorProperty, backgroundColor],
+            [<any>backgroundColorProperty, backgroundColor],
             [backgroundImageProperty, backgroundImage],
             [backgroundRepeatProperty, backgroundRepeat],
             [backgroundPositionProperty, backgroundPosition]
         ];
     } else {
         return [
-            [backgroundColorProperty, unsetValue],
+            [<any>backgroundColorProperty, unsetValue],
             [backgroundImageProperty, unsetValue],
             [backgroundRepeatProperty, unsetValue],
             [backgroundPositionProperty, unsetValue]

@@ -110,7 +110,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         throw new Error(`Frame should not have a view. Use 'defaultPage' property instead.`);
     }
 
-    @profile
+    @profile()
     public onLoaded() {
         super.onLoaded();
 
@@ -378,7 +378,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
     }
 
-    @profile
+    @profile()
     public performNavigation(navigationContext: NavigationContext) {
         this._executingContext = navigationContext;
 
@@ -388,7 +388,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         this._navigateCore(backstackEntry);
     }
 
-    @profile
+    @profile()
     private performGoBack(navigationContext: NavigationContext) {
         let backstackEntry = navigationContext.entry;
         const backstack = this._backStack;

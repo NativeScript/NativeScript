@@ -28,7 +28,7 @@
     "mocha-typescript": "^1.1.17",
     "mochawesome": "~3.1.2",
     "nativescript-dev-appium": "next",
-    "nativescript-dev-webpack": "next",
+    "@nativescript/webpack": "^2.0.0-alpha.3",
     "tns-platform-declarations": "file:../../tns-platform-declarations",
     "typescript": "~3.4.1"
   },

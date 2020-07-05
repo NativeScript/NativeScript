@@ -1,8 +1,10 @@
 import { ScrollEventData } from ".";
 import {
-    ScrollViewBase, layout, scrollBarIndicatorVisibleProperty,
-    isUserInteractionEnabledProperty, isScrollEnabledProperty
+    ScrollViewBase, scrollBarIndicatorVisibleProperty,
+    isScrollEnabledProperty
 } from "./scroll-view-common";
+import { layout } from "../../utils/utils";
+import { isUserInteractionEnabledProperty  } from "../core/view";
 
 export * from "./scroll-view-common";
 

@@ -28,6 +28,7 @@
     "ncp": "^2.0.0",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
+    "prettier": "^2.0.5",
     "readdirp": "~3.4.0",
     "reduce-css-calc": "^2.1.6",
     "rimraf": "^3.0.2",
@@ -36,6 +37,7 @@
     "ts-node": "^8.10.0",
     "tslib": "~2.0.0",
     "tslint": "^6.1.2",
+    "tslint-config-prettier": "~1.18.0",
     "typedoc": "^0.13.0",
     "typedoc-plugin-external-module-name": "git://github.com/PanayotCankov/typedoc-plugin-external-module-name.git#with-js",
     "typescript": "~3.9.0"
@@ -45,6 +47,7 @@
     "setup": "npm run build-core && npm run build-compat && npm run setup-link",
     "setup-link": "(cd nativescript-core && npm link) && (cd dist/tns-core-modules && npm uninstall @nativescript/core -S)",
     "setup-widgets": "(cd tns-core-modules-widgets && sh build.sh) && npm run dev-link-tns-core-modules-widgets",
+    "build": "tsc -p nativescript-core/tsconfig.json",
     "tsc-core-watch": "tsc -p nativescript-core/tsconfig.json -w",
     "tslint": "tslint --project tsconfig.tslint.json --config build/tslint.json",
     "unit-test": "tsc -p unit-tests/tsconfig.json && mocha --opts unit-tests/mocha.opts",

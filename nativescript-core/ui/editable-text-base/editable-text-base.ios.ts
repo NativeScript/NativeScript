@@ -1,8 +1,9 @@
 import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty,
-    autocapitalizationTypeProperty, autocorrectProperty, FormattedString
+    autocapitalizationTypeProperty, autocorrectProperty
 } from "./editable-text-base-common";
+import { FormattedString } from "../text-base/formatted-string";
 
 export * from "./editable-text-base-common";
 

@@ -17,7 +17,7 @@
     "tns-core-modules": "file:../../dist/tns-core-modules"
   },
   "devDependencies": {
-    "nativescript-dev-webpack": "next",
+    "@nativescript/webpack": "^2.0.0-alpha.3",
     "typescript": "3.4.5"
   },
   "gitHead": "8c1a4866a66daab09bf5ef8e5a96472687192373",

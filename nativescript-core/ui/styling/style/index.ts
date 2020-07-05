@@ -26,6 +26,27 @@ import {
 } from "../../../trace";
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
 
+export interface CommonLayoutParams {
+  width: number;
+  height: number;
+
+  widthPercent: number;
+  heightPercent: number;
+
+  leftMargin: number;
+  topMargin: number;
+  rightMargin: number;
+  bottomMargin: number;
+
+  leftMarginPercent: number;
+  topMarginPercent: number;
+  rightMarginPercent: number;
+  bottomMarginPercent: number;
+
+  horizontalAlignment: HorizontalAlignment;
+  verticalAlignment: VerticalAlignment;
+}
+
 export class Style extends Observable implements StyleDefinition {
     private unscopedCssVariables = new Map<string, string>();
     private scopedCssVariables = new Map<string, string>();

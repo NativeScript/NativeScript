@@ -319,7 +319,7 @@ export class ActionItemBase extends ViewBase implements ActionItemDefinition {
         }
     }
 
-    @profile
+    @profile()
     public onLoaded() {
         if (this._actionView) {
             this._actionView.style[horizontalAlignmentProperty.cssName] = "center";

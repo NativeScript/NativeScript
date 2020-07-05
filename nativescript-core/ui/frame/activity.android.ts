@@ -3,7 +3,7 @@ import * as globals from "../../globals";
 import * as appModule from "../../application";
 
 if (global.__snapshot) {
-    globals.install();
+    globals.initGlobal();
 }
 
 //@ts-ignore

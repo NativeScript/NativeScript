@@ -32,7 +32,7 @@ export class ListPicker extends ListPickerBase {
         return this.nativeViewProtected;
     }
 
-    @profile
+    @profile()
     public onLoaded() {
         super.onLoaded();
         this.ios.delegate = this._delegate;

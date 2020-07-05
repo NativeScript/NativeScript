@@ -3,7 +3,6 @@ import { TextDecoration, TextAlignment, TextTransform, getClosestPropertyValue }
 
 // Requires
 import { Font } from "../styling/font";
-import { VerticalAlignment } from "../styling/style-properties";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, lineHeightProperty,
@@ -12,10 +11,9 @@ import {
 import { Color } from "../../color";
 import { FormattedString } from "./formatted-string";
 import { Span } from "./span";
-import { colorProperty, fontInternalProperty } from "../styling/style-properties";
+import { colorProperty, fontInternalProperty, VerticalAlignment } from "../styling/style-properties";
 import { isString } from "../../utils/types";
-import { ios, layout } from "../../utils/utils";
-import { Property } from "../core/properties";
+import { ios } from "../../utils/utils";
 
 export * from "./text-base-common";
 

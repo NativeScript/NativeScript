@@ -28,7 +28,7 @@
     "mocha": "~5.2.0",
     "mochawesome": "~3.1.2",
     "nativescript-dev-appium": "next",
-    "nativescript-dev-webpack": "next",
+    "@nativescript/webpack": "^2.0.0-alpha.3",
     "typescript": "~3.4.1"
   },
   "scripts": {

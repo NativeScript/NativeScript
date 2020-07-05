@@ -110,6 +110,10 @@ export class TextBase extends View implements AddChildFromBuilder {
     //@endprivate
 }
 
+export interface TextTransformation {
+  new(owner: TextBase): any /* android.text.method.TransformationMethod */;
+}
+
 export const textProperty: Property<TextBase, string>;
 export const formattedTextProperty: Property<TextBase, FormattedString>;
 

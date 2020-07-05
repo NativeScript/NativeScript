@@ -1,5 +1,9 @@
 import { DockLayout as DockLayoutDefinition, Dock } from ".";
-import { LayoutBase, View, Property, isIOS, booleanConverter, makeValidator, makeParser, CSSType } from "../layout-base";
+import { LayoutBase } from "../layout-base";
+import { View, CSSType } from "../../core/view";
+import { Property, makeValidator, makeParser } from "../../core/properties";
+import { booleanConverter } from "../../core/view-base";
+import {  isIOS } from "../../../platform";
 
 function validateArgs(element: View): View {
     if (!element) {

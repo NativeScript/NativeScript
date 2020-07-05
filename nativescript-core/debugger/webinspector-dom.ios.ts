@@ -1,7 +1,7 @@
 import * as inspectorCommandTypes from "./InspectorBackendCommands.ios";
 const inspectorCommands: typeof inspectorCommandTypes = require("./InspectorBackendCommands");
 
-import * as debuggerDomains from "./debugger";
+import * as debuggerDomains from ".";
 
 import { attachDOMInspectorEventCallbacks, attachDOMInspectorCommandCallbacks } from "./devtools-elements";
 

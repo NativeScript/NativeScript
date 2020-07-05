@@ -2,7 +2,7 @@ import { CSSComputedStyleProperty } from "./css-agent";
 import { InspectorEvents } from "./devtools-elements-interfaces";
 
 // Needed for typings only
-import { ViewBase } from "../ui/core/view";
+import { ViewBase } from "../ui/core/view-base";
 
 const registeredDomNodes = {};
 const ELEMENT_NODE_TYPE = 1;

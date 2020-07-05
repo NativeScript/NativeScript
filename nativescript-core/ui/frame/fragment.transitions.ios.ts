@@ -1,5 +1,5 @@
 import { NavigationTransition } from "./frame";
-import { Transition } from "../transition/transition";
+import { Transition } from "../transition";
 import { SlideTransition } from "../transition/slide-transition";
 import { FadeTransition } from "../transition/fade-transition";
 

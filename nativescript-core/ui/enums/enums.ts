@@ -18,10 +18,10 @@ export module ReturnKeyType {
     export const send = "send";
 }
 
-export module TextAlignment {
-    export const left = "left";
-    export const center = "center";
-    export const right = "right";
+export class TextAlignment {
+    static left = "left";
+    static center = "center";
+    static right = "right";
 }
 
 export module TextDecoration {

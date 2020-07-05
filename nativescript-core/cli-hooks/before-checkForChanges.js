@@ -1,6 +1,6 @@
 const semver = require("semver");
 
-const webpackPackageName = "nativescript-dev-webpack";
+const webpackPackageName = "@nativescript/webpack";
 
 module.exports = function ($staticConfig, hookArgs) {
     const cliVersion = semver.parse($staticConfig.version);

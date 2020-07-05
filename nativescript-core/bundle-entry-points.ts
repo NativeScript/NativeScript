@@ -1,5 +1,6 @@
 if (global.TNS_WEBPACK) {
-    require("./globals");
+    const g = require("./globals");
+    g.initGlobal();
 
     // Register "dynamically" loaded module that need to be resolved by the
     // XML/component builders.

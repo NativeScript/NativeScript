@@ -267,7 +267,7 @@ export function getButtonColors(): { color: Color, backgroundColor: Color } {
         const Button = require("../button").Button;
         button = new Button;
         if (isIOS) {
-            button._setupUI({});
+            button._setupUI(<any>{});
         }
     }
 
@@ -286,7 +286,7 @@ export function getLabelColor(): Color {
         const Label = require("../label").Label;
         label = new Label;
         if (isIOS) {
-            label._setupUI({});
+            label._setupUI(<any>{});
         }
     }
 
@@ -303,7 +303,7 @@ export function getTextFieldColor(): Color {
         const TextField = require("../text-field").TextField;
         textField = new TextField();
         if (isIOS) {
-            textField._setupUI({});
+            textField._setupUI(<any>{});
         }
     }
 

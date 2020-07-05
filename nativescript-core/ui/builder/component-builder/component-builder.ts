@@ -140,13 +140,13 @@ export function getComponentModule(elementName: string, namespace: string, attri
     // Support lower-case-dashed component declaration in the XML (https://github.com/NativeScript/NativeScript/issues/309).
     elementName = elementName.split("-").map(s => s[0].toUpperCase() + s.substring(1)).join("");
 
-    const { instance, instanceModule } = createComponentInstance(elementName, namespace);
-    moduleExports = getComponentModuleExports(instance, moduleExports, attributes);
+    const { instance, instanceModule } = createComponentInstance(elementName, namespace, null);
+    moduleExports = getComponentModuleExports(instance, <any>moduleExports, attributes);
     if (isRootComponent) {
         applyComponentCss(instance, moduleNamePath, attributes);
     }
 
-    applyComponentAttributes(instance, instanceModule, moduleExports, attributes);
+    applyComponentAttributes(instance, instanceModule, moduleExports);
 
     let componentModule;
     if (instance && instanceModule) {

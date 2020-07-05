@@ -1,7 +1,8 @@
 ﻿import {
-    ProgressBase, Color, valueProperty, maxValueProperty,
-    colorProperty, backgroundColorProperty, backgroundInternalProperty
+    ProgressBase, valueProperty, maxValueProperty
 } from "./progress-common";
+import { Color } from "../../color";
+import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from "../styling/style-properties";
 
 export * from "./progress-common";
 

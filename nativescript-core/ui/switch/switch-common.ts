@@ -1,5 +1,7 @@
 ﻿import { Color } from "../../color";
-import { View, Property, booleanConverter, CSSType } from "../core/view";
+import { View, CSSType } from "../core/view";
+import { booleanConverter } from "../core/view-base";
+import { Property } from "../core/properties";
 import { Switch as SwitchDefinition } from ".";
 
 @CSSType("Switch")

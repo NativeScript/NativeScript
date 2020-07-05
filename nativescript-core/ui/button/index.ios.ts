@@ -1,10 +1,19 @@
 import { ControlStateChangeListener } from "../core/control-state-change";
 import {
-    ButtonBase, PseudoClassHandler, Length, layout,
-    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
-    whiteSpaceProperty, WhiteSpace, textAlignmentProperty, TextAlignment, View
+    ButtonBase
 } from "./button-common";
+import {
+  View,
+  PseudoClassHandler,
+} from "../core/view";
+import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
+  Length, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
+import { textAlignmentProperty, whiteSpaceProperty, WhiteSpace } from "../text-base";
+import { TextAlignment } from "../enums";
+import { profile } from "../../profiling";
+import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
+import { device } from "../../platform";
+import { layout } from "../../utils/utils";
 
 export * from "./button-common";
 

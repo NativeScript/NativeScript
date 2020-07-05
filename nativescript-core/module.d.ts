@@ -1,4 +1,4 @@
-declare var global: NodeJS.Global;
+declare var global: NodeJS.Global & typeof globalThis;
 
 interface ModuleResolver {
     /**

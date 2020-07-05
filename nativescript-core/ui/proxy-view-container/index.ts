@@ -1,7 +1,7 @@
 import { ProxyViewContainer as ProxyViewContainerDefinition } from ".";
 import { View, CSSType } from "../core/view";
 import { LayoutBase } from "../layouts/layout-base";
-import { Property } from "../core/properties/properties";
+import { Property } from "../core/properties";
 import { Trace } from "../../trace";
 
 /**

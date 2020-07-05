@@ -4,7 +4,8 @@ import { AddChildFromBuilder } from "../../core/view";
 import { TabNavigationBase } from "../tab-navigation-base";
 
 // Requires
-import { View, ViewBase, CSSType } from "../../core/view";
+import { View, CSSType } from "../../core/view";
+import { ViewBase } from "../../core/view-base";
 import { ContentView } from "../../content-view";
 export const traceCategory = "TabView";
 

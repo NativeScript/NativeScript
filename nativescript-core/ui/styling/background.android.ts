@@ -281,7 +281,7 @@ function onLivesync(args): void {
 }
 application.on("livesync", onLivesync);
 
-application.android.on("activityStarted", profile("initImageCache", args => {
+application.android.on("activityStarted", <any>profile("initImageCache", args => {
     if (!imageFetcher) {
         initImageCache(args.activity);
     } else {
@@ -289,7 +289,7 @@ application.android.on("activityStarted", profile("initImageCache", args => {
     }
 }));
 
-application.android.on("activityStopped", profile("closeImageCache", args => {
+application.android.on("activityStopped", <any>profile("closeImageCache", args => {
     if (imageFetcher) {
         imageFetcher.closeCache();
     }

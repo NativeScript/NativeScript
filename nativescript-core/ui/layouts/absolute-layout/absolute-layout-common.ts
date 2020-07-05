@@ -1,5 +1,8 @@
 import { AbsoluteLayout as AbsoluteLayoutDefinition } from ".";
-import { LayoutBase, View, Property, Length, zeroLength, CSSType } from "../layout-base";
+import { LayoutBase } from "../layout-base";
+import { View, CSSType } from "../../core/view";
+import { Property } from "../../core/properties";
+import { Length, zeroLength } from "../../styling/style-properties";
 
 export * from "../layout-base";
 

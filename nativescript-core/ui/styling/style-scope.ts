@@ -177,7 +177,7 @@ class CSSSource {
         return new CSSSource(undefined, url, file, keyframes, undefined);
     }
 
-    @profile
+    @profile()
     public static resolveCSSPathFromURL(url: string, importSource?: string): string {
         const app = knownFolders.currentApp().path;
         const file = resolveFileNameFromUrl(url, app, File.exists, importSource);
@@ -196,13 +196,13 @@ class CSSSource {
     get selectors(): RuleSet[] { return this._selectors; }
     get source(): string { return this._source; }
 
-    @profile
+    @profile()
     private load(): void {
         const file = File.fromPath(this._file);
         this._source = file.readTextSync();
     }
 
-    @profile
+    @profile()
     private parse(): void {
         try {
             if (!this._ast) {
@@ -225,7 +225,7 @@ class CSSSource {
         }
     }
 
-    @profile
+    @profile()
     private parseCSSAst() {
         if (this._source) {
             switch (parser) {
@@ -248,7 +248,7 @@ class CSSSource {
         }
     }
 
-    @profile
+    @profile()
     private createSelectors() {
         if (this._ast) {
             this._selectors = [
@@ -351,12 +351,12 @@ const onCssChanged = profile("\"style-scope\".onCssChanged", (args: application.
             mergeCssSelectors();
         }
     } else if (args.cssFile) {
-        loadCss(args.cssFile);
+        loadCss(args.cssFile, null, null);
     }
 });
 
 function onLiveSync(args: application.CssChangedEventData): void {
-    loadCss(application.getCssFileName());
+    loadCss(application.getCssFileName(), null, null);
 }
 
 const loadCss = profile(`"style-scope".loadCss`, (cssModule: string) => {
@@ -376,7 +376,7 @@ const loadCss = profile(`"style-scope".loadCss`, (cssModule: string) => {
     }
 });
 
-application.on("cssChanged", onCssChanged);
+application.on("cssChanged", <any>onCssChanged);
 application.on("livesync", onLiveSync);
 
 // Call to this method is injected in the application in:
@@ -385,14 +385,14 @@ application.on("livesync", onLiveSync);
 // Having the app.css loaded in snapshot provides significant boost in startup (when using the ns-theme ~150 ms). However, because app.css is resolved at build-time,
 // when the snapshot is created - there is no way to use file qualifiers or change the name of on app.css
 export const loadAppCSS = profile("\"style-scope\".loadAppCSS", (args: application.LoadAppCSSEventData) => {
-    loadCss(args.cssFile);
+    loadCss(args.cssFile, null, null);
     application.off("loadAppCss", loadAppCSS);
 });
 
 if (application.hasLaunched()) {
-    loadAppCSS({ eventName: "loadAppCss", object: <any>application, cssFile: application.getCssFileName() });
+    loadAppCSS({ eventName: "loadAppCss", object: <any>application, cssFile: application.getCssFileName() }, null, null);
 } else {
-    application.on("loadAppCss", loadAppCSS);
+    application.on("loadAppCss", <any>loadAppCSS);
 }
 
 export class CssState {
@@ -439,7 +439,7 @@ export class CssState {
             return false;
         }
 
-        return this.viewRef.get()._styleScope._getSelectorsVersion() === this._appliedSelectorsVersion;
+        return this.viewRef.get()._styleScope.getSelectorsVersion() === this._appliedSelectorsVersion;
     }
 
     public onLoaded(): void {
@@ -454,12 +454,12 @@ export class CssState {
         this.unsubscribeFromDynamicUpdates();
     }
 
-    @profile
+    @profile()
     private updateMatch() {
         const view = this.viewRef.get();
         if (view && view._styleScope) {
             this._match = view._styleScope.matchSelectors(view);
-            this._appliedSelectorsVersion = view._styleScope._getSelectorsVersion();
+            this._appliedSelectorsVersion = view._styleScope.getSelectorsVersion();
         } else {
             this._match = CssState.emptyMatch;
         }
@@ -467,7 +467,7 @@ export class CssState {
         this._matchInvalid = false;
     }
 
-    @profile
+    @profile()
     private updateDynamicState(): void {
         const view = this.viewRef.get();
         if (!view) {
@@ -726,7 +726,7 @@ export class StyleScope {
         this.ensureSelectors();
     }
 
-    @profile
+    @profile()
     private setCss(cssString: string, cssFileName?): void {
         this._css = cssString;
 
@@ -736,7 +736,7 @@ export class StyleScope {
         this.ensureSelectors();
     }
 
-    @profile
+    @profile()
     private appendCss(cssString: string, cssFileName?): void {
         if (!cssString && !cssFileName) {
             return;
@@ -772,7 +772,7 @@ export class StyleScope {
             this._createSelectors();
         }
 
-        return this._getSelectorsVersion();
+        return this.getSelectorsVersion();
     }
 
     public _increaseApplicationCssSelectorVersion(): void {
@@ -787,7 +787,7 @@ export class StyleScope {
         return this._localCssSelectorsAppliedVersion === this._localCssSelectorVersion;
     }
 
-    @profile
+    @profile()
     private _createSelectors() {
         let toMerge: RuleSet[][] = [];
         toMerge.push(applicationCssSelectors);
@@ -807,7 +807,7 @@ export class StyleScope {
 
     // HACK: This @profile decorator creates a circular dependency
     // HACK: because the function parameter type is evaluated with 'typeof'
-    @profile
+    @profile()
     public matchSelectors(view: any): SelectorsMatch<ViewBase> { // should be (view: ViewBase): SelectorsMatch<ViewBase>
         this.ensureSelectors();
 
@@ -820,7 +820,7 @@ export class StyleScope {
         return this._selectors.query(node).selectors;
     }
 
-    private _getSelectorsVersion() {
+    getSelectorsVersion() {
         // The counters can only go up. So we can return just appVersion + localVersion
         // The 100000 * appVersion is just for easier debugging
         return 100000 * this._applicationCssSelectorsAppliedVersion + this._localCssSelectorsAppliedVersion;

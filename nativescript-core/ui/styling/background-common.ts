@@ -1,6 +1,6 @@
 // Deifinitions.
 import { Background as BackgroundDefinition } from "./background";
-import { BackgroundRepeat } from "../core/view";
+import { BackgroundRepeat } from "../styling/style-properties";
 import { LinearGradient } from "./linear-gradient";
 // Types.
 import { Color } from "../../color";

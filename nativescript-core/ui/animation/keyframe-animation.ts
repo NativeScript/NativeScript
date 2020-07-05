@@ -17,7 +17,7 @@ import { Trace } from "../../trace";
 
 // Types.
 import { unsetValue } from "../core/properties";
-import { Animation } from "./animation";
+import { Animation } from ".";
 import {
     backgroundColorProperty,
     scaleXProperty, scaleYProperty,

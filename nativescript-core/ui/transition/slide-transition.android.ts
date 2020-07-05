@@ -1,4 +1,4 @@
-import * as transition from "./transition";
+import * as transition from ".";
 import * as platform from "../../platform";
 import lazy from "../../utils/lazy";
 

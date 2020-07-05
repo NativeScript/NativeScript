@@ -264,7 +264,7 @@ export class ListView extends ListViewBase {
         this.ios.clipsToBounds = true;
     }
 
-    @profile
+    @profile()
     public onLoaded() {
         super.onLoaded();
         if (this._isDataDirty) {

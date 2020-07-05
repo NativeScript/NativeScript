@@ -1,14 +1,18 @@
-import { Page as PageDefinition, NavigatedData, ShownModallyData } from ".";
+import { Page as PageDefinition, NavigatedData } from ".";
 import {
-    ContentView, View, Property, CssProperty, Color, isIOS,
-    booleanConverter, Style, EventData, CSSType
+    ContentView
 } from "../content-view";
+import { View, CSSType, ShownModallyData } from "../core/view";
+import { booleanConverter } from "../core/view-base";
+import { Property, CssProperty } from "../core/properties";
+import { Style } from "../styling/style";
+import { Color } from "../../color";
+import { EventData } from "../../data/observable";
+import { isIOS } from "../../platform";
 import { Frame } from "../frame";
 import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
 import { profile } from "../../profiling";
-
-export * from "../content-view";
 
 @CSSType("Page")
 export class PageBase extends ContentView implements PageDefinition {
@@ -101,7 +105,7 @@ export class PageBase extends ContentView implements PageDefinition {
         };
     }
 
-    @profile
+    @profile()
     public onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext?: any) {
         this._navigationContext = context;
 
@@ -119,17 +123,17 @@ export class PageBase extends ContentView implements PageDefinition {
         this.notify(this.createNavigatedData(PageBase.navigatingToEvent, isBackNavigation));
     }
 
-    @profile
+    @profile()
     public onNavigatedTo(isBackNavigation: boolean) {
         this.notify(this.createNavigatedData(PageBase.navigatedToEvent, isBackNavigation));
     }
 
-    @profile
+    @profile()
     public onNavigatingFrom(isBackNavigation: boolean) {
         this.notify(this.createNavigatedData(PageBase.navigatingFromEvent, isBackNavigation));
     }
 
-    @profile
+    @profile()
     public onNavigatedFrom(isBackNavigation: boolean) {
         this.notify(this.createNavigatedData(PageBase.navigatedFromEvent, isBackNavigation));
 

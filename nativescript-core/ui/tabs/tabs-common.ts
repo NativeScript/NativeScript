@@ -3,7 +3,8 @@ import { Tabs as TabsDefinition } from ".";
 
 // Requires
 import { TabNavigationBase } from "../tab-navigation-base/tab-navigation-base";
-import { CSSType, booleanConverter } from "../core/view";
+import { CSSType } from "../core/view";
+import { booleanConverter } from "../core/view-base";
 import { Property } from "../core/properties";
 
 export * from "../tab-navigation-base/tab-content-item";

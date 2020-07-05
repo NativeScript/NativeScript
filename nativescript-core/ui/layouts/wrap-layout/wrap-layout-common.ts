@@ -1,5 +1,9 @@
 ﻿import { WrapLayout as WrapLayoutDefinition, Orientation } from ".";
-import { LayoutBase, Property, isIOS, Length, makeValidator, makeParser, CSSType } from "../layout-base";
+import { LayoutBase  } from "../layout-base";
+import { CSSType } from "../../core/view";
+import { Property, makeValidator, makeParser } from "../../core/properties";
+import { Length } from "../../styling/style-properties";
+import { isIOS } from "../../../platform";
 
 export * from "../layout-base";
 
