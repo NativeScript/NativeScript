@@ -822,7 +822,6 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
   public _valueConverter?: (value: string) => any;
 
   constructor(options: CssAnimationPropertyOptions<T, U>) {
-    const { valueConverter, equalityComparer, valueChanged, defaultValue } = options;
     const propertyName = options.name;
     this.name = propertyName;
 
@@ -847,7 +846,7 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
     const defaultValueKey = Symbol(defaultName);
     this.defaultValueKey = defaultValueKey;
 
-    this.defaultValue = defaultValue;
+    this.defaultValue = options.defaultValue;
 
     const cssValue = Symbol(cssName);
     const styleValue = Symbol(`local:${propertyName}`);
@@ -904,8 +903,8 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
               }
             }
           } else {
-            if (valueConverter && typeof boxedValue === 'string') {
-              boxedValue = valueConverter(boxedValue);
+            if (options.valueConverter && typeof boxedValue === 'string') {
+              boxedValue = options.valueConverter(boxedValue);
             }
             this[symbol] = boxedValue;
             if (this[computedSource] <= propertySource) {
@@ -918,10 +917,10 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
           const source = this[computedSource];
           const isSet = source !== ValueSource.Default;
 
-          const computedValueChanged = oldValue !== value && (!equalityComparer || !equalityComparer(oldValue, value));
+          const computedValueChanged = oldValue !== value && (!options.equalityComparer || !options.equalityComparer(oldValue, value));
 
-          if (computedValueChanged && valueChanged) {
-            valueChanged(this, oldValue, value);
+          if (computedValueChanged && options.valueChanged) {
+            options.valueChanged(this, oldValue, value);
           }
 
           if (view[setNative] && (computedValueChanged || isSet !== wasSet)) {
@@ -932,14 +931,14 @@ export class CssAnimationProperty<T extends Style, U> implements CssAnimationPro
             } else {
               if (isSet) {
                 if (!wasSet && !(defaultValueKey in this)) {
-                  this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+                  this[defaultValueKey] = view[getDefault] ? view[getDefault]() : options.defaultValue;
                 }
                 view[setNative](value);
               } else if (wasSet) {
                 if (defaultValueKey in this) {
                   view[setNative](this[defaultValueKey]);
                 } else {
-                  view[setNative](defaultValue);
+                  view[setNative](options.defaultValue);
                 }
               }
             }

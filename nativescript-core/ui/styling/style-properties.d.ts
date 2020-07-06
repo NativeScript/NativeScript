@@ -1,4 +1,4 @@
-import { TransformFunctionsInfo } from '../animation/animation';
+import { TransformFunctionsInfo } from '../animation';
 import { Color } from '../../color';
 import { CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from '../core/properties';
 import { Style } from '../styling/style';
