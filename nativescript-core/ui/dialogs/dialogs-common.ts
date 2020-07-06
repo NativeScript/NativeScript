@@ -49,6 +49,11 @@ export interface ActionOptions extends CancelableOptions {
    * Gets or sets the list of available actions.
    */
   actions?: Array<string>;
+
+  /**
+   * [iOS only] Gets or sets the indexes of destructive actions.
+   */
+  destructiveActionsIndexes?: Array<number>;
 }
 
 /**

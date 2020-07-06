@@ -19,6 +19,8 @@
     "css": "^3.0.0",
     "css-tree": "^1.0.0-alpha.39",
     "gonzales": "^1.0.7",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.11",
     "madge": "^3.9.2",
     "markdown-snippet-injector": "~0.2.2",
     "mocha": "^8.0.1",
@@ -69,6 +71,8 @@
     }
   },
   "lint-staged": {
-    "**/*": ["prettier --write ."]
+    "**/*": [
+      "prettier --write ."
+    ]
   }
 }

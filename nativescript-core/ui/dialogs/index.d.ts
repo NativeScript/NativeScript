@@ -1,5 +1,4 @@
-﻿import { ConfirmOptions, PromptOptions, AlertOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from './dialogs-common';
-export * from './dialogs-common';
+﻿export * from './dialogs-common';
 /**
  * Defines the input type for prompt dialog.
  */
@@ -139,159 +138,158 @@ export function action(options: ActionOptions): Promise<string>;
  * Provides options for the dialog.
  */
 export interface CancelableOptions {
-    /**
-     * [Android only] Gets or sets if the dialog can be canceled by taping outside of the dialog.
-     */
-    cancelable?: boolean;
+  /**
+   * [Android only] Gets or sets if the dialog can be canceled by taping outside of the dialog.
+   */
+  cancelable?: boolean;
 }
 
 /**
  * Provides options for the dialog.
  */
 export interface ActionOptions extends CancelableOptions {
-    /**
-     * Gets or sets the dialog title.
-     */
-    title?: string;
+  /**
+   * Gets or sets the dialog title.
+   */
+  title?: string;
 
-    /**
-     * Gets or sets the dialog message.
-     */
-    message?: string;
+  /**
+   * Gets or sets the dialog message.
+   */
+  message?: string;
 
-    /**
-     * Gets or sets the Cancel button text.
-     */
-    cancelButtonText?: string;
+  /**
+   * Gets or sets the Cancel button text.
+   */
+  cancelButtonText?: string;
 
-    /**
-     * Gets or sets the list of available actions.
-     */
-    actions?: Array<string>;
+  /**
+   * Gets or sets the list of available actions.
+   */
+  actions?: Array<string>;
 
-    /**
-     * [iOS only] Gets or sets the indexes of destructive actions.
-     */
-    destructiveActionsIndexes?: Array<number>;
+  /**
+   * [iOS only] Gets or sets the indexes of destructive actions.
+   */
+  destructiveActionsIndexes?: Array<number>;
 }
 
 /**
  * Provides options for the dialog.
  */
 export interface DialogOptions extends CancelableOptions {
-    /**
-     * Gets or sets the dialog title.
-     */
-    title?: string;
+  /**
+   * Gets or sets the dialog title.
+   */
+  title?: string;
 
-    /**
-     * Gets or sets the dialog message.
-     */
-    message?: string;
-
+  /**
+   * Gets or sets the dialog message.
+   */
+  message?: string;
 }
 
 /**
  * Provides options for the alert.
  */
 export interface AlertOptions extends DialogOptions {
-    /**
-     * Gets or sets the OK button text.
-     */
-    okButtonText?: string;
+  /**
+   * Gets or sets the OK button text.
+   */
+  okButtonText?: string;
 }
 
 /**
  * Provides options for the confirm dialog.
  */
 export interface ConfirmOptions extends AlertOptions {
-    /**
-     * Gets or sets the Cancel button text.
-     */
-    cancelButtonText?: string;
+  /**
+   * Gets or sets the Cancel button text.
+   */
+  cancelButtonText?: string;
 
-    /**
-     * Gets or sets the neutral button text.
-     */
-    neutralButtonText?: string;
+  /**
+   * Gets or sets the neutral button text.
+   */
+  neutralButtonText?: string;
 }
 
 /**
  * Provides options for the prompt dialog.
  */
 export interface PromptOptions extends ConfirmOptions {
-    /**
-     * Gets or sets the default text to display in the input box.
-     */
-    defaultText?: string;
+  /**
+   * Gets or sets the default text to display in the input box.
+   */
+  defaultText?: string;
 
-    /**
-     * Gets or sets the prompt input type (plain text, password, or email).
-     */
-    inputType?: string;
+  /**
+   * Gets or sets the prompt input type (plain text, password, or email).
+   */
+  inputType?: string;
 
-    /**
-     * Gets or sets the prompt capitalizationType (none, all, sentences, or words).
-     */
-    capitalizationType?: string;
+  /**
+   * Gets or sets the prompt capitalizationType (none, all, sentences, or words).
+   */
+  capitalizationType?: string;
 }
 
 /**
  * Provides options for the login dialog.
  */
 export interface LoginOptions extends ConfirmOptions {
-    /**
-     * Gets or sets the default text to display as hint in the user name input box.
-     */
-    userNameHint?: string;
+  /**
+   * Gets or sets the default text to display as hint in the user name input box.
+   */
+  userNameHint?: string;
 
-    /**
-     * Gets or sets the default text to display as hint in the password input box.
-     */
-    passwordHint?: string;
+  /**
+   * Gets or sets the default text to display as hint in the password input box.
+   */
+  passwordHint?: string;
 
-    /**
-     * Gets or sets the default text to display in the user name input box.
-     */
-    userName?: string;
+  /**
+   * Gets or sets the default text to display in the user name input box.
+   */
+  userName?: string;
 
-    /**
-     * Gets or sets the default text to display in the password input box.
-     */
-    password?: string;
+  /**
+   * Gets or sets the default text to display in the password input box.
+   */
+  password?: string;
 }
 
 /**
  * Provides result data from the prompt dialog.
  */
 export interface PromptResult {
-    /**
-     * Gets or sets the prompt dialog boolean result.
-     */
-    result: boolean;
+  /**
+   * Gets or sets the prompt dialog boolean result.
+   */
+  result: boolean;
 
-    /**
-     *  Gets or sets the text entered in the prompt dialog.
-     */
-    text: string;
+  /**
+   *  Gets or sets the text entered in the prompt dialog.
+   */
+  text: string;
 }
 
 /**
  * Provides result data from the login dialog.
  */
 export interface LoginResult {
-    /**
-     * Gets or sets the login dialog boolean result.
-     */
-    result: boolean;
+  /**
+   * Gets or sets the login dialog boolean result.
+   */
+  result: boolean;
 
-    /**
-     *  Gets or sets the user entered in the login dialog.
-     */
-    userName: string;
+  /**
+   *  Gets or sets the user entered in the login dialog.
+   */
+  userName: string;
 
-    /**
-     *  Gets or sets the password entered in the login dialog.
-     */
-    password: string;
+  /**
+   *  Gets or sets the password entered in the login dialog.
+   */
+  password: string;
 }
