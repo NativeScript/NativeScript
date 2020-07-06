@@ -8,18 +8,18 @@ export function pageLoaded(args: ObservableEventData) {
 
 export function panLayout(args: PanGestureEventData)
 {
-	const scrollView = args.object.parent;
+    const scrollView = args.object.parent;
 
-	if (args.state === GestureStateTypes.began) {
-		args.object.previousDeltaY = 0;
-		scrollView.isScrollEnabled = false;
-	}
-	else if (args.state === GestureStateTypes.changed) {
-		const diff = (args.deltaY - args.object.previousDeltaY);
-		args.object.translateY += diff;
-		args.object.previousDeltaY = args.deltaY;
-	}
-	else if (args.state === GestureStateTypes.ended) {
-		scrollView.isScrollEnabled = true;
-	}
+    if (args.state === GestureStateTypes.began) {
+        args.object.previousDeltaY = 0;
+        scrollView.isScrollEnabled = false;
+    }
+    else if (args.state === GestureStateTypes.changed) {
+        const diff = (args.deltaY - args.object.previousDeltaY);
+        args.object.translateY += diff;
+        args.object.previousDeltaY = args.deltaY;
+    }
+    else if (args.state === GestureStateTypes.ended) {
+        scrollView.isScrollEnabled = true;
+    }
 }
