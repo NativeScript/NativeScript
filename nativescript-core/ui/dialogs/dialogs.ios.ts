@@ -114,11 +114,11 @@ export function confirm(arg: any): Promise<boolean> {
 		try {
 			let options = !isDialogOptions(arg)
 				? {
-						title: CONFIRM,
-						okButtonText: OK,
-						cancelButtonText: CANCEL,
-						message: arg + "",
-					}
+					title: CONFIRM,
+					okButtonText: OK,
+					cancelButtonText: CANCEL,
+					message: arg + "",
+				}
 				: arg;
 			let alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(
 				options.title,
