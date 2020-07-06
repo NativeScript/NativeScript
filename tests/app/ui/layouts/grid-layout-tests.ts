@@ -3,7 +3,7 @@ import { GridLayout, ItemSpec } from "@nativescript/core/ui/layouts/grid-layout"
 import { Button } from "@nativescript/core/ui/button";
 import * as TKUnit from "../../tk-unit";
 import * as view from "@nativescript/core/ui/core/view";
-import { unsetValue } from "@nativescript/core/ui/core/view";
+import { unsetValue } from "@nativescript/core";
 import { Builder } from "@nativescript/core/ui/builder";
 import * as testModule from "../../ui-test";
 import * as layoutHelper from "./layout-helper";

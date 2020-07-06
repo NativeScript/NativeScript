@@ -13,51 +13,51 @@ export const MEASURED_STATE_MASK = 0xff000000;
 export const MEASURED_SIZE_MASK = 0x00ffffff;
 
 export function getMode(mode: number): string {
-	switch (mode) {
-		case EXACTLY:
-			return "Exact";
-		case AT_MOST:
-			return "AtMost";
-		default:
-			return "Unspecified";
-	}
+  switch (mode) {
+    case EXACTLY:
+      return 'Exact';
+    case AT_MOST:
+      return 'AtMost';
+    default:
+      return 'Unspecified';
+  }
 }
 
 export function getMeasureSpecMode(spec: number): number {
-	return spec & MODE_MASK;
+  return spec & MODE_MASK;
 }
 
 export function getMeasureSpecSize(spec: number): number {
-	return spec & ~MODE_MASK;
+  return spec & ~MODE_MASK;
 }
 
 export function measureSpecToString(measureSpec: number): string {
-	const mode = getMeasureSpecMode(measureSpec);
-	const size = getMeasureSpecSize(measureSpec);
+  const mode = getMeasureSpecMode(measureSpec);
+  const size = getMeasureSpecSize(measureSpec);
 
-	let text = "MeasureSpec: ";
-	if (mode === UNSPECIFIED) {
-		text += "UNSPECIFIED ";
-	} else if (mode === EXACTLY) {
-		text += "EXACTLY ";
-	} else if (mode === AT_MOST) {
-		text += "AT_MOST ";
-	}
+  let text = 'MeasureSpec: ';
+  if (mode === UNSPECIFIED) {
+    text += 'UNSPECIFIED ';
+  } else if (mode === EXACTLY) {
+    text += 'EXACTLY ';
+  } else if (mode === AT_MOST) {
+    text += 'AT_MOST ';
+  }
 
-	text += size;
+  text += size;
 
-	return text;
+  return text;
 }
 
 export function round(value: number): number {
-	const res = Math.floor(value + 0.5);
-	if (res !== 0) {
-		return res;
-	} else if (value === 0) {
-		return 0;
-	} else if (value > 0) {
-		return 1;
-	}
+  const res = Math.floor(value + 0.5);
+  if (res !== 0) {
+    return res;
+  } else if (value === 0) {
+    return 0;
+  } else if (value > 0) {
+    return 1;
+  }
 
-	return -1;
+  return -1;
 }

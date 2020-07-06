@@ -1,7 +1,7 @@
 import * as helper from "../ui-helper";
 import * as TKUnit from "../tk-unit";
 
-import * as app from "@nativescript/core/application/application";
+import * as app from "@nativescript/core/application";
 import * as frame from "@nativescript/core/ui/frame";
 import { Color } from "@nativescript/core/color";
 import { Builder } from "@nativescript/core/ui/builder";

@@ -4,7 +4,7 @@ import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as tabViewTestsNative from "./bottom-navigation-tests-native";
 
-import { BottomNavigation, TabContentItem, TabStrip, TabStripItem, SelectedIndexChangedEventData } from "@nativescript/core/ui/bottom-navigation";
+import { BottomNavigation, TabContentItem, TabStrip, TabStripItem, SelectedIndexChangedEventData } from "@nativescript/core";
 
 export class BottomNavigationTest extends UITest<BottomNavigation> {
 

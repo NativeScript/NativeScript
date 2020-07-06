@@ -1,8 +1,4 @@
-// >> flexbox-layout-require
-import { FlexboxLayout } from "@nativescript/core/ui/layouts/flexbox-layout";
-// << flexbox-layout-require
-
-import { Button } from "@nativescript/core/ui/button";
+import { FlexboxLayout, Button, View, unsetValue, Length, PercentLength, Label, Builder } from "@nativescript/core";
 
 export namespace FlexDirection {
     export const ROW: "row" = "row";
@@ -51,11 +47,8 @@ export namespace AlignSelf {
     export const STRETCH: "stretch" = "stretch";
 }
 
-import { View, unsetValue, Length, PercentLength } from "@nativescript/core/ui/core/view";
-import { Label } from "@nativescript/core/ui/label";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { Builder } from "@nativescript/core/ui/builder";
 import { dipToDp, left, top, right, bottom, height, width,
     paddingLeft, paddingTop, paddingRight, paddingBottom,
     equal, closeEnough, notEqual, check,

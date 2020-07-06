@@ -1,5 +1,5 @@
 import * as TKUnit from "../../../tk-unit";
-import { Observable, EventData } from "@nativescript/core/data/observable";
+import { Observable, EventData } from "@nativescript/core";
 import { addWeakEventListener, removeWeakEventListener } from "@nativescript/core/ui/core/weak-event-listener";
 import { forceGC } from "../../../ui-helper";
 

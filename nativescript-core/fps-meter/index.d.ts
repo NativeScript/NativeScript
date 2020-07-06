@@ -16,9 +16,7 @@ export function running(): boolean;
 /**
  * Adds a callback function to be called each time FPS data is due to be reported. Returns an unique id which can be used to remove this callback later.
  */
-export function addCallback(
-	callback: (fps: number, minFps?: number) => void
-): number;
+export function addCallback(callback: (fps: number, minFps?: number) => void): number;
 
 /**
  * Removes the callback with the specified id.

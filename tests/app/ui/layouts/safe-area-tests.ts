@@ -1,12 +1,9 @@
-import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
 import * as TKUnit from "../../tk-unit";
 import * as view from "@nativescript/core/ui/core/view";
 import * as testModule from "../../ui-test";
 import * as platform from "@nativescript/core/platform";
 import * as helper from "../../ui-helper";
-import { Builder } from "@nativescript/core/ui/builder";
-import { Page } from "@nativescript/core/ui/page";
-import { Label } from "@nativescript/core/ui/label";
+import { Builder, Page, Label, GridLayout } from "@nativescript/core";
 import {
     dipToDp, left, top, right, bottom, height, width,
     equal, closeEnough, lessOrCloseEnough, greaterOrCloseEnough,

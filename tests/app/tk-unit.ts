@@ -14,12 +14,12 @@
 import * as application from "@nativescript/core/application";
 import * as platform from "@nativescript/core/platform";
 import * as timer from "@nativescript/core/timer";
-import * as trace from "@nativescript/core/trace";
+import { Trace } from "@nativescript/core";
 import * as types from "@nativescript/core/utils/types";
 
 const sdkVersion = parseInt(platform.device.sdkVersion);
 
-trace.enable();
+Trace.enable();
 
 export interface TestInfoEntry {
     testFunc: () => void;
@@ -41,7 +41,7 @@ export function time(): number {
 }
 
 export function write(message: string, type?: number) {
-    trace.write(message, trace.categories.Test, type);
+    Trace.write(message, Trace.categories.Test, type);
 }
 
 function runTest(testInfo: TestInfoEntry) {
@@ -57,7 +57,7 @@ function runTest(testInfo: TestInfoEntry) {
         if (testInfo.isTest) {
             duration = time() - start;
             testInfo.duration = duration;
-            write(`--- [${testInfo.testName}] OK, duration: ${duration.toFixed(2)}`, trace.messageType.info);
+            write(`--- [${testInfo.testName}] OK, duration: ${duration.toFixed(2)}`, Trace.messageType.info);
             testInfo.isPassed = true;
         }
     }
@@ -65,7 +65,7 @@ function runTest(testInfo: TestInfoEntry) {
         if (testInfo.isTest) {
             duration = time() - start;
             testInfo.duration = duration;
-            write(`--- [${testInfo.testName}] FAILED: ${e.message}, Stack: ${e.stack}, duration: ${duration.toFixed(2)}`, trace.messageType.error);
+            write(`--- [${testInfo.testName}] FAILED: ${e.message}, Stack: ${e.stack}, duration: ${duration.toFixed(2)}`, Trace.messageType.error);
             testInfo.isPassed = false;
             testInfo.errorMessage = e.message;
         }
@@ -93,7 +93,7 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
     let isDone = false;
     let handle;
     const testStartTime = time();
-    //write("--- [" + testInfo.testName + "] Started at: " + testStartTime, trace.messageType.info);
+    //write("--- [" + testInfo.testName + "] Started at: " + testStartTime, Trace.messageType.info);
     const doneCallback = (e: Error) => {
         if (e) {
             error = e;
@@ -109,17 +109,17 @@ function runAsync(testInfo: TestInfoEntry, recursiveIndex: number, testTimeout?:
         duration = time() - testStartTime;
         testInfo.duration = duration;
         if (isDone) {
-            write(`--- [${testInfo.testName}] OK, duration: ${duration.toFixed(2)}`, trace.messageType.info);
+            write(`--- [${testInfo.testName}] OK, duration: ${duration.toFixed(2)}`, Trace.messageType.info);
             testInfo.isPassed = true;
             runTests(testsQueue, recursiveIndex + 1);
         } else if (error) {
-            write(`--- [${testInfo.testName}] FAILED: ${error.message}, duration: ${duration.toFixed(2)}`, trace.messageType.error);
+            write(`--- [${testInfo.testName}] FAILED: ${error.message}, duration: ${duration.toFixed(2)}`, Trace.messageType.error);
             testInfo.errorMessage = error.message;
             runTests(testsQueue, recursiveIndex + 1);
         } else {
             const testEndTime = time();
             if (testEndTime - testStartTime > timeout) {
-                write(`--- [${testInfo.testName}] TIMEOUT, duration: ${duration.toFixed(2)}`, trace.messageType.error);
+                write(`--- [${testInfo.testName}] TIMEOUT, duration: ${duration.toFixed(2)}`, Trace.messageType.error);
                 testInfo.errorMessage = "Test timeout.";
                 runTests(testsQueue, recursiveIndex + 1);
             } else {
@@ -198,10 +198,10 @@ export function assertEqual<T extends { equals?(arg: T): boolean } | any>(actual
     if (!types.isNullOrUndefined(actual)
         && !types.isNullOrUndefined(expected)
         && types.getClass(actual) === types.getClass(expected)
-        && types.isFunction(actual.equals)) {
+        && types.isFunction((<any>actual).equals)) {
 
         // Use the equals method
-        if (!actual.equals(expected)) {
+        if (!(<any>actual).equals(expected)) {
             throw new Error(`${message} Actual: <${actual}>(${typeof (actual)}). Expected: <${expected}>(${typeof (expected)})`);
         }
     }

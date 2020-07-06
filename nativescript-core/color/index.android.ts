@@ -1,7 +1,7 @@
-﻿import * as common from "./color-common";
+﻿import * as common from './color-common';
 
 export class Color extends common.Color {
-	get android(): number {
-		return this.argb >> 0;
-	}
+  get android(): number {
+    return this.argb >> 0;
+  }
 }

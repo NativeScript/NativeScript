@@ -1,5 +1,5 @@
 import * as TKUnit from "../../tk-unit";
-import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style } from "@nativescript/core/ui/core/view";
+import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style } from "@nativescript/core";
 import { Frame } from "@nativescript/core/ui/frame";
 import { Page } from "@nativescript/core/ui/page";
 import { Button } from "@nativescript/core/ui/button";

@@ -20,7 +20,7 @@ import { isIOS, isAndroid } from "@nativescript/core/platform";
 import { Label } from "@nativescript/core/ui/label";
 import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
 import * as helper from "../../ui-helper";
-import { Span, FormattedString } from "@nativescript/core/text/formatted-string";
+import { Span, FormattedString } from "@nativescript/core";
 
 const testDir = "ui/label";
 

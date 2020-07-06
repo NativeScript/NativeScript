@@ -1,5 +1,5 @@
 import * as stack from "@nativescript/core/ui/layouts/stack-layout";
-import { unsetValue } from "@nativescript/core/ui/core/view";
+import { unsetValue } from "@nativescript/core";
 
 export function buttonTap(args) {
     var stackLayout = <stack.StackLayout>args.object.parent;

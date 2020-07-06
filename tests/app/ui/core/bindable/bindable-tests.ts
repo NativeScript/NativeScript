@@ -7,14 +7,14 @@ import * as helper from "../../../ui-helper";
 import * as utils from "@nativescript/core/utils/utils";
 import * as bindingBuilder from "@nativescript/core/ui/builder/binding-builder";
 import * as appModule from "@nativescript/core/application";
-import * as trace from "@nativescript/core/trace";
+import { Trace } from "@nativescript/core";
 import { View } from "@nativescript/core/ui/core/view";
 import { Button } from "@nativescript/core/ui/button";
 import { Page } from "@nativescript/core/ui/page";
 import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
 import { Label } from "@nativescript/core/ui/label";
 import { TextField } from "@nativescript/core/ui/text-field";
-
+declare var WeakRef: any;
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic.
 // </snippet>
@@ -799,7 +799,7 @@ export function test_WrongNestedPropertiesBinding() {
             errorMessage = message;
         }
     };
-    trace.addWriter(traceWriter);
+    Trace.addWriter(traceWriter);
 
     const target1 = new Label();
     target1.bind({
@@ -809,7 +809,7 @@ export function test_WrongNestedPropertiesBinding() {
     }, viewModel);
 
     TKUnit.assertNotEqual(errorMessage, undefined);
-    trace.removeWriter(traceWriter);
+    Trace.removeWriter(traceWriter);
 }
 
 export function test_NestedPropertiesBindingTwoTargets() {

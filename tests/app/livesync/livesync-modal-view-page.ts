@@ -1,4 +1,4 @@
-import { View, ShowModalOptions } from "@nativescript/core/ui/core/view";
+import { View, ShowModalOptions } from "@nativescript/core";
 const LIVESYNC_FOLDER = "livesync/";
 const buttonPageModuleName = `${LIVESYNC_FOLDER}livesync-button-page`;
 

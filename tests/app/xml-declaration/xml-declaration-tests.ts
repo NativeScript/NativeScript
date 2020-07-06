@@ -1,5 +1,4 @@
 import * as TKUnit from "../tk-unit";
-import * as view from "@nativescript/core/ui/core/view";
 import { Builder } from "@nativescript/core/ui/builder";
 import * as buttonModule from "@nativescript/core/ui/button";
 import * as switchModule from "@nativescript/core/ui/switch";
@@ -18,12 +17,11 @@ import { Observable } from "@nativescript/core/data/observable";
 import { TemplateView } from "./template-builder-tests/template-view";
 import * as listViewModule from "@nativescript/core/ui/list-view";
 import * as helper from "../ui-helper";
-import * as viewModule from "@nativescript/core/ui/core/view";
 import * as platform from "@nativescript/core/platform";
 import * as gesturesModule from "@nativescript/core/ui/gestures";
 import * as segmentedBar from "@nativescript/core/ui/segmented-bar";
 import { Source } from "@nativescript/core/utils/debug";
-import { PercentLength, Length } from "@nativescript/core/ui/core/view";
+import { View, getAncestor, eachDescendant, PercentLength, Length } from "@nativescript/core";
 
 export function test_load_IsDefined() {
     TKUnit.assertTrue(types.isFunction(Builder.load), "Builder should have load method!");
@@ -40,7 +38,7 @@ export function test_load_ShouldThrowWithInvalidFileName() {
 
 export function test_load_ShouldNotCrashWithoutExports() {
     var v = Builder.load("./xml-declaration/mainPage.xml");
-    TKUnit.assertTrue(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+    TKUnit.assertTrue(v instanceof View, "Expected result: View; Actual result: " + v + ";");
 }
 
 export function test_loadWithOptionsNoXML() {
@@ -51,7 +49,7 @@ export function test_loadWithOptionsNoXML() {
         page: new Page()
     });
 
-    TKUnit.assertTrue(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+    TKUnit.assertTrue(v instanceof View, "Expected result: View; Actual result: " + v + ";");
 }
 
 export function test_loadWithOptionsNoXML_CSSIsApplied() {
@@ -76,10 +74,10 @@ export function test_loadInheritedPageAndResolveFromChild() {
         let discoveredPage = contentLabel.page;
         TKUnit.assertEqual(page, discoveredPage);
 
-        let discoveredAncestorByBaseType = viewModule.getAncestor(contentLabel, Page);
+        let discoveredAncestorByBaseType = getAncestor(contentLabel, Page);
         TKUnit.assertEqual(page, discoveredAncestorByBaseType);
 
-        let discoveredAncestorByInheritedTypeName = viewModule.getAncestor(contentLabel, "InheritedPage");
+        let discoveredAncestorByInheritedTypeName = getAncestor(contentLabel, "InheritedPage");
         TKUnit.assertEqual(page, discoveredAncestorByInheritedTypeName);
     });
 }
@@ -91,7 +89,7 @@ export function test_loadWithOptionsWithXML() {
         exports: exports,
         page: new Page()
     });
-    TKUnit.assertTrue(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+    TKUnit.assertTrue(v instanceof View, "Expected result: View; Actual result: " + v + ";");
 }
 
 export function test_loadWithOptionsWithXML_CSSIsApplied() {
@@ -153,10 +151,10 @@ export function test_loadWithAttributes() {
 }
 
 export function test_parse_ShouldNotCrashWithoutExports() {
-    const xml = global.loadModule("xml-declaration/mainPage.xml", true);
+    const xml = (<any>global).loadModule("xml-declaration/mainPage.xml", true);
 
-    var v: view.View = Builder.parse(xml);
-    TKUnit.assert(v instanceof view.View, "Expected result: View; Actual result: " + v + ";");
+    var v: View = Builder.parse(xml);
+    TKUnit.assert(v instanceof View, "Expected result: View; Actual result: " + v + ";");
 }
 
 export function test_parse_ShouldResolveExportsFromCodeFile() {
@@ -200,7 +198,7 @@ export function test_parse_ShouldResolveExportsFromCodeFileForTemplates() {
             </ListView.itemTemplate>
         </ListView>
     </Page>`);
-    function testAction(views: Array<viewModule.View>) {
+    function testAction(views: Array<View>) {
         var ctrl;
 
         var obj = new observable.Observable();
@@ -428,7 +426,7 @@ export function test_parse_ShouldParseBindingsToGestures() {
     p.bindingContext = context;
     var lbl = <Label>p.content;
 
-    var observer = (<view.View>lbl).getGestureObservers(gesturesModule.GestureTypes.tap)[0];
+    var observer = (<View>lbl).getGestureObservers(gesturesModule.GestureTypes.tap)[0];
 
     TKUnit.assert(observer !== undefined, "Expected result: true.");
     TKUnit.assert(observer.context === context, "Context should be equal to binding context. Actual result: " + observer.context);
@@ -445,7 +443,7 @@ export function test_parse_ShouldParseBindingsToGesturesWithOn() {
     p.bindingContext = context;
     var lbl = <Label>p.content;
 
-    var observer = (<view.View>lbl).getGestureObservers(gesturesModule.GestureTypes.tap)[0];
+    var observer = (<View>lbl).getGestureObservers(gesturesModule.GestureTypes.tap)[0];
 
     TKUnit.assert(observer !== undefined, "Expected result: true.");
     TKUnit.assert(observer.context === context, "Context should be equal to binding context. Actual result: " + observer.context);
@@ -584,7 +582,7 @@ export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithCustomAttri
 export function test_parse_ShouldParseCustomComponentWithoutXmlInListViewTemplate() {
     var p = <Page>Builder.parse("<Page xmlns:customControls=\"xml-declaration/mymodule\"><ListView items=\"{{ items }}\" itemLoading=\"{{ itemLoading }}\"><ListView.itemTemplate><customControls:MyControl /></ListView.itemTemplate></ListView></Page>");
 
-    function testAction(views: Array<viewModule.View>) {
+    function testAction(views: Array<View>) {
         let ctrl;
         let obj = new observable.Observable();
         obj.set("items", [1]);
@@ -604,7 +602,7 @@ export function test_parse_ShouldParseCustomComponentWithoutXmlInListViewTemplat
 export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
     var p = <Page>Builder.parse("<Page xmlns=\"http://schemas.nativescript.org/tns.xsd\"><ListView items=\"{{ items }}\" itemLoading=\"{{ itemLoading }}\"><ListView.itemTemplate><ListView items=\"{{ subItems }}\" /></ListView.itemTemplate></ListView></Page>");
 
-    function testAction(views: Array<viewModule.View>) {
+    function testAction(views: Array<View>) {
         let ctrl;
         let obj = new observable.Observable();
         obj.set("items", [{ subItems: [1] }]);
@@ -623,7 +621,7 @@ export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
 export function test_parse_ShouldEvaluateEventBindingExpressionInListViewTemplate() {
     var p = <Page>Builder.parse("<Page xmlns=\"http://schemas.nativescript.org/tns.xsd\"><ListView items=\"{{ items }}\" itemLoading=\"{{ itemLoading }}\"><ListView.itemTemplate><SegmentedBar items=\"{{ $parents['ListView'].segmentedBarItems }}\" selectedIndexChanged=\"{{ $parents['ListView'].changed }}\" /></ListView.itemTemplate></ListView></Page>");
 
-    function testAction(views: Array<viewModule.View>) {
+    function testAction(views: Array<View>) {
         let ctrl: segmentedBar.SegmentedBar = null;
         let changed;
         let obj = new observable.Observable();
@@ -682,10 +680,10 @@ export function test_parse_NestedRepeaters() {
         "</Page>";
     var p = <Page>Builder.parse(pageXML);
 
-    function testAction(views: Array<viewModule.View>) {
+    function testAction(views: Array<View>) {
         p.bindingContext = [["0", "1"], ["2", "3"]];
         let lbls = new Array<Label>();
-        view.eachDescendant(p, (v) => {
+        eachDescendant(p, (v) => {
             if (v instanceof Label) {
                 lbls.push(v);
             }
@@ -705,7 +703,7 @@ export function test_parse_NestedRepeaters() {
 
 export function test_parseSpansDirectlyOnLabel() {
     var p = <Page>Builder.parse("<Page xmlns=\"http://schemas.nativescript.org/tns.xsd\" navigatedTo=\"pageNavigated\"><StackLayout><Label id=\"testLabel\"><Span text=\"We are\" fontSize=\"10\"/><Span text=\"Awesome\" fontWeight=\"bold\"/></Label></StackLayout></Page>");
-    function testAction(views: Array<viewModule.View>) {
+    function testAction(views: Array<View>) {
         var page = <Page>views[0];
         var testLabel = <Label>page.getViewById("testLabel");
         TKUnit.assertEqual(testLabel.formattedText + "", "We areAwesome", "formattedText");
@@ -718,7 +716,7 @@ export function test_parseSpansDirectlyOnLabel() {
 
 export function test_parseSpansDirectlyOnButton() {
     var p = <Page>Builder.parse("<Page xmlns=\"http://schemas.nativescript.org/tns.xsd\" navigatedTo=\"pageNavigated\"><StackLayout><Button id=\"testButton\"><Span text=\"We are\" fontSize=\"10\"/><Span text=\"Awesome\" fontWeight=\"bold\"/></Button></StackLayout></Page>");
-    function testAction(views: Array<viewModule.View>) {
+    function testAction(views: Array<View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "We areAwesome", "formattedText");
@@ -731,7 +729,7 @@ export function test_parseSpansDirectlyOnButton() {
 
 export function test_parseFormattedStringWithoutFormattedText() {
     var p = <Page>Builder.parse("<Page xmlns=\"http://schemas.nativescript.org/tns.xsd\" navigatedTo=\"pageNavigated\"><StackLayout><Button id=\"testButton\"><FormattedString><FormattedString.spans><Span text=\"author\"/><Span text=\" num_comments\"/></FormattedString.spans></FormattedString></Button></StackLayout></Page>");
-    function testAction(views: Array<viewModule.View>) {
+    function testAction(views: Array<View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
@@ -744,7 +742,7 @@ export function test_parseFormattedStringWithoutFormattedText() {
 
 export function test_parseFormattedStringFullSyntax() {
     var p = <Page>Builder.parse("<Page xmlns=\"http://schemas.nativescript.org/tns.xsd\" navigatedTo=\"pageNavigated\"><StackLayout><Button id=\"testButton\"><Button.formattedText><FormattedString><FormattedString.spans><Span text=\"author\"/><Span text=\" num_comments\"/></FormattedString.spans></FormattedString></Button.formattedText></Button></StackLayout></Page>");
-    function testAction(views: Array<viewModule.View>) {
+    function testAction(views: Array<View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
@@ -757,7 +755,7 @@ export function test_parseFormattedStringFullSyntax() {
 
 export function test_parseSpansDirectlyToFormattedString() {
     var p = <Page>Builder.parse("<Page xmlns=\"http://schemas.nativescript.org/tns.xsd\" navigatedTo=\"pageNavigated\"><StackLayout><Button id=\"testButton\"><FormattedString><Span text=\"author\"/><Span text=\" num_comments\"/></FormattedString></Button></StackLayout></Page>");
-    function testAction(views: Array<viewModule.View>) {
+    function testAction(views: Array<View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
@@ -818,7 +816,7 @@ export function test_NonExistingElementInTemplateError() {
         " > Module 'ui/unicorn' not found for element 'Unicorn'.";
     var message;
     var page = Builder.load("xml-declaration/errors/non-existing-element-in-template.xml");
-    TKUnit.assert(view, "Expected the xml to generate a page");
+    TKUnit.assert(page, "Expected the xml to generate a page");
     var templateView = <TemplateView>page.getViewById("template-view");
     TKUnit.assert(templateView, "Expected the page to have a TemplateView with 'temaplte-view' id.");
 
@@ -831,14 +829,14 @@ export function test_NonExistingElementInTemplateError() {
 }
 
 export function test_EventInTemplate() {
-    var pageCode = global.loadModule("xml-declaration/template-builder-tests/event-in-template", true);
+    var pageCode = (<any>global).loadModule("xml-declaration/template-builder-tests/event-in-template", true);
     var notified = false;
     pageCode.test = (args) => {
         notified = true;
     };
 
     var page = Builder.load("xml-declaration/template-builder-tests/event-in-template.xml", pageCode);
-    TKUnit.assert(view, "Expected the xml to generate a page");
+    TKUnit.assert(page, "Expected the xml to generate a page");
     var templateView = <TemplateView>page.getViewById("template-view");
     TKUnit.assert(templateView, "Expected the page to have a TemplateView with 'temaplte-view' id.");
     templateView.parseTemplate();
@@ -854,7 +852,7 @@ export function test_EventInTemplate() {
 }
 
 export function test_EventInCodelessFragment() {
-    var pageCode = global.loadModule("./xml-declaration/template-builder-tests/event-in-codeless-fragment", true);
+    var pageCode = (<any>global).loadModule("./xml-declaration/template-builder-tests/event-in-codeless-fragment", true);
 
     var notified = false;
     pageCode.setCallback((args) => {
@@ -862,7 +860,7 @@ export function test_EventInCodelessFragment() {
     });
 
     var page = Builder.load("./xml-declaration/template-builder-tests/event-in-codeless-fragment.xml", pageCode);
-    TKUnit.assert(view, "Expected the xml to generate a page");
+    TKUnit.assert(page, "Expected the xml to generate a page");
     var templateView = <TemplateView>page.getViewById("template-view");
     TKUnit.assert(templateView, "Expected the page to have a TemplateView with 'temaplte-view' id.");
     templateView.parseTemplate();
@@ -896,7 +894,7 @@ export function test_tabview_selectedindex_will_work_from_xml() {
         "</TabView>" +
         "</Page>");
 
-    function testAction(views: Array<viewModule.View>) {
+    function testAction(views: Array<View>) {
         let tab: TabView = <TabView>p.content;
         TKUnit.assertEqual(tab.selectedIndex, 1);
     }

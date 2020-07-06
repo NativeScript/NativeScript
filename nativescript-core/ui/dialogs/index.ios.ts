@@ -1,90 +1,54 @@
 ﻿/**
  * iOS specific dialogs functions implementation.
  */
-import { ios as iosView } from "../core/view";
-import { Trace } from "../../trace";
-import {
-	ConfirmOptions,
-	PromptOptions,
-	PromptResult,
-	LoginOptions,
-	LoginResult,
-	ActionOptions,
-	getCurrentPage,
-	getLabelColor,
-	getButtonColors,
-	getTextFieldColor,
-	isDialogOptions,
-	inputType,
-	capitalizationType,
-	ALERT,
-	OK,
-	CONFIRM,
-	CANCEL,
-	PROMPT,
-	parseLoginOptions,
-} from "./dialogs-common";
-import { isString, isDefined, isFunction } from "../../utils/types";
-import { getRootView, ios } from "../../application";
+import { ios as iosView } from '../core/view';
+import { Trace } from '../../trace';
+import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions, getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, DialogStrings, parseLoginOptions } from './dialogs-common';
+import { isString, isDefined, isFunction } from '../../utils/types';
+import { getRootView, ios } from '../../application';
 
-export * from "./dialogs-common";
+export * from './dialogs-common';
 
-function addButtonsToAlertController(
-	alertController: UIAlertController,
-	options: ConfirmOptions,
-	callback?: Function
-): void {
-	if (!options) {
-		return;
-	}
+function addButtonsToAlertController(alertController: UIAlertController, options: ConfirmOptions, callback?: Function): void {
+  if (!options) {
+    return;
+  }
 
-	if (isString(options.cancelButtonText)) {
-		alertController.addAction(
-			UIAlertAction.actionWithTitleStyleHandler(
-				options.cancelButtonText,
-				UIAlertActionStyle.Default,
-				() => {
-					raiseCallback(callback, false);
-				}
-			)
-		);
-	}
+  if (isString(options.cancelButtonText)) {
+    alertController.addAction(
+      UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Default, () => {
+        raiseCallback(callback, false);
+      })
+    );
+  }
 
-	if (isString(options.neutralButtonText)) {
-		alertController.addAction(
-			UIAlertAction.actionWithTitleStyleHandler(
-				options.neutralButtonText,
-				UIAlertActionStyle.Default,
-				() => {
-					raiseCallback(callback, undefined);
-				}
-			)
-		);
-	}
+  if (isString(options.neutralButtonText)) {
+    alertController.addAction(
+      UIAlertAction.actionWithTitleStyleHandler(options.neutralButtonText, UIAlertActionStyle.Default, () => {
+        raiseCallback(callback, undefined);
+      })
+    );
+  }
 
-	if (isString(options.okButtonText)) {
-		alertController.addAction(
-			UIAlertAction.actionWithTitleStyleHandler(
-				options.okButtonText,
-				UIAlertActionStyle.Default,
-				() => {
-					raiseCallback(callback, true);
-				}
-			)
-		);
-	}
+  if (isString(options.okButtonText)) {
+    alertController.addAction(
+      UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, () => {
+        raiseCallback(callback, true);
+      })
+    );
+  }
 }
 
 function raiseCallback(callback, result) {
-	if (isFunction(callback)) {
-		callback(result);
-	}
+  if (isFunction(callback)) {
+    callback(result);
+  }
 }
 export function alert(arg: any): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         try {
             let options = !isDialogOptions(arg)
-                ? { title: ALERT, okButtonText: OK, message: arg + "" }
+                ? { title: DialogStrings.ALERT, okButtonText: DialogStrings.OK, message: arg + "" }
                 : arg;
             let alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(
                 options.title,
@@ -108,9 +72,9 @@ export function confirm(arg: any): Promise<boolean> {
         try {
             let options = !isDialogOptions(arg)
                 ? {
-                    title: CONFIRM,
-                    okButtonText: OK,
-                    cancelButtonText: CANCEL,
+                    title: DialogStrings.CONFIRM,
+                    okButtonText: DialogStrings.OK,
+                    cancelButtonText: DialogStrings.CANCEL,
                     message: arg + "",
                 }
                 : arg;
@@ -135,9 +99,9 @@ export function prompt(arg: any): Promise<PromptResult> {
     let options: PromptOptions;
 
     let defaultOptions = {
-        title: PROMPT,
-        okButtonText: OK,
-        cancelButtonText: CANCEL,
+        title: DialogStrings.PROMPT,
+        okButtonText: DialogStrings.OK,
+        cancelButtonText: DialogStrings.CANCEL,
         inputType: inputType.text,
     };
 
@@ -337,7 +301,7 @@ function showUIAlertController(alertController: UIAlertController) {
 export function action(): Promise<string> {
     let options: ActionOptions;
 
-    let defaultOptions = { title: null, cancelButtonText: CANCEL };
+    let defaultOptions = { title: null, cancelButtonText: DialogStrings.CANCEL };
 
     if (arguments.length === 1) {
         if (isString(arguments[0])) {

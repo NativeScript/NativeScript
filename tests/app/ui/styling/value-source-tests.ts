@@ -1,15 +1,12 @@
-import * as color from "@nativescript/core/color";
-import * as button from "@nativescript/core/ui/button";
-import * as stack from "@nativescript/core/ui/layouts/stack-layout";
 import * as helper from "../../ui-helper";
 import * as TKUnit from "../../tk-unit";
-import { unsetValue } from "@nativescript/core/ui/core/view";
+import { Color, Button, StackLayout, unsetValue } from "@nativescript/core";
 
 export var test_value_Inherited_after_unset = function () {
     let page = helper.getCurrentPage();
     page.css = "StackLayout { color: #FF0000; } .blue { color: #0000FF; }";
-    let btn = new button.Button();
-    let testStack = new stack.StackLayout();
+    let btn = new Button();
+    let testStack = new StackLayout();
     page.content = testStack;
     testStack.addChild(btn);
     btn.className = "blue";
@@ -20,8 +17,8 @@ export var test_value_Inherited_after_unset = function () {
 
 export var test_value_Inherited_stronger_than_Default = function () {
     let page = helper.getCurrentPage();
-    let btn = new button.Button();
-    let testStack = new stack.StackLayout();
+    let btn = new Button();
+    let testStack = new StackLayout();
     page.content = testStack;
     testStack.addChild(btn);
     page.css = "stackLayout { color: red; }";
@@ -31,10 +28,10 @@ export var test_value_Inherited_stronger_than_Default = function () {
 
 export var test_value_Css_stronger_than_Inherited = function () {
     let page = helper.getCurrentPage();
-    let testStack = new stack.StackLayout();
+    let testStack = new StackLayout();
     page.content = testStack;
 
-    let btn = new button.Button();
+    let btn = new Button();
     testStack.addChild(btn);
     page.css = "stackLayout { color: red; } button { color: blue; }";
 
@@ -43,15 +40,15 @@ export var test_value_Css_stronger_than_Inherited = function () {
 
 export function test_value_Local_stronger_than_Css() {
     let testPage = helper.getCurrentPage();
-    let testStack = new stack.StackLayout();
+    let testStack = new StackLayout();
     testPage.content = testStack;
 
-    let btn = new button.Button();
+    let btn = new Button();
     testStack.addChild(btn);
     testPage.css = "button { color: red; }";
 
     helper.assertViewColor(btn, "#FF0000");
-    btn.style.color = new color.Color("#0000FF");
+    btn.style.color = new Color("#0000FF");
     helper.assertViewColor(btn, "#0000FF");
     btn.style.color = unsetValue;
     TKUnit.assertEqual(btn.style.color, undefined, "style.color should be undefined when set locally.");

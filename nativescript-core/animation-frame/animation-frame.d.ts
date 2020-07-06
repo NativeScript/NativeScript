@@ -3,7 +3,7 @@
  * @argument time Time of the current frame in milliseconds
  */
 export interface FrameRequestCallback {
-	(time: number): void;
+  (time: number): void;
 }
 
 /**

@@ -1,6 +1,6 @@
 import * as pages from "@nativescript/core/ui/page";
 import * as buttons from "@nativescript/core/ui/button";
-import { VerticalAlignment } from "@nativescript/core/ui/core/view";
+import { VerticalAlignment } from "@nativescript/core";
 
 export function createPage() {
     var page = new pages.Page();

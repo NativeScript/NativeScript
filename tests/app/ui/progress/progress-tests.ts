@@ -1,7 +1,7 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as viewModule from "@nativescript/core/ui/core/view";
-import * as observable from "@nativescript/core/data/observable";
+import { EventData, PropertyChangeData } from "@nativescript/core";
 import * as color from "@nativescript/core/color";
 import * as platform from "@nativescript/core/platform";
 
@@ -107,14 +107,14 @@ export function test_property_changed_event_when_setting_maxValue_with_adjust() 
     function testAction(views: Array<viewModule.View>) {
         var changedProperties = {};
         var allChanges = 0;
-        progress.on("valueChange", function (data: observable.EventData) {
+        progress.on("valueChange", function(data: EventData) {
             allChanges++;
-            changedProperties[(<observable.PropertyChangeData>data).propertyName] = true;
+            changedProperties[(<PropertyChangeData>data).propertyName] = true;
         });
 
-        progress.on("maxValueChange", function (data: observable.EventData) {
+        progress.on("maxValueChange", function(data: EventData) {
             allChanges++;
-            changedProperties[(<observable.PropertyChangeData>data).propertyName] = true;
+            changedProperties[(<PropertyChangeData>data).propertyName] = true;
         });
 
         // Act

@@ -1,6 +1,6 @@
 import * as helper from "../ui-helper";
 import * as platform from "@nativescript/core/platform";
-import * as trace from "@nativescript/core/trace";
+import { Trace } from "@nativescript/core";
 import { Color } from "@nativescript/core/color";
 import { NavigationEntry, NavigationTransition } from "@nativescript/core/ui/frame";
 import { Page } from "@nativescript/core/ui/page";
@@ -9,8 +9,8 @@ import { CustomTransition } from "./custom-transition";
 
 function _testTransition(navigationTransition: NavigationTransition) {
     var testId = `Transition[${JSON.stringify(navigationTransition)}]`;
-    if (trace.isEnabled()) {
-        trace.write(`Testing ${testId}`, trace.categories.Test);
+    if (Trace.isEnabled()) {
+        Trace.write(`Testing ${testId}`, Trace.categories.Test);
     }
     var navigationEntry: NavigationEntry = {
         create: function (): Page {

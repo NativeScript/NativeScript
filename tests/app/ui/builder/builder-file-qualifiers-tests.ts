@@ -3,7 +3,7 @@ import { assertEqual, assertNull, assertThrows, assertNotNull, assert } from "..
 import { _setResolver, ModuleNameResolver, PlatformContext } from "@nativescript/core/module-name-resolver";
 import { Button } from "@nativescript/core/ui/button";
 import { navigate } from "../../ui-helper";
-import { Page, Color } from "@nativescript/core/ui/page";
+import { Page, Color } from "@nativescript/core";
 
 const testPrefix = "bundle-file-qualifiers-tests";
 let modulesToCleanup: string[] = [];

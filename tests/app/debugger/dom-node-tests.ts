@@ -9,7 +9,7 @@ import { Label } from "@nativescript/core/ui/label";
 import { textProperty } from "@nativescript/core/ui/text-base";
 import { TextView } from "@nativescript/core/ui/text-view";
 import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
-import { isAndroid } from "@nativescript/core/platform/platform";
+import { isAndroid } from "@nativescript/core/platform";
 
 let originalInspectorGlobal: InspectorCommands & InspectorEvents;
 

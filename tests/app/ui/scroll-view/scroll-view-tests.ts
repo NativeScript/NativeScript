@@ -1,6 +1,6 @@
 import * as TKUnit from "../../tk-unit";
 import { Button } from "@nativescript/core/ui/button";
-import { Page, isIOS } from "@nativescript/core/ui/page";
+import { Page, isIOS } from "@nativescript/core";
 import { UITest } from "../../ui-test";
 import * as layoutHelper from "../layouts/layout-helper";
 import * as helper from "../../ui-helper";

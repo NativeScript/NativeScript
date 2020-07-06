@@ -2,18 +2,16 @@
  * Provides ModuleNameResolver class used for loading files based on device capabilities.
  */ /** */
 
-import { PlatformContext } from "./qualifier-matcher";
-// export { PlatformContext } from "./qualifier-matcher";
+import { PlatformContext } from './qualifier-matcher';
+
+export { PlatformContext } from './qualifier-matcher';
 
 export type ModuleListProvider = () => string[];
 
 export class ModuleNameResolver {
-	constructor(
-		context: PlatformContext,
-		moduleListProvider?: ModuleListProvider
-	);
-	resolveModuleName(path: string, ext: string): string;
-	clearCache(): void;
+  constructor(context: PlatformContext, moduleListProvider?: ModuleListProvider);
+  resolveModuleName(path: string, ext: string): string;
+  clearCache(): void;
 }
 
 export function resolveModuleName(path: string, ext: string): string;

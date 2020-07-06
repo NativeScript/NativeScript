@@ -1,23 +1,15 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import * as viewModule from "@nativescript/core/ui/core/view";
-import * as pagesModule from "@nativescript/core/ui/page";
+import { View, EventData, Button, Observable, Color, Page, FormattedString } from "@nativescript/core";
 import * as buttonTestsNative from "./button-tests-native";
-import * as colorModule from "@nativescript/core/color";
-import * as formattedStringModule from "@nativescript/core/text/formatted-string";
 import * as spanModule from "@nativescript/core/text/span";
 
-// >> button-require
-import * as buttonModule from "@nativescript/core/ui/button";
-// << button-require
-
 // >> button-require-others
-import * as bindable from "@nativescript/core/ui/core/bindable";
-import * as observable from "@nativescript/core/data/observable";
+import { BindingOptions } from "@nativescript/core/ui/core/bindable";
 // << button-require-others
 
 export function test_recycling() {
-    helper.nativeView_recycling_test(() => new buttonModule.Button());
+    helper.nativeView_recycling_test(() => new Button());
 }
 
 export var testSetText = function () {
@@ -78,17 +70,17 @@ export var testMemoryLeak = function (done) {
     }, done);
 };
 
-var _createButtonFunc = function (): buttonModule.Button {
+var _createButtonFunc = function (): Button {
     // >>button-create
-    var button = new buttonModule.Button();
+    var button = new Button();
     // << button-create
     button.text = "Button";
 
     return button;
 };
 
-var _testSetText = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
+var _testSetText = function (views: Array<View>) {
+    var button = <Button>views[0];
     // >> button-settext
     button.text = "Hello, world!";
     // << button-settext
@@ -99,12 +91,12 @@ var _testSetText = function (views: Array<viewModule.View>) {
     TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
 };
 
-var _testOnClick = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
+var _testOnClick = function (views: Array<View>) {
+    var button = <Button>views[0];
 
     var actualValue = false;
     // >> button-tap
-    button.on(buttonModule.Button.tapEvent, function (args: observable.EventData) {
+    button.on(Button.tapEvent, function (args: EventData) {
         // Do something
         // >> (hide)
         actualValue = true;
@@ -116,13 +108,13 @@ var _testOnClick = function (views: Array<viewModule.View>) {
     TKUnit.assertTrue(actualValue, "Actual: " + actualValue + "; Expected: " + true);
 };
 
-var _testBindTextDirectlyToModel = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
+var _testBindTextDirectlyToModel = function (views: Array<View>) {
+    var button = <Button>views[0];
 
     // >> button-bind
-    var model = new observable.Observable();
+    var model = new Observable();
     model.set("buttonTitle", "OK");
-    var options: bindable.BindingOptions = {
+    var options: BindingOptions = {
         sourceProperty: "buttonTitle",
         targetProperty: "text"
     };
@@ -139,15 +131,15 @@ var _testBindTextDirectlyToModel = function (views: Array<viewModule.View>) {
     // << button-bind
 };
 
-var _testBindTextToBindingContext = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
-    var page = <pagesModule.Page>views[1];
+var _testBindTextToBindingContext = function (views: Array<View>) {
+    var button = <Button>views[0];
+    var page = <Page>views[1];
 
-    var model = new observable.Observable();
+    var model = new Observable();
     model.set("buttonTitle", "OK");
     page.bindingContext = model;
 
-    var options: bindable.BindingOptions = {
+    var options: BindingOptions = {
         sourceProperty: "buttonTitle",
         targetProperty: "text"
     };
@@ -159,26 +151,26 @@ var _testBindTextToBindingContext = function (views: Array<viewModule.View>) {
 };
 
 var expectedFontSize = 42;
-var _testLocalFontSizeFromCss = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
-    var page = <pagesModule.Page>views[1];
+var _testLocalFontSizeFromCss = function (views: Array<View>) {
+    var button = <Button>views[0];
+    var page = <Page>views[1];
 
     page.css = "button { font-size: " + expectedFontSize + "; }";
     var actualResult = button.style.fontSize;
     TKUnit.assert(actualResult === expectedFontSize, "Actual: " + actualResult + "; Expected: " + 33);
 };
 
-var _testNativeFontSizeFromCss = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
-    var page = <pagesModule.Page>views[1];
+var _testNativeFontSizeFromCss = function (views: Array<View>) {
+    var button = <Button>views[0];
+    var page = <Page>views[1];
     page.css = "button { font-size: " + expectedFontSize + "; }";
 
     var actualResult = buttonTestsNative.getNativeFontSize(button);
     helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromCss");
 };
 
-var _testNativeFontSizeFromLocal = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
+var _testNativeFontSizeFromLocal = function (views: Array<View>) {
+    var button = <Button>views[0];
     button.style.fontSize = expectedFontSize;
 
     var actualResult = buttonTestsNative.getNativeFontSize(button);
@@ -187,27 +179,27 @@ var _testNativeFontSizeFromLocal = function (views: Array<viewModule.View>) {
 
 var actualColorHex = "#ffff0000";
 var expectedNormalizedColorHex = "#FF0000";
-var _testLocalColorFromCss = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
-    var page = <pagesModule.Page>views[1];
+var _testLocalColorFromCss = function (views: Array<View>) {
+    var button = <Button>views[0];
+    var page = <Page>views[1];
     page.css = "button { color: " + actualColorHex + "; }";
 
     var actualResult = button.style.color.hex;
     TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
 };
 
-var _testNativeColorFromCss = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
-    var page = <pagesModule.Page>views[1];
+var _testNativeColorFromCss = function (views: Array<View>) {
+    var button = <Button>views[0];
+    var page = <Page>views[1];
     page.css = "button { color: " + actualColorHex + "; }";
 
     var actualResult = buttonTestsNative.getNativeColor(button).hex;
     TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
 };
 
-var _testNativeColorFromLocal = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
-    button.style.color = new colorModule.Color(actualColorHex);
+var _testNativeColorFromLocal = function (views: Array<View>) {
+    var button = <Button>views[0];
+    button.style.color = new Color(actualColorHex);
 
     var actualResult = buttonTestsNative.getNativeColor(button).hex;
     TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
@@ -215,18 +207,18 @@ var _testNativeColorFromLocal = function (views: Array<viewModule.View>) {
 
 var actualBackgroundColorHex = "#FF00FF00";
 var expectedNormalizedBackgroundColorHex = "#00FF00";
-var _testLocalBackgroundColorFromCss = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
-    var page = <pagesModule.Page>views[1];
+var _testLocalBackgroundColorFromCss = function (views: Array<View>) {
+    var button = <Button>views[0];
+    var page = <Page>views[1];
     page.css = "button { background-color: " + actualBackgroundColorHex + "; }";
 
     var actualResult = button.style.backgroundColor.hex;
     TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
 };
 
-var _testNativeBackgroundColorFromCss = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
-    var page = <pagesModule.Page>views[1];
+var _testNativeBackgroundColorFromCss = function (views: Array<View>) {
+    var button = <Button>views[0];
+    var page = <Page>views[1];
     page.css = "button { background-color: " + actualBackgroundColorHex + "; }";
 
     helper.waitUntilLayoutReady(button);
@@ -235,9 +227,9 @@ var _testNativeBackgroundColorFromCss = function (views: Array<viewModule.View>)
     TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
 };
 
-var _testNativeBackgroundColorFromLocal = function (views: Array<viewModule.View>) {
-    var button = <buttonModule.Button>views[0];
-    button.style.backgroundColor = new colorModule.Color(actualBackgroundColorHex);
+var _testNativeBackgroundColorFromLocal = function (views: Array<View>) {
+    var button = <Button>views[0];
+    button.style.backgroundColor = new Color(actualBackgroundColorHex);
 
     helper.waitUntilLayoutReady(button);
 
@@ -247,9 +239,9 @@ var _testNativeBackgroundColorFromLocal = function (views: Array<viewModule.View
 
 var expectedTextAlignment: "right" = "right";
 export var testLocalTextAlignmentFromCss = function () {
-    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
-        var view = <buttonModule.Button>views[0];
-        var page = <pagesModule.Page>views[1];
+    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<View>) {
+        var view = <Button>views[0];
+        var page = <Page>views[1];
         page.css = "button { text-align: " + expectedTextAlignment + "; }";
 
         var actualResult = view.style.textAlignment;
@@ -258,9 +250,9 @@ export var testLocalTextAlignmentFromCss = function () {
 };
 
 export var testNativeTextAlignmentFromCss = function () {
-    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
-        var view = <buttonModule.Button>views[0];
-        var page = <pagesModule.Page>views[1];
+    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<View>) {
+        var view = <Button>views[0];
+        var page = <Page>views[1];
         page.css = "button { text-align: " + expectedTextAlignment + "; }";
 
         var actualResult = buttonTestsNative.getNativeTextAlignment(view);
@@ -269,9 +261,9 @@ export var testNativeTextAlignmentFromCss = function () {
 };
 
 export var test_StateHighlighted_also_fires_pressedState = function () {
-    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
-        var view = <buttonModule.Button>views[0];
-        var page = <pagesModule.Page>views[1];
+    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<View>) {
+        var view = <Button>views[0];
+        var page = <Page>views[1];
         var expectedColor = "#FFFF0000";
         var expectedNormalizedColor = "#FF0000";
         page.css = "button:pressed { background-color: " + expectedColor + "; }";
@@ -286,9 +278,9 @@ export var test_StateHighlighted_also_fires_pressedState = function () {
 };
 
 export var test_StateHighlighted_also_fires_activeState = function () {
-    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
-        var view = <buttonModule.Button>views[0];
-        var page = <pagesModule.Page>views[1];
+    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<View>) {
+        var view = <Button>views[0];
+        var page = <Page>views[1];
         var expectedColor = "#FFFF0000";
         var expectedNormalizedColor = "#FF0000";
         page.css = "button:active { background-color: " + expectedColor + "; }";
@@ -303,9 +295,9 @@ export var test_StateHighlighted_also_fires_activeState = function () {
 };
 
 export var test_applying_disabled_visual_State_when_button_is_disable = function () {
-    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
-        var view = <buttonModule.Button>views[0];
-        var page = <pagesModule.Page>views[1];
+    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<View>) {
+        var view = <Button>views[0];
+        var page = <Page>views[1];
         var expectedColor = "#FFFF0000";
         var expectedNormalizedColor = "#FF0000";
         page.css = "button:disabled { background-color: " + expectedColor + "; }";
@@ -320,8 +312,8 @@ export var test_applying_disabled_visual_State_when_button_is_disable = function
 };
 
 export var testNativeTextAlignmentFromLocal = function () {
-    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
-        var view = <buttonModule.Button>views[0];
+    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<View>) {
+        var view = <Button>views[0];
         view.style.textAlignment = expectedTextAlignment;
 
         var actualResult = buttonTestsNative.getNativeTextAlignment(view);
@@ -339,14 +331,14 @@ export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_Button = function
     var thirdSpan = new spanModule.Span();
     thirdSpan.fontSize = 20;
     thirdSpan.text = "Third";
-    var formattedString1 = new formattedStringModule.FormattedString();
+    var formattedString1 = new FormattedString();
     formattedString1.spans.push(firstSpan);
-    var formattedString2 = new formattedStringModule.FormattedString();
+    var formattedString2 = new FormattedString();
     formattedString2.spans.push(secondSpan);
     formattedString2.spans.push(thirdSpan);
 
-    var view = new buttonModule.Button();
-    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+    var view = new Button();
+    helper.buildUIAndRunTest(view, function (views: Array<View>) {
         TKUnit.assertEqual(view.text, "");
 
         view.formattedText = formattedString1;
@@ -364,8 +356,8 @@ export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_Button = function
 };
 
 export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
-    let view = new buttonModule.Button();
-    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+    let view = new Button();
+    helper.buildUIAndRunTest(view, function (views: Array<View>) {
         view.text = "NormalText";
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
 
@@ -376,9 +368,9 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
 }
 
 export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
-    let view = new buttonModule.Button();
+    let view = new Button();
     let formattedString = helper._generateFormattedString();
-    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+    helper.buildUIAndRunTest(view, function (views: Array<View>) {
         view.formattedText = formattedString;
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
 
@@ -390,7 +382,7 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
 
 // Reported in https://github.com/NativeScript/NativeScript/issues/4109
 export function test_setting_formattedText_With_UnknownFont_DoesNotCrash() {
-    let btn = new buttonModule.Button();
+    let btn = new Button();
     btn.style.fontFamily = "_UnknownFont";
 
     helper.buildUIAndRunTest(btn, function (views) {
@@ -398,7 +390,7 @@ export function test_setting_formattedText_With_UnknownFont_DoesNotCrash() {
 
         let span = new spanModule.Span();
         span.text = "Login";
-        let formattedString = new formattedStringModule.FormattedString();
+        let formattedString = new FormattedString();
         formattedString.spans.push(span);
         btn.formattedText = formattedString;
 
@@ -407,10 +399,10 @@ export function test_setting_formattedText_With_UnknownFont_DoesNotCrash() {
 }
 
 export function test_Native_Background_Color_BorderRadius_Change() {
-    let view = new buttonModule.Button();
+    let view = new Button();
     view.text = "TEST";
-    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
-        let page = <pagesModule.Page>views[1];
+    helper.buildUIAndRunTest(view, function (views: Array<View>) {
+        let page = <Page>views[1];
         page.css = ".border { background-color: #00FF00; border-radius: 1; } .colorfilter { background-color: #FF0000; }";
         view.className = "border";
         helper.waitUntilLayoutReady(view);

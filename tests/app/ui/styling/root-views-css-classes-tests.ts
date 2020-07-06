@@ -11,16 +11,16 @@ import {
     isIOS,
     device
 } from "@nativescript/core/platform";
-import { Button } from "@nativescript/core/ui/button/button";
+import { Button } from "@nativescript/core";
 import { Page } from "@nativescript/core/ui/page";
 import {
     ShownModallyData,
     ShowModalOptions,
     View
-} from "@nativescript/core/ui/frame";
+} from "@nativescript/core";
 import { _rootModalViews } from "@nativescript/core/ui/core/view/view-common";
-import { DeviceType } from "@nativescript/core/ui/enums/enums";
-import { ios as iosUtils } from "@nativescript/core/utils/utils";
+import { DeviceType } from "@nativescript/core/ui/enums";
+import { ios as iosUtils } from "@nativescript/core/utils";
 
 const CLASS_NAME = "class-name";
 const ROOT_CSS_CLASS = "ns-root";

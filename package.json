@@ -52,7 +52,7 @@
     "format-check": "npx prettier --check .",
     "tsc-core-watch": "tsc -p nativescript-core/tsconfig.json -w",
     "tslint": "tslint --project tsconfig.tslint.json --config build/tslint.json",
-    "unit-test": "tsc -p unit-tests/tsconfig.json && mocha --opts unit-tests/mocha.opts",
+    "unit-test": "tsc -p unit-tests/tsconfig.json && mocha --config=unit-tests/.mocharc.yml",
     "unit-test-watch": "mocha-typescript-watch -p unit-tests/tsconfig.json --opts unit-tests/mocha.opts",
     "dev-link-tns-core-modules-widgets": "(cd tns-core-modules-widgets/dist/package && npm link) && (cd nativescript-core && npm i ../tns-core-modules-widgets/dist/package --save)",
     "api-extractor": "api-extractor run --local --verbose && (cd nativescript-core && cat nativescript-core.header nativescript-core.d.ts > tmp_file && mv tmp_file nativescript-core.d.ts)",
@@ -62,5 +62,13 @@
     "build-core": "sh ./build/build-core.sh",
     "build-compat": "sh ./build/build-compat.sh",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*": ["prettier --write ."]
   }
 }

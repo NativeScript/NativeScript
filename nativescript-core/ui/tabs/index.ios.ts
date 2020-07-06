@@ -1,603 +1,457 @@
 ﻿// Types
-import { TabContentItem } from "../tab-navigation-base/tab-content-item";
-import { TabStrip } from "../tab-navigation-base/tab-strip";
-import { TabStripItem } from "../tab-navigation-base/tab-strip-item";
-import { TextTransform } from "../text-base";
+import { TabContentItem } from '../tab-navigation-base/tab-content-item';
+import { TabStrip } from '../tab-navigation-base/tab-strip';
+import { TabStripItem } from '../tab-navigation-base/tab-strip-item';
+import { TextTransform } from '../text-base';
 
 // Requires
-import { Color } from "../../color";
-import { ImageSource } from "../../image-source";
-import { device } from "../../platform";
-import { ios as iosUtils, isFontIconURI, layout } from "../../utils/utils";
-import { ios as iosView, View } from "../core/view";
-import { ViewBase } from "../core/view-base";
-import { Frame } from "../frame";
-import { Font } from "../styling/font";
-import {
-	getIconSpecSize,
-	itemsProperty,
-	selectedIndexProperty,
-	tabStripProperty,
-} from "../tab-navigation-base/tab-navigation-base";
-import {
-	swipeEnabledProperty,
-	TabsBase,
-	IOSTabBarItemsAlignment,
-	iOSTabBarItemsAlignmentProperty,
-} from "./tabs-common";
+import { Color } from '../../color';
+import { ImageSource } from '../../image-source';
+import { device } from '../../platform';
+import { ios as iosUtils, isFontIconURI, layout } from '../../utils';
+import { ios as iosView, View } from '../core/view';
+import { ViewBase } from '../core/view-base';
+import { Frame } from '../frame';
+import { Font } from '../styling/font';
+import { getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty } from '../tab-navigation-base/tab-navigation-base';
+import { swipeEnabledProperty, TabsBase, IOSTabBarItemsAlignment, iOSTabBarItemsAlignmentProperty } from './tabs-common';
 
 // TODO
 // import { profile } from "../../profiling";
 
-export * from "./tabs-common";
+export * from './tabs-common';
 
 const majorVersion = iosUtils.MajorVersion;
-const isPhone = device.deviceType === "Phone";
+const isPhone = device.deviceType === 'Phone';
 
 // Equivalent to dispatch_async(dispatch_get_main_queue(...)) call
 const invokeOnRunLoop = (function () {
-	const runloop = CFRunLoopGetMain();
+  const runloop = CFRunLoopGetMain();
 
-	return (action: () => any) => {
-		CFRunLoopPerformBlock(runloop, kCFRunLoopDefaultMode, action);
-		CFRunLoopWakeUp(runloop);
-	};
+  return (action: () => any) => {
+    CFRunLoopPerformBlock(runloop, kCFRunLoopDefaultMode, action);
+    CFRunLoopWakeUp(runloop);
+  };
 })();
 
 class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
-	public static ObjCProtocols = [MDCTabBarDelegate];
+  public static ObjCProtocols = [MDCTabBarDelegate];
 
-	private _owner: WeakRef<Tabs>;
+  private _owner: WeakRef<Tabs>;
 
-	public static initWithOwner(owner: WeakRef<Tabs>): MDCTabBarDelegateImpl {
-		let delegate = <MDCTabBarDelegateImpl>MDCTabBarDelegateImpl.new();
-		delegate._owner = owner;
+  public static initWithOwner(owner: WeakRef<Tabs>): MDCTabBarDelegateImpl {
+    let delegate = <MDCTabBarDelegateImpl>MDCTabBarDelegateImpl.new();
+    delegate._owner = owner;
 
-		return delegate;
-	}
+    return delegate;
+  }
 
-	public tabBarShouldSelectItem(
-		tabBar: MDCTabBar,
-		item: UITabBarItem
-	): boolean {
-		const owner = this._owner.get();
-		const shouldSelectItem = owner._canSelectItem;
-		const selectedIndex = owner.tabBarItems.indexOf(item);
+  public tabBarShouldSelectItem(tabBar: MDCTabBar, item: UITabBarItem): boolean {
+    const owner = this._owner.get();
+    const shouldSelectItem = owner._canSelectItem;
+    const selectedIndex = owner.tabBarItems.indexOf(item);
 
-		if (owner.selectedIndex !== selectedIndex) {
-			owner._canSelectItem = false;
-		}
+    if (owner.selectedIndex !== selectedIndex) {
+      owner._canSelectItem = false;
+    }
 
-		const tabStrip = owner.tabStrip;
-		const tabStripItems = tabStrip && tabStrip.items;
+    const tabStrip = owner.tabStrip;
+    const tabStripItems = tabStrip && tabStrip.items;
 
-		if (tabStripItems && tabStripItems[selectedIndex]) {
-			tabStripItems[selectedIndex]._emit(TabStripItem.tapEvent);
-			tabStrip.notify({
-				eventName: TabStrip.itemTapEvent,
-				object: tabStrip,
-				index: selectedIndex,
-			});
-		}
+    if (tabStripItems && tabStripItems[selectedIndex]) {
+      tabStripItems[selectedIndex]._emit(TabStripItem.tapEvent);
+      tabStrip.notify({
+        eventName: TabStrip.itemTapEvent,
+        object: tabStrip,
+        index: selectedIndex,
+      });
+    }
 
-		return shouldSelectItem;
-	}
+    return shouldSelectItem;
+  }
 
-	public tabBarDidSelectItem(
-		tabBar: MDCTabBar,
-		selectedItem: UITabBarItem
-	): void {
-		const owner = this._owner.get();
-		const tabBarItems = owner.tabBarItems;
-		const selectedIndex = tabBarItems.indexOf(selectedItem);
+  public tabBarDidSelectItem(tabBar: MDCTabBar, selectedItem: UITabBarItem): void {
+    const owner = this._owner.get();
+    const tabBarItems = owner.tabBarItems;
+    const selectedIndex = tabBarItems.indexOf(selectedItem);
 
-		owner.selectedIndex = selectedIndex;
-	}
+    owner.selectedIndex = selectedIndex;
+  }
 }
 
-class BackgroundIndicatorTemplate extends NSObject
-	implements MDCTabBarIndicatorTemplate {
-	public static ObjCProtocols = [MDCTabBarIndicatorTemplate];
+class BackgroundIndicatorTemplate extends NSObject implements MDCTabBarIndicatorTemplate {
+  public static ObjCProtocols = [MDCTabBarIndicatorTemplate];
 
-	public indicatorAttributesForContext(
-		context: MDCTabBarIndicatorContext
-	): MDCTabBarIndicatorAttributes {
-		let attributes = new MDCTabBarIndicatorAttributes();
-		attributes.path = UIBezierPath.bezierPathWithRect(context.bounds);
+  public indicatorAttributesForContext(context: MDCTabBarIndicatorContext): MDCTabBarIndicatorAttributes {
+    let attributes = new MDCTabBarIndicatorAttributes();
+    attributes.path = UIBezierPath.bezierPathWithRect(context.bounds);
 
-		return attributes;
-	}
+    return attributes;
+  }
 }
 
 class UIPageViewControllerImpl extends UIPageViewController {
-	tabBar: MDCTabBar;
-	scrollView: UIScrollView;
-	tabBarDelegate: MDCTabBarDelegateImpl;
+  tabBar: MDCTabBar;
+  scrollView: UIScrollView;
+  tabBarDelegate: MDCTabBarDelegateImpl;
 
-	private _owner: WeakRef<Tabs>;
+  private _owner: WeakRef<Tabs>;
 
-	public static initWithOwner(
-		owner: WeakRef<Tabs>
-	): UIPageViewControllerImpl {
-		const handler = <UIPageViewControllerImpl>(
-			UIPageViewControllerImpl.alloc().initWithTransitionStyleNavigationOrientationOptions(
-				UIPageViewControllerTransitionStyle.Scroll,
-				UIPageViewControllerNavigationOrientation.Horizontal,
-				null
-			)
-		);
-		handler._owner = owner;
+  public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerImpl {
+    const handler = <UIPageViewControllerImpl>UIPageViewControllerImpl.alloc().initWithTransitionStyleNavigationOrientationOptions(UIPageViewControllerTransitionStyle.Scroll, UIPageViewControllerNavigationOrientation.Horizontal, null);
+    handler._owner = owner;
 
-		return handler;
-	}
+    return handler;
+  }
 
-	public viewDidLoad(): void {
-		const owner = this._owner.get();
+  public viewDidLoad(): void {
+    const owner = this._owner.get();
 
-		const tabBarItems = owner.tabBarItems;
-		const tabBar = MDCTabBar.alloc().initWithFrame(this.view.bounds);
+    const tabBarItems = owner.tabBarItems;
+    const tabBar = MDCTabBar.alloc().initWithFrame(this.view.bounds);
 
-		if (tabBarItems && tabBarItems.length) {
-			tabBar.items = NSArray.arrayWithArray(tabBarItems);
-		}
+    if (tabBarItems && tabBarItems.length) {
+      tabBar.items = NSArray.arrayWithArray(tabBarItems);
+    }
 
-		tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(
-			new WeakRef(owner)
-		);
+    tabBar.delegate = this.tabBarDelegate = MDCTabBarDelegateImpl.initWithOwner(new WeakRef(owner));
 
-		if (majorVersion <= 12 || !UIColor.labelColor) {
-			tabBar.tintColor = UIColor.blueColor;
-			tabBar.barTintColor = UIColor.whiteColor;
-			tabBar.setTitleColorForState(
-				UIColor.blackColor,
-				MDCTabBarItemState.Normal
-			);
-			tabBar.setTitleColorForState(
-				UIColor.blackColor,
-				MDCTabBarItemState.Selected
-			);
-		} else {
-			tabBar.tintColor = UIColor.systemBlueColor;
-			tabBar.barTintColor = UIColor.systemBackgroundColor;
-			tabBar.setTitleColorForState(
-				UIColor.labelColor,
-				MDCTabBarItemState.Normal
-			);
-			tabBar.setTitleColorForState(
-				UIColor.labelColor,
-				MDCTabBarItemState.Selected
-			);
-			tabBar.inkColor = UIColor.clearColor;
-		}
+    if (majorVersion <= 12 || !UIColor.labelColor) {
+      tabBar.tintColor = UIColor.blueColor;
+      tabBar.barTintColor = UIColor.whiteColor;
+      tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Normal);
+      tabBar.setTitleColorForState(UIColor.blackColor, MDCTabBarItemState.Selected);
+    } else {
+      tabBar.tintColor = UIColor.systemBlueColor;
+      tabBar.barTintColor = UIColor.systemBackgroundColor;
+      tabBar.setTitleColorForState(UIColor.labelColor, MDCTabBarItemState.Normal);
+      tabBar.setTitleColorForState(UIColor.labelColor, MDCTabBarItemState.Selected);
+      tabBar.inkColor = UIColor.clearColor;
+    }
 
-		tabBar.autoresizingMask =
-			UIViewAutoresizing.FlexibleWidth |
-			UIViewAutoresizing.FlexibleBottomMargin;
-		tabBar.alignment = MDCTabBarAlignment.Justified;
-		tabBar.sizeToFit();
+    tabBar.autoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleBottomMargin;
+    tabBar.alignment = MDCTabBarAlignment.Justified;
+    tabBar.sizeToFit();
 
-		this.tabBar = tabBar;
-		this.view.addSubview(tabBar);
-	}
+    this.tabBar = tabBar;
+    this.view.addSubview(tabBar);
+  }
 
-	public viewWillAppear(animated: boolean): void {
-		super.viewWillAppear(animated);
-		const owner = this._owner.get();
-		if (!owner) {
-			return;
-		}
+  public viewWillAppear(animated: boolean): void {
+    super.viewWillAppear(animated);
+    const owner = this._owner.get();
+    if (!owner) {
+      return;
+    }
 
-		iosView.updateAutoAdjustScrollInsets(this, owner);
+    iosView.updateAutoAdjustScrollInsets(this, owner);
 
-		// Tabs can be reset as a root view. Call loaded here in this scenario.
-		if (!owner.isLoaded) {
-			owner.callLoaded();
-		}
-	}
+    // Tabs can be reset as a root view. Call loaded here in this scenario.
+    if (!owner.isLoaded) {
+      owner.callLoaded();
+    }
+  }
 
-	public viewDidLayoutSubviews(): void {
-		super.viewDidLayoutSubviews();
-		const owner = this._owner.get();
-		if (!owner) {
-			return;
-		}
+  public viewDidLayoutSubviews(): void {
+    super.viewDidLayoutSubviews();
+    const owner = this._owner.get();
+    if (!owner) {
+      return;
+    }
 
-		let safeAreaInsetsBottom = 0;
-		let safeAreaInsetsTop = 0;
+    let safeAreaInsetsBottom = 0;
+    let safeAreaInsetsTop = 0;
 
-		if (majorVersion > 10) {
-			safeAreaInsetsBottom = this.view.safeAreaInsets.bottom;
-			safeAreaInsetsTop = this.view.safeAreaInsets.top;
-		} else {
-			safeAreaInsetsTop = this.topLayoutGuide.length;
-		}
+    if (majorVersion > 10) {
+      safeAreaInsetsBottom = this.view.safeAreaInsets.bottom;
+      safeAreaInsetsTop = this.view.safeAreaInsets.top;
+    } else {
+      safeAreaInsetsTop = this.topLayoutGuide.length;
+    }
 
-		let scrollViewTop = 0;
-		let scrollViewHeight =
-			this.view.bounds.size.height + safeAreaInsetsBottom;
+    let scrollViewTop = 0;
+    let scrollViewHeight = this.view.bounds.size.height + safeAreaInsetsBottom;
 
-		if (owner.tabStrip) {
-			scrollViewTop = this.tabBar.frame.size.height;
-			scrollViewHeight =
-				this.view.bounds.size.height -
-				this.tabBar.frame.size.height +
-				safeAreaInsetsBottom;
-			let tabBarTop = safeAreaInsetsTop;
-			let tabBarHeight = this.tabBar.frame.size.height;
+    if (owner.tabStrip) {
+      scrollViewTop = this.tabBar.frame.size.height;
+      scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + safeAreaInsetsBottom;
+      let tabBarTop = safeAreaInsetsTop;
+      let tabBarHeight = this.tabBar.frame.size.height;
 
-			const tabsPosition = owner.tabsPosition;
-			if (tabsPosition === "bottom") {
-				tabBarTop =
-					this.view.frame.size.height -
-					this.tabBar.frame.size.height -
-					safeAreaInsetsBottom;
-				scrollViewTop = this.view.frame.origin.y;
-				scrollViewHeight =
-					this.view.frame.size.height - safeAreaInsetsBottom;
-			}
+      const tabsPosition = owner.tabsPosition;
+      if (tabsPosition === 'bottom') {
+        tabBarTop = this.view.frame.size.height - this.tabBar.frame.size.height - safeAreaInsetsBottom;
+        scrollViewTop = this.view.frame.origin.y;
+        scrollViewHeight = this.view.frame.size.height - safeAreaInsetsBottom;
+      }
 
-			let parent = owner.parent;
+      let parent = owner.parent;
 
-			// Handle Angular scenario where Tabs is in a ProxyViewContainer
-			// It is possible to wrap components in ProxyViewContainers indefinitely
-			while (parent && !parent.nativeViewProtected) {
-				parent = parent.parent;
-			}
+      // Handle Angular scenario where Tabs is in a ProxyViewContainer
+      // It is possible to wrap components in ProxyViewContainers indefinitely
+      while (parent && !parent.nativeViewProtected) {
+        parent = parent.parent;
+      }
 
-			if (parent && majorVersion > 10) {
-				// TODO: Figure out a better way to handle ViewController nesting/Safe Area nesting
-				tabBarTop = Math.max(
-					tabBarTop,
-					parent.nativeView.safeAreaInsets.top
-				);
-			}
+      if (parent && majorVersion > 10) {
+        // TODO: Figure out a better way to handle ViewController nesting/Safe Area nesting
+        tabBarTop = Math.max(tabBarTop, parent.nativeView.safeAreaInsets.top);
+      }
 
-			this.tabBar.frame = CGRectMake(
-				0,
-				tabBarTop,
-				this.tabBar.frame.size.width,
-				tabBarHeight
-			);
-		} else {
-			this.tabBar.hidden = true;
-		}
+      this.tabBar.frame = CGRectMake(0, tabBarTop, this.tabBar.frame.size.width, tabBarHeight);
+    } else {
+      this.tabBar.hidden = true;
+    }
 
-		const subViews: NSArray<UIView> = this.view.subviews;
-		let scrollView: UIScrollView = null;
+    const subViews: NSArray<UIView> = this.view.subviews;
+    let scrollView: UIScrollView = null;
 
-		for (let i = 0; i < subViews.count; i++) {
-			const view: UIView = subViews[i];
-			if (view instanceof UIScrollView) {
-				scrollView = <UIScrollView>view;
-			}
-		}
+    for (let i = 0; i < subViews.count; i++) {
+      const view: UIView = subViews[i];
+      if (view instanceof UIScrollView) {
+        scrollView = <UIScrollView>view;
+      }
+    }
 
-		if (scrollView) {
-			// The part of the UIPageViewController that is changing the pages is a UIScrollView
-			// We want to expand it to the size of the UIPageViewController as it is not so by default
-			this.scrollView = scrollView;
+    if (scrollView) {
+      // The part of the UIPageViewController that is changing the pages is a UIScrollView
+      // We want to expand it to the size of the UIPageViewController as it is not so by default
+      this.scrollView = scrollView;
 
-			if (!owner.swipeEnabled) {
-				scrollView.scrollEnabled = false;
-			}
+      if (!owner.swipeEnabled) {
+        scrollView.scrollEnabled = false;
+      }
 
-			scrollView.frame = CGRectMake(
-				0,
-				scrollViewTop,
-				this.view.bounds.size.width,
-				scrollViewHeight
-			); //this.view.bounds;
-		}
-	}
+      scrollView.frame = CGRectMake(0, scrollViewTop, this.view.bounds.size.width, scrollViewHeight); //this.view.bounds;
+    }
+  }
 
-	// Mind implementation for other controllers
-	public traitCollectionDidChange(
-		previousTraitCollection: UITraitCollection
-	): void {
-		super.traitCollectionDidChange(previousTraitCollection);
+  // Mind implementation for other controllers
+  public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+    super.traitCollectionDidChange(previousTraitCollection);
 
-		if (majorVersion >= 13) {
-			const owner = this._owner.get();
-			if (
-				owner &&
-				this.traitCollection
-					.hasDifferentColorAppearanceComparedToTraitCollection &&
-				this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(
-					previousTraitCollection
-				)
-			) {
-				owner.notify({
-					eventName:
-						iosView.traitCollectionColorAppearanceChangedEvent,
-					object: owner,
-				});
-			}
-		}
-	}
+    if (majorVersion >= 13) {
+      const owner = this._owner.get();
+      if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+        owner.notify({
+          eventName: iosView.traitCollectionColorAppearanceChangedEvent,
+          object: owner,
+        });
+      }
+    }
+  }
 
-	public viewWillTransitionToSizeWithTransitionCoordinator(
-		size: CGSize,
-		coordinator: UIViewControllerTransitionCoordinator
-	): void {
-		super.viewWillTransitionToSizeWithTransitionCoordinator(
-			size,
-			coordinator
-		);
-		coordinator.animateAlongsideTransitionCompletion(() => {
-			const owner = this._owner.get();
-			if (owner && owner.tabStrip && owner.tabStrip.items) {
-				const tabStrip = owner.tabStrip;
-				tabStrip.items.forEach((tabStripItem) => {
-					updateBackgroundPositions(
-						tabStrip,
-						tabStripItem,
-						this.tabBar.alignment !==
-							MDCTabBarAlignment.Justified ||
-							owner.selectedIndex !== tabStripItem._index
-							? owner._defaultItemBackgroundColor
-							: null
-					);
+  public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
+    super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
+    coordinator.animateAlongsideTransitionCompletion(() => {
+      const owner = this._owner.get();
+      if (owner && owner.tabStrip && owner.tabStrip.items) {
+        const tabStrip = owner.tabStrip;
+        tabStrip.items.forEach((tabStripItem) => {
+          updateBackgroundPositions(tabStrip, tabStripItem, this.tabBar.alignment !== MDCTabBarAlignment.Justified || owner.selectedIndex !== tabStripItem._index ? owner._defaultItemBackgroundColor : null);
 
-					const index = tabStripItem._index;
-					const tabBarItemController = owner.viewControllers[index];
-					updateTitleAndIconPositions(
-						tabStripItem,
-						tabBarItemController.tabBarItem,
-						tabBarItemController
-					);
-				});
-			}
-		}, null);
-	}
+          const index = tabStripItem._index;
+          const tabBarItemController = owner.viewControllers[index];
+          updateTitleAndIconPositions(tabStripItem, tabBarItemController.tabBarItem, tabBarItemController);
+        });
+      }
+    }, null);
+  }
 }
 
-class UIPageViewControllerDataSourceImpl extends NSObject
-	implements UIPageViewControllerDataSource {
-	public static ObjCProtocols = [UIPageViewControllerDataSource];
+class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewControllerDataSource {
+  public static ObjCProtocols = [UIPageViewControllerDataSource];
 
-	private _owner: WeakRef<Tabs>;
+  private _owner: WeakRef<Tabs>;
 
-	public static initWithOwner(
-		owner: WeakRef<Tabs>
-	): UIPageViewControllerDataSourceImpl {
-		let dataSource = <UIPageViewControllerDataSourceImpl>(
-			UIPageViewControllerDataSourceImpl.new()
-		);
-		dataSource._owner = owner;
+  public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerDataSourceImpl {
+    let dataSource = <UIPageViewControllerDataSourceImpl>UIPageViewControllerDataSourceImpl.new();
+    dataSource._owner = owner;
 
-		return dataSource;
-	}
+    return dataSource;
+  }
 
-	public pageViewControllerViewControllerBeforeViewController(
-		pageViewController: UIPageViewController,
-		viewController: UIViewController
-	): UIViewController {
-		// TODO
-		// if (Trace.isEnabled()) {
-		//     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
-		// }
+  public pageViewControllerViewControllerBeforeViewController(pageViewController: UIPageViewController, viewController: UIViewController): UIViewController {
+    // TODO
+    // if (Trace.isEnabled()) {
+    //     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
+    // }
 
-		const owner = this._owner.get();
-		let selectedIndex = owner.selectedIndex;
+    const owner = this._owner.get();
+    let selectedIndex = owner.selectedIndex;
 
-		if (selectedIndex === 0) {
-			return null;
-		}
+    if (selectedIndex === 0) {
+      return null;
+    }
 
-		selectedIndex--;
-		const prevItem = owner.items[selectedIndex];
-		let prevViewController = (<any>prevItem).__controller;
+    selectedIndex--;
+    const prevItem = owner.items[selectedIndex];
+    let prevViewController = (<any>prevItem).__controller;
 
-		// if (!prevViewController) {
-		//     prevViewController = owner.getViewController(prevItem);
-		// }
+    // if (!prevViewController) {
+    //     prevViewController = owner.getViewController(prevItem);
+    // }
 
-		owner._setCanBeLoaded(selectedIndex);
-		owner._loadUnloadTabItems(selectedIndex);
+    owner._setCanBeLoaded(selectedIndex);
+    owner._loadUnloadTabItems(selectedIndex);
 
-		return prevViewController;
-	}
+    return prevViewController;
+  }
 
-	public pageViewControllerViewControllerAfterViewController(
-		pageViewController: UIPageViewController,
-		viewController: UIViewController
-	): UIViewController {
-		// TODO
-		// if (Trace.isEnabled()) {
-		//     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
-		// }
+  public pageViewControllerViewControllerAfterViewController(pageViewController: UIPageViewController, viewController: UIViewController): UIViewController {
+    // TODO
+    // if (Trace.isEnabled()) {
+    //     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
+    // }
 
-		const owner = this._owner.get();
-		let selectedIndex = owner.selectedIndex;
+    const owner = this._owner.get();
+    let selectedIndex = owner.selectedIndex;
 
-		if (selectedIndex === owner.items.length - 1) {
-			return null;
-		}
+    if (selectedIndex === owner.items.length - 1) {
+      return null;
+    }
 
-		selectedIndex++;
-		const nextItem = owner.items[selectedIndex];
-		let nextViewController = (<any>nextItem).__controller;
+    selectedIndex++;
+    const nextItem = owner.items[selectedIndex];
+    let nextViewController = (<any>nextItem).__controller;
 
-		// if (!nextViewController) {
-		//     nextViewController = owner.getViewController(nextItem);
-		// }
+    // if (!nextViewController) {
+    //     nextViewController = owner.getViewController(nextItem);
+    // }
 
-		owner._setCanBeLoaded(selectedIndex);
-		owner._loadUnloadTabItems(selectedIndex);
-		// nextItem.loadView(nextItem.view);
+    owner._setCanBeLoaded(selectedIndex);
+    owner._loadUnloadTabItems(selectedIndex);
+    // nextItem.loadView(nextItem.view);
 
-		return nextViewController;
-	}
+    return nextViewController;
+  }
 
-	public presentationCountForPageViewController(
-		pageViewController: UIPageViewController
-	): number {
-		// TODO
-		// if (Trace.isEnabled()) {
-		//     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
-		// }
+  public presentationCountForPageViewController(pageViewController: UIPageViewController): number {
+    // TODO
+    // if (Trace.isEnabled()) {
+    //     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
+    // }
 
-		return 0;
-	}
+    return 0;
+  }
 
-	public presentationIndexForPageViewController(
-		pageViewController: UIPageViewController
-	): number {
-		// TODO
-		// if (Trace.isEnabled()) {
-		//     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
-		// }
+  public presentationIndexForPageViewController(pageViewController: UIPageViewController): number {
+    // TODO
+    // if (Trace.isEnabled()) {
+    //     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
+    // }
 
-		return 0;
-	}
+    return 0;
+  }
 }
 
-class UIPageViewControllerDelegateImpl extends NSObject
-	implements UIPageViewControllerDelegate {
-	public static ObjCProtocols = [UIPageViewControllerDelegate];
+class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewControllerDelegate {
+  public static ObjCProtocols = [UIPageViewControllerDelegate];
 
-	private _owner: WeakRef<Tabs>;
+  private _owner: WeakRef<Tabs>;
 
-	public static initWithOwner(
-		owner: WeakRef<Tabs>
-	): UIPageViewControllerDelegateImpl {
-		let delegate = <UIPageViewControllerDelegateImpl>(
-			UIPageViewControllerDelegateImpl.new()
-		);
-		delegate._owner = owner;
+  public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerDelegateImpl {
+    let delegate = <UIPageViewControllerDelegateImpl>UIPageViewControllerDelegateImpl.new();
+    delegate._owner = owner;
 
-		return delegate;
-	}
+    return delegate;
+  }
 
-	public pageViewControllerWillTransitionToViewControllers(
-		pageViewController: UIPageViewController,
-		viewControllers: NSArray<UIViewController>
-	): void {
-		// const owner = this._owner.get();
-		// const ownerViewControllers = owner.viewControllers;
-		// const selectedIndex = owner.selectedIndex;
-		// const nextViewController = viewControllers[0];
-		// const nextViewControllerIndex = ownerViewControllers.indexOf(nextViewController);
-		// if (selectedIndex > nextViewControllerIndex) {
-		//     owner.selectedIndex--;
-		// } else {
-		//     owner.selectedIndex++;
-		// }
-	}
+  public pageViewControllerWillTransitionToViewControllers(pageViewController: UIPageViewController, viewControllers: NSArray<UIViewController>): void {
+    // const owner = this._owner.get();
+    // const ownerViewControllers = owner.viewControllers;
+    // const selectedIndex = owner.selectedIndex;
+    // const nextViewController = viewControllers[0];
+    // const nextViewControllerIndex = ownerViewControllers.indexOf(nextViewController);
+    // if (selectedIndex > nextViewControllerIndex) {
+    //     owner.selectedIndex--;
+    // } else {
+    //     owner.selectedIndex++;
+    // }
+  }
 
-	public pageViewControllerDidFinishAnimatingPreviousViewControllersTransitionCompleted(
-		pageViewController: UIPageViewController,
-		didFinishAnimating: boolean,
-		previousViewControllers: NSArray<UIViewController>,
-		transitionCompleted: boolean
-	): void {
-		if (!transitionCompleted) {
-			return;
-		}
+  public pageViewControllerDidFinishAnimatingPreviousViewControllersTransitionCompleted(pageViewController: UIPageViewController, didFinishAnimating: boolean, previousViewControllers: NSArray<UIViewController>, transitionCompleted: boolean): void {
+    if (!transitionCompleted) {
+      return;
+    }
 
-		const owner = this._owner.get();
-		const ownerViewControllers = owner.viewControllers;
-		const selectedIndex = owner.selectedIndex;
-		const nextViewController = pageViewController.viewControllers[0];
-		const nextViewControllerIndex = ownerViewControllers.indexOf(
-			nextViewController
-		);
+    const owner = this._owner.get();
+    const ownerViewControllers = owner.viewControllers;
+    const selectedIndex = owner.selectedIndex;
+    const nextViewController = pageViewController.viewControllers[0];
+    const nextViewControllerIndex = ownerViewControllers.indexOf(nextViewController);
 
-		if (selectedIndex !== nextViewControllerIndex) {
-			owner.selectedIndex = nextViewControllerIndex;
-			owner._canSelectItem = true;
-		}
-	}
+    if (selectedIndex !== nextViewControllerIndex) {
+      owner.selectedIndex = nextViewControllerIndex;
+      owner._canSelectItem = true;
+    }
+  }
 }
 
-function iterateIndexRange(
-	index: number,
-	eps: number,
-	lastIndex: number,
-	callback: (i) => void
-) {
-	const rangeStart = Math.max(0, index - eps);
-	const rangeEnd = Math.min(index + eps, lastIndex);
-	for (let i = rangeStart; i <= rangeEnd; i++) {
-		callback(i);
-	}
+function iterateIndexRange(index: number, eps: number, lastIndex: number, callback: (i) => void) {
+  const rangeStart = Math.max(0, index - eps);
+  const rangeEnd = Math.min(index + eps, lastIndex);
+  for (let i = rangeStart; i <= rangeEnd; i++) {
+    callback(i);
+  }
 }
 
-function updateBackgroundPositions(
-	tabStrip: TabStrip,
-	tabStripItem: TabStripItem,
-	color: UIColor = null
-) {
-	let bgView = (<any>tabStripItem).bgView;
-	const index = tabStripItem._index;
-	let width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
-	const frame = CGRectMake(
-		width * index,
-		0,
-		width,
-		tabStrip.nativeView.frame.size.width
-	);
-	if (!bgView) {
-		bgView = UIView.alloc().initWithFrame(frame);
-		tabStrip.nativeView.insertSubviewAtIndex(bgView, 0);
-		(<any>tabStripItem).bgView = bgView;
-	} else {
-		bgView.frame = frame;
-	}
+function updateBackgroundPositions(tabStrip: TabStrip, tabStripItem: TabStripItem, color: UIColor = null) {
+  let bgView = (<any>tabStripItem).bgView;
+  const index = tabStripItem._index;
+  let width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
+  const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
+  if (!bgView) {
+    bgView = UIView.alloc().initWithFrame(frame);
+    tabStrip.nativeView.insertSubviewAtIndex(bgView, 0);
+    (<any>tabStripItem).bgView = bgView;
+  } else {
+    bgView.frame = frame;
+  }
 
-	const backgroundColor = tabStripItem.style.backgroundColor;
-	bgView.backgroundColor =
-		color ||
-		(backgroundColor instanceof Color
-			? backgroundColor.ios
-			: backgroundColor);
+  const backgroundColor = tabStripItem.style.backgroundColor;
+  bgView.backgroundColor = color || (backgroundColor instanceof Color ? backgroundColor.ios : backgroundColor);
 }
 
-function updateTitleAndIconPositions(
-	tabStripItem: TabStripItem,
-	tabBarItem: UITabBarItem,
-	controller: UIViewController
-) {
-	if (!tabStripItem || !tabBarItem) {
-		return;
-	}
+function updateTitleAndIconPositions(tabStripItem: TabStripItem, tabBarItem: UITabBarItem, controller: UIViewController) {
+  if (!tabStripItem || !tabBarItem) {
+    return;
+  }
 
-	// For iOS <11 icon is *always* above the text.
-	// For iOS 11 icon is above the text *only* on phones in portrait mode.
-	const orientation = controller.interfaceOrientation;
-	const isPortrait =
-		orientation !== UIInterfaceOrientation.LandscapeLeft &&
-		orientation !== UIInterfaceOrientation.LandscapeRight;
-	const isIconAboveTitle = majorVersion < 11 || (isPhone && isPortrait);
+  // For iOS <11 icon is *always* above the text.
+  // For iOS 11 icon is above the text *only* on phones in portrait mode.
+  const orientation = controller.interfaceOrientation;
+  const isPortrait = orientation !== UIInterfaceOrientation.LandscapeLeft && orientation !== UIInterfaceOrientation.LandscapeRight;
+  const isIconAboveTitle = majorVersion < 11 || (isPhone && isPortrait);
 
-	if (!tabStripItem.iconSource) {
-		if (isIconAboveTitle) {
-			tabBarItem.titlePositionAdjustment = {
-				horizontal: 0,
-				vertical: -20,
-			};
-		} else {
-			tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
-		}
-	}
+  if (!tabStripItem.iconSource) {
+    if (isIconAboveTitle) {
+      tabBarItem.titlePositionAdjustment = {
+        horizontal: 0,
+        vertical: -20,
+      };
+    } else {
+      tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: 0 };
+    }
+  }
 
-	if (!tabStripItem.title) {
-		if (isIconAboveTitle) {
-			tabBarItem.imageInsets = new UIEdgeInsets({
-				top: 6,
-				left: 0,
-				bottom: -6,
-				right: 0,
-			});
-		} else {
-			tabBarItem.imageInsets = new UIEdgeInsets({
-				top: 0,
-				left: 0,
-				bottom: 0,
-				right: 0,
-			});
-		}
-	}
+  if (!tabStripItem.title) {
+    if (isIconAboveTitle) {
+      tabBarItem.imageInsets = new UIEdgeInsets({
+        top: 6,
+        left: 0,
+        bottom: -6,
+        right: 0,
+      });
+    } else {
+      tabBarItem.imageInsets = new UIEdgeInsets({
+        top: 0,
+        left: 0,
+        bottom: 0,
+        right: 0,
+      });
+    }
+  }
 }
 
 export class Tabs extends TabsBase {

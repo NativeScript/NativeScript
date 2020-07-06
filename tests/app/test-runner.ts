@@ -4,13 +4,13 @@ import './ui-test';
 
 import { _resetRootView } from '@nativescript/core/application';
 import * as platform from '@nativescript/core/platform';
-import { messageType } from '@nativescript/core/trace';
+import { Trace } from '@nativescript/core/trace';
 import { Button } from '@nativescript/core/ui/button';
 import { Frame } from '@nativescript/core/ui/frame';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import { Page } from '@nativescript/core/ui/page';
 import { TextView } from '@nativescript/core/ui/text-view';
-import { ios } from '@nativescript/core/utils/utils';
+import { ios } from '@nativescript/core/utils';
 
 Frame.defaultAnimatedNavigation = false;
 
@@ -374,17 +374,17 @@ function printRunTestStats() {
         `DURATION: ${totalTime} ms\n` +
         `=== END OF TESTS ===\n`;
 
-    TKUnit.write(finalMessage, messageType.info);
+    TKUnit.write(finalMessage, Trace.messageType.info);
 
     failedTestInfo.forEach((message, i, arr) => {
-        TKUnit.write(message, messageType.error);
+        TKUnit.write(message, Trace.messageType.error);
         finalMessage += "\n" + message;
     });
 
     // console.log("test-result.xml:\n" + generateTestFile(allTests));
 
     // DO NOT CHANGE THE FIRST ROW! Used as an indicator for test run pass detection.
-    TKUnit.write(`Tests EOF!`, messageType.info);
+    TKUnit.write(`Tests EOF!`, Trace.messageType.info);
 
     showReportPage(finalMessage);
 }
@@ -451,14 +451,14 @@ function showReportPage(finalMessage: string) {
 
 function startLog(): void {
     let testsName: string = this.name;
-    TKUnit.write("START " + testsName + " TESTS.", messageType.info);
+    TKUnit.write("START " + testsName + " TESTS.", Trace.messageType.info);
     this.start = TKUnit.time();
 }
 
 function log(): void {
     let testsName: string = this.name;
     let duration = TKUnit.time() - this.start;
-    TKUnit.write(testsName + " COMPLETED for " + duration.toFixed(2) + " BACKSTACK DEPTH: " + Frame.topmost().backStack.length, messageType.info);
+    TKUnit.write(testsName + " COMPLETED for " + duration.toFixed(2) + " BACKSTACK DEPTH: " + Frame.topmost().backStack.length, Trace.messageType.info);
 }
 
 let testsSelector: string

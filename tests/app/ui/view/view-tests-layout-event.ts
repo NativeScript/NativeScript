@@ -1,6 +1,4 @@
-import { View } from "@nativescript/core/ui/core/view";
-import { Button } from "@nativescript/core/ui/button";
-import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout/stack-layout";
+import { View, Button, StackLayout } from "@nativescript/core";
 import * as helper from "../../ui-helper";
 import * as TKUnit from "../../tk-unit";
 

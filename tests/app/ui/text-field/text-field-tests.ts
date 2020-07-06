@@ -1,16 +1,11 @@
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
-import { View, isIOS } from "@nativescript/core/ui/core/view";
-import { Page } from "@nativescript/core/ui/page";
-import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
-import { Color } from "@nativescript/core/color";
+import { View, isIOS, StackLayout, Page, Color, Span, FormattedString } from "@nativescript/core";
 import {
     getNativeText, getNativeHint, typeTextNatively, typeTextNativelyWithReturn, getNativeSecure,
     getNativeFontSize, getNativeColor, getNativeBackgroundColor,
     getNativeTextAlignment, getNativePlaceholderColor, getNativeFocus
 } from "./text-field-tests-native";
-import { FormattedString } from "@nativescript/core/text/formatted-string";
-import { Span } from "@nativescript/core/text/span";
 
 // >> require-textfield
 import { TextField } from "@nativescript/core/ui/text-field";

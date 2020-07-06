@@ -10,10 +10,10 @@ import * as helper from "../../ui-helper";
 import * as types from "@nativescript/core/utils/types";
 import * as viewModule from "@nativescript/core/ui/core/view";
 import { resolveFileNameFromUrl, removeTaggedAdditionalCSS, addTaggedAdditionalCSS } from "@nativescript/core/ui/styling/style-scope";
-import { unsetValue } from "@nativescript/core/ui/core/view";
+import { unsetValue } from "@nativescript/core";
 import * as color from "@nativescript/core/color";
 import * as fs from "@nativescript/core/file-system";
-import { _evaluateCssCalcExpression } from "@nativescript/core/ui/core/properties/properties";
+import { _evaluateCssCalcExpression } from "@nativescript/core/ui/core/properties";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     const stack = new stackModule.StackLayout();

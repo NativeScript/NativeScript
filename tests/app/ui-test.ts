@@ -1,11 +1,9 @@
-import * as trace from "@nativescript/core/trace";
-import { View } from "@nativescript/core/ui/core/view";
-import { Page } from "@nativescript/core/ui/page";
+import { Page, View, Trace, TraceWriter } from "@nativescript/core";
 
 import * as TKUnit from "./tk-unit";
 import * as navHelper from "./ui-helper";
 
-export class UITest<T extends View> implements trace.TraceWriter {
+export class UITest<T extends View> implements TraceWriter {
 
     private _testPage: Page;
     private _testView: T;
@@ -43,14 +41,14 @@ export class UITest<T extends View> implements trace.TraceWriter {
             return page;
         };
 
-        trace.addWriter(this);
+        Trace.addWriter(this);
         navHelper.navigate(pageFactory);
     }
 
     public tearDownModule() {
         this._testPage = null;
         this._testView = null;
-        trace.removeWriter(this);
+        Trace.removeWriter(this);
     }
 
     public setUp() {
@@ -67,7 +65,7 @@ export class UITest<T extends View> implements trace.TraceWriter {
     }
 
     public write(message: any, category: string, type?: number): void {
-        if (category === trace.categories.Error) {
+        if (category === Trace.categories.Error) {
             this._errorMessage = message;
         }
     }

@@ -5,9 +5,9 @@ import * as scroll from "@nativescript/core/ui/scroll-view";
 import * as textView from "@nativescript/core/ui/text-view";
 import * as timer from "@nativescript/core/timer";
 import * as http from "@nativescript/core/http";
-import * as trace from "@nativescript/core/trace";
-trace.enable();
-trace.setCategories(trace.categories.Style);
+import { Trace } from "@nativescript/core";
+Trace.enable();
+Trace.setCategories(Trace.categories.Style);
 
 export function createPage() {
     function createTxt(text: string) {

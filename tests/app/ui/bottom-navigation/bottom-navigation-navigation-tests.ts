@@ -5,7 +5,7 @@ import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
 import { Frame } from "@nativescript/core/ui/frame";
 import { Page } from "@nativescript/core/ui/page";
 import { ListView, ItemEventData } from "@nativescript/core/ui/list-view";
-import { BottomNavigation, TabContentItem, TabStrip, TabStripItem } from "@nativescript/core/ui/bottom-navigation";
+import { BottomNavigation, TabContentItem, TabStrip, TabStripItem } from "@nativescript/core";
 import { Button } from "@nativescript/core/ui/button";
 
 var ASYNC = 2;

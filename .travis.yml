@@ -3,12 +3,12 @@ node_js:
   - "node"
 script:
 - npm install
-- npm run tslint
+- npm run format-check
 - npm run setup
 - npm run unit-test
 
 # public API changes check
-- npm run api-extractor-ci
+# - npm run api-extractor-ci
 
 # circular references check
 - cd tests && npm i

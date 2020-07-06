@@ -1,7 +1,5 @@
 // >> article-require-page-module
-import { Page, ShownModallyData, NavigatedData } from "@nativescript/core/ui/page";
-// FrameModule is needed in order to have an option to navigate to the new page.
-import { Frame, NavigationEntry } from "@nativescript/core/ui/frame";
+import { Page, ShownModallyData, NavigatedData, View, PercentLength, unsetValue, EventData, isIOS, Frame, NavigationEntry, TabView, TabViewItem, Button } from "@nativescript/core";
 // << article-require-page-module
 
 // TODO: Remove this and get it from global to decouple builder for angular
@@ -18,13 +16,10 @@ import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 
 import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
-import { View, PercentLength, unsetValue, EventData, isIOS } from "@nativescript/core/ui/core/view";
 import { Label } from "@nativescript/core/ui/label";
 import { Color } from "@nativescript/core/color";
-import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view/tab-view";
 import { _resetRootView } from "@nativescript/core/application";
-import { Button } from "@nativescript/core/ui/button/button";
-import { ios } from "@nativescript/core/utils/utils";
+import { ios } from "@nativescript/core/utils";
 
 export function addLabelToPage(page: Page, text?: string) {
     const label = new Label();

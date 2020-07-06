@@ -1,4 +1,4 @@
-﻿import * as observable from "@nativescript/core/data/observable";
+﻿import { EventData } from "@nativescript/core";
 import * as stackLayoutModule from "@nativescript/core/ui/layouts/stack-layout";
 import * as label from "@nativescript/core/ui/label";
 import * as button from "@nativescript/core/ui/button";
@@ -13,7 +13,7 @@ export class MyControl extends stackLayoutModule.StackLayout {
         lbl.id = "my-test-label";
         var btn = new button.Button();
         btn.text = "Tap me!";
-        btn.on(button.Button.tapEvent, (args: observable.EventData) => {
+        btn.on(button.Button.tapEvent, (args: EventData) => {
             lbl.text = "Tap " + counter++;
         });
 

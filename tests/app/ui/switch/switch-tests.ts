@@ -2,8 +2,7 @@ import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as viewModule from "@nativescript/core/ui/core/view";
 import * as bindable from "@nativescript/core/ui/core/bindable";
-import * as observable from "@nativescript/core/data/observable";
-import * as color from "@nativescript/core/color";
+import { Color, Observable, PropertyChangeData, EventData } from "@nativescript/core";
 import * as platform from "@nativescript/core/platform";
 // >> article-require-switch
 import * as switchModule from "@nativescript/core/ui/switch";
@@ -14,7 +13,7 @@ import * as switchModule from "@nativescript/core/ui/switch";
 // >> article-binding-switch-property
 function pageLoaded(args) {
     var page = args.object;
-    var obj = new observable.Observable();
+    var obj = new Observable();
     obj.set("someProperty", false);
     page.bindingContext = obj;
 }
@@ -46,7 +45,7 @@ export function test_default_native_values() {
 if (platform.device.os === platform.platformNames.ios) {
     exports.test_set_color = function () {
         var mySwitch = new switchModule.Switch();
-        mySwitch.color = new color.Color("red");
+        mySwitch.color = new Color("red");
 
         function testAction(views: Array<viewModule.View>) {
             TKUnit.assert(mySwitch.color.ios.isEqual(mySwitch.ios.thumbTintColor), "mySwitch.color");
@@ -57,10 +56,10 @@ if (platform.device.os === platform.platformNames.ios) {
 
     exports.test_set_backgroundColor = function () {
         var mySwitch = new switchModule.Switch();
-        mySwitch.backgroundColor = new color.Color("red");
+        mySwitch.backgroundColor = new Color("red");
 
         function testAction(views: Array<viewModule.View>) {
-            TKUnit.assert(CGColorEqualToColor((<color.Color>mySwitch.backgroundColor).ios.CGColor, mySwitch.ios.onTintColor.CGColor), "mySwitch.color");
+            TKUnit.assert(CGColorEqualToColor((<Color>mySwitch.backgroundColor).ios.CGColor, mySwitch.ios.onTintColor.CGColor), "mySwitch.color");
         }
 
         helper.buildUIAndRunTest(mySwitch, testAction);
@@ -94,9 +93,9 @@ export function test_set_native_checked_triggers_propertyChanged() {
     function testAction(views: Array<viewModule.View>) {
         var checkedChanged = false;
         var allChanges = 0;
-        mySwitch.on("checkedChange", function (data: observable.EventData) {
+        mySwitch.on("checkedChange", function(data: EventData) {
             allChanges++;
-            var propertyData = <observable.PropertyChangeData>data;
+            var propertyData = <PropertyChangeData>data;
             if (propertyData && propertyData.propertyName === "checked" && propertyData.value === true) {
                 checkedChanged = true;
             }
@@ -118,7 +117,7 @@ export function test_binding_value_to_model() {
 
     function testAction(views: Array<viewModule.View>) {
         // >> aricle-binding-checked-property
-        var model = new observable.Observable();
+        var model = new Observable();
         model.set("enabled", true);
         var options: bindable.BindingOptions = {
             sourceProperty: "enabled",

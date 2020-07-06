@@ -4,7 +4,7 @@ import { Builder } from "@nativescript/core/ui/builder";
 import { Label } from "@nativescript/core/ui/label";
 import { Button } from "@nativescript/core/ui/button";
 import { Page } from "@nativescript/core/ui/page";
-import { View, isIOS } from "@nativescript/core/ui/core/view";
+import { View, isIOS } from "@nativescript/core";
 import { fromObject } from "@nativescript/core/data/observable";
 import { Frame } from "@nativescript/core/ui/frame";
 

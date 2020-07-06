@@ -5,21 +5,21 @@ function mapSelectors(selector) {
     if (!selector) {
         return [];
     }
-    return selector.split(/\s*(?![^(]*\)),\s*/).map(function (s) { return s.replace(/\u200C/g, ","); });
+    return selector.split(/\s*(?![^(]*\)),\s*/).map(function (s) { return s.replace(/\u200C/g, ','); });
 }
 function mapPosition(node, css) {
     var res = {
         start: {
             line: node.loc.start.line,
-            column: node.loc.start.column
+            column: node.loc.start.column,
         },
         end: {
             line: node.loc.end.line,
-            column: node.loc.end.column
+            column: node.loc.end.column,
         },
-        content: css
+        content: css,
     };
-    if (node.loc.source && node.loc.source !== "<unknown>") {
+    if (node.loc.source && node.loc.source !== '<unknown>') {
         res.source = node.loc.source;
     }
     return res;
@@ -29,41 +29,44 @@ function transformAst(node, css, type) {
     if (!node) {
         return;
     }
-    if (node.type === "StyleSheet") {
+    if (node.type === 'StyleSheet') {
         return {
-            type: "stylesheet",
+            type: 'stylesheet',
             stylesheet: {
-                rules: node.children.map(function (child) { return transformAst(child, css); }).filter(function (child) { return child !== null; }).toArray(),
-                parsingErrors: []
-            }
+                rules: node.children
+                    .map(function (child) { return transformAst(child, css); })
+                    .filter(function (child) { return child !== null; })
+                    .toArray(),
+                parsingErrors: [],
+            },
         };
     }
-    if (node.type === "Atrule") {
+    if (node.type === 'Atrule') {
         var atrule = {
             type: node.name,
         };
-        if (node.name === "supports" || node.name === "media") {
+        if (node.name === 'supports' || node.name === 'media') {
             atrule[node.name] = node.prelude.value;
             atrule.rules = transformAst(node.block, css);
         }
-        else if (node.name === "page") {
+        else if (node.name === 'page') {
             atrule.selectors = node.prelude ? mapSelectors(node.prelude.value) : [];
             atrule.declarations = transformAst(node.block, css);
         }
-        else if (node.name === "document") {
-            atrule.document = node.prelude ? node.prelude.value : "";
-            atrule.vendor = "";
+        else if (node.name === 'document') {
+            atrule.document = node.prelude ? node.prelude.value : '';
+            atrule.vendor = '';
             atrule.rules = transformAst(node.block, css);
         }
-        else if (node.name === "font-face") {
+        else if (node.name === 'font-face') {
             atrule.declarations = transformAst(node.block, css);
         }
-        else if (node.name === "import" || node.name === "charset" || node.name === "namespace") {
-            atrule[node.name] = node.prelude ? node.prelude.value : "";
+        else if (node.name === 'import' || node.name === 'charset' || node.name === 'namespace') {
+            atrule[node.name] = node.prelude ? node.prelude.value : '';
         }
-        else if (node.name === "keyframes") {
-            atrule.name = node.prelude ? node.prelude.value : "";
-            atrule.keyframes = transformAst(node.block, css, "keyframe");
+        else if (node.name === 'keyframes') {
+            atrule.name = node.prelude ? node.prelude.value : '';
+            atrule.keyframes = transformAst(node.block, css, 'keyframe');
             atrule.vendor = undefined;
         }
         else {
@@ -72,17 +75,20 @@ function transformAst(node, css, type) {
         atrule.position = mapPosition(node, css);
         return atrule;
     }
-    if (node.type === "Block") {
-        return node.children.map(function (child) { return transformAst(child, css, type); }).filter(function (child) { return child !== null; }).toArray();
+    if (node.type === 'Block') {
+        return node.children
+            .map(function (child) { return transformAst(child, css, type); })
+            .filter(function (child) { return child !== null; })
+            .toArray();
     }
-    if (node.type === "Rule") {
+    if (node.type === 'Rule') {
         var value = node.prelude.value;
         var res = {
-            type: type != null ? type : "rule",
+            type: type != null ? type : 'rule',
             declarations: transformAst(node.block, css),
-            position: mapPosition(node, css)
+            position: mapPosition(node, css),
         };
-        if (type === "keyframe") {
+        if (type === 'keyframe') {
             res.values = mapSelectors(value);
         }
         else {
@@ -90,22 +96,22 @@ function transformAst(node, css, type) {
         }
         return res;
     }
-    if (node.type === "Comment") {
+    if (node.type === 'Comment') {
         return {
-            type: "comment",
+            type: 'comment',
             comment: node.value,
-            position: mapPosition(node, css)
+            position: mapPosition(node, css),
         };
     }
-    if (node.type === "Declaration") {
+    if (node.type === 'Declaration') {
         return {
-            type: "declaration",
+            type: 'declaration',
             property: node.property,
-            value: node.value.value ? node.value.value.trim() : "",
-            position: mapPosition(node, css)
+            value: node.value.value ? node.value.value.trim() : '',
+            position: mapPosition(node, css),
         };
     }
-    if (node.type === "Raw") {
+    if (node.type === 'Raw') {
         return null;
     }
     throw Error("Unknown node type " + node.type);
@@ -120,7 +126,7 @@ function cssTreeParse(css, source) {
         filename: source,
         onParseError: function (error) {
             errors.push(source + ":" + error.line + ":" + error.column + ": " + error.formattedMessage);
-        }
+        },
     });
     if (errors.length > 0) {
         throw new Error(errors[0]);

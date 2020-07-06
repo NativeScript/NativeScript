@@ -86,15 +86,15 @@ export function getClassInfo(object: Object): ClassInfo;
  * A Class holding information about a class
  */
 export class ClassInfo {
-	/**
-	 * Gets the name of the class.
-	 */
-	name: string;
+  /**
+   * Gets the name of the class.
+   */
+  name: string;
 
-	/**
-	 * Gets the ClassInfo for the base class of the current info.
-	 */
-	baseClassInfo: ClassInfo;
+  /**
+   * Gets the ClassInfo for the base class of the current info.
+   */
+  baseClassInfo: ClassInfo;
 }
 
 /**

@@ -1,7 +1,7 @@
 ﻿import * as observable from "@nativescript/core/data/observable";
-import * as trace from "@nativescript/core/trace";
-trace.addCategories(trace.categories.Layout);
-trace.enable();
+import { Trace } from "@nativescript/core";
+Trace.addCategories(Trace.categories.Layout);
+Trace.enable();
 
 export function onLoaded(args: observable.EventData) {
     (<any>args.object).bindingContext = [0, 1];

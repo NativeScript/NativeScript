@@ -2,8 +2,8 @@ import { Image } from "@nativescript/core/ui/image";
 import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
 import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
 import { isIOS, isAndroid } from "@nativescript/core/platform";
-import { PropertyChangeData } from "@nativescript/core/data/observable";
-import * as utils from "@nativescript/core/utils/utils";
+import { PropertyChangeData } from "@nativescript/core";
+import * as utils from "@nativescript/core/utils";
 import * as TKUnit from "../../tk-unit";
 import { getColor } from "../../ui-helper";
 
@@ -15,7 +15,6 @@ import * as types from "@nativescript/core/utils/types";
 import { ImageSource } from "@nativescript/core/image-source";
 import * as ViewModule from "@nativescript/core/ui/core/view";
 import * as helper from "../../ui-helper";
-import * as ObservableModule from "@nativescript/core/data/observable";
 import * as color from "@nativescript/core/color";
 import * as backgroundModule from "@nativescript/core/ui/styling/background";
 import { android as androidApp } from "@nativescript/core/application";
@@ -74,7 +73,7 @@ function runImageTestAsync(image: ImageModule.Image, src: string, done: (e: any)
     image.loadMode = "async";
     image.src = null;
 
-    let handler = function (data: ObservableModule.PropertyChangeData) {
+    let handler = function (data: PropertyChangeData) {
         image.off(IMAGE_LOADED_EVENT, handler);
 
         try {

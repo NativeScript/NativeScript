@@ -1,21 +1,20 @@
-import * as trace from "@nativescript/core/trace";
-import { Page } from "@nativescript/core/ui/page";
+import { Trace, Page } from "@nativescript/core";
 
 import * as tests from "./test-runner";
 
 let executeTests = true;
 
-trace.enable();
-trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
+Trace.enable();
+Trace.addCategories(Trace.categories.Test + "," + Trace.categories.Error);
 
 // When debugging
-// trace.setCategories(trace.categories.concat(
-//    trace.categories.Test,
-//    trace.categories.Navigation,
-//    trace.categories.Transition,
-//    trace.categories.NativeLifecycle,
-//    trace.categories.ViewHierarchy,
-//    trace.categories.VisualTreeEvents
+// Trace.setCategories(Trace.categories.concat(
+//    Trace.categories.Test,
+//    Trace.categories.Navigation,
+//    Trace.categories.Transition,
+//    Trace.categories.NativeLifecycle,
+//    Trace.categories.ViewHierarchy,
+//    Trace.categories.VisualTreeEvents
 // ));
 
 function runTests() {

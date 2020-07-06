@@ -1,9 +1,8 @@
-import { View, Length } from "@nativescript/core/ui/core/view";
 import * as TKUnit from "../../tk-unit";
-import { layout } from "@nativescript/core/utils/utils";
+import { Utils, View, Length } from "@nativescript/core";
 
-import round = layout.round;
-export const dipToDp = layout.toDevicePixels;
+const round = Utils.layout.round;
+export const dipToDp = Utils.layout.toDevicePixels;
 
 const EPS = 1;
 

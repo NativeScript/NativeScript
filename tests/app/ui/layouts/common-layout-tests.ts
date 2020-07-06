@@ -1,8 +1,7 @@
 ﻿import * as TKUnit from "../../tk-unit";
 import * as layoutHelper from "./layout-helper";
 import * as testModule from "../../ui-test";
-import { LayoutBase, unsetValue, PercentLength } from "@nativescript/core/ui/layouts/layout-base";
-import * as platform from "@nativescript/core/platform";
+import { LayoutBase, unsetValue, PercentLength, Device, platformNames } from "@nativescript/core";
 
 function getNativeLayoutParams(nativeView: android.view.View): org.nativescript.widgets.CommonLayoutParams {
     var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
@@ -14,7 +13,7 @@ function getNativeLayoutParams(nativeView: android.view.View): org.nativescript.
 }
 
 export function percent_support_nativeLayoutParams_are_correct(test: testModule.UITest<LayoutBase>) {
-    if (platform.device.os !== platform.platformNames.android) {
+    if (Device.os !== platformNames.android) {
         return;
     }
 

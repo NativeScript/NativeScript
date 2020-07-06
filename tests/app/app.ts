@@ -5,17 +5,17 @@ if (typeof NSDate !== "undefined") {
     start = java.lang.System.currentTimeMillis();
 }
 
-import * as application from "@nativescript/core/application";
+import { Application, ApplicationEventData, UnhandledErrorEventData, DiscardedErrorEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidApplication, AndroidActivityNewIntentEventData, AndroidActivityResultEventData, AndroidActivityBackPressedEventData } from "@nativescript/core";
 
-if (application.ios) {
+if (Application.ios) {
     // Observe application notifications.
-    application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, (notification: NSNotification) => {
+    Application.ios.addNotificationObserver(UIApplicationDidFinishLaunchingNotification, (notification: NSNotification) => {
         console.log("UIApplicationDidFinishLaunchingNotification: " + notification);
     });
 }
 
 // Common events for both Android and iOS.
-application.on(application.displayedEvent, function (args: application.ApplicationEventData) {
+Application.on(Application.displayedEvent, function (args: ApplicationEventData) {
     (<any>global).isDisplayedEventFired = true;
 
     if (args.android) {
@@ -27,7 +27,7 @@ application.on(application.displayedEvent, function (args: application.Applicati
     }
 });
 
-application.on(application.launchEvent, function (args: application.ApplicationEventData) {
+Application.on(Application.launchEvent, function (args: ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android.content.Intent class.
         console.log("Launched Android application with the following intent: " + args.android + ".");
@@ -37,7 +37,7 @@ application.on(application.launchEvent, function (args: application.ApplicationE
     }
 });
 
-application.on(application.suspendEvent, function (args: application.ApplicationEventData) {
+Application.on(Application.suspendEvent, function (args: ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an Android activity class.
         console.log("Suspend Activity: " + args.android);
@@ -47,7 +47,7 @@ application.on(application.suspendEvent, function (args: application.Application
     }
 });
 
-application.on(application.resumeEvent, function (args: application.ApplicationEventData) {
+Application.on(Application.resumeEvent, function (args: ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an Android activity class.
         console.log("Resume Activity: " + args.android);
@@ -57,7 +57,7 @@ application.on(application.resumeEvent, function (args: application.ApplicationE
     }
 });
 
-application.on(application.exitEvent, function (args: application.ApplicationEventData) {
+Application.on(Application.exitEvent, function (args: ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an Android activity class.
         console.log("Exit Activity: " + args.android);
@@ -67,7 +67,7 @@ application.on(application.exitEvent, function (args: application.ApplicationEve
     }
 });
 
-application.on(application.lowMemoryEvent, function (args: application.ApplicationEventData) {
+Application.on(Application.lowMemoryEvent, function (args: ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an Android activity class.
         console.log("Low Memory: " + args.android);
@@ -78,59 +78,59 @@ application.on(application.lowMemoryEvent, function (args: application.Applicati
 });
 
 // Error events.
-application.on(application.uncaughtErrorEvent, function (args: application.UnhandledErrorEventData) {
+Application.on(Application.uncaughtErrorEvent, function (args: UnhandledErrorEventData) {
     console.log("NativeScriptError: " + args.error);
     console.log((<any>args.error).nativeException || (<any>args.error).nativeError);
     console.log((<any>args.error).stackTrace || (<any>args.error).stack);
 });
 
-application.on(application.discardedErrorEvent, function (args: application.DiscardedErrorEventData) {
+Application.on(Application.discardedErrorEvent, function (args: DiscardedErrorEventData) {
     console.log("[Discarded] NativeScriptError: " + args.error);
     console.log((<any>args.error).nativeException || (<any>args.error).nativeError);
     console.log((<any>args.error).stackTrace || (<any>args.error).stack);
 });
 
 // Android activity events.
-if (application.android) {
-    application.android.on(application.AndroidApplication.activityCreatedEvent, function (args: application.AndroidActivityBundleEventData) {
+if (Application.android) {
+  Application.android.on(AndroidApplication.activityCreatedEvent, function (args: AndroidActivityBundleEventData) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity + ", Bundle: " + args.bundle);
     });
 
-    application.android.on(application.AndroidApplication.activityDestroyedEvent, function (args: application.AndroidActivityEventData) {
+    Application.android.on(AndroidApplication.activityDestroyedEvent, function (args: AndroidActivityEventData) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity);
     });
 
-    application.android.on(application.AndroidApplication.activityStartedEvent, function (args: application.AndroidActivityEventData) {
+    Application.android.on(AndroidApplication.activityStartedEvent, function (args: AndroidActivityEventData) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity);
     });
 
-    application.android.on(application.AndroidApplication.activityPausedEvent, function (args: application.AndroidActivityEventData) {
+    Application.android.on(AndroidApplication.activityPausedEvent, function (args: AndroidActivityEventData) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity);
     });
 
-    application.android.on(application.AndroidApplication.activityResumedEvent, function (args: application.AndroidActivityEventData) {
+    Application.android.on(AndroidApplication.activityResumedEvent, function (args: AndroidActivityEventData) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity);
     });
 
-    application.android.on(application.AndroidApplication.activityStoppedEvent, function (args: application.AndroidActivityEventData) {
+    Application.android.on(AndroidApplication.activityStoppedEvent, function (args: AndroidActivityEventData) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity);
     });
 
-    application.android.on(application.AndroidApplication.saveActivityStateEvent, function (args: application.AndroidActivityBundleEventData) {
+    Application.android.on(AndroidApplication.saveActivityStateEvent, function (args: AndroidActivityBundleEventData) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity + ", Bundle: " + args.bundle);
     });
 
-    application.android.on(application.AndroidApplication.activityResultEvent, function (args: application.AndroidActivityResultEventData) {
+    Application.android.on(AndroidApplication.activityResultEvent, function (args: AndroidActivityResultEventData) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity +
             ", requestCode: " + args.requestCode + ", resultCode: " + args.resultCode + ", Intent: " + args.intent);
     });
 
-    application.android.on(application.AndroidApplication.activityBackPressedEvent, function (args: application.AndroidActivityBackPressedEventData) {
+    Application.android.on(AndroidApplication.activityBackPressedEvent, function (args: AndroidActivityBackPressedEventData) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity);
         // Set args.cancel = true to cancel back navigation and do something custom.
     });
 
-    application.android.on(application.AndroidApplication.activityNewIntentEvent, function (args: application.AndroidActivityNewIntentEventData) {
+    Application.android.on(AndroidApplication.activityNewIntentEvent, function (args: AndroidActivityNewIntentEventData) {
         console.log("Event: " + args.eventName + ", Activity: " + args.activity + ", Intent: " + args.intent);
     });
 }
@@ -144,4 +144,4 @@ if (typeof NSDate !== "undefined") {
 
 console.log(`TIME TO LOAD APP: ${time} ms`);
 
-application.run({ moduleName: "app-root" });
+Application.run({ moduleName: "app-root" });

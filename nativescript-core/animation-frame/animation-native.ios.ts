@@ -1,3 +1,3 @@
-import { time } from "../profiling";
+import { time } from '../profiling';
 
 export const getTimeInFrameBase = time;

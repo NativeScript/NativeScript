@@ -2,7 +2,7 @@ import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { UITest } from "../../ui-test";
 import { getResources as appGetResources } from "@nativescript/core/application";
-import { Observable, EventData } from "@nativescript/core/data/observable";
+import { Observable, EventData, ObservableArray, Label } from "@nativescript/core";
 import { isFunction, isUndefined } from "@nativescript/core/utils/types";
 import { isAndroid, isIOS } from "@nativescript/core/platform";
 import { GC } from "@nativescript/core/utils/utils";
@@ -13,11 +13,6 @@ import { MyButton, MyStackLayout } from "../layouts/layout-helper";
 // >> article-require-listview-module
 import { ListView, ItemEventData } from "@nativescript/core/ui/list-view";
 // << article-require-listview-module
-
-// >> article-require-modules-listview
-import { ObservableArray } from "@nativescript/core/data/observable-array";
-import { Label } from "@nativescript/core/ui/label";
-// << article-require-modules-listview
 
 // >> article-item-tap
 function listViewItemTap(args) {

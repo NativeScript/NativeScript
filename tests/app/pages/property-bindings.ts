@@ -4,15 +4,15 @@ import * as stacks from "@nativescript/core/ui/layouts/stack-layout";
 import * as scroll from "@nativescript/core/ui/scroll-view";
 import * as textView from "@nativescript/core/ui/text-view";
 import * as labels from "@nativescript/core/ui/label";
-import * as trace from "@nativescript/core/trace";
+import { Trace } from "@nativescript/core";
 import * as gridModule from "@nativescript/core/ui/layouts/grid-layout";
 import * as sliders from "@nativescript/core/ui/slider";
 import * as switches from "@nativescript/core/ui/switch";
 import * as bindable from "@nativescript/core/ui/core/bindable";
 
-trace.enable();
-//trace.setCategories(trace.categories.Style + " ," + trace.categories.Binding);
-trace.setCategories(trace.categories.Binding);
+Trace.enable();
+//Trace.setCategories(Trace.categories.Style + " ," + Trace.categories.Binding);
+Trace.setCategories(Trace.categories.Binding);
 
 interface NumericProeprtyDescriptor {
     name: string;

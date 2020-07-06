@@ -3,7 +3,7 @@ import * as helper from "../../ui-helper";
 import { View } from "@nativescript/core/ui/core/view";
 import { Page } from "@nativescript/core/ui/page";
 import { BindingOptions } from "@nativescript/core/ui/core/bindable";
-import { Observable, EventData, PropertyChangeData } from "@nativescript/core/data/observable";
+import { Observable, EventData, PropertyChangeData } from "@nativescript/core";
 import { Color } from "@nativescript/core/color";
 import { isIOS } from "@nativescript/core/platform";
 

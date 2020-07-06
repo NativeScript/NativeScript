@@ -1,5 +1,5 @@
 import * as TKUnit from "../../tk-unit";
-import { Page, View } from "@nativescript/core/ui/page";
+import { Page, View } from "@nativescript/core";
 import { Frame, NavigationEntry, _stack } from "@nativescript/core/ui/frame";
 import { _resetRootView, getRootView } from "@nativescript/core/application";
 import { TabView } from "@nativescript/core/ui/tab-view";

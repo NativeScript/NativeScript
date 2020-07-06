@@ -1,8 +1,5 @@
-import { ShownModallyData } from "@nativescript/core/ui/core/view";
-import { TabView } from "@nativescript/core/ui/tab-view/tab-view";
+import { ShownModallyData, Frame, isIOS, TabView } from "@nativescript/core";
 import * as TKUnit from "../../tk-unit";
-import { Frame } from "@nativescript/core/ui/frame";
-import { isIOS } from "@nativescript/core/platform";
 
 export function onShownModally(args: ShownModallyData) {
     const tabView = <TabView>args.object;

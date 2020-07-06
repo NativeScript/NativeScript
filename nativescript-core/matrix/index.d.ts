@@ -4,7 +4,7 @@
  * may be changed in a non-major version.
  */
 
-import { TransformFunctionsInfo } from "../ui/animation";
+import { TransformFunctionsInfo } from '../ui/animation';
 
 /**
  * Returns the affine matrix representation of the transformation.
@@ -32,6 +32,4 @@ export declare function multiplyAffine2d(m1: number[], m2: number[]): number[];
  * Decomposes a css matrix to simple transforms - translate, rotate and scale.
  * @param matrix The css matrix array to decompose.
  */
-export function decompose2DTransformMatrix(
-	matrix: number[]
-): TransformFunctionsInfo;
+export function decompose2DTransformMatrix(matrix: number[]): TransformFunctionsInfo;

@@ -1,36 +1,36 @@
 // >> trace-require
-import * as trace from "@nativescript/core/trace";
+import { Trace } from "@nativescript/core";
 // << trace-require
 
 export var test_DummyTestForSnippetOnly0 = function () {
     // >> trace-all-categories
-    trace.setCategories(trace.categories.All);
-    trace.enable();
+    Trace.setCategories(Trace.categories.All);
+    Trace.enable();
     // << trace-all-categories
 };
 
 export var test_DummyTestForSnippetOnly1 = function () {
     // >> trace-specific-categories
-    trace.setCategories(trace.categories.concat(
-        trace.categories.Binding
-        , trace.categories.Debug
-        , trace.categories.Layout
-        , trace.categories.NativeLifecycle
-        , trace.categories.Navigation
-        , trace.categories.Style
-        , trace.categories.ViewHierarchy
-        , trace.categories.VisualTreeEvents
+    Trace.setCategories(Trace.categories.All.concat(
+        Trace.categories.Binding
+        , Trace.categories.Debug
+        , Trace.categories.Layout
+        , Trace.categories.NativeLifecycle
+        , Trace.categories.Navigation
+        , Trace.categories.Style
+        , Trace.categories.ViewHierarchy
+        , Trace.categories.VisualTreeEvents
     ));
-    trace.enable();
+    Trace.enable();
     // << trace-specific-categories
 };
 
 export var test_DummyTestForSnippetOnly2 = function () {
     // >> trace-message
-    trace.setCategories(trace.categories.Debug);
-    trace.enable();
-    if (trace.isEnabled()) {
-        trace.write("My Debug Message", trace.categories.Debug);
+    Trace.setCategories(Trace.categories.Debug);
+    Trace.enable();
+    if (Trace.isEnabled()) {
+        Trace.write("My Debug Message", Trace.categories.Debug);
     }
     // << trace-message
 };

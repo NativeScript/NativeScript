@@ -1,16 +1,4 @@
-import { Color } from "@nativescript/core/color";
-import { FormattedString, Span } from "@nativescript/core/text/formatted-string";
-import { ActionBar } from "@nativescript/core/ui/action-bar";
-// TODO: Remove this and get it from global to decouple builder for angular
-import { Builder } from "@nativescript/core/ui/builder";
-import { Button } from "@nativescript/core/ui/button";
-import { isIOS, unsetValue, View, ViewBase } from "@nativescript/core/ui/core/view";
-import { Frame, NavigationEntry } from "@nativescript/core/ui/frame";
-import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
-import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
-import { Page } from "@nativescript/core/ui/page";
-import { TabView, TabViewItem } from "@nativescript/core/ui/tab-view";
-import * as utils from "@nativescript/core/utils/utils";
+import { Color, Button, FormattedString, Span, ActionBar, Builder, isIOS, unsetValue, View, ViewBase, Frame, NavigationEntry, LayoutBase, StackLayout, Page, TabView, TabViewItem, Utils } from "@nativescript/core";
 
 import * as TKUnit from "./tk-unit";
 
@@ -148,10 +136,10 @@ export function buildUIWithWeakRefAndInteract<T extends View>(createFunc: () => 
 
         // An additional GC and wait are needed since WebKit upgrade to version 12.0
         // (TEXT-FIELD.testMemoryLeak test started failing sporadically)
-        utils.GC();
+        Utils.GC();
         TKUnit.wait(0.1);
     }
-    utils.GC();
+    Utils.GC();
     try {
         TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
         done(null);
@@ -246,7 +234,7 @@ export function goBack(topFrame?: Frame) {
 }
 
 export function assertAreClose(actual: number, expected: number, message: string): void {
-    const density = utils.layout.getDisplayDensity();
+    const density = Utils.layout.getDisplayDensity();
     const delta = Math.floor(density) !== density ? 1.1 : DELTA;
 
     TKUnit.assertAreClose(actual, expected, delta, message);
@@ -274,7 +262,7 @@ export function forceGC() {
         new ArrayBuffer(4 * 1024 * 1024);
     }
 
-    utils.GC();
+    Utils.GC();
     TKUnit.wait(0.001);
 }
 

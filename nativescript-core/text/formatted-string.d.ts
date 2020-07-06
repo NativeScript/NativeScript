@@ -1,1 +1,1 @@
-﻿export * from "../ui/text-base/formatted-string";
+﻿export * from '../ui/text-base/formatted-string';

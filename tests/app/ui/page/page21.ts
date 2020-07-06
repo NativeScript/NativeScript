@@ -1,4 +1,4 @@
-﻿import { ShownModallyData } from "@nativescript/core/ui/page";
+﻿import { ShownModallyData } from "@nativescript/core";
 
 export function onShownModally(args: ShownModallyData) {
     args.context.childPage = args.object;

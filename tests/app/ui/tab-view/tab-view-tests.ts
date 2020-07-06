@@ -1,7 +1,7 @@
 import { UITest } from "../../ui-test";
 import { Label } from "@nativescript/core/ui/label";
 import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
-import { unsetValue } from "@nativescript/core/ui/core/view";
+import { unsetValue } from "@nativescript/core";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import * as tabViewTestsNative from "./tab-view-tests-native";

@@ -1,9 +1,9 @@
 ﻿import { Frame } from "@nativescript/core/ui/frame";
 import * as observable from "@nativescript/core/data/observable";
 
-import * as trace from "@nativescript/core/trace";
-trace.setCategories("gestures");
-trace.enable();
+import { Trace } from "@nativescript/core";
+Trace.setCategories("gestures");
+Trace.enable();
 
 export function itemTap(args) {
     console.log("----- Item tapped: " + args.view.tag);

@@ -1,6 +1,6 @@
 ﻿/* tslint:disable:no-unused-variable */
 import * as app from "@nativescript/core/application";
-import { ios } from "@nativescript/core/utils/utils";
+import { ios } from "@nativescript/core/utils";
 import * as TKUnit from "../tk-unit";
 
 export * from "./application-tests-common";

@@ -1,18 +1,15 @@
-﻿import * as observable from "@nativescript/core/data/observable";
-import * as stackLayoutModule from "@nativescript/core/ui/layouts/stack-layout";
-import * as label from "@nativescript/core/ui/label";
-import * as button from "@nativescript/core/ui/button";
+﻿import { StackLayout, Label, Button, EventData } from "@nativescript/core";
 
-export class MyControl extends stackLayoutModule.StackLayout {
+export class MyControl extends StackLayout {
     constructor() {
         super();
 
         var counter: number = 0;
 
-        var lbl = new label.Label();
-        var btn = new button.Button();
+        var lbl = new Label();
+        var btn = new Button();
         btn.text = "Tap me!";
-        btn.on(button.Button.tapEvent, (args: observable.EventData) => {
+        btn.on(Button.tapEvent, (args: EventData) => {
             lbl.text = "Tap " + counter++;
         });
 

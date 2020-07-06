@@ -1,1 +1,1 @@
-export * from "./view-helper-common";
+export * from './view-helper-common';

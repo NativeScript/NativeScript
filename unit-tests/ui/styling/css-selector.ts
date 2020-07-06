@@ -17,7 +17,7 @@ describe("ui", () => {
                     }));
                 });
 
-                function create(css: string, source: string = "css-selectors.ts@test"): { rules: selector.RuleSet[], map: selector.SelectorsMap } {
+                function create(css: string, source: string = "css-selectors.ts@test"): { rules: selector.RuleSet[], map: selector.SelectorsMap<any> } {
                     let parse = parser.parse(css, { source });
                     let rulesAst = parse.stylesheet.rules.filter(n => n.type === "rule");
                     let rules = selector.fromAstNodes(rulesAst);

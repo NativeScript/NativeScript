@@ -3,7 +3,7 @@ import * as helper from "../../ui-helper";
 import * as viewModule from "@nativescript/core/ui/core/view";
 import * as searchBarTestsNative from "./search-bar-tests-native";
 import * as colorModule from "@nativescript/core/color";
-import * as observable from "@nativescript/core/data/observable";
+import { EventData } from "@nativescript/core";
 // >> article-require-searchbar-module
 import * as searchBarModule from "@nativescript/core/ui/search-bar";
 // << article-require-searchbar-module
@@ -120,10 +120,10 @@ export var testSearchBarPropertiesWithCSS = function () {
 export function test_DummyTestForSnippetOnly() {
     // >> article-searching
     var searchBar = new searchBarModule.SearchBar();
-    searchBar.on(searchBarModule.SearchBar.submitEvent, function (args: observable.EventData) {
+    searchBar.on(searchBarModule.SearchBar.submitEvent, function (args: EventData) {
         console.log("Search for " + (<searchBarModule.SearchBar>args.object).text);
     });
-    searchBar.on(searchBarModule.SearchBar.clearEvent, function (args: observable.EventData) {
+    searchBar.on(searchBarModule.SearchBar.clearEvent, function (args: EventData) {
         console.log("Clear");
     });
     // << article-searching
