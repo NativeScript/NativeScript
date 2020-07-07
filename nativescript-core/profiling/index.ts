@@ -243,7 +243,7 @@ const voidMethodDecorator = () => {
   // no op
 };
 
-export function profile(nameFnOrTarget?: string | Function | Object, fnOrKey?: Function | string | symbol, descriptor?: PropertyDescriptor, attrs?: any): Function | MethodDecorator {
+export function profile(nameFnOrTarget?: string | Function | Object, fnOrKey?: Function | string | symbol, descriptor?: PropertyDescriptor, attrs?: any): any {
   if (typeof nameFnOrTarget === 'object' && (typeof fnOrKey === 'string' || typeof fnOrKey === 'symbol')) {
     if (!profileFunctionFactory) {
       return;

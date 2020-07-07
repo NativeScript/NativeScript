@@ -33,7 +33,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
     }
   }
 
-  @profile()
+  @profile
   public onLoaded() {
     super.onLoaded();
 

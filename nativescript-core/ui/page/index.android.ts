@@ -3,7 +3,7 @@ import { View } from '../core/view';
 import { Color } from '../../color';
 import { ActionBar } from '../action-bar';
 import { GridLayout } from '../layouts/grid-layout';
-import { device } from '../../platform';
+import { Device } from '../../platform';
 import { profile } from '../../profiling';
 
 export * from './page-common';
@@ -43,7 +43,7 @@ export class Page extends PageBase {
     return super._addViewToNativeVisualTree(child, atIndex);
   }
 
-  @profile()
+  @profile
   public onLoaded() {
     super.onLoaded();
     if (!this.hasActionBar && this.actionBarHidden !== true) {
@@ -76,7 +76,7 @@ export class Page extends PageBase {
     color: number;
     systemUiVisibility: number;
   } {
-    if (device.sdkVersion >= '21') {
+    if (Device.sdkVersion >= '21') {
       const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
       const decorView = window.getDecorView();
 
@@ -89,7 +89,7 @@ export class Page extends PageBase {
     return null;
   }
   [statusBarStyleProperty.setNative](value: 'dark' | 'light' | { color: number; systemUiVisibility: number }) {
-    if (device.sdkVersion >= '21') {
+    if (Device.sdkVersion >= '21') {
       const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
       const decorView = window.getDecorView();
 
@@ -107,7 +107,7 @@ export class Page extends PageBase {
   }
 
   [androidStatusBarBackgroundProperty.getDefault](): number {
-    if (device.sdkVersion >= '21') {
+    if (Device.sdkVersion >= '21') {
       const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
 
       return (<any>window).getStatusBarColor();
@@ -116,7 +116,7 @@ export class Page extends PageBase {
     return null;
   }
   [androidStatusBarBackgroundProperty.setNative](value: number | Color) {
-    if (device.sdkVersion >= '21') {
+    if (Device.sdkVersion >= '21') {
       const window = (<androidx.appcompat.app.AppCompatActivity>this._context).getWindow();
       const color = value instanceof Color ? value.android : value;
       (<any>window).setStatusBarColor(color);

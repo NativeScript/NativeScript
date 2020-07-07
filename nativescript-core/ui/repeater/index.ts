@@ -47,7 +47,7 @@ export class Repeater extends CustomLayoutView {
    */
   public itemsLayout: LayoutBase;
 
-  @profile()
+  @profile
   public onLoaded() {
     if (this._isDirty) {
       this.refresh();

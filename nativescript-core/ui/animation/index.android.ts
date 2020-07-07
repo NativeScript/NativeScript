@@ -8,7 +8,7 @@ import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
 import { layout } from '../../utils';
-import { device, screen } from '../../platform';
+import { Device, screen } from '../../platform';
 import lazy from '../../utils/lazy';
 
 export * from './animation-common';
@@ -219,7 +219,7 @@ export class Animation extends AnimationBase {
   private _play(): AnimationPromise {
     const animationFinishedPromise = super.play();
 
-    if (device.sdkVersion <= '23') {
+    if (Device.sdkVersion <= '23') {
       this._animatorSet = new android.animation.AnimatorSet();
       this._animatorSet.addListener(this._animatorListener);
     }

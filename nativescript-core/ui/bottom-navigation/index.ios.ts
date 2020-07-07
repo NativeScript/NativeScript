@@ -7,7 +7,7 @@ import { TextTransform } from '../text-base';
 // Requires
 import { Color } from '../../color';
 import { ImageSource } from '../../image-source';
-import { device } from '../../platform';
+import { Device } from '../../platform';
 import { ios as iosUtils, isFontIconURI, layout } from '../../utils';
 import { CSSType, ios as iosView, View } from '../core/view';
 import { Frame } from '../frame';
@@ -20,7 +20,7 @@ import { getTransformedText } from '../text-base';
 
 const maxTabsCount = 5;
 const majorVersion = iosUtils.MajorVersion;
-const isPhone = device.deviceType === 'Phone';
+const isPhone = Device.deviceType === 'Phone';
 
 class UITabBarControllerImpl extends UITabBarController {
   private _owner: WeakRef<BottomNavigation>;

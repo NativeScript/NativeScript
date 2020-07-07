@@ -1,6 +1,6 @@
 /// <reference path="./tns-core-modules.d.ts" />
 export { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, iOSApplication, AndroidApplication, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData } from './application';
-import { getMainEntry, getRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, AndroidApplication, iOSApplication } from './application';
+import { getMainEntry, getRootView, _resetRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, AndroidApplication, iOSApplication } from './application';
 export declare const Application: {
   launchEvent: string;
   displayedEvent: string;
@@ -13,6 +13,7 @@ export declare const Application: {
   orientationChangedEvent: string;
   getMainEntry: typeof getMainEntry;
   getRootView: typeof getRootView;
+  resetRootView: typeof _resetRootView;
   setResources: typeof setResources;
   setCssFileName: typeof setCssFileName;
   getCssFileName: typeof getCssFileName;
@@ -64,7 +65,7 @@ export declare const Http: {
 };
 export { ImageAsset, ImageAssetOptions } from './image-asset';
 export { ImageSource } from './image-source';
-export { isAndroid, isIOS, screen as Screen, device as Device, platformNames } from './platform';
+export { isAndroid, isIOS, screen as Screen, IDevice, Device, platformNames } from './platform';
 export { InstrumentationMode, TimerInfo } from './profiling';
 import { enable as profilingEnable, disable as profilingDisable, time, uptime, start, stop, isRunning, dumpProfiles, resetProfiles, profile, startCPUProfile, stopCPUProfile } from './profiling';
 export declare const Profiling: {

@@ -12,11 +12,11 @@ import { ImageSource } from '../../image-source';
 import { profile } from '../../profiling';
 import { Frame } from '../frame';
 import { layout, ios as iosUtils } from '../../utils';
-import { device } from '../../platform';
+import { Device } from '../../platform';
 export * from './tab-view-common';
 
 const majorVersion = iosUtils.MajorVersion;
-const isPhone = device.deviceType === 'Phone';
+const isPhone = Device.deviceType === 'Phone';
 
 class UITabBarControllerImpl extends UITabBarController {
   private _owner: WeakRef<TabView>;
@@ -36,7 +36,7 @@ class UITabBarControllerImpl extends UITabBarController {
     this.extendedLayoutIncludesOpaqueBars = true;
   }
 
-  @profile()
+  @profile
   public viewWillAppear(animated: boolean): void {
     super.viewWillAppear(animated);
     const owner = this._owner.get();
@@ -51,7 +51,7 @@ class UITabBarControllerImpl extends UITabBarController {
     }
   }
 
-  @profile()
+  @profile
   public viewDidDisappear(animated: boolean): void {
     super.viewDidDisappear(animated);
     const owner = this._owner.get();
@@ -295,7 +295,7 @@ export class TabView extends TabViewBase {
     super.disposeNativeView();
   }
 
-  @profile()
+  @profile
   public onLoaded() {
     super.onLoaded();
 

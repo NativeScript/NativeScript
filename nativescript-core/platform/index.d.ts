@@ -25,7 +25,7 @@ export module platformNames {
 /*
  * An object containing device specific information.
  */
-export interface Device {
+export interface IDevice {
   /**
    * Gets the manufacturer of the device.
    * For example: "Apple" or "HTC" or "Samsung".
@@ -124,4 +124,4 @@ export module screen {
 /**
  * Gets the current device information.
  */
-export const device: Device;
+export const Device: IDevice;

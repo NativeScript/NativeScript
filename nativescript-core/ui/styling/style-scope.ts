@@ -157,7 +157,7 @@ class CSSSource {
     return new CSSSource(undefined, url, file, keyframes, undefined);
   }
 
-  @profile()
+  @profile
   public static resolveCSSPathFromURL(url: string, importSource?: string): string {
     const app = knownFolders.currentApp().path;
     const file = resolveFileNameFromUrl(url, app, File.exists, importSource);
@@ -180,13 +180,13 @@ class CSSSource {
     return this._source;
   }
 
-  @profile()
+  @profile
   private load(): void {
     const file = File.fromPath(this._file);
     this._source = file.readTextSync();
   }
 
-  @profile()
+  @profile
   private parse(): void {
     try {
       if (!this._ast) {
@@ -209,7 +209,7 @@ class CSSSource {
     }
   }
 
-  @profile()
+  @profile
   private parseCSSAst() {
     if (this._source) {
       switch (parser) {
@@ -232,7 +232,7 @@ class CSSSource {
     }
   }
 
-  @profile()
+  @profile
   private createSelectors() {
     if (this._ast) {
       this._selectors = [...this.createSelectorsFromImports(), ...this.createSelectorsFromSyntaxTree()];
@@ -447,7 +447,7 @@ export class CssState {
     this.unsubscribeFromDynamicUpdates();
   }
 
-  @profile()
+  @profile
   private updateMatch() {
     const view = this.viewRef.get();
     if (view && view._styleScope) {
@@ -460,7 +460,7 @@ export class CssState {
     this._matchInvalid = false;
   }
 
-  @profile()
+  @profile
   private updateDynamicState(): void {
     const view = this.viewRef.get();
     if (!view) {
@@ -716,7 +716,7 @@ export class StyleScope {
     this.ensureSelectors();
   }
 
-  @profile()
+  @profile
   private setCss(cssString: string, cssFileName?): void {
     this._css = cssString;
 
@@ -726,7 +726,7 @@ export class StyleScope {
     this.ensureSelectors();
   }
 
-  @profile()
+  @profile
   private appendCss(cssString: string, cssFileName?): void {
     if (!cssString && !cssFileName) {
       return;
@@ -773,7 +773,7 @@ export class StyleScope {
     return this._localCssSelectorsAppliedVersion === this._localCssSelectorVersion;
   }
 
-  @profile()
+  @profile
   private _createSelectors() {
     let toMerge: RuleSet[][] = [];
     toMerge.push(applicationCssSelectors);
@@ -793,7 +793,7 @@ export class StyleScope {
 
   // HACK: This @profile decorator creates a circular dependency
   // HACK: because the function parameter type is evaluated with 'typeof'
-  @profile()
+  @profile
   public matchSelectors(view: any): SelectorsMatch<ViewBase> {
     // should be (view: ViewBase): SelectorsMatch<ViewBase>
     this.ensureSelectors();

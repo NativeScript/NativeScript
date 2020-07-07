@@ -6,10 +6,10 @@ import * as TKUnit from "../tk-unit";
 import * as xmlModule from "@nativescript/core/xml";
 import * as fs from "@nativescript/core/file-system";
 import { Builder } from "@nativescript/core/ui/builder";
-import { isIOS, device } from "@nativescript/core/platform";
+import { isIOS, Device } from "@nativescript/core/platform";
 import lazy from "@nativescript/core/utils/lazy";
 
-const sdkVersion = lazy(() => parseInt(device.sdkVersion));
+const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 export var test_XmlParser_IsDefined = function () {
     TKUnit.assertNotEqual(xmlModule.XmlParser, undefined, "Class XmlParser should be defined!");

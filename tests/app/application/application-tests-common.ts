@@ -1,18 +1,18 @@
 ﻿import * as app from "@nativescript/core/application";
-import * as platform from "@nativescript/core/platform";
+import { isAndroid, isIOS, Device, Application, platformNames } from "@nativescript/core";
 
 import * as TKUnit from "../tk-unit";
 
-if (app.android) {
+if (isAndroid) {
     console.log("We are running on an Android device!");
-} else if (app.ios) {
+} else if (isIOS) {
     console.log("We are running on an iOS device!");
 }
 
 export function testInitialized() {
-    if (platform.device.os === platform.platformNames.android) {
+    if (Device.os === platformNames.android) {
         TKUnit.assert(app.android, "Application module not properly intialized");
-    } else if (platform.device.os === platform.platformNames.ios) {
+    } else if (Device.os === platformNames.ios) {
         TKUnit.assert(app.ios, "Application module not properly intialized");
     }
 }
@@ -23,5 +23,5 @@ export function testDisplayedEvent() {
 }
 
 export function testOrientation() {
-    TKUnit.assert(app.orientation(), "Orientation not initialized.");
+    TKUnit.assert(Application.orientation(), "Orientation not initialized.");
 }

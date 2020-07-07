@@ -328,7 +328,7 @@ export class File extends FileSystemEntity {
     });
   }
 
-  @profile()
+  @profile
   public readTextSync(onError?: (error: any) => any, encoding?: string): string {
     this.checkAccess();
 

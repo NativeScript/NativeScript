@@ -43,11 +43,11 @@ function printDeviceInfoIOS() {
 }
 
 function printTNSInfo() {
-    console.log("platform.device.model = " + platform.device.model);
-    console.log("platform.device.os = " + platform.device.os);
-    console.log("platform.device.osVersion = " + platform.device.osVersion);
-    console.log("platform.device.sdkVersion = " + platform.device.sdkVersion);
-    console.log("platform.device.deviceType = " + platform.device.deviceType);
+    console.log("platform.Device.model = " + platform.Device.model);
+    console.log("platform.Device.os = " + platform.Device.os);
+    console.log("platform.Device.osVersion = " + platform.Device.osVersion);
+    console.log("platform.Device.sdkVersion = " + platform.Device.sdkVersion);
+    console.log("platform.Device.deviceType = " + platform.Device.deviceType);
 
     console.log("platform.screen.mainScreen.widthDIPs = " + platform.screen.mainScreen.widthDIPs);
     console.log("platform.screen.mainScreen.heightDIPs = " + platform.screen.mainScreen.heightDIPs);

@@ -1,6 +1,6 @@
 import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyle, FontWeight } from './font-common';
 import { Trace } from '../../trace';
-import { device } from '../../platform';
+import { Device } from '../../platform';
 import * as fs from '../../file-system';
 export * from './font-common';
 
@@ -8,7 +8,7 @@ const EMULATE_OBLIQUE = true;
 const OBLIQUE_TRANSFORM = CGAffineTransformMake(1, 0, 0.2, 1, 0, 0);
 const DEFAULT_SERIF = 'Times New Roman';
 const DEFAULT_MONOSPACE = 'Courier New';
-const SUPPORT_FONT_WEIGHTS = parseFloat(device.osVersion) >= 10.0;
+const SUPPORT_FONT_WEIGHTS = parseFloat(Device.osVersion) >= 10.0;
 
 export class Font extends FontBase {
   public static default = new Font(undefined, undefined, FontStyle.NORMAL, FontWeight.NORMAL);

@@ -786,7 +786,7 @@ export function test_WhenRootTabViewShownModallyItCanCloseModal() {
 }
 
 export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
-    // if (platform.device.os === platform.platformNames.android
+    // if (platform.Device.os === platform.platformNames.android
     //     && android.os.Build.VERSION.SDK_INT === android.os.Build.VERSION_CODES.JELLY_BEAN_MR1
     //     && android.os.Build.CPU_ABI.indexOf("x86") !== -1) {
     //     // Skip this test on x68 Android with API Level 17

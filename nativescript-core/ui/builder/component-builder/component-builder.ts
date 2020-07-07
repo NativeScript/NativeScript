@@ -7,7 +7,7 @@ import { isEventOrGesture } from '../../core/bindable';
 import { getBindingOptions, bindingConstants } from '../binding-builder';
 import { profile } from '../../../profiling';
 import * as debugModule from '../../../utils/debug';
-import * as platform from '../../../platform';
+import { Device } from '../../../platform';
 import { sanitizeModuleName } from '../module-name-sanitizer';
 import { resolveModuleName } from '../../../module-name-resolver';
 
@@ -115,7 +115,7 @@ const applyComponentAttributes = profile('applyComponentAttributes', (instance: 
       if (attr.indexOf(':') !== -1) {
         const platformName = attr.split(':')[0].trim();
 
-        if (platformName.toLowerCase() === platform.device.os.toLowerCase()) {
+        if (platformName.toLowerCase() === Device.os.toLowerCase()) {
           attr = attr.split(':')[1].trim();
         } else {
           continue;

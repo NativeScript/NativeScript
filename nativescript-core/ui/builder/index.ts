@@ -9,7 +9,7 @@ import { debug, ScopeError, SourceError, Source } from '../../utils/debug';
 import * as xml from '../../xml';
 import { isString, isObject, isDefined } from '../../utils/types';
 import { ComponentModule, setPropertyValue, getComponentModule } from './component-builder';
-import { platformNames, device } from '../../platform';
+import { platformNames, Device } from '../../platform';
 import { profile } from '../../profiling';
 import { sanitizeModuleName } from './module-name-sanitizer';
 import { resolveModuleName } from '../../module-name-resolver';
@@ -368,7 +368,7 @@ namespace xml2ui {
     }
 
     private static isCurentPlatform(value: string): boolean {
-      return value && value.toLowerCase() === device.os.toLowerCase();
+      return value && value.toLowerCase() === Device.os.toLowerCase();
     }
   }
 
@@ -579,7 +579,7 @@ namespace xml2ui {
       this.sourceTracker = sourceTracker;
     }
 
-    @profile()
+    @profile
     private buildComponent(args: xml.ParserEvent): ComponentModule {
       if (args.prefix && args.namespace) {
         // Custom components

@@ -341,7 +341,7 @@ export function test_parse_ShouldParsePlatformSpecificProperties() {
     var p = <Page>Builder.parse("<Page><TextField ios:editable='False' android:editable='True' /></Page>");
     var tf = <textFieldModule.TextField>p.content;
 
-    if (platform.device.os === platform.platformNames.ios) {
+    if (platform.Device.os === platform.platformNames.ios) {
         TKUnit.assertFalse(tf.editable, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
     } else {
         TKUnit.assertTrue(tf.editable, "Expected result: true; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
@@ -350,7 +350,7 @@ export function test_parse_ShouldParsePlatformSpecificProperties() {
 
 export function test_parse_ShouldParsePlatformSpecificComponents() {
     var p = <Page>Builder.parse("<Page><ios><TextField /></ios><android><Label /></android></Page>");
-    if (platform.device.os === platform.platformNames.ios) {
+    if (platform.Device.os === platform.platformNames.ios) {
         TKUnit.assert(p.content instanceof textFieldModule.TextField, "Expected result: TextField; Actual result: " + p.content);
     }
     else {

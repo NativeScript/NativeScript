@@ -37,10 +37,10 @@ export function test_Transitions() {
     });
 
     var transitions;
-    if (platform.device.os === platform.platformNames.ios) {
+    if (platform.Device.os === platform.platformNames.ios) {
         transitions = ["curl"];
     } else {
-        const _sdkVersion = parseInt(platform.device.sdkVersion);
+        const _sdkVersion = parseInt(platform.Device.sdkVersion);
         transitions = _sdkVersion >= 21 ? ["explode"] : [];
     }
 

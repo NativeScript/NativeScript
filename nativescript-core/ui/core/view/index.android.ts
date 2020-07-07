@@ -46,7 +46,7 @@ import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { screen } from '../../../platform';
 import { AndroidActivityBackPressedEventData, android as androidApp } from '../../../application';
-import { device } from '../../../platform';
+import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 
 export * from './view-common';
@@ -59,7 +59,7 @@ const statePressed = 16842919; // android.R.attr.state_pressed
 const stateEnabled = 16842910; // android.R.attr.state_enabled
 const styleAnimationDialog = 16973826; // android.R.style.Animation_Dialog
 
-const sdkVersion = lazy(() => parseInt(device.sdkVersion));
+const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 const modalMap = new Map<number, DialogOptions>();
 
@@ -389,7 +389,7 @@ export class View extends ViewCommon {
     return manager;
   }
 
-  @profile()
+  @profile
   public onLoaded() {
     this._manager = null;
     this._rootManager = null;
@@ -397,7 +397,7 @@ export class View extends ViewCommon {
     this.setOnTouchListener();
   }
 
-  @profile()
+  @profile
   public onUnloaded() {
     if (this.touchListenerIsSet) {
       this.touchListenerIsSet = false;
@@ -516,7 +516,7 @@ export class View extends ViewCommon {
     }
   }
 
-  @profile()
+  @profile
   public requestLayout(): void {
     super.requestLayout();
     if (this.nativeViewProtected) {

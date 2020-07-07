@@ -1,12 +1,11 @@
 ﻿/* tslint:disable:class-name */
-import { Device as DeviceDefinition, ScreenMetrics as ScreenMetricsDefinition } from '.';
 
 export module platformNames {
   export const android = 'Android';
   export const ios = 'iOS';
 }
 
-class Device implements DeviceDefinition {
+class DeviceRef {
   private _model: string;
   private _osVersion: string;
   private _sdkVersion: string;
@@ -90,7 +89,7 @@ class Device implements DeviceDefinition {
   }
 }
 
-class MainScreen implements ScreenMetricsDefinition {
+class MainScreen {
   private _screen: UIScreen;
 
   private get screen(): UIScreen {
@@ -118,7 +117,7 @@ class MainScreen implements ScreenMetricsDefinition {
   }
 }
 
-export const device = new Device();
+export const Device = new DeviceRef();
 
 export module screen {
   export const mainScreen = new MainScreen();

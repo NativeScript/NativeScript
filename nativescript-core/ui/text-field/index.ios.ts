@@ -132,7 +132,7 @@ export class TextField extends TextFieldBase {
     super.disposeNativeView();
   }
 
-  @profile()
+  @profile
   public onLoaded() {
     super.onLoaded();
     this.ios.delegate = this._delegate;

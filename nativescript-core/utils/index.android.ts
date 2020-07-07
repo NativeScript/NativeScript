@@ -1,5 +1,5 @@
 import { ad } from './native-helper';
-import { device } from '../platform';
+import { Device } from '../platform';
 import { FileSystemAccess } from '../file-system/file-system-access';
 import { Trace } from '../trace';
 
@@ -113,7 +113,7 @@ Applications cannot access internal storage of other application on Android (see
     chooserIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
 
     // Android SDK <28 only requires starting the chooser Intent straight forwardly
-    const sdkVersion = parseInt(device.sdkVersion, 10);
+    const sdkVersion = parseInt(Device.sdkVersion, 10);
     if (sdkVersion && sdkVersion < MIN_URI_SHARE_RESTRICTED_APK_VERSION) {
       Trace.write(`detected sdk version ${sdkVersion} (< ${MIN_URI_SHARE_RESTRICTED_APK_VERSION}), using simple openFile`, Trace.categories.Debug);
       intent.setDataAndType(android.net.Uri.fromFile(new java.io.File(filePath)), mimeType);

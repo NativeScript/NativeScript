@@ -1,5 +1,5 @@
 import { ModuleNameResolver as ModuleNameResolverDefinition } from './';
-import { screen, device } from '../platform';
+import { screen, Device } from '../platform';
 import * as appCommonModule from '../application/application-common';
 import { PlatformContext, findMatch, stripQualifiers } from './qualifier-matcher';
 import { registerModulesFromFileSystem } from './non-bundle-workflow-compat';
@@ -70,8 +70,8 @@ export function resolveModuleName(path: string, ext: string): string {
     resolverInstance = new ModuleNameResolver({
       width: screen.mainScreen.widthDIPs,
       height: screen.mainScreen.heightDIPs,
-      os: device.os,
-      deviceType: device.deviceType,
+      os: Device.os,
+      deviceType: Device.deviceType,
     });
   }
 

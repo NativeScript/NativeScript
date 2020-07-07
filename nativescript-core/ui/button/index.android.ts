@@ -5,12 +5,12 @@ import { textAlignmentProperty } from '../text-base';
 import { TextAlignment } from '../enums';
 import { profile } from '../../profiling';
 import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
-import { device } from '../../platform';
+import { Device } from '../../platform';
 import lazy from '../../utils/lazy';
 
 export * from './button-common';
 
-const sdkVersion = lazy(() => parseInt(device.sdkVersion));
+const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 interface ClickListener {
   new (owner: Button): android.view.View.OnClickListener;
@@ -57,7 +57,7 @@ export class Button extends ButtonBase {
   private _stateListAnimator: any;
   private _highlightedHandler: (args: TouchGestureEventData) => void;
 
-  @profile()
+  @profile
   public createNativeView() {
     if (!AndroidButton) {
       AndroidButton = android.widget.Button;

@@ -1,5 +1,4 @@
 /* tslint:disable:class-name */
-import { Device as DeviceDefinition, ScreenMetrics as ScreenMetricsDefinition } from '.';
 import * as appModule from '../application';
 
 const MIN_TABLET_PIXELS = 600;
@@ -9,7 +8,7 @@ export module platformNames {
   export const ios = 'iOS';
 }
 
-class Device implements DeviceDefinition {
+class DeviceRef {
   private _manufacturer: string;
   private _model: string;
   private _osVersion: string;
@@ -95,7 +94,7 @@ class Device implements DeviceDefinition {
   }
 }
 
-class MainScreen implements ScreenMetricsDefinition {
+class MainScreen {
   private _metrics: android.util.DisplayMetrics;
 
   private reinitMetrics(): void {
@@ -140,7 +139,7 @@ class MainScreen implements ScreenMetricsDefinition {
   }
 }
 
-export const device = new Device();
+export const Device = new DeviceRef();
 
 export module screen {
   export const mainScreen = new MainScreen();

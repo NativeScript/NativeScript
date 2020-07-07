@@ -5,7 +5,7 @@ import * as fs from "@nativescript/core/file-system";
 
 import * as TKUnit from "../tk-unit";
 import * as appModule from "@nativescript/core/application";
-import * as platform from "@nativescript/core/platform";
+import { isIOS, Device, platformNames } from "@nativescript/core";
 
 export var testPathNormalize = function () {
     // >> file-system-normalize
@@ -190,7 +190,7 @@ export var testFileReadWriteBinary = function () {
     // >> (hide)
     var destination = destinationFile.readSync(e => { error = e; });
     TKUnit.assertNull(error);
-    if (platform.device.os === platform.platformNames.ios) {
+    if (Device.os === platformNames.ios) {
         TKUnit.assertTrue(source.isEqualToData(destination));
     } else {
         TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
@@ -217,7 +217,7 @@ export var testFileReadWriteBinaryAsync = function () {
                 // Succeded in writing the file
                 destinationFile.read()
                     .then(function (destination) {
-                        if (platform.device.os === platform.platformNames.ios) {
+                        if (Device.os === platformNames.ios) {
                             TKUnit.assertTrue(source.isEqualToData(destination));
                         } else {
                             TKUnit.assertEqual(new java.io.File(sourceFile.path).length(), new java.io.File(destinationFile.path).length());
@@ -268,7 +268,7 @@ function _testIOSSpecificKnownFolder(knownFolderName: string) {
             createdFile.writeTextSync("some text");
         }
     };
-    if (platform.isIOS) {
+    if (isIOS) {
         testFunc();
         if (knownFolder) {
             TKUnit.assertTrue(knownFolder.isKnown, `The ${knownFolderName} folder should have its "isKnown" property set to true.`);

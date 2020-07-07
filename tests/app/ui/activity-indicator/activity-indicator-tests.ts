@@ -49,7 +49,7 @@ export function test_set_TNS_value_updates_native_value() {
 }
 
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
-if (platform.device.os === platform.platformNames.ios) {
+if (platform.Device.os === platform.platformNames.ios) {
     exports.test_set_color = function () {
         var ai = new activityIndicatorModule.ActivityIndicator();
         ai.color = new color.Color("red");

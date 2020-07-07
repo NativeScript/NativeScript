@@ -385,7 +385,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     this[name] = WrappedValue.unwrap(value);
   }
 
-  @profile()
+  @profile
   public onLoaded() {
     this.setFlag(Flags.superOnLoadedCalled, true);
     if (this._isLoaded) {
@@ -405,7 +405,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     this._emit('loaded');
   }
 
-  @profile()
+  @profile
   public onUnloaded() {
     this.setFlag(Flags.superOnUnloadedCalled, true);
     if (!this._isLoaded) {
@@ -524,7 +524,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     return allStates;
   }
 
-  @profile()
+  @profile
   public addPseudoClass(name: string): void {
     let allStates = this.getAllAliasedStates(name);
     for (let i = 0; i < allStates.length; i++) {
@@ -535,7 +535,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
   }
 
-  @profile()
+  @profile
   public deletePseudoClass(name: string): void {
     let allStates = this.getAllAliasedStates(name);
     for (let i = 0; i < allStates.length; i++) {
@@ -618,7 +618,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
   }
 
-  @profile()
+  @profile
   public requestLayout(): void {
     // Default implementation for non View instances (like TabViewItem).
     const parent = this.parent;
@@ -631,7 +631,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     //
   }
 
-  @profile()
+  @profile
   public _addView(view: ViewBase, atIndex?: number) {
     if (Trace.isEnabled()) {
       Trace.write(`${this}._addView(${view}, ${atIndex})`, Trace.categories.ViewHierarchy);
@@ -757,7 +757,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     this._setupUI(context);
   }
 
-  @profile()
+  @profile
   public _setupUI(context: android.content.Context, atIndex?: number, parentIsLoaded?: boolean): void {
     if (this._context === context) {
       return;
@@ -851,7 +851,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
   }
 
-  @profile()
+  @profile
   public _tearDownUI(force?: boolean): void {
     // No context means we are already teared down.
     if (!this._context) {

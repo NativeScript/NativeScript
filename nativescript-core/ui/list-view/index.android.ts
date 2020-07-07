@@ -57,7 +57,7 @@ export class ListView extends ListViewBase {
   public _realizedItems = new Map<android.view.View, View>();
   public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
 
-  @profile()
+  @profile
   public createNativeView() {
     const listView = new android.widget.ListView(this._context);
     listView.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
@@ -281,7 +281,7 @@ function ensureListViewAdapterClass() {
       return itemViewType;
     }
 
-    @profile()
+    @profile
     public getView(index: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
       //this.owner._dumpRealizedTemplates();
 

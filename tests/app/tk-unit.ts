@@ -17,7 +17,7 @@ import * as timer from "@nativescript/core/timer";
 import { Trace } from "@nativescript/core";
 import * as types from "@nativescript/core/utils/types";
 
-const sdkVersion = parseInt(platform.device.sdkVersion);
+const sdkVersion = parseInt(platform.Device.sdkVersion);
 
 Trace.enable();
 

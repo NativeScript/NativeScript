@@ -108,7 +108,7 @@ export class TextView extends TextViewBaseCommon {
     super.disposeNativeView();
   }
 
-  @profile()
+  @profile
   public onLoaded() {
     super.onLoaded();
     this.ios.delegate = this._delegate;

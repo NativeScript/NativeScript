@@ -17,14 +17,14 @@ Frame.defaultAnimatedNavigation = false;
 export function isRunningOnEmulator(): boolean {
     // These checks are not good enough to be added to modules but they keep unit tests green.
 
-    if (platform.device.os === platform.platformNames.android) {
+    if (platform.Device.os === platform.platformNames.android) {
         return android.os.Build.FINGERPRINT.indexOf("generic") > -1 ||
             android.os.Build.HARDWARE.toLowerCase() === "goldfish" ||
             android.os.Build.HARDWARE.toLowerCase() === "donatello" || // VS Emulator
             android.os.Build.PRODUCT.toLocaleLowerCase().indexOf("sdk") > -1 ||
             android.os.Build.PRODUCT.toLocaleLowerCase().indexOf("emulator") > -1; // VS Emulator
     }
-    else if (platform.device.os === platform.platformNames.ios) {
+    else if (platform.Device.os === platform.platformNames.ios) {
         return (__dirname.search("Simulator") > -1);
     }
 }
@@ -397,7 +397,7 @@ function generateTestFile(allTests: TestInfo[]) {
         let testName = testCase.testName;
         let duration = (testCase.duration / 1000).toFixed(2);
 
-        testCases.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}">`)
+        testCases.push(`<testcase classname="${platform.Device.os}" name="${testName}" time="${duration}">`)
         if (!testCase.isPassed) {
             failedTestCount++;
             testCases.push(`<failure type="exceptions.AssertionError"><![CDATA[${testCase.errorMessage}]]></failure>`)

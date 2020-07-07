@@ -1,9 +1,9 @@
 import * as imageCacheModule from "@nativescript/core/ui/image-cache";
 import { ImageSource } from "@nativescript/core/image-source";
-import { isAndroid, device } from "@nativescript/core/platform";
+import { isAndroid, Device } from "@nativescript/core/platform";
 import lazy from "@nativescript/core/utils/lazy";
 
-const sdkVersion = lazy(() => parseInt(device.sdkVersion));
+const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 export const test_ImageCache_ValidUrl = function (done: (err: Error, res?: string) => void) {
     // see https://github.com/NativeScript/NativeScript/issues/6643

@@ -49,7 +49,7 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 
     // Supported in iOS only.
     public test_set_color() {
-        if (platform.device.os === platform.platformNames.ios) {
+        if (platform.Device.os === platform.platformNames.ios) {
             this.testView.color = new color.Color("red");
             TKUnit.assertEqual(this.testView.color.ios.CGColor, this.testView.ios.valueForKey("textColor").CGColor, "timePicker.color");
         }

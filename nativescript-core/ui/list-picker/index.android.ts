@@ -1,12 +1,12 @@
 import { ListPickerBase, selectedIndexProperty, itemsProperty, ItemsSource } from './list-picker-common';
 import { colorProperty } from '../styling/style-properties';
 import { Color } from '../../color';
-import { device } from '../../platform';
+import { Device } from '../../platform';
 import lazy from '../../utils/lazy';
 
 export * from './list-picker-common';
 
-const sdkVersion = lazy(() => parseInt(device.sdkVersion));
+const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 interface Formatter {
   new (owner: ListPicker): android.widget.NumberPicker.Formatter;

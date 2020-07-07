@@ -6,7 +6,7 @@ import { textAlignmentProperty, whiteSpaceProperty, WhiteSpace } from '../text-b
 import { TextAlignment } from '../enums';
 import { profile } from '../../profiling';
 import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
-import { device } from '../../platform';
+import { Device } from '../../platform';
 import { layout } from '../../utils';
 
 export * from './button-common';

@@ -1,6 +1,6 @@
 import { FileNameResolver as FileNameResolverDefinition } from '.';
 import { PlatformContext } from '../../module-name-resolver/qualifier-matcher';
-import { screen, device } from '../../platform';
+import { screen, Device } from '../../platform';
 import { path as fsPath, Folder, File } from '..';
 import { Trace } from '../../trace';
 import * as appCommonModule from '../../application/application-common';
@@ -79,8 +79,8 @@ export function resolveFileName(path: string, ext: string): string {
     resolverInstance = new FileNameResolver({
       width: screen.mainScreen.widthDIPs,
       height: screen.mainScreen.heightDIPs,
-      os: device.os,
-      deviceType: device.deviceType,
+      os: Device.os,
+      deviceType: Device.deviceType,
     });
   }
 

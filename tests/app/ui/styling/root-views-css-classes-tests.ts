@@ -9,7 +9,7 @@ import {
 import {
     isAndroid,
     isIOS,
-    device
+    Device
 } from "@nativescript/core/platform";
 import { Button } from "@nativescript/core";
 import { Page } from "@nativescript/core/ui/page";
@@ -75,7 +75,7 @@ function _test_device_type_css_class(rootView: View, shouldSetClassName: boolean
     }
 
     const cssClasses = rootView.cssClasses;
-    const deviceType = device.deviceType;
+    const deviceType = Device.deviceType;
     if (deviceType === DeviceType.Phone) {
         TKUnit.assertTrue(cssClasses.has(PHONE_DEVICE_TYPE_CSS_CLASS), `${PHONE_DEVICE_TYPE_CSS_CLASS} CSS class is missing`);
         TKUnit.assertFalse(cssClasses.has(TABLET_DEVICE_TYPE_CSS_CLASS), `${TABLET_DEVICE_TYPE_CSS_CLASS} CSS class is present`);

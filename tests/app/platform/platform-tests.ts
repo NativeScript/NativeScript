@@ -10,26 +10,26 @@ export function test_platform() {
     } else {
         expectedPlatform = "iOS";
     }
-    TKUnit.assertEqual(platformModule.device.os, expectedPlatform);
+    TKUnit.assertEqual(platformModule.Device.os, expectedPlatform);
 }
 
 export function test_device_screen() {
-    TKUnit.assert(platformModule.device.model, "Device model not initialized.");
-    TKUnit.assert(platformModule.device.manufacturer, "Device manufacturer not initialized.");
-    TKUnit.assert(platformModule.device.deviceType, "Device type not initialized.");
-    TKUnit.assert(platformModule.device.uuid, "Device UUID not initialized.");
+    TKUnit.assert(platformModule.Device.model, "Device model not initialized.");
+    TKUnit.assert(platformModule.Device.manufacturer, "Device manufacturer not initialized.");
+    TKUnit.assert(platformModule.Device.deviceType, "Device type not initialized.");
+    TKUnit.assert(platformModule.Device.uuid, "Device UUID not initialized.");
 
-    TKUnit.assert(platformModule.device.language, "Preferred language not initialized.");
+    TKUnit.assert(platformModule.Device.language, "Preferred language not initialized.");
     
     // NSLocale.currentLocale.objectForKey(NSLocaleCountryCode) not initialized by default on iOS13 simulator;
     // can be set through Settings -> General -> Language & Region -> Region
     if (platformModule.isAndroid || ios.MajorVersion < 13) {
-        TKUnit.assert(platformModule.device.region, "Preferred region not initialized.");
+        TKUnit.assert(platformModule.Device.region, "Preferred region not initialized.");
     }
 
-    TKUnit.assert(platformModule.device.os, "OS not initialized.");
-    TKUnit.assert(platformModule.device.osVersion, "OS version not initialized.");
-    TKUnit.assert(platformModule.device.sdkVersion, "SDK version not initialized.");
+    TKUnit.assert(platformModule.Device.os, "OS not initialized.");
+    TKUnit.assert(platformModule.Device.osVersion, "OS version not initialized.");
+    TKUnit.assert(platformModule.Device.sdkVersion, "SDK version not initialized.");
 
     TKUnit.assert(platformModule.screen.mainScreen.widthPixels, "Screen width (px) not initialized.");
     TKUnit.assert(platformModule.screen.mainScreen.heightPixels, "Screen height (px) not initialized.");

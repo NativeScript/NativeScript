@@ -80,7 +80,7 @@ export class View extends ViewCommon implements ViewDefinition {
     }
   }
 
-  @profile()
+  @profile
   public layout(left: number, top: number, right: number, bottom: number, setFrame = true): void {
     const { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
     if (setFrame) {
@@ -118,7 +118,7 @@ export class View extends ViewCommon implements ViewDefinition {
     this._privateFlags |= PFLAG_MEASURED_DIMENSION_SET;
   }
 
-  @profile()
+  @profile
   public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
     const view = this.nativeViewProtected;
     const width = layout.getMeasureSpecSize(widthMeasureSpec);

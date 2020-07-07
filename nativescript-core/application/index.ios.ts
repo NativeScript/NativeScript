@@ -13,7 +13,7 @@ export * from './application-common';
 import { Builder } from '../ui/builder';
 import { CLASS_PREFIX, getSystemCssClasses, pushToSystemCssClasses, ROOT_VIEW_CSS_CLASS } from '../css/system-classes';
 import { IOSHelper } from '../ui/core/view/view-helper';
-import { device } from '../platform';
+import { Device } from '../platform';
 import { profile } from '../profiling';
 import { ios } from '../utils';
 
@@ -166,7 +166,7 @@ export class iOSApplication implements iOSApplicationDefinition {
     }
   }
 
-  @profile()
+  @profile
   private didFinishLaunchingWithOptions(notification: NSNotification) {
     if (!displayedOnce) {
       displayedLinkTarget = CADisplayLinkTarget.new();
@@ -204,7 +204,7 @@ export class iOSApplication implements iOSApplicationDefinition {
     }
   }
 
-  @profile()
+  @profile
   private didBecomeActive(notification: NSNotification) {
     const ios = UIApplication.sharedApplication;
     const object = this;
@@ -484,7 +484,7 @@ function setViewControllerView(view: View): void {
 }
 
 function setRootViewsCssClasses(rootView: View): void {
-  const deviceType = device.deviceType.toLowerCase();
+  const deviceType = Device.deviceType.toLowerCase();
 
   pushToSystemCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
   pushToSystemCssClasses(`${CLASS_PREFIX}${deviceType}`);

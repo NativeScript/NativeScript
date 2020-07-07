@@ -42,7 +42,7 @@ export function test_default_native_values() {
 }
 
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
-if (platform.device.os === platform.platformNames.ios) {
+if (platform.Device.os === platform.platformNames.ios) {
     exports.test_set_color = function () {
         var mySwitch = new switchModule.Switch();
         mySwitch.color = new Color("red");

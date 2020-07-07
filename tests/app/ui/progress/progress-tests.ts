@@ -57,7 +57,7 @@ export function test_set_value_greater_than_max_should_set_value_to_max() {
 }
 
 // Uncomment this when find way to check android Drawable color set by setColorFilter() method.
-if (platform.device.os === platform.platformNames.ios) {
+if (platform.Device.os === platform.platformNames.ios) {
     exports.test_set_color = function () {
         var progress = new progressModule.Progress();
         progress.color = new color.Color("red");

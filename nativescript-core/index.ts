@@ -10,7 +10,7 @@ if (!hasInitGlobal) {
 export { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, iOSApplication, AndroidApplication, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData } from './application';
 
 // Export all methods and fields from "application" as Application
-import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, getMainEntry, getRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, android, ios } from './application';
+import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, getMainEntry, getRootView, _resetRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, android, ios } from './application';
 export const Application = {
   launchEvent,
   displayedEvent,
@@ -24,6 +24,7 @@ export const Application = {
 
   getMainEntry,
   getRootView,
+  resetRootView: _resetRootView,
   setResources,
   setCssFileName,
   getCssFileName,
@@ -86,7 +87,7 @@ export const Http = {
 export { ImageAsset, ImageAssetOptions } from './image-asset';
 
 export { ImageSource } from './image-source';
-export { isAndroid, isIOS, screen as Screen, device as Device, platformNames } from './platform';
+export { isAndroid, isIOS, screen as Screen, IDevice, Device, platformNames } from './platform';
 
 // Export interfaces from "profiling" module
 export { InstrumentationMode, TimerInfo } from './profiling';

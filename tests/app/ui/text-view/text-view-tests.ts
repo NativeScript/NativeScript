@@ -87,7 +87,7 @@ export var testSetTextUndefined = function () {
 };
 
 // Supported for ios only.
-if (platform.device.os === platform.platformNames.ios) {
+if (platform.Device.os === platform.platformNames.ios) {
     exports.test_set_color = function () {
         helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
             var textView = <textViewModule.TextView>views[0];
