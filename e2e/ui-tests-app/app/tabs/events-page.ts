@@ -1,6 +1,4 @@
-import { EventData } from "tns-core-modules/data/observable";
-import { Page } from "tns-core-modules/ui/page";
-import { Tabs, SelectedIndexChangedEventData } from "tns-core-modules/ui/tabs";
+import { EventData, Page, Tabs, SelectedIndexChangedEventData } from "@nativescript/core";
 
 export function goToFirst(args: EventData) {
   console.log("---> goToFirst");

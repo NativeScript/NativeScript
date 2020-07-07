@@ -1,5 +1,9 @@
 // Require globals first so that snapshot takes __extends function.
-import '../globals';
+// apply polyfills first
+import { initGlobal } from '../globals';
+if (!(<any>global).hasInitGlobal) {
+  initGlobal();
+}
 
 // Types
 import { AndroidApplication, iOSApplication } from '.';

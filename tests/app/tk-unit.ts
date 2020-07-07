@@ -11,13 +11,10 @@
 
 */
 
-import * as application from "@nativescript/core/application";
-import * as platform from "@nativescript/core/platform";
-import * as timer from "@nativescript/core/timer";
-import { Trace } from "@nativescript/core";
+import { isIOS, Trace, Device } from "@nativescript/core";
 import * as types from "@nativescript/core/utils/types";
 
-const sdkVersion = parseInt(platform.Device.sdkVersion);
+const sdkVersion = parseInt(Device.sdkVersion);
 
 Trace.enable();
 
@@ -361,7 +358,7 @@ export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 3, s
         return;
     }
 
-    if (application.ios) {
+    if (isIOS) {
         const timeoutMs = timeoutSec * 1000;
         let totalWaitTime = 0;
         while (true) {
@@ -381,7 +378,7 @@ export function waitUntilReady(isReady: () => boolean, timeoutSec: number = 3, s
                 }
             }
         }
-    } else if (application.android) {
+    } else {
         doModalAndroid(isReady, timeoutSec, shouldThrow);
     }
 }
@@ -431,7 +428,7 @@ function doModalAndroid(quitLoop: () => boolean, timeoutSec: number, shouldThrow
 
     let quit = false;
     let timeout = false;
-    timer.setTimeout(() => {
+    setTimeout(() => {
         quit = true;
         timeout = true;
     }, timeoutSec * 1000);

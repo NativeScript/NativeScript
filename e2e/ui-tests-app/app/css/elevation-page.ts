@@ -1,5 +1,5 @@
-import { Button } from "tns-core-modules/ui/button/button";
-import { EventData } from "tns-core-modules/ui/page/page";
+import { Button } from "tns-core-modules/ui/button";
+import { EventData } from "tns-core-modules/ui/page";
 
 const states = [
     { class: "", text: "default elevation" },

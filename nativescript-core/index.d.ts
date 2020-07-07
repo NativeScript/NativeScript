@@ -27,6 +27,32 @@ export declare const Application: {
   hasLaunched: typeof hasLaunched;
   android: AndroidApplication;
   ios: iOSApplication;
+} = {
+  launchEvent: 'launch',
+  displayedEvent: 'displayed',
+  uncaughtErrorEvent: 'uncaughtError',
+  discardedErrorEvent: 'discardedError',
+  suspendEvent: 'suspend',
+  resumeEvent: 'resume',
+  exitEvent: 'exit',
+  lowMemoryEvent: 'lowMemory',
+  orientationChangedEvent: 'orientationChanged',
+  getMainEntry,
+  getRootView,
+  resetRootView,
+  setResources,
+  setCssFileName,
+  getCssFileName,
+  loadAppCss,
+  addCss,
+  on,
+  off,
+  run,
+  orientation,
+  getNativeApplication,
+  hasLaunched,
+  android,
+  ios,
 };
 import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from './application-settings';
 export declare const ApplicationSettings: {
@@ -41,6 +67,18 @@ export declare const ApplicationSettings: {
   setBoolean: typeof setBoolean;
   getNumber: typeof getNumber;
   setNumber: typeof setNumber;
+} = {
+  clear,
+  flush,
+  hasKey,
+  remove,
+  setString,
+  getString,
+  getAllKeys,
+  getBoolean,
+  setBoolean,
+  getNumber,
+  setNumber,
 };
 export { Color } from './color';
 import { connectionType, getConnectionType, startMonitoring, stopMonitoring } from './connectivity';
@@ -49,6 +87,11 @@ export declare const Connectivity: {
   getConnectionType: typeof getConnectionType;
   startMonitoring: typeof startMonitoring;
   stopMonitoring: typeof stopMonitoring;
+} = {
+  connectionType,
+  getConnectionType,
+  startMonitoring,
+  stopMonitoring,
 };
 export { ObservableArray, ChangeType, ChangedData } from './data/observable-array';
 export { Observable, PropertyChangeData, EventData } from './data/observable';
@@ -62,6 +105,12 @@ export declare const Http: {
   getJSON: typeof getJSON;
   getString: typeof httpGetString;
   request: typeof request;
+} = {
+  getFile,
+  getImage,
+  getJSON,
+  getString,
+  request,
 };
 export { ImageAsset, ImageAssetOptions } from './image-asset';
 export { ImageSource } from './image-source';
@@ -81,6 +130,19 @@ export declare const Profiling: {
   profile: typeof profile;
   startCPUProfile: typeof startCPUProfile;
   stopCPUProfile: typeof stopCPUProfile;
+} = {
+  enable: profilingEnable,
+  disable: profilingDisable,
+  time,
+  uptime,
+  start,
+  stop,
+  isRunning,
+  dumpProfiles,
+  resetProfiles,
+  profile,
+  startCPUProfile,
+  stopCPUProfile,
 };
 export { encoding } from './text';
 export * from './trace';
@@ -104,5 +166,22 @@ export declare const Utils: {
   layout: typeof layout;
   android: typeof androidUtils;
   ios: typeof iosUtils;
+} = {
+  GC,
+  isFontIconURI,
+  isDataURI,
+  isFileOrResourcePath,
+  executeOnMainThread,
+  mainThreadify,
+  isMainThread,
+  dispatchToMainThread,
+  releaseNativeObject,
+  getModuleName,
+  openFile,
+  openUrl,
+  isRealDevice,
+  layout,
+  android,
+  ios,
 };
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

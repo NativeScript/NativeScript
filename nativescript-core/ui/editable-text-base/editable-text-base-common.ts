@@ -1,10 +1,11 @@
-﻿import { EditableTextBase as EditableTextBaseDefinition, KeyboardType, ReturnKeyType, UpdateTextTrigger, AutocapitalizationType } from '.';
+﻿import { EditableTextBase as EditableTextBaseDefinition, ReturnKeyType, UpdateTextTrigger, AutocapitalizationType } from '.';
 import { TextBase } from '../text-base';
 import { Property, CssProperty, makeValidator, makeParser } from '../core/properties';
 import { PseudoClassHandler } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
+import { KeyboardType } from '../enums';
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
   public static blurEvent = 'blur';

@@ -1,5 +1,4 @@
-import { EventData, Page } from "tns-core-modules/ui/page/page";
-import { Label } from "tns-core-modules/ui/label/label";
+import { EventData, Page, Label } from "@nativescript/core";
 
 const setLabelTextAndLog = (args, text: string) => {
     const page = <Page>args.object.page;

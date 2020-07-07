@@ -1,6 +1,4 @@
-import { Page } from "tns-core-modules/ui/page";
-import { TextView } from "tns-core-modules/ui/text-view";
-import { Color } from "tns-core-modules/color";
+import { Page, TextView, Color } from "@nativescript/core";
 
 export function changeTextAndColor(args) {
     const page = <Page>args.object.page;

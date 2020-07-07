@@ -111,4 +111,21 @@ export const fontInternalProperty: InheritedCssProperty<Style, Font>;
 export type BackgroundRepeat = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
 export type Visibility = 'visible' | 'hidden' | 'collapse';
 export type HorizontalAlignment = 'left' | 'center' | 'right' | 'stretch';
-export type VerticalAlignment = 'top' | 'middle' | 'bottom' | 'stretch';
+export namespace HorizontalAlignment {
+  export const LEFT: 'left';
+  export const CENTER: 'center';
+  export const RIGHT: 'right';
+  export const STRETCH: 'stretch';
+}
+export type VerticalAlignment = 'top' | 'middle' | 'bottom' | 'stretch' | 'text-top' | 'text-bottom' | 'super' | 'sub' | 'baseline';
+export namespace VerticalAlignment {
+  export const TOP: 'top';
+  export const MIDDLE: 'middle';
+  export const BOTTOM: 'bottom';
+  export const STRETCH: 'stretch';
+  export const TEXTTOP: 'text-top';
+  export const TEXTBOTTOM: 'text-bottom';
+  export const SUPER: 'super';
+  export const SUB: 'sub';
+  export const BASELINE: 'baseline';
+}

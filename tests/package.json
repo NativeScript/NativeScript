@@ -5,7 +5,7 @@
       "version": "next"
     },
     "tns-ios": {
-      "version": "6.5.2"
+      "version": "6.6.0-alpha.2-ios14-2020-07-06-159403-01"
     }
   },
   "main": "app.js",
@@ -16,13 +16,13 @@
     "clean": "npx rimraf hooks node_modules platforms package-lock.json && npm i"
   },
   "dependencies": {
-    "@nativescript/core": "file:../nativescript-core"
+    "@nativescript/core": "file:../dist/nativescript-core-7.0.0-rc.6.tgz"
   },
   "devDependencies": {
     "circular-dependency-plugin": "~5.2.0",
     "@nativescript/webpack": "^2.0.0-alpha.3",
     "node-sass": "^4.14.0",
-    "tns-platform-declarations": "file:../tns-platform-declarations",
+    "@nativescript/types": "file:../dist/nativescript-types-7.0.0-rc.0.tgz",
     "typescript": "~3.9.0"
   },
   "gitHead": "c06800e52ee1a184ea2dffd12a6702aaa43be4e3",

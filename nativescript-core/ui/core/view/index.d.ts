@@ -7,6 +7,9 @@ import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLeng
 import { GestureTypes, GestureEventData, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/gradient';
 
+// helpers (these are okay re-exported here)
+export * from './view-helper';
+
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
 /**
@@ -854,26 +857,3 @@ export const isEnabledProperty: Property<View, boolean>;
 export const isUserInteractionEnabledProperty: Property<View, boolean>;
 export const iosOverflowSafeAreaProperty: Property<View, boolean>;
 export const iosOverflowSafeAreaEnabledProperty: InheritedProperty<View, boolean>;
-
-export namespace ios {
-  /**
-   * String value used when hooking to traitCollectionColorAppearanceChangedEvent event.
-   */
-  export const traitCollectionColorAppearanceChangedEvent: string;
-
-  /**
-   * Returns a view with viewController or undefined if no such found along the view's parent chain.
-   * @param view The view form which to start the search.
-   */
-  export function getParentWithViewController(view: View): View;
-  export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void;
-  export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
-  export function layoutView(controller: any /* UIViewController */, owner: View): void;
-  export function getPositionFromFrame(frame: any /* CGRect */): { left; top; right; bottom };
-  export function getFrameFromPosition(position: { left; top; right; bottom }, insets?: { left; top; right; bottom }): any; /* CGRect */
-  export function shrinkToSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
-  export function expandBeyondSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
-  export class UILayoutViewController {
-    public static initWithOwner(owner: WeakRef<View>): UILayoutViewController;
-  }
-}

@@ -1,5 +1,5 @@
 import { EventData } from "tns-core-modules/data/observable";
-import { Button } from "tns-core-modules/ui/button/button";
+import { Button } from "tns-core-modules/ui/button";
 
 export function goToSecond(args: EventData) {
   console.log("---> goToSecond Page");

@@ -1,14 +1,14 @@
 // Types
 import { iOSApplication as iOSApplicationDefinition } from '.';
 import { ApplicationEventData, CssChangedEventData, LaunchEventData, LoadAppCSSEventData, OrientationChangedEventData, SystemAppearanceChangedEventData } from './application-interfaces';
-import { View } from '../ui/core/view';
-import { NavigationEntry } from '../ui/frame/frame-interfaces';
 
 // Require
 import { displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } from './application-common';
 // First reexport so that app module is initialized.
 export * from './application-common';
 
+import { View } from '../ui/core/view';
+import { NavigationEntry } from '../ui/frame/frame-interfaces';
 // TODO: Remove this and get it from global to decouple builder for angular
 import { Builder } from '../ui/builder';
 import { CLASS_PREFIX, getSystemCssClasses, pushToSystemCssClasses, ROOT_VIEW_CSS_CLASS } from '../css/system-classes';

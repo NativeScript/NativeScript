@@ -1,5 +1,4 @@
-import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { View, unsetValue, eachDescendant } from "tns-core-modules/ui/core/view";
+import { View, unsetValue, eachDescendant, StackLayout } from "@nativescript/core";
 
 export function resetStyles(args) {
     var stackLayout = <StackLayout>args.object.parent;

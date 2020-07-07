@@ -1,5 +1,4 @@
 // Definitions.
-import { ComponentModule } from '.';
 import { View } from '../../core/view';
 
 // Types.
@@ -10,6 +9,11 @@ import * as debugModule from '../../../utils/debug';
 import { Device } from '../../../platform';
 import { sanitizeModuleName } from '../module-name-sanitizer';
 import { resolveModuleName } from '../../../module-name-resolver';
+
+export interface ComponentModule {
+  component: View;
+  exports: any;
+}
 
 const UI_PATH = 'ui/';
 const MODULES = {
@@ -156,7 +160,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
     applyComponentCss(instance, moduleNamePath, attributes);
   }
 
-  applyComponentAttributes(instance, instanceModule, moduleExports);
+  applyComponentAttributes(instance, instanceModule, moduleExports, attributes);
 
   let componentModule;
   if (instance && instanceModule) {

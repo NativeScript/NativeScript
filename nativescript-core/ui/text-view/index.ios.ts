@@ -1,6 +1,7 @@
 import { ScrollEventData } from '../scroll-view';
+import { textProperty } from '../text-base';
 import { TextViewBase as TextViewBaseCommon, maxLinesProperty } from './text-view-common';
-import { editableProperty, hintProperty, textProperty, placeholderColorProperty, _updateCharactersInRangeReplacementString } from '../editable-text-base';
+import { editableProperty, hintProperty, placeholderColorProperty, _updateCharactersInRangeReplacementString } from '../editable-text-base';
 import { CSSType } from '../core/view';
 import { Color } from '../../color';
 import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length } from '../styling/style-properties';

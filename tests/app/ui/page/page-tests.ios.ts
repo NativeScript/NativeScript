@@ -1,6 +1,4 @@
-import { Page, View, EventData } from "@nativescript/core/ui/page";
-import { Label } from "@nativescript/core/ui/label";
-import { Frame } from "@nativescript/core/ui/frame";
+import { Page, View, EventData, Label, Frame } from "@nativescript/core";
 import * as TKUnit from "../../tk-unit";
 import * as helper from "../../ui-helper";
 import { addLabelToPage } from "./page-tests-common";

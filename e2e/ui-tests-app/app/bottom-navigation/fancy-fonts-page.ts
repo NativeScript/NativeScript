@@ -1,5 +1,4 @@
-import { EventData, Page } from "tns-core-modules/ui/page/page";
-import { BottomNavigation } from "tns-core-modules/ui/bottom-navigation/bottom-navigation";
+import { EventData, Page, BottomNavigation } from "@nativescript/core";
 
 export const selectTab = (args: EventData) => {
     const page = <Page>(<any>args.object).page;

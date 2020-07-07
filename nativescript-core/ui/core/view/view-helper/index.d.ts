@@ -33,6 +33,9 @@ export class ViewHelper {
   public static combineMeasuredStates(curState: number, newState): number;
 }
 
+/**
+ * Various iOS view helper methods
+ */
 export namespace IOSHelper {
   /**
    * String value used when hooking to traitCollectionColorAppearanceChangedEvent event.

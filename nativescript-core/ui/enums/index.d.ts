@@ -1,5 +1,5 @@
 ﻿import { CubicBezierAnimationCurve } from '../animation';
-import { KeyboardType as BaseKeyboardType, ReturnKeyType as BaseReturnKeyType, UpdateTextTrigger as BaseUpdateTrigger, AutocapitalizationType as BaseAutocapitalizationType } from '../editable-text-base';
+import { ReturnKeyType as BaseReturnKeyType, UpdateTextTrigger as BaseUpdateTrigger, AutocapitalizationType as BaseAutocapitalizationType } from '../editable-text-base';
 
 import { WhiteSpace as BaseWhiteSpace, TextAlignment as BaseTextAlignment, TextTransform as BaseTextTransform, TextDecoration as BaseTextDecoration } from '../text-base';
 
@@ -13,6 +13,7 @@ import { Stretch as BaseStretch } from '../image';
 
 import { FontStyle as BaseFontStyle, FontWeight as BaseFontWeight } from '../styling/font-common';
 
+export type KeyboardType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
 /**
  * Represents a soft keyboard flavor.
  */
@@ -21,36 +22,36 @@ export module KeyboardType {
    * Android: [TYPE_CLASS_DATETIME](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_DATETIME) | [TYPE_DATETIME_VARIATION_NORMAL](http://developer.android.com/reference/android/text/InputType.html#TYPE_DATETIME_VARIATION_NORMAL)
    * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
    */
-  export const datetime: BaseKeyboardType;
+  export const datetime: KeyboardType;
   /**
    * Android: [TYPE_CLASS_PHONE](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_PHONE)
    * iOS:  [UIKeyboardTypePhonePad](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
    */
-  export const phone: BaseKeyboardType;
+  export const phone: KeyboardType;
 
   /**
    * Android: [TYPE_CLASS_NUMBER](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_NUMBER) | [TYPE_NUMBER_VARIATION_NORMAL](http://developer.android.com/intl/es/reference/android/text/InputType.html#TYPE_NUMBER_VARIATION_NORMAL) | [TYPE_NUMBER_FLAG_SIGNED](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_SIGNED) | [TYPE_NUMBER_FLAG_DECIMAL](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_DECIMAL)
    * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
    */
-  export const number: BaseKeyboardType;
+  export const number: KeyboardType;
 
   /**
    * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_URI](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_URI)
    * iOS:  [UIKeyboardTypeURL](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
    */
-  export const url: BaseKeyboardType;
+  export const url: KeyboardType;
 
   /**
    * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_EMAIL_ADDRESS](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_EMAIL_ADDRESS)
    * iOS:  [UIKeyboardTypeEmailAddress](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
    */
-  export const email: BaseKeyboardType;
+  export const email: KeyboardType;
 
   /**
    * Android: [TYPE_CLASS_NUMBER](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_NUMBER | [TYPE_NUMBER_VARIATION_PASSWORD](android type_text_variation_password))
    * iOS:  [UIKeyboardTypeNumberPad](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
    */
-  export const integer: BaseKeyboardType;
+  export const integer: KeyboardType;
 }
 
 /**

@@ -24,6 +24,9 @@ import { TextTransform } from '../../text-base';
 
 import * as am from '../../animation';
 
+// helpers (these are okay re-exported here)
+export * from './view-helper';
+
 let animationModule: typeof am;
 function ensureAnimationModule() {
   if (!animationModule) {
@@ -166,7 +169,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     let handled = false;
-    this.eachChildView((child) => {
+    this.eachChildView((child: ViewCommon) => {
       if (child._onLivesync(context)) {
         handled = true;
 

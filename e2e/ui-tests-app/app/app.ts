@@ -1,22 +1,21 @@
 ﻿console.log("####### ------ APP MODULES START ");
 
-import * as application from "tns-core-modules/application";
-import * as trace from "tns-core-modules/trace";
-trace.addCategories(trace.categories.NativeLifecycle);
-trace.addCategories(trace.categories.Navigation);
-trace.addCategories(trace.categories.Transition);
+import { Trace, Application, UnhandledErrorEventData, LaunchEventData, ApplicationEventData, DiscardedErrorEventData } from "@nativescript/core";
+Trace.addCategories(Trace.categories.NativeLifecycle);
+Trace.addCategories(Trace.categories.Navigation);
+Trace.addCategories(Trace.categories.Transition);
 
-trace.enable();
+Trace.enable();
 
 var countResume = 0;
 var countSuspend = 0;
 
-application.on("displayed", args => {
+Application.on("displayed", args => {
     const uptime = global.android ? (<any>org).nativescript.Process.getUpTime : (<any>global).__tns_uptime;
     console.log("Startup time: " + uptime() + "ms.");
 });
 
-application.on("uncaughtError", args => {
+Application.on("uncaughtError", args => {
     const error = args.error;
     console.warn(error.message);
     if (error.nativeError) {
@@ -24,7 +23,7 @@ application.on("uncaughtError", args => {
     }
 });
 
-application.on(application.launchEvent, function (args: application.LaunchEventData) {
+Application.on(Application.launchEvent, function (args: LaunchEventData) {
     if (args.android) {
         // For Android applications, args.android is an android.content.Intent class.
         console.log("### Launched application with: " + args.android + ".");
@@ -34,7 +33,7 @@ application.on(application.launchEvent, function (args: application.LaunchEventD
     }
 });
 
-application.on(application.suspendEvent, function (args: application.ApplicationEventData) {
+Application.on(Application.suspendEvent, function (args: ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("#" + ++countSuspend + "# SuspendEvent Activity: " + args.android);
@@ -44,7 +43,7 @@ application.on(application.suspendEvent, function (args: application.Application
     }
 });
 
-application.on(application.resumeEvent, function (args: application.ApplicationEventData) {
+Application.on(Application.resumeEvent, function (args: ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("#" + ++countResume + "# ResumeEvent Activity: " + args.android);
@@ -54,7 +53,7 @@ application.on(application.resumeEvent, function (args: application.ApplicationE
     }
 });
 
-application.on(application.exitEvent, function (args: application.ApplicationEventData) {
+Application.on(Application.exitEvent, function (args: ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("### ExitEvent Activity: " + args.android);
@@ -64,7 +63,7 @@ application.on(application.exitEvent, function (args: application.ApplicationEve
     }
 });
 
-application.on(application.lowMemoryEvent, function (args: application.ApplicationEventData) {
+Application.on(Application.lowMemoryEvent, function (args: ApplicationEventData) {
     if (args.android) {
         // For Android applications, args.android is an android activity class.
         console.log("### LowMemoryEvent Activity: " + args.android);
@@ -74,21 +73,21 @@ application.on(application.lowMemoryEvent, function (args: application.Applicati
     }
 });
 
-application.on(application.uncaughtErrorEvent, function (args: application.UnhandledErrorEventData) {
+Application.on(Application.uncaughtErrorEvent, function (args: UnhandledErrorEventData) {
     console.log("### NativeScriptError: " + args.error);
     console.log("### nativeException: " + (<any>args.error).nativeException);
     console.log("### stackTrace: " + (<any>args.error).stackTrace);
     console.log("### stack: " + args.error.stack);
 });
 
-application.on(application.discardedErrorEvent, function (args: application.DiscardedErrorEventData) {
+Application.on(Application.discardedErrorEvent, function (args: DiscardedErrorEventData) {
     console.log("### [Discarded] NativeScriptError: " + args.error);
     console.log("### [Discarded] nativeException: " + (<any>args.error).nativeException);
     console.log("### [Discarded] stackTrace: " + (<any>args.error).stackTrace);
     console.log("### [Discarded] stack: " + args.error.stack);
 });
 
-application.run({ moduleName: "app-root" });
+Application.run({ moduleName: "app-root" });
 
 // TODO: investigate tab-view -> tabviewcss test crash
 // TODO: investigate css -> layouts border overlap failure

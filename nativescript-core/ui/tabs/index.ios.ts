@@ -9,7 +9,7 @@ import { Color } from '../../color';
 import { ImageSource } from '../../image-source';
 import { Device } from '../../platform';
 import { ios as iosUtils, isFontIconURI, layout } from '../../utils';
-import { ios as iosView, View } from '../core/view';
+import { IOSHelper, View } from '../core/view';
 import { ViewBase } from '../core/view-base';
 import { Frame } from '../frame';
 import { Font } from '../styling/font';
@@ -144,7 +144,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
       return;
     }
 
-    iosView.updateAutoAdjustScrollInsets(this, owner);
+    IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
     // Tabs can be reset as a root view. Call loaded here in this scenario.
     if (!owner.isLoaded) {
@@ -234,7 +234,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
       const owner = this._owner.get();
       if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
         owner.notify({
-          eventName: iosView.traitCollectionColorAppearanceChangedEvent,
+          eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
           object: owner,
         });
       }
@@ -665,7 +665,7 @@ export class Tabs extends TabsBase {
             newController = item.content.ios.controller;
             (<any>item).setViewController(newController, newController.view);
         } else {
-            newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.content)) as UIViewController;
+            newController = IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(item.content)) as UIViewController;
             newController.view.addSubview(item.content.nativeViewProtected);
             item.content.viewController = newController;
             (<any>item).setViewController(newController, item.content.nativeViewProtected);

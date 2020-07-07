@@ -1,6 +1,4 @@
-import { EventData } from "tns-core-modules/data/observable";
-import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
-import { Page } from "tns-core-modules/ui/page";
+import { EventData, WrapLayout, Page } from "@nativescript/core";
 
 import { SubMainPageViewModel } from "../sub-main-page-view-model";
 

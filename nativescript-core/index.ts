@@ -1,8 +1,8 @@
 /// <reference path="./tns-core-modules.d.ts" />
 
-// apply polyfills first
-import { initGlobal, hasInitGlobal } from './globals';
-if (!hasInitGlobal) {
+// Init globals first
+import { initGlobal } from './globals';
+if (!(<any>global).hasInitGlobal) {
   initGlobal();
 }
 

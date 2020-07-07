@@ -1,9 +1,4 @@
-import { EventData } from "tns-core-modules/data/observable";
-import { Frame } from "tns-core-modules/ui/frame/frame";
-import { Page } from "tns-core-modules/ui/page";
-import {
-  TabStripItemEventData, SelectedIndexChangedEventData, BottomNavigation, TabStrip,
-} from "tns-core-modules/ui/bottom-navigation";
+import { EventData, Frame, Page, TabStripItemEventData, SelectedIndexChangedEventData, BottomNavigation, TabStrip } from "@nativescript/core";
 
 export function goToFirst(args: EventData) {
   console.log("---> goToFirst");

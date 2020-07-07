@@ -1,7 +1,6 @@
 ﻿/**
  * iOS specific dialogs functions implementation.
  */
-import { ios as iosView } from '../core/view';
 import { Trace } from '../../trace';
 import { ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions, getCurrentPage, getLabelColor, getButtonColors, getTextFieldColor, isDialogOptions, inputType, capitalizationType, DialogStrings, parseLoginOptions } from './dialogs-common';
 import { isString, isDefined, isFunction } from '../../utils/types';

@@ -3,7 +3,7 @@ import { Frame, BackstackEntry } from '../frame';
 import { NavigationType } from '../frame/frame-common';
 
 // Types.
-import { ios as iosView, View } from '../core/view';
+import { View, IOSHelper } from '../core/view';
 import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './page-common';
 
 import { profile } from '../../profiling';
@@ -118,7 +118,7 @@ class UIViewControllerImpl extends UIViewController {
     }
 
     // Set autoAdjustScrollInsets in will appear - as early as possible
-    iosView.updateAutoAdjustScrollInsets(this, owner);
+    IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
     // Pages in backstack are unloaded so raise loaded here.
     if (!owner.isLoaded) {
@@ -242,7 +242,7 @@ class UIViewControllerImpl extends UIViewController {
     super.viewWillLayoutSubviews();
     const owner = this._owner.get();
     if (owner) {
-      iosView.updateConstraints(this, owner);
+      IOSHelper.updateConstraints(this, owner);
     }
   }
 
@@ -290,7 +290,7 @@ class UIViewControllerImpl extends UIViewController {
         }
       }
 
-      iosView.layoutView(this, owner);
+      IOSHelper.layoutView(this, owner);
     }
   }
 
@@ -302,7 +302,7 @@ class UIViewControllerImpl extends UIViewController {
       const owner = this._owner.get();
       if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
         owner.notify({
-          eventName: iosView.traitCollectionColorAppearanceChangedEvent,
+          eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
           object: owner,
         });
       }

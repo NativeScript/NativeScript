@@ -1,5 +1,8 @@
 console.log('Loading inspector modules...');
-require('./globals/ts-helpers');
+import { initGlobal } from './globals';
+if (!(<any>global).hasInitGlobal) {
+  initGlobal();
+}
 require('./debugger/webinspector-network');
 require('./debugger/webinspector-dom');
 require('./debugger/webinspector-css');

@@ -14,6 +14,8 @@ export { DatePicker } from './date-picker';
 export { action, alert, confirm, login, prompt, getCurrentPage, Dialogs, DialogStrings, DialogOptions, CancelableOptions, AlertOptions, PromptResult, PromptOptions, ActionOptions, ConfirmOptions, LoginResult, LoginOptions, inputType, capitalizationType } from './dialogs';
 
 export * from './editable-text-base';
+import * as enumsModule from './enums';
+export const Enums = enumsModule;
 export { Frame, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry } from './frame';
 
 export { GestureEventData, GestureEventDataWithState, GestureStateTypes, GestureTypes, GesturesObserver, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeDirection, SwipeGestureEventData, TouchGestureEventData } from './gestures';

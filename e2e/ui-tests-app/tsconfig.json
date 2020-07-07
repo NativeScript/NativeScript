@@ -5,7 +5,7 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "noEmitHelpers": true,
-        "noEmitOnError": true,
+        "noEmitOnError": false,
         "skipLibCheck": true,
         "lib": [
             "es6",
@@ -15,6 +15,9 @@
         "paths": {
             "~/*": [
                 "app/*"
+            ],
+            "tns-core-modules/*": [
+              "./node_modules/@nativescript/core/*"
             ],
             "*": [
                 "./node_modules/*"

@@ -1,4 +1,4 @@
-import { Tabs, SelectedIndexChangedEventData } from "tns-core-modules/ui/tabs";
+import { Tabs, SelectedIndexChangedEventData } from "@nativescript/core";
 
 export function onSelectedIndexChanged(args: SelectedIndexChangedEventData) {
     const tabsNav = <Tabs>args.object;

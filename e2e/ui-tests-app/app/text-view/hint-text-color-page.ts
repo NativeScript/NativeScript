@@ -1,7 +1,4 @@
-import { Page } from "tns-core-modules/ui/page";
-import { unsetValue } from "tns-core-modules/ui/core/view";
-import { TextView } from "tns-core-modules/ui/text-view";
-import { TextField } from "tns-core-modules/ui/text-field";
+import { TextView, unsetValue, TextField, Page } from "@nativescript/core";
 
 function exectuteOnAll(page: Page, callback: (txt: TextView | TextField) => void) {
     page.getViewById("container").eachChild((child) => {

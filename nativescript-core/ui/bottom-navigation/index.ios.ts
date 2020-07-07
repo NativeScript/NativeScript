@@ -9,7 +9,7 @@ import { Color } from '../../color';
 import { ImageSource } from '../../image-source';
 import { Device } from '../../platform';
 import { ios as iosUtils, isFontIconURI, layout } from '../../utils';
-import { CSSType, ios as iosView, View } from '../core/view';
+import { CSSType, IOSHelper, View } from '../core/view';
 import { Frame } from '../frame';
 import { Font } from '../styling/font';
 import { getIconSpecSize, itemsProperty, selectedIndexProperty, TabNavigationBase, tabStripProperty } from '../tab-navigation-base/tab-navigation-base';
@@ -44,7 +44,7 @@ class UITabBarControllerImpl extends UITabBarController {
     // Unify translucent and opaque bars layout
     this.extendedLayoutIncludesOpaqueBars = true;
 
-    iosView.updateAutoAdjustScrollInsets(this, owner);
+    IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
     if (!owner.parent) {
       owner.callLoaded();
@@ -86,7 +86,7 @@ class UITabBarControllerImpl extends UITabBarController {
       const owner = this._owner.get();
       if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
         owner.notify({
-          eventName: iosView.traitCollectionColorAppearanceChangedEvent,
+          eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
           object: owner,
         });
       }
@@ -540,7 +540,7 @@ export class BottomNavigation extends TabNavigationBase {
       newController = item.content.ios.controller;
       (<any>item).setViewController(newController, newController.view);
     } else {
-      newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.content)) as UIViewController;
+      newController = IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(item.content)) as UIViewController;
       newController.view.addSubview(item.content.nativeViewProtected);
       item.content.viewController = newController;
       (<any>item).setViewController(newController, item.content.nativeViewProtected);

@@ -3,6 +3,7 @@ import { Color } from '../../color';
 import { FormattedString } from '../text-base/formatted-string';
 import { Style } from '../styling/style';
 import { Property, CssProperty } from '../core/properties';
+import { KeyboardType } from '../enums';
 
 /**
  * Represents the base class for all editable text views.
@@ -65,7 +66,6 @@ export class EditableTextBase extends TextBase {
   //@endprivate
 }
 
-export type KeyboardType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
 export type ReturnKeyType = 'done' | 'next' | 'go' | 'search' | 'send';
 export type UpdateTextTrigger = 'focusLost' | 'textChanged';
 export type AutocapitalizationType = 'none' | 'words' | 'sentences' | 'allcharacters';
@@ -86,5 +86,3 @@ export const maxLengthProperty: Property<EditableTextBase, number>;
  */
 export function _updateCharactersInRangeReplacementString(formattedText: FormattedString, rangeLocation: number, rangeLength: number, replacementString: string): void;
 //@endprivate
-
-export * from '../text-base';

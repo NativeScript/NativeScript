@@ -1,7 +1,7 @@
 import { TabViewItem as TabViewItemDefinition } from '.';
 import { Font } from '../styling/font';
 
-import { ios as iosView, View } from '../core/view';
+import { IOSHelper, View } from '../core/view';
 import { ViewBase } from '../core/view-base';
 import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabTextFontSizeProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty, traceMissingIcon } from './tab-view-common';
 import { Color } from '../../color';
@@ -44,7 +44,7 @@ class UITabBarControllerImpl extends UITabBarController {
       return;
     }
 
-    iosView.updateAutoAdjustScrollInsets(this, owner);
+    IOSHelper.updateAutoAdjustScrollInsets(this, owner);
 
     if (!owner.parent) {
       owner.callLoaded();
@@ -78,7 +78,7 @@ class UITabBarControllerImpl extends UITabBarController {
       const owner = this._owner.get();
       if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
         owner.notify({
-          eventName: iosView.traitCollectionColorAppearanceChangedEvent,
+          eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
           object: owner,
         });
       }
@@ -432,7 +432,7 @@ export class TabView extends TabViewBase {
       newController = item.view.ios.controller;
       item.setViewController(newController, newController.view);
     } else {
-      newController = iosView.UILayoutViewController.initWithOwner(new WeakRef(item.view)) as UIViewController;
+      newController = IOSHelper.UILayoutViewController.initWithOwner(new WeakRef(item.view)) as UIViewController;
       newController.view.addSubview(item.view.nativeViewProtected);
       item.view.viewController = newController;
       item.setViewController(newController, item.view.nativeViewProtected);

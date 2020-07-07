@@ -1,5 +1,4 @@
-import { TextField } from "tns-core-modules/ui/text-field";
-import { TextView } from "tns-core-modules/ui/text-view";
+import { TextField, TextView } from "@nativescript/core";
 
 export function onLoaded(args) {
     const page = args.object;
