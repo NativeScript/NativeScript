@@ -105,40 +105,34 @@ function startMonitoringLegacy(connectionTypeChangedCallback) {
 }
 
 let callback;
-
+let networkCallback;
+let notifyCallback;
 export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
     if (android.os.Build.VERSION.SDK_INT >= 28) {
         const manager = getConnectivityManager() as any;
         if (manager) {
-            const notifyCallback = () => {
+             notifyCallback = () => {
                 let newConnectionType = getConnectionType();
                 let zoneCallback = <any>zonedCallback(connectionTypeChangedCallback);
                 zoneCallback(newConnectionType);
             };
             const ConnectivityManager = (android as any).net.ConnectivityManager;
-            const networkCallback = ConnectivityManager.NetworkCallback.extend({
-                onAvailable(network) {
-                    notifyCallback();
-                },
-                onBlockedStatusChanged(network, blocked: boolean) {
-                    // NOOP
-                },
-                onCapabilitiesChanged(network, networkCapabilities) {
-                    notifyCallback();
-                },
-                onLinkPropertiesChanged(network, linkProperties) {
-                    // NOOP
-                },
-                onLosing(network, maxMsToLive: number) {
-                    // NOOP
-                },
-                onLost(network) {
-                    notifyCallback();
-                },
-                onUnavailable() {
-                    notifyCallback();
-                }
-            });
+            if(!networkCallback){
+                networkCallback = ConnectivityManager.NetworkCallback.extend({
+                    onAvailable(network) {
+                        notifyCallback();
+                    },
+                    onCapabilitiesChanged(network, networkCapabilities) {
+                        notifyCallback();
+                    },
+                    onLost(network) {
+                        notifyCallback();
+                    },
+                    onUnavailable() {
+                        notifyCallback();
+                    }
+                });
+            }
             callback = new networkCallback();
             manager.registerDefaultNetworkCallback(callback);
         }
@@ -153,6 +147,8 @@ export function stopMonitoring(): void {
         const manager = getConnectivityManager() as any;
         if (manager && callback) {
             manager.unregisterNetworkCallback(callback);
+            notifyCallback = null;
+            callback = null;
         }
     } else {
         androidApp.unregisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
