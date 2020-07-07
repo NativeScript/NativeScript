@@ -29,15 +29,15 @@ export enum connectionType {
    */
   ethernet = 3,
 
-    /**
-     * Denotes a bluetooth connection
-     */
-    bluetooth = 4,
+  /**
+   * Denotes a bluetooth connection
+   */
+  bluetooth = 4,
 
-    /**
-     * Denotes a vpn connection
-     */
-    vpn = 5
+  /**
+   * Denotes a vpn connection
+   */
+  vpn = 5,
 }
 
 /**

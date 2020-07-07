@@ -1,10 +1,10 @@
 export enum connectionType {
-    none = 0,
-    wifi = 1,
-    mobile = 2,
-    ethernet = 3,
-    bluetooth = 4,
-    vpn = 5
+  none = 0,
+  wifi = 1,
+  mobile = 2,
+  ethernet = 3,
+  bluetooth = 4,
+  vpn = 5,
 }
 
 // Get Connection Type
@@ -40,84 +40,75 @@ function _getConnectionType(host?: string): number {
 }
 
 function _getConnectionTypeFromFlags(flags: number): number {
-    if (!flags) {
-        return connectionType.none;
-    }
+  if (!flags) {
+    return connectionType.none;
+  }
 
-    const isReachable = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsReachable;
-    const connectionRequired = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsConnectionRequired;
-    if (!isReachable || connectionRequired) {
-        return connectionType.none;
-    }
+  const isReachable = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsReachable;
+  const connectionRequired = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsConnectionRequired;
+  if (!isReachable || connectionRequired) {
+    return connectionType.none;
+  }
 
-    const isWWAN = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsIsWWAN;
-    if (isWWAN) {
-        return connectionType.mobile;
-    }
+  const isWWAN = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsIsWWAN;
+  if (isWWAN) {
+    return connectionType.mobile;
+  }
 
-    const cfDict = CFNetworkCopySystemProxySettings();
-    const nsDict = cfDict.takeUnretainedValue();
-    const keys = nsDict.objectForKey("__SCOPED__");
+  const cfDict = CFNetworkCopySystemProxySettings();
+  const nsDict = cfDict.takeUnretainedValue();
+  const keys = nsDict.objectForKey('__SCOPED__');
 
-    if (isVPNConnected(keys)) {
-        return connectionType.vpn;
-    }
+  if (isVPNConnected(keys)) {
+    return connectionType.vpn;
+  }
 
-    /*
+  /*
     TODO try improving with CBCentralManager since toggling bluetooth
       with multiple connections fails to detect switch, require key added
       to Info.plist.
      */
-    if (isBluetoothConnected(keys)) {
-        return connectionType.bluetooth;
-    }
+  if (isBluetoothConnected(keys)) {
+    return connectionType.bluetooth;
+  }
 
-    return connectionType.wifi;
+  return connectionType.wifi;
 }
 
-function isBluetoothConnected (keys) {
-    if (!keys) {
-        return false;
+function isBluetoothConnected(keys) {
+  if (!keys) {
+    return false;
+  }
+  const allKeys = keys.allKeys;
+  const size = allKeys.count;
+  let isBlueTooth = false;
+  for (let i = 0; i < size; i++) {
+    const key = allKeys.objectAtIndex(i);
+    if (key === 'en4') {
+      isBlueTooth = true;
+      break;
     }
-    const allKeys = keys.allKeys;
-    const size = allKeys.count;
-    let isBlueTooth = false;
-    for (let i = 0; i < size; i++) {
-        const key = allKeys.objectAtIndex(i);
-        if (
-            key === "en4"
-        ) {
-            isBlueTooth = true;
-            break;
-        }
-    }
+  }
 
-    return isBlueTooth;
+  return isBlueTooth;
 }
 
 function isVPNConnected(keys) {
-    if (!keys) {
-        return false;
+  if (!keys) {
+    return false;
+  }
+  const allKeys = keys.allKeys;
+  const size = allKeys.count;
+  let isVPN = false;
+  for (let i = 0; i < size; i++) {
+    const key = allKeys.objectAtIndex(i);
+    if (key === 'tap' || key === 'tun' || key === 'ppp' || key === 'ipsec' || key === 'ipsec0' || key === 'utun1') {
+      isVPN = true;
+      break;
     }
-    const allKeys = keys.allKeys;
-    const size = allKeys.count;
-    let isVPN = false;
-    for (let i = 0; i < size; i++) {
-        const key = allKeys.objectAtIndex(i);
-        if (
-            key === "tap" ||
-            key === "tun" ||
-            key === "ppp" ||
-            key === "ipsec" ||
-            key === "ipsec0" ||
-            key === "utun1"
-        ) {
-            isVPN = true;
-            break;
-        }
-    }
+  }
 
-    return isVPN;
+  return isVPN;
 }
 
 export function getConnectionType(): number {
@@ -126,11 +117,10 @@ export function getConnectionType(): number {
 
 // Start/Stop Monitoring
 function _reachabilityCallback(target: any, flags: number, info: any) {
-    if (_connectionTypeChangedCallback) {
-        const newConnectionType = _getConnectionTypeFromFlags(flags);
-        _connectionTypeChangedCallback(newConnectionType);
-    }
-
+  if (_connectionTypeChangedCallback) {
+    const newConnectionType = _getConnectionTypeFromFlags(flags);
+    _connectionTypeChangedCallback(newConnectionType);
+  }
 }
 
 const _reachabilityCallbackFunctionRef = new interop.FunctionReference(_reachabilityCallback);
