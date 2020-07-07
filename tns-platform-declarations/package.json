@@ -1,6 +1,6 @@
 {
     "name": "tns-platform-declarations",
-    "version": "6.5.8",
+    "version": "6.5.9",
     "description": "Platform-specific TypeScript declarations for NativeScript for accessing native objects",
     "main": "",
     "scripts": {
@@ -22,9 +22,9 @@
         "ns"
     ],
     "author": {
-        "name": "Telerik",
-        "email": "support@telerik.com",
-        "url": "http://www.telerik.com"
+        "name": "NativeScript Team",
+        "email": "oss@nativescript.org",
+        "url": "https://nativescript.org"
     },
     "license": "Apache-2.0",
     "bugs": {
