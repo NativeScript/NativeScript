@@ -117,7 +117,7 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
                 zoneCallback(newConnectionType);
             };
             const ConnectivityManager = (android as any).net.ConnectivityManager;
-            if(!networkCallback){
+            if (!networkCallback) {
                 networkCallback = ConnectivityManager.NetworkCallback.extend({
                     onAvailable(network) {
                         notifyCallback();
