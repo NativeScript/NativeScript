@@ -1,7 +1,13 @@
 {
+<<<<<<< HEAD
     "name": "tns-platform-declarations",
     "version": "6.5.10",
     "description": "Platform-specific TypeScript declarations for NativeScript for accessing native objects",
+=======
+    "name": "@nativescript/types",
+    "version": "7.0.0-rc.0",
+    "description": "Platform-specific TypeScript declarations for NativeScript",
+>>>>>>> chore: cleanup
     "main": "",
     "scripts": {
         "test": "tsc",
@@ -22,7 +28,7 @@
         "ns"
     ],
     "author": {
-        "name": "NativeScript Team",
+        "name": "NativeScript team",
         "email": "oss@nativescript.org",
         "url": "https://nativescript.org"
     },

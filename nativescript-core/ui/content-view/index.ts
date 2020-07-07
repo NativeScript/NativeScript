@@ -1,13 +1,12 @@
 ﻿import { View, CustomLayoutView, AddChildFromBuilder } from '../core/view';
 import { layout } from '../../utils';
 import { isIOS } from '../../platform';
-import { ContentView as ContentViewDefinition } from '.';
 
 /**
  * Represents a View that has a single child - content.
  * The View itself does not have visual representation and serves as a placeholder for its content in the logical tree.
  */
-export class ContentView extends CustomLayoutView implements ContentViewDefinition, AddChildFromBuilder {
+export class ContentView extends CustomLayoutView implements AddChildFromBuilder {
   private _content: View;
 
   /**

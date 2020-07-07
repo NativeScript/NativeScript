@@ -1,7 +1,7 @@
 {
-    "name": "tns-core-modules-widgets",
-    "version": "6.5.10",
-    "description": "Native widgets used in the NativeScript framework.",
+    "name": "@nativescript/core-widgets",
+    "version": "7.0.0-rc.0",
+    "description": "Native widgets used in @nativescript/core.",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },

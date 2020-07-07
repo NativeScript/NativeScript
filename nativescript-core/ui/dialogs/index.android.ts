@@ -382,3 +382,14 @@ export function action(arg: any): Promise<string> {
     }
   });
 }
+
+/**
+ * Singular rollup for convenience of all dialog methods
+ */
+export const Dialogs = {
+  alert,
+  confirm,
+  prompt,
+  login,
+  action,
+};

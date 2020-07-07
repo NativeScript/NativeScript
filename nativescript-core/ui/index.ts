@@ -11,9 +11,7 @@ export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedC
 export { DatePicker } from './date-picker';
 
 // No need go export dialogs, they are already export exported globally
-export * from './dialogs/dialogs-common';
-import { action, alert, confirm, login, prompt } from './dialogs';
-export const Dialogs = { action, alert, confirm, login, prompt };
+export { action, alert, confirm, login, prompt, getCurrentPage, Dialogs, DialogStrings, DialogOptions, CancelableOptions, AlertOptions, PromptResult, PromptOptions, ActionOptions, ConfirmOptions, LoginResult, LoginOptions, inputType, capitalizationType } from './dialogs';
 
 export * from './editable-text-base';
 export { Frame, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry } from './frame';

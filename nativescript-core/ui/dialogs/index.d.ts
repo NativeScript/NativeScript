@@ -293,3 +293,14 @@ export interface LoginResult {
    */
   password: string;
 }
+
+/**
+ * Singular rollup for convenience of all dialog methods
+ */
+export declare const Dialogs: {
+  alert: typeof alert;
+  confirm: typeof confirm;
+  prompt: typeof prompt;
+  login: typeof login;
+  action: typeof action;
+};

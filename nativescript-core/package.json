@@ -3,7 +3,7 @@
     "main": "index",
     "types": "index.d.ts",
     "description": "NativeScript Core Modules",
-    "version": "6.5.10",
+    "version": "7.0.0-rc.0",
     "homepage": "https://www.nativescript.org",
     "repository": {
         "type": "git",
@@ -23,13 +23,13 @@
         "css-tree": "^1.0.0-alpha.39",
         "reduce-css-calc": "^2.1.6",
         "semver": "~7.3.2",
-        "tns-core-modules-widgets": "~6.5.2",
+        "@nativescript/core-widgets": "~7.0.0-rc.0",
         "tslib": "~2.0.0"
     },
     "devDependencies": {
         "@types/chai": "~4.2.11",
         "@types/node": "~14.0.14",
-        "tns-platform-declarations": "~6.5.8"
+        "@nativescript/types": "~7.0.0-rc.0"
     },
     "scripts": {
         "version": "conventional-changelog -p angular -i ../CHANGELOG.md -s && git add ../CHANGELOG.md",
