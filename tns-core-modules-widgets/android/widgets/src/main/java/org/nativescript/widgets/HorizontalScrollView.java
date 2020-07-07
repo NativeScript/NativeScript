@@ -70,7 +70,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        if (!this.scrollEnabled && ev.getAction() == MotionEvent.ACTION_DOWN) {
+        if (!this.scrollEnabled && (ev.getAction() == MotionEvent.ACTION_DOWN || ev.getAction() == MotionEvent.ACTION_MOVE)) {
             return false;
         }
 

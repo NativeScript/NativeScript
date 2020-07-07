@@ -1,0 +1,7 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" class="page">
+    <ScrollView id="scroll-view" height="300">
+        <StackLayout height="500" backgroundColor="red" pan="panLayout">
+            <Label text="Move Me" color="#fff" fontSize="22"/>
+        </StackLayout>
+    </ScrollView>
+</Page>
