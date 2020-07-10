@@ -2,7 +2,7 @@
 // apply polyfills first
 import { initGlobal } from '../globals';
 if (!(<any>global).hasInitGlobal) {
-  initGlobal();
+	initGlobal();
 }
 
 // Types
@@ -23,22 +23,22 @@ export * from './application-interfaces';
 const events = new Observable();
 let launched = false;
 function setLaunched() {
-  launched = true;
-  events.off('launch', setLaunched);
+	launched = true;
+	events.off('launch', setLaunched);
 }
 events.on('launch', setLaunched);
 
 if (profilingLevel() > 0) {
-  events.on('displayed', () => {
-    const duration = uptime();
-    const end = time();
-    const start = end - duration;
-    profilingTrace(`Displayed in ${duration.toFixed(2)}ms`, start, end);
-  });
+	events.on('displayed', () => {
+		const duration = uptime();
+		const end = time();
+		const start = end - duration;
+		profilingTrace(`Displayed in ${duration.toFixed(2)}ms`, start, end);
+	});
 }
 
 export function hasLaunched(): boolean {
-  return launched;
+	return launched;
 }
 
 export const launchEvent = 'launch';
@@ -59,11 +59,11 @@ const SYSTEM_APPEARANCE_CSS_CLASSES = [`${CLASS_PREFIX}${SystemAppearance.light}
 let cssFile: string = './app.css';
 
 export function getResources() {
-  return bindableResources.get();
+	return bindableResources.get();
 }
 
 export function setResources(res: any) {
-  bindableResources.set(res);
+	bindableResources.set(res);
 }
 
 export let android: AndroidApplication = undefined;
@@ -76,124 +76,124 @@ export const hasListeners: typeof events.hasListeners = events.hasListeners.bind
 
 let app: iOSApplication | AndroidApplication;
 export function setApplication(instance: iOSApplication | AndroidApplication): void {
-  app = instance;
+	app = instance;
 }
 
 export function livesync(rootView: View, context?: ModuleContext) {
-  events.notify(<EventData>{ eventName: 'livesync', object: app });
-  const liveSyncCore = global.__onLiveSyncCore;
-  let reapplyAppStyles = false;
+	events.notify(<EventData>{ eventName: 'livesync', object: app });
+	const liveSyncCore = global.__onLiveSyncCore;
+	let reapplyAppStyles = false;
 
-  // ModuleContext is available only for Hot Module Replacement
-  if (context && context.path) {
-    const styleExtensions = ['css', 'scss'];
-    const appStylesFullFileName = getCssFileName();
-    const appStylesFileName = appStylesFullFileName.substring(0, appStylesFullFileName.lastIndexOf('.') + 1);
-    reapplyAppStyles = styleExtensions.some((ext) => context.path === appStylesFileName.concat(ext));
-  }
+	// ModuleContext is available only for Hot Module Replacement
+	if (context && context.path) {
+		const styleExtensions = ['css', 'scss'];
+		const appStylesFullFileName = getCssFileName();
+		const appStylesFileName = appStylesFullFileName.substring(0, appStylesFullFileName.lastIndexOf('.') + 1);
+		reapplyAppStyles = styleExtensions.some((ext) => context.path === appStylesFileName.concat(ext));
+	}
 
-  // Handle application styles
-  if (rootView && reapplyAppStyles) {
-    rootView._onCssStateChange();
-  } else if (liveSyncCore) {
-    liveSyncCore(context);
-  }
+	// Handle application styles
+	if (rootView && reapplyAppStyles) {
+		rootView._onCssStateChange();
+	} else if (liveSyncCore) {
+		liveSyncCore(context);
+	}
 }
 
 export function setCssFileName(cssFileName: string) {
-  cssFile = cssFileName;
-  events.notify(<CssChangedEventData>{
-    eventName: 'cssChanged',
-    object: app,
-    cssFile: cssFileName,
-  });
+	cssFile = cssFileName;
+	events.notify(<CssChangedEventData>{
+		eventName: 'cssChanged',
+		object: app,
+		cssFile: cssFileName,
+	});
 }
 
 export function getCssFileName(): string {
-  return cssFile;
+	return cssFile;
 }
 
 export function loadAppCss(): void {
-  try {
-    events.notify(<LoadAppCSSEventData>{
-      eventName: 'loadAppCss',
-      object: app,
-      cssFile: getCssFileName(),
-    });
-  } catch (e) {
-    throw new Error(`The app CSS file ${getCssFileName()} couldn't be loaded!`);
-  }
+	try {
+		events.notify(<LoadAppCSSEventData>{
+			eventName: 'loadAppCss',
+			object: app,
+			cssFile: getCssFileName(),
+		});
+	} catch (e) {
+		throw new Error(`The app CSS file ${getCssFileName()} couldn't be loaded!`);
+	}
 }
 
 function addCssClass(rootView: View, cssClass: string) {
-  pushToSystemCssClasses(cssClass);
-  rootView.cssClasses.add(cssClass);
+	pushToSystemCssClasses(cssClass);
+	rootView.cssClasses.add(cssClass);
 }
 
 function removeCssClass(rootView: View, cssClass: string) {
-  removeSystemCssClass(cssClass);
-  rootView.cssClasses.delete(cssClass);
+	removeSystemCssClass(cssClass);
+	rootView.cssClasses.delete(cssClass);
 }
 
 function increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
-  const styleScope = rootView._styleScope || ((<any>rootView).currentPage && (<any>rootView).currentPage._styleScope);
+	const styleScope = rootView._styleScope || ((<any>rootView).currentPage && (<any>rootView).currentPage._styleScope);
 
-  if (styleScope) {
-    styleScope._increaseApplicationCssSelectorVersion();
-  }
+	if (styleScope) {
+		styleScope._increaseApplicationCssSelectorVersion();
+	}
 }
 
 function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string) {
-  if (!rootView.cssClasses.has(newCssClass)) {
-    cssClasses.forEach((cssClass) => removeCssClass(rootView, cssClass));
-    addCssClass(rootView, newCssClass);
-    increaseStyleScopeApplicationCssSelectorVersion(rootView);
-    rootView._onCssStateChange();
-  }
+	if (!rootView.cssClasses.has(newCssClass)) {
+		cssClasses.forEach((cssClass) => removeCssClass(rootView, cssClass));
+		addCssClass(rootView, newCssClass);
+		increaseStyleScopeApplicationCssSelectorVersion(rootView);
+		rootView._onCssStateChange();
+	}
 }
 
 export function orientationChanged(rootView: View, newOrientation: 'portrait' | 'landscape' | 'unknown'): void {
-  if (!rootView) {
-    return;
-  }
+	if (!rootView) {
+		return;
+	}
 
-  const newOrientationCssClass = `${CLASS_PREFIX}${newOrientation}`;
-  applyCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
+	const newOrientationCssClass = `${CLASS_PREFIX}${newOrientation}`;
+	applyCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
 
-  const rootModalViews = <Array<View>>rootView._getRootModalViews();
-  rootModalViews.forEach((rootModalView) => {
-    applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
-  });
+	const rootModalViews = <Array<View>>rootView._getRootModalViews();
+	rootModalViews.forEach((rootModalView) => {
+		applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
+	});
 }
 
 export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void {
-  if (!rootView) {
-    return;
-  }
+	if (!rootView) {
+		return;
+	}
 
-  const newSystemAppearanceCssClass = `${CLASS_PREFIX}${newSystemAppearance}`;
-  applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
+	const newSystemAppearanceCssClass = `${CLASS_PREFIX}${newSystemAppearance}`;
+	applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
 
-  const rootModalViews = <Array<View>>rootView._getRootModalViews();
-  rootModalViews.forEach((rootModalView) => {
-    applyCssClass(rootModalView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
-  });
+	const rootModalViews = <Array<View>>rootView._getRootModalViews();
+	rootModalViews.forEach((rootModalView) => {
+		applyCssClass(rootModalView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
+	});
 }
 
 global.__onUncaughtError = function (error: NativeScriptError) {
-  events.notify(<UnhandledErrorEventData>{
-    eventName: uncaughtErrorEvent,
-    object: app,
-    android: error,
-    ios: error,
-    error: error,
-  });
+	events.notify(<UnhandledErrorEventData>{
+		eventName: uncaughtErrorEvent,
+		object: app,
+		android: error,
+		ios: error,
+		error: error,
+	});
 };
 
 global.__onDiscardedError = function (error: NativeScriptError) {
-  events.notify(<DiscardedErrorEventData>{
-    eventName: discardedErrorEvent,
-    object: app,
-    error: error,
-  });
+	events.notify(<DiscardedErrorEventData>{
+		eventName: discardedErrorEvent,
+		object: app,
+		error: error,
+	});
 };

@@ -1,24 +1,24 @@
 const _allColors = {};
 function registerColor(name, value): string {
-  _allColors[name.toLowerCase()] = value;
+	_allColors[name.toLowerCase()] = value;
 
-  return value;
+	return value;
 }
 
 export function isKnownName(name: string) {
-  if (!name) {
-    return undefined;
-  }
+	if (!name) {
+		return undefined;
+	}
 
-  return name.toLowerCase() in _allColors;
+	return name.toLowerCase() in _allColors;
 }
 
 export function getKnownColor(name: string): string {
-  if (!name) {
-    return undefined;
-  }
+	if (!name) {
+		return undefined;
+	}
 
-  return _allColors[name.toLowerCase()];
+	return _allColors[name.toLowerCase()];
 }
 
 export const Transparent = registerColor('Transparent', '#00000000');

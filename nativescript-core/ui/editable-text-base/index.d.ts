@@ -9,61 +9,61 @@ import { KeyboardType } from '../enums';
  * Represents the base class for all editable text views.
  */
 export class EditableTextBase extends TextBase {
-  public static blurEvent: string;
-  public static focusEvent: string;
-  public static textChangeEvent: string;
+	public static blurEvent: string;
+	public static focusEvent: string;
+	public static textChangeEvent: string;
 
-  /**
-   * Gets or sets the soft keyboard type.
-   */
-  keyboardType: KeyboardType;
+	/**
+	 * Gets or sets the soft keyboard type.
+	 */
+	keyboardType: KeyboardType;
 
-  /**
-   * Gets or sets the soft keyboard return key flavor.
-   */
-  returnKeyType: ReturnKeyType;
+	/**
+	 * Gets or sets the soft keyboard return key flavor.
+	 */
+	returnKeyType: ReturnKeyType;
 
-  /**
-   * Gets or sets a value indicating when the text property will be updated.
-   */
-  updateTextTrigger: UpdateTextTrigger;
+	/**
+	 * Gets or sets a value indicating when the text property will be updated.
+	 */
+	updateTextTrigger: UpdateTextTrigger;
 
-  /**
-   * Gets or sets the autocapitalization type.
-   */
-  autocapitalizationType: AutocapitalizationType;
+	/**
+	 * Gets or sets the autocapitalization type.
+	 */
+	autocapitalizationType: AutocapitalizationType;
 
-  /**
-   * Gets or sets whether the instance is editable.
-   */
-  editable: boolean;
+	/**
+	 * Gets or sets whether the instance is editable.
+	 */
+	editable: boolean;
 
-  /**
-   * Enables or disables autocorrection.
-   */
-  autocorrect: boolean;
+	/**
+	 * Enables or disables autocorrection.
+	 */
+	autocorrect: boolean;
 
-  /**
-   * Gets or sets the placeholder text.
-   */
-  hint: string;
+	/**
+	 * Gets or sets the placeholder text.
+	 */
+	hint: string;
 
-  /**
-   * Limits input to a certain number of characters.
-   */
-  maxLength: number;
+	/**
+	 * Limits input to a certain number of characters.
+	 */
+	maxLength: number;
 
-  /**
-   * Hides the soft input method, ususally a soft keyboard.
-   */
-  dismissSoftInput(): void;
+	/**
+	 * Hides the soft input method, ususally a soft keyboard.
+	 */
+	dismissSoftInput(): void;
 
-  //@private
-  /**
-   * @private
-   */
-  public _setInputType(inputType: number): void;
-  //@endprivate
+	//@private
+	/**
+	 * @private
+	 */
+	public _setInputType(inputType: number): void;
+	//@endprivate
 }
 
 export type ReturnKeyType = 'done' | 'next' | 'go' | 'search' | 'send';

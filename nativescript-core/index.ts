@@ -3,7 +3,7 @@
 // Init globals first
 import { initGlobal } from './globals';
 if (!(<any>global).hasInitGlobal) {
-  initGlobal();
+	initGlobal();
 }
 
 // Export all interfaces from "application" module
@@ -12,59 +12,59 @@ export { ApplicationEventData, LaunchEventData, OrientationChangedEventData, Unh
 // Export all methods and fields from "application" as Application
 import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, getMainEntry, getRootView, _resetRootView, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, android, ios } from './application';
 export const Application = {
-  launchEvent,
-  displayedEvent,
-  uncaughtErrorEvent,
-  discardedErrorEvent,
-  suspendEvent,
-  resumeEvent,
-  exitEvent,
-  lowMemoryEvent,
-  orientationChangedEvent,
+	launchEvent,
+	displayedEvent,
+	uncaughtErrorEvent,
+	discardedErrorEvent,
+	suspendEvent,
+	resumeEvent,
+	exitEvent,
+	lowMemoryEvent,
+	orientationChangedEvent,
 
-  getMainEntry,
-  getRootView,
-  resetRootView: _resetRootView,
-  setResources,
-  setCssFileName,
-  getCssFileName,
-  loadAppCss,
-  addCss,
-  on,
-  off,
-  run,
-  orientation,
-  getNativeApplication,
-  hasLaunched,
+	getMainEntry,
+	getRootView,
+	resetRootView: _resetRootView,
+	setResources,
+	setCssFileName,
+	getCssFileName,
+	loadAppCss,
+	addCss,
+	on,
+	off,
+	run,
+	orientation,
+	getNativeApplication,
+	hasLaunched,
 
-  android: android,
-  ios: ios,
+	android: android,
+	ios: ios,
 };
 
 // Export all methods from "application-settings" as ApplicationSettings
 import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from './application-settings';
 export const ApplicationSettings = {
-  clear,
-  flush,
-  hasKey,
-  remove,
-  setString,
-  getString,
-  getAllKeys,
-  getBoolean,
-  setBoolean,
-  getNumber,
-  setNumber,
+	clear,
+	flush,
+	hasKey,
+	remove,
+	setString,
+	getString,
+	getAllKeys,
+	getBoolean,
+	setBoolean,
+	getNumber,
+	setNumber,
 };
 
 export { Color } from './color';
 
 import { connectionType, getConnectionType, startMonitoring, stopMonitoring } from './connectivity';
 export const Connectivity = {
-  connectionType,
-  getConnectionType,
-  startMonitoring,
-  stopMonitoring,
+	connectionType,
+	getConnectionType,
+	startMonitoring,
+	stopMonitoring,
 };
 
 export { ObservableArray, ChangeType, ChangedData } from './data/observable-array';
@@ -77,11 +77,11 @@ export { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpCo
 // Export all methods from "http" as Http
 import { getFile, getImage, getJSON, getString as httpGetString, request } from './http';
 export const Http = {
-  getFile,
-  getImage,
-  getJSON,
-  getString: httpGetString,
-  request,
+	getFile,
+	getImage,
+	getJSON,
+	getString: httpGetString,
+	request,
 };
 
 export { ImageAsset, ImageAssetOptions } from './image-asset';
@@ -103,39 +103,39 @@ import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 
 export const Utils = {
-  GC,
-  isFontIconURI,
-  isDataURI,
-  isFileOrResourcePath,
-  executeOnMainThread,
-  mainThreadify,
-  isMainThread,
-  dispatchToMainThread,
-  releaseNativeObject,
+	GC,
+	isFontIconURI,
+	isDataURI,
+	isFileOrResourcePath,
+	executeOnMainThread,
+	mainThreadify,
+	isMainThread,
+	dispatchToMainThread,
+	releaseNativeObject,
 
-  getModuleName,
-  openFile,
-  openUrl,
-  isRealDevice,
+	getModuleName,
+	openFile,
+	openUrl,
+	isRealDevice,
 
-  layout,
-  android: androidUtils,
-  ios: iosUtils,
-  Source,
-  ClassInfo,
-  getClass,
-  getBaseClasses,
-  getClassInfo,
-  isBoolean,
-  isDefined,
-  isFunction,
-  isNullOrUndefined,
-  isNumber,
-  isObject,
-  isString,
-  isUndefined,
-  toUIString,
-  verifyCallback,
+	layout,
+	android: androidUtils,
+	ios: iosUtils,
+	Source,
+	ClassInfo,
+	getClass,
+	getBaseClasses,
+	getClassInfo,
+	isBoolean,
+	isDefined,
+	isFunction,
+	isNullOrUndefined,
+	isNumber,
+	isObject,
+	isString,
+	isUndefined,
+	toUIString,
+	verifyCallback,
 };
 
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

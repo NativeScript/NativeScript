@@ -7,46 +7,46 @@ import { Color } from '../../color';
 import { ActionBar } from '../action-bar';
 import { View } from '../core/view';
 export declare class PageBase extends ContentView {
-  static navigatingToEvent: string;
-  static navigatedToEvent: string;
-  static navigatingFromEvent: string;
-  static navigatedFromEvent: string;
-  _frame: Frame;
-  actionBarHidden: boolean;
-  enableSwipeBackNavigation: boolean;
-  backgroundSpanUnderStatusBar: boolean;
-  hasActionBar: boolean;
-  readonly navigationContext: any;
+	static navigatingToEvent: string;
+	static navigatedToEvent: string;
+	static navigatingFromEvent: string;
+	static navigatedFromEvent: string;
+	_frame: Frame;
+	actionBarHidden: boolean;
+	enableSwipeBackNavigation: boolean;
+	backgroundSpanUnderStatusBar: boolean;
+	hasActionBar: boolean;
+	readonly navigationContext: any;
 
-  actionBar: ActionBar;
+	actionBar: ActionBar;
 
-  statusBarStyle: 'light' | 'dark';
-  androidStatusBarBackground: Color;
+	statusBarStyle: 'light' | 'dark';
+	androidStatusBarBackground: Color;
 
-  readonly page: PageDefinition;
+	readonly page: PageDefinition;
 
-  _addChildFromBuilder(name: string, value: any): void;
+	_addChildFromBuilder(name: string, value: any): void;
 
-  getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo;
+	getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo;
 
-  readonly frame: Frame;
+	readonly frame: Frame;
 
-  createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
-    return {
-      eventName: eventName,
-      object: this,
-      context: this.navigationContext,
-      isBackNavigation: isBackNavigation,
-    };
-  }
+	createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
+		return {
+			eventName: eventName,
+			object: this,
+			context: this.navigationContext,
+			isBackNavigation: isBackNavigation,
+		};
+	}
 
-  onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext?: any): void;
+	onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext?: any): void;
 
-  onNavigatedTo(isBackNavigation: boolean): void;
+	onNavigatedTo(isBackNavigation: boolean): void;
 
-  onNavigatingFrom(isBackNavigation: boolean): void;
+	onNavigatingFrom(isBackNavigation: boolean): void;
 
-  onNavigatedFrom(isBackNavigation: boolean): void;
+	onNavigatedFrom(isBackNavigation: boolean): void;
 
-  eachChildView(callback: (child: View) => boolean): void;
+	eachChildView(callback: (child: View) => boolean): void;
 }

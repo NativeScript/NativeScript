@@ -4,8 +4,8 @@
  */
 
 interface TimerInfo {
-  totalTime: number;
-  count: number;
+	totalTime: number;
+	count: number;
 }
 
 /**
@@ -20,9 +20,9 @@ type InstrumentationMode = 'counters' | 'timeline' | 'lifecycle';
  * Logging levels in order of verbosity.
  */
 export enum Level {
-  none,
-  lifecycle,
-  timeline,
+	none,
+	lifecycle,
+	timeline,
 }
 
 /**

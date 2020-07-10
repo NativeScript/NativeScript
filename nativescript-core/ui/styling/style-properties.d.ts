@@ -14,28 +14,28 @@ export type Length = 'auto' | dip | LengthDipUnit | LengthPxUnit;
 export type PercentLength = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
 
 export namespace Length {
-  export function parse(text: string): Length;
-  export function equals(a: Length, b: Length): boolean;
-  /**
-   * Converts Length unit to device pixels.
-   * @param length The Length to convert.
-   * @param auto Value to use for conversion of "auto". By default is Math.NaN.
-   */
-  export function toDevicePixels(length: Length, auto?: number): number;
-  export function convertToString(length: Length): string;
+	export function parse(text: string): Length;
+	export function equals(a: Length, b: Length): boolean;
+	/**
+	 * Converts Length unit to device pixels.
+	 * @param length The Length to convert.
+	 * @param auto Value to use for conversion of "auto". By default is Math.NaN.
+	 */
+	export function toDevicePixels(length: Length, auto?: number): number;
+	export function convertToString(length: Length): string;
 }
 
 export namespace PercentLength {
-  export function parse(text: string): PercentLength;
-  export function equals(a: PercentLength, b: PercentLength): boolean;
-  /**
-   * Converts PercentLength unit to device pixels.
-   * @param length The PercentLength to convert.
-   * @param auto Value to use for conversion of "auto". By default is Math.NaN.
-   * @param parentAvailableWidth Value to use as base when converting percent unit. By default is Math.NaN.
-   */
-  export function toDevicePixels(length: PercentLength, auto?: number, parentAvailableWidth?: px): number;
-  export function convertToString(length: PercentLength): string;
+	export function parse(text: string): PercentLength;
+	export function equals(a: PercentLength, b: PercentLength): boolean;
+	/**
+	 * Converts PercentLength unit to device pixels.
+	 * @param length The PercentLength to convert.
+	 * @param auto Value to use for conversion of "auto". By default is Math.NaN.
+	 * @param parentAvailableWidth Value to use as base when converting percent unit. By default is Math.NaN.
+	 */
+	export function toDevicePixels(length: PercentLength, auto?: number, parentAvailableWidth?: px): number;
+	export function convertToString(length: PercentLength): string;
 }
 
 export const zeroLength: Length;
@@ -112,20 +112,20 @@ export type BackgroundRepeat = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
 export type Visibility = 'visible' | 'hidden' | 'collapse';
 export type HorizontalAlignment = 'left' | 'center' | 'right' | 'stretch';
 export namespace HorizontalAlignment {
-  export const LEFT: 'left';
-  export const CENTER: 'center';
-  export const RIGHT: 'right';
-  export const STRETCH: 'stretch';
+	export const LEFT: 'left';
+	export const CENTER: 'center';
+	export const RIGHT: 'right';
+	export const STRETCH: 'stretch';
 }
 export type VerticalAlignment = 'top' | 'middle' | 'bottom' | 'stretch' | 'text-top' | 'text-bottom' | 'super' | 'sub' | 'baseline';
 export namespace VerticalAlignment {
-  export const TOP: 'top';
-  export const MIDDLE: 'middle';
-  export const BOTTOM: 'bottom';
-  export const STRETCH: 'stretch';
-  export const TEXTTOP: 'text-top';
-  export const TEXTBOTTOM: 'text-bottom';
-  export const SUPER: 'super';
-  export const SUB: 'sub';
-  export const BASELINE: 'baseline';
+	export const TOP: 'top';
+	export const MIDDLE: 'middle';
+	export const BOTTOM: 'bottom';
+	export const STRETCH: 'stretch';
+	export const TEXTTOP: 'text-top';
+	export const TEXTBOTTOM: 'text-bottom';
+	export const SUPER: 'super';
+	export const SUB: 'sub';
+	export const BASELINE: 'baseline';
 }

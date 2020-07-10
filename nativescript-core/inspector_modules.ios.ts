@@ -1,7 +1,7 @@
 console.log('Loading inspector modules...');
 import { initGlobal } from './globals';
 if (!(<any>global).hasInitGlobal) {
-  initGlobal();
+	initGlobal();
 }
 require('./debugger/webinspector-network');
 require('./debugger/webinspector-dom');

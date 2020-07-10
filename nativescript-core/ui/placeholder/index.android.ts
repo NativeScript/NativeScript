@@ -6,21 +6,21 @@ export * from './placeholder-common';
 
 @CSSType('Placeholder')
 export class Placeholder extends View {
-  public static creatingViewEvent = 'creatingView';
+	public static creatingViewEvent = 'creatingView';
 
-  public createNativeView() {
-    const args = <CreateViewEventData>{
-      eventName: Placeholder.creatingViewEvent,
-      object: this,
-      view: undefined,
-      context: this._context,
-    };
-    this.notify(args);
+	public createNativeView() {
+		const args = <CreateViewEventData>{
+			eventName: Placeholder.creatingViewEvent,
+			object: this,
+			view: undefined,
+			context: this._context,
+		};
+		this.notify(args);
 
-    return <android.view.View>args.view;
-  }
+		return <android.view.View>args.view;
+	}
 }
 export interface Placeholder {
-  on(eventNames: string, callback: (args: EventData) => void);
-  on(event: 'creatingView', callback: (args: CreateViewEventData) => void);
+	on(eventNames: string, callback: (args: EventData) => void);
+	on(event: 'creatingView', callback: (args: CreateViewEventData) => void);
 }

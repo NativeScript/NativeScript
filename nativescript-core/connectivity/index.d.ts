@@ -9,35 +9,35 @@ export function getConnectionType(): number;
  * Defines the different connection types.
  */
 export enum connectionType {
-  /**
-   * Denotes no connection.
-   */
-  none = 0,
+	/**
+	 * Denotes no connection.
+	 */
+	none = 0,
 
-  /**
-   * Denotes a WiFi connection.
-   */
-  wifi = 1,
+	/**
+	 * Denotes a WiFi connection.
+	 */
+	wifi = 1,
 
-  /**
-   * Denotes a mobile connection, i.e. cellular network or WAN.
-   */
-  mobile = 2,
+	/**
+	 * Denotes a mobile connection, i.e. cellular network or WAN.
+	 */
+	mobile = 2,
 
-  /**
-   * Denotes an ethernet connection
-   */
-  ethernet = 3,
+	/**
+	 * Denotes an ethernet connection
+	 */
+	ethernet = 3,
 
-  /**
-   * Denotes a bluetooth connection
-   */
-  bluetooth = 4,
+	/**
+	 * Denotes a bluetooth connection
+	 */
+	bluetooth = 4,
 
-  /**
-   * Denotes a vpn connection
-   */
-  vpn = 5,
+	/**
+	 * Denotes a vpn connection
+	 */
+	vpn = 5,
 }
 
 /**

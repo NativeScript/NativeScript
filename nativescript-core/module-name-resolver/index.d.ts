@@ -9,9 +9,9 @@ export { PlatformContext } from './qualifier-matcher';
 export type ModuleListProvider = () => string[];
 
 export class ModuleNameResolver {
-  constructor(context: PlatformContext, moduleListProvider?: ModuleListProvider);
-  resolveModuleName(path: string, ext: string): string;
-  clearCache(): void;
+	constructor(context: PlatformContext, moduleListProvider?: ModuleListProvider);
+	resolveModuleName(path: string, ext: string): string;
+	clearCache(): void;
 }
 
 export function resolveModuleName(path: string, ext: string): string;

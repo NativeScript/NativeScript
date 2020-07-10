@@ -35,7 +35,7 @@ const TABID = '_tabId';
 const INDEX = '_index';
 
 interface PagerAdapter {
-  new (owner: Tabs): androidx.viewpager.widget.PagerAdapter;
+	new (owner: Tabs): androidx.viewpager.widget.PagerAdapter;
 }
 
 let PagerAdapter: PagerAdapter;
@@ -43,341 +43,341 @@ let TabsBar: any;
 let appResources: android.content.res.Resources;
 
 function makeFragmentName(viewId: number, id: number): string {
-  return 'android:viewpager:' + viewId + ':' + id;
+	return 'android:viewpager:' + viewId + ':' + id;
 }
 
 function getTabById(id: number): Tabs {
-  const ref = tabs.find((ref) => {
-    const tab = ref.get();
+	const ref = tabs.find((ref) => {
+		const tab = ref.get();
 
-    return tab && tab._domId === id;
-  });
+		return tab && tab._domId === id;
+	});
 
-  return ref && ref.get();
+	return ref && ref.get();
 }
 
 function initializeNativeClasses() {
-  if (PagerAdapter) {
-    return;
-  }
+	if (PagerAdapter) {
+		return;
+	}
 
-  class TabFragmentImplementation extends org.nativescript.widgets.FragmentBase {
-    private owner: Tabs;
-    private index: number;
-    private backgroundBitmap: android.graphics.Bitmap = null;
+	class TabFragmentImplementation extends org.nativescript.widgets.FragmentBase {
+		private owner: Tabs;
+		private index: number;
+		private backgroundBitmap: android.graphics.Bitmap = null;
 
-    constructor() {
-      super();
+		constructor() {
+			super();
 
-      return global.__native(this);
-    }
+			return global.__native(this);
+		}
 
-    static newInstance(tabId: number, index: number): TabFragmentImplementation {
-      const args = new android.os.Bundle();
-      args.putInt(TABID, tabId);
-      args.putInt(INDEX, index);
-      const fragment = new TabFragmentImplementation();
-      fragment.setArguments(args);
+		static newInstance(tabId: number, index: number): TabFragmentImplementation {
+			const args = new android.os.Bundle();
+			args.putInt(TABID, tabId);
+			args.putInt(INDEX, index);
+			const fragment = new TabFragmentImplementation();
+			fragment.setArguments(args);
 
-      return fragment;
-    }
+			return fragment;
+		}
 
-    public onCreate(savedInstanceState: android.os.Bundle): void {
-      super.onCreate(savedInstanceState);
-      const args = this.getArguments();
-      this.owner = getTabById(args.getInt(TABID));
-      this.index = args.getInt(INDEX);
-      if (!this.owner) {
-        throw new Error(`Cannot find TabView`);
-      }
-    }
+		public onCreate(savedInstanceState: android.os.Bundle): void {
+			super.onCreate(savedInstanceState);
+			const args = this.getArguments();
+			this.owner = getTabById(args.getInt(TABID));
+			this.index = args.getInt(INDEX);
+			if (!this.owner) {
+				throw new Error(`Cannot find TabView`);
+			}
+		}
 
-    public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-      const tabItem = this.owner.items[this.index];
+		public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
+			const tabItem = this.owner.items[this.index];
 
-      return tabItem.nativeViewProtected;
-    }
+			return tabItem.nativeViewProtected;
+		}
 
-    public onDestroyView() {
-      const hasRemovingParent = this.getRemovingParentFragment();
+		public onDestroyView() {
+			const hasRemovingParent = this.getRemovingParentFragment();
 
-      // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-      // TODO: Consider removing it when update to androidx.fragment:1.2.0
-      if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-        const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
-        this.owner._originalBackground = this.owner.backgroundColor || new Color('White');
-        this.owner.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
-        this.backgroundBitmap = null;
-      }
+			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
+			// TODO: Consider removing it when update to androidx.fragment:1.2.0
+			if (hasRemovingParent && this.owner.selectedIndex === this.index) {
+				const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
+				this.owner._originalBackground = this.owner.backgroundColor || new Color('White');
+				this.owner.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
+				this.backgroundBitmap = null;
+			}
 
-      super.onDestroyView();
-    }
+			super.onDestroyView();
+		}
 
-    public onPause(): void {
-      const hasRemovingParent = this.getRemovingParentFragment();
+		public onPause(): void {
+			const hasRemovingParent = this.getRemovingParentFragment();
 
-      // Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-      // TODO: Consider removing it when update to androidx.fragment:1.2.0
-      if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-        this.backgroundBitmap = this.loadBitmapFromView(this.owner.nativeViewProtected);
-      }
+			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
+			// TODO: Consider removing it when update to androidx.fragment:1.2.0
+			if (hasRemovingParent && this.owner.selectedIndex === this.index) {
+				this.backgroundBitmap = this.loadBitmapFromView(this.owner.nativeViewProtected);
+			}
 
-      super.onPause();
-    }
+			super.onPause();
+		}
 
-    private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
-      // Another way to get view bitmap. Test performance vs setDrawingCacheEnabled
-      // const width = view.getWidth();
-      // const height = view.getHeight();
-      // const bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
-      // const canvas = new android.graphics.Canvas(bitmap);
-      // view.layout(0, 0, width, height);
-      // view.draw(canvas);
+		private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
+			// Another way to get view bitmap. Test performance vs setDrawingCacheEnabled
+			// const width = view.getWidth();
+			// const height = view.getHeight();
+			// const bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
+			// const canvas = new android.graphics.Canvas(bitmap);
+			// view.layout(0, 0, width, height);
+			// view.draw(canvas);
 
-      view.setDrawingCacheEnabled(true);
-      const bitmap = android.graphics.Bitmap.createBitmap(view.getDrawingCache());
-      view.setDrawingCacheEnabled(false);
+			view.setDrawingCacheEnabled(true);
+			const bitmap = android.graphics.Bitmap.createBitmap(view.getDrawingCache());
+			view.setDrawingCacheEnabled(false);
 
-      return bitmap;
-    }
-  }
+			return bitmap;
+		}
+	}
 
-  const POSITION_UNCHANGED = -1;
-  const POSITION_NONE = -2;
+	const POSITION_UNCHANGED = -1;
+	const POSITION_NONE = -2;
 
-  class FragmentPagerAdapter extends androidx.viewpager.widget.PagerAdapter {
-    public items: Array<TabContentItem>;
-    private mCurTransaction: androidx.fragment.app.FragmentTransaction;
-    private mCurrentPrimaryItem: androidx.fragment.app.Fragment;
+	class FragmentPagerAdapter extends androidx.viewpager.widget.PagerAdapter {
+		public items: Array<TabContentItem>;
+		private mCurTransaction: androidx.fragment.app.FragmentTransaction;
+		private mCurrentPrimaryItem: androidx.fragment.app.Fragment;
 
-    constructor(public owner: Tabs) {
-      super();
+		constructor(public owner: Tabs) {
+			super();
 
-      return global.__native(this);
-    }
+			return global.__native(this);
+		}
 
-    getCount() {
-      const items = this.items;
+		getCount() {
+			const items = this.items;
 
-      return items ? items.length : 0;
-    }
+			return items ? items.length : 0;
+		}
 
-    getPageTitle(index: number) {
-      const items = this.items;
-      if (index < 0 || index >= items.length) {
-        return '';
-      }
+		getPageTitle(index: number) {
+			const items = this.items;
+			if (index < 0 || index >= items.length) {
+				return '';
+			}
 
-      return ''; // items[index].title;
-    }
+			return ''; // items[index].title;
+		}
 
-    startUpdate(container: android.view.ViewGroup): void {
-      if (container.getId() === android.view.View.NO_ID) {
-        throw new Error(`ViewPager with adapter ${this} requires a view containerId`);
-      }
-    }
+		startUpdate(container: android.view.ViewGroup): void {
+			if (container.getId() === android.view.View.NO_ID) {
+				throw new Error(`ViewPager with adapter ${this} requires a view containerId`);
+			}
+		}
 
-    instantiateItem(container: android.view.ViewGroup, position: number): java.lang.Object {
-      const fragmentManager = this.owner._getFragmentManager();
-      if (!this.mCurTransaction) {
-        this.mCurTransaction = fragmentManager.beginTransaction();
-      }
+		instantiateItem(container: android.view.ViewGroup, position: number): java.lang.Object {
+			const fragmentManager = this.owner._getFragmentManager();
+			if (!this.mCurTransaction) {
+				this.mCurTransaction = fragmentManager.beginTransaction();
+			}
 
-      const itemId = this.getItemId(position);
-      const name = makeFragmentName(container.getId(), itemId);
+			const itemId = this.getItemId(position);
+			const name = makeFragmentName(container.getId(), itemId);
 
-      let fragment: androidx.fragment.app.Fragment = fragmentManager.findFragmentByTag(name);
-      if (fragment != null) {
-        this.mCurTransaction.attach(fragment);
-      } else {
-        fragment = TabFragmentImplementation.newInstance(this.owner._domId, position);
-        this.mCurTransaction.add(container.getId(), fragment, name);
-      }
+			let fragment: androidx.fragment.app.Fragment = fragmentManager.findFragmentByTag(name);
+			if (fragment != null) {
+				this.mCurTransaction.attach(fragment);
+			} else {
+				fragment = TabFragmentImplementation.newInstance(this.owner._domId, position);
+				this.mCurTransaction.add(container.getId(), fragment, name);
+			}
 
-      if (fragment !== this.mCurrentPrimaryItem) {
-        fragment.setMenuVisibility(false);
-        fragment.setUserVisibleHint(false);
-      }
+			if (fragment !== this.mCurrentPrimaryItem) {
+				fragment.setMenuVisibility(false);
+				fragment.setUserVisibleHint(false);
+			}
 
-      const tabItems = this.owner.items;
-      const tabItem = tabItems ? tabItems[position] : null;
-      if (tabItem) {
-        tabItem.canBeLoaded = true;
-      }
+			const tabItems = this.owner.items;
+			const tabItem = tabItems ? tabItems[position] : null;
+			if (tabItem) {
+				tabItem.canBeLoaded = true;
+			}
 
-      return fragment;
-    }
+			return fragment;
+		}
 
-    getItemPosition(object: java.lang.Object): number {
-      return this.items ? POSITION_UNCHANGED : POSITION_NONE;
-    }
+		getItemPosition(object: java.lang.Object): number {
+			return this.items ? POSITION_UNCHANGED : POSITION_NONE;
+		}
 
-    destroyItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
-      if (!this.mCurTransaction) {
-        const fragmentManager = this.owner._getFragmentManager();
-        this.mCurTransaction = fragmentManager.beginTransaction();
-      }
+		destroyItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
+			if (!this.mCurTransaction) {
+				const fragmentManager = this.owner._getFragmentManager();
+				this.mCurTransaction = fragmentManager.beginTransaction();
+			}
 
-      const fragment: androidx.fragment.app.Fragment = <androidx.fragment.app.Fragment>object;
-      this.mCurTransaction.detach(fragment);
+			const fragment: androidx.fragment.app.Fragment = <androidx.fragment.app.Fragment>object;
+			this.mCurTransaction.detach(fragment);
 
-      if (this.mCurrentPrimaryItem === fragment) {
-        this.mCurrentPrimaryItem = null;
-      }
+			if (this.mCurrentPrimaryItem === fragment) {
+				this.mCurrentPrimaryItem = null;
+			}
 
-      const tabItems = this.owner.items;
-      const tabItem = tabItems ? tabItems[position] : null;
-      if (tabItem) {
-        tabItem.canBeLoaded = false;
-      }
-    }
+			const tabItems = this.owner.items;
+			const tabItem = tabItems ? tabItems[position] : null;
+			if (tabItem) {
+				tabItem.canBeLoaded = false;
+			}
+		}
 
-    setPrimaryItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
-      const fragment = <androidx.fragment.app.Fragment>object;
-      if (fragment !== this.mCurrentPrimaryItem) {
-        if (this.mCurrentPrimaryItem != null) {
-          this.mCurrentPrimaryItem.setMenuVisibility(false);
-          this.mCurrentPrimaryItem.setUserVisibleHint(false);
-        }
+		setPrimaryItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
+			const fragment = <androidx.fragment.app.Fragment>object;
+			if (fragment !== this.mCurrentPrimaryItem) {
+				if (this.mCurrentPrimaryItem != null) {
+					this.mCurrentPrimaryItem.setMenuVisibility(false);
+					this.mCurrentPrimaryItem.setUserVisibleHint(false);
+				}
 
-        if (fragment != null) {
-          fragment.setMenuVisibility(true);
-          fragment.setUserVisibleHint(true);
-        }
+				if (fragment != null) {
+					fragment.setMenuVisibility(true);
+					fragment.setUserVisibleHint(true);
+				}
 
-        this.mCurrentPrimaryItem = fragment;
-        this.owner.selectedIndex = position;
+				this.mCurrentPrimaryItem = fragment;
+				this.owner.selectedIndex = position;
 
-        const tab = this.owner;
-        const tabItems = tab.items;
-        const newTabItem = tabItems ? tabItems[position] : null;
+				const tab = this.owner;
+				const tabItems = tab.items;
+				const newTabItem = tabItems ? tabItems[position] : null;
 
-        if (newTabItem) {
-          tab._loadUnloadTabItems(tab.selectedIndex);
-        }
-      }
-    }
+				if (newTabItem) {
+					tab._loadUnloadTabItems(tab.selectedIndex);
+				}
+			}
+		}
 
-    finishUpdate(container: android.view.ViewGroup): void {
-      this._commitCurrentTransaction();
-    }
+		finishUpdate(container: android.view.ViewGroup): void {
+			this._commitCurrentTransaction();
+		}
 
-    isViewFromObject(view: android.view.View, object: java.lang.Object): boolean {
-      return (<androidx.fragment.app.Fragment>object).getView() === view;
-    }
+		isViewFromObject(view: android.view.View, object: java.lang.Object): boolean {
+			return (<androidx.fragment.app.Fragment>object).getView() === view;
+		}
 
-    saveState(): android.os.Parcelable {
-      // Commit the current transaction on save to prevent "No view found for id 0xa" exception on restore.
-      // Related to: https://github.com/NativeScript/NativeScript/issues/6466
-      this._commitCurrentTransaction();
+		saveState(): android.os.Parcelable {
+			// Commit the current transaction on save to prevent "No view found for id 0xa" exception on restore.
+			// Related to: https://github.com/NativeScript/NativeScript/issues/6466
+			this._commitCurrentTransaction();
 
-      return null;
-    }
+			return null;
+		}
 
-    restoreState(state: android.os.Parcelable, loader: java.lang.ClassLoader): void {
-      //
-    }
+		restoreState(state: android.os.Parcelable, loader: java.lang.ClassLoader): void {
+			//
+		}
 
-    getItemId(position: number): number {
-      return position;
-    }
+		getItemId(position: number): number {
+			return position;
+		}
 
-    private _commitCurrentTransaction() {
-      if (this.mCurTransaction != null) {
-        this.mCurTransaction.commitNowAllowingStateLoss();
-        this.mCurTransaction = null;
-      }
-    }
-  }
+		private _commitCurrentTransaction() {
+			if (this.mCurTransaction != null) {
+				this.mCurTransaction.commitNowAllowingStateLoss();
+				this.mCurTransaction = null;
+			}
+		}
+	}
 
-  class TabsBarImplementation extends org.nativescript.widgets.TabsBar {
-    constructor(context: android.content.Context, public owner: Tabs) {
-      super(context);
+	class TabsBarImplementation extends org.nativescript.widgets.TabsBar {
+		constructor(context: android.content.Context, public owner: Tabs) {
+			super(context);
 
-      return global.__native(this);
-    }
+			return global.__native(this);
+		}
 
-    public onSelectedPositionChange(position: number, prevPosition: number): void {
-      const owner = this.owner;
-      if (!owner) {
-        return;
-      }
+		public onSelectedPositionChange(position: number, prevPosition: number): void {
+			const owner = this.owner;
+			if (!owner) {
+				return;
+			}
 
-      const tabStripItems = owner.tabStrip && owner.tabStrip.items;
+			const tabStripItems = owner.tabStrip && owner.tabStrip.items;
 
-      if (position >= 0 && tabStripItems && tabStripItems[position]) {
-        tabStripItems[position]._emit(TabStripItem.selectEvent);
-        owner._setItemColor(tabStripItems[position]);
-      }
+			if (position >= 0 && tabStripItems && tabStripItems[position]) {
+				tabStripItems[position]._emit(TabStripItem.selectEvent);
+				owner._setItemColor(tabStripItems[position]);
+			}
 
-      if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
-        tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
-        owner._setItemColor(tabStripItems[prevPosition]);
-      }
-    }
+			if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
+				tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+				owner._setItemColor(tabStripItems[prevPosition]);
+			}
+		}
 
-    public onTap(position: number): boolean {
-      const owner = this.owner;
-      if (!owner) {
-        return false;
-      }
+		public onTap(position: number): boolean {
+			const owner = this.owner;
+			if (!owner) {
+				return false;
+			}
 
-      const tabStrip = owner.tabStrip;
-      const tabStripItems = tabStrip && tabStrip.items;
+			const tabStrip = owner.tabStrip;
+			const tabStripItems = tabStrip && tabStrip.items;
 
-      if (position >= 0 && tabStripItems[position]) {
-        tabStripItems[position]._emit(TabStripItem.tapEvent);
-        tabStrip.notify({
-          eventName: TabStrip.itemTapEvent,
-          object: tabStrip,
-          index: position,
-        });
-      }
+			if (position >= 0 && tabStripItems[position]) {
+				tabStripItems[position]._emit(TabStripItem.tapEvent);
+				tabStrip.notify({
+					eventName: TabStrip.itemTapEvent,
+					object: tabStrip,
+					index: position,
+				});
+			}
 
-      if (!owner.items[position]) {
-        return false;
-      }
+			if (!owner.items[position]) {
+				return false;
+			}
 
-      return true;
-    }
-  }
+			return true;
+		}
+	}
 
-  PagerAdapter = FragmentPagerAdapter;
-  TabsBar = TabsBarImplementation;
-  appResources = application.android.context.getResources();
+	PagerAdapter = FragmentPagerAdapter;
+	TabsBar = TabsBarImplementation;
+	appResources = application.android.context.getResources();
 }
 
 let defaultAccentColor: number = undefined;
 function getDefaultAccentColor(context: android.content.Context): number {
-  if (defaultAccentColor === undefined) {
-    //Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
-    defaultAccentColor = ad.resources.getPaletteColor(ACCENT_COLOR, context) || 0xff33b5e5;
-  }
+	if (defaultAccentColor === undefined) {
+		//Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
+		defaultAccentColor = ad.resources.getPaletteColor(ACCENT_COLOR, context) || 0xff33b5e5;
+	}
 
-  return defaultAccentColor;
+	return defaultAccentColor;
 }
 
 function setElevation(grid: org.nativescript.widgets.GridLayout, tabsBar: org.nativescript.widgets.TabsBar, tabsPosition: string) {
-  const compat = <any>androidx.core.view.ViewCompat;
-  if (compat.setElevation) {
-    const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
+	const compat = <any>androidx.core.view.ViewCompat;
+	if (compat.setElevation) {
+		const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
 
-    if (tabsPosition === 'top') {
-      compat.setElevation(grid, val);
-    }
+		if (tabsPosition === 'top') {
+			compat.setElevation(grid, val);
+		}
 
-    compat.setElevation(tabsBar, val);
-  }
+		compat.setElevation(tabsBar, val);
+	}
 }
 
 export const tabs = new Array<WeakRef<Tabs>>();
 
 function iterateIndexRange(index: number, eps: number, lastIndex: number, callback: (i) => void) {
-  const rangeStart = Math.max(0, index - eps);
-  const rangeEnd = Math.min(index + eps, lastIndex);
-  for (let i = rangeStart; i <= rangeEnd; i++) {
-    callback(i);
-  }
+	const rangeStart = Math.max(0, index - eps);
+	const rangeEnd = Math.min(index + eps, lastIndex);
+	for (let i = rangeStart; i <= rangeEnd; i++) {
+		callback(i);
+	}
 }
 
 export class Tabs extends TabsBase {
@@ -1001,12 +1001,12 @@ export class Tabs extends TabsBase {
 }
 
 function tryCloneDrawable(value: android.graphics.drawable.Drawable, resources: android.content.res.Resources): android.graphics.drawable.Drawable {
-  if (value) {
-    const constantState = value.getConstantState();
-    if (constantState) {
-      return constantState.newDrawable(resources);
-    }
-  }
+	if (value) {
+		const constantState = value.getConstantState();
+		if (constantState) {
+			return constantState.newDrawable(resources);
+		}
+	}
 
-  return value;
+	return value;
 }
