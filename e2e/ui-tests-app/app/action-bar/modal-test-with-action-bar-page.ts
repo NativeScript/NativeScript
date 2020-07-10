@@ -1,6 +1,4 @@
-import { EventData } from "tns-core-modules/data/observable";
-import { Page } from "tns-core-modules/ui/page";
-import { topmost } from "tns-core-modules/ui/frame";
+import { EventData, Frame, Page } from "@nativescript/core";
 
 export function btnClick(args: EventData) {
     (<Page>args.object).page.showModal("action-bar/modal-page-hidden-action-bar-page", {
@@ -11,5 +9,5 @@ export function btnClick(args: EventData) {
 }
 
 export function btnBack(args: EventData) {
-    topmost().goBack();
+    Frame.topmost().goBack();
 }

@@ -666,3 +666,38 @@ export module UserInterfaceStyle {
    */
   export const dark: string;
 }
+
+/**
+ * Singular rollup for convenience of all enums
+ */
+export declare const Enums: {
+  Accuracy: typeof Accuracy;
+  AndroidActionBarIconVisibility: typeof AndroidActionBarIconVisibility;
+  AndroidActionItemPosition: typeof AndroidActionItemPosition;
+  AnimationCurve: typeof AnimationCurve;
+  AutocapitalizationType: typeof AutocapitalizationType;
+  BackgroundRepeat: typeof BackgroundRepeat;
+  DeviceOrientation: typeof DeviceOrientation;
+  DeviceType: typeof DeviceType;
+  Dock: typeof Dock;
+  FontAttributes: typeof FontAttributes;
+  FontStyle: typeof FontStyle;
+  FontWeight: typeof FontWeight;
+  HorizontalAlignment: typeof HorizontalAlignment;
+  IOSActionItemPosition: typeof IOSActionItemPosition;
+  ImageFormat: typeof ImageFormat;
+  KeyboardType: typeof KeyboardType;
+  NavigationBarVisibility: typeof NavigationBarVisibility;
+  Orientation: typeof Orientation;
+  ReturnKeyType: typeof ReturnKeyType;
+  StatusBarStyle: typeof StatusBarStyle;
+  Stretch: typeof Stretch;
+  SystemAppearance: typeof SystemAppearance;
+  TextAlignment: typeof TextAlignment;
+  TextDecoration: typeof TextDecoration;
+  TextTransform: typeof TextTransform;
+  UpdateTextTrigger: typeof UpdateTextTrigger;
+  VerticalAlignment: typeof VerticalAlignment;
+  Visibility: typeof Visibility;
+  WhiteSpace: typeof WhiteSpace;
+};

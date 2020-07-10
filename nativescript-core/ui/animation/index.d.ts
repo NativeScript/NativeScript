@@ -2,6 +2,8 @@
 import { Color } from '../../color';
 import { PercentLength } from '../styling/style-properties';
 
+export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './keyframe-animation';
+
 /**
  * Defines animation options for the View.animate method.
  */

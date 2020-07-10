@@ -1,10 +1,12 @@
 export { ActionBar, ActionItem, ActionItems, NavigationButton } from './action-bar';
 export { ActivityIndicator } from './activity-indicator';
-export { Animation, AnimationDefinition } from './animation';
+export { Animation, AnimationDefinition, KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './animation';
 export { BottomNavigation, SelectedIndexChangedEventData } from './bottom-navigation';
 export { Builder, LoadOptions } from './builder';
+export { sanitizeModuleName } from './builder/module-name-sanitizer';
 export { Button } from './button';
 export { ContentView } from './content-view';
+export { Binding, BindingOptions } from './core/bindable';
 export { ViewBase, ShowModalOptions, eachDescendant, getAncestor, getViewById } from './core/view-base';
 export { View, Template, KeyedTemplate, ShownModallyData } from './core/view';
 export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, unsetValue } from './core/properties';
@@ -14,8 +16,7 @@ export { DatePicker } from './date-picker';
 export { action, alert, confirm, login, prompt, getCurrentPage, Dialogs, DialogStrings, DialogOptions, CancelableOptions, AlertOptions, PromptResult, PromptOptions, ActionOptions, ConfirmOptions, LoginResult, LoginOptions, inputType, capitalizationType } from './dialogs';
 
 export * from './editable-text-base';
-import * as enumsModule from './enums';
-export const Enums = enumsModule;
+export { Enums } from './enums';
 export { Frame, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry } from './frame';
 
 export { GestureEventData, GestureEventDataWithState, GestureStateTypes, GestureTypes, GesturesObserver, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeDirection, SwipeGestureEventData, TouchGestureEventData } from './gestures';
@@ -29,7 +30,7 @@ export * from './layouts'; // barrel export
 
 export { ListPicker } from './list-picker';
 export { ListView, ItemEventData, TemplatedItemsView, ItemsSource } from './list-view';
-export { Page, NavigatedData } from './page';
+export { Page, NavigatedData, PageBase } from './page';
 export { Placeholder, CreateViewEventData } from './placeholder';
 export { Progress } from './progress';
 export { ProxyViewContainer } from './proxy-view-container';
@@ -41,8 +42,11 @@ export { Slider } from './slider';
 
 // TODO: Consider adding APIs from style
 // export { addTaggedAdditionalCSS, removeTaggedAdditionalCSS } from "./styling/style-scope";
+export { animationTimingFunctionConverter, timeConverter } from './styling/converters';
 export { Style, CommonLayoutParams } from './styling/style';
 export * from './styling/style-properties';
+export { CssAnimationParser, parseKeyframeDeclarations } from './styling/css-animation-parser';
+export { CSSHelper } from './styling/css-selector';
 
 export { Switch } from './switch';
 export { TabContentItem } from './tab-navigation-base/tab-content-item';
@@ -51,7 +55,7 @@ export { TabStrip, TabStripItemEventData } from './tab-navigation-base/tab-strip
 export { TabStripItem } from './tab-navigation-base/tab-strip-item';
 export { TabView, TabViewItem } from './tab-view';
 export { Tabs } from './tabs';
-export { TextBase } from './text-base';
+export { TextBase, TextTransform } from './text-base';
 export { FormattedString } from './text-base/formatted-string';
 export { Span } from './text-base/span';
 export { TextField } from './text-field';

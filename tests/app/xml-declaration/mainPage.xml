@@ -46,9 +46,6 @@
             <TimePicker hour="10" minute="34" />
             <Image id="cameraImage" />
             <Button tap="setPicture" text="Get picture and set is to the image" />
-            <Border cornerRadius="10" borderWidth="1" borderColor="#FF0000">
-              <Button text="{{ text }}" tap="{{ myFunction }}" />
-            </Border>
             <Label id="Label1" text="This is Label!" />
             <StackLayout orientation="horizontal">
               <Label text="From expression {{ id + 1 }}: " />

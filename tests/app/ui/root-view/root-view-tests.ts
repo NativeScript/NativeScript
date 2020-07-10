@@ -1,9 +1,5 @@
 import * as TKUnit from "../../tk-unit";
-import { Page, View } from "@nativescript/core";
-import { Frame, NavigationEntry, _stack } from "@nativescript/core/ui/frame";
-import { _resetRootView, getRootView } from "@nativescript/core/application";
-import { TabView } from "@nativescript/core/ui/tab-view";
-import { GridLayout } from "@nativescript/core/ui/layouts/grid-layout";
+import { Page, TabView, View, GridLayout, Frame, NavigationEntry, Application } from "@nativescript/core";
 import * as helper from "../../ui-helper";
 
 function createTestFrameRootEntry() {
@@ -12,7 +8,7 @@ function createTestFrameRootEntry() {
     frameRoot.navigate(() => page);
 
     const entry: NavigationEntry = {
-        create: () => frameRoot
+        create: () => <any>frameRoot
     };
 
     return {
@@ -27,9 +23,9 @@ export function test_custom_component_rootview_css_applied() {
         moduleName: "ui/root-view/root-modules/custom-component-root"
     };
 
-    _resetRootView(entry);
+    Application.resetRootView(entry);
 
-    var rootView = getRootView();
+    var rootView = Application.getRootView();
     TKUnit.waitUntilReady(() => rootView.isLoaded);
 
     TKUnit.assertNotNull(rootView);
@@ -46,9 +42,9 @@ export function test_tabview_rootview_css_applied() {
         moduleName: "ui/root-view/root-modules/tabview-root"
     };
 
-    _resetRootView(entry);
+    Application.resetRootView(entry);
 
-    var rootView = getRootView();
+    var rootView = Application.getRootView();
     TKUnit.waitUntilReady(() => rootView.isLoaded);
 
     TKUnit.assert(rootView instanceof TabView);
@@ -60,9 +56,9 @@ export function test_gridlayout_rootview_css_applied() {
         moduleName: "ui/root-view/root-modules/gridlayout-root"
     };
 
-    _resetRootView(entry);
+    Application.resetRootView(entry);
 
-    var rootView = getRootView();
+    var rootView = Application.getRootView();
     TKUnit.waitUntilReady(() => rootView.isLoaded);
 
     TKUnit.assert(rootView instanceof GridLayout);
@@ -80,9 +76,9 @@ export function test_tabview_rootview_layout_updates() {
 function layout_invalidate_test(moduleName: string) {
     var entry = { moduleName };
 
-    _resetRootView(entry);
+    Application.resetRootView(entry);
 
-    var rootView = getRootView();
+    var rootView = Application.getRootView();
     TKUnit.waitUntilReady(() => rootView.isLayoutValid);
 
     const lbl = <View>rootView.getViewById("my-test-label");
@@ -101,6 +97,6 @@ export function tearDownModule() {
     // reset the root to frame for other tests
     const resetFrameRoot = createTestFrameRootEntry();
 
-    _resetRootView(resetFrameRoot.entry);
+    Application.resetRootView(resetFrameRoot.entry);
     TKUnit.waitUntilReady(() => resetFrameRoot.page.isLoaded);
 }

@@ -695,3 +695,21 @@ export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
     return set;
   }
 }
+
+export const CSSHelper = {
+  createSelector,
+  SelectorCore,
+  SimpleSelector,
+  InvalidSelector,
+  UniversalSelector,
+  TypeSelector,
+  ClassSelector,
+  AttributeSelector,
+  PseudoClassSelector,
+  SimpleSelectorSequence,
+  Selector,
+  RuleSet,
+  SelectorsMap,
+  fromAstNodes,
+  SelectorsMatch,
+};

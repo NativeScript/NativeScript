@@ -5,6 +5,7 @@ import { Trace } from '../trace';
 
 export { ad } from './native-helper';
 export * from './utils-common';
+export { Source } from './debug';
 
 const MIN_URI_SHARE_RESTRICTED_APK_VERSION = 24;
 

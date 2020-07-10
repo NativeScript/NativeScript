@@ -1,6 +1,4 @@
-import { EventData, Observable } from "tns-core-modules/data/observable";
-import { Page } from "tns-core-modules/ui/page";
-import * as frame from "tns-core-modules/ui/frame";
+import { EventData, Page, Observable, Frame } from "@nativescript/core";
 
 export function navigatingTo(args: EventData) {
     const page = <Page>args.object;
@@ -8,7 +6,7 @@ export function navigatingTo(args: EventData) {
 }
 
 export function onNavBtnTap(args) {
-    frame.topmost().goBack();
+    Frame.topmost().goBack();
 }
 
 export class TestPage extends Observable {

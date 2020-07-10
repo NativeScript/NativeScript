@@ -16,13 +16,13 @@
     "clean": "npx rimraf hooks node_modules platforms package-lock.json && npm i"
   },
   "dependencies": {
-    "@nativescript/core": "file:../dist/nativescript-core-7.0.0-rc.6.tgz"
+    "@nativescript/core": "file:../dist/nativescript-core-7.0.0-rc.9.tgz"
   },
   "devDependencies": {
     "circular-dependency-plugin": "~5.2.0",
     "@nativescript/webpack": "^2.0.0-alpha.3",
     "node-sass": "^4.14.0",
-    "@nativescript/types": "file:../dist/nativescript-types-7.0.0-rc.0.tgz",
+    "@nativescript/types": "~7.0.0-rc.0",
     "typescript": "~3.9.0"
   },
   "gitHead": "c06800e52ee1a184ea2dffd12a6702aaa43be4e3",

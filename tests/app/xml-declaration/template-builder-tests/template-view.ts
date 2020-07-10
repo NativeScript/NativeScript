@@ -1,6 +1,4 @@
-import { Property } from "@nativescript/core/ui/core/properties";
-import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
-import { Builder } from "@nativescript/core/ui/builder";
+import { Property, LayoutBase, Builder } from "@nativescript/core";
 
 export module knownTemplates {
     export var template = "template";

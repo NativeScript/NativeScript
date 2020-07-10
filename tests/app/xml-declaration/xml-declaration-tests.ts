@@ -1,21 +1,14 @@
 import * as TKUnit from "../tk-unit";
-import { Builder, Button, Switch, SearchBar, TextField, GridLayout, AbsoluteLayout, Observable, TabView, Page, Label } from "@nativescript/core";
-import * as types from "@nativescript/core/utils/types";
+import { EventData, ItemEventData, ListView, Builder, Button, Switch, SearchBar, TextField, GridLayout, AbsoluteLayout, Observable, TabView, Page, Label, platformNames, Device, GestureTypes, StackLayout, SegmentedBar, View, getAncestor, eachDescendant, PercentLength, Length, Utils, SegmentedBarItem } from "@nativescript/core";
 import { TemplateView } from "./template-builder-tests/template-view";
-import * as listViewModule from "@nativescript/core/ui/list-view";
 import * as helper from "../ui-helper";
-import * as platform from "@nativescript/core/platform";
-import * as gesturesModule from "@nativescript/core/ui/gestures";
-import * as segmentedBar from "@nativescript/core/ui/segmented-bar";
-import { Source } from "@nativescript/core/utils/debug";
-import { View, getAncestor, eachDescendant, PercentLength, Length } from "@nativescript/core";
 
 export function test_load_IsDefined() {
-    TKUnit.assertTrue(types.isFunction(Builder.load), "Builder should have load method!");
+    TKUnit.assertTrue(Utils.isFunction(Builder.load), "Builder should have load method!");
 }
 
 export function test_parse_IsDefined() {
-    TKUnit.assertTrue(types.isFunction(Builder.parse), "Builder should have parse method!");
+    TKUnit.assertTrue(Utils.isFunction(Builder.parse), "Builder should have parse method!");
 }
 
 export function test_load_ShouldThrowWithInvalidFileName() {
@@ -190,7 +183,7 @@ export function test_parse_ShouldResolveExportsFromCodeFileForTemplates() {
 
         var obj = new Observable();
         obj.set("items", [1]);
-        obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
+        obj.set("itemLoading", function (args: ItemEventData) {
             ctrl = args.view;
         });
         p.bindingContext = obj;
@@ -328,7 +321,7 @@ export function test_parse_ShouldParsePlatformSpecificProperties() {
     var p = <Page>Builder.parse("<Page><TextField ios:editable='False' android:editable='True' /></Page>");
     var tf = <TextField>p.content;
 
-    if (platform.Device.os === platform.platformNames.ios) {
+    if (Device.os === platformNames.ios) {
         TKUnit.assertFalse(tf.editable, "Expected result: false; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
     } else {
         TKUnit.assertTrue(tf.editable, "Expected result: true; Actual result: " + tf.editable + "; type: " + typeof (tf.editable));
@@ -337,7 +330,7 @@ export function test_parse_ShouldParsePlatformSpecificProperties() {
 
 export function test_parse_ShouldParsePlatformSpecificComponents() {
     var p = <Page>Builder.parse("<Page><ios><TextField /></ios><android><Label /></android></Page>");
-    if (platform.Device.os === platform.platformNames.ios) {
+    if (Device.os === platformNames.ios) {
         TKUnit.assert(p.content instanceof TextField, "Expected result: TextField; Actual result: " + p.content);
     }
     else {
@@ -413,7 +406,7 @@ export function test_parse_ShouldParseBindingsToGestures() {
     p.bindingContext = context;
     var lbl = <Label>p.content;
 
-    var observer = (<View>lbl).getGestureObservers(gesturesModule.GestureTypes.tap)[0];
+    var observer = (<View>lbl).getGestureObservers(GestureTypes.tap)[0];
 
     TKUnit.assert(observer !== undefined, "Expected result: true.");
     TKUnit.assert(observer.context === context, "Context should be equal to binding context. Actual result: " + observer.context);
@@ -430,7 +423,7 @@ export function test_parse_ShouldParseBindingsToGesturesWithOn() {
     p.bindingContext = context;
     var lbl = <Label>p.content;
 
-    var observer = (<View>lbl).getGestureObservers(gesturesModule.GestureTypes.tap)[0];
+    var observer = (<View>lbl).getGestureObservers(GestureTypes.tap)[0];
 
     TKUnit.assert(observer !== undefined, "Expected result: true.");
     TKUnit.assert(observer.context === context, "Context should be equal to binding context. Actual result: " + observer.context);
@@ -498,7 +491,7 @@ export function test_parse_ShouldParseLowerCaseDashedComponentDeclaration() {
 
     TKUnit.assert(ctrl instanceof StackLayout, "Expected result: StackLayout!; Actual result: " + ctrl);
     TKUnit.assert(ctrl.getChildAt(0) instanceof Label, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
-    TKUnit.assert(ctrl.getChildAt(1) instanceof segmentedBar.SegmentedBar, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
+    TKUnit.assert(ctrl.getChildAt(1) instanceof SegmentedBar, "Expected result: Label!; Actual result: " + ctrl.getChildAt(0));
 }
 
 export function test_parse_ShouldParseCustomComponentWithoutXml() {
@@ -573,7 +566,7 @@ export function test_parse_ShouldParseCustomComponentWithoutXmlInListViewTemplat
         let ctrl;
         let obj = new Observable();
         obj.set("items", [1]);
-        obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
+        obj.set("itemLoading", function (args: ItemEventData) {
             ctrl = args.view;
         });
         p.bindingContext = obj;
@@ -593,12 +586,12 @@ export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
         let ctrl;
         let obj = new Observable();
         obj.set("items", [{ subItems: [1] }]);
-        obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
+        obj.set("itemLoading", function (args: ItemEventData) {
             ctrl = args.view;
         });
         p.bindingContext = obj;
         TKUnit.waitUntilReady(() => !!ctrl);
-        TKUnit.assert(ctrl instanceof listViewModule.ListView, "Expected result: ListView!; Actual result: " + ctrl);
+        TKUnit.assert(ctrl instanceof ListView, "Expected result: ListView!; Actual result: " + ctrl);
     }
 
     helper.navigate(function () { return p; });
@@ -609,22 +602,22 @@ export function test_parse_ShouldEvaluateEventBindingExpressionInListViewTemplat
     var p = <Page>Builder.parse("<Page xmlns=\"http://schemas.nativescript.org/tns.xsd\"><ListView items=\"{{ items }}\" itemLoading=\"{{ itemLoading }}\"><ListView.itemTemplate><SegmentedBar items=\"{{ $parents['ListView'].segmentedBarItems }}\" selectedIndexChanged=\"{{ $parents['ListView'].changed }}\" /></ListView.itemTemplate></ListView></Page>");
 
     function testAction(views: Array<View>) {
-        let ctrl: segmentedBar.SegmentedBar = null;
+        let ctrl: SegmentedBar = null;
         let changed;
         let obj = new Observable();
 
-        let firstItem = new segmentedBar.SegmentedBarItem();
+        let firstItem = new SegmentedBarItem();
         firstItem.title = "One";
-        let secondItem = new segmentedBar.SegmentedBarItem();
+        let secondItem = new SegmentedBarItem();
         secondItem.title = "Two";
-        let thirdItem = new segmentedBar.SegmentedBarItem();
+        let thirdItem = new SegmentedBarItem();
         thirdItem.title = "Tree";
         let segmentedBarItems = [firstItem, secondItem, thirdItem];
 
         obj.set("items", [1, 2, 3]);
         obj.set("segmentedBarItems", segmentedBarItems);
-        obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
-            ctrl = <segmentedBar.SegmentedBar>args.view;
+        obj.set("itemLoading", function (args: ItemEventData) {
+            ctrl = <SegmentedBar>args.view;
         });
 
         obj.set("changed", function (args: EventData) {
@@ -904,10 +897,10 @@ export function test_hasSourceCodeLocations() {
     var basePath = "xml-declaration/";
     var page = <Page>Builder.load(basePath + "examples/test-page.xml");
     var grid = page.getViewById("grid");
-    var gridSource = Source.get(grid);
+    var gridSource = Utils.Source.get(grid);
     TKUnit.assertEqual(gridSource.toString(), basePath + "examples/test-page.xml:2:3");
     var label = page.getViewById("label");
-    var labelSource = Source.get(label);
+    var labelSource = Utils.Source.get(label);
     TKUnit.assertEqual(labelSource.toString(), basePath + "examples/test-page.xml:3:5");
 }
 

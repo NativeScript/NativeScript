@@ -3,7 +3,7 @@
     "main": "index",
     "types": "index.d.ts",
     "description": "NativeScript Core Modules",
-    "version": "7.0.0-rc.6",
+    "version": "7.0.0-rc.9",
     "homepage": "https://www.nativescript.org",
     "repository": {
         "type": "git",
@@ -19,7 +19,7 @@
     ],
     "license": "Apache-2.0",
     "dependencies": {
-        "@nativescript/core-widgets": "~7.0.0-rc.0",
+        "@nativescript/ui-base": "~7.0.0-rc.0",
         "@nativescript/hook": "~1.0.0",
         "css-tree": "^1.0.0-alpha.39",
         "reduce-css-calc": "^2.1.6",

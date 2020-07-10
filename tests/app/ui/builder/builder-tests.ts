@@ -1,5 +1,4 @@
-import { Builder } from "@nativescript/core/ui/builder";
-import { sanitizeModuleName } from "@nativescript/core/ui/builder/module-name-sanitizer";
+import { Builder, sanitizeModuleName } from "@nativescript/core";
 
 import { assertEqual, assertNull, assertThrows, assertNotNull } from "../../tk-unit";
 

@@ -123,24 +123,24 @@ export namespace Trace {
     export const separator = ',';
     export const All: Array<string>;
 
-    export function concat(): string;
-
-    class ConsoleWriter implements TraceWriter {
-      public write(message: any, category: string, type?: number): void;
-    }
-
-    export class DefaultErrorHandler implements TraceErrorHandler {
-      handlerError(error: any): void;
-    }
-
-    export function getErrorHandler(): TraceErrorHandler;
-
-    export function setErrorHandler(handler: TraceErrorHandler): void;
-
-    /**
-     * Passes an error to the registered ErrorHandler
-     * @param error The error to be handled.
-     */
-    export function error(error: string | Error): void;
+    export function concat(...args: any): string;
   }
+
+  class ConsoleWriter implements TraceWriter {
+    public write(message: any, category: string, type?: number): void;
+  }
+
+  export class DefaultErrorHandler implements TraceErrorHandler {
+    handlerError(error: any): void;
+  }
+
+  export function getErrorHandler(): TraceErrorHandler;
+
+  export function setErrorHandler(handler: TraceErrorHandler): void;
+
+  /**
+   * Passes an error to the registered ErrorHandler
+   * @param error The error to be handled.
+   */
+  export function error(error: string | Error): void;
 }

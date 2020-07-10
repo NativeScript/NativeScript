@@ -12,6 +12,7 @@ import { Device, screen } from '../../platform';
 import lazy from '../../utils/lazy';
 
 export * from './animation-common';
+export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './keyframe-animation';
 
 let argbEvaluator: android.animation.ArgbEvaluator;
 function ensureArgbEvaluator() {

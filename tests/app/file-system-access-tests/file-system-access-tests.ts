@@ -1,18 +1,16 @@
 import * as TKUnit from "../tk-unit";
-import * as fs from "@nativescript/core/file-system";
+import { knownFolders, path, File, Folder } from "@nativescript/core";
 
 export var test_UTF8_BOM_is_not_returned = function () {
-    var path = fs.path.join(fs.knownFolders.currentApp().path, "file-system-access-tests", "xml.expected");
-    if (!fs.File.exists(path)) {
-        TKUnit.assert(false, "Could not read file utf8.txt");
-
-        return;
+    const folder1 = path.join(knownFolders.documents().path, "file-system-access-tests");
+    if (!Folder.exists(folder1)) {
+      Folder.fromPath(folder1);
     }
-
-    var file = fs.File.fromPath(path);
+    var filePath = path.join(folder1, "xml.expected");
+    var file = File.fromPath(filePath);
 
     var onError = function (error) {
-        TKUnit.assert(false, "Could not read file utf8.txt");
+        TKUnit.assert(false, "Could not read file xml.expected");
     };
 
     var text = file.readTextSync(onError);
@@ -24,21 +22,28 @@ export var test_UTF8_BOM_is_not_returned = function () {
 };
 
 export var test_file_exists_on_folder = function () {
-    var path = fs.path.join(fs.knownFolders.currentApp().path, "file-system-access-tests", "folder");
+    const folder1 = path.join(knownFolders.documents().path, "file-system-access-tests");
+    if (!Folder.exists(folder1)) {
+      Folder.fromPath(folder1);
+    }
+    var filePath = path.join(folder1, "folder");
+    if (!Folder.exists(filePath)) {
+      Folder.fromPath(filePath);
+    }
 
-    if (!fs.Folder.exists(path)) {
-        TKUnit.assert(false, `Could not read path ${path}`);
+    if (!Folder.exists(filePath)) {
+        TKUnit.assert(false, `Could not read path ${filePath}`);
 
         return;
     }
 
-    TKUnit.assertTrue(fs.File.exists(path), "File.exists() returned false for folder!");
+    TKUnit.assertTrue(File.exists(filePath), "File.exists() returned false for folder!");
 };
 
 export var test_leading_slash_is_not_returned = function () {
     var parts = ["app", "tns_modules", "fileName"];
     var expected = parts.join("/");
-    var path = fs.path.join(...parts);
+    var filePath = path.join(...parts);
 
-    TKUnit.assertEqual(path, expected, "Leading slash should not be part of the path");
+    TKUnit.assertEqual(filePath, expected, "Leading slash should not be part of the path");
 };

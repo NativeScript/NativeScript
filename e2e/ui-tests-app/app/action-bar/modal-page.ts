@@ -1,7 +1,4 @@
-import { ShownModallyData } from "tns-core-modules/ui/page";
-import { Button } from "tns-core-modules/ui/button";
-import { Label } from "tns-core-modules/ui/label";
-import { Page } from "tns-core-modules/ui/page";
+import { EventData, Page, Button, Label, ShownModallyData } from "@nativescript/core";
 
 let closeCallback: Function;
 

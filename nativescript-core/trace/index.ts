@@ -204,7 +204,7 @@ export namespace Trace {
     export const separator = ',';
     export const All = [VisualTreeEvents, Layout, Style, ViewHierarchy, NativeLifecycle, Debug, Navigation, Test, Binding, Error, Animation, Transition, Livesync, ModuleNameResolver].join(separator);
 
-    export function concat(): string {
+    export function concat(...args: any): string {
       let result: string;
       for (let i = 0; i < arguments.length; i++) {
         if (!result) {

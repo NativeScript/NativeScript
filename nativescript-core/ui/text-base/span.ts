@@ -4,6 +4,7 @@ import { ViewBase } from '../core/view-base';
 import { FontStyle, FontWeight } from '../styling/font';
 import { TextDecoration } from '../text-base';
 import { EventData } from '../../data/observable';
+import { isNullOrUndefined, isString } from '../../utils/types';
 
 export class Span extends ViewBase implements SpanDefinition {
   static linkTapEvent = 'linkTap';
@@ -66,8 +67,12 @@ export class Span extends ViewBase implements SpanDefinition {
   }
   set text(value: string) {
     if (this._text !== value) {
-      // value can be a number
-      this._text = `${value}`.replace('\\n', '\n').replace('\\t', '\t');
+      if (isNullOrUndefined(value)) {
+        this._text = '';
+      } else {
+        // value can be a number
+        this._text = isString(value) ? `${value}`.replace('\\n', '\n').replace('\\t', '\t') : `${value}`;
+      }
       this.notifyPropertyChange('text', this._text);
     }
   }

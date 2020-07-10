@@ -3,6 +3,7 @@ import { Trace } from '../trace';
 
 export { ios } from './native-helper';
 export * from './utils-common';
+export { Source } from './debug';
 
 export function openFile(filePath: string): boolean {
   try {

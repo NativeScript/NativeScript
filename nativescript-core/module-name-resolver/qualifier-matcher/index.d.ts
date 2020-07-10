@@ -2,6 +2,9 @@
  * Provides ModuleNameResolver class used for loading files based on device capabilities.
  */
 
+/**
+ * Used with qualifier matchers and module resolution
+ */
 export interface PlatformContext {
   width: number;
   height: number;

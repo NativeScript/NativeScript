@@ -1,12 +1,9 @@
-import * as frame from "tns-core-modules/ui/frame";
-import { EventData } from "tns-core-modules/ui/frame";
-import { Button } from "tns-core-modules/ui/button";
-import { ActionBar } from "tns-core-modules/ui/action-bar";
+import { Frame, EventData, Button, ActionBar } from "@nativescript/core";
 
 const iconModes = ["automatic", "alwaysOriginal", "alwaysTemplate", undefined];
 
 export function navigate(args) {
-    frame.topmost().navigate("ui-tests-app/action-bar/clean");
+  Frame.topmost().navigate("ui-tests-app/action-bar/clean");
 }
 
 export function onChangeRenderingMode(args: EventData) {

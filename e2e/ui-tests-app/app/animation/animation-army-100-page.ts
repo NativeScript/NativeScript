@@ -1,16 +1,10 @@
-import * as view from "tns-core-modules/ui/core/view";
-import { View } from "tns-core-modules/ui/core/view";
-import * as pages from "tns-core-modules/ui/page";
-import { Button } from "tns-core-modules/ui/button";
-import { SegmentedBar, SegmentedBarItem } from "tns-core-modules/ui/segmented-bar";
-import { Label } from "tns-core-modules/ui/label";
-import { Animation, AnimationDefinition } from "tns-core-modules/ui/animation";
-import * as fpsMeter from "tns-core-modules/fps-meter";
+import { getViewById, View, Page, Button, SegmentedBar, SegmentedBarItem, Label, Animation, AnimationDefinition } from "@nativescript/core";
+import * as fpsMeter from "@nativescript/core/fps-meter";
 
 let fpsCallbackId;
 export function onLoaded(args) {
     const page = args.object;
-    const fpsLabel = view.getViewById(page, "fps") as Label;
+    const fpsLabel = getViewById(page, "fps") as Label;
     fpsCallbackId = fpsMeter.addCallback((fps: number, minFps: number) => {
         fpsLabel.text = `${fps.toFixed(2)}/${minFps.toFixed(2)}`;
     });
@@ -85,13 +79,13 @@ export function getBoxPropertyAnimationData(property: string,
 
 export function easeAnimate(args) {
     const clicked = args.object as Button;
-    const page: pages.Page = clicked.page;
-    const select = view.getViewById(page, "select") as SegmentedBar;
+    const page: Page = clicked.page;
+    const select = getViewById(page, "select") as SegmentedBar;
     const item: SegmentedBarItem = select.items[select.selectedIndex];
     const animsIn: AnimationDefinition[] = [];
     const animsOut: AnimationDefinition[] = [];
     for (let i = 0; i < 100; i++) {
-        const box = view.getViewById(page, "el-" + i) as Label;
+        const box = getViewById(page, "el-" + i) as Label;
         const prop = getBoxPropertyAnimationData(item.title, clicked.text, box, 32, 24);
         animsIn.push({
             [prop.animateKey]: prop.animateValueTo,

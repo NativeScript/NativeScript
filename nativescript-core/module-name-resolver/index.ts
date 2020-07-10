@@ -1,4 +1,3 @@
-import { ModuleNameResolver as ModuleNameResolverDefinition } from './';
 import { screen, Device } from '../platform';
 import * as appCommonModule from '../application/application-common';
 import { PlatformContext, findMatch, stripQualifiers } from './qualifier-matcher';
@@ -9,7 +8,7 @@ export { PlatformContext } from './qualifier-matcher';
 
 export type ModuleListProvider = () => string[];
 
-export class ModuleNameResolver implements ModuleNameResolverDefinition {
+export class ModuleNameResolver {
   private _cache = {};
 
   constructor(private context: PlatformContext, private moduleListProvider: ModuleListProvider = global.getRegisteredModules) {}

@@ -1,15 +1,13 @@
-import * as label from "@nativescript/core/ui/label";
-import * as pages from "@nativescript/core/ui/page";
-import * as fs from "@nativescript/core/file-system";
-import * as fileResolverModule from "@nativescript/core/file-system/file-name-resolver";
+import { Page, Label, knownFolders, path, ModuleNameResolver } from "@nativescript/core";
 
 export function createPage() {
-    var page = new pages.Page();
-    var lbl = new label.Label();
+    var page = new Page();
+    var lbl = new Label();
 
     var moduleName = "tests/pages/files/test";
 
-    var resolver = new fileResolverModule.FileNameResolver({
+    ModuleNameResolver
+    var resolver = new ModuleNameResolver({
         width: 400,
         height: 600,
         os: "android",
@@ -17,8 +15,8 @@ export function createPage() {
     });
 
     // Current app full path.
-    var currentAppPath = fs.knownFolders.currentApp().path;
-    var moduleNamePath = fs.path.join(currentAppPath, moduleName);
+    var currentAppPath = knownFolders.currentApp().path;
+    var moduleNamePath = path.join(currentAppPath, moduleName);
 
     var fileName = resolver.resolveFileName(moduleNamePath, "xml");
     lbl.text = fileName;

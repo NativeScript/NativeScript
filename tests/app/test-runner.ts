@@ -2,29 +2,20 @@
 import * as TKUnit from './tk-unit';
 import './ui-test';
 
-import { _resetRootView } from '@nativescript/core/application';
-import * as platform from '@nativescript/core/platform';
-import { Trace } from '@nativescript/core/trace';
-import { Button } from '@nativescript/core/ui/button';
-import { Frame } from '@nativescript/core/ui/frame';
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import { Page } from '@nativescript/core/ui/page';
-import { TextView } from '@nativescript/core/ui/text-view';
-import { ios } from '@nativescript/core/utils';
-
+import { isIOS, Application, Device, platformNames, Trace, Button, Frame, StackLayout, Page, TextView, Utils } from '@nativescript/core';
 Frame.defaultAnimatedNavigation = false;
 
 export function isRunningOnEmulator(): boolean {
     // These checks are not good enough to be added to modules but they keep unit tests green.
 
-    if (platform.Device.os === platform.platformNames.android) {
+    if (Device.os === platformNames.android) {
         return android.os.Build.FINGERPRINT.indexOf("generic") > -1 ||
             android.os.Build.HARDWARE.toLowerCase() === "goldfish" ||
             android.os.Build.HARDWARE.toLowerCase() === "donatello" || // VS Emulator
             android.os.Build.PRODUCT.toLocaleLowerCase().indexOf("sdk") > -1 ||
             android.os.Build.PRODUCT.toLocaleLowerCase().indexOf("emulator") > -1; // VS Emulator
     }
-    else if (platform.Device.os === platform.platformNames.ios) {
+    else if (Device.os === platformNames.ios) {
         return (__dirname.search("Simulator") > -1);
     }
 }
@@ -102,9 +93,6 @@ allTests["FILE-SYSTEM-ACCESS"] = fileSystemAccessTests;
 import * as qualifierMatcherTests from "./name-resolvers-tests/qualifier-matcher-tests";
 allTests["QUALIFIER-MATCHER"] = qualifierMatcherTests;
 
-import * as fileNameResolverTests from "./name-resolvers-tests/file-name-resolver-tests";
-allTests["FILE-NAME-RESOLVER"] = fileNameResolverTests;
-
 import * as moduleNameResolverTests from "./name-resolvers-tests/module-name-resolver-tests";
 allTests["MODULE-NAME-RESOLVER"] = moduleNameResolverTests;
 
@@ -154,7 +142,7 @@ import * as scrollViewSafeAreaTests from "./ui/scroll-view/scroll-view-safe-area
 import * as repeaterSafeAreaTests from "./ui/repeater/repeater-safe-area-tests";
 import * as webViewSafeAreaTests from "./ui/web-view/web-view-safe-area-tests";
 
-if (platform.isIOS && ios.MajorVersion > 10) {
+if (isIOS && Utils.ios.MajorVersion > 10) {
     allTests["SAFEAREALAYOUT"] = safeAreaLayoutTests;
     allTests["SAFEAREA-LISTVIEW"] = safeAreaListViewtTests;
     allTests["SAFEAREA-SCROLL-VIEW"] = scrollViewSafeAreaTests;
@@ -185,9 +173,6 @@ allTests["VISUAL-STATE"] = visualStateTests;
 
 import * as valueSourceTests from "./ui/styling/value-source-tests";
 allTests["VALUE-SOURCE"] = valueSourceTests;
-
-import * as borderTests from "./ui/border/border-tests";
-allTests["BORDER"] = borderTests;
 
 import * as builderTests from "./ui/builder/builder-tests";
 allTests["BUILDER"] = builderTests;
@@ -397,7 +382,7 @@ function generateTestFile(allTests: TestInfo[]) {
         let testName = testCase.testName;
         let duration = (testCase.duration / 1000).toFixed(2);
 
-        testCases.push(`<testcase classname="${platform.Device.os}" name="${testName}" time="${duration}">`)
+        testCases.push(`<testcase classname="${Device.os}" name="${testName}" time="${duration}">`)
         if (!testCase.isPassed) {
             failedTestCount++;
             testCases.push(`<failure type="exceptions.AssertionError"><![CDATA[${testCase.errorMessage}]]></failure>`)
@@ -436,7 +421,7 @@ function showReportPage(finalMessage: string) {
             page.content = stack;
             messageContainer.focus();
             page.style.fontSize = 11;
-            if (platform.isAndroid) {
+            if (isAndroid) {
                 page.on('navigatedTo', () => {
                     messageContainer.focus();
                     setTimeout(() => messageContainer.dismissSoftInput());

@@ -1,9 +1,6 @@
-import { Builder } from "@nativescript/core/ui/builder";
 import { assertEqual, assertNull, assertThrows, assertNotNull, assert } from "../../tk-unit";
-import { _setResolver, ModuleNameResolver, PlatformContext } from "@nativescript/core/module-name-resolver";
-import { Button } from "@nativescript/core/ui/button";
+import { Button, Builder, Page, Color, _setResolver, ModuleNameResolver, PlatformContext } from "@nativescript/core";
 import { navigate } from "../../ui-helper";
-import { Page, Color } from "@nativescript/core";
 
 const testPrefix = "bundle-file-qualifiers-tests";
 let modulesToCleanup: string[] = [];

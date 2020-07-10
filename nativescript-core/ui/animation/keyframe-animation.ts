@@ -1,6 +1,3 @@
-// Definitions.
-import { Keyframes as KeyframesDefinition, UnparsedKeyframe as UnparsedKeyframeDefinition, KeyframeDeclaration as KeyframeDeclarationDefinition, KeyframeInfo as KeyframeInfoDefinition, KeyframeAnimationInfo as KeyframeAnimationInfoDefinition, KeyframeAnimation as KeyframeAnimationDefinition } from './keyframe-animation';
-
 import { View } from '../core/view';
 import { Color } from '../../color';
 
@@ -13,28 +10,28 @@ import { unsetValue } from '../core/properties';
 import { Animation } from '.';
 import { backgroundColorProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, opacityProperty, rotateXProperty, rotateYProperty, widthProperty, heightProperty, PercentLength } from '../styling/style-properties';
 
-export class Keyframes implements KeyframesDefinition {
+export class Keyframes {
   name: string;
   keyframes: Array<UnparsedKeyframe>;
 }
 
-export class UnparsedKeyframe implements UnparsedKeyframeDefinition {
+export class UnparsedKeyframe {
   values: Array<any>;
   declarations: Array<KeyframeDeclaration>;
 }
 
-export class KeyframeDeclaration implements KeyframeDeclarationDefinition {
+export class KeyframeDeclaration {
   public property: string;
   public value: any;
 }
 
-export class KeyframeInfo implements KeyframeInfoDefinition {
+export class KeyframeInfo {
   public duration: number;
   public declarations: Array<KeyframeDeclaration>;
   public curve?: any = AnimationCurve.ease;
 }
 
-export class KeyframeAnimationInfo implements KeyframeAnimationInfoDefinition {
+export class KeyframeAnimationInfo {
   public keyframes: Array<KeyframeInfo>;
   public name?: string = '';
   public duration?: number = 0.3;
@@ -59,7 +56,7 @@ interface Keyframe {
   forceLayer?: boolean;
 }
 
-export class KeyframeAnimation implements KeyframeAnimationDefinition {
+export class KeyframeAnimation {
   public animations: Array<Keyframe>;
   public delay: number = 0;
   public iterations: number = 1;

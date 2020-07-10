@@ -41,7 +41,6 @@ export function installPolyfills(moduleName: string, exportNames: string[]) {
 }
 
 export function initGlobal() {
-  console.log('initGlobal called, init:', (<any>global).hasInitGlobal);
   if (!(<any>global).hasInitGlobal) {
     (<any>global).hasInitGlobal = true;
     // ts-helpers

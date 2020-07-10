@@ -8,7 +8,7 @@ import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { colorProperty, fontInternalProperty, VerticalAlignment } from '../styling/style-properties';
-import { isString } from '../../utils/types';
+import { isString, isDefined, isNullOrUndefined } from '../../utils/types';
 import { ios } from '../../utils';
 
 export * from './text-base-common';
@@ -307,7 +307,7 @@ export class TextBase extends TextBaseCommon {
       dict.set(NSParagraphStyleAttributeName, paragraphStyle);
     }
 
-    const source = getTransformedText(this.text ? this.text.toString() : '', this.textTransform);
+    const source = getTransformedText(isNullOrUndefined(this.text) ? '' : `${this.text}`, this.textTransform);
     if (dict.size > 0 || isTextView) {
       if (isTextView && this.nativeTextViewProtected.font) {
         // UITextView's font seems to change inside.
@@ -349,7 +349,7 @@ export class TextBase extends TextBaseCommon {
         const span = formattedString.spans.getItem(i);
         const text = span.text;
         const textTransform = (<TextBase>formattedString.parent).textTransform;
-        let spanText = text === null || text === undefined ? '' : text.toString();
+        let spanText = isNullOrUndefined(text) ? '' : `${text}`;
         if (textTransform !== 'none' && textTransform !== 'initial') {
           spanText = getTransformedText(spanText, textTransform);
         }

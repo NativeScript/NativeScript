@@ -1,11 +1,13 @@
-﻿import { CssProperty, Property } from '../core/properties';
+﻿import { PageBase } from './page-common';
+import { CssProperty, Property } from '../core/properties';
 import { Style } from '../styling/style';
 import { EventData } from '../../data/observable';
-import { ContentView } from '../content-view';
 import { Frame } from '../frame';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { Color } from '../../color';
+
+export * from './page-common';
 
 /**
  * Defines the data for the page navigation events.
@@ -29,7 +31,7 @@ export module knownCollections {
 /**
  * Represents a logical unit for navigation (inside Frame).
  */
-export class Page extends ContentView {
+export declare class Page extends PageBase {
   /**
    * String value used when hooking to navigatingTo event.
    */

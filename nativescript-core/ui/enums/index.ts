@@ -195,3 +195,35 @@ export module SystemAppearance {
   export const light = 'light';
   export const dark = 'dark';
 }
+
+export const Enums = {
+  Accuracy,
+  AndroidActionBarIconVisibility,
+  AndroidActionItemPosition,
+  AnimationCurve,
+  AutocapitalizationType,
+  BackgroundRepeat,
+  DeviceOrientation,
+  DeviceType,
+  Dock,
+  FontAttributes,
+  FontStyle,
+  FontWeight,
+  HorizontalAlignment,
+  IOSActionItemPosition,
+  ImageFormat,
+  KeyboardType,
+  NavigationBarVisibility,
+  Orientation,
+  ReturnKeyType,
+  StatusBarStyle,
+  Stretch,
+  SystemAppearance,
+  TextAlignment,
+  TextDecoration,
+  TextTransform,
+  UpdateTextTrigger,
+  VerticalAlignment,
+  Visibility,
+  WhiteSpace,
+};

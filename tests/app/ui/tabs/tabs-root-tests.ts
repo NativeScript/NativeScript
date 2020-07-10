@@ -1,8 +1,5 @@
 import * as TKUnit from "../../tk-unit";
-import { _resetRootView } from "@nativescript/core/application/";
-import { Frame, NavigationEntry, } from "@nativescript/core/ui/frame";
-import { Page } from "@nativescript/core/ui/page";
-import { Tabs, TabContentItem, TabStrip, TabStripItem } from "@nativescript/core/ui/tabs";
+import { Page, Frame, Tabs, TabContentItem, TabStrip, TabStripItem, NavigationEntry, Application } from "@nativescript/core";
 
 function waitUntilNavigatedToMaxTimeout(pages: Page[], action: Function) {
     const maxTimeout = 8;
@@ -84,7 +81,7 @@ export function test_frame_topmost_matches_selectedIndex() {
         create: () => tabView
     };
 
-    waitUntilNavigatedToMaxTimeout([items[0].page], () => _resetRootView(entry));
+    waitUntilNavigatedToMaxTimeout([items[0].page], () => Application.resetRootView(entry));
     TKUnit.assertEqual(Frame.topmost().id, "Tab0 Frame0");
 
     waitUntilNavigatedToMaxTimeout([items[1].page], () => tabView.selectedIndex = 1);
@@ -131,7 +128,7 @@ export function test_frame_topmost_matches_selectedIndex() {
 //         create: () => tabView
 //     };
 
-//     waitUntilNavigatedToMaxTimeout([items[0].page], () => _resetRootView(entry));
+//     waitUntilNavigatedToMaxTimeout([items[0].page], () => Application.resetRootView(entry));
 
 //     const expectedEventsRaisedAfterTabCreated = [
 //         [
@@ -193,5 +190,5 @@ export function tearDownModule() {
         create: () => frame
     };
 
-    waitUntilNavigatedToMaxTimeout([page], () => _resetRootView(entry));
+    waitUntilNavigatedToMaxTimeout([page], () => Application.resetRootView(entry));
 }

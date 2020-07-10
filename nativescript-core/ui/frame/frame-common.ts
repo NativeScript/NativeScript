@@ -1,5 +1,4 @@
 // Types.
-import { Frame as FrameDefinition } from '.';
 import { BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, NavigationType } from './frame-interfaces';
 import { Page } from '../page';
 import { View, CustomLayoutView, CSSType } from '../core/view';
@@ -35,7 +34,7 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
 }
 
 @CSSType('Frame')
-export class FrameBase extends CustomLayoutView implements FrameDefinition {
+export class FrameBase extends CustomLayoutView {
   public static androidOptionSelectedEvent = 'optionSelected';
 
   private _animated: boolean;

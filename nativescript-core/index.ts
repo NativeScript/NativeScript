@@ -68,7 +68,7 @@ export const Connectivity = {
 };
 
 export { ObservableArray, ChangeType, ChangedData } from './data/observable-array';
-export { Observable, PropertyChangeData, EventData } from './data/observable';
+export { Observable, PropertyChangeData, EventData, WrappedValue, fromObject, fromObjectRecursive } from './data/observable';
 export { VirtualArray, ItemsLoading } from './data/virtual-array';
 export { File, FileSystemEntity, Folder, knownFolders, path } from './file-system';
 
@@ -87,26 +87,11 @@ export const Http = {
 export { ImageAsset, ImageAssetOptions } from './image-asset';
 
 export { ImageSource } from './image-source';
+export { ModuleNameResolver, ModuleListProvider, PlatformContext, _setResolver } from './module-name-resolver';
 export { isAndroid, isIOS, screen as Screen, IDevice, Device, platformNames } from './platform';
 
-// Export interfaces from "profiling" module
-export { InstrumentationMode, TimerInfo } from './profiling';
-// Export methods from "profiling" module
-import { enable as profilingEnable, disable as profilingDisable, time, uptime, start, stop, isRunning, dumpProfiles, resetProfiles, profile, startCPUProfile, stopCPUProfile } from './profiling';
-export const Profiling = {
-  enable: profilingEnable,
-  disable: profilingDisable,
-  time,
-  uptime,
-  start,
-  stop,
-  isRunning,
-  dumpProfiles,
-  resetProfiles,
-  profile,
-  startCPUProfile,
-  stopCPUProfile,
-};
+// Profiling
+export { InstrumentationMode, TimerInfo, profile, enable as profilingEnable, disable as profilingDisable, time as profilingTime, uptime as profilingUptime, start as profilingStart, stop as profilingStop, isRunning as profilingIsRunning, dumpProfiles as profilingDumpProfiles, resetProfiles as profilingResetProfiles, startCPUProfile as profilingStartCPU, stopCPUProfile as profilingStopCPU } from './profiling';
 
 export { encoding } from './text';
 
@@ -114,7 +99,8 @@ export * from './trace';
 
 export * from './ui';
 
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, ios as iosUtils } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, ios as iosUtils, Source } from './utils';
+import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 
 export const Utils = {
   GC,
@@ -135,6 +121,21 @@ export const Utils = {
   layout,
   android: androidUtils,
   ios: iosUtils,
+  Source,
+  ClassInfo,
+  getClass,
+  getBaseClasses,
+  getClassInfo,
+  isBoolean,
+  isDefined,
+  isFunction,
+  isNullOrUndefined,
+  isNumber,
+  isObject,
+  isString,
+  isUndefined,
+  toUIString,
+  verifyCallback,
 };
 
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

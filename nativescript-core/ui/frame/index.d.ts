@@ -1,4 +1,4 @@
-﻿import { NavigationType } from './frame-common';
+﻿import { NavigationType, FrameBase } from './frame-common';
 import { Page } from '../page';
 import { Observable, EventData } from '../../data/observable';
 import { View } from '../core/view';
@@ -10,7 +10,7 @@ export * from './frame-interfaces';
  * Represents the logical View unit that is responsible for navigation within an application.
  * Nested frames are supported, enabling hierarchical navigation scenarios.
  */
-export class Frame extends View {
+export class Frame extends FrameBase {
   /**
    * Gets a frame by id.
    */

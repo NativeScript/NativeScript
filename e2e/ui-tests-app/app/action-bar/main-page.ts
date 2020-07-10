@@ -1,7 +1,5 @@
-import { EventData } from "tns-core-modules/data/observable";
+import { EventData, Frame, Button, ActionBar, WrapLayout, Page } from "@nativescript/core";
 import { SubMainPageViewModel } from "../sub-main-page-view-model";
-import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
-import { Page } from "tns-core-modules/ui/page";
 
 export function pageLoaded(args: EventData) {
     const page = <Page>args.object;

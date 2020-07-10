@@ -1,14 +1,10 @@
-import * as view from "tns-core-modules/ui/core/view";
-import * as pages from "tns-core-modules/ui/page";
-import { Button } from "tns-core-modules/ui/button";
-import { SegmentedBar, SegmentedBarItem } from "tns-core-modules/ui/segmented-bar";
-import { Label } from "tns-core-modules/ui/label";
+import { getViewById, View, Page, Button, SegmentedBar, SegmentedBarItem, Label, Animation, AnimationDefinition } from "@nativescript/core";
 
 export function easeAnimate(args) {
     const clicked = args.object as Button;
-    const page: pages.Page = clicked.page;
-    const target = view.getViewById(page, "target") as Label;
-    const select = view.getViewById(page, "select") as SegmentedBar;
+    const page: Page = clicked.page;
+    const target = getViewById(page, "target") as Label;
+    const select = getViewById(page, "select") as SegmentedBar;
     const item: SegmentedBarItem = select.items[select.selectedIndex];
     const easeType: string = clicked.text;
     const extent = 128;

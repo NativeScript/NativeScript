@@ -10,7 +10,7 @@ import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftPrope
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { layout } from '../../utils';
-import { isString } from '../../utils/types';
+import { isString, isNullOrUndefined } from '../../utils/types';
 
 export * from './text-base-common';
 
@@ -40,7 +40,7 @@ function initializeTextTransformation(): void {
         return createSpannableStringBuilder(formattedText, (<android.widget.TextView>view).getTextSize());
       } else {
         const text = this.textBase.text;
-        const stringValue = text === null || text === undefined ? '' : text.toString();
+        const stringValue = isNullOrUndefined(text) ? '' : text.toString();
 
         return getTransformedText(stringValue, this.textBase.textTransform);
       }

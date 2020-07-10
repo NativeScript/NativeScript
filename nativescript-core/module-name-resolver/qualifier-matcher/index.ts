@@ -3,6 +3,9 @@ const MIN_W: string = 'minW';
 const MIN_H: string = 'minH';
 const PRIORITY_STEP = 10000;
 
+/**
+ * Used with qualifier matchers and module resolution
+ */
 export interface PlatformContext {
   width: number;
   height: number;

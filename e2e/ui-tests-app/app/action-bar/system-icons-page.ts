@@ -1,5 +1,5 @@
-﻿import * as frame from "tns-core-modules/ui/frame";
+﻿import { Frame } from "@nativescript/core";
 
 export function navigate() {
-    frame.topmost().navigate("action-bar/clean-page");
+    Frame.topmost().navigate("action-bar/clean-page");
 }

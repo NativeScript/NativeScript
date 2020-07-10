@@ -13,8 +13,7 @@
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",
   "dependencies": {
-    "@nativescript/core": "file:../../dist/nativescript-core-7.0.0-rc.6.tgz",
-    "@nativescript/core-widgets": "^7.0.0-rc.0"
+    "@nativescript/core": "file:../../dist/nativescript-core-7.0.0-rc.9.tgz"
   },
   "devDependencies": {
     "@testdeck/mocha": "0.0.6",
@@ -29,7 +28,7 @@
     "mochawesome": "~3.1.2",
     "nativescript-dev-appium": "next",
     "@nativescript/webpack": "^2.0.0-alpha.3",
-    "@nativescript/types": "file:../../dist/nativescript-types-7.0.0-rc.0.tgz",
+    "@nativescript/types": "~7.0.0-rc.0",
     "typescript": "~3.9.0"
   },
   "gitHead": "8ab7726d1ee9991706069c1359c552e67ee0d1a4",

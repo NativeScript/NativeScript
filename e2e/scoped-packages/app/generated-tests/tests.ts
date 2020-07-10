@@ -430,14 +430,6 @@ import * as module_ui_animation_keyframe_animation_core from "@nativescript/core
 import * as module_ui_animation_keyframe_animation_compat from "tns-core-modules/ui/animation/keyframe-animation";
 compare("ui/animation/keyframe-animation", module_ui_animation_keyframe_animation_core, module_ui_animation_keyframe_animation_compat);
 
-import * as module_ui_border_core from "@nativescript/core/ui/border";
-import * as module_ui_border_compat from "tns-core-modules/ui/border";
-compare("ui/border", module_ui_border_core, module_ui_border_compat);
-
-import * as module_ui_border_border_core from "@nativescript/core/ui/border/border";
-import * as module_ui_border_border_compat from "tns-core-modules/ui/border/border";
-compare("ui/border/border", module_ui_border_border_core, module_ui_border_border_compat);
-
 import * as module_ui_bottom_navigation_core from "@nativescript/core/ui/bottom-navigation";
 import * as module_ui_bottom_navigation_compat from "tns-core-modules/ui/bottom-navigation";
 compare("ui/bottom-navigation", module_ui_bottom_navigation_core, module_ui_bottom_navigation_compat);

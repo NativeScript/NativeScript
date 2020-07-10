@@ -1,4 +1,4 @@
-import { Page as PageDefinition, NavigatedData } from '.';
+import { Page as PageDefinition } from '.';
 import { ContentView } from '../content-view';
 import { View, CSSType, ShownModallyData } from '../core/view';
 import { booleanConverter } from '../core/view-base';
@@ -12,8 +12,13 @@ import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
 
+interface NavigatedData extends EventData {
+  context: any;
+  isBackNavigation: boolean;
+}
+
 @CSSType('Page')
-export class PageBase extends ContentView implements PageDefinition {
+export class PageBase extends ContentView {
   public static navigatingToEvent = 'navigatingTo';
   public static navigatedToEvent = 'navigatedTo';
   public static navigatingFromEvent = 'navigatingFrom';

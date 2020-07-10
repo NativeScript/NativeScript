@@ -1,4 +1,4 @@
-import { Label } from "tns-core-modules/ui/label";
+import { Label } from "@nativescript/core";
 
 let toggle = false;
 

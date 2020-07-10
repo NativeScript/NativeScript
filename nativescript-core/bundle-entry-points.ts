@@ -11,7 +11,6 @@ if (global.TNS_WEBPACK) {
   global.registerModule('ui/text-base/span', () => require('./ui/text-base/span'));
   global.registerModule('ui/action-bar', () => require('./ui/action-bar'));
   global.registerModule('ui/activity-indicator', () => require('./ui/activity-indicator'));
-  global.registerModule('ui/border', () => require('./ui/border'));
   global.registerModule('ui/bottom-navigation', () => require('./ui/bottom-navigation'));
   global.registerModule('ui/button', () => require('./ui/button'));
   global.registerModule('ui/content-view', () => require('./ui/content-view'));

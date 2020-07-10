@@ -1,19 +1,7 @@
 import * as TKUnit from "../../tk-unit";
-import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style } from "@nativescript/core";
-import { Frame } from "@nativescript/core/ui/frame";
-import { Page } from "@nativescript/core/ui/page";
-import { Button } from "@nativescript/core/ui/button";
-import { Label } from "@nativescript/core/ui/label";
-import { Color } from "@nativescript/core/color";
-import { StackLayout } from "@nativescript/core/ui/layouts/stack-layout";
-import { AbsoluteLayout } from "@nativescript/core/ui/layouts/absolute-layout";
-import * as types from "@nativescript/core/utils/types";
+import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style, Frame, Page, Button, Label, Color, StackLayout, AbsoluteLayout, Observable, Utils, BindingOptions, isAndroid, LayoutBase } from "@nativescript/core";
 import * as helper from "../../ui-helper";
-import * as observable from "@nativescript/core/data/observable";
-import * as bindable from "@nativescript/core/ui/core/bindable";
 import * as definition from "./view-tests";
-import { isAndroid } from "@nativescript/core/platform";
-import { LayoutBase } from "@nativescript/core/ui/layouts/layout-base";
 
 export function test_eachDescendant() {
     const test = function (views: Array<View>) {
@@ -27,7 +15,7 @@ export function test_eachDescendant() {
             return true;
         };
 
-        eachDescendant(Frame.topmost(), callback);
+        eachDescendant(<any>Frame.topmost(), callback);
         // Descendants: page, actionBar, button
         TKUnit.assertEqual(counter, 3, "descendants");
     };
@@ -40,7 +28,7 @@ export function test_getViewById_Static() {
         views[1].id = "myLayout";
 
         // traverse the visual tree and verify the hierarchy
-        const result = getViewById(Frame.topmost(), "myLayout");
+        const result = getViewById(<any>Frame.topmost(), "myLayout");
 
         TKUnit.assert(result === views[1]);
     };
@@ -72,7 +60,7 @@ export function test_eachDescendant_Break_Iteration() {
             return false;
         };
 
-        eachDescendant(Frame.topmost(), callback);
+        eachDescendant(<any>Frame.topmost(), callback);
         TKUnit.assert(counter === 1);
     };
 
@@ -82,11 +70,11 @@ export function test_eachDescendant_Break_Iteration() {
 export function test_parent_IsValid_WhenAttached_ToVisualTree() {
     const test = function (views: Array<View>) {
         // views[0] is a Page instance, its parent should be the topmost frame
-        TKUnit.assert(types.isDefined(views[0].parent));
-        TKUnit.assert(views[0].parent === Frame.topmost());
+        TKUnit.assert(Utils.isDefined(views[0].parent));
+        TKUnit.assert(views[0].parent === <any>Frame.topmost());
 
         // views[1] is a Button instance, its parent should be the Page (views[0])
-        TKUnit.assert(types.isDefined(views[1].parent));
+        TKUnit.assert(Utils.isDefined(views[1].parent));
         TKUnit.assert(views[1].parent === views[0]);
     };
 
@@ -102,8 +90,8 @@ export function test_parent_IsReset_WhenDetached_FromVisualTree() {
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
 
-    TKUnit.assert(types.isUndefined(cachedViews[1].parent));
-    TKUnit.assert(types.isDefined(cachedViews[2].parent));
+    TKUnit.assert(Utils.isUndefined(cachedViews[1].parent));
+    TKUnit.assert(Utils.isDefined(cachedViews[2].parent));
     TKUnit.assert(cachedViews[2].parent === cachedViews[1]);
 }
 
@@ -165,7 +153,7 @@ export function test_bindingContext_IsInherited() {
     };
 
     helper.do_PageTest_WithStackLayout_AndButton(test);
-    Frame.topmost().bindingContext = undefined;
+    (<any>Frame.topmost()).bindingContext = undefined;
 }
 
 export function test_isAddedToNativeVisualTree_IsUpdated() {
@@ -705,10 +693,10 @@ export function test_InheritableProperties_ChangeNotification() {
 
 function property_binding_test(propName: string, firstValue: any, secondValue: any, view?: View) {
     let actualResult;
-    const model = new observable.Observable();
+    const model = new Observable();
     model.set(propName, firstValue);
 
-    const options: bindable.BindingOptions = {
+    const options: BindingOptions = {
         sourceProperty: propName,
         targetProperty: propName
     };
@@ -729,10 +717,10 @@ function property_binding_test(propName: string, firstValue: any, secondValue: a
 
 function property_binding_style_test(propName: string, firstValue: any, secondValue: any, view?: View) {
     let actualResult;
-    const model = new observable.Observable();
+    const model = new Observable();
     model.set(propName, firstValue);
 
-    const options: bindable.BindingOptions = {
+    const options: BindingOptions = {
         sourceProperty: propName,
         targetProperty: "style." + propName
     };

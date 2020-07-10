@@ -1,6 +1,4 @@
-﻿import { Label } from "tns-core-modules/ui/label";
-import { EventData, TextBase } from "tns-core-modules/ui/text-base";
-import { Page } from "tns-core-modules/ui/page";
+﻿import { EventData, Page, TextBase, Label } from "@nativescript/core";
 
 export function foxTap(args: EventData) {
     let page = <Page>(<any>args.object).page;

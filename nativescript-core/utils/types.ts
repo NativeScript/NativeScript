@@ -27,7 +27,7 @@ export function isObject(value: any): boolean {
 }
 
 export function isUndefined(value: any): boolean {
-  return value === undefined;
+  return typeof value === 'undefined';
 }
 
 export function isDefined(value: any): boolean {
@@ -35,7 +35,7 @@ export function isDefined(value: any): boolean {
 }
 
 export function isNullOrUndefined(value: any): boolean {
-  return value === undefined || value === null;
+  return typeof value === 'undefined' || value === null;
 }
 
 export function verifyCallback(value: any) {

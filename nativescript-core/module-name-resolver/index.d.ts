@@ -17,4 +17,8 @@ export class ModuleNameResolver {
 export function resolveModuleName(path: string, ext: string): string;
 export function clearCache(): void;
 
+/**
+ * Used to set a global singular instance of ModuleNameResolver
+ * @param resolver instance
+ */
 export function _setResolver(resolver: ModuleNameResolver);

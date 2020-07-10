@@ -1,4 +1,4 @@
-import { ShownModallyData } from "tns-core-modules/ui/page";
+import { ShownModallyData } from "@nativescript/core";
 
 let closeCallback: Function;
 

@@ -4,7 +4,7 @@ import { Trace } from "@nativescript/core";
 
 export var test_DummyTestForSnippetOnly0 = function () {
     // >> trace-all-categories
-    Trace.setCategories(Trace.categories.All);
+    Trace.setCategories(Trace.categories.All.join(','));
     Trace.enable();
     // << trace-all-categories
 };
@@ -20,7 +20,7 @@ export var test_DummyTestForSnippetOnly1 = function () {
         , Trace.categories.Style
         , Trace.categories.ViewHierarchy
         , Trace.categories.VisualTreeEvents
-    ));
+    ).join(','));
     Trace.enable();
     // << trace-specific-categories
 };

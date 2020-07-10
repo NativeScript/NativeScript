@@ -1,7 +1,7 @@
-import * as view from "tns-core-modules/ui/core/view";
+import { View } from "@nativescript/core";
 
 export function tapLabel(args) {
-    const clicked: view.View = args.object;
+    const clicked: View = args.object;
     const graffiti = clicked as any;
     clicked.animate({
         height: graffiti.toggle ? 64 : 128,

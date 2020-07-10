@@ -417,10 +417,6 @@ export abstract class ViewBase extends Observable {
    */
   public ensureDomNode();
 
-  //@private
-  /**
-   * @private
-   */
   public recycleNativeView: 'always' | 'never' | 'auto';
 
   /**

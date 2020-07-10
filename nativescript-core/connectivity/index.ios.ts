@@ -55,9 +55,14 @@ function _getConnectionTypeFromFlags(flags: number): number {
     return connectionType.mobile;
   }
 
-  const cfDict = CFNetworkCopySystemProxySettings();
-  const nsDict = cfDict.takeUnretainedValue();
-  const keys = nsDict.objectForKey('__SCOPED__');
+  let keys: any;
+  if (typeof CFNetworkCopySystemProxySettings !== 'undefined') {
+    const cfDict = CFNetworkCopySystemProxySettings();
+    if (cfDict && cfDict.takeUnretainedValue) {
+      const nsDict = cfDict.takeUnretainedValue();
+      keys = nsDict.objectForKey('__SCOPED__');
+    }
+  }
 
   if (isVPNConnected(keys)) {
     return connectionType.vpn;

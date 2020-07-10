@@ -137,7 +137,7 @@ export function buildUIWithWeakRefAndInteract<T extends View>(createFunc: () => 
         // An additional GC and wait are needed since WebKit upgrade to version 12.0
         // (TEXT-FIELD.testMemoryLeak test started failing sporadically)
         Utils.GC();
-        TKUnit.wait(0.1);
+        TKUnit.wait(0.2);
     }
     Utils.GC();
     try {

@@ -1,7 +1,6 @@
 import { time } from "tns-core-modules/profiling";
 import { ActionBar } from "tns-core-modules/ui/action-bar";
 import { ActivityIndicator } from "tns-core-modules/ui/activity-indicator";
-import { Border } from "tns-core-modules/ui/border";
 import { Button } from "tns-core-modules/ui/button";
 import { ContentView } from "tns-core-modules/ui/content-view";
 import { DatePicker } from "tns-core-modules/ui/date-picker";

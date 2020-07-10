@@ -1,6 +1,7 @@
 import { dip, px } from '../ui/core/view';
 
 export * from './mainthread-helper';
+export { Source } from './debug';
 
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;

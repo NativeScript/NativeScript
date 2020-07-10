@@ -27,32 +27,6 @@ export declare const Application: {
   hasLaunched: typeof hasLaunched;
   android: AndroidApplication;
   ios: iOSApplication;
-} = {
-  launchEvent: 'launch',
-  displayedEvent: 'displayed',
-  uncaughtErrorEvent: 'uncaughtError',
-  discardedErrorEvent: 'discardedError',
-  suspendEvent: 'suspend',
-  resumeEvent: 'resume',
-  exitEvent: 'exit',
-  lowMemoryEvent: 'lowMemory',
-  orientationChangedEvent: 'orientationChanged',
-  getMainEntry,
-  getRootView,
-  resetRootView,
-  setResources,
-  setCssFileName,
-  getCssFileName,
-  loadAppCss,
-  addCss,
-  on,
-  off,
-  run,
-  orientation,
-  getNativeApplication,
-  hasLaunched,
-  android,
-  ios,
 };
 import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from './application-settings';
 export declare const ApplicationSettings: {
@@ -67,18 +41,6 @@ export declare const ApplicationSettings: {
   setBoolean: typeof setBoolean;
   getNumber: typeof getNumber;
   setNumber: typeof setNumber;
-} = {
-  clear,
-  flush,
-  hasKey,
-  remove,
-  setString,
-  getString,
-  getAllKeys,
-  getBoolean,
-  setBoolean,
-  getNumber,
-  setNumber,
 };
 export { Color } from './color';
 import { connectionType, getConnectionType, startMonitoring, stopMonitoring } from './connectivity';
@@ -87,14 +49,9 @@ export declare const Connectivity: {
   getConnectionType: typeof getConnectionType;
   startMonitoring: typeof startMonitoring;
   stopMonitoring: typeof stopMonitoring;
-} = {
-  connectionType,
-  getConnectionType,
-  startMonitoring,
-  stopMonitoring,
 };
 export { ObservableArray, ChangeType, ChangedData } from './data/observable-array';
-export { Observable, PropertyChangeData, EventData } from './data/observable';
+export { Observable, PropertyChangeData, EventData, WrappedValue, fromObject, fromObjectRecursive } from './data/observable';
 export { VirtualArray, ItemsLoading } from './data/virtual-array';
 export { File, FileSystemEntity, Folder, knownFolders, path } from './file-system';
 export { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
@@ -105,50 +62,19 @@ export declare const Http: {
   getJSON: typeof getJSON;
   getString: typeof httpGetString;
   request: typeof request;
-} = {
-  getFile,
-  getImage,
-  getJSON,
-  getString,
-  request,
 };
 export { ImageAsset, ImageAssetOptions } from './image-asset';
 export { ImageSource } from './image-source';
+export { ModuleNameResolver, ModuleListProvider, PlatformContext, _setResolver } from './module-name-resolver';
 export { isAndroid, isIOS, screen as Screen, IDevice, Device, platformNames } from './platform';
-export { InstrumentationMode, TimerInfo } from './profiling';
-import { enable as profilingEnable, disable as profilingDisable, time, uptime, start, stop, isRunning, dumpProfiles, resetProfiles, profile, startCPUProfile, stopCPUProfile } from './profiling';
-export declare const Profiling: {
-  enable: typeof profilingEnable;
-  disable: typeof profilingDisable;
-  time: typeof time;
-  uptime: typeof uptime;
-  start: typeof start;
-  stop: typeof stop;
-  isRunning: typeof isRunning;
-  dumpProfiles: typeof dumpProfiles;
-  resetProfiles: typeof resetProfiles;
-  profile: typeof profile;
-  startCPUProfile: typeof startCPUProfile;
-  stopCPUProfile: typeof stopCPUProfile;
-} = {
-  enable: profilingEnable,
-  disable: profilingDisable,
-  time,
-  uptime,
-  start,
-  stop,
-  isRunning,
-  dumpProfiles,
-  resetProfiles,
-  profile,
-  startCPUProfile,
-  stopCPUProfile,
-};
+// Profiling
+export { InstrumentationMode, TimerInfo, profile, enable as profilingEnable, disable as profilingDisable, time as profilingTime, uptime as profilingUptime, start as profilingStart, stop as profilingStop, isRunning as profilingIsRunning, dumpProfiles as profilingDumpProfiles, resetProfiles as profilingResetProfiles, startCPUProfile as profilingStartCPU, stopCPUProfile as profilingStopCPU } from './profiling';
 export { encoding } from './text';
 export * from './trace';
 
 export * from './ui';
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, ios as iosUtils } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, ios as iosUtils, Source } from './utils';
+import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 export declare const Utils: {
   GC: typeof GC;
   isFontIconURI: typeof isFontIconURI;
@@ -166,22 +92,20 @@ export declare const Utils: {
   layout: typeof layout;
   android: typeof androidUtils;
   ios: typeof iosUtils;
-} = {
-  GC,
-  isFontIconURI,
-  isDataURI,
-  isFileOrResourcePath,
-  executeOnMainThread,
-  mainThreadify,
-  isMainThread,
-  dispatchToMainThread,
-  releaseNativeObject,
-  getModuleName,
-  openFile,
-  openUrl,
-  isRealDevice,
-  layout,
-  android,
-  ios,
+  Source: typeof Source;
+  ClassInfo: typeof ClassInfo;
+  getClass: typeof getClass;
+  getBaseClasses: typeof getBaseClasses;
+  getClassInfo: typeof getClassInfo;
+  isBoolean: typeof isBoolean;
+  isDefined: typeof isDefined;
+  isFunction: typeof isFunction;
+  isNullOrUndefined: typeof isNullOrUndefined;
+  isNumber: typeof isNumber;
+  isObject: typeof isObject;
+  isString: typeof isString;
+  isUndefined: typeof isUndefined;
+  toUIString: typeof toUIString;
+  verifyCallback: typeof verifyCallback;
 };
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

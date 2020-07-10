@@ -1,16 +1,13 @@
-import * as view from "tns-core-modules/ui/core/view";
-import * as pages from "tns-core-modules/ui/page";
+import { getViewById, View, Page, Button, SegmentedBar, SegmentedBarItem, Label, Animation, AnimationDefinition, Screen, TextView } from "@nativescript/core";
 import * as platform from "tns-core-modules/platform";
 import * as uiUtils from "tns-core-modules/ui/utils";
-import { Animation } from "tns-core-modules/ui/animation";
-import { TextView } from "tns-core-modules/ui/text-view";
 import { isIOS } from "tns-core-modules/platform";
 
 let toggle = false;
 
 export function pageLoaded(args) {
     const page = args.object;
-    const screenHeight = platform.screen.mainScreen.heightDIPs;
+    const screenHeight = Screen.mainScreen.heightDIPs;
     const screenYCenter = (screenHeight / 2);
     page.bindingContext = {
         screenHeight,
@@ -42,9 +39,9 @@ http://spaceipsum.com`
 }
 
 export function theFinalFrontier(args) {
-    const clicked = args.object as view.View;
-    const page: pages.Page = clicked.page;
-    const details = view.getViewById(page, "details") as TextView;
+    const clicked = args.object as View;
+    const page: Page = clicked.page;
+    const details = getViewById(page, "details") as TextView;
     const ctx = page.bindingContext;
     const detailHeaderHeight: number = ctx.detailsHeight;
 

@@ -149,10 +149,10 @@ export class Observable {
    */
   hasListeners(eventName: string): boolean;
 
-  //@private
+  public _emit(eventNames: string);
+
   /**
    * This method is intended to be overriden by inheritors to provide additional implementation.
-   * @private
    */
   _createPropertyChangeData(name: string, value: any, oldValue?: any): PropertyChangeData;
 
@@ -162,11 +162,6 @@ export class Observable {
    * @private
    */
   public _isViewBase: boolean;
-
-  /**
-   * @private
-   */
-  _emit(eventNames: string);
   //@endprivate
 }
 
