@@ -46,7 +46,7 @@
   },
   "scripts": {
     "clean": "npx rimraf node_modules package-lock.json && npm i",
-    "setup": "npm run build-core && npm run build-compat && npm run setup-link",
+    "setup": "npm run build-core",
     "setup-link": "(cd nativescript-core && npm link) && (cd dist/tns-core-modules && npm uninstall @nativescript/core -S)",
     "setup-widgets": "(cd tns-core-modules-widgets && sh build.sh) && npm run dev-link-tns-core-modules-widgets",
     "build": "tsc -p nativescript-core/tsconfig.json",
