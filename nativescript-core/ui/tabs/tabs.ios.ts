@@ -463,6 +463,7 @@ export class Tabs extends TabsBase {
     public _defaultItemBackgroundColor: UIColor;
     private _selectedItemColor: Color;
     private _unSelectedItemColor: Color;
+    public iOSAnimationEnabled: boolean;
 
     constructor() {
         super();
@@ -1102,7 +1103,7 @@ export class Tabs extends TabsBase {
             // do not make layout changes while the animation is in progress https://stackoverflow.com/a/47031524/613113
             this.visitFrames(item, frame => frame._animationInProgress = true);
 
-            this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, (finished: boolean) => {
+            invokeOnRunLoop( () => this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, this.iOSAnimationEnabled, (finished: boolean) => {
                 this.visitFrames(item, frame => frame._animationInProgress = false);
                 if (finished) {
                     // HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
@@ -1112,10 +1113,10 @@ export class Tabs extends TabsBase {
                     this._setCanBeLoaded(value);
                     this._loadUnloadTabItems(value);
                 }
-            });
+            }));
 
             if (this.tabBarItems && this.tabBarItems.length && this.viewController && this.viewController.tabBar) {
-                this.viewController.tabBar.setSelectedItemAnimated(this.tabBarItems[value], true);
+                this.viewController.tabBar.setSelectedItemAnimated(this.tabBarItems[value], this.iOSAnimationEnabled);
             }
             // TODO:
             // (<any>this._ios)._willSelectViewController = this._ios.viewControllers[value];
@@ -1140,7 +1141,6 @@ export class Tabs extends TabsBase {
     [tabStripProperty.getDefault](): TabStrip {
         return null;
     }
-
     [tabStripProperty.setNative](value: TabStrip) {
         this.setViewControllers(this.items);
         selectedIndexProperty.coerce(this);
@@ -1149,7 +1149,6 @@ export class Tabs extends TabsBase {
     [swipeEnabledProperty.getDefault](): boolean {
         return true;
     }
-
     [swipeEnabledProperty.setNative](value: boolean) {
         if (this.viewController && this.viewController.scrollView) {
             this.viewController.scrollView.scrollEnabled = value;
@@ -1165,7 +1164,6 @@ export class Tabs extends TabsBase {
 
         return <any>(alignment.charAt(0).toLowerCase() + alignment.substring(1));
     }
-
     [iOSTabBarItemsAlignmentProperty.setNative](value: IOSTabBarItemsAlignment) {
         if (!this.viewController || !this.viewController.tabBar) {
             return;
