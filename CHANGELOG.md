@@ -1,3 +1,12 @@
+## [6.5.10](https://github.com/NativeScript/NativeScript/compare/6.5.9...6.5.10) (2020-07-11)
+
+
+### Features
+
+* **tabs:** add animationEnabled property ([#8704](https://github.com/NativeScript/NativeScript/issues/8704)) ([36aa181](https://github.com/NativeScript/NativeScript/commit/36aa181185cc097f5281cb113cd87aca183ee659))
+
+
+
 ## [6.5.9](https://github.com/NativeScript/NativeScript/compare/6.5.8...6.5.9) (2020-07-07)
 
 
