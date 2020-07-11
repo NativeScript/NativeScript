@@ -13,16 +13,16 @@ import { ios as iosView, View } from "../core/view";
 import { Frame } from "../frame";
 import { Font } from "../styling/font";
 import {
-	getIconSpecSize,
-	itemsProperty,
-	selectedIndexProperty,
-	tabStripProperty,
+    getIconSpecSize,
+    itemsProperty,
+    selectedIndexProperty,
+    tabStripProperty,
 } from "../tab-navigation-base/tab-navigation-base";
 import {
-	IOSTabBarItemsAlignment,
-	iOSTabBarItemsAlignmentProperty,
-	swipeEnabledProperty,
-	TabsBase
+    IOSTabBarItemsAlignment,
+    iOSTabBarItemsAlignmentProperty,
+    swipeEnabledProperty,
+    TabsBase
 } from "./tabs-common";
 
 // TODO
