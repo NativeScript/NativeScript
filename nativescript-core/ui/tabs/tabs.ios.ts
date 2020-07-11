@@ -13,9 +13,17 @@ import { ios as iosView, View } from "../core/view";
 import { Frame } from "../frame";
 import { Font } from "../styling/font";
 import {
-    getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty,
+	getIconSpecSize,
+	itemsProperty,
+	selectedIndexProperty,
+	tabStripProperty,
 } from "../tab-navigation-base/tab-navigation-base";
-import { swipeEnabledProperty, TabsBase, IOSTabBarItemsAlignment, iOSTabBarItemsAlignmentProperty } from "./tabs-common";
+import {
+	IOSTabBarItemsAlignment,
+	iOSTabBarItemsAlignmentProperty,
+	swipeEnabledProperty,
+	TabsBase
+} from "./tabs-common";
 
 // TODO
 // import { profile } from "../../profiling";
@@ -463,7 +471,7 @@ export class Tabs extends TabsBase {
     public _defaultItemBackgroundColor: UIColor;
     private _selectedItemColor: Color;
     private _unSelectedItemColor: Color;
-    public iOSAnimationEnabled: boolean;
+    public animationEnabled: boolean;
 
     constructor() {
         super();
@@ -1103,7 +1111,7 @@ export class Tabs extends TabsBase {
             // do not make layout changes while the animation is in progress https://stackoverflow.com/a/47031524/613113
             this.visitFrames(item, frame => frame._animationInProgress = true);
 
-            invokeOnRunLoop( () => this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, this.iOSAnimationEnabled, (finished: boolean) => {
+            invokeOnRunLoop( () => this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, this.animationEnabled, (finished: boolean) => {
                 this.visitFrames(item, frame => frame._animationInProgress = false);
                 if (finished) {
                     // HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
@@ -1116,7 +1124,7 @@ export class Tabs extends TabsBase {
             }));
 
             if (this.tabBarItems && this.tabBarItems.length && this.viewController && this.viewController.tabBar) {
-                this.viewController.tabBar.setSelectedItemAnimated(this.tabBarItems[value], this.iOSAnimationEnabled);
+                this.viewController.tabBar.setSelectedItemAnimated(this.tabBarItems[value], this.animationEnabled);
             }
             // TODO:
             // (<any>this._ios)._willSelectViewController = this._ios.viewControllers[value];

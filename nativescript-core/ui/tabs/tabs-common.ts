@@ -45,5 +45,5 @@ export type IOSTabBarItemsAlignment = "leading" | "justified" | "center" | "cent
 export const iOSTabBarItemsAlignmentProperty = new Property<TabsBase, IOSTabBarItemsAlignment>({ name: "iOSTabBarItemsAlignment", defaultValue: "justified" });
 iOSTabBarItemsAlignmentProperty.register(TabsBase);
 
-export const iOSAnimationEnabledProperty = new Property<TabsBase, boolean>({ name: "iOSAnimationEnabled", defaultValue: true, valueConverter: booleanConverter });
-iOSAnimationEnabledProperty.register(TabsBase);
+export const animationEnabledProperty = new Property<TabsBase, boolean>({ name: "animationEnabled", defaultValue: true, valueConverter: booleanConverter });
+animationEnabledProperty.register(TabsBase);
