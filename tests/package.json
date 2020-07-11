@@ -5,13 +5,16 @@
       "version": "next"
     },
     "tns-ios": {
-      "version": "next"
+      "version": "6.5.2"
     }
   },
   "main": "app.js",
   "description": "NativeScript Application",
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",
+  "scripts": {
+    "clean": "npx rimraf hooks node_modules platforms package-lock.json && npm i"
+  },
   "dependencies": {
     "@nativescript/core": "file:../nativescript-core",
     "tns-core-modules": "file:../dist/tns-core-modules"
