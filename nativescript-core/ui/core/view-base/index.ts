@@ -247,7 +247,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _suspendedUpdates: {
 		[propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
 	};
-	public _suspendNativeUpdatesCount: SuspendType;
+	public _suspendNativeUpdatesCount: number;
 	public _isStyleScopeHost: boolean;
 	public _automaticallyAdjustsScrollViewInsets: boolean;
 

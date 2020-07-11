@@ -386,8 +386,8 @@ export class View extends ViewCommon implements ViewDefinition {
 		this._suspendCATransaction = false;
 	}
 
-	public _isPresentationLayerUpdateSuspeneded() {
-		return this._suspendCATransaction || this._suspendNativeUpdatesCount;
+	public _isPresentationLayerUpdateSuspeneded(): boolean {
+		return this._suspendCATransaction || this._suspendNativeUpdatesCount > 0;
 	}
 
 	protected _showNativeModalView(parent: View, options: ShowModalOptions) {

@@ -13,7 +13,7 @@
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",
   "dependencies": {
-    "@nativescript/core": "file:../../dist/nativescript-core-7.0.0-rc.9.tgz"
+    "@nativescript/core": "file:../../dist/nativescript-core-7.0.0-rc.11.tgz"
   },
   "devDependencies": {
     "@testdeck/mocha": "0.0.6",

@@ -3,7 +3,7 @@
     "main": "index",
     "types": "index.d.ts",
     "description": "NativeScript Core Modules",
-    "version": "7.0.0-rc.9",
+    "version": "7.0.0-rc.11",
     "homepage": "https://www.nativescript.org",
     "repository": {
         "type": "git",
@@ -12,6 +12,7 @@
     "files": [
         "**/*.d.ts",
         "**/*.js",
+        "**/*.map",
         "**/platforms/ios/**",
         "**/platforms/android/**",
         "**/package.json",

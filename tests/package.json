@@ -16,7 +16,7 @@
     "clean": "npx rimraf hooks node_modules platforms package-lock.json && npm i"
   },
   "dependencies": {
-    "@nativescript/core": "file:../dist/nativescript-core-7.0.0-rc.9.tgz"
+    "@nativescript/core": "file:../dist/nativescript-core-7.0.0-rc.11.tgz"
   },
   "devDependencies": {
     "circular-dependency-plugin": "~5.2.0",

@@ -2,9 +2,7 @@
 
 // Init globals first
 import { initGlobal } from './globals';
-if (!(<any>global).hasInitGlobal) {
-	initGlobal();
-}
+initGlobal();
 
 // Export all interfaces from "application" module
 export { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, iOSApplication, AndroidApplication, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData } from './application';
