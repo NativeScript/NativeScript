@@ -24,7 +24,7 @@
     "workspace-schematic": "nx workspace-schematic",
     "dep-graph": "nx dep-graph",
     "help": "nx help",
-    "setup": "npx rimraf -- hooks node_modules package-lock.json && npm i && nx run core:setup"
+    "setup": "npm i -g @nrwl/cli && npx rimraf -- hooks node_modules package-lock.json && npm i && nx run core:setup"
   },
   "private": true,
   "dependencies": {

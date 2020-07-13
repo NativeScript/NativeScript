@@ -36,7 +36,13 @@
           "options": {
             "commands": [
               {
-                "command": "npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js && npm i && npx rimraf -- package-lock.json"
+                "command": "npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js"
+              },
+              {
+                "command": "npm i"
+              },
+              {
+                "command": "npx rimraf -- package-lock.json"
               }
             ],
             "cwd": "packages/core/__tests__/e2e/automated",
@@ -80,7 +86,13 @@
           "options": {
             "commands": [
               {
-                "command": "npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js && npm i && npx rimraf -- package-lock.json"
+                "command": "npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js"
+              },
+              {
+                "command": "npm i"
+              },
+              {
+                "command": "npx rimraf -- package-lock.json"
               }
             ],
             "cwd": "packages/core/__tests__/e2e/playground",
@@ -124,7 +136,13 @@
           "options": {
             "commands": [
               {
-                "command": "npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js && npm i && npx rimraf -- package-lock.json"
+                "command": "npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js"
+              },
+              {
+                "command": "npm i"
+              },
+              {
+                "command": "npx rimraf -- package-lock.json"
               }
             ],
             "cwd": "packages/core/__tests__/e2e/ui",
@@ -364,7 +382,10 @@
           "options": {
             "commands": [
               {
-                "command": "npm run setup && mv \"$(npm pack | tail -n 1)\" nativescript-webpack.tgz"
+                "command": "npm run setup"
+              },
+              {
+                "command": "mv \"$(npm pack | tail -n 1)\" nativescript-webpack.tgz"
               }
             ],
             "cwd": "packages/webpack",
