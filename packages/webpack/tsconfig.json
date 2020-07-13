@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "target": "es2015",
+        "module": "commonjs",
+        "declaration": true,
+        "lib": [ "es2017" ],
+        "sourceMap": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "../types-ios/src/lib/ios.d.ts",
+        "../types-android/src/lib/android-29.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "demo",
+        "../core"
+    ]
+}

@@ -1,9 +1,8 @@
-# Ignore artifacts:
 .github
+.gitignore
+.npmignore
 *.yml
 .vscode
-api-reports
-apps
 build
 coverage
 dist
@@ -11,11 +10,11 @@ e2e
 js-libs
 platforms
 tests
-tns-core-modules-package
-tns-core-modules-widgets
-tns-platform-declarations
-temp
-unit-tests
+packages/types-android
+packages/types-ios
+packages/ui-mobile-base
+*.cmd
 *.md
 *.json
 *.js
+*.map
