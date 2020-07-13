@@ -18,3 +18,5 @@ packages/ui-mobile-base
 *.json
 *.js
 *.map
+*.css
+*.scss
