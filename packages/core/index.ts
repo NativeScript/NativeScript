@@ -1,5 +1,4 @@
-/// <reference path="./module.d.ts" />
-/// <reference path="./tns-core-modules.d.ts" />
+/// <reference path="./global-types.d.ts" />
 
 // Init globals first
 import { initGlobal } from './globals';
@@ -9,7 +8,7 @@ initGlobal();
 export { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, iOSApplication, AndroidApplication, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData } from './application';
 
 // Export all methods and fields from "application" as Application
-import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, android, ios } from './application';
+import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp } from './application';
 export const Application = {
 	launchEvent,
 	displayedEvent,
@@ -37,8 +36,8 @@ export const Application = {
 	getNativeApplication,
 	hasLaunched,
 
-	android: android,
-	ios: ios,
+	android: appAndroid,
+	ios: iosApp,
 };
 
 // Export all methods from "application-settings" as ApplicationSettings

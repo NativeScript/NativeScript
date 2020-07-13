@@ -42,3 +42,7 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# core
+# https://github.com/NativeScript/nativescript-dev-webpack/issues/932
+!packages/core/xml/index.js

@@ -1,9 +1,9 @@
 import { setActivityCallbacks, AndroidActivityCallbacks } from '.';
-import * as globals from '../../globals';
+import { initGlobal } from '../../globals';
 import * as appModule from '../../application';
 
 if (global.__snapshot) {
-	globals.initGlobal();
+	initGlobal();
 }
 
 //@ts-ignore

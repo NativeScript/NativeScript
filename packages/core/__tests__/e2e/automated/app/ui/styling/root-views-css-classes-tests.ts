@@ -95,7 +95,7 @@ function _test_orientation_css_class(rootView: View, shouldSetClassName: boolean
         appOrientation = Application.android.orientation;
     }
     else {
-        appOrientation = Utils.ios.orientation;
+        appOrientation = Application.ios.orientation;
     }
     if (appOrientation === "portrait") {
         TKUnit.assertTrue(cssClasses.has(PORTRAIT_ORIENTATION_CSS_CLASS), `${PORTRAIT_ORIENTATION_CSS_CLASS} CSS class is missing`);
@@ -129,7 +129,7 @@ function _test_system_appearance_css_class(rootView: View, shouldSetClassName: b
         systemAppearance = Application.android.systemAppearance;
     }
     else {
-        systemAppearance = Utils.ios.systemAppearance;
+        systemAppearance = Application.ios.systemAppearance;
     }
     if (isIOS && Utils.ios.MajorVersion <= 12) {
         TKUnit.assertFalse(cssClasses.has(DARK_SYSTEM_APPEARANCE_CSS_CLASS), `${DARK_SYSTEM_APPEARANCE_CSS_CLASS} CSS class is present`);

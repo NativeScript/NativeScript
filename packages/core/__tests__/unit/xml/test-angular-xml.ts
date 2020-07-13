@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-const xml = require('@nativescript/core/xml');
+import { XmlParser, ParserEventType } from '@nativescript/core/xml';
 
 describe('angular xml parser', () => {
 	let last_element = null;
@@ -7,9 +7,9 @@ describe('angular xml parser', () => {
 	let parser = null;
 
 	beforeEach(() => {
-		parser = new xml.XmlParser(function (event) {
+		parser = new XmlParser(function (event) {
 			switch (event.eventType) {
-				case xml.ParserEventType.StartElement:
+				case ParserEventType.StartElement:
 					last_element = event.elementName;
 					last_attrs = event.attributes;
 					break;

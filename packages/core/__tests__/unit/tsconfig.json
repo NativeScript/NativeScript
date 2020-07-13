@@ -21,9 +21,12 @@
         ],
         "baseUrl": ".",
         "paths": {
+            "@nativescript/core": [
+              "../../index.ts"
+            ],
             "@nativescript/core/*": [
                 "../../*"
-            ]
+            ],  
         }
     },
     "include": [
