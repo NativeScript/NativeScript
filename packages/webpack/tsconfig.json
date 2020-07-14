@@ -1,19 +1,20 @@
 {
     "compilerOptions": {
-        "target": "es2015",
+        "rootDir": ".",
+        "target": "es5",
         "module": "commonjs",
         "declaration": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
         "lib": [ "es2017" ],
         "sourceMap": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "skipDefaultLibCheck": true,
+        "diagnostics": true,
+        "baseUrl": "."
     },
-    "include": [
-        "../types-ios/src/lib/ios.d.ts",
-        "../types-android/src/lib/android-29.d.ts"
-    ],
     "exclude": [
         "node_modules",
-        "demo",
-        "../core"
+        "demo"
     ]
 }

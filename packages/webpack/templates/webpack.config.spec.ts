@@ -200,53 +200,6 @@ describe('webpack.config.js', () => {
 						expect(angularCompilerOptions.platformTransformers.length).toEqual(1);
 						expect(angularCompilerOptions.platformTransformers[0]).toEqual(FakeHmrTransformerFlag);
 					});
-
-					it('should contain the Lazy transformer when the @angular/core is an external module', () => {
-						const input = getInput({ platform, externals: ['@angular/core'] });
-
-						webpackConfig(input);
-
-						expect(angularCompilerOptions).toBeDefined();
-						expect(angularCompilerOptions.platformTransformers).toBeDefined();
-						expect(angularCompilerOptions.platformTransformers.length).toEqual(1);
-						expect(angularCompilerOptions.platformTransformers[0]).toEqual(FakeLazyTransformerFlag);
-					});
-
-					it('should contain the HMR + Lazy transformers when the HMR flag is passed and @angular/core is an external module', () => {
-						const input = getInput({ platform, hmr: true, externals: ['@angular/core'] });
-
-						webpackConfig(input);
-
-						expect(angularCompilerOptions).toBeDefined();
-						expect(angularCompilerOptions.platformTransformers).toBeDefined();
-						expect(angularCompilerOptions.platformTransformers.length).toEqual(2);
-						expect(angularCompilerOptions.platformTransformers).toContain(FakeHmrTransformerFlag);
-						expect(angularCompilerOptions.platformTransformers).toContain(FakeLazyTransformerFlag);
-					});
-
-					it('should contain the HMR + Lazy transformers when the HMR flags are passed and @angular/core is an external module', () => {
-						const input = getInput({ platform, hmr: true, externals: ['@angular/core'] });
-
-						webpackConfig(input);
-
-						expect(angularCompilerOptions).toBeDefined();
-						expect(angularCompilerOptions.platformTransformers).toBeDefined();
-						expect(angularCompilerOptions.platformTransformers.length).toEqual(2);
-						expect(angularCompilerOptions.platformTransformers).toContain(FakeHmrTransformerFlag);
-						expect(angularCompilerOptions.platformTransformers).toContain(FakeLazyTransformerFlag);
-					});
-
-					it('should contain the HMR + Lazy transformers in the proper order when the HMR flags are passed and @angular/core is an external module', () => {
-						const input = getInput({ platform, hmr: true, externals: ['@angular/core'] });
-
-						webpackConfig(input);
-
-						expect(angularCompilerOptions).toBeDefined();
-						expect(angularCompilerOptions.platformTransformers).toBeDefined();
-						expect(angularCompilerOptions.platformTransformers.length).toEqual(2);
-						expect(angularCompilerOptions.platformTransformers[0]).toEqual(FakeHmrTransformerFlag);
-						expect(angularCompilerOptions.platformTransformers[1]).toEqual(FakeLazyTransformerFlag);
-					});
 				});
 			}
 

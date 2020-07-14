@@ -4,9 +4,6 @@ const webpack = require('webpack');
 const nsWebpack = require('@nativescript/webpack');
 const nativescriptTarget = require('@nativescript/webpack/nativescript-target');
 const {
-  nsReplaceLazyLoader
-} = require('@nativescript/webpack/transformers/ns-replace-lazy-loader');
-const {
   nsSupportHmrNg
 } = require('@nativescript/webpack/transformers/ns-support-hmr-ng');
 const {
@@ -115,8 +112,6 @@ module.exports = env => {
       const appModuleFolderPath = dirname(
         resolve(appFullPath, appModuleRelativePath)
       );
-      // include the lazy loader inside app module
-      ngCompilerTransformers.push(nsReplaceLazyLoader);
       // include the new lazy loader path in the allowed ones
       additionalLazyModuleResources.push(appModuleFolderPath);
     }
