@@ -1,6 +1,11 @@
-import { InspectorEvents, InspectorCommands } from "./devtools-elements";
+// Types
+import { InspectorEvents, InspectorCommands } from "./devtools-elements-interfaces";
+
+// Requires
 import { getDocument, getComputedStylesForNode, removeNode, setAttributeAsText } from "./devtools-elements.common";
 import { registerInspectorEvents, DOMNode } from "./dom-node";
+
+export * from "./devtools-elements-interfaces";
 
 export function attachDOMInspectorEventCallbacks(DOMDomainFrontend: InspectorEvents) {
     registerInspectorEvents(DOMDomainFrontend);

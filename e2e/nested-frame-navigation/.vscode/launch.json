@@ -22,7 +22,7 @@
                 "4723",
                 "-a",
                 "--grep",
-                "layout-root"
+                "layout-root-with-multi-frames"
             ],
             "internalConsoleOptions": "openOnSessionStart"
         },

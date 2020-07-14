@@ -1,7 +1,7 @@
 import { ScrollEventData } from "../scroll-view";
-import { TextView as TextViewDefinition } from ".";
+import { TextViewBase as TextViewBaseCommon, maxLinesProperty } from "./text-view-common";
 import {
-    EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
+    editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
     Length, _updateCharactersInRangeReplacementString, Color, layout,
@@ -30,7 +30,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public textViewShouldBeginEditing(textView: UITextView): boolean {
         const owner = this._owner.get();
         if (owner) {
-            owner.showText();
+            return owner.textViewShouldBeginEditing(textView);
         }
 
         return true;
@@ -39,47 +39,28 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public textViewDidBeginEditing(textView: UITextView): void {
         const owner = this._owner.get();
         if (owner) {
-            owner._isEditing = true;
-            owner.notify({ eventName: TextView.focusEvent, object: owner });
+            owner.textViewDidBeginEditing(textView);
         }
     }
 
-    public textViewDidEndEditing(textView: UITextView) {
+    public textViewDidEndEditing(textView: UITextView): void {
         const owner = this._owner.get();
         if (owner) {
-            if (owner.updateTextTrigger === "focusLost") {
-                textProperty.nativeValueChange(owner, textView.text);
-            }
-
-            owner._isEditing = false;
-            owner.dismissSoftInput();
-            owner._refreshHintState(owner.hint, textView.text);
+            owner.textViewDidEndEditing(textView);
         }
     }
 
-    public textViewDidChange(textView: UITextView) {
+    public textViewDidChange(textView: UITextView): void {
         const owner = this._owner.get();
         if (owner) {
-            if (owner.updateTextTrigger === "textChanged") {
-                textProperty.nativeValueChange(owner, textView.text);
-            }
-            owner.requestLayout();
+            owner.textViewDidChange(textView);
         }
     }
 
     public textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, replacementString: string): boolean {
         const owner = this._owner.get();
         if (owner) {
-            const delta = replacementString.length - range.length;
-            if (delta > 0) {
-                if (textView.text.length + delta > owner.maxLength) {
-                    return false;
-                }
-            }
-
-            if (owner.formattedText) {
-                _updateCharactersInRangeReplacementString(owner.formattedText, range.location, range.length, replacementString);
-            }
+            return owner.textViewShouldChangeTextInRangeReplacementText(textView, range, replacementString);
         }
 
         return true;
@@ -88,13 +69,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public scrollViewDidScroll(sv: UIScrollView): void {
         const owner = this._owner.get();
         if (owner) {
-            const contentOffset = owner.nativeViewProtected.contentOffset;
-            owner.notify(<ScrollEventData>{
-                object: owner,
-                eventName: "scroll",
-                scrollX: contentOffset.x,
-                scrollY: contentOffset.y
-            });
+            return owner.scrollViewDidScroll(sv);
         }
     }
 }
@@ -110,14 +85,14 @@ class NoScrollAnimationUITextView extends UITextView {
 }
 
 @CSSType("TextView")
-export class TextView extends EditableTextBase implements TextViewDefinition {
+export class TextView extends TextViewBaseCommon {
     nativeViewProtected: UITextView;
     private _delegate: UITextViewDelegateImpl;
-    private _isShowingHint: boolean;
+    _isShowingHint: boolean;
     public _isEditing: boolean;
 
-    private _hintColor = majorVersion <= 12 ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
-    private _textColor = majorVersion <= 12 ? null : UIColor.labelColor;
+    private _hintColor = (majorVersion <= 12 || !UIColor.placeholderTextColor) ? UIColor.blackColor.colorWithAlphaComponent(0.22) : UIColor.placeholderTextColor;
+    private _textColor = (majorVersion <= 12 || !UIColor.labelColor) ? null : UIColor.labelColor;
 
     createNativeView() {
         const textView = NoScrollAnimationUITextView.new();
@@ -151,6 +126,61 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
 
     get ios(): UITextView {
         return this.nativeViewProtected;
+    }
+
+    public textViewShouldBeginEditing(textView: UITextView): boolean {
+        if (this._isShowingHint) {
+            this.showText();
+        }
+
+        return true;
+    }
+
+    public textViewDidBeginEditing(textView: UITextView): void {
+        this._isEditing = true;
+        this.notify({ eventName: TextView.focusEvent, object: this });
+    }
+
+    public textViewDidEndEditing(textView: UITextView): void {
+        if (this.updateTextTrigger === "focusLost") {
+            textProperty.nativeValueChange(this, textView.text);
+        }
+
+        this._isEditing = false;
+        this.dismissSoftInput();
+        this._refreshHintState(this.hint, textView.text);
+    }
+
+    public textViewDidChange(textView: UITextView): void {
+        if (this.updateTextTrigger === "textChanged") {
+            textProperty.nativeValueChange(this, textView.text);
+        }
+        this.requestLayout();
+    }
+
+    public textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, replacementString: string): boolean {
+        const delta = replacementString.length - range.length;
+        if (delta > 0) {
+            if (textView.text.length + delta > this.maxLength) {
+                return false;
+            }
+        }
+
+        if (this.formattedText) {
+            _updateCharactersInRangeReplacementString(this.formattedText, range.location, range.length, replacementString);
+        }
+
+        return true;
+    }
+
+    public scrollViewDidScroll(sv: UIScrollView): void {
+        const contentOffset = this.nativeViewProtected.contentOffset;
+        this.notify(<ScrollEventData>{
+            object: this,
+            eventName: "scroll",
+            scrollX: contentOffset.x,
+            scrollY: contentOffset.y
+        });
     }
 
     public _refreshHintState(hint: string, text: string) {
@@ -333,6 +363,20 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
         this.nativeTextViewProtected.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
+    [maxLinesProperty.getDefault](): number {
+        return 0;
+    }
+    [maxLinesProperty.setNative](value: number) {
+      this.nativeTextViewProtected.textContainer.maximumNumberOfLines = value;
+
+      if (value !== 0) {
+        this.nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+      }
+      else {
+        this.nativeTextViewProtected.textContainer.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+      }
+    }
+
 }
 
 TextView.prototype.recycleNativeView = "auto";

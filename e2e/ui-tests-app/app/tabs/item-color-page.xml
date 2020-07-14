@@ -1,0 +1,40 @@
+<Page class="page">
+
+  <ActionBar title="Tabs item-color" icon="" class="action-bar">
+  </ActionBar>
+
+  <Tabs automationText="tabNavigation">
+    <TabStrip selectedItemColor="red" unSelectedItemColor="green">
+        <TabStripItem>
+            <Label text="First"/>
+            <Image src="res://baseline_motorcycle_black_24"/>
+        </TabStripItem>
+        <TabStripItem>
+            <Label text="Second"/>
+            <Image src="res://up"/>
+        </TabStripItem>
+        <TabStripItem>
+            <Label text="Third"/>
+            <Image src="font://&#xF10B;" class="font-awesome font-size" />
+        </TabStripItem>
+    </TabStrip>
+
+    <TabContentItem class="special">
+        <GridLayout>
+          <Label text="First View" />
+        </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+        <GridLayout>
+          <Label text="Second View" />
+        </GridLayout>
+    </TabContentItem>
+
+    <TabContentItem>
+        <GridLayout>
+          <Label text="Third View" />
+        </GridLayout>
+    </TabContentItem>
+  </Tabs>
+</Page>

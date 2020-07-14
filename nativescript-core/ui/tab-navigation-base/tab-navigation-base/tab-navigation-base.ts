@@ -1,12 +1,12 @@
 ﻿// Types
 import { TabNavigationBase as TabNavigationBaseDefinition, SelectedIndexChangedEventData } from ".";
-import { TabContentItem } from "../tab-content-item";
-import { TabStrip } from "../tab-strip";
 import { TabStripItem } from "../tab-strip-item";
-import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder, EventData } from "../../core/view";
+import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder, EventData, Color } from "../../core/view";
 
 // Requires
-import { View, Property, CoercibleProperty, isIOS, Color } from "../../core/view";
+import { View, Property, CoercibleProperty, isIOS } from "../../core/view";
+import { TabContentItem } from "../tab-content-item";
+import { TabStrip } from "../tab-strip";
 
 // TODO: Impl trace
 // export const traceCategory = "TabView";
@@ -29,14 +29,14 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === "TabContentItem") {
+        if (value instanceof TabContentItem) {
             if (!this.items) {
                 this.items = new Array<TabContentItem>();
             }
             this.items.push(<TabContentItem>value);
             this._addView(value);
             // selectedIndexProperty.coerce(this);
-        } else if (name === "TabStrip") {
+        } else if (value instanceof TabStrip) {
             // Setting tabStrip will trigger onTabStripChanged
             this.tabStrip = value;
         }
@@ -113,6 +113,13 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
         return null;
     }
 
+    public getTabBarBackgroundArgbColor(): any {
+        // This method is implemented only for Android
+        const colorDrawable = this.getTabBarBackgroundColor();
+
+        return colorDrawable && colorDrawable.getColor && colorDrawable.getColor();
+    }
+
     public setTabBarBackgroundColor(value: any): void {
         // overridden by inheritors
     }
@@ -140,6 +147,24 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     }
 
     public setTabBarHighlightColor(value: any) {
+        // overridden by inheritors
+    }
+
+    public getTabBarSelectedItemColor(): Color {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarSelectedItemColor(value: Color) {
+        // overridden by inheritors
+    }
+
+    public getTabBarUnSelectedItemColor(): Color {
+        // overridden by inheritors
+        return null;
+    }
+
+    public setTabBarUnSelectedItemColor(value: Color) {
         // overridden by inheritors
     }
 
@@ -175,6 +200,10 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
     }
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: any): void {
+        // overridden by inheritors
+    }
+
+    public setTabBarIconSource(tabStripItem: TabStripItem, value: any): void {
         // overridden by inheritors
     }
 

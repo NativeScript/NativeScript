@@ -1,12 +1,11 @@
-import { PlatformContext, FileNameResolver as FileNameResolverDefinition } from "../file-name-resolver";
+import { PlatformContext, FileNameResolver as FileNameResolverDefinition } from ".";
 import { screen, device } from "../../platform";
 import { path as fsPath, Folder, File } from "../file-system";
 import * as trace from "../../trace";
 import * as appCommonModule from "../../application/application-common";
 
-import { findMatch } from "../../module-name-resolver/qualifier-matcher/qualifier-matcher";
+import { findMatch, stripQualifiers } from "../../module-name-resolver/qualifier-matcher/qualifier-matcher";
 
-@Deprecated
 export class FileNameResolver implements FileNameResolverDefinition {
     private _context: PlatformContext;
     private _cache = {};
@@ -36,6 +35,9 @@ export class FileNameResolver implements FileNameResolverDefinition {
         let result: string = null;
         path = fsPath.normalize(path);
         ext = "." + ext;
+
+        // This call will return a clean path without qualifiers
+        path = stripQualifiers(path);
 
         const candidates = this.getFileCandidatesFromFolder(path, ext);
         result = findMatch(path, ext, candidates, this._context);

@@ -200,25 +200,32 @@ export function test_class_selector() {
 
 export function test_class_selector_with_escape_characters() {
     let page = helper.getClearCurrentPage();
-    let btnWithClass1: buttonModule.Button;
-    let btnWithClass2: buttonModule.Button;
-
-    page.css = ".test-1 { color: red; } .test-1\\/2 { color: blue }";
-
-    //// Will be styled
-    btnWithClass1 = new buttonModule.Button();
-    btnWithClass1.className = "test-1";
-
-    btnWithClass2 = new buttonModule.Button();
-    btnWithClass2.className = "test-1/2";
+    page.css = `
+        .test-1 { color: red; }
+        .test-1\\/2, .test-1\\:2, .\\61 f, .\\1F642 { color: blue }
+    `;
 
     const stack = new stackModule.StackLayout();
     page.content = stack;
-    stack.addChild(btnWithClass1);
-    stack.addChild(btnWithClass2);
 
-    helper.assertViewColor(btnWithClass1, "#FF0000");
-    helper.assertViewColor(btnWithClass2, "#0000FF");
+    let btn: buttonModule.Button = new buttonModule.Button();
+    stack.addChild(btn);
+
+    //// Will be styled
+    btn.className = "test-1";
+    helper.assertViewColor(btn, "#FF0000");
+
+    btn.className = "test-1/2";
+    helper.assertViewColor(btn, "#0000FF");
+
+    btn.className = "test-1:2";
+    helper.assertViewColor(btn, "#0000FF");
+
+    btn.className = "af";
+    helper.assertViewColor(btn, "#0000FF");
+
+    btn.className = "\u{1F642}";
+    helper.assertViewColor(btn, "#0000FF");
 }
 
 export function test_multiple_class_selector() {
@@ -1584,7 +1591,7 @@ export function test_nested_css_calc() {
     stack.className = "wide";
     TKUnit.assertEqual(stack.width as any, 125, "Stack - width === 125");
 
-    (stack as any).style = `width: calc(100% * calc(1 / 2)`;
+    (stack as any).style = `width: calc(100% * calc(1 / 2))`;
 
     TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 0.5 }, "Stack - width === 50%");
 }
@@ -1789,6 +1796,7 @@ export function test_nested_css_calc_and_variables() {
 
     const cssVarName = `--my-width-factor-base-${Date.now()}`;
     const cssVarName2 = `--my-width-factor-${Date.now()}`;
+    const undefinedCssVarName = `--my-undefined-variable-${Date.now()}`;
 
     const stack = new stackModule.StackLayout();
     stack.css = `
@@ -1808,6 +1816,10 @@ export function test_nested_css_calc_and_variables() {
 
     StackLayout.nested {
         ${cssVarName2}: calc(var(${cssVarName}) * 2);
+    }
+
+    StackLayout.nested-fallback {
+        width: calc(calc(var(${undefinedCssVarName}, 16) / 2) * 2));
     }
     `;
 
@@ -1841,6 +1853,9 @@ export function test_nested_css_calc_and_variables() {
 
     stack.className = "nested";
     TKUnit.assertDeepEqual(stack.width, { unit: "%", value: 1 }, "Stack - width === 100%");
+
+    stack.className = "nested-fallback";
+    TKUnit.assertDeepEqual(stack.width, 16, "Stack - width === 16");
 }
 
 export function test_css_variable_is_applied_to_normal_properties() {

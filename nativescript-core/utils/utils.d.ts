@@ -251,6 +251,7 @@ export module ios {
      * Returns the visible UIViewController.
      */
     export function getVisibleViewController(rootViewController: any/* UIViewController*/): any/* UIViewController*/;
+
 }
 
 /**
@@ -346,3 +347,8 @@ export function hasDuplicates(arr: Array<any>): boolean;
  * @param arr - The array.
  */
 export function eliminateDuplicates(arr: Array<any>): Array<any>;
+
+/**
+ * Checks whether the application is running on real device and not on simulator/emulator.
+ */
+export function isRealDevice(): boolean;

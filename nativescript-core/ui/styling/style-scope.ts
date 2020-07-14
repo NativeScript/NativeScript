@@ -12,6 +12,9 @@ import {
     CSS3Parser,
     CSSNativeScript
 } from "../../css/parser";
+import {
+    cssTreeParse
+} from "../../css/css-tree-parser";
 
 import {
     RuleSet,
@@ -28,7 +31,7 @@ import {
     messageType as traceMessageType,
 } from "../../trace";
 import { File, knownFolders, path } from "../../file-system";
-import * as applicationCommon from "../../application/application-common";
+import * as application from "../../application";
 import { profile } from "../../profiling";
 
 import * as kam from "../animation/keyframe-animation";
@@ -50,11 +53,15 @@ function ensureCssAnimationParserModule() {
     }
 }
 
-let parser: "rework" | "nativescript" = "rework";
+let parser: "rework" | "nativescript" | "css-tree" = "css-tree";
 try {
     const appConfig = require("~/package.json");
-    if (appConfig && appConfig.cssParser === "nativescript") {
-        parser = "nativescript";
+    if (appConfig) {
+        if (appConfig.cssParser === "rework") {
+            parser = "rework";
+        } else if (appConfig.cssParser === "nativescript") {
+            parser = "nativescript";
+        }
     }
 } catch (e) {
     //
@@ -103,6 +110,19 @@ class CSSSource {
         this.parse();
     }
 
+    public static fromDetect(cssOrAst: any, keyframes: KeyframesMap, fileName?: string): CSSSource {
+        if (typeof cssOrAst === "string") {
+            // raw-loader
+            return CSSSource.fromSource(cssOrAst, keyframes, fileName);
+        } else if (typeof cssOrAst === "object" && cssOrAst.type === "stylesheet" && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
+            // css-loader
+            return CSSSource.fromAST(cssOrAst, keyframes, fileName);
+        } else {
+            // css2json-loader
+            return CSSSource.fromSource(cssOrAst.toString(), keyframes, fileName);
+        }
+    }
+
     public static fromURI(uri: string, keyframes: KeyframesMap): CSSSource {
         // webpack modules require all file paths to be relative to /app folder
         const appRelativeUri = CSSSource.pathRelativeToApp(uri);
@@ -112,16 +132,7 @@ class CSSSource {
         try {
             const cssOrAst = global.loadModule(resolvedModuleName, true);
             if (cssOrAst) {
-                if (typeof cssOrAst === "string") {
-                    // raw-loader
-                    return CSSSource.fromSource(cssOrAst, keyframes, resolvedModuleName);
-                } else if (typeof cssOrAst === "object" && cssOrAst.type === "stylesheet" && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
-                    // css-loader
-                    return CSSSource.fromAST(cssOrAst, keyframes, resolvedModuleName);
-                } else {
-                    // css2json-loader
-                    return CSSSource.fromSource(cssOrAst.toString(), keyframes, resolvedModuleName);
-                }
+                return CSSSource.fromDetect(cssOrAst, keyframes, resolvedModuleName);
             }
         } catch (e) {
             traceWrite(`Could not load CSS from ${uri}: ${e}`, traceCategories.Error, traceMessageType.error);
@@ -220,6 +231,10 @@ class CSSSource {
     private parseCSSAst() {
         if (this._source) {
             switch (parser) {
+                case "css-tree":
+                    this._ast = cssTreeParse(this._source, this._file);
+
+                    return;
                 case "nativescript":
                     const cssparser = new CSS3Parser(this._source);
                     const stylesheet = cssparser.parseAStylesheet();
@@ -314,7 +329,7 @@ export function removeTaggedAdditionalCSS(tag: String | Number): Boolean {
 }
 
 export function addTaggedAdditionalCSS(cssText: string, tag?: string | Number): Boolean {
-    const parsed: RuleSet[] = CSSSource.fromSource(cssText, applicationKeyframes, undefined).selectors;
+    const parsed: RuleSet[] = CSSSource.fromDetect(cssText, applicationKeyframes, undefined).selectors;
     let changed = false;
     if (parsed && parsed.length) {
         changed = true;
@@ -330,7 +345,7 @@ export function addTaggedAdditionalCSS(cssText: string, tag?: string | Number): 
     return changed;
 }
 
-const onCssChanged = profile("\"style-scope\".onCssChanged", (args: applicationCommon.CssChangedEventData) => {
+const onCssChanged = profile("\"style-scope\".onCssChanged", (args: application.CssChangedEventData) => {
     if (args.cssText) {
         const parsed = CSSSource.fromSource(args.cssText, applicationKeyframes, args.cssFile).selectors;
         if (parsed) {
@@ -342,8 +357,8 @@ const onCssChanged = profile("\"style-scope\".onCssChanged", (args: applicationC
     }
 });
 
-function onLiveSync(args: applicationCommon.CssChangedEventData): void {
-    loadCss(applicationCommon.getCssFileName());
+function onLiveSync(args: application.CssChangedEventData): void {
+    loadCss(application.getCssFileName());
 }
 
 const loadCss = profile(`"style-scope".loadCss`, (cssModule: string) => {
@@ -363,23 +378,23 @@ const loadCss = profile(`"style-scope".loadCss`, (cssModule: string) => {
     }
 });
 
-applicationCommon.on("cssChanged", onCssChanged);
-applicationCommon.on("livesync", onLiveSync);
+application.on("cssChanged", onCssChanged);
+application.on("livesync", onLiveSync);
 
 // Call to this method is injected in the application in:
 //  - no-snapshot - code injected in app.ts by [bundle-config-loader](https://github.com/NativeScript/nativescript-dev-webpack/blob/9b1e34d8ef838006c9b575285c42d2304f5f02b5/bundle-config-loader.ts#L85-L92)
 //  - with-snapshot - code injected in snapshot bundle by [NativeScriptSnapshotPlugin](https://github.com/NativeScript/nativescript-dev-webpack/blob/48b26f412fd70c19dc0b9c7763e08e9505a0ae11/plugins/NativeScriptSnapshotPlugin/index.js#L48-L56)
 // Having the app.css loaded in snapshot provides significant boost in startup (when using the ns-theme ~150 ms). However, because app.css is resolved at build-time,
 // when the snapshot is created - there is no way to use file qualifiers or change the name of on app.css
-export const loadAppCSS = profile("\"style-scope\".loadAppCSS", (args: applicationCommon.LoadAppCSSEventData) => {
+export const loadAppCSS = profile("\"style-scope\".loadAppCSS", (args: application.LoadAppCSSEventData) => {
     loadCss(args.cssFile);
-    applicationCommon.off("loadAppCss", loadAppCSS);
+    application.off("loadAppCss", loadAppCSS);
 });
 
-if (applicationCommon.hasLaunched()) {
-    loadAppCSS({ eventName: "loadAppCss", object: <any>applicationCommon, cssFile: applicationCommon.getCssFileName() });
+if (application.hasLaunched()) {
+    loadAppCSS({ eventName: "loadAppCss", object: <any>application, cssFile: application.getCssFileName() });
 } else {
-    applicationCommon.on("loadAppCss", loadAppCSS);
+    application.on("loadAppCss", loadAppCSS);
 }
 
 export class CssState {
@@ -514,6 +529,8 @@ export class CssState {
         const view = this.viewRef.get();
         if (view) {
             view.style["keyframe:rotate"] = unsetValue;
+            view.style["keyframe:rotateX"] = unsetValue;
+            view.style["keyframe:rotateY"] = unsetValue;
             view.style["keyframe:scaleX"] = unsetValue;
             view.style["keyframe:scaleY"] = unsetValue;
             view.style["keyframe:translateX"] = unsetValue;
@@ -760,6 +777,10 @@ export class StyleScope {
         return this._getSelectorsVersion();
     }
 
+    public _increaseApplicationCssSelectorVersion(): void {
+        applicationCssSelectorVersion++;
+    }
+
     public isApplicationCssSelectorsLatestVersionApplied(): boolean {
         return this._applicationCssSelectorsAppliedVersion === applicationCssSelectorVersion;
     }
@@ -780,14 +801,16 @@ export class StyleScope {
         }
 
         if (toMerge.length > 0) {
-            this._mergedCssSelectors = toMerge.filter(m => !!m).reduce((merged, next) => merged.concat(next), []);
+            this._mergedCssSelectors = toMerge.reduce((merged, next) => merged.concat(next || []), []);
             this._applyKeyframesOnSelectors();
             this._selectors = new SelectorsMap(this._mergedCssSelectors);
         }
     }
 
+    // HACK: This @profile decorator creates a circular dependency
+    // HACK: because the function parameter type is evaluated with 'typeof'
     @profile
-    public matchSelectors(view: ViewBase): SelectorsMatch<ViewBase> {
+    public matchSelectors(view: any): SelectorsMatch<ViewBase> { // should be (view: ViewBase): SelectorsMatch<ViewBase>
         this.ensureSelectors();
 
         return this._selectors.query(view);

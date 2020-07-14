@@ -254,7 +254,11 @@ declare class CXEndCallAction extends CXCallAction {
 
 declare const enum CXErrorCode {
 
-	UnknownError = 0
+	UnknownError = 0,
+
+	Unentitled = 1,
+
+	InvalidArgument = 2
 }
 
 declare const enum CXErrorCodeCallDirectoryManagerError {

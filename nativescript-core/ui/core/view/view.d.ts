@@ -75,6 +75,11 @@ export interface Point {
      * Represents the y coordinate of the location.
      */
     y: number;
+
+    /**
+     * Represents the z coordinate of the location.
+     */
+    z?: number;
 }
 
 /**
@@ -315,9 +320,25 @@ export abstract class View extends ViewBase {
     opacity: number;
 
     /**
-     * Gets or sets the rotate affine transform of the view.
+     * Gets or sets the rotate affine transform of the view along the Z axis.
      */
     rotate: number;
+
+    /**
+    * Gets or sets the rotate affine transform of the view along the X axis.
+    */
+    rotateX: number;
+
+    /**
+     * Gets or sets the rotate affine transform of the view along the Y axis.
+     */
+    rotateY: number;
+
+    /**
+     * Gets or sets the distance of the camera form the view perspective.
+     * Usually needed when rotating the view over the X or Y axis.
+     */
+    perspective: number;
 
     /**
      * Gets or sets the translateX affine transform of the view in device independent pixels.
@@ -347,12 +368,12 @@ export abstract class View extends ViewBase {
     automationText: string;
 
     /**
-     * Gets or sets the X component of the origin point around which the view will be transformed. The deafault value is 0.5 representing the center of the view.
+     * Gets or sets the X component of the origin point around which the view will be transformed. The default value is 0.5 representing the center of the view.
      */
     originX: number;
 
     /**
-     * Gets or sets the Y component of the origin point around which the view will be transformed. The deafault value is 0.5 representing the center of the view.
+     * Gets or sets the Y component of the origin point around which the view will be transformed. The default value is 0.5 representing the center of the view.
      */
     originY: number;
 
@@ -775,11 +796,11 @@ export class CustomLayoutView extends ContainerView {
     /**
      * @private
      */
-    _setChildMinWidthNative(child: View): void;
+    _setChildMinWidthNative(child: View, value: Length): void;
     /**
      * @private
      */
-    _setChildMinHeightNative(child: View): void;
+    _setChildMinHeightNative(child: View, value: Length): void;
     //@endprivate
 }
 

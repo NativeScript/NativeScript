@@ -7,7 +7,7 @@ import { Page } from "../../page";
 
 // Types.
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from "../properties";
-import { getModalRootViewCssClass, getRootViewCssClasses } from "../../../css/system-classes";
+import { getSystemCssClasses, MODAL_ROOT_VIEW_CSS_CLASS, ROOT_VIEW_CSS_CLASS } from "../../../css/system-classes";
 import { Source } from "../../../utils/debug";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories } from "../bindable";
 import { isIOS, isAndroid } from "../../../platform";
@@ -227,6 +227,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     _oldTop: number;
     _oldRight: number;
     _oldBottom: number;
+    _ignoreFlexMinWidthHeightReset: boolean;
 
     public effectiveMinWidth: number;
     public effectiveMinHeight: number;
@@ -375,6 +376,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this._isLoaded = false;
         this._cssState.onUnloaded();
         this._emit("unloaded");
+    }
+
+    public _layoutParent() {
+        if (this.parent) {
+            this.parent._layoutParent();
+        }
     }
 
     public _suspendNativeUpdates(type: SuspendType): void {
@@ -555,12 +562,24 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
     }
 
+    private performLayout(currentRun = 0) {
+        // if there's an animation in progress we need to delay the layout
+        // we've added a guard of 5000 milliseconds execution
+        // to make sure that the layout will happen even if the animation haven't finished in 5 seconds
+        if (this._shouldDelayLayout() && currentRun < 100) {
+            setTimeout(() => this.performLayout(currentRun), currentRun);
+            currentRun++;
+        } else {
+            this.parent.requestLayout();
+        }
+    }
+
     @profile
     public requestLayout(): void {
         // Default implementation for non View instances (like TabViewItem).
         const parent = this.parent;
         if (parent) {
-            parent.requestLayout();
+            this.performLayout();
         }
     }
 
@@ -611,6 +630,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         if (view && !view.isLoaded) {
             view.callLoaded();
         }
+    }
+
+    public _shouldDelayLayout(): boolean {
+        return false;
     }
 
     public unloadView(view: ViewBase): void {
@@ -1039,20 +1062,20 @@ export const classNameProperty = new Property<ViewBase, string>({
     name: "className",
     valueChanged(view: ViewBase, oldValue: string, newValue: string) {
         const cssClasses = view.cssClasses;
+        const rootViewsCssClasses = getSystemCssClasses();
 
-        const modalViewCssClass = getModalRootViewCssClass();
-        const rootViewCssClasses = getRootViewCssClasses();
-
-        const shouldAddModalRootViewCssClass = cssClasses.has(modalViewCssClass);
-        const shouldAddRootViewCssClasses = cssClasses.has(rootViewCssClasses[0]);
+        const shouldAddModalRootViewCssClasses = cssClasses.has(MODAL_ROOT_VIEW_CSS_CLASS);
+        const shouldAddRootViewCssClasses = cssClasses.has(ROOT_VIEW_CSS_CLASS);
 
         cssClasses.clear();
 
-        if (shouldAddModalRootViewCssClass) {
-            cssClasses.add(modalViewCssClass);
+        if (shouldAddModalRootViewCssClasses) {
+            cssClasses.add(MODAL_ROOT_VIEW_CSS_CLASS);
         } else if (shouldAddRootViewCssClasses) {
-            rootViewCssClasses.forEach(c => cssClasses.add(c));
+            cssClasses.add(ROOT_VIEW_CSS_CLASS);
         }
+
+        rootViewsCssClasses.forEach(c => cssClasses.add(c));
 
         if (typeof newValue === "string" && newValue !== "") {
             newValue.split(" ").forEach(c => cssClasses.add(c));

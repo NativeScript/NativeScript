@@ -49,7 +49,7 @@ export namespace FontWeight {
     export function parse(value: string): FontWeight;
 }
 
-interface ParsedFont {
+export interface ParsedFont {
     fontStyle?: FontStyle;
     fontVariant?: string;
     fontWeight?: FontWeight,

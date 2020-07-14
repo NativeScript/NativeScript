@@ -387,6 +387,8 @@ declare class NEFilterFlow extends NSObject implements NSCopying, NSSecureCoding
 
 	readonly direction: NETrafficDirection;
 
+	readonly identifier: NSUUID;
+
 	readonly sourceAppIdentifier: string;
 
 	readonly sourceAppUniqueIdentifier: NSData;

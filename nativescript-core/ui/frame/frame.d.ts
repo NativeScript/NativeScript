@@ -56,7 +56,7 @@ export class Frame extends View {
      * This method will require the module and will check for a Page property in the exports of the module.
      * @param pageModuleName The name of the module to require starting from the application root.
      * For example if you want to navigate to page called "myPage.js" in a folder called "subFolder" and your root folder is "app" you can call navigate method like this:
-     * const frames = require("tns-core-modules/ui/frame");
+     * const frames = require("&#64;nativescript/core/ui/frame");
      * frames.topmost().navigate("app/subFolder/myPage");
      */
     navigate(pageModuleName: string);
@@ -150,6 +150,10 @@ export class Frame extends View {
     /**
      * @private
      */
+    _animationInProgress: boolean;
+    /**
+     * @private
+     */
     _currentEntry: BackstackEntry;
     /**
      * @private
@@ -218,21 +222,21 @@ export function setFragmentClass(clazz: any): void;
 
 /**
  * @deprecated Use Frame.getFrameById() instead.
- * 
+ *
  * Gets a frame by id.
  */
 export function getFrameById(id: string): Frame;
 
 /**
  * @deprecated Use Frame.topmost() instead.
- * 
+ *
  * Gets the topmost frame in the frames stack. An application will typically has one frame instance. Multiple frames handle nested (hierarchical) navigation scenarios.
  */
 export function topmost(): Frame;
 
 /**
  * @deprecated Use Frame.goBack() instead.
- * 
+ *
  * Navigates back using the navigation hierarchy (if any). Updates the Frame stack as needed.
  * This method will start from the topmost Frame and will recursively search for an instance that has the canGoBack operation available.
  */
@@ -241,7 +245,7 @@ export function goBack();
 //@private
 /**
  * @deprecated Use Frame._stack() instead.
- * 
+ *
  * @private
  */
 export function _stack(): Array<Frame>;
@@ -487,7 +491,7 @@ export function setActivityCallbacks(activity: any /*androidx.appcompat.app.AppC
 //@private
 /**
  * @deprecated Use Frame.reloadPage() instead.
- * 
+ *
  * @private
  */
 export function reloadPage(context?: ModuleContext): void;

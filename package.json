@@ -1,20 +1,23 @@
 {
   "name": "NativeScript",
-  "description": "Telerik NativeScript Core Modules",
+  "description": "NativeScript Core Modules",
   "homepage": "https://www.nativescript.org",
+  "version": "6.5.10",
   "repository": {
     "type": "git",
     "url": "https://github.com/NativeScript/NativeScript"
   },
   "license": "Apache-2.0",
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.5.0",
+    "@microsoft/api-extractor": "7.6.1",
+    "@nativescript/tslint-rules": "0.0.5",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.42",
     "@types/node": "~10.12.18",
     "chai": "^4.1.2",
+    "conventional-changelog-cli": "^2.0.34",
     "css": "^2.2.1",
-    "css-tree": "^1.0.0-alpha24",
+    "css-tree": "^1.0.0-alpha.37",
     "gonzales": "^1.0.7",
     "madge": "^2.2.0",
     "markdown-snippet-injector": "0.2.2",
@@ -35,7 +38,7 @@
     "tslint": "^5.4.3",
     "typedoc": "^0.13.0",
     "typedoc-plugin-external-module-name": "git://github.com/PanayotCankov/typedoc-plugin-external-module-name.git#with-js",
-    "typescript": "^3.1.6"
+    "typescript": "~3.8.3"
   },
   "scripts": {
     "setup": "npm run build-core && npm run build-compat && npm run setup-link",
@@ -51,6 +54,7 @@
     "typedoc": "npm run api-extractor && typedoc --tsconfig tsconfig.typedoc.json",
     "typedoc-dev": "npm run typedoc && cd bin/dist/apiref && npx http-server",
     "build-core": "sh ./build/build-core.sh",
-    "build-compat": "sh ./build/build-compat.sh"
+    "build-compat": "sh ./build/build-compat.sh",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
   }
 }

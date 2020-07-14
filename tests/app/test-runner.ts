@@ -46,6 +46,8 @@ allTests["PLATFORM"] = platformTests;
 import * as fsTests from "./file-system/file-system-tests";
 allTests["FILE-SYSTEM"] = fsTests;
 
+// Disabled tests as they have external dependencies
+// TODO: find a way to run these tests locally, but don't run them on the CI as they are flaky
 // import * as httpTests from "./http/http-tests";
 // allTests["HTTP"] = httpTests;
 
@@ -75,6 +77,9 @@ allTests["OBSERVABLE"] = observableTests;
 
 import * as timerTests from "./timer/timer-tests";
 allTests["TIMER"] = timerTests;
+
+import * as animationFrameTests from "./animation-frame/animation-frame";
+allTests["ANIMATION-FRAME"] = animationFrameTests;
 
 import * as colorTests from "./color/color-tests";
 allTests["COLOR"] = colorTests;
@@ -199,6 +204,9 @@ allTests["LABEL"] = labelTests;
 import * as bottomNavigationTests from "./ui/bottom-navigation/bottom-navigation-tests";
 allTests["BOTTOM-NAVIGATION"] = bottomNavigationTests;
 
+import * as bottomNavigationTestsNew from "./ui/bottom-navigation/bottom-navigation-tests-new";
+allTests["BOTTOM-NAVIGATION-NEW"] = bottomNavigationTestsNew;
+
 import * as bottomNavigationNavigationTests from "./ui/bottom-navigation/bottom-navigation-navigation-tests";
 // TODO: uncomment this
 // allTests["BOTTOM-NAVIGATION-NAVIGATION"] = bottomNavigationNavigationTests;
@@ -206,11 +214,17 @@ import * as bottomNavigationNavigationTests from "./ui/bottom-navigation/bottom-
 import * as tabsTests from "./ui/tabs/tabs-tests";
 allTests["TABS"] = tabsTests;
 
+import * as tabsTestsNew from "./ui/tabs/tabs-tests-new";
+allTests["TABS-NEW"] = tabsTestsNew;
+
 import * as tabsNavigationTests from "./ui/tabs/tabs-navigation-tests";
 allTests["TABS-NAVIGATION"] = tabsNavigationTests;
 
 import * as tabViewTests from "./ui/tab-view/tab-view-tests";
 allTests["TAB-VIEW"] = tabViewTests;
+
+import * as tabViewTestsNew from "./ui/tab-view/tab-view-tests-new";
+allTests["TAB-VIEW-NEW"] = tabViewTestsNew;
 
 import * as tabViewNavigationTests from "./ui/tab-view/tab-view-navigation-tests";
 allTests["TAB-VIEW-NAVIGATION"] = tabViewNavigationTests;

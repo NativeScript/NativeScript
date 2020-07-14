@@ -18,9 +18,21 @@ import * as module_application_settings_application_settings_core from "@natives
 import * as module_application_settings_application_settings_compat from "tns-core-modules/application-settings/application-settings";
 compare("application-settings/application-settings", module_application_settings_application_settings_core, module_application_settings_application_settings_compat);
 
+import * as module_application_settings_application_settings_common_core from "@nativescript/core/application-settings/application-settings-common";
+import * as module_application_settings_application_settings_common_compat from "tns-core-modules/application-settings/application-settings-common";
+compare("application-settings/application-settings-common", module_application_settings_application_settings_common_core, module_application_settings_application_settings_common_compat);
+
 import * as module_application_application_core from "@nativescript/core/application/application";
 import * as module_application_application_compat from "tns-core-modules/application/application";
 compare("application/application", module_application_application_core, module_application_application_compat);
+
+import * as module_application_application_common_core from "@nativescript/core/application/application-common";
+import * as module_application_application_common_compat from "tns-core-modules/application/application-common";
+compare("application/application-common", module_application_application_common_core, module_application_application_common_compat);
+
+import * as module_bundle_entry_points_core from "@nativescript/core/bundle-entry-points";
+import * as module_bundle_entry_points_compat from "tns-core-modules/bundle-entry-points";
+compare("bundle-entry-points", module_bundle_entry_points_core, module_bundle_entry_points_compat);
 
 import * as module_color_core from "@nativescript/core/color";
 import * as module_color_compat from "tns-core-modules/color";
@@ -29,6 +41,10 @@ compare("color", module_color_core, module_color_compat);
 import * as module_color_color_core from "@nativescript/core/color/color";
 import * as module_color_color_compat from "tns-core-modules/color/color";
 compare("color/color", module_color_color_core, module_color_color_compat);
+
+import * as module_color_color_common_core from "@nativescript/core/color/color-common";
+import * as module_color_color_common_compat from "tns-core-modules/color/color-common";
+compare("color/color-common", module_color_color_common_core, module_color_color_common_compat);
 
 import * as module_color_known_colors_core from "@nativescript/core/color/known-colors";
 import * as module_color_known_colors_compat from "tns-core-modules/color/known-colors";
@@ -61,6 +77,10 @@ compare("css-value", module_css_value_core, module_css_value_compat);
 import * as module_css_value_reworkcss_value_core from "@nativescript/core/css-value/reworkcss-value";
 import * as module_css_value_reworkcss_value_compat from "tns-core-modules/css-value/reworkcss-value";
 compare("css-value/reworkcss-value", module_css_value_reworkcss_value_core, module_css_value_reworkcss_value_compat);
+
+import * as module_css_parser_core from "@nativescript/core/css/parser";
+import * as module_css_parser_compat from "tns-core-modules/css/parser";
+compare("css/parser", module_css_parser_core, module_css_parser_compat);
 
 import * as module_css_reworkcss_core from "@nativescript/core/css/reworkcss";
 import * as module_css_reworkcss_compat from "tns-core-modules/css/reworkcss";
@@ -105,6 +125,10 @@ compare("debugger/debugger", module_debugger_debugger_core, module_debugger_debu
 import * as module_debugger_devtools_elements_core from "@nativescript/core/debugger/devtools-elements";
 import * as module_debugger_devtools_elements_compat from "tns-core-modules/debugger/devtools-elements";
 compare("debugger/devtools-elements", module_debugger_devtools_elements_core, module_debugger_devtools_elements_compat);
+
+import * as module_debugger_devtools_elements_common_core from "@nativescript/core/debugger/devtools-elements.common";
+import * as module_debugger_devtools_elements_common_compat from "tns-core-modules/debugger/devtools-elements.common";
+compare("debugger/devtools-elements.common", module_debugger_devtools_elements_common_core, module_debugger_devtools_elements_common_compat);
 
 import * as module_debugger_dom_node_core from "@nativescript/core/debugger/dom-node";
 import * as module_debugger_dom_node_compat from "tns-core-modules/debugger/dom-node";
@@ -162,6 +186,10 @@ import * as module_globals_core_globals_core_core from "@nativescript/core/globa
 import * as module_globals_core_globals_core_compat from "tns-core-modules/globals/core/globals-core";
 compare("globals/core/globals-core", module_globals_core_globals_core_core, module_globals_core_globals_core_compat);
 
+import * as module_globals_decorators_core from "@nativescript/core/globals/decorators";
+import * as module_globals_decorators_compat from "tns-core-modules/globals/decorators";
+compare("globals/decorators", module_globals_decorators_core, module_globals_decorators_compat);
+
 import * as module_globals_globals_core from "@nativescript/core/globals/globals";
 import * as module_globals_globals_compat from "tns-core-modules/globals/globals";
 compare("globals/globals", module_globals_globals_core, module_globals_globals_compat);
@@ -206,6 +234,14 @@ import * as module_globals_polyfills_xhr_xhr_core from "@nativescript/core/globa
 import * as module_globals_polyfills_xhr_xhr_compat from "tns-core-modules/globals/polyfills/xhr/xhr";
 compare("globals/polyfills/xhr/xhr", module_globals_polyfills_xhr_xhr_core, module_globals_polyfills_xhr_xhr_compat);
 
+import * as module_globals_register_module_helpers_core from "@nativescript/core/globals/register-module-helpers";
+import * as module_globals_register_module_helpers_compat from "tns-core-modules/globals/register-module-helpers";
+compare("globals/register-module-helpers", module_globals_register_module_helpers_core, module_globals_register_module_helpers_compat);
+
+import * as module_globals_ts_helpers_core from "@nativescript/core/globals/ts-helpers";
+import * as module_globals_ts_helpers_compat from "tns-core-modules/globals/ts-helpers";
+compare("globals/ts-helpers", module_globals_ts_helpers_core, module_globals_ts_helpers_compat);
+
 import * as module_http_core from "@nativescript/core/http";
 import * as module_http_compat from "tns-core-modules/http";
 compare("http", module_http_core, module_http_compat);
@@ -222,6 +258,10 @@ import * as module_http_http_request_http_request_core from "@nativescript/core/
 import * as module_http_http_request_http_request_compat from "tns-core-modules/http/http-request/http-request";
 compare("http/http-request/http-request", module_http_http_request_http_request_core, module_http_http_request_http_request_compat);
 
+import * as module_http_http_request_http_request_common_core from "@nativescript/core/http/http-request/http-request-common";
+import * as module_http_http_request_http_request_common_compat from "tns-core-modules/http/http-request/http-request-common";
+compare("http/http-request/http-request-common", module_http_http_request_http_request_common_core, module_http_http_request_http_request_common_compat);
+
 import * as module_image_asset_core from "@nativescript/core/image-asset";
 import * as module_image_asset_compat from "tns-core-modules/image-asset";
 compare("image-asset", module_image_asset_core, module_image_asset_compat);
@@ -229,6 +269,10 @@ compare("image-asset", module_image_asset_core, module_image_asset_compat);
 import * as module_image_asset_image_asset_core from "@nativescript/core/image-asset/image-asset";
 import * as module_image_asset_image_asset_compat from "tns-core-modules/image-asset/image-asset";
 compare("image-asset/image-asset", module_image_asset_image_asset_core, module_image_asset_image_asset_compat);
+
+import * as module_image_asset_image_asset_common_core from "@nativescript/core/image-asset/image-asset-common";
+import * as module_image_asset_image_asset_common_compat from "tns-core-modules/image-asset/image-asset-common";
+compare("image-asset/image-asset-common", module_image_asset_image_asset_common_core, module_image_asset_image_asset_common_compat);
 
 import * as module_image_source_core from "@nativescript/core/image-source";
 import * as module_image_source_compat from "tns-core-modules/image-source";
@@ -281,6 +325,10 @@ compare("module-name-resolver", module_module_name_resolver_core, module_module_
 import * as module_module_name_resolver_module_name_resolver_core from "@nativescript/core/module-name-resolver/module-name-resolver";
 import * as module_module_name_resolver_module_name_resolver_compat from "tns-core-modules/module-name-resolver/module-name-resolver";
 compare("module-name-resolver/module-name-resolver", module_module_name_resolver_module_name_resolver_core, module_module_name_resolver_module_name_resolver_compat);
+
+import * as module_module_name_resolver_non_bundle_workflow_compat_core from "@nativescript/core/module-name-resolver/non-bundle-workflow-compat";
+import * as module_module_name_resolver_non_bundle_workflow_compat_compat from "tns-core-modules/module-name-resolver/non-bundle-workflow-compat";
+compare("module-name-resolver/non-bundle-workflow-compat", module_module_name_resolver_non_bundle_workflow_compat_core, module_module_name_resolver_non_bundle_workflow_compat_compat);
 
 import * as module_module_name_resolver_qualifier_matcher_core from "@nativescript/core/module-name-resolver/qualifier-matcher";
 import * as module_module_name_resolver_qualifier_matcher_compat from "tns-core-modules/module-name-resolver/qualifier-matcher";
@@ -350,6 +398,10 @@ import * as module_ui_action_bar_action_bar_core from "@nativescript/core/ui/act
 import * as module_ui_action_bar_action_bar_compat from "tns-core-modules/ui/action-bar/action-bar";
 compare("ui/action-bar/action-bar", module_ui_action_bar_action_bar_core, module_ui_action_bar_action_bar_compat);
 
+import * as module_ui_action_bar_action_bar_common_core from "@nativescript/core/ui/action-bar/action-bar-common";
+import * as module_ui_action_bar_action_bar_common_compat from "tns-core-modules/ui/action-bar/action-bar-common";
+compare("ui/action-bar/action-bar-common", module_ui_action_bar_action_bar_common_core, module_ui_action_bar_action_bar_common_compat);
+
 import * as module_ui_activity_indicator_core from "@nativescript/core/ui/activity-indicator";
 import * as module_ui_activity_indicator_compat from "tns-core-modules/ui/activity-indicator";
 compare("ui/activity-indicator", module_ui_activity_indicator_core, module_ui_activity_indicator_compat);
@@ -358,6 +410,10 @@ import * as module_ui_activity_indicator_activity_indicator_core from "@nativesc
 import * as module_ui_activity_indicator_activity_indicator_compat from "tns-core-modules/ui/activity-indicator/activity-indicator";
 compare("ui/activity-indicator/activity-indicator", module_ui_activity_indicator_activity_indicator_core, module_ui_activity_indicator_activity_indicator_compat);
 
+import * as module_ui_activity_indicator_activity_indicator_common_core from "@nativescript/core/ui/activity-indicator/activity-indicator-common";
+import * as module_ui_activity_indicator_activity_indicator_common_compat from "tns-core-modules/ui/activity-indicator/activity-indicator-common";
+compare("ui/activity-indicator/activity-indicator-common", module_ui_activity_indicator_activity_indicator_common_core, module_ui_activity_indicator_activity_indicator_common_compat);
+
 import * as module_ui_animation_core from "@nativescript/core/ui/animation";
 import * as module_ui_animation_compat from "tns-core-modules/ui/animation";
 compare("ui/animation", module_ui_animation_core, module_ui_animation_compat);
@@ -365,6 +421,10 @@ compare("ui/animation", module_ui_animation_core, module_ui_animation_compat);
 import * as module_ui_animation_animation_core from "@nativescript/core/ui/animation/animation";
 import * as module_ui_animation_animation_compat from "tns-core-modules/ui/animation/animation";
 compare("ui/animation/animation", module_ui_animation_animation_core, module_ui_animation_animation_compat);
+
+import * as module_ui_animation_animation_common_core from "@nativescript/core/ui/animation/animation-common";
+import * as module_ui_animation_animation_common_compat from "tns-core-modules/ui/animation/animation-common";
+compare("ui/animation/animation-common", module_ui_animation_animation_common_core, module_ui_animation_animation_common_compat);
 
 import * as module_ui_animation_keyframe_animation_core from "@nativescript/core/ui/animation/keyframe-animation";
 import * as module_ui_animation_keyframe_animation_compat from "tns-core-modules/ui/animation/keyframe-animation";
@@ -390,6 +450,10 @@ import * as module_ui_builder_core from "@nativescript/core/ui/builder";
 import * as module_ui_builder_compat from "tns-core-modules/ui/builder";
 compare("ui/builder", module_ui_builder_core, module_ui_builder_compat);
 
+import * as module_ui_builder_binding_builder_core from "@nativescript/core/ui/builder/binding-builder";
+import * as module_ui_builder_binding_builder_compat from "tns-core-modules/ui/builder/binding-builder";
+compare("ui/builder/binding-builder", module_ui_builder_binding_builder_core, module_ui_builder_binding_builder_compat);
+
 import * as module_ui_builder_builder_core from "@nativescript/core/ui/builder/builder";
 import * as module_ui_builder_builder_compat from "tns-core-modules/ui/builder/builder";
 compare("ui/builder/builder", module_ui_builder_builder_core, module_ui_builder_builder_compat);
@@ -413,6 +477,10 @@ compare("ui/button", module_ui_button_core, module_ui_button_compat);
 import * as module_ui_button_button_core from "@nativescript/core/ui/button/button";
 import * as module_ui_button_button_compat from "tns-core-modules/ui/button/button";
 compare("ui/button/button", module_ui_button_button_core, module_ui_button_button_compat);
+
+import * as module_ui_button_button_common_core from "@nativescript/core/ui/button/button-common";
+import * as module_ui_button_button_common_compat from "tns-core-modules/ui/button/button-common";
+compare("ui/button/button-common", module_ui_button_button_common_core, module_ui_button_button_common_compat);
 
 import * as module_ui_content_view_core from "@nativescript/core/ui/content-view";
 import * as module_ui_content_view_compat from "tns-core-modules/ui/content-view";
@@ -462,6 +530,10 @@ import * as module_ui_core_view_view_core from "@nativescript/core/ui/core/view/
 import * as module_ui_core_view_view_compat from "tns-core-modules/ui/core/view/view";
 compare("ui/core/view/view", module_ui_core_view_view_core, module_ui_core_view_view_compat);
 
+import * as module_ui_core_view_view_common_core from "@nativescript/core/ui/core/view/view-common";
+import * as module_ui_core_view_view_common_compat from "tns-core-modules/ui/core/view/view-common";
+compare("ui/core/view/view-common", module_ui_core_view_view_common_core, module_ui_core_view_view_common_compat);
+
 import * as module_ui_core_weak_event_listener_core from "@nativescript/core/ui/core/weak-event-listener";
 import * as module_ui_core_weak_event_listener_compat from "tns-core-modules/ui/core/weak-event-listener";
 compare("ui/core/weak-event-listener", module_ui_core_weak_event_listener_core, module_ui_core_weak_event_listener_compat);
@@ -478,6 +550,10 @@ import * as module_ui_date_picker_date_picker_core from "@nativescript/core/ui/d
 import * as module_ui_date_picker_date_picker_compat from "tns-core-modules/ui/date-picker/date-picker";
 compare("ui/date-picker/date-picker", module_ui_date_picker_date_picker_core, module_ui_date_picker_date_picker_compat);
 
+import * as module_ui_date_picker_date_picker_common_core from "@nativescript/core/ui/date-picker/date-picker-common";
+import * as module_ui_date_picker_date_picker_common_compat from "tns-core-modules/ui/date-picker/date-picker-common";
+compare("ui/date-picker/date-picker-common", module_ui_date_picker_date_picker_common_core, module_ui_date_picker_date_picker_common_compat);
+
 import * as module_ui_dialogs_core from "@nativescript/core/ui/dialogs";
 import * as module_ui_dialogs_compat from "tns-core-modules/ui/dialogs";
 compare("ui/dialogs", module_ui_dialogs_core, module_ui_dialogs_compat);
@@ -486,6 +562,10 @@ import * as module_ui_dialogs_dialogs_core from "@nativescript/core/ui/dialogs/d
 import * as module_ui_dialogs_dialogs_compat from "tns-core-modules/ui/dialogs/dialogs";
 compare("ui/dialogs/dialogs", module_ui_dialogs_dialogs_core, module_ui_dialogs_dialogs_compat);
 
+import * as module_ui_dialogs_dialogs_common_core from "@nativescript/core/ui/dialogs/dialogs-common";
+import * as module_ui_dialogs_dialogs_common_compat from "tns-core-modules/ui/dialogs/dialogs-common";
+compare("ui/dialogs/dialogs-common", module_ui_dialogs_dialogs_common_core, module_ui_dialogs_dialogs_common_compat);
+
 import * as module_ui_editable_text_base_core from "@nativescript/core/ui/editable-text-base";
 import * as module_ui_editable_text_base_compat from "tns-core-modules/ui/editable-text-base";
 compare("ui/editable-text-base", module_ui_editable_text_base_core, module_ui_editable_text_base_compat);
@@ -493,6 +573,10 @@ compare("ui/editable-text-base", module_ui_editable_text_base_core, module_ui_ed
 import * as module_ui_editable_text_base_editable_text_base_core from "@nativescript/core/ui/editable-text-base/editable-text-base";
 import * as module_ui_editable_text_base_editable_text_base_compat from "tns-core-modules/ui/editable-text-base/editable-text-base";
 compare("ui/editable-text-base/editable-text-base", module_ui_editable_text_base_editable_text_base_core, module_ui_editable_text_base_editable_text_base_compat);
+
+import * as module_ui_editable_text_base_editable_text_base_common_core from "@nativescript/core/ui/editable-text-base/editable-text-base-common";
+import * as module_ui_editable_text_base_editable_text_base_common_compat from "tns-core-modules/ui/editable-text-base/editable-text-base-common";
+compare("ui/editable-text-base/editable-text-base-common", module_ui_editable_text_base_editable_text_base_common_core, module_ui_editable_text_base_editable_text_base_common_compat);
 
 import * as module_ui_enums_core from "@nativescript/core/ui/enums";
 import * as module_ui_enums_compat from "tns-core-modules/ui/enums";
@@ -510,9 +594,21 @@ import * as module_ui_frame_fragment_transitions_core from "@nativescript/core/u
 import * as module_ui_frame_fragment_transitions_compat from "tns-core-modules/ui/frame/fragment.transitions";
 compare("ui/frame/fragment.transitions", module_ui_frame_fragment_transitions_core, module_ui_frame_fragment_transitions_compat);
 
+import * as module_ui_frame_fragment_transitions_types_core from "@nativescript/core/ui/frame/fragment.transitions.types";
+import * as module_ui_frame_fragment_transitions_types_compat from "tns-core-modules/ui/frame/fragment.transitions.types";
+compare("ui/frame/fragment.transitions.types", module_ui_frame_fragment_transitions_types_core, module_ui_frame_fragment_transitions_types_compat);
+
 import * as module_ui_frame_frame_core from "@nativescript/core/ui/frame/frame";
 import * as module_ui_frame_frame_compat from "tns-core-modules/ui/frame/frame";
 compare("ui/frame/frame", module_ui_frame_frame_core, module_ui_frame_frame_compat);
+
+import * as module_ui_frame_frame_common_core from "@nativescript/core/ui/frame/frame-common";
+import * as module_ui_frame_frame_common_compat from "tns-core-modules/ui/frame/frame-common";
+compare("ui/frame/frame-common", module_ui_frame_frame_common_core, module_ui_frame_frame_common_compat);
+
+import * as module_ui_frame_frame_stack_core from "@nativescript/core/ui/frame/frame-stack";
+import * as module_ui_frame_frame_stack_compat from "tns-core-modules/ui/frame/frame-stack";
+compare("ui/frame/frame-stack", module_ui_frame_frame_stack_core, module_ui_frame_frame_stack_compat);
 
 import * as module_ui_gestures_core from "@nativescript/core/ui/gestures";
 import * as module_ui_gestures_compat from "tns-core-modules/ui/gestures";
@@ -522,6 +618,10 @@ import * as module_ui_gestures_gestures_core from "@nativescript/core/ui/gesture
 import * as module_ui_gestures_gestures_compat from "tns-core-modules/ui/gestures/gestures";
 compare("ui/gestures/gestures", module_ui_gestures_gestures_core, module_ui_gestures_gestures_compat);
 
+import * as module_ui_gestures_gestures_common_core from "@nativescript/core/ui/gestures/gestures-common";
+import * as module_ui_gestures_gestures_common_compat from "tns-core-modules/ui/gestures/gestures-common";
+compare("ui/gestures/gestures-common", module_ui_gestures_gestures_common_core, module_ui_gestures_gestures_common_compat);
+
 import * as module_ui_html_view_core from "@nativescript/core/ui/html-view";
 import * as module_ui_html_view_compat from "tns-core-modules/ui/html-view";
 compare("ui/html-view", module_ui_html_view_core, module_ui_html_view_compat);
@@ -529,6 +629,10 @@ compare("ui/html-view", module_ui_html_view_core, module_ui_html_view_compat);
 import * as module_ui_html_view_html_view_core from "@nativescript/core/ui/html-view/html-view";
 import * as module_ui_html_view_html_view_compat from "tns-core-modules/ui/html-view/html-view";
 compare("ui/html-view/html-view", module_ui_html_view_html_view_core, module_ui_html_view_html_view_compat);
+
+import * as module_ui_html_view_html_view_common_core from "@nativescript/core/ui/html-view/html-view-common";
+import * as module_ui_html_view_html_view_common_compat from "tns-core-modules/ui/html-view/html-view-common";
+compare("ui/html-view/html-view-common", module_ui_html_view_html_view_common_core, module_ui_html_view_html_view_common_compat);
 
 import * as module_ui_image_core from "@nativescript/core/ui/image";
 import * as module_ui_image_compat from "tns-core-modules/ui/image";
@@ -542,9 +646,17 @@ import * as module_ui_image_cache_image_cache_core from "@nativescript/core/ui/i
 import * as module_ui_image_cache_image_cache_compat from "tns-core-modules/ui/image-cache/image-cache";
 compare("ui/image-cache/image-cache", module_ui_image_cache_image_cache_core, module_ui_image_cache_image_cache_compat);
 
+import * as module_ui_image_cache_image_cache_common_core from "@nativescript/core/ui/image-cache/image-cache-common";
+import * as module_ui_image_cache_image_cache_common_compat from "tns-core-modules/ui/image-cache/image-cache-common";
+compare("ui/image-cache/image-cache-common", module_ui_image_cache_image_cache_common_core, module_ui_image_cache_image_cache_common_compat);
+
 import * as module_ui_image_image_core from "@nativescript/core/ui/image/image";
 import * as module_ui_image_image_compat from "tns-core-modules/ui/image/image";
 compare("ui/image/image", module_ui_image_image_core, module_ui_image_image_compat);
+
+import * as module_ui_image_image_common_core from "@nativescript/core/ui/image/image-common";
+import * as module_ui_image_image_common_compat from "tns-core-modules/ui/image/image-common";
+compare("ui/image/image-common", module_ui_image_image_common_core, module_ui_image_image_common_compat);
 
 import * as module_ui_index_core from "@nativescript/core/ui/index";
 import * as module_ui_index_compat from "tns-core-modules/ui/index";
@@ -570,6 +682,10 @@ import * as module_ui_layouts_absolute_layout_absolute_layout_core from "@native
 import * as module_ui_layouts_absolute_layout_absolute_layout_compat from "tns-core-modules/ui/layouts/absolute-layout/absolute-layout";
 compare("ui/layouts/absolute-layout/absolute-layout", module_ui_layouts_absolute_layout_absolute_layout_core, module_ui_layouts_absolute_layout_absolute_layout_compat);
 
+import * as module_ui_layouts_absolute_layout_absolute_layout_common_core from "@nativescript/core/ui/layouts/absolute-layout/absolute-layout-common";
+import * as module_ui_layouts_absolute_layout_absolute_layout_common_compat from "tns-core-modules/ui/layouts/absolute-layout/absolute-layout-common";
+compare("ui/layouts/absolute-layout/absolute-layout-common", module_ui_layouts_absolute_layout_absolute_layout_common_core, module_ui_layouts_absolute_layout_absolute_layout_common_compat);
+
 import * as module_ui_layouts_dock_layout_core from "@nativescript/core/ui/layouts/dock-layout";
 import * as module_ui_layouts_dock_layout_compat from "tns-core-modules/ui/layouts/dock-layout";
 compare("ui/layouts/dock-layout", module_ui_layouts_dock_layout_core, module_ui_layouts_dock_layout_compat);
@@ -577,6 +693,10 @@ compare("ui/layouts/dock-layout", module_ui_layouts_dock_layout_core, module_ui_
 import * as module_ui_layouts_dock_layout_dock_layout_core from "@nativescript/core/ui/layouts/dock-layout/dock-layout";
 import * as module_ui_layouts_dock_layout_dock_layout_compat from "tns-core-modules/ui/layouts/dock-layout/dock-layout";
 compare("ui/layouts/dock-layout/dock-layout", module_ui_layouts_dock_layout_dock_layout_core, module_ui_layouts_dock_layout_dock_layout_compat);
+
+import * as module_ui_layouts_dock_layout_dock_layout_common_core from "@nativescript/core/ui/layouts/dock-layout/dock-layout-common";
+import * as module_ui_layouts_dock_layout_dock_layout_common_compat from "tns-core-modules/ui/layouts/dock-layout/dock-layout-common";
+compare("ui/layouts/dock-layout/dock-layout-common", module_ui_layouts_dock_layout_dock_layout_common_core, module_ui_layouts_dock_layout_dock_layout_common_compat);
 
 import * as module_ui_layouts_flexbox_layout_core from "@nativescript/core/ui/layouts/flexbox-layout";
 import * as module_ui_layouts_flexbox_layout_compat from "tns-core-modules/ui/layouts/flexbox-layout";
@@ -586,6 +706,10 @@ import * as module_ui_layouts_flexbox_layout_flexbox_layout_core from "@nativesc
 import * as module_ui_layouts_flexbox_layout_flexbox_layout_compat from "tns-core-modules/ui/layouts/flexbox-layout/flexbox-layout";
 compare("ui/layouts/flexbox-layout/flexbox-layout", module_ui_layouts_flexbox_layout_flexbox_layout_core, module_ui_layouts_flexbox_layout_flexbox_layout_compat);
 
+import * as module_ui_layouts_flexbox_layout_flexbox_layout_common_core from "@nativescript/core/ui/layouts/flexbox-layout/flexbox-layout-common";
+import * as module_ui_layouts_flexbox_layout_flexbox_layout_common_compat from "tns-core-modules/ui/layouts/flexbox-layout/flexbox-layout-common";
+compare("ui/layouts/flexbox-layout/flexbox-layout-common", module_ui_layouts_flexbox_layout_flexbox_layout_common_core, module_ui_layouts_flexbox_layout_flexbox_layout_common_compat);
+
 import * as module_ui_layouts_grid_layout_core from "@nativescript/core/ui/layouts/grid-layout";
 import * as module_ui_layouts_grid_layout_compat from "tns-core-modules/ui/layouts/grid-layout";
 compare("ui/layouts/grid-layout", module_ui_layouts_grid_layout_core, module_ui_layouts_grid_layout_compat);
@@ -593,6 +717,10 @@ compare("ui/layouts/grid-layout", module_ui_layouts_grid_layout_core, module_ui_
 import * as module_ui_layouts_grid_layout_grid_layout_core from "@nativescript/core/ui/layouts/grid-layout/grid-layout";
 import * as module_ui_layouts_grid_layout_grid_layout_compat from "tns-core-modules/ui/layouts/grid-layout/grid-layout";
 compare("ui/layouts/grid-layout/grid-layout", module_ui_layouts_grid_layout_grid_layout_core, module_ui_layouts_grid_layout_grid_layout_compat);
+
+import * as module_ui_layouts_grid_layout_grid_layout_common_core from "@nativescript/core/ui/layouts/grid-layout/grid-layout-common";
+import * as module_ui_layouts_grid_layout_grid_layout_common_compat from "tns-core-modules/ui/layouts/grid-layout/grid-layout-common";
+compare("ui/layouts/grid-layout/grid-layout-common", module_ui_layouts_grid_layout_grid_layout_common_core, module_ui_layouts_grid_layout_grid_layout_common_compat);
 
 import * as module_ui_layouts_index_core from "@nativescript/core/ui/layouts/index";
 import * as module_ui_layouts_index_compat from "tns-core-modules/ui/layouts/index";
@@ -602,6 +730,10 @@ import * as module_ui_layouts_layout_base_core from "@nativescript/core/ui/layou
 import * as module_ui_layouts_layout_base_compat from "tns-core-modules/ui/layouts/layout-base";
 compare("ui/layouts/layout-base", module_ui_layouts_layout_base_core, module_ui_layouts_layout_base_compat);
 
+import * as module_ui_layouts_layout_base_common_core from "@nativescript/core/ui/layouts/layout-base-common";
+import * as module_ui_layouts_layout_base_common_compat from "tns-core-modules/ui/layouts/layout-base-common";
+compare("ui/layouts/layout-base-common", module_ui_layouts_layout_base_common_core, module_ui_layouts_layout_base_common_compat);
+
 import * as module_ui_layouts_stack_layout_core from "@nativescript/core/ui/layouts/stack-layout";
 import * as module_ui_layouts_stack_layout_compat from "tns-core-modules/ui/layouts/stack-layout";
 compare("ui/layouts/stack-layout", module_ui_layouts_stack_layout_core, module_ui_layouts_stack_layout_compat);
@@ -609,6 +741,10 @@ compare("ui/layouts/stack-layout", module_ui_layouts_stack_layout_core, module_u
 import * as module_ui_layouts_stack_layout_stack_layout_core from "@nativescript/core/ui/layouts/stack-layout/stack-layout";
 import * as module_ui_layouts_stack_layout_stack_layout_compat from "tns-core-modules/ui/layouts/stack-layout/stack-layout";
 compare("ui/layouts/stack-layout/stack-layout", module_ui_layouts_stack_layout_stack_layout_core, module_ui_layouts_stack_layout_stack_layout_compat);
+
+import * as module_ui_layouts_stack_layout_stack_layout_common_core from "@nativescript/core/ui/layouts/stack-layout/stack-layout-common";
+import * as module_ui_layouts_stack_layout_stack_layout_common_compat from "tns-core-modules/ui/layouts/stack-layout/stack-layout-common";
+compare("ui/layouts/stack-layout/stack-layout-common", module_ui_layouts_stack_layout_stack_layout_common_core, module_ui_layouts_stack_layout_stack_layout_common_compat);
 
 import * as module_ui_layouts_wrap_layout_core from "@nativescript/core/ui/layouts/wrap-layout";
 import * as module_ui_layouts_wrap_layout_compat from "tns-core-modules/ui/layouts/wrap-layout";
@@ -618,6 +754,10 @@ import * as module_ui_layouts_wrap_layout_wrap_layout_core from "@nativescript/c
 import * as module_ui_layouts_wrap_layout_wrap_layout_compat from "tns-core-modules/ui/layouts/wrap-layout/wrap-layout";
 compare("ui/layouts/wrap-layout/wrap-layout", module_ui_layouts_wrap_layout_wrap_layout_core, module_ui_layouts_wrap_layout_wrap_layout_compat);
 
+import * as module_ui_layouts_wrap_layout_wrap_layout_common_core from "@nativescript/core/ui/layouts/wrap-layout/wrap-layout-common";
+import * as module_ui_layouts_wrap_layout_wrap_layout_common_compat from "tns-core-modules/ui/layouts/wrap-layout/wrap-layout-common";
+compare("ui/layouts/wrap-layout/wrap-layout-common", module_ui_layouts_wrap_layout_wrap_layout_common_core, module_ui_layouts_wrap_layout_wrap_layout_common_compat);
+
 import * as module_ui_list_picker_core from "@nativescript/core/ui/list-picker";
 import * as module_ui_list_picker_compat from "tns-core-modules/ui/list-picker";
 compare("ui/list-picker", module_ui_list_picker_core, module_ui_list_picker_compat);
@@ -625,6 +765,10 @@ compare("ui/list-picker", module_ui_list_picker_core, module_ui_list_picker_comp
 import * as module_ui_list_picker_list_picker_core from "@nativescript/core/ui/list-picker/list-picker";
 import * as module_ui_list_picker_list_picker_compat from "tns-core-modules/ui/list-picker/list-picker";
 compare("ui/list-picker/list-picker", module_ui_list_picker_list_picker_core, module_ui_list_picker_list_picker_compat);
+
+import * as module_ui_list_picker_list_picker_common_core from "@nativescript/core/ui/list-picker/list-picker-common";
+import * as module_ui_list_picker_list_picker_common_compat from "tns-core-modules/ui/list-picker/list-picker-common";
+compare("ui/list-picker/list-picker-common", module_ui_list_picker_list_picker_common_core, module_ui_list_picker_list_picker_common_compat);
 
 import * as module_ui_list_view_core from "@nativescript/core/ui/list-view";
 import * as module_ui_list_view_compat from "tns-core-modules/ui/list-view";
@@ -634,6 +778,10 @@ import * as module_ui_list_view_list_view_core from "@nativescript/core/ui/list-
 import * as module_ui_list_view_list_view_compat from "tns-core-modules/ui/list-view/list-view";
 compare("ui/list-view/list-view", module_ui_list_view_list_view_core, module_ui_list_view_list_view_compat);
 
+import * as module_ui_list_view_list_view_common_core from "@nativescript/core/ui/list-view/list-view-common";
+import * as module_ui_list_view_list_view_common_compat from "tns-core-modules/ui/list-view/list-view-common";
+compare("ui/list-view/list-view-common", module_ui_list_view_list_view_common_core, module_ui_list_view_list_view_common_compat);
+
 import * as module_ui_page_core from "@nativescript/core/ui/page";
 import * as module_ui_page_compat from "tns-core-modules/ui/page";
 compare("ui/page", module_ui_page_core, module_ui_page_compat);
@@ -641,6 +789,10 @@ compare("ui/page", module_ui_page_core, module_ui_page_compat);
 import * as module_ui_page_page_core from "@nativescript/core/ui/page/page";
 import * as module_ui_page_page_compat from "tns-core-modules/ui/page/page";
 compare("ui/page/page", module_ui_page_page_core, module_ui_page_page_compat);
+
+import * as module_ui_page_page_common_core from "@nativescript/core/ui/page/page-common";
+import * as module_ui_page_page_common_compat from "tns-core-modules/ui/page/page-common";
+compare("ui/page/page-common", module_ui_page_page_common_core, module_ui_page_page_common_compat);
 
 import * as module_ui_placeholder_core from "@nativescript/core/ui/placeholder";
 import * as module_ui_placeholder_compat from "tns-core-modules/ui/placeholder";
@@ -657,6 +809,10 @@ compare("ui/progress", module_ui_progress_core, module_ui_progress_compat);
 import * as module_ui_progress_progress_core from "@nativescript/core/ui/progress/progress";
 import * as module_ui_progress_progress_compat from "tns-core-modules/ui/progress/progress";
 compare("ui/progress/progress", module_ui_progress_progress_core, module_ui_progress_progress_compat);
+
+import * as module_ui_progress_progress_common_core from "@nativescript/core/ui/progress/progress-common";
+import * as module_ui_progress_progress_common_compat from "tns-core-modules/ui/progress/progress-common";
+compare("ui/progress/progress-common", module_ui_progress_progress_common_core, module_ui_progress_progress_common_compat);
 
 import * as module_ui_proxy_view_container_core from "@nativescript/core/ui/proxy-view-container";
 import * as module_ui_proxy_view_container_compat from "tns-core-modules/ui/proxy-view-container";
@@ -682,6 +838,10 @@ import * as module_ui_scroll_view_scroll_view_core from "@nativescript/core/ui/s
 import * as module_ui_scroll_view_scroll_view_compat from "tns-core-modules/ui/scroll-view/scroll-view";
 compare("ui/scroll-view/scroll-view", module_ui_scroll_view_scroll_view_core, module_ui_scroll_view_scroll_view_compat);
 
+import * as module_ui_scroll_view_scroll_view_common_core from "@nativescript/core/ui/scroll-view/scroll-view-common";
+import * as module_ui_scroll_view_scroll_view_common_compat from "tns-core-modules/ui/scroll-view/scroll-view-common";
+compare("ui/scroll-view/scroll-view-common", module_ui_scroll_view_scroll_view_common_core, module_ui_scroll_view_scroll_view_common_compat);
+
 import * as module_ui_search_bar_core from "@nativescript/core/ui/search-bar";
 import * as module_ui_search_bar_compat from "tns-core-modules/ui/search-bar";
 compare("ui/search-bar", module_ui_search_bar_core, module_ui_search_bar_compat);
@@ -689,6 +849,10 @@ compare("ui/search-bar", module_ui_search_bar_core, module_ui_search_bar_compat)
 import * as module_ui_search_bar_search_bar_core from "@nativescript/core/ui/search-bar/search-bar";
 import * as module_ui_search_bar_search_bar_compat from "tns-core-modules/ui/search-bar/search-bar";
 compare("ui/search-bar/search-bar", module_ui_search_bar_search_bar_core, module_ui_search_bar_search_bar_compat);
+
+import * as module_ui_search_bar_search_bar_common_core from "@nativescript/core/ui/search-bar/search-bar-common";
+import * as module_ui_search_bar_search_bar_common_compat from "tns-core-modules/ui/search-bar/search-bar-common";
+compare("ui/search-bar/search-bar-common", module_ui_search_bar_search_bar_common_core, module_ui_search_bar_search_bar_common_compat);
 
 import * as module_ui_segmented_bar_core from "@nativescript/core/ui/segmented-bar";
 import * as module_ui_segmented_bar_compat from "tns-core-modules/ui/segmented-bar";
@@ -698,6 +862,10 @@ import * as module_ui_segmented_bar_segmented_bar_core from "@nativescript/core/
 import * as module_ui_segmented_bar_segmented_bar_compat from "tns-core-modules/ui/segmented-bar/segmented-bar";
 compare("ui/segmented-bar/segmented-bar", module_ui_segmented_bar_segmented_bar_core, module_ui_segmented_bar_segmented_bar_compat);
 
+import * as module_ui_segmented_bar_segmented_bar_common_core from "@nativescript/core/ui/segmented-bar/segmented-bar-common";
+import * as module_ui_segmented_bar_segmented_bar_common_compat from "tns-core-modules/ui/segmented-bar/segmented-bar-common";
+compare("ui/segmented-bar/segmented-bar-common", module_ui_segmented_bar_segmented_bar_common_core, module_ui_segmented_bar_segmented_bar_common_compat);
+
 import * as module_ui_slider_core from "@nativescript/core/ui/slider";
 import * as module_ui_slider_compat from "tns-core-modules/ui/slider";
 compare("ui/slider", module_ui_slider_core, module_ui_slider_compat);
@@ -706,9 +874,25 @@ import * as module_ui_slider_slider_core from "@nativescript/core/ui/slider/slid
 import * as module_ui_slider_slider_compat from "tns-core-modules/ui/slider/slider";
 compare("ui/slider/slider", module_ui_slider_slider_core, module_ui_slider_slider_compat);
 
+import * as module_ui_slider_slider_common_core from "@nativescript/core/ui/slider/slider-common";
+import * as module_ui_slider_slider_common_compat from "tns-core-modules/ui/slider/slider-common";
+compare("ui/slider/slider-common", module_ui_slider_slider_common_core, module_ui_slider_slider_common_compat);
+
 import * as module_ui_styling_background_core from "@nativescript/core/ui/styling/background";
 import * as module_ui_styling_background_compat from "tns-core-modules/ui/styling/background";
 compare("ui/styling/background", module_ui_styling_background_core, module_ui_styling_background_compat);
+
+import * as module_ui_styling_background_common_core from "@nativescript/core/ui/styling/background-common";
+import * as module_ui_styling_background_common_compat from "tns-core-modules/ui/styling/background-common";
+compare("ui/styling/background-common", module_ui_styling_background_common_core, module_ui_styling_background_common_compat);
+
+import * as module_ui_styling_converters_core from "@nativescript/core/ui/styling/converters";
+import * as module_ui_styling_converters_compat from "tns-core-modules/ui/styling/converters";
+compare("ui/styling/converters", module_ui_styling_converters_core, module_ui_styling_converters_compat);
+
+import * as module_ui_styling_css_animation_parser_core from "@nativescript/core/ui/styling/css-animation-parser";
+import * as module_ui_styling_css_animation_parser_compat from "tns-core-modules/ui/styling/css-animation-parser";
+compare("ui/styling/css-animation-parser", module_ui_styling_css_animation_parser_core, module_ui_styling_css_animation_parser_compat);
 
 import * as module_ui_styling_css_selector_core from "@nativescript/core/ui/styling/css-selector";
 import * as module_ui_styling_css_selector_compat from "tns-core-modules/ui/styling/css-selector";
@@ -721,6 +905,14 @@ compare("ui/styling/css-selector/css-selector", module_ui_styling_css_selector_c
 import * as module_ui_styling_font_core from "@nativescript/core/ui/styling/font";
 import * as module_ui_styling_font_compat from "tns-core-modules/ui/styling/font";
 compare("ui/styling/font", module_ui_styling_font_core, module_ui_styling_font_compat);
+
+import * as module_ui_styling_font_common_core from "@nativescript/core/ui/styling/font-common";
+import * as module_ui_styling_font_common_compat from "tns-core-modules/ui/styling/font-common";
+compare("ui/styling/font-common", module_ui_styling_font_common_core, module_ui_styling_font_common_compat);
+
+import * as module_ui_styling_linear_gradient_core from "@nativescript/core/ui/styling/linear-gradient";
+import * as module_ui_styling_linear_gradient_compat from "tns-core-modules/ui/styling/linear-gradient";
+compare("ui/styling/linear-gradient", module_ui_styling_linear_gradient_core, module_ui_styling_linear_gradient_compat);
 
 import * as module_ui_styling_style_core from "@nativescript/core/ui/styling/style";
 import * as module_ui_styling_style_compat from "tns-core-modules/ui/styling/style";
@@ -746,6 +938,10 @@ import * as module_ui_switch_switch_core from "@nativescript/core/ui/switch/swit
 import * as module_ui_switch_switch_compat from "tns-core-modules/ui/switch/switch";
 compare("ui/switch/switch", module_ui_switch_switch_core, module_ui_switch_switch_compat);
 
+import * as module_ui_switch_switch_common_core from "@nativescript/core/ui/switch/switch-common";
+import * as module_ui_switch_switch_common_compat from "tns-core-modules/ui/switch/switch-common";
+compare("ui/switch/switch-common", module_ui_switch_switch_common_core, module_ui_switch_switch_common_compat);
+
 import * as module_ui_tab_navigation_base_tab_content_item_core from "@nativescript/core/ui/tab-navigation-base/tab-content-item";
 import * as module_ui_tab_navigation_base_tab_content_item_compat from "tns-core-modules/ui/tab-navigation-base/tab-content-item";
 compare("ui/tab-navigation-base/tab-content-item", module_ui_tab_navigation_base_tab_content_item_core, module_ui_tab_navigation_base_tab_content_item_compat);
@@ -753,6 +949,10 @@ compare("ui/tab-navigation-base/tab-content-item", module_ui_tab_navigation_base
 import * as module_ui_tab_navigation_base_tab_content_item_tab_content_item_core from "@nativescript/core/ui/tab-navigation-base/tab-content-item/tab-content-item";
 import * as module_ui_tab_navigation_base_tab_content_item_tab_content_item_compat from "tns-core-modules/ui/tab-navigation-base/tab-content-item/tab-content-item";
 compare("ui/tab-navigation-base/tab-content-item/tab-content-item", module_ui_tab_navigation_base_tab_content_item_tab_content_item_core, module_ui_tab_navigation_base_tab_content_item_tab_content_item_compat);
+
+import * as module_ui_tab_navigation_base_tab_content_item_tab_content_item_common_core from "@nativescript/core/ui/tab-navigation-base/tab-content-item/tab-content-item-common";
+import * as module_ui_tab_navigation_base_tab_content_item_tab_content_item_common_compat from "tns-core-modules/ui/tab-navigation-base/tab-content-item/tab-content-item-common";
+compare("ui/tab-navigation-base/tab-content-item/tab-content-item-common", module_ui_tab_navigation_base_tab_content_item_tab_content_item_common_core, module_ui_tab_navigation_base_tab_content_item_tab_content_item_common_compat);
 
 import * as module_ui_tab_navigation_base_tab_navigation_base_core from "@nativescript/core/ui/tab-navigation-base/tab-navigation-base";
 import * as module_ui_tab_navigation_base_tab_navigation_base_compat from "tns-core-modules/ui/tab-navigation-base/tab-navigation-base";
@@ -786,6 +986,10 @@ import * as module_ui_tab_view_tab_view_core from "@nativescript/core/ui/tab-vie
 import * as module_ui_tab_view_tab_view_compat from "tns-core-modules/ui/tab-view/tab-view";
 compare("ui/tab-view/tab-view", module_ui_tab_view_tab_view_core, module_ui_tab_view_tab_view_compat);
 
+import * as module_ui_tab_view_tab_view_common_core from "@nativescript/core/ui/tab-view/tab-view-common";
+import * as module_ui_tab_view_tab_view_common_compat from "tns-core-modules/ui/tab-view/tab-view-common";
+compare("ui/tab-view/tab-view-common", module_ui_tab_view_tab_view_common_core, module_ui_tab_view_tab_view_common_compat);
+
 import * as module_ui_tabs_core from "@nativescript/core/ui/tabs";
 import * as module_ui_tabs_compat from "tns-core-modules/ui/tabs";
 compare("ui/tabs", module_ui_tabs_core, module_ui_tabs_compat);
@@ -794,13 +998,29 @@ import * as module_ui_tabs_tabs_core from "@nativescript/core/ui/tabs/tabs";
 import * as module_ui_tabs_tabs_compat from "tns-core-modules/ui/tabs/tabs";
 compare("ui/tabs/tabs", module_ui_tabs_tabs_core, module_ui_tabs_tabs_compat);
 
+import * as module_ui_tabs_tabs_common_core from "@nativescript/core/ui/tabs/tabs-common";
+import * as module_ui_tabs_tabs_common_compat from "tns-core-modules/ui/tabs/tabs-common";
+compare("ui/tabs/tabs-common", module_ui_tabs_tabs_common_core, module_ui_tabs_tabs_common_compat);
+
 import * as module_ui_text_base_core from "@nativescript/core/ui/text-base";
 import * as module_ui_text_base_compat from "tns-core-modules/ui/text-base";
 compare("ui/text-base", module_ui_text_base_core, module_ui_text_base_compat);
 
+import * as module_ui_text_base_formatted_string_core from "@nativescript/core/ui/text-base/formatted-string";
+import * as module_ui_text_base_formatted_string_compat from "tns-core-modules/ui/text-base/formatted-string";
+compare("ui/text-base/formatted-string", module_ui_text_base_formatted_string_core, module_ui_text_base_formatted_string_compat);
+
+import * as module_ui_text_base_span_core from "@nativescript/core/ui/text-base/span";
+import * as module_ui_text_base_span_compat from "tns-core-modules/ui/text-base/span";
+compare("ui/text-base/span", module_ui_text_base_span_core, module_ui_text_base_span_compat);
+
 import * as module_ui_text_base_text_base_core from "@nativescript/core/ui/text-base/text-base";
 import * as module_ui_text_base_text_base_compat from "tns-core-modules/ui/text-base/text-base";
 compare("ui/text-base/text-base", module_ui_text_base_text_base_core, module_ui_text_base_text_base_compat);
+
+import * as module_ui_text_base_text_base_common_core from "@nativescript/core/ui/text-base/text-base-common";
+import * as module_ui_text_base_text_base_common_compat from "tns-core-modules/ui/text-base/text-base-common";
+compare("ui/text-base/text-base-common", module_ui_text_base_text_base_common_core, module_ui_text_base_text_base_common_compat);
 
 import * as module_ui_text_field_core from "@nativescript/core/ui/text-field";
 import * as module_ui_text_field_compat from "tns-core-modules/ui/text-field";
@@ -809,6 +1029,10 @@ compare("ui/text-field", module_ui_text_field_core, module_ui_text_field_compat)
 import * as module_ui_text_field_text_field_core from "@nativescript/core/ui/text-field/text-field";
 import * as module_ui_text_field_text_field_compat from "tns-core-modules/ui/text-field/text-field";
 compare("ui/text-field/text-field", module_ui_text_field_text_field_core, module_ui_text_field_text_field_compat);
+
+import * as module_ui_text_field_text_field_common_core from "@nativescript/core/ui/text-field/text-field-common";
+import * as module_ui_text_field_text_field_common_compat from "tns-core-modules/ui/text-field/text-field-common";
+compare("ui/text-field/text-field-common", module_ui_text_field_text_field_common_core, module_ui_text_field_text_field_common_compat);
 
 import * as module_ui_text_view_core from "@nativescript/core/ui/text-view";
 import * as module_ui_text_view_compat from "tns-core-modules/ui/text-view";
@@ -825,6 +1049,10 @@ compare("ui/time-picker", module_ui_time_picker_core, module_ui_time_picker_comp
 import * as module_ui_time_picker_time_picker_core from "@nativescript/core/ui/time-picker/time-picker";
 import * as module_ui_time_picker_time_picker_compat from "tns-core-modules/ui/time-picker/time-picker";
 compare("ui/time-picker/time-picker", module_ui_time_picker_time_picker_core, module_ui_time_picker_time_picker_compat);
+
+import * as module_ui_time_picker_time_picker_common_core from "@nativescript/core/ui/time-picker/time-picker-common";
+import * as module_ui_time_picker_time_picker_common_compat from "tns-core-modules/ui/time-picker/time-picker-common";
+compare("ui/time-picker/time-picker-common", module_ui_time_picker_time_picker_common_core, module_ui_time_picker_time_picker_common_compat);
 
 import * as module_ui_transition_core from "@nativescript/core/ui/transition";
 import * as module_ui_transition_compat from "tns-core-modules/ui/transition";
@@ -854,6 +1082,10 @@ import * as module_ui_web_view_web_view_core from "@nativescript/core/ui/web-vie
 import * as module_ui_web_view_web_view_compat from "tns-core-modules/ui/web-view/web-view";
 compare("ui/web-view/web-view", module_ui_web_view_web_view_core, module_ui_web_view_web_view_compat);
 
+import * as module_ui_web_view_web_view_common_core from "@nativescript/core/ui/web-view/web-view-common";
+import * as module_ui_web_view_web_view_common_compat from "tns-core-modules/ui/web-view/web-view-common";
+compare("ui/web-view/web-view-common", module_ui_web_view_web_view_common_core, module_ui_web_view_web_view_common_compat);
+
 import * as module_utils_debug_core from "@nativescript/core/utils/debug";
 import * as module_utils_debug_compat from "tns-core-modules/utils/debug";
 compare("utils/debug", module_utils_debug_core, module_utils_debug_compat);
@@ -866,6 +1098,14 @@ import * as module_utils_mainthread_helper_core from "@nativescript/core/utils/m
 import * as module_utils_mainthread_helper_compat from "tns-core-modules/utils/mainthread-helper";
 compare("utils/mainthread-helper", module_utils_mainthread_helper_core, module_utils_mainthread_helper_compat);
 
+import * as module_utils_module_merge_core from "@nativescript/core/utils/module-merge";
+import * as module_utils_module_merge_compat from "tns-core-modules/utils/module-merge";
+compare("utils/module-merge", module_utils_module_merge_core, module_utils_module_merge_compat);
+
+import * as module_utils_number_utils_core from "@nativescript/core/utils/number-utils";
+import * as module_utils_number_utils_compat from "tns-core-modules/utils/number-utils";
+compare("utils/number-utils", module_utils_number_utils_core, module_utils_number_utils_compat);
+
 import * as module_utils_types_core from "@nativescript/core/utils/types";
 import * as module_utils_types_compat from "tns-core-modules/utils/types";
 compare("utils/types", module_utils_types_core, module_utils_types_compat);
@@ -873,6 +1113,10 @@ compare("utils/types", module_utils_types_core, module_utils_types_compat);
 import * as module_utils_utils_core from "@nativescript/core/utils/utils";
 import * as module_utils_utils_compat from "tns-core-modules/utils/utils";
 compare("utils/utils", module_utils_utils_core, module_utils_utils_compat);
+
+import * as module_utils_utils_common_core from "@nativescript/core/utils/utils-common";
+import * as module_utils_utils_common_compat from "tns-core-modules/utils/utils-common";
+compare("utils/utils-common", module_utils_utils_common_core, module_utils_utils_common_compat);
 
 import * as module_xhr_core from "@nativescript/core/xhr";
 import * as module_xhr_compat from "tns-core-modules/xhr";

@@ -53,6 +53,11 @@ export const lowMemoryEvent: string;
 export const orientationChangedEvent: string;
 
 /**
+ * String value used when hooking to systemAppearanceChanged event.
+ */
+export const systemAppearanceChangedEvent: string;
+
+/**
  * Event data containing information for the application events.
  */
 export interface ApplicationEventData extends EventData {
@@ -205,15 +210,6 @@ export function run(entry?: NavigationEntry | string);
  * This method won't create Frame as root view.
  */
 export function _resetRootView(entry?: NavigationEntry | string);
-
-/**
- * @private
- */
-export function _shouldCreateRootFrame(): boolean;
-/**
- * @private
- */
-export function _start(entry?: NavigationEntry | string);
 
 /**
  * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -605,7 +601,7 @@ export class AndroidApplication extends Observable {
 /**
  * The abstraction of an iOS-specific application object.
  */
-export interface iOSApplication {
+export class iOSApplication {
     /* tslint:enable */
     /**
      * The root view controller for the application.

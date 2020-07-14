@@ -37,13 +37,12 @@ Below is a common NativeScript architecture diagram. In more detail, read the [H
 ## Quick Links
 
 - [NativeScript home page](https://nativescript.org)
-- [NativeScript code samples](https://docs.nativescript.org/angular/code-samples/overview)
+- [NativeScript code samples](https://market.nativescript.org/?tab=samples&framework=all_frameworks&category=all_samples)
 - [Install NativeScript demo mobile app](https://www.nativescript.org/nativescript-example-application)
 - [NativeScript playground](https://play.nativescript.org)
-- [NativeScript and Angular](https://docs.nativescript.org/angular/tutorial/ng-chapter-0)
+- [NativeScript and Angular](https://play.nativescript.org/?template=play-ng&tutorial=getting-started-ng)
 - [@NativeScript on Twitter](http://twitter.com/NativeScript)
-- [NativeScript community Slack channel](http://developer.telerik.com/wp-login.php?action=slack-invitation)
-- [NativeScript community forum](https://discourse.nativescript.org/)
+- [NativeScript community Slack channel](https://www.nativescript.org/slack-invitation-form)
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
 - [NativeScript documentation](https://docs.nativescript.org/)
 - [NativeScript marketplace](https://market.nativescript.org/)
@@ -65,7 +64,7 @@ The NativeScript framework consists of a number of components, all of which are 
 - **[CLI](//github.com/NativeScript/nativescript-cli)**
     [![npm](https://img.shields.io/npm/dm/nativescript.svg)](https://www.npmjs.com/package/nativescript) 
     - This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using the NativeScript framework. The CLI is written in TypeScript.
-- **[Docs](//github.com/NativeScript/docs)**
+- **[Docs](//github.com/NativeScript/docs)** [![Docs](https://img.shields.io/badge/Docs-NativeScript-brightgreen)](https://docs.nativescript.org/)
     - This repo contains the NativeScript framework documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
 
 In addition to the code that makes up the NativeScript framework itself, we also provide a number of [open-source sample apps](https://www.nativescript.org/app-samples-with-code) that you can reference while building your NativeScript application.

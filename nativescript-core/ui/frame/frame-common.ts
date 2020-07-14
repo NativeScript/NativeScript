@@ -1,22 +1,18 @@
-// Definitions.
-import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from ".";
-import { Page } from "../page";
-
 // Types.
-import { getAncestor, viewMatchesModuleContext } from "../core/view/view-common";
+import { Frame as FrameDefinition } from ".";
+import { BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, NavigationType } from "./frame-interfaces";
+import { Page } from "../page";
 import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, Property, CSSType } from "../core/view";
+
+// Requires.
+import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from "./frame-stack";
+import { getAncestor, viewMatchesModuleContext } from "../core/view/view-common";
 import { Builder } from "../builder";
+import { sanitizeModuleName } from "../builder/module-name-sanitizer";
 import { profile } from "../../profiling";
 
-import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from "./frame-stack";
-import { sanitizeModuleName } from "../builder/module-name-sanitizer";
+export * from "./frame-interfaces";
 export * from "../core/view";
-
-export enum NavigationType {
-    back,
-    forward,
-    replace
-}
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
     let entry: NavigationEntry;
@@ -35,13 +31,6 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
     return entry;
 }
 
-export interface NavigationContext {
-    entry: BackstackEntry;
-    // TODO: remove isBackNavigation for NativeScript 6.0
-    isBackNavigation: boolean;
-    navigationType: NavigationType;
-}
-
 @CSSType("Frame")
 export class FrameBase extends CustomLayoutView implements FrameDefinition {
     public static androidOptionSelectedEvent = "optionSelected";
@@ -53,6 +42,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
     public actionBarVisibility: "auto" | "never" | "always";
     public _currentEntry: BackstackEntry;
+    public _animationInProgress = false;
     public _executingContext: NavigationContext;
     public _isInFrameStack = false;
     public static defaultAnimatedNavigation = true;
@@ -70,12 +60,12 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         const top = FrameBase.topmost();
         if (top && top.canGoBack()) {
             top.goBack();
-    
+
             return true;
         } else if (top) {
             let parentFrameCanGoBack = false;
             let parentFrame = <FrameBase>getAncestor(top, "Frame");
-    
+
             while (parentFrame && !parentFrameCanGoBack) {
                 if (parentFrame && parentFrame.canGoBack()) {
                     parentFrameCanGoBack = true;
@@ -83,18 +73,18 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
                     parentFrame = <FrameBase>getAncestor(parentFrame, "Frame");
                 }
             }
-    
+
             if (parentFrame && parentFrameCanGoBack) {
                 parentFrame.goBack();
-    
+
                 return true;
             }
         }
-    
+
         if (frameStack.length > 1) {
             top._popFromFrameStack();
         }
-    
+
         return false;
     }
 
@@ -216,10 +206,10 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             traceWrite(`NAVIGATE`, traceCategories.Navigation);
         }
 
+        this._pushInFrameStack();
+
         const entry = buildEntryFromArgs(param);
         const page = Builder.createViewFromEntry(entry) as Page;
-
-        this._pushInFrameStack();
 
         const backstackEntry: BackstackEntry = {
             entry: entry,

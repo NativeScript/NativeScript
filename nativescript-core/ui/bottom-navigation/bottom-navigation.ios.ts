@@ -71,13 +71,19 @@ class UITabBarControllerImpl extends UITabBarController {
 
     public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
         super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
-        UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
-            .call(coordinator, null, () => {
-                const owner = this._owner.get();
-                if (owner && owner.items) {
-                    // owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions()); TODO:
-                }
-            });
+        coordinator.animateAlongsideTransitionCompletion(() => {
+            const owner = this._owner.get();
+            if (owner && owner.tabStrip && owner.tabStrip.items) {
+                const tabStrip = owner.tabStrip;
+                tabStrip.items.forEach(tabStripItem => {
+                    updateBackgroundPositions(tabStrip, tabStripItem);
+
+                    const index = tabStripItem._index;
+                    const tabBarItemController = this.viewControllers[index];
+                    updateTitleAndIconPositions(tabStripItem, tabBarItemController.tabBarItem, tabBarItemController);
+                });
+            }
+        }, null);
     }
 
     // Mind implementation for other controllers
@@ -86,7 +92,9 @@ class UITabBarControllerImpl extends UITabBarController {
 
         if (majorVersion >= 13) {
             const owner = this._owner.get();
-            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            if (owner &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
                 owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
             }
         }
@@ -148,23 +156,6 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 
         const owner = this._owner.get();
         if (owner) {
-            if (tabBarController.viewControllers) {
-                const position = tabBarController.viewControllers.indexOfObject(viewController);
-                if (position !== NSNotFound) {
-                    const prevPosition = owner.selectedIndex;
-                    const tabStripItems = owner.tabStrip && owner.tabStrip.items;
-                    if (tabStripItems) {
-                        if (tabStripItems[position]) {
-                            tabStripItems[position]._emit(TabStripItem.selectEvent);
-                        }
-
-                        if (tabStripItems[prevPosition]) {
-                            tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
-                        }
-                    }
-                }
-            }
-
             owner._onViewControllerShown(viewController);
         }
 
@@ -213,6 +204,23 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
     }
 }
 
+function updateBackgroundPositions(tabStrip: TabStrip, tabStripItem: TabStripItem) {
+    let bgView = (<any>tabStripItem).bgView;
+    const index = tabStripItem._index;
+    const width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
+    const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
+    if (!bgView) {
+        bgView = UIView.alloc().initWithFrame(frame);
+        tabStrip.nativeView.insertSubviewAtIndex(bgView, 0);
+        (<any>tabStripItem).bgView = bgView;
+    } else {
+        bgView.frame = frame;
+    }
+
+    const backgroundColor = tabStripItem.style.backgroundColor;
+    bgView.backgroundColor = backgroundColor instanceof Color ? backgroundColor.ios : backgroundColor;
+}
+
 function updateTitleAndIconPositions(tabStripItem: TabStripItem, tabBarItem: UITabBarItem, controller: UIViewController) {
     if (!tabStripItem || !tabBarItem) {
         return;
@@ -249,6 +257,8 @@ export class BottomNavigation extends TabNavigationBase {
     private _delegate: UITabBarControllerDelegateImpl;
     private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
     private _iconsCache = {};
+    private _selectedItemColor: Color;
+    private _unSelectedItemColor: Color;
 
     constructor() {
         super();
@@ -329,6 +339,17 @@ export class BottomNavigation extends TabNavigationBase {
             newItem.loadView(newItem.content);
         }
 
+        const tabStripItems = this.tabStrip && this.tabStrip.items;
+        if (tabStripItems) {
+            if (tabStripItems[newIndex]) {
+                tabStripItems[newIndex]._emit(TabStripItem.selectEvent);
+            }
+
+            if (tabStripItems[oldIndex]) {
+                tabStripItems[oldIndex]._emit(TabStripItem.unselectEvent);
+            }
+        }
+
         super.onSelectedIndexChanged(oldIndex, newIndex);
     }
 
@@ -338,6 +359,7 @@ export class BottomNavigation extends TabNavigationBase {
 
     public setTabBarBackgroundColor(value: UIColor | Color): void {
         this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+        this.updateAllItemsColors();
     }
 
     public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
@@ -345,43 +367,80 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        if (!this.tabStrip) {
+        if (!this.tabStrip || !tabStripItem) {
             return;
         }
 
-        let bgView = (<any>tabStripItem).bgView;
-        if (!bgView) {
-            const index = (<any>tabStripItem).index;
-            const width = this.tabStrip.nativeView.frame.size.width / this.tabStrip.items.length;
-            const frame = CGRectMake(width * index, 0, width, this.tabStrip.nativeView.frame.size.width);
-            bgView = UIView.alloc().initWithFrame(frame);
-            this.tabStrip.nativeView.insertSubviewAtIndex(bgView, 0);
-            (<any>tabStripItem).bgView = bgView;
-        }
-
-        bgView.backgroundColor = value instanceof Color ? value.ios : value;
+        updateBackgroundPositions(this.tabStrip, tabStripItem);
     }
 
     public setTabBarItemColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        const states = getTitleAttributesForStates(tabStripItem.label);
-        applyStatesToItem(tabStripItem.nativeView, states);
+        this.setViewAttributes(tabStripItem.nativeView, tabStripItem.label);
+    }
+
+    private setItemColors(): void {
+        if (this._selectedItemColor) {
+            this.viewController.tabBar.selectedImageTintColor = this._selectedItemColor.ios;
+        }
+        if (this._unSelectedItemColor) {
+            this.viewController.tabBar.unselectedItemTintColor = this._unSelectedItemColor.ios;
+        }
+    }
+
+    private setIconColor(tabStripItem: TabStripItem, forceReload: boolean = false): void {
+        if (forceReload || (!this._unSelectedItemColor && !this._selectedItemColor)) {
+            // if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
+            const tabStripColor = (this.selectedIndex === tabStripItem._index) ? this._selectedItemColor : this._unSelectedItemColor;
+
+            const image = this.getIcon(tabStripItem, tabStripColor);
+
+            tabStripItem.nativeView.image = image;
+            tabStripItem.nativeView.selectedImage = image;
+        }
     }
 
     public setTabBarIconColor(tabStripItem: TabStripItem, value: UIColor | Color): void {
-        const image = this.getIcon(tabStripItem);
+        this.setIconColor(tabStripItem);
+    }
 
-        tabStripItem.nativeView.image = image;
-        tabStripItem.nativeView.selectedImage = image;
+    public setTabBarIconSource(tabStripItem: TabStripItem, value: UIColor | Color): void {
+        this.updateItemColors(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        const states = getTitleAttributesForStates(tabStripItem.label);
-        applyStatesToItem(tabStripItem.nativeView, states);
+        this.setViewAttributes(tabStripItem.nativeView, tabStripItem.label);
     }
 
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
         const title = getTransformedText(tabStripItem.label.text, value);
         tabStripItem.nativeView.title = title;
+    }
+
+    public getTabBarHighlightColor(): UIColor {
+        return this._ios.tabBar.tintColor;
+    }
+
+    public setTabBarHighlightColor(value: UIColor | Color) {
+        const nativeColor = value instanceof Color ? value.ios : value;
+        this._ios.tabBar.tintColor = nativeColor;
+    }
+
+    public getTabBarSelectedItemColor(): Color {
+        return this._selectedItemColor;
+    }
+
+    public setTabBarSelectedItemColor(value: Color) {
+        this._selectedItemColor = value;
+        this.updateAllItemsColors();
+    }
+
+    public getTabBarUnSelectedItemColor(): Color {
+        return this._unSelectedItemColor;
+    }
+
+    public setTabBarUnSelectedItemColor(value: Color) {
+        this._unSelectedItemColor = value;
+        this.updateAllItemsColors();
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -505,22 +564,54 @@ export class BottomNavigation extends TabNavigationBase {
                 const tabBarItem = this.createTabBarItem(tabStripItem, i);
                 updateTitleAndIconPositions(tabStripItem, tabBarItem, controller);
 
-                const states = getTitleAttributesForStates(tabStripItem.label);
-                applyStatesToItem(tabBarItem, states);
+                this.setViewAttributes(tabBarItem, tabStripItem.label);
 
                 controller.tabBarItem = tabBarItem;
-                (<any>tabStripItem).index = i;
+                tabStripItem._index = i;
                 tabStripItem.setNativeView(tabBarItem);
             }
 
             controllers.addObject(controller);
         });
 
+        this.setItemImages();
+
         this._ios.viewControllers = controllers;
         this._ios.customizableViewControllers = null;
 
         // When we set this._ios.viewControllers, someone is clearing the moreNavigationController.delegate, so we have to reassign it each time here.
         this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
+    }
+
+    private setItemImages() {
+        if (this._selectedItemColor || this._unSelectedItemColor) {
+            if (this.tabStrip && this.tabStrip.items) {
+                this.tabStrip.items.forEach(item => {
+                    if (this._unSelectedItemColor && item.nativeView) {
+                        item.nativeView.image = this.getIcon(item, this._unSelectedItemColor);
+                        item.nativeView.tintColor = this._unSelectedItemColor;
+                    }
+                    if (this._selectedItemColor && item.nativeView) {
+                        item.nativeView.selectedImage = this.getIcon(item, this._selectedItemColor);
+                        item.nativeView.tintColor = this._selectedItemColor;
+                    }
+                });
+            }
+        }
+    }
+
+    public updateAllItemsColors() {
+        this.setItemColors();
+        if (this.tabStrip && this.tabStrip.items) {
+            this.tabStrip.items.forEach(tabStripItem => {
+                this.updateItemColors(tabStripItem);
+            });
+        }
+    }
+
+    private updateItemColors(tabStripItem: TabStripItem): void {
+        updateBackgroundPositions(this.tabStrip, tabStripItem);
+        this.setIconColor(tabStripItem, true);
     }
 
     private createTabBarItem(item: TabStripItem, index: number): UITabBarItem {
@@ -554,7 +645,7 @@ export class BottomNavigation extends TabNavigationBase {
         }
     }
 
-    private getIcon(tabStripItem: TabStripItem): UIImage {
+    private getIcon(tabStripItem: TabStripItem, color?: Color): UIImage {
         // Image and Label children of TabStripItem
         // take priority over its `iconSource` and `title` properties
         const iconSource = tabStripItem.image && tabStripItem.image.src;
@@ -563,8 +654,10 @@ export class BottomNavigation extends TabNavigationBase {
         }
 
         const target = tabStripItem.image;
-        const font = target.style.fontInternal;
-        const color = target.style.color;
+        const font = target.style.fontInternal || Font.default;
+        if (!color) {
+            color = target.style.color;
+        }
         const iconTag = [iconSource, font.fontStyle, font.fontWeight, font.fontSize, font.fontFamily, color].join(";");
 
         let isFontIcon = false;
@@ -673,44 +766,40 @@ export class BottomNavigation extends TabNavigationBase {
         this.setViewControllers(this.items);
         selectedIndexProperty.coerce(this);
     }
-}
 
-interface TabStates {
-    normalState?: any;
-    selectedState?: any;
-}
+    private setViewAttributes(item: UITabBarItem, view: View): any {
+        if (!view) {
+            return null;
+        }
 
-function getTitleAttributesForStates(view: View): TabStates {
-    if (!view) {
-        return null;
+        const defaultTabItemFontSize = 10;
+        const tabItemFontSize = view.style.fontSize || defaultTabItemFontSize;
+        const font: UIFont = (view.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+        const tabItemTextColor = view.style.color;
+        const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
+        let attributes: any = { [NSFontAttributeName]: font };
+
+        // if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
+        if (!this._selectedItemColor && !this._unSelectedItemColor) {
+            if (textColor) {
+                attributes[UITextAttributeTextColor] = textColor;
+                attributes[NSForegroundColorAttributeName] = textColor;
+            }
+        } else {
+            this.viewController.tabBar.unselectedItemTintColor = this._unSelectedItemColor && this._unSelectedItemColor.ios;
+            this.viewController.tabBar.selectedImageTintColor = this._selectedItemColor && this._selectedItemColor.ios;
+        }
+
+        item.setTitleTextAttributesForState(attributes, UIControlState.Selected);
+        item.setTitleTextAttributesForState(attributes, UIControlState.Normal);
+
+        // there's a bug when setting the item color on ios 13 if there's no background set to the tabstrip
+        // https://books.google.bg/books?id=99_BDwAAQBAJ&q=tabBar.unselectedItemTintColor
+        // to fix the above issue we are applying the selected fix only for the case, when there is no background set
+        // in that case we have the following known issue:
+        // // we will set the color to all unselected items, so you won't be able to set different colors for the different not selected items
+        if (!this.viewController.tabBar.barTintColor && attributes[UITextAttributeTextColor] && (majorVersion > 9)) {
+            this.viewController.tabBar.unselectedItemTintColor = attributes[UITextAttributeTextColor];
+        }
     }
-
-    const result: TabStates = {};
-    const defaultTabItemFontSize = 10;
-    const tabItemFontSize = view.style.fontSize || defaultTabItemFontSize;
-    const font: UIFont = view.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
-    const tabItemTextColor = view.style.color;
-    const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
-    result.normalState = { [NSFontAttributeName]: font };
-    if (textColor) {
-        result.normalState[UITextAttributeTextColor] = textColor;
-    }
-
-    const tabSelectedItemTextColor = view.style.color;
-    const selectedTextColor = tabSelectedItemTextColor instanceof Color ? tabSelectedItemTextColor.ios : null;
-    result.selectedState = { [NSFontAttributeName]: font };
-    if (selectedTextColor) {
-        result.selectedState[UITextAttributeTextColor] = selectedTextColor;
-    }
-
-    return result;
-}
-
-function applyStatesToItem(item: UITabBarItem, states: TabStates) {
-    if (!states) {
-        return;
-    }
-
-    item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
-    item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
 }

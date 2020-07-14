@@ -1,7 +1,8 @@
 import {
     ButtonBase, PseudoClassHandler,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
-    Length, zIndexProperty, textAlignmentProperty, TextAlignment
+    Length, zIndexProperty, textAlignmentProperty, TextAlignment, layout,
+    minWidthProperty, minHeightProperty
 } from "./button-common";
 import { profile } from "../../profiling";
 import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
@@ -111,6 +112,18 @@ export class Button extends ButtonBase {
         }
     }
 
+    [minWidthProperty.getDefault](): Length {
+        const dips = org.nativescript.widgets.ViewHelper.getMinWidth(this.nativeViewProtected);
+
+        return { value: dips, unit: "px" };
+    }
+
+    [minHeightProperty.getDefault](): Length {
+        const dips = org.nativescript.widgets.ViewHelper.getMinHeight(this.nativeViewProtected);
+        
+        return { value: dips, unit: "px" };
+    }
+
     [paddingTopProperty.getDefault](): Length {
         return { value: this._defaultPaddingTop, unit: "px" };
     }
@@ -177,3 +190,5 @@ export class Button extends ButtonBase {
         return 4; // 4dp @dimen/button_pressed_z_material
     }
 }
+
+Button.prototype._ignoreFlexMinWidthHeightReset = true;

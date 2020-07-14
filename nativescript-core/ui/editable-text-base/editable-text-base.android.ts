@@ -227,9 +227,13 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
             this._keyListenerCache = listener;
         }
 
-        // clear the listener if editable is false
+        // clear these fields instead of clearing listener.
+        // this allows input Type to be changed even after editable is false.
         if (!this.editable) {
-            nativeView.setKeyListener(null);
+            nativeView.setFocusable(false);
+            nativeView.setFocusableInTouchMode(false);
+            nativeView.setLongClickable(false);
+            nativeView.setClickable(false);
         }
     }
 
@@ -248,8 +252,9 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     [keyboardTypeProperty.getDefault](): number {
         return this.nativeTextViewProtected.getInputType();
     }
-    [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | number) {
+    [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | "integer" | number) {
         let newInputType;
+
         switch (value) {
             case "datetime":
                 newInputType = android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL;
@@ -269,6 +274,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
             case "email":
                 newInputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+                break;
+
+            case "integer":
+                newInputType = android.text.InputType.TYPE_CLASS_NUMBER;
                 break;
 
             default:

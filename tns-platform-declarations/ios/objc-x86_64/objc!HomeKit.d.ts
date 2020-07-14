@@ -1587,6 +1587,8 @@ declare class HMHome extends NSObject {
 
 	readonly serviceGroups: NSArray<HMServiceGroup>;
 
+	readonly supportsAddingNetworkRouter: boolean;
+
 	readonly triggers: NSArray<HMTrigger>;
 
 	readonly uniqueIdentifier: NSUUID;
@@ -1716,6 +1718,8 @@ interface HMHomeDelegate extends NSObjectProtocol {
 	homeDidUpdateNameForZone?(home: HMHome, zone: HMZone): void;
 
 	homeDidUpdateRoomForAccessory?(home: HMHome, room: HMRoom, accessory: HMAccessory): void;
+
+	homeDidUpdateSupportedFeatures?(home: HMHome): void;
 
 	homeDidUpdateTrigger?(home: HMHome, trigger: HMTrigger): void;
 }

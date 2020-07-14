@@ -47,7 +47,7 @@ export { File, FileSystemEntity, Folder, knownFolders, path } from "./file-syste
 
 // Export all interfaces from "http" module
 export { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from "./http";
-// Export all methods from "http" as ApplicationSettings
+// Export all methods from "http" as Http
 import { getFile, getImage, getJSON, getString as httpGetString, request } from "./http";
 export const Http = { getFile, getImage, getJSON, getString: httpGetString, request };
 
@@ -98,7 +98,7 @@ import {
     GC, isFontIconURI, isDataURI, isFileOrResourcePath,
     executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject,
     getModuleName,
-    openFile, openUrl,
+    openFile, openUrl, isRealDevice,
     layout, ad as androidUtils, ios as iosUtils
 } from "./utils/utils";
 
@@ -107,7 +107,7 @@ export const Utils = {
     executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject,
 
     getModuleName,
-    openFile, openUrl,
+    openFile, openUrl, isRealDevice,
 
     layout, android: androidUtils, ios: iosUtils
 };

@@ -4,7 +4,7 @@
  */ /** */
 
 import {
-    View, ViewBase, Property, CoercibleProperty, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData
+    View, ViewBase, Property, CoercibleProperty, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData, Color
 } from "../../core/view";
 import { TabStrip } from "../tab-strip";
 import { TabStripItem } from "../tab-strip-item";
@@ -94,6 +94,12 @@ export class TabNavigationBase extends View {
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
+    getTabBarBackgroundArgbColor(): any
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
     setTabBarBackgroundColor(value: any): void
 
     /**
@@ -148,6 +154,30 @@ export class TabNavigationBase extends View {
      * @private
      * Method is intended to be overridden by inheritors and used as "protected"
      */
+    getTabBarSelectedItemColor(): Color
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarSelectedItemColor(value: Color)
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    getTabBarUnSelectedItemColor(): Color
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarUnSelectedItemColor(value: Color)
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
     setTabBarItemTitle(tabStripItem: TabStripItem, value: any): any
 
     /**
@@ -179,6 +209,12 @@ export class TabNavigationBase extends View {
      * Method is intended to be overridden by inheritors and used as "protected"
      */
     setTabBarIconColor(tabStripItem: TabStripItem, value: any): void
+
+    /**
+     * @private
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    setTabBarIconSource(tabStripItem: TabStripItem, value: any): void
 
     /**
      * @private

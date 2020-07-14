@@ -58,3 +58,17 @@ export function getFile(arg: any, destinationFilePath?: string): Promise<any> {
             }, e => reject(e));
     });
 }
+
+export function getBinary(arg: any): Promise<ArrayBuffer> {
+    return new Promise<ArrayBuffer>((resolve, reject) => {
+        httpRequest.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
+            .then(r => {
+                try {
+                    const arrayBuffer = r.content.toArrayBuffer();
+                    resolve(arrayBuffer);
+                } catch (e) {
+                    reject(e);
+                }
+            }, e => reject(e));
+    });
+}

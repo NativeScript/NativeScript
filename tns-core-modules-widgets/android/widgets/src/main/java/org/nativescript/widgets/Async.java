@@ -26,6 +26,7 @@ import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -180,11 +181,8 @@ public class Async {
                     stream = new java.net.URL(params[0]).openStream();
                     Bitmap bmp = BitmapFactory.decodeStream(stream);
                     return bmp;
-                } catch (MalformedURLException e) {
-                    Log.e(TAG, "Failed to decode stream, MalformedURLException: " + e.getMessage());
-                    return null;
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed to decode stream, IOException: " + e.getMessage());
+                } catch (Throwable t) {
+                    Log.e(TAG, "Failed to decode stream, Throwable: " + t.getMessage());
                     return null;
                 } finally {
                     if (stream != null) {
@@ -329,7 +327,7 @@ public class Async {
             public String url;
             public String method;
             public ArrayList<KeyValuePair> headers;
-            public String content;
+            public Object content;
             public int timeout = -1;
             public int screenWidth = -1;
             public int screenHeight = -1;
@@ -356,17 +354,21 @@ public class Async {
             }
 
             public void writeContent(HttpURLConnection connection, Stack<Closeable> openedStreams) throws IOException {
-                if (this.content == null || this.content.getClass() != String.class) {
+                if (this.content == null) {
                     return;
                 }
 
                 OutputStream outStream = connection.getOutputStream();
                 openedStreams.push(outStream);
 
-                OutputStreamWriter writer = new OutputStreamWriter(outStream);
-                openedStreams.push(writer);
+                if (this.content instanceof String) {
+                    OutputStreamWriter writer = new OutputStreamWriter(outStream);
+                    openedStreams.push(writer);
 
-                writer.write((String) this.content);
+                    writer.write((String) this.content);
+                } else {
+                    outStream.write(((java.nio.ByteBuffer)this.content).array());
+                }
             }
         }
 
@@ -472,8 +474,8 @@ public class Async {
                         bitmapOptions.inSampleSize = scale;
                         this.responseAsImage = BitmapFactory.decodeByteArray(responseStream.buf(), 0, responseStream.size(), bitmapOptions);
                     }
-                } catch (Exception e) {
-                    Log.e(TAG, "Failed to decode byte array, Exception: " + e.getMessage());
+                } catch (Throwable t) {
+                    Log.e(TAG, "Failed to decode byte array, Throwable: " + t.getMessage());
                 }
 
                 if (this.responseAsImage == null) {
@@ -528,6 +530,7 @@ public class Async {
                     // apply timeout
                     if (options.timeout > 0) {
                         connection.setConnectTimeout(options.timeout);
+                        connection.setReadTimeout(options.timeout);
                     }
 
                     // don't follow redirect (30x) responses; by default, HttpURLConnection follows them.

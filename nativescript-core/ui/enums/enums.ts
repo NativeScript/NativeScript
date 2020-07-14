@@ -7,6 +7,7 @@ export module KeyboardType {
     export const number = "number";
     export const url = "url";
     export const email = "email";
+    export const integer = "integer";
 }
 
 export module ReturnKeyType {
@@ -77,6 +78,7 @@ export module Visibility {
     export const visible: string = "visible";
     export const collapse: string = "collapse";
     export const collapsed: string = "collapsed";
+    export const hidden: string = "hidden";
 }
 
 export module FontAttributes {

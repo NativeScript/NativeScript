@@ -12,11 +12,12 @@ export interface Node {
     parent?: Node;
 
     id?: string;
+    nodeName?: string;
     cssType?: string;
     cssClasses?: Set<string>;
     cssPseudoClasses?: Set<string>;
-    getChildIndex?(node: Node): number
-    getChildAt?(index: number): Node
+    getChildIndex?(node: Node): number;
+    getChildAt?(index: number): Node;
 }
 
 export interface Declaration {

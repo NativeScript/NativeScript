@@ -1,19 +1,18 @@
 import { Node, Declaration, Changes, ChangeMap } from ".";
 import { isNullOrUndefined } from "../../../utils/types";
-import { escapeRegexSymbols } from "../../../utils/utils-common";
 
 import * as cssParser from "../../../css";
 import * as parser from "../../../css/parser";
 
 const enum Specificity {
-    Inline = 0x01000000,
-    Id = 0x00010000,
-    Attribute = 0x00000100,
-    Class = 0x00000100,
-    PseudoClass = 0x00000100,
-    Type = 0x00000001,
-    Universal = 0x00000000,
-    Invalid = 0x00000000
+    Inline =        1000,
+    Id =            100,
+    Attribute =     10,
+    Class =         10,
+    PseudoClass =   10,
+    Type =          1,
+    Universal =     0,
+    Invalid =       0
 }
 
 const enum Rarity {
@@ -71,6 +70,7 @@ function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic: b
 declare type Combinator = "+" | ">" | "~" | " ";
 @SelectorProperties(Specificity.Universal, Rarity.Universal, Match.Static)
 export abstract class SelectorCore {
+    public pos: number;
     public specificity: number;
     public rarity: Rarity;
     public combinator: Combinator;
@@ -167,43 +167,35 @@ export class AttributeSelector extends SimpleSelector {
             this.match = node => false;
         }
 
-        let escapedValue = escapeRegexSymbols(value);
-        let regexp: RegExp = null;
-        switch (test) {
-            case "^=": // PrefixMatch
-                regexp = new RegExp("^" + escapedValue);
-                break;
-            case "$=": // SuffixMatch
-                regexp = new RegExp(escapedValue + "$");
-                break;
-            case "*=": // SubstringMatch
-                regexp = new RegExp(escapedValue);
-                break;
-            case "=": // Equals
-                regexp = new RegExp("^" + escapedValue + "$");
-                break;
-            case "~=": // Includes
-                if (/\s/.test(value)) {
-                    this.match = node => false;
+        this.match = node => {
+            const attr = node[attribute] + "";
 
-                    return;
-                }
-                regexp = new RegExp("(^|\\s)" + escapedValue + "(\\s|$)");
-                break;
-            case "|=": // DashMatch
-                regexp = new RegExp("^" + escapedValue + "(-|$)");
-                break;
-        }
+            if (test === "=") { // Equals
+                return attr === value;
+            }
 
-        if (regexp) {
-            this.match = node => regexp.test(node[attribute] + "");
+            if (test === "^=") { // PrefixMatch
+                return attr.startsWith(value);
+            }
 
-            return;
-        } else {
-            this.match = node => false;
+            if (test === "$=") { // SuffixMatch
+                return attr.endsWith(value);
+            }
 
-            return;
-        }
+            if (test === "*=") { // SubstringMatch
+                return attr.indexOf(value) !== -1;
+            }
+
+            if (test === "~=") { // Includes
+                const words = attr.split(" ");
+
+                return words && words.indexOf(value) !== -1;
+            }
+
+            if (test === "|=") { // DashMatch
+                return attr === value || attr.startsWith(value + "-");
+            }
+        };
     }
     public toString(): string { return `[${this.attribute}${wrap(this.test)}${(this.test && this.value) || ""}]${wrap(this.combinator)}`; }
     public match(node: Node): boolean { return false; }
@@ -252,7 +244,13 @@ export class Selector extends SelectorCore {
         let siblingGroup: SimpleSelector[];
         let lastGroup: SimpleSelector[][];
         let groups: SimpleSelector[][][] = [];
-        selectors.reverse().forEach(sel => {
+
+        this.specificity = 0;
+        this.dynamic = false;
+
+        for (let i = selectors.length - 1; i > -1; i--) {
+            const sel = selectors[i];
+
             if (supportedCombinator.indexOf(sel.combinator) === -1) {
                 throw new Error(`Unsupported combinator "${sel.combinator}".`);
             }
@@ -262,16 +260,22 @@ export class Selector extends SelectorCore {
             if (sel.combinator === ">") {
                 lastGroup.push(siblingGroup = []);
             }
+
+            this.specificity += sel.specificity;
+
+            if (sel.dynamic) {
+                this.dynamic = true;
+            }
+
             siblingGroup.push(sel);
-        });
+        }
+
         this.groups = groups.map(g =>
             new Selector.ChildGroup(g.map(sg =>
                 new Selector.SiblingGroup(sg)
             ))
         );
-        this.last = selectors[0];
-        this.specificity = selectors.reduce((sum, sel) => sel.specificity + sum, 0);
-        this.dynamic = selectors.some(sel => sel.dynamic);
+        this.last = selectors[selectors.length - 1];
     }
 
     public toString(): string { return this.selectors.join(""); }
@@ -364,15 +368,15 @@ export namespace Selector {
         }
 
         public match(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = node.parent) && !!sel.match(node)) ? node : null;
+            return this.selectors.every((sel, i) => (node = (i === 0 ? node : node.parent)) && sel.match(node)) ? node : null;
         }
 
         public mayMatch(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = node.parent) && !!sel.mayMatch(node)) ? node : null;
+            return this.selectors.every((sel, i) => (node = (i === 0 ? node : node.parent)) && sel.mayMatch(node)) ? node : null;
         }
 
         public trackChanges(node: Node, map: ChangeAccumulator) {
-            this.selectors.forEach((sel, i) => (i === 0 ? node : node = node.parent) && sel.trackChanges(node, map));
+            this.selectors.forEach((sel, i) => (node = (i === 0 ? node : node.parent)) && sel.trackChanges(node, map));
         }
     }
     export class SiblingGroup {
@@ -383,15 +387,15 @@ export namespace Selector {
         }
 
         public match(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.match(node)) ? node : null;
+            return this.selectors.every((sel, i) => (node = (i === 0 ? node : getNodeDirectSibling(node))) && sel.match(node)) ? node : null;
         }
 
         public mayMatch(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.mayMatch(node)) ? node : null;
+            return this.selectors.every((sel, i) => (node = (i === 0 ? node : getNodeDirectSibling(node))) && sel.mayMatch(node)) ? node : null;
         }
 
         public trackChanges(node: Node, map: ChangeAccumulator) {
-            this.selectors.forEach((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.trackChanges(node, map));
+            this.selectors.forEach((sel, i) => (node = (i === 0 ? node : getNodeDirectSibling(node))) && sel.trackChanges(node, map));
         }
     }
     export interface Bound {
@@ -412,9 +416,8 @@ export function fromAstNodes(astRules: cssParser.Node[]): RuleSet[] {
     return (<cssParser.Rule[]>astRules.filter(isRule)).map(rule => {
         let declarations = rule.declarations.filter(isDeclaration).map(createDeclaration);
         let selectors = rule.selectors.map(createSelector);
-        let ruleset = new RuleSet(selectors, declarations);
 
-        return ruleset;
+        return new RuleSet(selectors, declarations);
     });
 }
 
@@ -423,13 +426,28 @@ function createDeclaration(decl: cssParser.Declaration): any {
 }
 
 function createSimpleSelectorFromAst(ast: parser.SimpleSelector): SimpleSelector {
-    switch (ast.type) {
-        case "*": return new UniversalSelector();
-        case "#": return new IdSelector(ast.identifier);
-        case "": return new TypeSelector(ast.identifier.replace(/-/, "").toLowerCase());
-        case ".": return new ClassSelector(ast.identifier);
-        case ":": return new PseudoClassSelector(ast.identifier);
-        case "[]": return ast.test ? new AttributeSelector(ast.property, ast.test, ast.value) : new AttributeSelector(ast.property);
+    if (ast.type === ".") {
+        return new ClassSelector(ast.identifier);
+    }
+
+    if (ast.type === "") {
+        return new TypeSelector(ast.identifier.replace("-", "").toLowerCase());
+    }
+
+    if (ast.type === "#") {
+        return new IdSelector(ast.identifier);
+    }
+
+    if (ast.type === "[]") {
+        return new AttributeSelector(ast.property, ast.test, ast.test && ast.value);
+    }
+
+    if (ast.type === ":") {
+        return new PseudoClassSelector(ast.identifier);
+    }
+
+    if (ast.type === "*") {
+        return new UniversalSelector();
     }
 }
 
@@ -485,18 +503,14 @@ function isDeclaration(node: cssParser.Node): node is cssParser.Declaration {
     return node.type === "declaration";
 }
 
-interface SelectorInDocument {
-    pos: number;
-    sel: SelectorCore;
-}
 interface SelectorMap {
-    [key: string]: SelectorInDocument[];
+    [key: string]: SelectorCore[];
 }
 export class SelectorsMap<T extends Node> implements LookupSorter {
     private id: SelectorMap = {};
     private class: SelectorMap = {};
     private type: SelectorMap = {};
-    private universal: SelectorInDocument[] = [];
+    private universal: SelectorCore[] = [];
 
     private position = 0;
 
@@ -505,24 +519,23 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
     }
 
     query(node: T): SelectorsMatch<T> {
-        let selectorClasses = [
+        const selectorsMatch = new SelectorsMatch<T>();
+        const { cssClasses, id, cssType } = node;
+        const selectorClasses = [
             this.universal,
-            this.id[node.id],
-            this.type[node.cssType]
+            this.id[id],
+            this.type[cssType]
         ];
-        if (node.cssClasses) {
-            node.cssClasses.forEach(c => selectorClasses.push(this.class[c]));
-        }
-        let selectors = selectorClasses
-            .filter(arr => !!arr)
-            .reduce((cur, next) => cur.concat(next), []);
 
-        let selectorsMatch = new SelectorsMatch<T>();
+        if (cssClasses && cssClasses.size) {
+            cssClasses.forEach(c => selectorClasses.push(this.class[c]));
+        }
+
+        const selectors = selectorClasses.reduce((cur, next) => cur.concat(next || []), []);
 
         selectorsMatch.selectors = selectors
-            .filter(sel => sel.sel.accumulateChanges(node, selectorsMatch))
-            .sort((a, b) => a.sel.specificity - b.sel.specificity || a.pos - b.pos)
-            .map(docSel => docSel.sel);
+            .filter(sel => sel.accumulateChanges(node, selectorsMatch))
+            .sort((a, b) => a.specificity - b.specificity || a.pos - b.pos);
 
         return selectorsMatch;
     }
@@ -537,17 +550,17 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
     sortAsUniversal(sel: SelectorCore): void { this.universal.push(this.makeDocSelector(sel)); }
 
     private addToMap(map: SelectorMap, head: string, sel: SelectorCore): void {
-        this.position++;
-        let list = map[head];
-        if (list) {
-            list.push(this.makeDocSelector(sel));
-        } else {
-            map[head] = [this.makeDocSelector(sel)];
+        if (!map[head]) {
+            map[head] = [];
         }
+
+        map[head].push(this.makeDocSelector(sel));
     }
 
-    private makeDocSelector(sel: SelectorCore): SelectorInDocument {
-        return { sel, pos: this.position++ };
+    private makeDocSelector(sel: SelectorCore): SelectorCore {
+        sel.pos = this.position++;
+
+        return sel;
     }
 }
 

@@ -48,18 +48,18 @@ export class Screen {
     resetFrameRootView = async () => {
         console.log("Setting frame root ...");
         const btnResetFrameRootView = await this._driver.waitForElement(resetFrameRootView);
-        await btnResetFrameRootView.tap();
+        await btnResetFrameRootView.click();
     }
 
     resetLayoutRootView = async () => {
         console.log("Setting layout root ...");
         const btnResetLayoutRootView = await this._driver.waitForElement(resetLayoutRootView);
-        await btnResetLayoutRootView.tap();
+        await btnResetLayoutRootView.click();
     }
 
     resetTabRootView = async () => {
         const btnResetTabRootView = await this._driver.waitForElement(resetTabRootView);
-        await btnResetTabRootView.tap();
+        await btnResetTabRootView.click();
     }
 
     loadedTabRootView = async () => {
@@ -93,7 +93,7 @@ export class Screen {
 
     showModalFrame = async () => {
         const btnModalFrame = await this._driver.waitForElement(modalFrame);
-        await btnModalFrame.tap();
+        await btnModalFrame.click();
     }
 
     loadedModalFrame = async () => {
@@ -104,7 +104,7 @@ export class Screen {
 
     showModalPage = async () => {
         const btnModalPage = await this._driver.waitForElement(modalPage);
-        await btnModalPage.tap();
+        await btnModalPage.click();
     }
 
     loadedModalPage = async () => {
@@ -115,7 +115,7 @@ export class Screen {
 
     showModalLayout = async () => {
         const btnModalLayout = await this._driver.waitForElement(modalLayout);
-        await btnModalLayout.tap();
+        await btnModalLayout.click();
     }
 
     loadedModalLayout = async () => {
@@ -124,7 +124,7 @@ export class Screen {
 
     showModalTabView = async () => {
         const btnModalTabView = await this._driver.waitForElement(modalTabView);
-        await btnModalTabView.tap();
+        await btnModalTabView.click();
     }
 
     loadedModalTabView = async () => {
@@ -134,23 +134,23 @@ export class Screen {
     }
 
     navigateToSecondPage = async () => {
-        const btnNavToSecondPage = await this._driver.waitForElement(navToSecondPage);
-        await btnNavToSecondPage.tap();
+        const btnNavToSecondPage = await this._driver.findElementByText(navToSecondPage);
+        await btnNavToSecondPage.click();
     }
 
     showDialogConfirm = async () => {
         const btnShowDialogConfirm = await this._driver.waitForElement(showDialog);
-        await btnShowDialogConfirm.tap();
+        await btnShowDialogConfirm.click();
     }
 
     navigateToFirstItem = async () => {
         const itemModalFirst = await this._driver.waitForElement(modalFirst);
-        await itemModalFirst.tap();
+        await itemModalFirst.click();
     }
 
     navigateToSecondItem = async () => {
         const itemModalSecond = await this._driver.waitForElement(modalSecond);
-        await itemModalSecond.tap();
+        await itemModalSecond.click();
     }
 
     loadedConfirmDialog = async () => {
@@ -179,17 +179,17 @@ export class Screen {
 
     closeDialog = async () => {
         const btnYesDialog = await this._driver.waitForElement(confirmDialog);
-        await btnYesDialog.tap();
+        await btnYesDialog.click();
     }
 
     goBackFromSecondPage = async () => {
         const btnGoBackFromSecondPage = await this._driver.waitForElement(goBack);
-        await btnGoBackFromSecondPage.tap();
+        await btnGoBackFromSecondPage.click();
     }
 
     showNestedModalFrame = async () => {
         const btnShowNestedModalFrame = await this._driver.waitForElement(showNestedModalFrame);
-        await btnShowNestedModalFrame.tap();
+        await btnShowNestedModalFrame.click();
     }
 
     loadedNestedModalFrame = async () => {
@@ -200,12 +200,12 @@ export class Screen {
 
     closeModalNested = async () => {
         const btnCloseNestedModal = await this._driver.waitForElement(closeModalNested);
-        await btnCloseNestedModal.tap();
+        await btnCloseNestedModal.click();
     }
 
     showNestedModalPage = async () => {
         const btnShowNestedModalPage = await this._driver.waitForElement(showNestedModalPage);
-        await btnShowNestedModalPage.tap();
+        await btnShowNestedModalPage.click();
     }
 
     loadedNestedModalPage = async () => {
@@ -216,7 +216,7 @@ export class Screen {
 
     closeModal = async () => {
         const btnCloseModal = await this._driver.waitForElement(closeModal);
-        await btnCloseModal.tap();
+        await btnCloseModal.click();
     }
 
     loadModalFrame = async () => {

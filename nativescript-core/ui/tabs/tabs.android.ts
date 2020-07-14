@@ -15,7 +15,7 @@ import {
     getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty
 } from "../tab-navigation-base/tab-navigation-base";
 import { getTransformedText } from "../text-base";
-import { offscreenTabLimitProperty, swipeEnabledProperty, TabsBase } from "./tabs-common";
+import { offscreenTabLimitProperty, swipeEnabledProperty, animationEnabledProperty, TabsBase } from "./tabs-common";
 
 export * from "./tabs-common";
 
@@ -300,10 +300,12 @@ function initializeNativeClasses() {
 
             if (position >= 0 && tabStripItems && tabStripItems[position]) {
                 tabStripItems[position]._emit(TabStripItem.selectEvent);
+                owner._setItemColor(tabStripItems[position]);
             }
 
             if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
                 tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
+                owner._setItemColor(tabStripItems[prevPosition]);
             }
         }
 
@@ -373,6 +375,10 @@ export class Tabs extends TabsBase {
     private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
     private _androidViewId: number = -1;
     public _originalBackground: any;
+    private _textTransform: TextTransform = "uppercase";
+    private _selectedItemColor: Color;
+    private _unSelectedItemColor: Color;
+    public animationEnabled: boolean;
 
     constructor() {
         super();
@@ -465,7 +471,11 @@ export class Tabs extends TabsBase {
 
     public _loadUnloadTabItems(newIndex: number) {
         const items = this.items;
-        const lastIndex = this.items.length - 1;
+        if (!items) {
+            return;
+        }
+
+        const lastIndex = items.length - 1;
         const offsideItems = this.offscreenTabLimit;
 
         let toUnload = [];
@@ -617,10 +627,10 @@ export class Tabs extends TabsBase {
         }
 
         const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-        items.forEach((item: TabStripItem, i, arr) => {
-            (<any>item).index = i;
-            const tabItemSpec = this.createTabItemSpec(item);
-            (<any>item).tabItemSpec = tabItemSpec;
+        items.forEach((tabStripItem: TabStripItem, i, arr) => {
+            tabStripItem._index = i;
+            const tabItemSpec = this.createTabItemSpec(tabStripItem);
+            (<any>tabStripItem).tabItemSpec = tabItemSpec;
             tabItems.push(tabItemSpec);
         });
 
@@ -630,7 +640,20 @@ export class Tabs extends TabsBase {
         items.forEach((item, i, arr) => {
             const tv = tabsBar.getTextViewForItemAt(i);
             item.setNativeView(tv);
+            this._setItemColor(item);
         });
+    }
+
+    private getItemLabelTextTransform(tabStripItem: TabStripItem): TextTransform {
+        const nestedLabel = tabStripItem.label;
+        let textTransform: TextTransform = null;
+        if (nestedLabel && nestedLabel.style.textTransform !== "initial") {
+            textTransform = nestedLabel.style.textTransform;
+        } else if (tabStripItem.style.textTransform !== "initial") {
+            textTransform = tabStripItem.style.textTransform;
+        }
+
+        return textTransform || this._textTransform;
     }
 
     private createTabItemSpec(tabStripItem: TabStripItem): org.nativescript.widgets.TabItemSpec {
@@ -641,23 +664,18 @@ export class Tabs extends TabsBase {
             let title = nestedLabel.text;
 
             // TEXT-TRANSFORM
-            const textTransform = nestedLabel.style.textTransform;
-            if (textTransform) {
-                title = getTransformedText(title, textTransform);
-            }
+            const textTransform = this.getItemLabelTextTransform(tabStripItem);
+            title = getTransformedText(title, textTransform);
             tabItemSpec.title = title;
 
             // BACKGROUND-COLOR
             const backgroundColor = tabStripItem.style.backgroundColor;
-            if (backgroundColor) {
-                tabItemSpec.backgroundColor = backgroundColor.android;
-            }
+            tabItemSpec.backgroundColor = backgroundColor ? backgroundColor.android : this.getTabBarBackgroundArgbColor();
 
             // COLOR
-            const color = nestedLabel.style.color;
-            if (color) {
-                tabItemSpec.color = color.android;
-            }
+            let itemColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
+            const color = itemColor || nestedLabel.style.color;
+            tabItemSpec.color = color && color.android;
 
             // FONT
             const fontInternal = nestedLabel.style.fontInternal;
@@ -669,7 +687,7 @@ export class Tabs extends TabsBase {
             // ICON
             const iconSource = tabStripItem.image && tabStripItem.image.src;
             if (iconSource) {
-                const icon = this.getIcon(tabStripItem);
+                const icon = this.getIcon(tabStripItem, itemColor);
 
                 if (icon) {
                     // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
@@ -685,15 +703,20 @@ export class Tabs extends TabsBase {
         return tabItemSpec;
     }
 
-    private getIcon(tabStripItem: TabStripItem): android.graphics.drawable.BitmapDrawable {
+    private getIcon(tabStripItem: TabStripItem, color?: Color): android.graphics.drawable.BitmapDrawable {
         const iconSource = tabStripItem.image && tabStripItem.image.src;
+        if (!iconSource) {
+            return null;
+        }
 
         let is: ImageSource;
         if (isFontIconURI(iconSource)) {
             const fontIconCode = iconSource.split("//")[1];
             const target = tabStripItem.image ? tabStripItem.image : tabStripItem;
             const font = target.style.fontInternal;
-            const color = target.style.color;
+            if (!color) {
+                color = target.style.color;
+            }
             is = ImageSource.fromFontIconCodeSync(fontIconCode, font, color);
         } else {
             is = ImageSource.fromFileOrResourceSync(iconSource);
@@ -772,8 +795,19 @@ export class Tabs extends TabsBase {
         if (value instanceof Color) {
             this._tabsBar.setBackgroundColor(value.android);
         } else {
-            this._tabsBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
+            this._tabsBar.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources()));
         }
+
+        this.updateTabStripItems();
+    }
+
+    private updateTabStripItems(): void {
+        this.tabStrip.items.forEach((tabStripItem: TabStripItem) => {
+            if (tabStripItem.nativeView) {
+                const tabItemSpec = this.createTabItemSpec(tabStripItem);
+                this.updateAndroidItemAt(tabStripItem._index, tabItemSpec);
+            }
+        });
     }
 
     public getTabBarHighlightColor(): number {
@@ -785,40 +819,107 @@ export class Tabs extends TabsBase {
         this._tabsBar.setSelectedIndicatorColors([color]);
     }
 
-    public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
+    private setItemsColors(items: Array<TabStripItem>): void {
+        items.forEach((item) => {
+            if (item.nativeView) {
+                this._setItemColor(item);
+            }
+        });
+    }
+
+    public getTabBarSelectedItemColor(): Color {
+        return this._selectedItemColor;
+    }
+
+    public setTabBarSelectedItemColor(value: Color) {
+        this._selectedItemColor = value;
+        this.setItemsColors(this.tabStrip.items);
+    }
+
+    public getTabBarUnSelectedItemColor(): Color {
+        return this._unSelectedItemColor;
+    }
+
+    public setTabBarUnSelectedItemColor(value: Color) {
+        this._unSelectedItemColor = value;
+        this.setItemsColors(this.tabStrip.items);
+    }
+
+    private updateItem(tabStripItem: TabStripItem): void {
         // TODO: Should figure out a way to do it directly with the the nativeView
         const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
         const tabItemSpec = this.createTabItemSpec(tabStripItem);
         this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
+    }
+
+    public setTabBarItemTitle(tabStripItem: TabStripItem, value: string): void {
+        this.updateItem(tabStripItem);
     }
 
     public setTabBarItemBackgroundColor(tabStripItem: TabStripItem, value: android.graphics.drawable.Drawable | Color): void {
-        // TODO: Should figure out a way to do it directly with the the nativeView
-        const tabStripItemIndex = this.tabStrip.items.indexOf(tabStripItem);
-        const tabItemSpec = this.createTabItemSpec(tabStripItem);
-        this.updateAndroidItemAt(tabStripItemIndex, tabItemSpec);
+        this.updateItem(tabStripItem);
     }
 
-    public setTabBarItemColor(tabStripItem: TabStripItem, value: number | Color): void {
-        if (typeof value === "number") {
-            tabStripItem.nativeViewProtected.setTextColor(value);
-        } else {
-            tabStripItem.nativeViewProtected.setTextColor(value.android);
+    public _setItemColor(tabStripItem: TabStripItem) {
+        const itemColor = (tabStripItem._index === this.selectedIndex) ? this._selectedItemColor : this._unSelectedItemColor;
+        if (!itemColor) {
+            return;
+        }
+
+        // set label color
+        tabStripItem.nativeViewProtected.setTextColor(itemColor.android);
+
+        // set icon color
+        this.setIconColor(tabStripItem, itemColor);
+    }
+
+    private setIconColor(tabStripItem: TabStripItem, color?: Color) {
+        const tabBarItem = this._tabsBar.getViewForItemAt(tabStripItem._index);
+
+        const drawable = this.getIcon(tabStripItem, color);
+        const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
+        imgView.setImageDrawable(drawable);
+        if (color) {
+            imgView.setColorFilter(color.android);
         }
     }
 
-    public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
-        const index = (<any>tabStripItem).index;
-        const tabBarItem = this._tabsBar.getViewForItemAt(index);
-        const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
-        const drawable = this.getIcon(tabStripItem);
+    public setTabBarItemColor(tabStripItem: TabStripItem, value: number | Color): void {
+        const itemColor = (tabStripItem._index === this.selectedIndex) ? this._selectedItemColor : this._unSelectedItemColor;
+        if (itemColor) {
+            // the itemColor is set through the selectedItemColor and unSelectedItemColor properties
+            // so it does not respect the css color
+            return;
+        }
 
-        imgView.setImageDrawable(drawable);
+        const androidColor = value instanceof Color ? value.android : value;
+        tabStripItem.nativeViewProtected.setTextColor(androidColor);
+    }
+
+    public setTabBarIconColor(tabStripItem: TabStripItem, value: number | Color): void {
+        const itemColor = (tabStripItem._index === this.selectedIndex) ? this._selectedItemColor : this._unSelectedItemColor;
+        if (itemColor) {
+            // the itemColor is set through the selectedItemColor and unSelectedItemColor properties
+            // so it does not respect the css color
+            return;
+        }
+
+        this.setIconColor(tabStripItem);
+    }
+
+    public setTabBarIconSource(tabStripItem: TabStripItem, value: number | Color): void {
+        this.updateItem(tabStripItem);
     }
 
     public setTabBarItemFontInternal(tabStripItem: TabStripItem, value: Font): void {
-        tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        if (value.fontSize) {
+            tabStripItem.nativeViewProtected.setTextSize(value.fontSize);
+        }
         tabStripItem.nativeViewProtected.setTypeface(value.getAndroidTypeface());
+    }
+
+    public getTabBarItemTextTransform(tabStripItem: TabStripItem): TextTransform {
+        return this.getItemLabelTextTransform(tabStripItem);
     }
 
     public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
@@ -827,15 +928,30 @@ export class Tabs extends TabsBase {
         tabStripItem.nativeViewProtected.setText(title);
     }
 
-    [selectedIndexProperty.setNative](value: number) {
-        const smoothScroll = true;
+    public getTabBarTextTransform(): TextTransform {
+        return this._textTransform;
+    }
 
+    public setTabBarTextTransform(value: TextTransform): void {
+        let items = this.tabStrip && this.tabStrip.items;
+        if (items) {
+            items.forEach((tabStripItem) => {
+                if (tabStripItem.label && tabStripItem.nativeViewProtected) {
+                    const nestedLabel = tabStripItem.label;
+                    const title = getTransformedText(nestedLabel.text, value);
+                    tabStripItem.nativeViewProtected.setText(title);
+                }
+            });
+        }
+        this._textTransform = value;
+    }
+
+    [selectedIndexProperty.setNative](value: number) {
         // TODO
         // if (traceEnabled()) {
         //     traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
         // }
-
-        this._viewPager.setCurrentItem(value, smoothScroll);
+        this._viewPager.setCurrentItem(value, this.animationEnabled);
     }
 
     [itemsProperty.getDefault](): TabContentItem[] {
@@ -866,6 +982,10 @@ export class Tabs extends TabsBase {
     }
     [offscreenTabLimitProperty.setNative](value: number) {
         this._viewPager.setOffscreenPageLimit(value);
+    }
+
+    [animationEnabledProperty.setNative](value: number) {
+      (<any>this._viewPager).setAnimationEnabled(value);
     }
 }
 

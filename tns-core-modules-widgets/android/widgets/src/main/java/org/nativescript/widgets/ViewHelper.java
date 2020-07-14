@@ -5,6 +5,7 @@ import android.graphics.Rect;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 /**
  * Created by hhristov on 8/23/16.
@@ -22,6 +23,10 @@ public class ViewHelper {
     }
 
     public static void setMinWidth(android.view.View view, int value) {
+        if (view instanceof TextView) {
+            ((android.widget.TextView) view).setMinWidth(value);
+        }
+
         view.setMinimumWidth(value);
     }
 
@@ -30,6 +35,10 @@ public class ViewHelper {
     }
 
     public static void setMinHeight(android.view.View view, int value) {
+        if (view instanceof TextView) {
+            ((android.widget.TextView) view).setMinHeight(value);
+        }
+
         view.setMinimumHeight(value);
     }
 
@@ -47,10 +56,10 @@ public class ViewHelper {
         if (params == null) {
             params = new CommonLayoutParams();
         }
-        
+
         params.width = value;
         if (params instanceof CommonLayoutParams) {
-            ((CommonLayoutParams)params).widthPercent = -1;
+            ((CommonLayoutParams) params).widthPercent = -1;
         }
 
         view.setLayoutParams(params);
@@ -65,7 +74,9 @@ public class ViewHelper {
         if (params instanceof CommonLayoutParams) {
             CommonLayoutParams lp = (CommonLayoutParams) params;
             lp.widthPercent = value;
-            lp.width = (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK) == Gravity.FILL_HORIZONTAL ? ViewGroup.LayoutParams.MATCH_PARENT : ViewGroup.LayoutParams.WRAP_CONTENT;
+            lp.width = (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK) == Gravity.FILL_HORIZONTAL
+                    ? ViewGroup.LayoutParams.MATCH_PARENT
+                    : ViewGroup.LayoutParams.WRAP_CONTENT;
             view.setLayoutParams(params);
         }
     }
@@ -84,10 +95,10 @@ public class ViewHelper {
         if (params == null) {
             params = new CommonLayoutParams();
         }
-        
+
         params.height = value;
         if (params instanceof CommonLayoutParams) {
-            ((CommonLayoutParams)params).heightPercent = -1;
+            ((CommonLayoutParams) params).heightPercent = -1;
         }
 
         view.setLayoutParams(params);
@@ -102,7 +113,9 @@ public class ViewHelper {
         if (params instanceof CommonLayoutParams) {
             CommonLayoutParams lp = (CommonLayoutParams) params;
             lp.heightPercent = value;
-            lp.height = (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK) == Gravity.FILL_VERTICAL ? ViewGroup.LayoutParams.MATCH_PARENT : ViewGroup.LayoutParams.WRAP_CONTENT;
+            lp.height = (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK) == Gravity.FILL_VERTICAL
+                    ? ViewGroup.LayoutParams.MATCH_PARENT
+                    : ViewGroup.LayoutParams.WRAP_CONTENT;
             view.setLayoutParams(params);
         }
     }
@@ -321,14 +334,14 @@ public class ViewHelper {
             FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) params;
             if (Gravity.isHorizontal(lp.gravity)) {
                 switch (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK) {
-                    case Gravity.LEFT:
-                        return "left";
-                    case Gravity.CENTER:
-                        return "center";
-                    case Gravity.RIGHT:
-                        return "right";
-                    case Gravity.FILL_HORIZONTAL:
-                        return "stretch";
+                case Gravity.LEFT:
+                    return "left";
+                case Gravity.CENTER:
+                    return "center";
+                case Gravity.RIGHT:
+                    return "right";
+                case Gravity.FILL_HORIZONTAL:
+                    return "stretch";
 
                 }
             }
@@ -348,19 +361,19 @@ public class ViewHelper {
         if (params instanceof FrameLayout.LayoutParams) {
             FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) params;
             switch (value) {
-                case "left":
-                    lp.gravity = Gravity.LEFT | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
-                    break;
-                case "center":
-                case "middle":
-                    lp.gravity = Gravity.CENTER_HORIZONTAL | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
-                    break;
-                case "right":
-                    lp.gravity = Gravity.RIGHT | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
-                    break;
-                case "stretch":
-                    lp.gravity = Gravity.FILL_HORIZONTAL | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
-                    break;
+            case "left":
+                lp.gravity = Gravity.LEFT | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+                break;
+            case "center":
+            case "middle":
+                lp.gravity = Gravity.CENTER_HORIZONTAL | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+                break;
+            case "right":
+                lp.gravity = Gravity.RIGHT | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+                break;
+            case "stretch":
+                lp.gravity = Gravity.FILL_HORIZONTAL | (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK);
+                break;
             }
             view.setLayoutParams(params);
         }
@@ -372,14 +385,14 @@ public class ViewHelper {
             FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) params;
             if (Gravity.isHorizontal(lp.gravity)) {
                 switch (lp.gravity & Gravity.VERTICAL_GRAVITY_MASK) {
-                    case Gravity.TOP:
-                        return "top";
-                    case Gravity.CENTER:
-                        return "center";
-                    case Gravity.BOTTOM:
-                        return "bottom";
-                    case Gravity.FILL_VERTICAL:
-                        return "stretch";
+                case Gravity.TOP:
+                    return "top";
+                case Gravity.CENTER:
+                    return "center";
+                case Gravity.BOTTOM:
+                    return "bottom";
+                case Gravity.FILL_VERTICAL:
+                    return "stretch";
 
                 }
             }
@@ -399,19 +412,19 @@ public class ViewHelper {
         if (params instanceof FrameLayout.LayoutParams) {
             FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) params;
             switch (value) {
-                case "top":
-                    lp.gravity = Gravity.TOP | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
-                    break;
-                case "center":
-                case "middle":
-                    lp.gravity = Gravity.CENTER_VERTICAL | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
-                    break;
-                case "bottom":
-                    lp.gravity = Gravity.BOTTOM | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
-                    break;
-                case "stretch":
-                    lp.gravity = Gravity.FILL_VERTICAL | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
-                    break;
+            case "top":
+                lp.gravity = Gravity.TOP | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+                break;
+            case "center":
+            case "middle":
+                lp.gravity = Gravity.CENTER_VERTICAL | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+                break;
+            case "bottom":
+                lp.gravity = Gravity.BOTTOM | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+                break;
+            case "stretch":
+                lp.gravity = Gravity.FILL_VERTICAL | (lp.gravity & Gravity.HORIZONTAL_GRAVITY_MASK);
+                break;
             }
             view.setLayoutParams(params);
         }
@@ -480,7 +493,7 @@ public class ViewHelper {
     public static void setRotateY(android.view.View view, float value) {
         view.setRotationY(value);
     }
-    
+
     public static void setPerspective(android.view.View view, float value) {
         view.setCameraDistance(value);
     }
@@ -549,4 +562,3 @@ public class ViewHelper {
         }
     }
 }
-    

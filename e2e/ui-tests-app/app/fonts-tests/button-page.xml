@@ -4,6 +4,7 @@
     <Button text="left"    style="text-align: left" />
     <Button text="center"  style="text-align: center" />
     <Button text="right"   style="text-align: right" />
+    <Button text="Yellow text / black bg after 2s" class="ui-tests-app-issue-ng-1453-base ui-tests-app-issue-ng-1453-pink" loaded="issue_ng_1453_loaded" />
 
     <WrapLayout>
       <Button text="RESET" tap="resetStyles"/>

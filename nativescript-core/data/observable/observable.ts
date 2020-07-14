@@ -1,10 +1,7 @@
-import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition, PropertyChangeData } from ".";
+import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition } from ".";
+import { EventData, PropertyChangeData } from "./observable-interfaces";
 
-// TODO: Remove this. It is the same export as in d.ts to fix failing build when modules are linked
-export interface EventData {
-    eventName: string;
-    object: ObservableDefinition;
-}
+export * from "./observable-interfaces";
 
 interface ListenerEntry {
     callback: (data: EventData) => void;
@@ -58,6 +55,22 @@ export class Observable implements ObservableDefinition {
         const newValue = WrappedValue.unwrap(value);
         this[name] = newValue;
         this.notifyPropertyChange(name, newValue, oldValue);
+    }
+
+    public setProperty(name: string, value: any) {
+        const oldValue = this[name];
+        if (this[name] === value) {
+            return;
+        }
+        this[name] = value;
+        this.notifyPropertyChange(name, value, oldValue);
+
+        const specificPropertyChangeEventName = name + "Change";
+        if (this.hasListeners(specificPropertyChangeEventName)) {
+            const eventData = this._createPropertyChangeData(name, value, oldValue);
+            eventData.eventName = specificPropertyChangeEventName;
+            this.notify(eventData);
+        }
     }
 
     public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {

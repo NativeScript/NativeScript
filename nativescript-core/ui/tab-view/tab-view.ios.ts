@@ -63,13 +63,12 @@ class UITabBarControllerImpl extends UITabBarController {
 
     public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
         super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
-        UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion
-            .call(coordinator, null, () => {
-                const owner = this._owner.get();
-                if (owner && owner.items) {
-                    owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions());
-                }
-            });
+        coordinator.animateAlongsideTransitionCompletion(null, () => {
+            const owner = this._owner.get();
+            if (owner && owner.items) {
+                owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions());
+            }
+        });
     }
 
     // Mind implementation for other controllers
@@ -78,7 +77,9 @@ class UITabBarControllerImpl extends UITabBarController {
 
         if (majorVersion >= 13) {
             const owner = this._owner.get();
-            if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+            if (owner &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection &&
+                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
                 owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
             }
         }
@@ -586,7 +587,7 @@ function getTitleAttributesForStates(tabView: TabView): TabStates {
 
     const defaultTabItemFontSize = 10;
     const tabItemFontSize = tabView.style.tabTextFontSize || defaultTabItemFontSize;
-    const font: UIFont = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
+    const font: UIFont = (tabView.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
     const tabItemTextColor = tabView.style.tabTextColor;
     const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
     result.normalState = { [NSFontAttributeName]: font };

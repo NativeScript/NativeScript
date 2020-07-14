@@ -9,6 +9,8 @@ import { Color } from "../color";
 import { path as fsPath, knownFolders } from "../file-system";
 import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from "../utils/utils";
 
+import { getScaledDimensions } from "./image-source-common";
+
 export { isFileOrResourcePath };
 
 let http: typeof httpModule;
@@ -165,6 +167,7 @@ export class ImageSource implements ImageSourceDefinition {
     }
 
     static fromFontIconCodeSync(source: string, font: Font, color: Color): ImageSource {
+        font = font || Font.default;
         let fontSize = layout.toDevicePixels(font.fontSize);
         if (!fontSize) {
             // TODO: Consider making 36 font size as default for optimal look on TabView and ActionBar
@@ -334,6 +337,24 @@ export class ImageSource implements ImageSourceDefinition {
 
         return res;
 
+    }
+
+    public resize(maxSize: number, options?: any): ImageSource {
+        const size: CGSize = this.ios.size;
+        const dim = getScaledDimensions(
+            size.width,
+            size.height,
+            maxSize
+        );
+    
+        const newSize: CGSize = CGSizeMake(dim.width, dim.height);
+        UIGraphicsBeginImageContextWithOptions(newSize, true, this.ios.scale);
+        this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
+
+        const resizedImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+
+        return new ImageSource(resizedImage);
     }
 }
 

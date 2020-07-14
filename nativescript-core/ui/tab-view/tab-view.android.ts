@@ -542,7 +542,11 @@ export class TabView extends TabViewBase {
 
     public _loadUnloadTabItems(newIndex: number) {
         const items = this.items;
-        const lastIndex = this.items.length - 1;
+        if (!items) {
+            return;
+        }
+
+        const lastIndex = items.length - 1;
         const offsideItems = this.androidTabsPosition === "top" ? this.androidOffscreenTabLimit : 1;
 
         let toUnload = [];
@@ -729,7 +733,7 @@ export class TabView extends TabViewBase {
         if (value instanceof Color) {
             this._tabLayout.setBackgroundColor(value.android);
         } else {
-            this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources));
+            this._tabLayout.setBackground(tryCloneDrawable(value, this.nativeViewProtected.getResources()));
         }
     }
 

@@ -126,7 +126,7 @@ declare function ABPersonCreateInSource(source: any): interop.Unmanaged<any>;
 
 declare function ABPersonCreatePeopleInSourceWithVCardRepresentation(source: any, vCardData: NSData): interop.Unmanaged<NSArray<any>>;
 
-declare function ABPersonCreateVCardRepresentationWithPeople(people: NSArray<any>): interop.Unmanaged<NSData>;
+declare function ABPersonCreateVCardRepresentationWithPeople(people: NSArray<any> | any[]): interop.Unmanaged<NSData>;
 
 declare function ABPersonGetCompositeNameFormat(): number;
 

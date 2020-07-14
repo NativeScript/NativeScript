@@ -1,0 +1,9 @@
+﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+  showingModally="onShowingModally"
+  shownModally="onShownModally"
+  loaded="onLoaded" unloaded="onUnloaded" backgroundColor="Red">
+  <StackLayout backgroundColor="PaleGreen" margin="10">
+    <Label text="{{ context }}"/>
+    <Button text="Show Alert" tap="{{ onTap }}"/>
+  </StackLayout>
+</Page>

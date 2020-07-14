@@ -3,8 +3,6 @@ import { TabStripItem as TabStripItemDefinition } from ".";
 import { PropertyChangeData } from "../../../data/observable";
 import { TabNavigationBase } from "../tab-navigation-base";
 import { TabStrip } from "../tab-strip";
-import { Image } from "../../image/image";
-import { Label } from "../../label/label";
 import { Color } from "../../../color";
 import { AddChildFromBuilder } from "../../core/view";
 
@@ -12,8 +10,10 @@ import { AddChildFromBuilder } from "../../core/view";
 import {
     View, ViewBase, CSSType, backgroundColorProperty, backgroundInternalProperty, PseudoClassHandler
 } from "../../core/view";
-import { Tabs } from "../../tabs";
 import { isIOS } from "../../../platform";
+import { Image } from "../../image/image";
+import { Label } from "../../label/label";
+import { textTransformProperty, TextTransform } from "../../text-base";
 
 export * from "../../core/view";
 export const traceCategory = "TabView";
@@ -26,9 +26,11 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
 
     public image: Image;
     public label: Label;
+    public _index: number;
 
     private _title: string;
     private _iconSource: string;
+    private _iconClass: string;
 
     private _highlightedHandler: () => void;
     private _normalHandler: () => void;
@@ -58,6 +60,22 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         }
     }
 
+    get iconClass(): string {
+        if (this.isLoaded) {
+            return this.image.className;
+        }
+
+        return this._iconClass;
+    }
+
+    set iconClass(value: string) {
+        this._iconClass = value;
+
+        if (this.isLoaded) {
+            this.image.className = value;
+        }
+    }
+
     get iconSource(): string {
         if (this.isLoaded) {
             return this.image.src;
@@ -78,6 +96,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         if (!this.image) {
             const image = new Image();
             image.src = this.iconSource;
+            image.className = this.iconClass;
             this.image = image;
             this._addView(this.image);
         }
@@ -127,7 +146,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
 
-            return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
+            return tabStripParent && tabStripParent.setTabBarIconColor(this, args.value);
         });
         this.image.style.on("colorChange", this._imageColorHandler);
 
@@ -135,7 +154,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
 
-            return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
+            return tabStripParent && tabStripParent.setTabBarIconColor(this, args.value);
         });
         this.image.style.on("fontInternalChange", this._imageFontHandler);
 
@@ -143,7 +162,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
 
-            return tabStripParent && (<any>tabStripParent).setTabBarIconColor(this, args.value);
+            return tabStripParent && tabStripParent.setTabBarIconSource(this, args.value);
         });
         this.image.on("srcChange", this._imageSrcHandler);
     }
@@ -172,14 +191,15 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (name === "Image") {
+        if (value instanceof Image) {
             this.image = <Image>value;
             this.iconSource = (<Image>value).src;
+            this.iconClass = (<Image>value).className;
             this._addView(value);
             // selectedIndexProperty.coerce(this);
         }
 
-        if (name === "Label") {
+        if (value instanceof Label) {
             this.label = <Label>value;
             this.title = (<Label>value).text;
             this._addView(value);
@@ -211,8 +231,10 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
 
             const parent = <TabStrip>this.parent;
             const tabStripParent = parent && <TabNavigationBase>parent.parent;
-            if ((<any>this).index === tabStripParent.selectedIndex &&
-                !(isIOS && tabStripParent instanceof Tabs)) {
+            if (this._index === tabStripParent.selectedIndex &&
+                !(isIOS && tabStripParent.cssType.toLowerCase() === "tabs")) {
+                // HACK: tabStripParent instanceof Tabs creates a circular dependency
+                // HACK: tabStripParent.cssType === "Tabs" is a hacky workaround
                 this._goToVisualState("highlighted");
             }
         } else {
@@ -232,6 +254,19 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
         const tabStripParent = parent && <TabNavigationBase>parent.parent;
 
         return tabStripParent && tabStripParent.setTabBarItemBackgroundColor(this, value);
+    }
+
+    [textTransformProperty.getDefault](): TextTransform {
+        const parent = <TabStrip>this.parent;
+        const tabStripParent = parent && <TabNavigationBase>parent.parent;
+
+        return tabStripParent && tabStripParent.getTabBarItemTextTransform(this);
+    }
+    [textTransformProperty.setNative](value: TextTransform) {
+        const parent = <TabStrip>this.parent;
+        const tabStripParent = parent && <TabNavigationBase>parent.parent;
+
+        return tabStripParent && tabStripParent.setTabBarItemTextTransform(this, value);
     }
 
     [backgroundInternalProperty.getDefault](): any {

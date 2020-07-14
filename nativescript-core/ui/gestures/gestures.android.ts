@@ -1,5 +1,5 @@
 // Definitions.
-import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from ".";
+import { GestureEventData, TapGestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, GestureEventDataWithState } from ".";
 import { View, EventData } from "../core/view";
 
 // Types.
@@ -62,7 +62,7 @@ function initializeTapAndDoubleTapGestureListener() {
 
         public onLongPress(motionEvent: android.view.MotionEvent): void {
             if (this._type & GestureTypes.longPress) {
-                const args = _getArgs(GestureTypes.longPress, this._target, motionEvent);
+                const args = _getLongPressArgs(GestureTypes.longPress, this._target, GestureStateTypes.began, motionEvent);
                 _executeCallback(this._observer, args);
             }
         }
@@ -71,14 +71,14 @@ function initializeTapAndDoubleTapGestureListener() {
             if (this._target.getGestureObservers(GestureTypes.doubleTap)) {
                 this._tapTimeoutId = timer.setTimeout(() => {
                     if (this._type & GestureTypes.tap) {
-                        const args = _getArgs(GestureTypes.tap, this._target, motionEvent);
+                        const args = _getTapArgs(GestureTypes.tap, this._target, motionEvent);
                         _executeCallback(this._observer, args);
                     }
                     timer.clearTimeout(this._tapTimeoutId);
                 }, TapAndDoubleTapGestureListenerImpl.DoubleTapTimeout);
             } else {
                 if (this._type & GestureTypes.tap) {
-                    const args = _getArgs(GestureTypes.tap, this._target, motionEvent);
+                    const args = _getTapArgs(GestureTypes.tap, this._target, motionEvent);
                     _executeCallback(this._observer, args);
                 }
             }
@@ -89,7 +89,7 @@ function initializeTapAndDoubleTapGestureListener() {
                 timer.clearTimeout(this._tapTimeoutId);
             }
             if (this._type & GestureTypes.doubleTap) {
-                const args = _getArgs(GestureTypes.doubleTap, this._target, motionEvent);
+                const args = _getTapArgs(GestureTypes.doubleTap, this._target, motionEvent);
                 _executeCallback(this._observer, args);
             }
         }
@@ -372,14 +372,29 @@ export class GesturesObserver extends GesturesObserverBase {
     }
 }
 
-function _getArgs(type: GestureTypes, view: View, e: android.view.MotionEvent): GestureEventData {
-    return <GestureEventData>{
+function _getTapArgs(type: GestureTypes, view: View, e: android.view.MotionEvent): TapGestureEventData {
+  return <TapGestureEventData>{
+    type: type,
+    view: view,
+    android: e,
+    ios: undefined,
+    object: view,
+    eventName: toString(type),
+    getPointerCount: () => e.getPointerCount(),
+    getX: () => layout.toDeviceIndependentPixels(e.getX()),
+    getY: () => layout.toDeviceIndependentPixels(e.getY())
+  };
+}
+
+function _getLongPressArgs(type: GestureTypes, view: View, state: GestureStateTypes, e: android.view.MotionEvent): GestureEventDataWithState {
+    return <GestureEventDataWithState>{
         type: type,
         view: view,
         android: e,
         ios: undefined,
         object: view,
         eventName: toString(type),
+        state: state
     };
 }
 

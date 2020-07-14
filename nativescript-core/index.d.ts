@@ -100,7 +100,7 @@ export declare const Trace: {
     isEnabled: typeof isEnabled;
 };
 export * from "./ui";
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, layout, ad as androidUtils, ios as iosUtils } from "./utils/utils";
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, ios as iosUtils } from "./utils/utils";
 export declare const Utils: {
     GC: typeof GC;
     isFontIconURI: typeof isFontIconURI;
@@ -114,6 +114,7 @@ export declare const Utils: {
     getModuleName: typeof getModuleName;
     openFile: typeof openFile;
     openUrl: typeof openUrl;
+    isRealDevice: typeof isRealDevice;
     layout: typeof layout;
     android: typeof androidUtils;
     ios: typeof iosUtils;
