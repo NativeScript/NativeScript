@@ -4,15 +4,6 @@
   "license": "MIT",
   "scripts": {
     "nx": "nx",
-    "lint": "nx workspace-lint && nx lint",
-    "e2e": "nx e2e",
-    "format": "nx format:write",
-    "format:write": "nx format:write",
-    "format:check": "nx format:check",
-    "update": "nx migrate latest",
-    "workspace-schematic": "nx workspace-schematic",
-    "dep-graph": "nx dep-graph",
-    "help": "nx help",
     "setup": "npx rimraf -- hooks node_modules package-lock.json && npm i && nx run core:setup"
   },
   "private": true,
