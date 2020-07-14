@@ -382,6 +382,7 @@
         },
         "build": {
           "builder": "@nrwl/workspace:run-commands",
+          "outputs": ["dist/packages/webpack"],
           "options": {
             "commands": [
               {
