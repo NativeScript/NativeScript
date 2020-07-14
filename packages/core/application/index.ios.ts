@@ -111,6 +111,9 @@ export class iOSApplication implements iOSApplicationDefinition {
 	}
 
 	get rootController(): UIViewController {
+    if (NativeScriptEmbedder.sharedInstance().delegate && !this._window) {
+      this._window = UIApplication.sharedApplication.delegate.window;
+    }
 		return this._window.rootViewController;
 	}
 
