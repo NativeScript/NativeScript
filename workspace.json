@@ -370,7 +370,10 @@
           "options": {
             "commands": [
               {
-                "command": "npm run tsc && npm run jasmine"
+                "command": "npm run tsc"
+              },
+              {
+                "command": "npm run jasmine"
               }
             ],
             "cwd": "packages/webpack",

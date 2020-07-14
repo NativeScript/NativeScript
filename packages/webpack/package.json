@@ -99,6 +99,6 @@
     "nyc": "^15.1.0",
     "proxyquire": "~2.1.0",
     "source-map-support": "^0.5.13",
-    "typescript": "file:../../node_modules/typescript"
+    "typescript": "~3.9.0"
   }
 }
