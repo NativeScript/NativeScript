@@ -459,7 +459,7 @@ export class View extends ViewCommon implements ViewDefinition {
                 }
 
                 this.off(View.loadedEvent, handler);
-            }
+            };
 
             this.on(View.loadedEvent, handler);
         }
