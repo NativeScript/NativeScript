@@ -17,10 +17,10 @@
   },
   "dependencies": {
     "nativescript-theme-core": "file:../../../../../node_modules/nativescript-theme-core",
-    "@nativescript/core": "file:../../../../../dist/packages/nativescript-core-7.0.0-rc.12.tgz"
+    "@nativescript/core": "file:../../../"
   },
   "devDependencies": {
-    "@nativescript/webpack": "file:../../../../webpack/nativescript-webpack.tgz",
+    "@nativescript/webpack": "file:../../../../../dist/packages/nativescript-webpack.tgz",
     "typescript": "file:../../../../../node_modules/typescript"
   },
   "gitHead": "c06800e52ee1a184ea2dffd12a6702aaa43be4e3",

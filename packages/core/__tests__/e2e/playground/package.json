@@ -17,7 +17,7 @@
     "@nativescript/core": "file:../../../"
   },
   "devDependencies": {
-    "@nativescript/webpack": "file:../../../../webpack/nativescript-webpack.tgz",
+    "@nativescript/webpack": "file:../../../../../dist/packages/nativescript-webpack.tgz",
     "typescript": "file:../../../../../node_modules/typescript"
   }
 }
