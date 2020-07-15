@@ -447,12 +447,12 @@ export class View extends ViewCommon implements ViewDefinition {
             if (options.ios && options.ios.width > 0 && options.ios.height > 0) {
                 controller.preferredContentSize = CGSizeMake(options.ios.width, options.ios.height);
             } else {
-                //override the CSS & attribute width & height
+                //use CSS & attribute width & height if option is not provided
                 let handler = () => {
                     let w = <number>(this.width || this.style.width);
                     let h = <number>(this.height || this.style.height);
 
-                    //only if it's numeric value. will not support percentage for now
+                    //TODO: only numeric value is supported, percentage value is not supported like Android
                     if (w > 0 && h > 0) {
                         controller.preferredContentSize = CGSizeMake(w, h);
                     }
