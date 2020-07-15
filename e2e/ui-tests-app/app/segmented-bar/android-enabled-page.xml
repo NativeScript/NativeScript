@@ -1,0 +1,10 @@
+<Page>
+    <StackLayout>
+        <SegmentedBar selectedIndex="1" isEnabled="false">
+            <SegmentedBarItem title="Item 1" />
+            <SegmentedBarItem title="Item 2" />
+            <SegmentedBarItem title="Item 3" />
+        </SegmentedBar>
+        <Button text="go to previous page" tap="navigate" />
+    </StackLayout>
+</Page>
