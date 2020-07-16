@@ -1,4 +1,6 @@
 import { View } from '../core/view';
+import { Color } from '../../color';
+import { PercentLength } from '../styling/style-properties';
 
 export declare const ANIMATION_PROPERTIES;
 

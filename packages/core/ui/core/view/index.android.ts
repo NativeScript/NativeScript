@@ -50,6 +50,8 @@ import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 
 export * from './view-common';
+// This one can eventually be cleaned up but causes issues with a lot of ui-suite plugins in particular if not exported here
+export * from '../properties';
 
 const DOMID = '_domId';
 const androidBackPressedEvent = 'androidBackPressed';

@@ -36,6 +36,9 @@
     "core": {
       "tags": []
     },
+    "tns-core-modules-compat": {
+      "tags": []
+    },
     "types-ios": {
       "tags": []
     },

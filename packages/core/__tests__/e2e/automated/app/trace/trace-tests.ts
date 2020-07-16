@@ -4,14 +4,14 @@ import { Trace } from "@nativescript/core";
 
 export var test_DummyTestForSnippetOnly0 = function () {
     // >> trace-all-categories
-    Trace.setCategories(Trace.categories.All.join(','));
+    Trace.setCategories(Trace.categories.All);
     Trace.enable();
     // << trace-all-categories
 };
 
 export var test_DummyTestForSnippetOnly1 = function () {
     // >> trace-specific-categories
-    Trace.setCategories(Trace.categories.All.concat(
+    Trace.setCategories(Trace.categories.All.split(',').concat(
         Trace.categories.Binding
         , Trace.categories.Debug
         , Trace.categories.Layout

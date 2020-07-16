@@ -7,8 +7,8 @@ export { sanitizeModuleName } from './builder/module-name-sanitizer';
 export { Button } from './button';
 export { ContentView } from './content-view';
 export { Binding, BindingOptions } from './core/bindable';
-export { ViewBase, ShowModalOptions, eachDescendant, getAncestor, getViewById } from './core/view-base';
-export { View, Template, KeyedTemplate, ShownModallyData } from './core/view';
+export { ViewBase, ShowModalOptions, eachDescendant, getAncestor, getViewById, booleanConverter } from './core/view-base';
+export { View, Template, KeyedTemplate, ShownModallyData, CSSType, ContainerView } from './core/view';
 export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, unsetValue } from './core/properties';
 export { DatePicker } from './date-picker';
 
@@ -17,7 +17,7 @@ export { action, alert, confirm, login, prompt, getCurrentPage, Dialogs, DialogS
 
 export * from './editable-text-base';
 export { Enums } from './enums';
-export { Frame, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry } from './frame';
+export { Frame, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks, setActivityCallbacks } from './frame';
 
 export { GestureEventData, GestureEventDataWithState, GestureStateTypes, GestureTypes, GesturesObserver, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeDirection, SwipeGestureEventData, TouchGestureEventData } from './gestures';
 

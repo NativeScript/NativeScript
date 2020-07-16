@@ -2,12 +2,12 @@ import * as path from 'path';
 import * as fs from 'fs';
 import readdirp, { EntryInfo } from 'readdirp';
 
-const inputFolder = path.resolve('dist/nativescript-core');
-const outputFolder = path.resolve('dist/tns-core-modules');
+const inputFolder = path.resolve('dist/packages/core');
+const outputFolder = path.resolve('dist/packages/tns-core-modules');
 const testImports: string[] = [];
 
 // List of definition files that don't need to be exported.
-const dtsBlacklist = ['module.d.ts', 'nativescript-error.d.ts', 'references.d.ts', 'tns-core-modules.d.ts'];
+const dtsBlacklist = ['global-types.d.ts', 'references.d.ts'];
 
 // List of modules that should be re-exported despite they are private
 const privateModulesWhitelist = [

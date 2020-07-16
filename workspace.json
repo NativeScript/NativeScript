@@ -238,6 +238,36 @@
         }
       }
     },
+    "tns-core-modules-compat": {
+      "root": "packages/tns-core-modules-compat",
+      "sourceRoot": "packages/tns-core-modules-compat",
+      "projectType": "library",
+      "schematics": {},
+      "architect": {
+        "build": {
+          "builder": "@nrwl/workspace:run-commands",
+          "outputs": ["dist/packages"],
+          "options": {
+            "commands": [
+              {
+                "command": "npx rimraf -- node_modules package-lock.json"
+              },
+              {
+                "command": "npm i"
+              },
+              {
+                "command": "../../node_modules/.bin/tsc -p tsconfig.json"
+              },
+              {
+                "command": "mv \"$(npm pack | tail -n 1)\" ../../dist/packages/tns-core-modules.tgz"
+              }
+            ],
+            "cwd": "packages/tns-core-modules-compat",
+            "parallel": false
+          }
+        }
+      }
+    },
     "types-ios": {
       "root": "packages/types-ios",
       "sourceRoot": "packages/types-ios/src",

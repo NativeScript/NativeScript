@@ -1,19 +1,15 @@
-﻿import * as pageModule from "@nativescript/core/ui/page";
-import * as gridLayoutModule from "@nativescript/core/ui/layouts/grid-layout";
-import * as listViewModule from "@nativescript/core/ui/list-view";
-import * as observable from "@nativescript/core/data/observable";
-import * as observableArr from "@nativescript/core/data/observable-array";
+﻿import { Page, GridLayout, ListView, Observable, ObservableArray, EventData } from "@nativescript/core";
 
-var arr = new observableArr.ObservableArray();
+var arr = new ObservableArray();
 for (var i = 0; i < 100; i++) {
     arr.push("item " + i);
 }
 
 export function createPage() {
-    var page: pageModule.Page = new pageModule.Page();
-    var grid: gridLayoutModule.GridLayout = new gridLayoutModule.GridLayout();
-    var listView: listViewModule.ListView = new listViewModule.ListView();
-    listView.on(listViewModule.ListView.loadedEvent, function (args: observable.EventData) {
+    var page: Page = new Page();
+    var grid: GridLayout = new GridLayout();
+    var listView: ListView = new ListView();
+    listView.on(ListView.loadedEvent, function (args: EventData) {
         (<any>args.object).items = arr;
     });
     grid.addChild(listView);

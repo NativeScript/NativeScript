@@ -92,6 +92,8 @@ export declare const Utils: {
 	isRealDevice: typeof isRealDevice;
 	layout: typeof layout;
 	android: typeof androidUtils;
+	// legacy (a lot of plugins use the shorthand "ad" Utils.ad instead of Utils.android)
+	ad: typeof androidUtils;
 	ios: typeof iosUtils;
 	Source: typeof Source;
 	ClassInfo: typeof ClassInfo;

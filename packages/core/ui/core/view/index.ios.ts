@@ -12,6 +12,8 @@ import { perspectiveProperty, Visibility, visibilityProperty, opacityProperty, r
 import { profile } from '../../../profiling';
 
 export * from './view-common';
+// This one can eventually be cleaned up but causes issues with a lot of ui-suite plugins in particular if not exported here
+export * from '../properties';
 
 const PFLAG_FORCE_LAYOUT = 1;
 const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;

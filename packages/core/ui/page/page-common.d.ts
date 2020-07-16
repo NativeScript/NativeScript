@@ -31,14 +31,7 @@ export declare class PageBase extends ContentView {
 
 	readonly frame: Frame;
 
-	createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
-		return {
-			eventName: eventName,
-			object: this,
-			context: this.navigationContext,
-			isBackNavigation: isBackNavigation,
-		};
-	}
+	createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData;
 
 	onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext?: any): void;
 

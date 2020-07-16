@@ -1,6 +1,6 @@
 {
   "name": "nativescript",
-  "version": "7.0.0-rc.12",
+  "version": "7.0.0-rc.19",
   "license": "MIT",
   "scripts": {
     "nx": "nx",

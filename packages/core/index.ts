@@ -119,6 +119,8 @@ export const Utils = {
 
 	layout,
 	android: androidUtils,
+	// legacy (a lot of plugins use the shorthand "ad" Utils.ad instead of Utils.android)
+	ad: androidUtils,
 	ios: iosUtils,
 	Source,
 	ClassInfo,

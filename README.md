@@ -49,15 +49,23 @@ nx run core:build.npm
 There are additional targets you can test changes against:
 
 ```
-// livesync develop changes (used in CI automated tests)
+// variety of manual ui testing
+nx run core-e2e-ui:ios
+nx run core-e2e-ui:android
+nx run core-e2e-ui:clean
+
+// used in CI automated tests but you can run these manually as well to check if you caused any regressions
 nx run core-e2e-automated:ios
 nx run core-e2e-automated:android
 nx run core-e2e-automated:clean
 
-// various ui testing
-nx run core-e2e-ui:ios
-nx run core-e2e-ui:android
-nx run core-e2e-ui:clean
+
+```
+
+#### Compatibility package for old style tns-core-modules
+
+```
+nx run tns-core-modules-compat:build
 ```
 
 ## @nativescript/ui-mobile-base
