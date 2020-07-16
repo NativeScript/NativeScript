@@ -1,9 +1,10 @@
 {
   "name": "nativescript",
-  "version": "7.0.0-rc.19",
+  "version": "7.0.0-rc.20",
   "license": "MIT",
   "scripts": {
     "nx": "nx",
+    "format": "nx format:write",
     "setup": "npx rimraf -- hooks node_modules package-lock.json && npm i && nx run core:setup"
   },
   "private": true,

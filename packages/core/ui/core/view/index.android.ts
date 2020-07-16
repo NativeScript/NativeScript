@@ -50,6 +50,8 @@ import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 
 export * from './view-common';
+// helpers (these are okay re-exported here)
+export * from './view-helper';
 // This one can eventually be cleaned up but causes issues with a lot of ui-suite plugins in particular if not exported here
 export * from '../properties';
 
