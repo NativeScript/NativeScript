@@ -26,7 +26,7 @@ jobs:
         run: npx nx run core:build.npm
 
       - name: Publish @nativescript/core
-        working-directory: dist
+        working-directory: dist/packages
         env:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
