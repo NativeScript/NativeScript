@@ -29,5 +29,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
           echo dist/nativescript-core-$NPM_VERSION.tgz
           echo Publishing to NPM...
+          npm publish dist/nativescript-core-$NPM_VERSION.tgz --tag ci --dry-run
