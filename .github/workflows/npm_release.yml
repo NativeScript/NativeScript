@@ -1,0 +1,31 @@
+name: Release @nativescript/core to NPM
+
+on:
+  push:
+    branches: [ 'feat/monorepo' ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup
+        run: npm run setup
+
+      - name: Generate Version
+        working-directory: packages/core
+        run: echo ::set-env name=NPM_VERSION::$(node -e "console.log(require('./package.json').version);")--$(date +"%m-%d-%Y-%s")-$GITHUB_RUN_NUMBER
+
+      - name: Bump Version
+        working-directory: packages/core
+        run: npm version $NPM_VERSION
+
+      - name: Build @nativescript/core
+        run: npx nx run core:build.npm
+
+      - name: Publish @nativescript/core
+        run: |
+          echo dist/nativescript-core-$NPM_VERSION.tgz
+          echo Publishing to NPM...
