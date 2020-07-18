@@ -1,11 +1,11 @@
 ﻿import { WebView } from '.';
 import { EventData } from '../../data/observable';
 
-export type NavigationType = 'linkClicked' | 'formSubmitted' | 'backForward' | 'reload' | 'formResubmitted' | 'other' | undefined;
+export type WebViewNavigationType = 'linkClicked' | 'formSubmitted' | 'backForward' | 'reload' | 'formResubmitted' | 'other' | undefined;
 
 export interface LoadEventData extends EventData {
 	url: string;
-	navigationType: NavigationType;
+	navigationType: WebViewNavigationType;
 	error: string;
 }
 

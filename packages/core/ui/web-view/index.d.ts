@@ -14,7 +14,7 @@ export const urlProperty: Property<WebView, string>;
 /**
  * Represents navigation type
  */
-export type NavigationType = 'linkClicked' | 'formSubmitted' | 'backForward' | 'reload' | 'formResubmitted' | 'other' | undefined;
+export type WebViewNavigationType = 'linkClicked' | 'formSubmitted' | 'backForward' | 'reload' | 'formResubmitted' | 'other' | undefined;
 
 /**
  * Represents a standard WebView widget.

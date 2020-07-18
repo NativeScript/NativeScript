@@ -61,4 +61,4 @@ export { TextField } from './text-field';
 export { TextView } from './text-view';
 export { TimePicker } from './time-picker';
 export { Transition } from './transition';
-export { WebView } from './web-view';
+export { WebView, LoadEventData, WebViewNavigationType } from './web-view';

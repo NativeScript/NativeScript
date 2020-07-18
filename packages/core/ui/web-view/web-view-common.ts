@@ -1,4 +1,4 @@
-import { LoadEventData, NavigationType } from './web-view-interfaces';
+import { LoadEventData, WebViewNavigationType } from './web-view-interfaces';
 import { ContainerView, CSSType } from '../core/view';
 import { Property } from '../core/properties';
 import { EventData } from '../../data/observable';
@@ -27,7 +27,7 @@ export abstract class WebViewBase extends ContainerView {
 		this.notify(<any>args);
 	}
 
-	public _onLoadStarted(url: string, navigationType: NavigationType) {
+	public _onLoadStarted(url: string, navigationType: WebViewNavigationType) {
 		let args = <LoadEventData>{
 			eventName: WebViewBase.loadStartedEvent,
 			object: this,

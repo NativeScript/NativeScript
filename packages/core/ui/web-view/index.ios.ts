@@ -1,4 +1,4 @@
-import { NavigationType } from '.';
+import { WebViewNavigationType } from '.';
 import { WebViewBase } from './web-view-common';
 import { profile } from '../../profiling';
 import { Trace } from '../../trace';
@@ -18,7 +18,7 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 	public webViewDecidePolicyForNavigationActionDecisionHandler(webView: WKWebView, navigationAction: WKNavigationAction, decisionHandler: any): void {
 		const owner = this._owner.get();
 		if (owner && navigationAction.request.URL) {
-			let navType: NavigationType = 'other';
+			let navType: WebViewNavigationType = 'other';
 
 			switch (navigationAction.navigationType) {
 				case WKNavigationType.LinkActivated:
