@@ -419,6 +419,9 @@
                 "command": "npm run setup"
               },
               {
+                "command": "mkdir -p ../../dist/packages"
+              },
+              {
                 "command": "mv \"$(npm pack | tail -n 1)\" ../../dist/packages/nativescript-webpack.tgz"
               }
             ],
