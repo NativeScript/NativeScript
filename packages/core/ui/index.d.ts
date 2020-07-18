@@ -9,7 +9,7 @@ export { ContentView } from './content-view';
 export { Binding, BindingOptions } from './core/bindable';
 export { ViewBase, ShowModalOptions, eachDescendant, getAncestor, getViewById, booleanConverter } from './core/view-base';
 export { View, Template, KeyedTemplate, ShownModallyData, CSSType, ContainerView, ViewHelper, IOSHelper } from './core/view';
-export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, unsetValue } from './core/properties';
+export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, unsetValue, makeParser, makeValidator } from './core/properties';
 export { DatePicker } from './date-picker';
 
 // No need go export dialogs, they are already export exported globally

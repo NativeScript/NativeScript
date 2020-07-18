@@ -3,7 +3,7 @@
     "main": "index",
     "types": "index.d.ts",
     "description": "Compatibility with old style tns-core-modules imports for NativeScript.",
-    "version": "7.0.0-rc.20",
+    "version": "7.0.0-rc.21",
     "homepage": "https://nativescript.org",
     "repository": {
         "type": "git",
