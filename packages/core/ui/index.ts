@@ -42,6 +42,7 @@ export { SegmentedBar, SegmentedBarItem } from './segmented-bar';
 export { Slider } from './slider';
 
 export { addTaggedAdditionalCSS, removeTaggedAdditionalCSS, resolveFileNameFromUrl } from './styling/style-scope';
+export { Background, CacheMode } from './styling/background';
 export { animationTimingFunctionConverter, timeConverter } from './styling/converters';
 export { Style, CommonLayoutParams } from './styling/style';
 export * from './styling/style-properties';
