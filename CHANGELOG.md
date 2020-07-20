@@ -1,3 +1,12 @@
+## [6.5.11](https://github.com/NativeScript/NativeScript/compare/6.5.10...6.5.11) (2020-07-20)
+
+
+### Bug Fixes
+
+* **android:** add check in ad.dismissSoftInput to make sure the dismissed nativeView has focus at that moment ([#8720](https://github.com/NativeScript/NativeScript/issues/8720)) ([4479096](https://github.com/NativeScript/NativeScript/commit/4479096b5631c0f3d311d8afef73a24dfb082c8f))
+
+
+
 ## [6.5.10](https://github.com/NativeScript/NativeScript/compare/6.5.9...6.5.10) (2020-07-11)
 
 
