@@ -17,8 +17,8 @@ export function onLiveSync() {
 export function pageLoaded(args: EventData) {
     const view = args.object as View;
     const page = view.page;
-    console.log("Page loaded: " + page + ", isLoaded: " + page.isLoaded);
-    console.log("Frame: " + page.frame + ", currentPage: " + page.frame.currentPage);
+    console.log(`Page loaded: ${page}, isLoaded: ${page.isLoaded}`);
+    console.log(`Frame: ${page.frame}, currentPage: ${page.frame.currentPage}`);
 }
 
 export function onTap(args) {

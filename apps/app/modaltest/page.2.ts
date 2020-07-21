@@ -44,7 +44,7 @@ export function closeModal(args: EventData) {
 let modalContext = 0;
 export function showModal(args: EventData) {
     (args.object as View).showModal("modaltest/page.2", ++modalContext, function () {
-        console.log("Closed Modal: " + (args.object as View).bindingContext);
+        console.log(`Closed Modal: ${(args.object as View).bindingContext}`);
     });
 }
 
