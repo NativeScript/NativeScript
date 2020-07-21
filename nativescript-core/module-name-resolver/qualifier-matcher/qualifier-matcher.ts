@@ -15,7 +15,7 @@ const minWidthHeightQualifier: QualifierSpec = {
         return (new RegExp(`.${MIN_WH}\\d+`).test(path));
     },
     getMatchOccurences: function (path: string): Array<string> {
-        return path.match(new RegExp(`.${MIN_WH}\\d+`));
+        return path.match(new RegExp(`.${MIN_WH}\\d+`, "g"));
     },
     getMatchValue(value: string, context: PlatformContext): number {
         const numVal = parseInt(value.substr(MIN_WH.length + 1));
@@ -37,7 +37,7 @@ const minWidthQualifier: QualifierSpec = {
         return (new RegExp(`.${MIN_W}\\d+`).test(path)) && !(new RegExp(`.${MIN_WH}\\d+`).test(path));
     },
     getMatchOccurences: function (path: string): Array<string> {
-        return path.match(new RegExp(`.${MIN_W}\\d+`));
+        return path.match(new RegExp(`.${MIN_W}\\d+`, "g"));
     },
     getMatchValue(value: string, context: PlatformContext): number {
         const numVal = parseInt(value.substr(MIN_W.length + 1));
@@ -59,7 +59,7 @@ const minHeightQualifier: QualifierSpec = {
         return (new RegExp(`.${MIN_H}\\d+`).test(path)) && !(new RegExp(`.${MIN_WH}\\d+`).test(path));
     },
     getMatchOccurences: function (path: string): Array<string> {
-        return path.match(new RegExp(`.${MIN_H}\\d+`));
+        return path.match(new RegExp(`.${MIN_H}\\d+`, "g"));
     },
     getMatchValue(value: string, context: PlatformContext): number {
         const numVal = parseInt(value.substr(MIN_H.length + 1));
@@ -81,7 +81,7 @@ const platformQualifier: QualifierSpec = {
         return path.includes(".android") || path.includes(".ios");
     },
     getMatchOccurences: function (path: string): Array<string> {
-        return [".android", ".ios"];
+        return path.match(new RegExp("\\.android|\\.ios", "g"));
     },
     getMatchValue(value: string, context: PlatformContext): number {
         const val = value.substr(1);
@@ -95,7 +95,7 @@ const orientationQualifier: QualifierSpec = {
         return path.includes(".land") || path.includes(".port");
     },
     getMatchOccurences: function (path: string): Array<string> {
-        return [".land", ".port"];
+        return path.match(new RegExp("\\.land|\\.port", "g"));
     },
     getMatchValue(value: string, context: PlatformContext): number {
         const val = value.substr(1);

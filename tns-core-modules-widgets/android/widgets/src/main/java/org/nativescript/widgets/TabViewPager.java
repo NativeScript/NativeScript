@@ -1,18 +1,15 @@
-/**
- * 
- */
 package org.nativescript.widgets;
 
 import android.content.Context;
 import androidx.viewpager.widget.ViewPager;
 import android.util.AttributeSet;
-import android.view.View;
 import android.view.MotionEvent;
 import android.view.KeyEvent;
 
 // See this thread for more information https://stackoverflow.com/questions/9650265
 public class TabViewPager extends ViewPager {
     private boolean swipePageEnabled = true;
+    private boolean animationEnabled = true;
 
     public TabViewPager(Context context) {
         super(context);
@@ -24,6 +21,10 @@ public class TabViewPager extends ViewPager {
 
     public void setSwipePageEnabled(boolean enabled) {
         this.swipePageEnabled = enabled;
+    }
+
+    public void setAnimationEnabled(boolean enabled) {
+        this.animationEnabled = enabled;
     }
 
     @Override
@@ -55,6 +56,7 @@ public class TabViewPager extends ViewPager {
 
     @Override
     public void setCurrentItem(int item) {
-        super.setCurrentItem(item, this.swipePageEnabled);
+        boolean smoothScroll = this.animationEnabled && this.swipePageEnabled;
+        super.setCurrentItem(item, smoothScroll);
     }
 }

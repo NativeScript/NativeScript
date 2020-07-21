@@ -2,8 +2,8 @@
     "name": "@nativescript/core",
     "main": "index",
     "types": "index.d.ts",
-    "description": "Telerik NativeScript Core Modules",
-    "version": "6.5.7",
+    "description": "NativeScript Core Modules",
+    "version": "6.5.11",
     "homepage": "https://www.nativescript.org",
     "repository": {
         "type": "git",
@@ -23,13 +23,13 @@
         "nativescript-hook": "0.2.5",
         "reduce-css-calc": "^2.1.6",
         "semver": "6.3.0",
-        "tns-core-modules-widgets": "next",
+        "tns-core-modules-widgets": "6.5.10",
         "tslib": "1.10.0"
     },
     "devDependencies": {
         "@types/chai": "~4.2.5",
         "@types/node": "~10.12.18",
-        "tns-platform-declarations": "next"
+        "tns-platform-declarations": "6.5.10"
     },
     "scripts": {
         "version": "conventional-changelog -p angular -i ../CHANGELOG.md -s && git add ../CHANGELOG.md",
