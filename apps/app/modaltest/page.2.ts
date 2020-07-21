@@ -1,4 +1,8 @@
-import { View, EventData, ShownModallyData } from "tns-core-modules/ui/core/view";
+import {
+    View,
+    EventData,
+    ShownModallyData
+} from "tns-core-modules/ui/core/view";
 
 var x = 0;
 
