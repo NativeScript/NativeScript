@@ -25,7 +25,14 @@ export function onTap(args) {
     const view = args.object as View;
     const page = view.page;
     let context = page.bindingContext || 0;
-    page.frame.navigate({ moduleName: "modaltest/page.2", bindingContext: ++context, transition: { name: "fade", duration: 1000 } });
+    page.frame.navigate({
+        moduleName: "modaltest/page.2",
+        bindingContext: ++context,
+        transition: {
+            name: "fade",
+            duration: 1000
+        }
+    });
 }
 
 export function tenGoBacks(args) {
@@ -36,7 +43,14 @@ export function tenGoBacks(args) {
     let context = page.bindingContext || 0;
     let x = 4;
     while (x--) {
-        frame.navigate({ moduleName: "modaltest/page.2", bindingContext: ++context, transition: { name: "fade", duration: 1000 } });
+        frame.navigate({
+            moduleName: "modaltest/page.2",
+            bindingContext: ++context,
+            transition: {
+                name: "fade",
+                duration: 1000
+            }
+        });
     }
 
     x = 4;
