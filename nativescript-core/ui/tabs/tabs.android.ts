@@ -15,7 +15,7 @@ import {
     getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty
 } from "../tab-navigation-base/tab-navigation-base";
 import { getTransformedText } from "../text-base";
-import { offscreenTabLimitProperty, swipeEnabledProperty, TabsBase } from "./tabs-common";
+import { offscreenTabLimitProperty, swipeEnabledProperty, animationEnabledProperty, TabsBase } from "./tabs-common";
 
 export * from "./tabs-common";
 
@@ -378,6 +378,7 @@ export class Tabs extends TabsBase {
     private _textTransform: TextTransform = "uppercase";
     private _selectedItemColor: Color;
     private _unSelectedItemColor: Color;
+    public animationEnabled: boolean;
 
     constructor() {
         super();
@@ -946,14 +947,11 @@ export class Tabs extends TabsBase {
     }
 
     [selectedIndexProperty.setNative](value: number) {
-        const smoothScroll = true;
-
         // TODO
         // if (traceEnabled()) {
         //     traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
         // }
-
-        this._viewPager.setCurrentItem(value, smoothScroll);
+        this._viewPager.setCurrentItem(value, this.animationEnabled);
     }
 
     [itemsProperty.getDefault](): TabContentItem[] {
@@ -984,6 +982,10 @@ export class Tabs extends TabsBase {
     }
     [offscreenTabLimitProperty.setNative](value: number) {
         this._viewPager.setOffscreenPageLimit(value);
+    }
+
+    [animationEnabledProperty.setNative](value: number) {
+      (<any>this._viewPager).setAnimationEnabled(value);
     }
 }
 

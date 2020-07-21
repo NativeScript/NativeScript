@@ -62,6 +62,9 @@ export module ad {
         let windowToken: android.os.IBinder;
 
         if (nativeView instanceof android.view.View) {
+            if (!nativeView.hasFocus()) {
+                return;
+            }
             windowToken = nativeView.getWindowToken();
         } else if (androidApp.foregroundActivity instanceof androidx.appcompat.app.AppCompatActivity) {
             const decorView = androidApp.foregroundActivity.getWindow().getDecorView();

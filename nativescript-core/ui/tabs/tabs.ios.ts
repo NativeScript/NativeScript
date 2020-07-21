@@ -13,9 +13,17 @@ import { ios as iosView, View } from "../core/view";
 import { Frame } from "../frame";
 import { Font } from "../styling/font";
 import {
-    getIconSpecSize, itemsProperty, selectedIndexProperty, tabStripProperty,
+    getIconSpecSize,
+    itemsProperty,
+    selectedIndexProperty,
+    tabStripProperty,
 } from "../tab-navigation-base/tab-navigation-base";
-import { swipeEnabledProperty, TabsBase, IOSTabBarItemsAlignment, iOSTabBarItemsAlignmentProperty } from "./tabs-common";
+import {
+    IOSTabBarItemsAlignment,
+    iOSTabBarItemsAlignmentProperty,
+    swipeEnabledProperty,
+    TabsBase
+} from "./tabs-common";
 
 // TODO
 // import { profile } from "../../profiling";
@@ -463,6 +471,7 @@ export class Tabs extends TabsBase {
     public _defaultItemBackgroundColor: UIColor;
     private _selectedItemColor: Color;
     private _unSelectedItemColor: Color;
+    public animationEnabled: boolean;
 
     constructor() {
         super();
@@ -1102,7 +1111,7 @@ export class Tabs extends TabsBase {
             // do not make layout changes while the animation is in progress https://stackoverflow.com/a/47031524/613113
             this.visitFrames(item, frame => frame._animationInProgress = true);
 
-            this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, true, (finished: boolean) => {
+            invokeOnRunLoop( () => this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, this.animationEnabled, (finished: boolean) => {
                 this.visitFrames(item, frame => frame._animationInProgress = false);
                 if (finished) {
                     // HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
@@ -1112,10 +1121,10 @@ export class Tabs extends TabsBase {
                     this._setCanBeLoaded(value);
                     this._loadUnloadTabItems(value);
                 }
-            });
+            }));
 
             if (this.tabBarItems && this.tabBarItems.length && this.viewController && this.viewController.tabBar) {
-                this.viewController.tabBar.setSelectedItemAnimated(this.tabBarItems[value], true);
+                this.viewController.tabBar.setSelectedItemAnimated(this.tabBarItems[value], this.animationEnabled);
             }
             // TODO:
             // (<any>this._ios)._willSelectViewController = this._ios.viewControllers[value];
@@ -1140,7 +1149,6 @@ export class Tabs extends TabsBase {
     [tabStripProperty.getDefault](): TabStrip {
         return null;
     }
-
     [tabStripProperty.setNative](value: TabStrip) {
         this.setViewControllers(this.items);
         selectedIndexProperty.coerce(this);
@@ -1149,7 +1157,6 @@ export class Tabs extends TabsBase {
     [swipeEnabledProperty.getDefault](): boolean {
         return true;
     }
-
     [swipeEnabledProperty.setNative](value: boolean) {
         if (this.viewController && this.viewController.scrollView) {
             this.viewController.scrollView.scrollEnabled = value;
@@ -1165,7 +1172,6 @@ export class Tabs extends TabsBase {
 
         return <any>(alignment.charAt(0).toLowerCase() + alignment.substring(1));
     }
-
     [iOSTabBarItemsAlignmentProperty.setNative](value: IOSTabBarItemsAlignment) {
         if (!this.viewController || !this.viewController.tabBar) {
             return;

@@ -44,3 +44,6 @@ tabsPositionProperty.register(TabsBase);
 export type IOSTabBarItemsAlignment = "leading" | "justified" | "center" | "centerSelected";
 export const iOSTabBarItemsAlignmentProperty = new Property<TabsBase, IOSTabBarItemsAlignment>({ name: "iOSTabBarItemsAlignment", defaultValue: "justified" });
 iOSTabBarItemsAlignmentProperty.register(TabsBase);
+
+export const animationEnabledProperty = new Property<TabsBase, boolean>({ name: "animationEnabled", defaultValue: true, valueConverter: booleanConverter });
+animationEnabledProperty.register(TabsBase);
