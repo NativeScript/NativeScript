@@ -32,7 +32,7 @@ export function tenGoBacks(args) {
     const view = args.object as View;
     const page = view.page;
     const frame = page.frame;
-    
+
     let context = page.bindingContext || 0;
     let x = 4;
     while (x--) {
