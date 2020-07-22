@@ -1,4 +1,7 @@
-import { View, EventData } from "tns-core-modules/ui/core/view";
+import {
+    View,
+    EventData
+} from "tns-core-modules/ui/core/view";
 
 export function onNavigatingTo(args: EventData) {
     const page = args.object;
