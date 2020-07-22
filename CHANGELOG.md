@@ -1,3 +1,12 @@
+## [6.5.12](https://github.com/NativeScript/NativeScript/compare/6.5.11...6.5.12) (2020-07-21)
+
+
+### Bug Fixes
+
+* **ios:** actionbar show/hide should trigger page layout ([#8726](https://github.com/NativeScript/NativeScript/issues/8726)) ([09d866c](https://github.com/NativeScript/NativeScript/commit/09d866cfcda7c0ea42622201eac50a1b8691a26b))
+
+
+
 ## [6.5.11](https://github.com/NativeScript/NativeScript/compare/6.5.10...6.5.11) (2020-07-20)
 
 
