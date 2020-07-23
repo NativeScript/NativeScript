@@ -7,6 +7,7 @@ function ensureLruBitmapCacheClass() {
 		return;
 	}
 
+	@NativeClass
 	class LruBitmapCache extends android.util.LruCache<string, android.graphics.Bitmap> {
 		constructor(cacheSize: number) {
 			super(cacheSize);

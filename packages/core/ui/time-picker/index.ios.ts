@@ -114,6 +114,7 @@ export class TimePicker extends TimePickerBase {
 	}
 }
 
+@NativeClass
 class UITimePickerChangeHandlerImpl extends NSObject {
 	private _owner: WeakRef<TimePicker>;
 

@@ -9,6 +9,7 @@ export * from './search-bar-common';
 
 const majorVersion = iOSNativeHelper.MajorVersion;
 
+@NativeClass
 class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 	public static ObjCProtocols = [UISearchBarDelegate];
 

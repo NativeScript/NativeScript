@@ -35,6 +35,7 @@ function loadActionIcon(item: ActionItemDefinition): any /* UIImage */ {
 	return img;
 }
 
+@NativeClass
 class TapBarItemHandlerImpl extends NSObject {
 	private _owner: WeakRef<ActionItemDefinition>;
 

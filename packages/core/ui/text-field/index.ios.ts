@@ -13,6 +13,7 @@ const zeroLength: Length = {
 	unit: 'px',
 };
 
+@NativeClass
 class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	public static ObjCProtocols = [UITextFieldDelegate];
 

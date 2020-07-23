@@ -1,5 +1,6 @@
 import * as definition from './fps-native';
 
+@NativeClass
 class FrameHandlerImpl extends NSObject {
 	private _owner: WeakRef<FPSCallback>;
 

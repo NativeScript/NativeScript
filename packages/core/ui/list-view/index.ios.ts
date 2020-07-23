@@ -73,6 +73,7 @@ function notifyForItemAtIndex(listView: ListViewBase, cell: any, view: View, eve
 	return args;
 }
 
+@NativeClass
 class DataSource extends NSObject implements UITableViewDataSource {
 	public static ObjCProtocols = [UITableViewDataSource];
 
@@ -118,6 +119,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
 	}
 }
 
+@NativeClass
 class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 	public static ObjCProtocols = [UITableViewDelegate];
 
@@ -182,6 +184,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 	}
 }
 
+@NativeClass
 class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDelegate {
 	public static ObjCProtocols = [UITableViewDelegate];
 

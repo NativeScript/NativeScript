@@ -478,6 +478,7 @@ function ensureBroadCastReceiverClass() {
 		return;
 	}
 
+	@NativeClass
 	class BroadcastReceiver extends android.content.BroadcastReceiver {
 		private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
 
@@ -500,6 +501,7 @@ function ensureBroadCastReceiverClass() {
 
 declare namespace com {
 	namespace tns {
+		@NativeClass
 		class NativeScriptApplication extends android.app.Application {
 			static getInstance(): NativeScriptApplication;
 		}

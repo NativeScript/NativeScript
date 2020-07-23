@@ -17,6 +17,7 @@ module UIViewControllerAnimatedTransitioningMethods {
 	}
 }
 
+@NativeClass
 class AnimatedTransitioning extends NSObject implements UIViewControllerAnimatedTransitioning {
 	public static ObjCProtocols = [UIViewControllerAnimatedTransitioning];
 
