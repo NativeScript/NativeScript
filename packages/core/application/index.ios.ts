@@ -25,16 +25,7 @@ const majorVersion = iOSNativeHelper.MajorVersion;
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
 // TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
 // https://github.com/NativeScript/ios-runtime/issues/1012
-@NativeClass
-// class Responder extends UIResponder {
-// 	public static ObjCProtocols = [UIApplicationDelegate];
-// 	get window() {
-// 		return iosApp ? iosApp.window : undefined;
-// 	}
-// 	set window(setWindow) {
-// 		// NOOP
-// 	}
-// }
+
 const Responder = (<any>UIResponder).extend(
 	{
 		get window() {
