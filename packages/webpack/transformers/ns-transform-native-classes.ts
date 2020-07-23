@@ -17,10 +17,9 @@ export default function (ctx: ts.TransformationContext) {
     }
 
     function createHelper(node: ts.Node) {
-        const decoratorIndex= node.decorators.findIndex(d=>d.getFullText().trim().indexOf("@NativeClass") === 0);
-        node.decorators.slice(decoratorIndex, 1);
+        // we remove the decorator for now!
         return ts.createIdentifier(
-            ts.transpileModule(node.getText(), {
+            ts.transpileModule(node.getText().replace(/@NativeClass(\((.|\n)*?\))?/gm, ''), {
                 compilerOptions: { noEmitHelpers:true, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES5 },
             }).outputText
         );
