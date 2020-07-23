@@ -19,6 +19,7 @@ export function observe(target: View, type: GestureTypes, callback: (args: Gestu
 	return observer;
 }
 
+@NativeClass
 class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecognizerDelegate {
 	public static ObjCProtocols = [UIGestureRecognizerDelegate];
 
@@ -38,6 +39,7 @@ class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecog
 }
 let recognizerDelegateInstance: UIGestureRecognizerDelegateImpl = <UIGestureRecognizerDelegateImpl>UIGestureRecognizerDelegateImpl.new();
 
+@NativeClass
 class UIGestureRecognizerImpl extends NSObject {
 	public static ObjCExposedMethods = {
 		recognize: {
@@ -461,6 +463,7 @@ function _getLongPressData(args: GestureEventData): GestureEventDataWithState {
 	};
 }
 
+@NativeClass
 class TouchGestureRecognizer extends UIGestureRecognizer {
 	public observer: GesturesObserver;
 	private _eventData: TouchGestureEventData;

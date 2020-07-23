@@ -355,8 +355,8 @@ const loadCss = profile(`"style-scope".loadCss`, (cssModule: string) => {
 	}
 });
 
-application.on('cssChanged', <any>onCssChanged);
-application.on('livesync', onLiveSync);
+global.NativeScriptGlobals.events.on('cssChanged', <any>onCssChanged);
+global.NativeScriptGlobals.events.on('livesync', onLiveSync);
 
 // Call to this method is injected in the application in:
 //  - no-snapshot - code injected in app.ts by [bundle-config-loader](https://github.com/NativeScript/nativescript-dev-webpack/blob/9b1e34d8ef838006c9b575285c42d2304f5f02b5/bundle-config-loader.ts#L85-L92)
@@ -365,7 +365,7 @@ application.on('livesync', onLiveSync);
 // when the snapshot is created - there is no way to use file qualifiers or change the name of on app.css
 export const loadAppCSS = profile('"style-scope".loadAppCSS', (args: application.LoadAppCSSEventData) => {
 	loadCss(args.cssFile, null, null);
-	application.off('loadAppCss', loadAppCSS);
+	global.NativeScriptGlobals.events.off('loadAppCss', loadAppCSS);
 });
 
 if (application.hasLaunched()) {
@@ -379,7 +379,7 @@ if (application.hasLaunched()) {
 		null
 	);
 } else {
-	application.on('loadAppCss', <any>loadAppCSS);
+	global.NativeScriptGlobals.events.on('loadAppCss', <any>loadAppCSS);
 }
 
 export class CssState {

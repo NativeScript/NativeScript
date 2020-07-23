@@ -1,13 +1,11 @@
-import { Button } from '@nativescript/core/ui/button';
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import { GridLayout } from '@nativescript/core/ui/layouts/grid-layout';
+import { Button, StackLayout, GridLayout, Utils } from '@nativescript/core';
 
-import * as utils from '@nativescript/core/utils';
 import * as TKUnit from '../../tk-unit';
 import * as def from './layout-helper';
 
 var DELTA = 0.1;
 
+@NativeClass
 class NativeButton extends android.widget.Button {
 	constructor(context: android.content.Context, public owner: def.MeasuredView) {
 		super(context);
@@ -28,6 +26,7 @@ class NativeButton extends android.widget.Button {
 	}
 }
 
+@NativeClass
 class NativeStackLayout extends org.nativescript.widgets.StackLayout {
 	constructor(context: android.content.Context, public owner: def.MeasuredView) {
 		super(context);
@@ -48,6 +47,7 @@ class NativeStackLayout extends org.nativescript.widgets.StackLayout {
 	}
 }
 
+@NativeClass
 class NativeGridLayout extends org.nativescript.widgets.GridLayout {
 	constructor(context: android.content.Context, public owner: def.MeasuredView) {
 		super(context);
@@ -90,10 +90,10 @@ export class MyButton extends Button implements def.MyButton {
 	public heightMeasureSpec: number = Number.NaN;
 
 	public get measureWidth() {
-		return utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
+		return Utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
 	}
 	public get measureHeight() {
-		return utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
+		return Utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
 	}
 
 	public get measured(): boolean {
@@ -143,10 +143,10 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
 	public heightMeasureSpec: number = Number.NaN;
 
 	public get measureWidth() {
-		return utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
+		return Utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
 	}
 	public get measureHeight() {
-		return utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
+		return Utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
 	}
 
 	public get measured(): boolean {
@@ -196,10 +196,10 @@ export class MyGridLayout extends GridLayout implements def.MyGridLayout {
 	public heightMeasureSpec: number = Number.NaN;
 
 	public get measureWidth() {
-		return utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
+		return Utils.layout.getMeasureSpecSize(this.widthMeasureSpec);
 	}
 	public get measureHeight() {
-		return utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
+		return Utils.layout.getMeasureSpecSize(this.heightMeasureSpec);
 	}
 
 	public get measured(): boolean {
@@ -244,9 +244,9 @@ export function assertLayout(view: def.MeasuredView, left: number, top: number, 
 }
 
 export function dp(value: number): number {
-	return utils.layout.toDeviceIndependentPixels(value);
+	return Utils.layout.toDeviceIndependentPixels(value);
 }
 
 export function dip(value: number): number {
-	return utils.layout.toDevicePixels(value);
+	return Utils.layout.toDevicePixels(value);
 }

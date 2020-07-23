@@ -1,5 +1,5 @@
 /* tslint:disable:class-name */
-import * as appModule from '../application';
+import { getNativeApplication, on, off, orientationChangedEvent, android as AndroidApplication } from '../application';
 
 const MIN_TABLET_PIXELS = 600;
 
@@ -19,15 +19,15 @@ class MainScreen {
 	}
 
 	private initMetrics(): void {
-		const nativeApp = <android.app.Application>appModule.getNativeApplication();
+		const nativeApp = <android.app.Application>getNativeApplication();
 		nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(this._metrics);
 	}
 
 	private get metrics(): android.util.DisplayMetrics {
 		if (!this._metrics) {
 			// NOTE: This will be memory leak but we MainScreen is singleton
-			appModule.on('cssChanged', this.reinitMetrics, this);
-			appModule.on(appModule.orientationChangedEvent, this.reinitMetrics, this);
+			on('cssChanged', this.reinitMetrics, this);
+			on(orientationChangedEvent, this.reinitMetrics, this);
 
 			this._metrics = new android.util.DisplayMetrics();
 			this.initMetrics();
@@ -119,7 +119,7 @@ class DeviceRef {
 
 	get uuid(): string {
 		if (!this._uuid) {
-			const nativeApp = <android.app.Application>appModule.android.nativeApp;
+			const nativeApp = <android.app.Application>AndroidApplication.nativeApp;
 			this._uuid = android.provider.Settings.Secure.getString(nativeApp.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 		}
 
@@ -145,5 +145,5 @@ class DeviceRef {
 
 export const Device = new DeviceRef();
 
-export const isAndroid = true;
-export const isIOS = false;
+export const isAndroid = global.isAndroid;
+export const isIOS = global.isIOS;

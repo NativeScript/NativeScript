@@ -1,5 +1,4 @@
 ﻿import { View, AddArrayFromBuilder, AddChildFromBuilder } from '../../core/view';
-import { isIOS } from '../../../platform';
 import { TabStrip } from '../tab-strip';
 import { TabStripItem } from '../tab-strip-item';
 import { TabContentItem } from '../tab-content-item';

@@ -6,8 +6,8 @@ module.exports = function (source, map) {
     const imports = modules.map(convertSlashesInPath)
         .map(m => `require("${m}");`).join("\n");
     const augmentedSource = `
-        let applicationCheckPlatform = require("@nativescript/core/application");
-        if (applicationCheckPlatform.android && !global["__snapshot"]) {
+        const isAndroid = require("@nativescript/core").isAndroid;
+        if (isAndroid && !global["__snapshot"]) {
             ${imports}
         }
 

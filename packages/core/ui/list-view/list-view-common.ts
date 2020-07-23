@@ -10,15 +10,6 @@ import { Observable, EventData } from '../../data/observable';
 import { ObservableArray, ChangedData } from '../../data/observable-array';
 import { addWeakEventListener, removeWeakEventListener } from '../core/weak-event-listener';
 
-// TODO: Think of a way to register these instead of relying on hardcoded values.
-export module knownTemplates {
-	export const itemTemplate = 'itemTemplate';
-}
-
-export module knownMultiTemplates {
-	export const itemTemplates = 'itemTemplates';
-}
-
 const autoEffectiveRowHeight = -1;
 
 @CSSType('ListView')

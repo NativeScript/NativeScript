@@ -265,6 +265,7 @@ export class Button extends ButtonBase {
 	}
 }
 
+@NativeClass
 class TapHandlerImpl extends NSObject {
 	private _owner: WeakRef<Button>;
 

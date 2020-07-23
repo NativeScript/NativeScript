@@ -3,7 +3,6 @@ import { LayoutBase } from '../layout-base';
 import { View, CSSType } from '../../core/view';
 import { Property, makeValidator, makeParser } from '../../core/properties';
 import { booleanConverter } from '../../core/view-base';
-import { isIOS } from '../../../platform';
 
 function validateArgs(element: View): View {
 	if (!element) {
@@ -53,7 +52,7 @@ dockProperty.register(View);
 export const stretchLastChildProperty = new Property<DockLayoutBase, boolean>({
 	name: 'stretchLastChild',
 	defaultValue: true,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: booleanConverter,
 });
 stretchLastChildProperty.register(DockLayoutBase);

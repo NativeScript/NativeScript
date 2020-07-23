@@ -31,13 +31,6 @@ function ensureImageSource() {
 	}
 }
 
-let platform: typeof platformModule;
-function ensurePlatform() {
-	if (!platform) {
-		platform = require('../../platform');
-	}
-}
-
 let fs: typeof fsModule;
 function ensureFileSystem() {
 	if (!fs) {
@@ -204,8 +197,6 @@ function buildJavaOptions(options: httpModule.HttpRequestOptions) {
 
 		javaOptions.headers = arrayList;
 	}
-
-	ensurePlatform();
 
 	// pass the maximum available image size to the request options in case we need a bitmap conversion
 	javaOptions.screenWidth = Screen.mainScreen.widthPixels;

@@ -108,6 +108,9 @@ export const fontWeightProperty: InheritedCssProperty<Style, FontWeight>;
 export const backgroundInternalProperty: CssProperty<Style, Background>;
 export const fontInternalProperty: InheritedCssProperty<Style, Font>;
 
+export const androidElevationProperty: CssProperty<Style, number>;
+export const androidDynamicElevationOffsetProperty: CssProperty<Style, number>;
+
 export type BackgroundRepeat = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
 export type Visibility = 'visible' | 'hidden' | 'collapse';
 export type HorizontalAlignment = 'left' | 'center' | 'right' | 'stretch';

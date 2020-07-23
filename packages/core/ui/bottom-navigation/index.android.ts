@@ -54,6 +54,7 @@ function initializeNativeClasses() {
 		return;
 	}
 
+	@NativeClass
 	class TabFragmentImplementation extends org.nativescript.widgets.FragmentBase {
 		private owner: BottomNavigation;
 		private index: number;
@@ -143,6 +144,7 @@ function initializeNativeClasses() {
 		}
 	}
 
+	@NativeClass
 	class BottomNavigationBarImplementation extends org.nativescript.widgets.BottomNavigationBar {
 		constructor(context: android.content.Context, public owner: BottomNavigation) {
 			super(context);
@@ -197,6 +199,7 @@ function initializeNativeClasses() {
 		}
 	}
 
+	@NativeClass
 	@Interfaces([android.view.View.OnAttachStateChangeListener])
 	class AttachListener extends java.lang.Object implements android.view.View.OnAttachStateChangeListener {
 		constructor() {

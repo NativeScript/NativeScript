@@ -157,3 +157,5 @@ export namespace ad {
 		return fingerprint != null && (fingerprint.indexOf('vbox') > -1 || fingerprint.indexOf('generic') > -1);
 	}
 }
+
+export const iOSNativeHelper = 0;

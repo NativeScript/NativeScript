@@ -323,7 +323,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		};
 	}
 
-	private _onSizeChanged(): void {
+	_onSizeChanged(): void {
 		const nativeView = this.nativeViewProtected;
 		if (!nativeView) {
 			return;

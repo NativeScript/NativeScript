@@ -24,6 +24,7 @@ function initializeNativeClasses(): void {
 		return;
 	}
 
+	@NativeClass
 	@Interfaces([android.widget.NumberPicker.Formatter])
 	class FormatterImpl extends java.lang.Object implements android.widget.NumberPicker.Formatter {
 		constructor(private owner: ListPicker) {
@@ -37,6 +38,7 @@ function initializeNativeClasses(): void {
 		}
 	}
 
+	@NativeClass
 	@Interfaces([android.widget.NumberPicker.OnValueChangeListener])
 	class ValueChangeListenerImpl extends java.lang.Object implements android.widget.NumberPicker.OnValueChangeListener {
 		constructor(private owner: ListPicker) {

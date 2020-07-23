@@ -25,6 +25,7 @@ function initializeClickListener(): void {
 		return;
 	}
 
+	@NativeClass
 	@Interfaces([android.view.View.OnClickListener])
 	class ClickListenerImpl extends java.lang.Object implements android.view.View.OnClickListener {
 		constructor(public owner: Button) {

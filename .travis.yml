@@ -3,8 +3,8 @@ node_js:
   - "node"
 script:
 - npm run setup
-- nx run core:unit
-- nx run core:build.npm
+- npm start @nativescript.core.test
+- npm start @nativescript.core.build
 
 # public API changes check
 # - npm run api-extractor-ci

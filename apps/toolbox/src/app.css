@@ -1,0 +1,104 @@
+@import '~nativescript-theme-core/css/core.light.css';
+@import './app-platform.css';
+
+/*
+The following CSS rule changes the font size of all UI
+components that have the btn class name.
+*/
+.btn {
+  font-size: 18;
+}
+
+.bold{
+    font-weight: bold;
+}
+
+.icon-label{
+    font-size: 22;
+    font-family: "ns-playground-font";
+    text-align: center;
+    vertical-align: middle;
+    color: white;
+}
+
+.component-select{
+    text-align: right;
+    font-family: "ns-playground-font";
+    font-size: 22;
+}
+
+.component-code{
+    height: 100%;
+    vertical-align: top;
+}
+
+.code-text-view{
+    padding: 30px;
+}
+
+.custom-segmented-bar-root{
+    width: 100%;
+    padding-bottom: 10%;
+}
+
+.custom-segmented-bar-border{
+    width: 80%;
+    border-color: #3350ff;
+    height: 5%;
+}
+
+.component-details-layout{
+    padding: 40px;
+}
+
+.description-textview{
+    font-size: 18px;
+}
+
+.va-middle{
+    vertical-align: middle;
+}
+
+.image-text {
+    text-align: center;
+    color: gray;
+    padding-left: 15;
+    padding-right: 15;
+    font-size: 13;
+}
+
+.image-item {
+    margin-top: 15;
+}
+
+.image-button {
+    padding-top: 15px;
+}
+
+.img-circle {
+	border-radius: 50%
+}
+
+.list-view-row {
+    padding: 7 0 7 15;
+}
+
+.list-group .list-group-item {
+	padding: 8;
+	margin: 0
+}
+
+.list-group .list-group-item Label {
+    padding: 7;
+}
+
+.list-group .thumb {
+	stretch: fill;
+	width: 40;
+	height: 40;
+	margin-right: 16
+}
+
+.list-group .list-group-item-heading {
+	margin-bottom: 5
+}

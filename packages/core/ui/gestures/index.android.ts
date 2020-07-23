@@ -23,6 +23,7 @@ function initializeTapAndDoubleTapGestureListener() {
 		return;
 	}
 
+	@NativeClass
 	class TapAndDoubleTapGestureListenerImpl extends android.view.GestureDetector.SimpleOnGestureListener {
 		private _observer: GesturesObserver;
 		private _target: View;
@@ -107,6 +108,7 @@ function initializePinchGestureListener() {
 		return;
 	}
 
+	@NativeClass
 	class PinchGestureListenerImpl extends android.view.ScaleGestureDetector.SimpleOnScaleGestureListener {
 		private _observer: GesturesObserver;
 		private _target: View;
@@ -163,6 +165,7 @@ function initializeSwipeGestureListener() {
 		return;
 	}
 
+	@NativeClass
 	class SwipeGestureListenerImpl extends android.view.GestureDetector.SimpleOnGestureListener {
 		private _observer: GesturesObserver;
 		private _target: View;

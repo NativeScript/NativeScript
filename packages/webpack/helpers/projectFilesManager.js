@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 
-const { isTypeScript, isAngular, isVue, isShared } = require("./projectHelpers");
+const { isTypeScript, isAngular, isVue, isShared, isPlugin } = require("./projectHelpers");
 
 function addProjectFiles(projectDir) {
     const projectTemplates = getProjectTemplates(projectDir);
@@ -58,19 +58,21 @@ function copyTemplate(templateName, destinationPath) {
 
 function getProjectTemplates(projectDir) {
     const WEBPACK_CONFIG_NAME = "webpack.config.js";
-    const TSCONFIG_TNS_NAME = "tsconfig.tns.json";
 
     let templates;
-    if (isAngular({ projectDir })) {
+    if (isPlugin({ projectDir })) {
+      // TODO: create config for plugin builds
+      templates = [];
+    } else if (isAngular({ projectDir })) {
         if (isShared({ projectDir })) {
             templates = getSharedAngularTemplates(WEBPACK_CONFIG_NAME);
         } else {
-            templates = getAngularTemplates(WEBPACK_CONFIG_NAME, TSCONFIG_TNS_NAME);
+            templates = getAngularTemplates(WEBPACK_CONFIG_NAME);
         }
     } else if (isVue({ projectDir })) {
         templates = getVueTemplates(WEBPACK_CONFIG_NAME);
     } else if (isTypeScript({ projectDir })) {
-        templates = getTypeScriptTemplates(WEBPACK_CONFIG_NAME, TSCONFIG_TNS_NAME);
+        templates = getTypeScriptTemplates(WEBPACK_CONFIG_NAME);
     } else {
         templates = getJavaScriptTemplates(WEBPACK_CONFIG_NAME);
     }
@@ -84,17 +86,15 @@ function getSharedAngularTemplates(webpackConfigName) {
     };
 }
 
-function getAngularTemplates(webpackConfigName, tsconfigName) {
+function getAngularTemplates(webpackConfigName) {
     return {
-        "webpack.angular.js": webpackConfigName,
-        [tsconfigName]: tsconfigName,
+        "webpack.angular.js": webpackConfigName
     };
 }
 
-function getTypeScriptTemplates(webpackConfigName, tsconfigName) {
+function getTypeScriptTemplates(webpackConfigName) {
     return {
-        "webpack.typescript.js": webpackConfigName,
-        [tsconfigName]: tsconfigName,
+        "webpack.typescript.js": webpackConfigName
     };
 }
 
@@ -114,7 +114,7 @@ function getFullTemplatesPath(projectDir, templates) {
     let updatedTemplates = {};
 
     Object.keys(templates).forEach(key => {
-        const updatedKey = getFullPath(path.join(__dirname, "templates"), key);
+        const updatedKey = getFullPath(path.join(__dirname, "..", "templates"), key);
         const updatedValue = getFullPath(projectDir, templates[key])
 
         updatedTemplates[updatedKey] = updatedValue;

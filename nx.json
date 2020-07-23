@@ -27,7 +27,7 @@
     "apps-automated": {
       "tags": []
     },
-    "apps-playground": {
+    "apps-toolbox": {
       "tags": []
     },
     "apps-ui": {
@@ -36,7 +36,7 @@
     "core": {
       "tags": []
     },
-    "tns-core-modules-compat": {
+    "core-compat": {
       "tags": []
     },
     "types-ios": {

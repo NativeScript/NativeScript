@@ -29,6 +29,7 @@ class AnimationInfo {
 	public delay: number;
 }
 
+@NativeClass
 class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 	public nextAnimation: Function;
 

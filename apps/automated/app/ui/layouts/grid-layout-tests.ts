@@ -347,7 +347,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 		this.waitUntilTestElementLayoutIsValid();
 
 		TKUnit.assertTrue(btn.getMeasuredWidth() === this.testView.getMeasuredWidth());
-		TKUnit.assertTrue(this.testView.getMeasuredWidth() < platform.screen.mainScreen.widthPixels);
+		TKUnit.assertTrue(this.testView.getMeasuredWidth() < platform.Screen.mainScreen.widthPixels);
 	}
 
 	public test_measuredWidth_when_not_stretched_two_columns() {

@@ -11,6 +11,7 @@ function initializeWebViewClient(): void {
 		return;
 	}
 
+	@NativeClass
 	class WebViewClientImpl extends android.webkit.WebViewClient {
 		constructor(public owner: WebViewBase) {
 			super();

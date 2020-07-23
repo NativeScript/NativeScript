@@ -12,6 +12,7 @@ function ensureHttpRequest() {
 	}
 }
 
+@NativeClass
 class MemmoryWarningHandler extends NSObject {
 	static new(): MemmoryWarningHandler {
 		return <MemmoryWarningHandler>super.new();

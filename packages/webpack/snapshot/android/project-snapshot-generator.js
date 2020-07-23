@@ -16,7 +16,7 @@ const {
     getAndroidV8Version,
     getRuntimeNdkRevision,
     getMksnapshotParams
-} = require("../../androidProjectHelpers");
+} = require("../../helpers/androidProjectHelpers");
 
 // min version with settings.json file specifying the V8 version
 const MIN_ANDROID_RUNTIME_VERSION = "5.2.1";

@@ -2,8 +2,8 @@
 import { iOSApplication as iOSApplicationDefinition } from '.';
 import { ApplicationEventData, CssChangedEventData, LaunchEventData, LoadAppCSSEventData, OrientationChangedEventData, SystemAppearanceChangedEventData } from './application-interfaces';
 
-// Require
-import { displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } from './application-common';
+// Use requires to ensure order of imports is maintained
+const { displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common');
 // First reexport so that app module is initialized.
 export * from './application-common';
 
@@ -11,7 +11,7 @@ import { View } from '../ui/core/view';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
 // TODO: Remove this and get it from global to decouple builder for angular
 import { Builder } from '../ui/builder';
-import { CLASS_PREFIX, getSystemCssClasses, pushToSystemCssClasses, ROOT_VIEW_CSS_CLASS } from '../css/system-classes';
+import { CSSUtils } from '../css/system-classes';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { Device } from '../platform';
 import { profile } from '../profiling';
@@ -25,6 +25,7 @@ const majorVersion = iOSNativeHelper.MajorVersion;
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
 // TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
 // https://github.com/NativeScript/ios-runtime/issues/1012
+
 const Responder = (<any>UIResponder).extend(
 	{
 		get window() {
@@ -39,6 +40,7 @@ const Responder = (<any>UIResponder).extend(
 	}
 );
 
+@NativeClass
 class NotificationObserver extends NSObject {
 	private _onReceiveCallback: (notification: NSNotification) => void;
 
@@ -61,6 +63,8 @@ class NotificationObserver extends NSObject {
 let displayedOnce = false;
 let displayedLinkTarget;
 let displayedLink;
+
+@NativeClass
 class CADisplayLinkTarget extends NSObject {
 	onDisplayed(link: CADisplayLink) {
 		link.invalidate();
@@ -358,9 +362,11 @@ function createRootView(v?: View) {
 		if (!mainEntry) {
 			throw new Error('Main entry is missing. App cannot be started. Verify app bootstrap.');
 		} else {
+			// console.log('createRootView mainEntry:', mainEntry);
 			rootView = Builder.createViewFromEntry(mainEntry);
 		}
 	}
+	// console.log('createRootView rootView:', rootView);
 
 	setRootViewsCssClasses(rootView);
 
@@ -489,19 +495,19 @@ function setViewControllerView(view: View): void {
 function setRootViewsCssClasses(rootView: View): void {
 	const deviceType = Device.deviceType.toLowerCase();
 
-	pushToSystemCssClasses(`${CLASS_PREFIX}${IOS_PLATFORM}`);
-	pushToSystemCssClasses(`${CLASS_PREFIX}${deviceType}`);
-	pushToSystemCssClasses(`${CLASS_PREFIX}${iosApp.orientation}`);
+	CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${IOS_PLATFORM}`);
+	CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${deviceType}`);
+	CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${iosApp.orientation}`);
 
-	rootView.cssClasses.add(ROOT_VIEW_CSS_CLASS);
-	const rootViewCssClasses = getSystemCssClasses();
+	rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
+	const rootViewCssClasses = CSSUtils.getSystemCssClasses();
 	rootViewCssClasses.forEach((c) => rootView.cssClasses.add(c));
 }
 
 function setRootViewsSystemAppearanceCssClass(rootView: View): void {
 	if (majorVersion >= 13) {
-		const systemAppearanceCssClass = `${CLASS_PREFIX}${iosApp.systemAppearance}`;
-		pushToSystemCssClasses(systemAppearanceCssClass);
+		const systemAppearanceCssClass = `${CSSUtils.CLASS_PREFIX}${iosApp.systemAppearance}`;
+		CSSUtils.pushToSystemCssClasses(systemAppearanceCssClass);
 		rootView.cssClasses.add(systemAppearanceCssClass);
 	}
 }

@@ -22,6 +22,7 @@ const maxTabsCount = 5;
 const majorVersion = iOSNativeHelper.MajorVersion;
 const isPhone = Device.deviceType === 'Phone';
 
+@NativeClass
 class UITabBarControllerImpl extends UITabBarController {
 	private _owner: WeakRef<BottomNavigation>;
 
@@ -94,6 +95,7 @@ class UITabBarControllerImpl extends UITabBarController {
 	}
 }
 
+@NativeClass
 class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControllerDelegate {
 	public static ObjCProtocols = [UITabBarControllerDelegate];
 
@@ -160,6 +162,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 	}
 }
 
+@NativeClass
 class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
 

@@ -21,6 +21,36 @@ declare interface NativeScriptError extends Error {
 //Augment the NodeJS global type with our own extensions
 declare namespace NodeJS {
 	interface Global {
+		NativeScriptHasInitGlobal?: boolean;
+		NativeScriptGlobals?: {
+			/**
+			 * Global framework event handling
+			 */
+			events: {
+				on(eventNames: string, callback: (data: any) => void, thisArg?: any);
+				on(event: 'propertyChange', callback: (data: any) => void, thisArg?: any);
+				off(eventNames: string, callback?: any, thisArg?: any);
+				addEventListener(eventNames: string, callback: (data: any) => void, thisArg?: any);
+				removeEventListener(eventNames: string, callback?: any, thisArg?: any);
+				set(name: string, value: any): void;
+				setProperty(name: string, value: any): void;
+				get(name: string): any;
+				notify<T>(data: any): void;
+				notifyPropertyChange(propertyName: string, value: any, oldValue?: any): void;
+				hasListeners(eventName: string): boolean;
+			};
+			launched: boolean;
+			// used by various classes to setup callbacks to wire up global app event handling when the app instance is ready
+			appEventWiring: Array<any>;
+			// determines if the app instance is ready upon bootstrap
+			appInstanceReady: boolean;
+
+			/**
+			 * Ability for classes to initialize app event handling early even before the app instance is ready during boot cycle avoiding boot race conditions
+			 * @param callback wire up any global event handling inside the callback
+			 */
+			addEventWiring(callback: () => void): void;
+		};
 		android?: any;
 		require(id: string): any;
 
@@ -90,8 +120,10 @@ declare namespace NodeJS {
 		__onLiveSyncCore: (context?: { type: string; path: string }) => void;
 		__onUncaughtError: (error: NativeScriptError) => void;
 		__onDiscardedError: (error: NativeScriptError) => void;
-		TNS_WEBPACK?: boolean;
 		__snapshot?: boolean;
+		TNS_WEBPACK?: boolean;
+		isIOS?: boolean;
+		isAndroid?: boolean;
 		__requireOverride?: (name: string, dir: string) => any;
 	}
 }
@@ -201,6 +233,18 @@ declare var exports: any;
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
 declare function Experimental(target: Object, key?: string | symbol, value?: any): void;
+
+declare interface NativeClassOptions {
+	nativeClassName?: string; // for @JavaProxy and
+	protocols?: any[];
+	interfaces?: any[];
+}
+
+/**
+ * Decorates class that extends a native class(iOS or Android)
+ */
+declare function NativeClass<T extends {new(...args:any[]):{}}>(constructor:T);
+declare function NativeClass<T extends {new(...args:any[]):{}}>(options?:NativeClassOptions);
 
 /**
  * Decorates class that implements native Java interfaces.

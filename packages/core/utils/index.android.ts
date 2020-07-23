@@ -3,7 +3,7 @@ import { Device } from '../platform';
 import { FileSystemAccess } from '../file-system/file-system-access';
 import { Trace } from '../trace';
 
-export { ad } from './native-helper';
+export { ad, iOSNativeHelper } from './native-helper';
 export * from './utils-common';
 export { Source } from './debug';
 

@@ -127,7 +127,8 @@ export namespace iOSNativeHelper {
 		return transform;
 	}
 
-	export class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
+	@NativeClass
+export class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
 		public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
 
 		public getViewController(): UIViewController {

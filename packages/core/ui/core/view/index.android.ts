@@ -93,6 +93,7 @@ function initializeTouchListener(): void {
 		return;
 	}
 
+	@NativeClass
 	@Interfaces([android.view.View.OnTouchListener])
 	class TouchListenerImpl extends java.lang.Object implements android.view.View.OnTouchListener {
 		private owner: WeakRef<View>;
@@ -127,6 +128,7 @@ function initializeDialogFragment() {
 		return;
 	}
 
+	@NativeClass
 	class DialogImpl extends android.app.Dialog {
 		constructor(public fragment: DialogFragmentImpl, context: android.content.Context, themeResId: number) {
 			super(context, themeResId);
@@ -440,7 +442,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	private hasGestureObservers() {
+	hasGestureObservers() {
 		return this._gestureObservers && Object.keys(this._gestureObservers).length > 0;
 	}
 
@@ -462,7 +464,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	private setOnTouchListener() {
+	setOnTouchListener() {
 		if (!this.nativeViewProtected || !this.hasGestureObservers()) {
 			return;
 		}

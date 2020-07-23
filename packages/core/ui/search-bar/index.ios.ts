@@ -9,6 +9,7 @@ export * from './search-bar-common';
 
 const majorVersion = iOSNativeHelper.MajorVersion;
 
+@NativeClass
 class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 	public static ObjCProtocols = [UISearchBarDelegate];
 
@@ -56,6 +57,7 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 	}
 }
 
+@NativeClass
 class UISearchBarImpl extends UISearchBar {
 	sizeThatFits(size: CGSize): CGSize {
 		// iOS11 SDK does not support passing sizeThatFits(...) non-finite width value;

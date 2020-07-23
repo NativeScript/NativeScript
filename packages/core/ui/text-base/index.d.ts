@@ -126,6 +126,7 @@ export const textDecorationProperty: CssProperty<Style, TextDecoration>;
 export const textTransformProperty: CssProperty<Style, TextTransform>;
 export const whiteSpaceProperty: CssProperty<Style, WhiteSpace>;
 export const letterSpacingProperty: CssProperty<Style, number>;
+export const lineHeightProperty: CssProperty<Style, number>;
 
 //Used by tab view
 export function getTransformedText(text: string, textTransform: TextTransform): string;

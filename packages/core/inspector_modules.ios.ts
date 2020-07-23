@@ -1,6 +1,6 @@
 console.log('Loading inspector modules...');
 import { initGlobal } from './globals';
-if (!(<any>global).hasInitGlobal) {
+if (!global.NativeScriptHasInitGlobal) {
 	initGlobal();
 }
 require('./debugger/webinspector-network');

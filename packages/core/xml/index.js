@@ -1,6 +1,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.XmlParser = exports.ParserEvent = exports.ParserEventType = void 0;
-var easysax = require("../js-libs/easysax");
+var easysax = require('../js-libs/easysax');
+var easysax_1 = require("../js-libs/easysax");
 var ParserEventType = (function () {
     function ParserEventType() {
     }
@@ -413,7 +414,7 @@ function _HandleAmpEntities(found, decimalValue, hexValue, wordValue) {
 var XmlParser = (function () {
     function XmlParser(onEvent, onError, processNamespaces) {
         this._processNamespaces = processNamespaces;
-        this._parser = new easysax.EasySAXParser();
+        this._parser = new easysax_1.EasySAXParser();
         var that = this;
         this._parser.on('startNode', function (elem, attr, uq, tagend, str, pos) {
             var attributes = attr();

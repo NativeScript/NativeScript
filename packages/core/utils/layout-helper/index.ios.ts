@@ -2,22 +2,20 @@ import { round, MODE_MASK } from './layout-helper-common';
 
 export * from './layout-helper-common';
 
-let mainScreenScale;
-
 export function makeMeasureSpec(size: number, mode: number): number {
 	return (Math.round(Math.max(0, size)) & ~MODE_MASK) | (mode & MODE_MASK);
 }
 
 export function getDisplayDensity(): number {
-	return mainScreenScale;
+	return UIScreen.mainScreen.scale;
 }
 
 export function toDevicePixels(value: number): number {
-	return value * mainScreenScale;
+	return value * UIScreen.mainScreen.scale;
 }
 
 export function toDeviceIndependentPixels(value: number): number {
-	return value / mainScreenScale;
+	return value / UIScreen.mainScreen.scale;
 }
 
 export function measureNativeView(nativeView: any /* UIView */, width: number, widthMode: number, height: number, heightMode: number): { width: number; height: number } {
@@ -32,5 +30,3 @@ export function measureNativeView(nativeView: any /* UIView */, width: number, w
 
 	return nativeSize;
 }
-
-mainScreenScale = UIScreen.mainScreen.scale;

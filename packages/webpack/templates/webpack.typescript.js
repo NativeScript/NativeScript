@@ -5,6 +5,7 @@ const webpack = require("webpack");
 const nsWebpack = require("@nativescript/webpack");
 const nativescriptTarget = require("@nativescript/webpack/nativescript-target");
 const { getNoEmitOnErrorFromTSConfig } = require("@nativescript/webpack/utils/tsconfig-utils");
+const nsTransformNativeClasses = require("@nativescript/webpack/transformers/ns-transform-native-classes").default;
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
@@ -51,6 +52,7 @@ module.exports = env => {
         hiddenSourceMap, // --env.hiddenSourceMap
         hmr, // --env.hmr,
         unitTesting, // --env.unitTesting,
+        testing, // --env.testing
         verbose, // --env.verbose
         snapshotInDocker, // --env.snapshotInDocker
         skipSnapshotTools, // --env.skipSnapshotTools
@@ -84,10 +86,10 @@ module.exports = env => {
     const entries = env.entries || {};
     entries.bundle = entryPath;
 
-    const tsConfigPath = resolve(projectRoot, "tsconfig.tns.json");
+    const tsConfigPath = resolve(projectRoot, "tsconfig.json");
 
     const areCoreModulesExternal = Array.isArray(env.externals) && env.externals.some(e => e.indexOf("@nativescript") > -1);
-    if (platform === "ios" && !areCoreModulesExternal) {
+    if (platform === "ios" && !areCoreModulesExternal && !testing) {
         entries["tns_modules/@nativescript/core/inspector_modules"] = "inspector_modules";
     };
 
@@ -196,7 +198,7 @@ module.exports = env => {
                     use: [
                         // Require all Android app components
                         platform === "android" && {
-                            loader: "@nativescript/webpack/android-app-components-loader",
+                            loader: "@nativescript/webpack/helpers/android-app-components-loader",
                             options: { modules: appComponents }
                         },
 
@@ -218,17 +220,17 @@ module.exports = env => {
                     use: "@nativescript/webpack/hmr/hot-loader"
                 },
 
-                { test: /\.(html|xml)$/, use: "@nativescript/webpack/xml-namespace-loader" },
+                { test: /\.(html|xml)$/, use: "@nativescript/webpack/helpers/xml-namespace-loader" },
 
                 {
                     test: /\.css$/,
-                    use: "@nativescript/webpack/css2json-loader"
+                    use: "@nativescript/webpack/helpers/css2json-loader"
                 },
 
                 {
                     test: /\.scss$/,
                     use: [
-                        "@nativescript/webpack/css2json-loader",
+                        "@nativescript/webpack/helpers/css2json-loader",
                         "sass-loader"
                     ]
                 },
@@ -246,7 +248,10 @@ module.exports = env => {
                             compilerOptions: {
                                 sourceMap: isAnySourceMapEnabled,
                                 declaration: false
-                            }
+                            },
+                            getCustomTransformers: (program) => ({
+                              before: [nsTransformNativeClasses]
+                            })
                         },
                     }
                 },
@@ -256,6 +261,8 @@ module.exports = env => {
             // Define useful constants like TNS_WEBPACK
             new webpack.DefinePlugin({
                 "global.TNS_WEBPACK": "true",
+                "global.isAndroid": platform === 'android',
+                "global.isIOS": platform === 'ios',
                 "process": "global.process",
             }),
             // Remove all files from the out dir.
@@ -326,10 +333,6 @@ module.exports = env => {
     if (hmr) {
         config.plugins.push(new webpack.HotModuleReplacementPlugin());
     }
-
-    config.stats = {
-      warnings: false
-    };
 
     return config;
 };

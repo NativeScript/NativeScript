@@ -1,6 +1,5 @@
 ﻿import { View, CustomLayoutView, AddChildFromBuilder } from '../core/view';
 import { layout } from '../../utils';
-import { isIOS } from '../../platform';
 
 /**
  * Represents a View that has a single child - content.
@@ -28,7 +27,7 @@ export class ContentView extends CustomLayoutView implements AddChildFromBuilder
 		}
 
 		this._onContentChanged(oldView, value);
-		if (isIOS && oldView !== value) {
+		if (global.isIOS && oldView !== value) {
 			this.requestLayout();
 		}
 	}

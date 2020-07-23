@@ -7,6 +7,7 @@ interface KeyValuePair<K, V> {
 	v: V;
 }
 
+@NativeClass
 class TimerTargetImpl extends NSObject {
 	private callback: Function;
 	private disposed: boolean;

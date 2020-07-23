@@ -37,6 +37,13 @@ export function load(options: LoadOptions): View;
 
 export class Builder {
 	/**
+	 * UI plugin developers can add to these to define their own custom types if needed
+	 */
+	static knownTemplates: Set<string>;
+	static knownMultiTemplates: Set<string>;
+	static knownCollections: Set<string>;
+
+	/**
 	 * Creates view from navigation entry
 	 * @param entry NavigationEntry
 	 */

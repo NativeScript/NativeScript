@@ -13,6 +13,7 @@ tests
 packages/types-android
 packages/types-ios
 packages/ui-mobile-base
+tools/assets/App_Resources
 *.cmd
 *.md
 *.json
@@ -20,3 +21,4 @@ packages/ui-mobile-base
 *.map
 *.css
 *.scss
+*.sh

@@ -1,24 +1,22 @@
 {
   "name": "nativescript",
-  "version": "7.0.0-rc.24",
+  "version": "7.0.0-rc.47",
   "license": "MIT",
   "scripts": {
-    "nx": "nx",
-    "format": "nx format:write",
-    "setup": "npx rimraf -- hooks node_modules package-lock.json && npm i && nx run core:setup"
+    "setup": "npx rimraf -- hooks node_modules package-lock.json && npm i && ts-patch install && nx run core:setup",
+    "start": "nps"
   },
   "private": true,
   "dependencies": {
     "nativescript-theme-core": "^1.0.4"
   },
   "devDependencies": {
-    "nativescript": "rc",
     "@nativescript/hook": "^1.0.0",
-    "@nrwl/eslint-plugin-nx": "~9.5.1",
-    "@nrwl/jest": "~9.5.1",
-    "@nrwl/node": "~9.5.1",
-    "@nrwl/nx-cloud": "^9.3.0",
-    "@nrwl/workspace": "~9.5.1",
+    "@nrwl/eslint-plugin-nx": "~10.0.7",
+    "@nrwl/jest": "~10.0.7",
+    "@nrwl/node": "~10.0.7",
+    "@nrwl/nx-cloud": "~10.0.0",
+    "@nrwl/workspace": "~10.0.7",
     "@types/chai": "^4.2.11",
     "@types/jest": "~26.0.4",
     "@types/mocha": "^7.0.2",
@@ -40,7 +38,11 @@
     "mocha": "^8.0.1",
     "mocha-typescript": "^1.1.17",
     "module-alias": "^2.2.2",
+    "nativescript": "rc",
     "node-sass": "~4.14.1",
+    "nps": "^5.10.0",
+    "nps-i": "file:tools/plugins/nps-i-1.1.0.tgz",
+    "nps-utils": "^1.7.0",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
     "prettier": "~2.0.5",
@@ -49,9 +51,10 @@
     "terser-webpack-plugin": "~3.0.6",
     "ts-jest": "~26.1.1",
     "ts-node": "~8.10.2",
+    "ts-patch": "^1.2.5",
     "tslint": "~6.1.2",
-    "typescript": "~3.9.0",
-    "webpack": "~4.43.0",
+    "typescript": "~3.9.7",
+    "webpack": "~4.44.1",
     "webpack-cli": "~3.3.12"
   },
   "husky": {
@@ -61,7 +64,7 @@
   },
   "lint-staged": {
     "**/*": [
-      "nx format:write"
+      "nx format:write --files"
     ]
   }
 }

@@ -26,6 +26,7 @@ function initializeNativeClasses(): void {
 		return;
 	}
 
+	@NativeClass
 	@Interfaces([androidx.appcompat.widget.SearchView.OnQueryTextListener])
 	class CompatQueryTextListenerImpl extends java.lang.Object implements androidx.appcompat.widget.SearchView.OnQueryTextListener {
 		constructor(private owner: SearchBar) {
@@ -62,6 +63,7 @@ function initializeNativeClasses(): void {
 		}
 	}
 
+	@NativeClass
 	@Interfaces([androidx.appcompat.widget.SearchView.OnCloseListener])
 	class CompatCloseListenerImpl extends java.lang.Object implements androidx.appcompat.widget.SearchView.OnCloseListener {
 		constructor(private owner: SearchBar) {

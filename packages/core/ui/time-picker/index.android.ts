@@ -15,6 +15,7 @@ function initializeTimeChangedListener(): void {
 
 	apiLevel = android.os.Build.VERSION.SDK_INT;
 
+	@NativeClass
 	@Interfaces([android.widget.TimePicker.OnTimeChangedListener])
 	class TimeChangedListenerImpl extends java.lang.Object implements android.widget.TimePicker.OnTimeChangedListener {
 		constructor(public owner: TimePicker) {

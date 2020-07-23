@@ -55,8 +55,8 @@ class ScrollLayoutSafeAreaTest extends UITest<ScrollView> {
 		const b = bottom(scrollView);
 		equal(l, 0, `${scrollView}.left - actual:${l}; expected: ${0}`);
 		equal(t, 0, `${scrollView}.top - actual:${t}; expected: ${0}`);
-		equal(r, platform.screen.mainScreen.widthPixels, `${scrollView}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
-		equal(b, platform.screen.mainScreen.heightPixels, `${scrollView}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
+		equal(r, platform.Screen.mainScreen.widthPixels, `${scrollView}.right - actual:${r}; expected: ${platform.Screen.mainScreen.widthPixels}`);
+		equal(b, platform.Screen.mainScreen.heightPixels, `${scrollView}.bottom - actual:${b}; expected: ${platform.Screen.mainScreen.heightPixels}`);
 	}
 
 	private scroll_view_in_full_screen_test(pageOptions?: helper.PageOptions) {

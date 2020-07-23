@@ -6,7 +6,6 @@ import { Property, CssProperty } from '../core/properties';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { EventData } from '../../data/observable';
-import { isIOS } from '../../platform';
 import { Frame } from '../frame';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
@@ -171,7 +170,7 @@ export interface PageBase {
  */
 export const actionBarHiddenProperty = new Property<PageBase, boolean>({
 	name: 'actionBarHidden',
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: booleanConverter,
 });
 actionBarHiddenProperty.register(PageBase);
@@ -182,7 +181,7 @@ actionBarHiddenProperty.register(PageBase);
 export const backgroundSpanUnderStatusBarProperty = new Property<PageBase, boolean>({
 	name: 'backgroundSpanUnderStatusBar',
 	defaultValue: false,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: booleanConverter,
 });
 backgroundSpanUnderStatusBarProperty.register(PageBase);

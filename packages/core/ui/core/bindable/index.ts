@@ -10,7 +10,8 @@ import { escapeRegexSymbols } from '../../../utils';
 import { Trace } from '../../../trace';
 import * as types from '../../../utils/types';
 import * as bindableResources from './bindable-resources';
-import * as polymerExpressions from '../../../js-libs/polymer-expressions';
+const polymerExpressions = require('../../../js-libs/polymer-expressions');
+import { PolymerExpressions } from '../../../js-libs/polymer-expressions';
 
 const contextKey = 'context';
 // this regex is used to get parameters inside [] for example:
@@ -373,7 +374,7 @@ export class Binding {
 
 	private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
 		try {
-			let exp = polymerExpressions.PolymerExpressions.getExpression(expression);
+			let exp = PolymerExpressions.getExpression(expression);
 			if (exp) {
 				let context = (this.source && this.source.get && this.source.get()) || global;
 				let model = {};

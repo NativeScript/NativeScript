@@ -1,23 +1,22 @@
 import { setActivityCallbacks, AndroidActivityCallbacks } from '.';
-import { initGlobal } from '../../globals';
-import * as appModule from '../../application';
+// use requires to ensure import order
+const globals = require('../../globals');
+const appModule = require('../../application');
 
 if (global.__snapshot) {
-	initGlobal();
+	globals.initGlobal();
 }
 
-//@ts-ignore
-@JavaProxy('com.tns.NativeScriptActivity')
-class NativeScriptActivity extends androidx.appcompat.app.AppCompatActivity {
-	private _callbacks: AndroidActivityCallbacks;
-	public isNativeScriptActivity;
-	constructor() {
-		super();
-
-		return global.__native(this);
-	}
-
-	public onCreate(savedInstanceState: android.os.Bundle): void {
+/**
+ * NOTE: We cannot use NativeClass here because this is used in appComponents in webpack.config
+ * Whereby it bypasses the decorator transformation, hence pure es5 style written here
+ */
+const superProto = androidx.appcompat.app.AppCompatActivity.prototype;
+(<any>androidx.appcompat.app.AppCompatActivity).extend('com.tns.NativeScriptActivity', {
+	init() {
+		// init must at least be defined
+	},
+	onCreate(savedInstanceState: android.os.Bundle): void {
 		appModule.android.init(this.getApplication());
 
 		// Set isNativeScriptActivity in onCreate.
@@ -27,42 +26,42 @@ class NativeScriptActivity extends androidx.appcompat.app.AppCompatActivity {
 			setActivityCallbacks(this);
 		}
 
-		this._callbacks.onCreate(this, savedInstanceState, this.getIntent(), super.onCreate);
-	}
+		this._callbacks.onCreate(this, savedInstanceState, this.getIntent(), superProto.onCreate);
+	},
 
-	public onNewIntent(intent: android.content.Intent): void {
-		this._callbacks.onNewIntent(this, intent, super.setIntent, super.onNewIntent);
-	}
+	onNewIntent(intent: android.content.Intent): void {
+		this._callbacks.onNewIntent(this, intent, superProto.setIntent, superProto.onNewIntent);
+	},
 
-	public onSaveInstanceState(outState: android.os.Bundle): void {
-		this._callbacks.onSaveInstanceState(this, outState, super.onSaveInstanceState);
-	}
+	onSaveInstanceState(outState: android.os.Bundle): void {
+		this._callbacks.onSaveInstanceState(this, outState, superProto.onSaveInstanceState);
+	},
 
-	public onStart(): void {
-		this._callbacks.onStart(this, super.onStart);
-	}
+	onStart(): void {
+		this._callbacks.onStart(this, superProto.onStart);
+	},
 
-	public onStop(): void {
-		this._callbacks.onStop(this, super.onStop);
-	}
+	onStop(): void {
+		this._callbacks.onStop(this, superProto.onStop);
+	},
 
-	public onDestroy(): void {
-		this._callbacks.onDestroy(this, super.onDestroy);
-	}
+	onDestroy(): void {
+		this._callbacks.onDestroy(this, superProto.onDestroy);
+	},
 
-	public onPostResume(): void {
-		this._callbacks.onPostResume(this, super.onPostResume);
-	}
+	onPostResume(): void {
+		this._callbacks.onPostResume(this, superProto.onPostResume);
+	},
 
-	public onBackPressed(): void {
-		this._callbacks.onBackPressed(this, super.onBackPressed);
-	}
+	onBackPressed(): void {
+		this._callbacks.onBackPressed(this, superProto.onBackPressed);
+	},
 
-	public onRequestPermissionsResult(requestCode: number, permissions: Array<string>, grantResults: Array<number>): void {
+	onRequestPermissionsResult(requestCode: number, permissions: Array<string>, grantResults: Array<number>): void {
 		this._callbacks.onRequestPermissionsResult(this, requestCode, permissions, grantResults, undefined /*TODO: Enable if needed*/);
-	}
+	},
 
-	public onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
-		this._callbacks.onActivityResult(this, requestCode, resultCode, data, super.onActivityResult);
-	}
-}
+	onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
+		this._callbacks.onActivityResult(this, requestCode, resultCode, data, superProto.onActivityResult);
+	},
+});

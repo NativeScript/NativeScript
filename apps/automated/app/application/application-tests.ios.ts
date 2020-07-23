@@ -21,6 +21,7 @@ if (isIOS) {
 // >> application-ios-delegate
 //// Add custom application delegate
 if (isIOS) {
+	@NativeClass
 	class MyDelegate extends UIResponder implements UIApplicationDelegate {
 		public static ObjCProtocols = [UIApplicationDelegate];
 

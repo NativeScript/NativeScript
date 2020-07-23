@@ -40,6 +40,7 @@ function initializeNativeClasses(): void {
 	// Indicator thickness for material - 2dip. For pre-material - 5dip.
 	selectedIndicatorThickness = layout.toDevicePixels(apiLevel >= 21 ? 2 : 5);
 
+	@NativeClass
 	@Interfaces([android.widget.TabHost.OnTabChangeListener])
 	class TabChangeListenerImpl extends java.lang.Object implements android.widget.TabHost.OnTabChangeListener {
 		constructor(public owner: SegmentedBar) {
@@ -56,6 +57,7 @@ function initializeNativeClasses(): void {
 		}
 	}
 
+	@NativeClass
 	@Interfaces([android.widget.TabHost.TabContentFactory])
 	class TabContentFactoryImpl extends java.lang.Object implements android.widget.TabHost.TabContentFactory {
 		constructor(public owner: SegmentedBar) {
@@ -77,6 +79,7 @@ function initializeNativeClasses(): void {
 		}
 	}
 
+	@NativeClass
 	class TabHostImpl extends android.widget.TabHost {
 		constructor(context: android.content.Context, attrs: android.util.AttributeSet) {
 			super(context, attrs);

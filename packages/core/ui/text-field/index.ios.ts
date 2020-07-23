@@ -13,6 +13,7 @@ const zeroLength: Length = {
 	unit: 'px',
 };
 
+@NativeClass
 class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	public static ObjCProtocols = [UITextFieldDelegate];
 
@@ -78,6 +79,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	}
 }
 
+@NativeClass
 class UITextFieldImpl extends UITextField {
 	private _owner: WeakRef<TextField>;
 

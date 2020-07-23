@@ -1,7 +1,6 @@
 import { Image } from '@nativescript/core/ui/image';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import { GridLayout } from '@nativescript/core/ui/layouts/grid-layout';
-import { isIOS, isAndroid } from '@nativescript/core/platform';
 import { PropertyChangeData } from '@nativescript/core';
 import * as utils from '@nativescript/core/utils';
 import * as TKUnit from '../../tk-unit';
@@ -24,7 +23,7 @@ export function test_recycling() {
 	helper.nativeView_recycling_test(() => new Image());
 }
 
-if (isAndroid) {
+if (global.isAndroid) {
 	(<any>backgroundModule).initImageCache(androidApp.startActivity, (<any>backgroundModule).CacheMode.memory); // use memory cache only.
 }
 
@@ -64,7 +63,7 @@ function runImageTestSync(image: ImageModule.Image, src: string) {
 
 	image.src = src;
 
-	let imageSourceAvailable = isIOS ? !!image.imageSource : true;
+	let imageSourceAvailable = global.isIOS ? !!image.imageSource : true;
 	TKUnit.assertFalse(image.isLoading, 'Image.isLoading should be false.');
 	TKUnit.assertTrue(imageSourceAvailable, 'imageSource should be set.');
 }
@@ -77,7 +76,7 @@ function runImageTestAsync(image: ImageModule.Image, src: string, done: (e: any)
 		image.off(IMAGE_LOADED_EVENT, handler);
 
 		try {
-			let imageSourceAvailable = isIOS ? !!image.imageSource : true;
+			let imageSourceAvailable = global.isIOS ? !!image.imageSource : true;
 			TKUnit.assertFalse(image.isLoading, 'Image.isLoading should be false.');
 			TKUnit.assertTrue(imageSourceAvailable, 'imageSource should be set.');
 			done(null);
@@ -254,7 +253,7 @@ export const test_SettingStretch_none = function () {
 };
 
 function ios<T>(func: T): T {
-	return isIOS ? func : undefined;
+	return global.isIOS ? func : undefined;
 }
 
 export const test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(() => {

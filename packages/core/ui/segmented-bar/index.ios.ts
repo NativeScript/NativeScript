@@ -106,6 +106,7 @@ export class SegmentedBar extends SegmentedBarBase {
 	}
 }
 
+@NativeClass
 class SelectionHandlerImpl extends NSObject {
 	private _owner: WeakRef<SegmentedBar>;
 

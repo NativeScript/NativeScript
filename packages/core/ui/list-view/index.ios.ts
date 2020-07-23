@@ -25,6 +25,7 @@ interface ViewItemIndex {
 
 type ItemView = View & ViewItemIndex;
 
+@NativeClass
 class ListViewCell extends UITableViewCell {
 	public static initWithEmptyBackground(): ListViewCell {
 		const cell = <ListViewCell>ListViewCell.new();
@@ -73,6 +74,7 @@ function notifyForItemAtIndex(listView: ListViewBase, cell: any, view: View, eve
 	return args;
 }
 
+@NativeClass
 class DataSource extends NSObject implements UITableViewDataSource {
 	public static ObjCProtocols = [UITableViewDataSource];
 
@@ -118,6 +120,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
 	}
 }
 
+@NativeClass
 class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 	public static ObjCProtocols = [UITableViewDelegate];
 
@@ -182,6 +185,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
 	}
 }
 
+@NativeClass
 class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDelegate {
 	public static ObjCProtocols = [UITableViewDelegate];
 

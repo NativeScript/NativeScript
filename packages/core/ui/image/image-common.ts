@@ -5,7 +5,6 @@ import { ImageAsset } from '../../image-asset';
 import { ImageSource } from '../../image-source';
 import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from '../../utils';
 import { Color } from '../../color';
-import { isIOS } from '../../platform';
 import { Style } from '../styling/style';
 import { Length } from '../styling/style-properties';
 import { Property, InheritedCssProperty } from '../core/properties';
@@ -147,7 +146,7 @@ isLoadingProperty.register(ImageBase);
 export const stretchProperty = new Property<ImageBase, Stretch>({
 	name: 'stretch',
 	defaultValue: 'aspectFit',
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 });
 stretchProperty.register(ImageBase);
 

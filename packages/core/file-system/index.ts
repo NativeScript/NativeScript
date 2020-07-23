@@ -1,10 +1,13 @@
 import { FileSystemAccess } from './file-system-access';
-import { isIOS } from '../platform';
-import { profile } from '../profiling';
 
 // The FileSystemAccess implementation, used through all the APIs.
 let fileAccess: FileSystemAccess;
-function getFileAccess(): FileSystemAccess {
+
+/**
+ * Returns FileSystemAccess, a shared singleton utility class to provide methods to access and work with the file system. This is used under the hood of all the file system apis in @nativescript/core and provided as a lower level convenience if needed.
+ * @returns FileSystemAccess
+ */
+export function getFileAccess(): FileSystemAccess {
 	if (!fileAccess) {
 		fileAccess = new FileSystemAccess();
 	}
@@ -319,7 +322,6 @@ export class File extends FileSystemEntity {
 		});
 	}
 
-	@profile
 	public readTextSync(onError?: (error: any) => any, encoding?: string): string {
 		this.checkAccess();
 
@@ -574,7 +576,7 @@ export module knownFolders {
 
 	export module ios {
 		function _checkPlatform(knownFolderName: string) {
-			if (!isIOS) {
+			if (!global.isIOS) {
 				console.log(`The "${knownFolderName}" known folder is available on iOS only!`);
 			}
 		}

@@ -1,8 +1,7 @@
 // Require globals first so that snapshot takes __extends function.
-// apply polyfills first
-import { initGlobal } from '../globals';
-if (!(<any>global).hasInitGlobal) {
-	initGlobal();
+const nsGlobals = require('../globals');
+if (!global.NativeScriptHasInitGlobal) {
+	nsGlobals.initGlobal();
 }
 
 // Types
@@ -13,32 +12,14 @@ import { View } from '../ui/core/view';
 
 // Requires
 import { Observable } from '../data/observable';
-import { trace as profilingTrace, time, uptime, level as profilingLevel } from '../profiling';
 import * as bindableResources from '../ui/core/bindable/bindable-resources';
-import { CLASS_PREFIX, pushToSystemCssClasses, removeSystemCssClass } from '../css/system-classes';
-import { DeviceOrientation, SystemAppearance } from '../ui/enums';
+import { CSSUtils } from '../css/system-classes';
+import { Enums } from '../ui/enums';
 
 export * from './application-interfaces';
 
-const events = new Observable();
-let launched = false;
-function setLaunched() {
-	launched = true;
-	events.off('launch', setLaunched);
-}
-events.on('launch', setLaunched);
-
-if (profilingLevel() > 0) {
-	events.on('displayed', () => {
-		const duration = uptime();
-		const end = time();
-		const start = end - duration;
-		profilingTrace(`Displayed in ${duration.toFixed(2)}ms`, start, end);
-	});
-}
-
 export function hasLaunched(): boolean {
-	return launched;
+	return global.NativeScriptGlobals && global.NativeScriptGlobals.launched;
 }
 
 export const launchEvent = 'launch';
@@ -52,9 +33,9 @@ export const discardedErrorEvent = 'discardedError';
 export const orientationChangedEvent = 'orientationChanged';
 export const systemAppearanceChangedEvent = 'systemAppearanceChanged';
 
-const ORIENTATION_CSS_CLASSES = [`${CLASS_PREFIX}${DeviceOrientation.portrait}`, `${CLASS_PREFIX}${DeviceOrientation.landscape}`, `${CLASS_PREFIX}${DeviceOrientation.unknown}`];
+const ORIENTATION_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.portrait}`, `${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.landscape}`, `${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.unknown}`];
 
-const SYSTEM_APPEARANCE_CSS_CLASSES = [`${CLASS_PREFIX}${SystemAppearance.light}`, `${CLASS_PREFIX}${SystemAppearance.dark}`];
+const SYSTEM_APPEARANCE_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${Enums.SystemAppearance.light}`, `${CSSUtils.CLASS_PREFIX}${Enums.SystemAppearance.dark}`];
 
 let cssFile: string = './app.css';
 
@@ -69,18 +50,20 @@ export function setResources(res: any) {
 export let android: AndroidApplication = undefined;
 export let ios: iOSApplication = undefined;
 
-export const on: typeof events.on = events.on.bind(events);
-export const off: typeof events.off = events.off.bind(events);
-export const notify: typeof events.notify = events.notify.bind(events);
-export const hasListeners: typeof events.hasListeners = events.hasListeners.bind(events);
+export const on = global.NativeScriptGlobals.events.on.bind(global.NativeScriptGlobals.events);
+export const off = global.NativeScriptGlobals.events.off.bind(global.NativeScriptGlobals.events);
+export const notify = global.NativeScriptGlobals.events.notify.bind(global.NativeScriptGlobals.events);
+export const hasListeners = global.NativeScriptGlobals.events.hasListeners.bind(global.NativeScriptGlobals.events);
 
 let app: iOSApplication | AndroidApplication;
 export function setApplication(instance: iOSApplication | AndroidApplication): void {
 	app = instance;
+	// signal when the application instance is ready globally
+	global.NativeScriptGlobals.appInstanceReady = true;
 }
 
 export function livesync(rootView: View, context?: ModuleContext) {
-	events.notify(<EventData>{ eventName: 'livesync', object: app });
+	global.NativeScriptGlobals.events.notify(<EventData>{ eventName: 'livesync', object: app });
 	const liveSyncCore = global.__onLiveSyncCore;
 	let reapplyAppStyles = false;
 
@@ -102,7 +85,7 @@ export function livesync(rootView: View, context?: ModuleContext) {
 
 export function setCssFileName(cssFileName: string) {
 	cssFile = cssFileName;
-	events.notify(<CssChangedEventData>{
+	global.NativeScriptGlobals.events.notify(<CssChangedEventData>{
 		eventName: 'cssChanged',
 		object: app,
 		cssFile: cssFileName,
@@ -115,7 +98,7 @@ export function getCssFileName(): string {
 
 export function loadAppCss(): void {
 	try {
-		events.notify(<LoadAppCSSEventData>{
+		global.NativeScriptGlobals.events.notify(<LoadAppCSSEventData>{
 			eventName: 'loadAppCss',
 			object: app,
 			cssFile: getCssFileName(),
@@ -126,12 +109,12 @@ export function loadAppCss(): void {
 }
 
 function addCssClass(rootView: View, cssClass: string) {
-	pushToSystemCssClasses(cssClass);
+	CSSUtils.pushToSystemCssClasses(cssClass);
 	rootView.cssClasses.add(cssClass);
 }
 
 function removeCssClass(rootView: View, cssClass: string) {
-	removeSystemCssClass(cssClass);
+	CSSUtils.removeSystemCssClass(cssClass);
 	rootView.cssClasses.delete(cssClass);
 }
 
@@ -157,7 +140,7 @@ export function orientationChanged(rootView: View, newOrientation: 'portrait' | 
 		return;
 	}
 
-	const newOrientationCssClass = `${CLASS_PREFIX}${newOrientation}`;
+	const newOrientationCssClass = `${CSSUtils.CLASS_PREFIX}${newOrientation}`;
 	applyCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
 
 	const rootModalViews = <Array<View>>rootView._getRootModalViews();
@@ -171,7 +154,7 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'da
 		return;
 	}
 
-	const newSystemAppearanceCssClass = `${CLASS_PREFIX}${newSystemAppearance}`;
+	const newSystemAppearanceCssClass = `${CSSUtils.CLASS_PREFIX}${newSystemAppearance}`;
 	applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
 
 	const rootModalViews = <Array<View>>rootView._getRootModalViews();
@@ -181,7 +164,7 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'da
 }
 
 global.__onUncaughtError = function (error: NativeScriptError) {
-	events.notify(<UnhandledErrorEventData>{
+	global.NativeScriptGlobals.events.notify(<UnhandledErrorEventData>{
 		eventName: uncaughtErrorEvent,
 		object: app,
 		android: error,
@@ -191,7 +174,7 @@ global.__onUncaughtError = function (error: NativeScriptError) {
 };
 
 global.__onDiscardedError = function (error: NativeScriptError) {
-	events.notify(<DiscardedErrorEventData>{
+	global.NativeScriptGlobals.events.notify(<DiscardedErrorEventData>{
 		eventName: discardedErrorEvent,
 		object: app,
 		error: error,

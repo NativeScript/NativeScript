@@ -11,6 +11,7 @@ const NsVueTemplateCompiler = require("nativescript-vue-template-compiler");
 
 const nsWebpack = require("@nativescript/webpack");
 const nativescriptTarget = require("@nativescript/webpack/nativescript-target");
+const nsTransformNativeClasses = require("@nativescript/webpack/transformers/ns-transform-native-classes").default;
 const { NativeScriptWorkerPlugin } = require("nativescript-worker-loader/NativeScriptWorkerPlugin");
 const hashSalt = Date.now().toString();
 
@@ -51,6 +52,7 @@ module.exports = env => {
         sourceMap, // --env.sourceMap
         hiddenSourceMap, // --env.hiddenSourceMap
         unitTesting, // --env.unitTesting
+        testing, // --env.testing
         verbose, // --env.verbose
         snapshotInDocker, // --env.snapshotInDocker
         skipSnapshotTools, // --env.skipSnapshotTools
@@ -86,7 +88,7 @@ module.exports = env => {
     entries.bundle = entryPath;
 
     const areCoreModulesExternal = Array.isArray(env.externals) && env.externals.some(e => e.indexOf("@nativescript") > -1);
-    if (platform === "ios" && !areCoreModulesExternal) {
+    if (platform === "ios" && !areCoreModulesExternal && !testing) {
         entries["tns_modules/@nativescript/core/inspector_modules"] = "inspector_modules";
     };
     console.log(`Bundling application for entryPath ${entryPath}...`);
@@ -195,7 +197,7 @@ module.exports = env => {
                 use: [
                     // Require all Android app components
                     platform === "android" && {
-                        loader: "@nativescript/webpack/android-app-components-loader",
+                        loader: "@nativescript/webpack/helpers/android-app-components-loader",
                         options: { modules: appComponents },
                     },
 
@@ -215,9 +217,9 @@ module.exports = env => {
             {
                 test: /[\/|\\]app\.css$/,
                 use: [
-                    '@nativescript/webpack/style-hot-loader',
+                    '@nativescript/webpack/helpers/style-hot-loader',
                     {
-                        loader: "@nativescript/webpack/css2json-loader",
+                        loader: "@nativescript/webpack/helpers/css2json-loader",
                         options: { useForImports: true }
                     },
                 ],
@@ -225,9 +227,9 @@ module.exports = env => {
             {
                 test: /[\/|\\]app\.scss$/,
                 use: [
-                    '@nativescript/webpack/style-hot-loader',
+                    '@nativescript/webpack/helpers/style-hot-loader',
                     {
-                        loader: "@nativescript/webpack/css2json-loader",
+                        loader: "@nativescript/webpack/helpers/css2json-loader",
                         options: { useForImports: true }
                     },
                     'sass-loader',
@@ -237,8 +239,8 @@ module.exports = env => {
                 test: /\.css$/,
                 exclude: /[\/|\\]app\.css$/,
                 use: [
-                    '@nativescript/webpack/style-hot-loader',
-                    '@nativescript/webpack/apply-css-loader.js',
+                    '@nativescript/webpack/helpers/style-hot-loader',
+                    '@nativescript/webpack/helpers/apply-css-loader.js',
                     { loader: "css-loader", options: { url: false } },
                 ],
             },
@@ -246,8 +248,8 @@ module.exports = env => {
                 test: /\.scss$/,
                 exclude: /[\/|\\]app\.scss$/,
                 use: [
-                    '@nativescript/webpack/style-hot-loader',
-                    '@nativescript/webpack/apply-css-loader.js',
+                    '@nativescript/webpack/helpers/style-hot-loader',
+                    '@nativescript/webpack/helpers/apply-css-loader.js',
                     { loader: "css-loader", options: { url: false } },
                     'sass-loader',
                 ],
@@ -264,7 +266,10 @@ module.exports = env => {
                     allowTsInNodeModules: true,
                     compilerOptions: {
                         declaration: false
-                    }
+                    },
+                    getCustomTransformers: (program) => ({
+                      before: [nsTransformNativeClasses]
+                    })
                 },
             },
             {
@@ -283,6 +288,8 @@ module.exports = env => {
             // Define useful constants like TNS_WEBPACK
             new webpack.DefinePlugin({
                 "global.TNS_WEBPACK": "true",
+                "global.isAndroid": platform === 'android',
+                "global.isIOS": platform === 'ios',
                 "TNS_ENV": JSON.stringify(mode),
                 "process": "global.process"
             }),
@@ -316,14 +323,14 @@ module.exports = env => {
         config.module.rules.push(
             {
                 test: /-page\.js$/,
-                use: "@nativescript/webpack/script-hot-loader"
+                use: "@nativescript/webpack/helpers/script-hot-loader"
             },
             {
                 test: /\.(html|xml)$/,
-                use: "@nativescript/webpack/markup-hot-loader"
+                use: "@nativescript/webpack/helpers/markup-hot-loader"
             },
 
-            { test: /\.(html|xml)$/, use: "@nativescript/webpack/xml-namespace-loader" }
+            { test: /\.(html|xml)$/, use: "@nativescript/webpack/helpers/xml-namespace-loader" }
         );
     }
 

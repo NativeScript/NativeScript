@@ -2,8 +2,8 @@
   "compileOnSave": false,
   "compilerOptions": {
     "rootDir": ".",
-    "target": "es5",
-    "module": "commonjs",
+    "target": "ES2017",
+    "module": "esnext",
     "sourceMap": true,
     "declaration": true,
     "moduleResolution": "node",
@@ -24,6 +24,5 @@
       "@nativescript/types-android": ["packages/types-android/src/index.ts"]
     }
   },
-  "exclude": ["node_modules", "tmp", "platforms", "__tests__"],
-  "includes": ["packages/**/*.{ios,android}.ts"]
+  "exclude": ["node_modules", "tmp", "platforms", "__tests__"]
 }

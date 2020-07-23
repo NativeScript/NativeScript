@@ -1,5 +1,5 @@
 const { reload } = require("./hot-loader-helper");
-const { convertToUnixPath } = require("./lib/utils");
+const { convertToUnixPath } = require("../lib/utils");
 
 module.exports = function (source, map) {
     const typeStyle = "style";

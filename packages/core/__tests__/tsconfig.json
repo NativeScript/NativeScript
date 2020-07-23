@@ -22,10 +22,10 @@
         "baseUrl": ".",
         "paths": {
             "@nativescript/core": [
-              "../../index.ts"
+              "../index.ts"
             ],
             "@nativescript/core/*": [
-                "../../*"
+                "../*"
             ],  
         }
     },
@@ -33,12 +33,12 @@
         "./**/*.ts"
     ],
     "exclude": [
-        "../../**/*.android.ts",
-        "../../**/*.android.d.ts",
-        "../../**/*.ios.ts",
-        "../../**/*.ios.d.ts",
-        "../../node-modules",
-        "../../references.d.ts",
-        "../../platforms"
+        "../**/*.android.ts",
+        "../**/*.android.d.ts",
+        "../**/*.ios.ts",
+        "../**/*.ios.d.ts",
+        "../node-modules",
+        "../references.d.ts",
+        "../platforms"
     ]
 }

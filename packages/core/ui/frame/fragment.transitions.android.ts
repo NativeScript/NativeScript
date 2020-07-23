@@ -211,6 +211,7 @@ function setupExitAndPopEnterAnimation(entry: ExpandedEntry, transition: Transit
 
 function getAnimationListener(): android.animation.Animator.AnimatorListener {
 	if (!AnimationListener) {
+		@NativeClass
 		@Interfaces([android.animation.Animator.AnimatorListener])
 		class AnimationListenerImpl extends java.lang.Object implements android.animation.Animator.AnimatorListener {
 			constructor() {
@@ -323,6 +324,7 @@ export function _reverseTransitions(previousEntry: ExpandedEntry, currentEntry: 
 // android is cloning transitions and we can't expand them :(
 function getTransitionListener(entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener {
 	if (!TransitionListener) {
+		@NativeClass
 		@Interfaces([(<any>androidx).transition.Transition.TransitionListener])
 		class TransitionListenerImpl extends java.lang.Object implements androidx.transition.Transition.TransitionListener {
 			constructor(public entry: ExpandedEntry, public transition: androidx.transition.Transition) {

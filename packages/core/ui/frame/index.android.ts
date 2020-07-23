@@ -16,7 +16,7 @@ import { _setAndroidFragmentTransitions, _getAnimatedEntries, _updateTransitions
 
 // TODO: Remove this and get it from global to decouple builder for angular
 import { Builder } from '../builder';
-import { CLASS_PREFIX, getSystemCssClasses, pushToSystemCssClasses, ROOT_VIEW_CSS_CLASS } from '../../css/system-classes';
+import { CSSUtils } from '../../css/system-classes';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
 
@@ -48,28 +48,28 @@ export let attachStateChangeListener: android.view.View.OnAttachStateChangeListe
 
 function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 	if (!attachStateChangeListener) {
-		@Interfaces([android.view.View.OnAttachStateChangeListener])
-		class AttachListener extends java.lang.Object implements android.view.View.OnAttachStateChangeListener {
-			constructor() {
-				super();
-
-				return global.__native(this);
-			}
-
+		/**
+		 * NOTE: We cannot use NativeClass here because this is used in appComponents in webpack.config
+		 * Whereby it bypasses the decorator transformation, hence pure es5 style written here
+		 */
+		const AttachListener = (<any>java.lang.Object).extend({
+			interfaces: [android.view.View.OnAttachStateChangeListener],
+			init() {
+				// init must be defined at least
+			},
 			onViewAttachedToWindow(view: android.view.View): void {
 				const owner: View = view[ownerSymbol];
 				if (owner) {
 					owner._onAttachedToWindow();
 				}
-			}
-
+			},
 			onViewDetachedFromWindow(view: android.view.View): void {
 				const owner: View = view[ownerSymbol];
 				if (owner) {
 					owner._onDetachedFromWindow();
 				}
-			}
-		}
+			},
+		});
 
 		attachStateChangeListener = new AttachListener();
 	}
@@ -1316,13 +1316,13 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
 			const deviceType = Device.deviceType.toLowerCase();
 
-			pushToSystemCssClasses(`${CLASS_PREFIX}${ANDROID_PLATFORM}`);
-			pushToSystemCssClasses(`${CLASS_PREFIX}${deviceType}`);
-			pushToSystemCssClasses(`${CLASS_PREFIX}${application.android.orientation}`);
-			pushToSystemCssClasses(`${CLASS_PREFIX}${application.android.systemAppearance}`);
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${ANDROID_PLATFORM}`);
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${deviceType}`);
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${application.android.orientation}`);
+			CSSUtils.pushToSystemCssClasses(`${CSSUtils.CLASS_PREFIX}${application.android.systemAppearance}`);
 
-			this._rootView.cssClasses.add(ROOT_VIEW_CSS_CLASS);
-			const rootViewCssClasses = getSystemCssClasses();
+			this._rootView.cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
+			const rootViewCssClasses = CSSUtils.getSystemCssClasses();
 			rootViewCssClasses.forEach((c) => this._rootView.cssClasses.add(c));
 		}
 

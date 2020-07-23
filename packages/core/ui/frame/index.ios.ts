@@ -306,6 +306,7 @@ export class Frame extends FrameBase {
 
 let transitionDelegates = new Array<TransitionDelegate>();
 
+@NativeClass
 class TransitionDelegate extends NSObject {
 	private _id: string;
 
@@ -354,6 +355,7 @@ class TransitionDelegate extends NSObject {
 
 const _defaultTransitionDuration = 0.35;
 
+@NativeClass
 class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
 
@@ -388,6 +390,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 	}
 }
 
+@NativeClass
 class UINavigationControllerImpl extends UINavigationController {
 	private _owner: WeakRef<Frame>;
 
@@ -671,3 +674,5 @@ class iOSFrame implements iOSFrameDefinition {
 		this._navBarVisibility = value;
 	}
 }
+
+export function setActivityCallbacks(activity: any): void {}

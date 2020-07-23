@@ -12,7 +12,7 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug ios --no-hmr --emulator"
+                "command": "tns debug ios --no-hmr --emulator --env.testing"
               }
             ],
             "cwd": "apps/automated",
@@ -24,7 +24,7 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug android --no-hmr --emulator"
+                "command": "tns debug android --no-hmr --emulator --env.testing"
               }
             ],
             "cwd": "apps/automated",
@@ -51,9 +51,9 @@
         }
       }
     },
-    "apps-playground": {
-      "root": "apps/playground/",
-      "sourceRoot": "apps/playground/src",
+    "apps-toolbox": {
+      "root": "apps/toolbox/",
+      "sourceRoot": "apps/toolbox/src",
       "projectType": "application",
       "prefix": "nativescript",
       "architect": {
@@ -62,10 +62,10 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug ios --no-hmr --emulator"
+                "command": "tns debug ios --no-hmr --emulator --env.testing"
               }
             ],
-            "cwd": "apps/playground",
+            "cwd": "apps/toolbox",
             "parallel": false
           }
         },
@@ -74,10 +74,10 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug android --no-hmr --emulator"
+                "command": "tns debug android --no-hmr --emulator --env.testing"
               }
             ],
-            "cwd": "apps/playground",
+            "cwd": "apps/toolbox",
             "parallel": false
           }
         },
@@ -95,7 +95,7 @@
                 "command": "npx rimraf -- package-lock.json"
               }
             ],
-            "cwd": "apps/playground",
+            "cwd": "apps/toolbox",
             "parallel": false
           }
         }
@@ -112,7 +112,7 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug ios --no-hmr --emulator"
+                "command": "tns debug ios --no-hmr --emulator --env.testing"
               }
             ],
             "cwd": "apps/ui",
@@ -124,7 +124,7 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug android --no-hmr --emulator"
+                "command": "tns debug android --no-hmr --emulator --env.testing"
               }
             ],
             "cwd": "apps/ui",
@@ -229,7 +229,7 @@
           "options": {
             "commands": [
               {
-                "command": "../../../node_modules/.bin/mocha-typescript-watch -p tsconfig.json --config=.mocharc.yml"
+                "command": "../../../node_modules/.bin/tsc -p tsconfig.json && ../../../node_modules/.bin/mocha --watch --config=.mocharc.yml"
               }
             ],
             "cwd": "packages/core/__tests__",
@@ -238,9 +238,9 @@
         }
       }
     },
-    "tns-core-modules-compat": {
-      "root": "packages/tns-core-modules-compat",
-      "sourceRoot": "packages/tns-core-modules-compat",
+    "core-compat": {
+      "root": "packages/core-compat",
+      "sourceRoot": "packages/core-compat",
       "projectType": "library",
       "schematics": {},
       "architect": {
@@ -262,7 +262,7 @@
                 "command": "mv \"$(npm pack | tail -n 1)\" ../../dist/packages/tns-core-modules.tgz"
               }
             ],
-            "cwd": "packages/tns-core-modules-compat",
+            "cwd": "packages/core-compat",
             "parallel": false
           }
         }
@@ -365,12 +365,14 @@
           "options": {
             "commands": [
               {
-                "command": "cd packages/ui-mobile-base && ./build.sh"
+                "command": "./build.sh"
               },
               {
-                "command": "cp -R packages/ui-mobile-base/dist/package/platforms/* packages/core/platforms"
+                "command": "cp -R dist/package/platforms/* ../../packages/core/platforms"
               }
-            ]
+            ],
+            "cwd": "packages/ui-mobile-base",
+            "parallel": false
           }
         }
       }

@@ -2,8 +2,8 @@
 
 const hook = require("@nativescript/hook")(__dirname);
 
-const { compareProjectFiles } = require("./projectFilesManager");
-const { getProjectDir } = require("./projectHelpers");
+const { compareProjectFiles } = require("./helpers/projectFilesManager");
+const { getProjectDir } = require("./helpers/projectHelpers");
 const path = require("path");
 const fs = require("fs");
 

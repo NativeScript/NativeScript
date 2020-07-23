@@ -36,6 +36,10 @@ interface Rect {
 const clearCGColor = UIColor.clearColor.CGColor;
 const symbolUrl = Symbol('backgroundImageUrl');
 
+export enum CacheMode {
+	none,
+}
+
 export module ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
 		const background = view.style.backgroundInternal;

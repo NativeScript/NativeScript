@@ -15,19 +15,50 @@ export interface ComponentModule {
 	exports: any;
 }
 
-const UI_PATH = 'ui/';
-const MODULES = {
-	TabViewItem: 'ui/tab-view',
-	TabStrip: 'ui/tab-navigation-base/tab-strip',
-	TabStripItem: 'ui/tab-navigation-base/tab-strip-item',
-	TabContentItem: 'ui/tab-navigation-base/tab-content-item',
-	FormattedString: 'ui/text-base/formatted-string',
-	Span: 'ui/text-base/span',
-	ActionItem: 'ui/action-bar',
-	NavigationButton: 'ui/action-bar',
-	SegmentedBarItem: 'ui/segmented-bar',
-};
-
+const legacyShortBarrels = [
+	'text/formatted-string',
+	'text/span',
+	'ui/text-base/formatted-string',
+	'ui/text-base/span',
+	'ui/action-bar',
+	'ui/activity-indicator',
+	'ui/bottom-navigation',
+	'ui/button',
+	'ui/content-view',
+	'ui/date-picker',
+	'ui/frame',
+	'ui/html-view',
+	'ui/image',
+	'ui/label',
+	'ui/layouts/absolute-layout',
+	'ui/layouts/dock-layout',
+	'ui/layouts/grid-layout',
+	'ui/layouts/stack-layout',
+	'ui/layouts/flexbox-layout',
+	'ui/layouts/wrap-layout',
+	'ui/list-picker',
+	'ui/page',
+	'ui/placeholder',
+	'ui/progress',
+	'ui/proxy-view-container',
+	'ui/repeater',
+	'ui/scroll-view',
+	'ui/search-bar',
+	'ui/segmented-bar',
+	'ui/slider',
+	'ui/switch',
+	'ui/tab-view',
+	'ui/tab-navigation-base/tab-strip',
+	'ui/tab-navigation-base/tab-strip-item',
+	'ui/tab-navigation-base/tab-content-item',
+	'ui/tabs',
+	'ui/web-view',
+	'ui/text-field',
+	'ui/text-view',
+	'ui/time-picker',
+	'ui/list-view',
+];
+const CORE_UI_BARREL = '@nativescript/core/ui';
 const CODE_FILE = 'codeFile';
 const CSS_FILE = 'cssFile';
 const IMPORT = 'import';
@@ -39,21 +70,28 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 	let resolvedModuleName;
 	try {
 		if (typeof namespace === 'string') {
-			resolvedModuleName = resolveModuleName(namespace, '');
+			if (legacyShortBarrels.includes(namespace)) {
+				// console.log('CORE_UI_BARREL namespace:', namespace)
+				resolvedModuleName = CORE_UI_BARREL;
+			} else {
+				// console.log('CUSTOM namespace:', namespace)
+				resolvedModuleName = resolveModuleName(namespace, '');
+			}
 			instanceModule = global.loadModule(resolvedModuleName, true);
 		} else {
 			// load module from @nativescript/core/ui or mapped paths
-			resolvedModuleName =
-				MODULES[elementName] ||
-				UI_PATH +
-					(elementName.toLowerCase().indexOf('layout') !== -1 ? 'layouts/' : '') +
-					elementName
-						.split(/(?=[A-Z])/)
-						.join('-')
-						.toLowerCase();
+			// resolvedModuleName =
+			// 	MODULES[elementName] ||
+			// 	UI_PATH +
+			// 		(elementName.toLowerCase().indexOf('layout') !== -1 ? 'layouts/' : '') +
+			// 		elementName
+			// 			.split(/(?=[A-Z])/)
+			// 			.join('-')
+			// 			.toLowerCase();
 
+			instanceModule = global.loadModule(CORE_UI_BARREL, false);
 			// don't register core modules for HMR self-accept
-			instanceModule = global.loadModule(resolvedModuleName, false);
+			// instanceModule = global.loadModule(resolvedModuleName, false);
 		}
 
 		// Get the component type from module.

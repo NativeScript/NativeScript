@@ -1,4 +1,4 @@
-import { Observable } from '@nativescript/core';
+import { Observable, Frame } from '@nativescript/core';
 
 export class HelloWorldModel extends Observable {
 	private _counter: number;
@@ -26,6 +26,12 @@ export class HelloWorldModel extends Observable {
 	onTap() {
 		this._counter--;
 		this.updateMessage();
+	}
+
+	viewList() {
+		Frame.topmost().navigate({
+			moduleName: 'list-page',
+		});
 	}
 
 	private updateMessage() {

@@ -1,6 +1,13 @@
 /// <reference path="./global-types.d.ts" />
-export { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, iOSApplication, AndroidApplication, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData } from './application';
-import { getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, AndroidApplication, iOSApplication } from './application';
+/**
+ * IMPORTANT: this is not generated automatically due to this issue:
+ * https://github.com/microsoft/TypeScript/issues/36763
+ * the reference path above will get rewritten and break on compilation unless kept here
+ * Once issue is resolve we can remove this index.d.ts from repo and go back to auto generation on tsc
+ */
+export { iOSApplication, AndroidApplication } from './application';
+export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
+import { systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, systemAppearance } from './application';
 export declare const Application: {
 	launchEvent: string;
 	displayedEvent: string;
@@ -11,6 +18,8 @@ export declare const Application: {
 	exitEvent: string;
 	lowMemoryEvent: string;
 	orientationChangedEvent: string;
+	systemAppearanceChangedEvent: string;
+	systemAppearanceChanged: typeof systemAppearanceChanged;
 	getMainEntry: typeof getMainEntry;
 	getRootView: typeof getRootView;
 	resetRootView: typeof _resetRootView;
@@ -26,8 +35,9 @@ export declare const Application: {
 	orientation: typeof orientation;
 	getNativeApplication: typeof getNativeApplication;
 	hasLaunched: typeof hasLaunched;
-	android: AndroidApplication;
-	ios: iOSApplication;
+	systemAppearance: typeof systemAppearance;
+	android: import('./application').AndroidApplication;
+	ios: import('./application').iOSApplication;
 };
 import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from './application-settings';
 export declare const ApplicationSettings: {
@@ -51,33 +61,41 @@ export declare const Connectivity: {
 	startMonitoring: typeof startMonitoring;
 	stopMonitoring: typeof stopMonitoring;
 };
-export { ObservableArray, ChangeType, ChangedData } from './data/observable-array';
-export { Observable, PropertyChangeData, EventData, WrappedValue, fromObject, fromObjectRecursive } from './data/observable';
-export { VirtualArray, ItemsLoading } from './data/virtual-array';
-export { File, FileSystemEntity, Folder, knownFolders, path } from './file-system';
-export { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
-import { getFile, getImage, getJSON, getString as httpGetString, request } from './http';
+export { CSSUtils } from './css/system-classes';
+export { ObservableArray, ChangeType } from './data/observable-array';
+export type { ChangedData } from './data/observable-array';
+export { Observable, WrappedValue, fromObject, fromObjectRecursive } from './data/observable';
+export type { PropertyChangeData, EventData } from './data/observable';
+export { VirtualArray } from './data/virtual-array';
+export type { ItemsLoading } from './data/virtual-array';
+export { File, FileSystemEntity, Folder, knownFolders, path, getFileAccess } from './file-system';
+export type { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
+import { getFile, getImage, getJSON, getString as httpGetString } from './http';
 export declare const Http: {
 	getFile: typeof getFile;
 	getImage: typeof getImage;
 	getJSON: typeof getJSON;
 	getString: typeof httpGetString;
-	request: typeof request;
+	request: (options: import('./http').HttpRequestOptions) => Promise<import('./http').HttpResponse>;
 };
-export { ImageAsset, ImageAssetOptions } from './image-asset';
+export { ImageAsset } from './image-asset';
+export type { ImageAssetOptions } from './image-asset';
 export { ImageSource } from './image-source';
-export { ModuleNameResolver, ModuleListProvider, PlatformContext, _setResolver } from './module-name-resolver';
-export { isAndroid, isIOS, Screen, IDevice, Device, platformNames } from './platform';
-// Profiling
-export { InstrumentationMode, TimerInfo, profile, enable as profilingEnable, disable as profilingDisable, time as profilingTime, uptime as profilingUptime, start as profilingStart, stop as profilingStop, isRunning as profilingIsRunning, dumpProfiles as profilingDumpProfiles, resetProfiles as profilingResetProfiles, startCPUProfile as profilingStartCPU, stopCPUProfile as profilingStopCPU } from './profiling';
+export { ModuleNameResolver, _setResolver } from './module-name-resolver';
+export type { ModuleListProvider, PlatformContext } from './module-name-resolver';
+export { isAndroid, isIOS, Screen, Device, platformNames } from './platform';
+export type { IDevice } from './platform';
+export { profile, enable as profilingEnable, disable as profilingDisable, time as profilingTime, uptime as profilingUptime, start as profilingStart, stop as profilingStop, isRunning as profilingIsRunning, dumpProfiles as profilingDumpProfiles, resetProfiles as profilingResetProfiles, startCPUProfile as profilingStartCPU, stopCPUProfile as profilingStopCPU } from './profiling';
+export type { InstrumentationMode, TimerInfo } from './profiling';
 export { encoding } from './text';
 export * from './trace';
-
 export * from './ui';
 import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source } from './utils';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 export declare const Utils: {
 	GC: typeof GC;
+	RESOURCE_PREFIX: string;
+	FILE_PREFIX: string;
 	isFontIconURI: typeof isFontIconURI;
 	isDataURI: typeof isDataURI;
 	isFileOrResourcePath: typeof isFileOrResourcePath;
@@ -92,7 +110,6 @@ export declare const Utils: {
 	isRealDevice: typeof isRealDevice;
 	layout: typeof layout;
 	android: typeof androidUtils;
-	// legacy (a lot of plugins use the shorthand "ad" Utils.ad instead of Utils.android)
 	ad: typeof androidUtils;
 	ios: typeof iosUtils;
 	Source: typeof Source;

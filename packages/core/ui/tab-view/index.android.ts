@@ -45,6 +45,7 @@ function initializeNativeClasses() {
 		return;
 	}
 
+	@NativeClass
 	class TabFragmentImplementation extends org.nativescript.widgets.FragmentBase {
 		private owner: TabView;
 		private index: number;

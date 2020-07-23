@@ -10,10 +10,169 @@ export * from './view-helper-common';
 
 const majorVersion = iOSNativeHelper.MajorVersion;
 
-export namespace IOSHelper {
-	export const traitCollectionColorAppearanceChangedEvent = 'traitCollectionColorAppearanceChanged';
+@NativeClass
+class UILayoutViewController extends UIViewController {
+	public owner: WeakRef<View>;
 
-	export function getParentWithViewController(view: View): View {
+	public static initWithOwner(owner: WeakRef<View>): UILayoutViewController {
+		const controller = <UILayoutViewController>UILayoutViewController.new();
+		controller.owner = owner;
+
+		return controller;
+	}
+
+	public viewDidLoad(): void {
+		super.viewDidLoad();
+
+		// Unify translucent and opaque bars layout
+		// this.edgesForExtendedLayout = UIRectEdgeBottom;
+		this.extendedLayoutIncludesOpaqueBars = true;
+	}
+
+	public viewWillLayoutSubviews(): void {
+		super.viewWillLayoutSubviews();
+		const owner = this.owner.get();
+		if (owner) {
+			IOSHelper.updateConstraints(this, owner);
+		}
+	}
+
+	public viewDidLayoutSubviews(): void {
+		super.viewDidLayoutSubviews();
+		const owner = this.owner.get();
+		if (owner) {
+			if (majorVersion >= 11) {
+				// Handle nested UILayoutViewController safe area application.
+				// Currently, UILayoutViewController can be nested only in a TabView.
+				// The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
+				const tabViewItem = owner.parent;
+				const tabView = tabViewItem && tabViewItem.parent;
+				let parent = tabView && tabView.parent;
+
+				// Handle Angular scenario where TabView is in a ProxyViewContainer
+				// It is possible to wrap components in ProxyViewContainers indefinitely
+				// Not using instanceof ProxyViewContainer to avoid circular dependency
+				// TODO: Try moving UILayoutViewController out of view module
+				while (parent && !parent.nativeViewProtected) {
+					parent = parent.parent;
+				}
+
+				if (parent) {
+					const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
+					const currentInsetsTop = this.view.safeAreaInsets.top;
+					const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
+
+					const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
+					const currentInsetsBottom = this.view.safeAreaInsets.bottom;
+					const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
+
+					if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
+						const additionalInsets = new UIEdgeInsets({
+							top: additionalInsetsTop,
+							left: 0,
+							bottom: additionalInsetsBottom,
+							right: 0,
+						});
+						this.additionalSafeAreaInsets = additionalInsets;
+					}
+				}
+			}
+
+			IOSHelper.layoutView(this, owner);
+		}
+	}
+
+	public viewWillAppear(animated: boolean): void {
+		super.viewWillAppear(animated);
+		const owner = this.owner.get();
+		if (!owner) {
+			return;
+		}
+
+		IOSHelper.updateAutoAdjustScrollInsets(this, owner);
+
+		if (!owner.parent) {
+			owner.callLoaded();
+		}
+	}
+
+	public viewDidDisappear(animated: boolean): void {
+		super.viewDidDisappear(animated);
+		const owner = this.owner.get();
+		if (owner && !owner.parent) {
+			owner.callUnloaded();
+		}
+	}
+
+	// Mind implementation for other controllers
+	public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+		super.traitCollectionDidChange(previousTraitCollection);
+
+		if (majorVersion >= 13) {
+			const owner = this.owner.get();
+			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+				owner.notify({
+					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
+					object: owner,
+				});
+			}
+		}
+	}
+}
+
+@NativeClass
+class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
+	public static ObjCProtocols = [UIAdaptivePresentationControllerDelegate];
+
+	private owner: WeakRef<View>;
+	private closedCallback: Function;
+
+	public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp {
+		const instance = <UIAdaptivePresentationControllerDelegateImp>super.new();
+		instance.owner = owner;
+		instance.closedCallback = whenClosedCallback;
+
+		return instance;
+	}
+
+	public presentationControllerDidDismiss(presentationController: UIPresentationController) {
+		const owner = this.owner.get();
+		if (owner && typeof this.closedCallback === 'function') {
+			this.closedCallback();
+		}
+	}
+}
+
+@NativeClass
+class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
+	public static ObjCProtocols = [UIPopoverPresentationControllerDelegate];
+
+	private owner: WeakRef<View>;
+	private closedCallback: Function;
+
+	public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp {
+		const instance = <UIPopoverPresentationControllerDelegateImp>super.new();
+		instance.owner = owner;
+		instance.closedCallback = whenClosedCallback;
+
+		return instance;
+	}
+
+	public popoverPresentationControllerDidDismissPopover(popoverPresentationController: UIPopoverPresentationController) {
+		const owner = this.owner.get();
+		if (owner && typeof this.closedCallback === 'function') {
+			this.closedCallback();
+		}
+	}
+}
+
+export class IOSHelper {
+	static traitCollectionColorAppearanceChangedEvent = 'traitCollectionColorAppearanceChanged';
+	static UILayoutViewController = UILayoutViewController;
+	static UIAdaptivePresentationControllerDelegateImp = UIAdaptivePresentationControllerDelegateImp;
+	static UIPopoverPresentationControllerDelegateImp = UIPopoverPresentationControllerDelegateImp;
+
+	static getParentWithViewController(view: View): View {
 		while (view && !view.viewController) {
 			view = view.parent as View;
 		}
@@ -22,7 +181,7 @@ export namespace IOSHelper {
 		return view;
 	}
 
-	export function updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
+	static updateAutoAdjustScrollInsets(controller: UIViewController, owner: View): void {
 		if (majorVersion <= 10) {
 			owner._automaticallyAdjustsScrollViewInsets = false;
 			// This API is deprecated, but has no alternative for <= iOS 10
@@ -33,14 +192,14 @@ export namespace IOSHelper {
 		}
 	}
 
-	export function updateConstraints(controller: UIViewController, owner: View): void {
+	static updateConstraints(controller: UIViewController, owner: View): void {
 		if (majorVersion <= 10) {
-			const layoutGuide = initLayoutGuide(controller);
+			const layoutGuide = IOSHelper.initLayoutGuide(controller);
 			(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
 		}
 	}
 
-	function initLayoutGuide(controller: UIViewController) {
+	static initLayoutGuide(controller: UIViewController) {
 		const rootView = controller.view;
 		const layoutGuide = UILayoutGuide.alloc().init();
 		rootView.addLayoutGuide(layoutGuide);
@@ -49,12 +208,12 @@ export namespace IOSHelper {
 		return layoutGuide;
 	}
 
-	export function layoutView(controller: UIViewController, owner: View): void {
+	static layoutView(controller: UIViewController, owner: View): void {
 		let layoutGuide = controller.view.safeAreaLayoutGuide;
 		if (!layoutGuide) {
 			Trace.write(`safeAreaLayoutGuide during layout of ${owner}. Creating fallback constraints, but layout might be wrong.`, Trace.categories.Layout, Trace.messageType.error);
 
-			layoutGuide = initLayoutGuide(controller);
+			layoutGuide = IOSHelper.initLayoutGuide(controller);
 		}
 		const safeArea = layoutGuide.layoutFrame;
 		let position = IOSHelper.getPositionFromFrame(safeArea);
@@ -80,7 +239,7 @@ export namespace IOSHelper {
 		}
 	}
 
-	export function getPositionFromFrame(frame: CGRect): { left; top; right; bottom } {
+	static getPositionFromFrame(frame: CGRect): { left; top; right; bottom } {
 		const left = layout.round(layout.toDevicePixels(frame.origin.x));
 		const top = layout.round(layout.toDevicePixels(frame.origin.y));
 		const right = layout.round(layout.toDevicePixels(frame.origin.x + frame.size.width));
@@ -89,7 +248,7 @@ export namespace IOSHelper {
 		return { left, right, top, bottom };
 	}
 
-	export function getFrameFromPosition(position: { left; top; right; bottom }, insets?: { left; top; right; bottom }): CGRect {
+	static getFrameFromPosition(position: { left; top; right; bottom }, insets?: { left; top; right; bottom }): CGRect {
 		insets = insets || { left: 0, top: 0, right: 0, bottom: 0 };
 
 		const left = layout.toDeviceIndependentPixels(position.left + insets.left);
@@ -100,7 +259,7 @@ export namespace IOSHelper {
 		return CGRectMake(left, top, width, height);
 	}
 
-	export function shrinkToSafeArea(view: View, frame: CGRect): CGRect {
+	static shrinkToSafeArea(view: View, frame: CGRect): CGRect {
 		const insets = view.getSafeAreaInsets();
 		if (insets.left || insets.top) {
 			const position = IOSHelper.getPositionFromFrame(frame);
@@ -116,8 +275,8 @@ export namespace IOSHelper {
 		return null;
 	}
 
-	export function expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
-		const availableSpace = getAvailableSpaceFromParent(view, frame);
+	static expandBeyondSafeArea(view: View, frame: CGRect): CGRect {
+		const availableSpace = IOSHelper.getAvailableSpaceFromParent(view, frame);
 		const safeArea = availableSpace.safeArea;
 		const fullscreen = availableSpace.fullscreen;
 		const inWindow = availableSpace.inWindow;
@@ -154,7 +313,7 @@ export namespace IOSHelper {
 		return adjustedFrame;
 	}
 
-	function getAvailableSpaceFromParent(view: View, frame: CGRect): { safeArea: CGRect; fullscreen: CGRect; inWindow: CGRect } {
+	static getAvailableSpaceFromParent(view: View, frame: CGRect): { safeArea: CGRect; fullscreen: CGRect; inWindow: CGRect } {
 		if (!view) {
 			return;
 		}
@@ -205,158 +364,5 @@ export namespace IOSHelper {
 			fullscreen: fullscreen,
 			inWindow: inWindow,
 		};
-	}
-
-	export class UILayoutViewController extends UIViewController {
-		public owner: WeakRef<View>;
-
-		public static initWithOwner(owner: WeakRef<View>): UILayoutViewController {
-			const controller = <UILayoutViewController>UILayoutViewController.new();
-			controller.owner = owner;
-
-			return controller;
-		}
-
-		public viewDidLoad(): void {
-			super.viewDidLoad();
-
-			// Unify translucent and opaque bars layout
-			// this.edgesForExtendedLayout = UIRectEdgeBottom;
-			this.extendedLayoutIncludesOpaqueBars = true;
-		}
-
-		public viewWillLayoutSubviews(): void {
-			super.viewWillLayoutSubviews();
-			const owner = this.owner.get();
-			if (owner) {
-				updateConstraints(this, owner);
-			}
-		}
-
-		public viewDidLayoutSubviews(): void {
-			super.viewDidLayoutSubviews();
-			const owner = this.owner.get();
-			if (owner) {
-				if (majorVersion >= 11) {
-					// Handle nested UILayoutViewController safe area application.
-					// Currently, UILayoutViewController can be nested only in a TabView.
-					// The TabView itself is handled by the OS, so we check the TabView's parent (usually a Page, but can be a Layout).
-					const tabViewItem = owner.parent;
-					const tabView = tabViewItem && tabViewItem.parent;
-					let parent = tabView && tabView.parent;
-
-					// Handle Angular scenario where TabView is in a ProxyViewContainer
-					// It is possible to wrap components in ProxyViewContainers indefinitely
-					// Not using instanceof ProxyViewContainer to avoid circular dependency
-					// TODO: Try moving UILayoutViewController out of view module
-					while (parent && !parent.nativeViewProtected) {
-						parent = parent.parent;
-					}
-
-					if (parent) {
-						const parentPageInsetsTop = parent.nativeViewProtected.safeAreaInsets.top;
-						const currentInsetsTop = this.view.safeAreaInsets.top;
-						const additionalInsetsTop = Math.max(parentPageInsetsTop - currentInsetsTop, 0);
-
-						const parentPageInsetsBottom = parent.nativeViewProtected.safeAreaInsets.bottom;
-						const currentInsetsBottom = this.view.safeAreaInsets.bottom;
-						const additionalInsetsBottom = Math.max(parentPageInsetsBottom - currentInsetsBottom, 0);
-
-						if (additionalInsetsTop > 0 || additionalInsetsBottom > 0) {
-							const additionalInsets = new UIEdgeInsets({
-								top: additionalInsetsTop,
-								left: 0,
-								bottom: additionalInsetsBottom,
-								right: 0,
-							});
-							this.additionalSafeAreaInsets = additionalInsets;
-						}
-					}
-				}
-
-				layoutView(this, owner);
-			}
-		}
-
-		public viewWillAppear(animated: boolean): void {
-			super.viewWillAppear(animated);
-			const owner = this.owner.get();
-			if (!owner) {
-				return;
-			}
-
-			updateAutoAdjustScrollInsets(this, owner);
-
-			if (!owner.parent) {
-				owner.callLoaded();
-			}
-		}
-
-		public viewDidDisappear(animated: boolean): void {
-			super.viewDidDisappear(animated);
-			const owner = this.owner.get();
-			if (owner && !owner.parent) {
-				owner.callUnloaded();
-			}
-		}
-
-		// Mind implementation for other controllers
-		public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
-			super.traitCollectionDidChange(previousTraitCollection);
-
-			if (majorVersion >= 13) {
-				const owner = this.owner.get();
-				if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
-					owner.notify({
-						eventName: traitCollectionColorAppearanceChangedEvent,
-						object: owner,
-					});
-				}
-			}
-		}
-	}
-
-	export class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
-		public static ObjCProtocols = [UIAdaptivePresentationControllerDelegate];
-
-		private owner: WeakRef<View>;
-		private closedCallback: Function;
-
-		public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp {
-			const instance = <UIAdaptivePresentationControllerDelegateImp>super.new();
-			instance.owner = owner;
-			instance.closedCallback = whenClosedCallback;
-
-			return instance;
-		}
-
-		public presentationControllerDidDismiss(presentationController: UIPresentationController) {
-			const owner = this.owner.get();
-			if (owner && typeof this.closedCallback === 'function') {
-				this.closedCallback();
-			}
-		}
-	}
-
-	export class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
-		public static ObjCProtocols = [UIPopoverPresentationControllerDelegate];
-
-		private owner: WeakRef<View>;
-		private closedCallback: Function;
-
-		public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp {
-			const instance = <UIPopoverPresentationControllerDelegateImp>super.new();
-			instance.owner = owner;
-			instance.closedCallback = whenClosedCallback;
-
-			return instance;
-		}
-
-		public popoverPresentationControllerDidDismissPopover(popoverPresentationController: UIPopoverPresentationController) {
-			const owner = this.owner.get();
-			if (owner && typeof this.closedCallback === 'function') {
-				this.closedCallback();
-			}
-		}
 	}
 }

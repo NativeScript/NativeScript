@@ -3,7 +3,7 @@ import 'tslib';
 import * as moduleAlias from 'module-alias';
 import * as path from 'path';
 
-const tnsCoreModules = path.resolve(__dirname, '../..');
+const tnsCoreModules = path.resolve(__dirname, '..');
 
 moduleAlias.addPath(tnsCoreModules);
 moduleAlias.addAliases({
