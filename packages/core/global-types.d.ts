@@ -202,6 +202,18 @@ declare var exports: any;
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
 declare function Experimental(target: Object, key?: string | symbol, value?: any): void;
 
+declare interface NativeClassOptions {
+	nativeClassName?: string; // for @JavaProxy and
+	protocols?: any[];
+	interfaces?: any[];
+}
+
+/**
+ * Decorates class that extends a native class(iOS or Android)
+ */
+declare function NativeClass<T extends { new (...args: any[]): {} }>(constructor: T);
+declare function NativeClass<T extends { new (...args: any[]): {} }>(options?: NativeClassOptions);
+
 /**
  * Decorates class that implements native Java interfaces.
  * @param interfaces Implemented interfaces.

@@ -76,6 +76,7 @@ function initializeNativeClasses(): void {
 		}
 	}
 
+	@NativeClass
 	class TabHostImpl extends android.widget.TabHost {
 		constructor(context: android.content.Context, attrs: android.util.AttributeSet) {
 			super(context, attrs);

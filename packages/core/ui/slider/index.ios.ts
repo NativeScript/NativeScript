@@ -6,6 +6,7 @@ import { Color } from '../../color';
 
 export * from './slider-common';
 
+@NativeClass
 class SliderChangeHandlerImpl extends NSObject {
 	private _owner: WeakRef<Slider>;
 

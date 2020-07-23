@@ -127,6 +127,7 @@ function initializeDialogFragment() {
 		return;
 	}
 
+	@NativeClass
 	class DialogImpl extends android.app.Dialog {
 		constructor(public fragment: DialogFragmentImpl, context: android.content.Context, themeResId: number) {
 			super(context, themeResId);

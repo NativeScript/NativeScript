@@ -1,6 +1,7 @@
 ﻿/* tslint:disable:no-unused-variable */
 import { ControlStateChangeListener as ControlStateChangeListenerDefinition } from '.';
 
+@NativeClass
 class ObserverClass extends NSObject {
 	// NOTE: Refactor this - use Typescript property instead of strings....
 	observeValueForKeyPathOfObjectChangeContext(path: string) {

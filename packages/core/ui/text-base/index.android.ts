@@ -65,6 +65,7 @@ function initializeClickableSpan(): void {
 		return;
 	}
 
+	@NativeClass
 	class ClickableSpanImpl extends android.text.style.ClickableSpan {
 		owner: WeakRef<Span>;
 
@@ -100,6 +101,7 @@ function initializeBaselineAdjustedSpan(): void {
 	if (BaselineAdjustedSpan) {
 		return;
 	}
+	@NativeClass
 	class BaselineAdjustedSpanImpl extends android.text.style.MetricAffectingSpan {
 		fontSize: number;
 		align: VerticalAlignment = 'baseline';

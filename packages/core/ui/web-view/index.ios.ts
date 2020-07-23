@@ -5,6 +5,7 @@ import { Trace } from '../../trace';
 export * from './web-view-common';
 import { knownFolders } from '../../file-system';
 
+@NativeClass
 class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate {
 	public static ObjCProtocols = [WKNavigationDelegate];
 	public static initWithOwner(owner: WeakRef<WebView>): WKNavigationDelegateImpl {

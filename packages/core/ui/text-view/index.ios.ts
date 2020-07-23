@@ -11,6 +11,7 @@ import { profile } from '../../profiling';
 
 const majorVersion = iOSNativeHelper.MajorVersion;
 
+@NativeClass
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 	public static ObjCProtocols = [UITextViewDelegate];
 

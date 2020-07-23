@@ -15,6 +15,7 @@ export * from './text-base-common';
 
 const majorVersion = iOSNativeHelper.MajorVersion;
 
+@NativeClass
 class UILabelClickHandlerImpl extends NSObject {
 	private _owner: WeakRef<TextBase>;
 

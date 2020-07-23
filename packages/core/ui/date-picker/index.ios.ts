@@ -82,6 +82,7 @@ export class DatePicker extends DatePickerBase {
 	}
 }
 
+@NativeClass
 class UIDatePickerChangeHandlerImpl extends NSObject {
 	private _owner: WeakRef<DatePicker>;
 

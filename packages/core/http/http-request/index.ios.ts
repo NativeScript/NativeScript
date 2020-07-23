@@ -31,6 +31,7 @@ function parseJSON(source: string): any {
 	return JSON.parse(src);
 }
 
+@NativeClass
 class NSURLSessionTaskDelegateImpl extends NSObject implements NSURLSessionTaskDelegate {
 	public static ObjCProtocols = [NSURLSessionTaskDelegate];
 	public URLSessionTaskWillPerformHTTPRedirectionNewRequestCompletionHandler(session: NSURLSession, task: NSURLSessionTask, response: NSHTTPURLResponse, request: NSURLRequest, completionHandler: (p1: NSURLRequest) => void): void {

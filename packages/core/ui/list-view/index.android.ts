@@ -235,6 +235,7 @@ function ensureListViewAdapterClass() {
 		return;
 	}
 
+	@NativeClass
 	class ListViewAdapter extends android.widget.BaseAdapter {
 		constructor(public owner: ListView) {
 			super();

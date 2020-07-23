@@ -86,6 +86,7 @@ class UITabBarControllerImpl extends UITabBarController {
 	}
 }
 
+@NativeClass
 class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControllerDelegate {
 	public static ObjCProtocols = [UITabBarControllerDelegate];
 
@@ -133,6 +134,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 	}
 }
 
+@NativeClass
 class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
 

@@ -316,6 +316,7 @@ export namespace IOSHelper {
 		}
 	}
 
+	@NativeClass
 	export class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
 		public static ObjCProtocols = [UIAdaptivePresentationControllerDelegate];
 
@@ -338,6 +339,7 @@ export namespace IOSHelper {
 		}
 	}
 
+	@NativeClass
 	export class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
 		public static ObjCProtocols = [UIPopoverPresentationControllerDelegate];
 
