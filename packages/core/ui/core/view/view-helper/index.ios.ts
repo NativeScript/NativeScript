@@ -316,7 +316,8 @@ export namespace IOSHelper {
 		}
 	}
 
-	export class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
+	@NativeClass
+export class UIAdaptivePresentationControllerDelegateImp extends NSObject implements UIAdaptivePresentationControllerDelegate {
 		public static ObjCProtocols = [UIAdaptivePresentationControllerDelegate];
 
 		private owner: WeakRef<View>;
@@ -338,7 +339,8 @@ export namespace IOSHelper {
 		}
 	}
 
-	export class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
+	@NativeClass
+export class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIPopoverPresentationControllerDelegate {
 		public static ObjCProtocols = [UIPopoverPresentationControllerDelegate];
 
 		private owner: WeakRef<View>;

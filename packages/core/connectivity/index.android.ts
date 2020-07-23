@@ -109,29 +109,31 @@ let networkCallback;
 let notifyCallback;
 export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
 	if (android.os.Build.VERSION.SDK_INT >= 28) {
-		const manager = getConnectivityManager() as any;
+		const manager = getConnectivityManager();
 		if (manager) {
 			notifyCallback = () => {
 				let newConnectionType = getConnectionType();
 				let zoneCallback = <any>zonedCallback(connectionTypeChangedCallback);
 				zoneCallback(newConnectionType);
 			};
-			const ConnectivityManager = (android as any).net.ConnectivityManager;
+			const ConnectivityManager = android.net.ConnectivityManager;
 			if (!networkCallback) {
-				networkCallback = ConnectivityManager.NetworkCallback.extend({
-					onAvailable(network) {
+				@NativeClass 
+				class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback{
+					onAvailable(network: android.net.Network) {
 						notifyCallback();
-					},
-					onCapabilitiesChanged(network, networkCapabilities) {
+					}
+					onCapabilitiesChanged(network: android.net.Network, networkCapabilities: android.net.NetworkCapabilities) {
 						notifyCallback();
-					},
+					}
 					onLost(network) {
 						notifyCallback();
-					},
+					}
 					onUnavailable() {
 						notifyCallback();
-					},
-				});
+					}
+				};
+				networkCallback = NetworkCallbackImpl;
 			}
 			callback = new networkCallback();
 			manager.registerDefaultNetworkCallback(callback);

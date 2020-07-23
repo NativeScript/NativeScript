@@ -7,6 +7,7 @@ export * from './scroll-view-common';
 
 const majorVersion = iOSNativeHelper.MajorVersion;
 
+@NativeClass
 class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
 	private _owner: WeakRef<ScrollView>;
 

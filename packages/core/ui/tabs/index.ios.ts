@@ -34,6 +34,7 @@ const invokeOnRunLoop = (function () {
 	};
 })();
 
+@NativeClass
 class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
 	public static ObjCProtocols = [MDCTabBarDelegate];
 
@@ -79,6 +80,7 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
 	}
 }
 
+@NativeClass
 class BackgroundIndicatorTemplate extends NSObject implements MDCTabBarIndicatorTemplate {
 	public static ObjCProtocols = [MDCTabBarIndicatorTemplate];
 
@@ -259,6 +261,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
 	}
 }
 
+@NativeClass
 class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewControllerDataSource {
 	public static ObjCProtocols = [UIPageViewControllerDataSource];
 
@@ -345,6 +348,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
 	}
 }
 
+@NativeClass
 class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewControllerDelegate {
 	public static ObjCProtocols = [UIPageViewControllerDelegate];
 

@@ -77,6 +77,7 @@ export class ListPicker extends ListPickerBase {
 	}
 }
 
+@NativeClass
 class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
 	public static ObjCProtocols = [UIPickerViewDataSource];
 
@@ -100,6 +101,7 @@ class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
 	}
 }
 
+@NativeClass
 class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
 	public static ObjCProtocols = [UIPickerViewDelegate];
 

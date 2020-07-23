@@ -300,6 +300,7 @@ export class Frame extends FrameBase {
 
 let transitionDelegates = new Array<TransitionDelegate>();
 
+@NativeClass
 class TransitionDelegate extends NSObject {
 	private _id: string;
 
@@ -348,6 +349,7 @@ class TransitionDelegate extends NSObject {
 
 const _defaultTransitionDuration = 0.35;
 
+@NativeClass
 class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
 	public static ObjCProtocols = [UINavigationControllerDelegate];
 

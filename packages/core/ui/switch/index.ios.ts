@@ -5,6 +5,7 @@ import { layout } from '../../utils';
 
 export * from './switch-common';
 
+@NativeClass
 class SwitchChangeHandlerImpl extends NSObject {
 	private _owner: WeakRef<Switch>;
 

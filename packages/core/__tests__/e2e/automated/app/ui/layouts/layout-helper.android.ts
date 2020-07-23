@@ -8,6 +8,7 @@ import * as def from "./layout-helper";
 
 var DELTA = 0.1;
 
+@NativeClass
 class NativeButton extends android.widget.Button {
     constructor(context: android.content.Context, public owner: def.MeasuredView) {
         super(context);
@@ -28,6 +29,7 @@ class NativeButton extends android.widget.Button {
     }
 }
 
+@NativeClass
 class NativeStackLayout extends org.nativescript.widgets.StackLayout {
     constructor(context: android.content.Context, public owner: def.MeasuredView) {
         super(context);
@@ -48,6 +50,7 @@ class NativeStackLayout extends org.nativescript.widgets.StackLayout {
     }
 }
 
+@NativeClass
 class NativeGridLayout extends org.nativescript.widgets.GridLayout {
     constructor(context: android.content.Context, public owner: def.MeasuredView) {
         super(context);

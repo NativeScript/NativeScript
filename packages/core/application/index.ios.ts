@@ -25,6 +25,16 @@ const majorVersion = iOSNativeHelper.MajorVersion;
 // NOTE: UIResponder with implementation of window - related to https://github.com/NativeScript/ios-runtime/issues/430
 // TODO: Refactor the UIResponder to use Typescript extends when this issue is resolved:
 // https://github.com/NativeScript/ios-runtime/issues/1012
+@NativeClass
+// class Responder extends UIResponder {
+// 	public static ObjCProtocols = [UIApplicationDelegate];
+// 	get window() {
+// 		return iosApp ? iosApp.window : undefined;
+// 	}
+// 	set window(setWindow) {
+// 		// NOOP
+// 	}
+// }
 const Responder = (<any>UIResponder).extend(
 	{
 		get window() {
@@ -39,6 +49,7 @@ const Responder = (<any>UIResponder).extend(
 	}
 );
 
+@NativeClass
 class NotificationObserver extends NSObject {
 	private _onReceiveCallback: (notification: NSNotification) => void;
 
@@ -61,6 +72,8 @@ class NotificationObserver extends NSObject {
 let displayedOnce = false;
 let displayedLinkTarget;
 let displayedLink;
+
+@NativeClass
 class CADisplayLinkTarget extends NSObject {
 	onDisplayed(link: CADisplayLink) {
 		link.invalidate();
