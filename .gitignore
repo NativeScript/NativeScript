@@ -35,8 +35,10 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
-**/__tests__/e2e/**/*/platforms
-**/__tests__/**/*/webpack.*.js
+apps/**/*/*.js
+apps/**/*/*.map
+apps/**/*/platforms
+apps/**/*/webpack.*.js
 *.tgz
 
 # System Files

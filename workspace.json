@@ -1,9 +1,9 @@
 {
   "version": 1,
   "projects": {
-    "core-e2e-automated": {
-      "root": "packages/core/__tests__/e2e/automated/",
-      "sourceRoot": "packages/core/__tests__/e2e/automated/app",
+    "apps-automated": {
+      "root": "apps/automated/",
+      "sourceRoot": "apps/automated/app",
       "projectType": "application",
       "prefix": "nativescript",
       "architect": {
@@ -15,7 +15,7 @@
                 "command": "tns debug ios --no-hmr --emulator"
               }
             ],
-            "cwd": "packages/core/__tests__/e2e/automated",
+            "cwd": "apps/automated",
             "parallel": false
           }
         },
@@ -27,7 +27,7 @@
                 "command": "tns debug android --no-hmr --emulator"
               }
             ],
-            "cwd": "packages/core/__tests__/e2e/automated",
+            "cwd": "apps/automated",
             "parallel": false
           }
         },
@@ -45,15 +45,15 @@
                 "command": "npx rimraf -- package-lock.json"
               }
             ],
-            "cwd": "packages/core/__tests__/e2e/automated",
+            "cwd": "apps/automated",
             "parallel": false
           }
         }
       }
     },
-    "core-e2e-playground": {
-      "root": "packages/core/__tests__/e2e/playground/",
-      "sourceRoot": "packages/core/__tests__/e2e/playground/src",
+    "apps-playground": {
+      "root": "apps/playground/",
+      "sourceRoot": "apps/playground/src",
       "projectType": "application",
       "prefix": "nativescript",
       "architect": {
@@ -65,7 +65,7 @@
                 "command": "tns debug ios --no-hmr --emulator"
               }
             ],
-            "cwd": "packages/core/__tests__/e2e/playground",
+            "cwd": "apps/playground",
             "parallel": false
           }
         },
@@ -77,7 +77,7 @@
                 "command": "tns debug android --no-hmr --emulator"
               }
             ],
-            "cwd": "packages/core/__tests__/e2e/playground",
+            "cwd": "apps/playground",
             "parallel": false
           }
         },
@@ -95,15 +95,15 @@
                 "command": "npx rimraf -- package-lock.json"
               }
             ],
-            "cwd": "packages/core/__tests__/e2e/playground",
+            "cwd": "apps/playground",
             "parallel": false
           }
         }
       }
     },
-    "core-e2e-ui": {
-      "root": "packages/core/__tests__/e2e/ui/",
-      "sourceRoot": "packages/core/__tests__/e2e/ui/src",
+    "apps-ui": {
+      "root": "apps/ui/",
+      "sourceRoot": "apps/ui/src",
       "projectType": "application",
       "prefix": "nativescript",
       "architect": {
@@ -115,7 +115,7 @@
                 "command": "tns debug ios --no-hmr --emulator"
               }
             ],
-            "cwd": "packages/core/__tests__/e2e/ui",
+            "cwd": "apps/ui",
             "parallel": false
           }
         },
@@ -127,7 +127,7 @@
                 "command": "tns debug android --no-hmr --emulator"
               }
             ],
-            "cwd": "packages/core/__tests__/e2e/ui",
+            "cwd": "apps/ui",
             "parallel": false
           }
         },
@@ -145,7 +145,7 @@
                 "command": "npx rimraf -- package-lock.json"
               }
             ],
-            "cwd": "packages/core/__tests__/e2e/ui",
+            "cwd": "apps/ui",
             "parallel": false
           }
         }
@@ -217,10 +217,10 @@
           "options": {
             "commands": [
               {
-                "command": "../../../../node_modules/.bin/tsc -p tsconfig.json && ../../../../node_modules/.bin/mocha --config=.mocharc.yml"
+                "command": "../../../node_modules/.bin/tsc -p tsconfig.json && ../../../node_modules/.bin/mocha --config=.mocharc.yml"
               }
             ],
-            "cwd": "packages/core/__tests__/unit",
+            "cwd": "packages/core/__tests__",
             "parallel": false
           }
         },
@@ -229,10 +229,10 @@
           "options": {
             "commands": [
               {
-                "command": "../../../../node_modules/.bin/mocha-typescript-watch -p tsconfig.json --config=.mocharc.yml"
+                "command": "../../../node_modules/.bin/mocha-typescript-watch -p tsconfig.json --config=.mocharc.yml"
               }
             ],
-            "cwd": "packages/core/__tests__/unit",
+            "cwd": "packages/core/__tests__",
             "parallel": false
           }
         }

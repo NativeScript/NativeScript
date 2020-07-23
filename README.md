@@ -31,6 +31,16 @@ npm run setup
 ## @nativescript/core
 
 ```
+npx apps:playground:ios
+npm run apps:playground:android
+
+
+npm run packages:core:build
+npm run packages:core:test
+
+
+
+
 // livesync develop changes
 nx run core-e2e-playground:ios
 nx run core-e2e-playground:android

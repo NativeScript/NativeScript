@@ -1,7 +1,7 @@
 {
   "npmScope": "nativescript",
   "workspaceLayout": {
-    "appsDir": "packages",
+    "appsDir": "apps",
     "libsDir": "packages"
   },
   "implicitDependencies": {
@@ -24,13 +24,13 @@
     }
   },
   "projects": {
-    "core-e2e-automated": {
+    "apps-automated": {
       "tags": []
     },
-    "core-e2e-playground": {
+    "apps-playground": {
       "tags": []
     },
-    "core-e2e-ui": {
+    "apps-ui": {
       "tags": []
     },
     "core": {

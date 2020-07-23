@@ -271,14 +271,16 @@ class TapHandlerImpl extends NSObject {
 	public static initWithOwner(owner: WeakRef<Button>): TapHandlerImpl {
 		let handler = <TapHandlerImpl>TapHandlerImpl.new();
 		handler._owner = owner;
-
 		return handler;
 	}
 
 	public tap(args) {
-		let owner = this._owner.get();
-		if (owner) {
-			owner._emit(ButtonBase.tapEvent);
+		// _owner is a {N} view which could get destroyed when a tap initiates (protect!)
+		if (this._owner) {
+			let owner = this._owner.get();
+			if (owner) {
+				owner._emit(ButtonBase.tapEvent);
+			}
 		}
 	}
 
