@@ -1,9 +1,9 @@
 import * as transition from '.';
-import * as platform from '../../platform';
+import { Screen } from '../../platform';
 import lazy from '../../utils/lazy';
 
-const screenWidth = lazy(() => platform.screen.mainScreen.widthPixels);
-const screenHeight = lazy(() => platform.screen.mainScreen.heightPixels);
+const screenWidth = lazy(() => Screen.mainScreen.widthPixels);
+const screenHeight = lazy(() => Screen.mainScreen.heightPixels);
 
 export class SlideTransition extends transition.Transition {
 	private _direction: string;

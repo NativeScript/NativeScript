@@ -6,7 +6,7 @@ import { ImageAsset } from '../../image-asset';
 import { Length } from '../styling/style-properties';
 import { knownFolders } from '../../file-system';
 
-import * as platform from '../../platform';
+import { Screen } from '../../platform';
 export * from './image-common';
 
 const FILE_PREFIX = 'file:///';
@@ -87,10 +87,8 @@ export class Image extends ImageBase {
 			return;
 		}
 
-		let screen = platform.screen.mainScreen;
-
-		let decodeWidth = Math.min(Length.toDevicePixels(this.decodeWidth, 0), screen.widthPixels);
-		let decodeHeight = Math.min(Length.toDevicePixels(this.decodeHeight, 0), screen.heightPixels);
+		let decodeWidth = Math.min(Length.toDevicePixels(this.decodeWidth, 0), Screen.mainScreen.widthPixels);
+		let decodeHeight = Math.min(Length.toDevicePixels(this.decodeHeight, 0), Screen.mainScreen.heightPixels);
 		let keepAspectRatio = this._calculateKeepAspectRatio();
 		if (value instanceof ImageAsset) {
 			if (value.options) {

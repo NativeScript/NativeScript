@@ -1,9 +1,9 @@
 ﻿/* tslint:disable:class-name */
 
-export module platformNames {
-	export const android = 'Android';
-	export const ios = 'iOS';
-}
+export const platformNames = {
+	android: 'Android',
+	ios: 'iOS',
+};
 
 class DeviceRef {
 	private _model: string;
@@ -119,8 +119,8 @@ class MainScreen {
 
 export const Device = new DeviceRef();
 
-export module screen {
-	export const mainScreen = new MainScreen();
+export class Screen {
+	static mainScreen = new MainScreen();
 }
 
 export const isIOS = true;

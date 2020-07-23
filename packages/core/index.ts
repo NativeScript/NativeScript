@@ -87,7 +87,7 @@ export { ImageAsset, ImageAssetOptions } from './image-asset';
 
 export { ImageSource } from './image-source';
 export { ModuleNameResolver, ModuleListProvider, PlatformContext, _setResolver } from './module-name-resolver';
-export { isAndroid, isIOS, screen as Screen, IDevice, Device, platformNames } from './platform';
+export { isAndroid, isIOS, Screen, IDevice, Device, platformNames } from './platform';
 
 // Profiling
 export { InstrumentationMode, TimerInfo, profile, enable as profilingEnable, disable as profilingDisable, time as profilingTime, uptime as profilingUptime, start as profilingStart, stop as profilingStop, isRunning as profilingIsRunning, dumpProfiles as profilingDumpProfiles, resetProfiles as profilingResetProfiles, startCPUProfile as profilingStartCPU, stopCPUProfile as profilingStopCPU } from './profiling';

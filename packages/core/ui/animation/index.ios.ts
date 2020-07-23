@@ -9,7 +9,7 @@ import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProper
 
 import { iOSNativeHelper } from '../../utils/native-helper';
 
-import { screen } from '../../platform';
+import { Screen } from '../../platform';
 
 export * from './animation-common';
 export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './keyframe-animation';
@@ -263,7 +263,6 @@ export class Animation extends AnimationBase {
 		const style = view.style;
 		const nativeView = <UIView>view.nativeViewProtected;
 		const parent = view.parent as View;
-		const screenScale: number = screen.mainScreen.scale;
 
 		let propertyNameToAnimate = animation.property;
 		let subPropertyNameToAnimate;
@@ -388,7 +387,7 @@ export class Animation extends AnimationBase {
 					throw new Error(`cannot animate ${direction} on root view`);
 				}
 				const parentExtent: number = isHeight ? parent.getMeasuredHeight() : parent.getMeasuredWidth();
-				const asNumber = PercentLength.toDevicePixels(PercentLength.parse(toValue), parentExtent, parentExtent) / screenScale;
+				const asNumber = PercentLength.toDevicePixels(PercentLength.parse(toValue), parentExtent, parentExtent) / Screen.mainScreen.scale;
 				let currentBounds = nativeView.layer.bounds;
 				let extentX = isHeight ? currentBounds.size.width : asNumber;
 				let extentY = isHeight ? asNumber : currentBounds.size.height;

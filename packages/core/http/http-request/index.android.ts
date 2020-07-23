@@ -1,7 +1,7 @@
 // imported for definition purposes only
 import * as httpModule from '../../http';
 import * as imageSourceModule from '../../image-source';
-import * as platformModule from '../../platform';
+import { Screen } from '../../platform';
 import * as fsModule from '../../file-system';
 
 import { getFilenameFromUrl } from './http-request-common';
@@ -208,9 +208,8 @@ function buildJavaOptions(options: httpModule.HttpRequestOptions) {
 	ensurePlatform();
 
 	// pass the maximum available image size to the request options in case we need a bitmap conversion
-	const screen = platform.screen.mainScreen;
-	javaOptions.screenWidth = screen.widthPixels;
-	javaOptions.screenHeight = screen.heightPixels;
+	javaOptions.screenWidth = Screen.mainScreen.widthPixels;
+	javaOptions.screenHeight = Screen.mainScreen.heightPixels;
 
 	return javaOptions;
 }

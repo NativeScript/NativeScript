@@ -17,10 +17,10 @@ export const isIOS: boolean;
 /*
  * Enum holding platform names.
  */
-export module platformNames {
-	export const android: string;
-	export const ios: string;
-}
+export const platformNames: {
+	android: string;
+	ios: string;
+};
 
 /*
  * An object containing device specific information.
@@ -114,11 +114,11 @@ export interface ScreenMetrics {
 /**
  * An object describing general information about a display.
  */
-export module screen {
+export class Screen {
 	/**
 	 * Gets information about the main screen of the current device.
 	 */
-	export const mainScreen: ScreenMetrics;
+	static mainScreen: ScreenMetrics;
 }
 
 /**

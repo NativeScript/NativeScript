@@ -1,7 +1,5 @@
-// imported for definition purposes only
-import * as platformModule from '../platform';
-
 import { FileSystemAccess } from './file-system-access';
+import { isIOS } from '../platform';
 import { profile } from '../profiling';
 
 // The FileSystemAccess implementation, used through all the APIs.
@@ -12,13 +10,6 @@ function getFileAccess(): FileSystemAccess {
 	}
 
 	return fileAccess;
-}
-
-let platform: typeof platformModule;
-function ensurePlatform() {
-	if (!platform) {
-		platform = require('../platform');
-	}
 }
 
 function createFile(info: { path: string; name: string; extension: string }) {
@@ -583,9 +574,8 @@ export module knownFolders {
 
 	export module ios {
 		function _checkPlatform(knownFolderName: string) {
-			ensurePlatform();
-			if (!platform.isIOS) {
-				throw new Error(`The "${knownFolderName}" known folder is available on iOS only!`);
+			if (!isIOS) {
+				console.log(`The "${knownFolderName}" known folder is available on iOS only!`);
 			}
 		}
 

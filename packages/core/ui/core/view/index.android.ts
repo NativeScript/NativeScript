@@ -44,7 +44,7 @@ import {
 import { Background, ad as androidBackground } from '../../styling/background';
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
-import { screen } from '../../../platform';
+import { Screen } from '../../../platform';
 import { AndroidActivityBackPressedEventData, android as androidApp } from '../../../application';
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
@@ -940,9 +940,7 @@ export class View extends ViewCommon {
 	}
 
 	[perspectiveProperty.setNative](value: number) {
-		const scale = screen.mainScreen.scale;
-		const distance = value * scale;
-		org.nativescript.widgets.ViewHelper.setPerspective(this.nativeViewProtected, float(distance));
+		org.nativescript.widgets.ViewHelper.setPerspective(this.nativeViewProtected, float(value * Screen.mainScreen.scale));
 	}
 
 	[scaleXProperty.setNative](value: number) {

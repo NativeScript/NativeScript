@@ -1,12 +1,10 @@
 ﻿import { Transition } from '.';
-import { screen } from '../../platform';
+import { Screen } from '../../platform';
 
-let screenWidth = screen.mainScreen.widthDIPs;
-let screenHeight = screen.mainScreen.heightDIPs;
-let leftEdge = CGAffineTransformMakeTranslation(-screenWidth, 0);
-let rightEdge = CGAffineTransformMakeTranslation(screenWidth, 0);
-let topEdge = CGAffineTransformMakeTranslation(0, -screenHeight);
-let bottomEdge = CGAffineTransformMakeTranslation(0, screenHeight);
+let leftEdge = CGAffineTransformMakeTranslation(-Screen.mainScreen.widthDIPs, 0);
+let rightEdge = CGAffineTransformMakeTranslation(Screen.mainScreen.widthDIPs, 0);
+let topEdge = CGAffineTransformMakeTranslation(0, -Screen.mainScreen.heightDIPs);
+let bottomEdge = CGAffineTransformMakeTranslation(0, Screen.mainScreen.heightDIPs);
 
 export class SlideTransition extends Transition {
 	private _direction: string;

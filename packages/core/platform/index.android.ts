@@ -3,9 +3,58 @@ import * as appModule from '../application';
 
 const MIN_TABLET_PIXELS = 600;
 
-export module platformNames {
-	export const android = 'Android';
-	export const ios = 'iOS';
+export const platformNames = {
+	android: 'Android',
+	ios: 'iOS',
+};
+
+class MainScreen {
+	private _metrics: android.util.DisplayMetrics;
+
+	private reinitMetrics(): void {
+		if (!this._metrics) {
+			this._metrics = new android.util.DisplayMetrics();
+		}
+		this.initMetrics();
+	}
+
+	private initMetrics(): void {
+		const nativeApp = <android.app.Application>appModule.getNativeApplication();
+		nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(this._metrics);
+	}
+
+	private get metrics(): android.util.DisplayMetrics {
+		if (!this._metrics) {
+			// NOTE: This will be memory leak but we MainScreen is singleton
+			appModule.on('cssChanged', this.reinitMetrics, this);
+			appModule.on(appModule.orientationChangedEvent, this.reinitMetrics, this);
+
+			this._metrics = new android.util.DisplayMetrics();
+			this.initMetrics();
+		}
+
+		return this._metrics;
+	}
+
+	get widthPixels(): number {
+		return this.metrics.widthPixels;
+	}
+	get heightPixels(): number {
+		return this.metrics.heightPixels;
+	}
+	get scale(): number {
+		return this.metrics.density;
+	}
+	get widthDIPs(): number {
+		return this.metrics.widthPixels / this.metrics.density;
+	}
+	get heightDIPs(): number {
+		return this.metrics.heightPixels / this.metrics.density;
+	}
+}
+
+export class Screen {
+	static mainScreen = new MainScreen();
 }
 
 class DeviceRef {
@@ -56,7 +105,7 @@ class DeviceRef {
 
 	get deviceType(): 'Phone' | 'Tablet' {
 		if (!this._deviceType) {
-			const dips = Math.min(screen.mainScreen.widthPixels, screen.mainScreen.heightPixels) / screen.mainScreen.scale;
+			const dips = Math.min(Screen.mainScreen.widthPixels, Screen.mainScreen.heightPixels) / Screen.mainScreen.scale;
 			// If the device has more than 600 dips it is considered to be a tablet.
 			if (dips >= MIN_TABLET_PIXELS) {
 				this._deviceType = 'Tablet';
@@ -94,56 +143,7 @@ class DeviceRef {
 	}
 }
 
-class MainScreen {
-	private _metrics: android.util.DisplayMetrics;
-
-	private reinitMetrics(): void {
-		if (!this._metrics) {
-			this._metrics = new android.util.DisplayMetrics();
-		}
-		this.initMetrics();
-	}
-
-	private initMetrics(): void {
-		const nativeApp = <android.app.Application>appModule.getNativeApplication();
-		nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(this._metrics);
-	}
-
-	private get metrics(): android.util.DisplayMetrics {
-		if (!this._metrics) {
-			// NOTE: This will be memory leak but we MainScreen is singleton
-			appModule.on('cssChanged', this.reinitMetrics, this);
-			appModule.on(appModule.orientationChangedEvent, this.reinitMetrics, this);
-
-			this._metrics = new android.util.DisplayMetrics();
-			this.initMetrics();
-		}
-
-		return this._metrics;
-	}
-
-	get widthPixels(): number {
-		return this.metrics.widthPixels;
-	}
-	get heightPixels(): number {
-		return this.metrics.heightPixels;
-	}
-	get scale(): number {
-		return this.metrics.density;
-	}
-	get widthDIPs(): number {
-		return this.metrics.widthPixels / this.metrics.density;
-	}
-	get heightDIPs(): number {
-		return this.metrics.heightPixels / this.metrics.density;
-	}
-}
-
 export const Device = new DeviceRef();
-
-export module screen {
-	export const mainScreen = new MainScreen();
-}
 
 export const isAndroid = true;
 export const isIOS = false;

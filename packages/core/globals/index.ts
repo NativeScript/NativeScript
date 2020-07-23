@@ -1,4 +1,5 @@
 import * as tslib from 'tslib';
+import { isIOS, isAndroid } from '../platform';
 
 type ModuleLoader = (name?: string) => any;
 

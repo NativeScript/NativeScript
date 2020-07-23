@@ -8,7 +8,7 @@ import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { opacityProperty, backgroundColorProperty, rotateProperty, rotateXProperty, rotateYProperty, translateXProperty, translateYProperty, scaleXProperty, scaleYProperty, heightProperty, widthProperty, PercentLength } from '../styling/style-properties';
 import { layout } from '../../utils';
-import { Device, screen } from '../../platform';
+import { Device, Screen } from '../../platform';
 import lazy from '../../utils/lazy';
 
 export * from './animation-common';
@@ -499,10 +499,10 @@ export class Animation extends AnimationBase {
 					throw new Error(`cannot animate ${propertyAnimation.property} on root view`);
 				}
 				const parentExtent: number = isVertical ? parent.getMeasuredHeight() : parent.getMeasuredWidth();
-				toValue = PercentLength.toDevicePixels(toValue, parentExtent, parentExtent) / screen.mainScreen.scale;
+				toValue = PercentLength.toDevicePixels(toValue, parentExtent, parentExtent) / Screen.mainScreen.scale;
 				let nativeHeight: number = isVertical ? nativeView.getHeight() : nativeView.getWidth();
 				const targetStyle: string = setLocal ? extentProperty.name : extentProperty.keyframe;
-				originalValue1 = nativeHeight / screen.mainScreen.scale;
+				originalValue1 = nativeHeight / Screen.mainScreen.scale;
 				nativeArray[0] = originalValue1;
 				nativeArray[1] = toValue;
 				let extentAnimator = android.animation.ValueAnimator.ofFloat(nativeArray);

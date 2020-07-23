@@ -1,6 +1,6 @@
 import { ImageAsset as ImageAssetDefinition, ImageAssetOptions } from '.';
 import { Observable } from '../data/observable';
-import { screen as platformScreen } from '../platform';
+import { Screen } from '../platform';
 
 export class ImageAssetBase extends Observable implements ImageAssetDefinition {
 	private _options: ImageAssetOptions;
@@ -47,10 +47,8 @@ export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, req
 }
 
 export function getRequestedImageSize(src: { width: number; height: number }, options: ImageAssetOptions): { width: number; height: number } {
-	const screen = platformScreen.mainScreen;
-
-	let reqWidth = options.width || Math.min(src.width, screen.widthPixels);
-	let reqHeight = options.height || Math.min(src.height, screen.heightPixels);
+	let reqWidth = options.width || Math.min(src.width, Screen.mainScreen.widthPixels);
+	let reqHeight = options.height || Math.min(src.height, Screen.mainScreen.heightPixels);
 
 	if (options && options.keepAspectRatio) {
 		let safeAspectSize = getAspectSafeDimensions(src.width, src.height, reqWidth, reqHeight);
