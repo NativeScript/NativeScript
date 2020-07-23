@@ -16,8 +16,8 @@
     "rootDir": "./",
     "types": ["node"],
     "plugins": [
-      { "transform": "../webpack/transformers/ns-transform-native-classes.ts", "type": "raw" },
-  ]
+      { "transform": "../../../packages/webpack/transformers/ns-transform-native-classes.ts", "type": "raw" }
+    ]
   },
   "exclude": ["**/*.spec.ts", "dist", "__tests__"],
   "include": ["**/*.ts", "./references.d.ts"]
