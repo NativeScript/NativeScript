@@ -384,6 +384,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 	}
 }
 
+@NativeClass
 class UINavigationControllerImpl extends UINavigationController {
 	private _owner: WeakRef<Frame>;
 

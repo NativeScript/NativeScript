@@ -1,4 +1,5 @@
-import { parse } from 'css-tree';
+import { parse as parseType } from 'css-tree';
+const parse: typeof parseType = require('css-tree');
 
 function mapSelectors(selector: string): string[] {
 	if (!selector) {

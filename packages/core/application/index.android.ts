@@ -501,7 +501,6 @@ function ensureBroadCastReceiverClass() {
 
 declare namespace com {
 	namespace tns {
-		@NativeClass
 		class NativeScriptApplication extends android.app.Application {
 			static getInstance(): NativeScriptApplication;
 		}

@@ -90,7 +90,6 @@ declare namespace NodeJS {
 		__onLiveSyncCore: (context?: { type: string; path: string }) => void;
 		__onUncaughtError: (error: NativeScriptError) => void;
 		__onDiscardedError: (error: NativeScriptError) => void;
-		TNS_WEBPACK?: boolean;
 		__snapshot?: boolean;
 		__requireOverride?: (name: string, dir: string) => any;
 	}

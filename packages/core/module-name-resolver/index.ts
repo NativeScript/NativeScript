@@ -36,12 +36,6 @@ export class ModuleNameResolver {
 		let result: string = null;
 		ext = ext ? '.' + ext : '';
 
-		// Compatibility path for non-webpack workflow
-		// register modules from FS first
-		if (!global.TNS_WEBPACK) {
-			registerModulesFromFileSystem(path);
-		}
-
 		// This call will return a clean path without qualifiers
 		path = stripQualifiers(path);
 

@@ -64,6 +64,7 @@ function isBackNavigationFrom(controller: UIViewControllerImpl, page: Page): boo
 	return true;
 }
 
+@NativeClass
 class UIViewControllerImpl extends UIViewController {
 	private _owner: WeakRef<Page>;
 

@@ -26,7 +26,8 @@
     "css-tree": "^1.0.0-alpha.39",
     "@nativescript/hook": "~1.0.0",
     "reduce-css-calc": "^2.1.7",
-    "tns-core-modules": "rc"
+    "tns-core-modules": "rc",
+    "tslib": "2.0.0"
   },
   "nativescript": {
       "platforms": {

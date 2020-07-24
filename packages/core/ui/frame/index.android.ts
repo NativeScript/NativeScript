@@ -49,27 +49,44 @@ export let attachStateChangeListener: android.view.View.OnAttachStateChangeListe
 function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 	if (!attachStateChangeListener) {
 		@Interfaces([android.view.View.OnAttachStateChangeListener])
-		class AttachListener extends java.lang.Object implements android.view.View.OnAttachStateChangeListener {
-			constructor() {
-				super();
-
+		const AttachListener = java.lang.Object.extend('AttachListener', {
+			init() {
 				return global.__native(this);
-			}
-
+			},
 			onViewAttachedToWindow(view: android.view.View): void {
 				const owner: View = view[ownerSymbol];
 				if (owner) {
 					owner._onAttachedToWindow();
 				}
-			}
-
+			},
 			onViewDetachedFromWindow(view: android.view.View): void {
 				const owner: View = view[ownerSymbol];
 				if (owner) {
 					owner._onDetachedFromWindow();
 				}
-			}
-		}
+			},
+		});
+		// class AttachListener extends java.lang.Object implements android.view.View.OnAttachStateChangeListener {
+		// 	constructor() {
+		// 		super();
+
+		// 		return global.__native(this);
+		// 	}
+
+		// 	onViewAttachedToWindow(view: android.view.View): void {
+		// 		const owner: View = view[ownerSymbol];
+		// 		if (owner) {
+		// 			owner._onAttachedToWindow();
+		// 		}
+		// 	}
+
+		// 	onViewDetachedFromWindow(view: android.view.View): void {
+		// 		const owner: View = view[ownerSymbol];
+		// 		if (owner) {
+		// 			owner._onDetachedFromWindow();
+		// 		}
+		// 	}
+		// }
 
 		attachStateChangeListener = new AttachListener();
 	}

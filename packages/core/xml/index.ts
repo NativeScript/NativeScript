@@ -2,7 +2,8 @@
 // https://github.com/NativeScript/nativescript-dev-webpack/issues/932
 
 import * as definition from '.';
-import * as easysax from '../js-libs/easysax';
+const easysax = require('../js-libs/easysax');
+import { EasySAXParser } from '../js-libs/easysax';
 
 /**
  * Defines a position within string, in line and column form.
@@ -423,14 +424,14 @@ function _HandleAmpEntities(found: string, decimalValue: string, hexValue: strin
 
 export class XmlParser implements definition.XmlParser {
 	//TODO: Add option to configure whether the parser should report ignorable whitespace, i.e. document formatting whitespace.
-	private _parser: easysax.EasySAXParser;
+	private _parser: EasySAXParser;
 
 	private _processNamespaces: boolean;
 	private _namespaceStack: Array<any>;
 
 	constructor(onEvent: (event: definition.ParserEvent) => void, onError?: (error: Error, position: Position) => void, processNamespaces?: boolean) {
 		this._processNamespaces = processNamespaces;
-		this._parser = new easysax.EasySAXParser();
+		this._parser = new EasySAXParser();
 
 		const that = this;
 		this._parser.on('startNode', function (elem, attr, uq, tagend, str, pos) {
