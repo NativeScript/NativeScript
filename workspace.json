@@ -229,7 +229,7 @@
           "options": {
             "commands": [
               {
-                "command": "../../../node_modules/.bin/mocha-typescript-watch -p tsconfig.json --config=.mocharc.yml"
+                "command": "../../../node_modules/.bin/tsc -p tsconfig.json && ../../../node_modules/.bin/mocha --watch --config=.mocharc.yml"
               }
             ],
             "cwd": "packages/core/__tests__",
@@ -238,9 +238,9 @@
         }
       }
     },
-    "tns-core-modules-compat": {
-      "root": "packages/tns-core-modules-compat",
-      "sourceRoot": "packages/tns-core-modules-compat",
+    "core-compat": {
+      "root": "packages/core-compat",
+      "sourceRoot": "packages/core-compat",
       "projectType": "library",
       "schematics": {},
       "architect": {
@@ -262,7 +262,7 @@
                 "command": "mv \"$(npm pack | tail -n 1)\" ../../dist/packages/tns-core-modules.tgz"
               }
             ],
-            "cwd": "packages/tns-core-modules-compat",
+            "cwd": "packages/core-compat",
             "parallel": false
           }
         }
