@@ -11,6 +11,7 @@ const NsVueTemplateCompiler = require("nativescript-vue-template-compiler");
 
 const nsWebpack = require("@nativescript/webpack");
 const nativescriptTarget = require("@nativescript/webpack/nativescript-target");
+const nsTransformNativeClasses = require("@nativescript/webpack/transformers/ns-transform-native-classes").default;
 const { NativeScriptWorkerPlugin } = require("nativescript-worker-loader/NativeScriptWorkerPlugin");
 const hashSalt = Date.now().toString();
 
@@ -264,7 +265,10 @@ module.exports = env => {
                     allowTsInNodeModules: true,
                     compilerOptions: {
                         declaration: false
-                    }
+                    },
+                    getCustomTransformers: (program) => ({
+                      before: [nsTransformNativeClasses]
+                    })
                 },
             },
             {

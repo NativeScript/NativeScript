@@ -5,6 +5,7 @@ const webpack = require("webpack");
 const nsWebpack = require("@nativescript/webpack");
 const nativescriptTarget = require("@nativescript/webpack/nativescript-target");
 const { getNoEmitOnErrorFromTSConfig } = require("@nativescript/webpack/utils/tsconfig-utils");
+const nsTransformNativeClasses = require("@nativescript/webpack/transformers/ns-transform-native-classes").default;
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
@@ -246,7 +247,10 @@ module.exports = env => {
                             compilerOptions: {
                                 sourceMap: isAnySourceMapEnabled,
                                 declaration: false
-                            }
+                            },
+                            getCustomTransformers: (program) => ({
+                              before: [nsTransformNativeClasses]
+                            })
                         },
                     }
                 },

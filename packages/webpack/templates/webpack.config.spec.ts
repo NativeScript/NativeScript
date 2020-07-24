@@ -51,6 +51,7 @@ const webpackConfigAngular = proxyquire('./webpack.angular', {
 			return FakeHmrTransformerFlag;
 		},
 	},
+	'@nativescript/webpack/transformers/ns-transform-native-classes': emptyObject,
 	'@nativescript/webpack/utils/ast-utils': {
 		getMainModulePath: () => {
 			return 'fakePath';
@@ -78,6 +79,7 @@ const webpackConfigAngular = proxyquire('./webpack.angular', {
 const webpackConfigTypeScript = proxyquire('./webpack.typescript', {
 	'@nativescript/webpack': nativeScriptDevWebpack,
 	'@nativescript/webpack/nativescript-target': emptyObject,
+	'@nativescript/webpack/transformers/ns-transform-native-classes': emptyObject,
 	'@nativescript/webpack/utils/tsconfig-utils': {
 		getNoEmitOnErrorFromTSConfig: () => {
 			return false;
@@ -98,6 +100,7 @@ const webpackConfigJavaScript = proxyquire('./webpack.javascript', {
 const webpackConfigVue = proxyquire('./webpack.vue', {
 	'@nativescript/webpack': nativeScriptDevWebpack,
 	'@nativescript/webpack/nativescript-target': emptyObject,
+	'@nativescript/webpack/transformers/ns-transform-native-classes': emptyObject,
 	'vue-loader/lib/plugin': EmptyClass,
 	'nativescript-vue-template-compiler': emptyObject,
 	'terser-webpack-plugin': TerserJsStub,

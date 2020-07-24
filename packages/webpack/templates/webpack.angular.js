@@ -6,6 +6,7 @@ const nativescriptTarget = require('@nativescript/webpack/nativescript-target');
 const {
   nsSupportHmrNg
 } = require('@nativescript/webpack/transformers/ns-support-hmr-ng');
+const nsTransformNativeClasses = require("@nativescript/webpack/transformers/ns-transform-native-classes").default;
 const {
   getMainModulePath
 } = require('@nativescript/webpack/utils/ast-utils');
