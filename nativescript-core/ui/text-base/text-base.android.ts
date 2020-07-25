@@ -87,6 +87,75 @@ function initializeClickableSpan(): void {
     ClickableSpan = ClickableSpanImpl;
 }
 
+interface BaselineAdjustedSpan {
+    new (fontSize: number, align?: VerticalAlignment): android.text.style.MetricAffectingSpan;
+}
+
+let BaselineAdjustedSpan: BaselineAdjustedSpan;
+
+function initializeBaselineAdjustedSpan(): void {
+    if (BaselineAdjustedSpan) {
+        return;
+    }
+    class BaselineAdjustedSpanImpl extends android.text.style.MetricAffectingSpan {
+        fontSize: number;
+        align: VerticalAlignment = "baseline";
+
+        constructor(fontSize: number, align?: VerticalAlignment) {
+            super();
+
+            this.align = align;
+            this.fontSize = fontSize;
+        }
+
+        updateDrawState(paint: android.text.TextPaint) {
+            this.updateState(paint);
+        }
+
+        updateMeasureState(paint: android.text.TextPaint) {
+            this.updateState(paint);
+        }
+
+        updateState(paint: android.text.TextPaint) {
+            const metrics = paint.getFontMetrics();
+
+            if (!this.align || ["baseline", "stretch"].includes(this.align)) {
+                return;
+            }
+
+            if (this.align === "top") {
+                return paint.baselineShift = -this.fontSize - metrics.bottom - metrics.top;
+            }
+
+            if (this.align === "bottom") {
+                return paint.baselineShift = metrics.bottom;
+            }
+
+            if (this.align === "text-top") {
+                return paint.baselineShift = -this.fontSize - metrics.descent - metrics.ascent;
+            }
+
+            if (this.align === "text-bottom") {
+                return paint.baselineShift = metrics.bottom - metrics.descent;
+            }
+
+            if (this.align === "middle") {
+                return paint.baselineShift = (metrics.descent - metrics.ascent) / 2 - metrics.descent;
+            }
+
+            if (this.align === "super") {
+                return paint.baselineShift = -this.fontSize * .4;
+            }
+
+            if (this.align === "sub") {
+                return paint.baselineShift = (metrics.descent - metrics.ascent) * .4;
+            }
+        }
+    }
+
+    BaselineAdjustedSpan = BaselineAdjustedSpanImpl;
+}
+
 export class TextBase extends TextBaseCommon {
     nativeViewProtected: android.widget.TextView;
     nativeTextViewProtected: android.widget.TextView;
@@ -442,62 +511,6 @@ function createSpannableStringBuilder(formattedString: FormattedString, defaultF
     return ssb;
 }
 
-class BaselineAdjustedSpan extends android.text.style.MetricAffectingSpan {
-    fontSize: number;
-    align: VerticalAlignment = "baseline";
-
-    constructor(fontSize: number, align?: VerticalAlignment) {
-        super();
-
-        this.align = align;
-        this.fontSize = fontSize;
-    }
-
-    updateDrawState(paint: android.text.TextPaint) {
-        this.updateState(paint);
-    }
-
-    updateMeasureState(paint: android.text.TextPaint) {
-        this.updateState(paint);
-    }
-
-    updateState(paint: android.text.TextPaint) {
-        const metrics = paint.getFontMetrics();
-
-        if (!this.align || ["baseline", "stretch"].includes(this.align)) {
-            return;
-        }
-
-        if (this.align === "top") {
-            return paint.baselineShift = -this.fontSize - metrics.bottom - metrics.top;
-        }
-
-        if (this.align === "bottom") {
-            return paint.baselineShift = metrics.bottom;
-        }
-
-        if (this.align === "text-top") {
-            return paint.baselineShift = -this.fontSize - metrics.descent - metrics.ascent;
-        }
-
-        if (this.align === "text-bottom") {
-            return paint.baselineShift = metrics.bottom - metrics.descent;
-        }
-
-        if (this.align === "middle") {
-            return paint.baselineShift = (metrics.descent - metrics.ascent) / 2 - metrics.descent;
-        }
-
-        if (this.align === "super") {
-            return paint.baselineShift = -this.fontSize * .4;
-        }
-
-        if (this.align === "sub") {
-            return paint.baselineShift = (metrics.descent - metrics.ascent) * .4;
-        }
-    }
-}
-
 function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, start: number, end: number, defaultFontSize: number): void {
     const spanStyle = span.style;
     const bold = isBold(spanStyle.fontWeight);
@@ -553,7 +566,8 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
     }
 
     if (align) {
-      ssb.setSpan(new BaselineAdjustedSpan(defaultFontSize * layout.getDisplayDensity(), align), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        initializeBaselineAdjustedSpan();
+        ssb.setSpan(new BaselineAdjustedSpan(defaultFontSize * layout.getDisplayDensity(), align), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     const tappable = span.tappable;

@@ -1,8 +1,8 @@
 {
   "name": "NativeScript",
-  "description": "Telerik NativeScript Core Modules",
+  "description": "NativeScript Core Modules",
   "homepage": "https://www.nativescript.org",
-  "version": "6.5.8",
+  "version": "6.5.12",
   "repository": {
     "type": "git",
     "url": "https://github.com/NativeScript/NativeScript"

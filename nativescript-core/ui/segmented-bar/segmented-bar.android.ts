@@ -1,6 +1,6 @@
 import { Font } from "../styling/font";
 import {
-    SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
+    SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, isEnabledProperty, selectedBackgroundColorProperty,
     colorProperty, fontInternalProperty, fontSizeProperty, Color, layout
 } from "./segmented-bar-common";
 
@@ -30,6 +30,7 @@ let TabHost: TabHost;
 let TabChangeListener: TabChangeListener;
 let TabContentFactory: TabContentFactory;
 
+// TODO: All TabHost public methods become deprecated in API 30.
 function initializeNativeClasses(): void {
     if (TabChangeListener) {
         return;
@@ -238,6 +239,17 @@ export class SegmentedBar extends SegmentedBarBase {
         super.disposeNativeView();
     }
 
+    public onLoaded() {
+        super.onLoaded();
+        
+        // Can only be applied after view is loaded
+        const tabWidget = this.nativeViewProtected.getTabWidget();
+        if (tabWidget)
+        {
+            tabWidget.setEnabled(tabWidget.isEnabled());
+        }
+    }
+
     private insertTab(tabItem: SegmentedBarItem, index: number): void {
         const tabHost = this.nativeViewProtected;
         const tab = tabHost.newTabSpec(index + "");
@@ -269,5 +281,12 @@ export class SegmentedBar extends SegmentedBarBase {
         }
 
         selectedIndexProperty.coerce(this);
+    }
+    [isEnabledProperty.setNative](value: boolean) {
+        const tabWidget = this.nativeViewProtected.getTabWidget();
+        if (tabWidget)
+        {
+            tabWidget.setEnabled(value);
+        }
     }
 }

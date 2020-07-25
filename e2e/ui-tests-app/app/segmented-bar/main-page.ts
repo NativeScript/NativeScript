@@ -11,13 +11,9 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("scrolling-and-sizing", "scroll-view/scrolling-and-sizing-page");
-    examples.set("safe-area-root-element", "scroll-view/safe-area-root-element-page");
-    examples.set("safe-area-sub-element", "scroll-view/safe-area-sub-element-page");
-    examples.set("safe-area-images", "scroll-view/safe-area-images-page");
-    examples.set("safe-area-images-overflow", "scroll-view/safe-area-images-overflow-page");
-    examples.set("layout-outside-scroll", "scroll-view/layout-outside-scroll-page");
-    examples.set("scroll-enabled", "scroll-view/scroll-enabled-page");
+    examples.set("segStyle", "segmented-bar/all-page");
+    examples.set("clean", "segmented-bar/clean-page");
+    examples.set("android-enabled", "segmented-bar/android-enabled-page");
 
     return examples;
 }
