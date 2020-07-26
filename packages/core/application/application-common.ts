@@ -1,8 +1,7 @@
 // Require globals first so that snapshot takes __extends function.
-// apply polyfills first
-import { initGlobal } from '../globals';
+const nsGlobals = require('../globals');
 if (!(<any>global).hasInitGlobal) {
-	initGlobal();
+	nsGlobals.initGlobal();
 }
 
 // Types
@@ -13,32 +12,14 @@ import { View } from '../ui/core/view';
 
 // Requires
 import { Observable } from '../data/observable';
-import { trace as profilingTrace, time, uptime, level as profilingLevel } from '../profiling';
 import * as bindableResources from '../ui/core/bindable/bindable-resources';
 import { CSSUtils } from '../css/system-classes';
 import { Enums } from '../ui/enums';
 
 export * from './application-interfaces';
 
-const events = new Observable();
-let launched = false;
-function setLaunched() {
-	launched = true;
-	events.off('launch', setLaunched);
-}
-events.on('launch', setLaunched);
-
-if (profilingLevel() > 0) {
-	events.on('displayed', () => {
-		const duration = uptime();
-		const end = time();
-		const start = end - duration;
-		profilingTrace(`Displayed in ${duration.toFixed(2)}ms`, start, end);
-	});
-}
-
 export function hasLaunched(): boolean {
-	return launched;
+	return (<any>global).NativeScriptGlobals && (<any>global).NativeScriptGlobals.launched;
 }
 
 export const launchEvent = 'launch';
@@ -69,10 +50,10 @@ export function setResources(res: any) {
 export let android: AndroidApplication = undefined;
 export let ios: iOSApplication = undefined;
 
-export const on: typeof events.on = events.on.bind(events);
-export const off: typeof events.off = events.off.bind(events);
-export const notify: typeof events.notify = events.notify.bind(events);
-export const hasListeners: typeof events.hasListeners = events.hasListeners.bind(events);
+export const on = (<any>global).NativeScriptGlobals.events.on.bind((<any>global).NativeScriptGlobals.events);
+export const off = (<any>global).NativeScriptGlobals.events.off.bind((<any>global).NativeScriptGlobals.events);
+export const notify = (<any>global).NativeScriptGlobals.events.notify.bind((<any>global).NativeScriptGlobals.events);
+export const hasListeners = (<any>global).NativeScriptGlobals.events.hasListeners.bind((<any>global).NativeScriptGlobals.events);
 
 let app: iOSApplication | AndroidApplication;
 export function setApplication(instance: iOSApplication | AndroidApplication): void {
@@ -80,7 +61,7 @@ export function setApplication(instance: iOSApplication | AndroidApplication): v
 }
 
 export function livesync(rootView: View, context?: ModuleContext) {
-	events.notify(<EventData>{ eventName: 'livesync', object: app });
+	(<any>global).NativeScriptGlobals.events.notify(<EventData>{ eventName: 'livesync', object: app });
 	const liveSyncCore = global.__onLiveSyncCore;
 	let reapplyAppStyles = false;
 
@@ -102,7 +83,7 @@ export function livesync(rootView: View, context?: ModuleContext) {
 
 export function setCssFileName(cssFileName: string) {
 	cssFile = cssFileName;
-	events.notify(<CssChangedEventData>{
+	(<any>global).NativeScriptGlobals.events.notify(<CssChangedEventData>{
 		eventName: 'cssChanged',
 		object: app,
 		cssFile: cssFileName,
@@ -115,7 +96,7 @@ export function getCssFileName(): string {
 
 export function loadAppCss(): void {
 	try {
-		events.notify(<LoadAppCSSEventData>{
+		(<any>global).NativeScriptGlobals.events.notify(<LoadAppCSSEventData>{
 			eventName: 'loadAppCss',
 			object: app,
 			cssFile: getCssFileName(),
@@ -181,7 +162,7 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'da
 }
 
 global.__onUncaughtError = function (error: NativeScriptError) {
-	events.notify(<UnhandledErrorEventData>{
+	(<any>global).NativeScriptGlobals.events.notify(<UnhandledErrorEventData>{
 		eventName: uncaughtErrorEvent,
 		object: app,
 		android: error,
@@ -191,7 +172,7 @@ global.__onUncaughtError = function (error: NativeScriptError) {
 };
 
 global.__onDiscardedError = function (error: NativeScriptError) {
-	events.notify(<DiscardedErrorEventData>{
+	(<any>global).NativeScriptGlobals.events.notify(<DiscardedErrorEventData>{
 		eventName: discardedErrorEvent,
 		object: app,
 		error: error,

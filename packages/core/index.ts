@@ -1,8 +1,8 @@
 /// <reference path="./global-types.d.ts" />
 
-// Init globals first
-import { initGlobal } from './globals';
-initGlobal();
+// Init globals first (use require to ensure it's always at the top)
+const nsGlobals = require('./globals');
+nsGlobals.initGlobal();
 
 // Export all interfaces from "application" module
 export { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, iOSApplication, AndroidApplication, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData } from './application';

@@ -5,8 +5,8 @@ import { View } from '../ui/core/view';
 import { NavigationEntry, AndroidActivityCallbacks } from '../ui/frame/frame-interfaces';
 import { Observable } from '../data/observable';
 
-// Requires
-import { displayedEvent, hasListeners, livesync, lowMemoryEvent, notify, orientationChanged, orientationChangedEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } from './application-common';
+// Use requires to ensure order of imports is maintained
+const appCommon = require('./application-common');
 // First reexport so that app module is initialized.
 export * from './application-common';
 
@@ -60,9 +60,12 @@ export class AndroidApplication extends Observable implements AndroidApplication
 		this.nativeApp = nativeApp;
 		this.packageName = nativeApp.getPackageName();
 		this.context = nativeApp.getApplicationContext();
-
+		console.log('this.nativeApp:', this.nativeApp);
+		console.log('this.packageName:', this.packageName);
+		console.log('this.context:', this.context);
 		// we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
 		this.callbacks.lifecycleCallbacks = initLifecycleCallbacks();
+		console.log('this.callbacks.lifecycleCallbacks:', this.callbacks.lifecycleCallbacks);
 		this.callbacks.componentCallbacks = initComponentCallbacks();
 		this.nativeApp.registerActivityLifecycleCallbacks(this.callbacks.lifecycleCallbacks);
 		this.nativeApp.registerComponentCallbacks(this.callbacks.componentCallbacks);
@@ -154,8 +157,7 @@ export interface AndroidApplication {
 
 const androidApp = new AndroidApplication();
 export { androidApp as android };
-
-setApplication(androidApp);
+appCommon.setApplication(androidApp);
 
 let mainEntry: NavigationEntry;
 let started = false;
@@ -167,6 +169,8 @@ export function run(entry?: NavigationEntry | string) {
 
 	started = true;
 	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
+	console.log('run mainEntry:', mainEntry);
+	console.log('androidApp.nativeApp:', androidApp.nativeApp);
 	if (!androidApp.nativeApp) {
 		const nativeApp = getNativeApplication();
 		androidApp.init(nativeApp);
@@ -174,7 +178,7 @@ export function run(entry?: NavigationEntry | string) {
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {
-	notify(<CssChangedEventData>{
+	appCommon.notify(<CssChangedEventData>{
 		eventName: 'cssChanged',
 		object: androidApp,
 		cssText: cssText,
@@ -263,7 +267,7 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
 	}
 
 	const rootView = getRootView();
-	livesync(rootView, context);
+	appCommon.livesync(rootView, context);
 };
 
 function getOrientationValue(configuration: android.content.res.Configuration): 'portrait' | 'landscape' | 'unknown' {
@@ -318,8 +322,8 @@ function initLifecycleCallbacks() {
 		// store the listener not to trigger GC collection before collecting the method
 		global.onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
 			onGlobalLayout() {
-				notify({
-					eventName: displayedEvent,
+				appCommon.notify({
+					eventName: appCommon.displayedEvent,
 					object: androidApp,
 					activity,
 				});
@@ -340,7 +344,7 @@ function initLifecycleCallbacks() {
 
 			notifyActivityCreated(activity, <any>savedInstanceState, undefined);
 
-			if (hasListeners(displayedEvent)) {
+			if (appCommon.hasListeners(appCommon.displayedEvent)) {
 				subscribeForGlobalLayout(activity, undefined, undefined);
 			}
 		}),
@@ -366,8 +370,8 @@ function initLifecycleCallbacks() {
 		onActivityPaused: <any>profile('onActivityPaused', function (activity: androidx.appcompat.app.AppCompatActivity) {
 			if ((<any>activity).isNativeScriptActivity) {
 				androidApp.paused = true;
-				notify(<ApplicationEventData>{
-					eventName: suspendEvent,
+				appCommon.notify(<ApplicationEventData>{
+					eventName: appCommon.suspendEvent,
 					object: androidApp,
 					android: activity,
 				});
@@ -424,8 +428,8 @@ function initComponentCallbacks() {
 		onLowMemory: <any>profile('onLowMemory', function () {
 			gc();
 			java.lang.System.gc();
-			notify(<ApplicationEventData>{
-				eventName: lowMemoryEvent,
+			appCommon.notify(<ApplicationEventData>{
+				eventName: appCommon.lowMemoryEvent,
 				object: this,
 				android: this,
 			});
@@ -441,10 +445,10 @@ function initComponentCallbacks() {
 
 			if (androidApp.orientation !== newOrientation) {
 				androidApp.orientation = newOrientation;
-				orientationChanged(rootView, newOrientation);
+				appCommon.orientationChanged(rootView, newOrientation);
 
-				notify(<OrientationChangedEventData>{
-					eventName: orientationChangedEvent,
+				appCommon.notify(<OrientationChangedEventData>{
+					eventName: appCommon.orientationChangedEvent,
 					android: androidApp.nativeApp,
 					newValue: androidApp.orientation,
 					object: androidApp,
@@ -457,10 +461,10 @@ function initComponentCallbacks() {
 
 			if (androidApp.systemAppearance !== newSystemAppearance) {
 				androidApp.systemAppearance = newSystemAppearance;
-				systemAppearanceChanged(rootView, newSystemAppearance);
+				appCommon.systemAppearanceChanged(rootView, newSystemAppearance);
 
-				notify(<SystemAppearanceChangedEventData>{
-					eventName: systemAppearanceChangedEvent,
+				appCommon.notify(<SystemAppearanceChangedEventData>{
+					eventName: appCommon.systemAppearanceChangedEvent,
 					android: androidApp.nativeApp,
 					newValue: androidApp.systemAppearance,
 					object: androidApp,
@@ -478,23 +482,37 @@ function ensureBroadCastReceiverClass() {
 		return;
 	}
 
-	@NativeClass
-	class BroadcastReceiver extends android.content.BroadcastReceiver {
-		private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
+	// @NativeClass
+	// class BroadcastReceiver extends android.content.BroadcastReceiver {
+	// 	private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
 
-		constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
-			super();
-			this._onReceiveCallback = onReceiveCallback;
+	// 	constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+	// 		super();
+	// 		this._onReceiveCallback = onReceiveCallback;
 
-			return global.__native(this);
+	// 		return global.__native(this);
+	// 	}
+
+	// 	public onReceive(context: android.content.Context, intent: android.content.Intent) {
+	// 		if (this._onReceiveCallback) {
+	// 			this._onReceiveCallback(context, intent);
+	// 		}
+	// 	}
+	// }
+	var BroadcastReceiver = (function (_super) {
+		__extends(BroadcastReceiver, _super);
+		function BroadcastReceiver(onReceiveCallback) {
+			var _this = _super.call(this) || this;
+			_this._onReceiveCallback = onReceiveCallback;
+			return global.__native(_this);
 		}
-
-		public onReceive(context: android.content.Context, intent: android.content.Intent) {
+		BroadcastReceiver.prototype.onReceive = function (context, intent) {
 			if (this._onReceiveCallback) {
 				this._onReceiveCallback(context, intent);
 			}
-		}
-	}
+		};
+		return BroadcastReceiver;
+	})(android.content.BroadcastReceiver);
 
 	BroadcastReceiverClass = BroadcastReceiver;
 }

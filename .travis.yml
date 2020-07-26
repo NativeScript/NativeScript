@@ -2,9 +2,10 @@ language: node_js
 node_js:
   - "node"
 script:
-- npm run setup
-- nx run core:unit
-- nx run core:build.npm
+- npm i
+- npm start setup
+- npm start packages.core.test
+- npm start packages.core.build
 
 # public API changes check
 # - npm run api-extractor-ci

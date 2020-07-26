@@ -2,8 +2,8 @@
 import { iOSApplication as iOSApplicationDefinition } from '.';
 import { ApplicationEventData, CssChangedEventData, LaunchEventData, LoadAppCSSEventData, OrientationChangedEventData, SystemAppearanceChangedEventData } from './application-interfaces';
 
-// Require
-import { displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } from './application-common';
+// Use requires to ensure order of imports is maintained
+const { displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common');
 // First reexport so that app module is initialized.
 export * from './application-common';
 

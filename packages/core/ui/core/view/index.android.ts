@@ -122,68 +122,212 @@ function initializeTouchListener(): void {
 	TouchListener = TouchListenerImpl;
 }
 
+// function initializeDialogFragment() {
+// 	if (DialogFragment) {
+// 		return;
+// 	}
+
+// 	@NativeClass
+// 	class DialogImpl extends android.app.Dialog {
+// 		constructor(public fragment: DialogFragmentImpl, context: android.content.Context, themeResId: number) {
+// 			super(context, themeResId);
+
+// 			return global.__native(this);
+// 		}
+
+// 		public onDetachedFromWindow(): void {
+// 			super.onDetachedFromWindow();
+// 			this.fragment = null;
+// 		}
+
+// 		public onBackPressed(): void {
+// 			const view = this.fragment.owner;
+// 			const args = <AndroidActivityBackPressedEventData>{
+// 				eventName: 'activityBackPressed',
+// 				object: view,
+// 				activity: view._context,
+// 				cancel: false,
+// 			};
+
+// 			// Fist fire application.android global event
+// 			androidApp.notify(args);
+// 			if (args.cancel) {
+// 				return;
+// 			}
+
+// 			view.notify(args);
+
+// 			if (!args.cancel && !view.onBackPressed()) {
+// 				super.onBackPressed();
+// 			}
+// 		}
+// 	}
+
+// 	class DialogFragmentImpl extends androidx.fragment.app.DialogFragment {
+// 		public owner: View;
+// 		private _fullscreen: boolean;
+// 		private _animated: boolean;
+// 		private _stretched: boolean;
+// 		private _cancelable: boolean;
+// 		private _shownCallback: () => void;
+// 		private _dismissCallback: () => void;
+
+// 		constructor() {
+// 			super();
+
+// 			return global.__native(this);
+// 		}
+
+// 		public onCreateDialog(savedInstanceState: android.os.Bundle): android.app.Dialog {
+// 			const ownerId = this.getArguments().getInt(DOMID);
+// 			const options = getModalOptions(ownerId);
+// 			this.owner = options.owner;
+// 			// Set owner._dialogFragment to this in case the DialogFragment was recreated after app suspend
+// 			this.owner._dialogFragment = this;
+// 			this._fullscreen = options.fullscreen;
+// 			this._animated = options.animated;
+// 			this._cancelable = options.cancelable;
+// 			this._stretched = options.stretched;
+// 			this._dismissCallback = options.dismissCallback;
+// 			this._shownCallback = options.shownCallback;
+// 			this.setStyle(androidx.fragment.app.DialogFragment.STYLE_NO_TITLE, 0);
+
+// 			let theme = this.getTheme();
+// 			if (this._fullscreen) {
+// 				// In fullscreen mode, get the application's theme.
+// 				theme = this.getActivity().getApplicationInfo().theme;
+// 			}
+
+// 			const dialog = new DialogImpl(this, this.getActivity(), theme);
+
+// 			// do not override alignment unless fullscreen modal will be shown;
+// 			// otherwise we might break component-level layout:
+// 			// https://github.com/NativeScript/NativeScript/issues/5392
+// 			if (!this._fullscreen && !this._stretched) {
+// 				this.owner.horizontalAlignment = 'center';
+// 				this.owner.verticalAlignment = 'middle';
+// 			} else {
+// 				this.owner.horizontalAlignment = 'stretch';
+// 				this.owner.verticalAlignment = 'stretch';
+// 			}
+
+// 			// set the modal window animation
+// 			// https://github.com/NativeScript/NativeScript/issues/5989
+// 			if (this._animated) {
+// 				dialog.getWindow().setWindowAnimations(styleAnimationDialog);
+// 			}
+
+// 			dialog.setCanceledOnTouchOutside(this._cancelable);
+
+// 			return dialog;
+// 		}
+
+// 		public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
+// 			const owner = this.owner;
+// 			owner._setupAsRootView(this.getActivity());
+// 			owner._isAddedToNativeVisualTree = true;
+
+// 			return owner.nativeViewProtected;
+// 		}
+
+// 		public onStart(): void {
+// 			super.onStart();
+// 			if (this._fullscreen) {
+// 				const window = this.getDialog().getWindow();
+// 				const length = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+// 				window.setLayout(length, length);
+// 				// This removes the default backgroundDrawable so there are no margins.
+// 				window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));
+// 			}
+
+// 			const owner = this.owner;
+// 			if (owner && !owner.isLoaded) {
+// 				owner.callLoaded();
+// 			}
+
+// 			this._shownCallback();
+// 		}
+
+// 		public onDismiss(dialog: android.content.DialogInterface): void {
+// 			super.onDismiss(dialog);
+// 			const manager = this.getFragmentManager();
+// 			if (manager) {
+// 				removeModal(this.owner._domId);
+// 				this._dismissCallback();
+// 			}
+
+// 			const owner = this.owner;
+// 			if (owner && owner.isLoaded) {
+// 				owner.callUnloaded();
+// 			}
+// 		}
+
+// 		public onDestroy(): void {
+// 			super.onDestroy();
+// 			const owner = this.owner;
+
+// 			if (owner) {
+// 				// Android calls onDestroy before onDismiss.
+// 				// Make sure we unload first and then call _tearDownUI.
+// 				if (owner.isLoaded) {
+// 					owner.callUnloaded();
+// 				}
+
+// 				owner._isAddedToNativeVisualTree = false;
+// 				owner._tearDownUI(true);
+// 			}
+// 		}
+// 	}
+
+// 	DialogFragment = DialogFragmentImpl;
+// }
 function initializeDialogFragment() {
 	if (DialogFragment) {
 		return;
 	}
-
-	@NativeClass
-	class DialogImpl extends android.app.Dialog {
-		constructor(public fragment: DialogFragmentImpl, context: android.content.Context, themeResId: number) {
-			super(context, themeResId);
-
-			return global.__native(this);
+	var DialogImpl = (function (_super) {
+		__extends(DialogImpl, _super);
+		function DialogImpl(fragment, context, themeResId) {
+			var _this = _super.call(this, context, themeResId) || this;
+			_this.fragment = fragment;
+			return global.__native(_this);
 		}
-
-		public onDetachedFromWindow(): void {
-			super.onDetachedFromWindow();
+		DialogImpl.prototype.onDetachedFromWindow = function () {
+			_super.prototype.onDetachedFromWindow.call(this);
 			this.fragment = null;
-		}
-
-		public onBackPressed(): void {
-			const view = this.fragment.owner;
-			const args = <AndroidActivityBackPressedEventData>{
+		};
+		DialogImpl.prototype.onBackPressed = function () {
+			var view = this.fragment.owner;
+			if (!view) {
+				return;
+			}
+			var args = {
 				eventName: 'activityBackPressed',
 				object: view,
 				activity: view._context,
 				cancel: false,
 			};
-
-			// Fist fire application.android global event
-			androidApp.notify(args);
+			application_1.android.notify(args);
 			if (args.cancel) {
 				return;
 			}
-
 			view.notify(args);
-
 			if (!args.cancel && !view.onBackPressed()) {
-				super.onBackPressed();
+				_super.prototype.onBackPressed.call(this);
 			}
+		};
+		return DialogImpl;
+	})(android.app.Dialog);
+	var DialogFragmentImpl = (function (_super) {
+		__extends(DialogFragmentImpl, _super);
+		function DialogFragmentImpl() {
+			var _this = _super.call(this) || this;
+			return global.__native(_this);
 		}
-	}
-
-	class DialogFragmentImpl extends androidx.fragment.app.DialogFragment {
-		public owner: View;
-		private _fullscreen: boolean;
-		private _animated: boolean;
-		private _stretched: boolean;
-		private _cancelable: boolean;
-		private _shownCallback: () => void;
-		private _dismissCallback: () => void;
-
-		constructor() {
-			super();
-
-			return global.__native(this);
-		}
-
-		public onCreateDialog(savedInstanceState: android.os.Bundle): android.app.Dialog {
-			const ownerId = this.getArguments().getInt(DOMID);
-			const options = getModalOptions(ownerId);
+		DialogFragmentImpl.prototype.onCreateDialog = function (savedInstanceState) {
+			var ownerId = this.getArguments().getInt(DOMID);
+			var options = getModalOptions(ownerId);
 			this.owner = options.owner;
-			// Set owner._dialogFragment to this in case the DialogFragment was recreated after app suspend
-			this.owner._dialogFragment = this;
 			this._fullscreen = options.fullscreen;
 			this._animated = options.animated;
 			this._cancelable = options.cancelable;
@@ -191,18 +335,11 @@ function initializeDialogFragment() {
 			this._dismissCallback = options.dismissCallback;
 			this._shownCallback = options.shownCallback;
 			this.setStyle(androidx.fragment.app.DialogFragment.STYLE_NO_TITLE, 0);
-
-			let theme = this.getTheme();
+			var theme = this.getTheme();
 			if (this._fullscreen) {
-				// In fullscreen mode, get the application's theme.
 				theme = this.getActivity().getApplicationInfo().theme;
 			}
-
-			const dialog = new DialogImpl(this, this.getActivity(), theme);
-
-			// do not override alignment unless fullscreen modal will be shown;
-			// otherwise we might break component-level layout:
-			// https://github.com/NativeScript/NativeScript/issues/5392
+			var dialog = new DialogImpl(this, this.getActivity(), theme);
 			if (!this._fullscreen && !this._stretched) {
 				this.owner.horizontalAlignment = 'center';
 				this.owner.verticalAlignment = 'middle';
@@ -210,75 +347,57 @@ function initializeDialogFragment() {
 				this.owner.horizontalAlignment = 'stretch';
 				this.owner.verticalAlignment = 'stretch';
 			}
-
-			// set the modal window animation
-			// https://github.com/NativeScript/NativeScript/issues/5989
 			if (this._animated) {
 				dialog.getWindow().setWindowAnimations(styleAnimationDialog);
 			}
-
 			dialog.setCanceledOnTouchOutside(this._cancelable);
-
 			return dialog;
-		}
-
-		public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
-			const owner = this.owner;
+		};
+		DialogFragmentImpl.prototype.onCreateView = function (inflater, container, savedInstanceState) {
+			var owner = this.owner;
 			owner._setupAsRootView(this.getActivity());
 			owner._isAddedToNativeVisualTree = true;
-
 			return owner.nativeViewProtected;
-		}
-
-		public onStart(): void {
-			super.onStart();
+		};
+		DialogFragmentImpl.prototype.onStart = function () {
+			_super.prototype.onStart.call(this);
 			if (this._fullscreen) {
-				const window = this.getDialog().getWindow();
-				const length = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-				window.setLayout(length, length);
-				// This removes the default backgroundDrawable so there are no margins.
-				window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));
+				var window_1 = this.getDialog().getWindow();
+				var length_1 = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+				window_1.setLayout(length_1, length_1);
+				window_1.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));
 			}
-
-			const owner = this.owner;
+			var owner = this.owner;
 			if (owner && !owner.isLoaded) {
 				owner.callLoaded();
 			}
-
 			this._shownCallback();
-		}
-
-		public onDismiss(dialog: android.content.DialogInterface): void {
-			super.onDismiss(dialog);
-			const manager = this.getFragmentManager();
+		};
+		DialogFragmentImpl.prototype.onDismiss = function (dialog) {
+			_super.prototype.onDismiss.call(this, dialog);
+			var manager = this.getFragmentManager();
 			if (manager) {
 				removeModal(this.owner._domId);
 				this._dismissCallback();
 			}
-
-			const owner = this.owner;
+			var owner = this.owner;
 			if (owner && owner.isLoaded) {
 				owner.callUnloaded();
 			}
-		}
-
-		public onDestroy(): void {
-			super.onDestroy();
-			const owner = this.owner;
-
+		};
+		DialogFragmentImpl.prototype.onDestroy = function () {
+			_super.prototype.onDestroy.call(this);
+			var owner = this.owner;
 			if (owner) {
-				// Android calls onDestroy before onDismiss.
-				// Make sure we unload first and then call _tearDownUI.
 				if (owner.isLoaded) {
 					owner.callUnloaded();
 				}
-
 				owner._isAddedToNativeVisualTree = false;
 				owner._tearDownUI(true);
 			}
-		}
-	}
-
+		};
+		return DialogFragmentImpl;
+	})(androidx.fragment.app.DialogFragment);
 	DialogFragment = DialogFragmentImpl;
 }
 

@@ -1,6 +1,8 @@
 import * as tslibType from 'tslib';
 const tslib: typeof tslibType = require('tslib');
 import { isIOS, isAndroid } from '../platform';
+import { Observable } from '../data/observable';
+import { trace as profilingTrace, time, uptime, level as profilingLevel } from '../profiling';
 
 type ModuleLoader = (name?: string) => any;
 
@@ -33,6 +35,36 @@ function registerOnGlobalContext(moduleName: string, exportName: string): void {
 	});
 }
 
+/**
+ * Manages internal framework global state
+ */
+export class NativeScriptGlobalState {
+	events: Observable<any>;
+	launched = false;
+	private _setLaunched: () => void;
+	constructor() {
+		// console.log('creating NativeScriptGlobals...')
+		this.events = new Observable();
+		this._setLaunched = this._setLaunchedFn.bind(this);
+		this.events.on('launch', this._setLaunched);
+		if (profilingLevel() > 0) {
+			this.events.on('displayed', () => {
+				const duration = uptime();
+				const end = time();
+				const start = end - duration;
+				profilingTrace(`Displayed in ${duration.toFixed(2)}ms`, start, end);
+			});
+		}
+	}
+
+	private _setLaunchedFn() {
+		// console.log('NativeScriptGlobals launch fired!');
+		this.launched = true;
+		this.events.off('launch', this._setLaunched);
+		this._setLaunched = null;
+	}
+}
+
 export function installPolyfills(moduleName: string, exportNames: string[]) {
 	if (global.__snapshot) {
 		const loadedModule = global.loadModule(moduleName);
@@ -45,6 +77,9 @@ export function installPolyfills(moduleName: string, exportNames: string[]) {
 export function initGlobal() {
 	if (!(<any>global).hasInitGlobal) {
 		(<any>global).hasInitGlobal = true;
+		// init global state handler
+		(<any>global).NativeScriptGlobals = new NativeScriptGlobalState();
+
 		// ts-helpers
 		// Required by V8 snapshot generator
 		if (!(<any>global).__extends) {
