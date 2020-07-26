@@ -20,7 +20,7 @@ export * from './editable-text-base';
 export { Enums } from './enums';
 export { Frame, NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks, setActivityCallbacks } from './frame';
 
-export { GestureEventData, GestureEventDataWithState, GestureStateTypes, GestureTypes, GesturesObserver, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeDirection, SwipeGestureEventData, TouchGestureEventData } from './gestures';
+export { GestureEventData, GestureEventDataWithState, GestureStateTypes, GestureTypes, GesturesObserver, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeDirection, SwipeGestureEventData, TouchGestureEventData, TouchAction } from './gestures';
 
 export { HtmlView } from './html-view';
 export { Image } from './image';

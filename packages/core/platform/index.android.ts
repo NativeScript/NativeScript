@@ -1,5 +1,5 @@
 /* tslint:disable:class-name */
-import { getNativeApplication, on, off, orientationChangedEvent } from '../application';
+import { getNativeApplication, on, off, orientationChangedEvent, android as AndroidApplication } from '../application';
 
 const MIN_TABLET_PIXELS = 600;
 
@@ -119,7 +119,7 @@ class DeviceRef {
 
 	get uuid(): string {
 		if (!this._uuid) {
-			const nativeApp = <android.app.Application>appModule.android.nativeApp;
+			const nativeApp = <android.app.Application>AndroidApplication.nativeApp;
 			this._uuid = android.provider.Settings.Secure.getString(nativeApp.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 		}
 

@@ -112,7 +112,7 @@ class UILayoutViewController extends UIViewController {
 			const owner = this.owner.get();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
-					eventName: traitCollectionColorAppearanceChangedEvent,
+					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
 					object: owner,
 				});
 			}
@@ -167,7 +167,7 @@ class UIPopoverPresentationControllerDelegateImp extends NSObject implements UIP
 }
 
 export class IOSHelper {
-	traitCollectionColorAppearanceChangedEvent = 'traitCollectionColorAppearanceChanged';
+	static traitCollectionColorAppearanceChangedEvent = 'traitCollectionColorAppearanceChanged';
 	static UILayoutViewController = UILayoutViewController;
 	static UIAdaptivePresentationControllerDelegateImp = UIAdaptivePresentationControllerDelegateImp;
 	static UIPopoverPresentationControllerDelegateImp = UIPopoverPresentationControllerDelegateImp;
@@ -194,7 +194,7 @@ export class IOSHelper {
 
 	static updateConstraints(controller: UIViewController, owner: View): void {
 		if (majorVersion <= 10) {
-			const layoutGuide = initLayoutGuide(controller);
+			const layoutGuide = IOSHelper.initLayoutGuide(controller);
 			(<any>controller.view).safeAreaLayoutGuide = layoutGuide;
 		}
 	}
@@ -213,7 +213,7 @@ export class IOSHelper {
 		if (!layoutGuide) {
 			Trace.write(`safeAreaLayoutGuide during layout of ${owner}. Creating fallback constraints, but layout might be wrong.`, Trace.categories.Layout, Trace.messageType.error);
 
-			layoutGuide = initLayoutGuide(controller);
+			layoutGuide = IOSHelper.initLayoutGuide(controller);
 		}
 		const safeArea = layoutGuide.layoutFrame;
 		let position = IOSHelper.getPositionFromFrame(safeArea);

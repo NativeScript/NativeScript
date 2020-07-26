@@ -14,7 +14,7 @@ import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLeng
 
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString } from '../../gestures';
 
-import { getSystemCssClasses, MODAL_ROOT_VIEW_CSS_CLASS } from '../../../css/system-classes';
+import { CSSUtils } from '../../../css/system-classes';
 import { Builder } from '../../builder';
 import { sanitizeModuleName } from '../../builder/module-name-sanitizer';
 import { StyleScope } from '../../styling/style-scope';
@@ -355,8 +355,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	protected _showNativeModalView(parent: ViewCommon, options: ShowModalOptions) {
 		_rootModalViews.push(this);
 
-		this.cssClasses.add(MODAL_ROOT_VIEW_CSS_CLASS);
-		const modalRootViewCssClasses = getSystemCssClasses();
+		this.cssClasses.add(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
+		const modalRootViewCssClasses = CSSUtils.getSystemCssClasses();
 		modalRootViewCssClasses.forEach((c) => this.cssClasses.add(c));
 
 		parent._modal = this;

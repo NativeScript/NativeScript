@@ -66,6 +66,8 @@ export const Connectivity = {
 	stopMonitoring,
 };
 
+export { CSSUtils } from './css/system-classes';
+
 export { ObservableArray, ChangeType, ChangedData } from './data/observable-array';
 export { Observable, PropertyChangeData, EventData, WrappedValue, fromObject, fromObjectRecursive } from './data/observable';
 export { VirtualArray, ItemsLoading } from './data/virtual-array';
@@ -98,11 +100,13 @@ export * from './trace';
 
 export * from './ui';
 
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX } from './utils';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 
 export const Utils = {
 	GC,
+	RESOURCE_PREFIX,
+	FILE_PREFIX,
 	isFontIconURI,
 	isDataURI,
 	isFileOrResourcePath,

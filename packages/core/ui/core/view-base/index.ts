@@ -4,7 +4,7 @@ import { Page } from '../../page';
 
 // Types.
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
-import { getSystemCssClasses, MODAL_ROOT_VIEW_CSS_CLASS, ROOT_VIEW_CSS_CLASS } from '../../../css/system-classes';
+import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug';
 import { Binding, BindingOptions } from '../bindable';
 import { Trace } from '../../../trace';
@@ -1104,17 +1104,17 @@ export const classNameProperty = new Property<ViewBase, string>({
 	name: 'className',
 	valueChanged(view: ViewBase, oldValue: string, newValue: string) {
 		const cssClasses = view.cssClasses;
-		const rootViewsCssClasses = getSystemCssClasses();
+		const rootViewsCssClasses = CSSUtils.getSystemCssClasses();
 
-		const shouldAddModalRootViewCssClasses = cssClasses.has(MODAL_ROOT_VIEW_CSS_CLASS);
-		const shouldAddRootViewCssClasses = cssClasses.has(ROOT_VIEW_CSS_CLASS);
+		const shouldAddModalRootViewCssClasses = cssClasses.has(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
+		const shouldAddRootViewCssClasses = cssClasses.has(CSSUtils.ROOT_VIEW_CSS_CLASS);
 
 		cssClasses.clear();
 
 		if (shouldAddModalRootViewCssClasses) {
-			cssClasses.add(MODAL_ROOT_VIEW_CSS_CLASS);
+			cssClasses.add(CSSUtils.MODAL_ROOT_VIEW_CSS_CLASS);
 		} else if (shouldAddRootViewCssClasses) {
-			cssClasses.add(ROOT_VIEW_CSS_CLASS);
+			cssClasses.add(CSSUtils.ROOT_VIEW_CSS_CLASS);
 		}
 
 		rootViewsCssClasses.forEach((c) => cssClasses.add(c));

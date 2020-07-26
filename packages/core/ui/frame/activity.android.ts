@@ -6,13 +6,15 @@ if (global.__snapshot) {
 	initGlobal();
 }
 
-//@ts-ignore
-@JavaProxy('com.tns.NativeScriptActivity')
+const superProto = androidx.appcompat.app.AppCompatActivity.prototype;
+// @JavaProxy('com.tns.NativeScriptActivity')
 const NativeScriptActivity = (<any>androidx.appcompat.app.AppCompatActivity).extend('com.tns.NativeScriptActivity', {
 	init() {
-		return global.__native(this);
+		// superProto();
+		// return global.__native(this);
 	},
 	onCreate(savedInstanceState: android.os.Bundle): void {
+		console.log('onCreate this.getApplication():', this.getApplication());
 		appModule.android.init(this.getApplication());
 
 		// Set isNativeScriptActivity in onCreate.
@@ -22,35 +24,35 @@ const NativeScriptActivity = (<any>androidx.appcompat.app.AppCompatActivity).ext
 			setActivityCallbacks(this);
 		}
 
-		this._callbacks.onCreate(this, savedInstanceState, this.getIntent(), super.onCreate);
+		this._callbacks.onCreate(this, savedInstanceState, this.getIntent(), superProto.onCreate);
 	},
 
 	onNewIntent(intent: android.content.Intent): void {
-		this._callbacks.onNewIntent(this, intent, super.setIntent, super.onNewIntent);
+		this._callbacks.onNewIntent(this, intent, superProto.setIntent, superProto.onNewIntent);
 	},
 
 	onSaveInstanceState(outState: android.os.Bundle): void {
-		this._callbacks.onSaveInstanceState(this, outState, super.onSaveInstanceState);
+		this._callbacks.onSaveInstanceState(this, outState, superProto.onSaveInstanceState);
 	},
 
 	onStart(): void {
-		this._callbacks.onStart(this, super.onStart);
+		this._callbacks.onStart(this, superProto.onStart);
 	},
 
 	onStop(): void {
-		this._callbacks.onStop(this, super.onStop);
+		this._callbacks.onStop(this, superProto.onStop);
 	},
 
 	onDestroy(): void {
-		this._callbacks.onDestroy(this, super.onDestroy);
+		this._callbacks.onDestroy(this, superProto.onDestroy);
 	},
 
 	onPostResume(): void {
-		this._callbacks.onPostResume(this, super.onPostResume);
+		this._callbacks.onPostResume(this, superProto.onPostResume);
 	},
 
 	onBackPressed(): void {
-		this._callbacks.onBackPressed(this, super.onBackPressed);
+		this._callbacks.onBackPressed(this, superProto.onBackPressed);
 	},
 
 	onRequestPermissionsResult(requestCode: number, permissions: Array<string>, grantResults: Array<number>): void {
@@ -58,7 +60,7 @@ const NativeScriptActivity = (<any>androidx.appcompat.app.AppCompatActivity).ext
 	},
 
 	onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
-		this._callbacks.onActivityResult(this, requestCode, resultCode, data, super.onActivityResult);
+		this._callbacks.onActivityResult(this, requestCode, resultCode, data, superProto.onActivityResult);
 	},
 });
 

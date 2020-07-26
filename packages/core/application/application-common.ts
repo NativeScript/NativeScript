@@ -15,8 +15,8 @@ import { View } from '../ui/core/view';
 import { Observable } from '../data/observable';
 import { trace as profilingTrace, time, uptime, level as profilingLevel } from '../profiling';
 import * as bindableResources from '../ui/core/bindable/bindable-resources';
-import { CLASS_PREFIX, pushToSystemCssClasses, removeSystemCssClass } from '../css/system-classes';
-import { DeviceOrientation, SystemAppearance } from '../ui/enums';
+import { CSSUtils } from '../css/system-classes';
+import { Enums } from '../ui/enums';
 
 export * from './application-interfaces';
 
@@ -52,9 +52,9 @@ export const discardedErrorEvent = 'discardedError';
 export const orientationChangedEvent = 'orientationChanged';
 export const systemAppearanceChangedEvent = 'systemAppearanceChanged';
 
-const ORIENTATION_CSS_CLASSES = [`${CLASS_PREFIX}${DeviceOrientation.portrait}`, `${CLASS_PREFIX}${DeviceOrientation.landscape}`, `${CLASS_PREFIX}${DeviceOrientation.unknown}`];
+const ORIENTATION_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.portrait}`, `${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.landscape}`, `${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.unknown}`];
 
-const SYSTEM_APPEARANCE_CSS_CLASSES = [`${CLASS_PREFIX}${SystemAppearance.light}`, `${CLASS_PREFIX}${SystemAppearance.dark}`];
+const SYSTEM_APPEARANCE_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${Enums.SystemAppearance.light}`, `${CSSUtils.CLASS_PREFIX}${Enums.SystemAppearance.dark}`];
 
 let cssFile: string = './app.css';
 
@@ -126,12 +126,12 @@ export function loadAppCss(): void {
 }
 
 function addCssClass(rootView: View, cssClass: string) {
-	pushToSystemCssClasses(cssClass);
+	CSSUtils.pushToSystemCssClasses(cssClass);
 	rootView.cssClasses.add(cssClass);
 }
 
 function removeCssClass(rootView: View, cssClass: string) {
-	removeSystemCssClass(cssClass);
+	CSSUtils.removeSystemCssClass(cssClass);
 	rootView.cssClasses.delete(cssClass);
 }
 
@@ -157,7 +157,7 @@ export function orientationChanged(rootView: View, newOrientation: 'portrait' | 
 		return;
 	}
 
-	const newOrientationCssClass = `${CLASS_PREFIX}${newOrientation}`;
+	const newOrientationCssClass = `${CSSUtils.CLASS_PREFIX}${newOrientation}`;
 	applyCssClass(rootView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
 
 	const rootModalViews = <Array<View>>rootView._getRootModalViews();
@@ -171,7 +171,7 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'da
 		return;
 	}
 
-	const newSystemAppearanceCssClass = `${CLASS_PREFIX}${newSystemAppearance}`;
+	const newSystemAppearanceCssClass = `${CSSUtils.CLASS_PREFIX}${newSystemAppearance}`;
 	applyCssClass(rootView, SYSTEM_APPEARANCE_CSS_CLASSES, newSystemAppearanceCssClass);
 
 	const rootModalViews = <Array<View>>rootView._getRootModalViews();

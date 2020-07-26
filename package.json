@@ -1,6 +1,6 @@
 {
   "name": "nativescript",
-  "version": "7.0.0-rc.24",
+  "version": "7.0.0-rc.25",
   "license": "MIT",
   "scripts": {
     "start": "nps"
