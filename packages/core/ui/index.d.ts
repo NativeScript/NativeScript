@@ -7,6 +7,7 @@ export { sanitizeModuleName } from './builder/module-name-sanitizer';
 export { Button } from './button';
 export { ContentView } from './content-view';
 export { Binding, BindingOptions } from './core/bindable';
+export { ControlStateChangeListener } from './core/control-state-change';
 export { ViewBase, ShowModalOptions, eachDescendant, getAncestor, getViewById, booleanConverter } from './core/view-base';
 export { View, Template, KeyedTemplate, ShownModallyData, CSSType, ContainerView, ViewHelper, IOSHelper } from './core/view';
 export { Property, CoercibleProperty, InheritedProperty, CssProperty, InheritedCssProperty, ShorthandProperty, CssAnimationProperty, unsetValue, makeParser, makeValidator } from './core/properties';
