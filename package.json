@@ -3,7 +3,8 @@
   "version": "7.0.0-rc.29",
   "license": "MIT",
   "scripts": {
-    "start": "nps"
+    "start": "nps",
+    "help": "nps-i"
   },
   "private": true,
   "dependencies": {
@@ -40,6 +41,7 @@
     "nativescript": "rc",
     "node-sass": "~4.14.1",
     "nps": "^5.10.0",
+    "nps-i": "file:tools/plugins/nps-i-1.0.3.tgz",
     "nps-utils": "^1.7.0",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",

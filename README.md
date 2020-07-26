@@ -13,6 +13,14 @@ npm i
 npm start setup
 ```
 
+Need help?
+
+```
+npm run help
+```
+
+Browse commands with descriptions of all available workspace scripts.
+
 # Packages
 
 * [@nativescript/angular]()
