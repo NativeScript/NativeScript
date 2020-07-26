@@ -24,12 +24,37 @@ def computeBuildToolsVersion() {
     }
 }
 
-def computeAndroidXVersion() {
-    if(project.hasProperty("androidxVersion")) {
-        return androidxVersion
+def computeAndroidXTransitionVersion() {
+    if(project.hasProperty("androidXTransitionVersion")) {
+        return androidXTransitionVersion
+    }
+    else {
+        return "1.3.1"
+    }
+}
+
+def computeAndroidXAppCompatVersion() {
+    if(project.hasProperty("androidXAppCompatVersion")) {
+        return androidXAppCompatVersion
+    }
+    else {
+        return "1.1.0"
+    }
+}
+def computeAndroidXViewPagerVersion() {
+    if(project.hasProperty("androidXViewPagerVersion")) {
+        return androidXViewPagerVersion
     }
     else {
         return "1.0.0"
+    }
+}
+def computeAndroidXFragmentVersion() {
+    if(project.hasProperty("androidXFragmentVersion")) {
+        return androidXFragmentVersion
+    }
+    else {
+        return "1.2.5"
     }
 }
 
@@ -74,10 +99,10 @@ dependencies {
 
     if(project.hasProperty("useAndroidX")) {
         println 'Using android X'
-        def androidxVersion = computeAndroidXVersion()
-        implementation 'androidx.viewpager:viewpager:' + androidxVersion
-        implementation 'androidx.fragment:fragment:' + androidxVersion
-        implementation 'androidx.transition:transition:' + androidxVersion
+        implementation 'androidx.viewpager:viewpager:' + computeAndroidXViewPagerVersion()
+        implementation 'androidx.fragment:fragment:' + computeAndroidXFragmentVersion()
+        implementation 'androidx.transition:transition:' + computeAndroidXTransitionVersion()
+        implementation 'androidx.appcompat:appcompat:' + computeAndroidXAppCompatVersion()
     } else {
         println 'Using support library'
         implementation 'com.android.support:support-v4:' + computeSupportVersion()

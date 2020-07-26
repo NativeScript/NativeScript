@@ -68,6 +68,58 @@
                 public getRemovingParentFragment(): androidx.fragment.app.Fragment;
             }
 
+            export namespace Fragment {
+                class Interface {
+                    constructor(implementation: {
+                        onHiddenChanged(hidden: boolean): void;
+                        onCreateAnimator(
+                            transit: number,
+                            enter: boolean,
+                            nextAnim: number
+                        ): android.animation.Animator;
+                        onStop(): void;
+                        onPause(): void;
+                        onCreate(savedInstanceState: android.os.Bundle);
+                        onCreateView(
+                            inflater: android.view.LayoutInflater,
+                            container: android.view.ViewGroup,
+                            savedInstanceState: android.os.Bundle
+                        );
+                        onSaveInstanceState(outState: android.os.Bundle);
+                        onDestroyView();
+
+                        onDestroy();
+
+                        toString(): string;
+                    });
+                    onHiddenChanged(hidden: boolean): void;
+                    onCreateAnimator(
+                        transit: number,
+                        enter: boolean,
+                        nextAnim: number
+                    ): android.animation.Animator;
+                    public onStop(): void;
+                    public onPause(): void;
+                    public onCreate(savedInstanceState: android.os.Bundle);
+                    public onCreateView(
+                        inflater: android.view.LayoutInflater,
+                        container: android.view.ViewGroup,
+                        savedInstanceState: android.os.Bundle
+                    );
+                    public onSaveInstanceState(outState: android.os.Bundle);
+                    public onDestroyView();
+
+                    public onDestroy();
+
+                    public toString(): string;
+                }
+            }
+            export class Fragment extends FragmentBase {
+                constructor(inter?: Fragment.Interface);
+                inter: Fragment.Interface
+                setInterface(inter: Fragment.Interface);
+            }
+
             export class BorderDrawable extends android.graphics.drawable.ColorDrawable {
                 constructor(density: number);
                 constructor(density: number, id: string);
@@ -616,6 +668,104 @@
 
             export class CustomTypefaceSpan extends android.text.style.TypefaceSpan {
                 constructor(family: string, typeface: android.graphics.Typeface);
+            }
+        }
+    }
+}
+
+declare module com {
+    module tns {
+        export class NativeScriptActivity extends androidx.appcompat.app.AppCompatActivity {
+            static setInterface(inter: NativeScriptActivity.Interface);
+        }
+        export namespace NativeScriptActivity {
+            class Interface {
+                constructor(implementation: {
+                    beforeOnCreate(
+                        activity: NativeScriptActivity,
+                        savedInstanceState: globalAndroid.os.Bundle
+                    ): boolean;
+                    afterOnCreate(
+                        activity: NativeScriptActivity,
+                        savedInstanceState: globalAndroid.os.Bundle
+                    );
+
+                    onNewIntent(
+                        activity: NativeScriptActivity,
+                        intent: globalAndroid.content.Intent
+                    );
+
+                    onSaveInstanceState(
+                        activity: NativeScriptActivity,
+                        outState: globalAndroid.os.Bundle
+                    );
+
+                    onStart(activity: NativeScriptActivity);
+
+                    onStop(activity: NativeScriptActivity);
+
+                    onDestroy(activity: NativeScriptActivity);
+
+                    onPostResume(activity: NativeScriptActivity);
+
+                    onBackPressed(activity: NativeScriptActivity): boolean;
+
+                    onRequestPermissionsResult(
+                        activity: NativeScriptActivity,
+                        requestCode: number,
+                        permissions: string[],
+                        grantResults: number[]
+                    );
+
+                    onActivityResult(
+                        activity: NativeScriptActivity,
+                        requestCode: number,
+                        resultCode: number,
+                        data: globalAndroid.content.Intent
+                    );
+                });
+                beforeOnCreate(
+                    activity: NativeScriptActivity,
+                    savedInstanceState: globalAndroid.os.Bundle
+                ): boolean;
+                afterOnCreate(
+                    activity: NativeScriptActivity,
+                    savedInstanceState: globalAndroid.os.Bundle
+                );
+
+                onNewIntent(
+                    activity: NativeScriptActivity,
+                    intent: globalAndroid.content.Intent
+                );
+
+                onSaveInstanceState(
+                    activity: NativeScriptActivity,
+                    outState: globalAndroid.os.Bundle
+                );
+
+                onStart(activity: NativeScriptActivity);
+
+                onStop(activity: NativeScriptActivity);
+
+                onDestroy(activity: NativeScriptActivity);
+
+                onPostResume(activity: NativeScriptActivity);
+
+                onBackPressed(activity: NativeScriptActivity): boolean;
+
+                onRequestPermissionsResult(
+                    activity: NativeScriptActivity,
+                    requestCode: number,
+                    permissions: string[],
+                    grantResults: number[]
+                );
+
+                onActivityResult(
+                    activity: NativeScriptActivity,
+                    requestCode: number,
+                    resultCode: number,
+                    data: globalAndroid.content.Intent
+                );
             }
         }
     }

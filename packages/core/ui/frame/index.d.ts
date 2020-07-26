@@ -484,7 +484,7 @@ export interface iOSFrame {
 	//@endprivate
 }
 
-export function setActivityCallbacks(activity: any /*androidx.appcompat.app.AppCompatActivity*/): void;
+export function setActivityCallbacks(): void;
 //@private
 /**
  * @deprecated Use Frame.reloadPage() instead.
@@ -492,8 +492,4 @@ export function setActivityCallbacks(activity: any /*androidx.appcompat.app.AppC
  * @private
  */
 export function reloadPage(context?: ModuleContext): void;
-/**
- * @private
- */
-export function setFragmentCallbacks(fragment: any /*androidx.fragment.app.Fragment*/): void;
-//@endprivate
+

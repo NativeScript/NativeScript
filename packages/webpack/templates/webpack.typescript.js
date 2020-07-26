@@ -17,10 +17,6 @@ const hashSalt = Date.now().toString();
 module.exports = env => {
     // Add your custom Activities, Services and other Android app components here.
     const appComponents = env.appComponents || [];
-    appComponents.push(...[
-        "@nativescript/core/ui/frame",
-        "@nativescript/core/ui/frame/activity",
-    ]);
 
     const platform = env && (env.android && "android" || env.ios && "ios" || env.platform);
     if (!platform) {

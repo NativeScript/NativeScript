@@ -3,6 +3,7 @@ import { AndroidApplication as AndroidApplicationDefinition } from '.';
 import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, ApplicationEventData, CssChangedEventData, OrientationChangedEventData, SystemAppearanceChangedEventData } from './application-interfaces';
 import { View } from '../ui/core/view';
 import { NavigationEntry, AndroidActivityCallbacks } from '../ui/frame/frame-interfaces';
+import { setActivityCallbacks } from '../ui/frame';
 import { Observable } from '../data/observable';
 
 // Requires
@@ -226,6 +227,7 @@ export function getNativeApplication(): android.app.Application {
 		// check whether the com.tns.NativeScriptApplication type exists
 		if (!nativeApp && com.tns.NativeScriptApplication) {
 			nativeApp = com.tns.NativeScriptApplication.getInstance();
+			setActivityCallbacks();
 		}
 
 		// the getInstance might return null if com.tns.NativeScriptApplication exists but is  not the starting app type
