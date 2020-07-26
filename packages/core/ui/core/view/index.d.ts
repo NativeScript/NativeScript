@@ -642,6 +642,21 @@ export abstract class View extends ViewBase {
 	_eachLayoutView(callback: (View) => void): void;
 
 	/**
+	 * iOS Only Internal method used to update various view details like background rerendering, border, etc.
+	 */
+	_onSizeChanged?(): void;
+
+	/**
+	 * Android only check if gesture observers are attached
+	 */
+	hasGestureObservers?(): boolean;
+
+	/**
+	 * Android only to set the touch listener
+	 */
+	setOnTouchListener?(): void;
+
+	/**
 	 * Iterates over children of type View.
 	 * @param callback Called for each child of type View. Iteration stops if this method returns falsy value.
 	 */

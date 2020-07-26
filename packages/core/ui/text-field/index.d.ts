@@ -33,4 +33,9 @@ export class TextField extends EditableTextBase {
 	 * iOS only (to avoid 12+ auto suggested strong password handling)
 	 */
 	secureWithoutAutofill: boolean;
+
+	/**
+	 * iOS only update placeholder attributed text style
+	 */
+	_updateAttributedPlaceholder?(): void;
 }

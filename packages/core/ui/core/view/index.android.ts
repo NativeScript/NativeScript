@@ -441,7 +441,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	private hasGestureObservers() {
+	hasGestureObservers() {
 		return this._gestureObservers && Object.keys(this._gestureObservers).length > 0;
 	}
 
@@ -463,7 +463,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	private setOnTouchListener() {
+	setOnTouchListener() {
 		if (!this.nativeViewProtected || !this.hasGestureObservers()) {
 			return;
 		}
