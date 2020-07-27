@@ -1,5 +1,4 @@
-import { EventData } from "tns-core-modules/data/observable";
-import { Page, NavigatedData } from "tns-core-modules/ui/page";
+import { NavigatedData } from "tns-core-modules/ui/page";
 import { topmost, NavigationEntry } from "tns-core-modules/ui/frame";
 
 export function nav() {
