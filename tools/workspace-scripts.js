@@ -11,10 +11,6 @@ module.exports = {
       script: 'nx format:write',
       description: 'Format the source code of the entire workspace (auto-run on precommit hook)'
     },
-		setup: {
-      script: 'npx rimraf -- hooks node_modules package-lock.json && npm i && ts-patch install && nx run core:setup',
-      description: 'Setup the workspace for development'
-    },
 		// app testing targets
 		apps: {
 			// Automated test runner which executes unit tests on the target platform

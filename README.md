@@ -7,10 +7,8 @@ TypeScript driven development for native platform api's.
 # Develop
 
 ```
-// install workspace dependencies
-npm i
 // setup workspace for development
-npm start setup
+npm run setup
 ```
 
 Need help?

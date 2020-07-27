@@ -2,8 +2,7 @@ language: node_js
 node_js:
   - "node"
 script:
-- npm i
-- npm start setup
+- npm run setup
 - npm start packages.core.test
 - npm start packages.core.build
 
