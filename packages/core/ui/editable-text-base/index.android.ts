@@ -47,6 +47,7 @@ function initializeEditTextListeners(): void {
 		return;
 	}
 
+	@NativeClass
 	@Interfaces([android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener])
 	class EditTextListenersImpl extends java.lang.Object implements android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {
 		constructor(private owner: EditableTextBase) {

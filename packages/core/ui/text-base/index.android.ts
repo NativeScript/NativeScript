@@ -25,6 +25,7 @@ function initializeTextTransformation(): void {
 		return;
 	}
 
+	@NativeClass
 	@Interfaces([android.text.method.TransformationMethod])
 	class TextTransformationImpl extends java.lang.Object implements android.text.method.TransformationMethod {
 		constructor(public textBase: TextBase) {

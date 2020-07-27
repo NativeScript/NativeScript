@@ -15,6 +15,7 @@ function initializeCheckedChangeListener(): void {
 		return;
 	}
 
+	@NativeClass
 	@Interfaces([android.widget.CompoundButton.OnCheckedChangeListener])
 	class CheckedChangeListenerImpl extends java.lang.Object implements android.widget.CompoundButton.OnCheckedChangeListener {
 		constructor(private owner: Switch) {

@@ -1,68 +1,124 @@
 import { AndroidFragmentCallbacks, setFragmentCallbacks, setFragmentClass } from '.';
 
-@JavaProxy('com.tns.FragmentClass')
-@NativeClass
-class FragmentClass extends org.nativescript.widgets.FragmentBase {
-	// This field is updated in the frame module upon `new` (although hacky this eases the Fragment->callbacks association a lot)
-	private _callbacks: AndroidFragmentCallbacks;
+const superProto = org.nativescript.widgets.FragmentBase.prototype;
+const FragmentClass = (<any>org.nativescript.widgets.FragmentBase).extend('com.tns.FragmentClass', {
+	init() {},
+	onHiddenChanged(hidden: boolean): void {
+		this._callbacks.onHiddenChanged(this, hidden, superProto.onHiddenChanged);
+	},
 
-	constructor() {
-		super();
+	onCreateAnimator(transit: number, enter: boolean, nextAnim: number): android.animation.Animator {
+		return this._callbacks.onCreateAnimator(this, transit, enter, nextAnim, superProto.onCreateAnimator);
+	},
 
-		return global.__native(this);
-	}
+	onStop(): void {
+		this._callbacks.onStop(this, superProto.onStop);
+	},
 
-	public onHiddenChanged(hidden: boolean): void {
-		this._callbacks.onHiddenChanged(this, hidden, super.onHiddenChanged);
-	}
+	onPause(): void {
+		this._callbacks.onPause(this, superProto.onStop);
+	},
 
-	public onCreateAnimator(transit: number, enter: boolean, nextAnim: number): android.animation.Animator {
-		return this._callbacks.onCreateAnimator(this, transit, enter, nextAnim, super.onCreateAnimator);
-	}
-
-	public onStop(): void {
-		this._callbacks.onStop(this, super.onStop);
-	}
-
-	public onPause(): void {
-		this._callbacks.onPause(this, super.onStop);
-	}
-
-	public onCreate(savedInstanceState: android.os.Bundle) {
+	onCreate(savedInstanceState: android.os.Bundle) {
 		if (!this._callbacks) {
 			setFragmentCallbacks(this);
 		}
 
 		this.setHasOptionsMenu(true);
-		this._callbacks.onCreate(this, savedInstanceState, super.onCreate);
-	}
+		this._callbacks.onCreate(this, savedInstanceState, superProto.onCreate);
+	},
 
-	public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle) {
-		let result = this._callbacks.onCreateView(this, inflater, container, savedInstanceState, super.onCreateView);
+	onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle) {
+		let result = this._callbacks.onCreateView(this, inflater, container, savedInstanceState, superProto.onCreateView);
 
 		return result;
-	}
+	},
 
-	public onSaveInstanceState(outState: android.os.Bundle) {
-		this._callbacks.onSaveInstanceState(this, outState, super.onSaveInstanceState);
-	}
+	onSaveInstanceState(outState: android.os.Bundle) {
+		this._callbacks.onSaveInstanceState(this, outState, superProto.onSaveInstanceState);
+	},
 
-	public onDestroyView() {
-		this._callbacks.onDestroyView(this, super.onDestroyView);
-	}
+	onDestroyView() {
+		this._callbacks.onDestroyView(this, superProto.onDestroyView);
+	},
 
-	public onDestroy() {
-		this._callbacks.onDestroy(this, super.onDestroy);
-	}
+	onDestroy() {
+		this._callbacks.onDestroy(this, superProto.onDestroy);
+	},
 
-	public toString(): string {
+	toString(): string {
 		const callbacks = this._callbacks;
 		if (callbacks) {
-			return callbacks.toStringOverride(this, super.toString);
+			return callbacks.toStringOverride(this, superProto.toString);
 		} else {
-			super.toString();
+			superProto.toString();
 		}
-	}
-}
+	},
+});
+
+// @NativeClass
+// @JavaProxy('com.tns.FragmentClass')
+// class FragmentClass extends org.nativescript.widgets.FragmentBase {
+// 	// This field is updated in the frame module upon `new` (although hacky this eases the Fragment->callbacks association a lot)
+// 	private _callbacks: AndroidFragmentCallbacks;
+
+// 	constructor() {
+// 		super();
+
+// 		return global.__native(this);
+// 	}
+
+// 	public onHiddenChanged(hidden: boolean): void {
+// 		this._callbacks.onHiddenChanged(this, hidden, super.onHiddenChanged);
+// 	}
+
+// 	public onCreateAnimator(transit: number, enter: boolean, nextAnim: number): android.animation.Animator {
+// 		return this._callbacks.onCreateAnimator(this, transit, enter, nextAnim, super.onCreateAnimator);
+// 	}
+
+// 	public onStop(): void {
+// 		this._callbacks.onStop(this, super.onStop);
+// 	}
+
+// 	public onPause(): void {
+// 		this._callbacks.onPause(this, super.onStop);
+// 	}
+
+// 	public onCreate(savedInstanceState: android.os.Bundle) {
+// 		if (!this._callbacks) {
+// 			setFragmentCallbacks(this);
+// 		}
+
+// 		this.setHasOptionsMenu(true);
+// 		this._callbacks.onCreate(this, savedInstanceState, super.onCreate);
+// 	}
+
+// 	public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle) {
+// 		let result = this._callbacks.onCreateView(this, inflater, container, savedInstanceState, super.onCreateView);
+
+// 		return result;
+// 	}
+
+// 	public onSaveInstanceState(outState: android.os.Bundle) {
+// 		this._callbacks.onSaveInstanceState(this, outState, super.onSaveInstanceState);
+// 	}
+
+// 	public onDestroyView() {
+// 		this._callbacks.onDestroyView(this, super.onDestroyView);
+// 	}
+
+// 	public onDestroy() {
+// 		this._callbacks.onDestroy(this, super.onDestroy);
+// 	}
+
+// 	public toString(): string {
+// 		const callbacks = this._callbacks;
+// 		if (callbacks) {
+// 			return callbacks.toStringOverride(this, super.toString);
+// 		} else {
+// 			super.toString();
+// 		}
+// 	}
+// }
 
 setFragmentClass(FragmentClass);

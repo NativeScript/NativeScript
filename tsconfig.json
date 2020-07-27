@@ -24,6 +24,5 @@
       "@nativescript/types-android": ["packages/types-android/src/index.ts"]
     }
   },
-  "exclude": ["node_modules", "tmp", "platforms", "__tests__"],
-  "includes": ["packages/**/*.{ios,android}.ts"]
+  "exclude": ["node_modules", "tmp", "platforms", "__tests__"]
 }

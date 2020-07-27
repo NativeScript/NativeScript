@@ -247,24 +247,23 @@ function onLivesync(args): void {
 		imageFetcher.clearCache();
 	}
 }
-application.on('livesync', onLivesync);
 
-application.android.on(
-	'activityStarted',
-	<any>profile('initImageCache', (args) => {
+(<any>global).NativeScriptGlobals.events.on('livesync', onLivesync);
+
+(<any>global).NativeScriptGlobals.addEventWiring(() => {
+	application.android.on('activityStarted', (args) => {
 		if (!imageFetcher) {
 			initImageCache(args.activity);
 		} else {
 			imageFetcher.initCache();
 		}
-	})
-);
+	});
+});
 
-application.android.on(
-	'activityStopped',
-	<any>profile('closeImageCache', (args) => {
+(<any>global).NativeScriptGlobals.addEventWiring(() => {
+	application.android.on('activityStopped', (args) => {
 		if (imageFetcher) {
 			imageFetcher.closeCache();
 		}
-	})
-);
+	});
+});

@@ -58,6 +58,8 @@ export const hasListeners = (<any>global).NativeScriptGlobals.events.hasListener
 let app: iOSApplication | AndroidApplication;
 export function setApplication(instance: iOSApplication | AndroidApplication): void {
 	app = instance;
+	// signal when the application instance is ready globally
+	(<any>global).NativeScriptGlobals.appInstanceReady = true;
 }
 
 export function livesync(rootView: View, context?: ModuleContext) {

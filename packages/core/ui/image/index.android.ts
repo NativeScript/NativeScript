@@ -24,6 +24,7 @@ function initializeImageLoadedListener() {
 		return;
 	}
 
+	@NativeClass
 	@Interfaces([org.nativescript.widgets.image.Worker.OnImageLoadedListener])
 	class ImageLoadedListenerImpl extends java.lang.Object implements org.nativescript.widgets.image.Worker.OnImageLoadedListener {
 		constructor(public owner: Image) {

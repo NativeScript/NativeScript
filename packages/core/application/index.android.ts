@@ -1,14 +1,15 @@
 // Types.
 import { AndroidApplication as AndroidApplicationDefinition } from '.';
 import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, ApplicationEventData, CssChangedEventData, OrientationChangedEventData, SystemAppearanceChangedEventData } from './application-interfaces';
-import { View } from '../ui/core/view';
-import { NavigationEntry, AndroidActivityCallbacks } from '../ui/frame/frame-interfaces';
-import { Observable } from '../data/observable';
 
 // Use requires to ensure order of imports is maintained
 const appCommon = require('./application-common');
 // First reexport so that app module is initialized.
 export * from './application-common';
+
+import { View } from '../ui/core/view';
+import { NavigationEntry, AndroidActivityCallbacks } from '../ui/frame/frame-interfaces';
+import { Observable } from '../data/observable';
 
 import { profile } from '../profiling';
 
@@ -482,6 +483,20 @@ function ensureBroadCastReceiverClass() {
 		return;
 	}
 
+	const BroadcastReceiver = (<any>android.content.BroadcastReceiver).extend({
+		init(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+			// 		super();
+			this._onReceiveCallback = onReceiveCallback;
+
+			// 		return global.__native(this);
+		},
+		_onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
+			if (this._onReceiveCallback) {
+				this._onReceiveCallback(context, intent);
+			}
+		},
+	});
+
 	// @NativeClass
 	// class BroadcastReceiver extends android.content.BroadcastReceiver {
 	// 	private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
@@ -499,20 +514,20 @@ function ensureBroadCastReceiverClass() {
 	// 		}
 	// 	}
 	// }
-	var BroadcastReceiver = (function (_super) {
-		__extends(BroadcastReceiver, _super);
-		function BroadcastReceiver(onReceiveCallback) {
-			var _this = _super.call(this) || this;
-			_this._onReceiveCallback = onReceiveCallback;
-			return global.__native(_this);
-		}
-		BroadcastReceiver.prototype.onReceive = function (context, intent) {
-			if (this._onReceiveCallback) {
-				this._onReceiveCallback(context, intent);
-			}
-		};
-		return BroadcastReceiver;
-	})(android.content.BroadcastReceiver);
+	// var BroadcastReceiver = (function (_super) {
+	// 	__extends(BroadcastReceiver, _super);
+	// 	function BroadcastReceiver(onReceiveCallback) {
+	// 		var _this = _super.call(this) || this;
+	// 		_this._onReceiveCallback = onReceiveCallback;
+	// 		return global.__native(_this);
+	// 	}
+	// 	BroadcastReceiver.prototype.onReceive = function (context, intent) {
+	// 		if (this._onReceiveCallback) {
+	// 			this._onReceiveCallback(context, intent);
+	// 		}
+	// 	};
+	// 	return BroadcastReceiver;
+	// })(android.content.BroadcastReceiver);
 
 	BroadcastReceiverClass = BroadcastReceiver;
 }

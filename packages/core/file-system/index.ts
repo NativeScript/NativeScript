@@ -1,6 +1,5 @@
 import { FileSystemAccess } from './file-system-access';
 import { isIOS } from '../platform';
-import { profile } from '../profiling';
 
 // The FileSystemAccess implementation, used through all the APIs.
 let fileAccess: FileSystemAccess;
@@ -319,7 +318,6 @@ export class File extends FileSystemEntity {
 		});
 	}
 
-	@profile
 	public readTextSync(onError?: (error: any) => any, encoding?: string): string {
 		this.checkAccess();
 

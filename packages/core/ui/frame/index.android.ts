@@ -48,49 +48,50 @@ export let attachStateChangeListener: android.view.View.OnAttachStateChangeListe
 
 function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 	if (!attachStateChangeListener) {
-		var AttachListener = (function (_super) {
-			__extends(AttachListener, _super);
-			function AttachListener() {
-				var _this = _super.call(this) || this;
-				return global.__native(_this);
-			}
-			AttachListener.prototype.onViewAttachedToWindow = function (view) {
-				var owner = view[ownerSymbol];
-				if (owner) {
-					owner._onAttachedToWindow();
-				}
-			};
-			AttachListener.prototype.onViewDetachedFromWindow = function (view) {
-				var owner = view[ownerSymbol];
-				if (owner) {
-					owner._onDetachedFromWindow();
-				}
-			};
-			AttachListener = __decorate([Interfaces([android.view.View.OnAttachStateChangeListener])], AttachListener);
-			return AttachListener;
-		})(java.lang.Object);
-		// const AttachListener = (<any>java.lang.Object).extend({
-		//   interfaces: [android.view.View.OnAttachStateChangeListener],
-		// 	init() {
-		//     // this.super(this);
-		// 		// return global.__native(this);
-		// 	},
-		// 	onViewAttachedToWindow(view: android.view.View): void {
-		//     console.log('onViewAttachedToWindow')
-		//     const owner: View = view[ownerSymbol];
-		//     console.log('owner:', owner)
+		// var AttachListener = (function (_super) {
+		// 	__extends(AttachListener, _super);
+		// 	function AttachListener() {
+		// 		var _this = _super.call(this) || this;
+		// 		return global.__native(_this);
+		// 	}
+		// 	AttachListener.prototype.onViewAttachedToWindow = function (view) {
+		// 		var owner = view[ownerSymbol];
 		// 		if (owner) {
-		//       // console.log('owner._onAttachedToWindow:', owner._onAttachedToWindow)
 		// 			owner._onAttachedToWindow();
 		// 		}
-		// 	},
-		// 	onViewDetachedFromWindow(view: android.view.View): void {
-		// 		const owner: View = view[ownerSymbol];
+		// 	};
+		// 	AttachListener.prototype.onViewDetachedFromWindow = function (view) {
+		// 		var owner = view[ownerSymbol];
 		// 		if (owner) {
 		// 			owner._onDetachedFromWindow();
 		// 		}
-		// 	},
-		// });
+		// 	};
+		// 	AttachListener = __decorate([Interfaces([android.view.View.OnAttachStateChangeListener])], AttachListener);
+		// 	return AttachListener;
+		// })(java.lang.Object);
+
+		const AttachListener = (<any>java.lang.Object).extend({
+			interfaces: [android.view.View.OnAttachStateChangeListener],
+			init() {
+				// this.super(this);
+				// return global.__native(this);
+			},
+			onViewAttachedToWindow(view: android.view.View): void {
+				console.log('onViewAttachedToWindow');
+				const owner: View = view[ownerSymbol];
+				console.log('owner:', owner);
+				if (owner) {
+					// console.log('owner._onAttachedToWindow:', owner._onAttachedToWindow)
+					owner._onAttachedToWindow();
+				}
+			},
+			onViewDetachedFromWindow(view: android.view.View): void {
+				const owner: View = view[ownerSymbol];
+				if (owner) {
+					owner._onDetachedFromWindow();
+				}
+			},
+		});
 		// class AttachListener extends java.lang.Object implements android.view.View.OnAttachStateChangeListener {
 		// 	constructor() {
 		// 		super();

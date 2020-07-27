@@ -13,6 +13,7 @@ function initializeDateChangedListener(): void {
 		return;
 	}
 
+	@NativeClass
 	@Interfaces([android.widget.DatePicker.OnDateChangedListener])
 	class DateChangedListenerImpl extends java.lang.Object implements android.widget.DatePicker.OnDateChangedListener {
 		constructor(public owner: DatePicker) {

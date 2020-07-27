@@ -199,6 +199,7 @@ function initializeNativeClasses() {
 		}
 	}
 
+	@NativeClass
 	@Interfaces([android.view.View.OnAttachStateChangeListener])
 	class AttachListener extends java.lang.Object implements android.view.View.OnAttachStateChangeListener {
 		constructor() {

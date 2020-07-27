@@ -39,8 +39,11 @@ function registerOnGlobalContext(moduleName: string, exportName: string): void {
  * Manages internal framework global state
  */
 export class NativeScriptGlobalState {
-	events: Observable<any>;
+	events: Observable;
 	launched = false;
+	// used by various classes to setup callbacks to wire up global app event handling when the app instance is ready
+	appEventWiring: Array<any>;
+	private _appInstanceReady = false;
 	private _setLaunched: () => void;
 	constructor() {
 		// console.log('creating NativeScriptGlobals...')
@@ -54,6 +57,37 @@ export class NativeScriptGlobalState {
 				const start = end - duration;
 				profilingTrace(`Displayed in ${duration.toFixed(2)}ms`, start, end);
 			});
+		}
+	}
+
+	get appInstanceReady() {
+		return this._appInstanceReady;
+	}
+
+	set appInstanceReady(value: boolean) {
+		this._appInstanceReady = value;
+		// app instance ready, wire up any app events waiting in startup queue
+		if (this.appEventWiring && this.appEventWiring.length) {
+			for (const callback of this.appEventWiring) {
+				callback();
+			}
+			// cleanup
+			this.appEventWiring = null;
+		}
+	}
+
+	/**
+	 * Ability for classes to initialize app event handling early even before the app instance is ready during boot cycle avoiding boot race conditions
+	 * @param callback wire up any global event handling inside the callback
+	 */
+	addEventWiring(callback: () => void) {
+		if (this._appInstanceReady) {
+			callback();
+		} else {
+			if (!this.appEventWiring) {
+				this.appEventWiring = [];
+			}
+			this.appEventWiring.push(callback);
 		}
 	}
 

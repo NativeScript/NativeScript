@@ -14,6 +14,7 @@ let SeekBarChangeListener: android.widget.SeekBar.OnSeekBarChangeListener;
 
 function initializeListenerClass(): void {
 	if (!SeekBarChangeListener) {
+		@NativeClass
 		@Interfaces([android.widget.SeekBar.OnSeekBarChangeListener])
 		class SeekBarChangeListenerImpl extends java.lang.Object implements android.widget.SeekBar.OnSeekBarChangeListener {
 			constructor() {

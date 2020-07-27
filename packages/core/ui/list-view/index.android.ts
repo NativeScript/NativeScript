@@ -27,6 +27,7 @@ function initializeItemClickListener(): void {
 		return;
 	}
 
+	@NativeClass
 	@Interfaces([android.widget.AdapterView.OnItemClickListener])
 	class ItemClickListenerImpl extends java.lang.Object implements android.widget.AdapterView.OnItemClickListener {
 		constructor(public owner: ListView) {
