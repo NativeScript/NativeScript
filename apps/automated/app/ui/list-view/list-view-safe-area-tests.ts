@@ -52,8 +52,8 @@ export class ListViewSafeAreaTest extends UITest<ListView> {
 		const b = bottom(listView);
 		equal(l, 0, `${listView}.left - actual:${l}; expected: ${0}`);
 		equal(t, 0, `${listView}.top - actual:${t}; expected: ${0}`);
-		equal(r, platform.screen.mainScreen.widthPixels, `${listView}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
-		equal(b, platform.screen.mainScreen.heightPixels, `${listView}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
+		equal(r, platform.Screen.mainScreen.widthPixels, `${listView}.right - actual:${r}; expected: ${platform.Screen.mainScreen.widthPixels}`);
+		equal(b, platform.Screen.mainScreen.heightPixels, `${listView}.bottom - actual:${b}; expected: ${platform.Screen.mainScreen.heightPixels}`);
 	}
 
 	private list_view_in_full_screen_test(pageOptions?: helper.PageOptions) {

@@ -46,8 +46,8 @@ export class RepeaterSafeAreaTest extends UITest<Repeater> {
 		const b = bottom(repeater);
 		equal(l, 0, `${repeater}.left - actual:${l}; expected: ${0}`);
 		equal(t, 0, `${repeater}.top - actual:${t}; expected: ${0}`);
-		equal(r, platform.screen.mainScreen.widthPixels, `${repeater}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
-		equal(b, platform.screen.mainScreen.heightPixels, `${repeater}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
+		equal(r, platform.Screen.mainScreen.widthPixels, `${repeater}.right - actual:${r}; expected: ${platform.Screen.mainScreen.widthPixels}`);
+		equal(b, platform.Screen.mainScreen.heightPixels, `${repeater}.bottom - actual:${b}; expected: ${platform.Screen.mainScreen.heightPixels}`);
 	}
 
 	private repeater_in_full_screen_test(pageOptions?: helper.PageOptions) {

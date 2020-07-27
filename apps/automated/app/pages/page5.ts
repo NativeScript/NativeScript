@@ -49,11 +49,11 @@ function printTNSInfo() {
 	console.log('platform.Device.sdkVersion = ' + platform.Device.sdkVersion);
 	console.log('platform.Device.deviceType = ' + platform.Device.deviceType);
 
-	console.log('platform.screen.mainScreen.widthDIPs = ' + platform.screen.mainScreen.widthDIPs);
-	console.log('platform.screen.mainScreen.heightDIPs = ' + platform.screen.mainScreen.heightDIPs);
-	console.log('platform.screen.mainScreen.scale = ' + platform.screen.mainScreen.scale);
-	console.log('platform.screen.mainScreen.widthPixels = ' + platform.screen.mainScreen.widthPixels);
-	console.log('platform.screen.mainScreen.heightPixels = ' + platform.screen.mainScreen.heightPixels);
+	console.log('platform.Screen.mainScreen.widthDIPs = ' + platform.Screen.mainScreen.widthDIPs);
+	console.log('platform.Screen.mainScreen.heightDIPs = ' + platform.Screen.mainScreen.heightDIPs);
+	console.log('platform.Screen.mainScreen.scale = ' + platform.Screen.mainScreen.scale);
+	console.log('platform.Screen.mainScreen.widthPixels = ' + platform.Screen.mainScreen.widthPixels);
+	console.log('platform.Screen.mainScreen.heightPixels = ' + platform.Screen.mainScreen.heightPixels);
 }
 
 function print() {

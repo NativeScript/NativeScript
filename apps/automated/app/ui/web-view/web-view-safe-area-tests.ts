@@ -46,8 +46,8 @@ export class WebViewSafeAreaTest extends UITest<WebView> {
 		const b = bottom(webView);
 		equal(l, 0, `${webView}.left - actual:${l}; expected: ${0}`);
 		equal(t, 0, `${webView}.top - actual:${t}; expected: ${0}`);
-		equal(r, platform.screen.mainScreen.widthPixels, `${webView}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
-		equal(b, platform.screen.mainScreen.heightPixels, `${webView}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
+		equal(r, platform.Screen.mainScreen.widthPixels, `${webView}.right - actual:${r}; expected: ${platform.Screen.mainScreen.widthPixels}`);
+		equal(b, platform.Screen.mainScreen.heightPixels, `${webView}.bottom - actual:${b}; expected: ${platform.Screen.mainScreen.heightPixels}`);
 	}
 
 	private webview_in_full_screen_test(pageOptions?: helper.PageOptions) {

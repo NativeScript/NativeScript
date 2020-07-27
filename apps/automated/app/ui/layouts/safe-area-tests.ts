@@ -95,8 +95,8 @@ export class SafeAreaTests extends testModule.UITest<any> {
 		const b = bottom(layout);
 		equal(l, 0, `${layout}.left - actual:${l}; expected: ${0}`);
 		equal(t, 0, `${layout}.top - actual:${t}; expected: ${0}`);
-		equal(r, platform.screen.mainScreen.widthPixels, `${layout}.right - actual:${r}; expected: ${platform.screen.mainScreen.widthPixels}`);
-		equal(b, platform.screen.mainScreen.heightPixels, `${layout}.bottom - actual:${b}; expected: ${platform.screen.mainScreen.heightPixels}`);
+		equal(r, platform.Screen.mainScreen.widthPixels, `${layout}.right - actual:${r}; expected: ${platform.Screen.mainScreen.widthPixels}`);
+		equal(b, platform.Screen.mainScreen.heightPixels, `${layout}.bottom - actual:${b}; expected: ${platform.Screen.mainScreen.heightPixels}`);
 	}
 
 	// Absolute

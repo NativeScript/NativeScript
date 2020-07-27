@@ -1,22 +1,6 @@
 import * as TKUnit from '../../tk-unit';
-import * as app from '@nativescript/core/application';
 import * as helper from '../../ui-helper';
-import * as viewModule from '@nativescript/core/ui/core/view';
-import * as stackLayoutModule from '@nativescript/core/ui/layouts/stack-layout';
-import * as wrapLayoutModule from '@nativescript/core/ui/layouts/wrap-layout';
-import * as layoutBaseModule from '@nativescript/core/ui/layouts/layout-base';
-import * as pageModule from '@nativescript/core/ui/page';
-import * as gestureModule from '@nativescript/core/ui/gestures';
-import { Label } from '@nativescript/core/ui/label';
-
-// >> article-require-repeater-module
-import * as repeaterModule from '@nativescript/core/ui/repeater';
-// << article-require-repeater-module
-
-// >> article-require-modules-repeater
-import * as observableArray from '@nativescript/core/data/observable-array';
-import * as labelModule from '@nativescript/core/ui/label';
-// << article-require-modules-repeater
+import { Application, Label, Page, StackLayout, WrapLayout, LayoutBase, View, GestureTypes, Repeater, ObservableArray } from '@nativescript/core';
 
 var FEW_ITEMS = [0, 1, 2];
 var MANY_ITEMS = [];
@@ -25,15 +9,15 @@ for (var i = 0; i < 100; i++) {
 }
 
 export function test_recycling() {
-	const setters = new Map<string, stackLayoutModule.StackLayout>();
-	setters.set('itemsLayout', new stackLayoutModule.StackLayout());
-	helper.nativeView_recycling_test(() => new repeaterModule.Repeater(), null, null, setters);
+	const setters = new Map<string, StackLayout>();
+	setters.set('itemsLayout', new StackLayout());
+	helper.nativeView_recycling_test(() => new Repeater(), null, null, setters);
 }
 
 export function test_set_items_to_array_loads_all_items() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		// >> article-repeater-with-array
 		var colors = ['red', 'green', 'blue'];
 		repeater.items = colors;
@@ -50,9 +34,9 @@ export function test_set_items_to_array_loads_all_items() {
 }
 
 export function test_set_items_to_array_creates_views() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		repeater.items = FEW_ITEMS;
 
 		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
@@ -63,9 +47,9 @@ export function test_set_items_to_array_creates_views() {
 }
 
 export function test_refresh_after_adding_items_to_array_loads_new_items() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		var colors = ['red', 'green', 'blue'];
 		repeater.items = colors;
 
@@ -85,9 +69,9 @@ export function test_refresh_after_adding_items_to_array_loads_new_items() {
 }
 
 export function test_refresh_reloads_all_items() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		var testStarted = false;
 
 		var itemsToBind = <Array<any>>FEW_ITEMS;
@@ -114,9 +98,9 @@ export function test_refresh_reloads_all_items() {
 }
 
 export function test_set_itmes_to_null_clears_items() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		repeater.items = FEW_ITEMS;
 		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 		TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, 'views count.');
@@ -131,16 +115,16 @@ export function test_set_itmes_to_null_clears_items() {
 
 export function test_set_itemsLayout_accepted() {
 	// >> article-repeater-layout
-	var repeater = new repeaterModule.Repeater();
-	var stackLayout = new stackLayoutModule.StackLayout();
+	var repeater = new Repeater();
+	var stackLayout = new StackLayout();
 	stackLayout.orientation = 'horizontal';
 	repeater.itemsLayout = stackLayout;
 	// << article-repeater-layout
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		repeater.items = FEW_ITEMS;
 		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
-		TKUnit.assert((<stackLayoutModule.StackLayout>repeater.itemsLayout).orientation === 'horizontal', 'views count.');
+		TKUnit.assert((<StackLayout>repeater.itemsLayout).orientation === 'horizontal', 'views count.');
 		TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, 'views count.');
 	}
 
@@ -148,9 +132,9 @@ export function test_set_itemsLayout_accepted() {
 }
 
 export function test_set_itmes_to_undefiend_clears_items() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		repeater.items = FEW_ITEMS;
 		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 		TKUnit.assertEqual(getChildrenCount(repeater), FEW_ITEMS.length, 'views count.');
@@ -164,9 +148,9 @@ export function test_set_itmes_to_undefiend_clears_items() {
 }
 
 export function test_set_itmes_to_different_source_loads_new_items() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		repeater.items = [1, 2, 3];
 		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 		TKUnit.assertEqual(getChildrenCount(repeater), 3, 'views count.');
@@ -180,11 +164,11 @@ export function test_set_itmes_to_different_source_loads_new_items() {
 }
 
 export function test_set_items_to_observable_array_loads_all_items() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		// >> article-repeater-observablearray
-		var colors = new observableArray.ObservableArray(['red', 'green', 'blue']);
+		var colors = new ObservableArray(['red', 'green', 'blue']);
 		repeater.items = colors;
 		// << article-repeater-observablearray
 
@@ -198,10 +182,10 @@ export function test_set_items_to_observable_array_loads_all_items() {
 }
 
 export function test_add_to_observable_array_refreshes_the_Repeater() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
-		var colors = new observableArray.ObservableArray(['red', 'green', 'blue']);
+	function testAction(views: Array<View>) {
+		var colors = new ObservableArray(['red', 'green', 'blue']);
 		repeater.items = colors;
 
 		TKUnit.assertEqual(getChildrenCount(repeater), 3, 'getChildrenCount');
@@ -217,10 +201,10 @@ export function test_add_to_observable_array_refreshes_the_Repeater() {
 }
 
 export function test_remove_from_observable_array_refreshes_the_Repeater() {
-	var repeater = new repeaterModule.Repeater();
-	var data = new observableArray.ObservableArray([1, 2, 3]);
+	var repeater = new Repeater();
+	var data = new ObservableArray([1, 2, 3]);
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		repeater.items = data;
 
 		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
@@ -235,10 +219,10 @@ export function test_remove_from_observable_array_refreshes_the_Repeater() {
 }
 
 export function test_splice_observable_array_refreshes_the_Repeater() {
-	var repeater = new repeaterModule.Repeater();
-	var data = new observableArray.ObservableArray(['a', 'b', 'c']);
+	var repeater = new Repeater();
+	var data = new ObservableArray(['a', 'b', 'c']);
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		repeater.items = data;
 
 		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
@@ -254,7 +238,7 @@ export function test_splice_observable_array_refreshes_the_Repeater() {
 }
 
 export function test_usingAppLevelConvertersInRepeaterItems() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
 	var dateConverter = function (value, format) {
 		var result = format;
@@ -267,13 +251,13 @@ export function test_usingAppLevelConvertersInRepeaterItems() {
 		return result;
 	};
 
-	app.getResources()['dateConverter'] = dateConverter;
+	Application.getResources()['dateConverter'] = dateConverter;
 
-	var data = new observableArray.ObservableArray();
+	var data = new ObservableArray();
 
 	data.push({ date: new Date() });
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		repeater.itemTemplate = '<Label id="testLabel" text="{{ date, date | dateConverter(\'DD.MM.YYYY\') }}" />';
 		repeater.items = data;
 
@@ -286,9 +270,9 @@ export function test_usingAppLevelConvertersInRepeaterItems() {
 }
 
 export function test_BindingRepeaterToASimpleArray() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		repeater.itemTemplate = '<Label id="testLabel" text="{{ $value }}" />';
 		repeater.items = [1, 2, 3];
 
@@ -303,9 +287,9 @@ export function test_BindingRepeaterToASimpleArray() {
 }
 
 export function test_ItemTemplateFactoryFunction() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		repeater.itemTemplate = () => {
 			var label = new Label();
 			label.id = 'testLabel';
@@ -326,9 +310,9 @@ export function test_ItemTemplateFactoryFunction() {
 }
 
 export function test_BindingRepeaterToASimpleArrayWithExpression() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		repeater.itemTemplate = '<Label id="testLabel" text="{{ $value, $value + \' some static text\' }}" />';
 		repeater.items = [1, 2, 3];
 
@@ -343,14 +327,14 @@ export function test_BindingRepeaterToASimpleArrayWithExpression() {
 }
 
 export var test_RepeaterItemsGestureBindings = function () {
-	var testFunc = function (page: pageModule.Page) {
-		var repeater = <repeaterModule.Repeater>page.getViewById('repeater');
+	var testFunc = function (page: Page) {
+		var repeater = <Repeater>page.getViewById('repeater');
 		var hasObservers = false;
-		var eachChildCallback = function (childItem: viewModule.View) {
-			if (childItem instanceof labelModule.Label) {
-				var gestureObservers = childItem.getGestureObservers(gestureModule.GestureTypes.tap);
+		var eachChildCallback = function (childItem: View) {
+			if (childItem instanceof Label) {
+				var gestureObservers = childItem.getGestureObservers(GestureTypes.tap);
 				hasObservers = gestureObservers ? gestureObservers.length > 0 : false;
-			} else if (childItem instanceof layoutBaseModule.LayoutBase) {
+			} else if (childItem instanceof LayoutBase) {
 				childItem.eachChildView(eachChildCallback);
 			}
 
@@ -366,17 +350,17 @@ export var test_RepeaterItemsGestureBindings = function () {
 };
 
 export var test_RepeaterItemsParentBindingsShouldWork = function () {
-	var testFunc = function (page: pageModule.Page) {
-		var repeater = <repeaterModule.Repeater>page.getViewById('repeater');
+	var testFunc = function (page: Page) {
+		var repeater = <Repeater>page.getViewById('repeater');
 		var expectedText = page.bindingContext['parentViewProperty'];
 		var testPass = false;
-		var eachChildCallback = function (childItem: viewModule.View) {
-			if (childItem instanceof labelModule.Label) {
-				testPass = (<labelModule.Label>childItem).text === expectedText;
+		var eachChildCallback = function (childItem: View) {
+			if (childItem instanceof Label) {
+				testPass = (<Label>childItem).text === expectedText;
 				if (testPass === false) {
 					return false;
 				}
-			} else if (childItem instanceof layoutBaseModule.LayoutBase) {
+			} else if (childItem instanceof LayoutBase) {
 				childItem.eachChildView(eachChildCallback);
 			}
 
@@ -392,9 +376,9 @@ export var test_RepeaterItemsParentBindingsShouldWork = function () {
 };
 
 export function test_ChildrenAreNotCreatedUntilTheRepeaterIsLoaded() {
-	var repeater = new repeaterModule.Repeater();
+	var repeater = new Repeater();
 
-	repeater.itemsLayout = new wrapLayoutModule.WrapLayout();
+	repeater.itemsLayout = new WrapLayout();
 	TKUnit.assertEqual(getChildrenCount(repeater), 0, 'Repeater should not create its children until loaded.');
 
 	repeater.itemTemplate = '<Label id="testLabel" text="{{ $value, $value + \' some static text\' }}" />';
@@ -403,7 +387,7 @@ export function test_ChildrenAreNotCreatedUntilTheRepeaterIsLoaded() {
 	repeater.items = [1, 2, 3];
 	TKUnit.assertEqual(getChildrenCount(repeater), 0, 'Repeater should not create its children until loaded.');
 
-	function testAction(views: Array<viewModule.View>) {
+	function testAction(views: Array<View>) {
 		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
 		TKUnit.assertEqual(getChildrenCount(repeater), 3, 'Repeater should have created its children when loaded.');
 	}
@@ -413,8 +397,8 @@ export function test_ChildrenAreNotCreatedUntilTheRepeaterIsLoaded() {
 
 /*
 export function test_no_memory_leak_when_items_is_regular_array(done) {
-    var createFunc = function (): repeaterModule.Repeater {
-        var repeater = new repeaterModule.Repeater();
+    var createFunc = function (): Repeater {
+        var repeater = new Repeater();
         repeater.items = FEW_ITEMS;
         return repeater;
     };
@@ -426,10 +410,10 @@ export function test_no_memory_leak_when_items_is_regular_array(done) {
 
 export function test_no_memory_leak_when_items_is_observable_array(done) {
     // Keep the reference to the observable array to test the weakEventListener
-    var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
+    var colors = new ObservableArray(["red", "green", "blue"]);
 
-    var createFunc = function (): repeaterModule.Repeater {
-        var repeater = new repeaterModule.Repeater();
+    var createFunc = function (): Repeater {
+        var repeater = new Repeater();
         repeater.items = colors;
         return repeater;
     };
@@ -439,14 +423,14 @@ export function test_no_memory_leak_when_items_is_observable_array(done) {
     }, done);
 }
 */
-function getChildrenCount(repeater: repeaterModule.Repeater): number {
+function getChildrenCount(repeater: Repeater): number {
 	return repeater.itemsLayout.getChildrenCount();
 }
 
-function getChildAt(repeater: repeaterModule.Repeater, index: number): viewModule.View {
+function getChildAt(repeater: Repeater, index: number): View {
 	return repeater.itemsLayout.getChildAt(index);
 }
 
-function getChildAtText(repeater: repeaterModule.Repeater, index: number): string {
-	return (<labelModule.Label>getChildAt(repeater, index)).text + '';
+function getChildAtText(repeater: Repeater, index: number): string {
+	return (<Label>getChildAt(repeater, index)).text + '';
 }

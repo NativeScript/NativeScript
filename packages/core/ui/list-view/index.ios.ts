@@ -25,6 +25,7 @@ interface ViewItemIndex {
 
 type ItemView = View & ViewItemIndex;
 
+@NativeClass
 class ListViewCell extends UITableViewCell {
 	public static initWithEmptyBackground(): ListViewCell {
 		const cell = <ListViewCell>ListViewCell.new();

@@ -463,6 +463,7 @@ function _getLongPressData(args: GestureEventData): GestureEventDataWithState {
 	};
 }
 
+@NativeClass
 class TouchGestureRecognizer extends UIGestureRecognizer {
 	public observer: GesturesObserver;
 	private _eventData: TouchGestureEventData;

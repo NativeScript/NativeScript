@@ -92,6 +92,7 @@ class BackgroundIndicatorTemplate extends NSObject implements MDCTabBarIndicator
 	}
 }
 
+@NativeClass
 class UIPageViewControllerImpl extends UIPageViewController {
 	tabBar: MDCTabBar;
 	scrollView: UIScrollView;

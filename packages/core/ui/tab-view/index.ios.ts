@@ -18,6 +18,7 @@ export * from './tab-view-common';
 const majorVersion = iOSNativeHelper.MajorVersion;
 const isPhone = Device.deviceType === 'Phone';
 
+@NativeClass
 class UITabBarControllerImpl extends UITabBarController {
 	private _owner: WeakRef<TabView>;
 

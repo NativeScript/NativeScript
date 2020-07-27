@@ -71,6 +71,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 	}
 }
 
+@NativeClass
 class NoScrollAnimationUITextView extends UITextView {
 	// see https://github.com/NativeScript/NativeScript/issues/6863
 	// UITextView internally scrolls the text you are currently typing to visible when newline character

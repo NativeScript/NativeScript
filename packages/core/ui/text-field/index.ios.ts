@@ -79,6 +79,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 	}
 }
 
+@NativeClass
 class UITextFieldImpl extends UITextField {
 	private _owner: WeakRef<TextField>;
 
