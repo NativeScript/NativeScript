@@ -1,6 +1,5 @@
 import { Slider as SliderDefinition } from '.';
 import { View, CSSType } from '../core/view';
-import { isIOS } from '../../platform';
 import { Property, CoercibleProperty } from '../core/properties';
 
 // TODO: Extract base Range class for slider and progress
@@ -25,7 +24,7 @@ export const valueProperty = new CoercibleProperty<SliderBase, number>({
 
 		return value;
 	},
-	valueConverter: (v) => (isIOS ? parseFloat(v) : parseInt(v)),
+	valueConverter: (v) => (global.isIOS ? parseFloat(v) : parseInt(v)),
 });
 valueProperty.register(SliderBase);
 
@@ -39,7 +38,7 @@ export const minValueProperty = new Property<SliderBase, number>({
 		maxValueProperty.coerce(target);
 		valueProperty.coerce(target);
 	},
-	valueConverter: (v) => (isIOS ? parseFloat(v) : parseInt(v)),
+	valueConverter: (v) => (global.isIOS ? parseFloat(v) : parseInt(v)),
 });
 minValueProperty.register(SliderBase);
 
@@ -58,6 +57,6 @@ export const maxValueProperty = new CoercibleProperty<SliderBase, number>({
 		return value;
 	},
 	valueChanged: (target, oldValue, newValue) => valueProperty.coerce(target),
-	valueConverter: (v) => (isIOS ? parseFloat(v) : parseInt(v)),
+	valueConverter: (v) => (global.isIOS ? parseFloat(v) : parseInt(v)),
 });
 maxValueProperty.register(SliderBase);

@@ -1,6 +1,5 @@
 import * as tslibType from 'tslib';
 const tslib: typeof tslibType = require('tslib');
-import { isIOS, isAndroid } from '../platform';
 import { Observable } from '../data/observable';
 import { trace as profilingTrace, time, uptime, level as profilingLevel } from '../profiling';
 
@@ -109,10 +108,10 @@ export function installPolyfills(moduleName: string, exportNames: string[]) {
 }
 
 export function initGlobal() {
-	if (!(<any>global).hasInitGlobal) {
-		(<any>global).hasInitGlobal = true;
+	if (!global.NativeScriptHasInitGlobal) {
+		global.NativeScriptHasInitGlobal = true;
 		// init global state handler
-		(<any>global).NativeScriptGlobals = new NativeScriptGlobalState();
+		global.NativeScriptGlobals = new NativeScriptGlobalState();
 
 		// ts-helpers
 		// Required by V8 snapshot generator

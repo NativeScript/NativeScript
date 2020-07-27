@@ -70,7 +70,7 @@ module.exports = env => {
   const externals = nsWebpack.getConvertedExternals(env.externals);
   const appFullPath = resolve(projectRoot, appPath);
   const appResourcesFullPath = resolve(projectRoot, appResourcesPath);
-  const tsConfigName = 'tsconfig.tns.json';
+  const tsConfigName = 'tsconfig.json';
   const entryModule = `${nsWebpack.getEntryModule(appFullPath, platform)}.ts`;
   const entryPath = `.${sep}${entryModule}`;
   const entries = { bundle: entryPath };
@@ -349,6 +349,8 @@ module.exports = env => {
       // Define useful constants like TNS_WEBPACK
       new webpack.DefinePlugin({
         'global.TNS_WEBPACK': 'true',
+        'global.isAndroid': platform === 'android',
+        'global.isIOS': platform === 'ios',
         process: 'global.process'
       }),
       // Remove all files from the out dir.

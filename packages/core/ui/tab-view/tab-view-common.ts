@@ -4,7 +4,6 @@ import { ViewBase, booleanConverter } from '../core/view-base';
 import { Style } from '../styling/style';
 import { EventData } from '../../data/observable';
 import { Color } from '../../color';
-import { isIOS } from '../../platform';
 import { Property, CssProperty, CoercibleProperty } from '../core/properties';
 import { TextTransform } from '../text-base';
 import { Trace } from '../../trace';
@@ -220,7 +219,7 @@ export function traceMissingIcon(icon: string) {
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
 	name: 'selectedIndex',
 	defaultValue: -1,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
 		target.onSelectedIndexChanged(oldValue, newValue);
 	},
@@ -258,7 +257,7 @@ iosIconRenderingModeProperty.register(TabViewBase);
 export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
 	name: 'androidOffscreenTabLimit',
 	defaultValue: 1,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: (v) => parseInt(v),
 });
 androidOffscreenTabLimitProperty.register(TabViewBase);

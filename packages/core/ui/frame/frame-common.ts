@@ -3,7 +3,6 @@ import { BackstackEntry, NavigationContext, NavigationEntry, NavigationTransitio
 import { Page } from '../page';
 import { View, CustomLayoutView, CSSType } from '../core/view';
 import { Property } from '../core/properties';
-import { isIOS, isAndroid } from '../../platform';
 import { Trace } from '../../trace';
 
 // Requires.
@@ -525,11 +524,11 @@ export class FrameBase extends CustomLayoutView {
 
 	public _getNavigationTransition(entry: NavigationEntry): NavigationTransition {
 		if (entry) {
-			if (isIOS && entry.transitioniOS !== undefined) {
+			if (global.isIOS && entry.transitioniOS !== undefined) {
 				return entry.transitioniOS;
 			}
 
-			if (isAndroid && entry.transitionAndroid !== undefined) {
+			if (global.isAndroid && entry.transitionAndroid !== undefined) {
 				return entry.transitionAndroid;
 			}
 
@@ -721,5 +720,5 @@ export const defaultPage = new Property<FrameBase, string>({
 });
 defaultPage.register(FrameBase);
 
-export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: isIOS });
+export const actionBarVisibilityProperty = new Property<FrameBase, 'auto' | 'never' | 'always'>({ name: 'actionBarVisibility', defaultValue: 'auto', affectsLayout: global.isIOS });
 actionBarVisibilityProperty.register(FrameBase);

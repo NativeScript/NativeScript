@@ -232,6 +232,8 @@ module.exports = env => {
             // Define useful constants like TNS_WEBPACK
             new webpack.DefinePlugin({
                 "global.TNS_WEBPACK": "true",
+                "global.isAndroid": platform === 'android',
+                "global.isIOS": platform === 'ios',
                 "process": "global.process",
             }),
             // Remove all files from the out dir.

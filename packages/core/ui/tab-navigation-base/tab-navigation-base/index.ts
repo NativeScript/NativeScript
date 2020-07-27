@@ -8,7 +8,6 @@ import { Color } from '../../../color';
 import { ViewBase } from '../../core/view-base';
 import { Property, CoercibleProperty } from '../../core/properties';
 import { EventData } from '../../../data/observable';
-import { isIOS } from '../../../platform';
 import { TabContentItem } from '../tab-content-item';
 import { TabStrip } from '../tab-strip';
 
@@ -296,7 +295,7 @@ export function getIconSpecSize(size: { width: number; height: number }): { widt
 export const selectedIndexProperty = new CoercibleProperty<TabNavigationBase, number>({
 	name: 'selectedIndex',
 	defaultValue: -1,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
 		target.onSelectedIndexChanged(oldValue, newValue);
 	},

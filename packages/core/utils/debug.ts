@@ -1,5 +1,4 @@
 import { knownFolders } from '../file-system';
-import { isAndroid } from '../platform';
 
 export let debug = true;
 
@@ -62,7 +61,7 @@ export class ScopeError extends Error {
 			formattedMessage = message || inner.message || undefined;
 		}
 		super(formattedMessage);
-		this.stack = isAndroid ? 'Error: ' + this.message + '\n' + inner.stack.substr(inner.stack.indexOf('\n') + 1) : inner.stack;
+		this.stack = global.isAndroid ? 'Error: ' + this.message + '\n' + inner.stack.substr(inner.stack.indexOf('\n') + 1) : inner.stack;
 		this.message = formattedMessage;
 	}
 }

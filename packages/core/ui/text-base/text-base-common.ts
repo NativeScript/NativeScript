@@ -10,7 +10,6 @@ import { View } from '../core/view';
 import { Property, CssProperty, InheritedCssProperty, makeValidator, makeParser } from '../core/properties';
 import { Style } from '../styling/style';
 import { Length } from '../styling/style-properties';
-import { isAndroid, isIOS } from '../../platform';
 import { Observable } from '../../data/observable';
 
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from './text-base-interfaces';
@@ -182,7 +181,7 @@ export function isBold(fontWeight: FontWeight): boolean {
 export const textProperty = new Property<TextBaseCommon, string>({
 	name: 'text',
 	defaultValue: '',
-	affectsLayout: isAndroid,
+	affectsLayout: global.isAndroid,
 });
 textProperty.register(TextBaseCommon);
 
@@ -245,7 +244,7 @@ export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({
 	name: 'whiteSpace',
 	cssName: 'white-space',
 	defaultValue: 'initial',
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: whiteSpaceConverter,
 });
 whiteSpaceProperty.register(Style);
@@ -263,7 +262,7 @@ export const letterSpacingProperty = new InheritedCssProperty<Style, number>({
 	name: 'letterSpacing',
 	cssName: 'letter-spacing',
 	defaultValue: 0,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: (v) => parseFloat(v),
 });
 letterSpacingProperty.register(Style);
@@ -271,7 +270,7 @@ letterSpacingProperty.register(Style);
 export const lineHeightProperty = new InheritedCssProperty<Style, number>({
 	name: 'lineHeight',
 	cssName: 'line-height',
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: (v) => parseFloat(v),
 });
 lineHeightProperty.register(Style);

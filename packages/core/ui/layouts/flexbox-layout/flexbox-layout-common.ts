@@ -2,7 +2,6 @@ import { LayoutBase } from '../layout-base';
 import { View, CSSType } from '../../core/view';
 import { CssProperty, ShorthandProperty, makeParser, makeValidator, unsetValue } from '../../core/properties';
 import { Style } from '../../styling/style';
-import { isIOS } from '../../../platform';
 
 export type Basis = 'auto' | number;
 
@@ -223,7 +222,7 @@ export const flexDirectionProperty = new CssProperty<Style, FlexDirection>({
 	name: 'flexDirection',
 	cssName: 'flex-direction',
 	defaultValue: FlexDirection.ROW,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: FlexDirection.parse,
 });
 flexDirectionProperty.register(Style);
@@ -232,7 +231,7 @@ export const flexWrapProperty = new CssProperty<Style, FlexWrap>({
 	name: 'flexWrap',
 	cssName: 'flex-wrap',
 	defaultValue: 'nowrap',
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: FlexWrap.parse,
 });
 flexWrapProperty.register(Style);
@@ -241,7 +240,7 @@ export const justifyContentProperty = new CssProperty<Style, JustifyContent>({
 	name: 'justifyContent',
 	cssName: 'justify-content',
 	defaultValue: JustifyContent.FLEX_START,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: JustifyContent.parse,
 });
 justifyContentProperty.register(Style);
@@ -250,7 +249,7 @@ export const alignItemsProperty = new CssProperty<Style, AlignItems>({
 	name: 'alignItems',
 	cssName: 'align-items',
 	defaultValue: AlignItems.STRETCH,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: AlignItems.parse,
 });
 alignItemsProperty.register(Style);
@@ -259,7 +258,7 @@ export const alignContentProperty = new CssProperty<Style, AlignContent>({
 	name: 'alignContent',
 	cssName: 'align-content',
 	defaultValue: AlignContent.STRETCH,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: AlignContent.parse,
 });
 alignContentProperty.register(Style);

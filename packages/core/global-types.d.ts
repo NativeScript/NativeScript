@@ -21,6 +21,24 @@ declare interface NativeScriptError extends Error {
 //Augment the NodeJS global type with our own extensions
 declare namespace NodeJS {
 	interface Global {
+		NativeScriptHasInitGlobal?: boolean;
+		NativeScriptGlobals?: {
+			/**
+			 * Global framework event handling
+			 */
+			events: Observable;
+			launched: boolean;
+			// used by various classes to setup callbacks to wire up global app event handling when the app instance is ready
+			appEventWiring: Array<any>;
+			// determines if the app instance is ready upon bootstrap
+			appInstanceReady: boolean;
+
+			/**
+			 * Ability for classes to initialize app event handling early even before the app instance is ready during boot cycle avoiding boot race conditions
+			 * @param callback wire up any global event handling inside the callback
+			 */
+			addEventWiring(callback: () => void): void;
+		};
 		android?: any;
 		require(id: string): any;
 
@@ -91,6 +109,9 @@ declare namespace NodeJS {
 		__onUncaughtError: (error: NativeScriptError) => void;
 		__onDiscardedError: (error: NativeScriptError) => void;
 		__snapshot?: boolean;
+		TNS_WEBPACK?: boolean;
+		isIOS?: boolean;
+		isAndroid?: boolean;
 		__requireOverride?: (name: string, dir: string) => any;
 	}
 }

@@ -61,12 +61,8 @@ export class AndroidApplication extends Observable implements AndroidApplication
 		this.nativeApp = nativeApp;
 		this.packageName = nativeApp.getPackageName();
 		this.context = nativeApp.getApplicationContext();
-		console.log('this.nativeApp:', this.nativeApp);
-		console.log('this.packageName:', this.packageName);
-		console.log('this.context:', this.context);
 		// we store those callbacks and add a function for clearing them later so that the objects will be eligable for GC
 		this.callbacks.lifecycleCallbacks = initLifecycleCallbacks();
-		console.log('this.callbacks.lifecycleCallbacks:', this.callbacks.lifecycleCallbacks);
 		this.callbacks.componentCallbacks = initComponentCallbacks();
 		this.nativeApp.registerActivityLifecycleCallbacks(this.callbacks.lifecycleCallbacks);
 		this.nativeApp.registerComponentCallbacks(this.callbacks.componentCallbacks);
@@ -170,8 +166,6 @@ export function run(entry?: NavigationEntry | string) {
 
 	started = true;
 	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
-	console.log('run mainEntry:', mainEntry);
-	console.log('androidApp.nativeApp:', androidApp.nativeApp);
 	if (!androidApp.nativeApp) {
 		const nativeApp = getNativeApplication();
 		androidApp.init(nativeApp);

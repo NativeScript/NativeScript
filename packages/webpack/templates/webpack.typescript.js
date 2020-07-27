@@ -85,7 +85,7 @@ module.exports = env => {
     const entries = env.entries || {};
     entries.bundle = entryPath;
 
-    const tsConfigPath = resolve(projectRoot, "tsconfig.tns.json");
+    const tsConfigPath = resolve(projectRoot, "tsconfig.json");
 
     const areCoreModulesExternal = Array.isArray(env.externals) && env.externals.some(e => e.indexOf("@nativescript") > -1);
     if (platform === "ios" && !areCoreModulesExternal) {
@@ -260,6 +260,8 @@ module.exports = env => {
             // Define useful constants like TNS_WEBPACK
             new webpack.DefinePlugin({
                 "global.TNS_WEBPACK": "true",
+                "global.isAndroid": platform === 'android',
+                "global.isIOS": platform === 'ios',
                 "process": "global.process",
             }),
             // Remove all files from the out dir.

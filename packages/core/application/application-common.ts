@@ -1,6 +1,6 @@
 // Require globals first so that snapshot takes __extends function.
 const nsGlobals = require('../globals');
-if (!(<any>global).hasInitGlobal) {
+if (!global.NativeScriptHasInitGlobal) {
 	nsGlobals.initGlobal();
 }
 
@@ -19,7 +19,7 @@ import { Enums } from '../ui/enums';
 export * from './application-interfaces';
 
 export function hasLaunched(): boolean {
-	return (<any>global).NativeScriptGlobals && (<any>global).NativeScriptGlobals.launched;
+	return global.NativeScriptGlobals && global.NativeScriptGlobals.launched;
 }
 
 export const launchEvent = 'launch';
@@ -50,20 +50,20 @@ export function setResources(res: any) {
 export let android: AndroidApplication = undefined;
 export let ios: iOSApplication = undefined;
 
-export const on = (<any>global).NativeScriptGlobals.events.on.bind((<any>global).NativeScriptGlobals.events);
-export const off = (<any>global).NativeScriptGlobals.events.off.bind((<any>global).NativeScriptGlobals.events);
-export const notify = (<any>global).NativeScriptGlobals.events.notify.bind((<any>global).NativeScriptGlobals.events);
-export const hasListeners = (<any>global).NativeScriptGlobals.events.hasListeners.bind((<any>global).NativeScriptGlobals.events);
+export const on = global.NativeScriptGlobals.events.on.bind(global.NativeScriptGlobals.events);
+export const off = global.NativeScriptGlobals.events.off.bind(global.NativeScriptGlobals.events);
+export const notify = global.NativeScriptGlobals.events.notify.bind(global.NativeScriptGlobals.events);
+export const hasListeners = global.NativeScriptGlobals.events.hasListeners.bind(global.NativeScriptGlobals.events);
 
 let app: iOSApplication | AndroidApplication;
 export function setApplication(instance: iOSApplication | AndroidApplication): void {
 	app = instance;
 	// signal when the application instance is ready globally
-	(<any>global).NativeScriptGlobals.appInstanceReady = true;
+	global.NativeScriptGlobals.appInstanceReady = true;
 }
 
 export function livesync(rootView: View, context?: ModuleContext) {
-	(<any>global).NativeScriptGlobals.events.notify(<EventData>{ eventName: 'livesync', object: app });
+	global.NativeScriptGlobals.events.notify(<EventData>{ eventName: 'livesync', object: app });
 	const liveSyncCore = global.__onLiveSyncCore;
 	let reapplyAppStyles = false;
 
@@ -85,7 +85,7 @@ export function livesync(rootView: View, context?: ModuleContext) {
 
 export function setCssFileName(cssFileName: string) {
 	cssFile = cssFileName;
-	(<any>global).NativeScriptGlobals.events.notify(<CssChangedEventData>{
+	global.NativeScriptGlobals.events.notify(<CssChangedEventData>{
 		eventName: 'cssChanged',
 		object: app,
 		cssFile: cssFileName,
@@ -98,7 +98,7 @@ export function getCssFileName(): string {
 
 export function loadAppCss(): void {
 	try {
-		(<any>global).NativeScriptGlobals.events.notify(<LoadAppCSSEventData>{
+		global.NativeScriptGlobals.events.notify(<LoadAppCSSEventData>{
 			eventName: 'loadAppCss',
 			object: app,
 			cssFile: getCssFileName(),
@@ -164,7 +164,7 @@ export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'da
 }
 
 global.__onUncaughtError = function (error: NativeScriptError) {
-	(<any>global).NativeScriptGlobals.events.notify(<UnhandledErrorEventData>{
+	global.NativeScriptGlobals.events.notify(<UnhandledErrorEventData>{
 		eventName: uncaughtErrorEvent,
 		object: app,
 		android: error,
@@ -174,7 +174,7 @@ global.__onUncaughtError = function (error: NativeScriptError) {
 };
 
 global.__onDiscardedError = function (error: NativeScriptError) {
-	(<any>global).NativeScriptGlobals.events.notify(<DiscardedErrorEventData>{
+	global.NativeScriptGlobals.events.notify(<DiscardedErrorEventData>{
 		eventName: discardedErrorEvent,
 		object: app,
 		error: error,

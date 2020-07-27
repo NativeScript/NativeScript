@@ -10,7 +10,6 @@ import { AddChildFromBuilder, PseudoClassHandler } from '../../core/view';
 import { View, CSSType } from '../../core/view';
 import { ViewBase } from '../../core/view-base';
 import { backgroundColorProperty, backgroundInternalProperty } from '../../styling/style-properties';
-import { isIOS } from '../../../platform';
 import { Image } from '../../image';
 import { Label } from '../../label';
 import { textTransformProperty, TextTransform } from '../../text-base';
@@ -246,7 +245,7 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
 
 			const parent = <TabStrip>this.parent;
 			const tabStripParent = parent && <TabNavigationBase>parent.parent;
-			if (this._index === tabStripParent.selectedIndex && !(isIOS && tabStripParent.cssType.toLowerCase() === 'tabs')) {
+			if (this._index === tabStripParent.selectedIndex && !(global.isIOS && tabStripParent.cssType.toLowerCase() === 'tabs')) {
 				// HACK: tabStripParent instanceof Tabs creates a circular dependency
 				// HACK: tabStripParent.cssType === "Tabs" is a hacky workaround
 				this._goToVisualState('highlighted');

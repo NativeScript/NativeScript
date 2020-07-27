@@ -1,5 +1,4 @@
 import { FileSystemAccess } from './file-system-access';
-import { isIOS } from '../platform';
 
 // The FileSystemAccess implementation, used through all the APIs.
 let fileAccess: FileSystemAccess;
@@ -572,7 +571,7 @@ export module knownFolders {
 
 	export module ios {
 		function _checkPlatform(knownFolderName: string) {
-			if (!isIOS) {
+			if (!global.isIOS) {
 				console.log(`The "${knownFolderName}" known folder is available on iOS only!`);
 			}
 		}

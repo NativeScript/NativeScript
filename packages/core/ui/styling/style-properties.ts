@@ -9,7 +9,6 @@ import { Color } from '../../color';
 import { Font, parseFont, FontStyle, FontWeight } from '../../ui/styling/font';
 import { layout, hasDuplicates } from '../../utils';
 import { Background } from '../../ui/styling/background';
-import { isIOS } from '../../platform';
 
 import { radiansToDegrees } from '../../utils/number-utils';
 
@@ -198,7 +197,7 @@ export const minWidthProperty = new CssProperty<Style, Length>({
 	name: 'minWidth',
 	cssName: 'min-width',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -216,7 +215,7 @@ export const minHeightProperty = new CssProperty<Style, Length>({
 	name: 'minHeight',
 	cssName: 'min-height',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -238,7 +237,7 @@ export const widthProperty = new CssAnimationProperty<Style, PercentLength>({
 	// TODO: CSSAnimationProperty was needed for keyframe (copying other impls), but `affectsLayout` does not exist
 	//       on the animation property, so fake it here. x_x
 	valueChanged: (target, oldValue, newValue) => {
-		if (isIOS) {
+		if (global.isIOS) {
 			const view = target.viewRef.get();
 			if (view) {
 				view.requestLayout();
@@ -257,7 +256,7 @@ export const heightProperty = new CssAnimationProperty<Style, PercentLength>({
 	// TODO: CSSAnimationProperty was needed for keyframe (copying other impls), but `affectsLayout` does not exist
 	//       on the animation property, so fake it here. -_-
 	valueChanged: (target, oldValue, newValue) => {
-		if (isIOS) {
+		if (global.isIOS) {
 			const view = target.viewRef.get();
 			if (view) {
 				view.requestLayout();
@@ -286,7 +285,7 @@ export const marginLeftProperty = new CssProperty<Style, PercentLength>({
 	name: 'marginLeft',
 	cssName: 'margin-left',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -296,7 +295,7 @@ export const marginRightProperty = new CssProperty<Style, PercentLength>({
 	name: 'marginRight',
 	cssName: 'margin-right',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -306,7 +305,7 @@ export const marginTopProperty = new CssProperty<Style, PercentLength>({
 	name: 'marginTop',
 	cssName: 'margin-top',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -316,7 +315,7 @@ export const marginBottomProperty = new CssProperty<Style, PercentLength>({
 	name: 'marginBottom',
 	cssName: 'margin-bottom',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueConverter: PercentLength.parse,
 });
@@ -340,7 +339,7 @@ export const paddingLeftProperty = new CssProperty<Style, Length>({
 	name: 'paddingLeft',
 	cssName: 'padding-left',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -358,7 +357,7 @@ export const paddingRightProperty = new CssProperty<Style, Length>({
 	name: 'paddingRight',
 	cssName: 'padding-right',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -376,7 +375,7 @@ export const paddingTopProperty = new CssProperty<Style, Length>({
 	name: 'paddingTop',
 	cssName: 'padding-top',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -394,7 +393,7 @@ export const paddingBottomProperty = new CssProperty<Style, Length>({
 	name: 'paddingBottom',
 	cssName: 'padding-bottom',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
@@ -422,7 +421,7 @@ export const horizontalAlignmentProperty = new CssProperty<Style, HorizontalAlig
 	name: 'horizontalAlignment',
 	cssName: 'horizontal-align',
 	defaultValue: HorizontalAlignment.STRETCH,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: HorizontalAlignment.parse,
 });
 horizontalAlignmentProperty.register(Style);
@@ -447,7 +446,7 @@ export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignmen
 	name: 'verticalAlignment',
 	cssName: 'vertical-align',
 	defaultValue: VerticalAlignment.STRETCH,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: VerticalAlignment.parse,
 });
 verticalAlignmentProperty.register(Style);
@@ -1079,7 +1078,7 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
 	name: 'borderTopWidth',
 	cssName: 'border-top-width',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
@@ -1104,7 +1103,7 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
 	name: 'borderRightWidth',
 	cssName: 'border-right-width',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
@@ -1129,7 +1128,7 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
 	name: 'borderBottomWidth',
 	cssName: 'border-bottom-width',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
@@ -1154,7 +1153,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
 	name: 'borderLeftWidth',
 	cssName: 'border-left-width',
 	defaultValue: zeroLength,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
@@ -1212,7 +1211,7 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, Length>({
 	name: 'borderTopLeftRadius',
 	cssName: 'border-top-left-radius',
 	defaultValue: 0,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
@@ -1229,7 +1228,7 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, Length>({
 	name: 'borderTopRightRadius',
 	cssName: 'border-top-right-radius',
 	defaultValue: 0,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
@@ -1246,7 +1245,7 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, Length>({
 	name: 'borderBottomRightRadius',
 	cssName: 'border-bottom-right-radius',
 	defaultValue: 0,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
@@ -1263,7 +1262,7 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, Length>({
 	name: 'borderBottomLeftRadius',
 	cssName: 'border-bottom-left-radius',
 	defaultValue: 0,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
 		let value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
@@ -1354,7 +1353,7 @@ fontInternalProperty.register(Style);
 export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 	name: 'fontFamily',
 	cssName: 'font-family',
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
 		let currentFont = target.fontInternal || Font.default;
 		if (currentFont.fontFamily !== newValue) {
@@ -1368,7 +1367,7 @@ fontFamilyProperty.register(Style);
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',
 	cssName: 'font-size',
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
 		if (target.viewRef['handleFontSize'] === true) {
 			return;
@@ -1386,7 +1385,7 @@ fontSizeProperty.register(Style);
 export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
 	name: 'fontStyle',
 	cssName: 'font-style',
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	defaultValue: FontStyle.NORMAL,
 	valueConverter: FontStyle.parse,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1402,7 +1401,7 @@ fontStyleProperty.register(Style);
 export const fontWeightProperty = new InheritedCssProperty<Style, FontWeight>({
 	name: 'fontWeight',
 	cssName: 'font-weight',
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	defaultValue: FontWeight.NORMAL,
 	valueConverter: FontWeight.parse,
 	valueChanged: (target, oldValue, newValue) => {
@@ -1458,7 +1457,7 @@ export const visibilityProperty = new CssProperty<Style, Visibility>({
 	name: 'visibility',
 	cssName: 'visibility',
 	defaultValue: Visibility.VISIBLE,
-	affectsLayout: isIOS,
+	affectsLayout: global.isIOS,
 	valueConverter: Visibility.parse,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();

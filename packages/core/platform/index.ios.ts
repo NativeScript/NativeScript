@@ -123,5 +123,5 @@ export class Screen {
 	static mainScreen = new MainScreen();
 }
 
-export const isIOS = true;
-export const isAndroid = false;
+export const isAndroid = global.isAndroid;
+export const isIOS = global.isIOS;

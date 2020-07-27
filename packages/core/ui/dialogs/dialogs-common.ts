@@ -2,7 +2,6 @@
 import { View } from '../core/view';
 import { Color } from '../../color';
 import { Page } from '../page';
-import { isIOS } from '../../platform';
 import { Frame } from '../frame';
 import { isObject, isString } from '../../utils/types';
 
@@ -266,7 +265,7 @@ export function getButtonColors(): { color: Color; backgroundColor: Color } {
 	if (!button) {
 		const Button = require('../button').Button;
 		button = new Button();
-		if (isIOS) {
+		if (global.isIOS) {
 			button._setupUI(<any>{});
 		}
 	}
@@ -285,7 +284,7 @@ export function getLabelColor(): Color {
 	if (!label) {
 		const Label = require('../label').Label;
 		label = new Label();
-		if (isIOS) {
+		if (global.isIOS) {
 			label._setupUI(<any>{});
 		}
 	}
@@ -302,7 +301,7 @@ export function getTextFieldColor(): Color {
 	if (!textField) {
 		const TextField = require('../text-field').TextField;
 		textField = new TextField();
-		if (isIOS) {
+		if (global.isIOS) {
 			textField._setupUI(<any>{});
 		}
 	}

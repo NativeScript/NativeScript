@@ -145,5 +145,5 @@ class DeviceRef {
 
 export const Device = new DeviceRef();
 
-export const isAndroid = true;
-export const isIOS = false;
+export const isAndroid = global.isAndroid;
+export const isIOS = global.isIOS;
