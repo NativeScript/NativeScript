@@ -1,12 +1,19 @@
-import * as application from "tns-core-modules/application";
-import * as trace from "tns-core-modules/trace";
-trace.addCategories(
-    trace.categories.Transition)
-// + "," + 
-//     trace.categories.NativeLifecycle + "," + 
+import {
+    setCssFileName,
+    start
+} from "tns-core-modules/application";
+import {
+    addCategories,
+    categories,
+    enable
+} from "tns-core-modules/trace";
+
+addCategories(categories.Transition)
+// + "," +
+//     trace.categories.NativeLifecycle + "," +
 //     trace.categories.Navigation);
-trace.enable();
+enable();
 
 // Needed only for build infrastructure
-application.setCssFileName("navigation-app/app.css");
-application.start({ moduleName: "navigation-app/main-page" });
+setCssFileName("navigation-app/app.css");
+start({ moduleName: "navigation-app/main-page" });
