@@ -11,7 +11,7 @@ export function nav() {
     topmost().navigate(e)
 }
 export function navClearTrans() {
-    console.log("transition and clear")
+    console.log("transition and clear history")
 
     const e: NavigationEntry = {
         transition: {
@@ -25,6 +25,8 @@ export function navClearTrans() {
 }
 
 export function navWithTransition() {
+    console.log("transition and not clear history")
+
     const e: NavigationEntry = {
         transition: {
             name: "slideLeft",
@@ -36,15 +38,14 @@ export function navWithTransition() {
 }
 
 export function navWithClear() {
+    console.log("clear history")
+
     const e: NavigationEntry = {
         clearHistory: true,
         moduleName: "navigation-app/main-page"
     }
     topmost().navigate(e)
 }
-
-let i = 0;
-const colors = ["lightgreen", "lightblue", "lightcoral"]
 
 export function navigatedFrom(args: NavigatedData) {
     console.log(`navigatedFrom ${args.object.toString()}  isBack: ${args.isBackNavigation}`)
@@ -55,6 +56,9 @@ export function navigatedTo(args: NavigatedData) {
 }
 
 export function navigatingTo(args: NavigatedData) {
+    const colors = ["lightgreen", "lightblue", "lightcoral"];
+    let i = 0;
+
     if (!args.isBackNavigation) {
         (<any>args.object).page.backgroundColor = colors[(i++) % 3];
         const array = new Array();
