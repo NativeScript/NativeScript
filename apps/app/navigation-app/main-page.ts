@@ -1,5 +1,8 @@
 import { NavigatedData } from "tns-core-modules/ui/page";
-import { topmost, NavigationEntry } from "tns-core-modules/ui/frame";
+import {
+    topmost,
+    NavigationEntry
+} from "tns-core-modules/ui/frame";
 
 export function nav() {
     const e: NavigationEntry = {
