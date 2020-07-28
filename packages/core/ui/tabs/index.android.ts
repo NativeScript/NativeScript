@@ -181,8 +181,8 @@ function initializeNativeClasses() {
 
 		public onViewRecycled(holder: androidx.viewpager2.adapter.FragmentViewHolder): void {
 			super.onViewRecycled(holder);
-			if (holder.getLayoutPosition) {
-				const position = holder.getLayoutPosition();
+			if ((holder as any).getLayoutPosition) {
+				const position = (holder as any).getLayoutPosition();
 				const tabItems = this.owner.items;
 				const tabItem = tabItems ? tabItems[position] : null;
 				if (tabItem) {

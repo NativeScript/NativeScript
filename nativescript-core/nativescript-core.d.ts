@@ -1147,14 +1147,14 @@ declare function clear(): void;
  * Clears all the writers from the trace module.
  */
 declare function clearWriters(); /** */
+/**
+ * Represents a color object. Stores all color components (alpha (opacity), red, green, blue) in a [0..255] range.
+ */
 
 /**
  * Allows creating colors to be used when styling the UI.
  * @module "color"
- */ /**
- * Represents a color object. Stores all color components (alpha (opacity), red, green, blue) in a [0..255] range.
- */
-export declare class Color {
+ */ export declare class Color {
 	constructor(knownColor: string);
 	constructor(hex: string);
 	constructor(argb: number);
@@ -1765,14 +1765,14 @@ export declare class EditableTextBase extends TextBase {
  *  - "lifecycle" - Outputs basic non-verbose times for startup, navigation, etc.
  */
 declare function enable(type?: InstrumentationMode): void; /** */
+/**
+ * Enables the trace module.
+ */
 
 /**
  * Allows you to trace and print specific information based on categories.
  * @module "trace"
- */ /**
- * Enables the trace module.
- */
-declare function enable_2(): void;
+ */ declare function enable_2(): void;
 
 /**
  * Defines the supported character encodings.
@@ -1821,14 +1821,14 @@ declare function error(error: string | Error);
 export declare interface ErrorHandler {
 	handlerError(error: Error);
 } /** */
+/**
+ * Base event data.
+ */
 
 /**
  * Contains the Observable class, which represents an observable object, or "data" in the model-view paradigm.
  * @module "data/observable"
- */ /**
- * Base event data.
- */
-export declare interface EventData {
+ */ export declare interface EventData {
 	/**
 	 * The name of the event.
 	 */
@@ -1929,14 +1929,14 @@ export declare class File extends FileSystemEntity {
 	 */
 	writeSync(content: any, onError?: (error: any) => any): void;
 } /** */
+/**
+ * Represents a single entity on the file system.
+ */
 
 /**
  * Provides high-level abstractions for file system entities such as files, folders, known folders, paths, separators, etc.
  * @module "file-system"
- */ /**
- * Represents a single entity on the file system.
- */
-export declare class FileSystemEntity {
+ */ export declare class FileSystemEntity {
 	/**
 	 * Gets the Date object specifying the last time this entity was modified.
 	 */
@@ -2556,16 +2556,16 @@ declare function getAllKeys(): Array<string>;
  * @param defaultValue An optional value to be returned in case there is no existing value.
  */
 declare function getBoolean(key: string, defaultValue?: boolean): boolean; /** */
-
 /**
- * Contains connectivity utility methods.
- * @module "connectivity"
- */ /**
  * Gets the type of connection.
  * Returns a value from the connectivity.connectionType enumeration.
  * To use this method on Android you need to have the android.permission.ACCESS_NETWORK_STATE permission added to the AndroidManifest.xml file.
  */
-declare function getConnectionType(): number;
+
+/**
+ * Contains connectivity utility methods.
+ * @module "connectivity"
+ */ declare function getConnectionType(): number;
 
 /**
  * Gets css file name for the application.
@@ -2772,15 +2772,15 @@ export declare namespace GridUnitType {
 	export function isValid(value: any): boolean;
 	export function parse(value: string): GridUnitType;
 } /** */
+/**
+ * Checks whether such a key exists.
+ * @param key The key to check for.
+ */
 
 /**
  * Allows you to save and restore any kind of information related to your application.
  * @module "application-settings"
- */ /**
- * Checks whether such a key exists.
- * @param key The key to check for.
- */
-declare function hasKey(key: string): boolean;
+ */ declare function hasKey(key: string): boolean;
 
 /**
  * Indicates if the application is allready launched. See also the `application.on("launch", handler)` event.
@@ -5015,14 +5015,14 @@ export declare interface ParserEvent {
 	 */
 	toString(): string;
 } /** */
+/**
+ * Specifies the type of parser event.
+ */
 
 /**
  * Contains the XmlParser class, which is a SAX parser using the easysax implementation.
  * @module "xml"
- */ /**
- * Specifies the type of parser event.
- */
-export declare class ParserEventType {
+ */ export declare class ParserEventType {
 	/**
 	 * Specifies the StartElement event type.
 	 */
