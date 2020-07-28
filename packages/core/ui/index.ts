@@ -21,16 +21,16 @@ export { addWeakEventListener, removeWeakEventListener } from './core/weak-event
 export { DatePicker } from './date-picker';
 
 // No need go export dialogs, they are already export exported globally
-export { action, alert, confirm, login, prompt, getCurrentPage, Dialogs } from './dialogs';
-export type { DialogStrings, DialogOptions, CancelableOptions, AlertOptions, PromptResult, PromptOptions, ActionOptions, ConfirmOptions, LoginResult, LoginOptions, inputType, capitalizationType } from './dialogs';
+export { action, alert, confirm, login, prompt, getCurrentPage, Dialogs, inputType, capitalizationType } from './dialogs';
+export type { DialogStrings, DialogOptions, CancelableOptions, AlertOptions, PromptResult, PromptOptions, ActionOptions, ConfirmOptions, LoginResult, LoginOptions } from './dialogs';
 
 export * from './editable-text-base';
 export { Enums } from './enums';
 export { Frame, setActivityCallbacks } from './frame';
 export type { NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks } from './frame';
 
-export { GesturesObserver, TouchAction } from './gestures';
-export type { GestureEventData, GestureEventDataWithState, GestureStateTypes, GestureTypes, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeDirection, SwipeGestureEventData, TouchGestureEventData } from './gestures';
+export { GesturesObserver, TouchAction, GestureTypes, GestureStateTypes, SwipeDirection } from './gestures';
+export type { GestureEventData, GestureEventDataWithState, TapGestureEventData, PanGestureEventData, PinchGestureEventData, RotationGestureEventData, SwipeGestureEventData, TouchGestureEventData } from './gestures';
 
 export { HtmlView } from './html-view';
 export { Image } from './image';

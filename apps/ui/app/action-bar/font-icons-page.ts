@@ -3,7 +3,7 @@ import { Frame, EventData, Button, ActionBar } from '@nativescript/core';
 const iconModes = ['automatic', 'alwaysOriginal', 'alwaysTemplate', undefined];
 
 export function navigate(args) {
-	Frame.topmost().navigate('ui-tests-app/action-bar/clean');
+	Frame.topmost().navigate('action-bar/clean-page');
 }
 
 export function onChangeRenderingMode(args: EventData) {

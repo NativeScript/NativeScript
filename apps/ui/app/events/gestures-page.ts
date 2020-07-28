@@ -1,14 +1,9 @@
-import { GestureEventData, RotationGestureEventData, GestureTypes, SwipeGestureEventData, PanGestureEventData, PinchGestureEventData, GestureStateTypes } from '@nativescript/core/ui/gestures';
-import { Button } from '@nativescript/core/ui/button';
-import { Label } from '@nativescript/core/ui/label';
-import { Page } from '@nativescript/core/ui/page';
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import { screen, isAndroid } from '@nativescript/core/platform';
+import { Screen, StackLayout, Page, Label, Button, GestureEventData, RotationGestureEventData, GestureTypes, SwipeGestureEventData, PanGestureEventData, PinchGestureEventData, GestureStateTypes } from '@nativescript/core';
 
 export function createPage() {
 	const stack = new StackLayout();
 	var stopButton = new Button();
-	if (isAndroid) {
+	if (global.isAndroid) {
 		stopButton.height = 30;
 		stopButton.fontSize = 8;
 	}
@@ -16,7 +11,7 @@ export function createPage() {
 	stopButton.automationText = 'stopGesturesDetecting';
 	stack.addChild(stopButton);
 
-	const labelHeight = Math.round(screen.mainScreen.heightPixels / (10 * screen.mainScreen.scale));
+	const labelHeight = Math.round(Screen.mainScreen.heightPixels / (10 * Screen.mainScreen.scale));
 
 	const tapLabel = createLabel('Tap here', labelHeight);
 	stack.addChild(tapLabel);
