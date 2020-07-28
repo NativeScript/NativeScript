@@ -4,7 +4,7 @@ import { PlatformContext, findMatch, stripQualifiers } from './qualifier-matcher
 import { registerModulesFromFileSystem } from './non-bundle-workflow-compat';
 import { Trace } from '../trace';
 
-export { PlatformContext } from './qualifier-matcher';
+export type { PlatformContext } from './qualifier-matcher';
 
 export type ModuleListProvider = () => string[];
 

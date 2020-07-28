@@ -58,6 +58,7 @@ module.exports = env => {
     hiddenSourceMap, // --env.hiddenSourceMap
     hmr, // --env.hmr,
     unitTesting, // --env.unitTesting
+    testing, // --env.testing
     verbose, // --env.verbose
     ci, // --env.ci
     snapshotInDocker, // --env.snapshotInDocker
@@ -77,7 +78,7 @@ module.exports = env => {
   const areCoreModulesExternal =
     Array.isArray(env.externals) &&
     env.externals.some(e => e.indexOf('@nativescript') > -1);
-  if (platform === 'ios' && !areCoreModulesExternal) {
+  if (platform === 'ios' && !areCoreModulesExternal && !testing) {
     entries['tns_modules/@nativescript/core/inspector_modules'] =
       'inspector_modules';
   }

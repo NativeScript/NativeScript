@@ -1,6 +1,5 @@
 // Definitions.
-import { Frame, BackstackEntry } from '../frame';
-import { NavigationType } from '../frame/frame-common';
+import { Frame, BackstackEntry, NavigationType } from '../frame';
 
 // Types.
 import { View, IOSHelper } from '../core/view';

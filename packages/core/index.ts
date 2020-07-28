@@ -68,13 +68,16 @@ export const Connectivity = {
 
 export { CSSUtils } from './css/system-classes';
 
-export { ObservableArray, ChangeType, ChangedData } from './data/observable-array';
-export { Observable, PropertyChangeData, EventData, WrappedValue, fromObject, fromObjectRecursive } from './data/observable';
-export { VirtualArray, ItemsLoading } from './data/virtual-array';
+export { ObservableArray, ChangeType } from './data/observable-array';
+export type { ChangedData } from './data/observable-array';
+export { Observable, WrappedValue, fromObject, fromObjectRecursive } from './data/observable';
+export type { PropertyChangeData, EventData } from './data/observable';
+export { VirtualArray } from './data/virtual-array';
+export type { ItemsLoading } from './data/virtual-array';
 export { File, FileSystemEntity, Folder, knownFolders, path } from './file-system';
 
 // Export all interfaces from "http" module
-export { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
+export type { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
 // Export all methods from "http" as Http
 import { getFile, getImage, getJSON, getString as httpGetString, request } from './http';
 export const Http = {
@@ -85,14 +88,18 @@ export const Http = {
 	request,
 };
 
-export { ImageAsset, ImageAssetOptions } from './image-asset';
+export { ImageAsset } from './image-asset';
+export type { ImageAssetOptions } from './image-asset';
 
 export { ImageSource } from './image-source';
-export { ModuleNameResolver, ModuleListProvider, PlatformContext, _setResolver } from './module-name-resolver';
-export { isAndroid, isIOS, Screen, IDevice, Device, platformNames } from './platform';
+export { ModuleNameResolver, _setResolver } from './module-name-resolver';
+export type { ModuleListProvider, PlatformContext } from './module-name-resolver';
+export { isAndroid, isIOS, Screen, Device, platformNames } from './platform';
+export type { IDevice } from './platform';
 
 // Profiling
-export { InstrumentationMode, TimerInfo, profile, enable as profilingEnable, disable as profilingDisable, time as profilingTime, uptime as profilingUptime, start as profilingStart, stop as profilingStop, isRunning as profilingIsRunning, dumpProfiles as profilingDumpProfiles, resetProfiles as profilingResetProfiles, startCPUProfile as profilingStartCPU, stopCPUProfile as profilingStopCPU } from './profiling';
+export { profile, enable as profilingEnable, disable as profilingDisable, time as profilingTime, uptime as profilingUptime, start as profilingStart, stop as profilingStop, isRunning as profilingIsRunning, dumpProfiles as profilingDumpProfiles, resetProfiles as profilingResetProfiles, startCPUProfile as profilingStartCPU, stopCPUProfile as profilingStopCPU } from './profiling';
+export type { InstrumentationMode, TimerInfo } from './profiling';
 
 export { encoding } from './text';
 

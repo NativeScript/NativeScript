@@ -668,3 +668,5 @@ class iOSFrame implements iOSFrameDefinition {
 		this._navBarVisibility = value;
 	}
 }
+
+export function setActivityCallbacks(activity: any): void {}

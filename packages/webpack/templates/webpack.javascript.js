@@ -49,6 +49,7 @@ module.exports = env => {
         hiddenSourceMap, // --env.hiddenSourceMap
         hmr, // --env.hmr,
         unitTesting, // --env.unitTesting,
+        testing, // --env.testing
         verbose, // --env.verbose
         snapshotInDocker, // --env.snapshotInDocker
         skipSnapshotTools, // --env.skipSnapshotTools
@@ -82,7 +83,7 @@ module.exports = env => {
     entries.bundle = entryPath;
 
     const areCoreModulesExternal = Array.isArray(env.externals) && env.externals.some(e => e.indexOf("@nativescript") > -1);
-    if (platform === "ios" && !areCoreModulesExternal) {
+    if (platform === "ios" && !areCoreModulesExternal && !testing) {
         entries["tns_modules/@nativescript/core/inspector_modules"] = "inspector_modules";
     };
 
@@ -292,10 +293,6 @@ module.exports = env => {
     if (hmr) {
         config.plugins.push(new webpack.HotModuleReplacementPlugin());
     }
-
-    config.stats = {
-      warnings: false
-    };
 
     return config;
 };

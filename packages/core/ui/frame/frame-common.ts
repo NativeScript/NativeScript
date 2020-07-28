@@ -1,11 +1,9 @@
-// Types.
-import { BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, NavigationType } from './frame-interfaces';
+import type { BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition } from './frame-interfaces';
+import { NavigationType } from './frame-interfaces';
 import { Page } from '../page';
 import { View, CustomLayoutView, CSSType } from '../core/view';
 import { Property } from '../core/properties';
 import { Trace } from '../../trace';
-
-// Requires.
 import { frameStack, topmost as frameStackTopmost, _pushInFrameStack, _popFromFrameStack, _removeFromFrameStack } from './frame-stack';
 import { viewMatchesModuleContext } from '../core/view/view-common';
 import { getAncestor } from '../core/view-base';
@@ -13,7 +11,8 @@ import { Builder } from '../builder';
 import { sanitizeModuleName } from '../builder/module-name-sanitizer';
 import { profile } from '../../profiling';
 
-export * from './frame-interfaces';
+export { NavigationType } from './frame-interfaces';
+export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame } from './frame-interfaces';
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
 	let entry: NavigationEntry;

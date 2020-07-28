@@ -46,3 +46,5 @@ export function openUrl(location: string): boolean {
 export function isRealDevice(): boolean {
 	return iOSNativeHelper.isRealDevice();
 }
+
+export const ad = 0;

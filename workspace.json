@@ -12,7 +12,7 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug ios --no-hmr --emulator"
+                "command": "tns debug ios --no-hmr --emulator --env.testing"
               }
             ],
             "cwd": "apps/automated",
@@ -24,7 +24,7 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug android --no-hmr --emulator"
+                "command": "tns debug android --no-hmr --emulator --env.testing"
               }
             ],
             "cwd": "apps/automated",
@@ -62,7 +62,7 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug ios --no-hmr --emulator"
+                "command": "tns debug ios --no-hmr --emulator --env.testing"
               }
             ],
             "cwd": "apps/playground",
@@ -74,7 +74,7 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug android --no-hmr --emulator"
+                "command": "tns debug android --no-hmr --emulator --env.testing"
               }
             ],
             "cwd": "apps/playground",
@@ -112,7 +112,7 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug ios --no-hmr --emulator"
+                "command": "tns debug ios --no-hmr --emulator --env.testing"
               }
             ],
             "cwd": "apps/ui",
@@ -124,7 +124,7 @@
           "options": {
             "commands": [
               {
-                "command": "tns debug android --no-hmr --emulator"
+                "command": "tns debug android --no-hmr --emulator --env.testing"
               }
             ],
             "cwd": "apps/ui",
