@@ -21,8 +21,8 @@ export { addWeakEventListener, removeWeakEventListener } from './core/weak-event
 export { DatePicker } from './date-picker';
 
 // No need go export dialogs, they are already export exported globally
-export { action, alert, confirm, login, prompt, getCurrentPage, Dialogs, inputType, capitalizationType } from './dialogs';
-export type { DialogStrings, DialogOptions, CancelableOptions, AlertOptions, PromptResult, PromptOptions, ActionOptions, ConfirmOptions, LoginResult, LoginOptions } from './dialogs';
+export { DialogStrings, action, alert, confirm, login, prompt, getCurrentPage, Dialogs, inputType, capitalizationType } from './dialogs';
+export type { DialogOptions, CancelableOptions, AlertOptions, PromptResult, PromptOptions, ActionOptions, ConfirmOptions, LoginResult, LoginOptions } from './dialogs';
 
 export * from './editable-text-base';
 export { Enums } from './enums';

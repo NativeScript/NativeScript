@@ -365,12 +365,14 @@
           "options": {
             "commands": [
               {
-                "command": "cd packages/ui-mobile-base && ./build.sh"
+                "command": "./build.sh"
               },
               {
-                "command": "cp -R packages/ui-mobile-base/dist/package/platforms/* packages/core/platforms"
+                "command": "cp -R dist/package/platforms/* ../../packages/core/platforms"
               }
-            ]
+            ],
+            "cwd": "packages/ui-mobile-base",
+            "parallel": false
           }
         }
       }
