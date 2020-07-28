@@ -4,11 +4,10 @@
 const nsGlobals = require('./globals');
 nsGlobals.initGlobal();
 
-// Export all interfaces from "application" module
-export { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, iOSApplication, AndroidApplication, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData } from './application';
+export { iOSApplication, AndroidApplication } from './application';
+export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
 
-// Export all methods and fields from "application" as Application
-import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp } from './application';
+import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance } from './application';
 export const Application = {
 	launchEvent,
 	displayedEvent,
@@ -19,6 +18,7 @@ export const Application = {
 	exitEvent,
 	lowMemoryEvent,
 	orientationChangedEvent,
+	systemAppearanceChangedEvent,
 
 	getMainEntry,
 	getRootView,
@@ -35,6 +35,7 @@ export const Application = {
 	orientation,
 	getNativeApplication,
 	hasLaunched,
+	systemAppearance,
 
 	android: appAndroid,
 	ios: iosApp,
