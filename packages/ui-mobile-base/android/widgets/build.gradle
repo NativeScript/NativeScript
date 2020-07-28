@@ -11,7 +11,7 @@ def computeCompileSdkVersion () {
         return compileSdk
     }
     else {
-        return 28
+        return 30
     }
 }
 
@@ -20,16 +20,7 @@ def computeBuildToolsVersion() {
         return buildToolsVersion
     }
     else {
-        return "28.0.2"
-    }
-}
-
-def computeAndroidXVersion() {
-    if(project.hasProperty("androidxVersion")) {
-        return androidxVersion
-    }
-    else {
-        return "1.0.0"
+        return "30.0.0"
     }
 }
 
@@ -47,8 +38,44 @@ def computeTargetSdkVersion() {
         return targetSdk
     }
     else {
-        return 28
+        return 30
     }
+}
+
+def computeAndroidXExifInterfaceVersion() {
+	if(project.hasProperty("androidXExifInterface")) {
+		return androidXExifInterface
+	}
+	else {
+		return "1.2.0"
+	}
+}
+
+def computeAndroidXViewPagerVersion() {
+	if(project.hasProperty("androidXViewPager")) {
+		return androidxViewPager
+	}
+	else {
+		return "1.0.0"
+	}
+}
+
+def computeAndroidXFragmentVersion() {
+	if(project.hasProperty("androidXFragment")) {
+		return androidxFragment
+	}
+	else {
+		return "1.2.5"
+	}
+}
+
+def computeAndroidXTransitionVersion() {
+	if(project.hasProperty("androidXTransition")) {
+		return androidxTransition
+	}
+	else {
+		return "1.3.1"
+	}
 }
 
 android {
@@ -74,10 +101,10 @@ dependencies {
 
     if(project.hasProperty("useAndroidX")) {
         println 'Using android X'
-        def androidxVersion = computeAndroidXVersion()
-        implementation 'androidx.viewpager:viewpager:' + androidxVersion
-        implementation 'androidx.fragment:fragment:' + androidxVersion
-        implementation 'androidx.transition:transition:' + androidxVersion
+        implementation 'androidx.viewpager2:viewpager2:' + computeAndroidXViewPagerVersion()
+        implementation 'androidx.fragment:fragment:' + computeAndroidXFragmentVersion()
+        implementation 'androidx.transition:transition:' + computeAndroidXTransitionVersion()
+				implementation 'androidx.exifinterface:exifinterface:' + computeAndroidXExifInterfaceVersion()
     } else {
         println 'Using support library'
         implementation 'com.android.support:support-v4:' + computeSupportVersion()

@@ -25,13 +25,13 @@ const TABID = '_tabId';
 const INDEX = '_index';
 
 interface PagerAdapter {
-	new (owner: Tabs): androidx.viewpager.widget.PagerAdapter;
+	new (owner: Tabs): any;
 }
 
 let PagerAdapter: PagerAdapter;
 let TabsBar: any;
 let appResources: android.content.res.Resources;
-
+let PagerChangeCallback: any;
 function makeFragmentName(viewId: number, id: number): string {
 	return 'android:viewpager:' + viewId + ':' + id;
 }
@@ -133,23 +133,19 @@ function initializeNativeClasses() {
 		}
 	}
 
-	const POSITION_UNCHANGED = -1;
-	const POSITION_NONE = -2;
-
-	class FragmentPagerAdapter extends androidx.viewpager.widget.PagerAdapter {
+	@NativeClass
+	class FragmentPagerAdapter extends androidx.viewpager2.adapter.FragmentStateAdapter {
 		public items: Array<TabContentItem>;
 		private mCurTransaction: androidx.fragment.app.FragmentTransaction;
 		private mCurrentPrimaryItem: androidx.fragment.app.Fragment;
 
 		constructor(public owner: Tabs) {
-			super();
-
+			super(owner._getFragmentManager(), (application.android.foregroundActivity || application.android.startActivity).getLifecycle());
 			return global.__native(this);
 		}
 
-		getCount() {
+		getItemCount() {
 			const items = this.items;
-
 			return items ? items.length : 0;
 		}
 
@@ -162,122 +158,41 @@ function initializeNativeClasses() {
 			return ''; // items[index].title;
 		}
 
-		startUpdate(container: android.view.ViewGroup): void {
-			if (container.getId() === android.view.View.NO_ID) {
-				throw new Error(`ViewPager with adapter ${this} requires a view containerId`);
-			}
-		}
-
-		instantiateItem(container: android.view.ViewGroup, position: number): java.lang.Object {
-			const fragmentManager = this.owner._getFragmentManager();
-			if (!this.mCurTransaction) {
-				this.mCurTransaction = fragmentManager.beginTransaction();
-			}
-
-			const itemId = this.getItemId(position);
-			const name = makeFragmentName(container.getId(), itemId);
-
-			let fragment: androidx.fragment.app.Fragment = fragmentManager.findFragmentByTag(name);
-			if (fragment != null) {
-				this.mCurTransaction.attach(fragment);
-			} else {
-				fragment = TabFragmentImplementation.newInstance(this.owner._domId, position);
-				this.mCurTransaction.add(container.getId(), fragment, name);
-			}
-
-			if (fragment !== this.mCurrentPrimaryItem) {
-				fragment.setMenuVisibility(false);
-				fragment.setUserVisibleHint(false);
-			}
-
+		public createFragment(position: number): androidx.fragment.app.Fragment {
 			const tabItems = this.owner.items;
 			const tabItem = tabItems ? tabItems[position] : null;
 			if (tabItem) {
 				tabItem.canBeLoaded = true;
 			}
 
-			return fragment;
+			return TabFragmentImplementation.newInstance(this.owner._domId, position);
 		}
 
-		getItemPosition(object: java.lang.Object): number {
-			return this.items ? POSITION_UNCHANGED : POSITION_NONE;
-		}
+		public onBindViewHolder(holder, position) {
+			super.onBindViewHolder(holder, position);
+			const tab = this.owner;
+			const tabItems = tab.items;
+			const newTabItem = tabItems ? tabItems[position] : null;
 
-		destroyItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
-			if (!this.mCurTransaction) {
-				const fragmentManager = this.owner._getFragmentManager();
-				this.mCurTransaction = fragmentManager.beginTransaction();
-			}
-
-			const fragment: androidx.fragment.app.Fragment = <androidx.fragment.app.Fragment>object;
-			this.mCurTransaction.detach(fragment);
-
-			if (this.mCurrentPrimaryItem === fragment) {
-				this.mCurrentPrimaryItem = null;
-			}
-
-			const tabItems = this.owner.items;
-			const tabItem = tabItems ? tabItems[position] : null;
-			if (tabItem) {
-				tabItem.canBeLoaded = false;
+			if (newTabItem) {
+				tab._loadUnloadTabItems(tab.selectedIndex);
 			}
 		}
 
-		setPrimaryItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
-			const fragment = <androidx.fragment.app.Fragment>object;
-			if (fragment !== this.mCurrentPrimaryItem) {
-				if (this.mCurrentPrimaryItem != null) {
-					this.mCurrentPrimaryItem.setMenuVisibility(false);
-					this.mCurrentPrimaryItem.setUserVisibleHint(false);
-				}
-
-				if (fragment != null) {
-					fragment.setMenuVisibility(true);
-					fragment.setUserVisibleHint(true);
-				}
-
-				this.mCurrentPrimaryItem = fragment;
-				this.owner.selectedIndex = position;
-
-				const tab = this.owner;
-				const tabItems = tab.items;
-				const newTabItem = tabItems ? tabItems[position] : null;
-
-				if (newTabItem) {
-					tab._loadUnloadTabItems(tab.selectedIndex);
+		public onViewRecycled(holder: androidx.viewpager2.adapter.FragmentViewHolder): void {
+			super.onViewRecycled(holder);
+			if (holder.getLayoutPosition) {
+				const position = holder.getLayoutPosition();
+				const tabItems = this.owner.items;
+				const tabItem = tabItems ? tabItems[position] : null;
+				if (tabItem) {
+					tabItem.canBeLoaded = false;
 				}
 			}
-		}
-
-		finishUpdate(container: android.view.ViewGroup): void {
-			this._commitCurrentTransaction();
-		}
-
-		isViewFromObject(view: android.view.View, object: java.lang.Object): boolean {
-			return (<androidx.fragment.app.Fragment>object).getView() === view;
-		}
-
-		saveState(): android.os.Parcelable {
-			// Commit the current transaction on save to prevent "No view found for id 0xa" exception on restore.
-			// Related to: https://github.com/NativeScript/NativeScript/issues/6466
-			this._commitCurrentTransaction();
-
-			return null;
-		}
-
-		restoreState(state: android.os.Parcelable, loader: java.lang.ClassLoader): void {
-			//
 		}
 
 		getItemId(position: number): number {
 			return position;
-		}
-
-		private _commitCurrentTransaction() {
-			if (this.mCurTransaction != null) {
-				this.mCurTransaction.commitNowAllowingStateLoss();
-				this.mCurTransaction = null;
-			}
 		}
 	}
 
@@ -334,8 +249,22 @@ function initializeNativeClasses() {
 		}
 	}
 
+	@NativeClass
+	class PageChangeCallbackImpl extends androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback {
+		constructor(public owner: Tabs) {
+			super();
+			return global.__native(this);
+		}
+
+		onPageSelected(position: number) {
+			super.onPageSelected(position);
+			this.owner.selectedIndex = position;
+		}
+	}
+
 	PagerAdapter = FragmentPagerAdapter;
 	TabsBar = TabsBarImplementation;
+	PagerChangeCallback = PageChangeCallbackImpl;
 	appResources = application.android.context.getResources();
 }
 
@@ -374,15 +303,15 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
 
 export class Tabs extends TabsBase {
 	private _tabsBar: org.nativescript.widgets.TabsBar;
-	private _viewPager: androidx.viewpager.widget.ViewPager;
-	private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
+	private _viewPager;
+	private _pagerAdapter: androidx.viewpager2.adapter.FragmentStateAdapter;
 	private _androidViewId: number = -1;
 	public _originalBackground: any;
 	private _textTransform: TextTransform = 'uppercase';
 	private _selectedItemColor: Color;
 	private _unSelectedItemColor: Color;
 	public animationEnabled: boolean;
-
+	private _pageChangeCallback: any;
 	constructor() {
 		super();
 		tabs.push(new WeakRef(this));
@@ -414,6 +343,7 @@ export class Tabs extends TabsBase {
 		const context: android.content.Context = this._context;
 		const nativeView = new org.nativescript.widgets.GridLayout(context);
 		const viewPager = new org.nativescript.widgets.TabViewPager(context);
+		this._pageChangeCallback = new PagerChangeCallback(this);
 		const tabsBar = new TabsBar(context, this);
 		const lp = new org.nativescript.widgets.CommonLayoutParams();
 		const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
@@ -439,7 +369,7 @@ export class Tabs extends TabsBase {
 		const adapter = new PagerAdapter(this);
 		viewPager.setAdapter(adapter);
 		(<any>viewPager).adapter = adapter;
-
+		(<any>viewPager).registerOnPageChangeCallback(this._pageChangeCallback);
 		nativeView.addView(tabsBar);
 		(<any>nativeView).tabsBar = tabsBar;
 

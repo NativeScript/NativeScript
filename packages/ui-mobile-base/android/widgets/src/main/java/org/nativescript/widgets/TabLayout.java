@@ -18,8 +18,9 @@ package org.nativescript.widgets;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.SparseArray;
@@ -33,13 +34,15 @@ import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * To be used with ViewPager to provide a tab indicator component which give
  * constant feedback as to the user's scroll progress.
  * <p>
  * To use the component, simply add it to your view hierarchy. Then in your
- * {@link android.app.Activity} or {@link android.support.v4.app.Fragment} call
- * {@link #setViewPager(ViewPager)} providing it the ViewPager this layout is
+ * {@link android.app.Activity} or {@link androidx.fragment.app.Fragment} call
+ * {@link #setViewPager(TabViewPager)} providing it the ViewPager this layout is
  * being used for.
  * <p>
  * The colors can be customized in two ways. The first and simplest is to
@@ -63,6 +66,7 @@ public class TabLayout extends HorizontalScrollView {
 
     }
 
+
     private static final int TITLE_OFFSET_DIPS = 24;
     private static final int TAB_VIEW_PADDING_DIPS = 16;
     private static final int TAB_VIEW_TEXT_SIZE_SP = 12;
@@ -75,9 +79,9 @@ public class TabLayout extends HorizontalScrollView {
     private boolean mDistributeEvenly = true;
 
     private TabItemSpec[] mTabItems;
-    private ViewPager mViewPager;
+    private TabViewPager mViewPager;
     private SparseArray<String> mContentDescriptions = new SparseArray<String>();
-    private ViewPager.OnPageChangeListener mViewPagerPageChangeListener;
+    private ViewPager2.OnPageChangeCallback mViewPagerPageChangeListener;
 
     private final TabStrip mTabStrip;
 
@@ -156,14 +160,14 @@ public class TabLayout extends HorizontalScrollView {
     }
 
     /**
-     * Set the {@link ViewPager.OnPageChangeListener}. When using
+     * Set the {@link ViewPager2.OnPageChangeCallback}. When using
      * {@link TabLayout} you are required to set any
-     * {@link ViewPager.OnPageChangeListener} through this method. This is so
+     * {@link ViewPager2.OnPageChangeCallback} through this method. This is so
      * that the layout can update it's scroll position correctly.
      *
-     * @see ViewPager#setOnPageChangeListener(ViewPager.OnPageChangeListener)
+     * @see ViewPager2#registerOnPageChangeCallback(ViewPager2.OnPageChangeCallback)
      */
-    public void setOnPageChangeListener(ViewPager.OnPageChangeListener listener) {
+    public void setOnPageChangeListener(ViewPager2.OnPageChangeCallback listener) {
         mViewPagerPageChangeListener = listener;
     }
 
@@ -172,17 +176,17 @@ public class TabLayout extends HorizontalScrollView {
      * pager content (number of tabs and tab titles) does not change after this
      * call has been made.
      */
-    public void setViewPager(ViewPager viewPager) {
+    public void setViewPager(TabViewPager viewPager) {
         this.setItems(null, viewPager);
     }
 
-    public void setItems(TabItemSpec[] items, ViewPager viewPager) {
+    public void setItems(TabItemSpec[] items, TabViewPager viewPager) {
         mTabStrip.removeAllViews();
 
         mViewPager = viewPager;
         mTabItems = items;
         if (viewPager != null) {
-            viewPager.addOnPageChangeListener(new InternalViewPagerListener());
+            viewPager.getViewPager().registerOnPageChangeCallback(new InternalViewPagerListener());
             populateTabStrip();
         }
     }
@@ -311,18 +315,35 @@ public class TabLayout extends HorizontalScrollView {
     }
 
     private void populateTabStrip() {
-        final PagerAdapter adapter = mViewPager.getAdapter();
+        final RecyclerView.Adapter adapter = mViewPager.getViewPager().getAdapter();
         final OnClickListener tabClickListener = new TabClickListener();
 
-        for (int i = 0; i < adapter.getCount(); i++) {
+        for (int i = 0; i < adapter.getItemCount(); i++) {
             View tabView = null;
 
             TabItemSpec tabItem;
             if (this.mTabItems != null && this.mTabItems.length > i) {
                 tabItem = this.mTabItems[i];
             } else {
-                tabItem = new TabItemSpec();
-                tabItem.title = adapter.getPageTitle(i).toString();
+            	/* getPageTitle was removed in ViewPager2 */
+
+							String title = "";
+							Class<?> fragmentStateAdapter = null;
+							try {
+								fragmentStateAdapter = Class.forName("androidx.viewpager2.adapter.FragmentStateAdapter");
+								title = (String) fragmentStateAdapter.getDeclaredMethod("getPageTitle").invoke(i);
+							} catch (ClassNotFoundException e) {
+								e.printStackTrace();
+							} catch (IllegalAccessException e) {
+								e.printStackTrace();
+							} catch (InvocationTargetException e) {
+								e.printStackTrace();
+							} catch (NoSuchMethodException e) {
+								e.printStackTrace();
+							}
+
+							tabItem = new TabItemSpec();
+							tabItem.title = title;
             }
 
             tabView = createDefaultTabView(getContext(), tabItem);
@@ -334,7 +355,7 @@ public class TabLayout extends HorizontalScrollView {
             }
 
             mTabStrip.addView(tabView);
-            if (i == mViewPager.getCurrentItem()) {
+            if (i == mViewPager.getViewPager().getCurrentItem()) {
                 tabView.setSelected(true);
             }
         }
@@ -349,7 +370,7 @@ public class TabLayout extends HorizontalScrollView {
         super.onAttachedToWindow();
 
         if (mViewPager != null) {
-            scrollToTab(mViewPager.getCurrentItem(), 0);
+            scrollToTab(mViewPager.getViewPager().getCurrentItem(), 0);
         }
     }
 
@@ -373,7 +394,7 @@ public class TabLayout extends HorizontalScrollView {
         }
     }
 
-    private class InternalViewPagerListener implements ViewPager.OnPageChangeListener {
+    private class InternalViewPagerListener extends ViewPager2.OnPageChangeCallback {
         private int mScrollState;
 
         @Override
@@ -411,7 +432,7 @@ public class TabLayout extends HorizontalScrollView {
 
         @Override
         public void onPageSelected(int position) {
-            if (mScrollState == ViewPager.SCROLL_STATE_IDLE) {
+            if (mScrollState == ViewPager2.SCROLL_STATE_IDLE) {
                 mTabStrip.onViewPagerPageChanged(position, 0f);
                 scrollToTab(position, 0);
             }

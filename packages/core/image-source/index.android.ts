@@ -354,17 +354,18 @@ function getTargetFormat(format: 'png' | 'jpeg' | 'jpg'): android.graphics.Bitma
 
 function getRotationAngleFromFile(filename: string): number {
 	let result = 0;
-	const ei = new android.media.ExifInterface(filename);
-	const orientation = ei.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+	const ExifInterface = (androidx as any).exifinterface.media.ExifInterface;
+	const ei = new ExifInterface(filename);
+	const orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
 
 	switch (orientation) {
-		case android.media.ExifInterface.ORIENTATION_ROTATE_90:
+		case ExifInterface.ORIENTATION_ROTATE_90:
 			result = 90;
 			break;
-		case android.media.ExifInterface.ORIENTATION_ROTATE_180:
+		case ExifInterface.ORIENTATION_ROTATE_180:
 			result = 180;
 			break;
-		case android.media.ExifInterface.ORIENTATION_ROTATE_270:
+		case ExifInterface.ORIENTATION_ROTATE_270:
 			result = 270;
 			break;
 	}
