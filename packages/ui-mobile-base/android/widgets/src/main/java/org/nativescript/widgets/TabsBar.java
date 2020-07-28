@@ -343,14 +343,10 @@ public class TabsBar extends HorizontalScrollView {
 							try {
 								fragmentStateAdapter = Class.forName("androidx.viewpager2.adapter.FragmentStateAdapter");
 								title = (String) fragmentStateAdapter.getDeclaredMethod("getPageTitle").invoke(i);
-							} catch (ClassNotFoundException e) {
-								e.printStackTrace();
-							} catch (IllegalAccessException e) {
-								e.printStackTrace();
-							} catch (InvocationTargetException e) {
-								e.printStackTrace();
-							} catch (NoSuchMethodException e) {
-								e.printStackTrace();
+							} catch (ClassNotFoundException ignored) {
+							} catch (IllegalAccessException ignored) {
+							} catch (InvocationTargetException ignored) {
+							} catch (NoSuchMethodException ignored) {
 							}
 
 							tabItem = new TabItemSpec();
