@@ -4,8 +4,7 @@
   "license": "MIT",
   "scripts": {
     "setup": "npx rimraf -- hooks node_modules package-lock.json && npm i && ts-patch install && nx run core:setup",
-    "start": "nps",
-    "help": "nps-i"
+    "start": "nps"
   },
   "private": true,
   "dependencies": {

@@ -2,7 +2,7 @@ const npsUtils = require('nps-utils');
 
 module.exports = {
 	scripts: {
-		default: 'nps',
+		default: 'nps-i',
 		nx: {
       script: 'nx',
       description: 'Execute any command with the @nrwl/cli'
