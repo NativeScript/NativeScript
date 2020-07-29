@@ -1,4 +1,5 @@
 const { join, relative, resolve, sep, dirname } = require('path');
+const fs = require('fs');
 
 const webpack = require('webpack');
 const nsWebpack = require('@nativescript/webpack');
@@ -10,6 +11,7 @@ const nsTransformNativeClasses = require("@nativescript/webpack/transformers/ns-
 const {
   getMainModulePath
 } = require('@nativescript/webpack/utils/ast-utils');
+const { getNoEmitOnErrorFromTSConfig, getCompilerOptionsFromTSConfig } = require("@nativescript/webpack/utils/tsconfig-utils");
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
@@ -71,7 +73,15 @@ module.exports = env => {
   const externals = nsWebpack.getConvertedExternals(env.externals);
   const appFullPath = resolve(projectRoot, appPath);
   const appResourcesFullPath = resolve(projectRoot, appResourcesPath);
-  const tsConfigName = 'tsconfig.json';
+  let tsConfigName = 'tsconfig.json';
+  let tsConfigTnsName = 'tsconfig.tns.json';
+  let tsConfigPath = resolve(projectRoot, tsConfigName);
+  const tsConfigTnsPath = resolve(projectRoot, tsConfigTnsName);
+  if (fs.existsSync(tsConfigTnsPath)) {
+    // still support shared angular app configurations 
+    tsConfigName = tsConfigTnsName;
+    tsConfigPath = tsConfigTnsPath;
+  }
   const entryModule = `${nsWebpack.getEntryModule(appFullPath, platform)}.ts`;
   const entryPath = `.${sep}${entryModule}`;
   const entries = { bundle: entryPath };
@@ -82,6 +92,10 @@ module.exports = env => {
     entries['tns_modules/@nativescript/core/inspector_modules'] =
       'inspector_modules';
   }
+
+  const compilerOptions = getCompilerOptionsFromTSConfig(tsConfigPath);
+  nsWebpack.processTsPathsForScopedModules({ compilerOptions });
+  nsWebpack.processTsPathsForScopedAngular({ compilerOptions });
 
   const ngCompilerTransformers = [];
   const additionalLazyModuleResources = [];
@@ -125,10 +139,11 @@ module.exports = env => {
       t(() => ngCompilerPlugin, resolve(appFullPath, entryModule), projectRoot)
     ),
     mainPath: join(appFullPath, entryModule),
-    tsConfigPath: join(__dirname, tsConfigName),
+    tsConfigPath,
     skipCodeGeneration: false,
     sourceMap: !!isAnySourceMapEnabled,
-    additionalLazyModuleResources: additionalLazyModuleResources
+    additionalLazyModuleResources: additionalLazyModuleResources,
+    compilerOptions: { paths: compilerOptions.paths }
   });
 
   let sourceMapFilename = nsWebpack.getSourceMapFilename(
@@ -163,6 +178,8 @@ module.exports = env => {
       )}`
     );
   }
+
+  const noEmitOnErrorFromTSConfig = getNoEmitOnErrorFromTSConfig(tsConfigName);
 
   nsWebpack.processAppComponents(appComponents, platform);
   const config = {
@@ -221,6 +238,7 @@ module.exports = env => {
       : 'none',
     optimization: {
       runtimeChunk: 'single',
+      noEmitOnErrors: noEmitOnErrorFromTSConfig,
       splitChunks: {
         cacheGroups: {
           vendor: {
