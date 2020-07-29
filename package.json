@@ -64,7 +64,7 @@
   },
   "lint-staged": {
     "**/*": [
-      "nx format:write"
+      "nx format:write --files"
     ]
   }
 }
