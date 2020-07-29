@@ -166,8 +166,6 @@ function initializeNativeClasses() {
 
 		public onBindViewHolder(holder, position) {
 			super.onBindViewHolder(holder, position);
-			this.owner.selectedIndex = position;
-
 			const tab = this.owner;
 			const tabItems = tab.items;
 			const newTabItem = tabItems ? tabItems[position] : null;
