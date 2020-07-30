@@ -42,6 +42,7 @@ const nativeScriptDevWebpack = {
 
 const emptyObject = {};
 const FakeHmrTransformerFlag = 'hmr';
+const FakeNativeClassTransformerFlag = 'NativeClass';
 const FakeLazyTransformerFlag = 'lazy';
 const webpackConfigAngular = proxyquire('./webpack.angular', {
 	'@nativescript/webpack': nativeScriptDevWebpack,
@@ -51,7 +52,11 @@ const webpackConfigAngular = proxyquire('./webpack.angular', {
 			return FakeHmrTransformerFlag;
 		},
 	},
-	'@nativescript/webpack/transformers/ns-transform-native-classes': emptyObject,
+  '@nativescript/webpack/transformers/ns-transform-native-classes-ng': {
+		nsTransformNativeClassesNg: () => {
+			return FakeNativeClassTransformerFlag;
+		},
+	},
 	'@nativescript/webpack/utils/ast-utils': {
 		getMainModulePath: () => {
 			return 'fakePath';
@@ -183,15 +188,16 @@ describe('webpack.config.js', () => {
 						angularCompilerOptions = null;
 					});
 
-					it('should be empty by default', () => {
+					it('should contain only NativeClass transformer by default', () => {
 						const input = getInput({ platform });
 
 						webpackConfig(input);
 
 						expect(angularCompilerOptions).toBeDefined();
 						expect(angularCompilerOptions.platformTransformers).toBeDefined();
-						expect(angularCompilerOptions.platformTransformers.length).toEqual(0);
-					});
+            expect(angularCompilerOptions.platformTransformers.length).toEqual(1);
+            expect(angularCompilerOptions.platformTransformers[0]).toEqual(FakeNativeClassTransformerFlag);
+          });
 
 					it('should contain the HMR transformer when the HMR flag is passed', () => {
 						const input = getInput({ platform, hmr: true });
@@ -200,8 +206,8 @@ describe('webpack.config.js', () => {
 
 						expect(angularCompilerOptions).toBeDefined();
 						expect(angularCompilerOptions.platformTransformers).toBeDefined();
-						expect(angularCompilerOptions.platformTransformers.length).toEqual(1);
-						expect(angularCompilerOptions.platformTransformers[0]).toEqual(FakeHmrTransformerFlag);
+						expect(angularCompilerOptions.platformTransformers.length).toEqual(2);
+						expect(angularCompilerOptions.platformTransformers[1]).toEqual(FakeHmrTransformerFlag);
 					});
 				});
 			}

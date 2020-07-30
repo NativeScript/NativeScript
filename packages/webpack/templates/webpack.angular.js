@@ -7,7 +7,7 @@ const nativescriptTarget = require('@nativescript/webpack/nativescript-target');
 const {
   nsSupportHmrNg
 } = require('@nativescript/webpack/transformers/ns-support-hmr-ng');
-const nsTransformNativeClasses = require("@nativescript/webpack/transformers/ns-transform-native-classes").default;
+const { nsTransformNativeClassesNg } = require("@nativescript/webpack/transformers/ns-transform-native-classes-ng");
 const {
   getMainModulePath
 } = require('@nativescript/webpack/utils/ast-utils');
@@ -97,7 +97,7 @@ module.exports = env => {
   nsWebpack.processTsPathsForScopedModules({ compilerOptions });
   nsWebpack.processTsPathsForScopedAngular({ compilerOptions });
 
-  const ngCompilerTransformers = [];
+  const ngCompilerTransformers = [nsTransformNativeClassesNg];
   const additionalLazyModuleResources = [];
 
   const copyIgnore = { ignore: [`${relative(appPath, appResourcesFullPath)}/**`] };
