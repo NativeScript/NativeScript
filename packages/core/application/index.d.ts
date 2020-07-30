@@ -55,6 +55,13 @@ export const orientationChangedEvent: string;
 export const systemAppearanceChangedEvent: string;
 
 /**
+ * Updates root view classes including those of modals
+ * @param rootView the root view
+ * @param newSystemAppearance the new appearance change
+ */
+export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void;
+
+/**
  * Event data containing information for the application events.
  */
 export interface ApplicationEventData extends EventData {
