@@ -297,7 +297,7 @@ module.exports = env => {
           use: [
             // Require all Android app components
             platform === 'android' && {
-              loader: '@nativescript/webpack/android-app-components-loader',
+              loader: '@nativescript/webpack/helpers/android-app-components-loader',
               options: { modules: appComponents }
             },
 
@@ -320,9 +320,9 @@ module.exports = env => {
         {
           test: /[\/|\\]app\.css$/,
           use: [
-              '@nativescript/webpack/style-hot-loader',
+              '@nativescript/webpack/helpers/style-hot-loader',
               {
-                  loader: "@nativescript/webpack/css2json-loader",
+                  loader: "@nativescript/webpack/helpers/css2json-loader",
                   options: { useForImports: true }
               },
           ],
@@ -330,9 +330,9 @@ module.exports = env => {
         {
           test: /[\/|\\]app\.scss$/,
           use: [
-              '@nativescript/webpack/style-hot-loader',
+              '@nativescript/webpack/helpers/style-hot-loader',
               {
-                  loader: "@nativescript/webpack/css2json-loader",
+                  loader: "@nativescript/webpack/helpers/css2json-loader",
                   options: { useForImports: true }
               },
               'sass-loader',
@@ -350,8 +350,8 @@ module.exports = env => {
         {
           test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
           use: [
-            '@nativescript/webpack/moduleid-compat-loader',
-            '@nativescript/webpack/lazy-ngmodule-hot-loader',
+            '@nativescript/webpack/helpers/moduleid-compat-loader',
+            '@nativescript/webpack/helpers/lazy-ngmodule-hot-loader',
             '@ngtools/webpack'
           ]
         },

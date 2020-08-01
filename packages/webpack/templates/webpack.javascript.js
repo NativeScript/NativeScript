@@ -191,7 +191,7 @@ module.exports = env => {
                     use: [
                         // Require all Android app components
                         platform === "android" && {
-                            loader: "@nativescript/webpack/android-app-components-loader",
+                            loader: "@nativescript/webpack/helpers/android-app-components-loader",
                             options: { modules: appComponents }
                         },
 
@@ -213,17 +213,17 @@ module.exports = env => {
                     use: "@nativescript/webpack/hmr/hot-loader"
                 },
 
-                { test: /\.(html|xml)$/, use: "@nativescript/webpack/xml-namespace-loader" },
+                { test: /\.(html|xml)$/, use: "@nativescript/webpack/helpers/xml-namespace-loader" },
 
                 {
                     test: /\.css$/,
-                    use: "@nativescript/webpack/css2json-loader"
+                    use: "@nativescript/webpack/helpers/css2json-loader"
                 },
 
                 {
                     test: /\.scss$/,
                     use: [
-                        "@nativescript/webpack/css2json-loader",
+                        "@nativescript/webpack/helpers/css2json-loader",
                         "sass-loader"
                     ]
                 },

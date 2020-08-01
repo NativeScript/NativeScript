@@ -39,7 +39,7 @@ describe('css2jsonLoader', () => {
 	it('inlines css2json loader in imports if option is provided', (done) => {
 		const loaderContext = {
 			callback: (error, source: string, map) => {
-				expect(source).toContain(`global.registerModule("./custom.css", () => require("!@nativescript/webpack/css2json-loader?useForImports!./custom.css"))`);
+				expect(source).toContain(`global.registerModule("./custom.css", () => require("!@nativescript/webpack/helpers/css2json-loader?useForImports!./custom.css"))`);
 				expect(source).toContain(`{"type":"declaration","property":"background-color","value":"#7f9"}`);
 
 				done();

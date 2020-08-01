@@ -4,7 +4,7 @@ import { getOptions, urlToRequest } from 'loader-utils';
 
 const betweenQuotesPattern = /('|")(.*?)\1/;
 const unpackUrlPattern = /url\(([^\)]+)\)/;
-const inlineLoader = '!@nativescript/webpack/css2json-loader?useForImports!';
+const inlineLoader = '!@nativescript/webpack/helpers/css2json-loader?useForImports!';
 
 const loader: loader.Loader = function (content: string, map) {
 	const options = getOptions(this) || {};

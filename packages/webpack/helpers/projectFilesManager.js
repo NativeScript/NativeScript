@@ -111,7 +111,7 @@ function getFullTemplatesPath(projectDir, templates) {
     let updatedTemplates = {};
 
     Object.keys(templates).forEach(key => {
-        const updatedKey = getFullPath(path.join(__dirname, "templates"), key);
+        const updatedKey = getFullPath(path.join(__dirname, "..", "templates"), key);
         const updatedValue = getFullPath(projectDir, templates[key])
 
         updatedTemplates[updatedKey] = updatedValue;

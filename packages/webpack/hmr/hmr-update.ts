@@ -1,4 +1,4 @@
-import * as hot from '../hot';
+import * as hot from '../helpers/hot';
 
 declare const __webpack_require__: any;
 

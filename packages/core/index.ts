@@ -1,5 +1,3 @@
-/// <reference path="./global-types.d.ts" />
-
 // Init globals first (use require to ensure it's always at the top)
 const nsGlobals = require('./globals');
 nsGlobals.initGlobal();

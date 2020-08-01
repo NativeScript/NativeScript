@@ -1,6 +1,6 @@
-const helpers = require("./projectHelpers");
-const projectFilesManager = require("./projectFilesManager");
-const dependencyManager = require("./dependencyManager");
+const helpers = require("./helpers/projectHelpers");
+const projectFilesManager = require("./helpers/projectFilesManager");
+const dependencyManager = require("./helpers/dependencyManager");
 
 function install() {
     const projectDir = helpers.getProjectDir();

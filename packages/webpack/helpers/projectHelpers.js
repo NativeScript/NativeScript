@@ -8,13 +8,10 @@ const isTypeScript = ({ projectDir, packageJson } = {}) => {
 
     return (
         packageJson.dependencies &&
-        (packageJson.dependencies.hasOwnProperty("nativescript-dev-typescript") ||
             packageJson.dependencies.hasOwnProperty("typescript"))
-    ) || (
-            packageJson.devDependencies &&
-            (packageJson.devDependencies.hasOwnProperty("nativescript-dev-typescript") ||
-                packageJson.devDependencies.hasOwnProperty("typescript"))
-        ) || isAngular({ packageJson });
+           || (packageJson.devDependencies &&
+            packageJson.devDependencies.hasOwnProperty("typescript"))
+         || isAngular({ packageJson });
 };
 
 const isShared = ({ projectDir }) => {

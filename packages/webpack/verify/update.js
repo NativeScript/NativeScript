@@ -6,8 +6,8 @@ const {
     getProjectDir,
     writePackageJson,
 } = require("../projectHelpers");
-const { forceUpdateProjectFiles } = require("../projectFilesManager");
-const { forceUpdateProjectDeps } = require("../dependencyManager");
+const { forceUpdateProjectFiles } = require("../helpers/projectFilesManager");
+const { forceUpdateProjectDeps } = require("../helpers/dependencyManager");
 
 const PLUGIN_NAME = "@nativescript/webpack";
 const PROJECT_DIR = getProjectDir();

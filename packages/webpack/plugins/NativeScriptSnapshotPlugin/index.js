@@ -3,11 +3,11 @@ const { closeSync, openSync, writeFileSync } = require("fs");
 const validateOptions = require("schema-utils");
 
 const ProjectSnapshotGenerator = require("../../snapshot/android/project-snapshot-generator");
-const { getPackageJson } = require("../../projectHelpers");
+const { getPackageJson } = require("../../helpers/projectHelpers");
 const {
     ANDROID_PROJECT_DIR,
     ANDROID_APP_PATH,
-} = require("../../androidProjectHelpers");
+} = require("../../helpers/androidProjectHelpers");
 const { ensureDirectoryExistence } = require("../../lib/utils");
 const schema = require("./options.json");
 
@@ -50,8 +50,8 @@ exports.NativeScriptSnapshotPlugin = (function () {
             snapshotEntryContent += `
             require("${
                 options.angular ?
-                    '@nativescript/webpack/load-application-css-angular' :
-                    '@nativescript/webpack/load-application-css-regular'
+                    '@nativescript/webpack/helpers/load-application-css-angular' :
+                    '@nativescript/webpack/helpers/load-application-css-regular'
                 }")();
             `;
         }

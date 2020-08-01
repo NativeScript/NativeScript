@@ -1,6 +1,6 @@
 const { join, relative } = require("path");
 const { existsSync } = require("fs");
-const { convertSlashesInPath } = require("./projectHelpers");
+const { convertSlashesInPath } = require("./helpers/projectHelpers");
 
 function getRunnerFullPath(projectRoot) {
     const runnerRootPath = join(projectRoot, "node_modules", "nativescript-unit-test-runner");

@@ -1,11 +1,11 @@
 const path = require("path");
 const { existsSync } = require("fs");
-const { ANDROID_APP_PATH } = require("./androidProjectHelpers");
+const { ANDROID_APP_PATH } = require("./helpers/androidProjectHelpers");
 const {
     getPackageJson,
     isAndroid,
     isIos,
-} = require("./projectHelpers");
+} = require("./helpers/projectHelpers");
 
 Object.assign(exports, require("./plugins"));
 Object.assign(exports, require("./host/resolver"));

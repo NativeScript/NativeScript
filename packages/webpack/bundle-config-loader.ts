@@ -77,7 +77,7 @@ const loader: loader.Loader = function (source, map) {
 
 	if (loadCss) {
 		source = `
-            require("${angular ? '@nativescript/webpack/load-application-css-angular' : '@nativescript/webpack/load-application-css-regular'}")();
+            require("${angular ? '@nativescript/webpack/helpers/load-application-css-angular' : '@nativescript/webpack/helpers/load-application-css-regular'}")();
             ${source}
         `;
 	}
