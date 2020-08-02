@@ -54,7 +54,7 @@
     "ts-patch": "^1.2.5",
     "tslint": "~6.1.2",
     "typescript": "~3.9.0",
-    "webpack": "~4.43.0",
+    "webpack": "~4.44.1",
     "webpack-cli": "~3.3.12"
   },
   "husky": {
