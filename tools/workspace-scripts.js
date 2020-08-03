@@ -1,6 +1,8 @@
 const npsUtils = require('nps-utils');
 
 module.exports = {
+  message: 'NativeScript ~ made with ❤️  Choose a command to start...',
+  pageSize: 25,
 	scripts: {
 		default: 'nps-i',
 		nx: {
@@ -9,9 +11,9 @@ module.exports = {
     },
 		format: {
       script: 'nx format:write',
-      description: 'Format the source code of the entire workspace (auto-run on precommit hook)'
+      description: 'Format source code of the entire workspace (auto-run on precommit hook)'
     },
-    "> apps_________________": '--------',
+    "> apps": '--------',
 		// app testing targets
 		apps: {
 			// Automated test runner which executes unit tests on the target platform
@@ -60,7 +62,7 @@ module.exports = {
         },
 			},
     },
-    "> packages______________": '--------',
+    "> packages": '--------',
 		// packages
 		// build output is always in dist/packages
 		'@nativescript': {

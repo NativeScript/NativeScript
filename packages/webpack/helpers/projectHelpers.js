@@ -19,6 +19,11 @@ const isShared = ({ projectDir }) => {
     return nsConfig && !!nsConfig.shared;
 }
 
+const isPlugin = ({ projectDir, packageJson } = {}) => {
+  packageJson = packageJson || getPackageJson(projectDir);
+  return packageJson && packageJson.bootstrapper && (['nativescript-plugin-seed', '@nativescript/plugin-seed'].includes(packageJson.bootstrapper));
+}
+
 const isAngular = ({ projectDir, packageJson } = {}) => {
     packageJson = packageJson || getPackageJson(projectDir);
 
@@ -121,6 +126,7 @@ module.exports = {
     isIos,
     isAngular,
     isShared,
+    isPlugin,
     getAngularVersion,
     isVue,
     isTypeScript,
