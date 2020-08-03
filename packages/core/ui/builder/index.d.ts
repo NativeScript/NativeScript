@@ -39,9 +39,9 @@ export class Builder {
   /**
    * UI plugin developers can add to these to define their own custom types if needed
    */
-  static knownTemplates: Array<string>;
-  static knownMultiTemplates: Array<string>;
-  static knownCollections: Array<string>;
+  static knownTemplates: Set<string>;
+  static knownMultiTemplates: Set<string>;
+  static knownCollections: Set<string>;
   
 	/**
 	 * Creates view from navigation entry

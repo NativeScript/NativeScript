@@ -13,7 +13,10 @@ module.exports = {
       script: 'nx format:write',
       description: 'Format source code of the entire workspace (auto-run on precommit hook)'
     },
-    "> apps": '--------',
+    "__apps": {
+      script: `npx cowsay This is cool`,
+      description: ''
+    },
 		// app testing targets
 		apps: {
 			// Automated test runner which executes unit tests on the target platform
@@ -62,7 +65,7 @@ module.exports = {
         },
 			},
     },
-    "> packages": '--------',
+    "__packages": '--------',
 		// packages
 		// build output is always in dist/packages
 		'@nativescript': {

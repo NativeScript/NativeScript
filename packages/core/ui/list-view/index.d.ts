@@ -6,16 +6,6 @@ import { Style } from '../styling/style';
 import { Property, CssProperty } from '../core/properties';
 
 /**
- * Known template names.
- */
-export module knownTemplates {
-	/**
-	 * The ListView item template.
-	 */
-	export const itemTemplate: string;
-}
-
-/**
  * Represents a view that shows items in a vertically scrolling list.
  */
 export class ListView extends View {
