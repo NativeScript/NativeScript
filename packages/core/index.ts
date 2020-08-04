@@ -75,7 +75,7 @@ export { Observable, WrappedValue, fromObject, fromObjectRecursive } from './dat
 export type { PropertyChangeData, EventData } from './data/observable';
 export { VirtualArray } from './data/virtual-array';
 export type { ItemsLoading } from './data/virtual-array';
-export { File, FileSystemEntity, Folder, knownFolders, path } from './file-system';
+export { File, FileSystemEntity, Folder, knownFolders, path, getFileAccess } from './file-system';
 
 // Export all interfaces from "http" module
 export type { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
