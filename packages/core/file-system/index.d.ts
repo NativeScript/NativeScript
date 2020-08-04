@@ -1,4 +1,12 @@
-﻿/**
+﻿import { FileSystemAccess } from './file-system-access';
+
+/**
+ * Returns FileSystemAccess, a shared singleton utility class to provide methods to access and work with the file system. This is used under the hood of all the file system apis in @nativescript/core and provided as a lower level convenience if needed.
+ * @returns FileSystemAccess
+ */
+export function getFileAccess(): FileSystemAccess;
+
+/**
  * Represents a single entity on the file system.
  */
 export class FileSystemEntity {
