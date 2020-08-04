@@ -197,7 +197,7 @@ module.exports = env => {
                 use: [
                     // Require all Android app components
                     platform === "android" && {
-                        loader: "@nativescript/webpack/android-app-components-loader",
+                        loader: "@nativescript/webpack/helpers/android-app-components-loader",
                         options: { modules: appComponents },
                     },
 
@@ -217,9 +217,9 @@ module.exports = env => {
             {
                 test: /[\/|\\]app\.css$/,
                 use: [
-                    '@nativescript/webpack/style-hot-loader',
+                    '@nativescript/webpack/helpers/style-hot-loader',
                     {
-                        loader: "@nativescript/webpack/css2json-loader",
+                        loader: "@nativescript/webpack/helpers/css2json-loader",
                         options: { useForImports: true }
                     },
                 ],
@@ -227,9 +227,9 @@ module.exports = env => {
             {
                 test: /[\/|\\]app\.scss$/,
                 use: [
-                    '@nativescript/webpack/style-hot-loader',
+                    '@nativescript/webpack/helpers/style-hot-loader',
                     {
-                        loader: "@nativescript/webpack/css2json-loader",
+                        loader: "@nativescript/webpack/helpers/css2json-loader",
                         options: { useForImports: true }
                     },
                     'sass-loader',
@@ -239,8 +239,8 @@ module.exports = env => {
                 test: /\.css$/,
                 exclude: /[\/|\\]app\.css$/,
                 use: [
-                    '@nativescript/webpack/style-hot-loader',
-                    '@nativescript/webpack/apply-css-loader.js',
+                    '@nativescript/webpack/helpers/style-hot-loader',
+                    '@nativescript/webpack/helpers/apply-css-loader.js',
                     { loader: "css-loader", options: { url: false } },
                 ],
             },
@@ -248,8 +248,8 @@ module.exports = env => {
                 test: /\.scss$/,
                 exclude: /[\/|\\]app\.scss$/,
                 use: [
-                    '@nativescript/webpack/style-hot-loader',
-                    '@nativescript/webpack/apply-css-loader.js',
+                    '@nativescript/webpack/helpers/style-hot-loader',
+                    '@nativescript/webpack/helpers/apply-css-loader.js',
                     { loader: "css-loader", options: { url: false } },
                     'sass-loader',
                 ],
@@ -323,14 +323,14 @@ module.exports = env => {
         config.module.rules.push(
             {
                 test: /-page\.js$/,
-                use: "@nativescript/webpack/script-hot-loader"
+                use: "@nativescript/webpack/helpers/script-hot-loader"
             },
             {
                 test: /\.(html|xml)$/,
-                use: "@nativescript/webpack/markup-hot-loader"
+                use: "@nativescript/webpack/helpers/markup-hot-loader"
             },
 
-            { test: /\.(html|xml)$/, use: "@nativescript/webpack/xml-namespace-loader" }
+            { test: /\.(html|xml)$/, use: "@nativescript/webpack/helpers/xml-namespace-loader" }
         );
     }
 

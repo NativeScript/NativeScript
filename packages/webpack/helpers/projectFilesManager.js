@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 
-const { isTypeScript, isAngular, isVue, isShared } = require("./projectHelpers");
+const { isTypeScript, isAngular, isVue, isShared, isPlugin } = require("./projectHelpers");
 
 function addProjectFiles(projectDir) {
     const projectTemplates = getProjectTemplates(projectDir);
@@ -60,7 +60,10 @@ function getProjectTemplates(projectDir) {
     const WEBPACK_CONFIG_NAME = "webpack.config.js";
 
     let templates;
-    if (isAngular({ projectDir })) {
+    if (isPlugin({ projectDir })) {
+      // TODO: create config for plugin builds
+      templates = [];
+    } else if (isAngular({ projectDir })) {
         if (isShared({ projectDir })) {
             templates = getSharedAngularTemplates(WEBPACK_CONFIG_NAME);
         } else {
@@ -111,7 +114,7 @@ function getFullTemplatesPath(projectDir, templates) {
     let updatedTemplates = {};
 
     Object.keys(templates).forEach(key => {
-        const updatedKey = getFullPath(path.join(__dirname, "templates"), key);
+        const updatedKey = getFullPath(path.join(__dirname, "..", "templates"), key);
         const updatedValue = getFullPath(projectDir, templates[key])
 
         updatedTemplates[updatedKey] = updatedValue;

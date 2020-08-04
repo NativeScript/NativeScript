@@ -1,7 +1,7 @@
 const os = require("os");
 const { dirname } = require("path");
 const { existsSync, mkdirSync } = require("fs");
-const { isAndroid } = require("../projectHelpers");
+const { isAndroid } = require("../helpers/projectHelpers");
 
 function shouldSnapshot(config) {
     const platformSupportsSnapshot = isAndroid(config.platform);

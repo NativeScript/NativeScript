@@ -1,6 +1,8 @@
 const npsUtils = require('nps-utils');
 
 module.exports = {
+  message: 'NativeScript ~ made with ❤️  Choose a command to start...',
+  pageSize: 25,
 	scripts: {
 		default: 'nps-i',
 		nx: {
@@ -9,7 +11,11 @@ module.exports = {
     },
 		format: {
       script: 'nx format:write',
-      description: 'Format the source code of the entire workspace (auto-run on precommit hook)'
+      description: 'Format source code of the entire workspace (auto-run on precommit hook)'
+    },
+    "__apps": {
+      script: `npx cowsay This is cool`,
+      description: ''
     },
 		// app testing targets
 		apps: {
@@ -17,51 +23,52 @@ module.exports = {
 			automated: {
 				clean: {
           script: 'nx run apps-automated:clean',
-          description: 'Clean apps/automated'
+          description: '🧹 Clean'
         },
 				ios: {
           script: 'nx run apps-automated:ios',
-          description: 'Run apps/automated on iOS'
+          description: ' Run iOS'
         },
 				android: {
           script: 'nx run apps-automated:android',
-          description: 'Run apps/automated on Android'
+          description: '🤖 Run Android'
         },
 			},
 			// Playground useful for livesyncing changes and experimenting
 			playground: {
 				clean: {
           script: 'nx run apps-playground:clean',
-          description: 'Clean apps/playground'
+          description: '🧹 Clean'
         },
 				ios: {
           script: 'nx run apps-playground:ios',
-          description: 'Run apps/playground on iOS'
+          description: ' Run iOS'
         },
 				android: {
           script: 'nx run apps-playground:android',
-          description: 'Run apps/playground on Android'
+          description: '🤖 Run Android'
         },
 			},
 			// Various UI level setups for @nativescript/core testing
 			ui: {
 				clean: {
           script: 'nx run apps-ui:clean',
-          description: 'Clean apps/ui'
+          description: '🧹 Clean'
         },
 				ios: {
           script: 'nx run apps-ui:ios',
-          description: 'Run apps/ui on iOS'
+          description: ' Run iOS'
         },
 				android: {
           script: 'nx run apps-ui:android',
-          description: 'Run apps/ui on Android'
+          description: '🤖 Run Android'
         },
 			},
-		},
+    },
+    "__packages": '--------',
 		// packages
 		// build output is always in dist/packages
-		packages: {
+		'@nativescript': {
 			// @nativescript/core
 			core: {
 				build: {
@@ -102,6 +109,7 @@ module.exports = {
           description: '@nativescript/webpack: Unit tests'
         },
 			},
-		},
+    },
+    "> ______________________": '--------',
 	},
 };

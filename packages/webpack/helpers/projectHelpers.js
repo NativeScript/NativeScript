@@ -8,18 +8,20 @@ const isTypeScript = ({ projectDir, packageJson } = {}) => {
 
     return (
         packageJson.dependencies &&
-        (packageJson.dependencies.hasOwnProperty("nativescript-dev-typescript") ||
             packageJson.dependencies.hasOwnProperty("typescript"))
-    ) || (
-            packageJson.devDependencies &&
-            (packageJson.devDependencies.hasOwnProperty("nativescript-dev-typescript") ||
-                packageJson.devDependencies.hasOwnProperty("typescript"))
-        ) || isAngular({ packageJson });
+           || (packageJson.devDependencies &&
+            packageJson.devDependencies.hasOwnProperty("typescript"))
+         || isAngular({ packageJson });
 };
 
 const isShared = ({ projectDir }) => {
     const nsConfig = getNsConfig(projectDir);
     return nsConfig && !!nsConfig.shared;
+}
+
+const isPlugin = ({ projectDir, packageJson } = {}) => {
+  packageJson = packageJson || getPackageJson(projectDir);
+  return packageJson && packageJson.bootstrapper && (['nativescript-plugin-seed', '@nativescript/plugin-seed'].includes(packageJson.bootstrapper));
 }
 
 const isAngular = ({ projectDir, packageJson } = {}) => {
@@ -124,6 +126,7 @@ module.exports = {
     isIos,
     isAngular,
     isShared,
+    isPlugin,
     getAngularVersion,
     isVue,
     isTypeScript,

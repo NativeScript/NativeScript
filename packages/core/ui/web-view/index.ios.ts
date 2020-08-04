@@ -117,22 +117,16 @@ export class WebView extends WebViewBase {
 
 	initNativeView() {
 		super.initNativeView();
-		this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
-	}
-
-	disposeNativeView() {
-		this._delegate = null;
-		super.disposeNativeView();
+    this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
+    this.ios.navigationDelegate = this._delegate;
 	}
 
 	@profile
 	public onLoaded() {
 		super.onLoaded();
-		this.ios.navigationDelegate = this._delegate;
 	}
 
 	public onUnloaded() {
-		this.ios.navigationDelegate = null;
 		super.onUnloaded();
 	}
 

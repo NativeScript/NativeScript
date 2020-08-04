@@ -2,7 +2,7 @@
 
 const hook = require("@nativescript/hook")(__dirname);
 
-const { getProjectDir } = require("./projectHelpers");
+const { getProjectDir } = require("./helpers/projectHelpers");
 
 const projectDir = getProjectDir();
 

@@ -9,7 +9,7 @@ TypeScript driven development for native platform api's.
 ```bash
 # setup workspace for development
 $ npm run setup
-# list all available commands and interactively select them
+# list all available commands to run
 $ npm start
 ```
 

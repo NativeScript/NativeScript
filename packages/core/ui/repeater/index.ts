@@ -9,10 +9,6 @@ import { addWeakEventListener, removeWeakEventListener } from '../core/weak-even
 import { Builder } from '../builder';
 import { profile } from '../../profiling';
 
-export module knownTemplates {
-	export const itemTemplate = 'itemTemplate';
-}
-
 export interface ItemsSource {
 	length: number;
 	getItem(index: number): any;

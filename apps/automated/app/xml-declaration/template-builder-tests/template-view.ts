@@ -1,8 +1,6 @@
 import { Property, LayoutBase, Builder } from '@nativescript/core';
 
-export module knownTemplates {
-	export var template = 'template';
-}
+Builder.knownTemplates.add('template');
 
 export class TemplateView extends LayoutBase {
 	public template: string;

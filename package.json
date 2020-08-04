@@ -1,6 +1,6 @@
 {
   "name": "nativescript",
-  "version": "7.0.0-rc.33",
+  "version": "7.0.0-rc.41",
   "license": "MIT",
   "scripts": {
     "setup": "npx rimraf -- hooks node_modules package-lock.json && npm i && ts-patch install && nx run core:setup",
@@ -12,11 +12,11 @@
   },
   "devDependencies": {
     "@nativescript/hook": "^1.0.0",
-    "@nrwl/eslint-plugin-nx": "~9.5.1",
-    "@nrwl/jest": "~9.5.1",
-    "@nrwl/node": "~9.5.1",
-    "@nrwl/nx-cloud": "^9.3.0",
-    "@nrwl/workspace": "~9.5.1",
+    "@nrwl/eslint-plugin-nx": "~10.0.7",
+    "@nrwl/jest": "~10.0.7",
+    "@nrwl/node": "~10.0.7",
+    "@nrwl/nx-cloud": "~10.0.0",
+    "@nrwl/workspace": "~10.0.7",
     "@types/chai": "^4.2.11",
     "@types/jest": "~26.0.4",
     "@types/mocha": "^7.0.2",
@@ -41,7 +41,7 @@
     "nativescript": "rc",
     "node-sass": "~4.14.1",
     "nps": "^5.10.0",
-    "nps-i": "file:tools/plugins/nps-i-1.0.3.tgz",
+    "nps-i": "file:tools/plugins/nps-i-1.1.0.tgz",
     "nps-utils": "^1.7.0",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
@@ -53,8 +53,8 @@
     "ts-node": "~8.10.2",
     "ts-patch": "^1.2.5",
     "tslint": "~6.1.2",
-    "typescript": "~3.9.0",
-    "webpack": "~4.43.0",
+    "typescript": "~3.9.7",
+    "webpack": "~4.44.1",
     "webpack-cli": "~3.3.12"
   },
   "husky": {

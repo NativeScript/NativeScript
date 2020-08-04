@@ -2,7 +2,11 @@ import * as ts from 'typescript';
 
 export default function (ctx: ts.TransformationContext) {
 	function isNativeClassExtension(node: ts.ClassDeclaration) {
-		return node.decorators && node.decorators.filter((d) => d.getFullText().trim().indexOf('@NativeClass') === 0).length > 0;
+		return node.decorators && node.decorators.filter((d) => {
+      const fullText = d.getFullText().trim();
+      // TODO: chat with team abaout using full decorator style with parens or no parens
+      return fullText.indexOf('@NativeClass()') > -1 || fullText.indexOf('@NativeClass') > -1
+    }).length > 0;
 	}
 	function visitNode(node: ts.Node): ts.Node {
 		if (ts.isClassDeclaration(node) && isNativeClassExtension(node)) {

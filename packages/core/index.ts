@@ -1,5 +1,4 @@
 /// <reference path="./global-types.d.ts" />
-
 // Init globals first (use require to ensure it's always at the top)
 const nsGlobals = require('./globals');
 nsGlobals.initGlobal();
@@ -7,7 +6,7 @@ nsGlobals.initGlobal();
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
 
-import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance } from './application';
+import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance } from './application';
 export const Application = {
 	launchEvent,
 	displayedEvent,
@@ -18,7 +17,8 @@ export const Application = {
 	exitEvent,
 	lowMemoryEvent,
 	orientationChangedEvent,
-	systemAppearanceChangedEvent,
+  systemAppearanceChangedEvent,
+  systemAppearanceChanged,
 
 	getMainEntry,
 	getRootView,

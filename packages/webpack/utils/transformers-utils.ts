@@ -1,6 +1,6 @@
 import { AngularCompilerPlugin } from '@ngtools/webpack';
 import * as semver from 'semver';
-import { getAngularVersion } from '../projectHelpers';
+import { getAngularVersion } from '../helpers/projectHelpers';
 
 export function getResolvedEntryModule(ngCompiler: AngularCompilerPlugin, projectDir: string) {
 	const ngCoreVersion = projectDir && semver.coerce(getAngularVersion({ projectDir }));

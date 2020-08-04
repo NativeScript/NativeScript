@@ -1,6 +1,6 @@
 const { convertToUnixPath } = require("../lib/utils");
 const { RawSource, ConcatSource } = require("webpack-sources");
-const { getPackageJson } = require("../projectHelpers");
+const { getPackageJson } = require("../helpers/projectHelpers");
 const { SNAPSHOT_ENTRY_NAME } = require("./NativeScriptSnapshotPlugin");
 const path = require("path");
 
