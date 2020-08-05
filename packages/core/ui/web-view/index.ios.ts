@@ -117,8 +117,8 @@ export class WebView extends WebViewBase {
 
 	initNativeView() {
 		super.initNativeView();
-    this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
-    this.ios.navigationDelegate = this._delegate;
+		this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
+		this.ios.navigationDelegate = this._delegate;
 	}
 
 	@profile

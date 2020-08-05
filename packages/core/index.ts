@@ -17,8 +17,8 @@ export const Application = {
 	exitEvent,
 	lowMemoryEvent,
 	orientationChangedEvent,
-  systemAppearanceChangedEvent,
-  systemAppearanceChanged,
+	systemAppearanceChangedEvent,
+	systemAppearanceChanged,
 
 	getMainEntry,
 	getRootView,

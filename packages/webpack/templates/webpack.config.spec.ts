@@ -52,7 +52,7 @@ const webpackConfigAngular = proxyquire('./webpack.angular', {
 			return FakeHmrTransformerFlag;
 		},
 	},
-  '@nativescript/webpack/transformers/ns-transform-native-classes-ng': {
+	'@nativescript/webpack/transformers/ns-transform-native-classes-ng': {
 		nsTransformNativeClassesNg: () => {
 			return FakeNativeClassTransformerFlag;
 		},
@@ -195,9 +195,9 @@ describe('webpack.config.js', () => {
 
 						expect(angularCompilerOptions).toBeDefined();
 						expect(angularCompilerOptions.platformTransformers).toBeDefined();
-            expect(angularCompilerOptions.platformTransformers.length).toEqual(1);
-            expect(angularCompilerOptions.platformTransformers[0]).toEqual(FakeNativeClassTransformerFlag);
-          });
+						expect(angularCompilerOptions.platformTransformers.length).toEqual(1);
+						expect(angularCompilerOptions.platformTransformers[0]).toEqual(FakeNativeClassTransformerFlag);
+					});
 
 					it('should contain the HMR transformer when the HMR flag is passed', () => {
 						const input = getInput({ platform, hmr: true });

@@ -26,13 +26,13 @@ export class HelloWorldModel extends Observable {
 	onTap() {
 		this._counter--;
 		this.updateMessage();
-  }
-  
-  viewList() {
-    Frame.topmost().navigate({
-      moduleName: "list-page"
-    });
-  }
+	}
+
+	viewList() {
+		Frame.topmost().navigate({
+			moduleName: 'list-page',
+		});
+	}
 
 	private updateMessage() {
 		if (this._counter <= 0) {

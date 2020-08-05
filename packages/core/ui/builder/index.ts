@@ -28,10 +28,10 @@ export interface LoadOptions {
 }
 
 export class Builder {
-  // ui plugin developers can add to these to define their own custom types if needed
-  static knownTemplates: Set<string> = new Set(['itemTemplate']);
-  static knownMultiTemplates: Set<string> = new Set(['itemTemplates']);
-  static knownCollections: Set<string> = new Set(['items', 'spans', 'actionItems']);
+	// ui plugin developers can add to these to define their own custom types if needed
+	static knownTemplates: Set<string> = new Set(['itemTemplate']);
+	static knownMultiTemplates: Set<string> = new Set(['itemTemplates']);
+	static knownCollections: Set<string> = new Set(['items', 'spans', 'actionItems']);
 
 	static createViewFromEntry(entry: ViewEntry): View {
 		if (entry.create) {
@@ -712,11 +712,11 @@ namespace xml2ui {
 		}
 
 		private static isKnownTemplate(name: string, exports: any): boolean {
-      return Builder.knownTemplates.has(name);
+			return Builder.knownTemplates.has(name);
 		}
 
 		private static isKnownMultiTemplate(name: string, exports: any): boolean {
-      return Builder.knownMultiTemplates.has(name);
+			return Builder.knownMultiTemplates.has(name);
 		}
 
 		private static addToComplexProperty(parent: ComponentModule, complexProperty: ComponentParser.ComplexProperty, elementModule: ComponentModule) {
@@ -733,7 +733,7 @@ namespace xml2ui {
 		}
 
 		private static isKnownCollection(name: string, context: any): boolean {
-      return Builder.knownCollections.has(name);
+			return Builder.knownCollections.has(name);
 		}
 	}
 
