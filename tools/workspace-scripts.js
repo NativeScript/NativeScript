@@ -21,7 +21,7 @@ module.exports = {
 		apps: {
       "...Automated...": {
         script: `npx cowsay "These run fast, watch the fireworks! 🎆"`,
-        description: `🔻 Automated test runner which executes e2e tests on the target platform 🎆`
+        description: ` 🔻 Automated test runner which executes e2e tests on the target platform 🎆`
       },
 			// Automated test runner which executes e2e tests on the target platform
 			automated: {
@@ -40,7 +40,7 @@ module.exports = {
       },
       "...ToolBox...": {
         script: `npx cowsay "🎯 The best development target to experiment with ideas and debug core"`,
-        description: `🔻 Toolbox for livesyncing changes and experimenting 🎯`
+        description: ` 🔻 Toolbox for livesyncing changes and experimenting 🎯`
       },
 			// Toolbox useful for livesyncing changes and experimenting
 			toolbox: {
@@ -59,7 +59,7 @@ module.exports = {
       },
       "...UI...": {
         script: `npx cowsay "Tons of ui samples to prove out core behavior and validate github issue fixes ☑️"`,
-        description: `🔻 Tons of ui samples to prove out core behavior and validate github issue fixes ☑️`
+        description: ` 🔻 Tons of ui samples to prove out core behavior and validate github issue fixes ☑️`
       },
 			// Various UI level setups for @nativescript/core testing
 			ui: {

@@ -8,7 +8,7 @@
         <Button text="TAP" tap="{{ onTap }}" class="btn btn-primary btn-active"/>
         <Label text="{{ message }}" class="h2 text-center" textWrap="true"/>
         <StackLayout class="c-bg-grey w-full m-y-5" height="1"></StackLayout>
-        <ScrollView>
+        <ScrollView class="h-full">
           <StackLayout>
             <Label text="More things to tool around with:" class="t-12 text-center font-italic m-t-10"/>
             <Button text="View List" tap="{{ viewList }}" class="btn"/>

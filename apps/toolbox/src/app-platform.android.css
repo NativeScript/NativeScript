@@ -1,4 +1,13 @@
-﻿
+﻿Button {
+  background-color: transparent;
+  border-color: transparent;
+  border-width: 1;
+  text-transform: capitalize;
+  android-elevation: 0;
+  android-dynamic-elevation-offset: 0;
+  padding: 0;
+  margin: 0;
+}
 
 .component-label{
     margin-left: 12;
