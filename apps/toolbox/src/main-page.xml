@@ -1,6 +1,6 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
     <Page.actionBar>
-        <ActionBar title="Dev Playground" icon="" class="action-bar">
+        <ActionBar title="Dev Toolbox" icon="" class="action-bar">
         </ActionBar>
     </Page.actionBar>
     <StackLayout class="p-t-20 p-x-20">
@@ -10,7 +10,7 @@
         <StackLayout class="c-bg-grey w-full m-y-5" height="1"></StackLayout>
         <ScrollView>
           <StackLayout>
-            <Label text="More things to play with:" class="t-12 text-center font-italic m-t-10"/>
+            <Label text="More things to tool around with:" class="t-12 text-center font-italic m-t-10"/>
             <Button text="View List" tap="{{ viewList }}" class="btn"/>
             <!-- add more examples below as desired to test and play around -->
           </StackLayout>
