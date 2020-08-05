@@ -1,6 +1,6 @@
 {
   "nativescript": {
-    "id": "org.ns.testcore",
+    "id": "org.nativescript.ToolBox",
     "tns-ios": {
       "version": "6.5.0"
     },

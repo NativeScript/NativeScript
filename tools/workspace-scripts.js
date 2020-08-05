@@ -13,59 +13,74 @@ module.exports = {
       script: 'nx format:write',
       description: 'Format source code of the entire workspace (auto-run on precommit hook)'
     },
-    "__apps": {
-      script: `npx cowsay This is cool`,
-      description: ''
+    "🔧": {
+      script: `npx cowsay "NativeScript apps are key to a user's ❤️"`,
+      description: '_____________  Apps to develop and experiment with  _____________'
     },
 		// app testing targets
 		apps: {
-			// Automated test runner which executes unit tests on the target platform
+      "...Automated...": {
+        script: `npx cowsay "These run fast, watch the fireworks! 🎆"`,
+        description: `🔻 Automated test runner which executes e2e tests on the target platform 🎆`
+      },
+			// Automated test runner which executes e2e tests on the target platform
 			automated: {
 				clean: {
           script: 'nx run apps-automated:clean',
-          description: '🧹 Clean'
+          description: '⚆  Clean  🧹'
         },
 				ios: {
           script: 'nx run apps-automated:ios',
-          description: ' Run iOS'
+          description: '⚆  Run iOS  '
         },
 				android: {
           script: 'nx run apps-automated:android',
-          description: '🤖 Run Android'
+          description: '⚆  Run Android  🤖'
         },
-			},
-			// Playground useful for livesyncing changes and experimenting
-			playground: {
+      },
+      "...ToolBox...": {
+        script: `npx cowsay "🎯 The best development target to experiment with ideas and debug core"`,
+        description: `🔻 Toolbox for livesyncing changes and experimenting 🎯`
+      },
+			// Toolbox useful for livesyncing changes and experimenting
+			toolbox: {
 				clean: {
-          script: 'nx run apps-playground:clean',
-          description: '🧹 Clean'
+          script: 'nx run apps-toolbox:clean',
+          description: '⚆  Clean  🧹'
         },
 				ios: {
-          script: 'nx run apps-playground:ios',
-          description: ' Run iOS'
+          script: 'nx run apps-toolbox:ios',
+          description: '⚆  Run iOS  '
         },
 				android: {
-          script: 'nx run apps-playground:android',
-          description: '🤖 Run Android'
+          script: 'nx run apps-toolbox:android',
+          description: '⚆  Run Android  🤖'
         },
-			},
+      },
+      "...UI...": {
+        script: `npx cowsay "Tons of ui samples to prove out core behavior and validate github issue fixes ☑️"`,
+        description: `🔻 Tons of ui samples to prove out core behavior and validate github issue fixes ☑️`
+      },
 			// Various UI level setups for @nativescript/core testing
 			ui: {
 				clean: {
           script: 'nx run apps-ui:clean',
-          description: '🧹 Clean'
+          description: '⚆  Clean  🧹'
         },
 				ios: {
           script: 'nx run apps-ui:ios',
-          description: ' Run iOS'
+          description: '⚆  Run iOS  '
         },
 				android: {
           script: 'nx run apps-ui:android',
-          description: '🤖 Run Android'
+          description: '⚆  Run Android  🤖'
         },
 			},
     },
-    "__packages": '--------',
+    "⚙️": {
+      script: `npx cowsay "@nativescript/* packages will keep your ⚙️ cranking"`,
+      description: '_____________  @nativescript/*  _____________'
+    },
 		// packages
 		// build output is always in dist/packages
 		'@nativescript': {
@@ -110,6 +125,9 @@ module.exports = {
         },
 			},
     },
-    "> ______________________": '--------',
+    ".....................": {
+      script: `npx cowsay "That's all for now folks ~"`,
+      description: '.....................'
+    }
 	},
 };
