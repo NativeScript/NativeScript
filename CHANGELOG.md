@@ -1,3 +1,18 @@
+## [6.5.13](https://github.com/NativeScript/NativeScript/compare/6.5.12...6.5.13) (2020-08-07)
+
+
+### Bug Fixes
+
+* **android:** 'isEnabled' now works properly for SegmentedBar ([#8711](https://github.com/NativeScript/NativeScript/issues/8711)) ([0850252](https://github.com/NativeScript/NativeScript/commit/08502527eb25d074d5e29ede506f5fb88f47d088))
+* **android:** line-height ([#8751](https://github.com/NativeScript/NativeScript/issues/8751)) ([4708ff4](https://github.com/NativeScript/NativeScript/commit/4708ff4e680669c3747837be036c6cb86b4b46c6))
+
+
+### Features
+
+* **ios:** dialog size can now use CSS or attribute like android ([#8710](https://github.com/NativeScript/NativeScript/issues/8710)) ([fc37b95](https://github.com/NativeScript/NativeScript/commit/fc37b958fe4fc9f83cace2965f73a81c802cac75))
+
+
+
 ## [6.5.12](https://github.com/NativeScript/NativeScript/compare/6.5.11...6.5.12) (2020-07-21)
 
 
