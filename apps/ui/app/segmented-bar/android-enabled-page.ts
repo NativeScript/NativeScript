@@ -1,5 +1,5 @@
-﻿import { Frame } from "@nativescript/core";
+﻿import { Frame } from '@nativescript/core';
 
 export function navigate() {
-  Frame.topmost().goBack();
+	Frame.topmost().goBack();
 }

@@ -70,12 +70,20 @@ function getEditText(picker: android.widget.NumberPicker): android.widget.EditTe
 
 let selectorWheelPaintField: java.lang.reflect.Field;
 function getSelectorWheelPaint(picker: android.widget.NumberPicker): android.graphics.Paint {
-	if (!selectorWheelPaintField) {
+	try {
 		selectorWheelPaintField = picker.getClass().getDeclaredField('mSelectorWheelPaint');
-		selectorWheelPaintField.setAccessible(true);
+		if (selectorWheelPaintField) {
+			selectorWheelPaintField.setAccessible(true);
+		}
+	} catch (err) {
+		// mSelectorWheelPaint is not supported on api level
 	}
 
-	return selectorWheelPaintField.get(picker);
+	if (selectorWheelPaintField) {
+		return selectorWheelPaintField.get(picker);
+	}
+
+	return null;
 }
 
 export class ListPicker extends ListPickerBase {
@@ -101,9 +109,7 @@ export class ListPicker extends ListPickerBase {
 		// api28 and lower uses reflection to retrieve and manipulate
 		// android.graphics.Paint object; this is no longer allowed on newer api levels but
 		// equivalent public methods are exposed on api29+ directly on the native widget
-		if (sdkVersion() < 29) {
-			this._selectorWheelPaint = getSelectorWheelPaint(nativeView);
-		}
+		this._selectorWheelPaint = getSelectorWheelPaint(nativeView);
 
 		const formatter = new Formatter(this);
 		nativeView.setFormatter(formatter);
@@ -175,7 +181,11 @@ export class ListPicker extends ListPickerBase {
 			return this._selectorWheelPaint.getColor();
 		}
 
-		return this.nativeView.getTextColor();
+		if (this.nativeView && this.nativeView.getTextColor) {
+			return this.nativeView.getTextColor();
+		} else {
+			return 0;
+		}
 	}
 	[colorProperty.setNative](value: number | Color) {
 		const color = value instanceof Color ? value.android : value;
@@ -190,7 +200,7 @@ export class ListPicker extends ListPickerBase {
 			if (editText) {
 				editText.setTextColor(color);
 			}
-		} else {
+		} else if (this.nativeView && this.nativeView.setTextColor) {
 			// api29 and higher native implementation sets
 			// both wheel color and input text color with single call
 			this.nativeView.setTextColor(color);

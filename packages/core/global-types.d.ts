@@ -243,8 +243,8 @@ declare interface NativeClassOptions {
 /**
  * Decorates class that extends a native class(iOS or Android)
  */
-declare function NativeClass<T extends {new(...args:any[]):{}}>(constructor:T);
-declare function NativeClass<T extends {new(...args:any[]):{}}>(options?:NativeClassOptions);
+declare function NativeClass<T extends { new (...args: any[]): {} }>(constructor: T);
+declare function NativeClass<T extends { new (...args: any[]): {} }>(options?: NativeClassOptions);
 
 /**
  * Decorates class that implements native Java interfaces.

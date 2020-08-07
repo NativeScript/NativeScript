@@ -9,10 +9,6 @@ import { ShorthandProperty, CssProperty, Property, unsetValue } from '../core/pr
 import { Length, horizontalAlignmentProperty, verticalAlignmentProperty } from '../styling/style-properties';
 import { Style } from '../styling/style';
 
-export module knownCollections {
-	export const actionItems = 'actionItems';
-}
-
 @CSSType('ActionBar')
 export class ActionBarBase extends View implements ActionBarDefinition {
 	private _actionItems: ActionItems;

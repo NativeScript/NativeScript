@@ -14,10 +14,6 @@ export * from '../tab-navigation-base/tab-strip-item';
 
 export const traceCategory = 'TabView';
 
-export module knownCollections {
-	export const items = 'items';
-}
-
 @CSSType('Tabs')
 export class TabsBase extends TabNavigationBase implements TabsDefinition {
 	public swipeEnabled: boolean;

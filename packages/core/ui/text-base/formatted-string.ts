@@ -8,10 +8,6 @@ import { Color } from '../../color';
 import { FontStyle, FontWeight } from '../styling/font';
 import { TextDecoration } from '../text-base';
 
-export module knownCollections {
-	export const spans = 'spans';
-}
-
 export class FormattedString extends ViewBase implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
 	private _spans: ObservableArray<Span>;
 
@@ -88,7 +84,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 	}
 
 	public _addArrayFromBuilder(name: string, value: Array<any>) {
-		if (name === knownCollections.spans) {
+		if (name === 'spans') {
 			this.spans.push(value);
 		}
 	}

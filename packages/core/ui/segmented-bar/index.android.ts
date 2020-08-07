@@ -1,5 +1,6 @@
 import { Font } from '../styling/font';
-import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, isEnabledProperty, selectedBackgroundColorProperty } from './segmented-bar-common';
+import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty } from './segmented-bar-common';
+import { isEnabledProperty } from '../core/view';
 import { colorProperty, fontInternalProperty, fontSizeProperty } from '../styling/style-properties';
 import { Color } from '../../color';
 import { layout } from '../../utils';
@@ -240,18 +241,17 @@ export class SegmentedBar extends SegmentedBarBase {
 		const nativeView: any = this.nativeViewProtected;
 		nativeView.listener.owner = null;
 		super.disposeNativeView();
-  }
-  
-  public onLoaded() {
-    super.onLoaded();
+	}
 
-    // Can only be applied after view is loaded
-    const tabWidget = this.nativeViewProtected.getTabWidget();
-    if (tabWidget)
-    {
-        tabWidget.setEnabled(tabWidget.isEnabled());
-    }
-}
+	public onLoaded() {
+		super.onLoaded();
+
+		// Can only be applied after view is loaded
+		const tabWidget = this.nativeViewProtected.getTabWidget();
+		if (tabWidget) {
+			tabWidget.setEnabled(tabWidget.isEnabled());
+		}
+	}
 
 	private insertTab(tabItem: SegmentedBarItem, index: number): void {
 		const tabHost = this.nativeViewProtected;
@@ -284,12 +284,11 @@ export class SegmentedBar extends SegmentedBarBase {
 		}
 
 		selectedIndexProperty.coerce(this);
-  }
-  [isEnabledProperty.setNative](value: boolean) {
-    const tabWidget = this.nativeViewProtected.getTabWidget();
-    if (tabWidget)
-    {
-        tabWidget.setEnabled(value);
-    }
-  }
+	}
+	[isEnabledProperty.setNative](value: boolean) {
+		const tabWidget = this.nativeViewProtected.getTabWidget();
+		if (tabWidget) {
+			tabWidget.setEnabled(value);
+		}
+	}
 }

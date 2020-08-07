@@ -24,10 +24,6 @@ export interface NavigatedData extends EventData {
 	isBackNavigation: boolean;
 }
 
-export module knownCollections {
-	export const actionItems: string;
-}
-
 /**
  * Represents a logical unit for navigation (inside Frame).
  */

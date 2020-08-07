@@ -118,8 +118,8 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 			};
 			const ConnectivityManager = android.net.ConnectivityManager;
 			if (!networkCallback) {
-				@NativeClass 
-				class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback{
+				@NativeClass
+				class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback {
 					onAvailable(network: android.net.Network) {
 						notifyCallback();
 					}
@@ -132,7 +132,7 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 					onUnavailable() {
 						notifyCallback();
 					}
-				};
+				}
 				networkCallback = NetworkCallbackImpl;
 			}
 			callback = new networkCallback();

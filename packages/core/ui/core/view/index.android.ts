@@ -164,6 +164,7 @@ function initializeDialogFragment() {
 		}
 	}
 
+	@NativeClass
 	class DialogFragmentImpl extends androidx.fragment.app.DialogFragment {
 		public owner: View;
 		private _fullscreen: boolean;

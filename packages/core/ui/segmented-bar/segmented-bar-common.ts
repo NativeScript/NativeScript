@@ -6,10 +6,6 @@ import { Color } from '../../color';
 import { Style } from '../styling/style';
 import { EventData } from '../../data/observable';
 
-export module knownCollections {
-	export const items = 'items';
-}
-
 @CSSType('SegmentedBarItem')
 export abstract class SegmentedBarItemBase extends ViewBase implements SegmentedBarItemDefinition {
 	private _title: string = '';

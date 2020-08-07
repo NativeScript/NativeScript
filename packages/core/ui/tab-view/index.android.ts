@@ -130,6 +130,7 @@ function initializeNativeClasses() {
 	const POSITION_UNCHANGED = -1;
 	const POSITION_NONE = -2;
 
+	@NativeClass
 	class FragmentPagerAdapter extends androidx.viewpager.widget.PagerAdapter {
 		public items: Array<TabViewItemDefinition>;
 		private mCurTransaction: androidx.fragment.app.FragmentTransaction;

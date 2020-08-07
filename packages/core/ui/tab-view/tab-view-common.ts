@@ -83,10 +83,6 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
 	public abstract _update();
 }
 
-export module knownCollections {
-	export const items = 'items';
-}
-
 @CSSType('TabView')
 export class TabViewBase extends View implements TabViewDefinition, AddChildFromBuilder, AddArrayFromBuilder {
 	public static selectedIndexChangedEvent = 'selectedIndexChanged';

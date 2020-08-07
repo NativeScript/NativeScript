@@ -29,7 +29,7 @@ export function pageLoaded(args: EventData) {
 	examples.set('page', 'page/main-page');
 	examples.set('perf', 'perf/main-page');
 	examples.set('scroll-view', 'scroll-view/main-page');
-	examples.set("segmented-bar", "segmented-bar/main-page");
+	examples.set('segmented-bar', 'segmented-bar/main-page');
 	examples.set('search-bar', 'search-bar/main-page');
 	examples.set('tab-view', 'tab-view/main-page');
 	examples.set('timePicker', 'time-picker/time-picker-page');

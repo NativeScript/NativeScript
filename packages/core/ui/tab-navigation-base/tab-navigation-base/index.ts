@@ -14,10 +14,6 @@ import { TabStrip } from '../tab-strip';
 // TODO: Impl trace
 // export const traceCategory = "TabView";
 
-export module knownCollections {
-	export const items = 'items';
-}
-
 /**
  * Defines the data for the tab navigation selectedIndexChanged event.
  */

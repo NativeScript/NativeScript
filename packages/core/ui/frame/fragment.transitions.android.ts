@@ -31,10 +31,11 @@ interface ExpandedTransitionListener extends androidx.transition.Transition.Tran
 
 interface ExpandedAnimator extends android.animation.Animator {
 	entry: ExpandedEntry;
+	backEntry?: BackstackEntry;
 	transitionType?: string;
 }
 
-interface ExpandedEntry extends BackstackEntry {
+export interface ExpandedEntry extends BackstackEntry {
 	enterTransitionListener: ExpandedTransitionListener;
 	exitTransitionListener: ExpandedTransitionListener;
 	reenterTransitionListener: ExpandedTransitionListener;
@@ -52,7 +53,7 @@ interface ExpandedEntry extends BackstackEntry {
 	isNestedDefaultTransition: boolean;
 }
 
-export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: any, isNestedDefaultTransition?: boolean): void {
+export function _setAndroidFragmentTransitions(animated: boolean, navigationTransition: NavigationTransition, currentEntry: ExpandedEntry, newEntry: ExpandedEntry, frameId: number, fragmentTransaction: androidx.fragment.app.FragmentTransaction, isNestedDefaultTransition?: boolean): void {
 	const currentFragment: androidx.fragment.app.Fragment = currentEntry ? currentEntry.fragment : null;
 	const newFragment: androidx.fragment.app.Fragment = newEntry.fragment;
 	const entries = waitingQueue.get(frameId);
@@ -148,6 +149,7 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 			setupCurrentFragmentExplodeTransition(navigationTransition, currentEntry);
 		}
 	} else if (name.indexOf('flip') === 0) {
+		navigationTransition = { duration: 3000, curve: null };
 		const direction = name.substr('flip'.length) || 'right'; //Extract the direction from the string
 		const flipTransition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
 
@@ -238,7 +240,7 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 				if (Trace.isEnabled()) {
 					Trace.write(`END ${animator.transitionType} for ${animator.entry.fragmentTag}`, Trace.categories.Transition);
 				}
-				transitionOrAnimationCompleted(animator.entry);
+				transitionOrAnimationCompleted(animator.entry, animator.backEntry);
 			}
 
 			onAnimationCancel(animator: ExpandedAnimator): void {
@@ -327,6 +329,7 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 		@NativeClass
 		@Interfaces([(<any>androidx).transition.Transition.TransitionListener])
 		class TransitionListenerImpl extends java.lang.Object implements androidx.transition.Transition.TransitionListener {
+			public backEntry?: BackstackEntry;
 			constructor(public entry: ExpandedEntry, public transition: androidx.transition.Transition) {
 				super();
 
@@ -346,8 +349,7 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 				if (Trace.isEnabled()) {
 					Trace.write(`END ${toShortString(transition)} transition for ${entry.fragmentTag}`, Trace.categories.Transition);
 				}
-
-				transitionOrAnimationCompleted(entry);
+				transitionOrAnimationCompleted(entry, this.backEntry);
 			}
 
 			onTransitionResume(transition: androidx.transition.Transition): void {
@@ -649,7 +651,7 @@ export function addNativeTransitionListener(entry: ExpandedEntry, nativeTransiti
 	return listener;
 }
 
-function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
+function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: BackstackEntry): void {
 	const frameId = entry.frameId;
 	const entries = waitingQueue.get(frameId);
 	// https://github.com/NativeScript/NativeScript/issues/5759
@@ -678,7 +680,7 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry): void {
 		// Will be null if Frame is shown modally...
 		// transitionOrAnimationCompleted fires again (probably bug in android).
 		if (current) {
-			setTimeout(() => frame.setCurrent(current, navigationContext.navigationType));
+			setTimeout(() => frame.setCurrent(backEntry || current, navigationContext.navigationType));
 		}
 	} else {
 		completedEntries.set(frameId, entry);

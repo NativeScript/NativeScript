@@ -296,11 +296,6 @@ export class FrameBase extends CustomLayoutView {
 	private raiseCurrentPageNavigatedEvents(isBack: boolean) {
 		const page = this.currentPage;
 		if (page) {
-			if (page.isLoaded) {
-				// Forward navigation does not remove page from frame so we raise unloaded manually.
-				page.callUnloaded();
-			}
-
 			page.onNavigatedFrom(isBack);
 		}
 	}

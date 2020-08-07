@@ -1,4 +1,4 @@
-import * as ts from "typescript";
+import * as ts from 'typescript';
 
 export default function (ctx: ts.TransformationContext) {
 	function isNativeClassExtension(node: ts.ClassDeclaration) {
@@ -17,18 +17,14 @@ export default function (ctx: ts.TransformationContext) {
 		return ts.visitEachChild(node, visitNode, ctx);
 	}
 
-    function createHelper(node: ts.Node) {
-        // we remove the decorator for now!
-        return ts.createIdentifier(
-            ts.transpileModule(node.getText().replace(/@NativeClass(\((.|\n)*?\))?/gm, ''), {
-                compilerOptions: { noEmitHelpers:true, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES5 },
-            }).outputText
-        );
-    }
+	function createHelper(node: ts.Node) {
+		// we remove the decorator for now!
+		return ts.createIdentifier(
+			ts.transpileModule(node.getText().replace(/@NativeClass(\((.|\n)*?\))?/gm, ''), {
+				compilerOptions: { noEmitHelpers: true, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES5 },
+			}).outputText
+		);
+	}
 
-    return (source: ts.SourceFile) =>
-        ts.updateSourceFileNode(
-            source,
-            ts.visitNodes(source.statements, visitNode)
-        );
+	return (source: ts.SourceFile) => ts.updateSourceFileNode(source, ts.visitNodes(source.statements, visitNode));
 }

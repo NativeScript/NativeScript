@@ -436,7 +436,7 @@ export class Frame extends FrameBase {
 			//transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		}
 
-		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
+		transaction.add(this.containerViewId, newFragment, newFragmentTag);
 		transaction.commitAllowingStateLoss();
 	}
 
@@ -458,7 +458,29 @@ export class Frame extends FrameBase {
 
 		_reverseTransitions(backstackEntry, this._currentEntry);
 
-		transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
+		const currentIndex = this.backStack.length;
+		const gotBackToIndex = this.backStack.indexOf(backstackEntry);
+
+		for (let index = gotBackToIndex + 1; index < currentIndex; index++) {
+			transaction.remove(this.backStack[index].fragment);
+		}
+		if (this._currentEntry !== backstackEntry) {
+			// if we are going back we need to store where we are backing to
+			// so that we can set the current entry
+			if ((this._currentEntry as any).exitTransitionListener) {
+				(this._currentEntry as any).exitTransitionListener.backEntry = backstackEntry;
+			}
+			if ((this._currentEntry as any).returnTransitionListener) {
+				(this._currentEntry as any).returnTransitionListener.backEntry = backstackEntry;
+			}
+			if ((this._currentEntry as any).enterTransitionListener) {
+				(this._currentEntry as any).enterTransitionListener.backEntry = backstackEntry;
+			}
+			if ((this._currentEntry as any).reenterTransitionListener) {
+				(this._currentEntry as any).reenterTransitionListener.backEntry = backstackEntry;
+			}
+			transaction.remove(this._currentEntry.fragment);
+		}
 		transaction.commitAllowingStateLoss();
 	}
 

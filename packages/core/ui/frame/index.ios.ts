@@ -215,8 +215,8 @@ export class Frame extends FrameBase {
 			this._ios._disableNavBarAnimation = true;
 		}
 
-    // when showing/hiding navigationbar, the page needs a relayout to avoid overlapping or hidden layouts
-    const needsPageLayout = this._ios.showNavigationBar !== newValue;
+		// when showing/hiding navigationbar, the page needs a relayout to avoid overlapping or hidden layouts
+		const needsPageLayout = this._ios.showNavigationBar !== newValue;
 		this._ios.showNavigationBar = newValue;
 
 		if (disableNavBarAnimation) {
@@ -225,11 +225,11 @@ export class Frame extends FrameBase {
 
 		if (this._ios.controller.navigationBar) {
 			this._ios.controller.navigationBar.userInteractionEnabled = this.navigationQueueIsEmpty();
-    }
-    
-    if (needsPageLayout && page) {
-      page.requestLayout();
-    }
+		}
+
+		if (needsPageLayout && page) {
+			page.requestLayout();
+		}
 	}
 
 	public _getNavBarVisible(page: Page): boolean {
