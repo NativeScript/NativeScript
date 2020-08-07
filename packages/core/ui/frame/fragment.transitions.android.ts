@@ -143,13 +143,12 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 		if (currentFragmentNeedsDifferentAnimation) {
 			setupCurrentFragmentFadeTransition(navigationTransition, currentEntry);
 		}
-	} else if (name === 'explode') {
+	} else if (name === 'explode') { 
 		setupNewFragmentExplodeTransition(navigationTransition, newEntry);
 		if (currentFragmentNeedsDifferentAnimation) {
 			setupCurrentFragmentExplodeTransition(navigationTransition, currentEntry);
 		}
 	} else if (name.indexOf('flip') === 0) {
-		navigationTransition = { duration: 3000, curve: null };
 		const direction = name.substr('flip'.length) || 'right'; //Extract the direction from the string
 		const flipTransition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
 
