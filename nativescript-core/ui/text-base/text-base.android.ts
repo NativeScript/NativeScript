@@ -334,11 +334,10 @@ export class TextBase extends TextBaseCommon {
     }
 
     [lineHeightProperty.getDefault](): number {
-        return this.nativeTextViewProtected.getLineHeight() / layout.getDisplayDensity();
+        return this.nativeView.getLineSpacingExtra() / layout.getDisplayDensity();
     }
     [lineHeightProperty.setNative](value: number) {
-        const fontHeight = this.nativeTextViewProtected.getPaint().getFontMetricsInt(null);
-        this.nativeTextViewProtected.setLineSpacing(Math.max(value - fontHeight, 0) * layout.getDisplayDensity(), 1);
+        this.nativeView.setLineSpacing(value * layout.getDisplayDensity(), 1);
     }
 
     [fontInternalProperty.getDefault](): android.graphics.Typeface {
