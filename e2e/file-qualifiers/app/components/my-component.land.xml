@@ -1,3 +1,0 @@
-<StackLayout class="p-20" loaded="onLoaded">
-    <Label text="CUSTOM COMPONENT - LANDSCAPE" class="custom-component" />
-</StackLayout>

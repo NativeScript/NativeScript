@@ -1,0 +1,22 @@
+import { Trace } from '@nativescript/core';
+
+export const enable = Trace.enable;
+export const error = Trace.error;
+export const getErrorHandler = Trace.getErrorHandler;
+export const isCategorySet = Trace.isCategorySet;
+export const isEnabled = Trace.isEnabled;
+export const notifyEvent = Trace.notifyEvent;
+export const setCategories = Trace.setCategories;
+export const setErrorHandler = Trace.setErrorHandler;
+export const write = Trace.write;
+export const removeWriter = Trace.removeWriter;
+export const messageType = Trace.messageType;
+export const removeEventListener = Trace.removeEventListener;
+export const addCategories = Trace.addCategories;
+export const addEventListener = Trace.addEventListener;
+export const DefaultErrorHandler = Trace.DefaultErrorHandler;
+export const ConsoleWriter = Trace.ConsoleWriter;
+export const addWriter = Trace.addWriter;
+export const categories = Trace.categories;
+export const clearWriters = Trace.clearWriters;
+export const disable = Trace.disable;

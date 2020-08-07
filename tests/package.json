@@ -16,15 +16,14 @@
     "clean": "npx rimraf hooks node_modules platforms package-lock.json && npm i"
   },
   "dependencies": {
-    "@nativescript/core": "file:../nativescript-core",
-    "tns-core-modules": "file:../dist/tns-core-modules"
+    "@nativescript/core": "file:../dist/nativescript-core-7.0.0-rc.11.tgz"
   },
   "devDependencies": {
-    "circular-dependency-plugin": "5.2.0",
-    "nativescript-dev-webpack": "next",
-    "node-sass": "^4.12.0",
-    "tns-platform-declarations": "file:../tns-platform-declarations",
-    "typescript": "~3.4.1"
+    "circular-dependency-plugin": "~5.2.0",
+    "@nativescript/webpack": "^2.0.0-alpha.3",
+    "node-sass": "^4.14.0",
+    "@nativescript/types": "~7.0.0-rc.0",
+    "typescript": "~3.9.0"
   },
   "gitHead": "c06800e52ee1a184ea2dffd12a6702aaa43be4e3",
   "readme": "NativeScript Application"

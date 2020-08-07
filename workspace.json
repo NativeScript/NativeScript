@@ -1,0 +1,494 @@
+{
+  "version": 1,
+  "projects": {
+    "apps-automated": {
+      "root": "apps/automated/",
+      "sourceRoot": "apps/automated/app",
+      "projectType": "application",
+      "prefix": "nativescript",
+      "architect": {
+        "ios": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "tns debug ios --no-hmr --emulator"
+              }
+            ],
+            "cwd": "apps/automated",
+            "parallel": false
+          }
+        },
+        "android": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "tns debug android --no-hmr --emulator"
+              }
+            ],
+            "cwd": "apps/automated",
+            "parallel": false
+          }
+        },
+        "clean": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js"
+              },
+              {
+                "command": "npm i"
+              },
+              {
+                "command": "npx rimraf -- package-lock.json"
+              }
+            ],
+            "cwd": "apps/automated",
+            "parallel": false
+          }
+        }
+      }
+    },
+    "apps-playground": {
+      "root": "apps/playground/",
+      "sourceRoot": "apps/playground/src",
+      "projectType": "application",
+      "prefix": "nativescript",
+      "architect": {
+        "ios": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "tns debug ios --no-hmr --emulator"
+              }
+            ],
+            "cwd": "apps/playground",
+            "parallel": false
+          }
+        },
+        "android": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "tns debug android --no-hmr --emulator"
+              }
+            ],
+            "cwd": "apps/playground",
+            "parallel": false
+          }
+        },
+        "clean": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js"
+              },
+              {
+                "command": "npm i"
+              },
+              {
+                "command": "npx rimraf -- package-lock.json"
+              }
+            ],
+            "cwd": "apps/playground",
+            "parallel": false
+          }
+        }
+      }
+    },
+    "apps-ui": {
+      "root": "apps/ui/",
+      "sourceRoot": "apps/ui/src",
+      "projectType": "application",
+      "prefix": "nativescript",
+      "architect": {
+        "ios": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "tns debug ios --no-hmr --emulator"
+              }
+            ],
+            "cwd": "apps/ui",
+            "parallel": false
+          }
+        },
+        "android": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "tns debug android --no-hmr --emulator"
+              }
+            ],
+            "cwd": "apps/ui",
+            "parallel": false
+          }
+        },
+        "clean": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js"
+              },
+              {
+                "command": "npm i"
+              },
+              {
+                "command": "npx rimraf -- package-lock.json"
+              }
+            ],
+            "cwd": "apps/ui",
+            "parallel": false
+          }
+        }
+      }
+    },
+    "core": {
+      "root": "packages/core",
+      "sourceRoot": "packages/core",
+      "projectType": "library",
+      "schematics": {},
+      "architect": {
+        "lint": {
+          "builder": "@nrwl/linter:lint",
+          "options": {
+            "linter": "eslint",
+            "config": "packages/core/.eslintrc",
+            "tsConfig": [
+              "packages/core/tsconfig.lib.json",
+              "packages/core/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**",
+              "!packages/core/**"
+            ]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "packages/core/jest.config.js",
+            "tsConfig": "packages/core/tsconfig.spec.json",
+            "passWithNoTests": true
+          }
+        },
+        "setup": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "nx run webpack:build"
+              }
+            ]
+          }
+        },
+        "build": {
+          "builder": "@nrwl/node:package",
+          "options": {
+            "outputPath": "dist/packages/core",
+            "tsConfig": "packages/core/tsconfig.lib.json",
+            "packageJson": "packages/core/package.json",
+            "main": "packages/core/index.ts",
+            "assets": [
+              "packages/core/*.md"
+            ]
+          }
+        },
+        "build.npm": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "nx run core:build && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/**/*.d.ts\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/js-libs/**/*\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/cli-hooks/**/*.js\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/platforms/**/*\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/fetch/**/*\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/css/**/*\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/css-value/**/*\" dist && cd dist/packages/core && npm pack && mv *.tgz .."
+              }
+            ]
+          }
+        },
+        "unit": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "../../../node_modules/.bin/tsc -p tsconfig.json && ../../../node_modules/.bin/mocha --config=.mocharc.yml"
+              }
+            ],
+            "cwd": "packages/core/__tests__",
+            "parallel": false
+          }
+        },
+        "unit.watch": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "../../../node_modules/.bin/mocha-typescript-watch -p tsconfig.json --config=.mocharc.yml"
+              }
+            ],
+            "cwd": "packages/core/__tests__",
+            "parallel": false
+          }
+        }
+      }
+    },
+    "tns-core-modules-compat": {
+      "root": "packages/tns-core-modules-compat",
+      "sourceRoot": "packages/tns-core-modules-compat",
+      "projectType": "library",
+      "schematics": {},
+      "architect": {
+        "build": {
+          "builder": "@nrwl/workspace:run-commands",
+          "outputs": ["dist/packages"],
+          "options": {
+            "commands": [
+              {
+                "command": "npx rimraf -- node_modules package-lock.json"
+              },
+              {
+                "command": "npm i"
+              },
+              {
+                "command": "../../node_modules/.bin/tsc -p tsconfig.json"
+              },
+              {
+                "command": "mv \"$(npm pack | tail -n 1)\" ../../dist/packages/tns-core-modules.tgz"
+              }
+            ],
+            "cwd": "packages/tns-core-modules-compat",
+            "parallel": false
+          }
+        }
+      }
+    },
+    "types-ios": {
+      "root": "packages/types-ios",
+      "sourceRoot": "packages/types-ios/src",
+      "projectType": "library",
+      "schematics": {},
+      "architect": {
+        "lint": {
+          "builder": "@nrwl/linter:lint",
+          "options": {
+            "linter": "eslint",
+            "config": "packages/types-ios/.eslintrc",
+            "tsConfig": [
+              "packages/types-ios/tsconfig.lib.json",
+              "packages/types-ios/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**",
+              "!packages/types-ios/**"
+            ]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "packages/types-ios/jest.config.js",
+            "tsConfig": "packages/types-ios/tsconfig.spec.json",
+            "passWithNoTests": true
+          }
+        },
+        "build": {
+          "builder": "@nrwl/node:package",
+          "options": {
+            "outputPath": "dist/packages/types-ios",
+            "tsConfig": "packages/types-ios/tsconfig.lib.json",
+            "packageJson": "packages/types-ios/package.json",
+            "main": "packages/types-ios/src/index.ts",
+            "assets": [
+              "packages/types-ios/*.md"
+            ]
+          }
+        }
+      }
+    },
+    "types-android": {
+      "root": "packages/types-android",
+      "sourceRoot": "packages/types-android/src",
+      "projectType": "library",
+      "schematics": {},
+      "architect": {
+        "lint": {
+          "builder": "@nrwl/linter:lint",
+          "options": {
+            "linter": "eslint",
+            "config": "packages/types-android/.eslintrc",
+            "tsConfig": [
+              "packages/types-android/tsconfig.lib.json",
+              "packages/types-android/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**",
+              "!packages/types-android/**"
+            ]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/jest:jest",
+          "options": {
+            "jestConfig": "packages/types-android/jest.config.js",
+            "tsConfig": "packages/types-android/tsconfig.spec.json",
+            "passWithNoTests": true
+          }
+        },
+        "build": {
+          "builder": "@nrwl/node:package",
+          "options": {
+            "outputPath": "dist/packages/types-android",
+            "tsConfig": "packages/types-android/tsconfig.lib.json",
+            "packageJson": "packages/types-android/package.json",
+            "main": "packages/types-android/src/index.ts",
+            "assets": [
+              "packages/types-android/*.md"
+            ]
+          }
+        }
+      }
+    },
+    "ui-mobile-base": {
+      "root": "packages/ui-mobile-base",
+      "sourceRoot": "packages/ui-mobile-base",
+      "projectType": "library",
+      "schematics": {},
+      "architect": {
+        "build": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "cd packages/ui-mobile-base && ./build.sh"
+              },
+              {
+                "command": "cp -R packages/ui-mobile-base/dist/package/platforms/* packages/core/platforms"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "webpack": {
+      "root": "packages/webpack",
+      "sourceRoot": "packages/webpack",
+      "projectType": "library",
+      "schematics": {},
+      "architect": {
+        "lint": {
+          "builder": "@nrwl/linter:lint",
+          "options": {
+            "linter": "eslint",
+            "config": "packages/webpack/.eslintrc",
+            "tsConfig": [
+              "packages/webpack/tsconfig.json"
+            ],
+            "exclude": [
+              "**/node_modules/**",
+              "!packages/webpack/**"
+            ]
+          }
+        },
+        "test": {
+          "builder": "@nrwl/workspace:run-commands",
+          "options": {
+            "commands": [
+              {
+                "command": "npm run tsc"
+              },
+              {
+                "command": "npm run jasmine"
+              }
+            ],
+            "cwd": "packages/webpack",
+            "parallel": false
+          }
+        },
+        "build": {
+          "builder": "@nrwl/workspace:run-commands",
+          "outputs": ["dist/packages"],
+          "options": {
+            "commands": [
+              {
+                "command": "npm run setup"
+              },
+              {
+                "command": "mkdir -p ../../dist/packages"
+              },
+              {
+                "command": "mv \"$(npm pack | tail -n 1)\" ../../dist/packages/nativescript-webpack.tgz"
+              }
+            ],
+            "cwd": "packages/webpack",
+            "parallel": false
+          }
+        }
+      }
+    }
+  },
+  "cli": {
+    "defaultCollection": "@nrwl/workspace"
+  },
+  "schematics": {
+    "@nrwl/workspace": {
+      "library": {
+        "linter": "eslint"
+      }
+    },
+    "@nrwl/cypress": {
+      "cypress-project": {
+        "linter": "eslint"
+      }
+    },
+    "@nrwl/react": {
+      "application": {
+        "linter": "eslint"
+      },
+      "library": {
+        "linter": "eslint"
+      }
+    },
+    "@nrwl/next": {
+      "application": {
+        "linter": "eslint"
+      }
+    },
+    "@nrwl/web": {
+      "application": {
+        "linter": "eslint"
+      }
+    },
+    "@nrwl/node": {
+      "application": {
+        "linter": "eslint"
+      },
+      "library": {
+        "linter": "eslint"
+      }
+    },
+    "@nrwl/nx-plugin": {
+      "plugin": {
+        "linter": "eslint"
+      }
+    },
+    "@nrwl/nest": {
+      "application": {
+        "linter": "eslint"
+      }
+    },
+    "@nrwl/express": {
+      "application": {
+        "linter": "eslint"
+      },
+      "library": {
+        "linter": "eslint"
+      }
+    }
+  }
+}

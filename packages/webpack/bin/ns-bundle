@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+
+console.error("Using npm run scripts is no longer supported. Use CLI commands instead.\nExample:\ntns build android")
+process.exit(1);

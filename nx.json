@@ -1,0 +1,55 @@
+{
+  "npmScope": "nativescript",
+  "workspaceLayout": {
+    "appsDir": "apps",
+    "libsDir": "packages"
+  },
+  "implicitDependencies": {
+    "workspace.json": "*",
+    "package.json": {
+      "dependencies": "*",
+      "devDependencies": "*"
+    },
+    "tsconfig.json": "*",
+    "tslint.json": "*",
+    "nx.json": "*"
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "@nrwl/nx-cloud",
+      "options": {
+        "accessToken": "ODFhN2M3NTgtYjU3OC00MzUzLWFkN2MtNWE4NGJmNjFkMjhlfHJlYWQtd3JpdGU=",
+        "cacheableOperations": ["build", "test", "lint", "e2e"]
+      }
+    }
+  },
+  "projects": {
+    "apps-automated": {
+      "tags": []
+    },
+    "apps-playground": {
+      "tags": []
+    },
+    "apps-ui": {
+      "tags": []
+    },
+    "core": {
+      "tags": []
+    },
+    "tns-core-modules-compat": {
+      "tags": []
+    },
+    "types-ios": {
+      "tags": []
+    },
+    "types-android": {
+      "tags": []
+    },
+    "ui-mobile-base": {
+      "tags": []
+    },
+    "webpack": {
+      "tags": []
+    }
+  }
+}

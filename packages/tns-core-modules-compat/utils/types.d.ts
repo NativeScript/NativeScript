@@ -1,0 +1,14 @@
+export declare const ClassInfo: typeof import('@nativescript/core/utils/types').ClassInfo;
+export declare const getClass: typeof import('@nativescript/core/utils/types').getClass;
+export declare const getBaseClasses: typeof import('@nativescript/core/utils/types').getBaseClasses;
+export declare const getClassInfo: typeof import('@nativescript/core/utils/types').getClassInfo;
+export declare const isBoolean: typeof import('@nativescript/core/utils/types').isBoolean;
+export declare const isDefined: typeof import('@nativescript/core/utils/types').isDefined;
+export declare const isFunction: typeof import('@nativescript/core/utils/types').isFunction;
+export declare const isNullOrUndefined: typeof import('@nativescript/core/utils/types').isNullOrUndefined;
+export declare const isNumber: typeof import('@nativescript/core/utils/types').isNumber;
+export declare const isObject: typeof import('@nativescript/core/utils/types').isObject;
+export declare const isString: typeof import('@nativescript/core/utils/types').isString;
+export declare const isUndefined: typeof import('@nativescript/core/utils/types').isUndefined;
+export declare const toUIString: typeof import('@nativescript/core/utils/types').toUIString;
+export declare const verifyCallback: typeof import('@nativescript/core/utils/types').verifyCallback;

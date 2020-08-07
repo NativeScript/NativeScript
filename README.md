@@ -1,84 +1,99 @@
-# NativeScript [![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
+<img src="https://raw.githubusercontent.com/nstudio/nativescript/master/tools/graphics/nativescript-v8-logo-cropped.png?token=AADPTY7GXDQOQZXOMXRAWIC6YGI4A" width="100" />
 
-![NativeScript logo](https://i.imgur.com/YmNIMqS.png)
+# NativeScript
 
-[NativeScript](http://www.nativescript.org) is a framework for building native iOS and Android apps using JavaScript and CSS. NativeScript renders UIs with the native platform’s rendering engine, no [WebViews](http://developer.telerik.com/featured/what-is-a-webview/), resulting in native-like performance and UX.
+TypeScript driven development for native platform api's.
 
-NativeScript provides a best-of-both-worlds development experience. Our cross-platform JavaScript modules give you the convenience of writing iOS and Android apps from a single JavaScript codebase, while our runtimes give you the power of accessing native APIs, SDKs, and frameworks when you need all of them without having to open Xcode or Android Studio. NativeScript was created and is supported by [Telerik](http://www.telerik.com/).
+# Develop
 
-Check out the links below to get started:
+```
+npm run setup
+```
 
-* [CTO’s guide to NativeScript](#for-ctos)
-* [Getting Started and Installation](#getting-started-and-installation)
-* [Quick Links](#quick-links)
-* [Repositories](#repositories)
-* [Contributing](#contributing)
-* [Angular](#angular)
+# Packages
 
-> **IMPORTANT**: NativeScript is an inclusive community, and we expect all NativeScript community members, users, and contributors to treat each other respectfully. As such, all users of this repository must adhere to the [NativeScript community code of conduct](https://github.com/NativeScript/codeofconduct).
+* [@nativescript/angular]()
+  * [How to contribute]()
+* [@nativescript/core]()
+  * [How to contribute]()
+* [@nativescript/types]()
+  * Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
+* [@nativescript/types-ios]()
+  * Types for iOS
+* [@nativescript/types-android]()
+  * Types for Android
+* [@nativescript/ui-mobile-base]()
+  * Base level native ui classes 
+  * [How to contribute]()
+* [@nativescript/webpack]()
+  * [How to contribute]()
 
-## For CTOs
+## @nativescript/core
 
-Making the right technology choices is the key to success. Our [CTO’s guide to NativeScript](https://www.nativescript.org/ctos-guide) helps you understand why NativeScript is the right choice for your next mobile project.
+```
+npx apps:playground:ios
+npm run apps:playground:android
 
-## Getting Started and Installation
 
-Our Getting Started Guides are hands-on tutorials that walk you through installing NativeScript and building a real iOS and Android application.
+npm run packages:core:build
+npm run packages:core:test
 
-* [Get started with JavaScript](http://docs.nativescript.org/tutorial/chapter-0)
-* [Get started with TypeScript and Angular](http://docs.nativescript.org/angular/tutorial/ng-chapter-0)
 
-## NativeScript architecture diagram
 
-Below is a common NativeScript architecture diagram. In more detail, read the [How NativeScript Works article](https://docs.nativescript.org/start/how-it-works).
 
-![Architecture diagram](https://raw.githubusercontent.com/NativeScript/docs/master/docs/img/ns-common.png)
+// livesync develop changes
+nx run core-e2e-playground:ios
+nx run core-e2e-playground:android
 
-## Quick Links
+// clean and reset
+nx run core-e2e-playground:clean
 
-- [NativeScript home page](https://nativescript.org)
-- [NativeScript code samples](https://market.nativescript.org/?tab=samples&framework=all_frameworks&category=all_samples)
-- [Install NativeScript demo mobile app](https://www.nativescript.org/nativescript-example-application)
-- [NativeScript playground](https://play.nativescript.org)
-- [NativeScript and Angular](https://play.nativescript.org/?template=play-ng&tutorial=getting-started-ng)
-- [@NativeScript on Twitter](http://twitter.com/NativeScript)
-- [NativeScript community Slack channel](https://www.nativescript.org/slack-invitation-form)
-- [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
-- [NativeScript documentation](https://docs.nativescript.org/)
-- [NativeScript marketplace](https://market.nativescript.org/)
-- [NativeScript roadmap](https://www.nativescript.org/roadmap)
+// unit tests
+nx run core:unit
+nx run core:unit.watch
 
-## Repositories
+// build/prepare for npm (output: 'dist/packages/core')
+nx run core:build.npm
+```
 
-The NativeScript framework consists of a number of components, all of which are open source and on GitHub. Here are the major ones:
+There are additional targets you can test changes against:
 
-- **[Cross-platform modules](//github.com/NativeScript/NativeScript/)**
-    [![npm](https://img.shields.io/npm/dm/tns-core-modules.svg)](https://www.npmjs.com/package/tns-core-modules) 
-    - This repo contains the [NativeScript cross-platform modules](http://docs.nativescript.org/core-concepts/modules), which abstract iOS and Android APIs into JavaScript APIs—e.g. `camera.takePicture()`. The modules are written in TypeScript.
-- **[iOS runtime](//github.com/NativeScript/ios-runtime/)**
-    [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/tns-ios) 
-    - This repo contains the NativeScript iOS runtime—the code that hosts NativeScript iOS apps, and allows JavaScript code to be executed on iOS devices. The iOS runtime is written in a fun mix of C++, Objective-C, and more.
-- **[Android runtime](//github.com/NativeScript/android-runtime)**
-    [![npm](https://img.shields.io/npm/dm/tns-android.svg)](https://www.npmjs.com/package/tns-android) 
-    - This repo contains the NativeScript Android—the code that hosts NativeScript Android apps, and allows JavaScript code to be executed on Android devices. The Android runtime is written in a fun mix of C++ and Java.
-- **[CLI](//github.com/NativeScript/nativescript-cli)**
-    [![npm](https://img.shields.io/npm/dm/nativescript.svg)](https://www.npmjs.com/package/nativescript) 
-    - This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using the NativeScript framework. The CLI is written in TypeScript.
-- **[Docs](//github.com/NativeScript/docs)** [![Docs](https://img.shields.io/badge/Docs-NativeScript-brightgreen)](https://docs.nativescript.org/)
-    - This repo contains the NativeScript framework documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
+```
+// variety of manual ui testing
+nx run core-e2e-ui:ios
+nx run core-e2e-ui:android
+nx run core-e2e-ui:clean
 
-In addition to the code that makes up the NativeScript framework itself, we also provide a number of [open-source sample apps](https://www.nativescript.org/app-samples-with-code) that you can reference while building your NativeScript application.
+// used in CI automated tests but you can run these manually as well to check if you caused any regressions
+nx run core-e2e-automated:ios
+nx run core-e2e-automated:android
+nx run core-e2e-automated:clean
 
-## Contributing
 
-We love PRs, and accept them for all of our repositories — even docs! Please follow our [contribution guide](https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md) if you want to become part of the project.
+```
 
-## Angular
+#### Compatibility package for old style tns-core-modules
 
-We [worked together with the Google Angular team](https://angularjs.blogspot.com/2015/12/building-mobile-apps-with-angular-2-and.html) to make Angular 2+ work on top of NativeScript. To use Angular with NativeScript please follow the [getting started](http://docs.nativescript.org/angular/tutorial/ng-chapter-0) article.
+```
+nx run tns-core-modules-compat:build
+```
 
-## Get Help
+## @nativescript/ui-mobile-base
 
-Please, use [github issues](https://github.com/NativeScript/NativeScript/issues) strictly for [reporting a bugs](https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md#bugs) or [requesting features](https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md#features). For general NativeScript questions and support, check out [Stack Overflow](https://stackoverflow.com/questions/tagged/nativescript) or ask our experts in [NativeScript community Slack channel](https://www.nativescript.org/slack-invitation-form).
+Base native classes for ui components. 
+Included with @nativescript/core right now as direct dependency but also published separately for others to build on top of if desired.
 
-![](https://ga-beacon.appspot.com/UA-111455-24/nativescript/nativescript?pixel) 
+If you would like to make changes to source just build when ready to test your changes (you can then clean any testing target to try your changes)
+```
+nx run ui-mobile-base:build
+```
+
+## @nativescript/webpack
+
+```
+// To try any webpack changes, just build and then clean targets to try
+nx run webpack:build
+
+// unit tests
+nx run webpack:test
+```
