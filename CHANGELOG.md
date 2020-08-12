@@ -1,3 +1,12 @@
+## [6.5.15](https://github.com/NativeScript/NativeScript/compare/6.5.13...6.5.15) (2020-08-12)
+
+
+### Bug Fixes
+
+* **android:** list picker getTextColor api level issue ([#8755](https://github.com/NativeScript/NativeScript/issues/8755)) ([5c076de](https://github.com/NativeScript/NativeScript/commit/5c076de8560f71b59cf34124f47ebeafdc902658))
+
+
+
 ## [6.5.13](https://github.com/NativeScript/NativeScript/compare/6.5.12...6.5.13) (2020-08-07)
 
 
