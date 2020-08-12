@@ -2,7 +2,7 @@
   "name": "NativeScript",
   "description": "NativeScript Core Modules",
   "homepage": "https://www.nativescript.org",
-  "version": "6.5.13",
+  "version": "6.5.15",
   "repository": {
     "type": "git",
     "url": "https://github.com/NativeScript/NativeScript"
