@@ -68,18 +68,18 @@ function getEditText(picker: android.widget.NumberPicker): android.widget.EditTe
 let selectorWheelPaintField: java.lang.reflect.Field;
 function getSelectorWheelPaint(picker: android.widget.NumberPicker): android.graphics.Paint {
     if (!selectorWheelPaintField) {
-      try {
-        selectorWheelPaintField = picker.getClass().getDeclaredField("mSelectorWheelPaint");
-        if (selectorWheelPaintField) {
-          selectorWheelPaintField.setAccessible(true);
+        try {
+            selectorWheelPaintField = picker.getClass().getDeclaredField("mSelectorWheelPaint");
+            if (selectorWheelPaintField) {
+                selectorWheelPaintField.setAccessible(true);
+            }
+        } catch (err) {
+
         }
-      } catch (err) {
-        
-      }
     }
 
     if (selectorWheelPaintField) {
-      return selectorWheelPaintField.get(picker);
+        return selectorWheelPaintField.get(picker);
     }
     return null;
 }
@@ -180,9 +180,9 @@ export class ListPicker extends ListPickerBase {
         }
 
         if (this.nativeView && this.nativeView.getTextColor) {
-          return this.nativeView.getTextColor();
+            return this.nativeView.getTextColor();
         } else {
-          return 0;
+            return 0;
         }
     }
     [colorProperty.setNative](value: number | Color) {
