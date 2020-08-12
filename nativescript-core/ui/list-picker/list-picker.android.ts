@@ -74,13 +74,14 @@ function getSelectorWheelPaint(picker: android.widget.NumberPicker): android.gra
                 selectorWheelPaintField.setAccessible(true);
             }
         } catch (err) {
-
+            // mSelectorWheelPaint is not supported on api level
         }
     }
 
     if (selectorWheelPaintField) {
         return selectorWheelPaintField.get(picker);
     }
+    
     return null;
 }
 
