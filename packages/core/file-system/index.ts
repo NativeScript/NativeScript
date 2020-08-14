@@ -577,7 +577,7 @@ export module knownFolders {
 	export module ios {
 		function _checkPlatform(knownFolderName: string) {
 			if (!global.isIOS) {
-				console.log(`The "${knownFolderName}" known folder is available on iOS only!`);
+				throw new Error(`The "${knownFolderName}" known folder is available on iOS only!`);
 			}
 		}
 

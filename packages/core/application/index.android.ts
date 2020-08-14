@@ -49,7 +49,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
 	// we are using these property to store the callbacks to avoid early GC collection which would trigger MarkReachableObjects
 	private callbacks: any = {};
 
-	public init(nativeApp: android.app.Application) {
+	public init(nativeApp: android.app.Application): void {
 		if (this.nativeApp === nativeApp) {
 			return;
 		}
@@ -107,13 +107,12 @@ export class AndroidApplication extends Observable implements AndroidApplication
 		this._systemAppearance = value;
 	}
 
-	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void {
 		ensureBroadCastReceiverClass();
-		const that = this;
-		const registerFunc = function (context: android.content.Context) {
+		const registerFunc = (context: android.content.Context) => {
 			const receiver: android.content.BroadcastReceiver = new BroadcastReceiverClass(onReceiveCallback);
 			context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
-			that._registeredReceivers[intentFilter] = receiver;
+			this._registeredReceivers[intentFilter] = receiver;
 		};
 
 		if (this.context) {
@@ -123,7 +122,7 @@ export class AndroidApplication extends Observable implements AndroidApplication
 		}
 	}
 
-	public unregisterBroadcastReceiver(intentFilter: string) {
+	public unregisterBroadcastReceiver(intentFilter: string): void {
 		const receiver = this._registeredReceivers[intentFilter];
 		if (receiver) {
 			this.context.unregisterReceiver(receiver);
@@ -188,7 +187,7 @@ export function addCss(cssText: string, attributeScoped?: boolean): void {
 
 const CALLBACKS = '_callbacks';
 
-export function _resetRootView(entry?: NavigationEntry | string) {
+export function _resetRootView(entry?: NavigationEntry | string): void {
 	const activity = androidApp.foregroundActivity;
 	if (!activity) {
 		throw new Error('Cannot find android activity.');
@@ -322,7 +321,7 @@ function initLifecycleCallbacks() {
 					object: androidApp,
 					activity,
 				});
-				let viewTreeObserver = rootView.getViewTreeObserver();
+				const viewTreeObserver = rootView.getViewTreeObserver();
 				viewTreeObserver.removeOnGlobalLayoutListener(global.onGlobalLayoutListener);
 			},
 		});
@@ -419,7 +418,7 @@ function initLifecycleCallbacks() {
 }
 
 function initComponentCallbacks() {
-	let componentCallbacks = new android.content.ComponentCallbacks2({
+	const componentCallbacks = new android.content.ComponentCallbacks2({
 		onLowMemory: <any>profile('onLowMemory', function () {
 			gc();
 			java.lang.System.gc();
@@ -477,51 +476,24 @@ function ensureBroadCastReceiverClass() {
 		return;
 	}
 
-	const BroadcastReceiver = (<any>android.content.BroadcastReceiver).extend({
-		init(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
-			// 		super();
-			this._onReceiveCallback = onReceiveCallback;
+	 @NativeClass
+	 class BroadcastReceiver extends android.content.BroadcastReceiver {
+	 	private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
 
-			// 		return global.__native(this);
-		},
-		_onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
-			if (this._onReceiveCallback) {
-				this._onReceiveCallback(context, intent);
-			}
-		},
-	});
+	 	constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+	 		super();
+	 		this._onReceiveCallback = onReceiveCallback;
 
-	// @NativeClass
-	// class BroadcastReceiver extends android.content.BroadcastReceiver {
-	// 	private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
+	 		return global.__native(this);
+	 	}
 
-	// 	constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
-	// 		super();
-	// 		this._onReceiveCallback = onReceiveCallback;
+	 	public onReceive(context: android.content.Context, intent: android.content.Intent) {
+	 		if (this._onReceiveCallback) {
+	 			this._onReceiveCallback(context, intent);
+	 		}
+	 	}
+	 }
 
-	// 		return global.__native(this);
-	// 	}
-
-	// 	public onReceive(context: android.content.Context, intent: android.content.Intent) {
-	// 		if (this._onReceiveCallback) {
-	// 			this._onReceiveCallback(context, intent);
-	// 		}
-	// 	}
-	// }
-	// var BroadcastReceiver = (function (_super) {
-	// 	__extends(BroadcastReceiver, _super);
-	// 	function BroadcastReceiver(onReceiveCallback) {
-	// 		var _this = _super.call(this) || this;
-	// 		_this._onReceiveCallback = onReceiveCallback;
-	// 		return global.__native(_this);
-	// 	}
-	// 	BroadcastReceiver.prototype.onReceive = function (context, intent) {
-	// 		if (this._onReceiveCallback) {
-	// 			this._onReceiveCallback(context, intent);
-	// 		}
-	// 	};
-	// 	return BroadcastReceiver;
-	// })(android.content.BroadcastReceiver);
 
 	BroadcastReceiverClass = BroadcastReceiver;
 }

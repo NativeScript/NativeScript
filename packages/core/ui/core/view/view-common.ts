@@ -10,7 +10,7 @@ import { EventData } from '../../../data/observable';
 import { Trace } from '../../../trace';
 import { ViewHelper } from './view-helper';
 
-import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from '../../styling/style-properties';
+import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength, BackgroundRepeat } from '../../styling/style-properties';
 
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString } from '../../gestures';
 
@@ -19,7 +19,6 @@ import { Builder } from '../../builder';
 import { sanitizeModuleName } from '../../builder/module-name-sanitizer';
 import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
-import { BackgroundRepeat } from '../../styling/style-properties';
 import { TextTransform } from '../../text-base';
 
 import * as am from '../../animation';

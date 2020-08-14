@@ -1,8 +1,9 @@
 import { Frame } from '@nativescript/core/ui/frame';
 import * as TKUnit from '../../tk-unit';
-import { unsetValue, PercentLength } from '@nativescript/core/ui/core/view';
-
+import { unsetValue } from '@nativescript/core/ui/core/view';
+import { PercentLength } from '@nativescript/core/ui/styling/style-properties';
 export * from './frame-tests-common';
+
 
 export function test_percent_width_and_height_set_to_page_support() {
 	let topFrame = Frame.topmost();

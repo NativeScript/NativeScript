@@ -1,17 +1,17 @@
 /* tslint:disable:no-unused-variable */
-import { Application, isAndroid } from '@nativescript/core';
+import { Application } from '@nativescript/core';
 import * as TKUnit from '../tk-unit';
 
 export * from './application-tests-common';
 
 // >> application-app-android
-var androidApp = Application.android;
+let androidApp = Application.android;
 // << application-app-android
 
 // >> application-app-android-context
-var context = Application.android.context;
+let context = Application.android.context;
 //// get the Files (Documents) folder (directory)
-var dir = context.getFilesDir();
+let dir = context.getFilesDir();
 // << application-app-android-context
 
 // >> application-app-android-current
@@ -22,16 +22,16 @@ if (androidApp.foregroundActivity === androidApp.startActivity) {
 
 // >> application-app-android-broadcast
 //// Register the broadcast receiver
-if (isAndroid) {
+if (androidApp) {
 	Application.android.registerBroadcastReceiver(android.content.Intent.ACTION_BATTERY_CHANGED, function onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
-		var level = intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1);
-		var scale = intent.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1);
-		var percent = (level / scale) * 100.0;
+		const level = intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1);
+		const scale = intent.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1);
+		const percent = (level / scale) * 100.0;
 		////console.log("Battery: " + percent + "%");
 	});
 }
 //// When no longer needed, unregister the broadcast receiver
-if (isAndroid) {
+if (androidApp) {
 	Application.android.unregisterBroadcastReceiver(android.content.Intent.ACTION_BATTERY_CHANGED);
 }
 // << application-app-android-broadcast
