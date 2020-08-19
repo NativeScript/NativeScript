@@ -79,6 +79,6 @@ We [worked together with the Google Angular team](https://angularjs.blogspot.com
 
 ## Get Help
 
-Please, use [github issues](https://github.com/NativeScript/NativeScript/issues) strictly for [reporting a bugs](https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md#bugs) or [requesting features](https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md#features). For general NativeScript questions and support, check out [Stack Overflow](https://stackoverflow.com/questions/tagged/nativescript) or ask our experts in [NativeScript community Slack channel](https://www.nativescript.org/slack-invitation-form).
+Please, use [github issues](https://github.com/NativeScript/NativeScript/issues) strictly for [reporting bugs](https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md#bugs) or [requesting features](https://github.com/NativeScript/NativeScript/blob/master/CONTRIBUTING.md#features). For general NativeScript questions and support, check out [Stack Overflow](https://stackoverflow.com/questions/tagged/nativescript) or ask our experts in [NativeScript community Slack channel](https://www.nativescript.org/slack-invitation-form).
 
 ![](https://ga-beacon.appspot.com/UA-111455-24/nativescript/nativescript?pixel) 
