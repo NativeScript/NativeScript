@@ -11,7 +11,7 @@
 }
 
 .comments {
-    color: #10C2B0;
+    background: linear-gradient(to right, #06beb6, #48b1bf);
     font-size: 14;
     vertical-align: bottom;
     margin: 3;
