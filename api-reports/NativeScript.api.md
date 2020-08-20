@@ -2844,6 +2844,7 @@ export abstract class ViewBase extends Observable {
     // (undocumented)
     _defaultPaddingTop: number;
     public deletePseudoClass(name: string): void;
+    destroyNode(forceDestroyChildren?: boolean): void;
     public _dialogClosed(): void;
     disposeNativeView(): void;
     // (undocumented)
@@ -2960,6 +2961,7 @@ export abstract class ViewBase extends Observable {
     _removeViewFromNativeVisualTree(view: ViewBase): void;
     public requestLayout(): void;
     resetNativeView(): void;
+    public reusable: boolean;
     // (undocumented)
     row: number;
     // (undocumented)
