@@ -11,10 +11,7 @@ export declare function getAppModulePath(mainPath: string): string;
 export declare function findIdentifierNode(node: ts.Node, text: string): ts.Node | null;
 export declare function getObjectPropertyMatches(objectNode: ts.ObjectLiteralExpression, sourceFile: ts.SourceFile, targetPropertyName: string): ts.ObjectLiteralElement[];
 export declare function getDecoratorMetadata(source: ts.SourceFile, identifier: string, module: string): ts.Node[];
-export declare function angularImportsFromNode(
-	node: ts.ImportDeclaration,
-	_sourceFile: ts.SourceFile
-): {
-	[name: string]: string;
+export declare function angularImportsFromNode(node: ts.ImportDeclaration, _sourceFile: ts.SourceFile): {
+    [name: string]: string;
 };
 export declare function getExpressionName(expression: ts.Expression): string;

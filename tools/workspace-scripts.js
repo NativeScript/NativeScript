@@ -2,7 +2,7 @@ const npsUtils = require('nps-utils');
 
 module.exports = {
   message: 'NativeScript ~ made with ❤️  Choose a command to start...',
-  pageSize: 25,
+  pageSize: 32,
 	scripts: {
 		default: 'nps-i',
 		nx: {
@@ -124,6 +124,32 @@ module.exports = {
           description: '@nativescript/webpack: Unit tests'
         },
 			},
+    },
+    "⚡": {
+      script: `npx cowsay "Focus on segments of monorepo for efficiency ⚡"`,
+      description: '_____________  Focus on source (VS Code supported)  _____________'
+    },
+    'focus': {
+      core: {
+        script: 'nx g @nstudio/focus:mode core',
+        description: 'Focus on @nativescript/core'
+      },
+      types: {
+        script: 'nx g @nstudio/focus:mode types-android,types-ios',
+        description: 'Focus on @nativescript/types'
+      },
+      'ui-mobile-base': {
+        script: 'nx g @nstudio/focus:mode ui-mobile-base',
+        description: 'Focus on @nativescript/ui-mobile-base'
+      },
+      webpack: {
+        script: 'nx g @nstudio/focus:mode webpack',
+        description: 'Focus on @nativescript/webpack'
+      },
+      reset: {
+        script: 'nx g @nstudio/focus:mode',
+        description: 'Reset Focus'
+      }
     },
     ".....................": {
       script: `npx cowsay "That's all for now folks ~"`,

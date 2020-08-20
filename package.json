@@ -1,6 +1,6 @@
 {
   "name": "nativescript",
-  "version": "7.0.0-rc.51",
+  "version": "7.0.0-rc.52",
   "license": "MIT",
   "scripts": {
     "setup": "npx rimraf -- hooks node_modules package-lock.json && npm i && ts-patch install && nx run core:setup",
@@ -17,6 +17,7 @@
     "@nrwl/node": "~10.0.7",
     "@nrwl/nx-cloud": "~10.0.0",
     "@nrwl/workspace": "~10.0.7",
+    "@nstudio/focus": "~10.0.0",
     "@types/chai": "^4.2.11",
     "@types/jest": "~26.0.4",
     "@types/mocha": "^7.0.2",
