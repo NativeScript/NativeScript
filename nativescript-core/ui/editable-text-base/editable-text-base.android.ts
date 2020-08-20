@@ -60,8 +60,19 @@ function initializeEditTextListeners(): void {
             return global.__native(this);
         }
 
-        public beforeTextChanged(text: string, start: number, count: number, after: number): void {
-            //
+        public beforeTextChanged(text: any, start: number, count: number, after: number): void {
+            if (count === 0) {
+                return;
+            }
+            if (text instanceof android.text.Spanned) {
+                // if we have a formatted text with an ImageSpan and we press the delete key,
+                // remove the whole ImageSpan instead of just one character or the underlying text */
+                // from: https://stackoverflow.com/a/60021470
+                const spansToRemove = text.getSpans(start + 1, start + 1 + count, android.text.style.ImageSpan.class);
+                for(const span in spansToRemove) {
+                    text.removeSpan(span);
+                }
+            }
         }
 
         public onTextChanged(text: string, start: number, before: number, count: number): void {

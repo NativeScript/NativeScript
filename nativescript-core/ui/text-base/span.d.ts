@@ -47,6 +47,16 @@ export class Span extends ViewBase {
     public backgroundColor: Color;
 
     /**
+     * Gets or sets the height for the image of the span. The aspect ratio is preserved.
+     */
+    public imageHeight: number;
+
+    /**
+     * Gets or sets the image source for the span. Image is displayed instead of text. The image must be a local file.
+     */
+    public imageSrc: string;
+
+    /**
      * Gets or sets the text for the span.
      */
     public text: string;
