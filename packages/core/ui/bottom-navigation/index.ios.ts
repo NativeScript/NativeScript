@@ -1,19 +1,24 @@
 ﻿// Types
-import { TabContentItem } from '../tab-navigation-base/tab-content-item';
-import { TabStrip } from '../tab-navigation-base/tab-strip';
-import { TabStripItem } from '../tab-navigation-base/tab-strip-item';
-import { TextTransform } from '../text-base';
+import {TabContentItem} from '../tab-navigation-base/tab-content-item';
+import {TabStrip} from '../tab-navigation-base/tab-strip';
+import {TabStripItem} from '../tab-navigation-base/tab-strip-item';
+import {getTransformedText, TextTransform} from '../text-base';
 
 // Requires
-import { Color } from '../../color';
-import { ImageSource } from '../../image-source';
-import { Device } from '../../platform';
-import { iOSNativeHelper, isFontIconURI, layout } from '../../utils';
-import { CSSType, IOSHelper, View } from '../core/view';
-import { Frame } from '../frame';
-import { Font } from '../styling/font';
-import { getIconSpecSize, itemsProperty, selectedIndexProperty, TabNavigationBase, tabStripProperty } from '../tab-navigation-base/tab-navigation-base';
-import { getTransformedText } from '../text-base';
+import {Color} from '../../color';
+import {ImageSource} from '../../image-source';
+import {Device} from '../../platform';
+import {iOSNativeHelper, isFontIconURI, layout} from '../../utils';
+import {CSSType, IOSHelper, View} from '../core/view';
+import {Frame} from '../frame';
+import {Font} from '../styling/font';
+import {
+	getIconSpecSize,
+	itemsProperty,
+	selectedIndexProperty,
+	TabNavigationBase,
+	tabStripProperty
+} from '../tab-navigation-base/tab-navigation-base';
 
 // TODO:
 // import { profile } from "../../profiling";
@@ -27,7 +32,7 @@ class UITabBarControllerImpl extends UITabBarController {
 	private _owner: WeakRef<BottomNavigation>;
 
 	public static initWithOwner(owner: WeakRef<BottomNavigation>): UITabBarControllerImpl {
-		let handler = <UITabBarControllerImpl>UITabBarControllerImpl.new();
+		const handler = <UITabBarControllerImpl>UITabBarControllerImpl.new();
 		handler._owner = owner;
 
 		return handler;
@@ -102,7 +107,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 	private _owner: WeakRef<BottomNavigation>;
 
 	public static initWithOwner(owner: WeakRef<BottomNavigation>): UITabBarControllerDelegateImpl {
-		let delegate = <UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
+		const delegate = <UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
 		delegate._owner = owner;
 
 		return delegate;
@@ -114,10 +119,10 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
 		//     Trace.write("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", Trace.categories.Debug);
 		// }
 
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			// "< More" cannot be visible after clicking on the main tab bar buttons.
-			let backToMoreWillBeVisible = false;
+			const backToMoreWillBeVisible = false;
 			owner._handleTwoNavigationBars(backToMoreWillBeVisible);
 
 			if (tabBarController.viewControllers) {
@@ -169,7 +174,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 	private _owner: WeakRef<BottomNavigation>;
 
 	public static initWithOwner(owner: WeakRef<BottomNavigation>): UINavigationControllerDelegateImpl {
-		let delegate = <UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
+		const delegate = <UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
 		delegate._owner = owner;
 
 		return delegate;
@@ -181,11 +186,11 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		//     Trace.write("TabView.moreNavigationController.WILL_show(" + navigationController + ", " + viewController + ", " + animated + ");", Trace.categories.Debug);
 		// }
 
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			// If viewController is one of our tab item controllers, then "< More" will be visible shortly.
 			// Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
-			let backToMoreWillBeVisible = owner._ios.viewControllers.containsObject(viewController);
+			const backToMoreWillBeVisible = owner._ios.viewControllers.containsObject(viewController);
 			owner._handleTwoNavigationBars(backToMoreWillBeVisible);
 		}
 	}
@@ -197,7 +202,7 @@ class UINavigationControllerDelegateImpl extends NSObject implements UINavigatio
 		// }
 		// We don't need Edit button in More screen.
 		navigationController.navigationBar.topItem.rightBarButtonItem = null;
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			owner._onViewControllerShown(viewController);
 		}
@@ -425,8 +430,7 @@ export class BottomNavigation extends TabNavigationBase {
 	}
 
 	public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
-		const title = getTransformedText(tabStripItem.label.text, value);
-		tabStripItem.nativeView.title = title;
+		tabStripItem.nativeView.title = getTransformedText(tabStripItem.label.text, value);
 	}
 
 	public getTabBarHighlightColor(): UIColor {
@@ -434,8 +438,7 @@ export class BottomNavigation extends TabNavigationBase {
 	}
 
 	public setTabBarHighlightColor(value: UIColor | Color) {
-		const nativeColor = value instanceof Color ? value.ios : value;
-		this._ios.tabBar.tintColor = nativeColor;
+		this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
 	}
 
 	public getTabBarSelectedItemColor(): Color {
@@ -498,7 +501,7 @@ export class BottomNavigation extends TabNavigationBase {
 			return;
 		}
 
-		let actionBarVisible = page.frame._getNavBarVisible(page);
+		const actionBarVisible = page.frame._getNavBarVisible(page);
 
 		if (backToMoreWillBeVisible && actionBarVisible) {
 			page.frame.ios._disableNavBarAnimation = true;
@@ -641,9 +644,7 @@ export class BottomNavigation extends TabNavigationBase {
 			}
 		}
 
-		const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, image, index);
-
-		return tabBarItem;
+		return UITabBarItem.alloc().initWithTitleImageTag(title, image, index);
 	}
 
 	private getIconRenderingMode(): UIImageRenderingMode {
@@ -676,7 +677,7 @@ export class BottomNavigation extends TabNavigationBase {
 		let isFontIcon = false;
 		let image: UIImage = this._iconsCache[iconTag];
 		if (!image) {
-			let is = new ImageSource();
+			let is;
 			if (isFontIconURI(iconSource)) {
 				isFontIcon = true;
 				const fontIconCode = iconSource.split('//')[1];
@@ -722,7 +723,7 @@ export class BottomNavigation extends TabNavigationBase {
 
 		UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
 		image.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
-		let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+		const resultImage = UIGraphicsGetImageFromCurrentImageContext();
 		UIGraphicsEndImageContext();
 
 		return resultImage;
@@ -748,7 +749,7 @@ export class BottomNavigation extends TabNavigationBase {
 	//     this._updateIOSTabBarColorsAndFonts();
 	// }
 
-	[selectedIndexProperty.setNative](value: number) {
+	[selectedIndexProperty.setNative](value: number): void {
 		// TODO
 		// if (Trace.isEnabled()) {
 		//     Trace.write("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", Trace.categories.Debug);
@@ -763,7 +764,7 @@ export class BottomNavigation extends TabNavigationBase {
 	[itemsProperty.getDefault](): TabContentItem[] {
 		return null;
 	}
-	[itemsProperty.setNative](value: TabContentItem[]) {
+	[itemsProperty.setNative](value: TabContentItem[]): void {
 		if (value) {
 			value.forEach((item: TabContentItem, i) => {
 				(<any>item).index = i;
@@ -778,7 +779,7 @@ export class BottomNavigation extends TabNavigationBase {
 		return null;
 	}
 
-	[tabStripProperty.setNative](value: TabStrip) {
+	[tabStripProperty.setNative](value: TabStrip): void {
 		this.setViewControllers(this.items);
 		selectedIndexProperty.coerce(this);
 	}
@@ -793,7 +794,7 @@ export class BottomNavigation extends TabNavigationBase {
 		const font: UIFont = (view.style.fontInternal || Font.default).getUIFont(UIFont.systemFontOfSize(tabItemFontSize));
 		const tabItemTextColor = view.style.color;
 		const textColor = tabItemTextColor instanceof Color ? tabItemTextColor.ios : null;
-		let attributes: any = { [NSFontAttributeName]: font };
+		const attributes: any = { [NSFontAttributeName]: font };
 
 		// if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
 		if (!this._selectedItemColor && !this._unSelectedItemColor) {

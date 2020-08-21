@@ -57,7 +57,7 @@ export class TabNavigationBase extends View implements TabNavigationBaseDefiniti
 	}
 
 	get _selectedView(): View {
-		let selectedIndex = this.selectedIndex;
+		const selectedIndex = this.selectedIndex;
 
 		return selectedIndex > -1 ? this.items[selectedIndex].content : null;
 	}
@@ -296,9 +296,9 @@ export const selectedIndexProperty = new CoercibleProperty<TabNavigationBase, nu
 		target.onSelectedIndexChanged(oldValue, newValue);
 	},
 	coerceValue: (target, value) => {
-		let items = target.items;
+		const items = target.items;
 		if (items) {
-			let max = items.length - 1;
+			const max = items.length - 1;
 			if (value < 0) {
 				value = 0;
 			}

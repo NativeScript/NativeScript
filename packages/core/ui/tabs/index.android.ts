@@ -565,8 +565,9 @@ export class Tabs extends TabsBase {
 	private disposeCurrentFragments(): void {
 		const fragmentManager = this._getFragmentManager();
 		const transaction = fragmentManager.beginTransaction();
-		for (let fragment of <Array<any>>fragmentManager.getFragments().toArray()) {
-			transaction.remove(fragment);
+		let fragments = <Array<any>>fragmentManager.getFragments().toArray();
+		for (let i=0;i<fragments.length;i++ ) {
+			transaction.remove(fragments[i]);
 		}
 		transaction.commitNowAllowingStateLoss();
 	}

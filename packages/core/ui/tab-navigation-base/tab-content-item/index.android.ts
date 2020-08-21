@@ -53,9 +53,10 @@ export class TabContentItem extends TabContentItemBase {
 			Trace.write(`Current TabContentItem index is not set`, traceCategory, Trace.messageType.error);
 		}
 
-		for (let fragment of <Array<any>>fragmentManager.getFragments().toArray()) {
-			if (fragment.index === this.index) {
-				tabFragment = fragment;
+		const fragments = fragmentManager.getFragments().toArray();
+		for (let i=0;i<fragments.length;i++) {
+			if (fragments[i].index === this.index) {
+				tabFragment = fragments[i];
 				break;
 			}
 		}

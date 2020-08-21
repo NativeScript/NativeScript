@@ -22,11 +22,11 @@ let _wrappedIndex = 0;
 export class WrappedValue implements WrappedValueDefinition {
 	constructor(public wrapped: any) {}
 
-	public static unwrap(value: any) {
+	public static unwrap(value: any): any {
 		return value instanceof WrappedValue ? value.wrapped : value;
 	}
 
-	public static wrap(value: any) {
+	public static wrap(value: any): any {
 		const w = _wrappedValues[_wrappedIndex++ % 5];
 		w.wrapped = value;
 
@@ -34,7 +34,11 @@ export class WrappedValue implements WrappedValueDefinition {
 	}
 }
 
-let _wrappedValues = [new WrappedValue(null), new WrappedValue(null), new WrappedValue(null), new WrappedValue(null), new WrappedValue(null)];
+const _wrappedValues = [new WrappedValue(null), new WrappedValue(null), new WrappedValue(null), new WrappedValue(null), new WrappedValue(null)];
+
+
+const _globalEventHandlers = {};
+
 
 export class Observable implements ObservableDefinition {
 	public static propertyChangeEvent = 'propertyChange';
@@ -46,7 +50,7 @@ export class Observable implements ObservableDefinition {
 		return this[name];
 	}
 
-	public set(name: string, value: any) {
+	public set(name: string, value: any): void {
 		// TODO: Parameter validation
 		const oldValue = this[name];
 		if (this[name] === value) {
@@ -58,7 +62,7 @@ export class Observable implements ObservableDefinition {
 		this.notifyPropertyChange(name, newValue, oldValue);
 	}
 
-	public setProperty(name: string, value: any) {
+	public setProperty(name: string, value: any): void {
 		const oldValue = this[name];
 		if (this[name] === value) {
 			return;
@@ -74,20 +78,28 @@ export class Observable implements ObservableDefinition {
 		}
 	}
 
-	public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
+	public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void {
 		this.addEventListener(eventNames, callback, thisArg);
 	}
 
-	public once(event: string, callback: (data: EventData) => void, thisArg?: any) {
+	public once(event: string, callback: (data: EventData) => void, thisArg?: any): void {
+		if (typeof event !== 'string') {
+			throw new TypeError('Event must be string.');
+		}
+
+		if (typeof callback !== 'function') {
+			throw new TypeError('callback must be function.');
+		}
+
 		const list = this._getEventList(event, true);
 		list.push({ callback, thisArg, once: true });
 	}
 
-	public off(eventNames: string, callback?: any, thisArg?: any) {
+	public off(eventNames: string, callback?: any, thisArg?: any): void {
 		this.removeEventListener(eventNames, callback, thisArg);
 	}
 
-	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: Object) {
+	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void {
 		if (typeof eventNames !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
 		}
@@ -108,7 +120,7 @@ export class Observable implements ObservableDefinition {
 		}
 	}
 
-	public removeEventListener(eventNames: string, callback?: any, thisArg?: Object) {
+	public removeEventListener(eventNames: string, callback?: any, thisArg?: any): void {
 		if (typeof eventNames !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
 		}
@@ -123,7 +135,7 @@ export class Observable implements ObservableDefinition {
 			if (callback) {
 				const list = this._getEventList(event, false);
 				if (list) {
-					const index = this._indexOfListener(list, callback, thisArg);
+					const index = Observable._indexOfListener(list, callback, thisArg);
 					if (index >= 0) {
 						list.splice(index, 1);
 					}
@@ -138,14 +150,126 @@ export class Observable implements ObservableDefinition {
 		}
 	}
 
-	public notify<T extends EventData>(data: T) {
-		const observers = <Array<ListenerEntry>>this._observers[data.eventName];
-		if (!observers) {
-			return;
+	public static on(eventName: string, callback: any, thisArg?: any): void {
+		this.addEventListener(eventName, callback, thisArg);
+	}
+
+	public static once(eventName: string, callback: any, thisArg?: any): void {
+		if (typeof eventName !== 'string') {
+			throw new TypeError('Event must be string.');
 		}
 
+		if (typeof callback !== 'function') {
+			throw new TypeError('callback must be function.');
+		}
+
+		const eventClass = this.name;
+		if (!_globalEventHandlers[eventClass]) {
+			_globalEventHandlers[eventClass] = {};
+		}
+		if (!Array.isArray(_globalEventHandlers[eventClass][eventName])) {
+			_globalEventHandlers[eventClass][eventName] = [];
+		}
+		_globalEventHandlers[eventClass][eventName].push({callback, thisArg, once: true});
+	}
+
+	public static off(eventName: string, callback?: any, thisArg?: any): void {
+		this.removeEventListener(eventName, callback, thisArg);
+	}
+
+	public static removeEventListener(eventName: string, callback?: any, thisArg?: any): void {
+		if (typeof eventName !== 'string') {
+			throw new TypeError('Event must be string.');
+		}
+
+		if (callback && typeof callback !== 'function') {
+			throw new TypeError('callback must be function.');
+		}
+
+		const eventClass = this.name;
+
+		// Short Circuit if no handlers exist..
+		if (!_globalEventHandlers[eventClass] || !Array.isArray(_globalEventHandlers[eventClass][eventName])) { return; }
+
+		const events = _globalEventHandlers[eventClass][eventName];
+		if (thisArg) {
+			for (let i = 0; i < events.length; i++) {
+				if (events[i].callback === callback && events[i].thisArg === thisArg) {
+					events.splice(i, 1);
+					i--;
+				}
+			}
+		} else if (callback) {
+			for (let i = 0; i < events.length; i++) {
+				if (events[i].callback === callback) {
+					events.splice(i, 1);
+					i--;
+				}
+			}
+		} else {
+			// Clear all events of this type
+			delete _globalEventHandlers[eventClass][eventName];
+		}
+
+		if (events.length === 0) {
+			// Clear all events of this type
+			delete _globalEventHandlers[eventClass][eventName];
+		}
+
+		// Clear the primary class grouping if no events are left
+		const keys = Object.keys(_globalEventHandlers[eventClass]);
+		if (keys.length === 0) {
+			delete _globalEventHandlers[eventClass];
+		}
+
+	}
+
+	public static addEventListener(eventName: string, callback: any, thisArg?: any): void {
+		if (typeof eventName !== 'string') {
+			throw new TypeError('Event must be string.');
+		}
+
+		if (typeof callback !== 'function') {
+			throw new TypeError('callback must be function.');
+		}
+
+		const eventClass = this.name;
+		 if (!_globalEventHandlers[eventClass]) {
+		 		_globalEventHandlers[eventClass] = {};
+		 }
+		 if (!Array.isArray(_globalEventHandlers[eventClass][eventName])) {
+			 	_globalEventHandlers[eventClass][eventName] = [];
+		 }
+		 _globalEventHandlers[eventClass][eventName].push({callback, thisArg});
+	}
+
+	public notify<T extends EventData>(data: T): void {
+		const eventClass = this.constructor.name;
+		if (_globalEventHandlers[eventClass]) {
+			const event = data.eventName + "First";
+			const events = _globalEventHandlers[eventClass][event];
+			if (events) {
+				Observable._handleEvent(events, data);
+			}
+		}
+
+		const observers = <Array<ListenerEntry>>this._observers[data.eventName];
+		if (observers) {
+			Observable._handleEvent(observers, data);
+		}
+
+		if (_globalEventHandlers[eventClass]) {
+			const events = _globalEventHandlers[eventClass][data.eventName];
+			if (events) {
+				Observable._handleEvent(events, data);
+			}
+		}
+	}
+
+	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
+		if (!observers) { return; }
 		for (let i = observers.length - 1; i >= 0; i--) {
-			let entry = observers[i];
+			const entry = observers[i];
 			if (entry.once) {
 				observers.splice(i, 1);
 			}
@@ -198,7 +322,7 @@ export class Observable implements ObservableDefinition {
 		return list;
 	}
 
-	private _indexOfListener(list: Array<ListenerEntry>, callback: (data: EventData) => void, thisArg?: any): number {
+	private static _indexOfListener(list: Array<ListenerEntry>, callback: (data: EventData) => void, thisArg?: any): number {
 		for (let i = 0; i < list.length; i++) {
 			const entry = list[i];
 			if (thisArg) {
@@ -248,7 +372,7 @@ function defineNewProperty(target: ObservableFromObject, propertyName: string): 
 	});
 }
 
-function addPropertiesFromObject(observable: ObservableFromObject, source: any, recursive: boolean = false) {
+function addPropertiesFromObject(observable: ObservableFromObject, source: any, recursive = false) {
 	Object.keys(source).forEach((prop) => {
 		let value = source[prop];
 		if (recursive && !Array.isArray(value) && value && typeof value === 'object' && !(value instanceof Observable)) {
@@ -261,14 +385,14 @@ function addPropertiesFromObject(observable: ObservableFromObject, source: any, 
 }
 
 export function fromObject(source: any): Observable {
-	let observable = new ObservableFromObject();
+	const observable = new ObservableFromObject();
 	addPropertiesFromObject(observable, source, false);
 
 	return observable;
 }
 
 export function fromObjectRecursive(source: any): Observable {
-	let observable = new ObservableFromObject();
+	const observable = new ObservableFromObject();
 	addPropertiesFromObject(observable, source, true);
 
 	return observable;

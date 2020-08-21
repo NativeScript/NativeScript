@@ -365,9 +365,10 @@ export class TabViewItem extends TabViewItemBase {
 		const tabView = this.parent as TabView;
 		let tabFragment = null;
 		const fragmentManager = tabView._getFragmentManager();
-		for (let fragment of <Array<any>>fragmentManager.getFragments().toArray()) {
-			if (fragment.index === this.index) {
-				tabFragment = fragment;
+		const fragments = fragmentManager.getFragments().toArray();
+		for (let i=0;i<fragments.length;i++) {
+			if (fragments[i].index === this.index) {
+				tabFragment = fragments[i];
 				break;
 			}
 		}
@@ -622,8 +623,9 @@ export class TabView extends TabViewBase {
 	private disposeCurrentFragments(): void {
 		const fragmentManager = this._getFragmentManager();
 		const transaction = fragmentManager.beginTransaction();
-		for (let fragment of <Array<any>>fragmentManager.getFragments().toArray()) {
-			transaction.remove(fragment);
+		let fragments = <Array<any>>fragmentManager.getFragments().toArray();
+		for (let i=0;i<fragments.length;i++) {
+			transaction.remove(fragments[i]);
 		}
 		transaction.commitNowAllowingStateLoss();
 	}
