@@ -1,6 +1,6 @@
 <p align="center">
   <a href="http://www.nativescript.org">
-    <img alt="Gatsby" src="https://i.imgur.com/YmNIMqS.png" />
+    <img alt="NativeScript" src="https://i.imgur.com/YmNIMqS.png" />
   </a>
 </p>
 
