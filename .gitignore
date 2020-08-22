@@ -40,7 +40,6 @@ apps/**/*/*.map
 apps/**/*/platforms
 apps/**/*/webpack.*.js
 *.tgz
-!tools/plugins/nps-i-1.1.0.tgz
 
 # System Files
 .DS_Store

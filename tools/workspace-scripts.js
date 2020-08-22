@@ -126,10 +126,10 @@ module.exports = {
 			},
     },
     "⚡": {
-      script: `npx cowsay "Focus on segments of monorepo for efficiency ⚡"`,
-      description: '_____________  Focus on source (VS Code supported)  _____________'
+      script: `npx cowsay "Focus only on source you care about for efficiency ⚡"`,
+      description: '_____________  Focus (VS Code supported)  _____________'
     },
-    'focus': {
+    focus: {
       core: {
         script: 'nx g @nstudio/focus:mode core',
         description: 'Focus on @nativescript/core'
