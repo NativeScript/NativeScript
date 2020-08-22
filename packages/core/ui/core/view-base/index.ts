@@ -214,6 +214,7 @@ namespace SuspendType {
 export abstract class ViewBase extends Observable implements ViewBaseDefinition {
 	public static loadedEvent = 'loaded';
 	public static unloadedEvent = 'unloaded';
+	public static createdEvent = 'created';
 
 	private _onLoadedCalled: boolean = false;
 	private _onUnloadedCalled: boolean = false;
@@ -304,6 +305,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		super();
 		this._domId = viewIdCounter++;
 		this._style = new Style(new WeakRef(this));
+		this.notify({eventName: ViewBase.createdEvent, type: this.constructor.name, object: this});
 	}
 
 	// Used in Angular.
@@ -378,7 +380,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
-	// Overridden so we don't raise `poropertyChange`
+	// Overridden so we don't raise `propertyChange`
 	// The property will raise its own event.
 	public set(name: string, value: any) {
 		this[name] = WrappedValue.unwrap(value);

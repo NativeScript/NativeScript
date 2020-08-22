@@ -45,7 +45,9 @@ export function verifyCallback(value: any) {
 }
 
 const classInfosMap = new Map<Function, ClassInfo>();
-const funcNameRegex = /function ([_a-zA-Z0-9]{1,})\(/;
+
+// ES3-5 type classes are "function blah()", new ES6+ classes can be "class blah"
+const funcNameRegex = /(?:function|class)\s+(\w+).*/;
 export function getClass(object: Object): string {
 	return getClassInfo(object).name;
 }
@@ -74,18 +76,22 @@ export function getBaseClasses(object): Array<string> {
 }
 
 export class ClassInfo {
-	private _typeCosntructor: Function;
+	private _typeConstructor: Function;
 	private _name: string;
 	private _baseClassInfo: ClassInfo;
 
-	constructor(typeCosntructor: Function) {
-		this._typeCosntructor = typeCosntructor;
+	constructor(typeConstructor: Function) {
+		this._typeConstructor = typeConstructor;
 	}
 
 	get name(): string {
 		if (!this._name) {
-			const results = funcNameRegex.exec(this._typeCosntructor.toString());
-			this._name = results && results.length > 1 ? results[1] : '';
+			if (this._typeConstructor.name) {
+				this._name = this._typeConstructor.name;
+			} else {
+				const results = funcNameRegex.exec(this._typeConstructor.toString());
+				this._name = results && results.length > 1 ? results[1] : '';
+			}
 		}
 
 		return this._name;
@@ -106,7 +112,7 @@ export class ClassInfo {
 
 	private static _getBase(info: ClassInfo): ClassInfo {
 		let result = null;
-		const constructorProto = info._typeCosntructor.prototype;
+		const constructorProto = info._typeConstructor.prototype;
 		if (constructorProto.__proto__) {
 			result = getClassInfo(constructorProto.__proto__);
 		}
