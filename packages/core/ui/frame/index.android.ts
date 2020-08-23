@@ -19,6 +19,7 @@ import { Builder } from '../builder';
 import { CSSUtils } from '../../css/system-classes';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
+import { ExpandedEntry } from './fragment.transitions.android';
 
 export * from './frame-common';
 
@@ -463,26 +464,21 @@ export class Frame extends FrameBase {
 		const currentIndex =this.backStack.length;
 		const gotBackToIndex = this.backStack.indexOf(backstackEntry);
 		
-		for (let index = gotBackToIndex + 1; index < currentIndex; index++) {
-			transaction.remove(this.backStack[index].fragment);
-		}
+		// the order is important so that the transition listener called be 
+		// the one from the current entry we are going back from
 		if (this._currentEntry !== backstackEntry) {
+			const entry = this._currentEntry as ExpandedEntry;
 			// if we are going back we need to store where we are backing to
 			// so that we can set the current entry
-			if ((this._currentEntry as any).exitTransitionListener) {
-				(this._currentEntry as any).exitTransitionListener.backEntry = backstackEntry;
+			// it only needs to be done on the return transition
+			if (entry.returnTransitionListener) {
+				entry.returnTransitionListener.backEntry = backstackEntry;
 			}
-			if ((this._currentEntry as any).returnTransitionListener) {
-				(this._currentEntry as any).returnTransitionListener.backEntry = backstackEntry;
-			}
-			if ((this._currentEntry as any).enterTransitionListener) {
-				(this._currentEntry as any).enterTransitionListener.backEntry = backstackEntry;
-			}
-			if ((this._currentEntry as any).reenterTransitionListener) {
-				(this._currentEntry as any).reenterTransitionListener.backEntry = backstackEntry;
-			}
-			transaction.remove((this._currentEntry).fragment);
 			
+			transaction.remove((this._currentEntry).fragment);	
+		}
+		for (let index = gotBackToIndex + 1; index < currentIndex; index++) {
+			transaction.remove(this.backStack[index].fragment);
 		}
 		transaction.commitAllowingStateLoss();
 	}
