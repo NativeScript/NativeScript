@@ -259,7 +259,7 @@ export class FrameBase extends CustomLayoutView {
 	public _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void {
 		const isBack = navigationType === NavigationType.back;
 		const isReplace = navigationType === NavigationType.replace;
-		this.raiseCurrentPageNavigatedEvents(isBack, isReplace, entry.entry.clearHistory);
+		this.raiseCurrentPageNavigatedEvents(isBack);
 		const current = this._currentEntry;
 
 		// Do nothing for Hot Module Replacement
@@ -293,14 +293,9 @@ export class FrameBase extends CustomLayoutView {
 		return false;
 	}
 
-	private raiseCurrentPageNavigatedEvents(isBack: boolean, isReplace: boolean, clearHistory: boolean) {
+	private raiseCurrentPageNavigatedEvents(isBack: boolean) {
 		const page = this.currentPage;
 		if (page) {
-			if ((isBack || isReplace || clearHistory) && page.isLoaded) {
-				console.log('unloading current page');
-				// Forward navigation does not remove page from frame so we raise unloaded manually.
-				page.callUnloaded();
-			}
 			page.onNavigatedFrom(isBack);
 		}
 	}
