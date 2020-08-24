@@ -392,7 +392,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		if (this._isLoaded) {
 			return;
 		}
-
+		if (Trace.isEnabled()) {
+			Trace.write(`${this}.onLoaded()`, Trace.categories.ViewHierarchy);
+		}
 		this._isLoaded = true;
 		this._cssState.onLoaded();
 		this._resumeNativeUpdates(SuspendType.Loaded);
@@ -412,7 +414,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		if (!this._isLoaded) {
 			return;
 		}
-
+		if (Trace.isEnabled()) {
+			Trace.write(`${this}.onUnloaded()`, Trace.categories.ViewHierarchy);
+		}
 		this._suspendNativeUpdates(SuspendType.Loaded);
 
 		this.eachChild((child) => {
