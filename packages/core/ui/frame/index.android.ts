@@ -439,7 +439,11 @@ export class Frame extends FrameBase {
 			//transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		}
 
-		transaction.add(this.containerViewId, newFragment, newFragmentTag);
+		if (clearHistory) {
+			transaction.replace(this.containerViewId, newFragment, newFragmentTag);
+		} else  {
+			transaction.add(this.containerViewId, newFragment, newFragmentTag);
+		}
 		transaction.commitAllowingStateLoss();
 	}
 
