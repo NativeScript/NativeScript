@@ -504,7 +504,7 @@ function setEnterTransition(navigationTransition: NavigationTransition, entry: E
 	fragment.setEnterTransition(transition);
 }
 
-function xsetExitTransition(navigationTransition: NavigationTransition, entry: ExpandedEntry, transition: androidx.transition.Transition): void {
+function setExitTransition(navigationTransition: NavigationTransition, entry: ExpandedEntry, transition: androidx.transition.Transition): void {
 	setUpNativeTransition(navigationTransition, transition);
 	const listener = addNativeTransitionListener(entry, transition);
 
