@@ -15,7 +15,6 @@
     "@nrwl/eslint-plugin-nx": "~10.0.7",
     "@nrwl/jest": "~10.0.7",
     "@nrwl/node": "~10.0.7",
-    "@nrwl/nx-cloud": "~10.0.0",
     "@nrwl/workspace": "~10.0.7",
     "@nstudio/focus": "~10.0.0",
     "@nstudio/nps-i": "~1.1.0",
