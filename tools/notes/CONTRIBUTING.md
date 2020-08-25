@@ -52,8 +52,9 @@ git remote add upstream https://github.com/NativeScript/NativeScript.git
 
 ```bash
 #In the repo root
-npm install
 npm run setup
+#View interactive options
+npm start
 ```
 
 3. Create a branch for your PR
@@ -159,7 +160,7 @@ Must be one of the following:
 The scope should be the name of the affected component in the code.
 If the change affects only one of the target platforms (android, ios) that should be specified in the scope.
 
-Sample scopes for the `tns-core-modules` package:
+Sample scopes for the `@nativescript/core` package:
 
 * **android/application**
 * **ios/application**
