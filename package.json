@@ -1,60 +1,68 @@
 {
-  "name": "NativeScript",
-  "description": "NativeScript Core Modules",
-  "homepage": "https://www.nativescript.org",
-  "version": "6.5.15",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/NativeScript/NativeScript"
+  "name": "nativescript",
+  "version": "7.0.0-rc.54",
+  "license": "MIT",
+  "scripts": {
+    "setup": "npx rimraf -- hooks node_modules package-lock.json && npm i && ts-patch install && nx run core:setup",
+    "start": "nps"
   },
-  "license": "Apache-2.0",
+  "private": true,
+  "dependencies": {
+    "nativescript-theme-core": "^1.0.4"
+  },
   "devDependencies": {
-    "@microsoft/api-extractor": "7.6.1",
-    "@nativescript/tslint-rules": "0.0.5",
-    "@types/chai": "^4.0.4",
-    "@types/mocha": "^2.2.42",
-    "@types/node": "~10.12.18",
-    "chai": "^4.1.2",
+    "@nativescript/hook": "^1.0.0",
+    "@nrwl/eslint-plugin-nx": "~10.0.7",
+    "@nrwl/jest": "~10.0.7",
+    "@nrwl/node": "~10.0.7",
+    "@nrwl/workspace": "~10.0.7",
+    "@nstudio/focus": "~10.0.0",
+    "@nstudio/nps-i": "~1.1.0",
+    "@types/chai": "^4.2.11",
+    "@types/jest": "~26.0.4",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "~14.0.22",
+    "@typescript-eslint/eslint-plugin": "~3.6.0",
+    "@typescript-eslint/parser": "~3.6.0",
+    "chai": "^4.2.0",
     "conventional-changelog-cli": "^2.0.34",
-    "css": "^2.2.1",
-    "css-tree": "^1.0.0-alpha.37",
+    "copyfiles": "^2.3.0",
+    "css": "^3.0.0",
+    "css-tree": "^1.0.0-alpha.39",
+    "dotenv": "~8.2.0",
+    "eslint": "~7.4.0",
+    "eslint-config-prettier": "~6.11.0",
     "gonzales": "^1.0.7",
-    "madge": "^2.2.0",
-    "markdown-snippet-injector": "0.2.2",
-    "mocha": "^3.5.0",
-    "mocha-typescript": "^1.1.9",
-    "module-alias": "^2.0.1",
-    "nativescript-typedoc-theme": "git://github.com/NativeScript/nativescript-typedoc-theme.git#master",
-    "ncp": "^2.0.0",
+    "husky": "^4.2.5",
+    "jest": "~26.1.0",
+    "lint-staged": "^10.2.11",
+    "mocha": "^8.0.1",
+    "mocha-typescript": "^1.1.17",
+    "module-alias": "^2.2.2",
+    "nativescript": "rc",
+    "node-sass": "~4.14.1",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
-    "readdirp": "3.1.3",
-    "reduce-css-calc": "^2.1.6",
-    "rimraf": "^2.5.0",
+    "prettier": "~2.0.5",
+    "reduce-css-calc": "~2.1.7",
     "shady-css-parser": "^0.1.0",
-    "source-map-support": "^0.4.17",
-    "ts-node": "^8.3.0",
-    "tslib": "1.10.0",
-    "tslint": "^5.4.3",
-    "typedoc": "^0.13.0",
-    "typedoc-plugin-external-module-name": "git://github.com/PanayotCankov/typedoc-plugin-external-module-name.git#with-js",
-    "typescript": "~3.8.3"
+    "terser-webpack-plugin": "~3.0.6",
+    "ts-jest": "~26.1.1",
+    "ts-node": "~8.10.2",
+    "ts-patch": "^1.2.5",
+    "tslint": "~6.1.2",
+    "typescript": "~3.9.7",
+    "webpack": "~4.44.1",
+    "webpack-cli": "~3.3.12"
   },
-  "scripts": {
-    "setup": "npm run build-core && npm run build-compat && npm run setup-link",
-    "setup-link": "(cd nativescript-core && npm link) && (cd dist/tns-core-modules && npm uninstall @nativescript/core -S)",
-    "setup-widgets": "(cd tns-core-modules-widgets && sh build.sh) && npm run dev-link-tns-core-modules-widgets",
-    "tsc-core-watch": "tsc -p nativescript-core/tsconfig.json -w",
-    "tslint": "tslint --project tsconfig.tslint.json --config build/tslint.json",
-    "unit-test": "tsc -p unit-tests/tsconfig.json && mocha --opts unit-tests/mocha.opts",
-    "unit-test-watch": "mocha-typescript-watch -p unit-tests/tsconfig.json --opts unit-tests/mocha.opts",
-    "dev-link-tns-core-modules-widgets": "(cd tns-core-modules-widgets/dist/package && npm link) && (cd nativescript-core && npm i ../tns-core-modules-widgets/dist/package --save)",
-    "api-extractor": "api-extractor run --local --verbose && (cd nativescript-core && cat nativescript-core.header nativescript-core.d.ts > tmp_file && mv tmp_file nativescript-core.d.ts)",
-    "api-extractor-ci": "api-extractor run --verbose",
-    "typedoc": "npm run api-extractor && typedoc --tsconfig tsconfig.typedoc.json",
-    "typedoc-dev": "npm run typedoc && cd bin/dist/apiref && npx http-server",
-    "build-core": "sh ./build/build-core.sh",
-    "build-compat": "sh ./build/build-compat.sh",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*": [
+      "nx format:write --files"
+    ]
   }
 }

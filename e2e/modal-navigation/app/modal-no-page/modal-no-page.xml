@@ -1,4 +1,0 @@
-<StackLayout backgroundColor="lightGreen" loaded="onLoaded">
-    <Button text="Show Dialog" tap="showDialog" />
-    <Button text="Close Modal" tap="closeModal" />
-</StackLayout>

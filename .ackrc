@@ -1,5 +1,0 @@
---ignore-file=ext:js
---ignore-dir=is:bin
---ignore-file=is:android17.d.ts
---ignore-file=is:ios.d.ts
---ignore-file=match:tscommand.*

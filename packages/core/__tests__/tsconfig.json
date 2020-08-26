@@ -1,0 +1,44 @@
+{
+    "compilerOptions": {
+        "noEmitOnError": false,
+        "noEmitHelpers": true,
+        "target": "es5",
+        "module": "commonjs",
+        "noImplicitUseStrict": true,
+        "removeComments": true,
+        "experimentalDecorators": true,
+        "diagnostics": true,
+        "sourceMap": true,
+        "inlineSourceMap": false,
+        "lib": [
+            "es6",
+            "dom"
+        ],
+        "types": [
+            "node",
+            "chai",
+            "mocha"
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "@nativescript/core": [
+              "../index.ts"
+            ],
+            "@nativescript/core/*": [
+                "../*"
+            ],  
+        }
+    },
+    "include": [
+        "./**/*.ts"
+    ],
+    "exclude": [
+        "../**/*.android.ts",
+        "../**/*.android.d.ts",
+        "../**/*.ios.ts",
+        "../**/*.ios.d.ts",
+        "../node-modules",
+        "../references.d.ts",
+        "../platforms"
+    ]
+}

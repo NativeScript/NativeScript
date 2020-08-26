@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Test Page</title>
+		<meta charset="utf-8" />
+	</head>
+
+	<body>
+		<h3>Result</h3>
+		<div style="color: green;" id="result">No value yet</div>
+		<script type="text/javascript" charset="utf-8">
+			function getParameterByName(name) {
+				url = window.location.href;
+				name = name.replace(/[\[\]]/g, '\\$&');
+				var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+					results = regex.exec(url);
+				if (!results) return null;
+				if (!results[2]) return '';
+				return decodeURIComponent(results[2].replace(/\+/g, ' '));
+			}
+
+			var res = document.getElementById('result');
+			res.innerHTML = 'foo: ' + getParameterByName('foo') + '<br>' + 'urlType: ' + getParameterByName('urlType');
+		</script>
+	</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "main": "app.js",
+  "android": {
+    "v8Flags": "--nolazy --expose_gc",
+    "markingMode": "none",
+    "codeCache": "true",
+    "suppressCallJSMethodExceptions": false
+  },
+  "discardUncaughtJsExceptions": false
+}
