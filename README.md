@@ -48,7 +48,7 @@ Our Getting Started Guides are hands-on tutorials that walk you through installi
 - [NativeScript marketplace](https://market.nativescript.org/)
 - [NativeScript roadmap](https://www.nativescript.org/roadmap)
 
-## Repositories
+## Other framework source repos
 
 Outside of the source centralized in this repo, the NativeScript framework consists of a number of components, all of which are open source and on GitHub. Here are the major ones:
 
