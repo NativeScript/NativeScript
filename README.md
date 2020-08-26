@@ -13,18 +13,31 @@ NativeScript
 
 [NativeScript](http://www.nativescript.org) empowers you to access native api's from JavaScript directly. The framework currently provides iOS and Android runtimes for rich mobile development and can be utilized in a number of diverse use cases.
 
-# Develop
+## Getting Started and Installation
+
+Our Getting Started Guides are hands-on tutorials that walk you through developing with NativeScript:
+
+* [Get started with JavaScript](http://docs.nativescript.org/tutorial/chapter-0)
+* [Get started with TypeScript and Angular](http://docs.nativescript.org/angular/tutorial/ng-chapter-0)
+
+## Contribute
 
 ```bash
+$ git clone https://github.com/NativeScript/NativeScript.git
+$ cd NativeScript
+
 # setup workspace for development
 $ npm run setup
+
 # list all available commands to run
 $ npm start
 ```
 
-# Packages
+We love you and PR's 🤗 Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://nativescript.org/governance/) to become as involved as you want to be.
 
-* [@nativescript/core](https://www.npmjs.com/package/@nativescript/core)
+## @nativescript/* 
+
+* [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/master/packages/core)
   * Core iOS/Android for NativeScript
 * [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
   * Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
@@ -34,15 +47,8 @@ $ npm start
   * Types for Android
 * @nativescript/ui-mobile-base
   * UI mobile base native classes used by core
-* [@nativescript/webpack](https://www.npmjs.com/package/@nativescript/webpack)
+* [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/master/packages/webpack)
   * Webpack build utilities and configs used by NativeScript apps
-
-## Getting Started and Installation
-
-Our Getting Started Guides are hands-on tutorials that walk you through installing NativeScript and building a real iOS and Android application.
-
-* [Get started with JavaScript](http://docs.nativescript.org/tutorial/chapter-0)
-* [Get started with TypeScript and Angular](http://docs.nativescript.org/angular/tutorial/ng-chapter-0)
 
 ## Quick Links
 
@@ -75,6 +81,4 @@ Outside of the source centralized in this repo, the NativeScript framework consi
 
 In addition to the code that makes up the NativeScript framework itself, we also provide a number of [open-source sample apps](https://www.nativescript.org/app-samples-with-code) that you can reference while building your NativeScript application.
 
-## Contributing
-
-We love PRs, and accept them for all of our repositories — even docs! Please follow our [contribution guide](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md) if you want to become part of the project.
+### Made with ❤️
