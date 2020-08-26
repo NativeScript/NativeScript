@@ -70,6 +70,7 @@ module.exports = env => {
     const hasRootLevelScopedModules = nsWebpack.hasRootLevelScopedModules({ projectDir: projectRoot });
     let coreModulesPackageName = "tns-core-modules";
     const alias = env.alias || {};
+    alias['~/package.json'] = resolve(projectRoot, 'package.json');
     alias['~'] = appFullPath;
 
     if (hasRootLevelScopedModules) {
