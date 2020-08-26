@@ -1,6 +1,15 @@
-# NativeScript [![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
+<p align="center">
+  <a href="http://www.nativescript.org">
+    <img alt="NativeScript" src="https://i.imgur.com/YmNIMqS.png" />
+  </a>
+</p>
 
-![NativeScript logo](https://i.imgur.com/YmNIMqS.png)
+<h1 align="center"> 
+NativeScript 
+</h1>
+
+[![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
+
 
 [NativeScript](http://www.nativescript.org) empowers you to access native api's from JavaScript directly. The framework currently provides iOS and Android runtimes for rich mobile development and can be utilized in a number of diverse use cases.
 
