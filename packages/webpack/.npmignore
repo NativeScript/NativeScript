@@ -1,0 +1,17 @@
+build
+demo
+
+*.ts
+!*.d.ts
+
+*.spec.*
+.vscode/
+.github/
+.nyc_output
+coverage/
+jasmine-config/
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+PULL_REQUEST_TESTS.md
+
+*.tgz

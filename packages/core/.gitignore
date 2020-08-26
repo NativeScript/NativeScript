@@ -1,0 +1,12 @@
+dist
+*.js
+*.map
+!xml/xml.js
+!js-libs/**/*.*
+!cli-hooks/**/*.*
+!css/**/*.js
+!css/**/*.ts
+css/parser.js*
+css/system-classes.js*
+!css-value/**/*.*
+!fetch/**/*.*

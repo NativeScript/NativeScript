@@ -1,0 +1,85 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="MyPageLoaded"
+      xmlns:customControls="xml-declaration/mymodule"
+      xmlns:customControls2="xml-declaration/mymodulewithxml">
+  <TabView>
+    <TabView.items>
+      <TabViewItem title="Tab 1">
+        <TabViewItem.view>
+          <StackLayout>
+
+            <Label ios:text="&#xf179;" android:text="&#xf17b;" style="font-family: FontAwesome; font-size: 25;" />
+
+            <HtmlView html="&lt;span&gt;&lt;font color='#ff0000'&gt;Test&lt;/font&gt;&lt;/span&gt;" />
+
+            <WebView src="&lt;html&gt;&lt;body&gt;&lt;span style='color:red'&gt;Test&lt;/span&gt;&lt;/body&gt;&lt;/html&gt;" />
+
+            <!--<ToolBar>
+              <ToolBar.items>
+                <ToolBarItem>
+                  <ToolBarItem.view>
+                    <Label text="Label" />
+                  </ToolBarItem.view>
+                </ToolBarItem>
+                <ToolBarItem>
+                  <ToolBarItem.view>
+                    <Button text="Button" />
+                  </ToolBarItem.view>
+                </ToolBarItem>
+                <ToolBarItem>
+                  <ToolBarItem.view>
+                    <Image url="http://icons.iconarchive.com/icons/oxygen-icons.org/oxygen/256/Places-favorites-icon.png" />
+                  </ToolBarItem.view>
+                </ToolBarItem>
+              </ToolBar.items>
+            </ToolBar>-->
+
+            <SegmentedBar selectedIndex="1" style="background-color: red; color: white" selectedBackgroundColor="green">
+              <SegmentedBar.items>
+                <SegmentedBarItem title="MAY 3" />
+                <SegmentedBarItem title="MAY 4" />
+                <SegmentedBarItem title="MAY 5" />
+              </SegmentedBar.items>
+            </SegmentedBar>
+
+            <ListPicker items="{{ someItems }}" selectedIndex="3"/>
+            <DatePicker year="1976" month="10" day="30" />
+            <TimePicker hour="10" minute="34" />
+            <Image id="cameraImage" />
+            <Button tap="setPicture" text="Get picture and set is to the image" />
+            <Label id="Label1" text="This is Label!" />
+            <StackLayout orientation="horizontal">
+              <Label text="From expression {{ id + 1 }}: " />
+              <Label text="{{ id + 1 }}" />
+              <customControls:MyControl>
+                <Label text="This is test!" />
+              </customControls:MyControl>
+            </StackLayout>
+            <StackLayout orientation="horizontal">
+              <Label text="From sub prop {{ subObj.subId + 1 }}: " />
+              <Label text="{{ subObj.subId + 1 }}" />
+            </StackLayout>
+            <Button text="This is Button!" tap="buttonTap" />
+            <customControls:MyControl />
+          </StackLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="Tab 2">
+        <TabViewItem.view>
+          <StackLayout>
+            <customControls2:MyControl />
+            <Label text="This is Label in Tab 2" />
+          </StackLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="Tab 3">
+        <TabViewItem.view>
+          <GridLayout columns="50, auto, *" rows="50, auto, *">
+            <Label text="This is Label in Tab 3"  row="0" />
+            <Label text="This is second Label in Tab 3" row="1" />
+            <customControls:MyControl />
+          </GridLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+    </TabView.items>
+  </TabView>
+</Page>

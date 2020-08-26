@@ -1,6 +1,0 @@
-{
-    "name": "color",
-    "main": "color",
-    "types": "color.d.ts",
-    "nativescript": {}
-}

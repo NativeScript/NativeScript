@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+const ProjectSnapshotGenerator = require("../snapshot/android/project-snapshot-generator");
+const args = require("../snapshot/android/project-snapshot-generator-cli-ags-parser")();
+
+const generator = new ProjectSnapshotGenerator(args);
+generator.generate(args);
