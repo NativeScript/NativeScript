@@ -1,6 +1,0 @@
-{
-	"name": "layout-helper",
-	"main": "layout-helper",
-	"types": "layout-helper.d.ts",
-	"nativescript": {}
-}

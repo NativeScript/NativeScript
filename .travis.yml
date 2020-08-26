@@ -2,16 +2,9 @@ language: node_js
 node_js:
   - "node"
 script:
-- npm install
-- npm run tslint
 - npm run setup
-- npm run unit-test
+- npm start @nativescript.core.test
+- npm start @nativescript.core.build
 
 # public API changes check
-- npm run api-extractor-ci
-
-# circular references check
-- cd tests && npm i
-- node_modules/.bin/webpack --env.android
-- node_modules/.bin/webpack --env.ios
-
+# - npm run api-extractor-ci

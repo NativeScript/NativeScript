@@ -1,0 +1,25 @@
+{
+    "name": "tns-core-modules",
+    "main": "index",
+    "types": "index.d.ts",
+    "description": "Compatibility with old style tns-core-modules imports for NativeScript.",
+    "version": "7.0.0-rc.33",
+    "homepage": "https://nativescript.org",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NativeScript/NativeScript"
+    },
+    "license": "Apache-2.0",
+    "scripts": {
+        "setup": "npm i"
+    },
+    "devDependencies": {
+        "@nativescript/core": "rc"
+    },
+    "nativescript": {
+        "platforms": {
+            "ios": "5.0.0",
+            "android": "5.0.0"
+        }
+    }
+}

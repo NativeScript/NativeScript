@@ -1,9 +1,0 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" 
-    navigatingFrom="onNavigatingFrom"
-    navigatingTo="navigatingTo">
-    <StackLayout>
-        <Button text="Start test..." tap="onTap" style="font-size:11" />
-        <StackLayout id="placeholder" row="1"/>
-        <TextView id="result" row="2" editable="false" />
-    </StackLayout>
-</Page>
