@@ -33,7 +33,7 @@ export interface HttpRequestOptions {
 	timeout?: number;
 
 	/**
-	 * Gets or sets wether to *not* follow server's redirection responses.
+	 * Gets or sets whether to *not* follow server's redirection responses.
 	 */
 	dontFollowRedirects?: boolean;
 }
