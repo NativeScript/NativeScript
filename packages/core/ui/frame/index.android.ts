@@ -241,11 +241,6 @@ export class Frame extends FrameBase {
 
 	onUnloaded() {
 		super.onUnloaded();
-
-		// calling dispose fragment after super.onUnloaded() means we are not relying on the built-in Android logic
-		// to automatically remove child fragments when parent fragment is removed;
-		// this fixes issue with missing nested fragment on app suspend / resume;
-		this.disposeCurrentFragment();
 	}
 
 	private disposeCurrentFragment(): void {
