@@ -444,6 +444,9 @@ export class Frame extends FrameBase {
 		} else  {
 			transaction.add(this.containerViewId, newFragment, newFragmentTag);
 		}
+		if (this._currentEntry && this._currentEntry.entry.backstackVisible === false) {
+			transaction.remove(this._currentEntry.fragment);
+		}
 		transaction.commitAllowingStateLoss();
 	}
 
@@ -466,7 +469,7 @@ export class Frame extends FrameBase {
 		_reverseTransitions(backstackEntry, this._currentEntry);
 
 		const currentIndex =this.backStack.length;
-		const gotBackToIndex = this.backStack.indexOf(backstackEntry);
+		const goBackToIndex = this.backStack.indexOf(backstackEntry);
 		
 		// the order is important so that the transition listener called be 
 		// the one from the current entry we are going back from
@@ -481,9 +484,10 @@ export class Frame extends FrameBase {
 			
 			transaction.remove((this._currentEntry).fragment);	
 		}
-		for (let index = gotBackToIndex + 1; index < currentIndex; index++) {
+		for (let index = goBackToIndex + 1; index < currentIndex; index++) {
 			transaction.remove(this.backStack[index].fragment);
 		}
+		
 		transaction.commitAllowingStateLoss();
 	}
 
