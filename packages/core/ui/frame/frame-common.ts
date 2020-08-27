@@ -259,8 +259,8 @@ export class FrameBase extends CustomLayoutView {
 	public _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void {
 		const isBack = navigationType === NavigationType.back;
 		const isReplace = navigationType === NavigationType.replace;
-		this.raiseCurrentPageNavigatedEvents(isBack);
 		const current = this._currentEntry;
+		this.raiseCurrentPageNavigatedEvents(isBack);
 
 		// Do nothing for Hot Module Replacement
 		if (isBack) {
