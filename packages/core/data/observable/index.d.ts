@@ -163,6 +163,19 @@ export class Observable {
 	 */
 	public _isViewBase: boolean;
 	//@endprivate
+
+	/**
+	 * This method is intended to be overriden by inheritors to be notified when a new listener is added
+	 * count is the number of listeners for that event after addition
+	 */
+	onListenerAdded(eventName: string, count: number);
+
+	/**
+	 * This method is intended to be overriden by inheritors to be notified when a new listener is removed
+	 * count is the number of listeners for that event after removal
+	 */
+	onListenerRemoved(eventName: string, count: number);
+	
 }
 
 /**
