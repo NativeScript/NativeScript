@@ -44,6 +44,13 @@ const isVue = ({ projectDir, packageJson } = {}) => {
         .some(dependency => dependency === "nativescript-vue");
 };
 
+const isReact = ({ projectDir, packageJson } = {}) => {
+  packageJson = packageJson || getPackageJson(projectDir);
+
+  return packageJson.dependencies && Object.keys(packageJson.dependencies)
+      .some(dependency => dependency === "react-nativescript");
+};
+
 const getPackageJson = projectDir => {
     const packageJsonPath = getPackageJsonPath(projectDir);
     const result = readJsonFile(packageJsonPath);
@@ -137,6 +144,7 @@ module.exports = {
     isPlugin,
     getAngularVersion,
     isVue,
+    isReact,
     isTypeScript,
     writePackageJson,
     convertSlashesInPath,

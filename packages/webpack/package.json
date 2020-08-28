@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/webpack",
-  "version": "3.0.0-rc.1",
+  "version": "3.0.0-rc.2",
   "main": "index",
   "description": "Webpack plugin for NativeScript",
   "homepage": "https://nativescript.org",
@@ -60,7 +60,7 @@
     "global-modules-path": "~2.3.0",
     "loader-utils": "~2.0.0",
     "minimatch": "~3.0.4",
-    "@nativescript/hook": "~1.0.0",
+    "@nativescript/hook": "~2.0.0",
     "nativescript-worker-loader": "~0.12.0",
     "properties-reader": "~2.0.0",
     "proxy-lib": "0.4.0",
