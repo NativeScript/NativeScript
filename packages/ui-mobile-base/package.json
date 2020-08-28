@@ -1,5 +1,5 @@
 {
-    "name": "@nativescript/ui-base",
+    "name": "@nativescript/ui-mobile-base",
     "version": "7.0.0-rc.0",
     "description": "Native UI base components used with NativeScript.",
     "scripts": {
