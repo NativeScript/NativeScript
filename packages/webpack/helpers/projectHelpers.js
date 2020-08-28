@@ -88,7 +88,15 @@ const getIndentationCharacter = (jsonContent) => {
 
 const getProjectDir = hook.findProjectDir;
 
-const getPackageJsonPath = projectDir => resolve(projectDir, "package.json");
+const getPackageJsonPath = projectDir => {
+  const packagePath = resolve(projectDir, "package.json");
+  if (fs.existsSync(packagePath)) {
+    return packagePath;
+  } else {
+    return getPackageJsonPath(resolve(projectDir, '..'));
+  }
+  
+}
 const getNsConfigPath = projectDir => resolve(projectDir, "nsconfig.json");
 
 const isAndroid = platform => /android/i.test(platform);
