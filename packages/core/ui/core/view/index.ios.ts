@@ -29,6 +29,10 @@ export class View extends ViewCommon implements ViewDefinition {
 	private _popoverPresentationDelegate: IOSHelper.UIPopoverPresentationControllerDelegateImp;
 	private _adaptivePresentationDelegate: IOSHelper.UIAdaptivePresentationControllerDelegateImp;
 
+	/**
+	 * Track modal open animated options to use same option upon close
+	 */
+	private _modalAnimatedOptions: Array<boolean>;
 	private _isLaidOut = false;
 	private _hasTransfrom = false;
 	private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
@@ -472,7 +476,7 @@ export class View extends ViewCommon implements ViewDefinition {
 				this._setupAdaptiveControllerDelegate(controller);
 			} else {
 				// Prevent users from dismissing the modal.
-				(<any>controller).modalInPresentation = true;
+				controller.modalInPresentation = true;
 			}
 		}
 
@@ -481,7 +485,12 @@ export class View extends ViewCommon implements ViewDefinition {
 
 		this._raiseShowingModallyEvent();
 		const animated = options.animated === undefined ? true : !!options.animated;
-		(<any>controller).animated = animated;
+		if (!this._modalAnimatedOptions) {
+			// track the user's animated options to use upon close as well
+			this._modalAnimatedOptions = [];
+		}
+		this._modalAnimatedOptions.push(animated);
+
 		parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
 		const transitionCoordinator = parentController.transitionCoordinator;
 		if (transitionCoordinator) {
@@ -509,7 +518,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 
 		const parentController = parent.viewController;
-		const animated = (<any>this.viewController).animated;
+		const animated = this._modalAnimatedOptions ? !!this._modalAnimatedOptions.pop() : true;
 
 		parentController.dismissViewControllerAnimatedCompletion(animated, whenClosedCallback);
 	}
