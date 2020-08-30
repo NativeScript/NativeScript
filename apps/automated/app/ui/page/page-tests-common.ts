@@ -181,7 +181,7 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
 	helper.navigateWithEntry(navigationEntry);
 	helper.goBack();
 
-	const expectedEventSequence = ['navigatingTo', 'loaded', 'navigatedTo', 'navigatingFrom', 'unloaded', 'navigatedFrom'];
+	const expectedEventSequence = ['navigatingTo', 'loaded', 'navigatedTo', 'navigatingFrom', 'navigatedFrom', 'unloaded'];
 	TKUnit.arrayAssert(eventSequence, expectedEventSequence, 'Actual event sequence is not equal to expected. Actual: ' + eventSequence + '; Expected: ' + expectedEventSequence);
 }
 
