@@ -11,7 +11,7 @@
     "nativescript-theme-core": "^1.0.4"
   },
   "devDependencies": {
-    "@nativescript/hook": "^1.0.0",
+    "@nativescript/hook": "^2.0.0",
     "@nrwl/eslint-plugin-nx": "~10.0.7",
     "@nrwl/jest": "~10.0.7",
     "@nrwl/node": "~10.0.7",
