@@ -13,36 +13,87 @@ interface IConfigPlaform {
 interface IConfigIOS extends IConfigPlaform {}
 
 interface IConfigAndroid extends IConfigPlaform {
+	/**
+	 * These are the v8 runtime flags you can pass in, you must have "--expose_gc" as this is used in the runtime
+	 */
 	v8Flags?: string;
 
+	/**
+	 * Enable code cache by setting this to "true"
+	 */
 	codeCache?: boolean;
 
+	/**
+	 * Depreciated
+	 * Do not change
+	 */
 	heapSnapshotScript?: string;
 
-	'snapshot.blob'?: string;
+	/**
+	 * Depreciated
+	 * Do No change - File to use for Snapshots
+	 */
+	SnapshotFile?: string;
 
+	/**
+	 * Directory of profiler out put files
+	 */
 	profilerOutputDir?: string;
 
+	/**
+	 * How frequently in MS to automatically trigger a gc (0 = Disabled & Default)
+	 * Docs: https://docs.nativescript.org/core-concepts/android-runtime/advanced-topics/memory-management
+	 */
 	gcThrottleTime?: number;
 
+	/**
+	 * Enabled "timeline" profiling by setting this key to "timeline", default: ""
+	 */
 	profiling?: string;
 
+	/**
+	 * "none" & "full" is supported, "full" is depreciated
+	 * Default: none
+	 */
 	markingMode?: string;
 
+	/**
+	 * Allow time zone changes to notify app, default: false
+	 */
 	handleTimeZoneChanges?: boolean;
 
+	/**
+	 * Maximum size of a single output string; default: 1024
+	 */
 	maxLogcatObjectSize?: number;
 
+	/**
+	 * Enable logging in Release applications, default: false
+	 */
 	forceLog?: boolean;
 
+	/**
+	 * How frequently in ms that it does the freeMemoryRatio check
+	 * Docs: https://docs.nativescript.org/core-concepts/android-runtime/advanced-topics/memory-management
+	 */
 	memoryCheckInterval?: number;
 
+	/**
+	 * Percentage of memory (0.0 to 1.0) before it forces a GC (default & disabled = 0)
+	 * Paired with he memoryCheckInterval
+	 * Docs: https://docs.nativescript.org/core-concepts/android-runtime/advanced-topics/memory-management
+	 */
 	freeMemoryRatio?: number;
 
-	suppressCallJSMethodExceptions?: boolean;
-
+	/**
+	 * Used for Advanced debugging
+	 */
 	enableLineBreakpoints?: boolean;
 
+	/**
+	 * Enabled the multithreaded JavaScript engine, this will probably break plugins...
+	 * Disabled/Default: false
+	 */
 	enableMultithreadedJavascript?: boolean;
 }
 
