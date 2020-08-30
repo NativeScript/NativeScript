@@ -1,14 +1,5 @@
 {
-  "nativescript": {
-    "id": "org.nativescript.ToolBox",
-    "tns-ios": {
-      "version": "6.5.0"
-    },
-    "tns-android": {
-      "version": "6.5.0"
-    }
-  },
-  "main": "app.js",
+  "main": "main.js",
   "description": "NativeScript Application",
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",

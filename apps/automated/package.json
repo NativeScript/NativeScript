@@ -1,14 +1,5 @@
 {
-  "nativescript": {
-    "id": "org.nativescript.UnitTestApp",
-    "tns-android": {
-      "version": "next"
-    },
-    "tns-ios": {
-      "version": "6.5.2"
-    }
-  },
-  "main": "app.js",
+  "main": "main.js",
   "description": "NativeScript Application",
   "license": "SEE LICENSE IN <your-license-filename>",
   "repository": "<fill-your-repository-here>",
@@ -20,6 +11,7 @@
     "@nativescript/core": "file:../../packages/core"
   },
   "devDependencies": {
+    "@nativescript/ios": "7.0.0",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
     "typescript": "file:../../node_modules/typescript"
   },

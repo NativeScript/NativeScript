@@ -39,7 +39,7 @@
     "mocha": "^8.0.1",
     "mocha-typescript": "^1.1.17",
     "module-alias": "^2.2.2",
-    "nativescript": "rc",
+    "nativescript": "rc7",
     "node-sass": "~4.14.1",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
