@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 
-const { isTypeScript, isAngular, isVue, isShared, isPlugin } = require("./projectHelpers");
+const { isTypeScript, isAngular, isVue, isReact, isShared, isPlugin } = require("./projectHelpers");
 
 function addProjectFiles(projectDir) {
     const projectTemplates = getProjectTemplates(projectDir);
@@ -71,6 +71,8 @@ function getProjectTemplates(projectDir) {
         }
     } else if (isVue({ projectDir })) {
         templates = getVueTemplates(WEBPACK_CONFIG_NAME);
+    } else if (isReact({ projectDir })) {
+      templates = getReactTemplates(WEBPACK_CONFIG_NAME);
     } else if (isTypeScript({ projectDir })) {
         templates = getTypeScriptTemplates(WEBPACK_CONFIG_NAME);
     } else {
@@ -102,6 +104,13 @@ function getVueTemplates(webpackConfigName) {
     return {
         "webpack.vue.js": webpackConfigName
     };
+}
+
+function getReactTemplates(webpackConfigName) {
+  return {
+      "webpack.typescript.js": "webpack.typescript.js",
+      "webpack.react.js": webpackConfigName
+  };
 }
 
 function getJavaScriptTemplates(webpackConfigName) {

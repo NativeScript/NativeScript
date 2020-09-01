@@ -3,7 +3,7 @@
   "main": "index",
   "types": "index.d.ts",
   "description": "NativeScript Core Modules",
-  "version": "7.0.0-rc.55",
+  "version": "7.0.0",
   "homepage": "https://nativescript.org",
   "repository": {
       "type": "git",
@@ -27,9 +27,8 @@
   },
   "dependencies": {
     "css-tree": "^1.0.0-alpha.39",
-    "@nativescript/hook": "~1.0.0",
+    "@nativescript/hook": "~2.0.0",
     "reduce-css-calc": "^2.1.7",
-    "tns-core-modules": "rc",
     "tslib": "2.0.0"
   },
   "nativescript": {

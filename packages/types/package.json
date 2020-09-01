@@ -1,0 +1,18 @@
+{
+  "name": "@nativescript/types",
+  "version": "7.0.1",
+  "description": "NativeScript Types for all supported platforms.",
+  "homepage": "https://nativescript.org",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/NativeScript/NativeScript"
+  },
+  "files": [
+      "index.d.ts"
+  ],
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@nativescript/types-ios": "~7.0.0",
+    "@nativescript/types-android": "~7.0.0"
+  }
+}
