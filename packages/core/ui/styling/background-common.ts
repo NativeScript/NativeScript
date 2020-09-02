@@ -1,6 +1,6 @@
 // Deifinitions.
 import { Background as BackgroundDefinition } from './background';
-import { BackgroundRepeat } from '../styling/style-properties';
+import { BackgroundRepeat, BackgroundRepeatType } from '../styling/style-properties';
 import { LinearGradient } from './linear-gradient';
 // Types.
 import { Color } from '../../color';
@@ -10,7 +10,7 @@ export class Background implements BackgroundDefinition {
 
 	public color: Color;
 	public image: string | LinearGradient;
-	public repeat: BackgroundRepeat;
+	public repeat: BackgroundRepeatType;
 	public position: string;
 	public size: string;
 	public borderTopColor: Color;
@@ -66,7 +66,7 @@ export class Background implements BackgroundDefinition {
 		return clone;
 	}
 
-	public withRepeat(value: BackgroundRepeat): Background {
+	public withRepeat(value: BackgroundRepeatType): Background {
 		const clone = this.clone();
 		clone.repeat = value;
 

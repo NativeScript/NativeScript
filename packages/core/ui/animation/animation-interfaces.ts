@@ -1,6 +1,6 @@
 // Types
 import { View } from '../core/view';
-import { PercentLength } from '../styling/style-properties';
+import { PercentLengthType } from '../styling/style-properties';
 import { Color } from '../../color';
 
 export type Transformation = {
@@ -53,8 +53,8 @@ export interface AnimationDefinition {
 	backgroundColor?: Color;
 	translate?: Pair;
 	scale?: Pair;
-	height?: PercentLength | string;
-	width?: PercentLength | string;
+	height?: PercentLengthType | string;
+	width?: PercentLengthType | string;
 	rotate?: number;
 	duration?: number;
 	delay?: number;

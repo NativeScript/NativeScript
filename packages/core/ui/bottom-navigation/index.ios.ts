@@ -2,7 +2,7 @@
 import { TabContentItem } from '../tab-navigation-base/tab-content-item';
 import { TabStrip } from '../tab-navigation-base/tab-strip';
 import { TabStripItem } from '../tab-navigation-base/tab-strip-item';
-import { getTransformedText, TextTransform } from '../text-base';
+import { getTransformedText, TextTransformType } from '../text-base';
 
 // Requires
 import { Color } from '../../color';
@@ -424,7 +424,7 @@ export class BottomNavigation extends TabNavigationBase {
 		this.setViewAttributes(tabStripItem.nativeView, tabStripItem.label);
 	}
 
-	public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
+	public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransformType): void {
 		tabStripItem.nativeView.title = getTransformedText(tabStripItem.label.text, value);
 	}
 

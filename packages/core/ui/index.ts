@@ -77,7 +77,6 @@ export { TabStripItem } from './tab-navigation-base/tab-strip-item';
 export { TabView, TabViewItem } from './tab-view';
 export { Tabs } from './tabs';
 export { TextBase, getTransformedText, letterSpacingProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, whiteSpaceProperty, lineHeightProperty } from './text-base';
-export type { TextTransform } from './text-base';
 export { FormattedString } from './text-base/formatted-string';
 export { Span } from './text-base/span';
 export { TextField } from './text-field';

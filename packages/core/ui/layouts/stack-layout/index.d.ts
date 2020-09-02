@@ -12,8 +12,6 @@ export class StackLayout extends LayoutBase {
 	orientation: Orientation;
 }
 
-export type Orientation = 'horizontal' | 'vertical';
-
 /**
  * Represents the observable property backing the orientation property of each StackLayout instance.
  */

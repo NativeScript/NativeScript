@@ -3,7 +3,7 @@ import { TextDecoration, TextAlignment, TextTransform, WhiteSpace, getClosestPro
 
 // Requires
 import { Font } from '../styling/font';
-import { backgroundColorProperty, VerticalAlignment } from '../styling/style-properties';
+import { backgroundColorProperty, VerticalAlignment, VerticalAlignmentType, LengthType } from '../styling/style-properties';
 import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
@@ -93,7 +93,7 @@ function initializeClickableSpan(): void {
 }
 
 interface BaselineAdjustedSpan {
-	new (fontSize: number, align?: VerticalAlignment): android.text.style.MetricAffectingSpan;
+	new (fontSize: number, align?: VerticalAlignmentType): android.text.style.MetricAffectingSpan;
 }
 
 let BaselineAdjustedSpan: BaselineAdjustedSpan;
@@ -105,9 +105,9 @@ function initializeBaselineAdjustedSpan(): void {
 	@NativeClass
 	class BaselineAdjustedSpanImpl extends android.text.style.MetricAffectingSpan {
 		fontSize: number;
-		align: VerticalAlignment = 'baseline';
+		align: VerticalAlignmentType = 'baseline';
 
-		constructor(fontSize: number, align?: VerticalAlignment) {
+		constructor(fontSize: number, align?: VerticalAlignmentType) {
 			super();
 
 			this.align = align;
@@ -385,31 +385,31 @@ export class TextBase extends TextBaseCommon {
 		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
 	}
 
-	[paddingTopProperty.getDefault](): Length {
+	[paddingTopProperty.getDefault](): LengthType {
 		return { value: this._defaultPaddingTop, unit: 'px' };
 	}
-	[paddingTopProperty.setNative](value: Length) {
+	[paddingTopProperty.setNative](value: LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
 	}
 
-	[paddingRightProperty.getDefault](): Length {
+	[paddingRightProperty.getDefault](): LengthType {
 		return { value: this._defaultPaddingRight, unit: 'px' };
 	}
-	[paddingRightProperty.setNative](value: Length) {
+	[paddingRightProperty.setNative](value: LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
 	}
 
-	[paddingBottomProperty.getDefault](): Length {
+	[paddingBottomProperty.getDefault](): LengthType {
 		return { value: this._defaultPaddingBottom, unit: 'px' };
 	}
-	[paddingBottomProperty.setNative](value: Length) {
+	[paddingBottomProperty.setNative](value: LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
 	}
 
-	[paddingLeftProperty.getDefault](): Length {
+	[paddingLeftProperty.getDefault](): LengthType {
 		return { value: this._defaultPaddingLeft, unit: 'px' };
 	}
-	[paddingLeftProperty.setNative](value: Length) {
+	[paddingLeftProperty.setNative](value: LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
 	}
 

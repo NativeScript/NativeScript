@@ -1,19 +1,17 @@
 ﻿import { CubicBezierAnimationCurve } from '../animation';
-import { ReturnKeyType as BaseReturnKeyType, UpdateTextTrigger as BaseUpdateTrigger, AutocapitalizationType as BaseAutocapitalizationType } from '../editable-text-base';
+import { ReturnKeyButtonType, UpdateTextTriggerType, AutocapitalizationInputType } from '../editable-text-base';
 
-import { WhiteSpace as BaseWhiteSpace, TextAlignment as BaseTextAlignment, TextTransform as BaseTextTransform, TextDecoration as BaseTextDecoration } from '../text-base';
-
-import { Orientation as BaseOrientation } from '../layouts/stack-layout';
+import { WhiteSpaceType, TextAlignmentType, TextTransformType, TextDecorationType } from '../text-base';
 
 import { Dock as BaseDock } from '../layouts/dock-layout';
 
-import { BackgroundRepeat as BaseBackgroundRepeat, Visibility as BaseVisibility, HorizontalAlignment as BaseHorizontalAlignment, VerticalAlignment as BaseVerticalAlignment } from '../styling/style-properties';
+import { BackgroundRepeatType, VisibilityType, HorizontalAlignmentType, VerticalAlignmentType } from '../styling/style-properties';
 
 import { Stretch as BaseStretch } from '../image';
 
-import { FontStyle as BaseFontStyle, FontWeight as BaseFontWeight } from '../styling/font-common';
+import { FontStyleType, FontWeightType } from '../styling/font-common';
 
-export type KeyboardType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
+export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
 /**
  * Represents a soft keyboard flavor.
  */
@@ -22,36 +20,36 @@ export module KeyboardType {
 	 * Android: [TYPE_CLASS_DATETIME](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_DATETIME) | [TYPE_DATETIME_VARIATION_NORMAL](http://developer.android.com/reference/android/text/InputType.html#TYPE_DATETIME_VARIATION_NORMAL)
 	 * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
 	 */
-	export const datetime: KeyboardType;
+	export const datetime: KeyboardInputType;
 	/**
 	 * Android: [TYPE_CLASS_PHONE](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_PHONE)
 	 * iOS:  [UIKeyboardTypePhonePad](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
 	 */
-	export const phone: KeyboardType;
+	export const phone: KeyboardInputType;
 
 	/**
 	 * Android: [TYPE_CLASS_NUMBER](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_NUMBER) | [TYPE_NUMBER_VARIATION_NORMAL](http://developer.android.com/intl/es/reference/android/text/InputType.html#TYPE_NUMBER_VARIATION_NORMAL) | [TYPE_NUMBER_FLAG_SIGNED](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_SIGNED) | [TYPE_NUMBER_FLAG_DECIMAL](http://developer.android.com/reference/android/text/InputType.html#TYPE_NUMBER_FLAG_DECIMAL)
 	 * iOS:  [UIKeyboardTypeNumbersAndPunctuation](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
 	 */
-	export const number: KeyboardType;
+	export const number: KeyboardInputType;
 
 	/**
 	 * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_URI](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_URI)
 	 * iOS:  [UIKeyboardTypeURL](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
 	 */
-	export const url: KeyboardType;
+	export const url: KeyboardInputType;
 
 	/**
 	 * Android: [TYPE_CLASS_TEXT](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_TEXT) | [TYPE_TEXT_VARIATION_EMAIL_ADDRESS](http://developer.android.com/reference/android/text/InputType.html#TYPE_TEXT_VARIATION_EMAIL_ADDRESS)
 	 * iOS:  [UIKeyboardTypeEmailAddress](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
 	 */
-	export const email: KeyboardType;
+	export const email: KeyboardInputType;
 
 	/**
 	 * Android: [TYPE_CLASS_NUMBER](http://developer.android.com/reference/android/text/InputType.html#TYPE_CLASS_NUMBER | [TYPE_NUMBER_VARIATION_PASSWORD](android type_text_variation_password))
 	 * iOS:  [UIKeyboardTypeNumberPad](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIKeyboardType)
 	 */
-	export const integer: KeyboardType;
+	export const integer: KeyboardInputType;
 }
 
 /**
@@ -62,25 +60,25 @@ export module ReturnKeyType {
 	 * Android: [IME_ACTION_DONE](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_DONE)
 	 * iOS: [UIReturnKeyDone](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
 	 */
-	export const done: BaseReturnKeyType;
+	export const done: ReturnKeyButtonType;
 
 	/**
 	 * Android: [IME_ACTION_NEXT](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_NEXT)
 	 * iOS: [UIReturnKeyNext](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
 	 */
-	export const next: BaseReturnKeyType;
+	export const next: ReturnKeyButtonType;
 
 	/**
 	 * Android: [IME_ACTION_GO](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_GO)
 	 * iOS: [UIReturnKeyGo](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
 	 */
-	export const go: BaseReturnKeyType;
+	export const go: ReturnKeyButtonType;
 
 	/**
 	 * Android: [IME_ACTION_SEARCH](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_SEARCH)
 	 * iOS: [UIReturnKeySearch](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITextInputTraits_Protocol/index.html#//apple_ref/c/tdef/UIReturnKeyType)
 	 */
-	export const search: BaseReturnKeyType;
+	export const search: ReturnKeyButtonType;
 
 	/**
 	 * Android: [IME_ACTION_SEND](http://developer.android.com/reference/android/view/inputmethod/EditorInfo.html#IME_ACTION_SEND)
@@ -92,23 +90,24 @@ export module ReturnKeyType {
 /**
  * Represents a text-align enumeration.
  */
-export declare class TextAlignment {
+export module TextAlignment {
 	/**
 	 * Represents left text-align.
 	 */
-	static left: BaseTextAlignment;
+  export const left: TextAlignmentType;
 
 	/**
 	 * Represents center text-align.
 	 */
-	static center: BaseTextAlignment;
+  export const center: TextAlignmentType;
 
 	/**
 	 * Represents right text-align.
 	 */
-	static right: BaseTextAlignment;
+	export const right: TextAlignmentType;
 }
 
+export type OrientationType = 'horizontal' | 'vertical';
 /**
  * Orientation indicates a direction of a layout that can exist in a horizontal or vertical state.
  */
@@ -116,11 +115,11 @@ export module Orientation {
 	/**
 	 * Layout should be horizontally oriented.
 	 */
-	export const horizontal: BaseOrientation;
+	export const horizontal: OrientationType;
 	/**
 	 * Layout should be vertically oriented.
 	 */
-	export const vertical: BaseOrientation;
+	export const vertical: OrientationType;
 }
 
 /**
@@ -148,22 +147,22 @@ export module HorizontalAlignment {
 	/**
 	 * An element should be left aligned.
 	 */
-	export const left: BaseHorizontalAlignment;
+	export const left: HorizontalAlignmentType;
 
 	/**
 	 * An element should be center aligned.
 	 */
-	export const center: BaseHorizontalAlignment;
+	export const center: HorizontalAlignmentType;
 
 	/**
 	 * An element should be right aligned.
 	 */
-	export const right: BaseHorizontalAlignment;
+	export const right: HorizontalAlignmentType;
 
 	/**
 	 * An element should be stretched to fill all the available size.
 	 */
-	export const stretch: BaseHorizontalAlignment;
+	export const stretch: HorizontalAlignmentType;
 }
 
 /**
@@ -173,27 +172,27 @@ export module VerticalAlignment {
 	/**
 	 * An element should be top aligned.
 	 */
-	export const top: BaseVerticalAlignment;
+	export const top: VerticalAlignmentType;
 
 	/**
 	 * An element should be center aligned.
 	 */
-	export const center: BaseVerticalAlignment;
+	export const center: VerticalAlignmentType;
 
 	/**
 	 * Same as center. An element should be aligned in the middle.
 	 */
-	export const middle: BaseVerticalAlignment;
+	export const middle: VerticalAlignmentType;
 
 	/**
 	 * An element should be bottom aligned.
 	 */
-	export const bottom: BaseVerticalAlignment;
+	export const bottom: VerticalAlignmentType;
 
 	/**
 	 * An element should be stretched to fill all the available size.
 	 */
-	export const stretch: BaseVerticalAlignment;
+	export const stretch: VerticalAlignmentType;
 }
 
 /**
@@ -231,17 +230,17 @@ export module Visibility {
 	/**
 	 * The view is visible.
 	 */
-	export const visible: BaseVisibility;
+	export const visible: VisibilityType;
 
 	/**
 	 * The view is not visible and won't take place in the layout.
 	 */
-	export const collapse: BaseVisibility;
+	export const collapse: VisibilityType;
 
 	/**
 	 * The view is not visible but will take place in the layout.
 	 */
-	export const hidden: BaseVisibility;
+	export const hidden: VisibilityType;
 }
 
 /**
@@ -286,12 +285,12 @@ export module UpdateTextTrigger {
 	/**
 	 * The text property will be udpaded when the widget loses focus.
 	 */
-	export const focusLost: BaseUpdateTrigger;
+	export const focusLost: UpdateTextTriggerType;
 
 	/**
 	 * The text property will be udpaded on every single character typed by the user.
 	 */
-	export const textChanged: BaseUpdateTrigger;
+	export const textChanged: UpdateTextTriggerType;
 }
 
 /**
@@ -341,22 +340,22 @@ export module AutocapitalizationType {
 	/**
 	 * Do not capitalize any text automatically.
 	 */
-	export const none: BaseAutocapitalizationType;
+	export const none: AutocapitalizationInputType;
 
 	/**
 	 * Capitalize the first letter of each word automatically.
 	 */
-	export const words: BaseAutocapitalizationType;
+	export const words: AutocapitalizationInputType;
 
 	/**
 	 * Capitalize the first letter of each sentence automatically.
 	 */
-	export const sentences: BaseAutocapitalizationType;
+	export const sentences: AutocapitalizationInputType;
 
 	/**
 	 * Capitalize all characters automatically.
 	 */
-	export const allCharacters: BaseAutocapitalizationType;
+	export const allCharacters: AutocapitalizationInputType;
 }
 
 /**
@@ -435,12 +434,12 @@ export module FontStyle {
 	/**
 	 * Normal font style.
 	 */
-	export const normal: BaseFontStyle;
+	export const normal: FontStyleType;
 
 	/**
 	 * Italic font style.
 	 */
-	export const italic: BaseFontStyle;
+	export const italic: FontStyleType;
 }
 
 /**
@@ -450,17 +449,17 @@ export module TextDecoration {
 	/**
 	 * No decoration.
 	 */
-	export const none: BaseTextDecoration;
+	export const none: TextDecorationType;
 
 	/**
 	 * Text decoration underline.
 	 */
-	export const underline: BaseTextDecoration;
+	export const underline: TextDecorationType;
 
 	/**
 	 * Text decoration line-through.
 	 */
-	export const lineThrough: BaseTextDecoration;
+	export const lineThrough: TextDecorationType;
 }
 
 /**
@@ -470,22 +469,22 @@ export module TextTransform {
 	/**
 	 * No transform.
 	 */
-	export const none: BaseTextTransform;
+	export const none: TextTransformType;
 
 	/**
 	 * Text transform capitalize.
 	 */
-	export const capitalize: BaseTextTransform;
+	export const capitalize: TextTransformType;
 
 	/**
 	 * Text transform uppercase.
 	 */
-	export const uppercase: BaseTextTransform;
+	export const uppercase: TextTransformType;
 
 	/**
 	 * Text transform lowercase.
 	 */
-	export const lowercase: BaseTextTransform;
+	export const lowercase: TextTransformType;
 }
 
 /**
@@ -495,12 +494,12 @@ export module WhiteSpace {
 	/**
 	 * Normal wrap.
 	 */
-	export const normal: BaseWhiteSpace;
+	export const normal: WhiteSpaceType;
 
 	/**
 	 * No wrap.
 	 */
-	export const nowrap: BaseWhiteSpace;
+	export const nowrap: WhiteSpaceType;
 }
 
 /**
@@ -510,57 +509,57 @@ export module FontWeight {
 	/**
 	 * Thin font weight. CSS font-weight 100.
 	 */
-	export const thin: BaseFontWeight;
+	export const thin: FontWeightType;
 
 	/**
 	 * Extra-light / Ultra-light font weight. CSS font-weight 200.
 	 */
-	export const extraLight: BaseFontWeight;
+	export const extraLight: FontWeightType;
 
 	/**
 	 * Light font weight. CSS font-weight 300.
 	 */
-	export const light: BaseFontWeight;
+	export const light: FontWeightType;
 
 	/**
 	 * Normal font weight. CSS font-weight 400.
 	 */
-	export const normal: BaseFontWeight;
+	export const normal: FontWeightType;
 
 	/**
 	 * Medium font weight. CSS font-weight 500.
 	 */
-	export const medium: BaseFontWeight;
+	export const medium: FontWeightType;
 
 	/**
 	 * Semi-bold / Demi-bold font weight. CSS font-weight 600.
 	 */
-	export const semiBold: BaseFontWeight;
+	export const semiBold: FontWeightType;
 
 	/**
 	 * Bold font weight. CSS font-weight 700.
 	 */
-	export const bold: BaseFontWeight;
+	export const bold: FontWeightType;
 
 	/**
 	 * Extra-bold / Ultra-bold font weight. CSS font-weight 800.
 	 */
-	export const extraBold: BaseFontWeight;
+	export const extraBold: FontWeightType;
 
 	/**
 	 * Black font weight. CSS font-weight 900.
 	 */
-	export const black: BaseFontWeight;
+	export const black: FontWeightType;
 }
 
 /**
  * Specifies background repeat.
  */
 export module BackgroundRepeat {
-	export const repeat: BaseBackgroundRepeat;
-	export const repeatX: BaseBackgroundRepeat;
-	export const repeatY: BaseBackgroundRepeat;
-	export const noRepeat: BaseBackgroundRepeat;
+	export const repeat: BackgroundRepeatType;
+	export const repeatX: BackgroundRepeatType;
+	export const repeatY: BackgroundRepeatType;
+	export const noRepeat: BackgroundRepeatType;
 }
 
 /**
@@ -671,33 +670,48 @@ export module UserInterfaceStyle {
  * Singular rollup for convenience of all enums
  */
 export declare const Enums: {
-	Accuracy: typeof Accuracy;
+  Accuracy: typeof Accuracy;
 	AndroidActionBarIconVisibility: typeof AndroidActionBarIconVisibility;
 	AndroidActionItemPosition: typeof AndroidActionItemPosition;
 	AnimationCurve: typeof AnimationCurve;
 	AutocapitalizationType: typeof AutocapitalizationType;
+  AutocapitalizationInputType: AutocapitalizationInputType;
 	BackgroundRepeat: typeof BackgroundRepeat;
+  BackgroundRepeatType: BackgroundRepeatType;
 	DeviceOrientation: typeof DeviceOrientation;
 	DeviceType: typeof DeviceType;
 	Dock: typeof Dock;
 	FontAttributes: typeof FontAttributes;
 	FontStyle: typeof FontStyle;
+  FontStyleType: FontStyleType;
 	FontWeight: typeof FontWeight;
+  FontWeightType: FontWeightType;
 	HorizontalAlignment: typeof HorizontalAlignment;
+  HorizontalAlignmentType: HorizontalAlignmentType;
 	IOSActionItemPosition: typeof IOSActionItemPosition;
 	ImageFormat: typeof ImageFormat;
 	KeyboardType: typeof KeyboardType;
+  KeyboardInputType: KeyboardInputType;
 	NavigationBarVisibility: typeof NavigationBarVisibility;
-	Orientation: typeof Orientation;
+  Orientation: typeof Orientation;
+  OrientationType: OrientationType;
 	ReturnKeyType: typeof ReturnKeyType;
+	ReturnKeyButtonType: ReturnKeyButtonType;
 	StatusBarStyle: typeof StatusBarStyle;
 	Stretch: typeof Stretch;
 	SystemAppearance: typeof SystemAppearance;
 	TextAlignment: typeof TextAlignment;
+  TextAlignmentType: TextAlignmentType;
 	TextDecoration: typeof TextDecoration;
+  TextDecorationType: TextDecorationType;
 	TextTransform: typeof TextTransform;
+  TextTransformType: TextTransformType;
 	UpdateTextTrigger: typeof UpdateTextTrigger;
+  UpdateTextTriggerType: UpdateTextTriggerType;
 	VerticalAlignment: typeof VerticalAlignment;
+  VerticalAlignmentType: VerticalAlignmentType;
 	Visibility: typeof Visibility;
-	WhiteSpace: typeof WhiteSpace;
+  VisibilityType: VisibilityType;
+  WhiteSpace: typeof WhiteSpace;
+  WhiteSpaceType: WhiteSpaceType;
 };

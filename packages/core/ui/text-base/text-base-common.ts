@@ -9,7 +9,7 @@ import { Span } from './span';
 import { View } from '../core/view';
 import { Property, CssProperty, InheritedCssProperty, makeValidator, makeParser } from '../core/properties';
 import { Style } from '../styling/style';
-import { Length } from '../styling/style-properties';
+import { Length, LengthType } from '../styling/style-properties';
 import { Observable } from '../../data/observable';
 
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from './text-base-interfaces';
@@ -120,38 +120,38 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.whiteSpace = value;
 	}
 
-	get padding(): string | Length {
+	get padding(): string | LengthType {
 		return this.style.padding;
 	}
-	set padding(value: string | Length) {
+	set padding(value: string | LengthType) {
 		this.style.padding = value;
 	}
 
-	get paddingTop(): Length {
+	get paddingTop(): LengthType {
 		return this.style.paddingTop;
 	}
-	set paddingTop(value: Length) {
+	set paddingTop(value: LengthType) {
 		this.style.paddingTop = value;
 	}
 
-	get paddingRight(): Length {
+	get paddingRight(): LengthType {
 		return this.style.paddingRight;
 	}
-	set paddingRight(value: Length) {
+	set paddingRight(value: LengthType) {
 		this.style.paddingRight = value;
 	}
 
-	get paddingBottom(): Length {
+	get paddingBottom(): LengthType {
 		return this.style.paddingBottom;
 	}
-	set paddingBottom(value: Length) {
+	set paddingBottom(value: LengthType) {
 		this.style.paddingBottom = value;
 	}
 
-	get paddingLeft(): Length {
+	get paddingLeft(): LengthType {
 		return this.style.paddingLeft;
 	}
-	set paddingLeft(value: Length) {
+	set paddingLeft(value: LengthType) {
 		this.style.paddingLeft = value;
 	}
 

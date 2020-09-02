@@ -1,4 +1,4 @@
-import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyle, FontWeight } from './font-common';
+import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyle, FontWeight, FontStyleType, FontWeightType } from './font-common';
 import { Trace } from '../../trace';
 import { Device } from '../../platform';
 import * as fs from '../../file-system';
@@ -15,7 +15,7 @@ export class Font extends FontBase {
 
 	private _uiFont: UIFont;
 
-	constructor(family: string, size: number, style: FontStyle, weight: FontWeight) {
+	constructor(family: string, size: number, style: FontStyleType, weight: FontWeightType) {
 		super(family, size, style, weight);
 	}
 
@@ -23,11 +23,11 @@ export class Font extends FontBase {
 		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight);
 	}
 
-	public withFontStyle(style: FontStyle): Font {
+	public withFontStyle(style: FontStyleType): Font {
 		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
 	}
 
-	public withFontWeight(weight: FontWeight): Font {
+	public withFontWeight(weight: FontWeightType): Font {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
 	}
 
@@ -69,7 +69,7 @@ function shouldUseSystemFont(fontFamily: string) {
 	return !fontFamily || fontFamily === genericFontFamilies.sansSerif || fontFamily === genericFontFamilies.system;
 }
 
-function getNativeFontWeight(fontWeight: FontWeight): number {
+function getNativeFontWeight(fontWeight: FontWeightType): number {
 	switch (fontWeight) {
 		case FontWeight.THIN:
 			return UIFontWeightUltraLight;

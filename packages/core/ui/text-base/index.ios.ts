@@ -7,7 +7,7 @@ import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentPrope
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, VerticalAlignment } from '../styling/style-properties';
+import { colorProperty, fontInternalProperty, VerticalAlignment, VerticalAlignmentType } from '../styling/style-properties';
 import { isString, isDefined, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
 
@@ -369,7 +369,7 @@ export class TextBase extends TextBaseCommon {
 		return mas;
 	}
 
-	getBaselineOffset(font: UIFont, align?: VerticalAlignment): number {
+	getBaselineOffset(font: UIFont, align?: VerticalAlignmentType): number {
 		if (!align || ['stretch', 'baseline'].includes(align)) {
 			return 0;
 		}

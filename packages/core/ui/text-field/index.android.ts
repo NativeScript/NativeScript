@@ -1,5 +1,5 @@
 import { TextFieldBase, secureProperty } from './text-field-common';
-import { whiteSpaceProperty, WhiteSpace } from '../text-base';
+import { whiteSpaceProperty, WhiteSpaceType } from '../text-base';
 import { keyboardTypeProperty } from '../editable-text-base';
 
 export * from './text-field-common';
@@ -89,10 +89,10 @@ export class TextField extends TextFieldBase {
 		this._setInputType(inputType);
 	}
 
-	[whiteSpaceProperty.getDefault](): WhiteSpace {
+	[whiteSpaceProperty.getDefault](): WhiteSpaceType {
 		return 'nowrap';
 	}
-	[whiteSpaceProperty.setNative](value: WhiteSpace) {
+	[whiteSpaceProperty.setNative](value: WhiteSpaceType) {
 		// Don't change it otherwise TextField will go to multiline mode.
 	}
 }

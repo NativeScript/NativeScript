@@ -9,7 +9,7 @@ import { AnimationPromise } from '@nativescript/core/ui/animation';
 
 // >> animation-require
 import * as animation from '@nativescript/core/ui/animation';
-import { PercentLength } from '@nativescript/core/ui/styling/style-properties';
+import { PercentLengthType, PercentLength } from '@nativescript/core';
 // << animation-require
 
 function prepareTest(parentHeight?: number, parentWidth?: number): Label {
@@ -418,7 +418,7 @@ export function test_AnimateRotate(done) {
 		});
 }
 
-function animateExtentAndAssertExpected(along: 'height' | 'width', value: PercentLength, pixelExpected: PercentLength): Promise<void> {
+function animateExtentAndAssertExpected(along: 'height' | 'width', value: PercentLengthType, pixelExpected: PercentLengthType): Promise<void> {
 	function pretty(val) {
 		return JSON.stringify(val, null, 2);
 	}
@@ -478,7 +478,7 @@ export function test_AnimateExtent_Should_AcceptStringPixelValues(done) {
 		const expected = {
 			unit: 'px',
 			value: pair[1],
-		} as PercentLength;
+		} as PercentLengthType;
 		promise = promise.then(() => {
 			return animateExtentAndAssertExpected('height', input, expected);
 		});

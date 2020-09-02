@@ -1,5 +1,5 @@
 import { Label as LabelDefinition } from '.';
-import { TextBase, WhiteSpace, whiteSpaceProperty } from '../text-base';
+import { TextBase, WhiteSpaceType, whiteSpaceProperty } from '../text-base';
 import { profile } from '../../profiling';
 import { CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
@@ -40,7 +40,7 @@ export class Label extends TextBase implements LabelDefinition {
 		textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
 	}
 
-	[whiteSpaceProperty.setNative](value: WhiteSpace) {
+	[whiteSpaceProperty.setNative](value: WhiteSpaceType) {
 		// Label initial value is no-wrap. set in initNativeView
 		const newValue = value === 'initial' ? 'nowrap' : value;
 		super[whiteSpaceProperty.setNative](newValue);

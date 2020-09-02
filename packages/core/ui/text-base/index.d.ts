@@ -116,15 +116,15 @@ export interface TextTransformation {
 export const textProperty: Property<TextBase, string>;
 export const formattedTextProperty: Property<TextBase, FormattedString>;
 
-export type WhiteSpace = 'initial' | 'normal' | 'nowrap';
-export type TextAlignment = 'initial' | 'left' | 'center' | 'right';
-export type TextTransform = 'initial' | 'none' | 'capitalize' | 'uppercase' | 'lowercase';
-export type TextDecoration = 'none' | 'underline' | 'line-through' | 'underline line-through';
+export type WhiteSpaceType = 'initial' | 'normal' | 'nowrap';
+export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right';
+export type TextTransformType = 'initial' | 'none' | 'capitalize' | 'uppercase' | 'lowercase';
+export type TextDecorationType = 'none' | 'underline' | 'line-through' | 'underline line-through';
 
-export const textAlignmentProperty: InheritedCssProperty<Style, TextAlignment>;
-export const textDecorationProperty: CssProperty<Style, TextDecoration>;
-export const textTransformProperty: CssProperty<Style, TextTransform>;
-export const whiteSpaceProperty: CssProperty<Style, WhiteSpace>;
+export const textAlignmentProperty: InheritedCssProperty<Style, TextAlignmentType>;
+export const textDecorationProperty: CssProperty<Style, TextDecorationType>;
+export const textTransformProperty: CssProperty<Style, TextTransformType>;
+export const whiteSpaceProperty: CssProperty<Style, WhiteSpaceType>;
 export const letterSpacingProperty: CssProperty<Style, number>;
 export const lineHeightProperty: CssProperty<Style, number>;
 

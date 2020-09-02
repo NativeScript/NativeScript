@@ -22,12 +22,12 @@ export type LengthDipUnit = { readonly unit: 'dip'; readonly value: dip };
 export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
 export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
 
-export type Length = 'auto' | dip | LengthDipUnit | LengthPxUnit;
-export type PercentLength = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
+export type LengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit;
+export type PercentLengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
 
-function equalsCommon(a: Length, b: Length): boolean;
-function equalsCommon(a: PercentLength, b: PercentLength): boolean;
-function equalsCommon(a: PercentLength, b: PercentLength): boolean {
+function equalsCommon(a: LengthType, b: LengthType): boolean;
+function equalsCommon(a: PercentLengthType, b: PercentLengthType): boolean;
+function equalsCommon(a: PercentLengthType, b: PercentLengthType): boolean {
 	if (a == 'auto') {
 		// tslint:disable-line
 		return b == 'auto'; // tslint:disable-line
@@ -58,7 +58,7 @@ function equalsCommon(a: PercentLength, b: PercentLength): boolean {
 	return a.value == b.value && a.unit == b.unit; // tslint:disable-line
 }
 
-function convertToStringCommon(length: Length | PercentLength): string {
+function convertToStringCommon(length: LengthType | PercentLengthType): string {
 	if (length == 'auto') {
 		// tslint:disable-line
 		return 'auto';
@@ -76,7 +76,7 @@ function convertToStringCommon(length: Length | PercentLength): string {
 	return val + length.unit;
 }
 
-function toDevicePixelsCommon(length: PercentLength, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
+function toDevicePixelsCommon(length: PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
 	if (length == 'auto') {
 		// tslint:disable-line
 		return auto;
@@ -99,7 +99,7 @@ function toDevicePixelsCommon(length: PercentLength, auto: number = Number.NaN, 
 }
 
 export namespace PercentLength {
-	export function parse(fromValue: string | Length): PercentLength {
+	export function parse(fromValue: string | LengthType): PercentLengthType {
 		if (fromValue == 'auto') {
 			// tslint:disable-line
 			return 'auto';
@@ -144,18 +144,18 @@ export namespace PercentLength {
 	}
 
 	export const equals: {
-		(a: PercentLength, b: PercentLength): boolean;
+		(a: PercentLengthType, b: PercentLengthType): boolean;
 	} = equalsCommon;
 	export const toDevicePixels: {
-		(length: PercentLength, auto: number, parentAvailableWidth: number): number;
+		(length: PercentLengthType, auto: number, parentAvailableWidth: number): number;
 	} = toDevicePixelsCommon;
 	export const convertToString: {
-		(length: PercentLength): string;
+		(length: PercentLengthType): string;
 	} = convertToStringCommon;
 }
 
 export namespace Length {
-	export function parse(fromValue: string | Length): Length {
+	export function parse(fromValue: string | LengthType): LengthType {
 		if (fromValue == 'auto') {
 			// tslint:disable-line
 			return 'auto';
@@ -182,18 +182,18 @@ export namespace Length {
 			return fromValue;
 		}
 	}
-	export const equals: { (a: Length, b: Length): boolean } = equalsCommon;
+	export const equals: { (a: LengthType, b: LengthType): boolean } = equalsCommon;
 	export const toDevicePixels: {
-		(length: Length, auto?: number): number;
+		(length: LengthType, auto?: number): number;
 	} = toDevicePixelsCommon;
 	export const convertToString: {
-		(length: Length): string;
+		(length: LengthType): string;
 	} = convertToStringCommon;
 }
 
-export const zeroLength: Length = { value: 0, unit: 'px' };
+export const zeroLength: LengthType = { value: 0, unit: 'px' };
 
-export const minWidthProperty = new CssProperty<Style, Length>({
+export const minWidthProperty = new CssProperty<Style, LengthType>({
 	name: 'minWidth',
 	cssName: 'min-width',
 	defaultValue: zeroLength,
@@ -211,7 +211,7 @@ export const minWidthProperty = new CssProperty<Style, Length>({
 });
 minWidthProperty.register(Style);
 
-export const minHeightProperty = new CssProperty<Style, Length>({
+export const minHeightProperty = new CssProperty<Style, LengthType>({
 	name: 'minHeight',
 	cssName: 'min-height',
 	defaultValue: zeroLength,
@@ -229,7 +229,7 @@ export const minHeightProperty = new CssProperty<Style, Length>({
 });
 minHeightProperty.register(Style);
 
-export const widthProperty = new CssAnimationProperty<Style, PercentLength>({
+export const widthProperty = new CssAnimationProperty<Style, PercentLengthType>({
 	name: 'width',
 	cssName: 'width',
 	defaultValue: 'auto',
@@ -248,7 +248,7 @@ export const widthProperty = new CssAnimationProperty<Style, PercentLength>({
 });
 widthProperty.register(Style);
 
-export const heightProperty = new CssAnimationProperty<Style, PercentLength>({
+export const heightProperty = new CssAnimationProperty<Style, PercentLengthType>({
 	name: 'height',
 	cssName: 'height',
 	defaultValue: 'auto',
@@ -267,7 +267,7 @@ export const heightProperty = new CssAnimationProperty<Style, PercentLength>({
 });
 heightProperty.register(Style);
 
-const marginProperty = new ShorthandProperty<Style, string | PercentLength>({
+const marginProperty = new ShorthandProperty<Style, string | PercentLengthType>({
 	name: 'margin',
 	cssName: 'margin',
 	getter: function (this: Style) {
@@ -281,7 +281,7 @@ const marginProperty = new ShorthandProperty<Style, string | PercentLength>({
 });
 marginProperty.register(Style);
 
-export const marginLeftProperty = new CssProperty<Style, PercentLength>({
+export const marginLeftProperty = new CssProperty<Style, PercentLengthType>({
 	name: 'marginLeft',
 	cssName: 'margin-left',
 	defaultValue: zeroLength,
@@ -291,7 +291,7 @@ export const marginLeftProperty = new CssProperty<Style, PercentLength>({
 });
 marginLeftProperty.register(Style);
 
-export const marginRightProperty = new CssProperty<Style, PercentLength>({
+export const marginRightProperty = new CssProperty<Style, PercentLengthType>({
 	name: 'marginRight',
 	cssName: 'margin-right',
 	defaultValue: zeroLength,
@@ -301,7 +301,7 @@ export const marginRightProperty = new CssProperty<Style, PercentLength>({
 });
 marginRightProperty.register(Style);
 
-export const marginTopProperty = new CssProperty<Style, PercentLength>({
+export const marginTopProperty = new CssProperty<Style, PercentLengthType>({
 	name: 'marginTop',
 	cssName: 'margin-top',
 	defaultValue: zeroLength,
@@ -311,7 +311,7 @@ export const marginTopProperty = new CssProperty<Style, PercentLength>({
 });
 marginTopProperty.register(Style);
 
-export const marginBottomProperty = new CssProperty<Style, PercentLength>({
+export const marginBottomProperty = new CssProperty<Style, PercentLengthType>({
 	name: 'marginBottom',
 	cssName: 'margin-bottom',
 	defaultValue: zeroLength,
@@ -321,7 +321,7 @@ export const marginBottomProperty = new CssProperty<Style, PercentLength>({
 });
 marginBottomProperty.register(Style);
 
-const paddingProperty = new ShorthandProperty<Style, string | Length>({
+const paddingProperty = new ShorthandProperty<Style, string | LengthType>({
 	name: 'padding',
 	cssName: 'padding',
 	getter: function (this: Style) {
@@ -335,7 +335,7 @@ const paddingProperty = new ShorthandProperty<Style, string | Length>({
 });
 paddingProperty.register(Style);
 
-export const paddingLeftProperty = new CssProperty<Style, Length>({
+export const paddingLeftProperty = new CssProperty<Style, LengthType>({
 	name: 'paddingLeft',
 	cssName: 'padding-left',
 	defaultValue: zeroLength,
@@ -353,7 +353,7 @@ export const paddingLeftProperty = new CssProperty<Style, Length>({
 });
 paddingLeftProperty.register(Style);
 
-export const paddingRightProperty = new CssProperty<Style, Length>({
+export const paddingRightProperty = new CssProperty<Style, LengthType>({
 	name: 'paddingRight',
 	cssName: 'padding-right',
 	defaultValue: zeroLength,
@@ -371,7 +371,7 @@ export const paddingRightProperty = new CssProperty<Style, Length>({
 });
 paddingRightProperty.register(Style);
 
-export const paddingTopProperty = new CssProperty<Style, Length>({
+export const paddingTopProperty = new CssProperty<Style, LengthType>({
 	name: 'paddingTop',
 	cssName: 'padding-top',
 	defaultValue: zeroLength,
@@ -389,7 +389,7 @@ export const paddingTopProperty = new CssProperty<Style, Length>({
 });
 paddingTopProperty.register(Style);
 
-export const paddingBottomProperty = new CssProperty<Style, Length>({
+export const paddingBottomProperty = new CssProperty<Style, LengthType>({
 	name: 'paddingBottom',
 	cssName: 'padding-bottom',
 	defaultValue: zeroLength,
@@ -407,17 +407,17 @@ export const paddingBottomProperty = new CssProperty<Style, Length>({
 });
 paddingBottomProperty.register(Style);
 
-export type HorizontalAlignment = 'left' | 'center' | 'right' | 'stretch';
+export type HorizontalAlignmentType = 'left' | 'center' | 'right' | 'stretch';
 export namespace HorizontalAlignment {
 	export const LEFT = 'left';
 	export const CENTER = 'center';
 	export const RIGHT = 'right';
 	export const STRETCH = 'stretch';
-	export const isValid = makeValidator<HorizontalAlignment>(LEFT, CENTER, RIGHT, STRETCH);
-	export const parse = makeParser<HorizontalAlignment>(isValid);
+	export const isValid = makeValidator<HorizontalAlignmentType>(LEFT, CENTER, RIGHT, STRETCH);
+	export const parse = makeParser<HorizontalAlignmentType>(isValid);
 }
 
-export const horizontalAlignmentProperty = new CssProperty<Style, HorizontalAlignment>({
+export const horizontalAlignmentProperty = new CssProperty<Style, HorizontalAlignmentType>({
 	name: 'horizontalAlignment',
 	cssName: 'horizontal-align',
 	defaultValue: HorizontalAlignment.STRETCH,
@@ -426,7 +426,7 @@ export const horizontalAlignmentProperty = new CssProperty<Style, HorizontalAlig
 });
 horizontalAlignmentProperty.register(Style);
 
-export type VerticalAlignment = 'top' | 'middle' | 'bottom' | 'stretch' | 'text-top' | 'text-bottom' | 'super' | 'sub' | 'baseline';
+export type VerticalAlignmentType = 'top' | 'middle' | 'bottom' | 'stretch' | 'text-top' | 'text-bottom' | 'super' | 'sub' | 'baseline';
 export namespace VerticalAlignment {
 	export const TOP = 'top';
 	export const MIDDLE = 'middle';
@@ -437,12 +437,12 @@ export namespace VerticalAlignment {
 	export const SUPER = 'super';
 	export const SUB = 'sub';
 	export const BASELINE = 'baseline';
-	export const isValid = makeValidator<VerticalAlignment>(TOP, MIDDLE, BOTTOM, STRETCH, TEXTTOP, TEXTBOTTOM, SUPER, SUB, BASELINE);
+	export const isValid = makeValidator<VerticalAlignmentType>(TOP, MIDDLE, BOTTOM, STRETCH, TEXTTOP, TEXTBOTTOM, SUPER, SUB, BASELINE);
 	export const parse = (value: string) => (value.toLowerCase() === 'center' ? MIDDLE : parseStrict(value));
-	const parseStrict = makeParser<VerticalAlignment>(isValid);
+	const parseStrict = makeParser<VerticalAlignmentType>(isValid);
 }
 
-export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignment>({
+export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignmentType>({
 	name: 'verticalAlignment',
 	cssName: 'vertical-align',
 	defaultValue: VerticalAlignment.STRETCH,
@@ -502,7 +502,7 @@ function parseThickness(value: string): Thickness {
 	}
 }
 
-function convertToMargins(this: void, value: string | PercentLength): [CssProperty<any, any>, any][] {
+function convertToMargins(this: void, value: string | PercentLengthType): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
 		const thickness = parseThickness(value);
 
@@ -522,7 +522,7 @@ function convertToMargins(this: void, value: string | PercentLength): [CssProper
 	}
 }
 
-function convertToPaddings(this: void, value: string | Length): [CssProperty<any, any>, any][] {
+function convertToPaddings(this: void, value: string | LengthType): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
 		const thickness = parseThickness(value);
 
@@ -837,17 +837,17 @@ export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 });
 backgroundColorProperty.register(Style);
 
-export type BackgroundRepeat = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
+export type BackgroundRepeatType = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
 export namespace BackgroundRepeat {
 	export const REPEAT = 'repeat';
 	export const REPEAT_X = 'repeat-x';
 	export const REPEAT_Y = 'repeat-y';
 	export const NO_REPEAT = 'no-repeat';
-	export const isValid = makeValidator<BackgroundRepeat>(REPEAT, REPEAT_X, REPEAT_Y, NO_REPEAT);
-	export const parse = makeParser<BackgroundRepeat>(isValid);
+	export const isValid = makeValidator<BackgroundRepeatType>(REPEAT, REPEAT_X, REPEAT_Y, NO_REPEAT);
+	export const parse = makeParser<BackgroundRepeatType>(isValid);
 }
 
-export const backgroundRepeatProperty = new CssProperty<Style, BackgroundRepeat>({
+export const backgroundRepeatProperty = new CssProperty<Style, BackgroundRepeatType>({
 	name: 'backgroundRepeat',
 	cssName: 'background-repeat',
 	valueConverter: BackgroundRepeat.parse,
@@ -1042,7 +1042,7 @@ export const borderLeftColorProperty = new CssProperty<Style, Color>({
 borderLeftColorProperty.register(Style);
 
 // Border Width properties.
-const borderWidthProperty = new ShorthandProperty<Style, string | Length>({
+const borderWidthProperty = new ShorthandProperty<Style, string | LengthType>({
 	name: 'borderWidth',
 	cssName: 'border-width',
 	getter: function (this: Style) {
@@ -1074,7 +1074,7 @@ const borderWidthProperty = new ShorthandProperty<Style, string | Length>({
 });
 borderWidthProperty.register(Style);
 
-export const borderTopWidthProperty = new CssProperty<Style, Length>({
+export const borderTopWidthProperty = new CssProperty<Style, LengthType>({
 	name: 'borderTopWidth',
 	cssName: 'border-top-width',
 	defaultValue: zeroLength,
@@ -1099,7 +1099,7 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
 });
 borderTopWidthProperty.register(Style);
 
-export const borderRightWidthProperty = new CssProperty<Style, Length>({
+export const borderRightWidthProperty = new CssProperty<Style, LengthType>({
 	name: 'borderRightWidth',
 	cssName: 'border-right-width',
 	defaultValue: zeroLength,
@@ -1124,7 +1124,7 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
 });
 borderRightWidthProperty.register(Style);
 
-export const borderBottomWidthProperty = new CssProperty<Style, Length>({
+export const borderBottomWidthProperty = new CssProperty<Style, LengthType>({
 	name: 'borderBottomWidth',
 	cssName: 'border-bottom-width',
 	defaultValue: zeroLength,
@@ -1149,7 +1149,7 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
 });
 borderBottomWidthProperty.register(Style);
 
-export const borderLeftWidthProperty = new CssProperty<Style, Length>({
+export const borderLeftWidthProperty = new CssProperty<Style, LengthType>({
 	name: 'borderLeftWidth',
 	cssName: 'border-left-width',
 	defaultValue: zeroLength,
@@ -1175,7 +1175,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
 borderLeftWidthProperty.register(Style);
 
 // Border Radius properties.
-const borderRadiusProperty = new ShorthandProperty<Style, string | Length>({
+const borderRadiusProperty = new ShorthandProperty<Style, string | LengthType>({
 	name: 'borderRadius',
 	cssName: 'border-radius',
 	getter: function (this: Style) {
@@ -1207,7 +1207,7 @@ const borderRadiusProperty = new ShorthandProperty<Style, string | Length>({
 });
 borderRadiusProperty.register(Style);
 
-export const borderTopLeftRadiusProperty = new CssProperty<Style, Length>({
+export const borderTopLeftRadiusProperty = new CssProperty<Style, LengthType>({
 	name: 'borderTopLeftRadius',
 	cssName: 'border-top-left-radius',
 	defaultValue: 0,
@@ -1224,7 +1224,7 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, Length>({
 });
 borderTopLeftRadiusProperty.register(Style);
 
-export const borderTopRightRadiusProperty = new CssProperty<Style, Length>({
+export const borderTopRightRadiusProperty = new CssProperty<Style, LengthType>({
 	name: 'borderTopRightRadius',
 	cssName: 'border-top-right-radius',
 	defaultValue: 0,
@@ -1241,7 +1241,7 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, Length>({
 });
 borderTopRightRadiusProperty.register(Style);
 
-export const borderBottomRightRadiusProperty = new CssProperty<Style, Length>({
+export const borderBottomRightRadiusProperty = new CssProperty<Style, LengthType>({
 	name: 'borderBottomRightRadius',
 	cssName: 'border-bottom-right-radius',
 	defaultValue: 0,
@@ -1258,7 +1258,7 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, Length>({
 });
 borderBottomRightRadiusProperty.register(Style);
 
-export const borderBottomLeftRadiusProperty = new CssProperty<Style, Length>({
+export const borderBottomLeftRadiusProperty = new CssProperty<Style, LengthType>({
 	name: 'borderBottomLeftRadius',
 	cssName: 'border-bottom-left-radius',
 	defaultValue: 0,
@@ -1443,17 +1443,17 @@ const fontProperty = new ShorthandProperty<Style, string>({
 });
 fontProperty.register(Style);
 
-export type Visibility = 'visible' | 'hidden' | 'collapse';
+export type VisibilityType = 'visible' | 'hidden' | 'collapse';
 export namespace Visibility {
 	export const VISIBLE = 'visible';
 	export const HIDDEN = 'hidden';
 	export const COLLAPSE = 'collapse';
-	export const isValid = makeValidator<Visibility>(VISIBLE, HIDDEN, COLLAPSE);
+	export const isValid = makeValidator<VisibilityType>(VISIBLE, HIDDEN, COLLAPSE);
 	export const parse = (value: string) => (value.toLowerCase() === 'collapsed' ? COLLAPSE : parseStrict(value));
-	const parseStrict = makeParser<Visibility>(isValid);
+	const parseStrict = makeParser<VisibilityType>(isValid);
 }
 
-export const visibilityProperty = new CssProperty<Style, Visibility>({
+export const visibilityProperty = new CssProperty<Style, VisibilityType>({
 	name: 'visibility',
 	cssName: 'visibility',
 	defaultValue: Visibility.VISIBLE,

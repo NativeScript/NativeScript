@@ -1,5 +1,5 @@
 import { ActivityIndicatorBase, busyProperty } from './activity-indicator-common';
-import { colorProperty, visibilityProperty, Visibility } from '../styling/style-properties';
+import { colorProperty, visibilityProperty, Visibility, VisibilityType } from '../styling/style-properties';
 import { Color } from '../../color';
 
 export * from './activity-indicator-common';
@@ -24,10 +24,10 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		}
 	}
 
-	[visibilityProperty.getDefault](): Visibility {
+	[visibilityProperty.getDefault](): VisibilityType {
 		return Visibility.HIDDEN;
 	}
-	[visibilityProperty.setNative](value: Visibility) {
+	[visibilityProperty.setNative](value: VisibilityType) {
 		switch (value) {
 			case Visibility.VISIBLE:
 				this.nativeViewProtected.setVisibility(this.busy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);

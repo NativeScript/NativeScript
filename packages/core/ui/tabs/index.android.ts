@@ -2,7 +2,7 @@
 import { TabContentItem } from '../tab-navigation-base/tab-content-item';
 import { TabStrip } from '../tab-navigation-base/tab-strip';
 import { TabStripItem } from '../tab-navigation-base/tab-strip-item';
-import { TextTransform } from '../text-base';
+import { TextTransformType } from '../text-base';
 
 // Requires
 import * as application from '../../application';
@@ -379,7 +379,7 @@ export class Tabs extends TabsBase {
 	private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
 	private _androidViewId = -1;
 	public _originalBackground: any;
-	private _textTransform: TextTransform = 'uppercase';
+	private _textTransform: TextTransformType = 'uppercase';
 	private _selectedItemColor: Color;
 	private _unSelectedItemColor: Color;
 	public animationEnabled: boolean;
@@ -649,9 +649,9 @@ export class Tabs extends TabsBase {
 		});
 	}
 
-	private getItemLabelTextTransform(tabStripItem: TabStripItem): TextTransform {
+	private getItemLabelTextTransform(tabStripItem: TabStripItem): TextTransformType {
 		const nestedLabel = tabStripItem.label;
-		let textTransform: TextTransform = null;
+		let textTransform: TextTransformType = null;
 		if (nestedLabel && nestedLabel.style.textTransform !== 'initial') {
 			textTransform = nestedLabel.style.textTransform;
 		} else if (tabStripItem.style.textTransform !== 'initial') {
@@ -923,21 +923,21 @@ export class Tabs extends TabsBase {
 		tabStripItem.nativeViewProtected.setTypeface(value.getAndroidTypeface());
 	}
 
-	public getTabBarItemTextTransform(tabStripItem: TabStripItem): TextTransform {
+	public getTabBarItemTextTransform(tabStripItem: TabStripItem): TextTransformType {
 		return this.getItemLabelTextTransform(tabStripItem);
 	}
 
-	public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransform): void {
+	public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransformType): void {
 		const nestedLabel = tabStripItem.label;
 		const title = getTransformedText(nestedLabel.text, value);
 		tabStripItem.nativeViewProtected.setText(title);
 	}
 
-	public getTabBarTextTransform(): TextTransform {
+	public getTabBarTextTransform(): TextTransformType {
 		return this._textTransform;
 	}
 
-	public setTabBarTextTransform(value: TextTransform): void {
+	public setTabBarTextTransform(value: TextTransformType): void {
 		const items = this.tabStrip && this.tabStrip.items;
 		if (items) {
 			items.forEach((tabStripItem) => {

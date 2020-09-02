@@ -2,7 +2,7 @@
 import { TabContentItem } from '../tab-navigation-base/tab-content-item';
 import { TabStrip } from '../tab-navigation-base/tab-strip';
 import { TabStripItem } from '../tab-navigation-base/tab-strip-item';
-import { TextTransform } from '../text-base';
+import { TextTransformType } from '../text-base';
 
 // Requires
 import { Color } from '../../color';
@@ -1020,7 +1020,7 @@ export class Tabs extends TabsBase {
 		this._ios.tabBar.selectedItemTitleFont = font;
 	}
 
-	public getTabBarTextTransform(): TextTransform {
+	public getTabBarTextTransform(): TextTransformType {
 		switch (this._ios.tabBar.titleTextTransform) {
 			case MDCTabBarTextTransform.None:
 				return 'none';
@@ -1032,7 +1032,7 @@ export class Tabs extends TabsBase {
 		}
 	}
 
-	public setTabBarTextTransform(value: TextTransform): void {
+	public setTabBarTextTransform(value: TextTransformType): void {
 		if (value === 'none') {
 			this._ios.tabBar.titleTextTransform = MDCTabBarTextTransform.None;
 		} else if (value === 'uppercase') {

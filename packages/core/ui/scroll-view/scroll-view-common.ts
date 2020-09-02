@@ -1,17 +1,18 @@
-﻿import { ScrollView as ScrollViewDefinition, Orientation, ScrollEventData } from '.';
+﻿import { ScrollView as ScrollViewDefinition, ScrollEventData } from '.';
 import { ContentView } from '../content-view';
 import { profile } from '../../profiling';
 import { Property, makeParser, makeValidator } from '../core/properties';
 import { CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { EventData } from '../../data/observable';
+import { OrientationType } from '../enums';
 
 @CSSType('ScrollView')
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
 	private _scrollChangeCount = 0;
 	public static scrollEvent = 'scroll';
 
-	public orientation: Orientation;
+	public orientation: OrientationType;
 	public scrollBarIndicatorVisible: boolean;
 	public isScrollEnabled: boolean;
 
@@ -91,12 +92,12 @@ export interface ScrollViewBase {
 	on(event: 'scroll', callback: (args: ScrollEventData) => void, thisArg?: any);
 }
 
-const converter = makeParser<Orientation>(makeValidator('horizontal', 'vertical'));
-export const orientationProperty = new Property<ScrollViewBase, Orientation>({
+const converter = makeParser<OrientationType>(makeValidator('horizontal', 'vertical'));
+export const orientationProperty = new Property<ScrollViewBase, OrientationType>({
 	name: 'orientation',
 	defaultValue: 'vertical',
 	affectsLayout: true,
-	valueChanged: (target: ScrollViewBase, oldValue: Orientation, newValue: Orientation) => {
+	valueChanged: (target: ScrollViewBase, oldValue: OrientationType, newValue: OrientationType) => {
 		target._onOrientationChanged();
 	},
 	valueConverter: converter,

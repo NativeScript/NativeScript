@@ -1,7 +1,7 @@
 // imported for definition purposes only
 import * as animationModule from '../../ui/animation';
 
-export type KeyboardType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
+export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
 export namespace KeyboardType {
 	export const datetime = 'datetime';
 	export const phone = 'phone';
@@ -19,10 +19,10 @@ export namespace ReturnKeyType {
 	export const send = 'send';
 }
 
-export class TextAlignment {
-	static left = 'left';
-	static center = 'center';
-	static right = 'right';
+export module TextAlignment {
+	export const left = 'left';
+	export const center = 'center';
+	export const right = 'right';
 }
 
 export namespace TextDecoration {
@@ -43,6 +43,7 @@ export namespace WhiteSpace {
 	export const nowrap = 'nowrap';
 }
 
+export type OrientationType = 'horizontal' | 'vertical';
 export namespace Orientation {
 	export const horizontal = 'horizontal';
 	export const vertical = 'vertical';
@@ -201,29 +202,43 @@ export const Enums = {
 	AndroidActionBarIconVisibility,
 	AndroidActionItemPosition,
 	AnimationCurve,
-	AutocapitalizationType,
-	BackgroundRepeat,
+  AutocapitalizationType,
+  AutocapitalizationInputType: typeof AutocapitalizationType,
+  BackgroundRepeat,
+  BackgroundRepeatType: typeof BackgroundRepeat,
 	DeviceOrientation,
 	DeviceType,
 	Dock,
 	FontAttributes,
-	FontStyle,
-	FontWeight,
-	HorizontalAlignment,
+  FontStyle,
+  FontStyleType: typeof FontStyle,
+  FontWeight,
+  FontWeightType: typeof FontWeight,
+  HorizontalAlignment,
+  HorizontalAlignmentType: typeof HorizontalAlignment,
 	IOSActionItemPosition,
 	ImageFormat,
-	KeyboardType,
+  KeyboardType,
+  KeyboardInputType: typeof KeyboardType,
 	NavigationBarVisibility,
-	Orientation,
+  Orientation,
+  OrientationType: typeof Orientation,
 	ReturnKeyType,
 	StatusBarStyle,
 	Stretch,
-	SystemAppearance,
-	TextAlignment,
-	TextDecoration,
-	TextTransform,
-	UpdateTextTrigger,
-	VerticalAlignment,
-	Visibility,
-	WhiteSpace,
+  SystemAppearance,
+  TextAlignment,
+  TextAlignmentType: typeof TextAlignment,
+  TextDecoration,
+  TextDecorationType: typeof TextDecoration,
+  TextTransform,
+  TextTransformType: typeof TextTransform,
+  UpdateTextTrigger,
+  UpdateTextTriggerType: typeof UpdateTextTrigger,
+  VerticalAlignment,
+  VerticalAlignmentType: typeof VerticalAlignment,
+  Visibility,
+  VisibilityType: typeof Visibility,
+  WhiteSpace,
+  WhiteSpaceType: typeof WhiteSpace
 };

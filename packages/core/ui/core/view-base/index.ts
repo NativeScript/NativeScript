@@ -10,7 +10,7 @@ import { Binding, BindingOptions } from '../bindable';
 import { Trace } from '../../../trace';
 import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
-import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
+import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, LengthType } from '../../styling/style-properties';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
@@ -252,8 +252,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _automaticallyAdjustsScrollViewInsets: boolean;
 
 	// Dynamic properties.
-	left: Length;
-	top: Length;
+	left: LengthType;
+	top: LengthType;
 	effectiveLeft: number;
 	effectiveTop: number;
 	dock: 'left' | 'top' | 'right' | 'bottom';

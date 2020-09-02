@@ -6,7 +6,7 @@ import { ImageSource } from '../../image-source';
 import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from '../../utils';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
-import { Length } from '../styling/style-properties';
+import { Length, LengthType } from '../styling/style-properties';
 import { Property, InheritedCssProperty } from '../core/properties';
 import { Trace } from '../../trace';
 
@@ -17,8 +17,8 @@ export abstract class ImageBase extends View implements ImageDefinition {
 	public isLoading: boolean;
 	public stretch: Stretch;
 	public loadMode: 'sync' | 'async';
-	public decodeWidth: Length;
-	public decodeHeight: Length;
+	public decodeWidth: LengthType;
+	public decodeHeight: LengthType;
 
 	get tintColor(): Color {
 		return this.style.tintColor;
@@ -158,14 +158,14 @@ export const tintColorProperty = new InheritedCssProperty<Style, Color>({
 });
 tintColorProperty.register(Style);
 
-export const decodeHeightProperty = new Property<ImageBase, Length>({
+export const decodeHeightProperty = new Property<ImageBase, LengthType>({
 	name: 'decodeHeight',
 	defaultValue: { value: 0, unit: 'dip' },
 	valueConverter: Length.parse,
 });
 decodeHeightProperty.register(ImageBase);
 
-export const decodeWidthProperty = new Property<ImageBase, Length>({
+export const decodeWidthProperty = new Property<ImageBase, LengthType>({
 	name: 'decodeWidth',
 	defaultValue: { value: 0, unit: 'dip' },
 	valueConverter: Length.parse,

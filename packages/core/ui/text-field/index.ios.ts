@@ -2,13 +2,13 @@ import { TextFieldBase, secureProperty } from './text-field-common';
 import { textProperty } from '../text-base';
 import { hintProperty, placeholderColorProperty, _updateCharactersInRangeReplacementString } from '../editable-text-base';
 import { Color } from '../../color';
-import { colorProperty, Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
+import { colorProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, LengthType } from '../styling/style-properties';
 import { layout } from '../../utils';
 import { profile } from '../../profiling';
 
 export * from './text-field-common';
 
-const zeroLength: Length = {
+const zeroLength: LengthType = {
 	value: 0,
 	unit: 'px',
 };
@@ -281,31 +281,31 @@ export class TextField extends TextFieldBase {
 		this.nativeTextViewProtected.attributedPlaceholder = attributedPlaceholder;
 	}
 
-	[paddingTopProperty.getDefault](): Length {
+	[paddingTopProperty.getDefault](): LengthType {
 		return zeroLength;
 	}
-	[paddingTopProperty.setNative](value: Length) {
+	[paddingTopProperty.setNative](value: LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
-	[paddingRightProperty.getDefault](): Length {
+	[paddingRightProperty.getDefault](): LengthType {
 		return zeroLength;
 	}
-	[paddingRightProperty.setNative](value: Length) {
+	[paddingRightProperty.setNative](value: LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
-	[paddingBottomProperty.getDefault](): Length {
+	[paddingBottomProperty.getDefault](): LengthType {
 		return zeroLength;
 	}
-	[paddingBottomProperty.setNative](value: Length) {
+	[paddingBottomProperty.setNative](value: LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
-	[paddingLeftProperty.getDefault](): Length {
+	[paddingLeftProperty.getDefault](): LengthType {
 		return zeroLength;
 	}
-	[paddingLeftProperty.setNative](value: Length) {
+	[paddingLeftProperty.setNative](value: LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 }

@@ -8,7 +8,7 @@ import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
-import { perspectiveProperty, Visibility, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
+import { perspectiveProperty, Visibility, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty, VisibilityType } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 
 export * from './view-common';
@@ -564,10 +564,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.nativeViewProtected.userInteractionEnabled = value;
 	}
 
-	[visibilityProperty.getDefault](): Visibility {
+	[visibilityProperty.getDefault](): VisibilityType {
 		return this.nativeViewProtected.hidden ? Visibility.COLLAPSE : Visibility.VISIBLE;
 	}
-	[visibilityProperty.setNative](value: Visibility) {
+	[visibilityProperty.setNative](value: VisibilityType) {
 		switch (value) {
 			case Visibility.VISIBLE:
 				this.nativeViewProtected.hidden = false;

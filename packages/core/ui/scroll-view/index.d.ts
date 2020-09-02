@@ -81,6 +81,4 @@ export interface ScrollEventData extends EventData {
 	scrollY: number;
 }
 
-export type Orientation = 'horizontal' | 'vertical';
-
 export const orientationProperty: Property<ScrollView, Orientation>;

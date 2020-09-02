@@ -3,7 +3,7 @@ import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from '.';
 import { GestureTypes, GestureEventData } from '../../gestures';
 // Types.
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, VisibilityType, HorizontalAlignmentType, VerticalAlignmentType, LengthType, PercentLengthType } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions } from '../view-base';
@@ -738,7 +738,7 @@ export class View extends ViewCommon {
 		this.nativeViewProtected.setFocusable(value);
 	}
 
-	[visibilityProperty.getDefault](): Visibility {
+	[visibilityProperty.getDefault](): VisibilityType {
 		const nativeVisibility = this.nativeViewProtected.getVisibility();
 		switch (nativeVisibility) {
 			case android.view.View.VISIBLE:
@@ -751,7 +751,7 @@ export class View extends ViewCommon {
 				throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
 		}
 	}
-	[visibilityProperty.setNative](value: Visibility) {
+	[visibilityProperty.setNative](value: VisibilityType) {
 		switch (value) {
 			case 'visible':
 				this.nativeViewProtected.setVisibility(android.view.View.VISIBLE);
@@ -854,10 +854,10 @@ export class View extends ViewCommon {
 		nativeView.setStateListAnimator(stateListAnimator);
 	}
 
-	[horizontalAlignmentProperty.getDefault](): HorizontalAlignment {
-		return <HorizontalAlignment>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
+	[horizontalAlignmentProperty.getDefault](): HorizontalAlignmentType {
+		return <HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
 	}
-	[horizontalAlignmentProperty.setNative](value: HorizontalAlignment) {
+	[horizontalAlignmentProperty.setNative](value: HorizontalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		// Set only if params gravity exists.
@@ -892,10 +892,10 @@ export class View extends ViewCommon {
 		}
 	}
 
-	[verticalAlignmentProperty.getDefault](): VerticalAlignment {
-		return <VerticalAlignment>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
+	[verticalAlignmentProperty.getDefault](): VerticalAlignmentType {
+		return <VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
 	}
-	[verticalAlignmentProperty.setNative](value: VerticalAlignment) {
+	[verticalAlignmentProperty.setNative](value: VerticalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		// Set only if params gravity exists.
@@ -991,7 +991,7 @@ export class View extends ViewCommon {
 		this._redrawNativeBackground(value);
 	}
 
-	[minWidthProperty.setNative](value: Length) {
+	[minWidthProperty.setNative](value: LengthType) {
 		if (this.parent instanceof CustomLayoutView && this.parent.nativeViewProtected) {
 			this.parent._setChildMinWidthNative(this, value);
 		} else {
@@ -999,7 +999,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	[minHeightProperty.setNative](value: Length) {
+	[minHeightProperty.setNative](value: LengthType) {
 		if (this.parent instanceof CustomLayoutView && this.parent.nativeViewProtected) {
 			this.parent._setChildMinHeightNative(this, value);
 		} else {
@@ -1064,11 +1064,11 @@ export class CustomLayoutView extends ContainerView implements CustomLayoutViewD
 		// noop
 	}
 
-	public _setChildMinWidthNative(child: View, value: Length): void {
+	public _setChildMinWidthNative(child: View, value: LengthType): void {
 		child._setMinWidthNative(value);
 	}
 
-	public _setChildMinHeightNative(child: View, value: Length): void {
+	public _setChildMinHeightNative(child: View, value: LengthType): void {
 		child._setMinHeightNative(value);
 	}
 
@@ -1105,7 +1105,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 	const { getter, setter, auto = 0 } = options;
 	let setPixels, getPixels, setPercent;
 	if (getter) {
-		View.prototype[getter] = function (this: View): PercentLength {
+		View.prototype[getter] = function (this: View): PercentLengthType {
 			if (options) {
 				setPixels = options.setPixels;
 				getPixels = options.getPixels;
@@ -1122,7 +1122,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 		};
 	}
 	if (setter) {
-		View.prototype[setter] = function (this: View, length: PercentLength) {
+		View.prototype[setter] = function (this: View, length: PercentLengthType) {
 			if (options) {
 				setPixels = options.setPixels;
 				getPixels = options.getPixels;

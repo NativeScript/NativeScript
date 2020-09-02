@@ -1,4 +1,4 @@
-import { Font as FontBase, parseFontFamily, genericFontFamilies, FontWeight } from './font-common';
+import { Font as FontBase, parseFontFamily, genericFontFamilies, FontWeight, FontWeightType } from './font-common';
 import { Trace } from '../../trace';
 import * as application from '../../application';
 import * as fs from '../../file-system';
@@ -14,7 +14,7 @@ export class Font extends FontBase {
 
 	private _typeface: android.graphics.Typeface;
 
-	constructor(family: string, size: number, style: 'normal' | 'italic', weight: FontWeight) {
+	constructor(family: string, size: number, style: 'normal' | 'italic', weight: FontWeightType) {
 		super(family, size, style, weight);
 	}
 
@@ -26,7 +26,7 @@ export class Font extends FontBase {
 		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
 	}
 
-	public withFontWeight(weight: FontWeight): Font {
+	public withFontWeight(weight: FontWeightType): Font {
 		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
 	}
 
@@ -134,7 +134,7 @@ function createTypeface(font: Font): android.graphics.Typeface {
 	return result;
 }
 
-function getFontWeightSuffix(fontWeight: FontWeight): string {
+function getFontWeightSuffix(fontWeight: FontWeightType): string {
 	switch (fontWeight) {
 		case FontWeight.THIN:
 			return android.os.Build.VERSION.SDK_INT >= 16 ? '-thin' : '';
