@@ -1,10 +1,11 @@
 {
   "name": "nativescript",
-  "version": "7.0.0-rc.58",
+  "version": "7.0.0",
   "license": "MIT",
   "scripts": {
-    "setup": "npx rimraf -- hooks node_modules package-lock.json && npm i && ts-patch install && nx run core:setup",
-    "start": "nps"
+    "setup": "npx rimraf hooks node_modules package-lock.json && npm i && ts-patch install && nx run core:setup",
+    "start": "nps",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
   },
   "private": true,
   "dependencies": {
