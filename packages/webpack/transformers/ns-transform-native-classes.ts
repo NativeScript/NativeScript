@@ -22,7 +22,7 @@ export default function (ctx: ts.TransformationContext) {
 		return ts.createIdentifier(
 			ts.transpileModule(node.getText().replace(/@NativeClass(\((.|\n)*?\))?/gm, ''), {
 				compilerOptions: { noEmitHelpers: true, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES5 },
-			}).outputText
+			}).outputText.replace(/(Object\.defineProperty\(.*?{.*?)(enumerable:\s*false)(.*?}\))/gs, '$1enumerable: true$3')
 		);
 	}
 
