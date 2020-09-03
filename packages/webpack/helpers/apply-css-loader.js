@@ -27,7 +27,7 @@ module.exports = function (content, map) {
 
     content += `
     const { Application } = require("@nativescript/core");
-    //require("@nativescript/core/ui/styling/style-scope");
+    require("@nativescript/core/ui/styling/style-scope");
 
     if (___CSS_LOADER_EXPORT___ && typeof ___CSS_LOADER_EXPORT___.forEach === "function") {
         ___CSS_LOADER_EXPORT___.forEach(cssExport => {
