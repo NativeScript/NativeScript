@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/webpack",
-  "version": "3.0.0",
+  "version": "3.0.1-rc.0",
   "main": "index",
   "description": "Webpack plugin for NativeScript",
   "homepage": "https://nativescript.org",
