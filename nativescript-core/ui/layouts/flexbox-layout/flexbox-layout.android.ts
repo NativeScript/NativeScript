@@ -17,8 +17,16 @@ export * from "./flexbox-layout-common";
 let widgetFlexboxLayout: typeof org.nativescript.widgets.FlexboxLayout;
 let widgetLayoutParams: typeof org.nativescript.widgets.FlexboxLayout.LayoutParams;
 
+function ensureNativeTypes() {
+	if (!widgetFlexboxLayout) {
+		widgetFlexboxLayout = org.nativescript.widgets.FlexboxLayout;
+		widgetLayoutParams = widgetFlexboxLayout.LayoutParams;
+	}
+}
+
 function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.FlexboxLayout.LayoutParams, value: T) => void) {
     return function (this: View, value: T) {
+        ensureNativeTypes();
         const nativeView: android.view.View = this.nativeViewProtected;
         const lp = nativeView.getLayoutParams() || new widgetLayoutParams();
         if (lp instanceof widgetLayoutParams) {
@@ -86,10 +94,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     constructor() {
         super();
-        if (!widgetFlexboxLayout) {
-            widgetFlexboxLayout = org.nativescript.widgets.FlexboxLayout;
-            widgetLayoutParams = widgetFlexboxLayout.LayoutParams;
-        }
+        ensureNativeTypes();
     }
 
     public createNativeView() {
