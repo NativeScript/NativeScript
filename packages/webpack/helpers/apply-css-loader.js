@@ -26,14 +26,14 @@ module.exports = function (content, map) {
     }
 
     content += `
-    const nsCore = require("@nativescript/core");
+    const { Application } = require("@nativescript/core");
     require("@nativescript/core/ui/styling/style-scope");
 
-    if (typeof exports.forEach === "function") {
-        exports.forEach(cssExport => {
+    if (___CSS_LOADER_EXPORT___ && typeof ___CSS_LOADER_EXPORT___.forEach === "function") {
+        ___CSS_LOADER_EXPORT___.forEach(cssExport => {
             if (cssExport.length > 1 && cssExport[1]) {
                 // applying the second item of the export as it contains the css contents
-                nsCore.Application.addCss(cssExport[1]);
+                Application.addCss(cssExport[1]);
             }
         });
     }
