@@ -28,21 +28,36 @@ export class HelloWorldModel extends Observable {
 		this.updateMessage();
 	}
 
-	view1 = this.getPopup('blue', 110, 0);
-	view2 = this.getPopup('yellow', 110, 20);
-	view3 = this.getPopup('green', 110, 40);
+	view1 = this.getPopup('#EA5936', 110, 0);
+	view2 = this.getPopup('#232652', 110, 20);
+	view3 = this.getPopup('#E1E4E8', 110, 40);
 	popupViews = [this.view1, this.view2, this.view3];
 
 	open(args: EventData): void {
-		getRootLayout().open(this.popupViews[(<any>args.object).popupIndex]);
+		getRootLayout()
+			.open(this.popupViews[(<any>args.object).popupIndex], {
+				shade: {
+					color: '#FFFFFF',
+					opacity: 0.5,
+					tapToClose: true,
+				},
+			})
+			.then(() => console.log('opened'))
+			.catch((ex) => console.error(ex));
 	}
 
 	bringToFront(args: EventData): void {
-		getRootLayout().bringToFront(this.popupViews[(<any>args.object).popupIndex]);
+		getRootLayout()
+			.bringToFront(this.popupViews[(<any>args.object).popupIndex])
+			.then(() => console.log('brought to front'))
+			.catch((ex) => console.error(ex));
 	}
 
 	close(args: EventData): void {
-		getRootLayout().close(this.popupViews[(<any>args.object).popupIndex]);
+		getRootLayout()
+			.close(this.popupViews[(<any>args.object).popupIndex])
+			.then(() => console.log('closed'))
+			.catch((ex) => console.error(ex));
 	}
 
 	getPopup(color: string, size: number, offset: number): View {
@@ -52,6 +67,7 @@ export class HelloWorldModel extends Observable {
 		layout.translateY = offset;
 		layout.translateX = offset;
 		layout.backgroundColor = color;
+		layout.borderRadius = 10;
 		return layout;
 	}
 

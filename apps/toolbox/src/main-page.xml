@@ -3,40 +3,41 @@
         <ActionBar title="Dev Toolbox" icon="" class="action-bar">
         </ActionBar>
     </Page.actionBar>
-    <RootLayout>
-    <StackLayout class="p-t-20 p-x-20">
-        <Label text="Tap the button" class="h1 text-center"/>
-        <Button text="TAP" tap="{{ onTap }}" class="btn btn-primary btn-active"/>
-        <GridLayout columns="*, *, *">
-          <StackLayout col="0">
-            <Label textAlignment="center" fontWeight="bold" text="blue"></Label>
-            <Button text="open" tap="{{ open }}" popupIndex="0" class="btn btn-primary btn-active"/>
-            <Button text="bring to front" tap="{{ bringToFront }}" popupIndex="0" class="btn btn-primary btn-active"/>
-            <Button text="close" tap="{{ close }}" popupIndex="0" class="btn btn-primary btn-active"/>
-          </StackLayout>
-          <StackLayout col="1">
-            <Label textAlignment="center" fontWeight="bold" text="yellow"></Label>
-            <Button text="open" tap="{{ open }}" popupIndex="1" class="btn btn-primary btn-active"/>
-            <Button text="bring to front" tap="{{ bringToFront }}" popupIndex="1" class="btn btn-primary btn-active"/>
-            <Button text="close" tap="{{ close }}" popupIndex="1" class="btn btn-primary btn-active"/>
-          </StackLayout>
-          <StackLayout col="2">
-            <Label textAlignment="center" fontWeight="bold" text="green"></Label>
-            <Button text="open" tap="{{ open }}" popupIndex="2" class="btn btn-primary btn-active"/>
-            <Button text="bring to front" tap="{{ bringToFront }}" popupIndex="2" class="btn btn-primary btn-active"/>
-            <Button text="close" tap="{{ close }}" popupIndex="2" class="btn btn-primary btn-active"/>
-          </StackLayout>
+    
+    <GridLayout rows="2*, *">
+      <!-- Root layout demo -->
+      <RootLayout row="0">
+        <GridLayout height="100%" backgroundColor="#232652">
+          <Label textAlignment="center" fontWeight="bold" color="#fff" text="ROOT LAYOUT CONTENT"></Label>
         </GridLayout>
-        <Label text="{{ message }}" class="h2 text-center" textWrap="true"/>
-        <StackLayout class="c-bg-grey w-full m-y-5" height="1"></StackLayout>
-        <ScrollView class="h-full">
-          <StackLayout>
-            <Label text="More things to tool around with:" class="t-12 text-center font-italic m-t-10"/>
-            <Button text="View List" tap="{{ viewList }}" class="btn"/>
-            <!-- add more examples below as desired to test and play around -->
+      </RootLayout>
+
+      <!-- Root layout controls -->
+      <StackLayout row="1">
+        <ScrollView height="100%">
+          <StackLayout class="p-15">
+            <Label color="#b4b6b9" fontSize="25" fontWeight="bold" text="ORANGE"></Label>
+            <FlexboxLayout flexDirection="row" justifyContent="space-between">
+              <Button flexGrow="1" text="open" tap="{{ open }}" popupIndex="0" class="btn btn-primary btn-active"/>
+              <Button flexGrow="1" text="front" tap="{{ bringToFront }}" popupIndex="0" class="btn btn-primary btn-active"/>
+              <Button flexGrow="1" text="close" tap="{{ close }}" popupIndex="0" class="btn btn-primary btn-active"/>
+            </FlexboxLayout>
+
+            <Label color="#b4b6b9" fontSize="25" fontWeight="bold" text="NAVY"></Label>
+            <FlexboxLayout flexDirection="row">
+              <Button flexGrow="1" text="open" tap="{{ open }}" popupIndex="1" class="btn btn-primary btn-active"/>
+              <Button flexGrow="1" text="front" tap="{{ bringToFront }}" popupIndex="1" class="btn btn-primary btn-active"/>
+              <Button flexGrow="1" text="close" tap="{{ close }}" popupIndex="1" class="btn btn-primary btn-active"/>
+            </FlexboxLayout>
+
+            <Label color="#b4b6b9" fontSize="25" fontWeight="bold" text="GRAY"></Label>
+            <FlexboxLayout flexDirection="row">
+              <Button flexGrow="1" text="open" tap="{{ open }}" popupIndex="2" class="btn btn-primary btn-active"/>
+              <Button flexGrow="1" text="front" tap="{{ bringToFront }}" popupIndex="2" class="btn btn-primary btn-active"/>
+              <Button flexGrow="1" text="close" tap="{{ close }}" popupIndex="2" class="btn btn-primary btn-active"/>
+            </FlexboxLayout>
           </StackLayout>
         </ScrollView>
-        
-    </StackLayout>
-    </RootLayout>
+      </StackLayout>
+    </GridLayout>
 </Page>
