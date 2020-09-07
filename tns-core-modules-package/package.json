@@ -3,7 +3,7 @@
     "main": "index",
     "types": "index.d.ts",
     "description": "NativeScript Core Modules",
-    "version": "6.5.17",
+    "version": "6.5.18",
     "homepage": "https://www.nativescript.org",
     "repository": {
         "type": "git",
@@ -11,7 +11,7 @@
     },
     "license": "Apache-2.0",
     "dependencies": {
-        "@nativescript/core": "6.5.17"
+        "@nativescript/core": "6.5.18"
     },
     "devDependencies": {
         "tns-platform-declarations": "6.5.15"

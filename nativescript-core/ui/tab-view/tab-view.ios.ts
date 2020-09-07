@@ -18,159 +18,173 @@ export * from "./tab-view-common";
 const majorVersion = iosUtils.MajorVersion;
 const isPhone = device.deviceType === "Phone";
 
-class UITabBarControllerImpl extends UITabBarController {
+let UITabBarControllerImpl;
+let UITabBarControllerDelegateImpl;
+let UINavigationControllerDelegateImpl;
 
-    private _owner: WeakRef<TabView>;
-
-    public static initWithOwner(owner: WeakRef<TabView>): UITabBarControllerImpl {
-        let handler = <UITabBarControllerImpl>UITabBarControllerImpl.new();
-        handler._owner = owner;
-
-        return handler;
-    }
-
-    public viewDidLoad(): void {
-        super.viewDidLoad();
-
-        // Unify translucent and opaque bars layout
-        // this.edgesForExtendedLayout = UIRectEdgeBottom;
-        this.extendedLayoutIncludesOpaqueBars = true;
-    }
-
-    @profile
-    public viewWillAppear(animated: boolean): void {
-        super.viewWillAppear(animated);
-        const owner = this._owner.get();
-        if (!owner) {
-            return;
+const setupControllers = function () {
+	if (typeof UITabBarControllerImpl === 'undefined') {
+    class UITabBarControllerClass extends UITabBarController {
+    
+        private _owner: WeakRef<TabView>;
+    
+        public static initWithOwner(owner: WeakRef<TabView>): typeof UITabBarControllerImpl {
+            let handler = <typeof UITabBarControllerImpl>UITabBarControllerImpl.new();
+            handler._owner = owner;
+    
+            return handler;
         }
-
-        iosView.updateAutoAdjustScrollInsets(this, owner);
-
-        if (!owner.parent) {
-            owner.callLoaded();
+    
+        public viewDidLoad(): void {
+            super.viewDidLoad();
+    
+            // Unify translucent and opaque bars layout
+            // this.edgesForExtendedLayout = UIRectEdgeBottom;
+            this.extendedLayoutIncludesOpaqueBars = true;
         }
-    }
-
-    @profile
-    public viewDidDisappear(animated: boolean): void {
-        super.viewDidDisappear(animated);
-        const owner = this._owner.get();
-        if (owner && !owner.parent && owner.isLoaded && !this.presentedViewController) {
-            owner.callUnloaded();
-        }
-    }
-
-    public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
-        super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
-        coordinator.animateAlongsideTransitionCompletion(null, () => {
+    
+        @profile
+        public viewWillAppear(animated: boolean): void {
+            super.viewWillAppear(animated);
             const owner = this._owner.get();
-            if (owner && owner.items) {
-                owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions());
+            if (!owner) {
+                return;
             }
-        });
-    }
-
-    // Mind implementation for other controllers
-    public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
-        super.traitCollectionDidChange(previousTraitCollection);
-
-        if (majorVersion >= 13) {
-            const owner = this._owner.get();
-            if (owner &&
-                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection &&
-                this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
-                owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
+    
+            iosView.updateAutoAdjustScrollInsets(this, owner);
+    
+            if (!owner.parent) {
+                owner.callLoaded();
             }
         }
-    }
-}
-
-class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControllerDelegate {
-    public static ObjCProtocols = [UITabBarControllerDelegate];
-
-    private _owner: WeakRef<TabView>;
-
-    public static initWithOwner(owner: WeakRef<TabView>): UITabBarControllerDelegateImpl {
-        let delegate = <UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
-        delegate._owner = owner;
-
-        return delegate;
-    }
-
-    public tabBarControllerShouldSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): boolean {
-        if (traceEnabled()) {
-            traceWrite("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+    
+        @profile
+        public viewDidDisappear(animated: boolean): void {
+            super.viewDidDisappear(animated);
+            const owner = this._owner.get();
+            if (owner && !owner.parent && owner.isLoaded && !this.presentedViewController) {
+                owner.callUnloaded();
+            }
         }
-
-        let owner = this._owner.get();
-        if (owner) {
-            // "< More" cannot be visible after clicking on the main tab bar buttons.
-            let backToMoreWillBeVisible = false;
-            owner._handleTwoNavigationBars(backToMoreWillBeVisible);
+    
+        public viewWillTransitionToSizeWithTransitionCoordinator(size: CGSize, coordinator: UIViewControllerTransitionCoordinator): void {
+            super.viewWillTransitionToSizeWithTransitionCoordinator(size, coordinator);
+            coordinator.animateAlongsideTransitionCompletion(null, () => {
+                const owner = this._owner.get();
+                if (owner && owner.items) {
+                    owner.items.forEach(tabItem => tabItem._updateTitleAndIconPositions());
+                }
+            });
         }
-
-        if ((<any>tabBarController).selectedViewController === viewController) {
-            return false;
-        }
-
-        (<any>tabBarController)._willSelectViewController = viewController;
-
-        return true;
-    }
-
-    public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
-        if (traceEnabled()) {
-            traceWrite("TabView.delegate.DID_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
-        }
-
-        const owner = this._owner.get();
-        if (owner) {
-            owner._onViewControllerShown(viewController);
-        }
-
-        (<any>tabBarController)._willSelectViewController = undefined;
-    }
-}
-
-class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
-    public static ObjCProtocols = [UINavigationControllerDelegate];
-
-    private _owner: WeakRef<TabView>;
-
-    public static initWithOwner(owner: WeakRef<TabView>): UINavigationControllerDelegateImpl {
-        let delegate = <UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
-        delegate._owner = owner;
-
-        return delegate;
-    }
-
-    navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        if (traceEnabled()) {
-            traceWrite("TabView.moreNavigationController.WILL_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
-        }
-
-        let owner = this._owner.get();
-        if (owner) {
-            // If viewController is one of our tab item controllers, then "< More" will be visible shortly.
-            // Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
-            let backToMoreWillBeVisible = owner._ios.viewControllers.containsObject(viewController);
-            owner._handleTwoNavigationBars(backToMoreWillBeVisible);
+    
+        // Mind implementation for other controllers
+        public traitCollectionDidChange(previousTraitCollection: UITraitCollection): void {
+            super.traitCollectionDidChange(previousTraitCollection);
+    
+            if (majorVersion >= 13) {
+                const owner = this._owner.get();
+                if (owner &&
+                    this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection &&
+                    this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
+                    owner.notify({ eventName: iosView.traitCollectionColorAppearanceChangedEvent, object: owner });
+                }
+            }
         }
     }
-
-    navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
-        if (traceEnabled()) {
-            traceWrite("TabView.moreNavigationController.DID_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
+    UITabBarControllerImpl = UITabBarControllerClass;
+    
+    class UITabBarControllerDelegateClass extends NSObject implements UITabBarControllerDelegate {
+        public static ObjCProtocols = [UITabBarControllerDelegate];
+    
+        private _owner: WeakRef<TabView>;
+    
+        public static initWithOwner(owner: WeakRef<TabView>): typeof UITabBarControllerDelegateImpl {
+            let delegate = <typeof UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
+            delegate._owner = owner;
+    
+            return delegate;
         }
-        // We don't need Edit button in More screen.
-        navigationController.navigationBar.topItem.rightBarButtonItem = null;
-        let owner = this._owner.get();
-        if (owner) {
-            owner._onViewControllerShown(viewController);
+    
+        public tabBarControllerShouldSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): boolean {
+            if (traceEnabled()) {
+                traceWrite("TabView.delegate.SHOULD_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+            }
+    
+            let owner = this._owner.get();
+            if (owner) {
+                // "< More" cannot be visible after clicking on the main tab bar buttons.
+                let backToMoreWillBeVisible = false;
+                owner._handleTwoNavigationBars(backToMoreWillBeVisible);
+            }
+    
+            if ((<any>tabBarController).selectedViewController === viewController) {
+                return false;
+            }
+    
+            (<any>tabBarController)._willSelectViewController = viewController;
+    
+            return true;
+        }
+    
+        public tabBarControllerDidSelectViewController(tabBarController: UITabBarController, viewController: UIViewController): void {
+            if (traceEnabled()) {
+                traceWrite("TabView.delegate.DID_select(" + tabBarController + ", " + viewController + ");", traceCategories.Debug);
+            }
+    
+            const owner = this._owner.get();
+            if (owner) {
+                owner._onViewControllerShown(viewController);
+            }
+    
+            (<any>tabBarController)._willSelectViewController = undefined;
         }
     }
-}
+    UITabBarControllerDelegateImpl = UITabBarControllerDelegateClass;
+
+    class UINavigationControllerDelegateClass extends NSObject implements UINavigationControllerDelegate {
+        public static ObjCProtocols = [UINavigationControllerDelegate];
+    
+        private _owner: WeakRef<TabView>;
+    
+        public static initWithOwner(owner: WeakRef<TabView>): typeof UINavigationControllerDelegateImpl {
+            let delegate = <typeof UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
+            delegate._owner = owner;
+    
+            return delegate;
+        }
+    
+        navigationControllerWillShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+            if (traceEnabled()) {
+                traceWrite("TabView.moreNavigationController.WILL_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
+            }
+    
+            let owner = this._owner.get();
+            if (owner) {
+                // If viewController is one of our tab item controllers, then "< More" will be visible shortly.
+                // Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
+                let backToMoreWillBeVisible = owner._ios.viewControllers.containsObject(viewController);
+                owner._handleTwoNavigationBars(backToMoreWillBeVisible);
+            }
+        }
+    
+        navigationControllerDidShowViewControllerAnimated(navigationController: UINavigationController, viewController: UIViewController, animated: boolean): void {
+            if (traceEnabled()) {
+                traceWrite("TabView.moreNavigationController.DID_show(" + navigationController + ", " + viewController + ", " + animated + ");", traceCategories.Debug);
+            }
+            // We don't need Edit button in More screen.
+            navigationController.navigationBar.topItem.rightBarButtonItem = null;
+            let owner = this._owner.get();
+            if (owner) {
+                owner._onViewControllerShown(viewController);
+            }
+        }
+    }
+    UINavigationControllerDelegateImpl = UINavigationControllerDelegateClass;
+
+  }
+};
+
+setupControllers();
 
 function updateTitleAndIconPositions(tabItem: TabViewItem, tabBarItem: UITabBarItem, controller: UIViewController) {
     if (!tabItem || !tabBarItem) {
@@ -256,11 +270,11 @@ export class TabViewItem extends TabViewItemBase {
 }
 
 export class TabView extends TabViewBase {
-    public viewController: UITabBarControllerImpl;
+    public viewController: typeof UITabBarControllerImpl;
     public items: TabViewItem[];
-    public _ios: UITabBarControllerImpl;
-    private _delegate: UITabBarControllerDelegateImpl;
-    private _moreNavigationControllerDelegate: UINavigationControllerDelegateImpl;
+    public _ios: typeof UITabBarControllerImpl;
+    private _delegate: typeof UITabBarControllerDelegateImpl;
+    private _moreNavigationControllerDelegate: typeof UINavigationControllerDelegateImpl;
     private _iconsCache = {};
 
     constructor() {
