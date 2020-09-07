@@ -1,3 +1,13 @@
+## [6.5.18](https://github.com/NativeScript/NativeScript/compare/6.5.15...6.5.18) (2020-09-07)
+
+
+### Bug Fixes
+
+* **android:** undefined right-hand side of instance of ([bd4184e](https://github.com/NativeScript/NativeScript/commit/bd4184e78bffe3d9e7fe6b4f339d63e31a7ddb91))
+* **ios:** Objective-C class name "UITabBar..." already in use handling ([c827393](https://github.com/NativeScript/NativeScript/commit/c8273931f30cd067e6955e641580cd7ce46288c5))
+
+
+
 ## [6.5.15](https://github.com/NativeScript/NativeScript/compare/6.5.13...6.5.15) (2020-08-12)
 
 
