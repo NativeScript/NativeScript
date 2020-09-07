@@ -30,6 +30,9 @@
     "core-compat": {
       "tags": []
     },
+    "types": {
+      "tags": []
+    },
     "types-ios": {
       "tags": []
     },

@@ -214,6 +214,7 @@ module.exports = env => {
         'node_modules'
       ],
       alias: {
+        '~/package.json': resolve(projectRoot, 'package.json'),
         '~': appFullPath,
         "tns-core-modules": "@nativescript/core",
         "nativescript-angular": "@nativescript/angular"

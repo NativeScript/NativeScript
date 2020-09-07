@@ -11,7 +11,6 @@ const NsVueTemplateCompiler = require("nativescript-vue-template-compiler");
 
 const nsWebpack = require("@nativescript/webpack");
 const nativescriptTarget = require("@nativescript/webpack/nativescript-target");
-const nsTransformNativeClasses = require("@nativescript/webpack/transformers/ns-transform-native-classes").default;
 const { NativeScriptWorkerPlugin } = require("nativescript-worker-loader/NativeScriptWorkerPlugin");
 const hashSalt = Date.now().toString();
 
@@ -69,6 +68,7 @@ module.exports = env => {
     const hasRootLevelScopedModules = nsWebpack.hasRootLevelScopedModules({ projectDir: projectRoot });
     let coreModulesPackageName = "tns-core-modules";
     const alias = env.alias || {};
+    alias['~/package.json'] = resolve(projectRoot, 'package.json');
     alias['~'] = appFullPath;
     alias['@'] = appFullPath;
     alias['vue'] = 'nativescript-vue';
@@ -268,7 +268,9 @@ module.exports = env => {
                         declaration: false
                     },
                     getCustomTransformers: (program) => ({
-                      before: [nsTransformNativeClasses]
+                        before: [
+                            require("@nativescript/webpack/transformers/ns-transform-native-classes").default
+                        ]
                     })
                 },
             },
