@@ -1,5 +1,5 @@
 {
-  "name": "@nativescript/core",
+  "name": "@akylas/nativescript",
   "main": "index",
   "types": "index.d.ts",
   "description": "NativeScript Core Modules",
