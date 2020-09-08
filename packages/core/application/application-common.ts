@@ -148,9 +148,9 @@ export function orientationChanged(rootView: View, newOrientation: 'portrait' | 
 		applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
 	});
 }
-
+export let autoSystemAppearanceChanged = true;
 export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void {
-	if (!rootView) {
+	if (!rootView || !autoSystemAppearanceChanged) {
 		return;
 	}
 
