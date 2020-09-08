@@ -55,6 +55,10 @@ export const orientationChangedEvent: string;
 export const systemAppearanceChangedEvent: string;
 
 /**
+ * Boolean to enable/disable systemAppearanceChanged
+ */
+export let autoSystemAppearanceChanged = true;
+/**
  * Updates root view classes including those of modals
  * @param rootView the root view
  * @param newSystemAppearance the new appearance change
