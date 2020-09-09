@@ -1,4 +1,10 @@
-import { AppiumDriver, IRectangle, logInfo, logWarn, Point } from "nativescript-dev-appium";
+import {
+	AppiumDriver,
+	IRectangle,
+	logInfo,
+	logWarn,
+	Point
+} from "nativescript-dev-appium";
 
 export enum ElementCacheStrategy {
     allAtOnce,
@@ -18,12 +24,15 @@ export class NavigationHelper {
     private _cachedElements: ICachedElement;
     private _currentSuite: ICachedElement;
 
-    constructor(protected _driver: AppiumDriver, protected _suitMainPageNavigationLinks: Array<string>, private _elemtsCacheStrategy: ElementCacheStrategy = ElementCacheStrategy.onload) {
-    }
+    constructor(
+			protected _driver: AppiumDriver,
+			protected _suitMainPageNavigationLinks: Array<string>,
+			private _elementsCacheStrategy: ElementCacheStrategy = ElementCacheStrategy.onload
+    ) {}
 
     async initSuite() {
-        if (this._elemtsCacheStrategy === ElementCacheStrategy.allAtOnce
-            || this._elemtsCacheStrategy === ElementCacheStrategy.onload) {
+        if (this._elementsCacheStrategy === ElementCacheStrategy.allAtOnce
+            || this._elementsCacheStrategy === ElementCacheStrategy.onload) {
             if (this._currentSuite) {
                 while (this._currentSuite.parent) {
                     this._currentSuite = this._currentSuite.parent;
@@ -31,7 +40,7 @@ export class NavigationHelper {
             } else {
                 if (!this._cachedElements || this._cachedElements.children.size === 0) {
                     this._cachedElements = { name: "initSuite", children: new Map<string, ICachedElement>() };
-                    if (this._elemtsCacheStrategy === ElementCacheStrategy.allAtOnce) {
+                    if (this._elementsCacheStrategy === ElementCacheStrategy.allAtOnce) {
                         await this.cacheAllElements(this._cachedElements);
                     }
                 }
@@ -59,7 +68,7 @@ export class NavigationHelper {
         logInfo(`Navigate to ${sample}`);
         const sampleName = sample.toLowerCase();
 
-        if (this._elemtsCacheStrategy === ElementCacheStrategy.allAtOnce) {
+        if (this._elementsCacheStrategy === ElementCacheStrategy.allAtOnce) {
             if (!this._currentSuite.children.has(sampleName)) {
                 await this.cacheAllElements(this._currentSuite);
             }
@@ -69,7 +78,7 @@ export class NavigationHelper {
             const sampleElement = this._currentSuite.children.get(sampleName).rect;
             await this._driver.clickPoint(sampleElement.x + (sampleElement.width / 2), sampleElement.y + (sampleElement.height / 2));
             this._currentSuite = this._currentSuite.children.get(sampleName);
-        } else if (this._elemtsCacheStrategy === ElementCacheStrategy.onload) {
+        } else if (this._elementsCacheStrategy === ElementCacheStrategy.onload) {
             if (this._currentSuite.children.has(sampleName)) {
                 const sampleElement = this._currentSuite.children.get(sampleName).rect;
                 await this._driver.clickPoint(sampleElement.x + (sampleElement.width / 2), sampleElement.y + (sampleElement.height / 2));
@@ -94,8 +103,8 @@ export class NavigationHelper {
 
     async navigateBackToSuitMainPage() {
         logInfo(`Navigate to back`);
-        if (this._elemtsCacheStrategy === ElementCacheStrategy.allAtOnce
-            || this._elemtsCacheStrategy === ElementCacheStrategy.onload) {
+        if (this._elementsCacheStrategy === ElementCacheStrategy.allAtOnce
+            || this._elementsCacheStrategy === ElementCacheStrategy.onload) {
             this._currentSuite = this._currentSuite && this._currentSuite.parent;
         }
         await this._driver.navBack();
