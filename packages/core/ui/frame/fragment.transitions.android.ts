@@ -667,7 +667,6 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 	if (!entries) {
 		return;
 	}
-	console.log('transitionOrAnimationCompleted', frameId, backEntry && backEntry.fragmentTag, waitingQueue.size, entries.size, completedEntries.size );
 
 	entries.delete(entry);
 	if (entries.size === 0) {
