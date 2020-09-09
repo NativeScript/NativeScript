@@ -8,7 +8,7 @@
 export type { NativeScriptConfig } from './config';
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
-import { systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, systemAppearance } from './application';
+import { systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, systemAppearance } from './application';
 export declare const Application: {
 	launchEvent: string;
 	displayedEvent: string;
@@ -32,6 +32,8 @@ export declare const Application: {
 	addCss: typeof addCss;
 	on: typeof on;
 	off: typeof off;
+	notify: typeof notify;
+	hasListeners: typeof hasListeners;
 	run: typeof run;
 	orientation: typeof orientation;
 	getNativeApplication: typeof getNativeApplication;
@@ -113,6 +115,10 @@ export declare const Utils: {
 	android: typeof androidUtils;
 	ad: typeof androidUtils;
 	ios: typeof iosUtils;
+	setTimeout: typeof setTimeout;
+	setInterval: typeof setInterval;
+	clearInterval: typeof clearInterval;
+	clearTimeout: typeof clearTimeout;
 	Source: typeof Source;
 	ClassInfo: typeof ClassInfo;
 	getClass: typeof getClass;
