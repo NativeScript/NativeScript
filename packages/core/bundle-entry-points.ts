@@ -1,5 +1,5 @@
-const g = require('./globals');
-g.initGlobal();
+// using import is important to ensure webpack keep it in order
+import './globals';
 
 // Register "dynamically" loaded module that need to be resolved by the
 // XML/component builders.
