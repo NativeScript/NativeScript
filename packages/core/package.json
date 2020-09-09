@@ -1,0 +1,48 @@
+{
+  "name": "@nativescript/core",
+  "main": "index",
+  "types": "index.d.ts",
+  "description": "NativeScript Core Modules",
+  "version": "7.0.0",
+  "homepage": "https://nativescript.org",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/NativeScript/NativeScript"
+  },
+  "sideEffects": [
+    "./globals/index.js"
+  ],
+  "files": [
+      "**/*.d.ts",
+      "**/*.js",
+      "**/*.map",
+      "**/platforms/ios/**",
+      "**/platforms/android/**",
+      "**/package.json"
+  ],
+  "license": "Apache-2.0",
+  "scripts": {
+      "postinstall": "node cli-hooks/postinstall.js",
+      "preuninstall": "node cli-hooks/preuninstall.js"
+  },
+  "dependencies": {
+    "css-tree": "^1.0.0-alpha.39",
+    "@nativescript/hook": "~2.0.0",
+    "reduce-css-calc": "^2.1.7",
+    "tslib": "2.0.0"
+  },
+  "nativescript": {
+      "platforms": {
+          "ios": "6.0.0",
+          "android": "6.0.0"
+      },
+      "hooks": [
+          {
+              "name": "nativescript-core",
+              "type": "before-checkForChanges",
+              "script": "cli-hooks/before-checkForChanges.js",
+              "inject": true
+          }
+      ]
+  }
+}

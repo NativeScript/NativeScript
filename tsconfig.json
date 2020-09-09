@@ -1,56 +1,28 @@
 {
-    "compilerOptions": {
-        "noEmitOnError": false,
-        "noEmitHelpers": true,
-        "target": "es5",
-        "module": "commonjs",
-        "declaration": false,
-        "noImplicitAny": false,
-        "noImplicitUseStrict": true,
-        "removeComments": true,
-        "experimentalDecorators": true,
-        "diagnostics": true,
-        "sourceMap": true,
-        "lib": [
-            "es6",
-            "dom"
-        ],
-        "types": [
-            "node",
-            "chai",
-            "mocha"
-        ],
-        "baseUrl": ".",
-        "paths": {
-            "tns-core-modules/*": [
-                "tns-core-modules/*"
-            ]
-        }
-    },
-    "exclude": [
-        "tns-core-modules/node_modules/",
-        "tns-core-modules/package/",
-        "tns-core-modules/references.d.ts",
-        "tns-platform-declarations/ios/objc-x86_64/",
-        "tns-platform-declarations/ios-typings-prj/",
-        "tns-platform-declarations/node_modules/",
-        "tns-platform-declarations/package/",
-        "tns-platform-declarations/references.d.ts",
-        "tns-platform-declarations/android-*.d.ts",
-        "tns-platform-declarations/android/android-*.d.ts",
-        "tns-platform-declarations/android/androidx-*.d.ts",
-        "tests/",
-        "apps/",
-        "dist/",
-        "e2e/",
-        "node_modules/",
-        "package/",
-        "bin",
-        "build",
-        "Deploy",
-        "out",
-        "obj",
-        "unit-tests/common-types.d.ts",
-        "dist"
-    ]
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "target": "ES2017",
+    "module": "esnext",
+    "sourceMap": true,
+    "declaration": true,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noEmitOnError": true,
+    "noEmitHelpers": true,
+    "diagnostics": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "lib": ["es2017", "dom"],
+    "types": ["node", "jest"],
+    "baseUrl": ".",
+    "paths": {
+      "@nativescript/core": ["packages/core/index.ts"],
+      "@nativescript/core/*": ["packages/core/*"],
+      "@nativescript/types-ios": ["packages/types-ios/src/index.ts"],
+      "@nativescript/types-android": ["packages/types-android/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp", "platforms", "__tests__"]
 }

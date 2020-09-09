@@ -1,0 +1,11 @@
+{
+  "name": "@nativescript/types-ios",
+  "version": "7.0.1",
+  "description": "NativeScript Types for iOS.",
+  "homepage": "https://nativescript.org",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/NativeScript/NativeScript"
+  },
+  "license": "Apache-2.0"
+}

@@ -1,0 +1,49 @@
+{
+  "npmScope": "nativescript",
+  "workspaceLayout": {
+    "appsDir": "apps",
+    "libsDir": "packages"
+  },
+  "implicitDependencies": {
+    "workspace.json": "*",
+    "package.json": {
+      "dependencies": "*",
+      "devDependencies": "*"
+    },
+    "tsconfig.json": "*",
+    "tslint.json": "*",
+    "nx.json": "*"
+  },
+  "projects": {
+    "apps-automated": {
+      "tags": []
+    },
+    "apps-toolbox": {
+      "tags": []
+    },
+    "apps-ui": {
+      "tags": []
+    },
+    "core": {
+      "tags": []
+    },
+    "core-compat": {
+      "tags": []
+    },
+    "types": {
+      "tags": []
+    },
+    "types-ios": {
+      "tags": []
+    },
+    "types-android": {
+      "tags": []
+    },
+    "ui-mobile-base": {
+      "tags": []
+    },
+    "webpack": {
+      "tags": []
+    }
+  }
+}

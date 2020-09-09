@@ -1,0 +1,20 @@
+{
+  "main": "main.js",
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
+  "scripts": {
+    "clean": "npx rimraf hooks node_modules platforms package-lock.json && npm i"
+  },
+  "dependencies": {
+    "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core",
+    "@nativescript/core": "file:../../packages/core"
+  },
+  "devDependencies": {
+    "@nativescript/ios": "7.0.0",
+    "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
+    "typescript": "file:../../node_modules/typescript"
+  },
+  "gitHead": "c06800e52ee1a184ea2dffd12a6702aaa43be4e3",
+  "readme": "NativeScript Application"
+}

@@ -1,3 +1,45 @@
+# [7.0.0](https://github.com/NativeScript/NativeScript/compare/6.5.15...7.0.0) (2020-09-03)
+
+
+### Bug Fixes
+
+* **ios:** stop using artificial state handler via animated setter on uiviewcontroller ([#8797](https://github.com/NativeScript/NativeScript/issues/8797)) ([967d652](https://github.com/NativeScript/NativeScript/commit/967d652c61fbeed6c7e8bd568c893d40308b5b58))
+* **webpack:** don't require ts transformer unless processing ts file ([fa9f095](https://github.com/NativeScript/NativeScript/commit/fa9f0957b86624532c4b18a6510bdf405ecbe931))
+
+
+### Features
+
+* **core:** es2017 targeting ([020ad4d](https://github.com/NativeScript/NativeScript/commit/020ad4da37f551e934cd6054ca983ab5083a4042))
+* **core:** nativescript.config and webpack updates ([#8801](https://github.com/NativeScript/NativeScript/issues/8801)) ([54cce4f](https://github.com/NativeScript/NativeScript/commit/54cce4f20c142397fd31bba3300c27a3d7459420))
+* add enableMultithreadedJavascript flag to config definition ([4abfc8a](https://github.com/NativeScript/NativeScript/commit/4abfc8a370e3402e9566de078473f9e8deceff8b))
+* **webpack:** using new nativescript.config ([#8796](https://github.com/NativeScript/NativeScript/issues/8796)) ([33a703e](https://github.com/NativeScript/NativeScript/commit/33a703e1291b242fe7b218aa1e6bd746a5217f88))
+
+
+
+## [6.5.15](https://github.com/NativeScript/NativeScript/compare/6.5.13...6.5.15) (2020-08-12)
+
+
+### Bug Fixes
+
+* **android:** list picker getTextColor api level issue ([#8755](https://github.com/NativeScript/NativeScript/issues/8755)) ([5c076de](https://github.com/NativeScript/NativeScript/commit/5c076de8560f71b59cf34124f47ebeafdc902658))
+
+
+
+## [6.5.13](https://github.com/NativeScript/NativeScript/compare/6.5.12...6.5.13) (2020-08-07)
+
+
+### Bug Fixes
+
+* **android:** 'isEnabled' now works properly for SegmentedBar ([#8711](https://github.com/NativeScript/NativeScript/issues/8711)) ([0850252](https://github.com/NativeScript/NativeScript/commit/08502527eb25d074d5e29ede506f5fb88f47d088))
+* **android:** line-height ([#8751](https://github.com/NativeScript/NativeScript/issues/8751)) ([4708ff4](https://github.com/NativeScript/NativeScript/commit/4708ff4e680669c3747837be036c6cb86b4b46c6))
+
+
+### Features
+
+* **ios:** dialog size can now use CSS or attribute like android ([#8710](https://github.com/NativeScript/NativeScript/issues/8710)) ([fc37b95](https://github.com/NativeScript/NativeScript/commit/fc37b958fe4fc9f83cace2965f73a81c802cac75))
+
+
+
 ## [6.5.12](https://github.com/NativeScript/NativeScript/compare/6.5.11...6.5.12) (2020-07-21)
 
 

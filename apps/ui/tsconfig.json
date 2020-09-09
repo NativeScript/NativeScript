@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "diagnostics": false,
+    "paths": {
+      "~/*": ["src/*"],
+      "tns-core-modules/*": ["@nativescript/core/*"]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+    "name": "@nativescript/ui-mobile-base",
+    "version": "7.0.0-rc.0",
+    "description": "Native UI base components used with NativeScript.",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NativeScript/NativeScript"
+    },
+    "author": "NativeScript team",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/NativeScript/NativeScript/issues"
+    },
+    "homepage": "https://github.com/NativeScript/NativeScript/blob/master/tns-core-modules-widgets#readme",
+    "nativescript": {
+        "platforms": {
+            "ios": "6.0.0",
+            "android": "6.0.0"
+        }
+    }
+}

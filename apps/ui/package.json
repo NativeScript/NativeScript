@@ -1,0 +1,27 @@
+{
+  "main": "main.js",
+  "description": "NativeScript Application",
+  "license": "SEE LICENSE IN <your-license-filename>",
+  "repository": "<fill-your-repository-here>",
+  "dependencies": {
+    "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core",
+    "@nativescript/core": "file:../../packages/core"
+  },
+  "devDependencies": {
+    "@nativescript/ios": "7.0.0",
+    "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
+    "typescript": "file:../../node_modules/typescript"
+  },
+  "gitHead": "8ab7726d1ee9991706069c1359c552e67ee0d1a4",
+  "readme": "NativeScript Application",
+  "scripts": {
+    "clean": "npx rimraf hooks node_modules platforms package-lock.json",
+    "e2e": "tsc -p e2e && mocha --opts ../config/mocha.opts --recursive e2e --appiumCapsLocation ../config/appium.capabilities.json",
+    "e2e-debug": "./node_modules/.bin/ns-dev-appium --startSession",
+    "e2e-watch": "tsc -p e2e --watch",
+    "e2e-tsc": "tsc -p e2e",
+    "pretest": "tsc -p e2e",
+    "load-images": "./e2e/scripts/sparse-checkout.sh uitestsapp https://github.com/NativeScript/functional-tests-images.git $PWD/../../../functional-tests-images",
+    "update-emulators": "cd $PWD/../../../functional-tests-images  && . ./scripts/update-emulators.sh --appName uitestsapp"
+  }
+}

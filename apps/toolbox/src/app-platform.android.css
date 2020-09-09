@@ -1,0 +1,127 @@
+﻿Button {
+  background-color: transparent;
+  border-color: transparent;
+  border-width: 1;
+  text-transform: capitalize;
+  android-elevation: 0;
+  android-dynamic-elevation-offset: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.component-label{
+    margin-left: 12;
+    min-width: 100;
+}
+
+.component-select-fix{
+    padding-top: 6;
+    text-align: right;
+    vertical-align: middle;
+    padding-right: 8;
+}
+
+.header{
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.code-text-view-fix{
+    font-size: 15px;
+}
+
+.go-back{
+    font-family: "ns-playground-font";
+    font-size: 30;
+    color: #3350ff;
+}
+
+.header-label{
+   padding-top: 8%;
+   padding-left: 40%;
+   font-size: 20px;
+   color: black;
+}
+
+.components-header-label{
+    padding-top: 8%;
+    text-align: center;
+    font-size: 20px;
+    color: black;
+}
+
+.components-link{
+    color: #3350ff;
+    font-size: 20px;
+    padding-top: 8%;
+    margin-left: -25px;
+}
+
+.navigation-bar{
+    background-color: #f4f4f5;
+    height: 5%;
+    max-height: 3;
+}
+
+.navigation-bar-components{
+    background-color: #f4f4f5;
+    height: 8%;
+}
+
+.segmented-bar{
+    background-color: #f4f4f5;
+    padding-bottom: 10%
+}
+
+.custom-segmented-bar-root-fix{
+    padding-top: 15%;
+}
+
+.custom-segmented-bar-border-fix{
+    border-radius: 15px;
+    border-width: 5px;
+}
+
+.selected-segment{
+    color: #f4f4f5;
+    padding-top: 5%;
+    background-color: #3350ff;
+    text-align: center;
+}
+
+.unselected-segment{
+    color: #3350ff;
+    padding-top: 5%;
+    background-color: #f4f4f5;
+    text-align: center;
+}
+
+.action-item-details{
+    color: #007aff;
+    font-size: 20px;
+    padding-right: 15;
+}
+
+.listview-separator{
+    margin-left: 66;
+    background-color: #949494;
+    height: 1px;
+}
+
+.icon-around{
+    background-color: #3350ff;
+    height: 42;
+    width: 42;
+    border-radius: 3;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.list-view-row{
+    padding: 6 0 6 12;
+}
+
+.list-group{
+    background-color: white;
+    padding-top: 6;
+}

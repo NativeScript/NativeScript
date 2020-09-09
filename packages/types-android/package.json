@@ -1,0 +1,11 @@
+{
+  "name": "@nativescript/types-android",
+  "version": "7.0.2",
+  "description": "NativeScript Types for Android.",
+  "homepage": "https://nativescript.org",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/NativeScript/NativeScript"
+  },
+  "license": "Apache-2.0"
+}
