@@ -53,7 +53,7 @@ export class NavigationHelper {
     }
 
     async endSuite() {
-        logInfo("End of suit 'button' tests!");
+        logInfo(`End of suit 'button' tests!`);
         await this._driver.takeScreenshot("end_button_suit");
     }
 
@@ -124,7 +124,7 @@ export class NavigationHelper {
 
             await this._driver.swipe(startPoint, endPoint);
         } else {
-            logWarn("Swipe back is not supported from android!");
+            logWarn(`Swipe back is not supported from android!`);
         }
     }
 
