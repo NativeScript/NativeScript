@@ -30,7 +30,7 @@ export class NavigationHelper {
 			private _elementsCacheStrategy: ElementCacheStrategy = ElementCacheStrategy.onload
     ) {}
 
-    async initSuite() {
+    async initSuite(): Promise<void> {
         if (this._elementsCacheStrategy === ElementCacheStrategy.allAtOnce
             || this._elementsCacheStrategy === ElementCacheStrategy.onload) {
             if (this._currentSuite) {
@@ -52,12 +52,12 @@ export class NavigationHelper {
         await this.navigateToSuitMainPage();
     }
 
-    async endSuite() {
+		async endSuite(): Promise<void> {
         logInfo(`End of suit 'button' tests!`);
         await this._driver.takeScreenshot("end_button_suit");
     }
 
-    async navigateToSuitMainPage() {
+    async navigateToSuitMainPage(): Promise<void> {
         for (let index = 0; index < this._suitMainPageNavigationLinks.length; index++) {
             const mainPage = this._suitMainPageNavigationLinks[index];
             await this.navigateToSample(mainPage);
@@ -110,7 +110,7 @@ export class NavigationHelper {
         await this._driver.navBack();
     }
 
-    async swipeBackToSuitMainPage() {
+    async swipeBackToSuitMainPage(): Promise<void> {
         logInfo(`Swipe to back`);
         const startPoint = <Point>{};
         const endPoint = <Point>{};
@@ -128,7 +128,7 @@ export class NavigationHelper {
         }
     }
 
-    private async cacheAllElements(cachedElements: ICachedElement) {
+    private async cacheAllElements(cachedElements: ICachedElement): Promise<void> {
         const allSamples = await this._driver.findElementsByClassName(this._driver.locators.button);
         for (let index = 0; index < allSamples.length; index++) {
             const element = allSamples[index];
