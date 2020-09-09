@@ -3,6 +3,7 @@ import { FormattedString } from './formatted-string';
 import { Style } from '../styling/style';
 import { Length } from '../styling/style-properties';
 import { Property, CssProperty, InheritedCssProperty } from '../core/properties';
+import { Enums } from '../enums';
 
 export class TextBase extends View implements AddChildFromBuilder {
 	/**
@@ -39,22 +40,22 @@ export class TextBase extends View implements AddChildFromBuilder {
 	/**
 	 * Gets or sets text-alignment style property.
 	 */
-	textAlignment: TextAlignment;
+	textAlignment: Enums.TextAlignmentType;
 
 	/**
 	 * Gets or sets text decorations style property.
 	 */
-	textDecoration: TextDecoration;
+	textDecoration: Enums.TextDecorationType;
 
 	/**
 	 * Gets or sets text transform style property.
 	 */
-	textTransform: TextTransform;
+	textTransform: Enums.TextTransformType;
 
 	/**
 	 * Gets or sets white space style property.
 	 */
-	whiteSpace: WhiteSpace;
+	whiteSpace: Enums.WhiteSpaceType;
 
 	/**
 	 * Gets or sets padding style property.
@@ -116,19 +117,14 @@ export interface TextTransformation {
 export const textProperty: Property<TextBase, string>;
 export const formattedTextProperty: Property<TextBase, FormattedString>;
 
-export type WhiteSpaceType = 'initial' | 'normal' | 'nowrap';
-export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right';
-export type TextTransformType = 'initial' | 'none' | 'capitalize' | 'uppercase' | 'lowercase';
-export type TextDecorationType = 'none' | 'underline' | 'line-through' | 'underline line-through';
-
-export const textAlignmentProperty: InheritedCssProperty<Style, TextAlignmentType>;
-export const textDecorationProperty: CssProperty<Style, TextDecorationType>;
-export const textTransformProperty: CssProperty<Style, TextTransformType>;
-export const whiteSpaceProperty: CssProperty<Style, WhiteSpaceType>;
+export const textAlignmentProperty: InheritedCssProperty<Style, Enums.TextAlignmentType>;
+export const textDecorationProperty: CssProperty<Style, Enums.TextDecorationType>;
+export const textTransformProperty: CssProperty<Style, Enums.TextTransformType>;
+export const whiteSpaceProperty: CssProperty<Style, Enums.WhiteSpaceType>;
 export const letterSpacingProperty: CssProperty<Style, number>;
 export const lineHeightProperty: CssProperty<Style, number>;
 
 //Used by tab view
-export function getTransformedText(text: string, textTransform: TextTransform): string;
+export function getTransformedText(text: string, textTransform: Enums.TextTransformType): string;
 
 export const resetSymbol: symbol;

@@ -1,6 +1,7 @@
 ﻿import { LayoutBase } from '../layout-base';
 import { Property } from '../../core/properties';
 import { View } from '../../core/view';
+import { Enums } from '../../enums';
 
 /**
  * A Layout that arranges its children at its outer edges, and allows its last child to take up the remaining space.
@@ -23,11 +24,10 @@ export class DockLayout extends LayoutBase {
 	stretchLastChild: boolean;
 }
 
-export type Dock = 'left' | 'top' | 'right' | 'bottom';
 /**
  * Represents the observable property backing the dock property.
  */
-export const dockProperty: Property<DockLayout, Dock>;
+export const dockProperty: Property<DockLayout, Enums.DockType>;
 
 /**
  * Represents the observable property backing the stretchLastChild property of each DockLayout instance.

@@ -14,6 +14,7 @@ import { radiansToDegrees } from '../../utils/number-utils';
 
 import { decompose2DTransformMatrix, getTransformMatrix, matrixArrayToCssMatrix, multiplyAffine2d } from '../../matrix';
 import { Trace } from '../../trace';
+import { Enums } from '../enums';
 
 import * as parser from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
@@ -407,47 +408,21 @@ export const paddingBottomProperty = new CssProperty<Style, LengthType>({
 });
 paddingBottomProperty.register(Style);
 
-export type HorizontalAlignmentType = 'left' | 'center' | 'right' | 'stretch';
-export namespace HorizontalAlignment {
-	export const LEFT = 'left';
-	export const CENTER = 'center';
-	export const RIGHT = 'right';
-	export const STRETCH = 'stretch';
-	export const isValid = makeValidator<HorizontalAlignmentType>(LEFT, CENTER, RIGHT, STRETCH);
-	export const parse = makeParser<HorizontalAlignmentType>(isValid);
-}
-
-export const horizontalAlignmentProperty = new CssProperty<Style, HorizontalAlignmentType>({
+export const horizontalAlignmentProperty = new CssProperty<Style, Enums.HorizontalAlignmentType>({
 	name: 'horizontalAlignment',
 	cssName: 'horizontal-align',
-	defaultValue: HorizontalAlignment.STRETCH,
+	defaultValue: Enums.HorizontalAlignment.stretch,
 	affectsLayout: global.isIOS,
-	valueConverter: HorizontalAlignment.parse,
+	valueConverter: Enums.HorizontalAlignment.parse,
 });
 horizontalAlignmentProperty.register(Style);
 
-export type VerticalAlignmentType = 'top' | 'middle' | 'bottom' | 'stretch' | 'text-top' | 'text-bottom' | 'super' | 'sub' | 'baseline';
-export namespace VerticalAlignment {
-	export const TOP = 'top';
-	export const MIDDLE = 'middle';
-	export const BOTTOM = 'bottom';
-	export const STRETCH = 'stretch';
-	export const TEXTTOP = 'text-top';
-	export const TEXTBOTTOM = 'text-bottom';
-	export const SUPER = 'super';
-	export const SUB = 'sub';
-	export const BASELINE = 'baseline';
-	export const isValid = makeValidator<VerticalAlignmentType>(TOP, MIDDLE, BOTTOM, STRETCH, TEXTTOP, TEXTBOTTOM, SUPER, SUB, BASELINE);
-	export const parse = (value: string) => (value.toLowerCase() === 'center' ? MIDDLE : parseStrict(value));
-	const parseStrict = makeParser<VerticalAlignmentType>(isValid);
-}
-
-export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignmentType>({
+export const verticalAlignmentProperty = new CssProperty<Style, Enums.VerticalAlignmentTextType>({
 	name: 'verticalAlignment',
 	cssName: 'vertical-align',
-	defaultValue: VerticalAlignment.STRETCH,
+	defaultValue: Enums.VerticalAlignmentText.stretch,
 	affectsLayout: global.isIOS,
-	valueConverter: VerticalAlignment.parse,
+	valueConverter: Enums.VerticalAlignmentText.parse,
 });
 verticalAlignmentProperty.register(Style);
 
@@ -837,20 +812,10 @@ export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 });
 backgroundColorProperty.register(Style);
 
-export type BackgroundRepeatType = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
-export namespace BackgroundRepeat {
-	export const REPEAT = 'repeat';
-	export const REPEAT_X = 'repeat-x';
-	export const REPEAT_Y = 'repeat-y';
-	export const NO_REPEAT = 'no-repeat';
-	export const isValid = makeValidator<BackgroundRepeatType>(REPEAT, REPEAT_X, REPEAT_Y, NO_REPEAT);
-	export const parse = makeParser<BackgroundRepeatType>(isValid);
-}
-
-export const backgroundRepeatProperty = new CssProperty<Style, BackgroundRepeatType>({
+export const backgroundRepeatProperty = new CssProperty<Style, Enums.BackgroundRepeatType>({
 	name: 'backgroundRepeat',
 	cssName: 'background-repeat',
-	valueConverter: BackgroundRepeat.parse,
+	valueConverter: Enums.BackgroundRepeat.parse,
 	valueChanged: (target, oldValue, newValue) => {
 		const background = target.backgroundInternal.withRepeat(newValue);
 		target.backgroundInternal = background;
@@ -1443,26 +1408,16 @@ const fontProperty = new ShorthandProperty<Style, string>({
 });
 fontProperty.register(Style);
 
-export type VisibilityType = 'visible' | 'hidden' | 'collapse';
-export namespace Visibility {
-	export const VISIBLE = 'visible';
-	export const HIDDEN = 'hidden';
-	export const COLLAPSE = 'collapse';
-	export const isValid = makeValidator<VisibilityType>(VISIBLE, HIDDEN, COLLAPSE);
-	export const parse = (value: string) => (value.toLowerCase() === 'collapsed' ? COLLAPSE : parseStrict(value));
-	const parseStrict = makeParser<VisibilityType>(isValid);
-}
-
-export const visibilityProperty = new CssProperty<Style, VisibilityType>({
+export const visibilityProperty = new CssProperty<Style, Enums.VisibilityType>({
 	name: 'visibility',
 	cssName: 'visibility',
-	defaultValue: Visibility.VISIBLE,
+	defaultValue: Enums.Visibility.visible,
 	affectsLayout: global.isIOS,
-	valueConverter: Visibility.parse,
+	valueConverter: Enums.Visibility.parse,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
 		if (view) {
-			view.isCollapsed = newValue === Visibility.COLLAPSE;
+			view.isCollapsed = newValue === Enums.Visibility.collapse;
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}

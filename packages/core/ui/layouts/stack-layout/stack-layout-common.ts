@@ -2,18 +2,18 @@
 import { LayoutBase } from '../layout-base';
 import { CSSType } from '../../core/view';
 import { Property, makeParser, makeValidator } from '../../core/properties';
-import { OrientationType } from '../../enums';
+import { Enums } from '../../enums';
 
 @CSSType('StackLayout')
 export class StackLayoutBase extends LayoutBase implements StackLayoutDefinition {
-	public orientation: OrientationType;
+	public orientation: Enums.OrientationType;
 }
 
 StackLayoutBase.prototype.recycleNativeView = 'auto';
 
-const converter = makeParser<OrientationType>(makeValidator('horizontal', 'vertical'));
+const converter = makeParser<Enums.OrientationType>(makeValidator('horizontal', 'vertical'));
 
-export const orientationProperty = new Property<StackLayoutBase, OrientationType>({
+export const orientationProperty = new Property<StackLayoutBase, Enums.OrientationType>({
 	name: 'orientation',
 	defaultValue: 'vertical',
 	affectsLayout: global.isIOS,

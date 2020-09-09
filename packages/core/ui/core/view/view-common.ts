@@ -8,9 +8,10 @@ import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
 import { Trace } from '../../../trace';
+import { Enums } from '../../enums';
 import { ViewHelper } from './view-helper';
 
-import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength, BackgroundRepeat, LengthType, BackgroundRepeatType, PercentLengthType, HorizontalAlignmentType, VerticalAlignmentType, VisibilityType } from '../../styling/style-properties';
+import { PercentLength, LengthType, PercentLengthType } from '../../styling/style-properties';
 
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString } from '../../gestures';
 
@@ -19,7 +20,6 @@ import { Builder } from '../../builder';
 import { sanitizeModuleName } from '../../builder/module-name-sanitizer';
 import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
-import { TextTransformType } from '../../text-base';
 
 import * as am from '../../animation';
 
@@ -574,10 +574,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.backgroundPosition = value;
 	}
 
-	get backgroundRepeat(): BackgroundRepeatType {
+	get backgroundRepeat(): Enums.BackgroundRepeatType {
 		return this.style.backgroundRepeat;
 	}
-	set backgroundRepeat(value: BackgroundRepeatType) {
+	set backgroundRepeat(value: Enums.BackgroundRepeatType) {
 		this.style.backgroundRepeat = value;
 	}
 
@@ -644,24 +644,24 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.marginBottom = value;
 	}
 
-	get horizontalAlignment(): HorizontalAlignmentType {
+	get horizontalAlignment(): Enums.HorizontalAlignmentType {
 		return this.style.horizontalAlignment;
 	}
-	set horizontalAlignment(value: HorizontalAlignmentType) {
+	set horizontalAlignment(value: Enums.HorizontalAlignmentType) {
 		this.style.horizontalAlignment = value;
 	}
 
-	get verticalAlignment(): VerticalAlignmentType {
+	get verticalAlignment(): Enums.VerticalAlignmentType {
 		return this.style.verticalAlignment;
 	}
-	set verticalAlignment(value: VerticalAlignmentType) {
+	set verticalAlignment(value: Enums.VerticalAlignmentType) {
 		this.style.verticalAlignment = value;
 	}
 
-	get visibility(): VisibilityType {
+	get visibility(): Enums.VisibilityType {
 		return this.style.visibility;
 	}
-	set visibility(value: VisibilityType) {
+	set visibility(value: Enums.VisibilityType) {
 		this.style.visibility = value;
 	}
 
@@ -700,10 +700,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.perspective = value;
 	}
 
-	get textTransform(): TextTransformType {
+	get textTransform(): Enums.TextTransformType {
 		return this.style.textTransform;
 	}
-	set textTransform(value: TextTransformType) {
+	set textTransform(value: Enums.TextTransformType) {
 		this.style.textTransform = value;
 	}
 

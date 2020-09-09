@@ -1,7 +1,7 @@
 import { View } from '../core/view';
 import { Color } from '../../color';
 
-import { AnimationCurve } from '../enums';
+import { Enums } from '../enums';
 
 import { Trace } from '../../trace';
 
@@ -28,7 +28,7 @@ export class KeyframeDeclaration {
 export class KeyframeInfo {
 	public duration: number;
 	public declarations: Array<KeyframeDeclaration>;
-	public curve?: any = AnimationCurve.ease;
+	public curve?: any = Enums.AnimationCurve.ease;
 }
 
 export class KeyframeAnimationInfo {

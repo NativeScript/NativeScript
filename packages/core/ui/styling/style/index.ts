@@ -4,13 +4,13 @@ import { Font, FontStyle, FontWeight } from '../font';
 import { Background } from '../background';
 import { dip } from '../../core/view';
 import { ViewBase } from '../../core/view-base';
-import { HorizontalAlignmentType, VerticalAlignmentType, BackgroundRepeatType, LengthType, VisibilityType, PercentLengthType } from '../../styling/style-properties';
+import { LengthType, PercentLengthType } from '../../styling/style-properties';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { Observable } from '../../../data/observable';
 
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
-import { TextAlignmentType, TextDecorationType, TextTransformType, WhiteSpaceType } from '../../text-base';
+import { Enums } from '../../enums';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -29,8 +29,8 @@ export interface CommonLayoutParams {
 	rightMarginPercent: number;
 	bottomMarginPercent: number;
 
-	horizontalAlignment: HorizontalAlignmentType;
-	verticalAlignment: VerticalAlignmentType;
+	horizontalAlignment: Enums.HorizontalAlignmentType;
+	verticalAlignment: Enums.VerticalAlignmentType;
 }
 
 export class Style extends Observable implements StyleDefinition {
@@ -117,7 +117,7 @@ export class Style extends Observable implements StyleDefinition {
 	public background: string;
 	public backgroundColor: Color;
 	public backgroundImage: string | LinearGradient;
-	public backgroundRepeat: BackgroundRepeatType;
+	public backgroundRepeat: Enums.BackgroundRepeatType;
 	public backgroundSize: string;
 	public backgroundPosition: string;
 
@@ -147,14 +147,14 @@ export class Style extends Observable implements StyleDefinition {
 	public androidDynamicElevationOffset: number;
 	public zIndex: number;
 	public opacity: number;
-	public visibility: VisibilityType;
+	public visibility: Enums.VisibilityType;
 
 	public letterSpacing: number;
 	public lineHeight: number;
-	public textAlignment: TextAlignmentType;
-	public textDecoration: TextDecorationType;
-	public textTransform: TextTransformType;
-	public whiteSpace: WhiteSpaceType;
+	public textAlignment: Enums.TextAlignmentType;
+	public textDecoration: Enums.TextDecorationType;
+	public textTransform: Enums.TextTransformType;
+	public whiteSpace: Enums.WhiteSpaceType;
 
 	public minWidth: LengthType;
 	public minHeight: LengthType;
@@ -170,8 +170,8 @@ export class Style extends Observable implements StyleDefinition {
 	public paddingTop: LengthType;
 	public paddingRight: LengthType;
 	public paddingBottom: LengthType;
-	public horizontalAlignment: HorizontalAlignmentType;
-	public verticalAlignment: VerticalAlignmentType;
+	public horizontalAlignment: Enums.HorizontalAlignmentType;
+	public verticalAlignment: Enums.VerticalAlignmentType;
 
 	// TabView-specific props
 	public tabTextFontSize: number;

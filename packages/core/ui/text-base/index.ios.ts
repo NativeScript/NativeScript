@@ -1,5 +1,5 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform, getClosestPropertyValue } from './text-base-common';
+import { getClosestPropertyValue } from './text-base-common';
 
 // Requires
 import { Font } from '../styling/font';
@@ -7,9 +7,10 @@ import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentPrope
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, VerticalAlignment, VerticalAlignmentType } from '../styling/style-properties';
+import { colorProperty, fontInternalProperty } from '../styling/style-properties';
 import { isString, isDefined, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
+import { Enums } from '../enums';
 
 export * from './text-base-common';
 
@@ -156,7 +157,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textAlignmentProperty.setNative](value: TextAlignment) {
+	[textAlignmentProperty.setNative](value: Enums.TextAlignmentType) {
 		const nativeView = <UITextField | UITextView | UILabel>this.nativeTextViewProtected;
 		switch (value) {
 			case 'initial':
@@ -172,11 +173,11 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textDecorationProperty.setNative](value: TextDecoration) {
+	[textDecorationProperty.setNative](value: Enums.TextDecorationType) {
 		this._setNativeText();
 	}
 
-	[textTransformProperty.setNative](value: TextTransform) {
+	[textTransformProperty.setNative](value: Enums.TextTransformType) {
 		this._setNativeText();
 	}
 
@@ -369,7 +370,7 @@ export class TextBase extends TextBaseCommon {
 		return mas;
 	}
 
-	getBaselineOffset(font: UIFont, align?: VerticalAlignmentType): number {
+	getBaselineOffset(font: UIFont, align?: Enums.VerticalAlignmentTextType): number {
 		if (!align || ['stretch', 'baseline'].includes(align)) {
 			return 0;
 		}
@@ -394,7 +395,7 @@ export class TextBase extends TextBaseCommon {
 			return (font.descender - font.ascender) / 2 - font.descender;
 		}
 
-		if (align === 'super') {
+		if (align === 'sup') {
 			return -this.fontSize * 0.4;
 		}
 
@@ -424,7 +425,7 @@ export class TextBase extends TextBaseCommon {
 			attrDict[NSBackgroundColorAttributeName] = backgroundColor.ios;
 		}
 
-		const textDecoration: TextDecoration = getClosestPropertyValue(textDecorationProperty, span);
+		const textDecoration: Enums.TextDecorationType = getClosestPropertyValue(textDecorationProperty, span);
 
 		if (textDecoration) {
 			const underline = textDecoration.indexOf('underline') !== -1;
@@ -446,7 +447,7 @@ export class TextBase extends TextBaseCommon {
 	}
 }
 
-export function getTransformedText(text: string, textTransform: TextTransform): string {
+export function getTransformedText(text: string, textTransform: Enums.TextTransformType): string {
 	if (!text || !isString(text)) {
 		return '';
 	}

@@ -3,7 +3,7 @@ import { Color } from '../../color';
 import { FormattedString } from '../text-base/formatted-string';
 import { Style } from '../styling/style';
 import { Property, CssProperty } from '../core/properties';
-import { KeyboardInputType } from '../enums';
+import { Enums } from '../enums';
 
 /**
  * Represents the base class for all editable text views.
@@ -65,10 +65,6 @@ export class EditableTextBase extends TextBase {
 	public _setInputType(inputType: number): void;
 	//@endprivate
 }
-
-export type ReturnKeyButtonType = 'done' | 'next' | 'go' | 'search' | 'send';
-export type UpdateTextTriggerType = 'focusLost' | 'textChanged';
-export type AutocapitalizationInputType = 'none' | 'words' | 'sentences' | 'allcharacters';
 
 export const keyboardTypeProperty: Property<EditableTextBase, KeyboardInputType>;
 export const returnKeyTypeProperty: Property<EditableTextBase, ReturnKeyButtonType>;

@@ -12,7 +12,8 @@ import { ViewBase } from '../../core/view-base';
 import { backgroundColorProperty, backgroundInternalProperty } from '../../styling/style-properties';
 import { Image } from '../../image';
 import { Label } from '../../label';
-import { textTransformProperty, TextTransformType } from '../../text-base';
+import { textTransformProperty } from '../../text-base';
+import { Enums } from '../../enums';
 
 @CSSType('TabStripItem')
 export class TabStripItem extends View implements TabStripItemDefinition, AddChildFromBuilder {
@@ -269,13 +270,13 @@ export class TabStripItem extends View implements TabStripItemDefinition, AddChi
 		return tabStripParent && tabStripParent.setTabBarItemBackgroundColor(this, value);
 	}
 
-	[textTransformProperty.getDefault](): TextTransformType {
+	[textTransformProperty.getDefault](): Enums.TextTransformType {
 		const parent = <TabStrip>this.parent;
 		const tabStripParent = parent && <TabNavigationBase>parent.parent;
 
 		return tabStripParent && tabStripParent.getTabBarItemTextTransform(this);
 	}
-	[textTransformProperty.setNative](value: TextTransformType) {
+	[textTransformProperty.setNative](value: Enums.TextTransformType) {
 		const parent = <TabStrip>this.parent;
 		const tabStripParent = parent && <TabNavigationBase>parent.parent;
 

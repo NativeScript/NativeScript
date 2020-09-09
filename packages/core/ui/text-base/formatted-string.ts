@@ -6,7 +6,7 @@ import { AddArrayFromBuilder, AddChildFromBuilder } from '../core/view';
 import { ViewBase } from '../core/view-base';
 import { Color } from '../../color';
 import { FontStyle, FontWeight } from '../styling/font';
-import { TextDecorationType } from '../text-base';
+import { Enums } from '../enums';
 
 export class FormattedString extends ViewBase implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
 	private _spans: ObservableArray<Span>;
@@ -45,10 +45,10 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 		this.style.fontWeight = value;
 	}
 
-	get textDecoration(): TextDecorationType {
+	get textDecoration(): Enums.TextDecorationType {
 		return this.style.textDecoration;
 	}
-	set textDecoration(value: TextDecorationType) {
+	set textDecoration(value: Enums.TextDecorationType) {
 		this.style.textDecoration = value;
 	}
 
