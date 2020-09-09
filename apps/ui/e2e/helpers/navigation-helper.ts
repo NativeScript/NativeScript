@@ -129,15 +129,24 @@ export class NavigationHelper {
     }
 
     private async cacheAllElements(cachedElements: ICachedElement): Promise<void> {
-        const allSamples = await this._driver.findElementsByClassName(this._driver.locators.button);
+				const allSamples = await this._driver.findElementsByClassName(this._driver.locators.button);
         for (let index = 0; index < allSamples.length; index++) {
             const element = allSamples[index];
             const rect = await element.getRectangle();
-            const text = (await element.text()).toLowerCase();
-            if (!cachedElements.children.has(text)) {
-                console.log(text);
-                cachedElements.children.set(text, { parent: cachedElements, name: text, rect: rect, children: new Map() });
-            }
+						const text = (await element.text()).toLowerCase();
+
+						if (cachedElements.children.has(text)) continue
+
+						logInfo(text);
+						cachedElements.children.set(
+							  text,
+							  {
+								    parent: cachedElements,
+								    name: text,
+								    rect: rect,
+								    children: new Map()
+							  }
+					  );
         }
     }
 }
