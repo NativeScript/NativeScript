@@ -57,7 +57,7 @@ export const systemAppearanceChangedEvent: string;
 /**
  * Boolean to enable/disable systemAppearanceChanged
  */
-export let autoSystemAppearanceChanged = true;
+export let autoSystemAppearanceChanged: boolean;
 
 /**
  * enable/disable systemAppearanceChanged
