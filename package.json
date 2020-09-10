@@ -21,7 +21,7 @@
     "apps-ui:clean": "cd apps/ui && rimraf -- hooks node_modules platforms package-lock.json webpack.config.js && $npm_package_config_npm_alias i && rimraf -- package-lock.json",
     "core:lint": "cd packages/core && eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/core/**",
     "core:setup": "npm run webpack:build",
-    "core:build": "tsc -p packages/core/tsconfig.lib.json --outDir dist/packages/core && copyfiles -u packages/core/*.md packages/core/package.json dist/packages/core",
+    "core:build": "tsc -p packages/core/tsconfig.lib.json --outDir dist/packages/core && cpy 'packages/core/*.md' 'packages/core/package.json' 'dist/packages/core'",
     "core:build.npm": "npm run core:build && copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/**/*.d.ts\" dist && copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/js-libs/**/*\" dist && copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/cli-hooks/**/*.js\" dist && copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/platforms/**/*\" dist && copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/fetch/**/*\" dist && copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/css/**/*\" dist && copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/css-value/**/*\" dist && cd dist/packages/core && npm pack && mv *.tgz ..",
     "core:unit": "cd packages/core/__tests__ && tsc && mocha",
     "core:unit.watch": "cd packages/core/__tests__ && tsc && mocha --watch",
