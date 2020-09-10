@@ -5,7 +5,7 @@ const {
     getPackageJson,
     getProjectDir,
     writePackageJson,
-} = require("../projectHelpers");
+} = require("../helpers/projectHelpers");
 const { forceUpdateProjectFiles } = require("../helpers/projectFilesManager");
 const { forceUpdateProjectDeps } = require("../helpers/dependencyManager");
 

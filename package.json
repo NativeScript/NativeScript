@@ -1,6 +1,6 @@
 {
   "name": "nativescript",
-  "version": "7.0.0",
+  "version": "7.0.2",
   "license": "MIT",
   "config": {
     "npm_alias": "npm"
@@ -36,7 +36,11 @@
     "webpack:test": "cd packages/webpack && npm run tsc && npm run jasmine",
     "webpack:build": "cd packages/webpack npm run setup && mkdir -p ../../dist/packages && mv \"$(npm pack | tail -n 1)\" ../../dist/packages/nativescript-webpack.tgz"
   },
-  "private": true,
+	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/NativeScript/NativeScript.git"
+	},
   "dependencies": {
     "nativescript-theme-core": "^1.0.4"
   },

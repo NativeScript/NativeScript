@@ -358,3 +358,6 @@ export function initGlobal() {
 		};
 	}
 }
+if (!global.NativeScriptHasInitGlobal) {
+    initGlobal();
+}

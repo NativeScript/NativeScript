@@ -1,4 +1,4 @@
-﻿import { NavigationEntry } from '../ui/frame';
+import { NavigationEntry } from '../ui/frame';
 import { View } from '../ui/core/view';
 import { Observable, EventData } from '../data/observable';
 
@@ -57,7 +57,7 @@ export const systemAppearanceChangedEvent: string;
 /**
  * Boolean to enable/disable systemAppearanceChanged
  */
-export let autoSystemAppearanceChanged = true;
+export let autoSystemAppearanceChanged: boolean;
 
 /**
  * enable/disable systemAppearanceChanged

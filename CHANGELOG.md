@@ -1,3 +1,32 @@
+## [7.0.2](https://github.com/NativeScript/NativeScript/compare/7.0.0...7.0.2) (2020-09-10)
+
+
+### Bug Fixes
+
+* **core:** autoSystemAppearanceChanged typings in ambient context fix ([c30a9c3](https://github.com/NativeScript/NativeScript/commit/c30a9c3e3569e0367056bfd80fa730ae79e29066))
+* **core:** bundle-config-loader global handling ([#8838](https://github.com/NativeScript/NativeScript/issues/8838)) ([1623a56](https://github.com/NativeScript/NativeScript/commit/1623a567b6eaa195d075936103d2f7d829e1fa07))
+* **webpack:** verify now works properly ([f7713c4](https://github.com/NativeScript/NativeScript/commit/f7713c40a63959c2b5934a25bd3577f07d0401c0))
+
+
+
+## [7.0.1](https://github.com/NativeScript/NativeScript/compare/7.0.0...7.0.1) (2020-09-09)
+
+
+### Bug Fixes
+
+* **webpack:** react config ([#8822](https://github.com/NativeScript/NativeScript/issues/8822)) ([354b935](https://github.com/NativeScript/NativeScript/commit/354b935c6a334de3d418495b11674a799293a8bd))
+* invalid cli tag version ([#8821](https://github.com/NativeScript/NativeScript/issues/8821)) ([d51abef](https://github.com/NativeScript/NativeScript/commit/d51abef6bfeb66ed647d5bd2e1711d0ce9d07113))
+* **webpack:** apply-css-loader not applying css ([#8811](https://github.com/NativeScript/NativeScript/issues/8811)) ([c1a2d54](https://github.com/NativeScript/NativeScript/commit/c1a2d543b8a9aad0551ae5bb445ef4e08bac99b2))
+* **webpack:** Change NativeClass properties to enumerable ([#8813](https://github.com/NativeScript/NativeScript/issues/8813)) ([e4a2930](https://github.com/NativeScript/NativeScript/commit/e4a2930c6a019e3b65a7968afe4fa2653246ecf4))
+
+
+### Features
+
+* **core:** boolean to disable systemAppearanceChanged (theme) ([#8827](https://github.com/NativeScript/NativeScript/issues/8827)) ([5286adf](https://github.com/NativeScript/NativeScript/commit/5286adf081cb75ea17251edd498266be7fe7189a))
+* **core:** export additional properties for plugin usage ([#8835](https://github.com/NativeScript/NativeScript/issues/8835)) ([a2e1aa2](https://github.com/NativeScript/NativeScript/commit/a2e1aa246e6a9cbdd6d2c4647c9740ef411ad51a))
+
+
+
 # [7.0.0](https://github.com/NativeScript/NativeScript/compare/6.5.15...7.0.0) (2020-09-03)
 
 
