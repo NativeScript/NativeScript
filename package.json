@@ -7,7 +7,11 @@
     "start": "nps",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
   },
-  "private": true,
+	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/NativeScript/NativeScript.git"
+	},
   "dependencies": {
     "nativescript-theme-core": "^1.0.4"
   },
