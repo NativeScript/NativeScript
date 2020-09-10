@@ -1,3 +1,14 @@
+## [7.0.2](https://github.com/NativeScript/NativeScript/compare/7.0.0...7.0.2) (2020-09-10)
+
+
+### Bug Fixes
+
+* **core:** autoSystemAppearanceChanged typings in ambient context fix ([c30a9c3](https://github.com/NativeScript/NativeScript/commit/c30a9c3e3569e0367056bfd80fa730ae79e29066))
+* **core:** bundle-config-loader global handling ([#8838](https://github.com/NativeScript/NativeScript/issues/8838)) ([1623a56](https://github.com/NativeScript/NativeScript/commit/1623a567b6eaa195d075936103d2f7d829e1fa07))
+* **webpack:** verify now works properly ([f7713c4](https://github.com/NativeScript/NativeScript/commit/f7713c40a63959c2b5934a25bd3577f07d0401c0))
+
+
+
 ## [7.0.1](https://github.com/NativeScript/NativeScript/compare/7.0.0...7.0.1) (2020-09-09)
 
 
