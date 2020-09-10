@@ -300,12 +300,8 @@
           "builder": "@nrwl/workspace:run-commands",
           "options": {
             "commands": [
-              {
-                "command": "./build.sh"
-              },
-              {
-                "command": "cp -R dist/package/platforms/* ../../packages/core/platforms"
-              }
+              "./build.sh",
+              "cp -R dist/package/platforms/* ../../packages/core/platforms"
             ],
             "cwd": "packages/ui-mobile-base",
             "parallel": false
@@ -337,12 +333,8 @@
           "builder": "@nrwl/workspace:run-commands",
           "options": {
             "commands": [
-              {
-                "command": "npm run tsc"
-              },
-              {
-                "command": "npm run jasmine"
-              }
+              "npm run tsc",
+              "npm run jasmine"
             ],
             "cwd": "packages/webpack",
             "parallel": false
@@ -353,15 +345,9 @@
           "outputs": ["dist/packages"],
           "options": {
             "commands": [
-              {
-                "command": "npm run setup"
-              },
-              {
-                "command": "mkdir -p ../../dist/packages"
-              },
-              {
-                "command": "mv \"$(npm pack | tail -n 1)\" ../../dist/packages/nativescript-webpack.tgz"
-              }
+              "npm run setup",
+              "mkdir -p ../../dist/packages",
+              "mv \"$(npm pack | tail -n 1)\" ../../dist/packages/nativescript-webpack.tgz"
             ],
             "cwd": "packages/webpack",
             "parallel": false
