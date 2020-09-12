@@ -1,4 +1,6 @@
-interface IConfigPlaform {
+import type {InstrumentationMode} from '../profiling'
+
+interface IConfigPlatform {
 	/**
 	 * App's bundle id
 	 */
@@ -10,9 +12,10 @@ interface IConfigPlaform {
 	discardUncaughtJsExceptions?: boolean;
 }
 
-interface IConfigIOS extends IConfigPlaform {}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface IConfigIOS extends IConfigPlatform {}
 
-interface IConfigAndroid extends IConfigPlaform {
+interface IConfigAndroid extends IConfigPlatform {
 	/**
 	 * These are the v8 runtime flags you can pass in, you must have "--expose_gc" as this is used in the runtime
 	 */
@@ -45,11 +48,6 @@ interface IConfigAndroid extends IConfigPlaform {
 	 * Docs: https://docs.nativescript.org/core-concepts/android-runtime/advanced-topics/memory-management
 	 */
 	gcThrottleTime?: number;
-
-	/**
-	 * Enabled "timeline" profiling by setting this key to "timeline", default: ""
-	 */
-	profiling?: string;
 
 	/**
 	 * "none" & "full" is supported, "full" is depreciated
@@ -91,8 +89,8 @@ interface IConfigAndroid extends IConfigPlaform {
 	enableLineBreakpoints?: boolean;
 
 	/**
-	 * Enabled the multithreaded JavaScript engine, this will probably break plugins...
-	 * Disabled/Default: false
+	 * Enable the multithreaded JavaScript engine, this will probably break plugins...
+	 * Default: false - disabled.
 	 */
 	enableMultithreadedJavascript?: boolean;
 }
@@ -104,9 +102,13 @@ export interface NativeScriptConfig {
 	 */
 	id?: string;
 	/**
-	 * App's main entry file
+	 * App's main entry file (currently ignored - set it in package.json main field)
 	 */
 	main?: string;
+	/**
+	 * Path to the app source directory
+	 * This is often the `src` or `app` directory however can be changed.
+	 */
 	appPath?: string;
 	/**
 	 * App_Resources path
@@ -131,4 +133,15 @@ export interface NativeScriptConfig {
 	 * Various Android specific configurations including Android runtime flags.
 	 */
 	android?: IConfigAndroid;
+	/**
+	 * Enable profiling for the application. Default: no profiling
+	 * In most cases when profiling, you will want to use "timeline"
+	 */
+	profiling?: InstrumentationMode;
+	/**
+	 * Set the default CSS parser that NativeScript will use.
+	 * Default: css-tree
+	 */
+	cssParser?: 'rework' | 'nativescript' | 'css-tree';
 }
+
