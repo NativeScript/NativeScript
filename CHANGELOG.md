@@ -1,3 +1,12 @@
+## [7.0.3](https://github.com/NativeScript/NativeScript/compare/7.0.0...7.0.3) (2020-09-12)
+
+
+### Bug Fixes
+
+* add missing configuration keys and move profiling out of android key ([#8847](https://github.com/NativeScript/NativeScript/issues/8847)) ([d69e568](https://github.com/NativeScript/NativeScript/commit/d69e568a4b6505e1ceef33a56100996199bf2d4b))
+
+
+
 ## [7.0.2](https://github.com/NativeScript/NativeScript/compare/7.0.0...7.0.2) (2020-09-10)
 
 
