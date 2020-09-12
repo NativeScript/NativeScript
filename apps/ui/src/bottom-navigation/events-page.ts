@@ -1,25 +1,25 @@
 import { EventData } from '@nativescript/core/data/observable';
 import { Page } from '@nativescript/core/ui/page';
-import { Tabs, SelectedIndexChangedEventData } from '@nativescript/core/ui/tabs';
+import { BottomNavigation, SelectedIndexChangedEventData } from '@nativescript/core/ui/bottom-navigation';
 
 export function goToFirst(args: EventData) {
 	console.log('---> goToFirst');
 	const page = <Page>(<any>args.object).page;
-	const bottomNav = <Tabs>page.getViewById('bottomNav');
+	const bottomNav = <BottomNavigation>page.getViewById('bottomNav');
 	bottomNav.selectedIndex = 0;
 }
 
 export function goToSecond(args: EventData) {
 	console.log('---> goToSecond');
 	const page = <Page>(<any>args.object).page;
-	const bottomNav = <Tabs>page.getViewById('bottomNav');
+	const bottomNav = <BottomNavigation>page.getViewById('bottomNav');
 	bottomNav.selectedIndex = 1;
 }
 
 export function goToThird(args: EventData) {
 	console.log('---> goToThird');
 	const page = <Page>(<any>args.object).page;
-	const bottomNav = <Tabs>page.getViewById('bottomNav');
+	const bottomNav = <BottomNavigation>page.getViewById('bottomNav');
 	bottomNav.selectedIndex = 2;
 }
 
