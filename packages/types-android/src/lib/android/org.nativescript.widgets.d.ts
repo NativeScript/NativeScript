@@ -460,6 +460,7 @@
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet);
 
                 setSwipePageEnabled(enabled: boolean): void;
+							  setAnimationEnabled(enabled: boolean): void;
             }
 
             export class TabItemSpec {
