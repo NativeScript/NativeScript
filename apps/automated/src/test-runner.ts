@@ -200,15 +200,6 @@ export function isRunningOnEmulator(): boolean {
 // TODO: uncomment this
 // allTests["BOTTOM-NAVIGATION-NAVIGATION"] = bottomNavigationNavigationTests;
 
-	import * as tabsTests from './ui/tabs/tabs-tests';
-	allTests['TABS'] = tabsTests;
-
-	import * as tabsTestsNew from './ui/tabs/tabs-tests-new';
-	allTests['TABS-NEW'] = tabsTestsNew;
-
-	import * as tabsNavigationTests from './ui/tabs/tabs-navigation-tests';
-	allTests['TABS-NAVIGATION'] = tabsNavigationTests;
-
 	import * as tabViewTests from './ui/tab-view/tab-view-tests';
 	allTests['TAB-VIEW'] = tabViewTests;
 
