@@ -5,12 +5,15 @@
     </Page.actionBar>
     
     <GridLayout rows="2*, *">
+      <!-- background color transparent here to hide children overflow -->
+      <AbsoluteLayout row="0" backgroundColor="transparent">
       <!-- Root layout demo -->
-      <RootLayout row="0">
+      <RootLayout height="100%" width="100%">
         <GridLayout height="100%" backgroundColor="#232652">
           <Label textAlignment="center" fontWeight="bold" color="#fff" text="ROOT LAYOUT CONTENT"></Label>
         </GridLayout>
       </RootLayout>
+      </AbsoluteLayout>
 
       <!-- Root layout controls -->
       <StackLayout row="1">
