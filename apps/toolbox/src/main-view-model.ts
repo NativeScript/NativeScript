@@ -61,10 +61,13 @@ export class HelloWorldModel extends Observable {
 			view: this.getPopup('#232652', 110, 0, 0, 500),
 			options: {
 				shadeCover: {
-					color: '#000',
+					color: 'pink',
 					opacity: 0.3,
 					tapToClose: false,
 					height: 350,
+					exitAnimation: {
+						scaleXTo: 0,
+					},
 				},
 				enterAnimation: {
 					opacity: 1,
@@ -82,8 +85,8 @@ export class HelloWorldModel extends Observable {
 			view: this.getPopup('#E1E4E8', 110, 30, -300, -300),
 			options: {
 				shadeCover: {
-					color: '#303030', //'linear-gradient(to bottom, #E1E4E8, #FFF)',
-					opacity: 0.8,
+					color: '#ffffdd', //'linear-gradient(to bottom, #E1E4E8, #FFF)',
+					opacity: 0.5,
 					tapToClose: true,
 					height: 400,
 					ignoreShadeRestore: true,
@@ -111,7 +114,7 @@ export class HelloWorldModel extends Observable {
 
 	bringToFront(args: EventData): void {
 		getRootLayout()
-			.bringToFront(this.popupViews[(<any>args.object).popupIndex].view)
+			.bringToFront(this.popupViews[(<any>args.object).popupIndex].view, true)
 			.then(() => console.log('brought to front'))
 			.catch((ex) => console.error(ex));
 	}

@@ -65,7 +65,7 @@ export class RootLayoutBase extends GridLayout {
 		});
 	}
 
-	// TODO: pass in optional animation parameter here to overwrite close animation declared when opening popup
+	// optional animation parameter to overwrite close animation declared when opening popup
 	// ability to remove any view instance from composite views
 	close(view: View, exitAnimation?: AnimationDefinition): Promise<void> {
 		return new Promise((resolve, reject) => {
@@ -75,35 +75,39 @@ export class RootLayoutBase extends GridLayout {
 					// use exitAnimation that is passed in and fallback to the exitAnimation passed in when opening
 					const exitAnimationDefinition = exitAnimation || this.popupViews[popupIndex]?.options?.exitAnimation;
 
+					// Remove view from local array
+					const poppedView = this.popupViews[popupIndex];
+					this.popupViews.splice(popupIndex, 1);
+
+					// update shade cover with the topmost popupView options (if not specifically told to ignore)
+					const shadeCoverOptions = this.popupViews[this.popupViews.length - 1]?.options?.shadeCover;
+					if (shadeCoverOptions && !poppedView?.options?.shadeCover.ignoreShadeRestore) {
+						this.updateShadeCover(this.shadeCover, shadeCoverOptions);
+					}
+
 					if (exitAnimationDefinition) {
 						const exitAnimation = new Animation([{ ...exitAnimationDefinition, target: view }]);
-						return exitAnimation
-							.play()
+						const exitAnimations: Promise<any>[] = [exitAnimation.play()];
+
+						// also remove shade cover if this is the last opened popup view
+						if (this.popupViews.length === 0) {
+							exitAnimations.push(this.closeShadeCover(poppedView.options.shadeCover));
+						}
+						return Promise.all(exitAnimations)
 							.then(() => {
-								// Remove view from local array
-								const poppedView = this.popupViews[popupIndex];
-								this.popupViews.splice(popupIndex, 1);
-
-								// update shade cover with the topmost popupView options (if not specifically told to ignore)
-								const shadeCoverOptions = this.popupViews[this.popupViews.length - 1]?.options?.shadeCover;
-								if (shadeCoverOptions && !poppedView?.options?.shadeCover.ignoreShadeRestore) {
-									this.updateShadeCover(this.shadeCover, shadeCoverOptions);
-								}
-
 								this.removeChild(view);
-								this.removeShadeCover();
 								resolve();
 							})
 							.catch((ex) => reject(ex));
 					}
 					this.removeChild(view);
-					this.removeShadeCover();
+					this.closeShadeCover(poppedView.options.shadeCover);
 					resolve();
 				} catch (ex) {
 					reject(ex);
 				}
 			} else {
-				reject(`View ${view} not found`);
+				console.log(`View ${view} not found`);
 			}
 		});
 	}
@@ -111,12 +115,11 @@ export class RootLayoutBase extends GridLayout {
 	closeAll(): Promise<void> {
 		return new Promise((resolve, reject) => {
 			try {
-				// remove all children in the popupViews array
-				const closePopupViews = [];
-				this.popupViews.forEach((popupView) => {
-					closePopupViews.push(this.close(popupView.view));
-				});
-				return Promise.all(closePopupViews);
+				while (this.popupViews.length > 0) {
+					// remove all children in the popupViews array
+					this.close(this.popupViews[this.popupViews.length - 1].view);
+				}
+				resolve();
 			} catch (ex) {
 				reject(ex);
 			}
@@ -135,14 +138,18 @@ export class RootLayoutBase extends GridLayout {
 					this.popupViews.splice(this.getPopupIndex(view), 1);
 					this.popupViews.push(currentView);
 
-					// TODO: try to modify subview without using removeChild and addChild
-					// for better performance
 					if (this.hasChild(view)) {
 						if (animated) {
-							// TODO: maybe add a flag not to destroy the view when closing
-							this.close(view).then(() => {
-								this.open(currentView.view, currentView.options);
-							});
+							const exitAnimation = this.getViewExitAnimation(view);
+							if (exitAnimation) {
+								exitAnimation.play().then(() => {
+									this._bringToFront(view);
+									const enterAnimation = this.getViewEnterAnimation(currentView.view);
+									if (enterAnimation) {
+										enterAnimation.play();
+									}
+								});
+							}
 						} else {
 							this._bringToFront(view);
 						}
@@ -165,19 +172,49 @@ export class RootLayoutBase extends GridLayout {
 		});
 	}
 
+	private getViewEnterAnimation(view: View): Animation {
+		const popupIndex = this.getPopupIndex(view);
+		if (popupIndex === -1) {
+			return;
+		}
+		const enterAnimation = this.popupViews[popupIndex]?.options?.enterAnimation;
+		if (!enterAnimation) {
+			return;
+		}
+		return new Animation([{ ...enterAnimation, target: view }]);
+	}
+
+	private getViewExitAnimation(view: View): Animation {
+		const popupIndex = this.getPopupIndex(view);
+		if (popupIndex === -1) {
+			return;
+		}
+		const exitAnimation = this.popupViews[popupIndex]?.options?.exitAnimation;
+		if (!exitAnimation) {
+			return;
+		}
+		return new Animation([{ ...exitAnimation, target: view }]);
+	}
+
 	protected _bringToFront(view: View) {}
 
 	private hasChild(view: View): boolean {
 		return this.getChildIndex(view) >= 0;
 	}
 
-	private removeShadeCover(): void {
+	private closeShadeCover(shadeCoverOptions?: ShadeCoverOptions): Promise<void> {
 		// if shade cover is displayed and the last popup is closed, also close the shade cover
-		if (this.shadeCover && this.getChildrenCount() === this.staticChildCount + 1) {
-			this.removeChild(this.shadeCover);
-			this.shadeCover.off('loaded');
-			this.shadeCover = null;
+		if (this.shadeCover) {
+			return this._closeShadeCover(this.shadeCover, shadeCoverOptions).then(() => {
+				this.removeChild(this.shadeCover);
+				this.shadeCover.off('loaded');
+				this.shadeCover = null;
+			});
 		}
+	}
+
+	protected _closeShadeCover(view: View, shadeOptions: ShadeCoverOptions): Promise<void> {
+		return new Promise(() => {});
 	}
 
 	private createShadeCover(shadeOptions: ShadeCoverOptions): View {
@@ -204,7 +241,9 @@ export class RootLayoutBase extends GridLayout {
 
 	protected _initShadeCover(view: View, shadeOption: ShadeCoverOptions): void {}
 
-	protected _updateShadeCover(view: View, shadeOption: ShadeCoverOptions): void {}
+	protected _updateShadeCover(view: View, shadeOption: ShadeCoverOptions): Promise<void> {
+		return new Promise(() => {});
+	}
 
 	private getPopupIndex(view: View): number {
 		return this.popupViews.findIndex((popupView) => popupView.view === view);
@@ -222,8 +261,8 @@ export const defaultShadeCoverOptions: ShadeCoverOptions = {
 	enterAnimation: {
 		translateXFrom: 0,
 		translateYFrom: 1000,
-		scaleXFrom: 0,
-		scaleYFrom: 0,
+		scaleXFrom: 1,
+		scaleYFrom: 1,
 		rotateFrom: 0,
 		opacityFrom: 0,
 		duration: 0.5,
@@ -231,8 +270,8 @@ export const defaultShadeCoverOptions: ShadeCoverOptions = {
 	exitAnimation: {
 		translateXTo: 0,
 		translateYTo: 1000,
-		scaleXTo: 0,
-		scaleYTo: 0,
+		scaleXTo: 1,
+		scaleYTo: 1,
 		rotateTo: 0,
 		opacityTo: 0,
 		duration: 0.5,

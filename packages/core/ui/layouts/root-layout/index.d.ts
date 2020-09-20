@@ -4,7 +4,8 @@ import { View } from 'ui/core/view';
 export class RootLayout extends GridLayout {
 	open(view: View, options?: RootLayoutOptions): Promise<void>;
 	close(view: View, exitAnimation?: AnimationDefinition): Promise<void>;
-	bringToFront(view: View): Promise<void>;
+	bringToFront(view: View, animated?: boolean): Promise<void>;
+	closeAll(): Promise<void>;
 }
 
 export function getRootLayout(): RootLayout;
