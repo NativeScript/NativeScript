@@ -234,8 +234,8 @@ export class TextView extends TextViewBaseCommon {
 
 	public showText() {
 		this._isShowingHint = false;
-		this._refreshColor();
 		this._setNativeText();
+		this._refreshColor();
 		this.requestLayout();
 	}
 
