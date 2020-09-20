@@ -62,7 +62,7 @@ export class HelloWorldModel extends Observable {
 			options: {
 				shadeCover: {
 					color: '#000',
-					opacity: 0.7,
+					opacity: 0.3,
 					tapToClose: false,
 					height: 350,
 				},
@@ -85,6 +85,7 @@ export class HelloWorldModel extends Observable {
 					color: '#303030', //'linear-gradient(to bottom, #E1E4E8, #FFF)',
 					opacity: 0.8,
 					tapToClose: true,
+					height: 400,
 					ignoreShadeRestore: true,
 				},
 				enterAnimation: {

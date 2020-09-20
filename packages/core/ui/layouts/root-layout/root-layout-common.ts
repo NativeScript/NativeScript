@@ -1,7 +1,7 @@
 import { Color } from '../../../color';
 import { CSSType, View } from '../../core/view';
 import { GridLayout } from '../grid-layout';
-import { RootLayout } from '.';
+import { RootLayout, RootLayoutOptions, ShadeCoverOptions, ShadeCoverEnterAnimation, ShadeCoverExitAnimation } from '.';
 import { Animation, AnimationDefinition } from '../../animation';
 import { LinearGradient } from '../../styling/linear-gradient';
 
@@ -43,8 +43,7 @@ export class RootLayoutBase extends GridLayout {
 					}
 
 					// overwrite current shadeCover options if topmost popupview has additional shadeCover configurations
-					if (options?.shadeCover && this.shadeCover) {
-						console.log('options?.shadeCover', options?.shadeCover);
+					else if (options?.shadeCover && this.shadeCover) {
 						this.updateShadeCover(this.shadeCover, options.shadeCover);
 					}
 
@@ -125,21 +124,29 @@ export class RootLayoutBase extends GridLayout {
 	}
 
 	// bring any view instance open on the rootlayout to front of all the children visually
-	bringToFront(view: View): Promise<void> {
+	bringToFront(view: View, animated: boolean = false): Promise<void> {
 		return new Promise((resolve, reject) => {
 			try {
-				if (this.getPopupIndex(view) > -1) {
-					// TODO: try to modify subview without using removeChild and addChild
-					// for better performance
-					if (this.hasChild(view)) {
-						this.removeChild(view);
-						this.addChild(view);
-					}
-
+				const popupIndex = this.getPopupIndex(view);
+				// popupview should be present and not already the topmost view
+				if (popupIndex > -1 && popupIndex !== this.popupViews.length - 1) {
 					// keep the popupViews array in sync with the stacking of the views
 					const currentView = this.popupViews[this.getPopupIndex(view)];
 					this.popupViews.splice(this.getPopupIndex(view), 1);
 					this.popupViews.push(currentView);
+
+					// TODO: try to modify subview without using removeChild and addChild
+					// for better performance
+					if (this.hasChild(view)) {
+						if (animated) {
+							// TODO: maybe add a flag not to destroy the view when closing
+							this.close(view).then(() => {
+								this.open(currentView.view, currentView.options);
+							});
+						} else {
+							this._bringToFront(view);
+						}
+					}
 
 					// update shadeCover to reflect topmost's shadeCover options
 					const shadeCoverOptions = currentView?.options?.shadeCover;
@@ -149,7 +156,7 @@ export class RootLayoutBase extends GridLayout {
 
 					resolve();
 				} else {
-					reject(`View ${view} not found`);
+					console.log(`View ${view} not found or already at topmost`);
 				}
 			} catch (ex) {
 				// TODO: replace rejects with trace
@@ -157,6 +164,8 @@ export class RootLayoutBase extends GridLayout {
 			}
 		});
 	}
+
+	protected _bringToFront(view: View) {}
 
 	private hasChild(view: View): boolean {
 		return this.getChildIndex(view) >= 0;
@@ -166,27 +175,22 @@ export class RootLayoutBase extends GridLayout {
 		// if shade cover is displayed and the last popup is closed, also close the shade cover
 		if (this.shadeCover && this.getChildrenCount() === this.staticChildCount + 1) {
 			this.removeChild(this.shadeCover);
+			this.shadeCover.off('loaded');
 			this.shadeCover = null;
 		}
 	}
 
 	private createShadeCover(shadeOptions: ShadeCoverOptions): View {
 		const shadeCover = new GridLayout();
-		shadeCover.width = this.getMeasuredWidth();
 		shadeCover.verticalAlignment = 'bottom';
-		this.updateShadeCover(shadeCover, shadeOptions);
+		shadeCover.on('loaded', () => {
+			this._initShadeCover(shadeCover, shadeOptions);
+			this.updateShadeCover(shadeCover, shadeOptions);
+		});
 		return shadeCover;
 	}
 
 	private updateShadeCover(shade: View, shadeOptions: ShadeCoverOptions): void {
-		shade.height = shadeOptions.height || this.getMeasuredHeight();
-		if (shadeOptions.opacity !== undefined && shadeOptions.opacity !== null) {
-			shade.opacity = shadeOptions.opacity;
-		}
-		if (shadeOptions.color !== undefined && shadeOptions.color !== null) {
-			// TODO: pass in gradient color (see core implementation)
-			shade.backgroundColor = new Color(shadeOptions.color);
-		}
 		if (shadeOptions.tapToClose !== undefined && shadeOptions.tapToClose !== null) {
 			shade.off('tap');
 			if (shadeOptions.tapToClose) {
@@ -195,30 +199,43 @@ export class RootLayoutBase extends GridLayout {
 				});
 			}
 		}
+		this._updateShadeCover(shade, shadeOptions);
 	}
+
+	protected _initShadeCover(view: View, shadeOption: ShadeCoverOptions): void {}
+
+	protected _updateShadeCover(view: View, shadeOption: ShadeCoverOptions): void {}
 
 	private getPopupIndex(view: View): number {
 		return this.popupViews.findIndex((popupView) => popupView.view === view);
 	}
 }
 
-export class RootLayoutOptions {
-	// TODO: default to having a shade cover
-	shadeCover?: ShadeCoverOptions;
-	enterAnimation?: AnimationDefinition;
-	exitAnimation?: AnimationDefinition;
-}
-
-export class ShadeCoverOptions {
-	opacity?: number;
-	color?: string;
-	tapToClose?: boolean;
-	height?: number; // shade will be vertically aligned at bottom with the height specified
-	enterAnimation?: AnimationDefinition; // TODO: should these be a set of predefined animations? how do you handle the styles set before the animation to do the transitions
-	exitAnimation?: AnimationDefinition;
-	ignoreShadeRestore?: boolean; // overwrite default shade behavior
-}
-
 export function getRootLayout(): RootLayout {
 	return <RootLayout>global.rootLayout;
 }
+
+export const defaultShadeCoverOptions: ShadeCoverOptions = {
+	opacity: 0.5,
+	color: '#000000',
+	tapToClose: true,
+	enterAnimation: {
+		translateXFrom: 0,
+		translateYFrom: 1000,
+		scaleXFrom: 0,
+		scaleYFrom: 0,
+		rotateFrom: 0,
+		opacityFrom: 0,
+		duration: 0.5,
+	},
+	exitAnimation: {
+		translateXTo: 0,
+		translateYTo: 1000,
+		scaleXTo: 0,
+		scaleYTo: 0,
+		rotateTo: 0,
+		opacityTo: 0,
+		duration: 0.5,
+	},
+	ignoreShadeRestore: false,
+};
