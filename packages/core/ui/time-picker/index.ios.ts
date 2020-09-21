@@ -1,8 +1,13 @@
 import { TimePickerBase, timeProperty, minuteIntervalProperty, minuteProperty, minMinuteProperty, maxMinuteProperty, hourProperty, minHourProperty, maxHourProperty } from './time-picker-common';
 import { Color } from '../../color';
 import { colorProperty } from '../styling/style-properties';
+import { Device } from '../../platform';
 
 export * from './time-picker-common';
+
+const SUPPORT_DATE_PICKER_STYLE = parseFloat(Device.os) >= 14.0;
+const SUPPORT_TEXT_COLOR = parseFloat(Device.os) < 14.0;
+const DEFAULT_DATE_PICKER_STYLE = 1;
 
 function getDate(hour: number, minute: number): Date {
 	let components = NSDateComponents.alloc().init();
@@ -30,7 +35,9 @@ export class TimePicker extends TimePickerBase {
 	createNativeView() {
 		const picker = UIDatePicker.new();
 		picker.datePickerMode = UIDatePickerMode.Time;
-
+		if (SUPPORT_DATE_PICKER_STYLE) {
+			picker.preferredDatePickerStyle = DEFAULT_DATE_PICKER_STYLE;
+		}
 		return picker;
 	}
 
@@ -106,11 +113,13 @@ export class TimePicker extends TimePickerBase {
 	}
 
 	[colorProperty.getDefault](): UIColor {
-		return this.nativeViewProtected.valueForKey('textColor');
+		return SUPPORT_TEXT_COLOR ? this.nativeViewProtected.valueForKey('textColor') : UIColor.new();
 	}
 	[colorProperty.setNative](value: Color | UIColor) {
-		const color = value instanceof Color ? value.ios : value;
-		this.nativeViewProtected.setValueForKey(color, 'textColor');
+		if (SUPPORT_TEXT_COLOR) {
+			const color = value instanceof Color ? value.ios : value;
+			this.nativeViewProtected.setValueForKey(color, 'textColor');
+		}
 	}
 }
 
