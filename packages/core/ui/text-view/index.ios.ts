@@ -85,6 +85,7 @@ class NoScrollAnimationUITextView extends UITextView {
 @CSSType('TextView')
 export class TextView extends TextViewBaseCommon {
 	nativeViewProtected: UITextView;
+	nativeTextViewProtected: UITextView;
 	private _delegate: UITextViewDelegateImpl;
 	_isShowingHint: boolean;
 	public _isEditing: boolean;
@@ -114,11 +115,11 @@ export class TextView extends TextViewBaseCommon {
 	@profile
 	public onLoaded() {
 		super.onLoaded();
-		this.ios.delegate = this._delegate;
+		this.nativeTextViewProtected.delegate = this._delegate;
 	}
 
 	public onUnloaded() {
-		this.ios.delegate = null;
+		this.nativeTextViewProtected.delegate = null;
 		super.onUnloaded();
 	}
 
