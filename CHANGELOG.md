@@ -1,3 +1,12 @@
+## [7.0.5](https://github.com/NativeScript/NativeScript/compare/7.0.4-core...7.0.5) (2020-09-23)
+
+
+### Bug Fixes
+
+* **core:** bundle entry points and global handling ([#8884](https://github.com/NativeScript/NativeScript/issues/8884)) ([1f790ed](https://github.com/NativeScript/NativeScript/commit/1f790edc8032fd36bde4b7a24e4d1c1c4b4dea49))
+
+
+
 ## [7.0.4](https://github.com/NativeScript/NativeScript/compare/7.0.3-types-ios...7.0.4) (2020-09-23)
 
 
