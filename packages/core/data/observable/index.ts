@@ -97,7 +97,7 @@ export class Observable implements ObservableDefinition {
 	}
 	onListenerAdded(eventName: string, count: number) {}
 	onListenerRemoved(eventName: string, count: number) {}
-	
+
 	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void {
 		if (typeof eventNames !== 'string') {
 			throw new TypeError('Events name(s) must be string.');
@@ -164,7 +164,9 @@ export class Observable implements ObservableDefinition {
 	}
 
 	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
-		if (!observers) { return; }
+		if (!observers) {
+			return;
+		}
 		for (let i = observers.length - 1; i >= 0; i--) {
 			const entry = observers[i];
 			if (entry.once) {

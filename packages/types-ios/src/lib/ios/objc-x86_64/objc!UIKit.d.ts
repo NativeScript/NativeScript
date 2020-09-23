@@ -6101,6 +6101,8 @@ declare class UIDatePicker extends UIControl implements NSCoding {
 
 	minuteInterval: number;
 
+	preferredDatePickerStyle: number;
+
 	timeZone: NSTimeZone;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding

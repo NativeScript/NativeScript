@@ -1,3 +1,28 @@
+## [7.0.4](https://github.com/NativeScript/NativeScript/compare/7.0.3-types-ios...7.0.4) (2020-09-23)
+
+
+### Bug Fixes
+
+* **android-transitions:** remove hard-coded flip transition duration/curve ([#8851](https://github.com/NativeScript/NativeScript/issues/8851)) ([5f8d3d0](https://github.com/NativeScript/NativeScript/commit/5f8d3d03f7eac1bdcb1cf4c338734298d2ba86ab))
+* **ios:** text-view color refreshes properly after setting the text to keep the styles ([#8863](https://github.com/NativeScript/NativeScript/issues/8863)) ([313f476](https://github.com/NativeScript/NativeScript/commit/313f47637e2fd3d95acb56499cf72e8d6cde7aec))
+* **ios:** time-picker and date-picker for iOS 14 ([#8877](https://github.com/NativeScript/NativeScript/issues/8877)) ([45fb6c4](https://github.com/NativeScript/NativeScript/commit/45fb6c481b3ae7b3df2cd9f666e1813bdbaff0c7))
+
+
+### Features
+
+* **core:** global event handling ([#8830](https://github.com/NativeScript/NativeScript/issues/8830)) ([eb676fd](https://github.com/NativeScript/NativeScript/commit/eb676fdedf9e3db750bb1c0e7b48194faed2c772))
+
+
+
+## [7.0.3](https://github.com/NativeScript/NativeScript/compare/7.0.0...7.0.3) (2020-09-12)
+
+
+### Bug Fixes
+
+* add missing configuration keys and move profiling out of android key ([#8847](https://github.com/NativeScript/NativeScript/issues/8847)) ([d69e568](https://github.com/NativeScript/NativeScript/commit/d69e568a4b6505e1ceef33a56100996199bf2d4b))
+
+
+
 ## [7.0.2](https://github.com/NativeScript/NativeScript/compare/7.0.0...7.0.2) (2020-09-10)
 
 
