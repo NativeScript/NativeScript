@@ -1,3 +1,12 @@
+## [6.5.19](https://github.com/NativeScript/NativeScript/compare/6.5.18...6.5.19) (2020-09-23)
+
+
+### Bug Fixes
+
+* **ios:** time-picker and date-picker for iOS 14 ([#8876](https://github.com/NativeScript/NativeScript/issues/8876)) ([e1318b1](https://github.com/NativeScript/NativeScript/commit/e1318b12afa0fea22b22d210c0c5f57bc52c0c11))
+
+
+
 ## [6.5.18](https://github.com/NativeScript/NativeScript/compare/6.5.15...6.5.18) (2020-09-07)
 
 
