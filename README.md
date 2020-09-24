@@ -11,7 +11,7 @@ NativeScript
 [![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
 
 
-[NativeScript](http://www.nativescript.org) empowers you to access native api's from JavaScript directly. The framework currently provides iOS and Android runtimes for rich mobile development and can be utilized in a number of diverse use cases.
+[NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. The framework currently provides iOS and Android runtimes for rich mobile development and can be utilized in a number of diverse use cases.
 
 ## Getting Started and Installation
 
