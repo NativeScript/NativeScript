@@ -4,7 +4,7 @@ const { join, relative, isAbsolute } = require("path");
 const os = require("os");
 
 const { mkdir } = require("shelljs");
-// const { get } = require("request");
+const { get } = require("request");
 const { getProxySettings } = require("proxy-lib");
 const semver = require("semver");
 
@@ -66,39 +66,39 @@ function isWindows() {
 
 const downloadFile = (url, destinationFilePath, timeout) =>
     new Promise((resolve, reject) => {
-        // getRequestOptions(url, timeout)
-        //     .then(options =>
-        //         get(options)
-        //             .on("error", reject)
-        //             .pipe(createWriteStream(destinationFilePath, { autoClose: true }))
-        //             .on("finish", _ => {
-        //                 chmodSync(destinationFilePath, 0755);
-        //                 return resolve(destinationFilePath);
-        //             })
-        //     ).catch(reject);
+        getRequestOptions(url, timeout)
+            .then(options =>
+                get(options)
+                    .on("error", reject)
+                    .pipe(createWriteStream(destinationFilePath, { autoClose: true }))
+                    .on("finish", _ => {
+                        chmodSync(destinationFilePath, 0755);
+                        return resolve(destinationFilePath);
+                    })
+            ).catch(reject);
     });
 
 const getJsonFile = url =>
     new Promise((resolve, reject) => {
-        // getRequestOptions(url)
-        //     .then(options =>
-        //         get(options, (error, response, body) => {
-        //             if (error) {
-        //                 return reject(error);
-        //             }
+        getRequestOptions(url)
+            .then(options =>
+                get(options, (error, response, body) => {
+                    if (error) {
+                        return reject(error);
+                    }
 
-        //             if (!response || response.statusCode !== 200) {
-        //                 return reject(`Couldn't fetch ${url}! Response:${EOL}${response}`);
-        //             }
+                    if (!response || response.statusCode !== 200) {
+                        return reject(`Couldn't fetch ${url}! Response:${EOL}${response}`);
+                    }
 
-        //             try {
-        //                 const data = JSON.parse(body);
-        //                 resolve(data);
-        //             } catch (error) {
-        //                 reject(`Couldn't parse json data! Original error:${EOL}${error}`);
-        //             }
-        //         })
-        //     ).catch(reject);
+                    try {
+                        const data = JSON.parse(body);
+                        resolve(data);
+                    } catch (error) {
+                        reject(`Couldn't parse json data! Original error:${EOL}${error}`);
+                    }
+                })
+            ).catch(reject);
     });
 
 const getRequestOptions = (url, timeout) =>
