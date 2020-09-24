@@ -11,8 +11,12 @@ const ANDROID_CONFIGURATIONS_PATH = join(ANDROID_PROJECT_DIR, "build/configurati
 const getAndroidRuntimeVersion = (projectDir) => {
     try {
         const projectPackageJSON = getPackageJson(projectDir);
-
-        const version = projectPackageJSON["nativescript"]["tns-android"]["version"];
+				let version;
+			  if (projectPackageJSON["nativescript"]) {
+					  version = projectPackageJSON["nativescript"]["tns-android"]["version"];
+				} else {
+					  version = (projectPackageJSON["devDependencies"]["tns-android"] || projectPackageJSON["devDependencies"]["@nativescript/android"]).replace(/[~^]/, '');
+				}
         return version && toReleaseVersion(version);
     } catch (e) {
         return null;
