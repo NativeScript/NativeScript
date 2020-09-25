@@ -5,9 +5,8 @@ import { Device } from '../../platform';
 
 export * from './date-picker-common';
 
-const SUPPORT_DATE_PICKER_STYLE = parseFloat(Device.os) >= 14.0;
-const SUPPORT_TEXT_COLOR = parseFloat(Device.os) < 14.0;
-const DEFAULT_DATE_PICKER_STYLE = 1;
+const SUPPORT_DATE_PICKER_STYLE = parseFloat(Device.osVersion) >= 13.4;
+const SUPPORT_TEXT_COLOR = parseFloat(Device.osVersion) < 14.0;
 
 export class DatePicker extends DatePickerBase {
 	private _changeHandler: NSObject;
@@ -17,7 +16,7 @@ export class DatePicker extends DatePickerBase {
 		const picker = UIDatePicker.new();
 		picker.datePickerMode = UIDatePickerMode.Date;
 		if (SUPPORT_DATE_PICKER_STYLE) {
-			picker.preferredDatePickerStyle = DEFAULT_DATE_PICKER_STYLE;
+			picker.preferredDatePickerStyle = this.iosPreferredDatePickerStyle;
 		}
 		return picker;
 	}
