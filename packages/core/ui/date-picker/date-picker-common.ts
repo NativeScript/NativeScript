@@ -64,6 +64,7 @@ dateProperty.register(DatePickerBase);
 
 export const iosPreferredDatePickerStyleProperty = new Property<DatePickerBase, number>({
 	name: 'iosPreferredDatePickerStyle',
-	defaultValue: 0
+	defaultValue: 0,
+	valueConverter: (v) => parseInt(v),
 });
 iosPreferredDatePickerStyleProperty.register(DatePickerBase);

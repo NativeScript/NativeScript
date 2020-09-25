@@ -208,6 +208,7 @@ timeProperty.register(TimePickerBase);
 
 export const iosPreferredDatePickerStyleProperty = new Property<TimePickerBase, number>({
 	name: 'iosPreferredDatePickerStyle',
-	defaultValue: 0
+	defaultValue: 0,
+	valueConverter: (v) => parseInt(v),
 });
 iosPreferredDatePickerStyleProperty.register(TimePickerBase);
