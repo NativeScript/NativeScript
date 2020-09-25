@@ -246,7 +246,7 @@ export class ObservableArray<T> extends Observable {
 			eventName: CHANGE,
 			object: this,
 			action: ChangeType.Splice,
-			index: start,
+			index: Math.min(start, length),
 			removed: result,
 			addedCount: this._array.length + result.length - length,
 		});
