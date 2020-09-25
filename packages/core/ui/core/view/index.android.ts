@@ -48,6 +48,7 @@ import { Screen } from '../../../platform';
 import { AndroidActivityBackPressedEventData, android as androidApp } from '../../../application';
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
+import { accessibilityEnabledProperty } from '../../../acessibility/acessibility-properties';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -744,13 +745,6 @@ export class View extends ViewCommon {
 		org.nativescript.widgets.OriginPoint.setY(this.nativeViewProtected, value);
 	}
 
-	[automationTextProperty.getDefault](): string {
-		return this.nativeViewProtected.getContentDescription();
-	}
-	[automationTextProperty.setNative](value: string) {
-		this.nativeViewProtected.setContentDescription(value);
-	}
-
 	[isUserInteractionEnabledProperty.setNative](value: boolean) {
 		this.nativeViewProtected.setClickable(value);
 		this.nativeViewProtected.setFocusable(value);
@@ -790,6 +784,10 @@ export class View extends ViewCommon {
 	}
 	[opacityProperty.setNative](value: number) {
 		this.nativeViewProtected.setAlpha(float(value));
+	}
+
+	[accessibilityEnabledProperty.setNative](value: boolean): void {
+		this.nativeViewProtected.setFocusable(!!value);
 	}
 
 	[androidElevationProperty.getDefault](): number {

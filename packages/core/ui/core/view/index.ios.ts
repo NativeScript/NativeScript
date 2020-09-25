@@ -10,6 +10,7 @@ import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, Visibility, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
+import { accessibilityEnabledProperty, accessibilityHintProperty, accessibilityIdProperty, accessibilityLabelProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -553,12 +554,27 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.updateOriginPoint(this.originX, value);
 	}
 
-	[automationTextProperty.getDefault](): string {
+	[accessibilityIdProperty.getDefault](): string {
 		return this.nativeViewProtected.accessibilityLabel;
 	}
-	[automationTextProperty.setNative](value: string) {
+	[accessibilityIdProperty.setNative](value: string): void {
 		this.nativeViewProtected.accessibilityIdentifier = value;
-		this.nativeViewProtected.accessibilityLabel = value;
+	}
+
+	[accessibilityEnabledProperty.setNative](value: boolean): void {
+		this.nativeViewProtected.isAccessibilityElement = !!value;
+	}
+
+	[accessibilityValueProperty.setNative](value: string): void {
+		this.nativeViewProtected.accessibilityValue = value == null ? null : `${value}`;
+	}
+
+	[accessibilityLabelProperty.setNative](value: string): void {
+		this.nativeViewProtected.accessibilityLabel = value == null ? null : `${value}`;
+	}
+
+	[accessibilityHintProperty.setNative](value: string): void {
+		this.nativeViewProtected.accessibilityHint = value == null ? null : `${value}`;
 	}
 
 	[isUserInteractionEnabledProperty.getDefault](): boolean {

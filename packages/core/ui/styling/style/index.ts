@@ -11,6 +11,7 @@ import { Observable } from '../../../data/observable';
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from '../../text-base';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../acessibility/types';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -208,6 +209,13 @@ export class Style extends Observable implements StyleDefinition {
 	public alignSelf: AlignSelf;
 
 	// Accessibility properties
+	public accessible: boolean;
+	public accessibilityHidden: boolean;
+	public accessibilityRole: AccessibilityRole;
+	public accessibilityState: AccessibilityState;
+	public accessibilityLiveRegion: AccessibilityLiveRegion;
+	public accessibilityLanguage: string;
+	public accessibilityMediaSession: boolean;
 	public accessibilityStep: number;
 
 	public PropertyBag: {

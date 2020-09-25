@@ -22,6 +22,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import { TextTransform } from '../../text-base';
 
 import * as am from '../../animation';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../acessibility/types';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -735,6 +736,63 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.scaleY = value;
 	}
 
+	get accessible(): boolean {
+		return this.style.accessible;
+	}
+	set accessible(value: boolean) {
+		this.style.accessible = value;
+	}
+
+	get accessibilityHidden(): boolean {
+		return this.style.accessibilityHidden;
+	}
+	set accessibilityHidden(value: boolean) {
+		this.style.accessibilityHidden = value;
+	}
+
+	public accessibilityIdentifier: string;
+
+	get accessibilityRole(): AccessibilityRole {
+		return this.style.accessibilityRole;
+	}
+	set accessibilityRole(value: AccessibilityRole) {
+		this.style.accessibilityRole = value;
+	}
+
+	get accessibilityState(): AccessibilityState {
+		return this.style.accessibilityState;
+	}
+	set accessibilityState(value: AccessibilityState) {
+		this.style.accessibilityState = value;
+	}
+
+	public accessibilityLabel: string;
+	public accessibilityValue: string;
+	public accessibilityHint: string;
+
+	get accessibilityLiveRegion(): AccessibilityLiveRegion {
+		return this.style.accessibilityLiveRegion;
+	}
+	set accessibilityLiveRegion(value: AccessibilityLiveRegion) {
+		this.style.accessibilityLiveRegion = value;
+	}
+
+	get accessibilityLanguage(): string {
+		return this.style.accessibilityLanguage;
+	}
+	set accessibilityLanguage(value: string) {
+		this.style.accessibilityLanguage = value;
+	}
+
+	get accessibilityMediaSession(): boolean {
+		return this.style.accessibilityMediaSession;
+	}
+	set accessibilityMediaSession(value: boolean) {
+		this.style.accessibilityMediaSession = value;
+	}
+
+	public accessibilityTraits?: AccessibilityTrait[];
+
 	get androidElevation(): number {
 		return this.style.androidElevation;
 	}
@@ -751,7 +809,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	//END Style property shortcuts
 
-	public automationText: string;
 	public originX: number;
 	public originY: number;
 	public isEnabled: boolean;
@@ -1006,11 +1063,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return false;
 	}
 }
-
-export const automationTextProperty = new Property<ViewCommon, string>({
-	name: 'automationText',
-});
-automationTextProperty.register(ViewCommon);
 
 export const originXProperty = new Property<ViewCommon, number>({
 	name: 'originX',

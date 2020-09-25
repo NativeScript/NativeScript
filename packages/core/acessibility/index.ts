@@ -1,2 +1,3 @@
+export * from './acessibility-properties';
 export * from './fontscale-observable';
-export * from './properties';
+export * from './types';

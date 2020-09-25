@@ -9,36 +9,36 @@ export * from './slider-common';
 
 @NativeClass()
 class TNSSlider extends UISlider {
-  public owner: WeakRef<Slider>;
+	public owner: WeakRef<Slider>;
 
-  public static initWithOwner(owner: WeakRef<Slider>) {
-    const slider = TNSSlider.new() as TNSSlider;
-    slider.owner = owner;
+	public static initWithOwner(owner: WeakRef<Slider>) {
+		const slider = TNSSlider.new() as TNSSlider;
+		slider.owner = owner;
 
-    return slider;
-  }
+		return slider;
+	}
 
-  public accessibilityIncrement() {
-    const owner = this.owner.get();
-    if (!owner) {
-      this.value += 10;
-    } else {
-      this.value = owner._handlerAccessibilityIncrementEvent();
-    }
+	public accessibilityIncrement() {
+		const owner = this.owner.get();
+		if (!owner) {
+			this.value += 10;
+		} else {
+			this.value = owner._handlerAccessibilityIncrementEvent();
+		}
 
-    this.sendActionsForControlEvents(UIControlEvents.ValueChanged);
-  }
+		this.sendActionsForControlEvents(UIControlEvents.ValueChanged);
+	}
 
-  public accessibilityDecrement() {
-    const owner = this.owner.get();
-    if (!owner) {
-      this.value += 10;
-    } else {
-      this.value = owner._handlerAccessibilityDecrementEvent();
-    }
+	public accessibilityDecrement() {
+		const owner = this.owner.get();
+		if (!owner) {
+			this.value += 10;
+		} else {
+			this.value = owner._handlerAccessibilityDecrementEvent();
+		}
 
-    this.sendActionsForControlEvents(UIControlEvents.ValueChanged);
-  }
+		this.sendActionsForControlEvents(UIControlEvents.ValueChanged);
+	}
 }
 
 @NativeClass

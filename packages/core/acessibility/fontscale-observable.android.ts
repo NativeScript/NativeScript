@@ -4,42 +4,42 @@ import { FontScaleObservableBase, getClosestValidFontScale } from './fontscale-o
 
 let internalObservable: Observable;
 function fontScaleChanged(origFontScale: number) {
-  const fontScale = getClosestValidFontScale(origFontScale);
+	const fontScale = getClosestValidFontScale(origFontScale);
 
-  internalObservable.set(FontScaleObservable.FONT_SCALE, fontScale);
+	internalObservable.set(FontScaleObservable.FONT_SCALE, fontScale);
 }
 
 function useAndroidFontScale() {
-  fontScaleChanged(Number(Application.android.context.getResources().getConfiguration().fontScale));
+	fontScaleChanged(Number(Application.android.context.getResources().getConfiguration().fontScale));
 }
 
 function setupConfigListener() {
-  Application.off(Application.launchEvent, setupConfigListener);
+	Application.off(Application.launchEvent, setupConfigListener);
 
-  const context = Application.android && (Application.android.context as android.content.Context);
+	const context = Application.android && (Application.android.context as android.content.Context);
 
-  if (!context) {
-    Application.on(Application.launchEvent, setupConfigListener);
+	if (!context) {
+		Application.on(Application.launchEvent, setupConfigListener);
 
-    return;
-  }
+		return;
+	}
 
-  useAndroidFontScale();
+	useAndroidFontScale();
 
-  const configChangedCallback = new android.content.ComponentCallbacks2({
-    onLowMemory() {
-      // Dummy
-    },
-    onTrimMemory() {
-      // Dummy
-    },
-    onConfigurationChanged(newConfig: android.content.res.Configuration) {
-      fontScaleChanged(Number(newConfig.fontScale));
-    },
-  });
+	const configChangedCallback = new android.content.ComponentCallbacks2({
+		onLowMemory() {
+			// Dummy
+		},
+		onTrimMemory() {
+			// Dummy
+		},
+		onConfigurationChanged(newConfig: android.content.res.Configuration) {
+			fontScaleChanged(Number(newConfig.fontScale));
+		},
+	});
 
-  context.registerComponentCallbacks(configChangedCallback);
-  Application.on(Application.resumeEvent, useAndroidFontScale);
+	context.registerComponentCallbacks(configChangedCallback);
+	Application.on(Application.resumeEvent, useAndroidFontScale);
 }
 
 export class FontScaleObservable extends FontScaleObservableBase {
