@@ -207,6 +207,9 @@ export class Style extends Observable implements StyleDefinition {
 	public flexWrapBefore: FlexWrapBefore;
 	public alignSelf: AlignSelf;
 
+	// Accessibility properties
+	public accessibilityStep: number;
+
 	public PropertyBag: {
 		new (): { [property: string]: string };
 		prototype: { [property: string]: string };
