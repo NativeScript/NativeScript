@@ -26,9 +26,6 @@ const hashSalt = Date.now().toString();
 
 module.exports = env => {
   // Add your custom Activities, Services and other Android app components here.
-  const appComponents = [
-    "@nativescript/core/ui/frame", "@nativescript/core/ui/frame/activity"
-  ];
 
   const platform = env && ((env.android && 'android') || (env.ios && 'ios'));
   if (!platform) {
@@ -65,7 +62,9 @@ module.exports = env => {
     ci, // --env.ci
     snapshotInDocker, // --env.snapshotInDocker
     skipSnapshotTools, // --env.skipSnapshotTools
-    compileSnapshot // --env.compileSnapshot
+    compileSnapshot, // --env.compileSnapshot
+    appComponents = [],
+    entries = {}
   } = env;
 
   const useLibs = compileSnapshot;
@@ -84,12 +83,13 @@ module.exports = env => {
   }
   const entryModule = `${nsWebpack.getEntryModule(appFullPath, platform)}.ts`;
   const entryPath = `.${sep}${entryModule}`;
-  const entries = { bundle: entryPath };
+  const appEntries = Object.assign({ bundle: entryPath }, entries);
+  
   const areCoreModulesExternal =
     Array.isArray(env.externals) &&
     env.externals.some(e => e.indexOf('@nativescript') > -1);
   if (platform === 'ios' && !areCoreModulesExternal && !testing) {
-    entries['tns_modules/@nativescript/core/inspector_modules'] =
+    appEntries['tns_modules/@nativescript/core/inspector_modules'] =
       'inspector_modules';
   }
 
@@ -181,7 +181,11 @@ module.exports = env => {
 
   const noEmitOnErrorFromTSConfig = getNoEmitOnErrorFromTSConfig(tsConfigName);
 
-  nsWebpack.processAppComponents(appComponents, platform);
+  const projectAppComponents = appComponents.concat( [
+    "@nativescript/core/ui/frame", "@nativescript/core/ui/frame/activity"
+  ]);
+
+  nsWebpack.processAppComponents(projectAppComponents, platform);
   const config = {
     mode: production ? 'production' : 'development',
     context: appFullPath,
@@ -194,7 +198,7 @@ module.exports = env => {
       ]
     },
     target: nativescriptTarget,
-    entry: entries,
+    entry: appEntries,
     output: {
       pathinfo: false,
       path: dist,
@@ -251,7 +255,7 @@ module.exports = env => {
                 : '';
               return (
                 /[\\/]node_modules[\\/]/.test(moduleName) ||
-                appComponents.some(comp => comp === moduleName)
+                projectAppComponents.some(comp => comp === moduleName)
               );
             },
             enforce: true
@@ -299,7 +303,7 @@ module.exports = env => {
             // Require all Android app components
             platform === 'android' && {
               loader: '@nativescript/webpack/helpers/android-app-components-loader',
-              options: { modules: appComponents }
+              options: { modules: projectAppComponents }
             },
 
             {
@@ -310,7 +314,7 @@ module.exports = env => {
                 unitTesting,
                 appFullPath,
                 projectRoot,
-                ignoredFiles: nsWebpack.getUserDefinedEntries(entries, platform)
+                ignoredFiles: nsWebpack.getUserDefinedEntries(appEntries, platform)
               }
             }
           ].filter(loader => !!loader)
