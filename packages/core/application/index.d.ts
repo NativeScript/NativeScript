@@ -62,7 +62,7 @@ export let autoSystemAppearanceChanged: boolean;
 /**
  * enable/disable systemAppearanceChanged
  */
-export function setAutoSystemAppearanceChanged (value: boolean);
+export function setAutoSystemAppearanceChanged(value: boolean);
 
 /**
  * Updates root view classes including those of modals
