@@ -29,9 +29,9 @@ export const Application = {
 	loadAppCss,
 	addCss,
 	on,
-  off,
-  notify,
-  hasListeners,
+	off,
+	notify,
+	hasListeners,
 	run,
 	orientation,
 	getNativeApplication,
@@ -110,7 +110,7 @@ export * from './trace';
 
 export * from './ui';
 
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, queueMacrotask, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX } from './utils';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 
 export const Utils = {
@@ -124,6 +124,7 @@ export const Utils = {
 	mainThreadify,
 	isMainThread,
 	dispatchToMainThread,
+	queueMacrotask,
 	releaseNativeObject,
 
 	getModuleName,
@@ -135,11 +136,11 @@ export const Utils = {
 	android: androidUtils,
 	// legacy (a lot of plugins use the shorthand "ad" Utils.ad instead of Utils.android)
 	ad: androidUtils,
-  ios: iosUtils,
-  setTimeout, 
-  setInterval, 
-  clearInterval, 
-  clearTimeout,
+	ios: iosUtils,
+	setTimeout,
+	setInterval,
+	clearInterval,
+	clearTimeout,
 	Source,
 	ClassInfo,
 	getClass,

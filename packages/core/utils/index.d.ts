@@ -1,6 +1,7 @@
 import { dip, px } from '../ui/core/view';
 
 export * from './mainthread-helper';
+export * from './macrotask-scheduler';
 export { Source } from './debug';
 
 export * from './native-helper';
@@ -191,6 +192,12 @@ export function GC();
  * @param object The Java/Objective-C object to release.
  */
 export function releaseNativeObject(object: any /*java.lang.Object | NSObject*/);
+
+/**
+ * Queues the passed function to be ran in a macroTask
+ * @param task the function to execute as a macroTask
+ */
+export function queueMacrotask(task: () => void): void;
 
 /**
  * Checks if the current thread is the main thread. Directly calls the passed function
