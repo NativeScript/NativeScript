@@ -5,9 +5,13 @@ import { Property, CoercibleProperty } from '../core/properties';
 // TODO: Extract base Range class for slider and progress
 @CSSType('Slider')
 export class SliderBase extends View implements SliderDefinition {
+	static readonly accessibilityIncrementEvent = 'accessibilityIncrement';
+	static readonly accessibilityDecrementEvent = 'accessibilityDecrement';
+
 	public value: number;
 	public minValue: number;
 	public maxValue: number;
+	public accessibilityStep: number;
 }
 
 SliderBase.prototype.recycleNativeView = 'auto';
@@ -60,3 +64,11 @@ export const maxValueProperty = new CoercibleProperty<SliderBase, number>({
 	valueConverter: (v) => (global.isIOS ? parseFloat(v) : parseInt(v)),
 });
 maxValueProperty.register(SliderBase);
+
+/**
+ * Represents the observable property backing the accessibilityStep property of each Slider instance.
+ */
+export const accessibilityStepProperty = new Property<SliderBase, number>({
+	name: 'accessibilityStep',
+	valueConverter: (v) => (global.isIOS ? parseFloat(v) : parseInt(v)),
+});
