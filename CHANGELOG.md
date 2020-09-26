@@ -1,3 +1,12 @@
+## [6.5.20](https://github.com/NativeScript/NativeScript/compare/6.5.19...6.5.20) (2020-09-26)
+
+
+### Bug Fixes
+
+* **ios:** preferredDatePickerStyle ([#8906](https://github.com/NativeScript/NativeScript/issues/8906)) ([bd93060](https://github.com/NativeScript/NativeScript/commit/bd93060e8d811a1d5820f2a758d0c1ea23079476))
+
+
+
 ## [6.5.19](https://github.com/NativeScript/NativeScript/compare/6.5.18...6.5.19) (2020-09-23)
 
 
