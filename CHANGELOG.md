@@ -1,3 +1,12 @@
+## [7.0.7](https://github.com/NativeScript/NativeScript/compare/7.0.6-core...7.0.7) (2020-09-26)
+
+
+### Bug Fixes
+
+* **ios:** preferredDatePickerStyle property ([#8899](https://github.com/NativeScript/NativeScript/issues/8899)) ([dbefc43](https://github.com/NativeScript/NativeScript/commit/dbefc43b9bb9b907883990f8d40c178fc7ecea9c))
+
+
+
 ## [7.0.6](https://github.com/NativeScript/NativeScript/compare/7.0.5-core...7.0.6) (2020-09-25)
 
 
