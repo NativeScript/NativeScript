@@ -14,6 +14,7 @@ export class DatePickerBase extends View implements DatePickerDefinition {
     public maxDate: Date;
     public minDate: Date;
     public date: Date;
+    public iosPreferredDatePickerStyle: number;
 }
 
 DatePickerBase.prototype.recycleNativeView = "auto";
@@ -61,3 +62,10 @@ export const dateProperty = new Property<DatePickerBase, Date>({
     valueConverter: v => new Date(v),
 });
 dateProperty.register(DatePickerBase);
+
+export const iosPreferredDatePickerStyleProperty = new Property<DatePickerBase, number>({
+    name: 'iosPreferredDatePickerStyle',
+    defaultValue: 0,
+    valueConverter: (v) => parseInt(v),
+});
+iosPreferredDatePickerStyleProperty.register(DatePickerBase);
