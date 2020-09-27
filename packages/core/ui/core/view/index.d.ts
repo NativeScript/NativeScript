@@ -4,9 +4,9 @@ import { EventData } from '../../../data/observable';
 import { Color } from '../../../color';
 import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from '../../styling/style-properties';
-import { GestureTypes, GestureEventData, GesturesObserver } from '../../gestures';
+import { GestureTypes, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/gradient';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../acessibility/accessibility-types';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../acessibility/accessibility-types';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -732,6 +732,29 @@ export abstract class View extends ViewBase {
 	 * @param callback Called for each child of type View. Iteration stops if this method returns falsy value.
 	 */
 	public eachChildView(callback: (view: View) => boolean): void;
+
+	/**
+	 * Android: Send accessibility event
+	 */
+	public androidSendAccessibilityEvent(eventName: AndroidAccessibilityEvent, msg?: string): void;
+
+	/**
+	 * iOS: post accessibility notification.
+	 * type = 'announcement' will announce `args` via VoiceOver. If no args element will be announced instead.
+	 * type = 'layout' used when the layout of a screen changes.
+	 * type = 'screen' large change made to the screen.
+	 */
+	public iosPostAccessibilityNotification(notificationType: IOSPostAccessibilityNotificationType, msg?: string): void;
+
+	/**
+	 * Make an announcement to the screen reader.
+	 */
+	public accessibilityAnnouncement(msg?: string): void;
+
+	/**
+	 * Announce screen changed
+	 */
+	public accessibilityScreenChanged(): void;
 
 	//@private
 	/**

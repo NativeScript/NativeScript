@@ -49,7 +49,7 @@ import { AndroidActivityBackPressedEventData, android as androidApp } from '../.
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, initA11YView, updateAccessibilityProperties, updateContentDescription } from '../../../acessibility';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, initA11YView, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription } from '../../../acessibility';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -822,10 +822,6 @@ export class View extends ViewCommon {
 		updateContentDescription(this);
 	}
 
-	[accessibilityLanguageProperty.setNative](value: string): void {
-		this.nativeViewProtected.accessibilityLanguage = value == null ? null : `${value}`;
-	}
-
 	[accessibilityHiddenProperty.setNative](value: boolean): void {
 		if (value) {
 			this.nativeViewProtected.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
@@ -1113,6 +1109,18 @@ export class View extends ViewCommon {
 
 			(<any>nativeView).background = undefined;
 		}
+	}
+
+	public androidSendAccessibilityEvent(eventName: AndroidAccessibilityEvent, msg?: string): void {
+		sendAccessibilityEvent(this, eventName, msg);
+	}
+
+	public accessibilityAnnouncement(msg = this.accessibilityLabel): void {
+		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.ANNOUNCEMENT, msg);
+	}
+
+	public accessibilityScreenChanged(): void {
+		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
 	}
 }
 

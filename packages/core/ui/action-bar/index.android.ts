@@ -6,6 +6,7 @@ import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import * as application from '../../application';
+import { updateContentDescription } from '../../acessibility';
 
 export * from './action-bar-common';
 
@@ -298,7 +299,7 @@ export class ActionBar extends ActionBarBase {
 		}
 	}
 
-	public _updateTitleAndTitleView() {
+	public _updateTitleAndTitleView(): void {
 		if (!this.titleView) {
 			// No title view - show the title
 			const title = this.title;
@@ -313,6 +314,9 @@ export class ActionBar extends ActionBarBase {
 				}
 			}
 		}
+
+		// Update content description for the screen reader.
+		updateContentDescription(this, true);
 	}
 
 	public _addActionItems() {
@@ -445,6 +449,70 @@ export class ActionBar extends ActionBarBase {
 	[androidContentInsetRightProperty.setNative]() {
 		if (apiLevel >= 21) {
 			this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
+		}
+	}
+
+	public accessibilityScreenChanged(): void {
+		const nativeView = this.nativeViewProtected;
+		if (!nativeView) {
+			return;
+		}
+
+		const wasFocusable = android.os.Build.VERSION.SDK_INT >= 26 && nativeView.getFocusable();
+		const hasHeading = android.os.Build.VERSION.SDK_INT >= 28 && nativeView.isAccessibilityHeading();
+		const importantForA11Y = nativeView.getImportantForAccessibility();
+
+		try {
+			nativeView.setFocusable(false);
+			nativeView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+
+			let announceView: android.view.View | null = null;
+
+			const numChildren = nativeView.getChildCount();
+			for (let i = 0; i < numChildren; i += 1) {
+				const childView = nativeView.getChildAt(i);
+				if (!childView) {
+					continue;
+				}
+
+				childView.setFocusable(true);
+				if (childView instanceof androidx.appcompat.widget.AppCompatTextView) {
+					announceView = childView;
+					if (android.os.Build.VERSION.SDK_INT >= 28) {
+						announceView.setAccessibilityHeading(true);
+					}
+				}
+			}
+
+			if (!announceView) {
+				announceView = nativeView;
+			}
+
+			announceView.setFocusable(true);
+			announceView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+
+			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED);
+			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+		} catch {
+			// ignore
+		} finally {
+			setTimeout(() => {
+				// Reset status after the focus have been reset.
+				const localNativeView = this.nativeViewProtected;
+				if (!localNativeView) {
+					return;
+				}
+
+				if (android.os.Build.VERSION.SDK_INT >= 28) {
+					nativeView.setAccessibilityHeading(hasHeading);
+				}
+
+				if (android.os.Build.VERSION.SDK_INT >= 26) {
+					localNativeView.setFocusable(wasFocusable);
+				}
+
+				localNativeView.setImportantForAccessibility(importantForA11Y);
+			});
 		}
 	}
 }

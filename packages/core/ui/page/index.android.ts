@@ -5,6 +5,7 @@ import { ActionBar } from '../action-bar';
 import { GridLayout } from '../layouts/grid-layout';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
+import { AndroidAccessibilityEvent, getLastFocusedViewOnPage } from '../../acessibility';
 
 export * from './page-common';
 
@@ -121,5 +122,40 @@ export class Page extends PageBase {
 			const color = value instanceof Color ? value.android : value;
 			(<any>window).setStatusBarColor(color);
 		}
+	}
+
+	public accessibilityScreenChanged(refocus = false): void {
+		if (refocus) {
+			const lastFocusedView = getLastFocusedViewOnPage(this);
+			if (lastFocusedView) {
+				const announceView = lastFocusedView.nativeViewProtected;
+				if (announceView) {
+					announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED);
+					announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+
+					return;
+				}
+			}
+		}
+
+		if (this.actionBarHidden) {
+			this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
+
+			return;
+		}
+
+		if (this.accessibilityLabel) {
+			this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
+
+			return;
+		}
+
+		if (this.actionBar.accessibilityLabel || this.actionBar.title) {
+			this.actionBar.accessibilityScreenChanged();
+
+			return;
+		}
+
+		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
 	}
 }

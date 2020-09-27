@@ -1,4 +1,5 @@
 import { View } from '../ui/core/view';
+import { AndroidAccessibilityEvent } from './accessibility-types';
 
 export * from './fontscale-observable';
 export * from './accessibility-types';
@@ -9,7 +10,7 @@ export function updateAccessibilityProperties(view: View): void;
 /**
  * Android helper function for triggering accessiblity events
  */
-export function sendAccessibilityEvent(View: View, eventName: string, text?: string): void;
+export function sendAccessibilityEvent(View: View, eventName: AndroidAccessibilityEvent, text?: string): void;
 
 /**
  * Update the content description for android views
@@ -20,3 +21,8 @@ export function updateContentDescription(View: View, forceUpdate?: boolean): str
  * Is Android TalkBack or iOS VoiceOver enabled?
  */
 export function isAccessibilityServiceEnabled(): boolean;
+
+/**
+ * Find the last view focues on a page.
+ */
+export function getLastFocusedViewOnPage(page: Page): View | null;

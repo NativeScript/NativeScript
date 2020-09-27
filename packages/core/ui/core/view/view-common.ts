@@ -22,7 +22,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import { TextTransform } from '../../text-base';
 
 import * as am from '../../animation';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../acessibility/accessibility-types';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../acessibility/accessibility-types';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -1066,6 +1066,22 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 
 		return false;
+	}
+
+	public androidSendAccessibilityEvent(eventName: AndroidAccessibilityEvent, msg?: string): void {
+		return;
+	}
+
+	public iosPostAccessibilityNotification(notificationType: IOSPostAccessibilityNotificationType, msg?: string): void {
+		return;
+	}
+
+	public accessibilityAnnouncement(msg?: string): void {
+		return;
+	}
+
+	public accessibilityScreenChanged(): void {
+		return;
 	}
 }
 

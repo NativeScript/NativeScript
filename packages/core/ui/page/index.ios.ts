@@ -7,6 +7,7 @@ import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './pag
 
 import { profile } from '../../profiling';
 import { iOSNativeHelper, layout } from '../../utils';
+import { getLastFocusedViewOnPage } from '../../acessibility';
 
 export * from './page-common';
 
@@ -509,6 +510,40 @@ export class Page extends PageBase {
 				navigationBar.barStyle = value;
 			}
 		}
+	}
+
+	public accessibilityScreenChanged(refocus = false): void {
+		if (refocus) {
+			const lastFocusedView = getLastFocusedViewOnPage(this);
+			if (lastFocusedView) {
+				const uiView = lastFocusedView.nativeViewProtected;
+				if (uiView) {
+					UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, uiView);
+
+					return;
+				}
+			}
+		}
+
+		if (this.actionBarHidden) {
+			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.nativeViewProtected);
+
+			return;
+		}
+
+		if (this.accessibilityLabel) {
+			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.nativeViewProtected);
+
+			return;
+		}
+
+		if (this.actionBar.accessibilityLabel || this.actionBar.title) {
+			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.actionBar.nativeView);
+
+			return;
+		}
+
+		UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.nativeViewProtected);
 	}
 }
 
