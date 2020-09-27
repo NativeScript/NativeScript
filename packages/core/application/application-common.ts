@@ -122,7 +122,7 @@ function increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
 	}
 }
 
-function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string) {
+export function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void {
 	if (!rootView.cssClasses.has(newCssClass)) {
 		cssClasses.forEach((cssClass) => removeCssClass(rootView, cssClass));
 		addCssClass(rootView, newCssClass);
@@ -146,7 +146,7 @@ export function orientationChanged(rootView: View, newOrientation: 'portrait' | 
 }
 export let autoSystemAppearanceChanged = true;
 
-export function setAutoSystemAppearanceChanged(value: boolean) {
+export function setAutoSystemAppearanceChanged(value: boolean): void {
 	autoSystemAppearanceChanged = value;
 }
 

@@ -18,6 +18,7 @@ import { IOSHelper } from '../ui/core/view/view-helper';
 import { Device } from '../platform';
 import { profile } from '../profiling';
 import { iOSNativeHelper } from '../utils';
+import { initA11YCssHelper } from '../acessibility/accessibility-css-helper';
 
 const IOS_PLATFORM = 'ios';
 
@@ -435,6 +436,8 @@ export function run(entry?: string | NavigationEntry) {
 			}
 		}
 	}
+
+	initA11YCssHelper();
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {

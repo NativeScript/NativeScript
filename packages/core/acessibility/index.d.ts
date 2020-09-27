@@ -1,6 +1,5 @@
 import { View } from '../ui/core/view';
 
-export * from './accessibility-css-helper';
 export * from './fontscale-observable';
 export * from './accessibility-types';
 

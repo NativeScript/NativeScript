@@ -7,7 +7,6 @@ import * as utils from '../utils/utils';
 import { notifyAccessibilityFocusState } from './accessibility-common';
 import { AccessibilityRole, AccessibilityState } from './accessibility-types';
 
-export * from './accessibility-css-helper';
 export * from './accessibility-types';
 export * from './fontscale-observable';
 

@@ -62,7 +62,7 @@ export let autoSystemAppearanceChanged: boolean;
 /**
  * enable/disable systemAppearanceChanged
  */
-export function setAutoSystemAppearanceChanged(value: boolean);
+export function setAutoSystemAppearanceChanged(value: boolean): void;
 
 /**
  * Updates root view classes including those of modals
@@ -183,6 +183,11 @@ export function setCssFileName(cssFile: string): void;
  * Gets css file name for the application.
  */
 export function getCssFileName(): string;
+
+/**
+ * Ensure css-class is set on rootView
+ */
+export function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void;
 
 /**
  * Loads immediately the app.css.

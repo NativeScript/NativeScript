@@ -4,7 +4,6 @@ import { View } from '../ui/core/view';
 import { notifyAccessibilityFocusState } from './accessibility-common';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';
 
-export * from './accessibility-css-helper';
 export * from './accessibility-types';
 export * from './fontscale-observable';
 
