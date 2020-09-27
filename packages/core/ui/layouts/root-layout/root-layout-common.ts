@@ -203,14 +203,17 @@ export class RootLayoutBase extends GridLayout {
 	}
 
 	private closeShadeCover(shadeCoverOptions?: ShadeCoverOptions): Promise<void> {
-		// if shade cover is displayed and the last popup is closed, also close the shade cover
-		if (this.shadeCover) {
-			return this._closeShadeCover(this.shadeCover, shadeCoverOptions).then(() => {
-				this.removeChild(this.shadeCover);
-				this.shadeCover.off('loaded');
-				this.shadeCover = null;
-			});
-		}
+		return new Promise((resolve) => {
+			// if shade cover is displayed and the last popup is closed, also close the shade cover
+			if (this.shadeCover) {
+				return this._closeShadeCover(this.shadeCover, shadeCoverOptions).then(() => {
+					this.removeChild(this.shadeCover);
+					this.shadeCover.off('loaded');
+					this.shadeCover = null;
+					resolve();
+				});
+			}
+		});
 	}
 
 	protected _closeShadeCover(view: View, shadeOptions: ShadeCoverOptions): Promise<void> {

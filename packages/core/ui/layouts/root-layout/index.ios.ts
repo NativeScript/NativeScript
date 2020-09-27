@@ -13,10 +13,10 @@ export class RootLayout extends RootLayoutBase {
 		(<UIView>this.nativeViewProtected).bringSubviewToFront(view.nativeViewProtected);
 	}
 
-	protected _initShadeCover(view: View, options: ShadeCoverOptions): void {
+	protected _initShadeCover(view: View, shadeOptions: ShadeCoverOptions): void {
 		const initialState = <ShadeCoverEnterAnimation>{
 			...defaultShadeCoverOptions.enterAnimation,
-			...options?.enterAnimation,
+			...shadeOptions?.enterAnimation,
 		};
 		const translate = CGAffineTransformMakeTranslation(initialState.translateXFrom, initialState.translateYFrom);
 		const scale = CGAffineTransformMakeScale(initialState.scaleXFrom || 0.01, initialState.scaleYFrom || 0.01);

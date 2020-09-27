@@ -10,7 +10,7 @@
       <!-- Root layout demo -->
       <RootLayout height="100%" width="100%">
         <GridLayout height="100%" backgroundColor="#232652">
-          <Label textAlignment="center" fontWeight="bold" color="#fff" text="ROOT LAYOUT CONTENT"></Label>
+          <Label verticalAlignment="center" textAlignment="center" fontWeight="bold" color="#fff" text="ROOT LAYOUT CONTENT"></Label>
         </GridLayout>
       </RootLayout>
       </AbsoluteLayout>

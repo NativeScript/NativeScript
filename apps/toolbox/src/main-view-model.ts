@@ -62,7 +62,8 @@ export class HelloWorldModel extends Observable {
 			options: {
 				shadeCover: {
 					color: 'pink',
-					opacity: 0.3,
+					// opacity: 0.3,
+					opacity: 0.7,
 					tapToClose: false,
 					height: 350,
 					exitAnimation: {
