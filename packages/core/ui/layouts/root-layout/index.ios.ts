@@ -1,7 +1,7 @@
 import { Color } from '../../../color';
 import { View } from '../../core/view';
 import { RootLayoutBase, defaultShadeCoverOptions } from './root-layout-common';
-import { ShadeCoverEnterAnimation, ShadeCoverExitAnimation, ShadeCoverOptions } from '.';
+import { ShadeCoverAnimation, ShadeCoverOptions } from '.';
 export * from './root-layout-common';
 
 export class RootLayout extends RootLayoutBase {
@@ -14,16 +14,11 @@ export class RootLayout extends RootLayoutBase {
 	}
 
 	protected _initShadeCover(view: View, shadeOptions: ShadeCoverOptions): void {
-		const initialState = <ShadeCoverEnterAnimation>{
-			...defaultShadeCoverOptions.enterAnimation,
-			...shadeOptions?.enterAnimation,
+		const initialState = <ShadeCoverAnimation>{
+			...defaultShadeCoverOptions.animation.enterFrom,
+			...shadeOptions?.animation?.enterFrom,
 		};
-		const translate = CGAffineTransformMakeTranslation(initialState.translateXFrom, initialState.translateYFrom);
-		const scale = CGAffineTransformMakeScale(initialState.scaleXFrom || 0.01, initialState.scaleYFrom || 0.01);
-		const rotate = CGAffineTransformMakeRotation(initialState.rotateFrom);
-		const translateAndScale = CGAffineTransformConcat(translate, scale);
-		view.nativeViewProtected.transform = CGAffineTransformConcat(rotate, translateAndScale);
-		view.nativeViewProtected.alpha = initialState.opacityFrom;
+		this._applyAnimationProperties(view, initialState);
 	}
 
 	protected _updateShadeCover(view: View, shadeOptions: ShadeCoverOptions): Promise<void> {
@@ -33,17 +28,20 @@ export class RootLayout extends RootLayoutBase {
 				...shadeOptions,
 			};
 			if (view && view.nativeViewProtected) {
+				const duration = options.animation?.enterFrom?.duration || defaultShadeCoverOptions.animation.enterFrom.duration;
 				UIView.animateWithDurationAnimationsCompletion(
-					options.enterAnimation.duration,
+					duration,
 					() => {
-						view.nativeViewProtected.frame = CGRectMake(0, options.height || 0, this.getActualSize().width, this.getActualSize().height);
-						const translate = CGAffineTransformMakeTranslation(0, 0);
-						const scale = CGAffineTransformMakeScale(1, 1);
-						const rotate = CGAffineTransformMakeRotation(0);
-						const translateAndScale = CGAffineTransformConcat(translate, scale);
-						view.nativeViewProtected.transform = CGAffineTransformConcat(rotate, translateAndScale);
+						view.nativeViewProtected.frame = CGRectMake(0, options.height || 0, (<UIView>this.ios).frame.size.width, (<UIView>this.ios).frame.size.height);
 						view.nativeViewProtected.backgroundColor = new Color(options.color).ios;
-						view.nativeViewProtected.alpha = shadeOptions.opacity;
+						this._applyAnimationProperties(view, {
+							translateX: 0,
+							translateY: 0,
+							scaleX: 1,
+							scaleY: 1,
+							rotate: 0,
+							opacity: shadeOptions.opacity,
+						});
 					},
 					(completed: boolean) => {
 						resolve();
@@ -55,22 +53,16 @@ export class RootLayout extends RootLayoutBase {
 
 	protected _closeShadeCover(view: View, shadeOptions: ShadeCoverOptions): Promise<void> {
 		return new Promise((resolve) => {
-			const exitState = <ShadeCoverExitAnimation>{
-				...defaultShadeCoverOptions.exitAnimation,
-				...shadeOptions?.exitAnimation,
+			const exitState = <ShadeCoverAnimation>{
+				...defaultShadeCoverOptions.animation.exitTo,
+				...shadeOptions?.animation?.exitTo,
 			};
 
 			if (view && view.nativeViewProtected) {
 				UIView.animateWithDurationAnimationsCompletion(
 					exitState.duration,
 					() => {
-						const translate = CGAffineTransformMakeTranslation(exitState.translateXTo, exitState.translateYTo);
-						// ios doesn't like scale being 0, default it to a small number greater than 0
-						const scale = CGAffineTransformMakeScale(exitState.scaleXTo || 0.01, exitState.scaleYTo || 0.01);
-						const rotate = CGAffineTransformMakeRotation(exitState.rotateTo);
-						const translateAndScale = CGAffineTransformConcat(translate, scale);
-						view.nativeViewProtected.transform = CGAffineTransformConcat(rotate, translateAndScale);
-						view.nativeViewProtected.alpha = exitState.opacityTo;
+						this._applyAnimationProperties(view, exitState);
 					},
 					(completed: boolean) => {
 						resolve();
@@ -78,5 +70,15 @@ export class RootLayout extends RootLayoutBase {
 				);
 			}
 		});
+	}
+
+	private _applyAnimationProperties(view: View, shadeCoverAnimation: ShadeCoverAnimation): void {
+		const translate = CGAffineTransformMakeTranslation(shadeCoverAnimation.translateX, shadeCoverAnimation.translateY);
+		// ios doesn't like scale being 0, default it to a small number greater than 0
+		const scale = CGAffineTransformMakeScale(shadeCoverAnimation.scaleX || 0.1, shadeCoverAnimation.scaleY || 0.1);
+		const rotate = CGAffineTransformMakeRotation((shadeCoverAnimation.rotate * Math.PI) / 180); // convert degress to radians
+		const translateAndScale = CGAffineTransformConcat(translate, scale);
+		view.nativeViewProtected.transform = CGAffineTransformConcat(rotate, translateAndScale);
+		view.nativeViewProtected.alpha = shadeCoverAnimation.opacity;
 	}
 }

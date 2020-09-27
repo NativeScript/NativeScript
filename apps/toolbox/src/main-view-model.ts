@@ -62,12 +62,13 @@ export class HelloWorldModel extends Observable {
 			options: {
 				shadeCover: {
 					color: 'pink',
-					// opacity: 0.3,
 					opacity: 0.7,
 					tapToClose: false,
 					height: 350,
-					exitAnimation: {
-						scaleXTo: 0,
+					animation: {
+						exitTo: {
+							scaleX: 0,
+						},
 					},
 				},
 				enterAnimation: {
@@ -86,11 +87,22 @@ export class HelloWorldModel extends Observable {
 			view: this.getPopup('#E1E4E8', 110, 30, -300, -300),
 			options: {
 				shadeCover: {
-					color: '#ffffdd', //'linear-gradient(to bottom, #E1E4E8, #FFF)',
+					color: '#ffffdd',
 					opacity: 0.5,
 					tapToClose: true,
 					height: 400,
 					ignoreShadeRestore: true,
+					animation: {
+						enterFrom: {
+							translateX: -1000,
+							rotate: 360,
+							duration: 0.5,
+						},
+						exitTo: {
+							rotate: -180,
+							duration: 0.5,
+						},
+					},
 				},
 				enterAnimation: {
 					opacity: 1,

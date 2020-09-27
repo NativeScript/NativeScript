@@ -1,9 +1,7 @@
-import { Color } from '../../../color';
 import { CSSType, View } from '../../core/view';
 import { GridLayout } from '../grid-layout';
-import { RootLayout, RootLayoutOptions, ShadeCoverOptions, ShadeCoverEnterAnimation, ShadeCoverExitAnimation } from '.';
+import { RootLayout, RootLayoutOptions, ShadeCoverOptions } from '.';
 import { Animation, AnimationDefinition } from '../../animation';
-import { LinearGradient } from '../../styling/linear-gradient';
 
 @CSSType('RootLayout')
 export class RootLayoutBase extends GridLayout {
@@ -124,6 +122,10 @@ export class RootLayoutBase extends GridLayout {
 				reject(ex);
 			}
 		});
+	}
+
+	getShadeCover(): View {
+		return this.shadeCover;
 	}
 
 	// bring any view instance open on the rootlayout to front of all the children visually
@@ -261,23 +263,25 @@ export const defaultShadeCoverOptions: ShadeCoverOptions = {
 	opacity: 0.5,
 	color: '#000000',
 	tapToClose: true,
-	enterAnimation: {
-		translateXFrom: 0,
-		translateYFrom: 1000,
-		scaleXFrom: 1,
-		scaleYFrom: 1,
-		rotateFrom: 0,
-		opacityFrom: 0,
-		duration: 0.5,
-	},
-	exitAnimation: {
-		translateXTo: 0,
-		translateYTo: 1000,
-		scaleXTo: 1,
-		scaleYTo: 1,
-		rotateTo: 0,
-		opacityTo: 0,
-		duration: 0.5,
+	animation: {
+		enterFrom: {
+			translateX: 0,
+			translateY: getRootLayout()?.getMeasuredHeight() || 1000,
+			scaleX: 1,
+			scaleY: 1,
+			rotate: 0,
+			opacity: 0,
+			duration: 0.5,
+		},
+		exitTo: {
+			translateX: 0,
+			translateY: getRootLayout()?.getMeasuredHeight() || 1000,
+			scaleX: 1,
+			scaleY: 1,
+			rotate: 0,
+			opacity: 0,
+			duration: 0.5,
+		},
 	},
 	ignoreShadeRestore: false,
 };

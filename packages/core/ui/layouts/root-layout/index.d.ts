@@ -6,6 +6,7 @@ export class RootLayout extends GridLayout {
 	close(view: View, exitAnimation?: AnimationDefinition): Promise<void>;
 	bringToFront(view: View, animated?: boolean): Promise<void>;
 	closeAll(): Promise<void>;
+	getShadeCover(): View;
 }
 
 export function getRootLayout(): RootLayout;
@@ -21,27 +22,19 @@ export interface ShadeCoverOptions {
 	color?: string;
 	tapToClose?: boolean;
 	height?: number; // shade will be vertically aligned at bottom with the height specified
-	enterAnimation?: ShadeCoverEnterAnimation; // these will only be applied if its the first one to be opened
-	exitAnimation?: ShadeCoverExitAnimation; // these will only be applied if its the last one to be closed
+	animation?: {
+		enterFrom?: ShadeCoverAnimation; // these will only be applied if its the first one to be opened
+		exitTo?: ShadeCoverAnimation; // these will only be applied if its the last one to be closed
+	};
 	ignoreShadeRestore?: boolean;
 }
 
-export interface ShadeCoverEnterAnimation {
-	translateXFrom?: number;
-	translateYFrom?: number;
-	scaleXFrom?: number;
-	scaleYFrom?: number;
-	rotateFrom?: number;
-	opacityFrom?: number;
-	duration?: number; // in seconds
-}
-
-export interface ShadeCoverExitAnimation {
-	translateXTo?: number;
-	translateYTo?: number;
-	scaleXTo?: number;
-	scaleYTo?: number;
-	rotateTo?: number;
-	opacityTo?: number;
+export interface ShadeCoverAnimation {
+	translateX?: number;
+	translateY?: number;
+	scaleX?: number;
+	scaleY?: number;
+	rotate?: number; // in degrees
+	opacity?: number;
 	duration?: number; // in seconds
 }
