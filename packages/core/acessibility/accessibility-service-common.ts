@@ -1,7 +1,4 @@
-import { View } from '../ui/core/view';
-import { Page } from '../ui/page';
 import { Observable } from '../data/observable';
-import { AccessibilityBlurEventData, AccessibilityFocusChangedEventData, AccessibilityFocusEventData } from './accessibility-types';
 
 export interface SharedA11YObservable extends Observable {
 	readonly accessibilityServiceEnabled?: boolean;

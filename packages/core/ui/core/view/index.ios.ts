@@ -10,7 +10,8 @@ import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, Visibility, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
-import { accessibilityEnabledProperty, accessibilityHintProperty, accessibilityIdProperty, accessibilityLabelProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
+import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
+import { initA11YView, updateAccessibilityProperties } from '../../../acessibility';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -53,6 +54,12 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	get isLayoutRequested(): boolean {
 		return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
+	}
+
+	constructor() {
+		super();
+
+		initA11YView(this);
 	}
 
 	public requestLayout(): void {
@@ -554,6 +561,12 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.updateOriginPoint(this.originX, value);
 	}
 
+	[accessibilityEnabledProperty.setNative](value: boolean): void {
+		this.nativeViewProtected.isAccessibilityElement = !!value;
+
+		updateAccessibilityProperties(this);
+	}
+
 	[accessibilityIdProperty.getDefault](): string {
 		return this.nativeViewProtected.accessibilityLabel;
 	}
@@ -561,8 +574,12 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.nativeViewProtected.accessibilityIdentifier = value;
 	}
 
-	[accessibilityEnabledProperty.setNative](value: boolean): void {
-		this.nativeViewProtected.isAccessibilityElement = !!value;
+	[accessibilityRoleProperty.setNative](): void {
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityTraitsProperty.setNative](): void {
+		updateAccessibilityProperties(this);
 	}
 
 	[accessibilityValueProperty.setNative](value: string): void {
@@ -575,6 +592,28 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	[accessibilityHintProperty.setNative](value: string): void {
 		this.nativeViewProtected.accessibilityHint = value == null ? null : `${value}`;
+	}
+
+	[accessibilityLanguageProperty.setNative](value: string): void {
+		this.nativeViewProtected.accessibilityLanguage = value == null ? null : `${value}`;
+	}
+
+	[accessibilityHiddenProperty.setNative](value: boolean): void {
+		this.nativeViewProtected.accessibilityElementsHidden = !!value;
+
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityLiveRegionProperty.setNative](): void {
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityStateProperty.setNative](): void {
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityMediaSessionProperty.setNative](): void {
+		updateAccessibilityProperties(this);
 	}
 
 	[isUserInteractionEnabledProperty.getDefault](): boolean {

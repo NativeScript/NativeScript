@@ -7,6 +7,8 @@ import { booleanConverter } from '../core/view-base';
 export abstract class ButtonBase extends TextBase implements ButtonDefinition {
 	public static tapEvent = 'tap';
 
+	accessible = true;
+
 	get textWrap(): boolean {
 		return this.style.whiteSpace === 'normal';
 	}

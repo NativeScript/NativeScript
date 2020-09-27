@@ -4,6 +4,16 @@ import { AccessibilityBlurEventData, AccessibilityFocusChangedEventData, Accessi
 
 const lastFocusedViewOnPageKeyName = '__lastFocusedViewOnPage';
 
+/**
+ * Send notification when accessibility focus state changes.
+ * If either receivedFocus or lostFocus is true, 'accessibilityFocusChanged' is send with value true if element received focus
+ * If receivedFocus, 'accessibilityFocus' is send
+ * if lostFocus, 'accessibilityBlur' is send
+ *
+ * @param {View} view
+ * @param {boolean} receivedFocus
+ * @param {boolean} lostFocus
+ */
 export function notifyAccessibilityFocusState(view: View, receivedFocus: boolean, lostFocus: boolean): void {
 	if (!receivedFocus && !lostFocus) {
 		return;

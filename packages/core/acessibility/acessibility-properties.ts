@@ -1,7 +1,7 @@
-import { booleanConverter } from '../ui/core/view-base';
 import { CssProperty, InheritedCssProperty, Property } from '../ui/core/properties';
-import { Style } from '../ui/styling/style';
 import { View } from '../ui/core/view';
+import { booleanConverter } from '../ui/core/view-base';
+import { Style } from '../ui/styling/style';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';
 
 function makePropertyEnumConverter<T>(enumValues: any) {
@@ -30,7 +30,7 @@ accessibilityEnabledProperty.register(Style);
 const accessibilityHiddenPropertyName = 'accessibilityHidden';
 const accessibilityHiddenCssName = 'a11y-hidden';
 
-export const accessibilityHiddenCssProperty = global.isIOS
+export const accessibilityHiddenProperty = global.isIOS
 	? new InheritedCssProperty({
 			name: accessibilityHiddenPropertyName,
 			cssName: accessibilityHiddenCssName,
@@ -41,26 +41,26 @@ export const accessibilityHiddenCssProperty = global.isIOS
 			cssName: accessibilityHiddenCssName,
 			valueConverter: booleanConverter,
 	  });
-accessibilityHiddenCssProperty.register(Style);
+accessibilityHiddenProperty.register(Style);
 
 export const accessibilityIdProperty = new Property<View, string>({
 	name: 'accessibilityIdentifier',
 });
 accessibilityIdProperty.register(View);
 
-export const accessibilityRoleCssProperty = new CssProperty<Style, AccessibilityRole>({
+export const accessibilityRoleProperty = new CssProperty<Style, AccessibilityRole>({
 	name: 'accessibilityRole',
 	cssName: 'a11y-role',
 	valueConverter: makePropertyEnumConverter<AccessibilityRole>(AccessibilityRole),
 });
-accessibilityRoleCssProperty.register(Style);
+accessibilityRoleProperty.register(Style);
 
-export const accessibilityStateCssProperty = new CssProperty<Style, AccessibilityState>({
+export const accessibilityStateProperty = new CssProperty<Style, AccessibilityState>({
 	name: 'accessibilityState',
 	cssName: 'a11y-state',
 	valueConverter: makePropertyEnumConverter<AccessibilityState>(AccessibilityState),
 });
-accessibilityStateCssProperty.register(Style);
+accessibilityStateProperty.register(Style);
 
 export const accessibilityLabelProperty = new Property<View, string>({
 	name: 'accessibilityLabel',
@@ -77,13 +77,13 @@ export const accessibilityHintProperty = new Property<View, string>({
 });
 accessibilityHintProperty.register(View);
 
-export const accessibilityLiveRegionCssProperty = new CssProperty<Style, AccessibilityLiveRegion>({
+export const accessibilityLiveRegionProperty = new CssProperty<Style, AccessibilityLiveRegion>({
 	name: 'accessibilityLiveRegion',
 	cssName: 'a11y-live-region',
 	defaultValue: AccessibilityLiveRegion.None,
 	valueConverter: makePropertyEnumConverter<AccessibilityLiveRegion>(AccessibilityLiveRegion),
 });
-accessibilityLiveRegionCssProperty.register(Style);
+accessibilityLiveRegionProperty.register(Style);
 
 export const accessibilityTraitsProperty = new Property<View, AccessibilityTrait | AccessibilityTrait[]>({
 	name: 'accessibilityTraits',
@@ -96,11 +96,11 @@ export const accessibilityLanguageProperty = new CssProperty<Style, string>({
 });
 accessibilityLanguageProperty.register(Style);
 
-export const accessibilityMediaSessionCssProperty = new CssProperty({
+export const accessibilityMediaSessionProperty = new CssProperty({
 	name: 'accessibilityMediaSession',
 	cssName: 'a11y-media-session',
 });
-accessibilityMediaSessionCssProperty.register(Style);
+accessibilityMediaSessionProperty.register(Style);
 
 /**
  * Represents the observable property backing the accessibilityStep property.

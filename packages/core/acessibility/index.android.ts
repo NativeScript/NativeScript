@@ -518,7 +518,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 }
 
 export function initA11YView(view: View): void {
-	updateAccessibilityProperties(view);
+	view.on(View.loadedEvent, (evt) => updateAccessibilityProperties(evt.object as View));
 }
 
 export function updateAccessibilityProperties(view: View): void {

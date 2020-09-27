@@ -48,7 +48,8 @@ import { Screen } from '../../../platform';
 import { AndroidActivityBackPressedEventData, android as androidApp } from '../../../application';
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
-import { accessibilityEnabledProperty } from '../../../acessibility/acessibility-properties';
+import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
+import { AccessibilityLiveRegion, AccessibilityRole, initA11YView, updateAccessibilityProperties, updateContentDescription } from '../../../acessibility';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -323,6 +324,12 @@ export class View extends ViewCommon {
 	private _rootManager: androidx.fragment.app.FragmentManager;
 
 	nativeViewProtected: android.view.View;
+
+	constructor() {
+		super();
+
+		initA11YView(this);
+	}
 
 	// TODO: Implement unobserve that detach the touchListener.
 	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
@@ -788,6 +795,68 @@ export class View extends ViewCommon {
 
 	[accessibilityEnabledProperty.setNative](value: boolean): void {
 		this.nativeViewProtected.setFocusable(!!value);
+
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
+		updateAccessibilityProperties(this);
+
+		if (android.os.Build.VERSION.SDK_INT >= 28) {
+			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
+		}
+	}
+
+	[accessibilityValueProperty.setNative](): void {
+		this._androidContentDescriptionUpdated = true;
+		updateContentDescription(this);
+	}
+
+	[accessibilityLabelProperty.setNative](): void {
+		this._androidContentDescriptionUpdated = true;
+		updateContentDescription(this);
+	}
+
+	[accessibilityHintProperty.setNative](): void {
+		this._androidContentDescriptionUpdated = true;
+		updateContentDescription(this);
+	}
+
+	[accessibilityLanguageProperty.setNative](value: string): void {
+		this.nativeViewProtected.accessibilityLanguage = value == null ? null : `${value}`;
+	}
+
+	[accessibilityHiddenProperty.setNative](value: boolean): void {
+		if (value) {
+			this.nativeViewProtected.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+		} else {
+			this.nativeViewProtected.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+		}
+	}
+
+	[accessibilityLiveRegionProperty.setNative](value: AccessibilityLiveRegion): void {
+		switch (value) {
+			case AccessibilityLiveRegion.Assertive: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE);
+				break;
+			}
+			case AccessibilityLiveRegion.Polite: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE);
+				break;
+			}
+			default: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_NONE);
+				break;
+			}
+		}
+	}
+
+	[accessibilityStateProperty.setNative](): void {
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityMediaSessionProperty.setNative](): void {
+		updateAccessibilityProperties(this);
 	}
 
 	[androidElevationProperty.getDefault](): number {

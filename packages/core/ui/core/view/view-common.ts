@@ -94,6 +94,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	public _gestureObservers = {};
 
+	_androidContentDescriptionUpdated?: boolean;
+
 	get css(): string {
 		const scope = this._styleScope;
 
