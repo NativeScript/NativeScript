@@ -68,6 +68,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
+	public static accessibilityBlurEvent = 'accessibilityBlur';
+	public static accessibilityFocusEvent = 'accessibilityFocus';
+	public static accessibilityFocusChangedEvent = 'accessibilityFocusChanged';
 
 	protected _closeModalCallback: Function;
 	public _manager: any;

@@ -1,3 +1,6 @@
+import { EventData } from 'data/observable';
+import { View } from 'ui/core/view';
+
 export enum AccessibilityTrait {
 	/**
 	 * The element has no traits.
@@ -159,4 +162,14 @@ export enum AccessibilityLiveRegion {
 	None = 'none',
 	Polite = 'polite',
 	Assertive = 'assertive',
+}
+
+export interface AccessibilityFocusEventData extends EventData {
+	object: View;
+}
+
+export type AccessibilityBlurEventData = AccessibilityFocusEventData;
+
+export interface AccessibilityFocusChangedEventData extends AccessibilityFocusEventData {
+	value: boolean;
 }

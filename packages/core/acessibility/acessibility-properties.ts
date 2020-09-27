@@ -2,7 +2,7 @@ import { booleanConverter } from '../ui/core/view-base';
 import { CssProperty, InheritedCssProperty, Property } from '../ui/core/properties';
 import { Style } from '../ui/styling/style';
 import { View } from '../ui/core/view';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from './types';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './types';
 
 function makePropertyEnumConverter<T>(enumValues: any) {
 	return (value: string): T | null => {
@@ -85,12 +85,12 @@ export const accessibilityLiveRegionCssProperty = new CssProperty<Style, Accessi
 });
 accessibilityLiveRegionCssProperty.register(Style);
 
-export const accessibilityTraitsProperty = new Property({
+export const accessibilityTraitsProperty = new Property<View, AccessibilityTrait | AccessibilityTrait[]>({
 	name: 'accessibilityTraits',
 });
 accessibilityTraitsProperty.register(View);
 
-export const accessibilityLanguageProperty = new CssProperty({
+export const accessibilityLanguageProperty = new CssProperty<Style, string>({
 	name: 'accessibilityLanguage',
 	cssName: 'a11y-lang',
 });

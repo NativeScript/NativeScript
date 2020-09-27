@@ -132,6 +132,21 @@ export abstract class View extends ViewBase {
 	public static shownModallyEvent: string;
 
 	/**
+	 * String value used when hooking to accessibilityBlur event.
+	 */
+	public static accessibilityBlurEvent: string;
+
+	/**
+	 * String value used when hooking to accessibilityFocus event.
+	 */
+	public static accessibilityFocusEvent: string;
+
+	/**
+	 * String value used when hooking to accessibilityFocusChanged event.
+	 */
+	public static accessibilityFocusChangedEvent: string;
+
+	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
 	 */
 	public android: any;
@@ -924,7 +939,6 @@ export interface AddChildFromBuilder {
 	_addChildFromBuilder(name: string, value: any): void;
 }
 
-export const automationTextProperty: Property<View, string>;
 export const originXProperty: Property<View, number>;
 export const originYProperty: Property<View, number>;
 export const isEnabledProperty: Property<View, boolean>;
