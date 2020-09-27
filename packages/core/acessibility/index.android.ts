@@ -4,15 +4,20 @@ import { View } from '../ui/core/view';
 import { GestureTypes } from '../ui/gestures';
 import { ProxyViewContainer } from '../ui/proxy-view-container';
 import * as utils from '../utils/utils';
-import { notifyAccessibilityFocusState } from './accessibility-service';
-import { AccessibilityRole, AccessibilityState } from './types';
+import { notifyAccessibilityFocusState } from './accessibility-common';
+import { AccessibilityRole, AccessibilityState } from './accessibility-types';
+
+export * from './accessibility-css-helper';
+export * from './accessibility-types';
+export * from './fontscale-observable';
 
 const AccessibilityEvent = android.view.accessibility.AccessibilityEvent;
 type AccessibilityEvent = android.view.accessibility.AccessibilityEvent;
 const AccessibilityManager = android.view.accessibility.AccessibilityManager;
 type AccessibilityManager = android.view.accessibility.AccessibilityManager;
 let AccessibilityDelegate = android.view.View.androidviewViewAccessibilityDelegate;
-AccessibilityDelegate = (android.view.View as any).AccessibilityDelegate;
+// WORKAROUND: Typing referes to android.view.View.androidviewViewAccessibilityDelegate but it is called android.view.View.AccessibilityDelegate at runtime
+AccessibilityDelegate = android.view.View['AccessibilityDelegate'];
 type AccessibilityDelegate = android.view.View.AccessibilityDelegate;
 const AccessibilityNodeInfo = android.view.accessibility.AccessibilityNodeInfo;
 type AccessibilityNodeInfo = android.view.accessibility.AccessibilityNodeInfo;
@@ -39,7 +44,7 @@ const a11yScrollOnFocus = 'a11y-scroll-on-focus';
 let lastFocusedView: WeakRef<View>;
 function accessibilityEventHelper(view: View, eventType: number) {
 	const eventName = accessibilityEventTypeMap.get(eventType);
-	if (!AccessibilityHelper.isAccessibilityServiceEnabled()) {
+	if (!isAccessibilityServiceEnabled()) {
 		if (Trace.isEnabled()) {
 			Trace.write(`accessibilityEventHelper: Service not active`, Trace.categories.Accessibility);
 		}
@@ -145,6 +150,7 @@ const androidViewToTNSView = new WeakMap<AndroidView, WeakRef<View>>();
 
 let accessibilityEventMap: Map<string, number>;
 let accessibilityEventTypeMap: Map<number, string>;
+
 function ensureNativeClasses() {
 	if (TNSAccessibilityDelegate) {
 		return;
@@ -430,109 +436,6 @@ function ensureNativeClasses() {
 	accessibilityEventTypeMap = new Map([...accessibilityEventMap].map(([k, v]) => [v, k]));
 }
 
-export class AccessibilityHelper {
-	public static initA11YView(view: View): void {
-		AccessibilityHelper.updateAccessibilityProperties(view);
-	}
-
-	public static updateAccessibilityProperties(view: View): void {
-		if (view instanceof ProxyViewContainer) {
-			return;
-		}
-
-		setAccessibilityDelegate(view);
-		applyContentDescription(view);
-	}
-
-	public static sendAccessibilityEvent(view: View, eventName: string, text?: string): void {
-		const cls = `AccessibilityHelper.sendAccessibilityEvent(${view}, ${eventName}, ${text})`;
-
-		const androidView = view.nativeViewProtected as AndroidView;
-		if (!androidView) {
-			if (Trace.isEnabled()) {
-				Trace.write(`${cls}: no nativeView`, Trace.categories.Accessibility);
-			}
-
-			return;
-		}
-
-		if (!eventName) {
-			if (Trace.isEnabled()) {
-				Trace.write(`${cls}: no eventName provided`, Trace.categories.Accessibility);
-			}
-
-			return;
-		}
-
-		if (!AccessibilityHelper.isAccessibilityServiceEnabled()) {
-			if (Trace.isEnabled()) {
-				Trace.write(`${cls} - TalkBack not enabled`, Trace.categories.Accessibility);
-			}
-
-			return;
-		}
-
-		const a11yService = getAccessibilityManager(androidView);
-		if (!a11yService.isEnabled()) {
-			if (Trace.isEnabled()) {
-				Trace.write(`${cls} - a11yService not enabled`, Trace.categories.Accessibility);
-			}
-
-			return;
-		}
-
-		eventName = eventName.toLowerCase();
-		if (!accessibilityEventMap.has(eventName)) {
-			if (Trace.isEnabled()) {
-				Trace.write(`${cls} - unknown event`, Trace.categories.Accessibility);
-			}
-
-			return;
-		}
-		const eventInt = accessibilityEventMap.get(eventName);
-
-		if (!text) {
-			return androidView.sendAccessibilityEvent(eventInt);
-		}
-
-		const a11yEvent = AccessibilityEvent.obtain(eventInt);
-		a11yEvent.setSource(androidView);
-
-		a11yEvent.getText().clear();
-
-		if (!text) {
-			applyContentDescription(view);
-
-			text = androidView.getContentDescription() || view['title'];
-			if (Trace.isEnabled()) {
-				Trace.write(`${cls} - text not provided use androidView.getContentDescription() - ${text}`, Trace.categories.Accessibility);
-			}
-		}
-
-		if (Trace.isEnabled()) {
-			Trace.write(`${cls}: send event with text: '${JSON.stringify(text)}'`, Trace.categories.Accessibility);
-		}
-
-		if (text) {
-			a11yEvent.getText().add(text);
-		}
-
-		a11yService.sendAccessibilityEvent(a11yEvent);
-	}
-
-	public static updateContentDescription(view: View, forceUpdate = false): string | null {
-		if (view instanceof ProxyViewContainer) {
-			return null;
-		}
-
-		return applyContentDescription(view, forceUpdate);
-	}
-
-	public static isAccessibilityServiceEnabled(): boolean {
-		return isAccessibilityServiceEnabled();
-	}
-}
-
 function getA11YManager() {
 	const context = utils.ad.getApplicationContext() as android.content.Context;
 	if (!context) {
@@ -546,7 +449,7 @@ let accessibilityStateChangeListener: AccessibilityStateChangeListener;
 let touchExplorationStateChangeListener: TouchExplorationStateChangeListener;
 
 let accessbilityServiceEnabled: boolean;
-function isAccessibilityServiceEnabled(): boolean {
+export function isAccessibilityServiceEnabled(): boolean {
 	if (typeof accessbilityServiceEnabled === 'boolean') {
 		return accessbilityServiceEnabled;
 	}
@@ -614,18 +517,101 @@ function isAccessibilityServiceEnabled(): boolean {
 	return accessbilityServiceEnabled;
 }
 
-export function removeAccessibilityDelegate(view: View): void {
+export function initA11YView(view: View): void {
+	updateAccessibilityProperties(view);
+}
+
+export function updateAccessibilityProperties(view: View): void {
 	if (view instanceof ProxyViewContainer) {
 		return;
 	}
 
+	setAccessibilityDelegate(view);
+	applyContentDescription(view);
+}
+
+export function sendAccessibilityEvent(view: View, eventName: string, text?: string): void {
+	const cls = `sendAccessibilityEvent(${view}, ${eventName}, ${text})`;
+
 	const androidView = view.nativeViewProtected as AndroidView;
 	if (!androidView) {
+		if (Trace.isEnabled()) {
+			Trace.write(`${cls}: no nativeView`, Trace.categories.Accessibility);
+		}
+
 		return;
 	}
 
-	androidViewToTNSView.delete(androidView);
-	androidView.setAccessibilityDelegate(null);
+	if (!eventName) {
+		if (Trace.isEnabled()) {
+			Trace.write(`${cls}: no eventName provided`, Trace.categories.Accessibility);
+		}
+
+		return;
+	}
+
+	if (!isAccessibilityServiceEnabled()) {
+		if (Trace.isEnabled()) {
+			Trace.write(`${cls} - TalkBack not enabled`, Trace.categories.Accessibility);
+		}
+
+		return;
+	}
+
+	const a11yService = getAccessibilityManager(androidView);
+	if (!a11yService.isEnabled()) {
+		if (Trace.isEnabled()) {
+			Trace.write(`${cls} - a11yService not enabled`, Trace.categories.Accessibility);
+		}
+
+		return;
+	}
+
+	eventName = eventName.toLowerCase();
+	if (!accessibilityEventMap.has(eventName)) {
+		if (Trace.isEnabled()) {
+			Trace.write(`${cls} - unknown event`, Trace.categories.Accessibility);
+		}
+
+		return;
+	}
+	const eventInt = accessibilityEventMap.get(eventName);
+
+	if (!text) {
+		return androidView.sendAccessibilityEvent(eventInt);
+	}
+
+	const a11yEvent = AccessibilityEvent.obtain(eventInt);
+	a11yEvent.setSource(androidView);
+
+	a11yEvent.getText().clear();
+
+	if (!text) {
+		applyContentDescription(view);
+
+		text = androidView.getContentDescription() || view['title'];
+		if (Trace.isEnabled()) {
+			Trace.write(`${cls} - text not provided use androidView.getContentDescription() - ${text}`, Trace.categories.Accessibility);
+		}
+	}
+
+	if (Trace.isEnabled()) {
+		Trace.write(`${cls}: send event with text: '${JSON.stringify(text)}'`, Trace.categories.Accessibility);
+	}
+
+	if (text) {
+		a11yEvent.getText().add(text);
+	}
+
+	a11yService.sendAccessibilityEvent(a11yEvent);
+}
+
+export function updateContentDescription(view: View, forceUpdate?: boolean): string | null {
+	if (view instanceof ProxyViewContainer) {
+		return null;
+	}
+
+	return applyContentDescription(view, forceUpdate);
 }
 
 function setAccessibilityDelegate(view: View): void {

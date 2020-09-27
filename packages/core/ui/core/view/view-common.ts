@@ -22,7 +22,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import { TextTransform } from '../../text-base';
 
 import * as am from '../../animation';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../acessibility/types';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../acessibility/accessibility-types';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';

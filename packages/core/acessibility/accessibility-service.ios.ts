@@ -8,7 +8,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 }
 
 let sharedA11YObservable: SharedA11YObservable;
-let nativeObserver: any;
+let notificationObserver: NSNotification;
 
 function getSharedA11YObservable(): SharedA11YObservable {
 	if (sharedA11YObservable) {
@@ -31,26 +31,27 @@ function getSharedA11YObservable(): SharedA11YObservable {
 	sharedA11YObservable.set(AccessibilityServiceEnabledPropName, isVoiceOverRunning());
 
 	let voiceOverStatusChangedNotificationName: string | null = null;
-
 	if (typeof UIAccessibilityVoiceOverStatusDidChangeNotification !== 'undefined') {
+		// iOS 11+
 		voiceOverStatusChangedNotificationName = UIAccessibilityVoiceOverStatusDidChangeNotification;
 	} else if (typeof UIAccessibilityVoiceOverStatusChanged !== 'undefined') {
+		// iOS <11
 		voiceOverStatusChangedNotificationName = UIAccessibilityVoiceOverStatusChanged;
 	}
 
 	if (voiceOverStatusChangedNotificationName) {
-		nativeObserver = Application.ios.addNotificationObserver(voiceOverStatusChangedNotificationName, () => {
+		notificationObserver = Application.ios.addNotificationObserver(voiceOverStatusChangedNotificationName, () => {
 			if (sharedA11YObservable) {
 				sharedA11YObservable.set(AccessibilityServiceEnabledPropName, isVoiceOverRunning());
 			}
 		});
 
 		Application.on(Application.exitEvent, () => {
-			if (nativeObserver) {
-				Application.ios.removeNotificationObserver(nativeObserver, voiceOverStatusChangedNotificationName);
+			if (notificationObserver) {
+				Application.ios.removeNotificationObserver(notificationObserver, voiceOverStatusChangedNotificationName);
 			}
 
-			nativeObserver = null;
+			notificationObserver = null;
 			if (sharedA11YObservable) {
 				sharedA11YObservable.removeEventListener(Observable.propertyChangeEvent);
 				sharedA11YObservable = null;

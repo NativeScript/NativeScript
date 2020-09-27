@@ -1,5 +1,5 @@
-import { EventData } from 'data/observable';
-import { View } from 'ui/core/view';
+import { EventData } from '../data/observable';
+import { View } from '../ui/core/view';
 
 export enum AccessibilityTrait {
 	/**
