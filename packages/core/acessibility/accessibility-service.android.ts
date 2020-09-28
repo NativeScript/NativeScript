@@ -1,8 +1,8 @@
-import { Observable } from 'index';
 import * as Application from '../application';
-import * as utils from '../utils/utils';
-import { AccessibilityServiceEnabledPropName, CommonA11YServiceEnabledObservable } from './accessibility-service-common';
+import { Observable } from '../data/observable';
 import { Trace } from '../trace';
+import * as Utils from '../utils';
+import { AccessibilityServiceEnabledPropName, CommonA11YServiceEnabledObservable } from './accessibility-service-common';
 
 type AccessibilityManagerCompat = androidx.core.view.accessibility.AccessibilityManagerCompat;
 const AccessibilityManagerCompat = androidx.core.view.accessibility.AccessibilityManagerCompat;
@@ -15,7 +15,7 @@ type AccessibilityManager = android.view.accessibility.AccessibilityManager;
 const AccessibilityManager = android.view.accessibility.AccessibilityManager;
 
 function getA11YManager(): AccessibilityManager | null {
-	const context = utils.ad.getApplicationContext() as android.content.Context;
+	const context = Utils.ad.getApplicationContext() as android.content.Context;
 	if (!context) {
 		return null;
 	}

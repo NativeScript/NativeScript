@@ -1,12 +1,12 @@
 import * as Application from '../application';
 import { Trace } from '../trace';
-import { View } from '../ui/core/view';
+import type { View } from '../ui/core/view';
 import { GestureTypes } from '../ui/gestures';
-import { ProxyViewContainer } from '../ui/proxy-view-container';
 import * as utils from '../utils/utils';
 import { notifyAccessibilityFocusState } from './accessibility-common';
 import { AccessibilityRole, AccessibilityState, AndroidAccessibilityEvent } from './accessibility-types';
 
+export * from './accessibility-common';
 export * from './accessibility-types';
 export * from './fontscale-observable';
 
@@ -517,11 +517,11 @@ export function isAccessibilityServiceEnabled(): boolean {
 }
 
 export function initA11YView(view: View): void {
-	view.on(View.loadedEvent, (evt) => updateAccessibilityProperties(evt.object as View));
+	view.on('loaded', (evt) => updateAccessibilityProperties(evt.object as View));
 }
 
 export function updateAccessibilityProperties(view: View): void {
-	if (view instanceof ProxyViewContainer) {
+	if (!view.nativeViewProtected) {
 		return;
 	}
 
@@ -605,15 +605,15 @@ export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibili
 }
 
 export function updateContentDescription(view: View, forceUpdate?: boolean): string | null {
-	if (view instanceof ProxyViewContainer) {
-		return null;
+	if (!view.nativeViewProtected) {
+		return;
 	}
 
 	return applyContentDescription(view, forceUpdate);
 }
 
 function setAccessibilityDelegate(view: View): void {
-	if (view instanceof ProxyViewContainer) {
+	if (!view.nativeViewProtected) {
 		return;
 	}
 
@@ -636,11 +636,10 @@ function setAccessibilityDelegate(view: View): void {
 }
 
 function applyContentDescription(view: View, forceUpdate?: boolean) {
-	if (view instanceof ProxyViewContainer) {
-		return null;
-	}
-
 	let androidView = view.nativeViewProtected as AndroidView;
+	if (!androidView) {
+		return;
+	}
 
 	if (androidView instanceof androidx.appcompat.widget.Toolbar) {
 		const numChildren = androidView.getChildCount();

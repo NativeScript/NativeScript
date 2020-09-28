@@ -1,6 +1,7 @@
 // Definitions.
-import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from '.';
-import { GestureTypes, GestureEventData } from '../../gestures';
+import type { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from '.';
+import type { GestureTypes, GestureEventData } from '../../gestures';
+
 // Types.
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
@@ -48,7 +49,7 @@ import { Screen } from '../../../platform';
 import { AndroidActivityBackPressedEventData, android as androidApp } from '../../../application';
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
-import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
+import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, initA11YView, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription } from '../../../acessibility';
 
 export * from './view-common';

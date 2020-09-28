@@ -1,18 +1,22 @@
 import { CssProperty, InheritedCssProperty, Property } from '../ui/core/properties';
-import { View } from '../ui/core/view';
+import type { View } from '../ui/core/view';
 import { booleanConverter } from '../ui/core/view-base';
 import { Style } from '../ui/styling/style';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';
 
-function makePropertyEnumConverter<T>(enumValues: any) {
+function makePropertyEnumConverter<T>(enumValues) {
 	return (value: string): T | null => {
-		if (!value) {
+		if (!value || typeof value !== 'string') {
 			return null;
 		}
 
-		for (const [key, v] of Object.entries<T>(enumValues)) {
-			if (key === value || `${v}` === `${value}`.toLowerCase()) {
-				return v;
+		for (const [enumKey, enumValue] of Object.entries<T>(enumValues)) {
+			if (typeof enumKey !== 'string') {
+				continue;
+			}
+
+			if (enumKey === value || `${enumValue}`.toLowerCase() === `${value}`.toLowerCase()) {
+				return enumValue;
 			}
 		}
 
@@ -43,10 +47,9 @@ export const accessibilityHiddenProperty = global.isIOS
 	  });
 accessibilityHiddenProperty.register(Style);
 
-export const accessibilityIdProperty = new Property<View, string>({
+export const accessibilityIdentifierProperty = new Property<View, string>({
 	name: 'accessibilityIdentifier',
 });
-accessibilityIdProperty.register(View);
 
 export const accessibilityRoleProperty = new CssProperty<Style, AccessibilityRole>({
 	name: 'accessibilityRole',
@@ -65,17 +68,14 @@ accessibilityStateProperty.register(Style);
 export const accessibilityLabelProperty = new Property<View, string>({
 	name: 'accessibilityLabel',
 });
-accessibilityLabelProperty.register(View);
 
 export const accessibilityValueProperty = new Property<View, string>({
 	name: 'accessibilityValue',
 });
-accessibilityValueProperty.register(View);
 
 export const accessibilityHintProperty = new Property<View, string>({
 	name: 'accessibilityHint',
 });
-accessibilityHintProperty.register(View);
 
 export const accessibilityLiveRegionProperty = new CssProperty<Style, AccessibilityLiveRegion>({
 	name: 'accessibilityLiveRegion',
@@ -88,7 +88,6 @@ accessibilityLiveRegionProperty.register(Style);
 export const accessibilityTraitsProperty = new Property<View, AccessibilityTrait | AccessibilityTrait[]>({
 	name: 'accessibilityTraits',
 });
-accessibilityTraitsProperty.register(View);
 
 export const accessibilityLanguageProperty = new CssProperty<Style, string>({
 	name: 'accessibilityLanguage',

@@ -1,8 +1,12 @@
-import { View } from '../ui/core/view';
-import { Page } from '../ui/page';
-import { AccessibilityBlurEventData, AccessibilityFocusChangedEventData, AccessibilityFocusEventData } from './accessibility-types';
+import type { View } from '../ui/core/view';
+import type { Page } from '../ui/page';
+import type { AccessibilityBlurEventData, AccessibilityFocusChangedEventData, AccessibilityFocusEventData } from './accessibility-types';
 
 const lastFocusedViewOnPageKeyName = '__lastFocusedViewOnPage';
+
+export const accessibilityBlurEvent = 'accessibilityBlur';
+export const accessibilityFocusEvent = 'accessibilityFocus';
+export const accessibilityFocusChangedEvent = 'accessibilityFocusChanged';
 
 /**
  * Send notification when accessibility focus state changes.
@@ -20,7 +24,7 @@ export function notifyAccessibilityFocusState(view: View, receivedFocus: boolean
 	}
 
 	view.notify({
-		eventName: View.accessibilityFocusChangedEvent,
+		eventName: accessibilityFocusChangedEvent,
 		object: view,
 		value: !!receivedFocus,
 	} as AccessibilityFocusChangedEventData);
@@ -31,12 +35,12 @@ export function notifyAccessibilityFocusState(view: View, receivedFocus: boolean
 		}
 
 		view.notify({
-			eventName: View.accessibilityFocusEvent,
+			eventName: accessibilityFocusEvent,
 			object: view,
 		} as AccessibilityFocusEventData);
 	} else if (lostFocus) {
 		view.notify({
-			eventName: View.accessibilityBlurEvent,
+			eventName: accessibilityBlurEvent,
 			object: view,
 		} as AccessibilityBlurEventData);
 	}

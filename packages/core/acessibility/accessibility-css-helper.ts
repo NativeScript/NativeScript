@@ -1,5 +1,5 @@
 import { applyCssClass, getRootView } from '../application';
-import { View } from '../ui/core/view';
+import type { View } from '../ui/core/view';
 import { AccessibilityServiceEnabledObservable } from './accessibility-service';
 import { FontScaleObservable } from './fontscale-observable';
 

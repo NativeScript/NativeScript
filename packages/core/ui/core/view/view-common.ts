@@ -23,6 +23,8 @@ import { TextTransform } from '../../text-base';
 
 import * as am from '../../animation';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../acessibility/accessibility-types';
+import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
+import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent } from '../../../acessibility';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -68,9 +70,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
-	public static accessibilityBlurEvent = 'accessibilityBlur';
-	public static accessibilityFocusEvent = 'accessibilityFocus';
-	public static accessibilityFocusChangedEvent = 'accessibilityFocusChanged';
+	public static accessibilityBlurEvent = accessibilityBlurEvent;
+	public static accessibilityFocusEvent = accessibilityFocusEvent;
+	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
 
 	protected _closeModalCallback: Function;
 	public _manager: any;
@@ -1135,3 +1137,9 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
     valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
+
+accessibilityIdentifierProperty.register(ViewCommon);
+accessibilityLabelProperty.register(ViewCommon);
+accessibilityValueProperty.register(ViewCommon);
+accessibilityHintProperty.register(ViewCommon);
+accessibilityTraitsProperty.register(ViewCommon);

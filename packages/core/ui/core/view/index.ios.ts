@@ -10,7 +10,7 @@ import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, Visibility, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
-import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
+import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
 import { initA11YView, IOSPostAccessibilityNotificationType, updateAccessibilityProperties } from '../../../acessibility';
 
 export * from './view-common';
@@ -567,10 +567,10 @@ export class View extends ViewCommon implements ViewDefinition {
 		updateAccessibilityProperties(this);
 	}
 
-	[accessibilityIdProperty.getDefault](): string {
+	[accessibilityIdentifierProperty.getDefault](): string {
 		return this.nativeViewProtected.accessibilityLabel;
 	}
-	[accessibilityIdProperty.setNative](value: string): void {
+	[accessibilityIdentifierProperty.setNative](value: string): void {
 		this.nativeViewProtected.accessibilityIdentifier = value;
 	}
 

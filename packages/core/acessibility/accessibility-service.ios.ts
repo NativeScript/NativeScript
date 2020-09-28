@@ -1,7 +1,7 @@
-import { Observable } from 'index';
 import * as Application from '../application';
-import { AccessibilityServiceEnabledPropName, CommonA11YServiceEnabledObservable, SharedA11YObservable } from './accessibility-service-common';
+import { Observable } from '../data/observable';
 import { Trace } from '../trace';
+import { AccessibilityServiceEnabledPropName, CommonA11YServiceEnabledObservable, SharedA11YObservable } from './accessibility-service-common';
 
 export function isAccessibilityServiceEnabled(): boolean {
 	return getSharedA11YObservable().accessibilityServiceEnabled;

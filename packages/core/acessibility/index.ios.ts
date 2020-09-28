@@ -1,9 +1,10 @@
 import { ProxyViewContainer } from 'ui/proxy-view-container';
 import * as Application from '../application';
-import { View } from '../ui/core/view';
+import type { View } from '../ui/core/view';
 import { notifyAccessibilityFocusState } from './accessibility-common';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from './accessibility-types';
 
+export * from './accessibility-common';
 export * from './accessibility-types';
 export * from './fontscale-observable';
 

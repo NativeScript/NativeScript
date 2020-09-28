@@ -1,8 +1,9 @@
 import { View } from '../ui/core/view';
 import { AndroidAccessibilityEvent } from './accessibility-types';
 
-export * from './fontscale-observable';
+export * from './accessibility-common';
 export * from './accessibility-types';
+export * from './fontscale-observable';
 
 export function initA11YView(view: View): void;
 export function updateAccessibilityProperties(view: View): void;
