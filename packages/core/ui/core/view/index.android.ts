@@ -2,7 +2,7 @@
 import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from '.';
 import { GestureTypes, GestureEventData } from '../../gestures';
 // Types.
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
@@ -731,6 +731,13 @@ export class View extends ViewCommon {
 	}
 	[automationTextProperty.setNative](value: string) {
 		this.nativeViewProtected.setContentDescription(value);
+	}
+
+	[testIDProperty.getDefault](): string {
+		return this.nativeViewProtected.getTag();
+	}
+	[testIDProperty.setNative](value: string) {
+		this.nativeViewProtected.setTag(value);
 	}
 
 	[isUserInteractionEnabledProperty.setNative](value: boolean) {

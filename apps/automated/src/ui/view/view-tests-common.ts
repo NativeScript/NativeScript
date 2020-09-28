@@ -969,6 +969,11 @@ export function test_automation_text_default_value() {
 	TKUnit.assertTrue(view.automationText === undefined, 'AutomationText default value should be UNDEFINED.');
 }
 
+export function test_test_id_default_value() {
+	let view = new Button();
+	TKUnit.assertTrue(view.testID === undefined, 'testID default value should be UNDEFINED.');
+}
+
 export function test_getLocationInWindow_IsUndefinedWhenNotInTheVisualTree() {
 	const label = new Label();
 	TKUnit.assertNull(label.getLocationInWindow());

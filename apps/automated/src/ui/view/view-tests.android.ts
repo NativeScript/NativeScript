@@ -233,6 +233,17 @@ export function test_automation_text_set_to_native() {
 	helper.do_PageTest_WithStackLayout_AndButton(test);
 }
 
+export function test_test_id_set_to_native() {
+	const test = function (views: Array<View>) {
+		const newButton = new Button();
+		newButton.testID = 'Button1';
+		(<StackLayout>views[1]).addChild(newButton);
+		TKUnit.assertEqual((<android.widget.Button>newButton.android).getTag(), 'Button1', 'tag not set to native ');
+	};
+
+	helper.do_PageTest_WithStackLayout_AndButton(test);
+}
+
 export const test_StylePropertiesDefaultValuesCache = function () {
 	const testValue = 35;
 

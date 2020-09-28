@@ -2787,6 +2787,7 @@ export abstract class View extends ViewBase {
     _setValue(property: any, value: any): never;
     public static showingModallyEvent: string;
     public static shownModallyEvent: string;
+    testID: string;
     translateX: dip;
     translateY: dip;
     // (undocumented)

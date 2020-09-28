@@ -752,6 +752,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	//END Style property shortcuts
 
 	public automationText: string;
+	public testID: string;
 	public originX: number;
 	public originY: number;
 	public isEnabled: boolean;
@@ -1010,6 +1011,11 @@ export const automationTextProperty = new Property<ViewCommon, string>({
 	name: 'automationText',
 });
 automationTextProperty.register(ViewCommon);
+
+export const testIDProperty = new Property<ViewCommon, string>({
+	name: 'testID',
+});
+testIDProperty.register(ViewCommon);
 
 export const originXProperty = new Property<ViewCommon, number>({
 	name: 'originX',

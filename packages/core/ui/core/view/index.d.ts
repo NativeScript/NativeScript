@@ -364,6 +364,11 @@ export abstract class View extends ViewBase {
 	automationText: string;
 
 	/**
+	 * Gets or sets the testID of the view.
+	 */
+	testID: string;
+
+	/**
 	 * Gets or sets the X component of the origin point around which the view will be transformed. The default value is 0.5 representing the center of the view.
 	 */
 	originX: number;
@@ -869,6 +874,7 @@ export interface AddChildFromBuilder {
 }
 
 export const automationTextProperty: Property<View, string>;
+export const testIDProperty: Property<View, string>;
 export const originXProperty: Property<View, number>;
 export const originYProperty: Property<View, number>;
 export const isEnabledProperty: Property<View, boolean>;

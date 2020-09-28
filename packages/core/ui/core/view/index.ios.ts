@@ -2,7 +2,7 @@
 import { Point, View as ViewDefinition, dip } from '.';
 
 // Requires
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, testIDProperty } from './view-common';
 import { ShowModalOptions } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
@@ -555,6 +555,13 @@ export class View extends ViewCommon implements ViewDefinition {
 	[automationTextProperty.setNative](value: string) {
 		this.nativeViewProtected.accessibilityIdentifier = value;
 		this.nativeViewProtected.accessibilityLabel = value;
+	}
+
+	[testIDProperty.getDefault](): string {
+		return this.nativeViewProtected.accessibilityIdentifier;
+	}
+	[testIDProperty.setNative](value: string) {
+		this.nativeViewProtected.accessibilityIdentifier = value;
 	}
 
 	[isUserInteractionEnabledProperty.getDefault](): boolean {
