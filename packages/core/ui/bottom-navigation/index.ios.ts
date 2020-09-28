@@ -1,24 +1,18 @@
 ﻿// Types
-import {TabContentItem} from '../tab-navigation-base/tab-content-item';
-import {TabStrip} from '../tab-navigation-base/tab-strip';
-import {TabStripItem} from '../tab-navigation-base/tab-strip-item';
-import {getTransformedText, TextTransform} from '../text-base';
+import { TabContentItem } from '../tab-navigation-base/tab-content-item';
+import { TabStrip } from '../tab-navigation-base/tab-strip';
+import { TabStripItem } from '../tab-navigation-base/tab-strip-item';
+import { getTransformedText, TextTransform } from '../text-base';
 
 // Requires
-import {Color} from '../../color';
-import {ImageSource} from '../../image-source';
-import {Device} from '../../platform';
-import {iOSNativeHelper, isFontIconURI, layout} from '../../utils';
-import {CSSType, IOSHelper, View} from '../core/view';
-import {Frame} from '../frame';
-import {Font} from '../styling/font';
-import {
-	getIconSpecSize,
-	itemsProperty,
-	selectedIndexProperty,
-	TabNavigationBase,
-	tabStripProperty
-} from '../tab-navigation-base/tab-navigation-base';
+import { Color } from '../../color';
+import { ImageSource } from '../../image-source';
+import { Device } from '../../platform';
+import { iOSNativeHelper, isFontIconURI, layout } from '../../utils';
+import { CSSType, IOSHelper, View } from '../core/view';
+import { Frame } from '../frame';
+import { Font } from '../styling/font';
+import { getIconSpecSize, itemsProperty, selectedIndexProperty, TabNavigationBase, tabStripProperty } from '../tab-navigation-base/tab-navigation-base';
 
 // TODO:
 // import { profile } from "../../profiling";

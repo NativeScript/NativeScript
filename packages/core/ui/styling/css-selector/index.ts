@@ -1,3 +1,4 @@
+import '../../../globals';
 import { isNullOrUndefined } from '../../../utils/types';
 
 import * as cssParser from '../../../css';

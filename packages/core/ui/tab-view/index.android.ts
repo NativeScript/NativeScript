@@ -366,7 +366,7 @@ export class TabViewItem extends TabViewItemBase {
 		let tabFragment = null;
 		const fragmentManager = tabView._getFragmentManager();
 		const fragments = fragmentManager.getFragments().toArray();
-		for (let i=0;i<fragments.length;i++) {
+		for (let i = 0; i < fragments.length; i++) {
 			if (fragments[i].index === this.index) {
 				tabFragment = fragments[i];
 				break;
@@ -624,7 +624,7 @@ export class TabView extends TabViewBase {
 		const fragmentManager = this._getFragmentManager();
 		const transaction = fragmentManager.beginTransaction();
 		let fragments = <Array<any>>fragmentManager.getFragments().toArray();
-		for (let i=0;i<fragments.length;i++) {
+		for (let i = 0; i < fragments.length; i++) {
 			transaction.remove(fragments[i]);
 		}
 		transaction.commitNowAllowingStateLoss();

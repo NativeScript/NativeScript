@@ -98,6 +98,7 @@ export abstract class TimePickerBase extends View implements TimePickerDefinitio
 	public maxHour: number;
 	public minMinute: number;
 	public maxMinute: number;
+	public iosPreferredDatePickerStyle: number;
 }
 
 TimePickerBase.prototype.recycleNativeView = 'auto';
@@ -204,3 +205,10 @@ export const timeProperty = new Property<TimePickerBase, Date>({
 	},
 });
 timeProperty.register(TimePickerBase);
+
+export const iosPreferredDatePickerStyleProperty = new Property<TimePickerBase, number>({
+	name: 'iosPreferredDatePickerStyle',
+	defaultValue: 0,
+	valueConverter: (v) => parseInt(v),
+});
+iosPreferredDatePickerStyleProperty.register(TimePickerBase);

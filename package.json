@@ -1,6 +1,6 @@
 {
   "name": "nativescript",
-  "version": "7.0.5",
+  "version": "7.0.7",
   "license": "MIT",
   "scripts": {
     "setup": "npx rimraf hooks node_modules package-lock.json && npm i && ts-patch install && nx run core:setup",

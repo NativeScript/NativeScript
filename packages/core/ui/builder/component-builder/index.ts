@@ -95,7 +95,7 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 		}
 
 		// Get the component type from module.
-    const instanceType = instanceModule[elementName];
+		const instanceType = instanceModule[elementName];
 
 		// Create instance of the component.
 		instance = new instanceType();
