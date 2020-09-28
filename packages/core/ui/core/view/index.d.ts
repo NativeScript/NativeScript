@@ -301,6 +301,8 @@ export abstract class View extends ViewBase {
 	 */
 	_androidContentDescriptionUpdated?: boolean;
 
+	automationText: string;
+
 	/**
 	 * Gets or sets the elevation of the android view.
 	 */

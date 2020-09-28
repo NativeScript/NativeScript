@@ -800,6 +800,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	public accessibilityTraits?: AccessibilityTrait[];
 
+	get automationText(): string {
+		return this.accessibilityIdentifier;
+	}
+
+	set automationText(value: string) {
+		this.accessibilityIdentifier = value;
+	}
+
 	get androidElevation(): number {
 		return this.style.androidElevation;
 	}

@@ -51,6 +51,7 @@ import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, initA11YView, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription } from '../../../acessibility';
+import * as Utils from '../../../utils';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -798,6 +799,15 @@ export class View extends ViewCommon {
 		this.nativeViewProtected.setFocusable(!!value);
 
 		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityIdentifierProperty.setNative](value: string): void {
+		const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+
+		if (id) {
+			this.nativeViewProtected.setTag(id, value);
+			this.nativeViewProtected.setTag(value);
+		}
 	}
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
