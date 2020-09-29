@@ -82,8 +82,23 @@ function ensureNativeClasses() {
 
 	nativeFocusedNotificationObserver = Application.ios.addNotificationObserver(UIAccessibilityElementFocusedNotification, (args: NSNotification) => {
 		const uiView = args.userInfo.objectForKey(UIAccessibilityFocusedElementKey) as UIView;
+		if (!uiView.tag) {
+			return;
+		}
 
-		const view = Application.getRootView().getViewByDomId(uiView.tag) as View;
+		const rootView = Application.getRootView();
+
+		// We use the UIView's tag to find the NativeScript View by its domId.
+		let view = rootView.getViewByDomId<View>(uiView.tag);
+		if (!view) {
+			for (const modalView of <Array<View>>rootView._getRootModalViews()) {
+				view = modalView.getViewByDomId(uiView.tag);
+				if (view) {
+					break;
+				}
+			}
+		}
+
 		if (!view) {
 			return;
 		}
@@ -119,6 +134,12 @@ export function initA11YView(view: View): void {
 		return;
 	}
 
+	/**
+	 * We need to map back from the UIView to the NativeScript View.
+	 *
+	 * We do that by setting the uiView's tag to the View's domId.
+	 * This way we can do reverse lookup.
+	 */
 	uiView.tag = view._domId;
 }
 
