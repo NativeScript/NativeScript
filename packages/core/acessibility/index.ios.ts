@@ -39,7 +39,6 @@ let AccessibilityTraitsMap: Map<string, number>;
 let RoleTypeMap: Map<AccessibilityRole, number>;
 
 let nativeFocusedNotificationObserver;
-const uiViewToTnsView = new WeakMap<UIView, WeakRef<View>>();
 let lastFocusedView: WeakRef<View>;
 function ensureNativeClasses() {
 	if (AccessibilityTraitsMap && nativeFocusedNotificationObserver) {
@@ -84,7 +83,7 @@ function ensureNativeClasses() {
 	nativeFocusedNotificationObserver = Application.ios.addNotificationObserver(UIAccessibilityElementFocusedNotification, (args: NSNotification) => {
 		const uiView = args.userInfo.objectForKey(UIAccessibilityFocusedElementKey) as UIView;
 
-		const view = uiViewToTnsView.get(uiView)?.get();
+		const view = Application.getRootView().getViewByDomId(uiView.tag) as View;
 		if (!view) {
 			return;
 		}
@@ -110,6 +109,7 @@ function ensureNativeClasses() {
 		}
 
 		nativeFocusedNotificationObserver = null;
+		lastFocusedView = null;
 	});
 }
 
@@ -119,7 +119,7 @@ export function initA11YView(view: View): void {
 		return;
 	}
 
-	uiViewToTnsView.set(uiView, new WeakRef(view));
+	uiView.tag = view._domId;
 }
 
 export function updateAccessibilityProperties(view: View): void {
