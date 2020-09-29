@@ -1,9 +1,10 @@
 import * as Application from '../application';
 import { Trace } from '../trace';
 import type { View } from '../ui/core/view';
+import type { ViewBase } from '../ui/core/view-base';
 import { GestureTypes } from '../ui/gestures';
 import * as utils from '../utils/utils';
-import { notifyAccessibilityFocusState } from './accessibility-common';
+import { accessibilityScrollOnFocusEvent, notifyAccessibilityFocusState } from './accessibility-common';
 import { AccessibilityRole, AccessibilityState, AndroidAccessibilityEvent } from './accessibility-types';
 
 export * from './accessibility-common';
@@ -34,12 +35,8 @@ const AccessibilityStateChangeListener = androidx.core.view.accessibility.Access
 
 let clickableRolesMap = new Set<string>();
 
-function getAccessibilityManager(view: AndroidView): AccessibilityManager {
-	return view.getContext().getSystemService(android.content.Context.ACCESSIBILITY_SERVICE);
-}
-
+// Skip events triggered when a listview item is scrolled onto screen.
 let suspendAccessibilityEvents = false;
-const a11yScrollOnFocus = 'a11y-scroll-on-focus';
 let lastFocusedView: WeakRef<View>;
 function accessibilityEventHelper(view: View, eventType: number) {
 	const eventName = accessibilityEventTypeMap.get(eventType);
@@ -82,7 +79,7 @@ function accessibilityEventHelper(view: View, eventType: number) {
 			 */
 			if (android.os.Build.VERSION.SDK_INT >= 26) {
 				// Find all tap gestures and trigger them.
-				for (const tapGesture of view.getGestureObservers(GestureTypes.tap) || []) {
+				for (const tapGesture of view.getGestureObservers(GestureTypes.tap) ?? []) {
 					tapGesture.callback({
 						android: view.android,
 						eventName: 'tap',
@@ -97,7 +94,7 @@ function accessibilityEventHelper(view: View, eventType: number) {
 			return;
 		}
 		case AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED: {
-			const lastView = lastFocusedView && lastFocusedView.get();
+			const lastView = lastFocusedView?.get();
 			if (lastView && view !== lastView) {
 				const lastAndroidView = lastView.nativeViewProtected as AndroidView;
 				if (lastAndroidView) {
@@ -112,25 +109,30 @@ function accessibilityEventHelper(view: View, eventType: number) {
 
 			notifyAccessibilityFocusState(view, true, false);
 
-			const tree = [] as string[];
+			const tree = new Array<string>();
 
-			for (let node = view; node; node = node.parent as View) {
-				node.notify({
-					eventName: a11yScrollOnFocus,
-					object: view,
-				});
+			try {
+				suspendAccessibilityEvents = true;
+				for (let node: ViewBase = view; node; node = node.parent) {
+					node.notify({
+						eventName: accessibilityScrollOnFocusEvent,
+						object: view,
+					});
 
-				tree.push(`${node}[${node.className || ''}]`);
-			}
+					tree.push(`${node}[${node.className || ''}]`);
+				}
 
-			if (Trace.isEnabled()) {
-				Trace.write(`Focus-tree: ${tree.reverse().join(' => ')}`, Trace.categories.Accessibility);
+				if (Trace.isEnabled()) {
+					Trace.write(`Focus-tree: ${tree.reverse().join(' => ')}`, Trace.categories.Accessibility);
+				}
+			} finally {
+				suspendAccessibilityEvents = false;
 			}
 
 			return;
 		}
 		case AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED: {
-			const lastView = lastFocusedView && lastFocusedView.get();
+			const lastView = lastFocusedView?.get();
 			if (lastView && view === lastView) {
 				lastFocusedView = null;
 				androidView.clearFocus();
@@ -435,7 +437,7 @@ function ensureNativeClasses() {
 	accessibilityEventTypeMap = new Map([...accessibilityEventMap].map(([k, v]) => [v, k]));
 }
 
-function getA11YManager() {
+function getAccessibilityManager() {
 	const context = utils.ad.getApplicationContext() as android.content.Context;
 	if (!context) {
 		return null;
@@ -454,7 +456,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 	}
 
 	function updateAccessibilityServiceState() {
-		const a11yManager = getA11YManager();
+		const a11yManager = getAccessibilityManager();
 		if (!a11yManager) {
 			return;
 		}
@@ -462,7 +464,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 		accessbilityServiceEnabled = !!a11yManager.isEnabled() && !!a11yManager.isTouchExplorationEnabled();
 	}
 
-	const a11yManager = getA11YManager();
+	const a11yManager = getAccessibilityManager();
 	accessibilityStateChangeListener = new AccessibilityStateChangeListener({
 		onAccessibilityStateChanged(enabled) {
 			updateAccessibilityServiceState();
@@ -494,7 +496,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 			return;
 		}
 
-		const a11yManager = getA11YManager();
+		const a11yManager = getAccessibilityManager();
 		if (a11yManager) {
 			if (accessibilityStateChangeListener) {
 				AccessibilityManagerCompat.removeAccessibilityStateChangeListener(a11yManager, accessibilityStateChangeListener);
@@ -517,7 +519,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 }
 
 export function initA11YView(view: View): void {
-	view.on('loaded', (evt) => updateAccessibilityProperties(evt.object as View));
+	updateAccessibilityProperties(view);
 }
 
 export function updateAccessibilityProperties(view: View): void {
@@ -557,7 +559,7 @@ export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibili
 		return;
 	}
 
-	const a11yService = getAccessibilityManager(androidView);
+	const a11yService = getAccessibilityManager();
 	if (!a11yService.isEnabled()) {
 		if (Trace.isEnabled()) {
 			Trace.write(`${cls} - a11yService not enabled`, Trace.categories.Accessibility);
@@ -666,7 +668,7 @@ function applyContentDescription(view: View, forceUpdate?: boolean) {
 		return androidView.getContentDescription();
 	}
 
-	const contentDescriptionBuilder: string[] = [];
+	const contentDescriptionBuilder = new Array<string>();
 
 	// Workaround: TalkBack won't read the checked state for fake Switch.
 	if (view.accessibilityRole === AccessibilityRole.Switch) {

@@ -1,4 +1,3 @@
-import { ProxyViewContainer } from 'ui/proxy-view-container';
 import * as Application from '../application';
 import type { View } from '../ui/core/view';
 import { notifyAccessibilityFocusState } from './accessibility-common';
@@ -39,7 +38,7 @@ function inputArrayToBitMask(values: string | string[], map: Map<string, number>
 let AccessibilityTraitsMap: Map<string, number>;
 let RoleTypeMap: Map<AccessibilityRole, number>;
 
-let nativeFocusedNotificationObserver: NSNotification;
+let nativeFocusedNotificationObserver;
 const uiViewToTnsView = new WeakMap<UIView, WeakRef<View>>();
 let lastFocusedView: WeakRef<View>;
 function ensureNativeClasses() {
@@ -115,10 +114,6 @@ function ensureNativeClasses() {
 }
 
 export function initA11YView(view: View): void {
-	if (view instanceof ProxyViewContainer) {
-		return;
-	}
-
 	const uiView = view.nativeViewProtected as UIView;
 	if (!uiView) {
 		return;
@@ -128,10 +123,6 @@ export function initA11YView(view: View): void {
 }
 
 export function updateAccessibilityProperties(view: View): void {
-	if (view instanceof ProxyViewContainer) {
-		return;
-	}
-
 	const uiView = view.nativeViewProtected as UIView;
 	if (!uiView) {
 		return;

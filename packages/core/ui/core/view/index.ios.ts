@@ -59,7 +59,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	constructor() {
 		super();
 
-		initA11YView(this);
+		this.once(View.loadedEvent, () => initA11YView(this));
 	}
 
 	public requestLayout(): void {

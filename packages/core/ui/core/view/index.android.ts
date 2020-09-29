@@ -330,7 +330,7 @@ export class View extends ViewCommon {
 	constructor() {
 		super();
 
-		initA11YView(this);
+		this.on(View.loadedEvent, () => initA11YView(this));
 	}
 
 	// TODO: Implement unobserve that detach the touchListener.
