@@ -11,7 +11,7 @@ import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, Visibility, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
-import { initA11YView, IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties } from '../../../acessibility';
+import { setupAccessibleView, IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties } from '../../../acessibility';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -59,7 +59,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	constructor() {
 		super();
 
-		this.once(View.loadedEvent, () => initA11YView(this));
+		this.once(View.loadedEvent, () => setupAccessibleView(this));
 	}
 
 	public requestLayout(): void {

@@ -50,7 +50,7 @@ import { AndroidActivityBackPressedEventData, android as androidApp } from '../.
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, initA11YView, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription } from '../../../acessibility';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, setupAccessibleView, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription } from '../../../acessibility';
 import * as Utils from '../../../utils';
 
 export * from './view-common';
@@ -330,7 +330,7 @@ export class View extends ViewCommon {
 	constructor() {
 		super();
 
-		this.on(View.loadedEvent, () => initA11YView(this));
+		this.on(View.loadedEvent, () => setupAccessibleView(this));
 	}
 
 	// TODO: Implement unobserve that detach the touchListener.

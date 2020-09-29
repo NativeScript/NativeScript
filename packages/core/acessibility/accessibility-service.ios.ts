@@ -7,6 +7,10 @@ export function isAccessibilityServiceEnabled(): boolean {
 	return getSharedA11YObservable().accessibilityServiceEnabled;
 }
 
+export function getAndroidAccessibilityManager(): null {
+	return null;
+}
+
 let sharedA11YObservable: SharedA11YObservable;
 let notificationObserver: NSNotification;
 
@@ -15,7 +19,7 @@ function getSharedA11YObservable(): SharedA11YObservable {
 		return sharedA11YObservable;
 	}
 
-	sharedA11YObservable = new Observable() as SharedA11YObservable;
+	sharedA11YObservable = new SharedA11YObservable();
 
 	let isVoiceOverRunning: () => boolean;
 	if (typeof UIAccessibilityIsVoiceOverRunning === 'function') {
@@ -41,9 +45,7 @@ function getSharedA11YObservable(): SharedA11YObservable {
 
 	if (voiceOverStatusChangedNotificationName) {
 		notificationObserver = Application.ios.addNotificationObserver(voiceOverStatusChangedNotificationName, () => {
-			if (sharedA11YObservable) {
-				sharedA11YObservable.set(AccessibilityServiceEnabledPropName, isVoiceOverRunning());
-			}
+			sharedA11YObservable?.set(AccessibilityServiceEnabledPropName, isVoiceOverRunning());
 		});
 
 		Application.on(Application.exitEvent, () => {

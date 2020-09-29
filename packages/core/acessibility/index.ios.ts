@@ -128,7 +128,7 @@ function ensureNativeClasses() {
 	});
 }
 
-export function initA11YView(view: View): void {
+export function setupAccessibleView(view: View): void {
 	const uiView = view.nativeViewProtected as UIView;
 	if (!uiView) {
 		return;

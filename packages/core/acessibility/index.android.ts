@@ -2,8 +2,8 @@ import * as Application from '../application';
 import { Trace } from '../trace';
 import type { View } from '../ui/core/view';
 import { GestureTypes } from '../ui/gestures';
-import * as utils from '../utils/utils';
 import { notifyAccessibilityFocusState } from './accessibility-common';
+import { getAndroidAccessibilityManager } from './accessibility-service';
 import { AccessibilityRole, AccessibilityState, AndroidAccessibilityEvent } from './accessibility-types';
 
 export * from './accessibility-common';
@@ -365,17 +365,17 @@ function ensureNativeClasses() {
 	accessibilityEventTypeMap = new Map([...accessibilityEventMap].map(([k, v]) => [v, k]));
 }
 
-function getAccessibilityManager(): android.view.accessibility.AccessibilityManager | null {
-	const context = utils.ad.getApplicationContext() as android.content.Context;
-	if (!context) {
-		return null;
-	}
-
-	return context.getSystemService(android.content.Context.ACCESSIBILITY_SERVICE) as android.view.accessibility.AccessibilityManager;
-}
-
 let accessibilityStateChangeListener: androidx.core.view.accessibility.AccessibilityManagerCompat.AccessibilityStateChangeListener;
 let touchExplorationStateChangeListener: androidx.core.view.accessibility.AccessibilityManagerCompat.TouchExplorationStateChangeListener;
+
+function updateAccessibilityServiceState() {
+	const accessibilityManager = getAndroidAccessibilityManager();
+	if (!accessibilityManager) {
+		return;
+	}
+
+	accessbilityServiceEnabled = !!accessibilityManager.isEnabled() && !!accessibilityManager.isTouchExplorationEnabled();
+}
 
 let accessbilityServiceEnabled: boolean;
 export function isAccessibilityServiceEnabled(): boolean {
@@ -383,16 +383,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 		return accessbilityServiceEnabled;
 	}
 
-	function updateAccessibilityServiceState() {
-		const a11yManager = getAccessibilityManager();
-		if (!a11yManager) {
-			return;
-		}
-
-		accessbilityServiceEnabled = !!a11yManager.isEnabled() && !!a11yManager.isTouchExplorationEnabled();
-	}
-
-	const a11yManager = getAccessibilityManager();
+	const accessibilityManager = getAndroidAccessibilityManager();
 	accessibilityStateChangeListener = new androidx.core.view.accessibility.AccessibilityManagerCompat.AccessibilityStateChangeListener({
 		onAccessibilityStateChanged(enabled) {
 			updateAccessibilityServiceState();
@@ -413,8 +404,8 @@ export function isAccessibilityServiceEnabled(): boolean {
 		},
 	});
 
-	androidx.core.view.accessibility.AccessibilityManagerCompat.addAccessibilityStateChangeListener(a11yManager, accessibilityStateChangeListener);
-	androidx.core.view.accessibility.AccessibilityManagerCompat.addTouchExplorationStateChangeListener(a11yManager, touchExplorationStateChangeListener);
+	androidx.core.view.accessibility.AccessibilityManagerCompat.addAccessibilityStateChangeListener(accessibilityManager, accessibilityStateChangeListener);
+	androidx.core.view.accessibility.AccessibilityManagerCompat.addTouchExplorationStateChangeListener(accessibilityManager, touchExplorationStateChangeListener);
 
 	updateAccessibilityServiceState();
 
@@ -424,14 +415,14 @@ export function isAccessibilityServiceEnabled(): boolean {
 			return;
 		}
 
-		const a11yManager = getAccessibilityManager();
-		if (a11yManager) {
+		const accessibilityManager = getAndroidAccessibilityManager();
+		if (accessibilityManager) {
 			if (accessibilityStateChangeListener) {
-				androidx.core.view.accessibility.AccessibilityManagerCompat.removeAccessibilityStateChangeListener(a11yManager, accessibilityStateChangeListener);
+				androidx.core.view.accessibility.AccessibilityManagerCompat.removeAccessibilityStateChangeListener(accessibilityManager, accessibilityStateChangeListener);
 			}
 
 			if (touchExplorationStateChangeListener) {
-				androidx.core.view.accessibility.AccessibilityManagerCompat.removeTouchExplorationStateChangeListener(a11yManager, touchExplorationStateChangeListener);
+				androidx.core.view.accessibility.AccessibilityManagerCompat.removeTouchExplorationStateChangeListener(accessibilityManager, touchExplorationStateChangeListener);
 			}
 		}
 
@@ -446,7 +437,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 	return accessbilityServiceEnabled;
 }
 
-export function initA11YView(view: View): void {
+export function setupAccessibleView(view: View): void {
 	updateAccessibilityProperties(view);
 }
 
@@ -491,10 +482,10 @@ export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibili
 		return;
 	}
 
-	const a11yService = getAccessibilityManager();
-	if (!a11yService?.isEnabled()) {
+	const accessibilityManager = getAndroidAccessibilityManager();
+	if (!accessibilityManager?.isEnabled()) {
 		if (Trace.isEnabled()) {
-			Trace.write(`${cls} - a11yService not enabled`, Trace.categories.Accessibility);
+			Trace.write(`${cls} - accessibility service not enabled`, Trace.categories.Accessibility);
 		}
 
 		return;
@@ -507,16 +498,16 @@ export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibili
 
 		return;
 	}
-	const eventInt = accessibilityEventMap.get(eventType);
 
+	const eventInt = accessibilityEventMap.get(eventType);
 	if (!text) {
 		return androidView.sendAccessibilityEvent(eventInt);
 	}
 
-	const a11yEvent = android.view.accessibility.AccessibilityEvent.obtain(eventInt);
-	a11yEvent.setSource(androidView);
+	const accessibilityEvent = android.view.accessibility.AccessibilityEvent.obtain(eventInt);
+	accessibilityEvent.setSource(androidView);
 
-	a11yEvent.getText().clear();
+	accessibilityEvent.getText().clear();
 
 	if (!text) {
 		applyContentDescription(view);
@@ -532,10 +523,10 @@ export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibili
 	}
 
 	if (text) {
-		a11yEvent.getText().add(text);
+		accessibilityEvent.getText().add(text);
 	}
 
-	a11yService.sendAccessibilityEvent(a11yEvent);
+	accessibilityManager.sendAccessibilityEvent(accessibilityEvent);
 }
 
 export function updateContentDescription(view: View, forceUpdate?: boolean): string | null {

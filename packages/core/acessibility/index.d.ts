@@ -8,7 +8,7 @@ export * from './fontscale-observable';
 /**
  * Initialize accessibility for View. This should be called on loaded-event.
  */
-export function initA11YView(view: View): void;
+export function setupAccessibleView(view: View): void;
 
 /**
  * Update accessibility properties on nativeView
