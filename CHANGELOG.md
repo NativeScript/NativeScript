@@ -1,3 +1,14 @@
+## [7.0.8](https://github.com/NativeScript/NativeScript/compare/7.0.7-core...7.0.8) (2020-09-29)
+
+
+### Bug Fixes
+
+* **core:** global index typing fix for unit testing framework ([#8915](https://github.com/NativeScript/NativeScript/issues/8915)) ([806fc88](https://github.com/NativeScript/NativeScript/commit/806fc880dd944a8808a0f407ae5d0c0d4be55d5d))
+* **core:** Observable splice index > length  ([#8900](https://github.com/NativeScript/NativeScript/issues/8900)) ([65b1cdb](https://github.com/NativeScript/NativeScript/commit/65b1cdbae0a9e873a3d2bc4636038423351b794e))
+* **ios:** Utils.openFile ([#8914](https://github.com/NativeScript/NativeScript/issues/8914)) ([647926e](https://github.com/NativeScript/NativeScript/commit/647926ee281712a82238d5153522d9a07be5870c))
+
+
+
 ## [7.0.7](https://github.com/NativeScript/NativeScript/compare/7.0.6-core...7.0.7) (2020-09-26)
 
 
