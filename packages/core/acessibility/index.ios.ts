@@ -84,12 +84,12 @@ function ensureNativeClasses() {
 	nativeFocusedNotificationObserver = Application.ios.addNotificationObserver(UIAccessibilityElementFocusedNotification, (args: NSNotification) => {
 		const uiView = args.userInfo.objectForKey(UIAccessibilityFocusedElementKey) as UIView;
 
-		const view = uiViewToTnsView.has(uiView) ? uiViewToTnsView.get(uiView).get() : null;
+		const view = uiViewToTnsView.get(uiView)?.get();
 		if (!view) {
 			return;
 		}
 
-		const lastView = lastFocusedView && lastFocusedView.get();
+		const lastView = lastFocusedView?.get();
 		if (lastView && view !== lastView) {
 			const lastFocusedUIView = lastView.nativeViewProtected as UIView;
 			if (lastFocusedUIView) {

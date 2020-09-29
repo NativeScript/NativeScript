@@ -11,7 +11,7 @@ import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, Visibility, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
-import { initA11YView, IOSPostAccessibilityNotificationType, updateAccessibilityProperties } from '../../../acessibility';
+import { initA11YView, IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties } from '../../../acessibility';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -765,10 +765,18 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public accessibilityAnnouncement(msg = this.accessibilityLabel): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
 		this.iosPostAccessibilityNotification(IOSPostAccessibilityNotificationType.Announcement, msg);
 	}
 
 	public accessibilityScreenChanged(): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
 		this.iosPostAccessibilityNotification(IOSPostAccessibilityNotificationType.Screen);
 	}
 

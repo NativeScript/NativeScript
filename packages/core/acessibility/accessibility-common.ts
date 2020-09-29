@@ -9,11 +9,6 @@ export const accessibilityFocusEvent = 'accessibilityFocus';
 export const accessibilityFocusChangedEvent = 'accessibilityFocusChanged';
 
 /**
- * Android only event to make sure the ListView item is on screen.
- */
-export const accessibilityScrollOnFocusEvent = 'a11y-scroll-on-focus';
-
-/**
  * Send notification when accessibility focus state changes.
  * If either receivedFocus or lostFocus is true, 'accessibilityFocusChanged' is send with value true if element received focus
  * If receivedFocus, 'accessibilityFocus' is send

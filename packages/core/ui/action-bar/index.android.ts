@@ -6,7 +6,7 @@ import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import * as application from '../../application';
-import { updateContentDescription } from '../../acessibility';
+import { isAccessibilityServiceEnabled, updateContentDescription } from '../../acessibility';
 
 export * from './action-bar-common';
 
@@ -453,14 +453,18 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	public accessibilityScreenChanged(): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
 		const nativeView = this.nativeViewProtected;
 		if (!nativeView) {
 			return;
 		}
 
-		const wasFocusable = android.os.Build.VERSION.SDK_INT >= 26 && nativeView.getFocusable();
-		const hasHeading = android.os.Build.VERSION.SDK_INT >= 28 && nativeView.isAccessibilityHeading();
-		const importantForA11Y = nativeView.getImportantForAccessibility();
+		const originalFocusableState = android.os.Build.VERSION.SDK_INT >= 26 && nativeView.getFocusable();
+		const originalImportantForAccessibility = nativeView.getImportantForAccessibility();
+		const originalIsAccessibilityHeading = android.os.Build.VERSION.SDK_INT >= 28 && nativeView.isAccessibilityHeading();
 
 		try {
 			nativeView.setFocusable(false);
@@ -504,14 +508,14 @@ export class ActionBar extends ActionBarBase {
 				}
 
 				if (android.os.Build.VERSION.SDK_INT >= 28) {
-					nativeView.setAccessibilityHeading(hasHeading);
+					nativeView.setAccessibilityHeading(originalIsAccessibilityHeading);
 				}
 
 				if (android.os.Build.VERSION.SDK_INT >= 26) {
-					localNativeView.setFocusable(wasFocusable);
+					localNativeView.setFocusable(originalFocusableState);
 				}
 
-				localNativeView.setImportantForAccessibility(importantForA11Y);
+				localNativeView.setImportantForAccessibility(originalImportantForAccessibility);
 			});
 		}
 	}

@@ -5,7 +5,7 @@ import { ActionBar } from '../action-bar';
 import { GridLayout } from '../layouts/grid-layout';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
-import { AndroidAccessibilityEvent, getLastFocusedViewOnPage } from '../../acessibility';
+import { AndroidAccessibilityEvent, getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../acessibility';
 
 export * from './page-common';
 
@@ -125,6 +125,10 @@ export class Page extends PageBase {
 	}
 
 	public accessibilityScreenChanged(refocus = false): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
 		if (refocus) {
 			const lastFocusedView = getLastFocusedViewOnPage(this);
 			if (lastFocusedView) {
@@ -138,24 +142,12 @@ export class Page extends PageBase {
 			}
 		}
 
-		if (this.actionBarHidden) {
+		if (this.actionBarHidden || this.accessibilityLabel) {
 			this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
 
 			return;
 		}
 
-		if (this.accessibilityLabel) {
-			this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
-
-			return;
-		}
-
-		if (this.actionBar.accessibilityLabel || this.actionBar.title) {
-			this.actionBar.accessibilityScreenChanged();
-
-			return;
-		}
-
-		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
+		this.actionBar.accessibilityScreenChanged();
 	}
 }

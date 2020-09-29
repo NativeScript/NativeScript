@@ -1,10 +1,9 @@
 import * as Application from '../application';
 import { Trace } from '../trace';
 import type { View } from '../ui/core/view';
-import type { ViewBase } from '../ui/core/view-base';
 import { GestureTypes } from '../ui/gestures';
 import * as utils from '../utils/utils';
-import { accessibilityScrollOnFocusEvent, notifyAccessibilityFocusState } from './accessibility-common';
+import { notifyAccessibilityFocusState } from './accessibility-common';
 import { AccessibilityRole, AccessibilityState, AndroidAccessibilityEvent } from './accessibility-types';
 
 export * from './accessibility-common';
@@ -13,8 +12,6 @@ export * from './fontscale-observable';
 
 let clickableRolesMap = new Set<string>();
 
-// Skip events triggered when a listview item is scrolled onto screen.
-let suspendAccessibilityEvents = false;
 let lastFocusedView: WeakRef<View>;
 function accessibilityEventHelper(view: View, eventType: number) {
 	const eventName = accessibilityEventTypeMap.get(eventType);
@@ -87,26 +84,6 @@ function accessibilityEventHelper(view: View, eventType: number) {
 
 			notifyAccessibilityFocusState(view, true, false);
 
-			const tree = new Array<string>();
-
-			try {
-				suspendAccessibilityEvents = true;
-				for (let node: ViewBase = view; node; node = node.parent) {
-					node.notify({
-						eventName: accessibilityScrollOnFocusEvent,
-						object: view,
-					});
-
-					tree.push(`${node}[${node.className || ''}]`);
-				}
-
-				if (Trace.isEnabled()) {
-					Trace.write(`Focus-tree: ${tree.reverse().join(' => ')}`, Trace.categories.Accessibility);
-				}
-			} finally {
-				suspendAccessibilityEvents = false;
-			}
-
 			return;
 		}
 		case android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED: {
@@ -157,6 +134,7 @@ function ensureNativeClasses() {
 
 	const ignoreRoleTypesForTrace = new Set([AccessibilityRole.Header, AccessibilityRole.Link, AccessibilityRole.None, AccessibilityRole.Summary]);
 
+	@NativeClass()
 	class TNSAccessibilityDelegateImpl extends AccessibilityDelegate {
 		constructor() {
 			super();
@@ -187,7 +165,7 @@ function ensureNativeClasses() {
 				return;
 			}
 
-			const accessibilityRole = view.accessibilityRole as AccessibilityRole;
+			const accessibilityRole = view.accessibilityRole;
 			if (accessibilityRole) {
 				const androidClassName = RoleTypeMap.get(accessibilityRole);
 				if (androidClassName) {
@@ -197,7 +175,7 @@ function ensureNativeClasses() {
 					if (Trace.isEnabled()) {
 						Trace.write(`${view}.accessibilityRole = "${accessibilityRole}" is mapped to "${androidClassName}" (was ${oldClassName}). ${info.getClassName()}`, Trace.categories.Accessibility);
 					}
-				} else if (!ignoreRoleTypesForTrace.has(accessibilityRole as AccessibilityRole)) {
+				} else if (!ignoreRoleTypesForTrace.has(accessibilityRole)) {
 					if (Trace.isEnabled()) {
 						Trace.write(`${view}.accessibilityRole = "${accessibilityRole}" is unknown`, Trace.categories.Accessibility);
 					}
@@ -262,21 +240,6 @@ function ensureNativeClasses() {
 			}
 		}
 
-		public onInitializeAccessibilityEvent(view: android.view.View, event: android.view.accessibility.AccessibilityEvent) {
-			// for debugger
-			super.onInitializeAccessibilityEvent(view, event);
-		}
-
-		public onPopulateAccessibilityEvent(view: android.view.View, event: android.view.accessibility.AccessibilityEvent) {
-			// for debugger
-			super.onPopulateAccessibilityEvent(view, event);
-		}
-
-		public dispatchPopulateAccessibilityEvent(view: android.view.View, event: android.view.accessibility.AccessibilityEvent) {
-			// for debugger
-			return super.dispatchPopulateAccessibilityEvent(view, event);
-		}
-
 		public sendAccessibilityEvent(host: android.view.ViewGroup, eventType: number) {
 			super.sendAccessibilityEvent(host, eventType);
 			const view = this.getTnsView(host);
@@ -286,27 +249,11 @@ function ensureNativeClasses() {
 				return;
 			}
 
-			if (suspendAccessibilityEvents) {
-				if (Trace.isEnabled()) {
-					Trace.write(`sendAccessibilityEvent: ${view} - skip`, Trace.categories.Accessibility);
-				}
-
-				return;
-			}
-
 			try {
 				accessibilityEventHelper(view, eventType);
 			} catch (err) {
 				console.error(err);
 			}
-		}
-
-		public onRequestSendAccessibilityEvent(host: android.view.ViewGroup, view: android.view.View, event: android.view.accessibility.AccessibilityEvent) {
-			if (suspendAccessibilityEvents) {
-				return false;
-			}
-
-			return super.onRequestSendAccessibilityEvent(host, view, event);
 		}
 	}
 
@@ -513,6 +460,10 @@ export function updateAccessibilityProperties(view: View): void {
 }
 
 export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibilityEvent, text?: string): void {
+	if (!isAccessibilityServiceEnabled()) {
+		return;
+	}
+
 	const cls = `sendAccessibilityEvent(${view}, ${eventType}, ${text})`;
 
 	const androidView = view.nativeViewProtected as android.view.View;
@@ -541,7 +492,7 @@ export function sendAccessibilityEvent(view: View, eventType: AndroidAccessibili
 	}
 
 	const a11yService = getAccessibilityManager();
-	if (!a11yService.isEnabled()) {
+	if (!a11yService?.isEnabled()) {
 		if (Trace.isEnabled()) {
 			Trace.write(`${cls} - a11yService not enabled`, Trace.categories.Accessibility);
 		}

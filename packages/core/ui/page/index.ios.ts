@@ -7,7 +7,7 @@ import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './pag
 
 import { profile } from '../../profiling';
 import { iOSNativeHelper, layout } from '../../utils';
-import { getLastFocusedViewOnPage } from '../../acessibility';
+import { getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../acessibility';
 
 export * from './page-common';
 
@@ -513,6 +513,10 @@ export class Page extends PageBase {
 	}
 
 	public accessibilityScreenChanged(refocus = false): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
 		if (refocus) {
 			const lastFocusedView = getLastFocusedViewOnPage(this);
 			if (lastFocusedView) {

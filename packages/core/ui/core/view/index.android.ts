@@ -50,7 +50,7 @@ import { AndroidActivityBackPressedEventData, android as androidApp } from '../.
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../acessibility/acessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, initA11YView, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription } from '../../../acessibility';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, initA11YView, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription } from '../../../acessibility';
 import * as Utils from '../../../utils';
 
 export * from './view-common';
@@ -1123,14 +1123,26 @@ export class View extends ViewCommon {
 	}
 
 	public androidSendAccessibilityEvent(eventName: AndroidAccessibilityEvent, msg?: string): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
 		sendAccessibilityEvent(this, eventName, msg);
 	}
 
 	public accessibilityAnnouncement(msg = this.accessibilityLabel): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
 		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.ANNOUNCEMENT, msg);
 	}
 
 	public accessibilityScreenChanged(): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
 		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
 	}
 }
