@@ -1,4 +1,4 @@
-import {android as androidApp, getNativeApplication} from '../application';
+import { android as androidApp, getNativeApplication } from '../application';
 
 export enum connectionType {
 	none = 0,

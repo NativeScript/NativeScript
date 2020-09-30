@@ -54,7 +54,7 @@ export class TabContentItem extends TabContentItemBase {
 		}
 
 		const fragments = fragmentManager.getFragments().toArray();
-		for (let i=0;i<fragments.length;i++) {
+		for (let i = 0; i < fragments.length; i++) {
 			if (fragments[i].index === this.index) {
 				tabFragment = fragments[i];
 				break;

@@ -168,7 +168,10 @@ export namespace iOSNativeHelper {
 	 */
 	export function applyRotateTransform(transform: any /* CATransform3D*/, x: number, y: number, z: number): any; /* CATransform3D*/
 
-	export class UIDocumentInteractionControllerDelegateImpl {}
+  /**
+   * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
+   */
+	export function createUIDocumentInteractionControllerDelegate(): any;
 
 	/**
 	 * Checks whether the application is running on real device and not on simulator.

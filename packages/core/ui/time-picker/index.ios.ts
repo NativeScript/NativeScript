@@ -5,9 +5,8 @@ import { Device } from '../../platform';
 
 export * from './time-picker-common';
 
-const SUPPORT_DATE_PICKER_STYLE = parseFloat(Device.os) >= 14.0;
-const SUPPORT_TEXT_COLOR = parseFloat(Device.os) < 14.0;
-const DEFAULT_DATE_PICKER_STYLE = 1;
+const SUPPORT_DATE_PICKER_STYLE = parseFloat(Device.osVersion) >= 13.4;
+const SUPPORT_TEXT_COLOR = parseFloat(Device.osVersion) < 14.0;
 
 function getDate(hour: number, minute: number): Date {
 	let components = NSDateComponents.alloc().init();
@@ -36,7 +35,7 @@ export class TimePicker extends TimePickerBase {
 		const picker = UIDatePicker.new();
 		picker.datePickerMode = UIDatePickerMode.Time;
 		if (SUPPORT_DATE_PICKER_STYLE) {
-			picker.preferredDatePickerStyle = DEFAULT_DATE_PICKER_STYLE;
+			picker.preferredDatePickerStyle = this.iosPreferredDatePickerStyle;
 		}
 		return picker;
 	}

@@ -1,3 +1,33 @@
+## [7.0.8](https://github.com/NativeScript/NativeScript/compare/7.0.7-core...7.0.8) (2020-09-29)
+
+
+### Bug Fixes
+
+* **core:** global index typing fix for unit testing framework ([#8915](https://github.com/NativeScript/NativeScript/issues/8915)) ([806fc88](https://github.com/NativeScript/NativeScript/commit/806fc880dd944a8808a0f407ae5d0c0d4be55d5d))
+* **core:** Observable splice index > length  ([#8900](https://github.com/NativeScript/NativeScript/issues/8900)) ([65b1cdb](https://github.com/NativeScript/NativeScript/commit/65b1cdbae0a9e873a3d2bc4636038423351b794e))
+* **ios:** Utils.openFile ([#8914](https://github.com/NativeScript/NativeScript/issues/8914)) ([647926e](https://github.com/NativeScript/NativeScript/commit/647926ee281712a82238d5153522d9a07be5870c))
+
+
+
+## [7.0.7](https://github.com/NativeScript/NativeScript/compare/7.0.6-core...7.0.7) (2020-09-26)
+
+
+### Bug Fixes
+
+* **ios:** preferredDatePickerStyle property ([#8899](https://github.com/NativeScript/NativeScript/issues/8899)) ([dbefc43](https://github.com/NativeScript/NativeScript/commit/dbefc43b9bb9b907883990f8d40c178fc7ecea9c))
+
+
+
+## [7.0.6](https://github.com/NativeScript/NativeScript/compare/7.0.5-core...7.0.6) (2020-09-25)
+
+
+### Bug Fixes
+
+* **core:** delegate should be set on nativeTextViewProtected ([#8881](https://github.com/NativeScript/NativeScript/issues/8881)) ([021c0bb](https://github.com/NativeScript/NativeScript/commit/021c0bb9a24f15a9adf9d5e25a981ea53901e600))
+* **core:** global handling with env.production flag ([#8903](https://github.com/NativeScript/NativeScript/issues/8903)) ([3437ed7](https://github.com/NativeScript/NativeScript/commit/3437ed7e1483cddf75aeca9bd8ff475e449f110f))
+
+
+
 ## [7.0.5](https://github.com/NativeScript/NativeScript/compare/7.0.4-core...7.0.5) (2020-09-23)
 
 
