@@ -12,7 +12,7 @@ export function getAndroidAccessibilityManager(): null {
 }
 
 let sharedA11YObservable: SharedA11YObservable;
-let notificationObserver: NSNotification;
+let nativeObserver;
 
 function getSharedA11YObservable(): SharedA11YObservable {
 	if (sharedA11YObservable) {
@@ -44,18 +44,20 @@ function getSharedA11YObservable(): SharedA11YObservable {
 	}
 
 	if (voiceOverStatusChangedNotificationName) {
-		notificationObserver = Application.ios.addNotificationObserver(voiceOverStatusChangedNotificationName, () => {
+		nativeObserver = Application.ios.addNotificationObserver(voiceOverStatusChangedNotificationName, () => {
 			sharedA11YObservable?.set(AccessibilityServiceEnabledPropName, isVoiceOverRunning());
 		});
 
 		Application.on(Application.exitEvent, () => {
-			if (notificationObserver) {
-				Application.ios.removeNotificationObserver(notificationObserver, voiceOverStatusChangedNotificationName);
+			if (nativeObserver) {
+				Application.ios.removeNotificationObserver(nativeObserver, voiceOverStatusChangedNotificationName);
 			}
 
-			notificationObserver = null;
+			nativeObserver = null;
+
 			if (sharedA11YObservable) {
 				sharedA11YObservable.removeEventListener(Observable.propertyChangeEvent);
+
 				sharedA11YObservable = null;
 			}
 		});

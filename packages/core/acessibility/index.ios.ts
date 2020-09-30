@@ -215,7 +215,7 @@ export const sendAccessibilityEvent = (): void => {};
 export const updateContentDescription = (): string | null => null;
 
 let accessbilityServiceEnabled: boolean;
-let nativeObserver: NSNotification;
+let nativeObserver;
 export function isAccessibilityServiceEnabled(): boolean {
 	if (typeof accessbilityServiceEnabled === 'boolean') {
 		return accessbilityServiceEnabled;

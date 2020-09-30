@@ -7,4 +7,4 @@ export class AccessibilityServiceEnabledObservable extends Observable {
 /**
  * Get the Android platform's AccessibilityManager.
  */
-export function getAndroidAccessibilityManager(): android.view.accessibility.AccessibilityManager | null;
+export function getAndroidAccessibilityManager(): /* android.view.accessibility.AccessibilityManager */ any | null;

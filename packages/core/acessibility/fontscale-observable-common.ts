@@ -3,7 +3,7 @@ import { Observable, PropertyChangeData } from '../data/observable';
 export class FontScaleObservableBase extends Observable {
 	public static readonly FONT_SCALE = 'fontScale';
 	public static readonly IS_EXTRA_SMALL = 'isExtraSmall';
-	public static readonly IS_EXTRA_LARGE = 'isExtraSmall';
+	public static readonly IS_EXTRA_LARGE = 'isExtraLarge';
 
 	public static get VALID_FONT_SCALES(): number[] {
 		if (global.isIOS) {

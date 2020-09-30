@@ -118,17 +118,17 @@ export enum AccessibilityRole {
 	/**
 	 * The element should be treated as a image button.
 	 */
-	ImageButton = 'image_button',
+	ImageButton = 'imageButton',
 
 	/**
 	 * The element behaves as a keyboard key.
 	 */
-	KeyboardKey = 'keyboard_key',
+	KeyboardKey = 'keyboardKey',
 
 	/**
 	 * The element should be treated as static text that cannot change.
 	 */
-	StaticText = 'text_field',
+	StaticText = 'textField',
 
 	/**
 	 * The element allows continuous adjustment through a range of values.
@@ -138,16 +138,36 @@ export enum AccessibilityRole {
 	/**
 	 * The element provides summary information when the application starts.
 	 */
-	Summary = 'summery',
+	Summary = 'summary',
 
 	/**
 	 * The element is a header that divides content into sections, such as the title of a navigation bar.
 	 */
 	Header = 'header',
+
+	/**
+	 * The element behaves like a Checkbox
+	 */
 	Checkbox = 'checkbox',
-	ProgressBar = 'progress_bar',
-	RadioButton = 'radiobutton',
-	SpinButton = 'spin_button',
+
+	/**
+	 * The element behaves like a ProgressBar
+	 */
+	ProgressBar = 'progressBar',
+
+	/**
+	 * The element behaves like a RadioButton
+	 */
+	RadioButton = 'radioButton',
+
+	/**
+	 * The element behaves like a SpinButton
+	 */
+	SpinButton = 'spinButton',
+
+	/**
+	 * The element behaves like a switch
+	 */
 	Switch = 'switch',
 }
 
