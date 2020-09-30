@@ -6,7 +6,7 @@ import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import * as application from '../../application';
-import { isAccessibilityServiceEnabled, updateContentDescription } from '../../acessibility';
+import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
 
 export * from './action-bar-common';
 

@@ -18,7 +18,7 @@ import { IOSHelper } from '../ui/core/view/view-helper';
 import { Device } from '../platform';
 import { profile } from '../profiling';
 import { iOSNativeHelper } from '../utils';
-import { initA11YCssHelper } from '../acessibility/accessibility-css-helper';
+import { initA11YCssHelper } from '../accessibility/accessibility-css-helper';
 
 const IOS_PLATFORM = 'ios';
 

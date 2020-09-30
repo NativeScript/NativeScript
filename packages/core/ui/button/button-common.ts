@@ -2,7 +2,7 @@ import { Button as ButtonDefinition } from '.';
 import { TextBase } from '../text-base';
 import { CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
-import { AccessibilityRole } from '../../acessibility';
+import { AccessibilityRole } from '../../accessibility';
 
 @CSSType('Button')
 export abstract class ButtonBase extends TextBase implements ButtonDefinition {

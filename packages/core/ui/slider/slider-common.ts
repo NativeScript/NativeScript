@@ -1,5 +1,5 @@
 import { Slider as SliderDefinition } from '.';
-import { AccessibilityRole } from '../../acessibility';
+import { AccessibilityRole } from '../../accessibility';
 import { CoercibleProperty, Property } from '../core/properties';
 import { CSSType, View } from '../core/view';
 

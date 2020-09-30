@@ -7,7 +7,7 @@ import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './pag
 
 import { profile } from '../../profiling';
 import { iOSNativeHelper, layout } from '../../utils';
-import { getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../acessibility';
+import { getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
 
 export * from './page-common';
 

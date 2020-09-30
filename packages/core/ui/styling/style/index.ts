@@ -11,7 +11,7 @@ import { Observable } from '../../../data/observable';
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from '../../text-base';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../acessibility/accessibility-types';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
 
 export interface CommonLayoutParams {
 	width: number;

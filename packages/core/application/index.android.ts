@@ -15,7 +15,7 @@ import { NavigationEntry, AndroidActivityCallbacks } from '../ui/frame/frame-int
 import { Observable } from '../data/observable';
 
 import { profile } from '../profiling';
-import { initA11YCssHelper } from '../acessibility/accessibility-css-helper';
+import { initA11YCssHelper } from '../accessibility/accessibility-css-helper';
 
 const ActivityCreated = 'activityCreated';
 const ActivityDestroyed = 'activityDestroyed';
