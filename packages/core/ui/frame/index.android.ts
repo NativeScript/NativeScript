@@ -779,6 +779,12 @@ function findPageForFragment(fragment: androidx.fragment.app.Fragment, frame: Fr
 		entry = current;
 	} else if (executingContext && executingContext.entry && executingContext.entry.fragmentTag === fragmentTag) {
 		entry = executingContext.entry;
+	} else {
+		frame.backStack.forEach(e=>{
+			if (e && e.fragmentTag === fragmentTag) {
+				entry = e;
+			}
+		})
 	}
 
 	let page: Page;
