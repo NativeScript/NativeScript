@@ -1,0 +1,14 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <StackLayout tap="onStackLayoutTapped" backgroundColor="#fff">
+
+        <Label text="With 'isPassThroughParentEnabled'" textWrap="true" textAlignment="center" color="#000" fontSize="20"/>
+        <FlexboxLayout tap="onFlexLayoutTap" isPassThroughParentEnabled="true" alignItems="center" justifyContent="center" height="150" backgroundColor="#fff">
+            <Label text="Tap Here to trigger the parent tap! (StackLayout)" textWrap="true" fontSize="24"/>
+        </FlexboxLayout>
+
+        <Label text="Without 'isPassThroughParentEnabled'" textWrap="true" textAlignment="center" color="#000" fontSize="20"/>
+        <FlexboxLayout tap="onFlexLayoutTap" alignItems="center" justifyContent="center" height="150" backgroundColor="#fff">
+            <Label text="Tap Here to trigger both!" textWrap="true" fontSize="24"/>
+        </FlexboxLayout>
+    </StackLayout>
+</Page>
