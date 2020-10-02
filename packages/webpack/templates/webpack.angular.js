@@ -83,13 +83,14 @@ module.exports = env => {
   }
   const entryModule = `${nsWebpack.getEntryModule(appFullPath, platform)}.ts`;
   const entryPath = `.${sep}${entryModule}`;
-  const appEntries = Object.assign({ bundle: entryPath }, entries);
-  
+
+  Object.assign(entries, { bundle: entryPath }, entries);
+
   const areCoreModulesExternal =
     Array.isArray(env.externals) &&
     env.externals.some(e => e.indexOf('@nativescript') > -1);
   if (platform === 'ios' && !areCoreModulesExternal && !testing) {
-    appEntries['tns_modules/@nativescript/core/inspector_modules'] =
+    entries['tns_modules/@nativescript/core/inspector_modules'] =
       'inspector_modules';
   }
 
@@ -181,11 +182,10 @@ module.exports = env => {
 
   const noEmitOnErrorFromTSConfig = getNoEmitOnErrorFromTSConfig(tsConfigName);
 
-  const projectAppComponents = appComponents.concat( [
-    "@nativescript/core/ui/frame", "@nativescript/core/ui/frame/activity"
-  ]);
+  appComponents.push("@nativescript/core/ui/frame", 
+                     "@nativescript/core/ui/frame/activity");
 
-  nsWebpack.processAppComponents(projectAppComponents, platform);
+  nsWebpack.processAppComponents(appComponents, platform);
   const config = {
     mode: production ? 'production' : 'development',
     context: appFullPath,
@@ -198,7 +198,7 @@ module.exports = env => {
       ]
     },
     target: nativescriptTarget,
-    entry: appEntries,
+    entry: entries,
     output: {
       pathinfo: false,
       path: dist,
@@ -255,7 +255,7 @@ module.exports = env => {
                 : '';
               return (
                 /[\\/]node_modules[\\/]/.test(moduleName) ||
-                projectAppComponents.some(comp => comp === moduleName)
+                appComponents.some(comp => comp === moduleName)
               );
             },
             enforce: true
@@ -303,7 +303,7 @@ module.exports = env => {
             // Require all Android app components
             platform === 'android' && {
               loader: '@nativescript/webpack/helpers/android-app-components-loader',
-              options: { modules: projectAppComponents }
+              options: { modules: appComponents }
             },
 
             {
@@ -314,7 +314,7 @@ module.exports = env => {
                 unitTesting,
                 appFullPath,
                 projectRoot,
-                ignoredFiles: nsWebpack.getUserDefinedEntries(appEntries, platform)
+                ignoredFiles: nsWebpack.getUserDefinedEntries(entries, platform)
               }
             }
           ].filter(loader => !!loader)
