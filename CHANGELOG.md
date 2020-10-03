@@ -1,3 +1,12 @@
+## [7.0.10](https://github.com/NativeScript/NativeScript/compare/7.0.9-core...7.0.10) (2020-10-03)
+
+
+### Bug Fixes
+
+* **core:** ensure globals do not get tree shaked ([#8931](https://github.com/NativeScript/NativeScript/issues/8931)) ([bf772c4](https://github.com/NativeScript/NativeScript/commit/bf772c46b77fafc1be6493d9d0d01139b9b49242))
+
+
+
 ## [7.0.8](https://github.com/NativeScript/NativeScript/compare/7.0.8-core...7.0.8) (2020-10-01)
 
 
