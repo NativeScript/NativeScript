@@ -10,7 +10,9 @@
       "url": "https://github.com/NativeScript/NativeScript"
   },
   "sideEffects": [
-    "./globals/index.js"
+    "bundle-entry-points.js",
+    "./globals/index.js",
+    "./globals"
   ],
   "files": [
       "**/*.d.ts",
