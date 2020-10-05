@@ -1,3 +1,27 @@
+## [7.0.10](https://github.com/NativeScript/NativeScript/compare/7.0.9-core...7.0.10) (2020-10-03)
+
+
+### Bug Fixes
+
+* **core:** ensure globals do not get tree shaked ([#8931](https://github.com/NativeScript/NativeScript/issues/8931)) ([bf772c4](https://github.com/NativeScript/NativeScript/commit/bf772c46b77fafc1be6493d9d0d01139b9b49242))
+
+
+
+## [7.0.8](https://github.com/NativeScript/NativeScript/compare/7.0.8-core...7.0.8) (2020-10-01)
+
+
+### Bug Fixes
+
+* **android:** fragment onPause ([#8919](https://github.com/NativeScript/NativeScript/issues/8919)) ([a55bcd8](https://github.com/NativeScript/NativeScript/commit/a55bcd8561ee229a67a92578ba25a6439b860302))
+* **core:** ObservableArray splice ensure index is > 0 ([#8921](https://github.com/NativeScript/NativeScript/issues/8921)) ([6d135e5](https://github.com/NativeScript/NativeScript/commit/6d135e5d63ee34270e6452d0184fe40f45e2b5ec))
+
+
+### Features
+
+* **ui-mobile-base:** enable bitcode ([#8917](https://github.com/NativeScript/NativeScript/issues/8917)) ([66cea78](https://github.com/NativeScript/NativeScript/commit/66cea78c4936910d547a18727be24749dec029b5))
+
+
+
 ## [7.0.8](https://github.com/NativeScript/NativeScript/compare/7.0.7-core...7.0.8) (2020-09-29)
 
 
