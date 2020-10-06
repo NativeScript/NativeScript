@@ -24,16 +24,19 @@ const parseWorkspaceConfig = function(platform, envConfigs, projectName, debug) 
 
         // default project configurations
         for (const envConfig of envConfigs) {
-          if (projectSettings.configurations && projectSettings.configurations[envConfig]) {
-            if (projectSettings.configurations[envConfig].fileReplacements) {
-              for (const fileReplace of projectSettings.configurations[envConfig].fileReplacements) {
-                if (debug) {
-                  console.log('project fileReplacement:', fileReplace);
-                }
-                if (fileReplace.replace.indexOf('.ts') > -1) {
-                  fileReplacements[resolve(__dirname, `${rootPath}${fileReplace.replace}`)] = resolve(__dirname, `${rootPath}${fileReplace.with}`);
-                } else {
-                  copyReplacements.push({ from: resolve(__dirname, `${rootPath}${fileReplace.with}`), to: resolve(__dirname, `${rootPath}${fileReplace.replace}`), force: true });
+          if (projectSettings.architect.default && projectSettings.architect.default.configurations) {
+            const defaultConfigurations = projectSettings.architect.default.configurations;
+            if (defaultConfigurations && defaultConfigurations[envConfig]) {
+              if (defaultConfigurations[envConfig].fileReplacements) {
+                for (const fileReplace of defaultConfigurations[envConfig].fileReplacements) {
+                  if (debug) {
+                    console.log('project fileReplacement:', fileReplace);
+                  }
+                  if (fileReplace.replace.indexOf('.ts') > -1) {
+                    fileReplacements[resolve(__dirname, `${rootPath}${fileReplace.replace}`)] = resolve(__dirname, `${rootPath}${fileReplace.with}`);
+                  } else {
+                    copyReplacements.push({ from: resolve(__dirname, `${rootPath}${fileReplace.with}`), to: resolve(__dirname, `${rootPath}${fileReplace.replace}`), force: true });
+                  }
                 }
               }
             }
