@@ -9,6 +9,9 @@ const {
 } = require('@nativescript/webpack/transformers/ns-support-hmr-ng');
 const { nsTransformNativeClassesNg } = require("@nativescript/webpack/transformers/ns-transform-native-classes-ng");
 const {
+  parseWorkspaceConfig, hasConfigurations
+} = require('@nativescript/webpack/helpers/angular-config-parser');
+const {
   getMainModulePath
 } = require('@nativescript/webpack/utils/ast-utils');
 const { getNoEmitOnErrorFromTSConfig, getCompilerOptionsFromTSConfig } = require("@nativescript/webpack/utils/tsconfig-utils");
@@ -54,6 +57,8 @@ module.exports = env => {
     // You can provide the following flags when running 'tns run android|ios'
     snapshot, // --env.snapshot,
     production, // --env.production
+    configuration, // --env.configuration (consistent with angular cli usage)
+    projectName, // --env.projectName (drive configuration through angular projects)
     uglify, // --env.uglify
     report, // --env.report
     sourceMap, // --env.sourceMap
@@ -68,19 +73,28 @@ module.exports = env => {
     compileSnapshot // --env.compileSnapshot
   } = env;
 
+  const { fileReplacements, copyReplacements } = parseWorkspaceConfig(platform, configuration, projectName);
+
   const useLibs = compileSnapshot;
   const isAnySourceMapEnabled = !!sourceMap || !!hiddenSourceMap;
   const externals = nsWebpack.getConvertedExternals(env.externals);
   const appFullPath = resolve(projectRoot, appPath);
   const appResourcesFullPath = resolve(projectRoot, appResourcesPath);
   let tsConfigName = 'tsconfig.json';
-  let tsConfigTnsName = 'tsconfig.tns.json';
   let tsConfigPath = resolve(projectRoot, tsConfigName);
+  const tsConfigTnsName = 'tsconfig.tns.json';
   const tsConfigTnsPath = resolve(projectRoot, tsConfigTnsName);
   if (fs.existsSync(tsConfigTnsPath)) {
-    // still support shared angular app configurations 
+    // support shared angular app configurations 
     tsConfigName = tsConfigTnsName;
     tsConfigPath = tsConfigTnsPath;
+  }
+  const tsConfigEnvName = 'tsconfig.env.json';
+  const tsConfigEnvPath = resolve(projectRoot, tsConfigEnvName);
+  if (hasConfigurations(configuration) && fs.existsSync(tsConfigEnvPath)) {
+    // when configurations are used, switch to environments supported config
+    tsConfigName = tsConfigEnvName;
+    tsConfigPath = tsConfigEnvPath;
   }
   const entryModule = `${nsWebpack.getEntryModule(appFullPath, platform)}.ts`;
   const entryPath = `.${sep}${entryModule}`;
@@ -104,6 +118,7 @@ module.exports = env => {
   const copyTargets = [
     { from: 'assets/**', noErrorOnMissing: true, globOptions: { dot: false, ...copyIgnore } },
     { from: 'fonts/**', noErrorOnMissing: true, globOptions: { dot: false, ...copyIgnore } },
+    ...copyReplacements
   ];
 
   if (!production) {
@@ -217,7 +232,8 @@ module.exports = env => {
         '~/package.json': resolve(projectRoot, 'package.json'),
         '~': appFullPath,
         "tns-core-modules": "@nativescript/core",
-        "nativescript-angular": "@nativescript/angular"
+        "nativescript-angular": "@nativescript/angular",
+        ...fileReplacements
       },
       symlinks: true
     },
