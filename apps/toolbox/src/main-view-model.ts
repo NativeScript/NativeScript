@@ -84,7 +84,6 @@ export class HelloWorldModel extends Observable {
 					animation: {
 						enterFrom: {
 							translateX: -1000,
-							rotate: 360,
 							duration: 500,
 						},
 						exitTo: {
@@ -95,11 +94,12 @@ export class HelloWorldModel extends Observable {
 				},
 				animation: {
 					enterFrom: {
-						scaleX: 0,
+						rotate: 180,
 						duration: 300,
 					},
 					exitTo: {
-						scaleY: 0,
+						rotate: 180,
+						opacity: 0,
 						duration: 300,
 						curve: AnimationCurve.spring,
 					},

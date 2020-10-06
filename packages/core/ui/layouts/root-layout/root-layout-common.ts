@@ -1,3 +1,5 @@
+import { AnimationCurve } from '../../enums';
+import { Trace } from '../../../trace';
 import { CSSType, View } from '../../core/view';
 import { GridLayout } from '../grid-layout';
 import { RootLayout, RootLayoutOptions, ShadeCoverOptions, TransitionAnimation } from '.';
@@ -24,8 +26,9 @@ export class RootLayoutBase extends GridLayout {
 		return new Promise((resolve, reject) => {
 			try {
 				if (this.hasChild(view)) {
-					// TODO: add trace
-					console.log(`View ${view} has already been added`);
+					if (Trace.isEnabled()) {
+						Trace.write(`${view} has already been added`, Trace.categories.Layout);
+					}
 				} else {
 					// keep track of the views locally to be able to use their options later
 					this.popupViews.push({ view: view, options: options });
@@ -53,15 +56,18 @@ export class RootLayoutBase extends GridLayout {
 								resolve();
 							})
 							.catch((ex) => {
-								console.log('Error playing enter animation', ex);
-								reject(ex);
+								if (Trace.isEnabled()) {
+									Trace.write(`Error playing enter animation: ${ex}`, Trace.categories.Layout, Trace.messageType.error);
+								}
 							});
 					} else {
 						resolve();
 					}
 				}
 			} catch (ex) {
-				reject(ex);
+				if (Trace.isEnabled()) {
+					Trace.write(`Error opening popup (${view}): ${ex}`, Trace.categories.Layout, Trace.messageType.error);
+				}
 			}
 		});
 	}
@@ -99,16 +105,24 @@ export class RootLayoutBase extends GridLayout {
 								this.removeChild(view);
 								resolve();
 							})
-							.catch((ex) => reject(ex));
+							.catch((ex) => {
+								if (Trace.isEnabled()) {
+									Trace.write(`Error playing exit animation: ${ex}`, Trace.categories.Layout, Trace.messageType.error);
+								}
+							});
 					}
 					this.removeChild(view);
 					this.closeShadeCover(poppedView.options.shadeCover);
 					resolve();
 				} catch (ex) {
-					reject(ex);
+					if (Trace.isEnabled()) {
+						Trace.write(`Error closing popup (${view}): ${ex}`, Trace.categories.Layout, Trace.messageType.error);
+					}
 				}
 			} else {
-				console.log(`View ${view} not found`);
+				if (Trace.isEnabled()) {
+					Trace.write(`Unable to close popup. ${view} not found`, Trace.categories.Layout);
+				}
 			}
 		});
 	}
@@ -122,7 +136,9 @@ export class RootLayoutBase extends GridLayout {
 				}
 				resolve();
 			} catch (ex) {
-				reject(ex);
+				if (Trace.isEnabled()) {
+					Trace.write(`Error closing popups: ${ex}`, Trace.categories.Layout, Trace.messageType.error);
+				}
 			}
 		});
 	}
@@ -154,13 +170,19 @@ export class RootLayoutBase extends GridLayout {
 											.then(() => {
 												this.applyDefaultState(view);
 											})
-											.catch((ex) => console.log('error', ex));
+											.catch((ex) => {
+												if (Trace.isEnabled()) {
+													Trace.write(`Error playing enter animation: ${ex}`, Trace.categories.Layout, Trace.messageType.error);
+												}
+											});
 									} else {
 										this.applyDefaultState(view);
 									}
 								})
 								.catch((ex) => {
-									console.log('error', ex);
+									if (Trace.isEnabled()) {
+										Trace.write(`Error playing exit animation: ${ex}`, Trace.categories.Layout, Trace.messageType.error);
+									}
 									this._bringToFront(view);
 								});
 						} else {
@@ -176,11 +198,14 @@ export class RootLayoutBase extends GridLayout {
 
 					resolve();
 				} else {
-					console.log(`View ${view} not found or already at topmost`);
+					if (Trace.isEnabled()) {
+						Trace.write(`${view} not found or already at topmost`, Trace.categories.Layout);
+					}
 				}
 			} catch (ex) {
-				// TODO: replace rejects with trace
-				reject(ex);
+				if (Trace.isEnabled()) {
+					Trace.write(`Error in bringing view to front: ${ex}`, Trace.categories.Layout, Trace.messageType.error);
+				}
 			}
 		});
 	}
@@ -340,7 +365,7 @@ export const defaultTransitionAnimation: TransitionAnimation = {
 	rotate: 0,
 	opacity: 1,
 	duration: 300,
-	curve: 'easeIn',
+	curve: AnimationCurve.easeIn,
 };
 
 export const defaultShadeCoverTransitionAnimation: TransitionAnimation = {

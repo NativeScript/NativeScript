@@ -88,15 +88,8 @@ export class RootLayout extends RootLayoutBase {
 			animatorSet.setDuration(duration);
 			animatorSet.addListener(
 				new android.animation.Animator.AnimatorListener({
-					onAnimationStart: function (animator: android.animation.Animator): void {
-						// if (Trace.isEnabled()) {
-						// 	Trace.write('MainAnimatorListener.onAndroidAnimationStart(' + animator + ')', Trace.categories.Animation);
-						// }
-					},
+					onAnimationStart: function (animator: android.animation.Animator): void {},
 					onAnimationEnd: function (animator: android.animation.Animator): void {
-						// if (Trace.isEnabled()) {
-						// 	Trace.write('MainAnimatorListener.onAnimationEnd(' + animator + ')', Trace.categories.Animation);
-						// }
 						resolve();
 					},
 					onAnimationRepeat: function (animator: android.animation.Animator): void {},
