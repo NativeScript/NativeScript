@@ -1,7 +1,7 @@
 import { Color } from '../../../color';
 import { View } from '../../core/view';
 import { RootLayoutBase, defaultShadeCoverOptions } from './root-layout-common';
-import { ShadeCoverAnimation, ShadeCoverOptions } from '.';
+import { TransitionAnimation, ShadeCoverOptions } from '.';
 
 export * from './root-layout-common';
 
@@ -15,7 +15,7 @@ export class RootLayout extends RootLayoutBase {
 	}
 
 	protected _initShadeCover(view: View, shadeOptions: ShadeCoverOptions): void {
-		const initialState = <ShadeCoverAnimation>{
+		const initialState = <TransitionAnimation>{
 			...defaultShadeCoverOptions.animation.enterFrom,
 			...shadeOptions?.animation?.enterFrom,
 		};
@@ -46,14 +46,14 @@ export class RootLayout extends RootLayoutBase {
 	}
 
 	protected _closeShadeCover(view: View, shadeOptions: ShadeCoverOptions): Promise<void> {
-		const exitState = <ShadeCoverAnimation>{
+		const exitState = <TransitionAnimation>{
 			...defaultShadeCoverOptions.animation.exitTo,
 			...shadeOptions?.animation?.exitTo,
 		};
 		return this._playAnimation(this._getAnimationSet(view, exitState), exitState?.duration);
 	}
 
-	private _getAnimationSet(view: View, shadeCoverAnimation: ShadeCoverAnimation, backgroundColor: string = defaultShadeCoverOptions.color): Array<android.animation.Animator> {
+	private _getAnimationSet(view: View, shadeCoverAnimation: TransitionAnimation, backgroundColor: string = defaultShadeCoverOptions.color): Array<android.animation.Animator> {
 		const animationSet = Array.create(android.animation.Animator, 7);
 		animationSet[0] = android.animation.ObjectAnimator.ofFloat(view.nativeViewProtected, 'translationX', [shadeCoverAnimation.translateX]);
 		animationSet[1] = android.animation.ObjectAnimator.ofFloat(view.nativeViewProtected, 'translationY', [shadeCoverAnimation.translateY]);
@@ -83,9 +83,6 @@ export class RootLayout extends RootLayoutBase {
 
 	private _playAnimation(animationSet: Array<android.animation.Animator>, duration: number = 0): Promise<void> {
 		return new Promise((resolve) => {
-			if (duration) {
-				duration = duration * 1000; // convert duration from seconds to milliseconds
-			}
 			const animatorSet = new android.animation.AnimatorSet();
 			animatorSet.playTogether(animationSet);
 			animatorSet.setDuration(duration);

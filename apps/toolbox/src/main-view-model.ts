@@ -31,23 +31,24 @@ export class HelloWorldModel extends Observable {
 
 	popupViews: { view: View; options: RootLayoutOptions; extra?: any }[] = [
 		{
-			view: this.getPopup('#EA5936', 110, -30, 500),
+			view: this.getPopup('#EA5936', 110, -30),
 			options: {
 				shadeCover: {
 					color: '#FFF',
 					opacity: 0.7,
 					tapToClose: true,
 				},
-				enterAnimation: {
-					opacity: 1,
-					scale: { x: 1, y: 1 },
-					translate: { x: 0, y: 0 },
-					duration: 500,
-					curve: AnimationCurve.easeIn,
-				},
-				exitAnimation: {
-					opacity: 0,
-					translate: { x: 500, y: 0 },
+				animation: {
+					enterFrom: {
+						opacity: 0,
+						translateY: 500,
+						duration: 500,
+						// curve: AnimationCurve.easeIn,
+					},
+					exitTo: {
+						opacity: 0,
+						duration: 300,
+					},
 				},
 			},
 			extra: {
@@ -58,61 +59,50 @@ export class HelloWorldModel extends Observable {
 			},
 		},
 		{
-			view: this.getPopup('#232652', 110, 0, 0, 500),
+			view: this.getPopup('#232652', 110, 0),
 			options: {
 				shadeCover: {
 					color: 'pink',
 					opacity: 0.7,
 					tapToClose: false,
-					height: 350,
 					animation: {
 						exitTo: {
 							scaleX: 0,
 						},
 					},
 				},
-				enterAnimation: {
-					opacity: 1,
-					scale: { x: 1, y: 1 },
-					translate: { x: 0, y: 0 },
-					curve: AnimationCurve.easeOut,
-				},
-				exitAnimation: {
-					opacity: 0,
-					translate: { x: 0, y: 500 },
-				},
 			},
 		},
 		{
-			view: this.getPopup('#E1E4E8', 110, 30, -300, -300),
+			view: this.getPopup('#E1E4E8', 110, 30),
 			options: {
 				shadeCover: {
 					color: '#ffffdd',
 					opacity: 0.5,
 					tapToClose: true,
-					height: 400,
 					ignoreShadeRestore: true,
 					animation: {
 						enterFrom: {
 							translateX: -1000,
 							rotate: 360,
-							duration: 0.5,
+							duration: 500,
 						},
 						exitTo: {
 							rotate: -180,
-							duration: 0.5,
+							duration: 500,
 						},
 					},
 				},
-				enterAnimation: {
-					opacity: 1,
-					scale: { x: 1, y: 1 },
-					translate: { x: 0, y: 0 },
-					curve: AnimationCurve.easeInOut,
-				},
-				exitAnimation: {
-					opacity: 0,
-					translate: { x: 300, y: 300 },
+				animation: {
+					enterFrom: {
+						scaleX: 0,
+						duration: 300,
+					},
+					exitTo: {
+						scaleY: 0,
+						duration: 300,
+						curve: AnimationCurve.spring,
+					},
 				},
 			},
 		},
@@ -146,17 +136,14 @@ export class HelloWorldModel extends Observable {
 		}
 	}
 
-	getPopup(color: string, size: number, offset: number, translateX: number = 0, translateY: number = 0): View {
+	getPopup(color: string, size: number, offset: number): View {
 		const layout = new StackLayout();
 		layout.height = size;
 		layout.width = size;
 		layout.marginTop = offset;
 		layout.marginLeft = offset;
-		layout.translateY = translateY;
-		layout.translateX = translateX;
 		layout.backgroundColor = color;
 		layout.borderRadius = 10;
-		layout.opacity = 0;
 		return layout;
 	}
 

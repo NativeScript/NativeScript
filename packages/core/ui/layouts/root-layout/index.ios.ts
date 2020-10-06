@@ -1,7 +1,7 @@
 import { Color } from '../../../color';
 import { View } from '../../core/view';
 import { RootLayoutBase, defaultShadeCoverOptions } from './root-layout-common';
-import { ShadeCoverAnimation, ShadeCoverOptions } from '.';
+import { TransitionAnimation, ShadeCoverOptions } from '.';
 export * from './root-layout-common';
 
 export class RootLayout extends RootLayoutBase {
@@ -14,7 +14,7 @@ export class RootLayout extends RootLayoutBase {
 	}
 
 	protected _initShadeCover(view: View, shadeOptions: ShadeCoverOptions): void {
-		const initialState = <ShadeCoverAnimation>{
+		const initialState = <TransitionAnimation>{
 			...defaultShadeCoverOptions.animation.enterFrom,
 			...shadeOptions?.animation?.enterFrom,
 		};
@@ -28,11 +28,11 @@ export class RootLayout extends RootLayoutBase {
 				...shadeOptions,
 			};
 			if (view && view.nativeViewProtected) {
-				const duration = options.animation?.enterFrom?.duration || defaultShadeCoverOptions.animation.enterFrom.duration;
+				const duration = this._convertDurationToSeconds(options.animation?.enterFrom?.duration || defaultShadeCoverOptions.animation.enterFrom.duration);
 				UIView.animateWithDurationAnimationsCompletion(
 					duration,
 					() => {
-						view.nativeViewProtected.frame = CGRectMake(0, options.height || 0, (<UIView>this.ios).frame.size.width, (<UIView>this.ios).frame.size.height);
+						// view.nativeViewProtected.frame = CGRectMake(0, options.height || 0, (<UIView>this.ios).frame.size.width, (<UIView>this.ios).frame.size.height);
 						view.nativeViewProtected.backgroundColor = new Color(options.color).ios;
 						this._applyAnimationProperties(view, {
 							translateX: 0,
@@ -53,14 +53,14 @@ export class RootLayout extends RootLayoutBase {
 
 	protected _closeShadeCover(view: View, shadeOptions: ShadeCoverOptions): Promise<void> {
 		return new Promise((resolve) => {
-			const exitState = <ShadeCoverAnimation>{
+			const exitState = <TransitionAnimation>{
 				...defaultShadeCoverOptions.animation.exitTo,
 				...shadeOptions?.animation?.exitTo,
 			};
 
 			if (view && view.nativeViewProtected) {
 				UIView.animateWithDurationAnimationsCompletion(
-					exitState.duration,
+					this._convertDurationToSeconds(exitState.duration),
 					() => {
 						this._applyAnimationProperties(view, exitState);
 					},
@@ -72,7 +72,7 @@ export class RootLayout extends RootLayoutBase {
 		});
 	}
 
-	private _applyAnimationProperties(view: View, shadeCoverAnimation: ShadeCoverAnimation): void {
+	private _applyAnimationProperties(view: View, shadeCoverAnimation: TransitionAnimation): void {
 		const translate = CGAffineTransformMakeTranslation(shadeCoverAnimation.translateX, shadeCoverAnimation.translateY);
 		// ios doesn't like scale being 0, default it to a small number greater than 0
 		const scale = CGAffineTransformMakeScale(shadeCoverAnimation.scaleX || 0.1, shadeCoverAnimation.scaleY || 0.1);
@@ -80,5 +80,9 @@ export class RootLayout extends RootLayoutBase {
 		const translateAndScale = CGAffineTransformConcat(translate, scale);
 		view.nativeViewProtected.transform = CGAffineTransformConcat(rotate, translateAndScale);
 		view.nativeViewProtected.alpha = shadeCoverAnimation.opacity;
+	}
+
+	private _convertDurationToSeconds(duration: number): number {
+		return duration / 1000;
 	}
 }
