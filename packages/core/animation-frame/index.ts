@@ -1,6 +1,7 @@
 import { queueMacrotask } from '../utils/macrotask-scheduler';
 import { FPSCallback } from '../fps-meter/fps-native';
 import { getTimeInFrameBase } from './animation-native';
+import { Trace } from 'trace';
 
 export interface FrameRequestCallback {
 	(time: number): void;
@@ -32,7 +33,12 @@ function callAnimationCallbacks(thisFrameCbs: AnimationFrameCallbacks, frameTime
 	inAnimationFrame = true;
 	for (const animationId in thisFrameCbs) {
 		if (thisFrameCbs[animationId]) {
-			thisFrameCbs[animationId](frameTime);
+			try {
+				thisFrameCbs[animationId](frameTime);
+			} catch (err) {
+				const msg = err ? err.stack || err : err;
+				Trace.write(`Error in requestAnimationFrame: ${msg}`, Trace.categories.Error, Trace.messageType.error);
+			}
 		}
 	}
 	inAnimationFrame = false;

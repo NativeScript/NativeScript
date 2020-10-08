@@ -1,3 +1,4 @@
+import { Trace } from 'trace';
 import { dispatchToMainThread } from './mainthread-helper';
 
 let scheduled = false;
@@ -7,8 +8,14 @@ function drainMacrotaskQueue() {
 	const currentQueue = macroTaskQueue;
 	macroTaskQueue = [];
 	scheduled = false;
-	// TODO: error handling?
-	currentQueue.forEach((v) => v());
+	currentQueue.forEach((task) => {
+		try {
+			task();
+		} catch (err) {
+			const msg = err ? err.stack || err : err;
+			Trace.write(`Error in macroTask: ${msg}`, Trace.categories.Error, Trace.messageType.error);
+		}
+	});
 }
 
 export function queueMacrotask(task: () => void): void {
