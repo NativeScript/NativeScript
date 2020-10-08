@@ -95,8 +95,6 @@ export class Observable implements ObservableDefinition {
 	public off(eventNames: string, callback?: any, thisArg?: any): void {
 		this.removeEventListener(eventNames, callback, thisArg);
 	}
-	onListenerAdded(eventName: string, count: number) {}
-	onListenerRemoved(eventName: string, count: number) {}
 
 	public addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void {
 		if (typeof eventNames !== 'string') {
@@ -116,7 +114,6 @@ export class Observable implements ObservableDefinition {
 				callback: callback,
 				thisArg: thisArg,
 			});
-            this.onListenerAdded(event, list.length );
 		}
 	}
 
@@ -143,11 +140,9 @@ export class Observable implements ObservableDefinition {
 						delete this._observers[event];
 					}
 				}
-				this.onListenerRemoved(event, list ? list.length : 0);
 			} else {
 				this._observers[event] = undefined;
 				delete this._observers[event];
-				this.onListenerRemoved(event, 0);
 			}
 		}
 	}
