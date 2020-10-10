@@ -8,7 +8,7 @@ import { AccessibilityRole, AccessibilityState, AndroidAccessibilityEvent } from
 
 export * from './accessibility-common';
 export * from './accessibility-types';
-export * from './fontscale-observable';
+export * from './fontscale';
 
 let clickableRolesMap = new Set<string>();
 

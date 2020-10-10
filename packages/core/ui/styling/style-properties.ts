@@ -1364,6 +1364,27 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 });
 fontFamilyProperty.register(Style);
 
+export const fontScaleProperty = new InheritedCssProperty<Style, number>({
+	name: '_fontScale',
+	cssName: '_fontScale',
+	affectsLayout: global.isIOS,
+	valueChanged: (target, oldValue, newValue) => {
+		if (global.isIOS) {
+			if (target.viewRef['handleFontSize'] === true) {
+				return;
+			}
+
+			const currentFont = target.fontInternal || Font.default;
+			if (currentFont.fontScale !== newValue) {
+				const newFont = currentFont.withFontScale(newValue);
+				target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
+			}
+		}
+	},
+	valueConverter: (v) => parseFloat(v),
+});
+fontScaleProperty.register(Style);
+
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',
 	cssName: 'font-size',

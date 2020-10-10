@@ -15,7 +15,8 @@ import { NavigationEntry, AndroidActivityCallbacks } from '../ui/frame/frame-int
 import { Observable } from '../data/observable';
 
 import { profile } from '../profiling';
-import { initA11YCssHelper } from '../accessibility/accessibility-css-helper';
+import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
+import { initAccessibilityFontScale } from '../accessibility/fontscale';
 
 const ActivityCreated = 'activityCreated';
 const ActivityDestroyed = 'activityDestroyed';
@@ -174,7 +175,8 @@ export function run(entry?: NavigationEntry | string) {
 		androidApp.init(nativeApp);
 	}
 
-	initA11YCssHelper();
+	initAccessibilityCssHelper();
+	initAccessibilityFontScale();
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {

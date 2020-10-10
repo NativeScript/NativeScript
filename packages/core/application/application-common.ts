@@ -28,6 +28,7 @@ export const uncaughtErrorEvent = 'uncaughtError';
 export const discardedErrorEvent = 'discardedError';
 export const orientationChangedEvent = 'orientationChanged';
 export const systemAppearanceChangedEvent = 'systemAppearanceChanged';
+export const fontScaleChangedEvent = 'fontScaleChanged';
 
 const ORIENTATION_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.portrait}`, `${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.landscape}`, `${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.unknown}`];
 

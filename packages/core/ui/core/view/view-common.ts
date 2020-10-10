@@ -24,7 +24,7 @@ import { TextTransform } from '../../text-base';
 import * as am from '../../animation';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent } from '../../../accessibility';
+import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, getCurrentFontScale } from '../../../accessibility';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -367,6 +367,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		modalRootViewCssClasses.forEach((c) => this.cssClasses.add(c));
 
 		parent._modal = this;
+		this.style._fontScale = getCurrentFontScale();
 		this._modalParent = parent;
 		this._modalContext = options.context;
 		const that = this;

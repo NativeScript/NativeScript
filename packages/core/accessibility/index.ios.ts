@@ -5,7 +5,7 @@ import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, Accessi
 
 export * from './accessibility-common';
 export * from './accessibility-types';
-export * from './fontscale-observable';
+export * from './fontscale';
 
 function enforceArray(val: string | string[]): string[] {
 	if (Array.isArray(val)) {

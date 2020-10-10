@@ -55,6 +55,11 @@ export const orientationChangedEvent: string;
 export const systemAppearanceChangedEvent: string;
 
 /**
+ * String value used when hooking to fontScaleChanged event.
+ */
+export const fontScaleChangedEvent: string;
+
+/**
  * Boolean to enable/disable systemAppearanceChanged
  */
 export let autoSystemAppearanceChanged: boolean;

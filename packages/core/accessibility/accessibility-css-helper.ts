@@ -1,7 +1,8 @@
 import { applyCssClass, getRootView } from '../application';
+import * as Application from '../application';
 import type { View } from '../ui/core/view';
 import { AccessibilityServiceEnabledObservable } from './accessibility-service';
-import { FontScaleObservable } from './fontscale-observable';
+import { FontScaleCategory, getCurrentFontScale, getFontScaleCategory, VALID_FONT_SCALES } from './fontscale';
 
 // CSS-classes
 const fontScaleExtraSmallCategoryClass = `a11y-fontscale-xs`;
@@ -14,7 +15,6 @@ const a11yServiceEnabledClass = `a11y-service-enabled`;
 const a11yServiceDisabledClass = `a11y-service-disabled`;
 const a11yServiceClasses = [a11yServiceEnabledClass, a11yServiceDisabledClass];
 
-let fontScaleObservable: FontScaleObservable;
 let accessibilityServiceObservable: AccessibilityServiceEnabledObservable;
 let fontScaleCssClasses: Map<number, string>;
 
@@ -23,13 +23,12 @@ let currentFontScaleCategory = '';
 let currentA11YServiceClass = '';
 
 function ensureClasses() {
-	if (fontScaleObservable) {
+	if (accessibilityServiceObservable) {
 		return;
 	}
 
-	fontScaleCssClasses = new Map(FontScaleObservable.VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`]));
+	fontScaleCssClasses = new Map(VALID_FONT_SCALES.map((fs) => [fs, `a11y-fontscale-${Number(fs * 100).toFixed(0)}`]));
 
-	fontScaleObservable = new FontScaleObservable();
 	accessibilityServiceObservable = new AccessibilityServiceEnabledObservable();
 }
 
@@ -42,15 +41,32 @@ function applyRootCssClass(cssClasses: string[], newCssClass: string): void {
 	applyCssClass(rootView, cssClasses, newCssClass);
 
 	const rootModalViews = <Array<View>>rootView._getRootModalViews();
-	rootModalViews.forEach((rootModalView) => {
-		applyCssClass(rootModalView, cssClasses, newCssClass);
-	});
+	rootModalViews.forEach((rootModalView) => applyCssClass(rootModalView, cssClasses, newCssClass));
 }
 
-export function initA11YCssHelper(): void {
+function applyFontScaleToRootViews(): void {
+	const rootView = getRootView();
+	if (!rootView) {
+		return;
+	}
+
+	const fontScale = getCurrentFontScale();
+
+	rootView.style._fontScale = fontScale;
+
+	const rootModalViews = <Array<View>>rootView._getRootModalViews();
+	rootModalViews.forEach((rootModalView) => (rootModalView.style._fontScale = fontScale));
+}
+
+export function initAccessibilityCssHelper(): void {
 	ensureClasses();
 
-	fontScaleObservable.on(FontScaleObservable.propertyChangeEvent, updateCurrentHelperClasses);
+	Application.on(Application.fontScaleChangedEvent, () => {
+		updateCurrentHelperClasses();
+
+		applyFontScaleToRootViews();
+	});
+
 	accessibilityServiceObservable.on(AccessibilityServiceEnabledObservable.propertyChangeEvent, updateCurrentHelperClasses);
 }
 
@@ -59,7 +75,8 @@ export function initA11YCssHelper(): void {
  * Return true is any changes.
  */
 function updateCurrentHelperClasses(): void {
-	const { fontScale, isExtraSmall, isExtraLarge } = fontScaleObservable;
+	const fontScale = getCurrentFontScale();
+	const fontScaleCategory = getFontScaleCategory();
 
 	const oldFontScaleClass = currentFontScaleClass;
 	if (fontScaleCssClasses.has(fontScale)) {
@@ -73,16 +90,22 @@ function updateCurrentHelperClasses(): void {
 	}
 
 	const oldActiveFontScaleCategory = currentFontScaleCategory;
-	if (global.isAndroid) {
-		// Android only has medium font-sizes
-		currentFontScaleCategory = fontScaleMediumCategoryClass;
-	} else {
-		if (isExtraSmall) {
-			currentFontScaleCategory = fontScaleExtraSmallCategoryClass;
-		} else if (isExtraLarge) {
-			currentFontScaleCategory = fontScaleExtraLargeCategoryClass;
-		} else {
+	switch (fontScaleCategory) {
+		case FontScaleCategory.ExtraSmall: {
 			currentFontScaleCategory = fontScaleMediumCategoryClass;
+			break;
+		}
+		case FontScaleCategory.Medium: {
+			currentFontScaleCategory = fontScaleMediumCategoryClass;
+			break;
+		}
+		case FontScaleCategory.ExtraLarge: {
+			currentFontScaleCategory = fontScaleExtraLargeCategoryClass;
+			break;
+		}
+		default: {
+			currentFontScaleCategory = fontScaleMediumCategoryClass;
+			break;
 		}
 	}
 

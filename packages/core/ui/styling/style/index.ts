@@ -98,6 +98,7 @@ export class Style extends Observable implements StyleDefinition {
 	}
 
 	public fontInternal: Font;
+	public _fontScale: number;
 	public backgroundInternal: Background;
 
 	public rotate: number;

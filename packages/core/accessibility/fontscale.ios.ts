@@ -1,14 +1,35 @@
 import * as Application from '../application';
-import { Observable } from '../data/observable';
-import { FontScaleObservableBase, getClosestValidFontScale } from './fontscale-observable-common';
+import { FontScaleCategory, getClosestValidFontScale } from './fontscale-common';
 
-let internalObservable: Observable;
+let currentFontScale: number = null;
 function fontScaleChanged(origFontScale: number) {
-	const fontScale = getClosestValidFontScale(origFontScale);
+	const oldValue = currentFontScale;
+	currentFontScale = getClosestValidFontScale(origFontScale);
 
-	internalObservable.set(FontScaleObservable.FONT_SCALE, fontScale);
-	internalObservable.set(FontScaleObservable.IS_EXTRA_SMALL, fontScale < 0.85);
-	internalObservable.set(FontScaleObservable.IS_EXTRA_LARGE, fontScale > 1.5);
+	if (oldValue !== currentFontScale) {
+		Application.notify({
+			eventName: Application.fontScaleChangedEvent,
+			object: Application,
+		});
+	}
+}
+
+export function getCurrentFontScale(): number {
+	setupConfigListener();
+
+	return currentFontScale;
+}
+
+export function getFontScaleCategory(): FontScaleCategory {
+	if (currentFontScale < 0.85) {
+		return FontScaleCategory.ExtraSmall;
+	}
+
+	if (currentFontScale > 1.5) {
+		return FontScaleCategory.ExtraLarge;
+	}
+
+	return FontScaleCategory.Medium;
 }
 
 const sizeMap = new Map<string, number>([
@@ -44,7 +65,12 @@ function useIOSFontScale() {
 	}
 }
 
+let fontSizeObserver: any;
 function setupConfigListener(attempt = 0) {
+	if (fontSizeObserver) {
+		return;
+	}
+
 	if (!Application.ios.nativeApp) {
 		if (attempt > 100) {
 			fontScaleChanged(1);
@@ -58,14 +84,16 @@ function setupConfigListener(attempt = 0) {
 		return;
 	}
 
-	const fontSizeObserver = Application.ios.addNotificationObserver(UIContentSizeCategoryDidChangeNotification, (args) => {
+	fontSizeObserver = Application.ios.addNotificationObserver(UIContentSizeCategoryDidChangeNotification, (args) => {
 		const fontSize = args.userInfo.valueForKey(UIContentSizeCategoryNewValueKey);
 		contentSizeUpdated(fontSize);
 	});
 
 	Application.on(Application.exitEvent, () => {
-		Application.ios.removeNotificationObserver(fontSizeObserver, UIContentSizeCategoryDidChangeNotification);
-		internalObservable = null;
+		if (fontSizeObserver) {
+			Application.ios.removeNotificationObserver(fontSizeObserver, UIContentSizeCategoryDidChangeNotification);
+			fontSizeObserver = null;
+		}
 
 		Application.off(Application.resumeEvent, useIOSFontScale);
 	});
@@ -75,13 +103,6 @@ function setupConfigListener(attempt = 0) {
 	useIOSFontScale();
 }
 
-export class FontScaleObservable extends FontScaleObservableBase {
-	protected _setupNativeObservable(): Observable {
-		if (!internalObservable) {
-			internalObservable = new Observable();
-			setupConfigListener();
-		}
-
-		return internalObservable;
-	}
+export function initAccessibilityFontScale(): void {
+	setupConfigListener();
 }

@@ -3,7 +3,7 @@ import { AndroidAccessibilityEvent } from './accessibility-types';
 
 export * from './accessibility-common';
 export * from './accessibility-types';
-export * from './fontscale-observable';
+export * from './fontscale';
 
 /**
  * Initialize accessibility for View. This should be called on loaded-event.
@@ -16,7 +16,7 @@ export function setupAccessibleView(view: View): void;
 export function updateAccessibilityProperties(view: View): void;
 
 /**
- * Android helper function for triggering accessiblity events
+ * Android helper function for triggering accessibility events
  */
 export function sendAccessibilityEvent(View: View, eventName: AndroidAccessibilityEvent, text?: string): void;
 
@@ -31,6 +31,6 @@ export function updateContentDescription(View: View, forceUpdate?: boolean): str
 export function isAccessibilityServiceEnabled(): boolean;
 
 /**
- * Find the last view focues on a page.
+ * Find the last view focused on a page.
  */
 export function getLastFocusedViewOnPage(page: Page): View | null;
