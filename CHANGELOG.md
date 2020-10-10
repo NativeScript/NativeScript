@@ -1,3 +1,18 @@
+## [7.0.10](https://github.com/NativeScript/NativeScript/compare/7.0.10-core...7.0.10) (2020-10-10)
+
+
+### Bug Fixes
+
+* **ios:** iOS 10 support with adjustment to UILayoutGuide ([#8954](https://github.com/NativeScript/NativeScript/issues/8954)) ([ad25759](https://github.com/NativeScript/NativeScript/commit/ad2575991aa53c1a1806dfd5dc5e368e1674d73c))
+
+
+### Features
+
+* **webpack:** angular configuration schema validation compliance ([ee05b44](https://github.com/NativeScript/NativeScript/commit/ee05b4466336858bd7e2dcb651deb15ba74fc8c2))
+* **webpack:** angular configuration support for environment handling ([#8938](https://github.com/NativeScript/NativeScript/issues/8938)) ([3f7bf67](https://github.com/NativeScript/NativeScript/commit/3f7bf676ff4321d7c490099e3c72687ad68d46a2))
+
+
+
 ## [7.0.10](https://github.com/NativeScript/NativeScript/compare/7.0.9-core...7.0.10) (2020-10-03)
 
 
