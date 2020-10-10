@@ -214,11 +214,11 @@ export function updateAccessibilityProperties(view: View): void {
 export const sendAccessibilityEvent = (): void => {};
 export const updateContentDescription = (): string | null => null;
 
-let accessbilityServiceEnabled: boolean;
+let accessibilityServiceEnabled: boolean;
 let nativeObserver;
 export function isAccessibilityServiceEnabled(): boolean {
-	if (typeof accessbilityServiceEnabled === 'boolean') {
-		return accessbilityServiceEnabled;
+	if (typeof accessibilityServiceEnabled === 'boolean') {
+		return accessibilityServiceEnabled;
 	}
 
 	let isVoiceOverRunning: () => boolean;
@@ -227,12 +227,12 @@ export function isAccessibilityServiceEnabled(): boolean {
 	} else {
 		// iOS is too old to tell us if voice over is enabled
 		if (typeof UIAccessibilityIsVoiceOverRunning !== 'function') {
-			accessbilityServiceEnabled = false;
-			return accessbilityServiceEnabled;
+			accessibilityServiceEnabled = false;
+			return accessibilityServiceEnabled;
 		}
 	}
 
-	accessbilityServiceEnabled = isVoiceOverRunning();
+	accessibilityServiceEnabled = isVoiceOverRunning();
 
 	let voiceOverStatusChangedNotificationName: string | null = null;
 	if (typeof UIAccessibilityVoiceOverStatusDidChangeNotification !== 'undefined') {
@@ -243,7 +243,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 
 	if (voiceOverStatusChangedNotificationName) {
 		nativeObserver = Application.ios.addNotificationObserver(voiceOverStatusChangedNotificationName, () => {
-			accessbilityServiceEnabled = isVoiceOverRunning();
+			accessibilityServiceEnabled = isVoiceOverRunning();
 		});
 
 		Application.on(Application.exitEvent, () => {
@@ -251,14 +251,14 @@ export function isAccessibilityServiceEnabled(): boolean {
 				Application.ios.removeNotificationObserver(nativeObserver, voiceOverStatusChangedNotificationName);
 			}
 
-			accessbilityServiceEnabled = undefined;
+			accessibilityServiceEnabled = undefined;
 			nativeObserver = null;
 		});
 	}
 
 	Application.on(Application.resumeEvent, () => {
-		accessbilityServiceEnabled = isVoiceOverRunning();
+		accessibilityServiceEnabled = isVoiceOverRunning();
 	});
 
-	return accessbilityServiceEnabled;
+	return accessibilityServiceEnabled;
 }

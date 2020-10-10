@@ -65,7 +65,7 @@ function useIOSFontScale() {
 	}
 }
 
-let fontSizeObserver: any;
+let fontSizeObserver;
 function setupConfigListener(attempt = 0) {
 	if (fontSizeObserver) {
 		return;

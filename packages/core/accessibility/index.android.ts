@@ -112,7 +112,7 @@ function ensureNativeClasses() {
 		return;
 	}
 
-	// WORKAROUND: Typing referes to android.view.View.androidviewViewAccessibilityDelegate but it is called android.view.View.AccessibilityDelegate at runtime
+	// WORKAROUND: Typing refers to android.view.View.androidviewViewAccessibilityDelegate but it is called android.view.View.AccessibilityDelegate at runtime
 	const AccessibilityDelegate: typeof android.view.View.androidviewViewAccessibilityDelegate = android.view.View['AccessibilityDelegate'];
 
 	const RoleTypeMap = new Map<AccessibilityRole, string>([
@@ -374,13 +374,13 @@ function updateAccessibilityServiceState() {
 		return;
 	}
 
-	accessbilityServiceEnabled = !!accessibilityManager.isEnabled() && !!accessibilityManager.isTouchExplorationEnabled();
+	accessibilityServiceEnabled = !!accessibilityManager.isEnabled() && !!accessibilityManager.isTouchExplorationEnabled();
 }
 
-let accessbilityServiceEnabled: boolean;
+let accessibilityServiceEnabled: boolean;
 export function isAccessibilityServiceEnabled(): boolean {
-	if (typeof accessbilityServiceEnabled === 'boolean') {
-		return accessbilityServiceEnabled;
+	if (typeof accessibilityServiceEnabled === 'boolean') {
+		return accessibilityServiceEnabled;
 	}
 
 	const accessibilityManager = getAndroidAccessibilityManager();
@@ -434,7 +434,7 @@ export function isAccessibilityServiceEnabled(): boolean {
 
 	Application.on(Application.resumeEvent, updateAccessibilityServiceState);
 
-	return accessbilityServiceEnabled;
+	return accessibilityServiceEnabled;
 }
 
 export function setupAccessibleView(view: View): void {
