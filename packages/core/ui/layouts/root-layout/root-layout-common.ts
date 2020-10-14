@@ -96,7 +96,7 @@ export class RootLayoutBase extends GridLayout {
 						const exitAnimation = this.getExitAnimation(view, exitAnimationDefinition);
 						const exitAnimations: Promise<any>[] = [exitAnimation.play()];
 
-						// also remove shade cover if this is the last opened popup view
+						// add remove shade cover animation if this is the last opened popup view
 						if (this.popupViews.length === 0) {
 							exitAnimations.push(this.closeShadeCover(poppedView.options.shadeCover));
 						}
@@ -112,7 +112,11 @@ export class RootLayoutBase extends GridLayout {
 							});
 					}
 					this.removeChild(view);
-					this.closeShadeCover(poppedView.options.shadeCover);
+
+					// also remove shade cover if this is the last opened popup view
+					if (this.popupViews.length === 0) {
+						this.closeShadeCover(poppedView.options.shadeCover);
+					}
 					resolve();
 				} catch (ex) {
 					if (Trace.isEnabled()) {
