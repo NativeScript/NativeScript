@@ -32,6 +32,7 @@ export interface ChangedData<T> extends EventData {
 	 * Number of added items.
 	 */
 	addedCount: number;
+
 }
 
 const CHANGE = 'change';
@@ -113,7 +114,11 @@ export class ObservableArray<T> extends Observable {
 
 	set length(value: number) {
 		if (types.isNumber(value) && this._array && this._array.length !== value) {
-			this.splice(value, this._array.length - value);
+			let added=[];
+			for (let i=this._array.length;i < value;++i) {
+				added.push(undefined);
+			}
+			this.splice(value, this._array.length - value, ...added);
 		}
 	}
 
@@ -246,7 +251,15 @@ export class ObservableArray<T> extends Observable {
 			eventName: CHANGE,
 			object: this,
 			action: ChangeType.Splice,
-			index: Math.max(Math.min(start, this._array.length-1), 0),
+
+			// The logic here is a bit weird; so lets explain why it is written this way
+			// First of all, if you ADD any items to the array, we want the index to point to
+			//   the first value of the index, so this fixes it when you put a value to high in
+			// If you remove items from the array, then the index needs to point to the INDEX
+			//   where you removed the item.
+			// If you add and remove items, the index will point to the remove location as that
+			//   is the index you passed in.
+			index: Math.max(Math.min(start, length - (result.length > 0 ? 1 : 0)), 0),
 			removed: result,
 			addedCount: this._array.length + result.length - length,
 		});
