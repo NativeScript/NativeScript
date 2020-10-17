@@ -63,10 +63,10 @@ const webpackConfigAngular = proxyquire('./webpack.angular', {
 				fileReplacements: {},
 				copyReplacements: [],
 			};
-    },
-    hasConfigurations: (envConfigs) => {
-      return false;
-    }
+		},
+		hasConfigurations: (envConfigs) => {
+			return false;
+		},
 	},
 	'@nativescript/webpack/utils/ast-utils': {
 		getMainModulePath: () => {
