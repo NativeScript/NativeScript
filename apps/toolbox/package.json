@@ -11,7 +11,6 @@
     "@nativescript/core": "file:../../packages/core"
   },
   "devDependencies": {
-    "@nativescript/ios": "7.0.1",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
     "typescript": "file:../../node_modules/typescript"
   }
