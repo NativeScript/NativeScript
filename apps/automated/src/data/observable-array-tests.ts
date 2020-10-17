@@ -401,10 +401,38 @@ export const test_ObservableArray_spliceShouldAddSpecifiedNumberOfElementsStarti
 		// << (hide)
 	});
 
+	// Because their is only one item in the above array the item index should be
+	// normalized to Index 1.
 	array.splice(2, 0, 1);
 	// << observable-array-splice-change
 
-	// Index should be reset to 0, since their is no more index=1 in this deletion
+	TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Splice && result.removed.length === 0 && result.index === 1 && result.addedCount === 1, "ObservableArray splice() should raise 'change' event with correct args!");
+};
+
+export const test_ObservableArray_spliceShouldAddDeleteSpecifiedNumberOfElementsStartingFromSpecifiedIndexAndRaiseChangeEventWithCorrectArgs = function () {
+	let result: ChangedData<number>;
+
+	// >> observable-array-splice-change
+	const array = new ObservableArray([0]);
+
+	array.on(ObservableArray.changeEvent, (args: ChangedData<number>) => {
+		// Argument (args) is ChangedData<T>.
+		// args.eventName is "change".
+		// args.action is "splice".
+		// args.index is the start index.
+		// args.removed.length is equal to the number of deleted items.
+		// args.addedCount is 1.
+
+		// >> (hide)
+		result = args;
+		// << (hide)
+	});
+
+	// Because we are starting at index 2, their is NOTHING to delete
+	// So the Starting index should actually be normalized to Index 1
+	array.splice(2, 2, 1);
+	// << observable-array-splice-change
+
 	TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Splice && result.removed.length === 0 && result.index === 1 && result.addedCount === 1, "ObservableArray splice() should raise 'change' event with correct args!");
 };
 
@@ -430,8 +458,7 @@ export const test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsSta
 	array.splice(1, 2);
 	// << observable-array-splice-change
 
-	// Index should be reset to 0, since their is no more index=1 in this deletion
-	TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Splice && result.removed.length === 2 && result.index === 0 && result.addedCount === 0, "ObservableArray splice() should raise 'change' event with correct args!");
+	TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Splice && result.removed.length === 2 && result.index === 1 && result.addedCount === 0, "ObservableArray splice() should raise 'change' event with correct args!");
 };
 
 export const test_ObservableArray_spliceShouldInsertNewItemsInPlaceOfRemovedItemsStartingFromSpecifiedIndex = function () {
@@ -567,7 +594,7 @@ export const test_ObservableArray_settingLengthToSomethingPerformsSplice = funct
 		TKUnit.assertEqual(args.object, array);
 		TKUnit.assertEqual(args.eventName, 'change');
 		TKUnit.assertEqual(args.action, ChangeType.Splice);
-		TKUnit.assertEqual(args.index, 0);
+		TKUnit.assertEqual(args.index, 1);
 		TKUnit.assertEqual(args.addedCount, 0);
 		TKUnit.arrayAssert(args.removed, [2, 3]);
 	});
@@ -578,7 +605,7 @@ export const test_ObservableArray_settingLengthToSomethingPerformsSplice = funct
 	TKUnit.assertTrue(changeRaised);
 };
 
-export const test_ObservableArray_settingLengthToSomethingPerformsSplice2 = function () {
+export const test_ObservableArray_settingLengthToSomethingPerformsSpliceAdded = function () {
 	const array = new ObservableArray([1, 2, 3]);
 	let changeRaised = false;
 
@@ -587,14 +614,16 @@ export const test_ObservableArray_settingLengthToSomethingPerformsSplice2 = func
 		TKUnit.assertEqual(args.object, array);
 		TKUnit.assertEqual(args.eventName, 'change');
 		TKUnit.assertEqual(args.action, ChangeType.Splice);
-		TKUnit.assertEqual(args.index, 1);
-		TKUnit.assertEqual(args.addedCount, 0);
-		TKUnit.arrayAssert(args.removed, [3]);
+
+		// Because the array only has 3 elements, the index it starts the change at is #2
+		TKUnit.assertEqual(args.index, 3);
+		TKUnit.assertEqual(args.addedCount, 2);
+		TKUnit.arrayAssert(args.removed, []);
 	});
 
-	array.length = 2;
+	array.length = 5;
 
-	TKUnit.assertEqual(array.length, 2);
+	TKUnit.assertEqual(array.length, 5);
 	TKUnit.assertTrue(changeRaised);
 };
 
