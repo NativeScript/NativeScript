@@ -23,7 +23,7 @@ jobs:
         run: npm version $NPM_VERSION
 
       - name: Build @nativescript/core
-        run: npx nx run core:build.npm
+        run: npx nx run core:build
 
       - name: Publish @nativescript/core
         working-directory: dist/packages

@@ -27,6 +27,7 @@ export class Label extends TextBase implements LabelDefinition {
 		return view;
 	}
 
+	// @ts-ignore
 	get ios(): TNSLabel {
 		return this.nativeTextViewProtected;
 	}

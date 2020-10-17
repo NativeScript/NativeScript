@@ -46,6 +46,7 @@ export class Frame extends FrameBase {
 		super.disposeNativeView();
 	}
 
+	// @ts-ignore
 	public get ios(): iOSFrame {
 		return this._ios;
 	}

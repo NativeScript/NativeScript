@@ -21,6 +21,7 @@ export class ImageAsset extends ImageAssetBase {
 		}
 	}
 
+	// @ts-ignore
 	get ios(): PHAsset {
 		return this._ios;
 	}

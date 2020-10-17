@@ -291,6 +291,7 @@ export class ListView extends ListViewBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UITableView {
 		return this.nativeViewProtected;
 	}

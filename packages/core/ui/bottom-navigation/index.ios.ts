@@ -316,6 +316,7 @@ export class BottomNavigation extends TabNavigationBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UITabBarController {
 		return this._ios;
 	}

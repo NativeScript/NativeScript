@@ -504,3 +504,6 @@ declare namespace com {
 		}
 	}
 }
+
+// consistent symbol access
+export class iOSApplication {}

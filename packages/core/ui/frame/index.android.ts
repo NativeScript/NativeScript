@@ -130,6 +130,7 @@ export class Frame extends FrameBase {
 		return this._containerViewId;
 	}
 
+	// @ts-ignore
 	get android(): AndroidFrame {
 		return this._android;
 	}

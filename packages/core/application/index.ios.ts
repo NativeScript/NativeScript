@@ -11,6 +11,7 @@ import { View } from '../ui/core/view';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
 // TODO: Remove this and get it from global to decouple builder for angular
 import { Builder } from '../ui/builder';
+import { Observable } from '../data/observable';
 import { CSSUtils } from '../css/system-classes';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { Device } from '../platform';
@@ -528,3 +529,6 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
 	const rootView = getRootView();
 	livesync(rootView, context);
 };
+
+// consistent symbol access
+export class AndroidApplication extends Observable {}

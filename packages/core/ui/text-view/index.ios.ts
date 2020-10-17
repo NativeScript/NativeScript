@@ -123,6 +123,7 @@ export class TextView extends TextViewBaseCommon {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UITextView {
 		return this.nativeViewProtected;
 	}
