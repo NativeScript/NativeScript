@@ -505,5 +505,7 @@ declare namespace com {
 	}
 }
 
-// consistent symbol access
-export class iOSApplication {}
+// core exports this symbol so apps may import them in general
+// technically they are only available for use when running that platform
+// helps avoid a webpack nonexistent warning
+export const iOSApplication = undefined;

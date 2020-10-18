@@ -530,5 +530,7 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
 	livesync(rootView, context);
 };
 
-// consistent symbol access
-export class AndroidApplication extends Observable {}
+// core exports this symbol so apps may import them in general
+// technically they are only available for use when running that platform
+// helps avoid a webpack nonexistent warning
+export const AndroidApplication = undefined;
