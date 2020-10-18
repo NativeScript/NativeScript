@@ -954,10 +954,13 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 			const hasRemovingParent = fragment.getRemovingParentFragment();
 
 			if (hasRemovingParent) {
-				const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), this.backgroundBitmap);
-				this.frame._originalBackground = this.frame.backgroundColor || new Color('White');
-				this.frame.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
-				this.backgroundBitmap = null;
+				const nativeFrameView = this.frame.nativeViewProtected;
+				if (nativeFrameView) {
+					const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), this.backgroundBitmap);
+					this.frame._originalBackground = this.frame.backgroundColor || new Color('White');
+					nativeFrameView.setBackgroundDrawable(bitmapDrawable);
+					this.backgroundBitmap = null;
+				}
 			}
 		} finally {
 			superFunc.call(fragment);
