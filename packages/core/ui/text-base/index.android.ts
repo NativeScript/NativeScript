@@ -164,6 +164,7 @@ function initializeBaselineAdjustedSpan(): void {
 
 export class TextBase extends TextBaseCommon {
 	nativeViewProtected: android.widget.TextView;
+	// @ts-ignore
 	nativeTextViewProtected: android.widget.TextView;
 	private _defaultTransformationMethod: android.text.method.TransformationMethod;
 	private _paintFlags: number;

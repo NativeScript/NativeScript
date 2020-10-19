@@ -33,6 +33,7 @@ export class Button extends ButtonBase {
 		super.disposeNativeView();
 	}
 
+	// @ts-ignore
 	get ios() {
 		return this.nativeViewProtected;
 	}

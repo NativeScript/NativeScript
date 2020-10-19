@@ -1,5 +1,6 @@
 dist
 *.js
+!jest.config.js
 *.map
 !xml/xml.js
 !js-libs/**/*.*

@@ -466,6 +466,7 @@ export class Tabs extends TabsBase {
 	// public offscreenTabLimit: number;
 	// public tabsPosition: "top" | "bottom";
 	public _canSelectItem: boolean;
+	// @ts-ignore
 	public isLoaded: boolean;
 	public viewController: UIPageViewControllerImpl;
 	public items: TabContentItem[];
@@ -530,6 +531,7 @@ export class Tabs extends TabsBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UIPageViewController {
 		return this._ios;
 	}

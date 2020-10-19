@@ -52,6 +52,7 @@ export class Slider extends SliderBase {
 		super.disposeNativeView();
 	}
 
+	// @ts-ignore
 	get ios(): UISlider {
 		return this.nativeViewProtected;
 	}

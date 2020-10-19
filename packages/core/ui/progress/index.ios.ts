@@ -11,6 +11,7 @@ export class Progress extends ProgressBase {
 		return UIProgressView.new();
 	}
 
+	// @ts-ignore
 	get ios() {
 		return this.nativeViewProtected;
 	}

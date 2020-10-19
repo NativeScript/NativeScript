@@ -28,6 +28,7 @@ export class ListPicker extends ListPickerBase {
 		super.disposeNativeView();
 	}
 
+	// @ts-ignore
 	get ios() {
 		return this.nativeViewProtected;
 	}

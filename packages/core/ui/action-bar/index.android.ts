@@ -96,6 +96,7 @@ export class ActionItem extends ActionItemBase {
 		this._itemId = generateItemId();
 	}
 
+	// @ts-ignore
 	public get android(): AndroidActionItemSettings {
 		return this._androidPosition;
 	}

@@ -1,32 +1,109 @@
 {
   "migrations": [
     {
-      "version": "10.0.0-beta.0",
-      "description": "Add default branch to nx.json",
-      "factory": "./src/migrations/update-10-0-0/update-10-0-0",
+      "version": "10.1.0-beta.0",
+      "description": "Migrate .eslintrc files to use tsconfig with a wildcard",
+      "factory": "./src/migrations/update-10-1-0/migrate-eslintrc-tsconfig-wildcard",
       "package": "@nrwl/workspace",
-      "name": "add-default-branch-to-nx-json"
+      "name": "migrate-eslintrc-tsconfig-wildcard"
     },
     {
-      "version": "10.0.0-beta.0",
-      "description": "Migrate tsconfigs to solution style tsconfigs",
-      "factory": "./src/migrations/update-10-0-0/solution-tsconfigs",
+      "version": "10.3.0-beta.0",
+      "description": "Add @nrwl/cli as dependency",
+      "factory": "./src/migrations/update-10-3-0/add-cli-dependency",
       "package": "@nrwl/workspace",
-      "name": "solution-tsconfigs"
+      "name": "add-cli-dependency"
     },
     {
-      "version": "10.0.1-beta.0",
-      "description": "Migrate .eslintrc files to reference new tsconfig",
-      "factory": "./src/migrations/update-10-0-1/migrate-eslintrc",
+      "version": "10.3.0-beta.0",
+      "description": "Update typescript to v4",
+      "factory": "./src/migrations/update-10-3-0/update-typescript",
       "package": "@nrwl/workspace",
-      "name": "migrate-eslintrc-tsconfig"
+      "name": "update-10-3-0"
     },
     {
-      "version": "10.0.0-beta.2",
-      "description": "update jest configs to include setup env files",
-      "factory": "./src/migrations/update-10-0-0/update-jest-configs",
+      "version": "10.3.0-beta.1",
+      "description": "Adds .vscode/extensions.json to a workspace",
+      "factory": "./src/migrations/update-10-3-0/add-vscode-extensions",
+      "package": "@nrwl/workspace",
+      "name": "add-vscode-extensions"
+    },
+    {
+      "version": "10.3.0-beta.0",
+      "description": "Adds `buildableProjectDepsInPackageJsonType` for web and angular package builders",
+      "factory": "./src/migrations/update-10-3-0/add-buildable-project-deps-in-package-json-type",
+      "package": "@nrwl/workspace",
+      "name": "add-buildable-project-deps-in-package-json-type"
+    },
+    {
+      "version": "10.1.0-beta.4",
+      "description": "Update jest to v26",
+      "factory": "./src/migrations/update-10-1-0/update-10-1-0",
       "package": "@nrwl/jest",
-      "name": "update-10.0.0"
+      "name": "update-10.1.0"
+    },
+    {
+      "version": "10.2.0",
+      "description": "Remove deprecated jest builder options",
+      "factory": "./src/migrations/update-10-2-0/update-10-2-0",
+      "package": "@nrwl/jest",
+      "name": "update-10.2.0"
+    },
+    {
+      "version": "10.3.0-beta.1",
+      "description": "Adds all jest projects into the root jest config",
+      "factory": "./src/migrations/update-10-3-0/update-projects-property",
+      "package": "@nrwl/jest",
+      "name": "update-projects-property"
+    },
+    {
+      "version": "10.3.0-beta.1",
+      "description": "Update ts-jest to v26.4",
+      "factory": "./src/migrations/update-10-3-0/update-ts-jest",
+      "package": "@nrwl/jest",
+      "name": "update-ts-jest"
+    },
+    {
+      "version": "10.3.0-beta.1",
+      "description": "Adds a jest extension to the recommended extensions for vscode",
+      "factory": "./src/migrations/update-10-3-0/add-jest-extension",
+      "package": "@nrwl/jest",
+      "name": "add-jest-extension"
+    },
+    {
+      "version": "10.3.0-beta.1",
+      "description": "Update @typescript-eslint to v4.3",
+      "factory": "./src/migrations/update-10-3-0/update-10-3-0",
+      "package": "@nrwl/linter",
+      "name": "update-10.3.0"
+    },
+    {
+      "version": "10.3.0-beta.0",
+      "description": "Migrate to the new ESLint builder and ESLint config style",
+      "factory": "./src/migrations/update-10-3-0/update-eslint-builder-and-config",
+      "package": "@nrwl/linter",
+      "name": "update-eslint-builder-and-config"
+    },
+    {
+      "version": "10.3.0-beta.2",
+      "description": "Add explicit .json file extension to .eslintrc files, not using an extension is deprecated",
+      "factory": "./src/migrations/update-10-3-0/add-json-ext-to-eslintrc",
+      "package": "@nrwl/linter",
+      "name": "add-json-ext-to-eslintrc"
+    },
+    {
+      "version": "10.3.0-beta.3",
+      "description": "Update implicitDependencies within nx.json to include root .eslintrc.json",
+      "factory": "./src/migrations/update-10-3-0/add-root-eslintrc-json-to-workspace-implicit-deps",
+      "package": "@nrwl/linter",
+      "name": "add-root-eslintrc-json-to-workspace-implicit-deps"
+    },
+    {
+      "version": "10.1.0-beta.1",
+      "description": "Removes rootDir from node libs' tsconfig",
+      "factory": "./src/migrations/update-10-1-0/remove-root-dir",
+      "package": "@nrwl/node",
+      "name": "remove-root-dir"
     }
   ]
 }
