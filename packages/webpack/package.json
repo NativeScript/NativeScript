@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/webpack",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "main": "index",
   "description": "Webpack plugin for NativeScript",
   "homepage": "https://nativescript.org",
@@ -99,6 +99,6 @@
     "nyc": "^15.1.0",
     "proxyquire": "~2.1.0",
     "source-map-support": "^0.5.13",
-    "typescript": "~3.9.0"
+    "typescript": "~4.0.0"
   }
 }

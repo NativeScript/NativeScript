@@ -1,3 +1,19 @@
+## [7.0.12](https://github.com/NativeScript/NativeScript/compare/7.0.11-core...7.0.12) (2020-10-21)
+
+
+### Bug Fixes
+
+* **android:** BottomNavigation error on back press (application exit) ([#8970](https://github.com/NativeScript/NativeScript/issues/8970)) ([99bb067](https://github.com/NativeScript/NativeScript/commit/99bb067420871078c40454eec842fad6cbede0f7))
+* **core:** ObservableArray tests and a typo ([#8968](https://github.com/NativeScript/NativeScript/issues/8968)) ([5c1b7f6](https://github.com/NativeScript/NativeScript/commit/5c1b7f6d76c19877da1f47a0696dfbbd89b5fd00))
+
+
+### Features
+
+* **core:** TypeScript 4 + cleanup ([#8967](https://github.com/NativeScript/NativeScript/issues/8967)) ([2243660](https://github.com/NativeScript/NativeScript/commit/2243660080ce6877d68a3f32fd64625f86023f77))
+* **webpack:** add svelte support ([#8963](https://github.com/NativeScript/NativeScript/issues/8963)) ([0afea86](https://github.com/NativeScript/NativeScript/commit/0afea8681c62071823804f392ab8d595e61190ff))
+
+
+
 ## [7.0.10](https://github.com/NativeScript/NativeScript/compare/7.0.10-core...7.0.10) (2020-10-10)
 
 
