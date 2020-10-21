@@ -3,7 +3,7 @@ import { AndroidAccessibilityEvent } from './accessibility-types';
 
 export * from './accessibility-common';
 export * from './accessibility-types';
-export * from './fontscale';
+export * from './font-scale';
 
 /**
  * Initialize accessibility for View. This should be called on loaded-event.

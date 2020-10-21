@@ -19,7 +19,7 @@ import { Device } from '../platform';
 import { profile } from '../profiling';
 import { iOSNativeHelper } from '../utils';
 import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
-import { initAccessibilityFontScale } from '../accessibility/fontscale';
+import { initAccessibilityFontScale } from '../accessibility/font-scale';
 
 const IOS_PLATFORM = 'ios';
 

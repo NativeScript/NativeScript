@@ -16,7 +16,7 @@ import { Observable } from '../data/observable';
 
 import { profile } from '../profiling';
 import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
-import { initAccessibilityFontScale } from '../accessibility/fontscale';
+import { initAccessibilityFontScale } from '../accessibility/font-scale';
 
 const ActivityCreated = 'activityCreated';
 const ActivityDestroyed = 'activityDestroyed';

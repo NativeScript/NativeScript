@@ -1,5 +1,6 @@
 import * as Application from '../application';
-import { FontScaleCategory, getClosestValidFontScale } from './fontscale-common';
+import { FontScaleCategory, getClosestValidFontScale } from './font-scale-common';
+export * from './font-scale-common';
 
 let currentFontScale: number = null;
 function fontScaleChanged(origFontScale: number) {

@@ -2,7 +2,7 @@ import { applyCssClass, getRootView } from '../application';
 import * as Application from '../application';
 import type { View } from '../ui/core/view';
 import { AccessibilityServiceEnabledObservable } from './accessibility-service';
-import { FontScaleCategory, getCurrentFontScale, getFontScaleCategory, VALID_FONT_SCALES } from './fontscale';
+import { FontScaleCategory, getCurrentFontScale, getFontScaleCategory, VALID_FONT_SCALES } from './font-scale';
 
 // CSS-classes
 const fontScaleExtraSmallCategoryClass = `a11y-fontscale-xs`;
