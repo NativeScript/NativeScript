@@ -83,6 +83,21 @@ Outside of the source centralized in this repo, the NativeScript framework consi
 In addition to the code that makes up the NativeScript framework itself, we also provide a number of [open-source sample apps](https://www.nativescript.org/app-samples-with-code) that you can reference while building your NativeScript application.
 
 ## License
-[Apache License 2.0](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
+```
+Copyright (c) 2020, nStudio, LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+Read complete license agreement [here](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
 
 <h3 align="center">Made with ❤️</h3>
