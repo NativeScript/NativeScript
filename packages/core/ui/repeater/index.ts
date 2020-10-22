@@ -20,7 +20,7 @@ export interface ItemsSource {
 @CSSType('Repeater')
 export class Repeater extends CustomLayoutView {
 	// TODO: get rid of such hacks.
-	public static knownFunctions = ['itemTemplateSelector']; //See component-builder.ts isKnownFunction
+	public static knownFunctions = ['itemTemplateSelector']; // See component-builder.ts isKnownFunction
 
 	private _isDirty = false;
 	private _itemTemplateSelector: (item: any, index: number, items: any) => string;
