@@ -1,8 +1,5 @@
 // Require globals first so that snapshot takes __extends function.
-const nsGlobals = require('../globals');
-if (!global.NativeScriptHasInitGlobal) {
-	nsGlobals.initGlobal();
-}
+import '../globals';
 
 // Types
 import { AndroidApplication, iOSApplication } from '.';
@@ -148,9 +145,14 @@ export function orientationChanged(rootView: View, newOrientation: 'portrait' | 
 		applyCssClass(rootModalView, ORIENTATION_CSS_CLASSES, newOrientationCssClass);
 	});
 }
+export let autoSystemAppearanceChanged = true;
+
+export function setAutoSystemAppearanceChanged(value: boolean) {
+	autoSystemAppearanceChanged = value;
+}
 
 export function systemAppearanceChanged(rootView: View, newSystemAppearance: 'dark' | 'light'): void {
-	if (!rootView) {
+	if (!rootView || !autoSystemAppearanceChanged) {
 		return;
 	}
 

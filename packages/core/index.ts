@@ -1,12 +1,11 @@
 /// <reference path="./global-types.d.ts" />
-// Init globals first (use require to ensure it's always at the top)
-const nsGlobals = require('./globals');
-nsGlobals.initGlobal();
+// Init globals first (use import to ensure it's always at the top)
+import './globals';
 
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
 
-import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance } from './application';
+import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance } from './application';
 export const Application = {
 	launchEvent,
 	displayedEvent,
@@ -31,6 +30,8 @@ export const Application = {
 	addCss,
 	on,
 	off,
+	notify,
+	hasListeners,
 	run,
 	orientation,
 	getNativeApplication,
@@ -103,7 +104,8 @@ export { profile, enable as profilingEnable, disable as profilingDisable, time a
 export type { InstrumentationMode, TimerInfo } from './profiling';
 
 export { encoding } from './text';
-
+// for developers to be explicit if they desire around globals (allows access via Utils below)
+import { setTimeout, setInterval, clearInterval, clearTimeout } from './timer';
 export * from './trace';
 
 export * from './ui';
@@ -134,6 +136,10 @@ export const Utils = {
 	// legacy (a lot of plugins use the shorthand "ad" Utils.ad instead of Utils.android)
 	ad: androidUtils,
 	ios: iosUtils,
+	setTimeout,
+	setInterval,
+	clearInterval,
+	clearTimeout,
 	Source,
 	ClassInfo,
 	getClass,

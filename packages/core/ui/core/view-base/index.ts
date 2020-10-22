@@ -305,7 +305,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		super();
 		this._domId = viewIdCounter++;
 		this._style = new Style(new WeakRef(this));
-		this.notify({eventName: ViewBase.createdEvent, type: this.constructor.name, object: this});
+		this.notify({ eventName: ViewBase.createdEvent, type: this.constructor.name, object: this });
 	}
 
 	// Used in Angular.

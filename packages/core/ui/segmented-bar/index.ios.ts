@@ -36,6 +36,7 @@ export class SegmentedBar extends SegmentedBarBase {
 		super.disposeNativeView();
 	}
 
+	// @ts-ignore
 	get ios(): UISegmentedControl {
 		return this.nativeViewProtected;
 	}

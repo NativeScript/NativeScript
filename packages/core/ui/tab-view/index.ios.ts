@@ -330,6 +330,7 @@ export class TabView extends TabViewBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UITabBarController {
 		return this._ios;
 	}

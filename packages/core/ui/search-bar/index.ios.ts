@@ -103,6 +103,7 @@ export class SearchBar extends SearchBarBase {
 		(<UIResponder>this.ios).resignFirstResponder();
 	}
 
+	// @ts-ignore
 	get ios(): UISearchBar {
 		return this.nativeViewProtected;
 	}

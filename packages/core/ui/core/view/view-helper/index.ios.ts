@@ -201,7 +201,7 @@ export class IOSHelper {
 
 	static initLayoutGuide(controller: UIViewController) {
 		const rootView = controller.view;
-		const layoutGuide = UILayoutGuide.alloc().init();
+		const layoutGuide = UILayoutGuide.new();
 		rootView.addLayoutGuide(layoutGuide);
 		NSLayoutConstraint.activateConstraints(<any>[layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor), layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor), layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor), layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)]);
 

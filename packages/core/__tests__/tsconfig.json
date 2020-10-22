@@ -30,6 +30,7 @@
         }
     },
     "include": [
+        "../global-types.d.ts",
         "./**/*.ts"
     ],
     "exclude": [
