@@ -32,7 +32,6 @@ export class RootLayout extends RootLayoutBase {
 				UIView.animateWithDurationAnimationsCompletion(
 					duration,
 					() => {
-						// view.nativeViewProtected.frame = CGRectMake(0, options.height || 0, (<UIView>this.ios).frame.size.width, (<UIView>this.ios).frame.size.height);
 						view.nativeViewProtected.backgroundColor = new Color(options.color).ios;
 						this._applyAnimationProperties(view, {
 							translateX: 0,

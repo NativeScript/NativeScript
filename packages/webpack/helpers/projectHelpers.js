@@ -152,10 +152,7 @@ module.exports = {
     getAngularVersion,
     isVue,
     isReact,
-<<<<<<< HEAD
-=======
     isSvelte,
->>>>>>> master
     isTypeScript,
     writePackageJson,
     convertSlashesInPath,

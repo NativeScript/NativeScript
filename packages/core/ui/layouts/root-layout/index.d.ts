@@ -24,7 +24,6 @@ export interface ShadeCoverOptions {
 	opacity?: number;
 	color?: string;
 	tapToClose?: boolean;
-	// height?: number; // shade will be vertically aligned at bottom with the height specified
 	animation?: {
 		enterFrom?: TransitionAnimation; // these will only be applied if its the first one to be opened
 		exitTo?: TransitionAnimation; // these will only be applied if its the last one to be closed

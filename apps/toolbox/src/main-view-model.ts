@@ -43,7 +43,6 @@ export class HelloWorldModel extends Observable {
 						opacity: 0,
 						translateY: 500,
 						duration: 500,
-						// curve: AnimationCurve.easeIn,
 					},
 					exitTo: {
 						opacity: 0,
