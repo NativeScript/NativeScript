@@ -13,6 +13,7 @@
 		"url": "https://github.com/NativeScript/NativeScript.git"
 	},
 	"dependencies": {
+		"markdown-snippet-injector": "^0.2.4",
 		"nativescript-theme-core": "^1.0.4"
 	},
 	"devDependencies": {

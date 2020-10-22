@@ -1772,6 +1772,10 @@ export class Repeater extends CustomLayoutView {
 
     itemTemplate: string | Template;
 
+    itemTemplates: string | Array<KeyedTemplate>;
+
+    itemTemplateSelector: string | ((item: any, index: number, items: any) => string);
+
     refresh();
 }
 
