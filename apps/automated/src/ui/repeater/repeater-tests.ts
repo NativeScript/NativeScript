@@ -1,12 +1,24 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { Application, Label, Page, StackLayout, WrapLayout, LayoutBase, View, GestureTypes, Repeater, ObservableArray } from '@nativescript/core';
+import { Application, Label, Page, StackLayout, WrapLayout, LayoutBase, View, KeyedTemplate, GestureTypes, Repeater, ObservableArray } from '@nativescript/core';
 
 var FEW_ITEMS = [0, 1, 2];
 var MANY_ITEMS = [];
 for (var i = 0; i < 100; i++) {
 	MANY_ITEMS[i] = i;
 }
+
+const ITEM_TEMPLATES_STRING = `
+				<template key="red">
+				    <Label text='red' style.backgroundColor='red' minHeight='100' maxHeight='100'/>
+				</template>
+				<template key='green'>
+				    <Label text='green' style.backgroundColor='green' minHeight='100' maxHeight='100'/>
+				</template>
+				<template key='blue'>
+				    <Label text='blue' style.backgroundColor='blue' minHeight='100' maxHeight='100'/>
+				</template>
+				`;
 
 export function test_recycling() {
 	const setters = new Map<string, StackLayout>();
@@ -304,6 +316,117 @@ export function test_ItemTemplateFactoryFunction() {
 		TKUnit.assertEqual(getChildAtText(repeater, 0), '1', 'first element text');
 		TKUnit.assertEqual(getChildAtText(repeater, 1), '2', 'second element text');
 		TKUnit.assertEqual(getChildAtText(repeater, 2), '3', 'third element text');
+	}
+
+	helper.buildUIAndRunTest(repeater, testAction);
+}
+
+// Multiple item templates tests
+export function test_ItemTemplateSelector_WhenWrongTemplateKeyIsSpecified_TheDefaultTemplateIsUsed() {
+	var repeater = new Repeater();
+
+	function testAction(views: Array<View>) {
+		repeater.itemTemplate = "<Label text='default' minHeight='100' maxHeight='100'/>";
+		repeater.itemTemplates = ITEM_TEMPLATES_STRING;
+		repeater.itemTemplateSelector = "age == 20 ? 'wrong' : 'green'";
+		repeater.items = [{ age: 20 }, { age: 25 }];
+
+		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
+
+		const firstElement = getChildAt(repeater, 0);
+		TKUnit.assertEqual((<Label>firstElement).text, 'default', 'first element text');
+	}
+
+	helper.buildUIAndRunTest(repeater, testAction);
+}
+
+export function test_ItemTemplateSelector_IsCorrectlyParsedFromString() {
+	var repeater = new Repeater();
+
+	function testAction(views: Array<View>) {
+		repeater.itemTemplates = ITEM_TEMPLATES_STRING;
+		repeater.itemTemplateSelector = "age < 25 ? 'red' : 'green'";
+		repeater.items = [{ age: 20 }, { age: 25 }];
+		let itemTemplateSelectorFunction = <any>repeater.itemTemplateSelector;
+
+		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
+
+		let templateKey0 = itemTemplateSelectorFunction(repeater.items[0], 0, repeater.items);
+		TKUnit.assertEqual(templateKey0, 'red', 'itemTemplateSelector result for first item');
+
+		let templateKey1 = itemTemplateSelectorFunction(repeater.items[1], 1, repeater.items);
+		TKUnit.assertEqual(templateKey1, 'green', 'itemTemplateSelector result for second item');
+	}
+
+	helper.buildUIAndRunTest(repeater, testAction);
+}
+
+export function test_ItemTemplateSelector_IsCorrectlyUsedAsAFunction() {
+	var repeater = new Repeater();
+
+	function testAction(views: Array<View>) {
+		repeater.itemTemplates = ITEM_TEMPLATES_STRING;
+		repeater.itemTemplateSelector = function (item, index: number, items) {
+			return item.age < 25 ? 'red' : 'green';
+		};
+		repeater.items = [{ age: 20 }, { age: 25 }];
+		let itemTemplateSelectorFunction = <any>repeater.itemTemplateSelector;
+
+		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
+
+		let templateKey0 = itemTemplateSelectorFunction(repeater.items[0], 0, repeater.items);
+		TKUnit.assertEqual(templateKey0, 'red', 'itemTemplateSelector result for first item');
+
+		let templateKey1 = itemTemplateSelectorFunction(repeater.items[1], 1, repeater.items);
+		TKUnit.assertEqual(templateKey1, 'green', 'itemTemplateSelector result for second item');
+	}
+
+	helper.buildUIAndRunTest(repeater, testAction);
+}
+
+export function test_ItemTemplateSelector_ItemTemplatesAreCorrectlyParsedFromString() {
+	var repeater = new Repeater();
+
+	function testAction(views: Array<View>) {
+		repeater.itemTemplates = ITEM_TEMPLATES_STRING;
+
+		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
+
+		let itemTemplatesArray = <any>repeater.itemTemplates;
+
+		TKUnit.assertEqual(itemTemplatesArray.length, 3, 'itemTemplates array length');
+
+		let template0 = <KeyedTemplate>itemTemplatesArray[0];
+		TKUnit.assertEqual(template0.key, 'red', 'template0.key');
+		TKUnit.assertEqual((<Label>template0.createView()).text, 'red', 'template0 created view text');
+
+		let template1 = <KeyedTemplate>itemTemplatesArray[1];
+		TKUnit.assertEqual(template1.key, 'green', 'template1.key');
+		TKUnit.assertEqual((<Label>template1.createView()).text, 'green', 'template1 created view text');
+
+		let template2 = <KeyedTemplate>itemTemplatesArray[2];
+		TKUnit.assertEqual(template2.key, 'blue', 'template2.key');
+		TKUnit.assertEqual((<Label>template2.createView()).text, 'blue', 'template2 created view text');
+	}
+
+	helper.buildUIAndRunTest(repeater, testAction);
+}
+
+export function test_ItemTemplateSelector_CorrectTemplateIsUsed() {
+	var repeater = new Repeater();
+
+	function testAction(views: Array<View>) {
+		repeater.itemTemplates = ITEM_TEMPLATES_STRING;
+		repeater.itemTemplateSelector = "age == 25 ? 'green' : 'red'";
+		repeater.items = [{ age: 20 }, { age: 25 }];
+
+		TKUnit.waitUntilReady(() => repeater.isLayoutValid);
+
+		const firstElement = getChildAt(repeater, 0);
+		const secondElement = getChildAt(repeater, 1);
+
+		TKUnit.assertEqual((<Label>firstElement).text, 'red', 'first element text');
+		TKUnit.assertEqual((<Label>secondElement).text, 'green', 'second element text');
 	}
 
 	helper.buildUIAndRunTest(repeater, testAction);

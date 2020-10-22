@@ -24,6 +24,7 @@ export class Repeater extends CustomLayoutView {
 
 	private _isDirty = false;
 	private _itemTemplateSelector: (item: any, index: number, items: any) => string;
+	private _itemTemplateSelectorBindable;
 	public ios;
 	public android;
 
@@ -65,9 +66,26 @@ export class Repeater extends CustomLayoutView {
 	}
 	set itemTemplateSelector(value: string | ((item: any, index: number, items: any) => string)) {
 		if (typeof value === 'string') {
+			if (!this._itemTemplateSelectorBindable) {
+				this._itemTemplateSelectorBindable = new Label();
+			}
+
+			this._itemTemplateSelectorBindable.bind({
+				sourceProperty: null,
+				targetProperty: 'templateKey',
+				expression: value,
+			});
+
 			this._itemTemplateSelector = (item: any, index: number, items: any) => {
 				item['$index'] = index;
-				return value;
+
+				if (this._itemTemplateSelectorBindable.bindingContext === item) {
+					this._itemTemplateSelectorBindable.bindingContext = null;
+				}
+
+				this._itemTemplateSelectorBindable.bindingContext = item;
+
+				return this._itemTemplateSelectorBindable.get('templateKey');
 			};
 		} else if (typeof value === 'function') {
 			this._itemTemplateSelector = value;
