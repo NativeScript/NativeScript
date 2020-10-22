@@ -204,7 +204,7 @@ export class Repeater extends CustomLayoutView {
 Repeater.prototype.recycleNativeView = 'auto';
 
 /**
- * Represents the item template property of each ListView instance.
+ * Represents the item template property of each Repeater instance.
  */
 export const itemTemplateProperty = new Property<Repeater, string | Template>({
 	name: 'itemTemplate',
