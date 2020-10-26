@@ -31,6 +31,7 @@ const documentTypeByMimeType = {
 	'text/typescript': 'Script',
 };
 
+@NativeClass()
 export class Request {
 	private _resourceType: string;
 	private _data: any;
@@ -118,6 +119,7 @@ export class Request {
 	}
 }
 
+@NativeClass()
 @inspectorCommands.DomainDispatcher('Network')
 export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomain.NetworkDomainDispatcher {
 	private _enabled: boolean;

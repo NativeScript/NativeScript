@@ -1,5 +1,5 @@
-import { ViewBase } from '../ui/core/view-base';
-import { CSSComputedStyleProperty } from './css-agent';
+import type { ViewBase } from '../ui/core/view-base';
+import type { CSSComputedStyleProperty } from './css-agent';
 export declare function getNodeById(id: number): DOMNode;
 declare class WeakRef<T> {
 	constructor(obj: T);

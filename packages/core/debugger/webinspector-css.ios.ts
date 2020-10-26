@@ -5,6 +5,7 @@ import * as debuggerDomains from '.';
 
 import { attachCSSInspectorCommandCallbacks } from './devtools-elements';
 
+@NativeClass()
 @inspectorCommands.DomainDispatcher('CSS')
 export class CSSDomainDebugger implements inspectorCommandTypes.CSSDomain.CSSDomainDispatcher {
 	private _enabled: boolean;

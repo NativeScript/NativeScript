@@ -50,6 +50,7 @@ export namespace HeapDomain {
 		// Returns the strongly referenced Runtime.RemoteObject for a Heap.HeapObjectId.
 		getRemoteObject(params: GetRemoteObjectMethodArguments): { result: RuntimeDomain.RemoteObject };
 	}
+	@NativeClass()
 	export class HeapFrontend {
 		// Information about the garbage collection.
 		garbageCollected(collection: GarbageCollection): void {
@@ -325,6 +326,7 @@ export namespace DebuggerDomain {
 		// Sets overlay message.
 		setOverlayMessage(params: SetOverlayMessageMethodArguments): void;
 	}
+	@NativeClass()
 	export class DebuggerFrontend {
 		// Called when global has been cleared and debugger client should reset its state. Happens upon navigation or reload.
 		globalObjectCleared(): void {
@@ -758,6 +760,7 @@ export namespace RuntimeDomain {
 		// Returns a list of basic blocks for the given sourceID with information about their text ranges and whether or not they have executed.
 		getBasicBlocks(params: GetBasicBlocksMethodArguments): { basicBlocks: BasicBlock[] };
 	}
+	@NativeClass()
 	export class RuntimeFrontend {
 		// Issued when new execution context is created.
 		executionContextCreated(context: ExecutionContextDescription): void {
@@ -832,6 +835,7 @@ export namespace ConsoleDomain {
 		// Enables console to refer to the node with given id via $0 (see Command Line API for more details).
 		addInspectedNode(params: AddInspectedNodeMethodArguments): void;
 	}
+	@NativeClass()
 	export class ConsoleFrontend {
 		// Issued when new console message is added.
 		messageAdded(message: ConsoleMessage): void {
@@ -1130,6 +1134,7 @@ export namespace PageDomain {
 		// Grab an archive of the page.
 		archive(): { data: string };
 	}
+	@NativeClass()
 	export class PageFrontend {
 		domContentEventFired(timestamp: number): void {
 			__inspectorSendEvent(
@@ -1377,6 +1382,7 @@ export namespace NetworkDomain {
 		// Loads a resource in the context of a frame on the inspected page without cross origin checks.
 		loadResource(params: LoadResourceMethodArguments): { content: string; mimeType: string; status: number };
 	}
+	@NativeClass()
 	export class NetworkFrontend {
 		// Fired when page is about to send HTTP request.
 		requestWillBeSent(requestId: RequestId, frameId: FrameId, loaderId: LoaderId, documentURL: string, request: Request, timestamp: Timestamp, initiator: Initiator, redirectResponse?: Response, type?: PageDomain.ResourceType): void {
@@ -1750,6 +1756,7 @@ export namespace DOMDomain {
 		// Resolves JavaScript node object for given node id.
 		resolveNode(params: ResolveNodeMethodArguments): { object: RuntimeDomain.RemoteObject };
 	}
+	@NativeClass()
 	export class DOMFrontend {
 		// Fired when <code>Document</code> has been totally updated. Node ids are no longer valid.
 		documentUpdated(): void {
@@ -2133,6 +2140,7 @@ export namespace CSSDomain {
 		// Returns the current textual content and the URL for a stylesheet.
 		getStyleSheetText(params: GetStyleSheetTextMethodArguments): { text: string };
 	}
+	@NativeClass()
 	export class CSSFrontend {
 		// Fires whenever a MediaQuery result changes (for example, after a browser window has been resized.) The current implementation considers only viewport-dependent media features.
 		mediaQueryResultChanged(): void {

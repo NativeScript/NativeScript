@@ -1,0 +1,19 @@
+{
+	"compilerOptions": {
+		"outDir": "../../../dist/packages/core/debugger",
+		"rootDirs": ["."],
+		"module": "commonjs",
+		"target": "es5",
+		"moduleResolution": "node",
+		"declaration": false,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"noEmitHelpers": false,
+		"noEmitOnError": true,
+    "removeComments": true,
+    "skipLibCheck": true,
+    "baseUrl": "."
+	},
+	"include": ["../references.d.ts", "./devtools-elements-interfaces.ts"],
+	"files": ["index.ts", "devtools-elements.common.ts", "devtools-elements.android.ts", "devtools-elements.ios.ts", "dom-node.ts", "InspectorBackendCommands.ios.ts", "webinspector-css.ios.ts", "webinspector-dom.ios.ts", "webinspector-network.ios.ts"]
+}

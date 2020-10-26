@@ -5,6 +5,7 @@ import * as debuggerDomains from '.';
 
 import { attachDOMInspectorEventCallbacks, attachDOMInspectorCommandCallbacks } from './devtools-elements';
 
+@NativeClass()
 @inspectorCommands.DomainDispatcher('DOM')
 export class DOMDomainDebugger implements inspectorCommandTypes.DOMDomain.DOMDomainDispatcher {
 	private _enabled: boolean;

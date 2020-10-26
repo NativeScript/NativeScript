@@ -1,5 +1,5 @@
 // Types
-import { ViewBase } from '../ui/core/view-base';
+import type { ViewBase } from '../ui/core/view-base';
 
 //Requires
 import { getNodeById } from './dom-node';
