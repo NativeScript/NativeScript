@@ -91,57 +91,6 @@ function initializeNativeClasses() {
 
 			return tabItem.nativeViewProtected;
 		}
-
-		public onDestroyView() {
-			const hasRemovingParent = this.getRemovingParentFragment();
-
-			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-			// TODO: Consider removing it when update to androidx.fragment:1.2.0
-			if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-				const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
-				this.owner._originalBackground = this.owner.backgroundColor || new Color('White');
-				this.owner.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
-				this.backgroundBitmap = null;
-
-				let thisView = this.getView();
-				if (thisView) {
-					let thisViewParent = thisView.getParent();
-					if (thisViewParent && thisViewParent instanceof android.view.ViewGroup) {
-						thisViewParent.removeView(thisView);
-					}
-				}
-			}
-
-			super.onDestroyView();
-		}
-
-		public onPause(): void {
-			const hasRemovingParent = this.getRemovingParentFragment();
-
-			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-			// TODO: Consider removing it when update to androidx.fragment:1.2.0
-			if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-				this.backgroundBitmap = this.loadBitmapFromView(this.owner.nativeViewProtected);
-			}
-
-			super.onPause();
-		}
-
-		private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
-			// Another way to get view bitmap. Test performance vs setDrawingCacheEnabled
-			// const width = view.getWidth();
-			// const height = view.getHeight();
-			// const bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
-			// const canvas = new android.graphics.Canvas(bitmap);
-			// view.layout(0, 0, width, height);
-			// view.draw(canvas);
-
-			view.setDrawingCacheEnabled(true);
-			const bitmap = android.graphics.Bitmap.createBitmap(view.getDrawingCache());
-			view.setDrawingCacheEnabled(false);
-
-			return bitmap;
-		}
 	}
 
 	@NativeClass
@@ -250,7 +199,7 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
 @CSSType('BottomNavigation')
 export class BottomNavigation extends TabNavigationBase {
 	private _contentView: org.nativescript.widgets.ContentLayout;
-	private _contentViewId: number = -1;
+	private _contentViewId = -1;
 	private _bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar;
 	private _currentFragment: androidx.fragment.app.Fragment;
 	private _currentTransaction: androidx.fragment.app.FragmentTransaction;
@@ -347,8 +296,8 @@ export class BottomNavigation extends TabNavigationBase {
 		const lastIndex = this.items.length - 1;
 		const offsideItems = 0;
 
-		let toUnload = [];
-		let toLoad = [];
+		const toUnload = [];
+		const toLoad = [];
 
 		iterateIndexRange(newIndex, offsideItems, lastIndex, (i) => toLoad.push(i));
 
@@ -610,7 +559,7 @@ export class BottomNavigation extends TabNavigationBase {
 			tabItemSpec.backgroundColor = backgroundColor ? backgroundColor.android : this.getTabBarBackgroundArgbColor();
 
 			// COLOR
-			let itemColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
+			const itemColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
 			const color = itemColor || titleLabel.style.color;
 			tabItemSpec.color = color && color.android;
 
@@ -669,7 +618,7 @@ export class BottomNavigation extends TabNavigationBase {
 				image = this.getFixedSizeIcon(image);
 			}
 
-			let imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
+			const imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
 
 			return {
 				drawable: imageDrawable,
@@ -681,7 +630,7 @@ export class BottomNavigation extends TabNavigationBase {
 	}
 
 	private getIconInfo(tabStripItem: TabStripItem, color?: Color): IconInfo {
-		let originalIcon = this.getOriginalIcon(tabStripItem, color);
+		const originalIcon = this.getOriginalIcon(tabStripItem, color);
 
 		return this.getDrawableInfo(originalIcon);
 	}
@@ -841,7 +790,7 @@ export class BottomNavigation extends TabNavigationBase {
 	}
 
 	public setTabBarTextTransform(value: TextTransform): void {
-		let items = this.tabStrip && this.tabStrip.items;
+		const items = this.tabStrip && this.tabStrip.items;
 		if (items) {
 			items.forEach((tabStripItem) => {
 				if (tabStripItem.label && tabStripItem.nativeViewProtected) {

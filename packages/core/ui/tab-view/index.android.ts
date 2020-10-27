@@ -82,49 +82,6 @@ function initializeNativeClasses() {
 
 			return tabItem.view.nativeViewProtected;
 		}
-
-		public onDestroyView() {
-			const hasRemovingParent = this.getRemovingParentFragment();
-
-			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-			// TODO: Consider removing it when update to androidx.fragment:1.2.0
-			if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-				const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(appResources, this.backgroundBitmap);
-				this.owner._originalBackground = this.owner.backgroundColor || new Color('White');
-				this.owner.nativeViewProtected.setBackground(bitmapDrawable);
-				this.backgroundBitmap = null;
-			}
-
-			super.onDestroyView();
-		}
-
-		public onPause(): void {
-			const hasRemovingParent = this.getRemovingParentFragment();
-
-			// Get view as bitmap and set it as background. This is workaround for the disapearing nested fragments.
-			// TODO: Consider removing it when update to androidx.fragment:1.2.0
-			if (hasRemovingParent && this.owner.selectedIndex === this.index) {
-				this.backgroundBitmap = this.loadBitmapFromView(this.owner.nativeViewProtected);
-			}
-
-			super.onPause();
-		}
-
-		private loadBitmapFromView(view: android.view.View): android.graphics.Bitmap {
-			// Another way to get view bitmap. Test performance vs setDrawingCacheEnabled
-			// const width = view.getWidth();
-			// const height = view.getHeight();
-			// const bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
-			// const canvas = new android.graphics.Canvas(bitmap);
-			// view.layout(0, 0, width, height);
-			// view.draw(canvas);
-
-			view.setDrawingCacheEnabled(true);
-			const bitmap = android.graphics.Bitmap.createBitmap(view.getDrawingCache());
-			view.setDrawingCacheEnabled(false);
-
-			return bitmap;
-		}
 	}
 
 	const POSITION_UNCHANGED = -1;
@@ -442,7 +399,7 @@ export class TabView extends TabViewBase {
 	private _tabLayout: org.nativescript.widgets.TabLayout;
 	private _viewPager: androidx.viewpager.widget.ViewPager;
 	private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
-	private _androidViewId: number = -1;
+	private _androidViewId = -1;
 	public _originalBackground: any;
 
 	constructor() {
@@ -549,8 +506,8 @@ export class TabView extends TabViewBase {
 		const lastIndex = items.length - 1;
 		const offsideItems = this.androidTabsPosition === 'top' ? this.androidOffscreenTabLimit : 1;
 
-		let toUnload = [];
-		let toLoad = [];
+		const toUnload = [];
+		const toLoad = [];
 
 		iterateIndexRange(newIndex, offsideItems, lastIndex, (i) => toLoad.push(i));
 
@@ -623,7 +580,7 @@ export class TabView extends TabViewBase {
 	private disposeCurrentFragments(): void {
 		const fragmentManager = this._getFragmentManager();
 		const transaction = fragmentManager.beginTransaction();
-		let fragments = <Array<any>>fragmentManager.getFragments().toArray();
+		const fragments = <Array<any>>fragmentManager.getFragments().toArray();
 		for (let i = 0; i < fragments.length; i++) {
 			transaction.remove(fragments[i]);
 		}
@@ -769,7 +726,7 @@ export class TabView extends TabViewBase {
 		return getDefaultAccentColor(this._context);
 	}
 	[androidSelectedTabHighlightColorProperty.setNative](value: number | Color) {
-		let tabLayout = this._tabLayout;
+		const tabLayout = this._tabLayout;
 		const color = value instanceof Color ? value.android : value;
 		tabLayout.setSelectedIndicatorColors([color]);
 	}
