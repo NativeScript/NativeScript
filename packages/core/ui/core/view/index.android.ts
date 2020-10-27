@@ -111,7 +111,7 @@ function initializeTouchListener(): void {
 			}
 			owner.handleGestureTouch(event);
 
-			let nativeView = owner.nativeViewProtected;
+			const nativeView = owner.nativeViewProtected;
 			if (!nativeView || !nativeView.onTouchEvent) {
 				return false;
 			}
@@ -237,6 +237,8 @@ function initializeDialogFragment() {
 			if (this._fullscreen) {
 				const window = this.getDialog().getWindow();
 				const length = android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+				// set the animations to use on showing and hiding the dialog
+				window.setWindowAnimations(16973826); //android.R.style.Animation_Dialog
 				window.setLayout(length, length);
 				// This removes the default backgroundDrawable so there are no margins.
 				window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE));
@@ -420,7 +422,7 @@ export class View extends ViewCommon {
 	}
 
 	public onBackPressed(): boolean {
-		let topmostFrame = topmost();
+		const topmostFrame = topmost();
 
 		// Delegate back navigation handling to the topmost Frame
 		// when it's a child of the current View.
@@ -432,8 +434,8 @@ export class View extends ViewCommon {
 	}
 
 	public handleGestureTouch(event: android.view.MotionEvent): any {
-		for (let type in this._gestureObservers) {
-			let list = this._gestureObservers[type];
+		for (const type in this._gestureObservers) {
+			const list = this._gestureObservers[type];
 			list.forEach((element) => {
 				element.androidOnTouchEvent(event);
 			});
@@ -542,7 +544,7 @@ export class View extends ViewCommon {
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		let view = this.nativeViewProtected;
+		const view = this.nativeViewProtected;
 		if (view) {
 			view.measure(widthMeasureSpec, heightMeasureSpec);
 			this.setMeasuredDimension(view.getMeasuredWidth(), view.getMeasuredHeight());
@@ -550,7 +552,7 @@ export class View extends ViewCommon {
 	}
 
 	public onLayout(left: number, top: number, right: number, bottom: number): void {
-		let view = this.nativeViewProtected;
+		const view = this.nativeViewProtected;
 		if (view) {
 			this.layoutNativeView(left, top, right, bottom);
 		}
@@ -603,7 +605,7 @@ export class View extends ViewCommon {
 			return undefined;
 		}
 
-		let nativeArray = (<any>Array).create('int', 2);
+		const nativeArray = (<any>Array).create('int', 2);
 		this.nativeViewProtected.getLocationInWindow(nativeArray);
 
 		return {
@@ -617,7 +619,7 @@ export class View extends ViewCommon {
 			return undefined;
 		}
 
-		let nativeArray = (<any>Array).create('int', 2);
+		const nativeArray = (<any>Array).create('int', 2);
 		this.nativeViewProtected.getLocationOnScreen(nativeArray);
 
 		return {
@@ -631,9 +633,9 @@ export class View extends ViewCommon {
 			return undefined;
 		}
 
-		let myArray = (<any>Array).create('int', 2);
+		const myArray = (<any>Array).create('int', 2);
 		this.nativeViewProtected.getLocationOnScreen(myArray);
-		let otherArray = (<any>Array).create('int', 2);
+		const otherArray = (<any>Array).create('int', 2);
 		otherView.nativeViewProtected.getLocationOnScreen(otherArray);
 
 		return {
@@ -739,7 +741,7 @@ export class View extends ViewCommon {
 	}
 
 	[visibilityProperty.getDefault](): Visibility {
-		let nativeVisibility = this.nativeViewProtected.getVisibility();
+		const nativeVisibility = this.nativeViewProtected.getVisibility();
 		switch (nativeVisibility) {
 			case android.view.View.VISIBLE:
 				return 'visible';
