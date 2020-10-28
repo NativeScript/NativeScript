@@ -1,13 +1,13 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform, getClosestPropertyValue } from './text-base-common';
+import { TextDecoration, TextAlignment, TextTransform, TextShadow, getClosestPropertyValue } from './text-base-common';
 
 // Requires
 import { Font } from '../styling/font';
-import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, letterSpacingProperty, lineHeightProperty, resetSymbol } from './text-base-common';
+import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, VerticalAlignment } from '../styling/style-properties';
+import { colorProperty, fontInternalProperty, VerticalAlignment, Length } from '../styling/style-properties';
 import { isString, isDefined, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
 
@@ -186,6 +186,10 @@ export class TextBase extends TextBaseCommon {
 
 	[lineHeightProperty.setNative](value: number) {
 		this._setNativeText();
+  }
+  
+  [textShadowProperty.setNative](value: TextShadow) {
+		this._setShadow(value);
 	}
 
 	_setNativeText(reset = false): void {
@@ -341,6 +345,32 @@ export class TextBase extends TextBaseCommon {
 		if (!style.color && majorVersion >= 13 && UIColor.labelColor) {
 			this._setColor(UIColor.labelColor);
 		}
+	}
+
+	_setShadow(value: TextShadow): void {
+		let layer;
+
+		if (this.nativeTextViewProtected instanceof UITextView) {
+			layer = this.nativeTextViewProtected.layer.sublayers.objectAtIndex(1);
+		} else {
+			layer = this.nativeTextViewProtected.layer;
+		}
+
+		if (isNullOrUndefined(value)) {
+			// clear the text shadow
+			layer.shadowOpacity = 0;
+			layer.shadowRadius = 0;
+			layer.shadowColor = UIColor.clearColor;
+			layer.shadowOffset = CGSizeMake(0, 0);
+			return;
+		}
+
+		layer.shadowOpacity = 1;
+		layer.shadowRadius = Length.toDevicePixels(value.blurRadius) / 2;
+		layer.shadowColor = value.color.ios.CGColor;
+		layer.shadowOffset = CGSizeMake(Length.toDevicePixels(value.offsetX), Length.toDevicePixels(value.offsetY));
+		layer.shouldRasterize = true;
+		layer.masksToBounds = false;
 	}
 
 	createNSMutableAttributedString(formattedString: FormattedString): NSMutableAttributedString {
