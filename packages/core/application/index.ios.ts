@@ -528,3 +528,8 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
 	const rootView = getRootView();
 	livesync(rootView, context);
 };
+
+// core exports this symbol so apps may import them in general
+// technically they are only available for use when running that platform
+// helps avoid a webpack nonexistent warning
+export const AndroidApplication = undefined;

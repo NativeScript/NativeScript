@@ -15,6 +15,7 @@ export class ImageAsset extends ImageAssetBase {
 		this.android = fileName;
 	}
 
+	// @ts-ignore
 	get android(): string {
 		return this._android;
 	}

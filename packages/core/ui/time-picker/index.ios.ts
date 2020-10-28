@@ -51,6 +51,7 @@ export class TimePicker extends TimePickerBase {
 		super.initNativeView();
 	}
 
+	// @ts-ignore
 	get ios(): UIDatePicker {
 		return this.nativeViewProtected;
 	}

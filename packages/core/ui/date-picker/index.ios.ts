@@ -33,6 +33,7 @@ export class DatePicker extends DatePickerBase {
 		super.disposeNativeView();
 	}
 
+	// @ts-ignore
 	get ios(): UIDatePicker {
 		return this.nativeViewProtected;
 	}

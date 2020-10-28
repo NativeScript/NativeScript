@@ -1,3 +1,34 @@
+## [7.0.12](https://github.com/NativeScript/NativeScript/compare/7.0.11-core...7.0.12) (2020-10-21)
+
+
+### Bug Fixes
+
+* **android:** BottomNavigation error on back press (application exit) ([#8970](https://github.com/NativeScript/NativeScript/issues/8970)) ([99bb067](https://github.com/NativeScript/NativeScript/commit/99bb067420871078c40454eec842fad6cbede0f7))
+* **core:** ObservableArray tests and a typo ([#8968](https://github.com/NativeScript/NativeScript/issues/8968)) ([5c1b7f6](https://github.com/NativeScript/NativeScript/commit/5c1b7f6d76c19877da1f47a0696dfbbd89b5fd00))
+
+
+### Features
+
+* **core:** TypeScript 4 + cleanup ([#8967](https://github.com/NativeScript/NativeScript/issues/8967)) ([2243660](https://github.com/NativeScript/NativeScript/commit/2243660080ce6877d68a3f32fd64625f86023f77))
+* **webpack:** add svelte support ([#8963](https://github.com/NativeScript/NativeScript/issues/8963)) ([0afea86](https://github.com/NativeScript/NativeScript/commit/0afea8681c62071823804f392ab8d595e61190ff))
+
+
+
+## [7.0.10](https://github.com/NativeScript/NativeScript/compare/7.0.10-core...7.0.10) (2020-10-10)
+
+
+### Bug Fixes
+
+* **ios:** iOS 10 support with adjustment to UILayoutGuide ([#8954](https://github.com/NativeScript/NativeScript/issues/8954)) ([ad25759](https://github.com/NativeScript/NativeScript/commit/ad2575991aa53c1a1806dfd5dc5e368e1674d73c))
+
+
+### Features
+
+* **webpack:** angular configuration schema validation compliance ([ee05b44](https://github.com/NativeScript/NativeScript/commit/ee05b4466336858bd7e2dcb651deb15ba74fc8c2))
+* **webpack:** angular configuration support for environment handling ([#8938](https://github.com/NativeScript/NativeScript/issues/8938)) ([3f7bf67](https://github.com/NativeScript/NativeScript/commit/3f7bf676ff4321d7c490099e3c72687ad68d46a2))
+
+
+
 ## [7.0.10](https://github.com/NativeScript/NativeScript/compare/7.0.9-core...7.0.10) (2020-10-03)
 
 

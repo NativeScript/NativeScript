@@ -1,6 +1,7 @@
 export { ActionBar, ActionItem, ActionItems, NavigationButton } from './action-bar';
 export { ActivityIndicator } from './activity-indicator';
-export { Animation, AnimationDefinition, KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './animation';
+export { Animation, KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './animation';
+export type { AnimationDefinition } from './animation';
 export { BottomNavigation } from './bottom-navigation';
 export type { SelectedIndexChangedEventData } from './bottom-navigation';
 export { Builder } from './builder';
@@ -45,7 +46,8 @@ export { ListView } from './list-view';
 export type { ItemEventData, TemplatedItemsView, ItemsSource } from './list-view';
 export { Page, PageBase } from './page';
 export type { NavigatedData } from './page';
-export { Placeholder, CreateViewEventData } from './placeholder';
+export { Placeholder } from './placeholder';
+export type { CreateViewEventData } from './placeholder';
 export { Progress } from './progress';
 export { ProxyViewContainer } from './proxy-view-container';
 export { Repeater } from './repeater';

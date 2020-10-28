@@ -130,6 +130,7 @@ export class WebView extends WebViewBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): WKWebView {
 		return this.nativeViewProtected;
 	}

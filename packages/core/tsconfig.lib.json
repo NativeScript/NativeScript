@@ -1,25 +1,27 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "noEmitOnError": true,
-    "noEmitHelpers": true,
-    "declaration": true,
-    "noImplicitAny": false,
-    "noImplicitUseStrict": true,
-    "removeComments": false,
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"noEmitOnError": true,
+		"noEmitHelpers": true,
+		"declaration": true,
+		"noImplicitAny": false,
+		"noImplicitUseStrict": true,
+		"removeComments": false,
     "emitDecoratorMetadata": false,
-    "experimentalDecorators": true,
-    "diagnostics": true,
-    "sourceMap": true,
-    "inlineSourceMap": false,
-    "baseUrl": ".",
-    "outDir": "../../dist/out-tsc",
-    "rootDir": "./",
-    "types": ["node"],
-    "plugins": [
-      { "transform": "../webpack/transformers/ns-transform-native-classes.ts", "type": "raw" }
-    ]
-  },
-  "exclude": ["**/*.spec.ts", "dist", "__tests__"],
-  "include": ["**/*.ts", "./references.d.ts"]
+		"experimentalDecorators": true,
+		"diagnostics": true,
+		"sourceMap": true,
+		"inlineSourceMap": false,
+		"baseUrl": ".",
+		"outDir": "../../dist",
+		"types": ["node"],
+		"plugins": [
+			{
+				"transform": "../webpack/transformers/ns-transform-native-classes.ts",
+				"type": "raw"
+			}
+		]
+	},
+	"exclude": ["**/*.spec.ts", "dist", "__tests__"],
+	"include": ["**/*.ts", "./references.d.ts"]
 }

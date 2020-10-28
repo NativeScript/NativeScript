@@ -1,11 +1,11 @@
 {
   "main": "main.js",
   "description": "NativeScript Application",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/NativeScript/NativeScript.git"
-	},
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NativeScript/NativeScript.git"
+  },
   "dependencies": {
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core",
     "@nativescript/core": "file:../../packages/core"

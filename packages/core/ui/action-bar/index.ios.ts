@@ -64,6 +64,7 @@ export class ActionItem extends ActionItemBase {
 		systemIcon: undefined,
 	};
 
+	// @ts-ignore
 	public get ios(): IOSActionItemSettings {
 		return this._ios;
 	}

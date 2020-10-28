@@ -103,7 +103,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 				// First add to logical tree so that inherited properties are set.
 				this._addView(<any>span);
 
-				// Then attach handlers - we skip the first nofitication because
+				// Then attach handlers - we skip the first notification because
 				// we raise change for the whole instance.
 				this.addPropertyChangeHandler(span);
 			}

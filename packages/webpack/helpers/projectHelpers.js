@@ -51,6 +51,13 @@ const isReact = ({ projectDir, packageJson } = {}) => {
       .some(dependency => dependency === "react-nativescript");
 };
 
+const isSvelte = ({ projectDir, packageJson } = {}) => {
+  packageJson = packageJson || getPackageJson(projectDir);
+
+  return packageJson.dependencies && Object.keys(packageJson.dependencies)
+      .some(dependency => dependency === "svelte-native");
+};
+
 const getPackageJson = projectDir => {
     const packageJsonPath = getPackageJsonPath(projectDir);
     const result = readJsonFile(packageJsonPath);
@@ -102,7 +109,7 @@ const getPackageJsonPath = projectDir => {
   } else {
     return getPackageJsonPath(resolve(projectDir, '..'));
   }
-  
+
 }
 const getNsConfigPath = projectDir => resolve(projectDir, "nsconfig.json");
 
@@ -145,6 +152,7 @@ module.exports = {
     getAngularVersion,
     isVue,
     isReact,
+    isSvelte,
     isTypeScript,
     writePackageJson,
     convertSlashesInPath,

@@ -20,6 +20,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		return view;
 	}
 
+	// @ts-ignore
 	get ios(): UIActivityIndicatorView {
 		return this.nativeViewProtected;
 	}

@@ -131,6 +131,7 @@ export class Frame extends FrameBase {
 		return this._containerViewId;
 	}
 
+	// @ts-ignore
 	get android(): AndroidFrame {
 		return this._android;
 	}
@@ -435,7 +436,7 @@ export class Frame extends FrameBase {
 		}
 
 		if (clearHistory || isReplace) {
-			transaction.replace(this.containerViewId, newFragment, newFragmentTag);
+		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
 		} else  {
 			transaction.add(this.containerViewId, newFragment, newFragmentTag);
 		}
@@ -482,7 +483,7 @@ export class Frame extends FrameBase {
 		for (let index = goBackToIndex + 1; index < currentIndex; index++) {
 			transaction.remove(this.backStack[index].fragment);
 		}
-		
+
 		transaction.commitAllowingStateLoss();
 	}
 
@@ -975,11 +976,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
 	@profile
 	public onDestroyView(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-		if (Trace.isEnabled()) {
-			Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
+			if (Trace.isEnabled()) {
+				Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
+			}
+			superFunc.call(fragment);
 		}
-		superFunc.call(fragment);
-	}
 
 	@profile
 	public onDestroy(fragment: androidx.fragment.app.Fragment, superFunc: Function): void {
@@ -1012,7 +1013,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
 	@profile
 	public onPause(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-		superFunc.call(fragment);
+			superFunc.call(fragment);
 	}
 
 	@profile
