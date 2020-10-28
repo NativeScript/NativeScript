@@ -10,7 +10,7 @@ import { Observable } from '../../../data/observable';
 
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
-import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from '../../text-base';
+import { TextAlignment, TextDecoration, TextTransform, WhiteSpace, TextShadow } from '../../text-base';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -154,6 +154,7 @@ export class Style extends Observable implements StyleDefinition {
 	public textAlignment: TextAlignment;
 	public textDecoration: TextDecoration;
 	public textTransform: TextTransform;
+	public textShadow: TextShadow;
 	public whiteSpace: WhiteSpace;
 
 	public minWidth: Length;
