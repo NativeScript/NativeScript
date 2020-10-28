@@ -7,7 +7,7 @@ import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentPrope
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, VerticalAlignment, Length } from '../styling/style-properties';
+import { colorProperty, fontInternalProperty, VerticalAlignment } from '../styling/style-properties';
 import { isString, isDefined, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
 
@@ -366,9 +366,9 @@ export class TextBase extends TextBaseCommon {
 		}
 
 		layer.shadowOpacity = 1;
-		layer.shadowRadius = Length.toDevicePixels(value.blurRadius) / 2;
+		layer.shadowRadius = value.blurRadius;
 		layer.shadowColor = value.color.ios.CGColor;
-		layer.shadowOffset = CGSizeMake(Length.toDevicePixels(value.offsetX), Length.toDevicePixels(value.offsetY));
+		layer.shadowOffset = CGSizeMake(value.offsetX, value.offsetY);
 		layer.shouldRasterize = true;
 		layer.masksToBounds = false;
 	}
