@@ -2,9 +2,7 @@ import { Keyframes } from '../animation/keyframe-animation';
 import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
 import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
-import { SyntaxTree, Keyframes as KeyframesDefinition, parse as parseCss, Node as CssNode } from '../../css';
-import { CSS3Parser, CSSNativeScript } from '../../css/parser';
-import { cssTreeParse } from '../../css/css-tree-parser';
+import { SyntaxTree, Keyframes as KeyframesDefinition, Node as CssNode } from '../../css';
 
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
 import { Trace } from '../../trace';
@@ -214,10 +212,12 @@ class CSSSource {
 		if (this._source) {
 			switch (parser) {
 				case 'css-tree':
+					const cssTreeParse = require('../../css/css-tree-parser').pacssTreeParserse;
 					this._ast = cssTreeParse(this._source, this._file);
-
 					return;
 				case 'nativescript':
+					const CSS3Parser = require('../../css/parser').CSS3Parser;
+					const CSSNativeScript = require('../../css/parser').CSSNativeScript;
 					const cssparser = new CSS3Parser(this._source);
 					const stylesheet = cssparser.parseAStylesheet();
 					const cssNS = new CSSNativeScript();
@@ -225,6 +225,7 @@ class CSSSource {
 
 					return;
 				case 'rework':
+					const parseCss = require('../../css').parse;
 					this._ast = parseCss(this._source, { source: this._file });
 
 					return;
