@@ -23,9 +23,9 @@ export class Color implements definition.Color {
 					this._argb = argbFromHslOrHsla(arg);
 				} else if (knownColors.isKnownName(arg)) {
 					// The parameter is a known color name
-					const hex = knownColors.getKnownColor(arg);
+					const argb = knownColors.getKnownColor(arg);
 					this._name = arg;
-					this._argb = this._argbFromString(hex);
+					this._argb = argb;
 				} else if (HEX_REGEX.test(arg)) {
 					// The parameter is a "#AARRGGBB" formatted string
 					const hex = this._normalizeHex(arg);
