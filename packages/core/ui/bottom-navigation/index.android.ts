@@ -456,7 +456,7 @@ export class BottomNavigation extends TabNavigationBase {
 		const fragmentManager = this._getFragmentManager();
 		const transaction = fragmentManager.beginTransaction();
 		const fragments = fragmentManager.getFragments().toArray();
-		for (let i=0;i<fragments.length;i++) {
+		for (let i = 0; i < fragments.length; i++) {
 			transaction.remove(fragments[i]);
 		}
 

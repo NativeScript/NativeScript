@@ -309,6 +309,7 @@ class UIViewControllerImpl extends UIViewController {
 		}
 	}
 
+	// @ts-ignore
 	public get preferredStatusBarStyle(): UIStatusBarStyle {
 		const owner = this._owner.get();
 		if (owner) {
@@ -340,6 +341,7 @@ export class Page extends PageBase {
 		return this.viewController.view;
 	}
 
+	// @ts-ignore
 	get ios(): UIViewController {
 		return this._ios;
 	}

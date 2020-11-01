@@ -476,24 +476,23 @@ function ensureBroadCastReceiverClass() {
 		return;
 	}
 
-	 @NativeClass
-	 class BroadcastReceiver extends android.content.BroadcastReceiver {
-	 	private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
+	@NativeClass
+	class BroadcastReceiver extends android.content.BroadcastReceiver {
+		private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
 
-	 	constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
-	 		super();
-	 		this._onReceiveCallback = onReceiveCallback;
+		constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+			super();
+			this._onReceiveCallback = onReceiveCallback;
 
-	 		return global.__native(this);
-	 	}
+			return global.__native(this);
+		}
 
-	 	public onReceive(context: android.content.Context, intent: android.content.Intent) {
-	 		if (this._onReceiveCallback) {
-	 			this._onReceiveCallback(context, intent);
-	 		}
-	 	}
-	 }
-
+		public onReceive(context: android.content.Context, intent: android.content.Intent) {
+			if (this._onReceiveCallback) {
+				this._onReceiveCallback(context, intent);
+			}
+		}
+	}
 
 	BroadcastReceiverClass = BroadcastReceiver;
 }
@@ -505,3 +504,8 @@ declare namespace com {
 		}
 	}
 }
+
+// core exports this symbol so apps may import them in general
+// technically they are only available for use when running that platform
+// helps avoid a webpack nonexistent warning
+export const iOSApplication = undefined;

@@ -55,6 +55,7 @@ export class Switch extends SwitchBase {
 		super.disposeNativeView();
 	}
 
+	// @ts-ignore
 	get ios(): UISwitch {
 		return this.nativeViewProtected;
 	}

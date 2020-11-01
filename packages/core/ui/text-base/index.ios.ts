@@ -79,6 +79,7 @@ class UILabelClickHandlerImpl extends NSObject {
 
 export class TextBase extends TextBaseCommon {
 	public nativeViewProtected: UITextField | UITextView | UILabel | UIButton;
+	// @ts-ignore
 	public nativeTextViewProtected: UITextField | UITextView | UILabel | UIButton;
 	private _tappable: boolean = false;
 	private _tapGestureRecognizer: UITapGestureRecognizer;

@@ -30,7 +30,7 @@ class ListViewCell extends UITableViewCell {
 	public static initWithEmptyBackground(): ListViewCell {
 		const cell = <ListViewCell>ListViewCell.new();
 		// Clear background by default - this will make cells transparent
-		cell.backgroundColor = null;
+		cell.backgroundColor = UIColor.clearColor;
 
 		return cell;
 	}
@@ -38,7 +38,7 @@ class ListViewCell extends UITableViewCell {
 	initWithStyleReuseIdentifier(style: UITableViewCellStyle, reuseIdentifier: string): this {
 		const cell = <this>super.initWithStyleReuseIdentifier(style, reuseIdentifier);
 		// Clear background by default - this will make cells transparent
-		cell.backgroundColor = null;
+		cell.backgroundColor = UIColor.clearColor;
 
 		return cell;
 	}
@@ -291,6 +291,7 @@ export class ListView extends ListViewBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UITableView {
 		return this.nativeViewProtected;
 	}

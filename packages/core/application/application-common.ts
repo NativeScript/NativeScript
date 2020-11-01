@@ -1,8 +1,5 @@
 // Require globals first so that snapshot takes __extends function.
-const nsGlobals = require('../globals');
-if (!global.NativeScriptHasInitGlobal) {
-	nsGlobals.initGlobal();
-}
+import '../globals';
 
 // Types
 import { AndroidApplication, iOSApplication } from '.';

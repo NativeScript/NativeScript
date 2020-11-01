@@ -1,13 +1,13 @@
 {
-  "name": "nativescript",
-  "version": "7.0.2",
-  "license": "MIT",
+	"name": "nativescript",
+	"version": "7.0.13",
+	"license": "MIT",
   "config": {
     "npm_alias": "npm"
   },
-  "scripts": {
+	"scripts": {
     "setup": "npx rimraf hooks node_modules package-lock.json && $npm_package_config_npm_alias i && ts-patch install && npm run core:setup",
-    "start": "nps",
+		"start": "nps",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "clean": "rimraf -- hooks node_modules platforms package-lock.json webpack.config.js",
     "apps-automated:ios": "cd apps/automated && tns debug ios --no-hmr --emulator --env.testing",
@@ -35,72 +35,72 @@
     "webpack:lint": "cd packages/webpack && eslint -c .eslintrc --ignore-pattern **/node_modules/** --ignore-pattern !packages/webpack/**",
     "webpack:test": "cd packages/webpack && npm run tsc && npm run jasmine",
     "webpack:build": "cd packages/webpack npm run setup && mkdir -p ../../dist/packages && mv \"$(npm pack | tail -n 1)\" ../../dist/packages/nativescript-webpack.tgz"
-  },
+	},
 	"private": true,
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/NativeScript/NativeScript.git"
 	},
-  "dependencies": {
-    "nativescript-theme-core": "^1.0.4"
-  },
-  "devDependencies": {
-    "@nativescript/hook": "^2.0.0",
-    "@nrwl/eslint-plugin-nx": "~10.0.7",
-    "@nrwl/jest": "~10.0.7",
-    "@nrwl/node": "~10.0.7",
-    "@nrwl/workspace": "~10.0.7",
-    "@nstudio/focus": "~10.0.0",
-    "@nstudio/nps-i": "~1.1.0",
-    "@types/chai": "^4.2.11",
-    "@types/jest": "~26.0.4",
-    "@types/mocha": "^7.0.2",
-    "@types/node": "~14.0.22",
-    "@typescript-eslint/eslint-plugin": "~3.6.0",
-    "@typescript-eslint/parser": "~3.6.0",
-    "chai": "^4.2.0",
-    "conventional-changelog-cli": "^2.0.34",
-    "copyfiles": "^2.3.0",
-    "cpy-cli": "^3.1.1",
-    "css": "^3.0.0",
-    "css-tree": "^1.0.0-alpha.39",
-    "dotenv": "~8.2.0",
-    "eslint": "~7.4.0",
-    "eslint-config-prettier": "~6.11.0",
-    "gonzales": "^1.0.7",
-    "husky": "^4.2.5",
-    "jest": "~26.1.0",
-    "lint-staged": "^10.2.11",
-    "mocha": "^8.0.1",
-    "mocha-typescript": "^1.1.17",
-    "module-alias": "^2.2.2",
-    "nativescript": "~7.0.6",
-    "node-sass": "~4.14.1",
-    "nps": "5.10.0",
-    "parse-css": "git+https://github.com/tabatkins/parse-css.git",
-    "parserlib": "^1.1.1",
-    "prettier": "~2.0.5",
-    "reduce-css-calc": "~2.1.7",
-    "rimraf": "3.0.2",
-    "shady-css-parser": "^0.1.0",
-    "terser-webpack-plugin": "~3.0.6",
-    "ts-jest": "~26.1.1",
-    "ts-node": "~8.10.2",
-    "ts-patch": "^1.2.5",
-    "tslib": "~2.0.1",
-    "tslint": "~6.1.3",
-    "typescript": "~3.9.7",
-    "webpack": "~4.44.1",
-    "webpack-cli": "~3.3.12"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npx lint-staged"
-    }
-  },
-  "lint-staged": {
-    "**/*": [
-      "nx format:write --files"
-    ]
-  }
+	"dependencies": {
+		"nativescript-theme-core": "^1.0.4"
+	},
+	"devDependencies": {
+		"@nativescript/hook": "^2.0.0",
+		"@nrwl/cli": "~10.3.1",
+		"@nrwl/eslint-plugin-nx": "~10.3.0",
+		"@nrwl/jest": "~10.3.0",
+		"@nrwl/node": "~10.3.0",
+		"@nrwl/workspace": "~10.3.0",
+		"@nstudio/focus": "~10.3.0",
+		"@nstudio/nps-i": "~1.1.0",
+		"@types/chai": "^4.2.11",
+		"@types/jest": "~26.0.8",
+		"@types/mocha": "^7.0.2",
+		"@types/node": "~14.0.22",
+		"@typescript-eslint/eslint-plugin": "~4.3.0",
+		"@typescript-eslint/parser": "~4.3.0",
+		"chai": "^4.2.0",
+		"conventional-changelog-cli": "^2.0.34",
+        "copyfiles": "^2.4.0",
+        "cpy-cli": "^3.1.1",
+		"css": "^3.0.0",
+		"css-tree": "^1.0.0-alpha.39",
+		"dotenv": "~8.2.0",
+		"eslint": "~7.10.0",
+		"eslint-config-prettier": "~6.11.0",
+		"gonzales": "^1.0.7",
+		"husky": "^4.2.5",
+		"jest": "~26.2.2",
+		"lint-staged": "^10.2.11",
+		"mocha": "^8.0.1",
+		"mocha-typescript": "^1.1.17",
+		"module-alias": "^2.2.2",
+		"nativescript": "~7.0.6",
+		"node-sass": "~4.14.1",
+        "nps": "5.10.0",
+		"parse-css": "git+https://github.com/tabatkins/parse-css.git",
+		"parserlib": "^1.1.1",
+		"prettier": "~2.0.5",
+		"reduce-css-calc": "~2.1.7",
+        "rimraf": "3.0.2",
+		"shady-css-parser": "^0.1.0",
+		"terser-webpack-plugin": "~3.0.6",
+		"ts-jest": "26.4.0",
+		"ts-node": "~8.10.2",
+		"ts-patch": "^1.2.5",
+		"tslint": "~6.1.2",
+		"typescript": "~4.0.3",
+		"webpack": "~4.44.1",
+		"webpack-cli": "~3.3.12"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "npx lint-staged"
+		}
+	},
+	"lint-staged": {
+		"**/*": [
+			"nx format:write --files"
+		]
+	}
 }

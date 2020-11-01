@@ -14,7 +14,7 @@ function openFileAtRootModule(filePath: string): boolean {
 		let path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
 
 		const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
-		controller.delegate = new iOSNativeHelper.UIDocumentInteractionControllerDelegateImpl();
+		controller.delegate = iOSNativeHelper.createUIDocumentInteractionControllerDelegate();
 
 		return controller.presentPreviewAnimated(true);
 	} catch (e) {
@@ -125,30 +125,33 @@ export namespace iOSNativeHelper {
 		}
 
 		return transform;
-	}
-
-	@NativeClass
-	export class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
-		public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
-
-		public getViewController(): UIViewController {
-			const app = UIApplication.sharedApplication;
-
-			return app.keyWindow.rootViewController;
-		}
-
-		public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
-			return this.getViewController();
-		}
-
-		public documentInteractionControllerViewForPreview(controller: UIDocumentInteractionController) {
-			return this.getViewController().view;
-		}
-
-		public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
-			return this.getViewController().view.frame;
-		}
-	}
+  }
+  
+  export function createUIDocumentInteractionControllerDelegate(): NSObject {
+    @NativeClass
+    class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
+      public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
+  
+      public getViewController(): UIViewController {
+        const app = UIApplication.sharedApplication;
+  
+        return app.keyWindow.rootViewController;
+      }
+  
+      public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
+        return this.getViewController();
+      }
+  
+      public documentInteractionControllerViewForPreview(controller: UIDocumentInteractionController) {
+        return this.getViewController().view;
+      }
+  
+      public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
+        return this.getViewController().view.frame;
+      }
+    }
+    return new UIDocumentInteractionControllerDelegateImpl();
+  }
 
 	export function isRealDevice() {
 		try {

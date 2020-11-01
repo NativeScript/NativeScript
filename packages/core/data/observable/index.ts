@@ -36,9 +36,7 @@ export class WrappedValue implements WrappedValueDefinition {
 
 const _wrappedValues = [new WrappedValue(null), new WrappedValue(null), new WrappedValue(null), new WrappedValue(null), new WrappedValue(null)];
 
-
 const _globalEventHandlers = {};
-
 
 export class Observable implements ObservableDefinition {
 	public static propertyChangeEvent = 'propertyChange';
@@ -163,14 +161,14 @@ export class Observable implements ObservableDefinition {
 			throw new TypeError('callback must be function.');
 		}
 
-		const eventClass = this.name;
+		const eventClass = this.name === 'Observable' ? '*' : this.name;
 		if (!_globalEventHandlers[eventClass]) {
 			_globalEventHandlers[eventClass] = {};
 		}
 		if (!Array.isArray(_globalEventHandlers[eventClass][eventName])) {
 			_globalEventHandlers[eventClass][eventName] = [];
 		}
-		_globalEventHandlers[eventClass][eventName].push({callback, thisArg, once: true});
+		_globalEventHandlers[eventClass][eventName].push({ callback, thisArg, once: true });
 	}
 
 	public static off(eventName: string, callback?: any, thisArg?: any): void {
@@ -186,10 +184,12 @@ export class Observable implements ObservableDefinition {
 			throw new TypeError('callback must be function.');
 		}
 
-		const eventClass = this.name;
+		const eventClass = this.name === 'Observable' ? '*' : this.name;
 
 		// Short Circuit if no handlers exist..
-		if (!_globalEventHandlers[eventClass] || !Array.isArray(_globalEventHandlers[eventClass][eventName])) { return; }
+		if (!_globalEventHandlers[eventClass] || !Array.isArray(_globalEventHandlers[eventClass][eventName])) {
+			return;
+		}
 
 		const events = _globalEventHandlers[eventClass][eventName];
 		if (thisArg) {
@@ -221,7 +221,6 @@ export class Observable implements ObservableDefinition {
 		if (keys.length === 0) {
 			delete _globalEventHandlers[eventClass];
 		}
-
 	}
 
 	public static addEventListener(eventName: string, callback: any, thisArg?: any): void {
@@ -233,41 +232,52 @@ export class Observable implements ObservableDefinition {
 			throw new TypeError('callback must be function.');
 		}
 
-		const eventClass = this.name;
-		 if (!_globalEventHandlers[eventClass]) {
-		 		_globalEventHandlers[eventClass] = {};
-		 }
-		 if (!Array.isArray(_globalEventHandlers[eventClass][eventName])) {
-			 	_globalEventHandlers[eventClass][eventName] = [];
-		 }
-		 _globalEventHandlers[eventClass][eventName].push({callback, thisArg});
+		const eventClass = this.name === 'Observable' ? '*' : this.name;
+		if (!_globalEventHandlers[eventClass]) {
+			_globalEventHandlers[eventClass] = {};
+		}
+		if (!Array.isArray(_globalEventHandlers[eventClass][eventName])) {
+			_globalEventHandlers[eventClass][eventName] = [];
+		}
+		_globalEventHandlers[eventClass][eventName].push({ callback, thisArg });
 	}
 
-	public notify<T extends EventData>(data: T): void {
-		const eventClass = this.constructor.name;
+	private _globalNotify<T extends EventData>(eventClass: string, eventType: string, data: T): void {
+		// Check for the Global handlers for JUST this class
 		if (_globalEventHandlers[eventClass]) {
-			const event = data.eventName + "First";
+			const event = data.eventName + eventType;
 			const events = _globalEventHandlers[eventClass][event];
 			if (events) {
 				Observable._handleEvent(events, data);
 			}
 		}
 
-		const observers = <Array<ListenerEntry>>this._observers[data.eventName];
-		if (observers) {
-			Observable._handleEvent(observers, data);
-		}
-
-		if (_globalEventHandlers[eventClass]) {
-			const events = _globalEventHandlers[eventClass][data.eventName];
+		// Check for he Global handlers for ALL classes
+		if (_globalEventHandlers['*']) {
+			const event = data.eventName + eventType;
+			const events = _globalEventHandlers['*'][event];
 			if (events) {
 				Observable._handleEvent(events, data);
 			}
 		}
 	}
 
+	public notify<T extends EventData>(data: T): void {
+		const eventClass = this.constructor.name;
+		this._globalNotify(eventClass, 'First', data);
+
+		const observers = <Array<ListenerEntry>>this._observers[data.eventName];
+		if (observers) {
+			Observable._handleEvent(observers, data);
+		}
+
+		this._globalNotify(eventClass, '', data);
+	}
+
 	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {
-		if (!observers) { return; }
+		if (!observers) {
+			return;
+		}
 		for (let i = observers.length - 1; i >= 0; i--) {
 			const entry = observers[i];
 			if (entry.once) {

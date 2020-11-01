@@ -52,7 +52,7 @@ const loader: loader.Loader = function (source, map) {
 	}
 
 	source = `
-        require("${sourceModule}/bundle-entry-points");
+        import "${sourceModule}/bundle-entry-points";
         ${source}
     `;
 

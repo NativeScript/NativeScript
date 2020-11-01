@@ -145,6 +145,7 @@ export class TextField extends TextFieldBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UITextField {
 		return this.nativeViewProtected;
 	}

@@ -11,7 +11,7 @@ export function openFile(filePath: string): boolean {
 		let path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
 
 		const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
-		controller.delegate = <UIDocumentInteractionControllerDelegate>new iOSNativeHelper.UIDocumentInteractionControllerDelegateImpl();
+		controller.delegate = iOSNativeHelper.createUIDocumentInteractionControllerDelegate();
 
 		return controller.presentPreviewAnimated(true);
 	} catch (e) {

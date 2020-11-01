@@ -1,7 +1,6 @@
 /// <reference path="./global-types.d.ts" />
-// Init globals first (use require to ensure it's always at the top)
-const nsGlobals = require('./globals');
-nsGlobals.initGlobal();
+// Init globals first (use import to ensure it's always at the top)
+import './globals';
 
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
@@ -30,9 +29,9 @@ export const Application = {
 	loadAppCss,
 	addCss,
 	on,
-  off,
-  notify,
-  hasListeners,
+	off,
+	notify,
+	hasListeners,
 	run,
 	orientation,
 	getNativeApplication,
@@ -136,11 +135,11 @@ export const Utils = {
 	android: androidUtils,
 	// legacy (a lot of plugins use the shorthand "ad" Utils.ad instead of Utils.android)
 	ad: androidUtils,
-  ios: iosUtils,
-  setTimeout, 
-  setInterval, 
-  clearInterval, 
-  clearTimeout,
+	ios: iosUtils,
+	setTimeout,
+	setInterval,
+	clearInterval,
+	clearTimeout,
 	Source,
 	ClassInfo,
 	getClass,
