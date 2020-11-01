@@ -1,3 +1,18 @@
+## [7.0.13](https://github.com/NativeScript/NativeScript/compare/7.0.12-core...7.0.13) (2020-10-28)
+
+
+### Bug Fixes
+
+* **core:** ListViewCell.initWithEmptyBackground ([#8985](https://github.com/NativeScript/NativeScript/issues/8985)) ([0eb2246](https://github.com/NativeScript/NativeScript/commit/0eb2246b7dfc3eda731f8cb7ee1bbfcd36551dfa))
+* **ios:** UIImage.imageWithData.async is not a function ([b966542](https://github.com/NativeScript/NativeScript/commit/b96654276b8e423a21f95261449f578470e027d8))
+
+
+### Features
+
+* **core:** Repeater multiple item templates implementation ([#8981](https://github.com/NativeScript/NativeScript/issues/8981)) ([b113f19](https://github.com/NativeScript/NativeScript/commit/b113f1916db591d23327e7eead498c722ce76876))
+
+
+
 ## [7.0.12](https://github.com/NativeScript/NativeScript/compare/7.0.11-core...7.0.12) (2020-10-21)
 
 
