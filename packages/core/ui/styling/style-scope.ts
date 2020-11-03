@@ -212,7 +212,7 @@ class CSSSource {
 		if (this._source) {
 			switch (parser) {
 				case 'css-tree':
-					const cssTreeParse = require('../../css/css-tree-parser').pacssTreeParserse;
+					const cssTreeParse = require('../../css/css-tree-parser').cssTreeParse;
 					this._ast = cssTreeParse(this._source, this._file);
 					return;
 				case 'nativescript':
