@@ -4,10 +4,11 @@ echo "Set exit on simple errors"
 set -e
 
 echo "Build for iphonesimulator"
-xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -scheme TNSWidgets -sdk iphonesimulator -configuration Release clean build BUILD_DIR=$(PWD)/TNSWidgets/build -quiet
+xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -scheme TNSWidgets -sdk iphonesimulator -configuration Release clean build BUILD_DIR=$(PWD)/TNSWidgets/build -quiet -xcconfig "TNSWidgets/build.xcconfig"
+
 
 echo "Build for iphoneos"
-xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -scheme TNSWidgets -sdk iphoneos -configuration Release clean build BUILD_DIR=$(PWD)/TNSWidgets/build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -quiet
+xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -scheme TNSWidgets -sdk iphoneos -configuration Release clean build BUILD_DIR=$(PWD)/TNSWidgets/build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -quiet -xcconfig "TNSWidgets/build.xcconfig"
 
 function buildFatFramework() {
     FRAMEWORK_NAME=$1
