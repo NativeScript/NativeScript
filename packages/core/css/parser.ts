@@ -1,4 +1,4 @@
-import { getKnownColor } from "color/known-colors";
+import { getKnownColor } from "../color/known-colors";
 
 export type Parsed<V> = { start: number; end: number; value: V };
 
