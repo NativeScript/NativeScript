@@ -513,7 +513,7 @@ export function runAll(testSelector?: string) {
 			testsQueue.push(new TestInfo(test.setUpModule, test));
 		}
 
-		for (const testName in getAllProperties(test)) {
+		for (const testName of getAllProperties(test)) {
 			if (singleTestName && singleTestName !== testName.toLowerCase()) {
 				continue;
 			}
