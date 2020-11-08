@@ -1,5 +1,5 @@
-declare var __startCPUProfiler: any;
-declare var __stopCPUProfiler: any;
+declare let __startCPUProfiler: any;
+declare let __stopCPUProfiler: any;
 
 export function uptime() {
 	return global.android ? (<any>org).nativescript.Process.getUpTime() : (<any>global).__tns_uptime();
@@ -98,10 +98,10 @@ export function isRunning(name: string): boolean {
 function countersProfileFunctionFactory<F extends Function>(fn: F, name: string, type: MemberType = MemberType.Instance): F {
 	profileNames.push(name);
 
-	return <any>function () {
+	return <any>function (...args) {
 		start(name);
 		try {
-			return fn.apply(this, arguments);
+			return fn(...args);
 		} finally {
 			stop(name);
 		}
@@ -110,19 +110,19 @@ function countersProfileFunctionFactory<F extends Function>(fn: F, name: string,
 
 function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string, type: MemberType = MemberType.Instance): F {
 	return type === MemberType.Instance
-		? <any>function () {
+		? <any>function (...args) {
 				const start = time();
 				try {
-					return fn.apply(this, arguments);
+					return fn(...args);
 				} finally {
 					const end = time();
 					console.log(`Timeline: Modules: ${name} ${this}  (${start}ms. - ${end}ms.)`);
 				}
 		  }
-		: function () {
+		: function (...args) {
 				const start = time();
 				try {
-					return fn.apply(this, arguments);
+					return fn(...args);
 				} finally {
 					const end = time();
 					console.log(`Timeline: Modules: ${name}  (${start}ms. - ${end}ms.)`);
@@ -159,6 +159,7 @@ export function enable(mode: InstrumentationMode = 'counters') {
 }
 
 try {
+	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const appConfig = require('~/package.json');
 	if (appConfig && appConfig.profiling) {
 		enable(appConfig.profiling);
@@ -192,7 +193,7 @@ const profileMethodUnnamed = (target, key, descriptor) => {
 		className = target.constructor.name + '.';
 	}
 
-	let name = className + key;
+	const name = className + key;
 
 	//editing the descriptor/value parameter
 	descriptor.value = profileFunctionFactory(originalMethod, name, MemberType.Instance);
@@ -213,7 +214,7 @@ const profileStaticMethodUnnamed = (ctor, key, descriptor) => {
 	if (ctor && ctor.name) {
 		className = ctor.name + '.';
 	}
-	let name = className + key;
+	const name = className + key;
 
 	//editing the descriptor/value parameter
 	descriptor.value = profileFunctionFactory(originalMethod, name, MemberType.Static);

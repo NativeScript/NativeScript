@@ -191,7 +191,7 @@ function buildJavaOptions(options: httpModule.HttpRequestOptions) {
 		const arrayList = new java.util.ArrayList<org.nativescript.widgets.Async.Http.KeyValuePair>();
 		const pair = org.nativescript.widgets.Async.Http.KeyValuePair;
 
-		for (let key in options.headers) {
+		for (const key in options.headers) {
 			arrayList.add(new pair(key, options.headers[key] + ''));
 		}
 

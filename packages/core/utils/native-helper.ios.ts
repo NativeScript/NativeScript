@@ -1,6 +1,6 @@
 import { Trace } from '../trace';
 
-declare var UIImagePickerControllerSourceType: any;
+declare let UIImagePickerControllerSourceType: any;
 
 const radToDeg = Math.PI / 180;
 
@@ -11,7 +11,7 @@ function isOrientationLandscape(orientation: number) {
 function openFileAtRootModule(filePath: string): boolean {
 	try {
 		const appPath = iOSNativeHelper.getCurrentAppPath();
-		let path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
+		const path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
 
 		const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
 		controller.delegate = iOSNativeHelper.createUIDocumentInteractionControllerDelegate();
@@ -43,7 +43,7 @@ export namespace iOSNativeHelper {
 		export function nsArrayToJSArray(a: NSArray<any>): Array<Object> {
 			const arr = [];
 			if (a !== undefined) {
-				let count = a.count;
+				const count = a.count;
 				for (let i = 0; i < count; i++) {
 					arr.push(a.objectAtIndex(i));
 				}

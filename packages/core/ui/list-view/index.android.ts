@@ -53,7 +53,7 @@ function initializeItemClickListener(): void {
 
 export class ListView extends ListViewBase {
 	nativeViewProtected: android.widget.ListView;
-	private _androidViewId: number = -1;
+	private _androidViewId = -1;
 
 	public _realizedItems = new Map<android.view.View, View>();
 	public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
@@ -180,7 +180,7 @@ export class ListView extends ListViewBase {
 	}
 
 	public isItemAtIndexVisible(index: number): boolean {
-		let nativeView = this.nativeViewProtected;
+		const nativeView = this.nativeViewProtected;
 		const start = nativeView.getFirstVisiblePosition();
 		const end = nativeView.getLastVisiblePosition();
 
@@ -191,7 +191,7 @@ export class ListView extends ListViewBase {
 		dividerHeight: number;
 		divider: android.graphics.drawable.Drawable;
 	} {
-		let nativeView = this.nativeViewProtected;
+		const nativeView = this.nativeViewProtected;
 
 		return {
 			dividerHeight: nativeView.getDividerHeight(),
@@ -206,7 +206,7 @@ export class ListView extends ListViewBase {
 					divider: android.graphics.drawable.Drawable;
 			  }
 	) {
-		let nativeView = this.nativeViewProtected;
+		const nativeView = this.nativeViewProtected;
 		if (value instanceof Color) {
 			nativeView.setDivider(new android.graphics.drawable.ColorDrawable(value.android));
 			nativeView.setDividerHeight(1);
@@ -250,7 +250,7 @@ function ensureListViewAdapterClass() {
 
 		public getItem(i: number) {
 			if (this.owner && this.owner.items && i < this.owner.items.length) {
-				let getItem = (<ItemsSource>this.owner.items).getItem;
+				const getItem = (<ItemsSource>this.owner.items).getItem;
 
 				return getItem ? getItem.call(this.owner.items, i) : this.owner.items[i];
 			}
@@ -259,7 +259,7 @@ function ensureListViewAdapterClass() {
 		}
 
 		public getItemId(i: number) {
-			let item = this.getItem(i);
+			const item = this.getItem(i);
 			let id = i;
 			if (this.owner && item && this.owner.items) {
 				id = this.owner.itemIdGenerator(item, i, this.owner.items);
@@ -277,8 +277,8 @@ function ensureListViewAdapterClass() {
 		}
 
 		public getItemViewType(index: number) {
-			let template = this.owner._getItemTemplate(index);
-			let itemViewType = this.owner._itemTemplatesInternal.indexOf(template);
+			const template = this.owner._getItemTemplate(index);
+			const itemViewType = this.owner._itemTemplatesInternal.indexOf(template);
 
 			return itemViewType;
 		}
@@ -291,7 +291,7 @@ function ensureListViewAdapterClass() {
 				return null;
 			}
 
-			let totalItemCount = this.owner.items ? this.owner.items.length : 0;
+			const totalItemCount = this.owner.items ? this.owner.items.length : 0;
 			if (index === totalItemCount - 1) {
 				this.owner.notify({
 					eventName: LOADMOREITEMS,
@@ -300,7 +300,7 @@ function ensureListViewAdapterClass() {
 			}
 
 			// Recycle an existing view or create a new one if needed.
-			let template = this.owner._getItemTemplate(index);
+			const template = this.owner._getItemTemplate(index);
 			let view: View;
 			if (convertView) {
 				view = this.owner._realizedTemplates.get(template.key).get(convertView);
@@ -311,7 +311,7 @@ function ensureListViewAdapterClass() {
 				view = template.createView();
 			}
 
-			let args: ItemEventData = {
+			const args: ItemEventData = {
 				eventName: ITEMLOADING,
 				object: this.owner,
 				index: index,
@@ -341,7 +341,7 @@ function ensureListViewAdapterClass() {
 						this.owner._addView(args.view);
 						convertView = args.view.nativeViewProtected;
 					} else {
-						let sp = new StackLayout();
+						const sp = new StackLayout();
 						sp.addChild(args.view);
 						this.owner._addView(sp);
 

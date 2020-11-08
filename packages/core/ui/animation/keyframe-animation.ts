@@ -58,8 +58,8 @@ interface Keyframe {
 
 export class KeyframeAnimation {
 	public animations: Array<Keyframe>;
-	public delay: number = 0;
-	public iterations: number = 1;
+	public delay = 0;
+	public iterations = 1;
 
 	private _resolve;
 	private _isPlaying: boolean;
@@ -69,22 +69,22 @@ export class KeyframeAnimation {
 
 	public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo): KeyframeAnimation {
 		const length = info.keyframes.length;
-		let animations = new Array<Keyframe>();
+		const animations = new Array<Keyframe>();
 		let startDuration = 0;
 
 		if (info.isReverse) {
 			for (let index = length - 1; index >= 0; index--) {
-				let keyframe = info.keyframes[index];
+				const keyframe = info.keyframes[index];
 				startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
 			}
 		} else {
 			for (let index = 0; index < length; index++) {
-				let keyframe = info.keyframes[index];
+				const keyframe = info.keyframes[index];
 				startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
 			}
 			for (let index = length - 1; index > 0; index--) {
-				let a1 = animations[index];
-				let a2 = animations[index - 1];
+				const a1 = animations[index];
+				const a2 = animations[index - 1];
 				if (a2['curve'] !== undefined) {
 					a1['curve'] = a2['curve'];
 					a2['curve'] = undefined;
@@ -104,8 +104,8 @@ export class KeyframeAnimation {
 	}
 
 	private static parseKeyframe(info: KeyframeAnimationInfo, keyframe: KeyframeInfo, animations: Array<Object>, startDuration: number): number {
-		let animation: Keyframe = {};
-		for (let declaration of keyframe.declarations) {
+		const animation: Keyframe = {};
+		for (const declaration of keyframe.declarations) {
 			animation[declaration.property] = declaration.value;
 		}
 
@@ -138,13 +138,13 @@ export class KeyframeAnimation {
 
 		this._isPlaying = false;
 		for (let i = this._nativeAnimations.length - 1; i >= 0; i--) {
-			let animation = this._nativeAnimations[i];
+			const animation = this._nativeAnimations[i];
 			if (animation.isPlaying) {
 				animation.cancel();
 			}
 		}
 		if (this._nativeAnimations.length > 0) {
-			let animation = this._nativeAnimations[0];
+			const animation = this._nativeAnimations[0];
 			this._resetAnimationValues(this._target, animation);
 		}
 		this._resetAnimations();
@@ -159,7 +159,7 @@ export class KeyframeAnimation {
 			});
 		}
 
-		let animationFinishedPromise = new Promise<void>((resolve) => {
+		const animationFinishedPromise = new Promise<void>((resolve) => {
 			this._resolve = resolve;
 		});
 
@@ -181,7 +181,7 @@ export class KeyframeAnimation {
 			return;
 		}
 		if (index === 0) {
-			let animation = this.animations[0];
+			const animation = this.animations[0];
 
 			if ('backgroundColor' in animation) {
 				view.style[backgroundColorProperty.keyframe] = animation.backgroundColor;
@@ -216,7 +216,7 @@ export class KeyframeAnimation {
 				this.animate(view, 0, iterations);
 			} else {
 				if (this._isForwards === false) {
-					let animation = this.animations[this.animations.length - 1];
+					const animation = this.animations[this.animations.length - 1];
 					this._resetAnimationValues(view, animation);
 				}
 				this._resolveAnimationFinishedPromise();
@@ -228,7 +228,7 @@ export class KeyframeAnimation {
 			if (cachedAnimation) {
 				animation = cachedAnimation;
 			} else {
-				let animationDef = this.animations[index];
+				const animationDef = this.animations[index];
 				(<any>animationDef).target = view;
 				animation = new Animation([animationDef]);
 				this._nativeAnimations.push(animation);

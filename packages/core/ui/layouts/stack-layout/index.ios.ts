@@ -27,7 +27,7 @@ export class StackLayout extends StackLayoutBase {
 
 		let measureSpec: number;
 
-		let mode = isVertical ? heightMode : widthMode;
+		const mode = isVertical ? heightMode : widthMode;
 		let remainingLength: number;
 
 		if (mode === layout.UNSPECIFIED) {
@@ -63,13 +63,13 @@ export class StackLayout extends StackLayoutBase {
 				}
 
 				measureWidth = Math.max(measureWidth, childSize.measuredWidth);
-				let viewHeight = childSize.measuredHeight;
+				const viewHeight = childSize.measuredHeight;
 				measureHeight += viewHeight;
 				remainingLength = Math.max(0, remainingLength - viewHeight);
 			} else {
 				childSize = View.measureChild(this, child, layout.makeMeasureSpec(remainingLength, measureSpec), childMeasureSpec);
 				measureHeight = Math.max(measureHeight, childSize.measuredHeight);
-				let viewWidth = childSize.measuredWidth;
+				const viewWidth = childSize.measuredWidth;
 				measureWidth += viewWidth;
 				remainingLength = Math.max(0, remainingLength - viewWidth);
 			}
@@ -108,8 +108,8 @@ export class StackLayout extends StackLayoutBase {
 		const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom + insets.bottom;
 
 		let childTop: number;
-		let childLeft: number = paddingLeft;
-		let childRight = right - left - paddingRight;
+		const childLeft: number = paddingLeft;
+		const childRight = right - left - paddingRight;
 
 		switch (this.verticalAlignment) {
 			case VerticalAlignment.MIDDLE:
@@ -141,9 +141,9 @@ export class StackLayout extends StackLayoutBase {
 		const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
 		const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom + insets.bottom;
 
-		let childTop: number = paddingTop;
+		const childTop: number = paddingTop;
 		let childLeft: number;
-		let childBottom = bottom - top - paddingBottom;
+		const childBottom = bottom - top - paddingBottom;
 
 		switch (this.horizontalAlignment) {
 			case HorizontalAlignment.CENTER:

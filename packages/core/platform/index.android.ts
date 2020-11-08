@@ -1,5 +1,5 @@
 /* tslint:disable:class-name */
-import { getNativeApplication, on, off, orientationChangedEvent, android as AndroidApplication } from '../application';
+import { getNativeApplication, on, orientationChangedEvent, android as AndroidApplication } from '../application';
 
 const MIN_TABLET_PIXELS = 600;
 

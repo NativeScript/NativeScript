@@ -75,7 +75,7 @@ export namespace ad {
 		export function stringArrayToStringSet(str: string[]): java.util.HashSet<string> {
 			const hashSet = new java.util.HashSet<string>();
 			if (str !== undefined) {
-				for (let element in str) {
+				for (const element in str) {
 					hashSet.add('' + str[element]);
 				}
 			}
@@ -131,13 +131,13 @@ export namespace ad {
 				}
 
 				let colorID = 0;
-				let field = attr.getField(name);
+				const field = attr.getField(name);
 				if (field) {
 					colorID = field.getInt(null);
 				}
 
 				if (colorID) {
-					let typedValue = new android.util.TypedValue();
+					const typedValue = new android.util.TypedValue();
 					context.getTheme().resolveAttribute(colorID, typedValue, true);
 					result = typedValue.data;
 				}

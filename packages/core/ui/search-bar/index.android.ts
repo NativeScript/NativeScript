@@ -91,7 +91,7 @@ function enableSearchView(nativeView: any, value: boolean) {
 	}
 
 	for (let i = 0; i < nativeView.getChildCount(); i++) {
-		let child = nativeView.getChildAt(i);
+		const child = nativeView.getChildAt(i);
 		enableSearchView(child, value);
 	}
 }
@@ -105,7 +105,7 @@ function enableUserInteractionSearchView(nativeView: any, value: boolean) {
 	}
 
 	for (let i = 0; i < nativeView.getChildCount(); i++) {
-		let child = nativeView.getChildAt(i);
+		const child = nativeView.getChildAt(i);
 		enableUserInteractionSearchView(child, value);
 	}
 }
@@ -120,7 +120,7 @@ export class SearchBar extends SearchBarBase {
 	}
 
 	public focus(): boolean {
-		let result = super.focus();
+		const result = super.focus();
 		if (result) {
 			ad.showSoftInput(this.nativeViewProtected);
 		}

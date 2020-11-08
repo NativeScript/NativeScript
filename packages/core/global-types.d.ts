@@ -1,4 +1,4 @@
-declare var global: NodeJS.Global & typeof globalThis;
+declare let global: NodeJS.Global & typeof globalThis;
 
 interface ModuleResolver {
 	/**
@@ -209,7 +209,7 @@ declare type HeaderInit = Headers | Array<string>;
 declare function fetch(url: string, init?: RequestInit): Promise<Response>;
 
 // declare var console: Console;
-declare var require: NodeRequire;
+declare let require: NodeRequire;
 
 // Extend NodeRequire with the webpack's require context extension.
 interface RequireContext {
@@ -223,12 +223,12 @@ interface NodeRequire {
 	context(path: string, deep?: boolean, filter?: RegExp): RequireContext;
 }
 
-declare var __dirname: string;
-declare var __filename: string;
+declare let __dirname: string;
+declare let __filename: string;
 
-declare var module: NodeModule;
+declare let module: NodeModule;
 // Same as module.exports
-declare var exports: any;
+declare let exports: any;
 
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;

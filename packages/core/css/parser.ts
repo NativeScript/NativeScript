@@ -52,8 +52,8 @@ export interface BackgroundPosition {
 	text?: string;
 }
 
-const urlRegEx = /\s*url\((?:('|")([^\1]*)\1|([^\)]*))\)\s*/gy;
-export function parseURL(text: string, start: number = 0): Parsed<URL> {
+const urlRegEx = /\s*url\((?:('|")([^\1]*)\1|([^)]*))\)\s*/gy;
+export function parseURL(text: string, start = 0): Parsed<URL> {
 	urlRegEx.lastIndex = start;
 	const result = urlRegEx.exec(text);
 	if (!result) {
@@ -66,14 +66,14 @@ export function parseURL(text: string, start: number = 0): Parsed<URL> {
 }
 
 const hexColorRegEx = /\s*#((?:[0-9A-F]{8})|(?:[0-9A-F]{6})|(?:[0-9A-F]{3}))\s*/giy;
-export function parseHexColor(text: string, start: number = 0): Parsed<ARGB> {
+export function parseHexColor(text: string, start = 0): Parsed<ARGB> {
 	hexColorRegEx.lastIndex = start;
 	const result = hexColorRegEx.exec(text);
 	if (!result) {
 		return null;
 	}
 	const end = hexColorRegEx.lastIndex;
-	let hex = result[1];
+	const hex = result[1];
 	let argb;
 	if (hex.length === 8) {
 		argb = parseInt('0x' + hex);
@@ -86,7 +86,7 @@ export function parseHexColor(text: string, start: number = 0): Parsed<ARGB> {
 	return { start, end, value: argb };
 }
 
-function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): number | undefined {
+function rgbaToArgbNumber(r: number, g: number, b: number, a = 1): number | undefined {
 	if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1) {
 		return Math.round(a * 0xff) * 0x01000000 + r * 0x010000 + g * 0x000100 + b;
 	} else {
@@ -95,7 +95,7 @@ function rgbaToArgbNumber(r: number, g: number, b: number, a: number = 1): numbe
 }
 
 const rgbColorRegEx = /\s*(rgb\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*\))/gy;
-export function parseRGBColor(text: string, start: number = 0): Parsed<ARGB> {
+export function parseRGBColor(text: string, start = 0): Parsed<ARGB> {
 	rgbColorRegEx.lastIndex = start;
 	const result = rgbColorRegEx.exec(text);
 	if (!result) {
@@ -108,7 +108,7 @@ export function parseRGBColor(text: string, start: number = 0): Parsed<ARGB> {
 }
 
 const rgbaColorRegEx = /\s*(rgba\(\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)\s*,\s*([01]?\.?\d*)\s*\))/gy;
-export function parseRGBAColor(text: string, start: number = 0): Parsed<ARGB> {
+export function parseRGBAColor(text: string, start = 0): Parsed<ARGB> {
 	rgbaColorRegEx.lastIndex = start;
 	const result = rgbaColorRegEx.exec(text);
 	if (!result) {
@@ -126,10 +126,10 @@ export function convertHSLToRGBColor(hue: number, saturation: number, lightness:
 	hue /= 60;
 	lightness /= 100;
 
-	let chroma = ((1 - Math.abs(2 * lightness - 1)) * saturation) / 100,
-		X = chroma * (1 - Math.abs((hue % 2) - 1)),
+	const chroma = ((1 - Math.abs(2 * lightness - 1)) * saturation) / 100,
+		X = chroma * (1 - Math.abs((hue % 2) - 1));
 		// Add lightness match to all RGB components beforehand
-		{ m: r, m: g, m: b } = { m: lightness - chroma / 2 };
+	let { m: r, m: g, m: b } = { m: lightness - chroma / 2 };
 
 	if (0 <= hue && hue < 1) {
 		r += chroma;
@@ -158,8 +158,8 @@ export function convertHSLToRGBColor(hue: number, saturation: number, lightness:
 	};
 }
 
-function hslaToArgbNumber(h: number, s: number, l: number, a: number = 1): number | undefined {
-	let { r, g, b } = convertHSLToRGBColor(h, s, l);
+function hslaToArgbNumber(h: number, s: number, l: number, a = 1): number | undefined {
+	const { r, g, b } = convertHSLToRGBColor(h, s, l);
 
 	if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1) {
 		return Math.round(a * 0xff) * 0x01000000 + r * 0x010000 + g * 0x000100 + b;
@@ -169,7 +169,7 @@ function hslaToArgbNumber(h: number, s: number, l: number, a: number = 1): numbe
 }
 
 const hslColorRegEx = /\s*(hsl\(\s*([\d.]*)\s*,\s*([\d.]*)%\s*,\s*([\d.]*)%\s*\))/gy;
-export function parseHSLColor(text: string, start: number = 0): Parsed<ARGB> {
+export function parseHSLColor(text: string, start = 0): Parsed<ARGB> {
 	hslColorRegEx.lastIndex = start;
 	const result = hslColorRegEx.exec(text);
 	if (!result) {
@@ -182,7 +182,7 @@ export function parseHSLColor(text: string, start: number = 0): Parsed<ARGB> {
 }
 
 const hslaColorRegEx = /\s*(hsla\(\s*([\d.]*)\s*,\s*([\d.]*)%\s*,\s*([\d.]*)%\s*,\s*([01]?\.?\d*)\s*\))/gy;
-export function parseHSLAColor(text: string, start: number = 0): Parsed<ARGB> {
+export function parseHSLAColor(text: string, start = 0): Parsed<ARGB> {
 	hslaColorRegEx.lastIndex = start;
 	const result = hslaColorRegEx.exec(text);
 	if (!result) {
@@ -357,12 +357,12 @@ export function parseColorKeyword(value, start: number, keyword = parseKeyword(v
 	return null;
 }
 
-export function parseColor(value: string, start: number = 0, keyword = parseKeyword(value, start)): Parsed<ARGB> {
+export function parseColor(value: string, start = 0, keyword = parseKeyword(value, start)): Parsed<ARGB> {
 	return parseHexColor(value, start) || parseColorKeyword(value, start, keyword) || parseRGBColor(value, start) || parseRGBAColor(value, start) || parseHSLColor(value, start) || parseHSLAColor(value, start);
 }
 
-const keywordRegEx = /\s*([a-z][\w\-]*)\s*/giy;
-function parseKeyword(text: string, start: number = 0): Parsed<Keyword> {
+const keywordRegEx = /\s*([a-z][\w-]*)\s*/giy;
+function parseKeyword(text: string, start = 0): Parsed<Keyword> {
 	keywordRegEx.lastIndex = start;
 	const result = keywordRegEx.exec(text);
 	if (!result) {
@@ -375,7 +375,7 @@ function parseKeyword(text: string, start: number = 0): Parsed<Keyword> {
 }
 
 const backgroundRepeatKeywords = new Set(['repeat', 'repeat-x', 'repeat-y', 'no-repeat']);
-export function parseRepeat(value: string, start: number = 0, keyword = parseKeyword(value, start)): Parsed<BackgroundRepeat> {
+export function parseRepeat(value: string, start = 0, keyword = parseKeyword(value, start)): Parsed<BackgroundRepeat> {
 	if (keyword && backgroundRepeatKeywords.has(keyword.value)) {
 		const end = keyword.end;
 		const value = <BackgroundRepeat>keyword.value;
@@ -386,8 +386,8 @@ export function parseRepeat(value: string, start: number = 0, keyword = parseKey
 	return null;
 }
 
-const unitRegEx = /\s*([\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?)([a-zA-Z]+|%)?\s*/gy;
-export function parseUnit(text: string, start: number = 0): Parsed<Unit<string>> {
+const unitRegEx = /\s*([+-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][+-]?\d+)?)([a-zA-Z]+|%)?\s*/gy;
+export function parseUnit(text: string, start = 0): Parsed<Unit<string>> {
 	unitRegEx.lastIndex = start;
 	const result = unitRegEx.exec(text);
 	if (!result) {
@@ -400,7 +400,7 @@ export function parseUnit(text: string, start: number = 0): Parsed<Unit<string>>
 	return { start, end, value: { value, unit } };
 }
 
-export function parsePercentageOrLength(text: string, start: number = 0): Parsed<LengthPercentage> {
+export function parsePercentageOrLength(text: string, start = 0): Parsed<LengthPercentage> {
 	const unitResult = parseUnit(text, start);
 	if (unitResult) {
 		const { start, end } = unitResult;
@@ -445,7 +445,7 @@ const angleUnitsToRadMap: {
 		value: turn * Math.PI * 2,
 	}),
 };
-export function parseAngle(value: string, start: number = 0): Parsed<Angle> {
+export function parseAngle(value: string, start = 0): Parsed<Angle> {
 	const angleResult = parseUnit(value, start);
 	if (angleResult) {
 		const { start, end, value } = angleResult;
@@ -457,7 +457,7 @@ export function parseAngle(value: string, start: number = 0): Parsed<Angle> {
 }
 
 const backgroundSizeKeywords = new Set(['auto', 'contain', 'cover']);
-export function parseBackgroundSize(value: string, start: number = 0, keyword = parseKeyword(value, start)): Parsed<BackgroundSize> {
+export function parseBackgroundSize(value: string, start = 0, keyword = parseKeyword(value, start)): Parsed<BackgroundSize> {
 	let end = start;
 	if (keyword && backgroundSizeKeywords.has(keyword.value)) {
 		end = keyword.end;
@@ -497,7 +497,7 @@ const backgroundPositionKeywordsDirection: {
 	top: 'y',
 	bottom: 'y',
 };
-export function parseBackgroundPosition(text: string, start: number = 0, keyword = parseKeyword(text, start)): Parsed<BackgroundPosition> {
+export function parseBackgroundPosition(text: string, start = 0, keyword = parseKeyword(text, start)): Parsed<BackgroundPosition> {
 	function formatH(align: Parsed<HorizontalAlign>, offset: Parsed<LengthPercentage>) {
 		if (align.value === 'center') {
 			return 'center';
@@ -521,7 +521,7 @@ export function parseBackgroundPosition(text: string, start: number = 0, keyword
 	let end = start;
 	if (keyword && backgroundPositionKeywords.has(keyword.value)) {
 		end = keyword.end;
-		let firstDirection = backgroundPositionKeywordsDirection[keyword.value];
+		const firstDirection = backgroundPositionKeywordsDirection[keyword.value];
 
 		const firstLength = firstDirection !== 'center' && parsePercentageOrLength(text, end);
 		if (firstLength) {
@@ -531,7 +531,7 @@ export function parseBackgroundPosition(text: string, start: number = 0, keyword
 		const secondKeyword = parseKeyword(text, end);
 		if (secondKeyword && backgroundPositionKeywords.has(secondKeyword.value)) {
 			end = secondKeyword.end;
-			let secondDirection = backgroundPositionKeywordsDirection[secondKeyword.end];
+			const secondDirection = backgroundPositionKeywordsDirection[secondKeyword.end];
 
 			if (firstDirection === secondDirection && firstDirection !== 'center') {
 				return null; // Reject pair of both horizontal or both vertical alignments.
@@ -641,7 +641,7 @@ const cornerDirections = {
 		bottom: (Math.PI * 5) / 4,
 	},
 };
-function parseDirection(text: string, start: number = 0): Parsed<Angle> {
+function parseDirection(text: string, start = 0): Parsed<Angle> {
 	directionRegEx.lastIndex = start;
 	const result = directionRegEx.exec(text);
 	if (!result) {
@@ -700,7 +700,7 @@ function parseArgumentsList<T>(text: string, start: number, argument: (value: st
 	}
 }
 
-export function parseColorStop(text: string, start: number = 0): Parsed<ColorStop> {
+export function parseColorStop(text: string, start = 0): Parsed<ColorStop> {
 	const color = parseColor(text, start);
 	if (!color) {
 		return null;
@@ -721,7 +721,7 @@ export function parseColorStop(text: string, start: number = 0): Parsed<ColorSto
 }
 
 const linearGradientStartRegEx = /\s*linear-gradient\s*/gy;
-export function parseLinearGradient(text: string, start: number = 0): Parsed<LinearGradient> {
+export function parseLinearGradient(text: string, start = 0): Parsed<LinearGradient> {
 	linearGradientStartRegEx.lastIndex = start;
 	const lgs = linearGradientStartRegEx.exec(text);
 	if (!lgs) {
@@ -772,7 +772,7 @@ function parseSlash(text: string, start: number): Parsed<'/'> {
 	return { start, end, value: '/' };
 }
 
-export function parseBackground(text: string, start: number = 0): Parsed<Background> {
+export function parseBackground(text: string, start = 0): Parsed<Background> {
 	const value: any = {};
 	let end = start;
 	while (end < text.length) {
@@ -865,7 +865,7 @@ export type SelectorCombinatorPair = [SimpleSelectorSequence, Combinator];
 export type Selector = SelectorCombinatorPair[];
 
 const universalSelectorRegEx = /\*/gy;
-export function parseUniversalSelector(text: string, start: number = 0): Parsed<UniversalSelector> {
+export function parseUniversalSelector(text: string, start = 0): Parsed<UniversalSelector> {
 	universalSelectorRegEx.lastIndex = start;
 	const result = universalSelectorRegEx.exec(text);
 	if (!result) {
@@ -878,7 +878,7 @@ export function parseUniversalSelector(text: string, start: number = 0): Parsed<
 
 const simpleIdentifierSelectorRegEx = /(#|\.|:|\b)((?:[\w_-]|\\.)(?:[\w\d_-]|\\.)*)/guy;
 const unicodeEscapeRegEx = /\\([0-9a-fA-F]{1,5}\s|[0-9a-fA-F]{6})/g;
-export function parseSimpleIdentifierSelector(text: string, start: number = 0): Parsed<TypeSelector | ClassSelector | IdSelector | PseudoClassSelector> {
+export function parseSimpleIdentifierSelector(text: string, start = 0): Parsed<TypeSelector | ClassSelector | IdSelector | PseudoClassSelector> {
 	simpleIdentifierSelectorRegEx.lastIndex = start;
 	const result = simpleIdentifierSelectorRegEx.exec(text.replace(unicodeEscapeRegEx, (_, c) => '\\' + String.fromCodePoint(parseInt(c.trim(), 16))));
 	if (!result) {
@@ -892,7 +892,7 @@ export function parseSimpleIdentifierSelector(text: string, start: number = 0): 
 	return { start, end, value };
 }
 
-const attributeSelectorRegEx = /\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\]/gy;
+const attributeSelectorRegEx = /\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\]/gy;
 export function parseAttributeSelector(text: string, start: number): Parsed<AttributeSelector> {
 	attributeSelectorRegEx.lastIndex = start;
 	const result = attributeSelectorRegEx.exec(text);
@@ -911,7 +911,7 @@ export function parseAttributeSelector(text: string, start: number): Parsed<Attr
 	return { start, end, value: { type: '[]', property } };
 }
 
-export function parseSimpleSelector(text: string, start: number = 0): Parsed<SimpleSelector> {
+export function parseSimpleSelector(text: string, start = 0): Parsed<SimpleSelector> {
 	return parseUniversalSelector(text, start) || parseSimpleIdentifierSelector(text, start) || parseAttributeSelector(text, start);
 }
 
@@ -921,7 +921,7 @@ export function parseSimpleSelectorSequence(text: string, start: number): Parsed
 		return null;
 	}
 	let end = simpleSelector.end;
-	let value = <SimpleSelectorSequence>[];
+	const value = <SimpleSelectorSequence>[];
 	while (simpleSelector) {
 		value.push(simpleSelector.value);
 		end = simpleSelector.end;
@@ -932,7 +932,7 @@ export function parseSimpleSelectorSequence(text: string, start: number): Parsed
 }
 
 const combinatorRegEx = /\s*(\+|~|>)?\s*/gy;
-export function parseCombinator(text: string, start: number = 0): Parsed<Combinator> {
+export function parseCombinator(text: string, start = 0): Parsed<Combinator> {
 	combinatorRegEx.lastIndex = start;
 	const result = combinatorRegEx.exec(text);
 	if (!result) {
@@ -945,14 +945,14 @@ export function parseCombinator(text: string, start: number = 0): Parsed<Combina
 }
 
 const whiteSpaceRegEx = /\s*/gy;
-export function parseSelector(text: string, start: number = 0): Parsed<Selector> {
+export function parseSelector(text: string, start = 0): Parsed<Selector> {
 	let end = start;
 	whiteSpaceRegEx.lastIndex = end;
 	const leadingWhiteSpace = whiteSpaceRegEx.exec(text);
 	if (leadingWhiteSpace) {
 		end = whiteSpaceRegEx.lastIndex;
 	}
-	let value = <Selector>[];
+	const value = <Selector>[];
 	let combinator: Parsed<Combinator>;
 	let expectSimpleSelector = true; // Must have at least one
 	let pair: SelectorCombinatorPair;
@@ -1001,12 +1001,13 @@ export interface QualifiedRule {
 
 const whitespaceRegEx = /[\s\t\n\r\f]*/gmy;
 
-const singleQuoteStringRegEx = /'((?:[^\n\r\f\']|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?'|$)/gmy; // Besides $n, parse escape
-const doubleQuoteStringRegEx = /"((?:[^\n\r\f\"]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?"|$)/gmy; // Besides $n, parse escape
+const singleQuoteStringRegEx = /'((?:[^\n\r\f']|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?'|$)/gmy; // Besides $n, parse escape
+const doubleQuoteStringRegEx = /"((?:[^\n\r\f"]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?"|$)/gmy; // Besides $n, parse escape
 
-const commentRegEx = /(\/\*(?:[^\*]|\*[^\/])*\*\/)/gmy;
-const numberRegEx = /[\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?/gmy;
-const nameRegEx = /-?(?:(?:[a-zA-Z_]|[^\x00-\x7F]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))(?:[a-zA-Z_0-9\-]*|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)/gmy;
+const commentRegEx = /(\/\*(?:[^*]|\*[^/])*\*\/)/gmy;
+const numberRegEx = /[+-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][+-]?\d+)?/gmy;
+// eslint-disable-next-line no-control-regex
+const nameRegEx = /-?(?:(?:[a-zA-Z_]|[^\x00-\x7F]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))(?:[a-zA-Z_0-9-]*|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)/gmy;
 // const nonQuoteURLRegEx = /(:?[^\)\s\t\n\r\f\'\"\(]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*/gym; // TODO: non-printable code points omitted
 
 type InputToken = '(' | ')' | '{' | '}' | '[' | ']' | ':' | ';' | ',' | ' ' | '^=' | '|=' | '$=' | '*=' | '~=' | '<!--' | '-->' | undefined | /* <EOF-token> */ InputTokenObject | FunctionInputToken | FunctionToken | SimpleBlock | AtKeywordToken;
@@ -1092,7 +1093,7 @@ interface SimpleBlock extends InputTokenObject {
 	values: InputToken[];
 }
 
-interface AtKeywordToken extends InputTokenObject {}
+type AtKeywordToken = InputTokenObject
 
 /**
  * CSS parser following relatively close:
@@ -1111,7 +1112,7 @@ export class CSS3Parser {
 	 * This method allows us to run and assert the proper working of the tokenizer.
 	 */
 	tokenize(): InputToken[] {
-		let tokens: InputToken[] = [];
+		const tokens: InputToken[] = [];
 		let inputToken: InputToken;
 		do {
 			inputToken = this.consumeAToken();
@@ -1127,7 +1128,7 @@ export class CSS3Parser {
 	 */
 	private consumeAToken(): InputToken {
 		if (this.reconsumedInputToken) {
-			let result = this.reconsumedInputToken;
+			const result = this.reconsumedInputToken;
 			this.reconsumedInputToken = null;
 
 			return result;
@@ -1224,7 +1225,7 @@ export class CSS3Parser {
 
 	private consumeAHashToken(): InputTokenObject {
 		this.nextInputCodePointIndex++;
-		let hashName = this.consumeAName();
+		const hashName = this.consumeAName();
 		if (hashName) {
 			return { type: TokenObjectType.hash, text: '#' + hashName.text };
 		}
@@ -1429,7 +1430,7 @@ export class CSS3Parser {
 
 	private consumeAtKeyword(): InputTokenObject {
 		this.nextInputCodePointIndex++;
-		let name = this.consumeAName();
+		const name = this.consumeAName();
 		if (name) {
 			return { type: TokenObjectType.atKeyword, text: name.text };
 		}
@@ -1483,7 +1484,7 @@ export class CSS3Parser {
 				case ' ':
 					continue;
 				case '<!--':
-				case '-->':
+				case '-->':{
 					if (this.topLevelFlag) {
 						continue;
 					}
@@ -1493,6 +1494,7 @@ export class CSS3Parser {
 						rules.push(atRule);
 					}
 					continue;
+				}
 			}
 			if ((<InputTokenObject>inputToken).type === TokenObjectType.atKeyword) {
 				this.reconsumeTheCurrentInputToken(inputToken);
@@ -1559,7 +1561,7 @@ export class CSS3Parser {
 		let inputToken: InputToken;
 		while ((inputToken = this.consumeAToken())) {
 			if (inputToken === '{') {
-				let block = this.consumeASimpleBlock(inputToken);
+				const block = this.consumeASimpleBlock(inputToken);
 				qualifiedRule.block = block;
 
 				return qualifiedRule;
@@ -1660,17 +1662,19 @@ export class CSS3Parser {
 			}
 			const nextInputToken = this.text[this.nextInputCodePointIndex];
 			switch (nextInputToken) {
-				case ')':
+				case ')':{
 					this.nextInputCodePointIndex++;
 					const end = this.nextInputCodePointIndex;
 					funcToken.text = name + '(' + this.text.substring(start, end);
 
 					return funcToken;
-				default:
+				}
+				default:{
 					const component = this.consumeAComponentValue();
 					if (component) {
 						funcToken.components.push(component);
 					}
+				}
 				// TODO: Else we won't advance
 			}
 		} while (true);
@@ -1739,7 +1743,7 @@ export class CSSNativeScript {
 		let reading: 'property' | 'value' = 'property';
 
 		for (let i = 0; i < declarationsInputTokens.length; i++) {
-			let inputToken = declarationsInputTokens[i];
+			const inputToken = declarationsInputTokens[i];
 			if (reading === 'property') {
 				if (inputToken === ':') {
 					reading = 'value';
@@ -1773,7 +1777,7 @@ export class CSSNativeScript {
 	}
 
 	private preludeToSelectorsStringArray(prelude: InputToken[]): string[] {
-		let selectors = [];
+		const selectors = [];
 		let selector = '';
 		prelude.forEach((inputToken) => {
 			if (typeof inputToken === 'string') {

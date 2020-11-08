@@ -35,25 +35,25 @@ export class ImageAsset extends ImageAssetBase {
 			callback(null, 'Asset cannot be found.');
 		}
 
-		let srcWidth = this.nativeImage ? this.nativeImage.size.width : this.ios.pixelWidth;
-		let srcHeight = this.nativeImage ? this.nativeImage.size.height : this.ios.pixelHeight;
-		let requestedSize = getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
+		const srcWidth = this.nativeImage ? this.nativeImage.size.width : this.ios.pixelWidth;
+		const srcHeight = this.nativeImage ? this.nativeImage.size.height : this.ios.pixelHeight;
+		const requestedSize = getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
 
 		if (this.nativeImage) {
-			let newSize = CGSizeMake(requestedSize.width, requestedSize.height);
-			let resizedImage = this.scaleImage(this.nativeImage, newSize);
+			const newSize = CGSizeMake(requestedSize.width, requestedSize.height);
+			const resizedImage = this.scaleImage(this.nativeImage, newSize);
 			callback(resizedImage, null);
 
 			return;
 		}
 
-		let imageRequestOptions = PHImageRequestOptions.alloc().init();
+		const imageRequestOptions = PHImageRequestOptions.alloc().init();
 		imageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat;
 		imageRequestOptions.networkAccessAllowed = true;
 
 		PHImageManager.defaultManager().requestImageForAssetTargetSizeContentModeOptionsResultHandler(this.ios, requestedSize, PHImageContentMode.AspectFit, imageRequestOptions, (image, imageResultInfo) => {
 			if (image) {
-				let resultImage = this.scaleImage(image, requestedSize);
+				const resultImage = this.scaleImage(image, requestedSize);
 				callback(resultImage, null);
 			} else {
 				callback(null, imageResultInfo.valueForKey(PHImageErrorKey));
@@ -67,7 +67,7 @@ export class ImageAsset extends ImageAssetBase {
 
 		UIGraphicsBeginImageContextWithOptions(requestedSize, false, scaleFactor);
 		image.drawInRect(CGRectMake(0, 0, requestedSize.width, requestedSize.height));
-		let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+		const resultImage = UIGraphicsGetImageFromCurrentImageContext();
 		UIGraphicsEndImageContext();
 
 		return resultImage;

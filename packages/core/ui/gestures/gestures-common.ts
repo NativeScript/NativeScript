@@ -26,7 +26,7 @@ export enum SwipeDirection {
 	down = 1 << 3,
 }
 
-export module TouchAction {
+export namespace TouchAction {
 	export const down = 'down';
 	export const up = 'up';
 	export const move = 'move';
@@ -34,7 +34,7 @@ export module TouchAction {
 }
 
 export function toString(type: GestureTypes, separator?: string): string {
-	let types = new Array<string>();
+	const types = new Array<string>();
 
 	if (type & GestureTypes.tap) {
 		types.push('tap');
@@ -74,7 +74,7 @@ export function toString(type: GestureTypes, separator?: string): string {
 // NOTE: toString could return the text of multiple GestureTypes.
 // Souldn't fromString do split on separator and return multiple GestureTypes?
 export function fromString(type: string): GestureTypes {
-	let t = type.trim().toLowerCase();
+	const t = type.trim().toLowerCase();
 
 	if (t === 'tap') {
 		return GestureTypes.tap;
@@ -128,7 +128,7 @@ export abstract class GesturesObserverBase implements GesturesObserverDefinition
 	public disconnect() {
 		// remove gesture observer from map
 		if (this.target) {
-			let list = this.target.getGestureObservers(this.type);
+			const list = this.target.getGestureObservers(this.type);
 			if (list && list.length > 0) {
 				for (let i = 0; i < list.length; i++) {
 					if (list[i].callback === this.callback) {

@@ -31,7 +31,7 @@ export class Progress extends ProgressBase {
 		return null;
 	}
 	[colorProperty.setNative](value: Color) {
-		let progressDrawable = this.nativeViewProtected.getProgressDrawable();
+		const progressDrawable = this.nativeViewProtected.getProgressDrawable();
 		if (!progressDrawable) {
 			return;
 		}
@@ -47,13 +47,13 @@ export class Progress extends ProgressBase {
 		return null;
 	}
 	[backgroundColorProperty.setNative](value: Color) {
-		let progressDrawable = this.nativeViewProtected.getProgressDrawable();
+		const progressDrawable = this.nativeViewProtected.getProgressDrawable();
 		if (!progressDrawable) {
 			return;
 		}
 
 		if (progressDrawable instanceof android.graphics.drawable.LayerDrawable && progressDrawable.getNumberOfLayers() > 0) {
-			let backgroundDrawable = progressDrawable.getDrawable(0);
+			const backgroundDrawable = progressDrawable.getDrawable(0);
 			if (backgroundDrawable) {
 				if (value instanceof Color) {
 					backgroundDrawable.setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);

@@ -365,7 +365,7 @@ export function traceMissingIcon(icon: string) {
 
 function convertToContentInset(this: void, value: string | Length): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
-		let insets = value.split(/[ ,]+/);
+		const insets = value.split(/[ ,]+/);
 
 		return [
 			[androidContentInsetLeftProperty, Length.parse(insets[0])],

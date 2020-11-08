@@ -1,10 +1,10 @@
 ﻿import { Transition } from '.';
 import { Screen } from '../../platform';
 
-let leftEdge = CGAffineTransformMakeTranslation(-Screen.mainScreen.widthDIPs, 0);
-let rightEdge = CGAffineTransformMakeTranslation(Screen.mainScreen.widthDIPs, 0);
-let topEdge = CGAffineTransformMakeTranslation(0, -Screen.mainScreen.heightDIPs);
-let bottomEdge = CGAffineTransformMakeTranslation(0, Screen.mainScreen.heightDIPs);
+const leftEdge = CGAffineTransformMakeTranslation(-Screen.mainScreen.widthDIPs, 0);
+const rightEdge = CGAffineTransformMakeTranslation(Screen.mainScreen.widthDIPs, 0);
+const topEdge = CGAffineTransformMakeTranslation(0, -Screen.mainScreen.heightDIPs);
+const bottomEdge = CGAffineTransformMakeTranslation(0, Screen.mainScreen.heightDIPs);
 
 export class SlideTransition extends Transition {
 	private _direction: string;
@@ -15,12 +15,12 @@ export class SlideTransition extends Transition {
 	}
 
 	public animateIOSTransition(containerView: UIView, fromView: UIView, toView: UIView, operation: UINavigationControllerOperation, completion: (finished: boolean) => void): void {
-		let originalToViewTransform = toView.transform;
-		let originalFromViewTransform = fromView.transform;
+		const originalToViewTransform = toView.transform;
+		const originalFromViewTransform = fromView.transform;
 
 		let fromViewEndTransform: CGAffineTransform;
 		let toViewBeginTransform: CGAffineTransform;
-		let push = operation === UINavigationControllerOperation.Push;
+		const push = operation === UINavigationControllerOperation.Push;
 
 		switch (this._direction) {
 			case 'left':
@@ -53,8 +53,8 @@ export class SlideTransition extends Transition {
 				break;
 		}
 
-		let duration = this.getDuration();
-		let curve = this.getCurve();
+		const duration = this.getDuration();
+		const curve = this.getCurve();
 		UIView.animateWithDurationAnimationsCompletion(
 			duration,
 			() => {

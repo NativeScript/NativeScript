@@ -33,6 +33,7 @@ function ensureCssAnimationParserModule() {
 
 let parser: 'rework' | 'nativescript' | 'css-tree' = 'css-tree';
 try {
+	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const appConfig = require('~/package.json');
 	if (appConfig) {
 		if (appConfig.cssParser === 'rework') {
@@ -69,17 +70,17 @@ function evaluateCssExpressions(view: ViewBase, property: string, value: string)
 
 export function mergeCssSelectors(): void {
 	applicationCssSelectors = applicationSelectors.slice();
-	applicationCssSelectors.push.apply(applicationCssSelectors, applicationAdditionalSelectors);
+	applicationCssSelectors.push(...applicationAdditionalSelectors);
 	applicationCssSelectorVersion++;
 }
 
 let applicationCssSelectors: RuleSet[] = [];
-let applicationCssSelectorVersion: number = 0;
+let applicationCssSelectorVersion = 0;
 let applicationSelectors: RuleSet[] = [];
 const applicationAdditionalSelectors: RuleSet[] = [];
 const applicationKeyframes: any = {};
-const animationsSymbol: symbol = Symbol('animations');
-const pattern: RegExp = /('|")(.*?)\1/;
+const animationsSymbol = Symbol('animations');
+const pattern = /('|")(.*?)\1/;
 
 class CSSSource {
 	private _selectors: RuleSet[] = [];
@@ -138,7 +139,7 @@ class CSSSource {
 
 	public static fromFile(url: string, keyframes: KeyframesMap): CSSSource {
 		// .scss, .sass, etc. css files in vanilla app are usually compiled to .css so we will try to load a compiled file first.
-		let cssFileUrl = url.replace(/\..\w+$/, '.css');
+		const cssFileUrl = url.replace(/\..\w+$/, '.css');
 		if (cssFileUrl !== url) {
 			const cssFile = CSSSource.resolveCSSPathFromURL(cssFileUrl);
 			if (cssFile) {
@@ -217,13 +218,14 @@ class CSSSource {
 					this._ast = cssTreeParse(this._source, this._file);
 
 					return;
-				case 'nativescript':
+				case 'nativescript':{
 					const cssparser = new CSS3Parser(this._source);
 					const stylesheet = cssparser.parseAStylesheet();
 					const cssNS = new CSSNativeScript();
 					this._ast = cssNS.parseStylesheet(stylesheet);
 
 					return;
+				}
 				case 'rework':
 					this._ast = parseCss(this._source, { source: this._file });
 
@@ -289,7 +291,7 @@ class CSSSource {
 	}
 }
 
-export function removeTaggedAdditionalCSS(tag: String | Number): Boolean {
+export function removeTaggedAdditionalCSS(tag: string | number): boolean {
 	let changed = false;
 	for (let i = 0; i < applicationAdditionalSelectors.length; i++) {
 		if (applicationAdditionalSelectors[i].tag === tag) {
@@ -305,7 +307,7 @@ export function removeTaggedAdditionalCSS(tag: String | Number): Boolean {
 	return changed;
 }
 
-export function addTaggedAdditionalCSS(cssText: string, tag?: string | Number): Boolean {
+export function addTaggedAdditionalCSS(cssText: string, tag?: string | number): boolean {
 	const parsed: RuleSet[] = CSSSource.fromDetect(cssText, applicationKeyframes, undefined).selectors;
 	let changed = false;
 	if (parsed && parsed.length) {
@@ -315,7 +317,7 @@ export function addTaggedAdditionalCSS(cssText: string, tag?: string | Number): 
 				parsed[i].tag = tag;
 			}
 		}
-		applicationAdditionalSelectors.push.apply(applicationAdditionalSelectors, parsed);
+		applicationAdditionalSelectors.push(...parsed);
 		mergeCssSelectors();
 	}
 
@@ -326,7 +328,7 @@ const onCssChanged = profile('"style-scope".onCssChanged', (args: application.Cs
 	if (args.cssText) {
 		const parsed = CSSSource.fromSource(args.cssText, applicationKeyframes, args.cssFile).selectors;
 		if (parsed) {
-			applicationAdditionalSelectors.push.apply(applicationAdditionalSelectors, parsed);
+			applicationAdditionalSelectors.push(...parsed);
 			mergeCssSelectors();
 		}
 	} else if (args.cssFile) {
@@ -379,12 +381,12 @@ if (application.hasLaunched()) {
 		null
 	);
 } else {
-	global.NativeScriptGlobals.events.on('loadAppCss', <any>loadAppCSS);
+	global.NativeScriptGlobals.events.on('loadAppCss', loadAppCSS);
 }
 
 export class CssState {
 	static emptyChangeMap: Readonly<ChangeMap<ViewBase>> = Object.freeze(new Map());
-	static emptyPropertyBag: Readonly<{}> = Object.freeze({});
+	static emptyPropertyBag: Readonly<Record<string, unknown>> = Object.freeze({});
 	static emptyAnimationArray: ReadonlyArray<kam.KeyframeAnimation> = Object.freeze([]);
 	static emptyMatch: Readonly<SelectorsMatch<ViewBase>> = {
 		selectors: [],
@@ -396,7 +398,7 @@ export class CssState {
 
 	_onDynamicStateChangeHandler: () => void;
 	_appliedChangeMap: Readonly<ChangeMap<ViewBase>>;
-	_appliedPropertyValues: Readonly<{}>;
+	_appliedPropertyValues: Readonly<Record<string, unknown>>;
 	_appliedAnimations: ReadonlyArray<kam.KeyframeAnimation>;
 	_appliedSelectorsVersion: number;
 
@@ -481,11 +483,11 @@ export class CssState {
 		const animations: kam.KeyframeAnimation[] = [];
 
 		matchingSelectors.forEach((selector) => {
-			let ruleAnimations: kam.KeyframeAnimationInfo[] = selector.ruleset[animationsSymbol];
+			const ruleAnimations: kam.KeyframeAnimationInfo[] = selector.ruleset[animationsSymbol];
 			if (ruleAnimations) {
 				ensureKeyframeAnimationModule();
-				for (let animationInfo of ruleAnimations) {
-					let animation = keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
+				for (const animationInfo of ruleAnimations) {
+					const animation = keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
 					if (animation) {
 						animations.push(animation);
 					}
@@ -631,7 +633,7 @@ export class CssState {
 			}
 			if (changes.pseudoClasses) {
 				changes.pseudoClasses.forEach((pseudoClass) => {
-					let eventName = ':' + pseudoClass;
+					const eventName = ':' + pseudoClass;
 					view.addEventListener(':' + pseudoClass, this._onDynamicStateChangeHandler);
 					if (view[eventName]) {
 						view[eventName](+1);
@@ -651,7 +653,7 @@ export class CssState {
 			}
 			if (changes.pseudoClasses) {
 				changes.pseudoClasses.forEach((pseudoClass) => {
-					let eventName = ':' + pseudoClass;
+					const eventName = ':' + pseudoClass;
 					view.removeEventListener(eventName, this._onDynamicStateChangeHandler);
 					if (view[eventName]) {
 						view[eventName](-1);
@@ -680,12 +682,12 @@ CssState.prototype._matchInvalid = true;
 
 export class StyleScope {
 	private _selectors: SelectorsMap<any>;
-	private _css: string = '';
+	private _css = '';
 	private _mergedCssSelectors: RuleSet[];
 	private _localCssSelectors: RuleSet[] = [];
-	private _localCssSelectorVersion: number = 0;
-	private _localCssSelectorsAppliedVersion: number = 0;
-	private _applicationCssSelectorsAppliedVersion: number = 0;
+	private _localCssSelectorVersion = 0;
+	private _localCssSelectorsAppliedVersion = 0;
+	private _applicationCssSelectorsAppliedVersion = 0;
 	private _keyframes = new Map<string, Keyframes>();
 
 	get css(): string {
@@ -732,9 +734,9 @@ export class StyleScope {
 			return;
 		}
 
-		let parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromURI(cssFileName, this._keyframes);
+		const parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromURI(cssFileName, this._keyframes);
 		this._css = this._css + parsedCssSelectors.source;
-		this._localCssSelectors.push.apply(this._localCssSelectors, parsedCssSelectors.selectors);
+		this._localCssSelectors.push(...parsedCssSelectors.selectors);
 		this._localCssSelectorVersion++;
 		this.ensureSelectors();
 	}
@@ -775,12 +777,12 @@ export class StyleScope {
 
 	@profile
 	private _createSelectors() {
-		let toMerge: RuleSet[][] = [];
+		const toMerge: RuleSet[][] = [];
 		toMerge.push(applicationCssSelectors);
 		this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
 		toMerge.push(this._localCssSelectors);
 		this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
-		for (let keyframe in applicationKeyframes) {
+		for (const keyframe in applicationKeyframes) {
 			this._keyframes[keyframe] = applicationKeyframes[keyframe];
 		}
 
@@ -794,7 +796,7 @@ export class StyleScope {
 	// HACK: This @profile decorator creates a circular dependency
 	// HACK: because the function parameter type is evaluated with 'typeof'
 	@profile
-	public matchSelectors(view: any): SelectorsMatch<ViewBase> {
+	public matchSelectors(view): SelectorsMatch<ViewBase> {
 		// should be (view: ViewBase): SelectorsMatch<ViewBase>
 		this.ensureSelectors();
 
@@ -815,11 +817,11 @@ export class StyleScope {
 
 	private _applyKeyframesOnSelectors() {
 		for (let i = this._mergedCssSelectors.length - 1; i >= 0; i--) {
-			let ruleset = this._mergedCssSelectors[i];
-			let animations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
+			const ruleset = this._mergedCssSelectors[i];
+			const animations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
 			if (animations !== undefined && animations.length) {
 				ensureCssAnimationParserModule();
-				for (let animation of animations) {
+				for (const animation of animations) {
 					const cssKeyframe = this._keyframes[animation.name];
 					if (cssKeyframe !== undefined) {
 						animation.keyframes = cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(cssKeyframe.keyframes);
@@ -885,8 +887,8 @@ function resolveFilePathFromImport(importSource: string, fileName: string): stri
 }
 
 export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase, styleStr: string) {
-	let localStyle = `local { ${styleStr} }`;
-	let inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
+	const localStyle = `local { ${styleStr} }`;
+	const inlineRuleSet = CSSSource.fromSource(localStyle, new Map()).selectors;
 
 	// Reset unscoped css-variables
 	view.style.resetUnscopedCssVariables();
@@ -894,7 +896,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
 	// Set all the css-variables first, so we can be sure they are up-to-date
 	inlineRuleSet[0].declarations.forEach((d) => {
 		// Use the actual property name so that a local value is set.
-		let property = d.property;
+		const property = d.property;
 		if (isCssVariable(property)) {
 			view.style.setUnscopedCssVariable(property, d.value);
 		}
@@ -902,7 +904,7 @@ export const applyInlineStyle = profile(function applyInlineStyle(view: ViewBase
 
 	inlineRuleSet[0].declarations.forEach((d) => {
 		// Use the actual property name so that a local value is set.
-		let property = d.property;
+		const property = d.property;
 		try {
 			if (isCssVariable(property)) {
 				// Skip css-variables, they have been handled
