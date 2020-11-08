@@ -1,6 +1,6 @@
 {
 	"name": "nativescript",
-	"version": "7.0.13",
+	"version": "7.0.14",
 	"license": "MIT",
 	"config": {
 		"npm_alias": "npm"
