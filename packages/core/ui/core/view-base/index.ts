@@ -238,6 +238,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	public id: string;
 	public className: string;
+	public disableCss: boolean;
 
 	public _domId: number;
 	public _context: any;
@@ -394,7 +395,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 
 		this._isLoaded = true;
-		this._cssState.onLoaded();
+		if (!this.disableCss) {
+			this._cssState.onLoaded();
+		}
 		this._resumeNativeUpdates(SuspendType.Loaded);
 
 		this.eachChild((child) => {
@@ -422,7 +425,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 
 		this._isLoaded = false;
-		this._cssState.onUnloaded();
+		if (!this.disableCss) {
+			this._cssState.onUnloaded();
+		}
 		this._emit('unloaded');
 	}
 
@@ -1008,6 +1013,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	}
 
 	_onCssStateChange(): void {
+		if (this.disableCss) {
+			return;
+		}
 		this._cssState.onChange();
 		eachDescendant(this, (child: ViewBase) => {
 			child._cssState.onChange();
@@ -1017,6 +1025,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	}
 
 	_inheritStyleScope(styleScope: ssm.StyleScope): void {
+		if (this.disableCss) {
+			return;
+		}
 		// If we are styleScope don't inherit parent stylescope.
 		// TODO: Consider adding parent scope and merge selectors.
 		if (this._isStyleScopeHost) {
@@ -1104,6 +1115,9 @@ bindingContextProperty.register(ViewBase);
 export const classNameProperty = new Property<ViewBase, string>({
 	name: 'className',
 	valueChanged(view: ViewBase, oldValue: string, newValue: string) {
+		if (view.disableCss) {
+			return;
+		}
 		const cssClasses = view.cssClasses;
 		const rootViewsCssClasses = CSSUtils.getSystemCssClasses();
 
@@ -1134,6 +1148,14 @@ export const idProperty = new Property<ViewBase, string>({
 	valueChanged: (view, oldValue, newValue) => view._onCssStateChange(),
 });
 idProperty.register(ViewBase);
+export const disableCssProperty = new InheritedProperty<ViewBase, boolean>({
+	name: 'disableCss',
+	defaultValue: false,
+	valueConverter: booleanConverter,
+	// valueChanged: (view, oldValue, newValue) => console.log('disableCss changed', view, newValue),
+});
+disableCssProperty.register(ViewBase);
+
 
 export function booleanConverter(v: string): boolean {
 	const lowercase = (v + '').toLowerCase();

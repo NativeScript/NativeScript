@@ -108,6 +108,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public changeCssFile(cssFileName: string): void {
+		if (this.disableCss) {
+			return;
+		}
 		const scope = this._styleScope;
 		if (scope && cssFileName) {
 			scope.changeCssFile(cssFileName);
@@ -116,6 +119,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public _updateStyleScope(cssFileName?: string, cssString?: string, css?: string): void {
+		if (this.disableCss) {
+			return;
+		}
 		let scope = this._styleScope;
 		if (!scope) {
 			scope = new StyleScope();
