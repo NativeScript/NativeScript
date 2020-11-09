@@ -9,6 +9,7 @@ import * as datePickerModule from '@nativescript/core/ui/date-picker';
 // << date-picker-require
 
 import * as helper from '../../ui-helper';
+import {Device} from "../../../../../packages/core";
 
 export function test_recycling() {
 	helper.nativeView_recycling_test(() => new datePickerModule.DatePicker());
@@ -77,8 +78,11 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
 
 	public test_set_color() {
 		if (platform.Device.os === platform.platformNames.ios) {
-			this.testView.color = new color.Color('red');
-			TKUnit.assertEqual(this.testView.color.ios.CGColor, this.testView.ios.valueForKey('textColor').CGColor, 'datePicker.color');
+			const SUPPORT_TEXT_COLOR = parseFloat(platform.Device.osVersion) < 14.0;
+			if (SUPPORT_TEXT_COLOR) {
+				this.testView.color = new color.Color('red');
+				TKUnit.assertEqual(this.testView.color.ios.CGColor, this.testView.ios.valueForKey('textColor').CGColor, 'datePicker.color');
+			}
 		}
 	}
 
