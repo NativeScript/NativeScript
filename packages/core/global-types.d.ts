@@ -1,4 +1,5 @@
-declare let global: NodeJS.Global & typeof globalThis;
+/* eslint-disable no-var */
+declare var global: NodeJS.Global & typeof globalThis;
 
 interface ModuleResolver {
 	/**
@@ -209,7 +210,7 @@ declare type HeaderInit = Headers | Array<string>;
 declare function fetch(url: string, init?: RequestInit): Promise<Response>;
 
 // declare var console: Console;
-declare let require: NodeRequire;
+declare var require: NodeRequire;
 
 // Extend NodeRequire with the webpack's require context extension.
 interface RequireContext {
@@ -223,12 +224,12 @@ interface NodeRequire {
 	context(path: string, deep?: boolean, filter?: RegExp): RequireContext;
 }
 
-declare let __dirname: string;
-declare let __filename: string;
+declare var __dirname: string;
+declare var __filename: string;
 
-declare let module: NodeModule;
+declare var module: NodeModule;
 // Same as module.exports
-declare let exports: any;
+declare var exports: any;
 
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
@@ -253,17 +254,17 @@ declare function NativeClass<T extends { new (...args: any[]): {} }>(options?: N
 declare function Interfaces(...interfaces): ClassDecorator;
 
 /**
- * Decorates class that extends native Java class
- * @param nativeClassName The name of the newly generated class. Must be unique in the application.
- */
-declare function JavaProxy(nativeClassName: string): ClassDecorator;
-
-/**
  * Important: Not applicable to Objective-C classes (iOS platform)
  * Decorates class that extends native Java class
  * @param interfaces An array of fully-classified Java interface names that the class must implement.
  */
 declare function Interfaces(interfaces: any[]): ClassDecorator;
+
+/**
+ * Decorates class that extends native Java class
+ * @param nativeClassName The name of the newly generated class. Must be unique in the application.
+ */
+declare function JavaProxy(nativeClassName: string): ClassDecorator;
 
 /**
  * Important: Not applicable to Java classes (Android platform)
