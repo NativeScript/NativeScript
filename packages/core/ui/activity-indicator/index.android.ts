@@ -11,6 +11,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		const progressBar = new android.widget.ProgressBar(this._context);
 		progressBar.setVisibility(android.view.View.INVISIBLE);
 		progressBar.setIndeterminate(true);
+		progressBar.getIndeterminateDrawable().mutate();
 
 		return progressBar;
 	}
@@ -47,8 +48,9 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		return -1;
 	}
 	[colorProperty.setNative](value: number | Color) {
-		if (value instanceof Color) {
-			this.nativeViewProtected.getIndeterminateDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+		const color = value instanceof Color ? value.android : value;
+		if (color) {
+			this.nativeViewProtected.getIndeterminateDrawable().setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
 		} else {
 			this.nativeViewProtected.getIndeterminateDrawable().clearColorFilter();
 		}
