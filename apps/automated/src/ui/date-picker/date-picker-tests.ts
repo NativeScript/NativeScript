@@ -1,15 +1,14 @@
 import * as TKUnit from '../../tk-unit';
 import * as testModule from '../../ui-test';
 import * as datePickerTestsNative from './date-picker-tests-native';
-import * as color from '@nativescript/core/color';
 import * as platform from '@nativescript/core/platform';
+import { Color } from '@nativescript/core';
 
 // >> date-picker-require
 import * as datePickerModule from '@nativescript/core/ui/date-picker';
 // << date-picker-require
 
 import * as helper from '../../ui-helper';
-import {Device} from "../../../../../packages/core";
 
 export function test_recycling() {
 	helper.nativeView_recycling_test(() => new datePickerModule.DatePicker());
@@ -80,7 +79,7 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
 		if (platform.Device.os === platform.platformNames.ios) {
 			const SUPPORT_TEXT_COLOR = parseFloat(platform.Device.osVersion) < 14.0;
 			if (SUPPORT_TEXT_COLOR) {
-				this.testView.color = new color.Color('red');
+				this.testView.color = new Color('red');
 				TKUnit.assertEqual(this.testView.color.ios.CGColor, this.testView.ios.valueForKey('textColor').CGColor, 'datePicker.color');
 			}
 		}

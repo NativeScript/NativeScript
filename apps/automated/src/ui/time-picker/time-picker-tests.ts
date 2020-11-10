@@ -1,9 +1,9 @@
 import * as TKUnit from '../../tk-unit';
 import * as testModule from '../../ui-test';
 import * as timePickerTestsNative from './time-picker-tests-native';
-import * as color from '@nativescript/core/color';
 import * as platform from '@nativescript/core/platform';
 import * as helper from '../../ui-helper';
+import { Color } from '@nativescript/core';
 
 // >> require-time-picker
 import * as timePickerModule from '@nativescript/core/ui/time-picker';
@@ -52,7 +52,7 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 		if (platform.Device.os === platform.platformNames.ios) {
 			const SUPPORT_TEXT_COLOR = parseFloat(platform.Device.osVersion) < 14.0;
 			if (SUPPORT_TEXT_COLOR) {
-				this.testView.color = new color.Color('red');
+				this.testView.color = new Color('red');
 				TKUnit.assertEqual(this.testView.color.ios.CGColor, this.testView.ios.valueForKey('textColor').CGColor, 'timePicker.color');
 			}
 		}
