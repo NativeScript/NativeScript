@@ -34,10 +34,6 @@ const invokeOnRunLoop = (function () {
 	};
 })();
 
-function NSRunOnLoop(fun) {
-	NSRunLoop.mainRunLoop.performBlock(fun);
-}
-
 @NativeClass
 class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
 	public static ObjCProtocols = [MDCTabBarDelegate];
@@ -1123,31 +1119,30 @@ export class Tabs extends TabsBase {
 			// do not make layout changes while the animation is in progress https://stackoverflow.com/a/47031524/613113
 			this.visitFrames(item, (frame) => (frame._animationInProgress = true));
 
+			const doneAnimating = () => {
+				this.visitFrames(item, (frame) => (frame._animationInProgress = false));
+
+				this._canSelectItem = true;
+				this._setCanBeLoaded(value);
+				this._loadUnloadTabItems(value);
+			};
+
 			invokeOnRunLoop(() =>
 				this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, this.animationEnabled, (finished: boolean) => {
 					if (finished) {
 						if (this.animationEnabled) {
 							// HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
 							// Prior Hack fails on iOS 10.3 during tests with v8 engine...
-							// Leaving the link in case we need to special case this for only iOS < 11?
+							// Leaving the above link in case we need to special case this for only iOS > 10.3?
 
 							// HACK: UIPageViewController fix; see https://stackoverflow.com/questions/15325891
 							invokeOnRunLoop(() => {
 								this.viewController.dataSource = null;
 								(<any>this.viewController).dataSource = this.viewController;
-
-								this.visitFrames(item, (frame) => (frame._animationInProgress = false));
-
-								this._canSelectItem = true;
-								this._setCanBeLoaded(value);
-								this._loadUnloadTabItems(value);
+								doneAnimating();
 							});
 						} else {
-							this.visitFrames(item, (frame) => (frame._animationInProgress = false));
-
-							this._canSelectItem = true;
-							this._setCanBeLoaded(value);
-							this._loadUnloadTabItems(value);
+							doneAnimating();
 						}
 					}
 				})
