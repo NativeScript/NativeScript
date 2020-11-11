@@ -18,7 +18,10 @@ export type TransformFunctionsInfo = {
 	scale: Pair;
 };
 
-export type AnimationPromise = Promise<void> & Cancelable;
+export interface AnimationPromise extends Promise<any>, Cancelable {
+	then(...args):AnimationPromise
+	catch(...args):AnimationPromise
+};
 
 export interface Pair {
 	x: number;

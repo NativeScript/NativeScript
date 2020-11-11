@@ -377,7 +377,7 @@ export class Tabs extends TabsBase {
 	private _tabsBar: org.nativescript.widgets.TabsBar;
 	private _viewPager: androidx.viewpager.widget.ViewPager;
 	private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
-	private _androidViewId: number = -1;
+	private _androidViewId = -1;
 	public _originalBackground: any;
 	private _textTransform: TextTransform = 'uppercase';
 	private _selectedItemColor: Color;
@@ -418,7 +418,7 @@ export class Tabs extends TabsBase {
 		const tabsBar = new TabsBar(context, this);
 		const lp = new org.nativescript.widgets.CommonLayoutParams();
 		const primaryColor = ad.resources.getPaletteColor(PRIMARY_COLOR, context);
-		let accentColor = getDefaultAccentColor(context);
+		const accentColor = getDefaultAccentColor(context);
 
 		lp.row = 1;
 
@@ -482,8 +482,8 @@ export class Tabs extends TabsBase {
 		const lastIndex = items.length - 1;
 		const offsideItems = this.offscreenTabLimit;
 
-		let toUnload = [];
-		let toLoad = [];
+		const toUnload = [];
+		const toLoad = [];
 
 		iterateIndexRange(newIndex, offsideItems, lastIndex, (i) => toLoad.push(i));
 
@@ -565,7 +565,7 @@ export class Tabs extends TabsBase {
 	private disposeCurrentFragments(): void {
 		const fragmentManager = this._getFragmentManager();
 		const transaction = fragmentManager.beginTransaction();
-		let fragments = <Array<any>>fragmentManager.getFragments().toArray();
+		const fragments = <Array<any>>fragmentManager.getFragments().toArray();
 		for (let i = 0; i < fragments.length; i++) {
 			transaction.remove(fragments[i]);
 		}
@@ -678,7 +678,7 @@ export class Tabs extends TabsBase {
 			tabItemSpec.backgroundColor = backgroundColor ? backgroundColor.android : this.getTabBarBackgroundArgbColor();
 
 			// COLOR
-			let itemColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
+			const itemColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
 			const color = itemColor || nestedLabel.style.color;
 			tabItemSpec.color = color && color.android;
 
@@ -938,7 +938,7 @@ export class Tabs extends TabsBase {
 	}
 
 	public setTabBarTextTransform(value: TextTransform): void {
-		let items = this.tabStrip && this.tabStrip.items;
+		const items = this.tabStrip && this.tabStrip.items;
 		if (items) {
 			items.forEach((tabStripItem) => {
 				if (tabStripItem.label && tabStripItem.nativeViewProtected) {

@@ -97,7 +97,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public _getItemTemplate(index: number): KeyedTemplate {
 		let templateKey = 'default';
 		if (this.itemTemplateSelector) {
-			let dataItem = this._getDataItem(index);
+			const dataItem = this._getDataItem(index);
 			templateKey = this._itemTemplateSelector(dataItem, index, this.items);
 		}
 
@@ -118,13 +118,13 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	}
 
 	private _getDataItem(index: number): any {
-		let thisItems = <ItemsSource>this.items;
+		const thisItems = <ItemsSource>this.items;
 
 		return thisItems.getItem ? thisItems.getItem(index) : thisItems[index];
 	}
 
 	public _getDefaultItemContent(index: number): View {
-		let lbl = new Label();
+		const lbl = new Label();
 		lbl.bind({
 			targetProperty: 'text',
 			sourceProperty: '$value',

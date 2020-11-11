@@ -16,7 +16,7 @@ export abstract class WebViewBase extends ContainerView {
 	public src: string;
 
 	public _onLoadFinished(url: string, error?: string) {
-		let args = <LoadEventData>{
+		const args = <LoadEventData>{
 			eventName: WebViewBase.loadFinishedEvent,
 			object: this,
 			url: url,
@@ -28,7 +28,7 @@ export abstract class WebViewBase extends ContainerView {
 	}
 
 	public _onLoadStarted(url: string, navigationType: WebViewNavigationType) {
-		let args = <LoadEventData>{
+		const args = <LoadEventData>{
 			eventName: WebViewBase.loadStartedEvent,
 			object: this,
 			url: url,

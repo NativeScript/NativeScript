@@ -1,5 +1,4 @@
-﻿//@private
-import { ViewBase } from '../core/view-base';
+﻿import { ViewBase } from '../core/view-base';
 import { SyntaxTree } from '../../css';
 import { RuleSet, Node, SelectorCore, ChangeMap } from '../styling/css-selector';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';

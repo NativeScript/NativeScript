@@ -1,7 +1,7 @@
 import * as http from '../http';
 import * as types from '../utils/types';
 
-module XMLHttpRequestResponseType {
+namespace XMLHttpRequestResponseType {
 	export const empty = '';
 	export const text = 'text';
 	export const json = 'json';
@@ -31,7 +31,7 @@ export class XMLHttpRequest {
 	private _headers: any;
 	private _errorFlag: boolean;
 	private _sendFlag: boolean;
-	private _responseType: string = '';
+	private _responseType = '';
 	private _overrideMimeType: string;
 
 	private _listeners: Map<string, Array<Function>> = new Map<string, Array<Function>>();
@@ -138,7 +138,7 @@ export class XMLHttpRequest {
 			this['on' + eventName](...args);
 		}
 
-		let handlers = this._listeners.get(eventName) || [];
+		const handlers = this._listeners.get(eventName) || [];
 		handlers.forEach((handler) => {
 			handler(...args);
 		});
@@ -173,7 +173,7 @@ export class XMLHttpRequest {
 			throw new Error('Event not supported: ' + eventName);
 		}
 
-		let handlers = this._listeners.get(eventName) || [];
+		const handlers = this._listeners.get(eventName) || [];
 		handlers.push(handler);
 		this._listeners.set(eventName, handlers);
 	}
@@ -278,7 +278,7 @@ export class XMLHttpRequest {
 
 		let result = '';
 
-		for (let i in this._headers) {
+		for (const i in this._headers) {
 			result += i + ': ' + this._headers[i] + '\r\n';
 		}
 
@@ -288,7 +288,7 @@ export class XMLHttpRequest {
 	public getResponseHeader(header: string): string {
 		if (types.isString(header) && this._readyState > 1 && this._headers && !this._errorFlag) {
 			header = header.toLowerCase();
-			for (let i in this._headers) {
+			for (const i in this._headers) {
 				if (i.toLowerCase() === header) {
 					return this._headers[i];
 				}
@@ -362,7 +362,7 @@ export class FormData {
 	}
 
 	toString(): string {
-		let arr = new Array<string>();
+		const arr = new Array<string>();
 
 		this._data.forEach(function (value, name, map) {
 			arr.push(`${encodeURIComponent(name)}=${encodeURIComponent(value)}`);
@@ -511,21 +511,21 @@ export class FileReader {
 	}
 
 	private _array2base64(input: Uint8Array): string {
-		var byteToCharMap = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+		const byteToCharMap = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
 
-		var output = [];
+		const output = [];
 
-		for (var i = 0; i < input.length; i += 3) {
-			var byte1 = input[i];
-			var haveByte2 = i + 1 < input.length;
-			var byte2 = haveByte2 ? input[i + 1] : 0;
-			var haveByte3 = i + 2 < input.length;
-			var byte3 = haveByte3 ? input[i + 2] : 0;
+		for (let i = 0; i < input.length; i += 3) {
+			const byte1 = input[i];
+			const haveByte2 = i + 1 < input.length;
+			const byte2 = haveByte2 ? input[i + 1] : 0;
+			const haveByte3 = i + 2 < input.length;
+			const byte3 = haveByte3 ? input[i + 2] : 0;
 
-			var outByte1 = byte1 >> 2;
-			var outByte2 = ((byte1 & 0x03) << 4) | (byte2 >> 4);
-			var outByte3 = ((byte2 & 0x0f) << 2) | (byte3 >> 6);
-			var outByte4 = byte3 & 0x3f;
+			const outByte1 = byte1 >> 2;
+			const outByte2 = ((byte1 & 0x03) << 4) | (byte2 >> 4);
+			let outByte3 = ((byte2 & 0x0f) << 2) | (byte3 >> 6);
+			let outByte4 = byte3 & 0x3f;
 
 			if (!haveByte3) {
 				outByte4 = 64;
@@ -560,7 +560,7 @@ export class FileReader {
 			this['on' + eventName](...args);
 		}
 
-		let handlers = this._listeners.get(eventName) || [];
+		const handlers = this._listeners.get(eventName) || [];
 		handlers.forEach((handler) => {
 			handler(...args);
 		});
@@ -571,7 +571,7 @@ export class FileReader {
 			throw new Error('Event not supported: ' + eventName);
 		}
 
-		let handlers = this._listeners.get(eventName) || [];
+		const handlers = this._listeners.get(eventName) || [];
 		handlers.push(handler);
 		this._listeners.set(eventName, handlers);
 	}

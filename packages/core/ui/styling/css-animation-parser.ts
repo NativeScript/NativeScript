@@ -21,7 +21,7 @@ export class CssAnimationParser {
 			return undefined;
 		}
 
-		let animations = new Array<KeyframeAnimationInfo>();
+		const animations = new Array<KeyframeAnimationInfo>();
 		let animationInfo: KeyframeAnimationInfo = undefined;
 
 		declarations.forEach(({ property, value }) => {
@@ -43,9 +43,9 @@ export class CssAnimationParser {
 	}
 
 	public static keyframesArrayFromCSS(keyframes: UnparsedKeyframe[]): KeyframeInfo[] {
-		let parsedKeyframes = new Array<KeyframeInfo>();
-		for (let keyframe of keyframes) {
-			let declarations = parseKeyframeDeclarations(keyframe.declarations);
+		const parsedKeyframes = new Array<KeyframeInfo>();
+		for (const keyframe of keyframes) {
+			const declarations = parseKeyframeDeclarations(keyframe.declarations);
 			for (let time of keyframe.values) {
 				if (time === 'from') {
 					time = 0;
@@ -66,7 +66,7 @@ export class CssAnimationParser {
 					current.duration = time;
 					parsedKeyframes[time] = current;
 				}
-				for (let declaration of keyframe.declarations) {
+				for (const declaration of keyframe.declarations) {
 					if (declaration.property === 'animation-timing-function') {
 						current.curve = animationTimingFunctionConverter(declaration.value);
 					}
@@ -74,8 +74,8 @@ export class CssAnimationParser {
 				current.declarations = declarations;
 			}
 		}
-		let array = new Array();
-		for (let parsedKeyframe in parsedKeyframes) {
+		const array = [];
+		for (const parsedKeyframe in parsedKeyframes) {
 			array.push(parsedKeyframes[parsedKeyframe]);
 		}
 		array.sort(function (a, b) {
@@ -88,10 +88,10 @@ export class CssAnimationParser {
 
 function keyframeAnimationsFromCSSProperty(value: any, animations: KeyframeAnimationInfo[]) {
 	if (typeof value === 'string') {
-		let values = value.split(/[,]+/);
-		for (let parsedValue of values) {
-			let animationInfo = new KeyframeAnimationInfo();
-			let arr = (<string>parsedValue).trim().split(/[ ]+/);
+		const values = value.split(/[,]+/);
+		for (const parsedValue of values) {
+			const animationInfo = new KeyframeAnimationInfo();
+			const arr = (<string>parsedValue).trim().split(/[ ]+/);
 
 			if (arr.length > 0) {
 				animationInfo.name = arr[0];

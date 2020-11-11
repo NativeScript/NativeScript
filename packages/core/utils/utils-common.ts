@@ -10,7 +10,7 @@ export const RESOURCE_PREFIX = 'res://';
 export const FILE_PREFIX = 'file:///';
 
 export function escapeRegexSymbols(source: string): string {
-	let escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
+	const escapeRegex = /[-[]\/{}()*+?.\\^$|]/g;
 
 	return source.replace(escapeRegex, '\\$&');
 }
@@ -36,7 +36,7 @@ export function convertString(value: any): any {
 }
 
 export function getModuleName(path: string): string {
-	let moduleName = path.replace('./', '');
+	const moduleName = path.replace('./', '');
 
 	return sanitizeModuleName(moduleName);
 }
@@ -86,7 +86,7 @@ export function mergeSort(arr, compareFunc) {
 }
 
 export function merge(left, right, compareFunc) {
-	let result = [];
+	const result = [];
 	while (left.length && right.length) {
 		if (compareFunc(left[0], right[0]) <= 0) {
 			result.push(left.shift());
@@ -123,8 +123,8 @@ export function executeOnMainThread(func: Function) {
 }
 
 export function mainThreadify(func: Function): (...args: any[]) => void {
-	return function () {
-		const argsToPass = arguments;
+	return function (...args) {
+		const argsToPass = args;
 		executeOnMainThread(() => func.apply(this, argsToPass));
 	};
 }

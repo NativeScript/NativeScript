@@ -86,7 +86,7 @@ export function removeCallback(id: number) {
 
 function notify(fps) {
 	let callback: Function;
-	for (let id in callbacks) {
+	for (const id in callbacks) {
 		callback = callbacks[id];
 		callback(fps, _minFps);
 	}

@@ -41,7 +41,7 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
 	private _owner: WeakRef<Tabs>;
 
 	public static initWithOwner(owner: WeakRef<Tabs>): MDCTabBarDelegateImpl {
-		let delegate = <MDCTabBarDelegateImpl>MDCTabBarDelegateImpl.new();
+		const delegate = <MDCTabBarDelegateImpl>MDCTabBarDelegateImpl.new();
 		delegate._owner = owner;
 
 		return delegate;
@@ -85,7 +85,7 @@ class BackgroundIndicatorTemplate extends NSObject implements MDCTabBarIndicator
 	public static ObjCProtocols = [MDCTabBarIndicatorTemplate];
 
 	public indicatorAttributesForContext(context: MDCTabBarIndicatorContext): MDCTabBarIndicatorAttributes {
-		let attributes = new MDCTabBarIndicatorAttributes();
+		const attributes = new MDCTabBarIndicatorAttributes();
 		attributes.path = UIBezierPath.bezierPathWithRect(context.bounds);
 
 		return attributes;
@@ -179,7 +179,7 @@ class UIPageViewControllerImpl extends UIPageViewController {
 			scrollViewTop = this.tabBar.frame.size.height;
 			scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + safeAreaInsetsBottom;
 			let tabBarTop = safeAreaInsetsTop;
-			let tabBarHeight = this.tabBar.frame.size.height;
+			const tabBarHeight = this.tabBar.frame.size.height;
 
 			const tabsPosition = owner.tabsPosition;
 			if (tabsPosition === 'bottom') {
@@ -269,7 +269,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
 	private _owner: WeakRef<Tabs>;
 
 	public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerDataSourceImpl {
-		let dataSource = <UIPageViewControllerDataSourceImpl>UIPageViewControllerDataSourceImpl.new();
+		const dataSource = <UIPageViewControllerDataSourceImpl>UIPageViewControllerDataSourceImpl.new();
 		dataSource._owner = owner;
 
 		return dataSource;
@@ -290,7 +290,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
 
 		selectedIndex--;
 		const prevItem = owner.items[selectedIndex];
-		let prevViewController = (<any>prevItem).__controller;
+		const prevViewController = (<any>prevItem).__controller;
 
 		// if (!prevViewController) {
 		//     prevViewController = owner.getViewController(prevItem);
@@ -317,7 +317,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
 
 		selectedIndex++;
 		const nextItem = owner.items[selectedIndex];
-		let nextViewController = (<any>nextItem).__controller;
+		const nextViewController = (<any>nextItem).__controller;
 
 		// if (!nextViewController) {
 		//     nextViewController = owner.getViewController(nextItem);
@@ -356,7 +356,7 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
 	private _owner: WeakRef<Tabs>;
 
 	public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerDelegateImpl {
-		let delegate = <UIPageViewControllerDelegateImpl>UIPageViewControllerDelegateImpl.new();
+		const delegate = <UIPageViewControllerDelegateImpl>UIPageViewControllerDelegateImpl.new();
 		delegate._owner = owner;
 
 		return delegate;
@@ -404,7 +404,7 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
 function updateBackgroundPositions(tabStrip: TabStrip, tabStripItem: TabStripItem, color: UIColor = null) {
 	let bgView = (<any>tabStripItem).bgView;
 	const index = tabStripItem._index;
-	let width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
+	const width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
 	const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
 	if (!bgView) {
 		bgView = UIView.alloc().initWithFrame(frame);
@@ -594,8 +594,8 @@ export class Tabs extends TabsBase {
 		const lastIndex = items.length - 1;
 		const offsideItems = this.offscreenTabLimit;
 
-		let toUnload = [];
-		let toLoad = [];
+		const toUnload = [];
+		const toLoad = [];
 
 		iterateIndexRange(newIndex, offsideItems, lastIndex, (i) => toLoad.push(i));
 
@@ -894,7 +894,7 @@ export class Tabs extends TabsBase {
 
 		UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
 		image.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
-		let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+		const resultImage = UIGraphicsGetImageFromCurrentImageContext();
 		UIGraphicsEndImageContext();
 
 		return resultImage;
@@ -940,7 +940,7 @@ export class Tabs extends TabsBase {
 			return;
 		}
 
-		let newColor = value instanceof Color ? value.ios : value;
+		const newColor = value instanceof Color ? value.ios : value;
 		const itemSelectedAndHighlighted = this.isSelectedAndHightlightedItem(tabStripItem);
 
 		// As we cannot implement selected item background color in Tabs we are using the Indicator for this
@@ -979,7 +979,7 @@ export class Tabs extends TabsBase {
 		}
 	}
 
-	private setIconColor(tabStripItem: TabStripItem, forceReload: boolean = false): void {
+	private setIconColor(tabStripItem: TabStripItem, forceReload = false): void {
 		// if there is no change in the css color and there is no item color set
 		// we don't need to reload the icon
 		if (!forceReload && !this._selectedItemColor && !this._unSelectedItemColor) {
@@ -1100,7 +1100,7 @@ export class Tabs extends TabsBase {
 			const item = this.items[value];
 			const controllers = NSMutableArray.alloc<UIViewController>().initWithCapacity(1);
 
-			let itemController = (<any>item).__controller;
+			const itemController = (<any>item).__controller;
 
 			// if (!itemController) {
 			//     itemController = this.getViewController(item);
@@ -1193,7 +1193,7 @@ export class Tabs extends TabsBase {
 			return 'justified';
 		}
 
-		let alignment = this.viewController.tabBar.alignment.toString();
+		const alignment = this.viewController.tabBar.alignment.toString();
 
 		return <any>(alignment.charAt(0).toLowerCase() + alignment.substring(1));
 	}
@@ -1218,7 +1218,7 @@ export class Tabs extends TabsBase {
 		this.viewController.tabBar.alignment = alignment;
 	}
 
-	private setViewTextAttributes(view: View, setSelected: boolean = false): any {
+	private setViewTextAttributes(view: View, setSelected = false): any {
 		if (!view) {
 			return null;
 		}

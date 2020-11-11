@@ -8,7 +8,7 @@ import { EventData } from '../../data/observable';
 
 @CSSType('ScrollView')
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
-	private _scrollChangeCount: number = 0;
+	private _scrollChangeCount = 0;
 	public static scrollEvent = 'scroll';
 
 	public orientation: Orientation;

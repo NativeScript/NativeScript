@@ -106,7 +106,7 @@ export namespace PercentLength {
 		}
 		if (typeof fromValue === 'string') {
 			let stringValue = fromValue.trim();
-			let percentIndex = stringValue.indexOf('%');
+			const percentIndex = stringValue.indexOf('%');
 			if (percentIndex !== -1) {
 				let value: percent;
 				// if only % or % is not last we treat it as invalid value.
@@ -124,14 +124,14 @@ export namespace PercentLength {
 				return { unit: '%', value };
 			} else if (stringValue.indexOf('px') !== -1) {
 				stringValue = stringValue.replace('px', '').trim();
-				let value: px = parseFloat(stringValue);
+				const value: px = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${fromValue}`);
 				}
 
 				return { unit: 'px', value };
 			} else {
-				let value: dip = parseFloat(stringValue);
+				const value: dip = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${fromValue}`);
 				}
@@ -164,14 +164,14 @@ export namespace Length {
 			let stringValue = fromValue.trim();
 			if (stringValue.indexOf('px') !== -1) {
 				stringValue = stringValue.replace('px', '').trim();
-				let value: px = parseFloat(stringValue);
+				const value: px = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${stringValue}`);
 				}
 
 				return { unit: 'px', value };
 			} else {
-				let value: dip = parseFloat(stringValue);
+				const value: dip = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${stringValue}`);
 				}
@@ -409,10 +409,10 @@ paddingBottomProperty.register(Style);
 
 export type HorizontalAlignment = 'left' | 'center' | 'right' | 'stretch';
 export namespace HorizontalAlignment {
-	export const LEFT: 'left' = 'left';
-	export const CENTER: 'center' = 'center';
-	export const RIGHT: 'right' = 'right';
-	export const STRETCH: 'stretch' = 'stretch';
+	export const LEFT = 'left';
+	export const CENTER = 'center';
+	export const RIGHT = 'right';
+	export const STRETCH = 'stretch';
 	export const isValid = makeValidator<HorizontalAlignment>(LEFT, CENTER, RIGHT, STRETCH);
 	export const parse = makeParser<HorizontalAlignment>(isValid);
 }
@@ -428,15 +428,15 @@ horizontalAlignmentProperty.register(Style);
 
 export type VerticalAlignment = 'top' | 'middle' | 'bottom' | 'stretch' | 'text-top' | 'text-bottom' | 'super' | 'sub' | 'baseline';
 export namespace VerticalAlignment {
-	export const TOP: 'top' = 'top';
-	export const MIDDLE: 'middle' = 'middle';
-	export const BOTTOM: 'bottom' = 'bottom';
-	export const STRETCH: 'stretch' = 'stretch';
-	export const TEXTTOP: 'text-top' = 'text-top';
-	export const TEXTBOTTOM: 'text-bottom' = 'text-bottom';
-	export const SUPER: 'super' = 'super';
-	export const SUB: 'sub' = 'sub';
-	export const BASELINE: 'baseline' = 'baseline';
+	export const TOP = 'top';
+	export const MIDDLE = 'middle';
+	export const BOTTOM = 'bottom';
+	export const STRETCH = 'stretch';
+	export const TEXTTOP = 'text-top';
+	export const TEXTBOTTOM = 'text-bottom';
+	export const SUPER = 'super';
+	export const SUB = 'sub';
+	export const BASELINE = 'baseline';
 	export const isValid = makeValidator<VerticalAlignment>(TOP, MIDDLE, BOTTOM, STRETCH, TEXTTOP, TEXTBOTTOM, SUPER, SUB, BASELINE);
 	export const parse = (value: string) => (value.toLowerCase() === 'center' ? MIDDLE : parseStrict(value));
 	const parseStrict = makeParser<VerticalAlignment>(isValid);
@@ -460,7 +460,7 @@ interface Thickness {
 
 function parseThickness(value: string): Thickness {
 	if (typeof value === 'string') {
-		let arr = value.split(/[ ,]+/);
+		const arr = value.split(/[ ,]+/);
 
 		let top: string;
 		let right: string;
@@ -504,7 +504,7 @@ function parseThickness(value: string): Thickness {
 
 function convertToMargins(this: void, value: string | PercentLength): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
-		let thickness = parseThickness(value);
+		const thickness = parseThickness(value);
 
 		return [
 			[marginTopProperty, PercentLength.parse(thickness.top)],
@@ -524,7 +524,7 @@ function convertToMargins(this: void, value: string | PercentLength): [CssProper
 
 function convertToPaddings(this: void, value: string | Length): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
-		let thickness = parseThickness(value);
+		const thickness = parseThickness(value);
 
 		return [
 			[paddingTopProperty, Length.parse(thickness.top)],
@@ -618,13 +618,13 @@ const transformProperty = new ShorthandProperty<Style, string>({
 	name: 'transform',
 	cssName: 'transform',
 	getter: function (this: Style) {
-		let scaleX = this.scaleX;
-		let scaleY = this.scaleY;
-		let translateX = this.translateX;
-		let translateY = this.translateY;
-		let rotate = this.rotate;
-		let rotateX = this.rotateX;
-		let rotateY = this.rotateY;
+		const scaleX = this.scaleX;
+		const scaleY = this.scaleY;
+		const translateX = this.translateX;
+		const translateY = this.translateY;
+		const rotate = this.rotate;
+		const rotateX = this.rotateX;
+		const rotateY = this.rotateY;
 		let result = '';
 		if (translateX !== 0 || translateY !== 0) {
 			result += `translate(${translateX}, ${translateY}) `;
@@ -749,7 +749,7 @@ export function transformConverter(text: string): TransformFunctionsInfo {
 // properties is faster than using more specific regex
 // https://jsperf.com/cssparse
 function parseTransformString(text: string): Transformation[] {
-	let matches: Transformation[] = [];
+	const matches: Transformation[] = [];
 	let match;
 
 	while ((match = TRANSFORM_SPLITTER.exec(text)) !== null) {
@@ -839,10 +839,10 @@ backgroundColorProperty.register(Style);
 
 export type BackgroundRepeat = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
 export namespace BackgroundRepeat {
-	export const REPEAT: 'repeat' = 'repeat';
-	export const REPEAT_X: 'repeat-x' = 'repeat-x';
-	export const REPEAT_Y: 'repeat-y' = 'repeat-y';
-	export const NO_REPEAT: 'no-repeat' = 'no-repeat';
+	export const REPEAT = 'repeat';
+	export const REPEAT_X = 'repeat-x';
+	export const REPEAT_Y = 'repeat-y';
+	export const NO_REPEAT = 'no-repeat';
 	export const isValid = makeValidator<BackgroundRepeat>(REPEAT, REPEAT_X, REPEAT_Y, NO_REPEAT);
 	export const parse = makeParser<BackgroundRepeat>(isValid);
 }
@@ -910,7 +910,7 @@ function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>
 }
 
 function parseBorderColor(value: string): { top: Color; right: Color; bottom: Color; left: Color } {
-	let result: { top: Color; right: Color; bottom: Color; left: Color } = {
+	const result: { top: Color; right: Color; bottom: Color; left: Color } = {
 		top: undefined,
 		right: undefined,
 		bottom: undefined,
@@ -922,33 +922,33 @@ function parseBorderColor(value: string): { top: Color; right: Color; bottom: Co
 		return result;
 	}
 
-	let arr = value.split(/[ ,]+/);
+	const arr = value.split(/[ ,]+/);
 	if (arr.length === 1) {
-		let arr0 = new Color(arr[0]);
+		const arr0 = new Color(arr[0]);
 		result.top = arr0;
 		result.right = arr0;
 		result.bottom = arr0;
 		result.left = arr0;
 	} else if (arr.length === 2) {
-		let arr0 = new Color(arr[0]);
-		let arr1 = new Color(arr[1]);
+		const arr0 = new Color(arr[0]);
+		const arr1 = new Color(arr[1]);
 		result.top = arr0;
 		result.right = arr1;
 		result.bottom = arr0;
 		result.left = arr1;
 	} else if (arr.length === 3) {
-		let arr0 = new Color(arr[0]);
-		let arr1 = new Color(arr[1]);
-		let arr2 = new Color(arr[2]);
+		const arr0 = new Color(arr[0]);
+		const arr1 = new Color(arr[1]);
+		const arr2 = new Color(arr[2]);
 		result.top = arr0;
 		result.right = arr1;
 		result.bottom = arr2;
 		result.left = arr1;
 	} else if (arr.length === 4) {
-		let arr0 = new Color(arr[0]);
-		let arr1 = new Color(arr[1]);
-		let arr2 = new Color(arr[2]);
-		let arr3 = new Color(arr[3]);
+		const arr0 = new Color(arr[0]);
+		const arr1 = new Color(arr[1]);
+		const arr2 = new Color(arr[2]);
+		const arr3 = new Color(arr[3]);
 		result.top = arr0;
 		result.right = arr1;
 		result.bottom = arr2;
@@ -973,7 +973,7 @@ const borderColorProperty = new ShorthandProperty<Style, string | Color>({
 	},
 	converter: function (value) {
 		if (typeof value === 'string') {
-			let fourColors = parseBorderColor(value);
+			const fourColors = parseBorderColor(value);
 
 			return [
 				[borderTopColorProperty, fourColors.top],
@@ -1054,7 +1054,7 @@ const borderWidthProperty = new ShorthandProperty<Style, string | Length>({
 	},
 	converter: function (value) {
 		if (typeof value === 'string' && value !== 'auto') {
-			let borderWidths = parseThickness(value);
+			const borderWidths = parseThickness(value);
 
 			return [
 				[borderTopWidthProperty, borderWidths.top],
@@ -1081,7 +1081,7 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1106,7 +1106,7 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1131,7 +1131,7 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1156,7 +1156,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1187,7 +1187,7 @@ const borderRadiusProperty = new ShorthandProperty<Style, string | Length>({
 	},
 	converter: function (value) {
 		if (typeof value === 'string') {
-			let borderRadius = parseThickness(value);
+			const borderRadius = parseThickness(value);
 
 			return [
 				[borderTopLeftRadiusProperty, borderRadius.top],
@@ -1213,7 +1213,7 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, Length>({
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-top-left-radius should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1230,7 +1230,7 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, Length>({
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-top-right-radius should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1247,7 +1247,7 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, Length>({
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-bottom-right-radius should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1264,7 +1264,7 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, Length>({
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-bottom-left-radius should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1279,12 +1279,12 @@ function isNonNegativeFiniteNumber(value: number): boolean {
 	return isFinite(value) && !isNaN(value) && value >= 0;
 }
 
-let supportedPaths = ['rect', 'circle', 'ellipse', 'polygon', 'inset'];
+const supportedPaths = ['rect', 'circle', 'ellipse', 'polygon', 'inset'];
 function isClipPathValid(value: string): boolean {
 	if (!value) {
 		return true;
 	}
-	let functionName = value.substring(0, value.indexOf('(')).trim();
+	const functionName = value.substring(0, value.indexOf('(')).trim();
 
 	return supportedPaths.indexOf(functionName) !== -1;
 }
@@ -1304,7 +1304,7 @@ export const clipPathProperty = new CssProperty<Style, string>({
 clipPathProperty.register(Style);
 
 function isFloatValueConverter(value: string): number {
-	let newValue = parseFloat(value);
+	const newValue = parseFloat(value);
 	if (isNaN(newValue)) {
 		throw new Error(`Invalid value: ${newValue}`);
 	}
@@ -1320,7 +1320,7 @@ export const zIndexProperty = new CssProperty<Style, number>({
 zIndexProperty.register(Style);
 
 function opacityConverter(value: any): number {
-	let newValue = parseFloat(value);
+	const newValue = parseFloat(value);
 	if (!isNaN(newValue) && 0 <= newValue && newValue <= 1) {
 		return newValue;
 	}
@@ -1355,7 +1355,7 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 	cssName: 'font-family',
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		let currentFont = target.fontInternal || Font.default;
+		const currentFont = target.fontInternal || Font.default;
 		if (currentFont.fontFamily !== newValue) {
 			const newFont = currentFont.withFontFamily(newValue);
 			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
@@ -1372,7 +1372,7 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 		if (target.viewRef['handleFontSize'] === true) {
 			return;
 		}
-		let currentFont = target.fontInternal || Font.default;
+		const currentFont = target.fontInternal || Font.default;
 		if (currentFont.fontSize !== newValue) {
 			const newFont = currentFont.withFontSize(newValue);
 			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
@@ -1389,7 +1389,7 @@ export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
 	defaultValue: FontStyle.NORMAL,
 	valueConverter: FontStyle.parse,
 	valueChanged: (target, oldValue, newValue) => {
-		let currentFont = target.fontInternal || Font.default;
+		const currentFont = target.fontInternal || Font.default;
 		if (currentFont.fontStyle !== newValue) {
 			const newFont = currentFont.withFontStyle(newValue);
 			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
@@ -1405,7 +1405,7 @@ export const fontWeightProperty = new InheritedCssProperty<Style, FontWeight>({
 	defaultValue: FontWeight.NORMAL,
 	valueConverter: FontWeight.parse,
 	valueChanged: (target, oldValue, newValue) => {
-		let currentFont = target.fontInternal || Font.default;
+		const currentFont = target.fontInternal || Font.default;
 		if (currentFont.fontWeight !== newValue) {
 			const newFont = currentFont.withFontWeight(newValue);
 			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
@@ -1445,9 +1445,9 @@ fontProperty.register(Style);
 
 export type Visibility = 'visible' | 'hidden' | 'collapse';
 export namespace Visibility {
-	export const VISIBLE: 'visible' = 'visible';
-	export const HIDDEN: 'hidden' = 'hidden';
-	export const COLLAPSE: 'collapse' = 'collapse';
+	export const VISIBLE = 'visible';
+	export const HIDDEN = 'hidden';
+	export const COLLAPSE = 'collapse';
 	export const isValid = makeValidator<Visibility>(VISIBLE, HIDDEN, COLLAPSE);
 	export const parse = (value: string) => (value.toLowerCase() === 'collapsed' ? COLLAPSE : parseStrict(value));
 	const parseStrict = makeParser<Visibility>(isValid);

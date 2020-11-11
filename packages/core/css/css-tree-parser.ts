@@ -9,7 +9,7 @@ function mapSelectors(selector: string): string[] {
 }
 
 function mapPosition(node, css) {
-	let res: any = {
+	const res: any = {
 		start: {
 			line: node.loc.start.line,
 			column: node.loc.start.column,
@@ -47,7 +47,7 @@ function transformAst(node, css, type = null) {
 	}
 
 	if (node.type === 'Atrule') {
-		let atrule: any = {
+		const atrule: any = {
 			type: node.name,
 		};
 
@@ -86,9 +86,9 @@ function transformAst(node, css, type = null) {
 	}
 
 	if (node.type === 'Rule') {
-		let value = node.prelude.value;
+		const value = node.prelude.value;
 
-		let res: any = {
+		const res: any = {
 			type: type != null ? type : 'rule',
 			declarations: transformAst(node.block, css),
 			position: mapPosition(node, css),
@@ -128,8 +128,8 @@ function transformAst(node, css, type = null) {
 }
 
 export function cssTreeParse(css, source): any {
-	let errors = [];
-	let ast = parse(css, {
+	const errors = [];
+	const ast = parse(css, {
 		parseValue: false,
 		parseAtrulePrelude: false,
 		parseRulePrelude: false,

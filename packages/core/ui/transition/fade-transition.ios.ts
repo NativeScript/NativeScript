@@ -2,8 +2,8 @@
 
 export class FadeTransition extends Transition {
 	public animateIOSTransition(containerView: UIView, fromView: UIView, toView: UIView, operation: UINavigationControllerOperation, completion: (finished: boolean) => void): void {
-		let originalToViewAlpha = toView.alpha;
-		let originalFromViewAlpha = fromView.alpha;
+		const originalToViewAlpha = toView.alpha;
+		const originalFromViewAlpha = fromView.alpha;
 
 		toView.alpha = 0.0;
 		fromView.alpha = 1.0;
@@ -17,8 +17,8 @@ export class FadeTransition extends Transition {
 				break;
 		}
 
-		let duration = this.getDuration();
-		let curve = this.getCurve();
+		const duration = this.getDuration();
+		const curve = this.getCurve();
 		UIView.animateWithDurationAnimationsCompletion(
 			duration,
 			() => {

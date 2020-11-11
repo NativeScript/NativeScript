@@ -37,7 +37,7 @@ class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecog
 		return false;
 	}
 }
-let recognizerDelegateInstance: UIGestureRecognizerDelegateImpl = <UIGestureRecognizerDelegateImpl>UIGestureRecognizerDelegateImpl.new();
+const recognizerDelegateInstance: UIGestureRecognizerDelegateImpl = <UIGestureRecognizerDelegateImpl>UIGestureRecognizerDelegateImpl.new();
 
 @NativeClass
 class UIGestureRecognizerImpl extends NSObject {
@@ -248,9 +248,9 @@ export class GesturesObserver extends GesturesObserverBase {
 
 	private _detach() {
 		if (this.target && this.target.nativeViewProtected) {
-			for (let name in this._recognizers) {
+			for (const name in this._recognizers) {
 				if (this._recognizers.hasOwnProperty(name)) {
-					let item = <RecognizerCache>this._recognizers[name];
+					const item = <RecognizerCache>this._recognizers[name];
 					this.target.nativeViewProtected.removeGestureRecognizer(item.recognizer);
 
 					item.recognizer = null;
@@ -591,7 +591,7 @@ class TouchGestureEventData implements TouchGestureEventData {
 		if (!this._allPointers) {
 			this._allPointers = [];
 
-			let nsArr = this.ios.event.allTouches.allObjects;
+			const nsArr = this.ios.event.allTouches.allObjects;
 			for (let i = 0; i < nsArr.count; i++) {
 				this._allPointers.push(new Pointer(nsArr.objectAtIndex(i), this.view));
 			}

@@ -15,7 +15,7 @@ export class ContentView extends CustomLayoutView implements AddChildFromBuilder
 		return this._content;
 	}
 	set content(value: View) {
-		let oldView = this._content;
+		const oldView = this._content;
 		if (this._content) {
 			this._removeView(this._content);
 		}

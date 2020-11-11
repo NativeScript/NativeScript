@@ -36,7 +36,7 @@ function ensureStyleScopeModule() {
 	}
 }
 
-let defaultBindingSource = {};
+const defaultBindingSource = {};
 
 export interface ShowModalOptions {
 	/**
@@ -47,7 +47,7 @@ export interface ShowModalOptions {
 	/**
 	 * A function that will be called when the view is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
 	 */
-	closeCallback: Function;
+	closeCallback: (...args)=>void;
 
 	/**
 	 * An optional parameter specifying whether to show the modal view in full-screen mode.
@@ -94,7 +94,7 @@ export interface ShowModalOptions {
 	cancelable?: boolean;
 }
 
-export function getAncestor(view: ViewBaseDefinition, criterion: string | Function): ViewBaseDefinition {
+export function getAncestor(view: ViewBaseDefinition, criterion: string | { new() }): ViewBaseDefinition {
 	let matcher: (view: ViewBaseDefinition) => boolean = null;
 	if (typeof criterion === 'string') {
 		matcher = (view: ViewBaseDefinition) => view.typeName === criterion;
@@ -143,7 +143,7 @@ export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewB
 	}
 
 	let continueIteration: boolean;
-	let localCallback = function (child: ViewBaseDefinition): boolean {
+	const localCallback = function (child: ViewBaseDefinition): boolean {
 		continueIteration = callback(child);
 		if (continueIteration) {
 			child.eachChild(localCallback);
@@ -216,8 +216,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public static unloadedEvent = 'unloaded';
 	public static createdEvent = 'created';
 
-	private _onLoadedCalled: boolean = false;
-	private _onUnloadedCalled: boolean = false;
+	private _onLoadedCalled = false;
+	private _onUnloadedCalled = false;
 	private _iosView: Object;
 	private _androidView: Object;
 	private _style: Style;
@@ -527,7 +527,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	@profile
 	public addPseudoClass(name: string): void {
-		let allStates = this.getAllAliasedStates(name);
+		const allStates = this.getAllAliasedStates(name);
 		for (let i = 0; i < allStates.length; i++) {
 			if (!this.cssPseudoClasses.has(allStates[i])) {
 				this.cssPseudoClasses.add(allStates[i]);
@@ -538,7 +538,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	@profile
 	public deletePseudoClass(name: string): void {
-		let allStates = this.getAllAliasedStates(name);
+		const allStates = this.getAllAliasedStates(name);
 		for (let i = 0; i < allStates.length; i++) {
 			if (this.cssPseudoClasses.has(allStates[i])) {
 				this.cssPseudoClasses.delete(allStates[i]);
@@ -999,7 +999,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		} else {
 			str += `(${this._domId})`;
 		}
-		let source = Source.get(this);
+		const source = Source.get(this);
 		if (source) {
 			str += `@${source};`;
 		}

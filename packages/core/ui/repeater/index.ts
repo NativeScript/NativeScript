@@ -155,7 +155,7 @@ export class Repeater extends CustomLayoutView {
 	}
 
 	private _getDataItem(index: number): any {
-		let items = <ItemsSource>this.items;
+		const items = <ItemsSource>this.items;
 
 		return items.getItem ? items.getItem(index) : this.items[index];
 	}

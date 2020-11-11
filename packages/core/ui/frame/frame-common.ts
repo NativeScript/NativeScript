@@ -282,6 +282,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	private isNestedWithin(parentFrameCandidate: FrameBase): boolean {
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		let frameAncestor: FrameBase = this;
 		while (frameAncestor) {
 			frameAncestor = <FrameBase>getAncestor(frameAncestor, FrameBase);
@@ -565,7 +566,7 @@ export class FrameBase extends CustomLayoutView {
 		let i = length - 1;
 		console.log(`Frame Back Stack: `);
 		while (i >= 0) {
-			let backstackEntry = <BackstackEntry>this.backStack[i--];
+			const backstackEntry = <BackstackEntry>this.backStack[i--];
 			console.log(`\t${backstackEntry.resolvedPage}`);
 		}
 	}

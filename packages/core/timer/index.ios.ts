@@ -15,7 +15,7 @@ class TimerTargetImpl extends NSObject {
 	private shouldRepeat: boolean;
 
 	public static initWithCallback(callback: Function, id: number, shouldRepeat: boolean): TimerTargetImpl {
-		let handler = <TimerTargetImpl>TimerTargetImpl.new();
+		const handler = <TimerTargetImpl>TimerTargetImpl.new();
 		handler.callback = callback;
 		handler.id = id;
 		handler.shouldRepeat = shouldRepeat;
@@ -37,7 +37,7 @@ class TimerTargetImpl extends NSObject {
 		if (!this.disposed) {
 			this.disposed = true;
 
-			let timer = timeoutCallbacks.get(this.id).k;
+			const timer = timeoutCallbacks.get(this.id).k;
 			timer.invalidate();
 			timeoutCallbacks.delete(this.id);
 		}
@@ -53,14 +53,14 @@ function createTimerAndGetId(callback: Function, milliseconds: number, shouldRep
 	milliseconds += 0;
 
 	timerId++;
-	let id = timerId;
-	let timerTarget = TimerTargetImpl.initWithCallback(callback, id, shouldRepeat);
-	let timer = NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(milliseconds / 1000, timerTarget, 'tick', null, shouldRepeat);
+	const id = timerId;
+	const timerTarget = TimerTargetImpl.initWithCallback(callback, id, shouldRepeat);
+	const timer = NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(milliseconds / 1000, timerTarget, 'tick', null, shouldRepeat);
 
 	// https://github.com/NativeScript/NativeScript/issues/2116
 	NSRunLoop.currentRunLoop.addTimerForMode(timer, NSRunLoopCommonModes);
 
-	let pair: KeyValuePair<NSTimer, TimerTargetImpl> = {
+	const pair: KeyValuePair<NSTimer, TimerTargetImpl> = {
 		k: timer,
 		v: timerTarget,
 	};
@@ -70,20 +70,20 @@ function createTimerAndGetId(callback: Function, milliseconds: number, shouldRep
 }
 
 export function setTimeout(callback: Function, milliseconds = 0, ...args): number {
-	let invoke = () => callback(...args);
+	const invoke = () => callback(...args);
 
 	return createTimerAndGetId(zonedCallback(invoke), milliseconds, false);
 }
 
 export function clearTimeout(id: number): void {
-	let pair = timeoutCallbacks.get(<number>(<any>id));
+	const pair = timeoutCallbacks.get(<number>(<any>id));
 	if (pair) {
 		pair.v.unregister();
 	}
 }
 
 export function setInterval(callback: Function, milliseconds = 0, ...args): number {
-	let invoke = () => callback(...args);
+	const invoke = () => callback(...args);
 
 	return createTimerAndGetId(zonedCallback(invoke), milliseconds, true);
 }

@@ -2,6 +2,7 @@
 // https://github.com/NativeScript/nativescript-dev-webpack/issues/932
 
 import * as definition from '.';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const easysax = require('../js-libs/easysax');
 import { EasySAXParser } from '../js-libs/easysax';
 
@@ -388,7 +389,7 @@ function _generateAmpMap(): any {
 		Square: 9633,
 	};
 	const ampCodes = new Map();
-	for (let key in objCodes) {
+	for (const key in objCodes) {
 		if (objCodes.hasOwnProperty(key)) {
 			ampCodes.set(key, objCodes[key]);
 		}
@@ -443,7 +444,7 @@ export class XmlParser implements definition.XmlParser {
 			}
 
 			if (attributes) {
-				for (let key in attributes) {
+				for (const key in attributes) {
 					if (attributes.hasOwnProperty(key)) {
 						// Convert entities such as &gt; to >
 						attributes[key] = XmlParser._dereferenceEntities(attributes[key]);
@@ -532,7 +533,7 @@ export class XmlParser implements definition.XmlParser {
 
 		let attributeName;
 		let namespacePrefix;
-		for (let key in attributes) {
+		for (const key in attributes) {
 			if (!attributes.hasOwnProperty(key)) {
 				continue;
 			}
@@ -573,7 +574,7 @@ export class XmlParser implements definition.XmlParser {
 		for (let i = this._namespaceStack.length - 1; i >= 0; i--) {
 			stackEntry = this._namespaceStack[i];
 
-			for (let key in stackEntry) {
+			for (const key in stackEntry) {
 				if (!stackEntry.hasOwnProperty(key)) {
 					continue;
 				}
