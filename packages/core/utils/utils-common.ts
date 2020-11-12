@@ -11,7 +11,7 @@ export const RESOURCE_PREFIX = 'res://';
 export const FILE_PREFIX = 'file:///';
 
 export function escapeRegexSymbols(source: string): string {
-	const escapeRegex = /[-[]\/{}()*+?.\\^$|]/g;
+	const escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
 
 	return source.replace(escapeRegex, '\\$&');
 }
