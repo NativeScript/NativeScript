@@ -1,4 +1,4 @@
-import { Trace } from 'trace';
+import { Trace } from '../trace';
 import { dispatchToMainThread } from './mainthread-helper';
 
 let scheduled = false;
