@@ -1,3 +1,4 @@
+/* eslint-disable prefer-rest-params */
 declare let __startCPUProfiler: any;
 declare let __stopCPUProfiler: any;
 
@@ -98,10 +99,10 @@ export function isRunning(name: string): boolean {
 function countersProfileFunctionFactory<F extends Function>(fn: F, name: string, type: MemberType = MemberType.Instance): F {
 	profileNames.push(name);
 
-	return <any>function (...args) {
+	return <any>function () {
 		start(name);
 		try {
-			return fn(...args);
+			return fn.apply(this, arguments);
 		} finally {
 			stop(name);
 		}
@@ -110,19 +111,19 @@ function countersProfileFunctionFactory<F extends Function>(fn: F, name: string,
 
 function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string, type: MemberType = MemberType.Instance): F {
 	return type === MemberType.Instance
-		? <any>function (...args) {
+		? <any>function () {
 				const start = time();
 				try {
-					return fn(...args);
+					return fn.apply(this, arguments);
 				} finally {
 					const end = time();
 					console.log(`Timeline: Modules: ${name} ${this}  (${start}ms. - ${end}ms.)`);
 				}
 		  }
-		: function (...args) {
+		: function () {
 				const start = time();
 				try {
-					return fn(...args);
+					return fn.apply(this, arguments);
 				} finally {
 					const end = time();
 					console.log(`Timeline: Modules: ${name}  (${start}ms. - ${end}ms.)`);
