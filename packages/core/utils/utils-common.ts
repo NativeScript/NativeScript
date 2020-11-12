@@ -5,6 +5,7 @@ import * as layout from './layout-helper';
 
 export { layout };
 export * from './mainthread-helper';
+export * from './macrotask-scheduler';
 
 export const RESOURCE_PREFIX = 'res://';
 export const FILE_PREFIX = 'file:///';
