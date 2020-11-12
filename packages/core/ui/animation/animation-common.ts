@@ -100,15 +100,17 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 			_this.cancel();
 		};
 		const _then = promise.then;
-		promise.then = function (...args) {
-			const r = _then(...args);
+		promise.then = function () {
+			// eslint-disable-next-line prefer-rest-params
+			const r = _then.apply(promise, arguments);
 			_this.fixupAnimationPromise(r);
 
 			return r;
 		};
 		const _catch = promise.catch;
-		promise.catch = function (...args) {
-			const r = _catch(...args);
+		promise.catch = function () {
+			// eslint-disable-next-line prefer-rest-params
+			const r = _catch.apply(promise, arguments);
 			_this.fixupAnimationPromise(r);
 
 			return r;
