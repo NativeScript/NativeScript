@@ -237,7 +237,7 @@ export function parseRepeat(value: string, start = 0, keyword = parseKeyword(val
 	return null;
 }
 
-const unitRegEx = /\s*([+-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][+-]?\d+)?)([a-zA-Z]+|%)?\s*/gy;
+const unitRegEx = /\s*([\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?)([a-zA-Z]+|%)?\s*/gy;
 export function parseUnit(text: string, start = 0): Parsed<Unit<string>> {
 	unitRegEx.lastIndex = start;
 	const result = unitRegEx.exec(text);
@@ -743,7 +743,7 @@ export function parseSimpleIdentifierSelector(text: string, start = 0): Parsed<T
 	return { start, end, value };
 }
 
-const attributeSelectorRegEx = /\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\]/gy;
+const attributeSelectorRegEx = /\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\]/gy;
 export function parseAttributeSelector(text: string, start: number): Parsed<AttributeSelector> {
 	attributeSelectorRegEx.lastIndex = start;
 	const result = attributeSelectorRegEx.exec(text);
@@ -852,13 +852,13 @@ export interface QualifiedRule {
 
 const whitespaceRegEx = /[\s\t\n\r\f]*/gmy;
 
-const singleQuoteStringRegEx = /'((?:[^\n\r\f']|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?'|$)/gmy; // Besides $n, parse escape
-const doubleQuoteStringRegEx = /"((?:[^\n\r\f"]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?"|$)/gmy; // Besides $n, parse escape
+const singleQuoteStringRegEx = /'((?:[^\n\r\f\']|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?'|$)/gmy; // Besides $n, parse escape
+const doubleQuoteStringRegEx = /"((?:[^\n\r\f\"]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?"|$)/gmy; // Besides $n, parse escape
 
-const commentRegEx = /(\/\*(?:[^*]|\*[^/])*\*\/)/gmy;
-const numberRegEx = /[+-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][+-]?\d+)?/gmy;
+const commentRegEx = /(\/\*(?:[^\*]|\*[^\/])*\*\/)/gmy;
+const numberRegEx = /[\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?/gmy;
 // eslint-disable-next-line no-control-regex
-const nameRegEx = /-?(?:(?:[a-zA-Z_]|[^\x00-\x7F]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))(?:[a-zA-Z_0-9-]*|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)/gmy;
+const nameRegEx = /-?(?:(?:[a-zA-Z_]|[^\x00-\x7F]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))(?:[a-zA-Z_0-9\-]*|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)/gmy;
 // const nonQuoteURLRegEx = /(:?[^\)\s\t\n\r\f\'\"\(]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*/gym; // TODO: non-printable code points omitted
 
 type InputToken = '(' | ')' | '{' | '}' | '[' | ']' | ':' | ';' | ',' | ' ' | '^=' | '|=' | '$=' | '*=' | '~=' | '<!--' | '-->' | undefined | /* <EOF-token> */ InputTokenObject | FunctionInputToken | FunctionToken | SimpleBlock | AtKeywordToken;

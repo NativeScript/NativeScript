@@ -25,6 +25,7 @@
 		"no-prototype-builtins": "off",
 		"no-inner-declarations": "off",
 		"no-constant-condition": "off",
+		"no-useless-escape": "off",
 		"@nrwl/nx/enforce-module-boundaries": [
 			"error",
 			{
