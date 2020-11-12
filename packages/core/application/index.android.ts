@@ -2,8 +2,11 @@
 import { AndroidApplication as AndroidApplicationDefinition } from '.';
 import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, ApplicationEventData, CssChangedEventData, OrientationChangedEventData, SystemAppearanceChangedEventData } from './application-interfaces';
 
+// TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const appCommon = require('./application-common');
+
 // First reexport so that app module is initialized.
 export * from './application-common';
 

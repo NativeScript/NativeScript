@@ -66,8 +66,8 @@ export class Button extends ButtonBase {
 		};
 	}
 	[borderTopWidthProperty.setNative](value: Length) {
-		let inset = this.nativeViewProtected.contentEdgeInsets;
-		let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
+		const inset = this.nativeViewProtected.contentEdgeInsets;
+		const top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
 		this.nativeViewProtected.contentEdgeInsets = {
 			top: top,
 			left: inset.left,
@@ -83,8 +83,8 @@ export class Button extends ButtonBase {
 		};
 	}
 	[borderRightWidthProperty.setNative](value: Length) {
-		let inset = this.nativeViewProtected.contentEdgeInsets;
-		let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
+		const inset = this.nativeViewProtected.contentEdgeInsets;
+		const right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
 		this.nativeViewProtected.contentEdgeInsets = {
 			top: inset.top,
 			left: inset.left,
@@ -100,8 +100,8 @@ export class Button extends ButtonBase {
 		};
 	}
 	[borderBottomWidthProperty.setNative](value: Length) {
-		let inset = this.nativeViewProtected.contentEdgeInsets;
-		let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
+		const inset = this.nativeViewProtected.contentEdgeInsets;
+		const bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
 		this.nativeViewProtected.contentEdgeInsets = {
 			top: inset.top,
 			left: inset.left,
@@ -117,8 +117,8 @@ export class Button extends ButtonBase {
 		};
 	}
 	[borderLeftWidthProperty.setNative](value: Length) {
-		let inset = this.nativeViewProtected.contentEdgeInsets;
-		let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
+		const inset = this.nativeViewProtected.contentEdgeInsets;
+		const left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
 		this.nativeViewProtected.contentEdgeInsets = {
 			top: inset.top,
 			left: left,
@@ -134,8 +134,8 @@ export class Button extends ButtonBase {
 		};
 	}
 	[paddingTopProperty.setNative](value: Length) {
-		let inset = this.nativeViewProtected.contentEdgeInsets;
-		let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
+		const inset = this.nativeViewProtected.contentEdgeInsets;
+		const top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
 		this.nativeViewProtected.contentEdgeInsets = {
 			top: top,
 			left: inset.left,
@@ -151,8 +151,8 @@ export class Button extends ButtonBase {
 		};
 	}
 	[paddingRightProperty.setNative](value: Length) {
-		let inset = this.nativeViewProtected.contentEdgeInsets;
-		let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
+		const inset = this.nativeViewProtected.contentEdgeInsets;
+		const right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
 		this.nativeViewProtected.contentEdgeInsets = {
 			top: inset.top,
 			left: inset.left,
@@ -168,8 +168,8 @@ export class Button extends ButtonBase {
 		};
 	}
 	[paddingBottomProperty.setNative](value: Length) {
-		let inset = this.nativeViewProtected.contentEdgeInsets;
-		let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
+		const inset = this.nativeViewProtected.contentEdgeInsets;
+		const bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
 		this.nativeViewProtected.contentEdgeInsets = {
 			top: inset.top,
 			left: inset.left,
@@ -185,8 +185,8 @@ export class Button extends ButtonBase {
 		};
 	}
 	[paddingLeftProperty.setNative](value: Length) {
-		let inset = this.nativeViewProtected.contentEdgeInsets;
-		let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
+		const inset = this.nativeViewProtected.contentEdgeInsets;
+		const left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
 		this.nativeViewProtected.contentEdgeInsets = {
 			top: inset.top,
 			left: left,
@@ -235,7 +235,7 @@ export class Button extends ButtonBase {
 			return super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 
-		let nativeView = this.nativeViewProtected;
+		const nativeView = this.nativeViewProtected;
 		if (nativeView) {
 			const width = layout.getMeasureSpecSize(widthMeasureSpec);
 			const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
@@ -271,7 +271,7 @@ class TapHandlerImpl extends NSObject {
 	private _owner: WeakRef<Button>;
 
 	public static initWithOwner(owner: WeakRef<Button>): TapHandlerImpl {
-		let handler = <TapHandlerImpl>TapHandlerImpl.new();
+		const handler = <TapHandlerImpl>TapHandlerImpl.new();
 		handler._owner = owner;
 		return handler;
 	}
@@ -279,7 +279,7 @@ class TapHandlerImpl extends NSObject {
 	public tap(args) {
 		// _owner is a {N} view which could get destroyed when a tap initiates (protect!)
 		if (this._owner) {
-			let owner = this._owner.get();
+			const owner = this._owner.get();
 			if (owner) {
 				owner._emit(ButtonBase.tapEvent);
 			}

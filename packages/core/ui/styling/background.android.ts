@@ -14,7 +14,7 @@ interface AndroidView {
 
 // TODO: Change this implementation to use
 // We are using "ad" here to avoid namespace collision with the global android object
-export module ad {
+export namespace ad {
 	let SDK: number;
 	function getSDK() {
 		if (!SDK) {
@@ -121,7 +121,7 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
 	return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);
 }
 
-const pattern: RegExp = /url\(('|")(.*?)\1\)/;
+const pattern = /url\(('|")(.*?)\1\)/;
 function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
 	const nativeView = <android.view.View>view.nativeViewProtected;
 	const context = nativeView.getContext();
@@ -220,7 +220,7 @@ export enum CacheMode {
 let currentCacheMode: CacheMode;
 let imageFetcher: org.nativescript.widgets.image.Fetcher;
 
-export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize: number = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
+export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
 	if (currentCacheMode === mode) {
 		return;
 	}

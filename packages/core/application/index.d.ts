@@ -199,21 +199,6 @@ export function loadAppCss();
 export function addCss(cssText: string, attributeScoped?: boolean): void;
 
 /**
- * This event is raised when application css is changed.
- */
-export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any);
-
-/**
- * Event raised then livesync operation is performed.
- */
-export function on(event: 'livesync', callback: (args: EventData) => void);
-
-/**
- * Removes listener for the specified event name.
- */
-export function off(eventNames: string, callback?: any, thisArg?: any);
-
-/**
  * Call this method to run the application. Important: All code after this method call will not be executed!
  * Compared to start this method won't create Frame as root view.
  */
@@ -226,12 +211,9 @@ export function run(entry?: NavigationEntry | string);
 export function _resetRootView(entry?: NavigationEntry | string);
 
 /**
- * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
- * @param eventNames - String corresponding to events (e.g. "onLaunch"). Optionally could be used more events separated by `,` (e.g. "onLaunch", "onSuspend").
- * @param callback - Callback function which will be executed when event is raised.
- * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+ * Removes listener for the specified event name.
  */
-export function on(eventNames: string, callback: (data: any) => void, thisArg?: any);
+export function off(eventNames: string, callback?: any, thisArg?: any);
 
 /**
  * Shortcut alias to the removeEventListener method.
@@ -252,6 +234,34 @@ export function notify(data: any): void;
  * @param eventName The name of the event to check for.
  */
 export function hasListeners(eventName: string): boolean;
+
+/**
+ * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+ * @param eventNames - String corresponding to events (e.g. "onLaunch"). Optionally could be used more events separated by `,` (e.g. "onLaunch", "onSuspend").
+ * @param callback - Callback function which will be executed when event is raised.
+ * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+ */
+export function on(eventNames: string, callback: (data: any) => void, thisArg?: any);
+
+/**
+ * This event is raised when application css is changed.
+ */
+export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any);
+
+/**
+ * Event raised then livesync operation is performed.
+ */
+export function on(event: 'livesync', callback: (args: EventData) => void);
+
+/**
+ * This event is raised when application css is changed.
+ */
+export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any);
+
+/**
+ * Event raised then livesync operation is performed.
+ */
+export function on(event: 'livesync', callback: (args: EventData) => void);
 
 /**
  * This event is raised on application launchEvent.

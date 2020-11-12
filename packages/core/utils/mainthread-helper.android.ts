@@ -6,6 +6,6 @@ export function dispatchToMainThread(func: () => void) {
 	);
 }
 
-export function isMainThread(): Boolean {
+export function isMainThread(): boolean {
 	return android.os.Looper.myLooper() === android.os.Looper.getMainLooper();
 }

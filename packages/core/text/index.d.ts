@@ -3,7 +3,7 @@
 /**
  * Defines the supported character encodings.
  */
-export module encoding {
+export namespace encoding {
 	/**
 	 * Denotes ISO-8859-1 character encoding.
 	 */

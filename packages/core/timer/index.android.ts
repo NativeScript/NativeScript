@@ -43,7 +43,7 @@ export function setTimeout(callback: Function, milliseconds = 0, ...args): numbe
 }
 
 export function clearTimeout(id: number): void {
-	let index = id;
+	const index = id;
 	if (timeoutCallbacks[index]) {
 		timeoutHandler.removeCallbacks(timeoutCallbacks[index]);
 		delete timeoutCallbacks[index];

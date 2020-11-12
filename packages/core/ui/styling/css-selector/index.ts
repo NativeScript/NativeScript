@@ -84,7 +84,7 @@ function getNodeDirectSibling(node): null | Node {
 	return node.parent.getChildAt(nodeIndex - 1);
 }
 
-function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic: boolean = false): ClassDecorator {
+function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic = false): ClassDecorator {
 	return (cls) => {
 		cls.prototype.specificity = specificity;
 		cls.prototype.rarity = rarity;
@@ -340,7 +340,7 @@ export class Selector extends SelectorCore {
 		const supportedCombinator = [undefined, ' ', '>', '+'];
 		let siblingGroup: SimpleSelector[];
 		let lastGroup: SimpleSelector[][];
-		let groups: SimpleSelector[][][] = [];
+		const groups: SimpleSelector[][][] = [];
 
 		this.specificity = 0;
 		this.dynamic = false;
@@ -403,10 +403,10 @@ export class Selector extends SelectorCore {
 			return this.match(node);
 		}
 
-		let bounds: Selector.Bound[] = [];
-		let mayMatch = this.groups.every((group, i) => {
+		const bounds: Selector.Bound[] = [];
+		const mayMatch = this.groups.every((group, i) => {
 			if (i === 0) {
-				let nextNode = group.mayMatch(node);
+				const nextNode = group.mayMatch(node);
 				bounds.push({ left: node, right: node });
 				node = nextNode;
 
@@ -414,7 +414,7 @@ export class Selector extends SelectorCore {
 			} else {
 				let ancestor = node;
 				while ((ancestor = ancestor.parent)) {
-					let nextNode = group.mayMatch(ancestor);
+					const nextNode = group.mayMatch(ancestor);
 					if (nextNode) {
 						bounds.push({ left: ancestor, right: null });
 						node = nextNode;
@@ -437,11 +437,11 @@ export class Selector extends SelectorCore {
 		}
 
 		for (let i = 0; i < this.groups.length; i++) {
-			let group = this.groups[i];
+			const group = this.groups[i];
 			if (!group.dynamic) {
 				continue;
 			}
-			let bound = bounds[i];
+			const bound = bounds[i];
 			let node = bound.left;
 			do {
 				if (group.mayMatch(node)) {
@@ -500,7 +500,7 @@ export namespace Selector {
 }
 
 export class RuleSet {
-	tag: string | Number;
+	tag: string | number;
 	constructor(public selectors: SelectorCore[], public declarations: Declaration[]) {
 		this.selectors.forEach((sel) => (sel.ruleset = this));
 	}
@@ -514,8 +514,8 @@ export class RuleSet {
 
 export function fromAstNodes(astRules: cssParser.Node[]): RuleSet[] {
 	return (<cssParser.Rule[]>astRules.filter(isRule)).map((rule) => {
-		let declarations = rule.declarations.filter(isDeclaration).map(createDeclaration);
-		let selectors = rule.selectors.map(createSelector);
+		const declarations = rule.declarations.filter(isDeclaration).map(createDeclaration);
+		const selectors = rule.selectors.map(createSelector);
 
 		return new RuleSet(selectors, declarations);
 	});
@@ -567,7 +567,7 @@ function createSelectorFromAst(ast: parser.Selector): SimpleSelector | SimpleSel
 	} else if (ast.length === 1) {
 		return createSimpleSelectorSequenceFromAst(ast[0][0]);
 	} else {
-		let simpleSelectorSequences = [];
+		const simpleSelectorSequences = [];
 		let simpleSelectorSequence: SimpleSelectorSequence | SimpleSelector;
 		let combinator: parser.Combinator;
 		for (let i = 0; i < ast.length; i++) {
@@ -585,7 +585,7 @@ function createSelectorFromAst(ast: parser.Selector): SimpleSelector | SimpleSel
 
 export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | Selector {
 	try {
-		let parsedSelector = parser.parseSelector(sel);
+		const parsedSelector = parser.parseSelector(sel);
 		if (!parsedSelector) {
 			return new InvalidSelector(new Error('Empty selector'));
 		}
@@ -672,7 +672,7 @@ export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
 	public selectors;
 
 	public addAttribute(node: T, attribute: string): void {
-		let deps: Changes = this.properties(node);
+		const deps: Changes = this.properties(node);
 		if (!deps.attributes) {
 			deps.attributes = new Set();
 		}
@@ -680,7 +680,7 @@ export class SelectorsMatch<T extends Node> implements ChangeAccumulator {
 	}
 
 	public addPseudoClass(node: T, pseudoClass: string): void {
-		let deps: Changes = this.properties(node);
+		const deps: Changes = this.properties(node);
 		if (!deps.pseudoClasses) {
 			deps.pseudoClasses = new Set();
 		}

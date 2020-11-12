@@ -9,7 +9,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 	public _update() {
 		const parent = <SegmentedBar>this.parent;
 		if (parent) {
-			let tabIndex = parent.items.indexOf(this);
+			const tabIndex = parent.items.indexOf(this);
 			let title = this.title;
 			title = title === null || title === undefined ? '' : title;
 			parent.ios.setTitleForSegmentAtIndex(title, tabIndex);
@@ -74,7 +74,7 @@ export class SegmentedBar extends SegmentedBarBase {
 	}
 	[selectedBackgroundColorProperty.setNative](value: UIColor | Color) {
 		const currentOsVersion = iOSNativeHelper.MajorVersion;
-		let color = value instanceof Color ? value.ios : value;
+		const color = value instanceof Color ? value.ios : value;
 		if (currentOsVersion < 13) {
 			this.ios.tintColor = color;
 		} else {
@@ -86,10 +86,10 @@ export class SegmentedBar extends SegmentedBarBase {
 		return null;
 	}
 	[colorProperty.setNative](value: Color | UIColor) {
-		let color = value instanceof Color ? value.ios : value;
-		let bar = this.ios;
-		let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
-		let attrs = currentAttrs ? currentAttrs.mutableCopy() : NSMutableDictionary.new();
+		const color = value instanceof Color ? value.ios : value;
+		const bar = this.ios;
+		const currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
+		const attrs = currentAttrs ? currentAttrs.mutableCopy() : NSMutableDictionary.new();
 		attrs.setValueForKey(color, NSForegroundColorAttributeName);
 		bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
 	}
@@ -98,10 +98,10 @@ export class SegmentedBar extends SegmentedBarBase {
 		return null;
 	}
 	[fontInternalProperty.setNative](value: Font) {
-		let font: UIFont = value ? value.getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize)) : null;
-		let bar = this.ios;
-		let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
-		let attrs = currentAttrs ? currentAttrs.mutableCopy() : NSMutableDictionary.new();
+		const font: UIFont = value ? value.getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize)) : null;
+		const bar = this.ios;
+		const currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
+		const attrs = currentAttrs ? currentAttrs.mutableCopy() : NSMutableDictionary.new();
 		attrs.setValueForKey(font, NSFontAttributeName);
 		bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
 	}
@@ -112,14 +112,14 @@ class SelectionHandlerImpl extends NSObject {
 	private _owner: WeakRef<SegmentedBar>;
 
 	public static initWithOwner(owner: WeakRef<SegmentedBar>): SelectionHandlerImpl {
-		let handler = <SelectionHandlerImpl>SelectionHandlerImpl.new();
+		const handler = <SelectionHandlerImpl>SelectionHandlerImpl.new();
 		handler._owner = owner;
 
 		return handler;
 	}
 
 	public selected(sender: UISegmentedControl) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			owner.selectedIndex = sender.selectedSegmentIndex;
 		}

@@ -1,6 +1,6 @@
 import { knownFolders } from '../file-system';
 
-export let debug = true;
+export const debug = true;
 
 let applicationRootPath: string;
 function ensureAppRootPath() {
@@ -15,7 +15,7 @@ export class Source {
 	private _line: number;
 	private _column: number;
 
-	private static _source: symbol = Symbol('source');
+	private static _source = Symbol('source');
 
 	constructor(uri: string, line: number, column: number) {
 		ensureAppRootPath();

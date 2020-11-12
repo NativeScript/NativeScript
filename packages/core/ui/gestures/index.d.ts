@@ -86,7 +86,7 @@ export enum SwipeDirection {
 /**
  * Defines a touch action
  */
-export module TouchAction {
+export namespace TouchAction {
 	/**
 	 * Down action.
 	 */

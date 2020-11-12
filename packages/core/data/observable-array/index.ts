@@ -1,3 +1,4 @@
+/* eslint-disable prefer-rest-params */
 import { Observable, EventData } from '../observable';
 import * as types from '../../utils/types';
 
@@ -59,6 +60,7 @@ export class ObservableArray<T> extends Observable {
 		if (arguments.length === 1 && Array.isArray(arguments[0])) {
 			this._array = arguments[0].slice();
 		} else {
+			// eslint-disable-next-line prefer-spread
 			this._array = Array.apply(null, arguments);
 		}
 
@@ -67,7 +69,7 @@ export class ObservableArray<T> extends Observable {
 			object: this,
 			action: ChangeType.Add,
 			index: null,
-			removed: new Array(),
+			removed: [],
 			addedCount: 1,
 		};
 
@@ -92,7 +94,7 @@ export class ObservableArray<T> extends Observable {
 	 * Sets item at specified index.
 	 */
 	setItem(index: number, value: T) {
-		let oldValue = this._array[index];
+		const oldValue = this._array[index];
 		this._array[index] = value;
 
 		this.notify(<ChangedData<T>>{
@@ -114,7 +116,7 @@ export class ObservableArray<T> extends Observable {
 
 	set length(value: number) {
 		if (types.isNumber(value) && this._array && this._array.length !== value) {
-			let added=[];
+			const added=[];
 			for (let i=this._array.length;i < value;++i) {
 				added.push(undefined);
 			}
@@ -137,9 +139,9 @@ export class ObservableArray<T> extends Observable {
 	 * Combines two or more arrays.
 	 * @param items Additional items to add to the end of array1.
 	 */
-	concat(_args?: any): T[] {
+	concat(...args): T[] {
 		this._addArgs.index = this._array.length;
-		const result = this._array.concat.apply(this._array, arguments);
+		const result = this._array.concat(...args);
 
 		return result;
 	}
@@ -182,7 +184,7 @@ export class ObservableArray<T> extends Observable {
 				this._array.push(source[i]);
 			}
 		} else {
-			this._array.push.apply(this._array, arguments);
+			this._array.push(...args);
 		}
 
 		this._addArgs.addedCount = this._array.length - this._addArgs.index;
@@ -245,7 +247,7 @@ export class ObservableArray<T> extends Observable {
 	 */
 	splice(start: number, deleteCount?: number, ...items: any): T[] {
 		const length = this._array.length;
-		const result = this._array.splice.apply(this._array, arguments);
+		const result = this._array.splice(start, deleteCount, ...items);
 
 		this.notify(<ChangedData<T>>{
 			eventName: CHANGE,
@@ -276,7 +278,7 @@ export class ObservableArray<T> extends Observable {
 	 */
 	unshift(...args: any): number {
 		const length = this._array.length;
-		const result = this._array.unshift.apply(this._array, arguments);
+		const result = this._array.unshift(...args);
 
 		this._addArgs.index = 0;
 		this._addArgs.addedCount = result - length;

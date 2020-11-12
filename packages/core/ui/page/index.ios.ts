@@ -158,7 +158,7 @@ class UIViewControllerImpl extends UIViewController {
 			frame.setCurrent(newEntry, navigationContext.navigationType);
 
 			if (isReplace) {
-				let controller = newEntry.resolvedPage.ios;
+				const controller = newEntry.resolvedPage.ios;
 				if (controller) {
 					const animated = frame._getIsAnimatedNavigation(newEntry.entry);
 					if (animated) {
@@ -432,7 +432,7 @@ export class Page extends PageBase {
 		const childLeft = 0 + insets.left;
 		const childTop = 0 + insets.top;
 		const childRight = right - insets.right;
-		let childBottom = bottom - insets.bottom;
+		const childBottom = bottom - insets.bottom;
 
 		View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
 	}

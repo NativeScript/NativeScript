@@ -2,11 +2,11 @@ const Object_prototype_toString = {}.toString;
 const ArrayBufferString = Object_prototype_toString.call(ArrayBuffer.prototype);
 
 function decoderReplacer(encoded) {
-	var codePoint = encoded.charCodeAt(0) << 24;
-	var leadingOnes = Math.clz32(~codePoint) | 0;
-	var endPos = 0,
-		stringLen = encoded.length | 0;
-	var result = '';
+	let codePoint = encoded.charCodeAt(0) << 24;
+	const leadingOnes = Math.clz32(~codePoint) | 0;
+	let endPos = 0;
+	const stringLen = encoded.length | 0;
+	let result = '';
 	if (leadingOnes < 5 && stringLen >= leadingOnes) {
 		codePoint = (codePoint << leadingOnes) >>> (24 + leadingOnes);
 		for (endPos = 1; endPos < leadingOnes; endPos = (endPos + 1) | 0) {
@@ -35,9 +35,9 @@ function decoderReplacer(encoded) {
 
 function encoderReplacer(nonAsciiChars) {
 	// make the UTF string into a binary UTF-8 encoded string
-	var point = nonAsciiChars.charCodeAt(0) | 0;
+	let point = nonAsciiChars.charCodeAt(0) | 0;
 	if (point >= 0xd800 && point <= 0xdbff) {
-		var nextcode = nonAsciiChars.charCodeAt(1) | 0;
+		const nextcode = nonAsciiChars.charCodeAt(1) | 0;
 		if (nextcode !== nextcode) {
 			// NaN because string is 1 code point long
 			return String.fromCharCode(0xef /*11101111*/, 0xbf /*10111111*/, 0xbd /*10111101*/);
@@ -71,7 +71,7 @@ export class TextDecoder {
 		if (Object_prototype_toString.call(buffer) !== ArrayBufferString) {
 			throw Error("Failed to execute 'decode' on 'TextDecoder': The provided value is not of type '(ArrayBuffer or ArrayBufferView)'");
 		}
-		let inputAs8 = new Uint8Array(buffer);
+		const inputAs8 = new Uint8Array(buffer);
 		let resultingString = '';
 		for (let index = 0, len = inputAs8.length | 0; index < len; index = (index + 32768) | 0) {
 			resultingString += String.fromCharCode.apply(0, inputAs8.slice(index, (index + 32768) | 0));
@@ -92,7 +92,7 @@ export class TextEncoder {
 		return 'utf-8';
 	}
 
-	public encode(input: string = ''): Uint8Array {
+	public encode(input = ''): Uint8Array {
 		// 0xc0 => 0b11000000; 0xff => 0b11111111; 0xc0-0xff => 0b11xxxxxx
 		// 0x80 => 0b10000000; 0xbf => 0b10111111; 0x80-0xbf => 0b10xxxxxx
 		const encodedString = input === undefined ? '' : ('' + input).replace(/[\x80-\uD7ff\uDC00-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]?/g, encoderReplacer);

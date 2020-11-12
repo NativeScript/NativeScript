@@ -1,4 +1,4 @@
-import { getKnownColor } from "color/known-colors";
+import { getKnownColor } from "../color/known-colors";
 
 export type Parsed<V> = { start: number; end: number; value: V };
 
@@ -54,7 +54,7 @@ export interface BackgroundPosition {
 	text?: string;
 }
 
-const urlRegEx = /\s*url\((?:('|")([^\1]*)\1|([^\)]*))\)\s*/gy;
+const urlRegEx = /\s*url\((?:('|")([^\1]*)\1|([^)]*))\)\s*/gy;
 export function parseURL(text: string, start = 0): Parsed<URL> {
 	urlRegEx.lastIndex = start;
 	const result = urlRegEx.exec(text);
@@ -128,10 +128,10 @@ export function convertHSLToRGBColor(hue: number, saturation: number, lightness:
 	hue /= 60;
 	lightness /= 100;
 
-	let chroma = ((1 - Math.abs(2 * lightness - 1)) * saturation) / 100,
-		X = chroma * (1 - Math.abs((hue % 2) - 1)),
+	const chroma = ((1 - Math.abs(2 * lightness - 1)) * saturation) / 100,
+		X = chroma * (1 - Math.abs((hue % 2) - 1));
 		// Add lightness match to all RGB components beforehand
-		{ m: r, m: g, m: b } = { m: lightness - chroma / 2 };
+	let { m: r, m: g, m: b } = { m: lightness - chroma / 2 };
 
 	if (0 <= hue && hue < 1) {
 		r += chroma;
@@ -212,7 +212,7 @@ export function parseColor(value: string, start = 0, keyword = parseKeyword(valu
 	return parseHexColor(value, start) || parseColorKeyword(value, start, keyword) || parseRGBColor(value, start) || parseRGBAColor(value, start) || parseHSLColor(value, start) || parseHSLAColor(value, start);
 }
 
-const keywordRegEx = /\s*([a-z][\w\-]*)\s*/giy;
+const keywordRegEx = /\s*([a-z][\w-]*)\s*/giy;
 function parseKeyword(text: string, start = 0): Parsed<Keyword> {
 	keywordRegEx.lastIndex = start;
 	const result = keywordRegEx.exec(text);
@@ -237,7 +237,7 @@ export function parseRepeat(value: string, start = 0, keyword = parseKeyword(val
 	return null;
 }
 
-const unitRegEx = /\s*([\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?)([a-zA-Z]+|%)?\s*/gy;
+const unitRegEx = /\s*([+-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][+-]?\d+)?)([a-zA-Z]+|%)?\s*/gy;
 export function parseUnit(text: string, start = 0): Parsed<Unit<string>> {
 	unitRegEx.lastIndex = start;
 	const result = unitRegEx.exec(text);
@@ -743,7 +743,7 @@ export function parseSimpleIdentifierSelector(text: string, start = 0): Parsed<T
 	return { start, end, value };
 }
 
-const attributeSelectorRegEx = /\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\]/gy;
+const attributeSelectorRegEx = /\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\]/gy;
 export function parseAttributeSelector(text: string, start: number): Parsed<AttributeSelector> {
 	attributeSelectorRegEx.lastIndex = start;
 	const result = attributeSelectorRegEx.exec(text);
@@ -852,12 +852,13 @@ export interface QualifiedRule {
 
 const whitespaceRegEx = /[\s\t\n\r\f]*/gmy;
 
-const singleQuoteStringRegEx = /'((?:[^\n\r\f\']|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?'|$)/gmy; // Besides $n, parse escape
-const doubleQuoteStringRegEx = /"((?:[^\n\r\f\"]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?"|$)/gmy; // Besides $n, parse escape
+const singleQuoteStringRegEx = /'((?:[^\n\r\f']|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?'|$)/gmy; // Besides $n, parse escape
+const doubleQuoteStringRegEx = /"((?:[^\n\r\f"]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)(:?"|$)/gmy; // Besides $n, parse escape
 
-const commentRegEx = /(\/\*(?:[^\*]|\*[^\/])*\*\/)/gmy;
-const numberRegEx = /[\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?/gmy;
-const nameRegEx = /-?(?:(?:[a-zA-Z_]|[^\x00-\x7F]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))(?:[a-zA-Z_0-9\-]*|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)/gmy;
+const commentRegEx = /(\/\*(?:[^*]|\*[^/])*\*\/)/gmy;
+const numberRegEx = /[+-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][+-]?\d+)?/gmy;
+// eslint-disable-next-line no-control-regex
+const nameRegEx = /-?(?:(?:[a-zA-Z_]|[^\x00-\x7F]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))(?:[a-zA-Z_0-9-]*|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*)/gmy;
 // const nonQuoteURLRegEx = /(:?[^\)\s\t\n\r\f\'\"\(]|\\(?:\$|\n|[0-9a-fA-F]{1,6}\s?))*/gym; // TODO: non-printable code points omitted
 
 type InputToken = '(' | ')' | '{' | '}' | '[' | ']' | ':' | ';' | ',' | ' ' | '^=' | '|=' | '$=' | '*=' | '~=' | '<!--' | '-->' | undefined | /* <EOF-token> */ InputTokenObject | FunctionInputToken | FunctionToken | SimpleBlock | AtKeywordToken;
@@ -1334,7 +1335,7 @@ export class CSS3Parser {
 				case ' ':
 					continue;
 				case '<!--':
-				case '-->':
+				case '-->':{
 					if (this.topLevelFlag) {
 						continue;
 					}
@@ -1344,6 +1345,7 @@ export class CSS3Parser {
 						rules.push(atRule);
 					}
 					continue;
+			}
 			}
 			if ((<InputTokenObject>inputToken).type === TokenObjectType.atKeyword) {
 				this.reconsumeTheCurrentInputToken(inputToken);
@@ -1511,17 +1513,19 @@ export class CSS3Parser {
 			}
 			const nextInputToken = this.text[this.nextInputCodePointIndex];
 			switch (nextInputToken) {
-				case ')':
+				case ')':{
 					this.nextInputCodePointIndex++;
 					const end = this.nextInputCodePointIndex;
 					funcToken.text = name + '(' + this.text.substring(start, end);
 
 					return funcToken;
-				default:
+				}
+				default:{
 					const component = this.consumeAComponentValue();
 					if (component) {
 						funcToken.components.push(component);
 					}
+				}
 				// TODO: Else we won't advance
 			}
 		} while (true);

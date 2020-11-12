@@ -1,6 +1,6 @@
-const MIN_WH: string = 'minWH';
-const MIN_W: string = 'minW';
-const MIN_H: string = 'minH';
+const MIN_WH = 'minWH';
+const MIN_W = 'minW';
+const MIN_H = 'minH';
 const PRIORITY_STEP = 10000;
 
 /**
@@ -120,9 +120,9 @@ const supportedQualifiers: Array<QualifierSpec> = [minWidthHeightQualifier, minW
 function checkQualifiers(path: string, context: PlatformContext): number {
 	let result = 0;
 	for (let i = 0; i < supportedQualifiers.length; i++) {
-		let qualifier = supportedQualifiers[i];
+		const qualifier = supportedQualifiers[i];
 		if (qualifier.isMatch(path)) {
-			let occurences = qualifier.getMatchOccurences(path);
+			const occurences = qualifier.getMatchOccurences(path);
 			// Always get the last qualifier among identical occurences
 			result = qualifier.getMatchValue(occurences[occurences.length - 1], context);
 			if (result < 0) {
@@ -142,9 +142,9 @@ function checkQualifiers(path: string, context: PlatformContext): number {
 export function stripQualifiers(path: string): string {
 	// Strip qualifiers from path if any
 	for (let i = 0; i < supportedQualifiers.length; i++) {
-		let qualifier = supportedQualifiers[i];
+		const qualifier = supportedQualifiers[i];
 		if (qualifier.isMatch(path)) {
-			let occurences = qualifier.getMatchOccurences(path);
+			const occurences = qualifier.getMatchOccurences(path);
 			for (let j = 0; j < occurences.length; j++) {
 				path = path.replace(occurences[j], '');
 			}
@@ -155,7 +155,7 @@ export function stripQualifiers(path: string): string {
 }
 
 export function findMatch(path: string, ext: string, candidates: Array<string>, context: PlatformContext): string {
-	let fullPath: string = ext ? path + ext : path;
+	const fullPath: string = ext ? path + ext : path;
 	let bestValue = -1;
 	let result: string = null;
 

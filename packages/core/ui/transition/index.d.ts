@@ -1,4 +1,4 @@
-﻿export module AndroidTransitionType {
+﻿export namespace AndroidTransitionType {
 	export const enter: string;
 	export const exit: string;
 	export const popEnter: string;

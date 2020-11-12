@@ -208,7 +208,7 @@ export namespace NetworkAgent {
 	}
 
 	function mimeTypeToType(mimeType: string): string {
-		let type: string = 'Document';
+		let type = 'Document';
 
 		if (mimeType) {
 			if (mimeType.indexOf('image') === 0) {
