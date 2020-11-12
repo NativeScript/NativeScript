@@ -38,7 +38,7 @@ function initializeItemClickListener(): void {
 
 		onItemClick<T extends android.widget.Adapter>(parent: android.widget.AdapterView<T>, convertView: android.view.View, index: number, id: number) {
 			const owner = this.owner;
-			const view = owner._realizedTemplates.get(owner._getItemTemplate(index).key).get(convertView);
+			const view = owner._realizedItems.get(convertView).view;
 			owner.notify({
 				eventName: ITEMTAP,
 				object: owner,
@@ -55,8 +55,68 @@ export class ListView extends ListViewBase {
 	nativeViewProtected: android.widget.ListView;
 	private _androidViewId = -1;
 
-	public _realizedItems = new Map<android.view.View, View>();
+	public _realizedItems = new Map<
+		android.view.View,
+		{
+			view: View;
+			templateKey: string;
+		}
+	>();
+	public _availableViews = new Map<string, Set<android.view.View>>();
 	public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
+
+	private _ensureAvailableViews(templateKey: string) {
+		if (!this._availableViews.has(templateKey)) {
+			this._availableViews.set(templateKey, new Set());
+		}
+	}
+
+	public _registerViewToTemplate(templateKey: string, nativeView: android.view.View, view: View) {
+		this._realizedItems.set(nativeView, {
+			view,
+			templateKey,
+		});
+		if (!this._realizedTemplates.has(templateKey)) {
+			this._realizedTemplates.set(templateKey, new Map());
+		}
+		this._realizedTemplates.get(templateKey).set(nativeView, view);
+		this._ensureAvailableViews(templateKey);
+		const availableViews = this._availableViews.get(templateKey);
+		availableViews.add(nativeView);
+	}
+
+	public _markViewUsed(nativeView: android.view.View) {
+		const viewData = this._realizedItems.get(nativeView);
+		if (!viewData) {
+			throw new Error('View not registered');
+		}
+		this._ensureAvailableViews(viewData.templateKey);
+		this._availableViews.get(viewData.templateKey).delete(nativeView);
+	}
+	public _markViewUnused(nativeView: android.view.View) {
+		const viewData = this._realizedItems.get(nativeView);
+		if (!viewData) {
+			throw new Error('View not registered');
+		}
+		this._ensureAvailableViews(viewData.templateKey);
+		this._availableViews.get(viewData.templateKey).add(nativeView);
+	}
+	public _getKeyFromView(nativeView: android.view.View) {
+		return this._realizedItems.get(nativeView).templateKey;
+	}
+	public _hasAvailableView(templateKey: string) {
+		this._ensureAvailableViews(templateKey);
+		return this._availableViews.get(templateKey).size > 0;
+	}
+	public _getAvailableView(templateKey: string) {
+		this._ensureAvailableViews(templateKey);
+		if (!this._hasAvailableView(templateKey)) {
+			return null;
+		}
+		const view: android.view.View = this._availableViews.get(templateKey).values().next().value;
+		this._markViewUsed(view);
+		return view;
+	}
 
 	@profile
 	public createNativeView() {
@@ -112,7 +172,7 @@ export class ListView extends ListViewBase {
 		}
 
 		// clear bindingContext when it is not observable because otherwise bindings to items won't reevaluate
-		this._realizedItems.forEach((view, nativeView) => {
+		this._realizedItems.forEach(({ view }, nativeView) => {
 			if (!(view.bindingContext instanceof Observable)) {
 				view.bindingContext = null;
 			}
@@ -140,7 +200,7 @@ export class ListView extends ListViewBase {
 	}
 
 	public eachChildView(callback: (child: View) => boolean): void {
-		this._realizedItems.forEach((view, nativeView) => {
+		this._realizedItems.forEach(({ view }, nativeView) => {
 			if (view.parent instanceof ListView) {
 				callback(view);
 			} else {
@@ -165,7 +225,7 @@ export class ListView extends ListViewBase {
 
 	private clearRealizedCells(): void {
 		// clear the cache
-		this._realizedItems.forEach((view, nativeView) => {
+		this._realizedItems.forEach(({ view }, nativeView) => {
 			if (view.parent) {
 				// This is to clear the StackLayout that is used to wrap non LayoutBase & ProxyViewContainer instances.
 				if (!(view.parent instanceof ListView)) {
@@ -176,6 +236,7 @@ export class ListView extends ListViewBase {
 		});
 
 		this._realizedItems.clear();
+		this._availableViews.clear();
 		this._realizedTemplates.clear();
 	}
 
@@ -302,12 +363,16 @@ function ensureListViewAdapterClass() {
 			// Recycle an existing view or create a new one if needed.
 			const template = this.owner._getItemTemplate(index);
 			let view: View;
+			// convertView is of the wrong type
+			if (convertView && this.owner._getKeyFromView(convertView) !== template.key) {
+				this.owner._markViewUnused(convertView); // release this view
+				convertView = this.owner._getAvailableView(template.key); // get a view from the right type or null
+			}
 			if (convertView) {
-				view = this.owner._realizedTemplates.get(template.key).get(convertView);
-				if (!view) {
-					throw new Error(`There is no entry with key '${convertView}' in the realized views cache for template with key'${template.key}'.`);
-				}
-			} else {
+				view = this.owner._realizedItems.get(convertView).view;
+			}
+
+			if (!view) {
 				view = template.createView();
 			}
 
@@ -349,14 +414,8 @@ function ensureListViewAdapterClass() {
 					}
 				}
 
-				// Cache the view for recycling
-				let realizedItemsForTemplateKey = this.owner._realizedTemplates.get(template.key);
-				if (!realizedItemsForTemplateKey) {
-					realizedItemsForTemplateKey = new Map<android.view.View, View>();
-					this.owner._realizedTemplates.set(template.key, realizedItemsForTemplateKey);
-				}
-				realizedItemsForTemplateKey.set(convertView, args.view);
-				this.owner._realizedItems.set(convertView, args.view);
+				this.owner._registerViewToTemplate(template.key, convertView, args.view);
+				this.owner._markViewUsed(convertView);
 			}
 
 			return convertView;
