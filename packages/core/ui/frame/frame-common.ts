@@ -249,12 +249,12 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		newPage.onNavigatedTo(isBack);
-        this.notify({
-            eventName: Page.navigatedToEvent,
-            object: this,
-            isBack,
-            entry,
-        });
+		this.notify({
+			eventName: Page.navigatedToEvent,
+			object: this,
+			isBack,
+			entry,
+		});
 
 		// Reset executing context after NavigatedTo is raised;
 		// we do not want to execute two navigations in parallel in case
@@ -424,12 +424,12 @@ export class FrameBase extends CustomLayoutView {
 
 		backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
 		this.notify({
-            eventName: Page.navigatingToEvent,
-            object: this,
-            isBack,
+			eventName: Page.navigatingToEvent,
+			object: this,
+			isBack,
 			entry: backstackEntry.entry,
 			fromEntry:this.currentEntry
-        });
+		});
 	}
 
 	public get animated(): boolean {
