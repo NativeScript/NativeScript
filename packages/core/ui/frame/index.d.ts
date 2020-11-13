@@ -1,10 +1,16 @@
 ﻿import { NavigationType, FrameBase } from './frame-common';
-import { Page } from '../page';
+import { NavigatedData, Page } from '../page';
 import { Observable, EventData } from '../../data/observable';
 import { View } from '../core/view';
 import { Transition } from '../transition';
 
 export * from './frame-interfaces';
+
+export interface NavigationData extends EventData  {
+	entry?: NavigationEntry;
+	fromEntry?: NavigationEntry;
+	isBack?: boolean;
+}
 
 /**
  * Represents the logical View unit that is responsible for navigation within an application.
@@ -210,6 +216,16 @@ export class Frame extends FrameBase {
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
 	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
+
+	/**
+	 * Raised when navigation to the page has started.
+	 */
+	public on(event: 'navigatingTo', callback: (args: NavigationData) => void, thisArg?: any);
+
+	/**
+	 * Raised when navigation to the page has finished.
+	 */
+	public on(event: 'navigatedTo', callback: (args: NavigationData) => void, thisArg?: any);
 }
 
 /**
