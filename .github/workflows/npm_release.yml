@@ -16,7 +16,9 @@ jobs:
 
       - name: Generate Version
         working-directory: packages/core
-        run: echo ::set-env name=NPM_VERSION::$(node -e "console.log(require('./package.json').version);")-$(date +"%m-%d-%Y")-$GITHUB_RUN_ID
+        run: |
+          echo NPM_TAG=next >> $GITHUB_ENV
+          echo NPM_VERSION=$(node -e "console.log(require('./package.json').version);")-$NPM_TAG-$(date +"%m-%d-%Y")-$GITHUB_RUN_ID >> $GITHUB_ENV
 
       - name: Bump Version
         working-directory: packages/core
@@ -31,5 +33,5 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-          echo "Publishing @nativescript/core@$NPM_VERSION to NPM..."
-          npm publish nativescript-core-$NPM_VERSION.tgz --tag next --dry-run
+          echo "Publishing @nativescript/core@$NPM_VERSION to NPM with tag $NPM_TAG..."
+          npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG --dry-run
