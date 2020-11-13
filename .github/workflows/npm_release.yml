@@ -2,7 +2,7 @@ name: Release @nativescript/core to NPM
 
 on:
   push:
-    branches: [ 'feat/monorepo' ]
+    branches: [ 'master' ]
 
 jobs:
   release:
@@ -32,4 +32,4 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
           echo "Publishing @nativescript/core@$NPM_VERSION to NPM..."
-          npm publish nativescript-core-$NPM_VERSION.tgz --tag ci --dry-run
+          npm publish nativescript-core-$NPM_VERSION.tgz --tag next --dry-run
