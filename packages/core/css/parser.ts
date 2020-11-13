@@ -1,4 +1,4 @@
-import { getKnownColor } from "../color/known-colors";
+import { getKnownColor } from '../color/known-colors';
 
 export type Parsed<V> = { start: number; end: number; value: V };
 
@@ -54,7 +54,7 @@ export interface BackgroundPosition {
 	text?: string;
 }
 
-const urlRegEx = /\s*url\((?:('|")([^\1]*)\1|([^)]*))\)\s*/gy;
+const urlRegEx = /\s*url\((?:(['"])([^\1]*)\1|([^)]*))\)\s*/gy;
 export function parseURL(text: string, start = 0): Parsed<URL> {
 	urlRegEx.lastIndex = start;
 	const result = urlRegEx.exec(text);
@@ -130,7 +130,7 @@ export function convertHSLToRGBColor(hue: number, saturation: number, lightness:
 
 	const chroma = ((1 - Math.abs(2 * lightness - 1)) * saturation) / 100,
 		X = chroma * (1 - Math.abs((hue % 2) - 1));
-		// Add lightness match to all RGB components beforehand
+	// Add lightness match to all RGB components beforehand
 	let { m: r, m: g, m: b } = { m: lightness - chroma / 2 };
 
 	if (0 <= hue && hue < 1) {
@@ -162,12 +162,7 @@ export function convertHSLToRGBColor(hue: number, saturation: number, lightness:
 
 function hslaToArgbNumber(h: number, s: number, l: number, a = 1): number | undefined {
 	const { r, g, b } = convertHSLToRGBColor(h, s, l);
-
-	if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255 && a >= 0 && a <= 1) {
-		return Math.round(a * 0xff) * 0x01000000 + r * 0x010000 + g * 0x000100 + b;
-	} else {
-		return null;
-	}
+	return rgbaToArgbNumber(r, g, b, a);
 }
 
 const hslColorRegEx = /\s*(hsl\(\s*([\d.]*)\s*,\s*([\d.]*)%\s*,\s*([\d.]*)%\s*\))/gy;
@@ -196,15 +191,13 @@ export function parseHSLAColor(text: string, start = 0): Parsed<ARGB> {
 	return { start, end, value };
 }
 
-
 export function parseColorKeyword(value, start: number, keyword = parseKeyword(value, start)): Parsed<ARGB> {
 	const parseColor = keyword && getKnownColor(keyword.value);
-	if (parseColor !== undefined) {
+	if (parseColor != null) {
 		const end = keyword.end;
 		const value = parseColor;
 		return { start, end, value };
 	}
-
 	return null;
 }
 
@@ -212,7 +205,7 @@ export function parseColor(value: string, start = 0, keyword = parseKeyword(valu
 	return parseHexColor(value, start) || parseColorKeyword(value, start, keyword) || parseRGBColor(value, start) || parseRGBAColor(value, start) || parseHSLColor(value, start) || parseHSLAColor(value, start);
 }
 
-const keywordRegEx = /\s*([a-z][\w-]*)\s*/giy;
+const keywordRegEx = /\s*([a-z][\w\-]*)\s*/giy;
 function parseKeyword(text: string, start = 0): Parsed<Keyword> {
 	keywordRegEx.lastIndex = start;
 	const result = keywordRegEx.exec(text);
@@ -237,7 +230,7 @@ export function parseRepeat(value: string, start = 0, keyword = parseKeyword(val
 	return null;
 }
 
-const unitRegEx = /\s*([\+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][\+\-]?\d+)?)([a-zA-Z]+|%)?\s*/gy;
+const unitRegEx = /\s*([+\-]?(?:\d+\.\d+|\d+|\.\d+)(?:[eE][+\-]?\d+)?)([a-zA-Z]+|%)?\s*/gy;
 export function parseUnit(text: string, start = 0): Parsed<Unit<string>> {
 	unitRegEx.lastIndex = start;
 	const result = unitRegEx.exec(text);
@@ -512,7 +505,7 @@ function parseDirection(text: string, start = 0): Parsed<Angle> {
 
 const openingBracketRegEx = /\s*\(\s*/gy;
 const closingBracketRegEx = /\s*\)\s*/gy;
-const closingBracketOrCommaRegEx = /\s*(\)|,)\s*/gy;
+const closingBracketOrCommaRegEx = /\s*([),])\s*/gy;
 function parseArgumentsList<T>(text: string, start: number, argument: (value: string, lastIndex: number, index: number) => Parsed<T>): Parsed<Parsed<T>[]> {
 	openingBracketRegEx.lastIndex = start;
 	const openingBracket = openingBracketRegEx.exec(text);
@@ -541,6 +534,7 @@ function parseArgumentsList<T>(text: string, start: number, argument: (value: st
 		if (closingBracketOrComma) {
 			end = closingBracketOrCommaRegEx.lastIndex;
 			if (closingBracketOrComma[1] === ',') {
+				// noinspection UnnecessaryContinueJS
 				continue;
 			} else if (closingBracketOrComma[1] === ')') {
 				return { start, end, value };
@@ -702,7 +696,7 @@ export interface PseudoClassSelector {
 	type: ':';
 	identifier: string;
 }
-export type AttributeSelectorTest = '=' | '^=' | '$=' | '*=' | '=' | '~=' | '|=';
+export type AttributeSelectorTest = '=' | '^=' | '$=' | '*=' | '~=' | '|=';
 export interface AttributeSelector {
 	type: '[]';
 	property: string;
@@ -743,7 +737,7 @@ export function parseSimpleIdentifierSelector(text: string, start = 0): Parsed<T
 	return { start, end, value };
 }
 
-const attributeSelectorRegEx = /\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\]/gy;
+const attributeSelectorRegEx = /\[\s*([_\-\w][_\-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_\-\w][_\-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\]/gy;
 export function parseAttributeSelector(text: string, start: number): Parsed<AttributeSelector> {
 	attributeSelectorRegEx.lastIndex = start;
 	const result = attributeSelectorRegEx.exec(text);
@@ -782,7 +776,7 @@ export function parseSimpleSelectorSequence(text: string, start: number): Parsed
 	return { start, end, value };
 }
 
-const combinatorRegEx = /\s*(\+|~|>)?\s*/gy;
+const combinatorRegEx = /\s*([+~>])?\s*/gy;
 export function parseCombinator(text: string, start = 0): Parsed<Combinator> {
 	combinatorRegEx.lastIndex = start;
 	const result = combinatorRegEx.exec(text);
@@ -818,6 +812,10 @@ export function parseSelector(text: string, start = 0): Parsed<Selector> {
 		}
 		end = simpleSelectorSequence.end;
 		if (combinator) {
+			// This logic looks weird; this `if` statement would occur on the next LOOP, so it effects the prior `pair`
+			// variable which is already pushed into the `value` array is going to have its `undefined` set to this
+			// value before the following statement creates a new `pair` memory variable.
+			// noinspection JSUnusedAssignment
 			pair[1] = combinator.value;
 		}
 		pair = [simpleSelectorSequence.value, undefined];
@@ -944,7 +942,7 @@ interface SimpleBlock extends InputTokenObject {
 	values: InputToken[];
 }
 
-type AtKeywordToken = InputTokenObject
+type AtKeywordToken = InputTokenObject;
 
 /**
  * CSS parser following relatively close:
@@ -1316,11 +1314,9 @@ export class CSS3Parser {
 	 */
 	public parseAStylesheet(): Stylesheet {
 		this.topLevelFlag = true;
-		const stylesheet: Stylesheet = {
+		return {
 			rules: this.consumeAListOfRules(),
 		};
-
-		return stylesheet;
 	}
 
 	/**
@@ -1335,7 +1331,7 @@ export class CSS3Parser {
 				case ' ':
 					continue;
 				case '<!--':
-				case '-->':{
+				case '-->': {
 					if (this.topLevelFlag) {
 						continue;
 					}
@@ -1345,7 +1341,7 @@ export class CSS3Parser {
 						rules.push(atRule);
 					}
 					continue;
-			}
+				}
 			}
 			if ((<InputTokenObject>inputToken).type === TokenObjectType.atKeyword) {
 				this.reconsumeTheCurrentInputToken(inputToken);
@@ -1412,8 +1408,7 @@ export class CSS3Parser {
 		let inputToken: InputToken;
 		while ((inputToken = this.consumeAToken())) {
 			if (inputToken === '{') {
-				const block = this.consumeASimpleBlock(inputToken);
-				qualifiedRule.block = block;
+				qualifiedRule.block = this.consumeASimpleBlock(inputToken);
 
 				return qualifiedRule;
 			} else if ((<InputTokenObject>inputToken).type === TokenObjectType.simpleBlock) {
@@ -1513,14 +1508,14 @@ export class CSS3Parser {
 			}
 			const nextInputToken = this.text[this.nextInputCodePointIndex];
 			switch (nextInputToken) {
-				case ')':{
+				case ')': {
 					this.nextInputCodePointIndex++;
 					const end = this.nextInputCodePointIndex;
 					funcToken.text = name + '(' + this.text.substring(start, end);
 
 					return funcToken;
 				}
-				default:{
+				default: {
 					const component = this.consumeAComponentValue();
 					if (component) {
 						funcToken.components.push(component);
@@ -1560,7 +1555,7 @@ export class CSSNativeScript {
 
 	private parseAtRule(rule: AtRule): any {
 		if (rule.name === 'import') {
-			// TODO: We have used an "@improt { url('path somewhere'); }" at few places.
+			// TODO: We have used an "@import { url('path somewhere'); }" at few places.
 			return {
 				import: rule.prelude
 					.map((m) => (typeof m === 'string' ? m : m.text))
