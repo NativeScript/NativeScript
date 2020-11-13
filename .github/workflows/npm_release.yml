@@ -16,7 +16,7 @@ jobs:
 
       - name: Generate Version
         working-directory: packages/core
-        run: echo ::set-env name=NPM_VERSION::$(node -e "console.log(require('./package.json').version);")--$(date +"%m-%d-%Y-%s")-$GITHUB_RUN_NUMBER
+        run: echo ::set-env name=NPM_VERSION::$(node -e "console.log(require('./package.json').version);")-$(date +"%m-%d-%Y")-$GITHUB_RUN_ID
 
       - name: Bump Version
         working-directory: packages/core
