@@ -7,6 +7,7 @@ import { Color } from '../../color';
 import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
+import { BoxShadow } from './box-shadow';
 
 export * from './background-common';
 
@@ -24,6 +25,8 @@ interface NativeView extends UIView {
 	leftBorderLayer: CALayer;
 
 	gradientLayer: CAGradientLayer;
+
+	boxShadowLayer: CALayer;
 }
 
 interface Rect {
@@ -53,6 +56,17 @@ export module ios {
 		clearGradient(nativeView);
 		if (background.image instanceof LinearGradient) {
 			drawGradient(nativeView, background.image);
+		}
+
+		if (true) {
+			drawBoxShadow(nativeView, {
+				shadowColor: new Color('red'),
+				shadowOffsetWidth: 5,
+				shadowOffsetHeight: 5,
+				radius: 5,
+				shadowOpacity: 0.8,
+				shadowRadius: 5,
+			});
 		}
 
 		const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
@@ -704,6 +718,82 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
 	}
 
 	nativeView.hasNonUniformBorder = hasNonUniformBorder;
+}
+
+function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow) {
+	const layer: CALayer = nativeView.layer;
+	if (true) {
+		layer.backgroundColor = UIColor.whiteColor.CGColor;
+	} else {
+		layer.backgroundColor = UIColor.clearColor.CGColor;
+	}
+	layer.shadowOpacity = boxShadow.shadowOpacity;
+	layer.shadowRadius = boxShadow.shadowRadius;
+	layer.shadowColor = boxShadow.shadowColor.ios.CGColor;
+	layer.shadowOffset = CGSizeMake(boxShadow.shadowOffsetWidth, boxShadow.shadowOffsetHeight);
+	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, boxShadow.radius).CGPath;
+
+	// layer.insertSublayerAtIndex(shadow, 0);
+
+	// from shadow directive ------
+	// createShadow(view: UIView) {
+	// 	const layer: CALayer = view.layer;
+	// 	if (this.useShadowLayer) {
+	// 	  const shadowColor = new Color(this.shadowColor);
+	// 	  layer.masksToBounds = false;
+	// 	  if (this.shadowWhiteBg) {
+	// 		layer.backgroundColor = UIColor.whiteColor.CGColor;
+	// 	  } else {
+	// 		layer.backgroundColor = UIColor.clearColor.CGColor;
+	// 	  }
+	// 	  layer.shadowOpacity = this.shadowOpacity;
+	// 	  layer.shadowRadius = this.shadowRadius;
+	// 	  layer.shadowColor = shadowColor.ios.CGColor;
+	// 	  layer.shadowOffset = CGSizeMake(this.shadowOffsetWidth, this.shadowOffsetHeight);
+	// 	  // view.layer.shadowPath = UIBezierPath.bezierPathWithRect(CGRectMake(0, 0, 2.1 * this._radius, view.frame.size.height)).CGPath;
+	// 	  layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(view.bounds, this.radius).CGPath;
+	// 	} else {
+	// 	  // console.log('this.shadowId:', this.shadowId);
+	// 	  // let shadow = this._nativeCache.getItem(this.shadowId);
+	// 	  // if (!shadow) {
+	// 	  // console.log('creating effect...');
+	// 	  const shadow = CAShapeLayer.layer();
+	// 	  const shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(view.bounds, this.radius);
+	// 	  const shadowColor = new Color(this.shadowColor);
+	// 	  let backgroundColor: Color;
+	// 	  let ignoreFill = false;
+	// 	  if (this.shadowBackgroundColor === 'card-shadow') {
+	// 		shadow.fillColor = UIColor.colorWithRedGreenBlueAlpha(0, 0, 0, 0.2).CGColor;
+	// 		ignoreFill = true; // hack for discover shadows for now (not enough time to do right lol - nrw)
+	// 	  } else if (this.shadowBackgroundColor) {
+	// 		if (this.shadowBackgroundColor instanceof Color) {
+	// 		  backgroundColor = this.shadowBackgroundColor;
+	// 		} else {
+	// 		  backgroundColor = new Color(this.shadowBackgroundColor);
+	// 		}
+	// 	  }
+	// 	  if (!ignoreFill) {
+	// 		shadow.fillColor = backgroundColor && backgroundColor.ios ? backgroundColor.ios.CGColor : UIColor.whiteColor.CGColor;
+	// 	  }
+
+	// 	  // shadow.masksToBounds = false;
+	// 	  shadow.shadowColor = shadowColor && shadowColor.ios ? shadowColor.ios.CGColor : UIColor.blackColor.CGColor;
+	// 	  shadow.shadowOffset = CGSizeMake(this.shadowOffsetWidth, this.shadowOffsetHeight);
+	// 	  shadow.shadowOpacity = this.shadowOpacity;
+	// 	  shadow.path = shadowPath.CGPath;
+	// 	  shadow.shadowPath = shadow.path;
+	// 	  shadow.shadowRadius = this.shadowRadius;
+	// 	  // this._nativeCache.setItem(this.shadowId, shadow);
+	// 	  // }
+	// 	  // else {
+	// 	  //   console.log('using cached effect.');
+	// 	  // }
+	// 	  // layer.masksToBounds = false;
+	// 	  layer.insertSublayerAtIndex(shadow, 0);
+	// 	}
+	// 	this._applied = true;
+	//   }
+	// ------------------
 }
 
 function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
