@@ -1,9 +1,12 @@
-name: Release @nativescript/core to NPM
+name: '@nativescript/core -> npm'
 
 on:
   push:
     branches: [ 'master' ]
 
+env:
+  NPM_TAG: 'next'
+  
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -17,7 +20,6 @@ jobs:
       - name: Generate Version
         working-directory: packages/core
         run: |
-          echo NPM_TAG=next >> $GITHUB_ENV
           echo NPM_VERSION=$(node -e "console.log(require('./package.json').version);")-$NPM_TAG-$(date +"%m-%d-%Y")-$GITHUB_RUN_ID >> $GITHUB_ENV
 
       - name: Bump Version
