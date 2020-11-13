@@ -58,15 +58,10 @@ export module ios {
 			drawGradient(nativeView, background.image);
 		}
 
-		if (true) {
-			drawBoxShadow(nativeView, {
-				shadowColor: new Color('red'),
-				shadowOffsetWidth: 5,
-				shadowOffsetHeight: 5,
-				radius: 5,
-				shadowOpacity: 0.8,
-				shadowRadius: 5,
-			});
+		const boxShadow = view.style.boxShadow;
+		if (boxShadow) {
+			console.log('boxShadow', boxShadow);
+			drawBoxShadow(nativeView, boxShadow);
 		}
 
 		const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
@@ -727,13 +722,11 @@ function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow) {
 	} else {
 		layer.backgroundColor = UIColor.clearColor.CGColor;
 	}
-	layer.shadowOpacity = boxShadow.shadowOpacity;
-	layer.shadowRadius = boxShadow.shadowRadius;
-	layer.shadowColor = boxShadow.shadowColor.ios.CGColor;
-	layer.shadowOffset = CGSizeMake(boxShadow.shadowOffsetWidth, boxShadow.shadowOffsetHeight);
-	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, boxShadow.radius).CGPath;
-
-	// layer.insertSublayerAtIndex(shadow, 0);
+	layer.shadowOpacity = 0.7; //boxShadow.shadowOpacity;
+	layer.shadowRadius = boxShadow.blurRadius;
+	layer.shadowColor = boxShadow.color.ios.CGColor;
+	layer.shadowOffset = CGSizeMake(boxShadow.offsetX, boxShadow.offsetY);
+	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, boxShadow.spreadRadius).CGPath;
 
 	// from shadow directive ------
 	// createShadow(view: UIView) {

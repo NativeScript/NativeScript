@@ -17,6 +17,7 @@ import { Trace } from '../../trace';
 
 import * as parser from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
+import { BoxShadow } from './box-shadow';
 
 export type LengthDipUnit = { readonly unit: 'dip'; readonly value: dip };
 export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
@@ -450,6 +451,48 @@ export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignmen
 	valueConverter: VerticalAlignment.parse,
 });
 verticalAlignmentProperty.register(Style);
+
+function parseBoxShadowProperites(value: string): BoxShadow {
+	if (typeof value === 'string') {
+		let arr = value.split(/[ ,]+/);
+
+		let offsetX: number;
+		let offsetY: number;
+		let blurRadius: number;
+		let spreadRadius: number;
+		let color: Color;
+		// let opacity: string;
+
+		if (arr.length === 3) {
+			offsetX = +arr[0];
+			offsetY = +arr[1];
+			color = new Color(arr[2]);
+		} else if (arr.length === 4) {
+			offsetX = +arr[0];
+			offsetY = +arr[1];
+			blurRadius = +arr[2];
+			color = new Color(arr[3]);
+		} else if (arr.length === 5) {
+			offsetX = +arr[0];
+			offsetY = +arr[1];
+			blurRadius = +arr[2];
+			spreadRadius = +arr[3];
+			color = new Color(arr[4]);
+		} else {
+			throw new Error('Expected 3, 4 or 5 parameters. Actual: ' + value);
+		}
+		return {
+			offsetX: offsetX,
+			offsetY: offsetY,
+			blurRadius: blurRadius,
+			spreadRadius: spreadRadius,
+			color: color,
+			// opacity: opacity
+		};
+	} else {
+		return value;
+	}
+}
 
 interface Thickness {
 	top: string;
@@ -1274,6 +1317,18 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, Length>({
 	valueConverter: Length.parse,
 });
 borderBottomLeftRadiusProperty.register(Style);
+
+const boxShadowProperty = new CssProperty<Style, BoxShadow>({
+	name: 'boxShadow',
+	cssName: 'box-shadow',
+	valueChanged: (target, oldValue, newValue) => {
+		target.boxShadow = newValue;
+	},
+	valueConverter: (value) => {
+		return parseBoxShadowProperites(value);
+	},
+});
+boxShadowProperty.register(Style);
 
 function isNonNegativeFiniteNumber(value: number): boolean {
 	return isFinite(value) && !isNaN(value) && value >= 0;
