@@ -1,7 +1,7 @@
 import { queueMacrotask } from '../utils/macrotask-scheduler';
 import { FPSCallback } from '../fps-meter/fps-native';
 import { getTimeInFrameBase } from './animation-native';
-import { Trace } from 'trace';
+import { Trace } from '../trace';
 
 export interface FrameRequestCallback {
 	(time: number): void;
