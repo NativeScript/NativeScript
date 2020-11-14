@@ -7,21 +7,16 @@
 		"declaration": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
-		"lib": [
-			"es2017"
-		],
+		"lib": ["es2017"],
 		"sourceMap": true,
 		"skipLibCheck": true,
 		"skipDefaultLibCheck": true,
 		"diagnostics": true,
 		"paths": {
-			"@nativescript/webpack": [
-				"src"
-			]
+			"@nativescript/webpack": ["src"]
 		},
 		"esModuleInterop": true
 	},
-	"exclude": [
-		"node_modules"
-	]
+	"include": ["src"],
+	"exclude": ["node_modules"]
 }
