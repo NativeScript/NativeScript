@@ -253,6 +253,31 @@
 					}
 				}
 			}
+		},
+		"webpack5": {
+			"root": "packages/webpack5",
+			"sourceRoot": "packages/webpack5",
+			"projectType": "library",
+			"schematics": {},
+			"architect": {
+				"lint": {
+					"builder": "@nrwl/linter:eslint",
+					"options": {
+						"lintFilePatterns": []
+					}
+				},
+				"build": {
+					"builder": "@nrwl/workspace:run-commands",
+					"outputs": ["dist/packages"],
+					"options": {
+						"commands": [
+							"npm run build"
+						],
+						"cwd": "packages/webpack5",
+						"parallel": false
+					}
+				}
+			}
 		}
 	},
 	"cli": {
