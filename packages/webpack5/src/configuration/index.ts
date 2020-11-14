@@ -7,19 +7,36 @@ import svelte from './svelte';
 import typescript from './typescript';
 import vue from './vue';
 
+// export chain configs
+// todo: rename if needed
+export { base as __base, angular as __angular, javascript as __javascript, react as __react, svelte as __svelte, typescript as __typescript, vue as __vue };
+
 // export final configs
-// todo: perhaps we can export chain configs as well
+export const baseConfig = (env: IWebpackEnv) => base(env).toConfig();
 
-export const baseConfig = (env) => base(env).toConfig();
-
-export const angularConfig = (env) => angular(env).toConfig();
-export const javascriptConfig = (env) => javascript(env).toConfig();
-export const reactConfig = (env) => react(env).toConfig();
-export const svelteConfig = (env) => svelte(env).toConfig();
-export const typescriptConfig = (env) => typescript(env).toConfig();
-export const vueConfig = (env) => vue(env).toConfig();
+export const angularConfig = (env: IWebpackEnv) => angular(env).toConfig();
+export const javascriptConfig = (env: IWebpackEnv) => javascript(env).toConfig();
+export const reactConfig = (env: IWebpackEnv) => react(env).toConfig();
+export const svelteConfig = (env: IWebpackEnv) => svelte(env).toConfig();
+export const typescriptConfig = (env: IWebpackEnv) => typescript(env).toConfig();
+export const vueConfig = (env: IWebpackEnv) => vue(env).toConfig();
 
 export interface IWebpackEnv {
-	hmr: boolean;
+	[name: string]: any;
+
+	appPath?: string;
+	appResourcesPath?: string;
+
+	android?: boolean;
+	ios?: boolean;
+
+	production?: boolean;
+	report?: boolean;
+	hmr?: boolean;
 	// todo: add others
+}
+
+export enum WebpackPlatform {
+	'ios',
+	'android',
 }

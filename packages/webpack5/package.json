@@ -16,6 +16,7 @@
     "webpack": "^5.4.0"
   },
   "dependencies": {
+    "clean-webpack-plugin": "^3.0.0",
     "vue-loader": "^15.9.5",
     "webpack-chain": "^6.5.1"
   }
