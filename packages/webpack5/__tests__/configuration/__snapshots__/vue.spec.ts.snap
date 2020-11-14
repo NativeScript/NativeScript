@@ -1,47 +1,136 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`vue configuration works 1`] = `
-Object {
-  "entry": Object {
-    "": Array [],
-  },
-  "module": Object {
-    "rules": Array [
-      Object {
-        "test": /\\\\\\.vue\\$/,
-        "use": Array [
-          Object {
-            "loader": "vue-loader",
-            "options": Object {
-              "compiler": "nativescript-vue-template-compiler",
-            },
-          },
-        ],
-      },
-      Object {
-        "use": Array [
-          Object {
-            "loader": "ts-loader",
-            "options": Object {
-              "appendTsSuffixTo": Array [
-                /\\\\\\.vue\\$/,
-              ],
-            },
-          },
-        ],
-      },
-    ],
-  },
-  "plugins": Array [
-    VueLoaderPlugin {},
-  ],
-  "resolve": Object {
-    "alias": Object {
-      "vue": "nativescript-vue",
+exports[`vue configuration [android] works 1`] = `
+"{
+  resolve: {
+    symlinks: true,
+    alias: {
+      '~/package.json': 'package.json',
+      '~': '<TODO>appFullPath',
+      '@': '<TODO>appFullPath',
+      vue: 'nativescript-vue'
     },
-    "extensions": Array [
-      ".vue",
-    ],
+    extensions: [
+      '.vue'
+    ]
   },
-}
+  module: {
+    rules: [
+      /* config.module.rule('vue') */
+      {
+        test: /\\\\.vue$/,
+        use: [
+          /* config.module.rule('vue').use('vue-loader') */
+          {
+            loader: 'vue-loader',
+            options: {
+              compiler: 'nativescript-vue-template-compiler'
+            }
+          }
+        ]
+      },
+      /* config.module.rule('ts') */
+      {
+        use: [
+          /* config.module.rule('ts').use('ts-loader') */
+          {
+            loader: 'ts-loader',
+            options: {
+              appendTsSuffixTo: [
+                /\\\\.vue$/
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  plugins: [
+    /* config.plugin('clean') */
+    new CleanWebpackPlugin(
+      {
+        cleanOnceBeforeBuildPatterns: [
+          'platforms/android/app/src/main/assets/app/**/*'
+        ],
+        verbose: true
+      }
+    ),
+    /* config.plugin('vue-plugin') */
+    new VueLoaderPlugin()
+  ],
+  entry: {
+    bundle: [
+      'todo/main'
+    ]
+  }
+}"
+`;
+
+exports[`vue configuration [ios] works 1`] = `
+"{
+  resolve: {
+    symlinks: true,
+    alias: {
+      '~/package.json': 'package.json',
+      '~': '<TODO>appFullPath',
+      '@': '<TODO>appFullPath',
+      vue: 'nativescript-vue'
+    },
+    extensions: [
+      '.vue'
+    ]
+  },
+  module: {
+    rules: [
+      /* config.module.rule('vue') */
+      {
+        test: /\\\\.vue$/,
+        use: [
+          /* config.module.rule('vue').use('vue-loader') */
+          {
+            loader: 'vue-loader',
+            options: {
+              compiler: 'nativescript-vue-template-compiler'
+            }
+          }
+        ]
+      },
+      /* config.module.rule('ts') */
+      {
+        use: [
+          /* config.module.rule('ts').use('ts-loader') */
+          {
+            loader: 'ts-loader',
+            options: {
+              appendTsSuffixTo: [
+                /\\\\.vue$/
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  plugins: [
+    /* config.plugin('clean') */
+    new CleanWebpackPlugin(
+      {
+        cleanOnceBeforeBuildPatterns: [
+          'platforms/ios/[todo]/app/**/*'
+        ],
+        verbose: true
+      }
+    ),
+    /* config.plugin('vue-plugin') */
+    new VueLoaderPlugin()
+  ],
+  entry: {
+    inspector_modules: [
+      'tns_modules/@nativescript/core/inspector_modules'
+    ],
+    bundle: [
+      'todo/main'
+    ]
+  }
+}"
 `;
