@@ -1,0 +1,13 @@
+{
+  "name": "@nativescript/webpack",
+  "version": "4.0.0-dev",
+  "private": true,
+  "main": "index.js",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "echo todo"
+  },
+  "devDependencies": {
+    "webpack": "^5.4.0"
+  }
+}
