@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "echo todo",
-		"test": "jest"
+    "test": "jest"
   },
   "devDependencies": {
     "@types/jest": "^26.0.15",
@@ -16,6 +16,7 @@
     "webpack": "^5.4.0"
   },
   "dependencies": {
+    "vue-loader": "^15.9.5",
     "webpack-chain": "^6.5.1"
   }
 }

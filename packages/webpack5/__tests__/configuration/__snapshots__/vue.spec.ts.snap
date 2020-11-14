@@ -3,9 +3,7 @@
 exports[`vue configuration works 1`] = `
 Object {
   "entry": Object {
-    "bundle.js": Array [
-      "bundle.js",
-    ],
+    "": Array [],
   },
   "module": Object {
     "rules": Array [
@@ -20,6 +18,29 @@ Object {
           },
         ],
       },
+      Object {
+        "use": Array [
+          Object {
+            "loader": "ts-loader",
+            "options": Object {
+              "appendTsSuffixTo": Array [
+                /\\\\\\.vue\\$/,
+              ],
+            },
+          },
+        ],
+      },
+    ],
+  },
+  "plugins": Array [
+    VueLoaderPlugin {},
+  ],
+  "resolve": Object {
+    "alias": Object {
+      "vue": "nativescript-vue",
+    },
+    "extensions": Array [
+      ".vue",
     ],
   },
 }

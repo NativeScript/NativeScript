@@ -1,10 +1,16 @@
 import base from './base';
-import { default as Config } from 'webpack-chain';
+import Config from 'webpack-chain';
+import { VueLoaderPlugin } from 'vue-loader';
+import { IWebpackEnv } from './index';
 
 // todo: add base configuration for vue
-export default function (env) {
-	const config = new Config().merge(base(env));
+export default function (env: IWebpackEnv): Config {
+	const config = base(env);
 
+	// resolve .vue files
+	config.resolve.extensions.prepend('.vue');
+
+	// add a rule for .vue files
 	config.module
 		.rule('vue')
 		.test(/\.vue$/)
@@ -18,14 +24,23 @@ export default function (env) {
 		})
 		.end();
 
-	// todo: we may want to use webpack-chain internally
-	// to avoid "trying to read property x of undefined" type of issues
-	/*
-		config.module.rules.push({
-			test: /.vue$/,
-			use: [],
+	// set up ts support in vue files
+	config.module
+		.rule('ts')
+		.use('ts-loader')
+		.loader('ts-loader')
+		.tap((options) => {
+			return {
+				...options,
+				appendTsSuffixTo: [/\.vue$/],
+			};
 		});
-	*/
 
-	return config.toConfig();
+	// add VueLoaderPlugin
+	config.plugin('vue-plugin').use(VueLoaderPlugin);
+
+	// add an alias for vue, since some plugins may try to import it
+	config.resolve.alias.set('vue', 'nativescript-vue');
+
+	return config;
 }
