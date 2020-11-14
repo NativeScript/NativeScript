@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`vue configuration works 1`] = `
+Object {
+  "entry": Object {
+    "bundle.js": Array [
+      "bundle.js",
+    ],
+  },
+  "module": Object {
+    "rules": Array [
+      Object {
+        "test": /\\\\\\.vue\\$/,
+        "use": Array [
+          Object {
+            "loader": "vue-loader",
+            "options": Object {
+              "compiler": "nativescript-vue-template-compiler",
+            },
+          },
+        ],
+      },
+    ],
+  },
+}
+`;
