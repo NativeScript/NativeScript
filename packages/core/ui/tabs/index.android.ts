@@ -247,7 +247,6 @@ function initializeNativeClasses() {
 
 				// Update tabstrip items
 				if (position != previousPosition) {
-					console.log(position, previousPosition);
 					const tabStripItems = tab.tabStrip && tab.tabStrip.items;
 
 					if (position >= 0 && tabStripItems && tabStripItems[position]) {
