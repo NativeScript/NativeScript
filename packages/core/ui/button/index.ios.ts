@@ -2,8 +2,9 @@ import { ControlStateChangeListener } from '../core/control-state-change';
 import { ButtonBase } from './button-common';
 import { View, PseudoClassHandler } from '../core/view';
 import { borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, LengthType } from '../styling/style-properties';
-import { textAlignmentProperty, whiteSpaceProperty, WhiteSpaceType, TextAlignmentType } from '../text-base';
+import { textAlignmentProperty, whiteSpaceProperty } from '../text-base';
 import { layout } from '../../utils';
+import { Enums } from '../enums';
 
 export * from './button-common';
 
@@ -191,7 +192,7 @@ export class Button extends ButtonBase {
 		};
 	}
 
-	[textAlignmentProperty.setNative](value: TextAlignmentType) {
+	[textAlignmentProperty.setNative](value: Enums.TextAlignmentType) {
 		switch (value) {
 			case 'left':
 				this.nativeViewProtected.titleLabel.textAlignment = NSTextAlignment.Left;
@@ -209,7 +210,7 @@ export class Button extends ButtonBase {
 		}
 	}
 
-	[whiteSpaceProperty.setNative](value: WhiteSpaceType) {
+	[whiteSpaceProperty.setNative](value: Enums.WhiteSpaceType) {
 		const nativeView = this.nativeViewProtected.titleLabel;
 		switch (value) {
 			case 'normal':

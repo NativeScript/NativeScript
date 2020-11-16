@@ -1,8 +1,8 @@
 import { ButtonBase } from './button-common';
 import { PseudoClassHandler } from '../core/view';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty, minWidthProperty, minHeightProperty, LengthType } from '../styling/style-properties';
-import { textAlignmentProperty, TextAlignmentType } from '../text-base';
-import { TextAlignment } from '../enums';
+import { textAlignmentProperty } from '../text-base';
+import { Enums } from '../enums';
 import { profile } from '../../profiling';
 import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
 import { Device } from '../../platform';
@@ -167,7 +167,7 @@ export class Button extends ButtonBase {
 		org.nativescript.widgets.ViewHelper.setZIndex(this.nativeViewProtected, value);
 	}
 
-	[textAlignmentProperty.setNative](value: TextAlignmentType) {
+	[textAlignmentProperty.setNative](value: Enums.TextAlignmentType) {
 		// Button initial value is center.
 		const newValue = value === 'initial' ? 'center' : value;
 		super[textAlignmentProperty.setNative](newValue);

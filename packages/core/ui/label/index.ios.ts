@@ -3,7 +3,8 @@ import { Background } from '../styling/background';
 import { Length, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, LengthType } from '../styling/style-properties';
 import { booleanConverter } from '../core/view-base';
 import { View, CSSType } from '../core/view';
-import { TextBase, whiteSpaceProperty, WhiteSpaceType } from '../text-base';
+import { Enums } from '../enums';
+import { TextBase, whiteSpaceProperty } from '../text-base';
 import { layout } from '../../utils';
 
 import { ios } from '../styling/background';
@@ -111,7 +112,7 @@ export class Label extends TextBase implements LabelDefinition {
 		return nativeSize;
 	}
 
-	[whiteSpaceProperty.setNative](value: WhiteSpaceType) {
+	[whiteSpaceProperty.setNative](value: Enums.WhiteSpaceType) {
 		const nativeView = this.nativeTextViewProtected;
 		switch (value) {
 			case 'normal':

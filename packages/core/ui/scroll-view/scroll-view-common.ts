@@ -5,14 +5,14 @@ import { Property, makeParser, makeValidator } from '../core/properties';
 import { CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { EventData } from '../../data/observable';
-import { OrientationType } from '../enums';
+import { Enums } from '../enums';
 
 @CSSType('ScrollView')
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
 	private _scrollChangeCount = 0;
 	public static scrollEvent = 'scroll';
 
-	public orientation: OrientationType;
+	public orientation: Enums.OrientationType;
 	public scrollBarIndicatorVisible: boolean;
 	public isScrollEnabled: boolean;
 
@@ -92,12 +92,12 @@ export interface ScrollViewBase {
 	on(event: 'scroll', callback: (args: ScrollEventData) => void, thisArg?: any);
 }
 
-const converter = makeParser<OrientationType>(makeValidator('horizontal', 'vertical'));
-export const orientationProperty = new Property<ScrollViewBase, OrientationType>({
+const converter = makeParser<Enums.OrientationType>(makeValidator(Enums.Orientation.horizontal, Enums.Orientation.vertical));
+export const orientationProperty = new Property<ScrollViewBase, Enums.OrientationType>({
 	name: 'orientation',
-	defaultValue: 'vertical',
+	defaultValue: Enums.Orientation.vertical,
 	affectsLayout: true,
-	valueChanged: (target: ScrollViewBase, oldValue: OrientationType, newValue: OrientationType) => {
+	valueChanged: (target: ScrollViewBase, oldValue: Enums.OrientationType, newValue: Enums.OrientationType) => {
 		target._onOrientationChanged();
 	},
 	valueConverter: converter,

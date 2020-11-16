@@ -1,21 +1,21 @@
-﻿import { EditableTextBase as EditableTextBaseDefinition, ReturnKeyButtonType, UpdateTextTriggerType, AutocapitalizationInputType } from '.';
+﻿import { EditableTextBase as EditableTextBaseDefinition } from '.';
 import { TextBase } from '../text-base';
 import { Property, CssProperty, makeValidator, makeParser } from '../core/properties';
 import { PseudoClassHandler } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
-import { KeyboardInputType } from '../enums';
+import { Enums } from '../enums';
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
 	public static blurEvent = 'blur';
 	public static focusEvent = 'focus';
 	public static textChangeEvent = 'textChange';
 
-	public keyboardType: KeyboardInputType;
-	public returnKeyType: ReturnKeyButtonType;
-	public updateTextTrigger: UpdateTextTriggerType;
-	public autocapitalizationType: AutocapitalizationInputType;
+	public keyboardType: Enums.KeyboardInputType;
+	public returnKeyType: Enums.ReturnKeyButtonType;
+	public updateTextTrigger: Enums.UpdateTextTriggerType;
+	public autocapitalizationType: Enums.AutocapitalizationInputType;
 	public editable: boolean;
 	public autocorrect: boolean;
 	public hint: string;
@@ -47,14 +47,14 @@ export const placeholderColorProperty = new CssProperty<Style, Color>({
 });
 placeholderColorProperty.register(Style);
 
-const keyboardTypeConverter = makeParser<KeyboardInputType>(makeValidator<KeyboardInputType>('datetime', 'phone', 'number', 'url', 'email', 'integer'));
+const keyboardTypeConverter = makeParser<Enums.KeyboardInputType>(makeValidator<Enums.KeyboardInputType>(Enums.KeyboardType.datetime, Enums.KeyboardType.phone, Enums.KeyboardType.number, Enums.KeyboardType.url, Enums.KeyboardType.email, Enums.KeyboardType.integer));
 
-export const keyboardTypeProperty = new Property<EditableTextBase, KeyboardInputType>({ name: 'keyboardType', valueConverter: keyboardTypeConverter });
+export const keyboardTypeProperty = new Property<EditableTextBase, Enums.KeyboardInputType>({ name: 'keyboardType', valueConverter: keyboardTypeConverter });
 keyboardTypeProperty.register(EditableTextBase);
 
-const returnKeyTypeConverter = makeParser<ReturnKeyButtonType>(makeValidator<ReturnKeyButtonType>('done', 'next', 'go', 'search', 'send'));
+const returnKeyTypeConverter = makeParser<Enums.ReturnKeyButtonType>(makeValidator<Enums.ReturnKeyButtonType>(Enums.ReturnKeyType.done, Enums.ReturnKeyType.next, Enums.ReturnKeyType.go, Enums.ReturnKeyType.search, Enums.ReturnKeyType.send));
 
-export const returnKeyTypeProperty = new Property<EditableTextBase, ReturnKeyButtonType>({ name: 'returnKeyType', valueConverter: returnKeyTypeConverter });
+export const returnKeyTypeProperty = new Property<EditableTextBase, Enums.ReturnKeyButtonType>({ name: 'returnKeyType', valueConverter: returnKeyTypeConverter });
 returnKeyTypeProperty.register(EditableTextBase);
 
 export const editableProperty = new Property<EditableTextBase, boolean>({
@@ -64,14 +64,14 @@ export const editableProperty = new Property<EditableTextBase, boolean>({
 });
 editableProperty.register(EditableTextBase);
 
-export const updateTextTriggerProperty = new Property<EditableTextBase, UpdateTextTriggerType>({ name: 'updateTextTrigger', defaultValue: 'textChanged' });
+export const updateTextTriggerProperty = new Property<EditableTextBase, Enums.UpdateTextTriggerType>({ name: 'updateTextTrigger', defaultValue: Enums.UpdateTextTrigger.textChanged });
 updateTextTriggerProperty.register(EditableTextBase);
 
-const autocapitalizationTypeConverter = makeParser<AutocapitalizationInputType>(makeValidator<AutocapitalizationInputType>('none', 'words', 'sentences', 'allcharacters'));
+const autocapitalizationTypeConverter = makeParser<Enums.AutocapitalizationInputType>(makeValidator<Enums.AutocapitalizationInputType>(Enums.AutocapitalizationType.none, Enums.AutocapitalizationType.words, Enums.AutocapitalizationType.sentences, Enums.AutocapitalizationType.allCharacters));
 
-export const autocapitalizationTypeProperty = new Property<EditableTextBase, AutocapitalizationInputType>({
+export const autocapitalizationTypeProperty = new Property<EditableTextBase, Enums.AutocapitalizationInputType>({
 	name: 'autocapitalizationType',
-	defaultValue: 'sentences',
+	defaultValue: Enums.AutocapitalizationType.sentences,
 	valueConverter: autocapitalizationTypeConverter,
 });
 autocapitalizationTypeProperty.register(EditableTextBase);

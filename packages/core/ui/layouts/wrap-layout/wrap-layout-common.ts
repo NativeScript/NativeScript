@@ -3,13 +3,13 @@ import { LayoutBase } from '../layout-base';
 import { CSSType } from '../../core/view';
 import { Property, makeValidator, makeParser } from '../../core/properties';
 import { Length, LengthType } from '../../styling/style-properties';
-import { OrientationType } from '../../enums';
+import { Enums } from '../../enums';
 
 export * from '../layout-base';
 
 @CSSType('WrapLayout')
 export class WrapLayoutBase extends LayoutBase implements WrapLayoutDefinition {
-	public orientation: OrientationType;
+	public orientation: Enums.OrientationType;
 	public itemWidth: LengthType;
 	public itemHeight: LengthType;
 	public effectiveItemWidth: number;
@@ -36,10 +36,10 @@ export const itemHeightProperty = new Property<WrapLayoutBase, LengthType>({
 });
 itemHeightProperty.register(WrapLayoutBase);
 
-const converter = makeParser<OrientationType>(makeValidator<OrientationType>('horizontal', 'vertical'));
-export const orientationProperty = new Property<WrapLayoutBase, OrientationType>({
+const converter = makeParser<Enums.OrientationType>(makeValidator<Enums.OrientationType>(Enums.Orientation.horizontal, Enums.Orientation.vertical));
+export const orientationProperty = new Property<WrapLayoutBase, Enums.OrientationType>({
 	name: 'orientation',
-	defaultValue: 'horizontal',
+	defaultValue: Enums.Orientation.horizontal,
 	affectsLayout: global.isIOS,
 	valueConverter: converter,
 });

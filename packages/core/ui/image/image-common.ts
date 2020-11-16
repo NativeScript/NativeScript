@@ -1,6 +1,7 @@
-import { Image as ImageDefinition, Stretch } from '.';
+import { Image as ImageDefinition } from '.';
 import { View, CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
+import { Enums } from '../enums';
 import { ImageAsset } from '../../image-asset';
 import { ImageSource } from '../../image-source';
 import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from '../../utils';
@@ -15,7 +16,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 	public imageSource: ImageSource;
 	public src: string | ImageSource;
 	public isLoading: boolean;
-	public stretch: Stretch;
+	public stretch: Enums.ImageStretchType;
 	public loadMode: 'sync' | 'async';
 	public decodeWidth: LengthType;
 	public decodeHeight: LengthType;
@@ -143,7 +144,7 @@ export const isLoadingProperty = new Property<ImageBase, boolean>({
 });
 isLoadingProperty.register(ImageBase);
 
-export const stretchProperty = new Property<ImageBase, Stretch>({
+export const stretchProperty = new Property<ImageBase, Enums.ImageStretchType>({
 	name: 'stretch',
 	defaultValue: 'aspectFit',
 	affectsLayout: global.isIOS,

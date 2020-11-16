@@ -1,6 +1,7 @@
 import { TextFieldBase, secureProperty } from './text-field-common';
-import { whiteSpaceProperty, WhiteSpaceType } from '../text-base';
+import { whiteSpaceProperty } from '../text-base';
 import { keyboardTypeProperty } from '../editable-text-base';
+import { Enums } from '../enums';
 
 export * from './text-field-common';
 
@@ -89,10 +90,10 @@ export class TextField extends TextFieldBase {
 		this._setInputType(inputType);
 	}
 
-	[whiteSpaceProperty.getDefault](): WhiteSpaceType {
+	[whiteSpaceProperty.getDefault](): Enums.WhiteSpaceType {
 		return 'nowrap';
 	}
-	[whiteSpaceProperty.setNative](value: WhiteSpaceType) {
+	[whiteSpaceProperty.setNative](value: Enums.WhiteSpaceType) {
 		// Don't change it otherwise TextField will go to multiline mode.
 	}
 }

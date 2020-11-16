@@ -5,7 +5,7 @@ import { Style } from '../styling/style';
 import { EventData } from '../../data/observable';
 import { Color } from '../../color';
 import { Property, CssProperty, CoercibleProperty } from '../core/properties';
-import { TextTransformType } from '../text-base';
+import { Enums } from '../enums';
 import { Trace } from '../../trace';
 
 export const traceCategory = 'TabView';
@@ -16,10 +16,10 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
 	private _view: View;
 	private _iconSource: string;
 
-	get textTransform(): TextTransformType {
+	get textTransform(): Enums.TextTransformType {
 		return this.style.textTransform;
 	}
-	set textTransform(value: TextTransformType) {
+	set textTransform(value: Enums.TextTransformType) {
 		this.style.textTransform = value;
 	}
 
