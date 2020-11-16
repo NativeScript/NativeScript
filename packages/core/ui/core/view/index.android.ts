@@ -76,6 +76,7 @@ interface DialogOptions {
 	animated: boolean;
 	stretched: boolean;
 	cancelable: boolean;
+	windowSoftInputMode: number;
 	shownCallback: () => void;
 	dismissCallback: () => void;
 }
@@ -168,6 +169,7 @@ function initializeDialogFragment() {
 	class DialogFragmentImpl extends androidx.fragment.app.DialogFragment {
 		public owner: View;
 		private _fullscreen: boolean;
+		private _windowSoftInputMode: number;
 		private _animated: boolean;
 		private _stretched: boolean;
 		private _cancelable: boolean;
@@ -192,6 +194,7 @@ function initializeDialogFragment() {
 			this._stretched = options.stretched;
 			this._dismissCallback = options.dismissCallback;
 			this._shownCallback = options.shownCallback;
+			this._windowSoftInputMode = options.windowSoftInputMode;
 			this.setStyle(androidx.fragment.app.DialogFragment.STYLE_NO_TITLE, 0);
 
 			let theme = this.getTheme();
@@ -243,8 +246,20 @@ function initializeDialogFragment() {
 			}
 
 			const owner = this.owner;
-			if (owner && !owner.isLoaded) {
-				owner.callLoaded();
+			if (owner) {
+				if (!owner.isLoaded) {
+					owner.callLoaded();
+				}
+
+				
+				const window = this.getDialog().getWindow();
+				if (this._windowSoftInputMode !== undefined) {
+					window.setSoftInputMode(this._windowSoftInputMode);
+				} else {
+					// the dialog seems to not follow the default activity softinputmode,
+					// thus set we set it here.
+					window.setSoftInputMode((<androidx.appcompat.app.AppCompatActivity>owner._context).getWindow().getAttributes().softInputMode);
+				}
 			}
 
 			this._shownCallback();
@@ -672,10 +687,14 @@ export class View extends ViewCommon {
 		df.setArguments(args);
 
 		let cancelable = true;
+		let windowSoftInputMode: number;
 
-		if (options.android && (<any>options).android.cancelable !== undefined) {
-			cancelable = !!(<any>options).android.cancelable;
-			console.log('ShowModalOptions.android.cancelable is deprecated. Use ShowModalOptions.cancelable instead.');
+		if (options.android) {
+			if ((<any>options).android.cancelable !== undefined) {
+				cancelable = !!(<any>options).android.cancelable;
+				console.log('ShowModalOptions.android.cancelable is deprecated. Use ShowModalOptions.cancelable instead.');
+			}
+			windowSoftInputMode = (<any>options).android.windowSoftInputMode;
 		}
 
 		cancelable = options.cancelable !== undefined ? !!options.cancelable : cancelable;
@@ -686,6 +705,7 @@ export class View extends ViewCommon {
 			animated: !!options.animated,
 			stretched: !!options.stretched,
 			cancelable: cancelable,
+			windowSoftInputMode: windowSoftInputMode,
 			shownCallback: () => this._raiseShownModallyEvent(),
 			dismissCallback: () => this.closeModal(),
 		};
