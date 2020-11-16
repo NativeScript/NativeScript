@@ -58,12 +58,16 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
 	const handler = timeoutHandler;
 	const invoke = () => callback(...args);
 	const zoneBound = zonedCallback(invoke);
+	const start = Date.now();
+	function nextCallMs() {
+		return milliseconds > 0 ? milliseconds - ((Date.now() - start) % milliseconds) : milliseconds;
+	}
 
 	const runnable = new java.lang.Runnable({
 		run: () => {
 			zoneBound();
 			if (timeoutCallbacks[id]) {
-				handler.postDelayed(runnable, long(milliseconds));
+				handler.postDelayed(runnable, long(nextCallMs()));
 			}
 		},
 	});
@@ -72,7 +76,7 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
 		timeoutCallbacks[id] = runnable;
 	}
 
-	timeoutHandler.postDelayed(runnable, long(milliseconds));
+	timeoutHandler.postDelayed(runnable, long(nextCallMs()));
 
 	return id;
 }
