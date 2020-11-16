@@ -3,43 +3,14 @@ import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from '.';
 import { GestureTypes, GestureEventData } from '../../gestures';
 // Types.
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, VisibilityType, HorizontalAlignmentType, VerticalAlignmentType, LengthType, PercentLengthType } from '../../styling/style-properties';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, LengthType, PercentLengthType } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions } from '../view-base';
 import { EventData } from '../../../data/observable';
 
-import {
-	perspectiveProperty,
-	Length,
-	PercentLength,
-	Visibility,
-	HorizontalAlignment,
-	VerticalAlignment,
-	visibilityProperty,
-	opacityProperty,
-	horizontalAlignmentProperty,
-	verticalAlignmentProperty,
-	minWidthProperty,
-	minHeightProperty,
-	widthProperty,
-	heightProperty,
-	marginLeftProperty,
-	marginTopProperty,
-	marginRightProperty,
-	marginBottomProperty,
-	rotateProperty,
-	rotateXProperty,
-	rotateYProperty,
-	scaleXProperty,
-	scaleYProperty,
-	translateXProperty,
-	translateYProperty,
-	zIndexProperty,
-	backgroundInternalProperty,
-	androidElevationProperty,
-	androidDynamicElevationOffsetProperty,
-} from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
+import { Enums } from '../../enums';
 
 import { Background, ad as androidBackground } from '../../styling/background';
 import { profile } from '../../../profiling';
@@ -738,7 +709,7 @@ export class View extends ViewCommon {
 		this.nativeViewProtected.setFocusable(value);
 	}
 
-	[visibilityProperty.getDefault](): VisibilityType {
+	[visibilityProperty.getDefault](): Enums.VisibilityType {
 		const nativeVisibility = this.nativeViewProtected.getVisibility();
 		switch (nativeVisibility) {
 			case android.view.View.VISIBLE:
@@ -751,7 +722,7 @@ export class View extends ViewCommon {
 				throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
 		}
 	}
-	[visibilityProperty.setNative](value: VisibilityType) {
+	[visibilityProperty.setNative](value: Enums.VisibilityType) {
 		switch (value) {
 			case 'visible':
 				this.nativeViewProtected.setVisibility(android.view.View.VISIBLE);
@@ -854,10 +825,10 @@ export class View extends ViewCommon {
 		nativeView.setStateListAnimator(stateListAnimator);
 	}
 
-	[horizontalAlignmentProperty.getDefault](): HorizontalAlignmentType {
-		return <HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
+	[horizontalAlignmentProperty.getDefault](): Enums.HorizontalAlignmentType {
+		return <Enums.HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
 	}
-	[horizontalAlignmentProperty.setNative](value: HorizontalAlignmentType) {
+	[horizontalAlignmentProperty.setNative](value: Enums.HorizontalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		// Set only if params gravity exists.
@@ -892,10 +863,10 @@ export class View extends ViewCommon {
 		}
 	}
 
-	[verticalAlignmentProperty.getDefault](): VerticalAlignmentType {
-		return <VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
+	[verticalAlignmentProperty.getDefault](): Enums.VerticalAlignmentType {
+		return <Enums.VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
 	}
-	[verticalAlignmentProperty.setNative](value: VerticalAlignmentType) {
+	[verticalAlignmentProperty.setNative](value: Enums.VerticalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		// Set only if params gravity exists.

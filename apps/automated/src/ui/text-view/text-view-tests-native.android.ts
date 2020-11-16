@@ -1,7 +1,7 @@
 import * as textViewModule from '@nativescript/core/ui/text-view';
 import * as colorModule from '@nativescript/core/color';
 import * as utilsModule from '@nativescript/core/utils/utils';
-import * as enums from '@nativescript/core/ui/enums';
+import { Enums } from '@nativescript/core';
 
 export function getNativeText(textView: textViewModule.TextView): string {
 	return textView.android.getText().toString();
@@ -42,15 +42,15 @@ export function getNativeTextAlignment(textView: textViewModule.TextView): strin
 	var gravity = textView.android.getGravity();
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.LEFT) {
-		return enums.TextAlignment.left;
+		return Enums.TextAlignment.left;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.CENTER_HORIZONTAL) {
-		return enums.TextAlignment.center;
+		return Enums.TextAlignment.center;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.RIGHT) {
-		return enums.TextAlignment.right;
+		return Enums.TextAlignment.right;
 	}
 
 	return 'unexpected value';

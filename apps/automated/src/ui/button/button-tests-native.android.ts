@@ -1,7 +1,7 @@
 import * as buttonModule from '@nativescript/core/ui/button';
 import * as colorModule from '@nativescript/core/color';
 import * as utilsModule from '@nativescript/core/utils/utils';
-import * as enums from '@nativescript/core/ui/enums';
+import { Enums } from '@nativescript/core';
 
 export function getNativeText(button: buttonModule.Button): string {
 	return button.android.getText();
@@ -34,15 +34,15 @@ export function getNativeTextAlignment(button: buttonModule.Button): string {
 	var gravity = button.android.getGravity();
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.LEFT) {
-		return enums.TextAlignment.left;
+		return Enums.TextAlignment.left;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.CENTER_HORIZONTAL) {
-		return enums.TextAlignment.center;
+		return Enums.TextAlignment.center;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.RIGHT) {
-		return enums.TextAlignment.right;
+		return Enums.TextAlignment.right;
 	}
 
 	return 'unexpected value';

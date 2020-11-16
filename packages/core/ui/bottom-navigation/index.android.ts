@@ -2,7 +2,7 @@
 import { TabContentItem } from '../tab-navigation-base/tab-content-item';
 import { TabStrip } from '../tab-navigation-base/tab-strip';
 import { TabStripItem } from '../tab-navigation-base/tab-strip-item';
-import { TextTransformType } from '../text-base';
+import { Enums } from '../enums';
 
 // Requires
 import * as application from '../../application';
@@ -256,7 +256,7 @@ export class BottomNavigation extends TabNavigationBase {
 	private _currentTransaction: androidx.fragment.app.FragmentTransaction;
 	private _attachedToWindow = false;
 	public _originalBackground: any;
-	private _textTransform: TextTransformType = 'none';
+	private _textTransform: Enums.TextTransformType = 'none';
 	private _selectedItemColor: Color;
 	private _unSelectedItemColor: Color;
 
@@ -581,9 +581,9 @@ export class BottomNavigation extends TabNavigationBase {
 		});
 	}
 
-	private getItemLabelTextTransform(tabStripItem: TabStripItem): TextTransformType {
+	private getItemLabelTextTransform(tabStripItem: TabStripItem): Enums.TextTransformType {
 		const nestedLabel = tabStripItem.label;
-		let textTransform: TextTransformType = null;
+		let textTransform: Enums.TextTransformType = null;
 		if (nestedLabel && nestedLabel.style.textTransform !== 'initial') {
 			textTransform = nestedLabel.style.textTransform;
 		} else if (tabStripItem.style.textTransform !== 'initial') {
@@ -830,17 +830,17 @@ export class BottomNavigation extends TabNavigationBase {
 		tabStripItem.nativeViewProtected.setTypeface(value.getAndroidTypeface());
 	}
 
-	public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: TextTransformType): void {
+	public setTabBarItemTextTransform(tabStripItem: TabStripItem, value: Enums.TextTransformType): void {
 		const titleLabel = tabStripItem.label;
 		const title = getTransformedText(titleLabel.text, value);
 		tabStripItem.nativeViewProtected.setText(title);
 	}
 
-	public getTabBarTextTransform(): TextTransformType {
+	public getTabBarTextTransform(): Enums.TextTransformType {
 		return this._textTransform;
 	}
 
-	public setTabBarTextTransform(value: TextTransformType): void {
+	public setTabBarTextTransform(value: Enums.TextTransformType): void {
 		const items = this.tabStrip && this.tabStrip.items;
 		if (items) {
 			items.forEach((tabStripItem) => {

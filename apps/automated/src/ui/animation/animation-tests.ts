@@ -4,7 +4,7 @@ import * as viewModule from '@nativescript/core/ui/core/view';
 import { Label } from '@nativescript/core/ui/label';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import * as colorModule from '@nativescript/core/color';
-import * as enums from '@nativescript/core/ui/enums';
+import { Enums } from '@nativescript/core';
 import { AnimationPromise } from '@nativescript/core/ui/animation';
 
 // >> animation-require
@@ -46,7 +46,7 @@ export function test_AnimatingProperties(done) {
 			duration: 5,
 			delay: 10,
 			iterations: 3,
-			curve: enums.AnimationCurve.easeIn,
+			curve: Enums.AnimationCurve.easeIn,
 		})
 		.then(() => {
 			//console.log("Animation finished.");

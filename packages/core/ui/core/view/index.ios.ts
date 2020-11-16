@@ -8,8 +8,9 @@ import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
 import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
-import { perspectiveProperty, Visibility, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty, VisibilityType } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
+import { Enums } from '../../enums';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -564,20 +565,20 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.nativeViewProtected.userInteractionEnabled = value;
 	}
 
-	[visibilityProperty.getDefault](): VisibilityType {
-		return this.nativeViewProtected.hidden ? Visibility.COLLAPSE : Visibility.VISIBLE;
+	[visibilityProperty.getDefault](): Enums.VisibilityType {
+		return this.nativeViewProtected.hidden ? Enums.Visibility.collapse : Enums.Visibility.visible;
 	}
-	[visibilityProperty.setNative](value: VisibilityType) {
+	[visibilityProperty.setNative](value: Enums.VisibilityType) {
 		switch (value) {
-			case Visibility.VISIBLE:
+			case Enums.Visibility.visible:
 				this.nativeViewProtected.hidden = false;
 				break;
-			case Visibility.HIDDEN:
-			case Visibility.COLLAPSE:
+			case Enums.Visibility.hidden:
+			case Enums.Visibility.collapse:
 				this.nativeViewProtected.hidden = true;
 				break;
 			default:
-				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
+				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Enums.Visibility.visible}", "${Enums.Visibility.hidden}", "${Enums.Visibility.collapse}".`);
 		}
 	}
 
