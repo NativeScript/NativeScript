@@ -174,20 +174,12 @@ export function test_setInterval_callbackCalledWithExtraArgs(done) {
 export function test_setInterval_callbackNotDelayedByBusyWork() {
 	let calls = 0;
 
-	function busyWait(ms: number) {
-		const waitStart = Date.now();
-		while (true) {
-			if (Date.now() - waitStart >= ms) {
-				break;
-			}
-		}
-	}
 	let firstCall = true;
 	const id = timer.setInterval(() => {
 		calls++;
 		if (firstCall) {
 			firstCall = false;
-			busyWait(25);
+			TKUnit.wait(0.025);
 		}
 	}, 50);
 
