@@ -232,6 +232,16 @@ function initializeDialogFragment() {
 			owner._setupAsRootView(this.getActivity());
 			owner._isAddedToNativeVisualTree = true;
 
+			// we need to set the window SoftInputMode here.
+			// it wont work is set in onStart
+			const window = this.getDialog().getWindow();
+			if (this._windowSoftInputMode !== undefined) {
+				window.setSoftInputMode(this._windowSoftInputMode);
+			} else {
+				// the dialog seems to not follow the default activity softinputmode,
+				// thus set we set it here.
+				window.setSoftInputMode((<androidx.appcompat.app.AppCompatActivity>owner._context).getWindow().getAttributes().softInputMode);
+			}
 			return owner.nativeViewProtected;
 		}
 
@@ -246,20 +256,8 @@ function initializeDialogFragment() {
 			}
 
 			const owner = this.owner;
-			if (owner) {
-				if (!owner.isLoaded) {
-					owner.callLoaded();
-				}
-
-				
-				const window = this.getDialog().getWindow();
-				if (this._windowSoftInputMode !== undefined) {
-					window.setSoftInputMode(this._windowSoftInputMode);
-				} else {
-					// the dialog seems to not follow the default activity softinputmode,
-					// thus set we set it here.
-					window.setSoftInputMode((<androidx.appcompat.app.AppCompatActivity>owner._context).getWindow().getAttributes().softInputMode);
-				}
+			if (owner && !owner.isLoaded) {
+				owner.callLoaded();
 			}
 
 			this._shownCallback();
