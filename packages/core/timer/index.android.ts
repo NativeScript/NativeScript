@@ -58,9 +58,9 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
 	const handler = timeoutHandler;
 	const invoke = () => callback(...args);
 	const zoneBound = zonedCallback(invoke);
-	const start = Date.now();
+	const startOffset = milliseconds > 0 ? Date.now() % milliseconds : 0;
 	function nextCallMs() {
-		return milliseconds > 0 ? milliseconds - ((Date.now() - start) % milliseconds) : milliseconds;
+		return milliseconds > 0 ? milliseconds - ((Date.now() - startOffset) % milliseconds) : milliseconds;
 	}
 
 	const runnable = new java.lang.Runnable({
