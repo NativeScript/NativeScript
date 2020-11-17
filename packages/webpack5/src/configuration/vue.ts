@@ -2,7 +2,7 @@ import base from './base';
 import Config from 'webpack-chain';
 import { VueLoaderPlugin } from 'vue-loader';
 import { IWebpackEnv } from './index';
-
+import { merge } from 'webpack-merge';
 // todo: add base configuration for vue
 export default function (env: IWebpackEnv): Config {
 	const config = base(env);
@@ -29,15 +29,14 @@ export default function (env: IWebpackEnv): Config {
 		.rule('ts')
 		.use('ts-loader')
 		.loader('ts-loader')
-		.tap((options) => {
-			return {
-				...options,
-				appendTsSuffixTo: [/\.vue$/],
-			};
+		.tap((options = {}) => {
+			return merge(options, {
+				appendTsSuffixTo: ['\\.vue$'],
+			});
 		});
 
 	// add VueLoaderPlugin
-	config.plugin('vue-plugin').use(VueLoaderPlugin);
+	config.plugin('vue').use(VueLoaderPlugin);
 
 	// add an alias for vue, since some plugins may try to import it
 	config.resolve.alias.set('vue', 'nativescript-vue');

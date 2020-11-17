@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`vue configuration [android] works 1`] = `
+exports[`vue configuration for android 1`] = `
 "{
   resolve: {
     symlinks: true,
@@ -14,8 +14,74 @@ exports[`vue configuration [android] works 1`] = `
       '.vue'
     ]
   },
+  resolveLoader: {
+    modules: [
+      '@nativescript/webpack/loaders',
+      'node_modules'
+    ]
+  },
   module: {
     rules: [
+      /* config.module.rule('ts') */
+      {
+        test: /\\\\.ts$/,
+        use: [
+          /* config.module.rule('ts').use('ts-loader') */
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+              allowTsInNodeModules: true,
+              compilerOptions: {
+                sourceMap: true,
+                declaration: false
+              },
+              getCustomTransformers: function () { /* omitted long function */ },
+              appendTsSuffixTo: [
+                '\\\\\\\\.vue$'
+              ]
+            }
+          }
+        ]
+      },
+      /* config.module.rule('js') */
+      {
+        test: /\\\\.js$/,
+        use: [
+          /* config.module.rule('js').use('babel-loader') */
+          {
+            loader: 'babel-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css') */
+      {
+        test: /\\\\.css$/,
+        use: [
+          /* config.module.rule('css').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('css').use('css-loader') */
+          {
+            loader: 'css-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss') */
+      {
+        test: /\\\\.scss$/,
+        use: [
+          /* config.module.rule('scss').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('scss-loader') */
+          {
+            loader: 'scss-loader'
+          }
+        ]
+      },
       /* config.module.rule('vue') */
       {
         test: /\\\\.vue$/,
@@ -25,20 +91,6 @@ exports[`vue configuration [android] works 1`] = `
             loader: 'vue-loader',
             options: {
               compiler: 'nativescript-vue-template-compiler'
-            }
-          }
-        ]
-      },
-      /* config.module.rule('ts') */
-      {
-        use: [
-          /* config.module.rule('ts').use('ts-loader') */
-          {
-            loader: 'ts-loader',
-            options: {
-              appendTsSuffixTo: [
-                /\\\\.vue$/
-              ]
             }
           }
         ]
@@ -55,7 +107,24 @@ exports[`vue configuration [android] works 1`] = `
         verbose: true
       }
     ),
-    /* config.plugin('vue-plugin') */
+    /* config.plugin('define') */
+    new DefinePlugin(
+      {
+        'global.NS_WEBPACK': true,
+        'global.isAndroid': true,
+        'global.isIOS': false,
+        process: 'global.process'
+      }
+    ),
+    /* config.plugin('copy') */
+    new CopyPluginTemp(
+      {
+        patterns: []
+      }
+    ),
+    /* config.plugin('watch-state-logger') */
+    new WatchStateLoggerPlugin(),
+    /* config.plugin('vue') */
     new VueLoaderPlugin()
   ],
   entry: {
@@ -66,7 +135,7 @@ exports[`vue configuration [android] works 1`] = `
 }"
 `;
 
-exports[`vue configuration [ios] works 1`] = `
+exports[`vue configuration for ios 1`] = `
 "{
   resolve: {
     symlinks: true,
@@ -80,8 +149,74 @@ exports[`vue configuration [ios] works 1`] = `
       '.vue'
     ]
   },
+  resolveLoader: {
+    modules: [
+      '@nativescript/webpack/loaders',
+      'node_modules'
+    ]
+  },
   module: {
     rules: [
+      /* config.module.rule('ts') */
+      {
+        test: /\\\\.ts$/,
+        use: [
+          /* config.module.rule('ts').use('ts-loader') */
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+              allowTsInNodeModules: true,
+              compilerOptions: {
+                sourceMap: true,
+                declaration: false
+              },
+              getCustomTransformers: function () { /* omitted long function */ },
+              appendTsSuffixTo: [
+                '\\\\\\\\.vue$'
+              ]
+            }
+          }
+        ]
+      },
+      /* config.module.rule('js') */
+      {
+        test: /\\\\.js$/,
+        use: [
+          /* config.module.rule('js').use('babel-loader') */
+          {
+            loader: 'babel-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css') */
+      {
+        test: /\\\\.css$/,
+        use: [
+          /* config.module.rule('css').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('css').use('css-loader') */
+          {
+            loader: 'css-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss') */
+      {
+        test: /\\\\.scss$/,
+        use: [
+          /* config.module.rule('scss').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('scss-loader') */
+          {
+            loader: 'scss-loader'
+          }
+        ]
+      },
       /* config.module.rule('vue') */
       {
         test: /\\\\.vue$/,
@@ -91,20 +226,6 @@ exports[`vue configuration [ios] works 1`] = `
             loader: 'vue-loader',
             options: {
               compiler: 'nativescript-vue-template-compiler'
-            }
-          }
-        ]
-      },
-      /* config.module.rule('ts') */
-      {
-        use: [
-          /* config.module.rule('ts').use('ts-loader') */
-          {
-            loader: 'ts-loader',
-            options: {
-              appendTsSuffixTo: [
-                /\\\\.vue$/
-              ]
             }
           }
         ]
@@ -121,7 +242,24 @@ exports[`vue configuration [ios] works 1`] = `
         verbose: true
       }
     ),
-    /* config.plugin('vue-plugin') */
+    /* config.plugin('define') */
+    new DefinePlugin(
+      {
+        'global.NS_WEBPACK': true,
+        'global.isAndroid': false,
+        'global.isIOS': true,
+        process: 'global.process'
+      }
+    ),
+    /* config.plugin('copy') */
+    new CopyPluginTemp(
+      {
+        patterns: []
+      }
+    ),
+    /* config.plugin('watch-state-logger') */
+    new WatchStateLoggerPlugin(),
+    /* config.plugin('vue') */
     new VueLoaderPlugin()
   ],
   entry: {
