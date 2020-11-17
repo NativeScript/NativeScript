@@ -41,22 +41,24 @@ export default function (env: IWebpackEnv): Config {
 		return args;
 	});
 
-	// todo: conditional + env flag to forceEnable?
-	config.plugin('ReactRefreshWebpackPlugin').use(function ReactRefreshWebpackPlugin() {}, [
-		{
-			/**
-			 * Maybe one day we'll implement an Error Overlay, but the work involved is too daunting for now.
-			 * @see https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/79#issuecomment-644324557
-			 */
-			overlay: false,
-			/**
-			 * If you (temporarily) want to enable HMR on a production build:
-			 *   1) Set `forceEnable` to `true`
-			 *   2) Remove the `!production` condition on `tsxRule` to ensure that babel-loader gets used.
-			 */
-			forceEnable: false,
-		},
-	]);
+	// todo: env flag to forceEnable?
+	config.when(env.hmr && !production, (config) => {
+		config.plugin('ReactRefreshWebpackPlugin').use(function ReactRefreshWebpackPlugin() {}, [
+			{
+				/**
+				 * Maybe one day we'll implement an Error Overlay, but the work involved is too daunting for now.
+				 * @see https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/79#issuecomment-644324557
+				 */
+				overlay: false,
+				/**
+				 * If you (temporarily) want to enable HMR on a production build:
+				 *   1) Set `forceEnable` to `true`
+				 *   2) Remove the `!production` condition on `tsxRule` to ensure that babel-loader gets used.
+				 */
+				forceEnable: false,
+			},
+		]);
+	});
 
 	return config;
 }
