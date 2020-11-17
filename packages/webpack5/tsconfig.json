@@ -2,8 +2,9 @@
 	"compilerOptions": {
 		"rootDir": ".",
 		"baseUrl": ".",
-		"target": "es2015",
+		"target": "es2017",
 		"module": "commonjs",
+		"outDir": "./dist",
 		"declaration": true,
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,

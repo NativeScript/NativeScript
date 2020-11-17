@@ -2,6 +2,7 @@
 
 exports[`vue configuration for android 1`] = `
 "{
+  mode: 'development',
   resolve: {
     symlinks: true,
     alias: {
@@ -137,6 +138,7 @@ exports[`vue configuration for android 1`] = `
 
 exports[`vue configuration for ios 1`] = `
 "{
+  mode: 'development',
   resolve: {
     symlinks: true,
     alias: {
