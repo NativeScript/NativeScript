@@ -39,7 +39,7 @@ export default function (env: IWebpackEnv): Config {
 	// set up ts support
 	config.module
 		.rule('ts')
-		.test(/\.ts$/)
+		.test([/\.ts$/])
 		.use('ts-loader')
 		.loader('ts-loader')
 		.options({
@@ -84,7 +84,7 @@ export default function (env: IWebpackEnv): Config {
 		.loader('scss-loader');
 
 	// items to clean
-	config.plugin('clean').use(CleanWebpackPlugin, [
+	config.plugin('CleanWebpackPlugin').use(CleanWebpackPlugin, [
 		{
 			cleanOnceBeforeBuildPatterns: [`${distPath}/**/*`],
 			verbose: true,
@@ -92,7 +92,7 @@ export default function (env: IWebpackEnv): Config {
 	]);
 
 	// todo: refine defaults
-	config.plugin('define').use(DefinePlugin, [
+	config.plugin('DefinePlugin').use(DefinePlugin, [
 		{
 			'global.NS_WEBPACK': true,
 			'global.isAndroid': platform === WebpackPlatform.android,
@@ -104,14 +104,14 @@ export default function (env: IWebpackEnv): Config {
 	// todo: we should probably move away from CopyWebpackPlugin
 	// it has many issues we can solve by simply copying files **before** the build even starts
 	// this is just a temp inline plugin that does nothing while building out the configs.
-	config.plugin('copy').use(function CopyPluginTemp() {}, [
+	config.plugin('CopyWebpackPlugin').use(function CopyPluginTemp() {}, [
 		{
 			patterns: [],
 		},
 	]);
 
 	// add the WatchStateLogger plugin used to notify the CLI of build state
-	config.plugin('watch-state-logger').use(WatchStateLoggerPlugin);
+	config.plugin('WatchStateLoggerPlugin').use(WatchStateLoggerPlugin);
 
 	return config;
 }

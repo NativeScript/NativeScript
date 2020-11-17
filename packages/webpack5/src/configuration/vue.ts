@@ -36,7 +36,7 @@ export default function (env: IWebpackEnv): Config {
 		});
 
 	// add VueLoaderPlugin
-	config.plugin('vue').use(VueLoaderPlugin);
+	config.plugin('VueLoaderPlugin').use(VueLoaderPlugin);
 
 	// add an alias for vue, since some plugins may try to import it
 	config.resolve.alias.set('vue', 'nativescript-vue');

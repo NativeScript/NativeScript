@@ -25,7 +25,10 @@ exports[`react configuration for android 1`] = `
     rules: [
       /* config.module.rule('ts') */
       {
-        test: /\\\\.(ts|tsx)$/,
+        test: [
+          /\\\\.ts$/,
+          /\\\\.tsx$/
+        ],
         use: [
           /* config.module.rule('ts').use('react-hmr') */
           {
@@ -94,7 +97,7 @@ exports[`react configuration for android 1`] = `
     ]
   },
   plugins: [
-    /* config.plugin('clean') */
+    /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
@@ -103,7 +106,7 @@ exports[`react configuration for android 1`] = `
         verbose: true
       }
     ),
-    /* config.plugin('define') */
+    /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
         'global.NS_WEBPACK': true,
@@ -115,14 +118,21 @@ exports[`react configuration for android 1`] = `
         'process.env.NODE_ENV': '\\"development\\"'
       }
     ),
-    /* config.plugin('copy') */
+    /* config.plugin('CopyWebpackPlugin') */
     new CopyPluginTemp(
       {
         patterns: []
       }
     ),
-    /* config.plugin('watch-state-logger') */
-    new WatchStateLoggerPlugin()
+    /* config.plugin('WatchStateLoggerPlugin') */
+    new WatchStateLoggerPlugin(),
+    /* config.plugin('ReactRefreshWebpackPlugin') */
+    new ReactRefreshWebpackPlugin(
+      {
+        overlay: false,
+        forceEnable: false
+      }
+    )
   ],
   entry: {
     bundle: [
@@ -157,7 +167,10 @@ exports[`react configuration for ios 1`] = `
     rules: [
       /* config.module.rule('ts') */
       {
-        test: /\\\\.(ts|tsx)$/,
+        test: [
+          /\\\\.ts$/,
+          /\\\\.tsx$/
+        ],
         use: [
           /* config.module.rule('ts').use('react-hmr') */
           {
@@ -226,7 +239,7 @@ exports[`react configuration for ios 1`] = `
     ]
   },
   plugins: [
-    /* config.plugin('clean') */
+    /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
@@ -235,7 +248,7 @@ exports[`react configuration for ios 1`] = `
         verbose: true
       }
     ),
-    /* config.plugin('define') */
+    /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
         'global.NS_WEBPACK': true,
@@ -247,14 +260,21 @@ exports[`react configuration for ios 1`] = `
         'process.env.NODE_ENV': '\\"development\\"'
       }
     ),
-    /* config.plugin('copy') */
+    /* config.plugin('CopyWebpackPlugin') */
     new CopyPluginTemp(
       {
         patterns: []
       }
     ),
-    /* config.plugin('watch-state-logger') */
-    new WatchStateLoggerPlugin()
+    /* config.plugin('WatchStateLoggerPlugin') */
+    new WatchStateLoggerPlugin(),
+    /* config.plugin('ReactRefreshWebpackPlugin') */
+    new ReactRefreshWebpackPlugin(
+      {
+        overlay: false,
+        forceEnable: false
+      }
+    )
   ],
   entry: {
     inspector_modules: [
