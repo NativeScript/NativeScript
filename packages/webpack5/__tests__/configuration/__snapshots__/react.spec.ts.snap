@@ -1,0 +1,268 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`react configuration for android 1`] = `
+"{
+  mode: 'development',
+  resolve: {
+    symlinks: true,
+    alias: {
+      '~/package.json': 'package.json',
+      '~': '<TODO>appFullPath',
+      '@': '<TODO>appFullPath',
+      'react-dom': 'react-nativescript'
+    },
+    extensions: [
+      '.tsx'
+    ]
+  },
+  resolveLoader: {
+    modules: [
+      '@nativescript/webpack/loaders',
+      'node_modules'
+    ]
+  },
+  module: {
+    rules: [
+      /* config.module.rule('ts') */
+      {
+        test: /\\\\.(ts|tsx)$/,
+        use: [
+          /* config.module.rule('ts').use('react-hmr') */
+          {
+            loader: 'babel-loader',
+            options: {
+              sourceMaps: 'inline',
+              babelrc: false,
+              plugins: [
+                'react-refresh/babel'
+              ]
+            }
+          },
+          /* config.module.rule('ts').use('ts-loader') */
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+              allowTsInNodeModules: true,
+              compilerOptions: {
+                sourceMap: true,
+                declaration: false
+              },
+              getCustomTransformers: function () { /* omitted long function */ }
+            }
+          }
+        ]
+      },
+      /* config.module.rule('js') */
+      {
+        test: /\\\\.js$/,
+        use: [
+          /* config.module.rule('js').use('babel-loader') */
+          {
+            loader: 'babel-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css') */
+      {
+        test: /\\\\.css$/,
+        use: [
+          /* config.module.rule('css').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('css').use('css-loader') */
+          {
+            loader: 'css-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss') */
+      {
+        test: /\\\\.scss$/,
+        use: [
+          /* config.module.rule('scss').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('scss-loader') */
+          {
+            loader: 'scss-loader'
+          }
+        ]
+      }
+    ]
+  },
+  plugins: [
+    /* config.plugin('clean') */
+    new CleanWebpackPlugin(
+      {
+        cleanOnceBeforeBuildPatterns: [
+          'platforms/android/app/src/main/assets/app/**/*'
+        ],
+        verbose: true
+      }
+    ),
+    /* config.plugin('define') */
+    new DefinePlugin(
+      {
+        'global.NS_WEBPACK': true,
+        'global.isAndroid': true,
+        'global.isIOS': false,
+        process: 'global.process',
+        __DEV__: 'true',
+        __TEST__: 'false',
+        'process.env.NODE_ENV': '\\"development\\"'
+      }
+    ),
+    /* config.plugin('copy') */
+    new CopyPluginTemp(
+      {
+        patterns: []
+      }
+    ),
+    /* config.plugin('watch-state-logger') */
+    new WatchStateLoggerPlugin()
+  ],
+  entry: {
+    bundle: [
+      'todo/main'
+    ]
+  }
+}"
+`;
+
+exports[`react configuration for ios 1`] = `
+"{
+  mode: 'development',
+  resolve: {
+    symlinks: true,
+    alias: {
+      '~/package.json': 'package.json',
+      '~': '<TODO>appFullPath',
+      '@': '<TODO>appFullPath',
+      'react-dom': 'react-nativescript'
+    },
+    extensions: [
+      '.tsx'
+    ]
+  },
+  resolveLoader: {
+    modules: [
+      '@nativescript/webpack/loaders',
+      'node_modules'
+    ]
+  },
+  module: {
+    rules: [
+      /* config.module.rule('ts') */
+      {
+        test: /\\\\.(ts|tsx)$/,
+        use: [
+          /* config.module.rule('ts').use('react-hmr') */
+          {
+            loader: 'babel-loader',
+            options: {
+              sourceMaps: 'inline',
+              babelrc: false,
+              plugins: [
+                'react-refresh/babel'
+              ]
+            }
+          },
+          /* config.module.rule('ts').use('ts-loader') */
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+              allowTsInNodeModules: true,
+              compilerOptions: {
+                sourceMap: true,
+                declaration: false
+              },
+              getCustomTransformers: function () { /* omitted long function */ }
+            }
+          }
+        ]
+      },
+      /* config.module.rule('js') */
+      {
+        test: /\\\\.js$/,
+        use: [
+          /* config.module.rule('js').use('babel-loader') */
+          {
+            loader: 'babel-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css') */
+      {
+        test: /\\\\.css$/,
+        use: [
+          /* config.module.rule('css').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('css').use('css-loader') */
+          {
+            loader: 'css-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss') */
+      {
+        test: /\\\\.scss$/,
+        use: [
+          /* config.module.rule('scss').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('scss-loader') */
+          {
+            loader: 'scss-loader'
+          }
+        ]
+      }
+    ]
+  },
+  plugins: [
+    /* config.plugin('clean') */
+    new CleanWebpackPlugin(
+      {
+        cleanOnceBeforeBuildPatterns: [
+          'platforms/ios/[todo]/app/**/*'
+        ],
+        verbose: true
+      }
+    ),
+    /* config.plugin('define') */
+    new DefinePlugin(
+      {
+        'global.NS_WEBPACK': true,
+        'global.isAndroid': false,
+        'global.isIOS': true,
+        process: 'global.process',
+        __DEV__: 'true',
+        __TEST__: 'false',
+        'process.env.NODE_ENV': '\\"development\\"'
+      }
+    ),
+    /* config.plugin('copy') */
+    new CopyPluginTemp(
+      {
+        patterns: []
+      }
+    ),
+    /* config.plugin('watch-state-logger') */
+    new WatchStateLoggerPlugin()
+  ],
+  entry: {
+    inspector_modules: [
+      'tns_modules/@nativescript/core/inspector_modules'
+    ],
+    bundle: [
+      'todo/main'
+    ]
+  }
+}"
+`;
