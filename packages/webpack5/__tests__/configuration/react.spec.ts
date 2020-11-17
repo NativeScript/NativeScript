@@ -10,12 +10,23 @@ describe('react configuration', () => {
 	const platforms = ['ios', 'android'];
 
 	for (let platform of platforms) {
-		it(`for ${platform}`, () => {
-			expect(
-				__react({
-					[platform]: true,
-				}).toString()
-			).toMatchSnapshot();
+		describe(`> ${platform} >`, () => {
+			it(`base config`, () => {
+				expect(
+					__react({
+						[platform]: true,
+					}).toString()
+				).toMatchSnapshot();
+			});
+
+			it(`adds ReactRefreshWebpackPlugin when HMR enabled`, () => {
+				expect(
+					__react({
+						[platform]: true,
+						hmr: true,
+					}).toString()
+				).toMatchSnapshot();
+			});
 		});
 	}
 });
