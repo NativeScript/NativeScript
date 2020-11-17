@@ -10,6 +10,13 @@ export default function (env: IWebpackEnv): Config {
 	const config = new Config();
 	const distPath = getDistPath(env);
 	const platform = determinePlatformFromEnv(env);
+	const mode = env.production ? 'production' : 'development';
+
+	// set mode
+	config.mode(mode);
+
+	// todo: devtool
+	// config.devtool()
 
 	// look for loaders in
 	//  - @nativescript/webpack/loaders

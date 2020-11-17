@@ -5,7 +5,7 @@
   "main": "index.js",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "echo todo",
+    "build": "tsc",
     "test": "jest"
   },
   "devDependencies": {
