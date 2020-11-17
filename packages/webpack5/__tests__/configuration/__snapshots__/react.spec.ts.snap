@@ -30,7 +30,7 @@ exports[`react configuration for android 1`] = `
           /\\\\.tsx$/
         ],
         use: [
-          /* config.module.rule('ts').use('react-hmr') */
+          /* config.module.rule('ts').use('babel-loader|react-refresh') */
           {
             loader: 'babel-loader',
             options: {
@@ -172,7 +172,7 @@ exports[`react configuration for ios 1`] = `
           /\\\\.tsx$/
         ],
         use: [
-          /* config.module.rule('ts').use('react-hmr') */
+          /* config.module.rule('ts').use('babel-loader|react-refresh') */
           {
             loader: 'babel-loader',
             options: {

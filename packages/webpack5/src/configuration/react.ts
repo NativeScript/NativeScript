@@ -17,7 +17,7 @@ export default function (env: IWebpackEnv): Config {
 	config.module
 		.rule('ts')
 		.test([...config.module.rule('ts').get('test'), /\.tsx$/])
-		.use('react-hmr')
+		.use('babel-loader|react-refresh')
 		.loader('babel-loader')
 		.before('ts-loader')
 		.options({
