@@ -1,6 +1,7 @@
 import Config from 'webpack-chain';
-import webpack, { config } from 'webpack';
+import webpack from 'webpack';
 import { configs } from './configuration';
+import { determineProjectFlavor } from './helpers/flavor';
 
 export type Platform = 'android' | 'ios' | string;
 
@@ -22,6 +23,7 @@ export interface IWebpackEnv {
 let webpackChains: any[] = [];
 let webpackMerges: any[] = [];
 let env: IWebpackEnv = {};
+let explicitUseConfig = false;
 
 ////// PUBLIC API
 export const defaultConfigs = configs;
@@ -30,10 +32,10 @@ export function init(_env: IWebpackEnv) {
 	if (_env) {
 		env = _env;
 	}
-	// todo: determine default config based on deps and print **useful** error if it fails.
 }
 
 export function useConfig(config: keyof typeof defaultConfigs) {
+	explicitUseConfig = true;
 	webpackChains.push(configs[config]);
 }
 
@@ -47,6 +49,10 @@ export function mergeWebpack(mergeFn: (config: Partial<webpack.Configuration>, e
 
 export function resolveChainableConfig() {
 	const config = new Config();
+
+	if (!explicitUseConfig) {
+		useConfig(determineProjectFlavor());
+	}
 
 	// this applies all chain configs
 	webpackChains.forEach((chainFn) => {
