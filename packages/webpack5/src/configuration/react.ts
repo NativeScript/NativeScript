@@ -3,9 +3,8 @@ import { IWebpackEnv } from '@nativescript/webpack';
 import Config from 'webpack-chain';
 import { merge } from 'webpack-merge';
 
-// todo: add base configuration for react
-export default function (env: IWebpackEnv): Config {
-	const config = base(env);
+export default function (config: Config, env: IWebpackEnv): Config {
+	base(config, env);
 
 	// todo: use env
 	let isAnySourceMapEnabled = true;

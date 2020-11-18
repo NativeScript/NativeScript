@@ -1,10 +1,6 @@
-import { __react } from '@nativescript/webpack';
-
-// todo: maybe mock baseConfig as we test it separately?
-// import Config from 'webpack-chain'
-// jest.mock('../../src/configuration/base', () => () => {
-// 	return new Config()
-// })
+// @ts-ignore
+import Config from 'webpack-chain';
+import react from '../../src/configuration/react';
 
 describe('react configuration', () => {
 	const platforms = ['ios', 'android'];
@@ -13,7 +9,7 @@ describe('react configuration', () => {
 		describe(`> ${platform} >`, () => {
 			it(`base config`, () => {
 				expect(
-					__react({
+					react(new Config(), {
 						[platform]: true,
 					}).toString()
 				).toMatchSnapshot();
@@ -21,7 +17,7 @@ describe('react configuration', () => {
 
 			it(`adds ReactRefreshWebpackPlugin when HMR enabled`, () => {
 				expect(
-					__react({
+					react(new Config(), {
 						[platform]: true,
 						hmr: true,
 					}).toString()

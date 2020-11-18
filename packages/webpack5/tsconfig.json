@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"rootDir": ".",
+		"rootDir": "./src",
 		"baseUrl": ".",
 		"target": "es2017",
 		"module": "commonjs",
@@ -16,7 +16,8 @@
 		"paths": {
 			"@nativescript/webpack": ["src"]
 		},
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true
 	},
 	"include": ["src"],
 	"exclude": ["node_modules"]

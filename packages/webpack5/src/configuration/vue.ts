@@ -1,11 +1,11 @@
 import base from './base';
 import Config from 'webpack-chain';
 import { VueLoaderPlugin } from 'vue-loader';
-import { IWebpackEnv } from './index';
+import { IWebpackEnv } from '../index';
 import { merge } from 'webpack-merge';
-// todo: add base configuration for vue
-export default function (env: IWebpackEnv): Config {
-	const config = base(env);
+
+export default function (config: Config, env: IWebpackEnv): Config {
+	base(config, env);
 
 	// resolve .vue files
 	config.resolve.extensions.prepend('.vue');

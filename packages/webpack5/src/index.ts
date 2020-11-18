@@ -1,55 +1,66 @@
-export * from './configuration';
-import { existsSync } from "fs";
-import { getPackageJson } from './helpers/projectHelpers';
-import { resolve } from "path";
+import Config from 'webpack-chain';
+import webpack, { config } from 'webpack';
+import { configs } from './configuration';
 
+export type Platform = 'android' | 'ios' | string;
 
-export type Platform = 'android' | 'ios';
-/**
- * Function to ensure the app directory exists
- *
- * @param appDirectory
- */
-function verifyEntryModuleDirectory(appDirectory: string) {
-    if (!appDirectory) {
-        throw new Error("Path to app directory is not specified. Unable to find entry module.");
-    }
+export interface IWebpackEnv {
+	[name: string]: any;
 
-    if (!existsSync(appDirectory)) {
-        throw new Error(`The specified path to app directory ${appDirectory} does not exist. Unable to find entry module.`);
-    }
+	appPath?: string;
+	appResourcesPath?: string;
+
+	android?: boolean;
+	ios?: boolean;
+
+	production?: boolean;
+	report?: boolean;
+	hmr?: boolean;
+	// todo: add others
 }
 
-function getPackageJsonEntry(appDirectory) {
-    const packageJsonSource = getPackageJson(appDirectory);
-    const entry = packageJsonSource.main;
+let webpackChains: any[] = [];
+let webpackMerges: any[] = [];
+let env: IWebpackEnv = {};
 
-    if (!entry) {
-        throw new Error(`${appDirectory}/package.json must contain a 'main' attribute!`);
-    }
+////// PUBLIC API
+export const defaultConfigs = configs;
 
-    return entry.replace(/\.js$/i, "");
+export function init(_env: IWebpackEnv) {
+	if (_env) {
+		env = _env;
+	}
+	// todo: determine default config based on deps and print **useful** error if it fails.
 }
 
+export function useConfig(config: 'angular' | 'javascript' | 'react' | 'svelte' | 'typescript' | 'vue') {
+	webpackChains.push(configs[config]);
+}
 
-export function getEntryModule  (appDirectory: string, platform: 'android' | 'ios') {
-    verifyEntryModuleDirectory(appDirectory);
+export function chainWebpack(chainFn: (config: Config, env: IWebpackEnv) => any) {
+	webpackChains.push(chainFn);
+}
 
-    const entry = getPackageJsonEntry(appDirectory);
+export function mergeWebpack(mergeFn: (config: Partial<webpack.Configuration>, env: IWebpackEnv) => any | Partial<webpack.Configuration>) {
+	webpackMerges.push(mergeFn);
+}
 
-    const tsEntryPath = resolve(appDirectory, `${entry}.ts`);
-    const jsEntryPath = resolve(appDirectory, `${entry}.js`);
-    let entryExists = existsSync(tsEntryPath) || existsSync(jsEntryPath);
-    if (!entryExists && platform) {
-        const platformTsEntryPath = resolve(appDirectory, `${entry}.${platform}.ts`);
-        const platformJsEntryPath = resolve(appDirectory, `${entry}.${platform}.js`);
-        entryExists = existsSync(platformTsEntryPath) || existsSync(platformJsEntryPath);
-    }
+export function resolveChainableConfig() {
+	const config = new Config();
 
-    if (!entryExists) {
-        throw new Error(`The entry module ${entry} specified in ` +
-            `${appDirectory}/package.json doesn't exist!`)
-    }
+	// this applies all chain configs
+	webpackChains.forEach((chainFn) => {
+		return chainFn(config, env);
+	});
 
-    return entry;
-};
+	return config;
+}
+
+export function resolveConfig(chainableConfig = resolveChainableConfig()) {
+	// todo: warn if no base config
+
+	// todo: apply merges from webpackMerges
+
+	// return a config usable by webpack
+	return chainableConfig.toConfig();
+}

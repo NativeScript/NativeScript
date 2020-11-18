@@ -1,13 +1,11 @@
 import Config from 'webpack-chain';
-import { IWebpackEnv, WebpackPlatform } from './index';
+import { IWebpackEnv, Platform } from '../index';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import { getDistPath } from '../helpers/projectHelpers';
 import { DefinePlugin } from 'webpack';
 import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
 
-// todo: add base configuration that's shared across all flavors
-export default function (env: IWebpackEnv): Config {
-	const config = new Config();
+export default function (config: Config, env: IWebpackEnv): Config {
 	const distPath = getDistPath(env);
 	const platform = determinePlatformFromEnv(env);
 	const mode = env.production ? 'production' : 'development';
@@ -21,7 +19,7 @@ export default function (env: IWebpackEnv): Config {
 	// look for loaders in
 	//  - @nativescript/webpack/loaders
 	//  - node_modules
-	config.resolveLoader.modules.add('@nativescript/webpack/loaders').add('node_modules');
+	config.resolveLoader.modules.add('@nativescript/webpack/dist/loaders').add('node_modules');
 
 	// inspector_modules
 	config.when(shouldIncludeInspectorModules(env), (config) => {
@@ -95,8 +93,8 @@ export default function (env: IWebpackEnv): Config {
 	config.plugin('DefinePlugin').use(DefinePlugin, [
 		{
 			'global.NS_WEBPACK': true,
-			'global.isAndroid': platform === WebpackPlatform.android,
-			'global.isIOS': platform === WebpackPlatform.ios,
+			'global.isAndroid': platform === 'android',
+			'global.isIOS': platform === 'ios',
 			process: 'global.process',
 		},
 	]);
@@ -120,16 +118,16 @@ function shouldIncludeInspectorModules(env: IWebpackEnv): boolean {
 	const platform = determinePlatformFromEnv(env);
 	// todo: check if core modules are external
 	// todo: check if we are testing
-	return platform === WebpackPlatform.ios;
+	return platform === 'ios';
 }
 
-function determinePlatformFromEnv(env: IWebpackEnv): WebpackPlatform {
+function determinePlatformFromEnv(env: IWebpackEnv): Platform {
 	if (env?.android) {
-		return WebpackPlatform.android;
+		return 'android';
 	}
 
 	if (env?.ios) {
-		return WebpackPlatform.ios;
+		return 'ios';
 	}
 
 	throw new Error('You need to provide a target platform!');

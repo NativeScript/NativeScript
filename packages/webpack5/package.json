@@ -2,11 +2,15 @@
   "name": "@nativescript/webpack",
   "version": "4.0.0-dev",
   "private": true,
-  "main": "index.js",
+  "main": "dist/index.js",
+	"files": [
+		"dist"
+	],
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+		"prepack": "npm run build && cp -R src/stubs dist/stubs"
   },
   "devDependencies": {
     "@types/jest": "^26.0.15",

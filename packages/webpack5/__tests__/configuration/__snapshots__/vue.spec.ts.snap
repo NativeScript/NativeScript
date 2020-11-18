@@ -17,7 +17,7 @@ exports[`vue configuration for android 1`] = `
   },
   resolveLoader: {
     modules: [
-      '@nativescript/webpack/loaders',
+      '@nativescript/webpack/dist/loaders',
       'node_modules'
     ]
   },
@@ -155,7 +155,7 @@ exports[`vue configuration for ios 1`] = `
   },
   resolveLoader: {
     modules: [
-      '@nativescript/webpack/loaders',
+      '@nativescript/webpack/dist/loaders',
       'node_modules'
     ]
   },
