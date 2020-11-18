@@ -6,6 +6,9 @@ import { parse } from '../../css-value';
 import { path, knownFolders } from '../../file-system';
 import * as application from '../../application';
 import { profile } from '../../profiling';
+import { BoxShadow } from './box-shadow';
+import { Color } from '../../color';
+import { Screen } from '../../platform';
 export * from './background-common';
 
 interface AndroidView {
@@ -81,6 +84,12 @@ export module ad {
 			}
 
 			nativeView.setBackground(defaultDrawable);
+		}
+
+		const boxShadow = view.style.boxShadow;
+		if (boxShadow) {
+			console.log('boxShadow', boxShadow);
+			drawBoxShadow(nativeView, boxShadow);
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
@@ -209,6 +218,73 @@ function createNativeCSSValueArray(css: string): native.Array<org.nativescript.w
 	}
 
 	return nativeArray;
+}
+
+function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
+	const shadowOpacity = 0.8;
+	const color = boxShadow.color;
+	const shadowColor = new Color(shadowOpacity * 255, color.r, color.g, color.b);
+	// TODO: this is suppsosed to be android's background
+	const backgroundColor = new Color('#ffffff'); // new Color(this.backgroundColor);
+	const cornerRadiusValue = boxShadow.blurRadius * Screen.mainScreen.scale;
+	const elevationValue = 3; // this.elevation;
+	const shadowColorValue = shadowColor.android;
+	const backgroundColorValue = backgroundColor.android;
+	// const shadowSpread = this.shadowSpread * Screen.mainScreen.scale;
+	const shadowSpread = boxShadow.spreadRadius * Screen.mainScreen.scale;
+	const outerRadius = Array.create('float', 8);
+	outerRadius[0] = cornerRadiusValue;
+	outerRadius[1] = cornerRadiusValue;
+	outerRadius[2] = cornerRadiusValue;
+	outerRadius[3] = cornerRadiusValue;
+	outerRadius[4] = cornerRadiusValue;
+	outerRadius[5] = cornerRadiusValue;
+	outerRadius[6] = cornerRadiusValue;
+	outerRadius[7] = cornerRadiusValue;
+	const backgroundPaint = new android.graphics.Paint();
+	backgroundPaint.setAntiAlias(true);
+	backgroundPaint.setStyle(android.graphics.Paint.Style.FILL);
+	backgroundPaint.setShadowLayer(cornerRadiusValue, 0, 0, 0);
+	const shapeDrawablePadding = new android.graphics.Rect();
+	shapeDrawablePadding.left = elevationValue;
+	shapeDrawablePadding.right = elevationValue;
+	shapeDrawablePadding.top = elevationValue;
+	shapeDrawablePadding.bottom = elevationValue;
+	const shapeDrawable = new android.graphics.drawable.ShapeDrawable();
+	shapeDrawable.setPadding(shapeDrawablePadding);
+	shapeDrawable.getPaint().setColor(backgroundColorValue);
+
+	shapeDrawable.getPaint().setShadowLayer(shadowSpread, 0, 0, shadowColorValue);
+	nativeView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, shapeDrawable.getPaint());
+	shapeDrawable.setShape(new android.graphics.drawable.shapes.RoundRectShape(outerRadius, null, null));
+	shapeDrawable.getPaint().setAntiAlias(true);
+	const drawableArray = Array.create('android.graphics.drawable.Drawable', 1);
+	drawableArray[0] = shapeDrawable;
+	const shadowGravity = 'center';
+	const drawable = new android.graphics.drawable.LayerDrawable(drawableArray);
+	const left_right = elevationValue;
+	const top_bottom = shadowGravity === 'center' ? elevationValue : elevationValue * 2;
+	drawable.setLayerInset(0, left_right, top_bottom, left_right, top_bottom);
+	nativeView.setBackground(drawable);
+
+	if ((<any>nativeView).setClipToPadding) {
+		console.log('setting clip to padding');
+		(<any>nativeView).setClipToPadding(false);
+	}
+	//   this._drawable = drawable;
+	let count = 0;
+	while (nativeView.getParent() && nativeView.getParent() instanceof android.view.ViewGroup) {
+		console.log('while');
+		count++;
+		const parent = nativeView.getParent() as android.view.ViewGroup;
+		parent.setClipChildren(false);
+		parent.setClipToPadding(false);
+		// removing clipping from all breaks the ui
+		if (count === 1) {
+			break;
+		}
+		nativeView = parent;
+	}
 }
 
 export enum CacheMode {

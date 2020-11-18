@@ -7,7 +7,7 @@ components that have the btn class name.
 */
 .btn {
   font-size: 18;
-  box-shadow: 5 5 10 red;
+  box-shadow: 5 5 20 10 red;
 }
 
 .bold{

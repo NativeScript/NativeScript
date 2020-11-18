@@ -464,19 +464,19 @@ function parseBoxShadowProperites(value: string): BoxShadow {
 		// let opacity: string;
 
 		if (arr.length === 3) {
-			offsetX = +arr[0];
-			offsetY = +arr[1];
+			offsetX = parseInt(arr[0]);
+			offsetY = parseInt(arr[1]);
 			color = new Color(arr[2]);
 		} else if (arr.length === 4) {
-			offsetX = +arr[0];
-			offsetY = +arr[1];
-			blurRadius = +arr[2];
+			offsetX = parseInt(arr[0]);
+			offsetY = parseInt(arr[1]);
+			blurRadius = parseInt(arr[2]);
 			color = new Color(arr[3]);
 		} else if (arr.length === 5) {
-			offsetX = +arr[0];
-			offsetY = +arr[1];
-			blurRadius = +arr[2];
-			spreadRadius = +arr[3];
+			offsetX = parseInt(arr[0]);
+			offsetY = parseInt(arr[1]);
+			blurRadius = parseInt(arr[2]);
+			spreadRadius = parseInt(arr[3]);
 			color = new Color(arr[4]);
 		} else {
 			throw new Error('Expected 3, 4 or 5 parameters. Actual: ' + value);
