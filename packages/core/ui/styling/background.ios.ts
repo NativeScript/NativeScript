@@ -25,7 +25,6 @@ interface NativeView extends UIView {
 	leftBorderLayer: CALayer;
 
 	gradientLayer: CAGradientLayer;
-
 	boxShadowLayer: CALayer;
 }
 
@@ -58,12 +57,6 @@ export module ios {
 			drawGradient(nativeView, background.image);
 		}
 
-		const boxShadow = view.style.boxShadow;
-		if (boxShadow) {
-			console.log('boxShadow', boxShadow);
-			drawBoxShadow(nativeView, boxShadow);
-		}
-
 		const hasNonUniformBorderWidths = background.hasBorderWidth() && !background.hasUniformBorder();
 		const hasNonUniformBorderRadiuses = background.hasBorderRadius() && !background.hasUniformBorderRadius();
 		if (background.hasUniformBorderColor() && (hasNonUniformBorderWidths || hasNonUniformBorderRadiuses)) {
@@ -93,6 +86,12 @@ export module ios {
 			callback(uiColor);
 		} else {
 			setUIColorFromImage(view, nativeView, callback, flip);
+		}
+
+		const boxShadow = view.style.boxShadow;
+		if (boxShadow) {
+			console.log('boxShadow', boxShadow);
+			drawBoxShadow(nativeView, boxShadow, background);
 		}
 	}
 }
@@ -715,18 +714,39 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
 	nativeView.hasNonUniformBorder = hasNonUniformBorder;
 }
 
-function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow) {
+function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
 	const layer: CALayer = nativeView.layer;
-	if (true) {
-		layer.backgroundColor = UIColor.whiteColor.CGColor;
+	if (useSubLayer) {
+		const boxShadowLayer = CAShapeLayer.layer();
+
+		boxShadowLayer.frame = nativeView.bounds;
+		boxShadowLayer.fillColor = UIColor.whiteColor.CGColor; // boxShadow.color.ios.CGColor;
+		// const renderSize = nativeView.bounds.size || { width: 0, height: 0 };
+		// console.log('renderSize', renderSize);
+		// const cornerRadius = layout.toDeviceIndependentPixels(background.getUniformBorderRadius());
+		// layer.cornerRadius = 20;// Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), cornerRadius);
+
+		const shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, boxShadow.blurRadius);
+		boxShadowLayer.shadowPath = shadowPath;
+		boxShadowLayer.path = shadowPath.CGPath;
+		boxShadowLayer.shadowColor = boxShadow.color.ios.CGColor;
+		boxShadowLayer.shadowOpacity = 0.7; //boxShadow.shadowOpacity;
+		boxShadowLayer.shadowOffset = CGSizeMake(boxShadow.offsetX, boxShadow.offsetY);
+		boxShadowLayer.shadowRadius = boxShadow.blurRadius;
+
+		nativeView.boxShadowLayer = boxShadowLayer;
+		layer.insertSublayerAtIndex(boxShadowLayer, 0);
 	} else {
-		layer.backgroundColor = UIColor.clearColor.CGColor;
+		if (!background.color.a) {
+			// add white background if view has a transparent background
+			layer.backgroundColor = UIColor.whiteColor.CGColor;
+		}
+		layer.shadowOpacity = 0.7; //boxShadow.shadowOpacity;
+		layer.shadowRadius = boxShadow.blurRadius;
+		layer.shadowColor = boxShadow.color.ios.CGColor;
+		layer.shadowOffset = CGSizeMake(boxShadow.offsetX, boxShadow.offsetY);
+		layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, boxShadow.spreadRadius).CGPath;
 	}
-	layer.shadowOpacity = 0.7; //boxShadow.shadowOpacity;
-	layer.shadowRadius = boxShadow.blurRadius;
-	layer.shadowColor = boxShadow.color.ios.CGColor;
-	layer.shadowOffset = CGSizeMake(boxShadow.offsetX, boxShadow.offsetY);
-	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, boxShadow.spreadRadius).CGPath;
 }
 
 function drawGradient(nativeView: NativeView, gradient: LinearGradient) {

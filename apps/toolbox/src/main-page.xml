@@ -5,7 +5,7 @@
     </Page.actionBar>
     <StackLayout class="p-t-20 p-x-20">
         <Label text="Tap the button" class="h1 text-center"/>
-        <Button text="TAP" tap="{{ onTap }}" class="btn btn-primary btn-active" boxShadow="5 5 10 5 #00ff00"/>
+        <Button text="TAP" tap="{{ onTap }}" class="btn btn-primary btn-active" boxShadow="5 5 10 5 blue"/>
         <Label text="{{ message }}" class="h2 text-center" textWrap="true"/>
         <StackLayout class="c-bg-grey w-full m-y-5" height="1"></StackLayout>
         <ScrollView class="h-full">
@@ -13,8 +13,8 @@
             <Label text="More things to tool around with:" class="t-12 text-center font-italic m-t-10"/>
             <Button text="View List" tap="{{ viewList }}" class="btn"/>
 
-              <StackLayout backgroundColor="yellow" padding="50" boxShadow="10 10 20 20 #000">
-                <Label text="StackLayout" backgroundColor="pink" boxShadow="10 20 20 20 #0ff"/>
+              <StackLayout padding="50" boxShadow="10 10 20 20 #ddd">
+                <Label text="StackLayout" padding="50" backgroundColor="pink" boxShadow="10 20 20 20 #0ff"/>
               </StackLayout>
             <!-- add more examples below as desired to test and play around -->
           </StackLayout>

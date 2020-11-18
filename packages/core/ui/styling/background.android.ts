@@ -274,7 +274,6 @@ function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
 	//   this._drawable = drawable;
 	let count = 0;
 	while (nativeView.getParent() && nativeView.getParent() instanceof android.view.ViewGroup) {
-		console.log('while');
 		count++;
 		const parent = nativeView.getParent() as android.view.ViewGroup;
 		parent.setClipChildren(false);
