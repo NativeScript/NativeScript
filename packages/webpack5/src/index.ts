@@ -33,7 +33,7 @@ export function init(_env: IWebpackEnv) {
 	// todo: determine default config based on deps and print **useful** error if it fails.
 }
 
-export function useConfig(config: 'angular' | 'javascript' | 'react' | 'svelte' | 'typescript' | 'vue') {
+export function useConfig(config: keyof typeof defaultConfigs) {
 	webpackChains.push(configs[config]);
 }
 
