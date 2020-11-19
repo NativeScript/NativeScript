@@ -1,6 +1,11 @@
 import Config from 'webpack-chain';
 import { IWebpackEnv, Platform } from '../index';
-import { getAbsoluteDistPath, getDistPath, getEntryPath, getPackageJson } from '../helpers/project';
+import {
+	getAbsoluteDistPath,
+	getDistPath,
+	getEntryPath,
+	getPackageJson,
+} from '../helpers/project';
 
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import { DefinePlugin } from 'webpack';
@@ -22,11 +27,18 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	// todo: devtool
 	config.devtool('inline-source-map');
 
+	// todo: figure out easiest way to make "node" target work in ns,
+	// rather than the custom ns target implementation that's hard to maintain
 	config.target('node');
 
 	config.entry('bundle').add(entryPath);
 
-	config.output.path(getAbsoluteDistPath()).pathinfo(false).publicPath('').libraryTarget('commonjs').globalObject('global');
+	config.output
+		.path(getAbsoluteDistPath())
+		.pathinfo(false)
+		.publicPath('')
+		.libraryTarget('commonjs')
+		.globalObject('global');
 
 	// Set up Terser options
 	config.optimization.minimizer('TerserPlugin').use(TerserPlugin, [
@@ -45,17 +57,34 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	// look for loaders in
 	//  - @nativescript/webpack/loaders
 	//  - node_modules
-	config.resolveLoader.modules.add('@nativescript/webpack/dist/loaders').add('node_modules');
+	config.resolveLoader.modules
+		.add('@nativescript/webpack/dist/loaders')
+		.add('node_modules');
 
 	// inspector_modules
 	config.when(shouldIncludeInspectorModules(env), (config) => {
-		config.entry('tns_modules/@nativescript/core/inspector_modules').add('@nativescript/core/inspector_modules');
+		config
+			.entry('tns_modules/@nativescript/core/inspector_modules')
+			.add('@nativescript/core/inspector_modules');
 	});
 
-	config.resolve.extensions.add(`.${platform}.ts`).add('.ts').add(`.${platform}.js`).add('.js').add(`.${platform}.css`).add('.css').add(`.${platform}.scss`).add('.scss').add(`.${platform}.json`).add('.json');
+	config.resolve.extensions
+		.add(`.${platform}.ts`)
+		.add('.ts')
+		.add(`.${platform}.js`)
+		.add('.js')
+		.add(`.${platform}.css`)
+		.add('.css')
+		.add(`.${platform}.scss`)
+		.add('.scss')
+		.add(`.${platform}.json`)
+		.add('.json');
 
 	// base aliases
-	config.resolve.alias.set('~/package.json', 'package.json').set('~', '<TODO>appFullPath').set('@', '<TODO>appFullPath');
+	config.resolve.alias
+		.set('~/package.json', 'package.json')
+		.set('~', '<TODO>appFullPath')
+		.set('@', '<TODO>appFullPath');
 
 	// resolve symlinks
 	config.resolve.symlinks(true);
@@ -85,7 +114,11 @@ export default function (config: Config, env: IWebpackEnv): Config {
 
 	// set up js
 	// todo: do we need babel-loader? It's useful to support it
-	config.module.rule('js').test(/\.js$/).use('babel-loader').loader('babel-loader');
+	config.module
+		.rule('js')
+		.test(/\.js$/)
+		.use('babel-loader')
+		.loader('babel-loader');
 
 	// set up css
 	config.module
