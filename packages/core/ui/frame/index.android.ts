@@ -1301,16 +1301,16 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		if (!rootView) {
 			const mainEntry = application.getMainEntry();
 			const intent = activity.getIntent();
-			let ensureNoRootView = false;
+			let shouldRootViewBeEmpty = false;
 
 			if (fireLaunchEvent) {
 				// entry point for Angular and Vue frameworks
 				rootView = notifyLaunch(intent, <any>savedInstanceState, null);
-				ensureNoRootView = rootView === null;
+				shouldRootViewBeEmpty = rootView === null;
 			}
 
 			if (!rootView) {
-				if(ensureNoRootView) {
+				if (shouldRootViewBeEmpty) {
 					return;
 				}
 				// entry point for NS Core
