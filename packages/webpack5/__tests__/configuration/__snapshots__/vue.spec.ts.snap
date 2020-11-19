@@ -24,6 +24,7 @@ exports[`vue configuration for android 1`] = `
       vue: 'nativescript-vue'
     },
     extensions: [
+      '.android.vue',
       '.vue',
       '.android.ts',
       '.ts',
@@ -195,6 +196,7 @@ exports[`vue configuration for ios 1`] = `
       vue: 'nativescript-vue'
     },
     extensions: [
+      '.ios.vue',
       '.vue',
       '.ios.ts',
       '.ts',

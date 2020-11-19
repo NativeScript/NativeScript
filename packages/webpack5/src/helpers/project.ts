@@ -1,4 +1,4 @@
-import { env } from '../index';
+import { env, Platform } from '../index';
 import { resolve, basename } from 'path';
 
 export function getProjectRootPath(): string {
@@ -31,6 +31,19 @@ export function getDistPath() {
 	// todo: additional platforms
 	// perhaps we could combine platform specifics into "plugins"
 	// 3rd party platforms would be treated the same
+}
+
+export function getPlatform(): Platform {
+	if (env?.android) {
+		return 'android';
+	}
+
+	if (env?.ios) {
+		return 'ios';
+	}
+
+	// todo: maybe no throw?
+	throw new Error('You need to provide a target platform!');
 }
 
 interface IPackageJson {

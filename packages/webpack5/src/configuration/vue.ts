@@ -3,12 +3,16 @@ import Config from 'webpack-chain';
 import { VueLoaderPlugin } from 'vue-loader';
 import { env as _env, IWebpackEnv } from '../index';
 import { merge } from 'webpack-merge';
+import { getPlatform } from '../helpers/project';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 
+	const platform = getPlatform();
+
 	// resolve .vue files
-	config.resolve.extensions.prepend('.vue');
+	// the order is reversed because we are using prepend!
+	config.resolve.extensions.prepend('.vue').prepend(`.${platform}.vue`);
 
 	// add a rule for .vue files
 	config.module
