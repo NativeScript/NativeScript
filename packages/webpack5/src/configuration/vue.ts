@@ -1,10 +1,10 @@
 import base from './base';
 import Config from 'webpack-chain';
 import { VueLoaderPlugin } from 'vue-loader';
-import { IWebpackEnv } from '../index';
+import { env as _env, IWebpackEnv } from '../index';
 import { merge } from 'webpack-merge';
 
-export default function (config: Config, env: IWebpackEnv): Config {
+export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 
 	// resolve .vue files
@@ -35,8 +35,12 @@ export default function (config: Config, env: IWebpackEnv): Config {
 			});
 		});
 
-	// add VueLoaderPlugin
-	config.plugin('VueLoaderPlugin').use(VueLoaderPlugin);
+	// add VueLoaderPlugin as the first plugin
+	config
+		.plugin('VueLoaderPlugin')
+		// @ts-ignore
+		.before(config.plugins.values()[0].name)
+		.use(VueLoaderPlugin);
 
 	// add an alias for vue, since some plugins may try to import it
 	config.resolve.alias.set('vue', 'nativescript-vue');

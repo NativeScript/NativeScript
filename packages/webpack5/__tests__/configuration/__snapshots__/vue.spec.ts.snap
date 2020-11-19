@@ -3,6 +3,18 @@
 exports[`vue configuration for android 1`] = `
 "{
   mode: 'development',
+  externals: [
+    'package.json'
+  ],
+  devtool: 'inline-source-map',
+  target: 'node',
+  output: {
+    path: '__jest__/platforms/android/app/src/main/assets/app',
+    pathinfo: false,
+    publicPath: '',
+    libraryTarget: 'commonjs',
+    globalObject: 'global'
+  },
   resolve: {
     symlinks: true,
     alias: {
@@ -12,7 +24,17 @@ exports[`vue configuration for android 1`] = `
       vue: 'nativescript-vue'
     },
     extensions: [
-      '.vue'
+      '.vue',
+      '.android.ts',
+      '.ts',
+      '.android.js',
+      '.js',
+      '.android.css',
+      '.css',
+      '.android.scss',
+      '.scss',
+      '.android.json',
+      '.json'
     ]
   },
   resolveLoader: {
@@ -100,7 +122,25 @@ exports[`vue configuration for android 1`] = `
       }
     ]
   },
+  optimization: {
+    minimizer: [
+      /* config.optimization.minimizer('TerserPlugin') */
+      new TerserPlugin(
+        {
+          terserOptions: {
+            compress: {
+              collapse_vars: false,
+              sequences: false
+            },
+            keep_fnames: true
+          }
+        }
+      )
+    ]
+  },
   plugins: [
+    /* config.plugin('VueLoaderPlugin') */
+    new VueLoaderPlugin(),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
@@ -116,23 +156,16 @@ exports[`vue configuration for android 1`] = `
         'global.NS_WEBPACK': true,
         'global.isAndroid': true,
         'global.isIOS': false,
-        process: 'global.process'
-      }
-    ),
-    /* config.plugin('CopyWebpackPlugin') */
-    new CopyPluginTemp(
-      {
-        patterns: []
+        process: 'global.process',
+        profile: '() => {}'
       }
     ),
     /* config.plugin('WatchStateLoggerPlugin') */
-    new WatchStateLoggerPlugin(),
-    /* config.plugin('VueLoaderPlugin') */
-    new VueLoaderPlugin()
+    new WatchStateLoggerPlugin()
   ],
   entry: {
     bundle: [
-      'todo/main'
+      'src/app.js'
     ]
   }
 }"
@@ -141,6 +174,18 @@ exports[`vue configuration for android 1`] = `
 exports[`vue configuration for ios 1`] = `
 "{
   mode: 'development',
+  externals: [
+    'package.json'
+  ],
+  devtool: 'inline-source-map',
+  target: 'node',
+  output: {
+    path: '__jest__/platforms/ios/__jest__/app',
+    pathinfo: false,
+    publicPath: '',
+    libraryTarget: 'commonjs',
+    globalObject: 'global'
+  },
   resolve: {
     symlinks: true,
     alias: {
@@ -150,7 +195,17 @@ exports[`vue configuration for ios 1`] = `
       vue: 'nativescript-vue'
     },
     extensions: [
-      '.vue'
+      '.vue',
+      '.ios.ts',
+      '.ts',
+      '.ios.js',
+      '.js',
+      '.ios.css',
+      '.css',
+      '.ios.scss',
+      '.scss',
+      '.ios.json',
+      '.json'
     ]
   },
   resolveLoader: {
@@ -238,12 +293,30 @@ exports[`vue configuration for ios 1`] = `
       }
     ]
   },
+  optimization: {
+    minimizer: [
+      /* config.optimization.minimizer('TerserPlugin') */
+      new TerserPlugin(
+        {
+          terserOptions: {
+            compress: {
+              collapse_vars: true,
+              sequences: true
+            },
+            keep_fnames: true
+          }
+        }
+      )
+    ]
+  },
   plugins: [
+    /* config.plugin('VueLoaderPlugin') */
+    new VueLoaderPlugin(),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
-          'platforms/ios/[todo]/app/**/*'
+          'platforms/ios/__jest__/app/**/*'
         ],
         verbose: true
       }
@@ -254,26 +327,19 @@ exports[`vue configuration for ios 1`] = `
         'global.NS_WEBPACK': true,
         'global.isAndroid': false,
         'global.isIOS': true,
-        process: 'global.process'
-      }
-    ),
-    /* config.plugin('CopyWebpackPlugin') */
-    new CopyPluginTemp(
-      {
-        patterns: []
+        process: 'global.process',
+        profile: '() => {}'
       }
     ),
     /* config.plugin('WatchStateLoggerPlugin') */
-    new WatchStateLoggerPlugin(),
-    /* config.plugin('VueLoaderPlugin') */
-    new VueLoaderPlugin()
+    new WatchStateLoggerPlugin()
   ],
   entry: {
-    inspector_modules: [
-      'tns_modules/@nativescript/core/inspector_modules'
-    ],
     bundle: [
-      'todo/main'
+      'src/app.js'
+    ],
+    'tns_modules/@nativescript/core/inspector_modules': [
+      '@nativescript/core/inspector_modules'
     ]
   }
 }"

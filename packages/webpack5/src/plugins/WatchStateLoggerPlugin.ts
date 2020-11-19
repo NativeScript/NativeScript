@@ -31,9 +31,10 @@ export class WatchStateLoggerPlugin {
 			}
 
 			const emittedFiles = Object.keys(compilation.assets).filter((assetKey) => compilation.assets[assetKey].emitted);
-
 			const chunkFiles = getChunkFiles(compilation);
+
 			process.send && process.send(messages.compilationComplete, (error) => null);
+
 			// Send emitted files so they can be LiveSynced if need be
 			process.send && process.send({ emittedFiles, chunkFiles, hash: compilation.hash }, (error) => null);
 		});

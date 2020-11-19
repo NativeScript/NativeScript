@@ -3,5 +3,8 @@ module.exports = {
   testEnvironment: 'node',
 	moduleNameMapper: {
   	'^@nativescript/webpack$': '<rootDir>/src'
-	}
+	},
+	setupFiles: [
+		'<rootDir>/jest.setup.ts'
+	]
 };

@@ -2,6 +2,7 @@ import Config from 'webpack-chain';
 import webpack from 'webpack';
 import { configs } from './configuration';
 import { determineProjectFlavor } from './helpers/flavor';
+import { highlight } from 'cli-highlight';
 
 export type Platform = 'android' | 'ios' | string;
 
@@ -17,13 +18,20 @@ export interface IWebpackEnv {
 	production?: boolean;
 	report?: boolean;
 	hmr?: boolean;
+
+	// enable verbose output
+	verbose?: boolean;
 	// todo: add others
 }
 
 let webpackChains: any[] = [];
 let webpackMerges: any[] = [];
-let env: IWebpackEnv = {};
 let explicitUseConfig = false;
+
+/**
+ * @internal
+ */
+export let env: IWebpackEnv = {};
 
 ////// PUBLIC API
 export const defaultConfigs = configs;
@@ -34,9 +42,11 @@ export function init(_env: IWebpackEnv) {
 	}
 }
 
-export function useConfig(config: keyof typeof defaultConfigs) {
+export function useConfig(config: keyof typeof defaultConfigs | false) {
 	explicitUseConfig = true;
-	webpackChains.push(configs[config]);
+	if (config) {
+		webpackChains.unshift(configs[config]);
+	}
 }
 
 export function chainWebpack(chainFn: (config: Config, env: IWebpackEnv) => any) {
@@ -58,6 +68,11 @@ export function resolveChainableConfig() {
 	webpackChains.forEach((chainFn) => {
 		return chainFn(config, env);
 	});
+
+	if (env.verbose) {
+		console.log('Resolved chainable config:');
+		console.log(highlight(config.toString(), { language: 'js' }));
+	}
 
 	return config;
 }

@@ -1,20 +1,46 @@
 import Config from 'webpack-chain';
 import { IWebpackEnv, Platform } from '../index';
+import { getAbsoluteDistPath, getDistPath, getEntryPath, getPackageJson } from '../helpers/project';
+
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
-import { getDistPath } from '../helpers/projectHelpers';
 import { DefinePlugin } from 'webpack';
 import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
+import TerserPlugin from 'terser-webpack-plugin';
 
 export default function (config: Config, env: IWebpackEnv): Config {
-	const distPath = getDistPath(env);
+	const entryPath = getEntryPath();
+	const distPath = getDistPath();
 	const platform = determinePlatformFromEnv(env);
+	const packageJson = getPackageJson();
 	const mode = env.production ? 'production' : 'development';
 
 	// set mode
 	config.mode(mode);
 
+	config.externals(['package.json']);
+
 	// todo: devtool
-	// config.devtool()
+	config.devtool('inline-source-map');
+
+	config.target('node');
+
+	config.entry('bundle').add(entryPath);
+
+	config.output.path(getAbsoluteDistPath()).pathinfo(false).publicPath('').libraryTarget('commonjs').globalObject('global');
+
+	// Set up Terser options
+	config.optimization.minimizer('TerserPlugin').use(TerserPlugin, [
+		{
+			terserOptions: {
+				compress: {
+					collapse_vars: platform !== 'android',
+					sequences: platform !== 'android',
+				},
+				// todo: move into vue.ts if not required in other flavors?
+				keep_fnames: true,
+			},
+		},
+	]);
 
 	// look for loaders in
 	//  - @nativescript/webpack/loaders
@@ -23,10 +49,10 @@ export default function (config: Config, env: IWebpackEnv): Config {
 
 	// inspector_modules
 	config.when(shouldIncludeInspectorModules(env), (config) => {
-		config.entry('inspector_modules').add('tns_modules/@nativescript/core/inspector_modules').end();
+		config.entry('tns_modules/@nativescript/core/inspector_modules').add('@nativescript/core/inspector_modules');
 	});
 
-	config.entry('bundle').add('todo/main').end();
+	config.resolve.extensions.add(`.${platform}.ts`).add('.ts').add(`.${platform}.js`).add('.js').add(`.${platform}.css`).add('.css').add(`.${platform}.scss`).add('.scss').add(`.${platform}.json`).add('.json');
 
 	// base aliases
 	config.resolve.alias.set('~/package.json', 'package.json').set('~', '<TODO>appFullPath').set('@', '<TODO>appFullPath');
@@ -96,17 +122,18 @@ export default function (config: Config, env: IWebpackEnv): Config {
 			'global.isAndroid': platform === 'android',
 			'global.isIOS': platform === 'ios',
 			process: 'global.process',
+			profile: '() => {}',
 		},
 	]);
 
 	// todo: we should probably move away from CopyWebpackPlugin
 	// it has many issues we can solve by simply copying files **before** the build even starts
 	// this is just a temp inline plugin that does nothing while building out the configs.
-	config.plugin('CopyWebpackPlugin').use(function CopyPluginTemp() {}, [
-		{
-			patterns: [],
-		},
-	]);
+	// config.plugin('CopyWebpackPlugin').use(function CopyPluginTemp() {}, [
+	// 	{
+	// 		patterns: [],
+	// 	},
+	// ]);
 
 	// add the WatchStateLogger plugin used to notify the CLI of build state
 	config.plugin('WatchStateLoggerPlugin').use(WatchStateLoggerPlugin);
