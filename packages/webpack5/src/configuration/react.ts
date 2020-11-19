@@ -1,9 +1,9 @@
 import base from './base';
-import { IWebpackEnv } from '@nativescript/webpack';
+import { env as _env, IWebpackEnv } from '@nativescript/webpack';
 import Config from 'webpack-chain';
 import { merge } from 'webpack-merge';
 
-export default function (config: Config, env: IWebpackEnv): Config {
+export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 
 	// todo: use env

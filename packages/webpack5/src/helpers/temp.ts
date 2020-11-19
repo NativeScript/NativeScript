@@ -1,5 +1,5 @@
 import { existsSync } from 'fs';
-import { getPackageJson } from './projectHelpers';
+import { getPackageJson } from './project';
 import { resolve } from 'path';
 
 // todo: get rid of these or reduce them to their simplest form
@@ -20,12 +20,12 @@ function verifyEntryModuleDirectory(appDirectory: string) {
 	}
 }
 
-function getPackageJsonEntry(appDirectory) {
-	const packageJsonSource = getPackageJson(appDirectory);
+function getPackageJsonEntry() {
+	const packageJsonSource = getPackageJson();
 	const entry = packageJsonSource.main;
 
 	if (!entry) {
-		throw new Error(`${appDirectory}/package.json must contain a 'main' attribute!`);
+		throw new Error(`package.json must contain a 'main' attribute!`);
 	}
 
 	return entry.replace(/\.js$/i, '');
@@ -34,7 +34,7 @@ function getPackageJsonEntry(appDirectory) {
 export function getEntryModule(appDirectory: string, platform: 'android' | 'ios') {
 	verifyEntryModuleDirectory(appDirectory);
 
-	const entry = getPackageJsonEntry(appDirectory);
+	const entry = getPackageJsonEntry();
 
 	const tsEntryPath = resolve(appDirectory, `${entry}.ts`);
 	const jsEntryPath = resolve(appDirectory, `${entry}.js`);

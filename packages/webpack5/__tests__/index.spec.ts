@@ -13,6 +13,7 @@ describe('@nativescript/webpack', () => {
 	});
 
 	it('applies chain configs', () => {
+		webpack.useConfig(false);
 		expect(webpack.chainWebpack).toBeInstanceOf(Function);
 
 		const chainFn = jest.fn();
