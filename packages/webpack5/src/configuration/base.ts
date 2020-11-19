@@ -5,6 +5,7 @@ import {
 	getDistPath,
 	getEntryPath,
 	getPackageJson,
+	getPlatform,
 } from '../helpers/project';
 
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
@@ -15,7 +16,7 @@ import TerserPlugin from 'terser-webpack-plugin';
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();
 	const distPath = getDistPath();
-	const platform = determinePlatformFromEnv(env);
+	const platform = getPlatform();
 	const packageJson = getPackageJson();
 	const mode = env.production ? 'production' : 'development';
 
@@ -175,20 +176,8 @@ export default function (config: Config, env: IWebpackEnv): Config {
 }
 
 function shouldIncludeInspectorModules(env: IWebpackEnv): boolean {
-	const platform = determinePlatformFromEnv(env);
+	const platform = getPlatform();
 	// todo: check if core modules are external
 	// todo: check if we are testing
 	return platform === 'ios';
-}
-
-function determinePlatformFromEnv(env: IWebpackEnv): Platform {
-	if (env?.android) {
-		return 'android';
-	}
-
-	if (env?.ios) {
-		return 'ios';
-	}
-
-	throw new Error('You need to provide a target platform!');
 }
