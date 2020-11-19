@@ -1301,6 +1301,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		if (!rootView) {
 			const mainEntry = application.getMainEntry();
 			const intent = activity.getIntent();
+			// useful for integrations that would like to set rootView asynchronously after app launch
 			let shouldRootViewBeEmpty = false;
 
 			if (fireLaunchEvent) {
