@@ -24,6 +24,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
       'react-dom': 'react-nativescript'
     },
     extensions: [
+      '.android.tsx',
       '.tsx',
       '.android.ts',
       '.ts',
@@ -39,7 +40,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
   },
   resolveLoader: {
     modules: [
-      '@nativescript/webpack/dist/loaders',
+      'node_modules/@nativescript/webpack/dist/loaders',
       'node_modules'
     ]
   },
@@ -92,9 +93,9 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
       {
         test: /\\\\.css$/,
         use: [
-          /* config.module.rule('css').use('css2json-loader') */
+          /* config.module.rule('css').use('apply-css-loader') */
           {
-            loader: 'css2json-loader'
+            loader: 'apply-css-loader'
           },
           /* config.module.rule('css').use('css-loader') */
           {
@@ -199,6 +200,7 @@ exports[`react configuration > android > base config 1`] = `
       'react-dom': 'react-nativescript'
     },
     extensions: [
+      '.android.tsx',
       '.tsx',
       '.android.ts',
       '.ts',
@@ -214,7 +216,7 @@ exports[`react configuration > android > base config 1`] = `
   },
   resolveLoader: {
     modules: [
-      '@nativescript/webpack/dist/loaders',
+      'node_modules/@nativescript/webpack/dist/loaders',
       'node_modules'
     ]
   },
@@ -267,9 +269,9 @@ exports[`react configuration > android > base config 1`] = `
       {
         test: /\\\\.css$/,
         use: [
-          /* config.module.rule('css').use('css2json-loader') */
+          /* config.module.rule('css').use('apply-css-loader') */
           {
-            loader: 'css2json-loader'
+            loader: 'apply-css-loader'
           },
           /* config.module.rule('css').use('css-loader') */
           {
@@ -367,6 +369,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
       'react-dom': 'react-nativescript'
     },
     extensions: [
+      '.ios.tsx',
       '.tsx',
       '.ios.ts',
       '.ts',
@@ -382,7 +385,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
   },
   resolveLoader: {
     modules: [
-      '@nativescript/webpack/dist/loaders',
+      'node_modules/@nativescript/webpack/dist/loaders',
       'node_modules'
     ]
   },
@@ -435,9 +438,9 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
       {
         test: /\\\\.css$/,
         use: [
-          /* config.module.rule('css').use('css2json-loader') */
+          /* config.module.rule('css').use('apply-css-loader') */
           {
-            loader: 'css2json-loader'
+            loader: 'apply-css-loader'
           },
           /* config.module.rule('css').use('css-loader') */
           {
@@ -545,6 +548,7 @@ exports[`react configuration > ios > base config 1`] = `
       'react-dom': 'react-nativescript'
     },
     extensions: [
+      '.ios.tsx',
       '.tsx',
       '.ios.ts',
       '.ts',
@@ -560,7 +564,7 @@ exports[`react configuration > ios > base config 1`] = `
   },
   resolveLoader: {
     modules: [
-      '@nativescript/webpack/dist/loaders',
+      'node_modules/@nativescript/webpack/dist/loaders',
       'node_modules'
     ]
   },
@@ -613,9 +617,9 @@ exports[`react configuration > ios > base config 1`] = `
       {
         test: /\\\\.css$/,
         use: [
-          /* config.module.rule('css').use('css2json-loader') */
+          /* config.module.rule('css').use('apply-css-loader') */
           {
-            loader: 'css2json-loader'
+            loader: 'apply-css-loader'
           },
           /* config.module.rule('css').use('css-loader') */
           {

@@ -40,7 +40,7 @@ exports[`vue configuration for android 1`] = `
   },
   resolveLoader: {
     modules: [
-      '@nativescript/webpack/dist/loaders',
+      'node_modules/@nativescript/webpack/dist/loaders',
       'node_modules'
     ]
   },
@@ -84,9 +84,9 @@ exports[`vue configuration for android 1`] = `
       {
         test: /\\\\.css$/,
         use: [
-          /* config.module.rule('css').use('css2json-loader') */
+          /* config.module.rule('css').use('apply-css-loader') */
           {
-            loader: 'css2json-loader'
+            loader: 'apply-css-loader'
           },
           /* config.module.rule('css').use('css-loader') */
           {
@@ -212,7 +212,7 @@ exports[`vue configuration for ios 1`] = `
   },
   resolveLoader: {
     modules: [
-      '@nativescript/webpack/dist/loaders',
+      'node_modules/@nativescript/webpack/dist/loaders',
       'node_modules'
     ]
   },
@@ -256,9 +256,9 @@ exports[`vue configuration for ios 1`] = `
       {
         test: /\\\\.css$/,
         use: [
-          /* config.module.rule('css').use('css2json-loader') */
+          /* config.module.rule('css').use('apply-css-loader') */
           {
-            loader: 'css2json-loader'
+            loader: 'apply-css-loader'
           },
           /* config.module.rule('css').use('css-loader') */
           {

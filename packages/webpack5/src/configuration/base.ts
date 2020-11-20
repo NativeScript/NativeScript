@@ -8,6 +8,8 @@ import {
 	getPlatform,
 } from '../helpers/project';
 
+import TransformNativeClass from '../transformers/NativeClass';
+
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import { DefinePlugin } from 'webpack';
 import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
@@ -55,10 +57,10 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	]);
 
 	// look for loaders in
-	//  - @nativescript/webpack/loaders
+	//  - node_modules/@nativescript/webpack/dist/loaders
 	//  - node_modules
 	config.resolveLoader.modules
-		.add('@nativescript/webpack/dist/loaders')
+		.add('node_modules/@nativescript/webpack/dist/loaders')
 		.add('node_modules');
 
 	// inspector_modules
@@ -105,9 +107,7 @@ export default function (config: Config, env: IWebpackEnv): Config {
 			},
 			getCustomTransformers() {
 				return {
-					before: [
-						// todo: transform NativeClass
-					],
+					before: [TransformNativeClass],
 				};
 			},
 		});
@@ -124,8 +124,8 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	config.module
 		.rule('css')
 		.test(/\.css$/)
-		.use('css2json-loader')
-		.loader('css2json-loader')
+		.use('apply-css-loader')
+		.loader('apply-css-loader')
 		.end()
 		.use('css-loader')
 		.loader('css-loader');
