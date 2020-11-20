@@ -146,7 +146,7 @@ exports[`vue configuration for android 1`] = `
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
-          'platforms/android/app/src/main/assets/app/**/*'
+          '__jest__/platforms/android/app/src/main/assets/app/**/*'
         ],
         verbose: true
       }
@@ -318,7 +318,7 @@ exports[`vue configuration for ios 1`] = `
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
-          'platforms/ios/__jest__/app/**/*'
+          '__jest__/platforms/ios/__jest__/app/**/*'
         ],
         verbose: true
       }

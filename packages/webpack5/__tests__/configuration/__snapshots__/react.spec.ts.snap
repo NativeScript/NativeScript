@@ -139,7 +139,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
-          'platforms/android/app/src/main/assets/app/**/*'
+          '__jest__/platforms/android/app/src/main/assets/app/**/*'
         ],
         verbose: true
       }
@@ -314,7 +314,7 @@ exports[`react configuration > android > base config 1`] = `
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
-          'platforms/android/app/src/main/assets/app/**/*'
+          '__jest__/platforms/android/app/src/main/assets/app/**/*'
         ],
         verbose: true
       }
@@ -482,7 +482,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
-          'platforms/ios/__jest__/app/**/*'
+          '__jest__/platforms/ios/__jest__/app/**/*'
         ],
         verbose: true
       }
@@ -660,7 +660,7 @@ exports[`react configuration > ios > base config 1`] = `
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
-          'platforms/ios/__jest__/app/**/*'
+          '__jest__/platforms/ios/__jest__/app/**/*'
         ],
         verbose: true
       }
