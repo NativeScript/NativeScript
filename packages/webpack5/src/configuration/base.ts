@@ -8,12 +8,11 @@ import {
 	getPlatform,
 } from '../helpers/project';
 
-import TransformNativeClass from '../transformers/NativeClass';
-
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import { DefinePlugin } from 'webpack';
 import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
 import TerserPlugin from 'terser-webpack-plugin';
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();
@@ -55,6 +54,22 @@ export default function (config: Config, env: IWebpackEnv): Config {
 			},
 		},
 	]);
+
+	config.optimization.splitChunks({
+		cacheGroups: {
+			defaultVendor: {
+				test: /[\\/]node_modules[\\/]/,
+				priority: -10,
+				name: 'vendor',
+				chunks: 'all',
+				// test: (module) => {
+				// 	const moduleName = module.nameForCondition ? module.nameForCondition() : '';
+				// 	return /[\\/]node_modules[\\/]/.test(moduleName);
+				// },
+				// enforce: true
+			},
+		},
+	});
 
 	// look for loaders in
 	//  - node_modules/@nativescript/webpack/dist/loaders
@@ -107,7 +122,7 @@ export default function (config: Config, env: IWebpackEnv): Config {
 			},
 			getCustomTransformers() {
 				return {
-					before: [TransformNativeClass],
+					before: [require('../transformers/NativeClass')],
 				};
 			},
 		});
@@ -127,8 +142,8 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		.use('apply-css-loader')
 		.loader('apply-css-loader')
 		.end()
-		.use('css-loader')
-		.loader('css-loader');
+		.use('css2json-loader')
+		.loader('css2json-loader');
 
 	// set up scss
 	config.module
@@ -167,6 +182,8 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	// 		patterns: [],
 	// 	},
 	// ]);
+
+	config.plugin('BundleAnalyzerPlugin').use(BundleAnalyzerPlugin);
 
 	// add the WatchStateLogger plugin used to notify the CLI of build state
 	config.plugin('WatchStateLoggerPlugin').use(WatchStateLoggerPlugin);

@@ -1,5 +1,6 @@
 import { parse, Import, Stylesheet } from 'css';
 import { urlToRequest } from 'loader-utils';
+import { dedent } from 'ts-dedent';
 
 const betweenQuotesPattern = /('|")(.*?)\1/;
 const unpackUrlPattern = /url\(([^\)]+)\)/;
@@ -33,9 +34,17 @@ export default function loader(content: string, map: any) {
 
 	// map.mappings = map.mappings.replace(/;{2,}/, '')
 
+	const code = dedent`
+	/* CSS2JSON */
+	${dependencies.join('\n')}
+
+	const ___CSS2JSON_LOADER_EXPORT___ = ${str}
+
+	export default ___CSS2JSON_LOADER_EXPORT___
+	`;
 	this.callback(
 		null,
-		`${dependencies.join('\n')}module.exports = ${str};`,
+		code, //`${dependencies.join('\n')}module.exports = ${str};`,
 		null
 	);
 }

@@ -1,35 +1,34 @@
 import { dedent } from 'ts-dedent';
 
 const cssLoaderWarning = dedent`
-	The apply-css-loader requires the file to be pre-processed by css-loader.
-	Make sure css-loader is applied before apply-css-loader.
+	The apply-css-loader requires the file to be pre-processed by either css-loader or css2json-loader.
+	Make sure the appropriate loader is applied before apply-css-loader.
 `;
 
-function hasCssLoader(loaders: any[], loaderIndex: number) {
-	return loaders
-		?.slice(loaderIndex)
-		.some(({ path }) => path.includes('css-loader'));
-}
-
 export default function loader(content, map) {
-	// if (this.request.match(/\/app\.(css|scss|less|sass)$/)) {
-	// 	return content;
-	// }
+	const hasLoader = (loader: string) => {
+		return this.loaders
+			?.slice(this.loaderIndex)
+			.some(({ path }) => path.includes(loader));
+	};
 
-	// Emit a warning if the file was not processed by the css-loader.
-	if (!hasCssLoader(this.loaders, this.loaderIndex)) {
-		this.emitWarning(new Error(cssLoaderWarning));
-	}
-
-	content = dedent`
-		/* CSS START */
+	if (hasLoader('apply-css-loader')) {
+		// add a tag to the applied css
+		const tag =
+			this.mode === 'development'
+				? `, ${JSON.stringify(this.resourcePath)}`
+				: '';
+		content = dedent`
 		${content}
-		/* CSS END */
-
-		/* APPLY CSS */
+		const { addTaggedAdditionalCSS } = require("@nativescript/core/ui/styling/style-scope");
+		addTaggedAdditionalCSS(___CSS2JSON_LOADER_EXPORT___${tag})
+		`;
+	} else if (hasLoader('css-loader')) {
+		content = dedent`
+		${content}
+		// apply css
 		const { Application } = require("@nativescript/core");
 		require("@nativescript/core/ui/styling/style-scope");
-
 		if (___CSS_LOADER_EXPORT___ && typeof ___CSS_LOADER_EXPORT___.forEach === "function") {
 			___CSS_LOADER_EXPORT___.forEach(cssExport => {
 				if (cssExport.length > 1 && cssExport[1]) {
@@ -39,6 +38,9 @@ export default function loader(content, map) {
 			});
 		}
 	`;
+	} else {
+		this.emitWarning(new Error(cssLoaderWarning));
+	}
 
 	this.callback(null, content, map);
 }
