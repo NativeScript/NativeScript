@@ -714,13 +714,16 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
 	nativeView.hasNonUniformBorder = hasNonUniformBorder;
 }
 
+// TODO: use sublayer if its applied to a layout
 function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
 	const layer: CALayer = nativeView.layer;
 	if (useSubLayer) {
 		const boxShadowLayer = CAShapeLayer.layer();
 
 		boxShadowLayer.frame = nativeView.bounds;
-		boxShadowLayer.fillColor = UIColor.whiteColor.CGColor; // boxShadow.color.ios.CGColor;
+
+		// TODO: this should be the clear?
+		boxShadowLayer.fillColor = UIColor.clearColor.CGColor; // boxShadow.color.ios.CGColor;
 		// const renderSize = nativeView.bounds.size || { width: 0, height: 0 };
 		// console.log('renderSize', renderSize);
 		// const cornerRadius = layout.toDeviceIndependentPixels(background.getUniformBorderRadius());
@@ -733,8 +736,11 @@ function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow, background:
 		boxShadowLayer.shadowOpacity = 0.7; //boxShadow.shadowOpacity;
 		boxShadowLayer.shadowOffset = CGSizeMake(boxShadow.offsetX, boxShadow.offsetY);
 		boxShadowLayer.shadowRadius = boxShadow.blurRadius;
+		boxShadowLayer.masksToBounds = false;
 
 		nativeView.boxShadowLayer = boxShadowLayer;
+
+		layer.masksToBounds = false;
 		layer.insertSublayerAtIndex(boxShadowLayer, 0);
 	} else {
 		if (!background.color.a) {
@@ -746,6 +752,10 @@ function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow, background:
 		layer.shadowColor = boxShadow.color.ios.CGColor;
 		layer.shadowOffset = CGSizeMake(boxShadow.offsetX, boxShadow.offsetY);
 		layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, boxShadow.spreadRadius).CGPath;
+
+		// Eduardo's changes
+		layer.masksToBounds = false;
+		nativeView.clipsToBounds = true;
 	}
 }
 

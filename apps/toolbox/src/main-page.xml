@@ -4,21 +4,18 @@
         </ActionBar>
     </Page.actionBar>
     <StackLayout class="p-t-20 p-x-20">
-        <Label text="Tap the button" class="h1 text-center"/>
-        <Button text="TAP" tap="{{ onTap }}" height="100" class="btn btn-primary btn-active" boxShadow="5 5 10 5 blue"/>
-        <Label text="{{ message }}" class="h2 text-center" textWrap="true"/>
-        <StackLayout class="c-bg-grey w-full m-y-5" height="1"></StackLayout>
-        <ScrollView class="h-full">
-          <StackLayout>
-            <Label text="More things to tool around with:" class="t-12 text-center font-italic m-t-10"/>
-            <Button text="View List" height="100" tap="{{ viewList }}" class="btn"/>
 
-              <StackLayout padding="50" boxShadow="10 10 20 20 #ddd">
-                <Label text="StackLayout" padding="50" backgroundColor="pink" boxShadow="10 20 20 20 #0ff"/>
-              </StackLayout>
-            <!-- add more examples below as desired to test and play around -->
-          </StackLayout>
-        </ScrollView>
+        <Button text="Button with html boxShadow" tap="{{ onTap }}" height="50" class="btn btn-primary btn-active" boxShadow="5 5 10 navy"/>  
+
+        <Button text="Button with css boxShadow (rgba)" tap="{{ onTap }}" height="50" marginTop="50" class="btn btn-primary btn-active"/>  
+  
+        <Button text="Button with boxShadow 3 props" tap="{{ onTap }}" height="50" marginTop="50" boxShadow="5 5 navy" class="btn btn-primary btn-active"/>  
+        <Button text="Button with boxShadow 4 props" tap="{{ onTap }}" height="50" marginTop="50" boxShadow="5 5 10 navy" class="btn btn-primary btn-active"/>  
+        <Button text="Button with boxShadow 5 props" tap="{{ onTap }}" height="50" marginTop="50" boxShadow="5 5 10 10 navy" class="btn btn-primary btn-active"/>  
+
+        <StackLayout boxShadow="10 10 rgba(0,0,0,1)" marginTop="50">
+          <Button text="Button with css boxShadow" tap="{{ onTap }}" height="50" borderRadius="10"/>
+        </StackLayout>
         
     </StackLayout>
 </Page>

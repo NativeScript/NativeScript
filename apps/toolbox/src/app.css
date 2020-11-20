@@ -7,7 +7,12 @@ components that have the btn class name.
 */
 .btn {
   font-size: 18;
-  box-shadow: 5 5 20 10 red;
+  /* box-shadow: -5 -5 10 10 navy; */
+  box-shadow: -5 -5 rgba(0,0,0,0.5);
+  background-color: #add8e6;
+  color: navy;
+  /* TODO: adding border radius breaks shadow */
+  /* border-radius: 10; */
 }
 
 .bold{
