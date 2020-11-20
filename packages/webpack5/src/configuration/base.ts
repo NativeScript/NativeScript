@@ -15,7 +15,6 @@ import TerserPlugin from 'terser-webpack-plugin';
 
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();
-	const distPath = getDistPath();
 	const platform = getPlatform();
 	const packageJson = getPackageJson();
 	const mode = env.production ? 'production' : 'development';
@@ -144,7 +143,7 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	// items to clean
 	config.plugin('CleanWebpackPlugin').use(CleanWebpackPlugin, [
 		{
-			cleanOnceBeforeBuildPatterns: [`${distPath}/**/*`],
+			cleanOnceBeforeBuildPatterns: [`${getAbsoluteDistPath()}/**/*`],
 			verbose: true,
 		},
 	]);
