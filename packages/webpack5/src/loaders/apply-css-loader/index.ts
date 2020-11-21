@@ -11,33 +11,29 @@ export default function loader(content, map) {
 			?.slice(this.loaderIndex)
 			.some(({ path }) => path.includes(loader));
 	};
+	// add a tag to the applied css
+	const tag =
+		this.mode === 'development' ? `, ${JSON.stringify(this.resourcePath)}` : '';
 
 	if (hasLoader('apply-css-loader')) {
-		// add a tag to the applied css
-		const tag =
-			this.mode === 'development'
-				? `, ${JSON.stringify(this.resourcePath)}`
-				: '';
 		content = dedent`
-		${content}
-		const { addTaggedAdditionalCSS } = require("@nativescript/core/ui/styling/style-scope");
-		addTaggedAdditionalCSS(___CSS2JSON_LOADER_EXPORT___${tag})
+			${content}
+			const { addTaggedAdditionalCSS } = require("@nativescript/core/ui/styling/style-scope");
+			addTaggedAdditionalCSS(___CSS2JSON_LOADER_EXPORT___${tag})
 		`;
 	} else if (hasLoader('css-loader')) {
 		content = dedent`
-		${content}
-		// apply css
-		const { Application } = require("@nativescript/core");
-		require("@nativescript/core/ui/styling/style-scope");
-		if (___CSS_LOADER_EXPORT___ && typeof ___CSS_LOADER_EXPORT___.forEach === "function") {
-			___CSS_LOADER_EXPORT___.forEach(cssExport => {
-				if (cssExport.length > 1 && cssExport[1]) {
-					// applying the second item of the export as it contains the css contents
-					Application.addCss(cssExport[1]);
-				}
-			});
-		}
-	`;
+			${content}
+			const { addTaggedAdditionalCSS } = require("@nativescript/core/ui/styling/style-scope");
+			if (___CSS_LOADER_EXPORT___ && typeof ___CSS_LOADER_EXPORT___.forEach === "function") {
+				___CSS_LOADER_EXPORT___.forEach(cssExport => {
+					if (cssExport.length > 1 && cssExport[1]) {
+						// applying the second item of the export as it contains the css contents
+						addTaggedAdditionalCSS(cssExport[1]${tag});
+					}
+				});
+			}
+		`;
 	} else {
 		this.emitWarning(new Error(cssLoaderWarning));
 	}

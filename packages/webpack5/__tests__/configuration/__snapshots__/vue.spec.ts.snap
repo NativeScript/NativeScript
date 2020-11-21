@@ -88,9 +88,9 @@ exports[`vue configuration for android 1`] = `
           {
             loader: 'apply-css-loader'
           },
-          /* config.module.rule('css').use('css-loader') */
+          /* config.module.rule('css').use('css2json-loader') */
           {
-            loader: 'css-loader'
+            loader: 'css2json-loader'
           }
         ]
       },
@@ -98,6 +98,10 @@ exports[`vue configuration for android 1`] = `
       {
         test: /\\\\.scss$/,
         use: [
+          /* config.module.rule('scss').use('apply-css-loader') */
+          {
+            loader: 'apply-css-loader'
+          },
           /* config.module.rule('scss').use('css2json-loader') */
           {
             loader: 'css2json-loader'
@@ -124,6 +128,16 @@ exports[`vue configuration for android 1`] = `
     ]
   },
   optimization: {
+    splitChunks: {
+      cacheGroups: {
+        defaultVendor: {
+          test: /[\\\\\\\\/]node_modules[\\\\\\\\/]/,
+          priority: -10,
+          name: 'vendor',
+          chunks: 'all'
+        }
+      }
+    },
     minimizer: [
       /* config.optimization.minimizer('TerserPlugin') */
       new TerserPlugin(
@@ -148,19 +162,25 @@ exports[`vue configuration for android 1`] = `
         cleanOnceBeforeBuildPatterns: [
           '__jest__/platforms/android/app/src/main/assets/app/**/*'
         ],
-        verbose: true
+        verbose: false
       }
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
-        'global.NS_WEBPACK': true,
+        __DEV__: true,
+        __NS_WEBPACK__: true,
+        __CSS_PARSER__: '\\"css-tree\\"',
+        __ANDROID__: true,
+        __IOS__: false,
         'global.isAndroid': true,
         'global.isIOS': false,
         process: 'global.process',
         profile: '() => {}'
       }
     ),
+    /* config.plugin('BundleAnalyzerPlugin') */
+    new BundleAnalyzerPlugin(),
     /* config.plugin('WatchStateLoggerPlugin') */
     new WatchStateLoggerPlugin()
   ],
@@ -260,9 +280,9 @@ exports[`vue configuration for ios 1`] = `
           {
             loader: 'apply-css-loader'
           },
-          /* config.module.rule('css').use('css-loader') */
+          /* config.module.rule('css').use('css2json-loader') */
           {
-            loader: 'css-loader'
+            loader: 'css2json-loader'
           }
         ]
       },
@@ -270,6 +290,10 @@ exports[`vue configuration for ios 1`] = `
       {
         test: /\\\\.scss$/,
         use: [
+          /* config.module.rule('scss').use('apply-css-loader') */
+          {
+            loader: 'apply-css-loader'
+          },
           /* config.module.rule('scss').use('css2json-loader') */
           {
             loader: 'css2json-loader'
@@ -296,6 +320,16 @@ exports[`vue configuration for ios 1`] = `
     ]
   },
   optimization: {
+    splitChunks: {
+      cacheGroups: {
+        defaultVendor: {
+          test: /[\\\\\\\\/]node_modules[\\\\\\\\/]/,
+          priority: -10,
+          name: 'vendor',
+          chunks: 'all'
+        }
+      }
+    },
     minimizer: [
       /* config.optimization.minimizer('TerserPlugin') */
       new TerserPlugin(
@@ -320,19 +354,25 @@ exports[`vue configuration for ios 1`] = `
         cleanOnceBeforeBuildPatterns: [
           '__jest__/platforms/ios/__jest__/app/**/*'
         ],
-        verbose: true
+        verbose: false
       }
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
-        'global.NS_WEBPACK': true,
+        __DEV__: true,
+        __NS_WEBPACK__: true,
+        __CSS_PARSER__: '\\"css-tree\\"',
+        __ANDROID__: false,
+        __IOS__: true,
         'global.isAndroid': false,
         'global.isIOS': true,
         process: 'global.process',
         profile: '() => {}'
       }
     ),
+    /* config.plugin('BundleAnalyzerPlugin') */
+    new BundleAnalyzerPlugin(),
     /* config.plugin('WatchStateLoggerPlugin') */
     new WatchStateLoggerPlugin()
   ],
