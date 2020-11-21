@@ -8,9 +8,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 
 	const platform = getPlatform();
+	const mode = env.production ? 'production' : 'development';
+	const production = mode === 'production';
+
 	// todo: use env
 	let isAnySourceMapEnabled = true;
-	let production = false;
 
 	config.resolve.extensions.prepend('.tsx').prepend(`.${platform}.tsx`);
 	config.resolve.alias.set('react-dom', 'react-nativescript');
@@ -30,15 +32,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.plugin('DefinePlugin').tap((args) => {
 		args[0] = merge(args[0], {
 			/** For various libraries in the React ecosystem. */
-			__DEV__: production ? 'false' : 'true',
 			__TEST__: 'false',
 			/**
 			 * Primarily for React Fast Refresh plugin, but technically the allowHmrInProduction option could be used instead.
 			 * Worth including anyway, as there are plenty of Node libraries that use this flag.
 			 */
-			'process.env.NODE_ENV': JSON.stringify(
-				production ? 'production' : 'development'
-			),
+			'process.env.NODE_ENV': JSON.stringify(mode),
 		});
 
 		return args;

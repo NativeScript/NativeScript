@@ -1,5 +1,6 @@
 import { env, Platform } from '../index';
 import { resolve, basename } from 'path';
+import { error } from './log';
 
 export function getProjectRootPath(): string {
 	// todo: find actual path?
@@ -42,8 +43,7 @@ export function getPlatform(): Platform {
 		return 'ios';
 	}
 
-	// todo: maybe no throw?
-	throw new Error('You need to provide a target platform!');
+	error('You need to provide a target platform!');
 }
 
 interface IPackageJson {

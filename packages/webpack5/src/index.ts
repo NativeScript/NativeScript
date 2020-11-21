@@ -1,8 +1,9 @@
 import Config from 'webpack-chain';
 import webpack from 'webpack';
+import { highlight } from 'cli-highlight';
 import { configs } from './configuration';
 import { determineProjectFlavor } from './helpers/flavor';
-import { highlight } from 'cli-highlight';
+import { applyExternalConfigs } from './helpers/externalConfigs';
 
 export type Platform = 'android' | 'ios' | string;
 
@@ -49,11 +50,18 @@ export function useConfig(config: keyof typeof defaultConfigs | false) {
 	}
 }
 
-export function chainWebpack(chainFn: (config: Config, env: IWebpackEnv) => any) {
+export function chainWebpack(
+	chainFn: (config: Config, env: IWebpackEnv) => any
+) {
 	webpackChains.push(chainFn);
 }
 
-export function mergeWebpack(mergeFn: (config: Partial<webpack.Configuration>, env: IWebpackEnv) => any | Partial<webpack.Configuration>) {
+export function mergeWebpack(
+	mergeFn: (
+		config: Partial<webpack.Configuration>,
+		env: IWebpackEnv
+	) => any | Partial<webpack.Configuration>
+) {
 	webpackMerges.push(mergeFn);
 }
 
@@ -63,6 +71,10 @@ export function resolveChainableConfig() {
 	if (!explicitUseConfig) {
 		useConfig(determineProjectFlavor());
 	}
+
+	// apply configs from dependencies
+	// todo: allow opt-out
+	applyExternalConfigs();
 
 	// this applies all chain configs
 	webpackChains.forEach((chainFn) => {

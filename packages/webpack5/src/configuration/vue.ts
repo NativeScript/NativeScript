@@ -23,6 +23,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.tap((options) => {
 			return {
 				...options,
+				// todo: should be a compiler object
+				// but we want it as an external dependency
 				compiler: 'nativescript-vue-template-compiler',
 			};
 		})

@@ -13,6 +13,8 @@ export default function loader(content: string, map: any) {
 
 	const ast = parse(content);
 
+	// todo: revise if this is necessary
+	// todo: perhaps use postCSS and just build imports into a single file?
 	let dependencies = [];
 	getImportRules(ast)
 		.map(extractUrlFromRule)
@@ -37,9 +39,7 @@ export default function loader(content: string, map: any) {
 	const code = dedent`
 	/* CSS2JSON */
 	${dependencies.join('\n')}
-
 	const ___CSS2JSON_LOADER_EXPORT___ = ${str}
-
 	export default ___CSS2JSON_LOADER_EXPORT___
 	`;
 	this.callback(
