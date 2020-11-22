@@ -109,6 +109,8 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		.use('ts-loader')
 		.loader('ts-loader')
 		.options({
+			// todo: perhaps we can provide a default tsconfig
+			// and use that if the project doesn't have one?
 			// configFile: '',
 			transpileOnly: true,
 			allowTsInNodeModules: true,
@@ -118,7 +120,7 @@ export default function (config: Config, env: IWebpackEnv): Config {
 			},
 			getCustomTransformers() {
 				return {
-					before: [require('../transformers/NativeClass')],
+					before: [require('../transformers/NativeClass').default],
 				};
 			},
 		});
