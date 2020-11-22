@@ -178,8 +178,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         'global.isAndroid': true,
         'global.isIOS': false,
         process: 'global.process',
-        profile: '() => {}',
-        __TEST__: 'false',
+        __TEST__: false,
         'process.env.NODE_ENV': '\\"development\\"'
       }
     ),
@@ -373,8 +372,7 @@ exports[`react configuration > android > base config 1`] = `
         'global.isAndroid': true,
         'global.isIOS': false,
         process: 'global.process',
-        profile: '() => {}',
-        __TEST__: 'false',
+        __TEST__: false,
         'process.env.NODE_ENV': '\\"development\\"'
       }
     ),
@@ -568,8 +566,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         'global.isAndroid': false,
         'global.isIOS': true,
         process: 'global.process',
-        profile: '() => {}',
-        __TEST__: 'false',
+        __TEST__: false,
         'process.env.NODE_ENV': '\\"development\\"'
       }
     ),
@@ -766,8 +763,7 @@ exports[`react configuration > ios > base config 1`] = `
         'global.isAndroid': false,
         'global.isIOS': true,
         process: 'global.process',
-        profile: '() => {}',
-        __TEST__: 'false',
+        __TEST__: false,
         'process.env.NODE_ENV': '\\"development\\"'
       }
     ),

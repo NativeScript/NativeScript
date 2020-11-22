@@ -18,14 +18,14 @@ export default function loader(content, map) {
 
 	const hmrCode = this.hot
 		? dedent`
-	if(module.hot) {
-		module.hot.accept()
-		module.hot.dispose(() => {
-			const { removeTaggedAdditionalCSS } = require("@nativescript/core/ui/styling/style-scope");
-			removeTaggedAdditionalCSS(${tag})
-		})
-	}
-	`
+			if(module.hot) {
+				module.hot.accept()
+				module.hot.dispose(() => {
+					const { removeTaggedAdditionalCSS } = require("@nativescript/core/ui/styling/style-scope");
+					removeTaggedAdditionalCSS(${tag})
+				})
+			}
+		`
 		: ``;
 
 	if (hasLoader('apply-css-loader')) {
