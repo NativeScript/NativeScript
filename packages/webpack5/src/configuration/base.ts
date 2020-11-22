@@ -8,7 +8,8 @@ import {
 
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
-import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
+// import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
+import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 
@@ -202,7 +203,8 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	// ]);
 
 	// add the WatchStateLogger plugin used to notify the CLI of build state
-	config.plugin('WatchStateLoggerPlugin').use(WatchStateLoggerPlugin);
+	// config.plugin('WatchStateLoggerPlugin').use(WatchStateLoggerPlugin);
+	config.plugin('WatchStatePlugin').use(WatchStatePlugin);
 
 	config.when(env.hmr, (config) => {
 		config.plugin('HotModuleReplacementPlugin').use(HotModuleReplacementPlugin);
