@@ -1,6 +1,7 @@
 import webpack from 'webpack';
 
 const id = 'WatchStateLoggerPlugin';
+
 export enum messages {
 	compilationComplete = 'Webpack compilation complete.',
 	startWatching = 'Webpack compilation complete. Watching for file changes.',
@@ -38,9 +39,7 @@ export class WatchStateLoggerPlugin {
 				console.log(messages.compilationComplete);
 			}
 
-			const emittedFiles = Object.keys(compilation.assets).filter(
-				(assetKey) => compilation.assets[assetKey].emitted
-			);
+			const emittedFiles = Array.from(compilation.emittedAssets);
 			const chunkFiles = getChunkFiles(compilation);
 
 			notify(messages.compilationComplete);
