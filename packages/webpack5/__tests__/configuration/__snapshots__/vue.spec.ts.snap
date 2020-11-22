@@ -120,7 +120,12 @@ exports[`vue configuration for android 1`] = `
           {
             loader: 'vue-loader',
             options: {
-              compiler: 'nativescript-vue-template-compiler'
+              compiler: {
+                compile: function () { /* omitted long function */ },
+                compileToFunctions: function () { /* omitted long function */ },
+                parseComponent: function () { /* omitted long function */ },
+                registerElement: function () { /* omitted long function */ }
+              }
             }
           }
         ]
@@ -312,7 +317,12 @@ exports[`vue configuration for ios 1`] = `
           {
             loader: 'vue-loader',
             options: {
-              compiler: 'nativescript-vue-template-compiler'
+              compiler: {
+                compile: function () { /* omitted long function */ },
+                compileToFunctions: function () { /* omitted long function */ },
+                parseComponent: function () { /* omitted long function */ },
+                registerElement: function () { /* omitted long function */ }
+              }
             }
           }
         ]

@@ -1,8 +1,9 @@
-import base from './base';
-import Config from 'webpack-chain';
+import * as compiler from 'nativescript-vue-template-compiler';
 import { VueLoaderPlugin } from 'vue-loader';
-import { env as _env, IWebpackEnv } from '../index';
 import { merge } from 'webpack-merge';
+import Config from 'webpack-chain';
+import base from './base';
+import { env as _env, IWebpackEnv } from '../index';
 import { getPlatform } from '../helpers/project';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
@@ -23,9 +24,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.tap((options) => {
 			return {
 				...options,
-				// todo: should be a compiler object
-				// but we want it as an external dependency
-				compiler: 'nativescript-vue-template-compiler',
+				compiler,
 			};
 		})
 		.end();
