@@ -4,7 +4,8 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
 "{
   mode: 'development',
   externals: [
-    'package.json'
+    'package.json',
+    '~/package.json'
   ],
   devtool: 'inline-source-map',
   target: 'node',
@@ -18,7 +19,6 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
   resolve: {
     symlinks: true,
     alias: {
-      '~/package.json': 'package.json',
       '~': '<TODO>appFullPath',
       '@': '<TODO>appFullPath',
       'react-dom': 'react-nativescript'
@@ -82,10 +82,18 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
       /* config.module.rule('js') */
       {
         test: /\\\\.js$/,
+        exclude: [
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('js').use('babel-loader') */
           {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
+            options: {
+              generatorOpts: {
+                compact: false
+              }
+            }
           }
         ]
       },
@@ -179,16 +187,19 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     new WatchStateLoggerPlugin(),
     /* config.plugin('HotModuleReplacementPlugin') */
     new HotModuleReplacementPlugin(),
-    /* config.plugin('ReactRefreshWebpackPlugin') */
-    new ReactRefreshWebpackPlugin(
+    /* config.plugin('ReactRefreshPlugin') */
+    new ReactRefreshPlugin(
       {
         overlay: false,
-        forceEnable: false
+        forceEnable: false,
+        exclude: /node_modules/i,
+        include: /\\\\.([jt]sx?|flow)$/i
       }
     )
   ],
   entry: {
     bundle: [
+      '@nativescript/core/globals/index.js',
       'src/app.js'
     ]
   }
@@ -199,7 +210,8 @@ exports[`react configuration > android > base config 1`] = `
 "{
   mode: 'development',
   externals: [
-    'package.json'
+    'package.json',
+    '~/package.json'
   ],
   devtool: 'inline-source-map',
   target: 'node',
@@ -213,7 +225,6 @@ exports[`react configuration > android > base config 1`] = `
   resolve: {
     symlinks: true,
     alias: {
-      '~/package.json': 'package.json',
       '~': '<TODO>appFullPath',
       '@': '<TODO>appFullPath',
       'react-dom': 'react-nativescript'
@@ -248,17 +259,6 @@ exports[`react configuration > android > base config 1`] = `
           /\\\\.tsx$/
         ],
         use: [
-          /* config.module.rule('ts').use('babel-loader|react-refresh') */
-          {
-            loader: 'babel-loader',
-            options: {
-              sourceMaps: 'inline',
-              babelrc: false,
-              plugins: [
-                'react-refresh/babel'
-              ]
-            }
-          },
           /* config.module.rule('ts').use('ts-loader') */
           {
             loader: 'ts-loader',
@@ -277,10 +277,18 @@ exports[`react configuration > android > base config 1`] = `
       /* config.module.rule('js') */
       {
         test: /\\\\.js$/,
+        exclude: [
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('js').use('babel-loader') */
           {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
+            options: {
+              generatorOpts: {
+                compact: false
+              }
+            }
           }
         ]
       },
@@ -375,6 +383,7 @@ exports[`react configuration > android > base config 1`] = `
   ],
   entry: {
     bundle: [
+      '@nativescript/core/globals/index.js',
       'src/app.js'
     ]
   }
@@ -385,7 +394,8 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
 "{
   mode: 'development',
   externals: [
-    'package.json'
+    'package.json',
+    '~/package.json'
   ],
   devtool: 'inline-source-map',
   target: 'node',
@@ -399,7 +409,6 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
   resolve: {
     symlinks: true,
     alias: {
-      '~/package.json': 'package.json',
       '~': '<TODO>appFullPath',
       '@': '<TODO>appFullPath',
       'react-dom': 'react-nativescript'
@@ -463,10 +472,18 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
       /* config.module.rule('js') */
       {
         test: /\\\\.js$/,
+        exclude: [
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('js').use('babel-loader') */
           {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
+            options: {
+              generatorOpts: {
+                compact: false
+              }
+            }
           }
         ]
       },
@@ -560,16 +577,19 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     new WatchStateLoggerPlugin(),
     /* config.plugin('HotModuleReplacementPlugin') */
     new HotModuleReplacementPlugin(),
-    /* config.plugin('ReactRefreshWebpackPlugin') */
-    new ReactRefreshWebpackPlugin(
+    /* config.plugin('ReactRefreshPlugin') */
+    new ReactRefreshPlugin(
       {
         overlay: false,
-        forceEnable: false
+        forceEnable: false,
+        exclude: /node_modules/i,
+        include: /\\\\.([jt]sx?|flow)$/i
       }
     )
   ],
   entry: {
     bundle: [
+      '@nativescript/core/globals/index.js',
       'src/app.js'
     ],
     'tns_modules/@nativescript/core/inspector_modules': [
@@ -583,7 +603,8 @@ exports[`react configuration > ios > base config 1`] = `
 "{
   mode: 'development',
   externals: [
-    'package.json'
+    'package.json',
+    '~/package.json'
   ],
   devtool: 'inline-source-map',
   target: 'node',
@@ -597,7 +618,6 @@ exports[`react configuration > ios > base config 1`] = `
   resolve: {
     symlinks: true,
     alias: {
-      '~/package.json': 'package.json',
       '~': '<TODO>appFullPath',
       '@': '<TODO>appFullPath',
       'react-dom': 'react-nativescript'
@@ -632,17 +652,6 @@ exports[`react configuration > ios > base config 1`] = `
           /\\\\.tsx$/
         ],
         use: [
-          /* config.module.rule('ts').use('babel-loader|react-refresh') */
-          {
-            loader: 'babel-loader',
-            options: {
-              sourceMaps: 'inline',
-              babelrc: false,
-              plugins: [
-                'react-refresh/babel'
-              ]
-            }
-          },
           /* config.module.rule('ts').use('ts-loader') */
           {
             loader: 'ts-loader',
@@ -661,10 +670,18 @@ exports[`react configuration > ios > base config 1`] = `
       /* config.module.rule('js') */
       {
         test: /\\\\.js$/,
+        exclude: [
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('js').use('babel-loader') */
           {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
+            options: {
+              generatorOpts: {
+                compact: false
+              }
+            }
           }
         ]
       },
@@ -759,6 +776,7 @@ exports[`react configuration > ios > base config 1`] = `
   ],
   entry: {
     bundle: [
+      '@nativescript/core/globals/index.js',
       'src/app.js'
     ],
     'tns_modules/@nativescript/core/inspector_modules': [

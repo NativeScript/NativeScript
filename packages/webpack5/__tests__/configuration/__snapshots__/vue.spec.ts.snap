@@ -4,7 +4,8 @@ exports[`vue configuration for android 1`] = `
 "{
   mode: 'development',
   externals: [
-    'package.json'
+    'package.json',
+    '~/package.json'
   ],
   devtool: 'inline-source-map',
   target: 'node',
@@ -18,7 +19,6 @@ exports[`vue configuration for android 1`] = `
   resolve: {
     symlinks: true,
     alias: {
-      '~/package.json': 'package.json',
       '~': '<TODO>appFullPath',
       '@': '<TODO>appFullPath',
       vue: 'nativescript-vue'
@@ -73,10 +73,18 @@ exports[`vue configuration for android 1`] = `
       /* config.module.rule('js') */
       {
         test: /\\\\.js$/,
+        exclude: [
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('js').use('babel-loader') */
           {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
+            options: {
+              generatorOpts: {
+                compact: false
+              }
+            }
           }
         ]
       },
@@ -189,6 +197,7 @@ exports[`vue configuration for android 1`] = `
   ],
   entry: {
     bundle: [
+      '@nativescript/core/globals/index.js',
       'src/app.js'
     ]
   }
@@ -199,7 +208,8 @@ exports[`vue configuration for ios 1`] = `
 "{
   mode: 'development',
   externals: [
-    'package.json'
+    'package.json',
+    '~/package.json'
   ],
   devtool: 'inline-source-map',
   target: 'node',
@@ -213,7 +223,6 @@ exports[`vue configuration for ios 1`] = `
   resolve: {
     symlinks: true,
     alias: {
-      '~/package.json': 'package.json',
       '~': '<TODO>appFullPath',
       '@': '<TODO>appFullPath',
       vue: 'nativescript-vue'
@@ -268,10 +277,18 @@ exports[`vue configuration for ios 1`] = `
       /* config.module.rule('js') */
       {
         test: /\\\\.js$/,
+        exclude: [
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('js').use('babel-loader') */
           {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
+            options: {
+              generatorOpts: {
+                compact: false
+              }
+            }
           }
         ]
       },
@@ -384,6 +401,7 @@ exports[`vue configuration for ios 1`] = `
   ],
   entry: {
     bundle: [
+      '@nativescript/core/globals/index.js',
       'src/app.js'
     ],
     'tns_modules/@nativescript/core/inspector_modules': [

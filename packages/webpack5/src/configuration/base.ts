@@ -134,8 +134,15 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	config.module
 		.rule('js')
 		.test(/\.js$/)
+		.exclude.add(/node_modules/)
+		.end()
 		.use('babel-loader')
-		.loader('babel-loader');
+		.loader('babel-loader')
+		.options({
+			generatorOpts: {
+				compact: false,
+			},
+		});
 
 	// set up css
 	config.module
