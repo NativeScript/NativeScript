@@ -19,15 +19,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.module
 		.rule('ts')
-		.test([...config.module.rule('ts').get('test'), /\.tsx$/])
-		.use('babel-loader|react-refresh')
-		.loader('babel-loader')
-		.before('ts-loader')
-		.options({
-			sourceMaps: isAnySourceMapEnabled ? 'inline' : false,
-			babelrc: false,
-			plugins: ['react-refresh/babel'],
-		});
+		.test([...config.module.rule('ts').get('test'), /\.tsx$/]);
 
 	config.plugin('DefinePlugin').tap((args) => {
 		args[0] = merge(args[0], {
@@ -45,9 +37,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// todo: env flag to forceEnable?
 	config.when(env.hmr && !production, (config) => {
+		config.module
+			.rule('ts')
+			.use('babel-loader|react-refresh')
+			.loader('babel-loader')
+			.before('ts-loader')
+			.options({
+				sourceMaps: isAnySourceMapEnabled ? 'inline' : false,
+				babelrc: false,
+				plugins: ['react-refresh/babel'],
+			});
+
 		config
-			.plugin('ReactRefreshWebpackPlugin')
-			.use(function ReactRefreshWebpackPlugin() {}, [
+			.plugin('ReactRefreshPlugin')
+			.use(require('@pmmmwh/react-refresh-webpack-plugin'), [
 				{
 					/**
 					 * Maybe one day we'll implement an Error Overlay, but the work involved is too daunting for now.

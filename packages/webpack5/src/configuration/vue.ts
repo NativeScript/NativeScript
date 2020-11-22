@@ -1,4 +1,3 @@
-import * as compiler from 'nativescript-vue-template-compiler';
 import { VueLoaderPlugin } from 'vue-loader';
 import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
@@ -24,7 +23,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.tap((options) => {
 			return {
 				...options,
-				compiler,
+				compiler: require('nativescript-vue-template-compiler'),
 			};
 		})
 		.end();
