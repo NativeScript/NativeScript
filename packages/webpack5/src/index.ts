@@ -1,9 +1,11 @@
+import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 import webpack from 'webpack';
 import { highlight } from 'cli-highlight';
 import { configs } from './configuration';
 import { determineProjectFlavor } from './helpers/flavor';
 import { applyExternalConfigs } from './helpers/externalConfigs';
+import { error, info } from './helpers/log';
 
 export type Platform = 'android' | 'ios' | string;
 
@@ -28,6 +30,7 @@ export interface IWebpackEnv {
 let webpackChains: any[] = [];
 let webpackMerges: any[] = [];
 let explicitUseConfig = false;
+let hasInitialized = false;
 
 /**
  * @internal
@@ -38,6 +41,7 @@ export let env: IWebpackEnv = {};
 export const defaultConfigs = configs;
 
 export function init(_env: IWebpackEnv) {
+	hasInitialized = true;
 	if (_env) {
 		env = _env;
 	}
@@ -82,18 +86,32 @@ export function resolveChainableConfig() {
 	});
 
 	if (env.verbose) {
-		console.log('Resolved chainable config:');
-		console.log(highlight(config.toString(), { language: 'js' }));
+		info('Resolved chainable config (before merges):');
+		info(highlight(config.toString(), { language: 'js' }));
 	}
 
 	return config;
 }
 
 export function resolveConfig(chainableConfig = resolveChainableConfig()) {
-	// todo: warn if no base config
+	if (!hasInitialized) {
+		throw error('resolveConfig() must be called after init()');
+	}
 
-	// todo: apply merges from webpackMerges
+	let config = chainableConfig.toConfig();
+
+	// this applies webpack merges
+	webpackMerges.forEach((mergeFn) => {
+		if (typeof mergeFn === 'function') {
+			// mergeFn is a function with optional return value
+			const res = mergeFn(config, env);
+			if (res) config = merge(config, res);
+		} else if (mergeFn) {
+			// mergeFn is a literal value (object)
+			config = merge(config, mergeFn);
+		}
+	});
 
 	// return a config usable by webpack
-	return chainableConfig.toConfig();
+	return config;
 }
