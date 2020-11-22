@@ -184,8 +184,6 @@ exports[`vue configuration for android 1`] = `
         profile: '() => {}'
       }
     ),
-    /* config.plugin('BundleAnalyzerPlugin') */
-    new BundleAnalyzerPlugin(),
     /* config.plugin('WatchStateLoggerPlugin') */
     new WatchStateLoggerPlugin()
   ],
@@ -381,8 +379,6 @@ exports[`vue configuration for ios 1`] = `
         profile: '() => {}'
       }
     ),
-    /* config.plugin('BundleAnalyzerPlugin') */
-    new BundleAnalyzerPlugin(),
     /* config.plugin('WatchStateLoggerPlugin') */
     new WatchStateLoggerPlugin()
   ],

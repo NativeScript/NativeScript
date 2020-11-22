@@ -6,6 +6,7 @@ import { configs } from './configuration';
 import { determineProjectFlavor } from './helpers/flavor';
 import { applyExternalConfigs } from './helpers/externalConfigs';
 import { error, info } from './helpers/log';
+import helpers from './helpers';
 
 export type Platform = 'android' | 'ios' | string;
 
@@ -14,6 +15,8 @@ export interface IWebpackEnv {
 
 	appPath?: string;
 	appResourcesPath?: string;
+
+	nativescriptLibPath?: string;
 
 	android?: boolean;
 	ios?: boolean;
@@ -39,6 +42,7 @@ export let env: IWebpackEnv = {};
 
 ////// PUBLIC API
 export const defaultConfigs = configs;
+export const Utils = helpers;
 
 export function init(_env: IWebpackEnv) {
 	hasInitialized = true;
