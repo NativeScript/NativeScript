@@ -7,7 +7,7 @@ import {
 } from '../helpers/project';
 
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
-import { DefinePlugin } from 'webpack';
+import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
 import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
@@ -188,11 +188,16 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	// 	},
 	// ]);
 
-	// todo: make opt-in with a flag
-	config.plugin('BundleAnalyzerPlugin').use(BundleAnalyzerPlugin);
-
 	// add the WatchStateLogger plugin used to notify the CLI of build state
 	config.plugin('WatchStateLoggerPlugin').use(WatchStateLoggerPlugin);
+
+	config.when(env.hmr, (config) => {
+		config.plugin('HotModuleReplacementPlugin').use(HotModuleReplacementPlugin);
+	});
+
+	config.when(env.report, (config) => {
+		config.plugin('BundleAnalyzerPlugin').use(BundleAnalyzerPlugin);
+	});
 
 	return config;
 }
