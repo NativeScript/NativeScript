@@ -3,7 +3,6 @@ import path from 'path';
 
 export function getAllDependencies(): string[] {
 	const packageJSON = getPackageJson();
-	console.log(packageJSON);
 
 	return [
 		...Object.keys(packageJSON.dependencies ?? {}),
