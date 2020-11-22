@@ -186,7 +186,9 @@ export default function (config: Config, env: IWebpackEnv): Config {
 			/* for compat only */ 'global.isAndroid': platform === 'android',
 			/* for compat only */ 'global.isIOS': platform === 'ios',
 			process: 'global.process',
-			/* todo: remove if fixed in core? */ profile: '() => {}',
+
+			// todo: ?!?!
+			// profile: '() => {}',
 		},
 	]);
 
