@@ -1,8 +1,7 @@
 import path from 'path';
 import fs from 'fs';
-import dedent from 'ts-dedent';
 import * as lib from '../index';
-import { error, info } from './log';
+import { error, info, warn } from './log';
 import { getAllDependencies, getDependencyPath } from './dependencies';
 
 export function applyExternalConfigs() {
@@ -17,17 +16,22 @@ export function applyExternalConfigs() {
 				const externalConfig = require(configPath);
 
 				if (typeof externalConfig === 'function') {
+					info('Applying external config...');
 					externalConfig(lib);
+				} else if (externalConfig) {
+					info('Merging external config...');
+					lib.mergeWebpack(externalConfig);
 				} else {
-					// todo: warn user
-					// todo: perhaps support exported objects to merge into config?
+					warn(
+						'Unsupported external config. The config must export a function or an object.'
+					);
 				}
 			} catch (err) {
 				error(
-					dedent`
-					Unable to apply config: ${configPath}.
-					Error is:
-				`,
+					`
+						Unable to apply config: ${configPath}.
+						Error is:
+					`,
 					err
 				);
 			}
