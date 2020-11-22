@@ -11,7 +11,7 @@ function cleanup(data: any[]) {
 }
 
 export function error(...data: any): Error {
-	console.error(`[@nativescript/webpack]`, ...cleanup(data));
+	console.error(`[@nativescript/webpack] Error: \n`, ...cleanup(data));
 
 	// we return the error - the caller can throw or ignore
 	if (typeof data[0] === 'string') {
@@ -22,11 +22,11 @@ export function error(...data: any): Error {
 }
 
 export function warn(...data: any): void {
-	console.warn(`[@nativescript/webpack]`, ...cleanup(data));
+	console.warn(`[@nativescript/webpack] Warn: \n`, ...cleanup(data));
 }
 
 export function info(...data: any): void {
-	console.info(`[@nativescript/webpack]`, ...cleanup(data));
+	console.info(`[@nativescript/webpack] Info: \n`, ...cleanup(data));
 }
 
 // todo: refine

@@ -1,3 +1,4 @@
+import { merge } from 'webpack-merge';
 import { getValue } from './config';
 import { getAllDependencies, getDependencyPath } from './dependencies';
 import { determineProjectFlavor } from './flavor';
@@ -16,6 +17,7 @@ import {
 // that show all the utils inline
 // rather than imports to types
 export default {
+	merge,
 	config: {
 		getValue,
 	},
@@ -27,9 +29,9 @@ export default {
 		determineProjectFlavor,
 	},
 	log: {
+		error,
 		info,
 		warn,
-		error,
 	},
 	project: {
 		getProjectRootPath,
