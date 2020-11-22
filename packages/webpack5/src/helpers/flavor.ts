@@ -1,7 +1,6 @@
 import { defaultConfigs } from '@nativescript/webpack';
 import { getAllDependencies } from './dependencies';
 import { error } from './log';
-import dedent from 'ts-dedent';
 
 export function determineProjectFlavor(): keyof typeof defaultConfigs | false {
 	const dependencies = getAllDependencies();
@@ -35,7 +34,7 @@ export function determineProjectFlavor(): keyof typeof defaultConfigs | false {
 		return 'javascript';
 	}
 
-	error(dedent`
+	error(`
 		Could not determine project flavor.
 		Please use webpack.useConfig('<flavor>') to explicitly set the base config.
 	`);

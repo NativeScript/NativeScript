@@ -1,3 +1,34 @@
+import dedent from 'ts-dedent';
+
+// de-indents strings so multi-line string literals can be used
+function cleanup(data: any[]) {
+	return data.map((d) => {
+		if (typeof d === 'string') {
+			return dedent(d);
+		}
+		return d;
+	});
+}
+
+export function error(...data: any): Error {
+	console.error(`[@nativescript/webpack]`, ...cleanup(data));
+
+	// we return the error - the caller can throw or ignore
+	if (typeof data[0] === 'string') {
+		return new Error(data[0]);
+	}
+
+	return new Error('@nativescript/webpack ran into a problem...');
+}
+
+export function warn(...data: any): void {
+	console.warn(`[@nativescript/webpack]`, ...cleanup(data));
+}
+
+export function info(...data: any): void {
+	console.info(`[@nativescript/webpack]`, ...cleanup(data));
+}
+
 // todo: refine
 // export function error(message: string, info?: { possibleCauses?: string[] }) {
 // 	console.error(`
@@ -9,15 +40,3 @@
 // 	${info?.possibleCauses?.map((cause) => `- ${cause}`).join('\n')}
 // 	`);
 // }
-
-export function error(...data: any) {
-	console.error(`[@nativescript/webpack]`, ...data);
-}
-
-export function warn(...data: any) {
-	console.warn(`[@nativescript/webpack]`, ...data);
-}
-
-export function info(...data: any) {
-	console.info(`[@nativescript/webpack]`, ...data);
-}
