@@ -165,8 +165,8 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		.use('css2json-loader')
 		.loader('css2json-loader')
 		.end()
-		.use('scss-loader')
-		.loader('scss-loader');
+		.use('sass-loader')
+		.loader('sass-loader');
 
 	// items to clean
 	config.plugin('CleanWebpackPlugin').use(CleanWebpackPlugin, [
