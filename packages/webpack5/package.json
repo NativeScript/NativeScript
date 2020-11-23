@@ -6,18 +6,23 @@
 	"files": [
 		"dist"
 	],
+	"bin": {
+		"nativescript-webpack": "dist/bin/index.js"
+	},
 	"license": "Apache-2.0",
 	"scripts": {
 		"build": "tsc",
 		"test": "jest",
-		"prepack": "npm run build && cp -R src/stubs dist/stubs"
+		"prepack": "npm run build && cp -R src/stubs dist/stubs && chmod +x dist/bin/index.js"
 	},
 	"dependencies": {
 		"@babel/core": "^7.12.3",
 		"@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 		"babel-loader": "^8.2.1",
+		"chalk": "^4.1.0",
 		"clean-webpack-plugin": "^3.0.0",
 		"cli-highlight": "^2.1.8",
+		"commander": "^6.2.0",
 		"copy-webpack-plugin": "^6.3.2",
 		"css": "^3.0.0",
 		"css-loader": "^5.0.1",
