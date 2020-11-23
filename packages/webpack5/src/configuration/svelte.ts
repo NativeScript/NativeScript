@@ -1,7 +1,7 @@
 import base from './base';
-import { env as _env, IWebpackEnv } from '@nativescript/webpack';
+import { env as _env, IWebpackEnv } from '../index';
 import Config from 'webpack-chain';
-import { getPlatform } from '../helpers/project';
+import { getPlatform, getProjectRootPath } from '../helpers/project';
 import { merge } from 'webpack-merge';
 import svelteNativePreprocessor from 'svelte-native-preprocessor';
 
@@ -25,10 +25,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.tap((options) => {
 			return {
 				...options,
-				// todo: should be a compiler object
-				// but we want it as an external dependency
 				dev: production,
-				preprocess: [svelteNativePreprocessor()],
+				preprocess: [getSvelteConfig()?.preprocess, svelteNativePreprocessor()],
 				hotReload: production,
 				hotOptions: {
 					injectCss: false,
@@ -53,4 +51,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.resolve.alias.set('svelte', 'svelte-native');
 
 	return config;
+}
+
+function getSvelteConfig(): { preprocess: any } | null {
+	try {
+		const resolvedPath = require.resolve(`./svelte.config.js`, {
+			paths: [getProjectRootPath()],
+		});
+		return require(resolvedPath);
+	} catch (e) {
+		return null;
+	}
 }
