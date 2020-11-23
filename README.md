@@ -86,3 +86,5 @@ In addition to the code that makes up the NativeScript framework itself, we also
 [Apache License 2.0](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
 
 <h3 align="center">Made with ❤️</h3>
+
+## Thank You!
