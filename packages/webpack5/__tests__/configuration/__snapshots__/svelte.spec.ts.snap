@@ -20,8 +20,7 @@ exports[`svelte configuration for android 1`] = `
     symlinks: true,
     alias: {
       '~': '<TODO>appFullPath',
-      '@': '<TODO>appFullPath',
-      svelte: 'svelte-native'
+      '@': '<TODO>appFullPath'
     },
     extensions: [
       '.android.svelte',
@@ -62,10 +61,7 @@ exports[`svelte configuration for android 1`] = `
                 sourceMap: true,
                 declaration: false
               },
-              getCustomTransformers: function () { /* omitted long function */ },
-              appendTsSuffixTo: [
-                '\\\\\\\\.svelte$'
-              ]
+              getCustomTransformers: function () { /* omitted long function */ }
             }
           }
         ]
@@ -123,19 +119,22 @@ exports[`svelte configuration for android 1`] = `
       /* config.module.rule('svelte') */
       {
         test: /\\\\.svelte$/,
+        exclude: [
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('svelte').use('svelte-loader-hot') */
           {
             loader: 'svelte-loader-hot',
             options: {
-              dev: false,
+              dev: true,
               preprocess: [
                 undefined,
                 {
                   markup: function () { /* omitted long function */ }
                 }
               ],
-              hotReload: false,
+              hotReload: true,
               hotOptions: {
                 injectCss: false,
                 'native': true
@@ -258,8 +257,7 @@ exports[`svelte configuration for ios 1`] = `
     symlinks: true,
     alias: {
       '~': '<TODO>appFullPath',
-      '@': '<TODO>appFullPath',
-      svelte: 'svelte-native'
+      '@': '<TODO>appFullPath'
     },
     extensions: [
       '.ios.svelte',
@@ -300,10 +298,7 @@ exports[`svelte configuration for ios 1`] = `
                 sourceMap: true,
                 declaration: false
               },
-              getCustomTransformers: function () { /* omitted long function */ },
-              appendTsSuffixTo: [
-                '\\\\\\\\.svelte$'
-              ]
+              getCustomTransformers: function () { /* omitted long function */ }
             }
           }
         ]
@@ -361,19 +356,22 @@ exports[`svelte configuration for ios 1`] = `
       /* config.module.rule('svelte') */
       {
         test: /\\\\.svelte$/,
+        exclude: [
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('svelte').use('svelte-loader-hot') */
           {
             loader: 'svelte-loader-hot',
             options: {
-              dev: false,
+              dev: true,
               preprocess: [
                 undefined,
                 {
                   markup: function () { /* omitted long function */ }
                 }
               ],
-              hotReload: false,
+              hotReload: true,
               hotOptions: {
                 injectCss: false,
                 'native': true
