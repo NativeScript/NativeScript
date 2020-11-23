@@ -26,8 +26,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				...options,
 				compiler: require('nativescript-vue-template-compiler'),
 			};
-		})
-		.end();
+		});
 
 	// set up ts support in vue files
 	config.module

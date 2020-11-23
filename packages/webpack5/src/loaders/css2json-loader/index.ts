@@ -16,20 +16,11 @@ export default function loader(content: string, map: any) {
 	// todo: revise if this is necessary
 	// todo: perhaps use postCSS and just build imports into a single file?
 	let dependencies = [];
-	getImportRules(ast)
+	getAndRemoveImportRules(ast)
 		.map(extractUrlFromRule)
 		.map(createRequireUri)
 		.forEach(({ uri, requireURI }) => {
-			dependencies.push(
-				`global.registerModule("${uri}", () => require("${requirePrefix}${requireURI}"));`
-			);
-
-			// Call registerModule with requireURI to handle cases like @import "~@nativescript/theme/css/blue.css";
-			if (uri !== requireURI) {
-				dependencies.push(
-					`global.registerModule("${requireURI}", () => require("${requirePrefix}${requireURI}"));`
-				);
-			}
+			dependencies.push(`require("${requirePrefix}${requireURI}")`);
 		});
 
 	const str = JSON.stringify(ast, (k, v) => (k === 'position' ? undefined : v));
@@ -58,6 +49,15 @@ function getImportRules(ast: Stylesheet): Import[] {
 			(rule) => rule.type === 'import' && (<any>rule).import
 		)
 	);
+}
+
+function getAndRemoveImportRules(ast: Stylesheet): Import[] {
+	const imports = getImportRules(ast);
+	ast.stylesheet.rules = ast.stylesheet.rules.filter(
+		(rule) => rule.type !== 'import'
+	);
+
+	return imports;
 }
 
 /**

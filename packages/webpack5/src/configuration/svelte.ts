@@ -1,9 +1,10 @@
-import base from './base';
-import { env as _env, IWebpackEnv } from '../index';
-import Config from 'webpack-chain';
-import { getPlatform, getProjectRootPath } from '../helpers/project';
-import { merge } from 'webpack-merge';
 import svelteNativePreprocessor from 'svelte-native-preprocessor';
+import Config from 'webpack-chain';
+
+import { env as _env, IWebpackEnv } from '../index';
+import { getPlatform, getProjectRootPath } from '../helpers/project';
+import base from './base';
+import { error } from '../helpers/log';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
@@ -20,46 +21,39 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.module
 		.rule('svelte')
 		.test(/\.svelte$/)
+		.exclude.add(/node_modules/)
+		.end()
 		.use('svelte-loader-hot')
 		.loader('svelte-loader-hot')
 		.tap((options) => {
 			return {
 				...options,
-				dev: production,
-				preprocess: [getSvelteConfig()?.preprocess, svelteNativePreprocessor()],
-				hotReload: production,
+				dev: !production,
+				preprocess: [getSvelteConfigPreprocessor(), svelteNativePreprocessor()],
+				hotReload: !production,
 				hotOptions: {
 					injectCss: false,
 					native: true,
 				},
 			};
-		})
-		.end();
-
-	// set up ts support in svelte files
-	config.module
-		.rule('ts')
-		.use('ts-loader')
-		.loader('ts-loader')
-		.tap((options = {}) => {
-			return merge(options, {
-				appendTsSuffixTo: ['\\.svelte$'],
-			});
 		});
-
-	// add an alias for svelte, since some plugins may try to import it
-	config.resolve.alias.set('svelte', 'svelte-native');
 
 	return config;
 }
 
-function getSvelteConfig(): { preprocess: any } | null {
+function getSvelteConfigPreprocessor(): any {
+	const config = getSvelteConfig();
+
+	return config?.preprocess;
+}
+
+function getSvelteConfig(): { preprocess: any } | undefined {
 	try {
 		const resolvedPath = require.resolve(`./svelte.config.js`, {
 			paths: [getProjectRootPath()],
 		});
 		return require(resolvedPath);
-	} catch (e) {
-		return null;
+	} catch (err) {
+		error('Could not find svelte.config.js.', err);
 	}
 }
