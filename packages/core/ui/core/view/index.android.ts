@@ -465,7 +465,10 @@ export class View extends ViewCommon {
 	public initNativeView(): void {
 		super.initNativeView();
 		this._isClickable = this.nativeViewProtected.isClickable();
-
+		if (this.nativeViewProtected.setClickable) {
+			this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
+		}
+		
 		if (this.hasListeners(ViewCommon.layoutChangedEvent)) {
 			this.setOnLayoutChangeListener();
 		}
@@ -492,10 +495,6 @@ export class View extends ViewCommon {
 		this.nativeViewProtected.setOnTouchListener(this.touchListener);
 
 		this.touchListenerIsSet = true;
-
-		if (this.nativeViewProtected.setClickable) {
-			this.nativeViewProtected.setClickable(this.isUserInteractionEnabled);
-		}
 	}
 
 	private setOnLayoutChangeListener() {
