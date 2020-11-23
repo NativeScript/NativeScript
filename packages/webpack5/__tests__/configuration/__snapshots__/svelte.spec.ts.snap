@@ -4,7 +4,8 @@ exports[`svelte configuration for android 1`] = `
 "{
   mode: 'development',
   externals: [
-    'package.json'
+    'package.json',
+    '~/package.json'
   ],
   devtool: 'inline-source-map',
   target: 'node',
@@ -18,7 +19,6 @@ exports[`svelte configuration for android 1`] = `
   resolve: {
     symlinks: true,
     alias: {
-      '~/package.json': 'package.json',
       '~': '<TODO>appFullPath',
       '@': '<TODO>appFullPath',
       svelte: 'svelte-native'
@@ -73,10 +73,18 @@ exports[`svelte configuration for android 1`] = `
       /* config.module.rule('js') */
       {
         test: /\\\\.js$/,
+        exclude: [
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('js').use('babel-loader') */
           {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
+            options: {
+              generatorOpts: {
+                compact: false
+              }
+            }
           }
         ]
       },
@@ -106,9 +114,9 @@ exports[`svelte configuration for android 1`] = `
           {
             loader: 'css2json-loader'
           },
-          /* config.module.rule('scss').use('scss-loader') */
+          /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'scss-loader'
+            loader: 'sass-loader'
           }
         ]
       },
@@ -122,6 +130,7 @@ exports[`svelte configuration for android 1`] = `
             options: {
               dev: false,
               preprocess: [
+                undefined,
                 {
                   markup: function () { /* omitted long function */ }
                 }
@@ -183,17 +192,46 @@ exports[`svelte configuration for android 1`] = `
         __IOS__: false,
         'global.isAndroid': true,
         'global.isIOS': false,
-        process: 'global.process',
-        profile: '() => {}'
+        process: 'global.process'
       }
     ),
-    /* config.plugin('BundleAnalyzerPlugin') */
-    new BundleAnalyzerPlugin(),
-    /* config.plugin('WatchStateLoggerPlugin') */
-    new WatchStateLoggerPlugin()
+    /* config.plugin('CopyWebpackPlugin') */
+    new CopyPlugin(
+      {
+        patterns: [
+          {
+            from: 'assets/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: 'fonts/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: '**/*.+(jpg|png)',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          }
+        ]
+      }
+    ),
+    /* config.plugin('WatchStatePlugin') */
+    new WatchStatePlugin()
   ],
   entry: {
     bundle: [
+      '@nativescript/core/globals/index.js',
       'src/app.js'
     ]
   }
@@ -204,7 +242,8 @@ exports[`svelte configuration for ios 1`] = `
 "{
   mode: 'development',
   externals: [
-    'package.json'
+    'package.json',
+    '~/package.json'
   ],
   devtool: 'inline-source-map',
   target: 'node',
@@ -218,7 +257,6 @@ exports[`svelte configuration for ios 1`] = `
   resolve: {
     symlinks: true,
     alias: {
-      '~/package.json': 'package.json',
       '~': '<TODO>appFullPath',
       '@': '<TODO>appFullPath',
       svelte: 'svelte-native'
@@ -273,10 +311,18 @@ exports[`svelte configuration for ios 1`] = `
       /* config.module.rule('js') */
       {
         test: /\\\\.js$/,
+        exclude: [
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('js').use('babel-loader') */
           {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
+            options: {
+              generatorOpts: {
+                compact: false
+              }
+            }
           }
         ]
       },
@@ -306,9 +352,9 @@ exports[`svelte configuration for ios 1`] = `
           {
             loader: 'css2json-loader'
           },
-          /* config.module.rule('scss').use('scss-loader') */
+          /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'scss-loader'
+            loader: 'sass-loader'
           }
         ]
       },
@@ -322,6 +368,7 @@ exports[`svelte configuration for ios 1`] = `
             options: {
               dev: false,
               preprocess: [
+                undefined,
                 {
                   markup: function () { /* omitted long function */ }
                 }
@@ -383,17 +430,46 @@ exports[`svelte configuration for ios 1`] = `
         __IOS__: true,
         'global.isAndroid': false,
         'global.isIOS': true,
-        process: 'global.process',
-        profile: '() => {}'
+        process: 'global.process'
       }
     ),
-    /* config.plugin('BundleAnalyzerPlugin') */
-    new BundleAnalyzerPlugin(),
-    /* config.plugin('WatchStateLoggerPlugin') */
-    new WatchStateLoggerPlugin()
+    /* config.plugin('CopyWebpackPlugin') */
+    new CopyPlugin(
+      {
+        patterns: [
+          {
+            from: 'assets/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: 'fonts/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: '**/*.+(jpg|png)',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          }
+        ]
+      }
+    ),
+    /* config.plugin('WatchStatePlugin') */
+    new WatchStatePlugin()
   ],
   entry: {
     bundle: [
+      '@nativescript/core/globals/index.js',
       'src/app.js'
     ],
     'tns_modules/@nativescript/core/inspector_modules': [
