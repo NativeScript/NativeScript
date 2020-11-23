@@ -123,9 +123,9 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
           {
             loader: 'css2json-loader'
           },
-          /* config.module.rule('scss').use('scss-loader') */
+          /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'scss-loader'
+            loader: 'sass-loader'
           }
         ]
       }
@@ -182,8 +182,39 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         'process.env.NODE_ENV': '\\"development\\"'
       }
     ),
-    /* config.plugin('WatchStateLoggerPlugin') */
-    new WatchStateLoggerPlugin(),
+    /* config.plugin('CopyWebpackPlugin') */
+    new CopyPlugin(
+      {
+        patterns: [
+          {
+            from: 'assets/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: 'fonts/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: '**/*.+(jpg|png)',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          }
+        ]
+      }
+    ),
+    /* config.plugin('WatchStatePlugin') */
+    new WatchStatePlugin(),
     /* config.plugin('HotModuleReplacementPlugin') */
     new HotModuleReplacementPlugin(),
     /* config.plugin('ReactRefreshPlugin') */
@@ -317,9 +348,9 @@ exports[`react configuration > android > base config 1`] = `
           {
             loader: 'css2json-loader'
           },
-          /* config.module.rule('scss').use('scss-loader') */
+          /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'scss-loader'
+            loader: 'sass-loader'
           }
         ]
       }
@@ -376,8 +407,39 @@ exports[`react configuration > android > base config 1`] = `
         'process.env.NODE_ENV': '\\"development\\"'
       }
     ),
-    /* config.plugin('WatchStateLoggerPlugin') */
-    new WatchStateLoggerPlugin()
+    /* config.plugin('CopyWebpackPlugin') */
+    new CopyPlugin(
+      {
+        patterns: [
+          {
+            from: 'assets/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: 'fonts/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: '**/*.+(jpg|png)',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          }
+        ]
+      }
+    ),
+    /* config.plugin('WatchStatePlugin') */
+    new WatchStatePlugin()
   ],
   entry: {
     bundle: [
@@ -511,9 +573,9 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
           {
             loader: 'css2json-loader'
           },
-          /* config.module.rule('scss').use('scss-loader') */
+          /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'scss-loader'
+            loader: 'sass-loader'
           }
         ]
       }
@@ -570,8 +632,39 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         'process.env.NODE_ENV': '\\"development\\"'
       }
     ),
-    /* config.plugin('WatchStateLoggerPlugin') */
-    new WatchStateLoggerPlugin(),
+    /* config.plugin('CopyWebpackPlugin') */
+    new CopyPlugin(
+      {
+        patterns: [
+          {
+            from: 'assets/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: 'fonts/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: '**/*.+(jpg|png)',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          }
+        ]
+      }
+    ),
+    /* config.plugin('WatchStatePlugin') */
+    new WatchStatePlugin(),
     /* config.plugin('HotModuleReplacementPlugin') */
     new HotModuleReplacementPlugin(),
     /* config.plugin('ReactRefreshPlugin') */
@@ -708,9 +801,9 @@ exports[`react configuration > ios > base config 1`] = `
           {
             loader: 'css2json-loader'
           },
-          /* config.module.rule('scss').use('scss-loader') */
+          /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'scss-loader'
+            loader: 'sass-loader'
           }
         ]
       }
@@ -767,8 +860,39 @@ exports[`react configuration > ios > base config 1`] = `
         'process.env.NODE_ENV': '\\"development\\"'
       }
     ),
-    /* config.plugin('WatchStateLoggerPlugin') */
-    new WatchStateLoggerPlugin()
+    /* config.plugin('CopyWebpackPlugin') */
+    new CopyPlugin(
+      {
+        patterns: [
+          {
+            from: 'assets/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: 'fonts/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: '**/*.+(jpg|png)',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          }
+        ]
+      }
+    ),
+    /* config.plugin('WatchStatePlugin') */
+    new WatchStatePlugin()
   ],
   entry: {
     bundle: [

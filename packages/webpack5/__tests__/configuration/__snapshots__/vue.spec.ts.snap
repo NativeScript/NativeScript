@@ -114,9 +114,9 @@ exports[`vue configuration for android 1`] = `
           {
             loader: 'css2json-loader'
           },
-          /* config.module.rule('scss').use('scss-loader') */
+          /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'scss-loader'
+            loader: 'sass-loader'
           }
         ]
       },
@@ -191,8 +191,39 @@ exports[`vue configuration for android 1`] = `
         process: 'global.process'
       }
     ),
-    /* config.plugin('WatchStateLoggerPlugin') */
-    new WatchStateLoggerPlugin()
+    /* config.plugin('CopyWebpackPlugin') */
+    new CopyPlugin(
+      {
+        patterns: [
+          {
+            from: 'assets/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: 'fonts/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: '**/*.+(jpg|png)',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          }
+        ]
+      }
+    ),
+    /* config.plugin('WatchStatePlugin') */
+    new WatchStatePlugin()
   ],
   entry: {
     bundle: [
@@ -317,9 +348,9 @@ exports[`vue configuration for ios 1`] = `
           {
             loader: 'css2json-loader'
           },
-          /* config.module.rule('scss').use('scss-loader') */
+          /* config.module.rule('scss').use('sass-loader') */
           {
-            loader: 'scss-loader'
+            loader: 'sass-loader'
           }
         ]
       },
@@ -394,8 +425,39 @@ exports[`vue configuration for ios 1`] = `
         process: 'global.process'
       }
     ),
-    /* config.plugin('WatchStateLoggerPlugin') */
-    new WatchStateLoggerPlugin()
+    /* config.plugin('CopyWebpackPlugin') */
+    new CopyPlugin(
+      {
+        patterns: [
+          {
+            from: 'assets/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: 'fonts/**',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          },
+          {
+            from: '**/*.+(jpg|png)',
+            context: 'src',
+            noErrorOnMissing: true,
+            globOptions: {
+              dot: false
+            }
+          }
+        ]
+      }
+    ),
+    /* config.plugin('WatchStatePlugin') */
+    new WatchStatePlugin()
   ],
   entry: {
     bundle: [
