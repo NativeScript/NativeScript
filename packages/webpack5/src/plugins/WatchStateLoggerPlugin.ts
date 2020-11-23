@@ -11,6 +11,7 @@ export enum messages {
 /**
  * This little plugin will report the webpack state through the console.
  * So the {N} CLI can get some idea when compilation completes.
+ * @deprecated todo: remove soon
  */
 export class WatchStateLoggerPlugin {
 	isRunningWatching: boolean;
