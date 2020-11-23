@@ -1,0 +1,404 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`svelte configuration for android 1`] = `
+"{
+  mode: 'development',
+  externals: [
+    'package.json'
+  ],
+  devtool: 'inline-source-map',
+  target: 'node',
+  output: {
+    path: '__jest__/platforms/android/app/src/main/assets/app',
+    pathinfo: false,
+    publicPath: '',
+    libraryTarget: 'commonjs',
+    globalObject: 'global'
+  },
+  resolve: {
+    symlinks: true,
+    alias: {
+      '~/package.json': 'package.json',
+      '~': '<TODO>appFullPath',
+      '@': '<TODO>appFullPath',
+      svelte: 'svelte-native'
+    },
+    extensions: [
+      '.android.svelte',
+      '.svelte',
+      '.android.ts',
+      '.ts',
+      '.android.js',
+      '.js',
+      '.android.css',
+      '.css',
+      '.android.scss',
+      '.scss',
+      '.android.json',
+      '.json'
+    ]
+  },
+  resolveLoader: {
+    modules: [
+      'node_modules/@nativescript/webpack/dist/loaders',
+      'node_modules'
+    ]
+  },
+  module: {
+    rules: [
+      /* config.module.rule('ts') */
+      {
+        test: [
+          /\\\\.ts$/
+        ],
+        use: [
+          /* config.module.rule('ts').use('ts-loader') */
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+              allowTsInNodeModules: true,
+              compilerOptions: {
+                sourceMap: true,
+                declaration: false
+              },
+              getCustomTransformers: function () { /* omitted long function */ },
+              appendTsSuffixTo: [
+                '\\\\\\\\.svelte$'
+              ]
+            }
+          }
+        ]
+      },
+      /* config.module.rule('js') */
+      {
+        test: /\\\\.js$/,
+        use: [
+          /* config.module.rule('js').use('babel-loader') */
+          {
+            loader: 'babel-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css') */
+      {
+        test: /\\\\.css$/,
+        use: [
+          /* config.module.rule('css').use('apply-css-loader') */
+          {
+            loader: 'apply-css-loader'
+          },
+          /* config.module.rule('css').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss') */
+      {
+        test: /\\\\.scss$/,
+        use: [
+          /* config.module.rule('scss').use('apply-css-loader') */
+          {
+            loader: 'apply-css-loader'
+          },
+          /* config.module.rule('scss').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('scss-loader') */
+          {
+            loader: 'scss-loader'
+          }
+        ]
+      },
+      /* config.module.rule('svelte') */
+      {
+        test: /\\\\.svelte$/,
+        use: [
+          /* config.module.rule('svelte').use('svelte-loader-hot') */
+          {
+            loader: 'svelte-loader-hot',
+            options: {
+              dev: false,
+              preprocess: [
+                {
+                  markup: function () { /* omitted long function */ }
+                }
+              ],
+              hotReload: false,
+              hotOptions: {
+                injectCss: false,
+                'native': true
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        defaultVendor: {
+          test: /[\\\\\\\\/]node_modules[\\\\\\\\/]/,
+          priority: -10,
+          name: 'vendor',
+          chunks: 'all'
+        }
+      }
+    },
+    minimizer: [
+      /* config.optimization.minimizer('TerserPlugin') */
+      new TerserPlugin(
+        {
+          terserOptions: {
+            compress: {
+              collapse_vars: false,
+              sequences: false
+            },
+            keep_fnames: true
+          }
+        }
+      )
+    ]
+  },
+  plugins: [
+    /* config.plugin('CleanWebpackPlugin') */
+    new CleanWebpackPlugin(
+      {
+        cleanOnceBeforeBuildPatterns: [
+          '__jest__/platforms/android/app/src/main/assets/app/**/*'
+        ],
+        verbose: false
+      }
+    ),
+    /* config.plugin('DefinePlugin') */
+    new DefinePlugin(
+      {
+        __DEV__: true,
+        __NS_WEBPACK__: true,
+        __CSS_PARSER__: '\\"css-tree\\"',
+        __ANDROID__: true,
+        __IOS__: false,
+        'global.isAndroid': true,
+        'global.isIOS': false,
+        process: 'global.process',
+        profile: '() => {}'
+      }
+    ),
+    /* config.plugin('BundleAnalyzerPlugin') */
+    new BundleAnalyzerPlugin(),
+    /* config.plugin('WatchStateLoggerPlugin') */
+    new WatchStateLoggerPlugin()
+  ],
+  entry: {
+    bundle: [
+      'src/app.js'
+    ]
+  }
+}"
+`;
+
+exports[`svelte configuration for ios 1`] = `
+"{
+  mode: 'development',
+  externals: [
+    'package.json'
+  ],
+  devtool: 'inline-source-map',
+  target: 'node',
+  output: {
+    path: '__jest__/platforms/ios/__jest__/app',
+    pathinfo: false,
+    publicPath: '',
+    libraryTarget: 'commonjs',
+    globalObject: 'global'
+  },
+  resolve: {
+    symlinks: true,
+    alias: {
+      '~/package.json': 'package.json',
+      '~': '<TODO>appFullPath',
+      '@': '<TODO>appFullPath',
+      svelte: 'svelte-native'
+    },
+    extensions: [
+      '.ios.svelte',
+      '.svelte',
+      '.ios.ts',
+      '.ts',
+      '.ios.js',
+      '.js',
+      '.ios.css',
+      '.css',
+      '.ios.scss',
+      '.scss',
+      '.ios.json',
+      '.json'
+    ]
+  },
+  resolveLoader: {
+    modules: [
+      'node_modules/@nativescript/webpack/dist/loaders',
+      'node_modules'
+    ]
+  },
+  module: {
+    rules: [
+      /* config.module.rule('ts') */
+      {
+        test: [
+          /\\\\.ts$/
+        ],
+        use: [
+          /* config.module.rule('ts').use('ts-loader') */
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+              allowTsInNodeModules: true,
+              compilerOptions: {
+                sourceMap: true,
+                declaration: false
+              },
+              getCustomTransformers: function () { /* omitted long function */ },
+              appendTsSuffixTo: [
+                '\\\\\\\\.svelte$'
+              ]
+            }
+          }
+        ]
+      },
+      /* config.module.rule('js') */
+      {
+        test: /\\\\.js$/,
+        use: [
+          /* config.module.rule('js').use('babel-loader') */
+          {
+            loader: 'babel-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css') */
+      {
+        test: /\\\\.css$/,
+        use: [
+          /* config.module.rule('css').use('apply-css-loader') */
+          {
+            loader: 'apply-css-loader'
+          },
+          /* config.module.rule('css').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss') */
+      {
+        test: /\\\\.scss$/,
+        use: [
+          /* config.module.rule('scss').use('apply-css-loader') */
+          {
+            loader: 'apply-css-loader'
+          },
+          /* config.module.rule('scss').use('css2json-loader') */
+          {
+            loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('scss-loader') */
+          {
+            loader: 'scss-loader'
+          }
+        ]
+      },
+      /* config.module.rule('svelte') */
+      {
+        test: /\\\\.svelte$/,
+        use: [
+          /* config.module.rule('svelte').use('svelte-loader-hot') */
+          {
+            loader: 'svelte-loader-hot',
+            options: {
+              dev: false,
+              preprocess: [
+                {
+                  markup: function () { /* omitted long function */ }
+                }
+              ],
+              hotReload: false,
+              hotOptions: {
+                injectCss: false,
+                'native': true
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        defaultVendor: {
+          test: /[\\\\\\\\/]node_modules[\\\\\\\\/]/,
+          priority: -10,
+          name: 'vendor',
+          chunks: 'all'
+        }
+      }
+    },
+    minimizer: [
+      /* config.optimization.minimizer('TerserPlugin') */
+      new TerserPlugin(
+        {
+          terserOptions: {
+            compress: {
+              collapse_vars: true,
+              sequences: true
+            },
+            keep_fnames: true
+          }
+        }
+      )
+    ]
+  },
+  plugins: [
+    /* config.plugin('CleanWebpackPlugin') */
+    new CleanWebpackPlugin(
+      {
+        cleanOnceBeforeBuildPatterns: [
+          '__jest__/platforms/ios/__jest__/app/**/*'
+        ],
+        verbose: false
+      }
+    ),
+    /* config.plugin('DefinePlugin') */
+    new DefinePlugin(
+      {
+        __DEV__: true,
+        __NS_WEBPACK__: true,
+        __CSS_PARSER__: '\\"css-tree\\"',
+        __ANDROID__: false,
+        __IOS__: true,
+        'global.isAndroid': false,
+        'global.isIOS': true,
+        process: 'global.process',
+        profile: '() => {}'
+      }
+    ),
+    /* config.plugin('BundleAnalyzerPlugin') */
+    new BundleAnalyzerPlugin(),
+    /* config.plugin('WatchStateLoggerPlugin') */
+    new WatchStateLoggerPlugin()
+  ],
+  entry: {
+    bundle: [
+      'src/app.js'
+    ],
+    'tns_modules/@nativescript/core/inspector_modules': [
+      '@nativescript/core/inspector_modules'
+    ]
+  }
+}"
+`;
