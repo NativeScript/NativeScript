@@ -18,6 +18,7 @@
 		"babel-loader": "^8.2.1",
 		"clean-webpack-plugin": "^3.0.0",
 		"cli-highlight": "^2.1.8",
+		"copy-webpack-plugin": "^6.3.2",
 		"css": "^3.0.0",
 		"css-loader": "^5.0.1",
 		"loader-utils": "^2.0.0",

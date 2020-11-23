@@ -4,19 +4,25 @@ import {
 	getAbsoluteDistPath,
 	getEntryPath,
 	getPlatform,
+	getProjectRootPath,
 } from '../helpers/project';
 
-import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
+
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
+import TerserPlugin from 'terser-webpack-plugin';
+
 // import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
-import TerserPlugin from 'terser-webpack-plugin';
-import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+import path from 'path';
 
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();
 	const platform = getPlatform();
 	const mode = env.production ? 'production' : 'development';
+	const appPath = path.dirname(entryPath);
 
 	// set mode
 	config.mode(mode);
@@ -196,11 +202,20 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	// todo: we should probably move away from CopyWebpackPlugin
 	// it has many issues we can solve by simply copying files **before** the build even starts
 	// this is just a temp inline plugin that does nothing while building out the configs.
-	// config.plugin('CopyWebpackPlugin').use(function CopyPluginTemp() {}, [
-	// 	{
-	// 		patterns: [],
-	// 	},
-	// ]);
+	const copyPaths = ['assets/**', 'fonts/**', '**/*.+(jpg|png)'];
+	config.plugin('CopyWebpackPlugin').use(CopyWebpackPlugin, [
+		{
+			patterns: copyPaths.map((from) => ({
+				from,
+				context: appPath,
+				noErrorOnMissing: true,
+				globOptions: {
+					dot: false,
+					// ignore: [``]
+				},
+			})),
+		},
+	]);
 
 	// add the WatchStateLogger plugin used to notify the CLI of build state
 	// config.plugin('WatchStateLoggerPlugin').use(WatchStateLoggerPlugin);
