@@ -83,6 +83,10 @@ export interface ShowModalOptions {
 		 * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
 		 */
 		cancelable?: boolean;
+		/**
+		 * An optional parameter specifying the windowSoftInputMode of the dialog window
+		 */
+		windowSoftInputMode?: number;
 	};
 	/**
 	 * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
