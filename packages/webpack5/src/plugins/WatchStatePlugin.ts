@@ -1,4 +1,4 @@
-const id = 'WatchStateLoggerPlugin';
+const id = 'WatchStatePlugin';
 const version = 1;
 
 export enum messages {
@@ -14,7 +14,7 @@ export enum messages {
 export class WatchStatePlugin {
 	isRunningWatching: boolean;
 
-	apply(compiler) {
+	apply(compiler: any) {
 		let isWatchMode = false;
 		let prevAssets = [];
 
@@ -32,6 +32,7 @@ export class WatchStatePlugin {
 				isWatchMode ? messages.startWatching : messages.compilationComplete
 			);
 
+			// logic taken from CleanWebpackPlugin
 			const assets =
 				compilation.getStats().toJson(
 					{
@@ -40,6 +41,7 @@ export class WatchStatePlugin {
 					true
 				).assets || [];
 			const assetList = assets.map((asset) => asset.name);
+
 			const emittedAssets = Array.from(compilation.emittedAssets);
 			const staleAssets = prevAssets.filter((asset) => {
 				return assetList.includes(asset) === false;
