@@ -1,13 +1,6 @@
-import Config from 'webpack-chain';
-import { IWebpackEnv } from '../index';
-import {
-	getAbsoluteDistPath,
-	getEntryPath,
-	getPlatform,
-	getProjectRootPath,
-} from '../helpers/project';
-
 import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
+import Config from 'webpack-chain';
+import path from 'path';
 
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
@@ -16,7 +9,12 @@ import TerserPlugin from 'terser-webpack-plugin';
 
 // import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
-import path from 'path';
+import { IWebpackEnv } from '../index';
+import {
+	getAbsoluteDistPath,
+	getEntryPath,
+	getPlatform,
+} from '../helpers/project';
 
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();
@@ -199,9 +197,6 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		},
 	]);
 
-	// todo: we should probably move away from CopyWebpackPlugin
-	// it has many issues we can solve by simply copying files **before** the build even starts
-	// this is just a temp inline plugin that does nothing while building out the configs.
 	const copyPaths = ['assets/**', 'fonts/**', '**/*.+(jpg|png)'];
 	config.plugin('CopyWebpackPlugin').use(CopyWebpackPlugin, [
 		{
@@ -211,6 +206,7 @@ export default function (config: Config, env: IWebpackEnv): Config {
 				noErrorOnMissing: true,
 				globOptions: {
 					dot: false,
+					// todo: ignore AppResources if inside app folder!
 					// ignore: [``]
 				},
 			})),
