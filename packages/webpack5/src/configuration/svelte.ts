@@ -35,6 +35,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 					injectCss: false,
 					native: true,
 				},
+				// Suppress A11y warnings
+				onwarn(warning, warn) {
+					if (!/A11y:/.test(warning.message)) {
+						warn(warning);
+					}
+				},
 			};
 		});
 
