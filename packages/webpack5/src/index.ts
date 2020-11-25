@@ -30,7 +30,11 @@ export interface IWebpackEnv {
 	// todo: add others
 }
 
-let webpackChains: any[] = [];
+let webpackChains = {
+	base: [],
+	normal: [],
+	last: [],
+};
 let webpackMerges: any[] = [];
 let explicitUseConfig = false;
 let hasInitialized = false;
@@ -54,7 +58,7 @@ export function init(_env: IWebpackEnv) {
 export function useConfig(config: keyof typeof defaultConfigs | false) {
 	explicitUseConfig = true;
 	if (config) {
-		webpackChains.unshift(configs[config]);
+		webpackChains.base.push(configs[config]);
 	}
 }
 
@@ -62,8 +66,8 @@ export function chainWebpack(
 	chainFn: (config: Config, env: IWebpackEnv) => any,
 	options?: { last?: boolean }
 ) {
-	// todo: handle options.last by storing them in a separate array?
-	webpackChains.push(chainFn);
+	const type = options?.last ? 'last' : 'normal';
+	webpackChains[type].push(chainFn);
 }
 
 export function mergeWebpack(
@@ -75,7 +79,7 @@ export function mergeWebpack(
 	webpackMerges.push(mergeFn);
 }
 
-export function resolveChainableConfig() {
+export function resolveChainableConfig(): Config {
 	const config = new Config();
 
 	if (!explicitUseConfig) {
@@ -86,10 +90,19 @@ export function resolveChainableConfig() {
 	// todo: allow opt-out
 	applyExternalConfigs();
 
-	// this applies all chain configs
-	webpackChains.forEach((chainFn) => {
-		return chainFn(config, env);
-	});
+	const applyChains = (chains) => {
+		// this applies the chain configs
+		chains.forEach((chainFn) => {
+			return chainFn(config, env);
+		});
+	};
+
+	// first we apply base configs
+	applyChains(webpackChains.base);
+	// then regular configs
+	applyChains(webpackChains.normal);
+	// finally configs that opted to be called last
+	applyChains(webpackChains.last);
 
 	if (env.verbose) {
 		info('Resolved chainable config (before merges):');
@@ -99,7 +112,9 @@ export function resolveChainableConfig() {
 	return config;
 }
 
-export function resolveConfig(chainableConfig = resolveChainableConfig()) {
+export function resolveConfig(
+	chainableConfig = resolveChainableConfig()
+): webpack.Configuration {
 	if (!hasInitialized) {
 		throw error('resolveConfig() must be called after init()');
 	}

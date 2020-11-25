@@ -1,8 +1,11 @@
-// @ts-ignore
-import Config from 'webpack-chain';
-import * as webpack from '../src';
-
 describe('@nativescript/webpack', () => {
+	let webpack: typeof import('../src');
+
+	beforeEach(() => {
+		jest.resetModules();
+		webpack = require('../src');
+	});
+
 	it('exports the public api', () => {
 		expect(webpack.init).toBeInstanceOf(Function);
 		expect(webpack.useConfig).toBeInstanceOf(Function);
@@ -27,7 +30,29 @@ describe('@nativescript/webpack', () => {
 
 		expect(chainFn).toHaveBeenCalledTimes(1);
 		expect(chainFn).toHaveBeenCalledWith(config, {});
-		expect(config).toBeInstanceOf(Config);
+	});
+
+	it('applies chain configs in the right order', () => {
+		webpack.useConfig(false);
+		let lastCalled = false;
+
+		// this is registered before chainFnNormal
+		// however, should be called after chainFnNormal
+		const chainFnLast = jest.fn((config) => {
+			lastCalled = true;
+			expect(config.normal).toBe(true);
+		});
+		webpack.chainWebpack(chainFnLast, { last: true });
+
+		const chainFnNormal = jest.fn((config) => {
+			config.normal = true;
+
+			// chainFnLast should not have been called yet
+			expect(lastCalled).toBe(false);
+		});
+		webpack.chainWebpack(chainFnNormal);
+
+		webpack.resolveChainableConfig();
 	});
 
 	it('applies merge configs', () => {
