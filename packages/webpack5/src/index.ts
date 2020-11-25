@@ -59,8 +59,10 @@ export function useConfig(config: keyof typeof defaultConfigs | false) {
 }
 
 export function chainWebpack(
-	chainFn: (config: Config, env: IWebpackEnv) => any
+	chainFn: (config: Config, env: IWebpackEnv) => any,
+	options?: { last?: boolean }
 ) {
+	// todo: handle options.last by storing them in a separate array?
 	webpackChains.push(chainFn);
 }
 

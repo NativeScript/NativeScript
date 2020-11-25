@@ -28,6 +28,7 @@
 		"css-loader": "^5.0.1",
 		"fork-ts-checker-webpack-plugin": "^6.0.3",
 		"loader-utils": "^2.0.0",
+		"raw-loader": "^4.0.2",
 		"react-refresh": "^0.9.0",
 		"sass": "^1.29.0",
 		"sass-loader": "^10.1.0",
@@ -50,9 +51,11 @@
 		"@types/loader-utils": "^2.0.1",
 		"@types/terser-webpack-plugin": "^5.0.2",
 		"jest": "^26.6.3",
+		"memfs": "^3.2.0",
 		"nativescript-vue-template-compiler": "^2.8.2",
 		"ts-jest": "^26.4.4",
-		"typescript": "^4.1.2"
+		"typescript": "^4.1.2",
+		"unionfs": "^4.4.0"
 	},
 	"peerDependencies": {
 		"nativescript-vue-template-compiler": "^2.8.1"

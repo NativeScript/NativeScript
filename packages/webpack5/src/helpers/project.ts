@@ -16,7 +16,7 @@ export function getAbsoluteDistPath() {
 export function getEntryPath() {
 	const packageJson = getPackageJson();
 
-	return resolve(packageJson.main);
+	return resolve(getProjectRootPath(), packageJson.main);
 }
 
 export function getDistPath() {
