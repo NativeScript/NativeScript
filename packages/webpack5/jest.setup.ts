@@ -11,6 +11,17 @@ jest.mock(
 	{ virtual: true }
 );
 
+jest.mock('cosmiconfig', () => ({
+	cosmiconfigSync(moduleName) {
+		return {
+			search() {
+				// no-op in tests
+				return null;
+			},
+		};
+	},
+}));
+
 jest.mock('path', () => ({
 	...jest.requireActual('path'),
 	// we are mocking resolve to just simply join the paths for tests

@@ -138,7 +138,8 @@ exports[`svelte configuration for android 1`] = `
               hotOptions: {
                 injectCss: false,
                 'native': true
-              }
+              },
+              onwarn: function () { /* omitted long function */ }
             }
           }
         ]
@@ -172,6 +173,14 @@ exports[`svelte configuration for android 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('ForkTsCheckerWebpackPlugin') */
+    new ForkTsCheckerWebpackPlugin(
+      {
+        typescript: {
+          memoryLimit: 4096
+        }
+      }
+    ),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
@@ -375,7 +384,8 @@ exports[`svelte configuration for ios 1`] = `
               hotOptions: {
                 injectCss: false,
                 'native': true
-              }
+              },
+              onwarn: function () { /* omitted long function */ }
             }
           }
         ]
@@ -409,6 +419,14 @@ exports[`svelte configuration for ios 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('ForkTsCheckerWebpackPlugin') */
+    new ForkTsCheckerWebpackPlugin(
+      {
+        typescript: {
+          memoryLimit: 4096
+        }
+      }
+    ),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
