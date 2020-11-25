@@ -286,3 +286,5 @@ export function eliminateDuplicates(arr: Array<any>): Array<any>;
  * Checks whether the application is running on real device and not on simulator/emulator.
  */
 export function isRealDevice(): boolean;
+
+export function isSimulatorOrEmulator(): boolean;

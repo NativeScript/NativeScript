@@ -93,7 +93,7 @@ export type { InstrumentationMode, TimerInfo } from './profiling';
 export { encoding } from './text';
 export * from './trace';
 export * from './ui';
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, isSimulatorOrEmulator, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source } from './utils';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 export declare const Utils: {
 	GC: typeof GC;
@@ -111,6 +111,7 @@ export declare const Utils: {
 	openFile: typeof openFile;
 	openUrl: typeof openUrl;
 	isRealDevice: typeof isRealDevice;
+	isSimulatorOrEmulator: typeof isSimulatorOrEmulator;
 	layout: typeof layout;
 	android: typeof androidUtils;
 	ad: typeof androidUtils;

@@ -1,4 +1,5 @@
 import { Trace } from '../trace';
+import { isNullOrUndefined } from './types';
 
 declare let UIImagePickerControllerSourceType: any;
 
@@ -125,33 +126,33 @@ export namespace iOSNativeHelper {
 		}
 
 		return transform;
-  }
-  
-  export function createUIDocumentInteractionControllerDelegate(): NSObject {
-    @NativeClass
-    class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
-      public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
-  
-      public getViewController(): UIViewController {
-        const app = UIApplication.sharedApplication;
-  
-        return app.keyWindow.rootViewController;
-      }
-  
-      public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
-        return this.getViewController();
-      }
-  
-      public documentInteractionControllerViewForPreview(controller: UIDocumentInteractionController) {
-        return this.getViewController().view;
-      }
-  
-      public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
-        return this.getViewController().view.frame;
-      }
-    }
-    return new UIDocumentInteractionControllerDelegateImpl();
-  }
+	}
+
+	export function createUIDocumentInteractionControllerDelegate(): NSObject {
+		@NativeClass
+		class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
+			public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
+
+			public getViewController(): UIViewController {
+				const app = UIApplication.sharedApplication;
+
+				return app.keyWindow.rootViewController;
+			}
+
+			public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
+				return this.getViewController();
+			}
+
+			public documentInteractionControllerViewForPreview(controller: UIDocumentInteractionController) {
+				return this.getViewController().view;
+			}
+
+			public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
+				return this.getViewController().view.frame;
+			}
+		}
+		return new UIDocumentInteractionControllerDelegateImpl();
+	}
 
 	export function isRealDevice() {
 		try {
@@ -163,5 +164,10 @@ export namespace iOSNativeHelper {
 		} catch (e) {
 			return true;
 		}
+	}
+
+	export function isSimulatorOrEmulator(): boolean {
+		const realDevice = isRealDevice();
+		return isNullOrUndefined(realDevice);
 	}
 }

@@ -1,5 +1,6 @@
 import { getNativeApplication, android as androidApp } from '../application';
 import { Trace } from '../trace';
+import { isNullOrUndefined } from './types';
 
 // We are using "ad" here to avoid namespace collision with the global android object
 export namespace ad {
@@ -153,8 +154,16 @@ export namespace ad {
 
 	export function isRealDevice(): boolean {
 		const fingerprint = android.os.Build.FINGERPRINT;
-
 		return fingerprint != null && (fingerprint.indexOf('vbox') > -1 || fingerprint.indexOf('generic') > -1);
+	}
+
+	export function isSimulatorOrEmulator(): boolean {
+		const fingerprint = android.os.Build.FINGERPRINT;
+		if (isNullOrUndefined(fingerprint)) {
+			return true;
+		} else {
+			return fingerprint.includes('vbox') || fingerprint.includes('generic');
+		}
 	}
 }
 
