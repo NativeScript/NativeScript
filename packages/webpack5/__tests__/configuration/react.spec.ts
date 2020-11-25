@@ -1,4 +1,3 @@
-// @ts-ignore
 import Config from 'webpack-chain';
 import react from '../../src/configuration/react';
 import { init } from '../../src';

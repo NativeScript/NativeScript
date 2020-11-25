@@ -60,6 +60,8 @@ function getSvelteConfig(): { preprocess: any } | undefined {
 		});
 		return require(resolvedPath);
 	} catch (err) {
+		// todo: remove when jest supports mocking require.resolve
+		if (__TEST__) return;
 		error('Could not find svelte.config.js.', err);
 	}
 }

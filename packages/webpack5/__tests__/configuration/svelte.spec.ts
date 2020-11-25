@@ -1,7 +1,10 @@
-// @ts-ignore
 import Config from 'webpack-chain';
 import svelte from '../../src/configuration/svelte';
 import { init } from '../../src';
+
+mockFile('./svelte.config.js', '');
+// jest.mock('__jest__/svelte.config.js', () => {
+// }, { virtual: true })
 
 describe.only('svelte configuration', () => {
 	const platforms = ['ios', 'android'];

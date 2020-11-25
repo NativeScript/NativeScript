@@ -211,7 +211,7 @@ exports[`vue configuration for android 1`] = `
         patterns: [
           {
             from: 'assets/**',
-            context: 'src',
+            context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
               dot: false
@@ -219,7 +219,7 @@ exports[`vue configuration for android 1`] = `
           },
           {
             from: 'fonts/**',
-            context: 'src',
+            context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
               dot: false
@@ -227,7 +227,7 @@ exports[`vue configuration for android 1`] = `
           },
           {
             from: '**/*.+(jpg|png)',
-            context: 'src',
+            context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
               dot: false
@@ -242,7 +242,7 @@ exports[`vue configuration for android 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
-      'src/app.js'
+      '__jest__/src/app.js'
     ]
   }
 }"
@@ -459,7 +459,7 @@ exports[`vue configuration for ios 1`] = `
         patterns: [
           {
             from: 'assets/**',
-            context: 'src',
+            context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
               dot: false
@@ -467,7 +467,7 @@ exports[`vue configuration for ios 1`] = `
           },
           {
             from: 'fonts/**',
-            context: 'src',
+            context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
               dot: false
@@ -475,7 +475,7 @@ exports[`vue configuration for ios 1`] = `
           },
           {
             from: '**/*.+(jpg|png)',
-            context: 'src',
+            context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
               dot: false
@@ -490,7 +490,7 @@ exports[`vue configuration for ios 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
-      'src/app.js'
+      '__jest__/src/app.js'
     ],
     'tns_modules/@nativescript/core/inspector_modules': [
       '@nativescript/core/inspector_modules'
