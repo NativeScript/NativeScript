@@ -20,7 +20,7 @@ export interface ApplicationEventData extends EventData {
 }
 
 export interface LaunchEventData extends ApplicationEventData {
-	root?: View;
+	root?: View | null;
 	savedInstanceState?: any /* android.os.Bundle */;
 }
 

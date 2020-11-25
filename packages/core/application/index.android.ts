@@ -191,7 +191,7 @@ export function addCss(cssText: string, attributeScoped?: boolean): void {
 const CALLBACKS = '_callbacks';
 
 export function _resetRootView(entry?: NavigationEntry | string): void {
-	const activity = androidApp.foregroundActivity;
+	const activity = androidApp.foregroundActivity || androidApp.startActivity;
 	if (!activity) {
 		throw new Error('Cannot find android activity.');
 	}
