@@ -26,6 +26,7 @@
 		"copy-webpack-plugin": "^6.3.2",
 		"css": "^3.0.0",
 		"css-loader": "^5.0.1",
+		"fork-ts-checker-webpack-plugin": "^6.0.3",
 		"loader-utils": "^2.0.0",
 		"react-refresh": "^0.9.0",
 		"sass": "^1.29.0",

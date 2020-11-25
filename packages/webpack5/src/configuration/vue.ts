@@ -39,6 +39,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			});
 		});
 
+	config.plugin('ForkTsCheckerWebpackPlugin').tap((args) => {
+		args[0] = merge(args[0], {
+			typescript: {
+				extensions: {
+					vue: {
+						enabled: true,
+						compiler: 'nativescript-vue-template-compiler',
+					},
+				},
+			},
+		});
+		return args;
+	});
+
 	// add VueLoaderPlugin as the first plugin
 	config
 		.plugin('VueLoaderPlugin')

@@ -158,6 +158,14 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     ]
   },
   plugins: [
+    /* config.plugin('ForkTsCheckerWebpackPlugin') */
+    new ForkTsCheckerWebpackPlugin(
+      {
+        typescript: {
+          memoryLimit: 4096
+        }
+      }
+    ),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
@@ -383,6 +391,14 @@ exports[`react configuration > android > base config 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('ForkTsCheckerWebpackPlugin') */
+    new ForkTsCheckerWebpackPlugin(
+      {
+        typescript: {
+          memoryLimit: 4096
+        }
+      }
+    ),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
@@ -608,6 +624,14 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     ]
   },
   plugins: [
+    /* config.plugin('ForkTsCheckerWebpackPlugin') */
+    new ForkTsCheckerWebpackPlugin(
+      {
+        typescript: {
+          memoryLimit: 4096
+        }
+      }
+    ),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
@@ -836,6 +860,14 @@ exports[`react configuration > ios > base config 1`] = `
     ]
   },
   plugins: [
+    /* config.plugin('ForkTsCheckerWebpackPlugin') */
+    new ForkTsCheckerWebpackPlugin(
+      {
+        typescript: {
+          memoryLimit: 4096
+        }
+      }
+    ),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {

@@ -2,6 +2,7 @@ import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
 import Config from 'webpack-chain';
 import path from 'path';
 
+import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
@@ -133,6 +134,15 @@ export default function (config: Config, env: IWebpackEnv): Config {
 				};
 			},
 		});
+
+	// Use Fork TS Checker to do type checking in a separate non-blocking process
+	config.plugin('ForkTsCheckerWebpackPlugin').use(ForkTsCheckerWebpackPlugin, [
+		{
+			typescript: {
+				memoryLimit: 4096,
+			},
+		},
+	]);
 
 	// set up js
 	// todo: do we need babel-loader? It's useful to support it

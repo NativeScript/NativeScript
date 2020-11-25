@@ -169,6 +169,20 @@ exports[`vue configuration for android 1`] = `
   plugins: [
     /* config.plugin('VueLoaderPlugin') */
     new VueLoaderPlugin(),
+    /* config.plugin('ForkTsCheckerWebpackPlugin') */
+    new ForkTsCheckerWebpackPlugin(
+      {
+        typescript: {
+          memoryLimit: 4096,
+          extensions: {
+            vue: {
+              enabled: true,
+              compiler: 'nativescript-vue-template-compiler'
+            }
+          }
+        }
+      }
+    ),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
@@ -403,6 +417,20 @@ exports[`vue configuration for ios 1`] = `
   plugins: [
     /* config.plugin('VueLoaderPlugin') */
     new VueLoaderPlugin(),
+    /* config.plugin('ForkTsCheckerWebpackPlugin') */
+    new ForkTsCheckerWebpackPlugin(
+      {
+        typescript: {
+          memoryLimit: 4096,
+          extensions: {
+            vue: {
+              enabled: true,
+              compiler: 'nativescript-vue-template-compiler'
+            }
+          }
+        }
+      }
+    ),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
