@@ -36,9 +36,11 @@ export interface ChangedData<T> extends EventData {
 
 const CHANGE = 'change';
 
-class ObservableArray extends Observable {
+declare class ObservableArray<T> extends Observable {
+    getItem(index: number): T;
+    setItem(index: number, value: T);
 }
-type ObservableArrayConstructor = (new <T>(...args) => ObservableArray & T[]) & {changeEvent: string};
+type ObservableArrayConstructor = (new <T>(...args) => ObservableArray<T> & T[]) & {changeEvent: string};
 
 class ObservableArrayInsideObservable<T> extends Observable {
 	_addArgs?: ChangedData<T>;
