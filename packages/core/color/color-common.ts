@@ -174,7 +174,7 @@ export class Color implements definition.Color {
 	}
 
 	/**
-	 * return true if brightenss < 128
+	 * return true if brightness < 128
 	 *
 	 */
 	public isDark() {
@@ -182,7 +182,7 @@ export class Color implements definition.Color {
 	}
 
 	/**
-	 * return true if brightenss >= 128
+	 * return true if brightness >= 128
 	 *
 	 */
 	public isLight() {
