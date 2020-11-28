@@ -17,6 +17,9 @@ jest.mock(
 	'__jest__/package.json',
 	() => ({
 		main: 'src/app.js',
+		devDependencies: {
+			typescript: '*',
+		},
 	}),
 	{ virtual: true }
 );

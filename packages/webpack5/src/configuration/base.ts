@@ -16,6 +16,7 @@ import {
 	getEntryPath,
 	getPlatform,
 } from '../helpers/project';
+import { hasDependency } from '../helpers/dependencies';
 
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();
@@ -136,13 +137,17 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		});
 
 	// Use Fork TS Checker to do type checking in a separate non-blocking process
-	config.plugin('ForkTsCheckerWebpackPlugin').use(ForkTsCheckerWebpackPlugin, [
-		{
-			typescript: {
-				memoryLimit: 4096,
-			},
-		},
-	]);
+	config.when(hasDependency('typescript'), (config) => {
+		config
+			.plugin('ForkTsCheckerWebpackPlugin')
+			.use(ForkTsCheckerWebpackPlugin, [
+				{
+					typescript: {
+						memoryLimit: 4096,
+					},
+				},
+			]);
+	});
 
 	// set up js
 	// todo: do we need babel-loader? It's useful to support it

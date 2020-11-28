@@ -1,6 +1,7 @@
 import { getPackageJson, getProjectRootPath } from './project';
 import path from 'path';
 
+// todo: memoize
 export function getAllDependencies(): string[] {
 	const packageJSON = getPackageJson();
 
@@ -10,6 +11,12 @@ export function getAllDependencies(): string[] {
 	];
 }
 
+// todo: memoize
+export function hasDependency(dependencyName: string) {
+	return getAllDependencies().includes(dependencyName);
+}
+
+// todo: memoize
 export function getDependencyPath(dependencyName: string): string | null {
 	try {
 		const resolvedPath = require.resolve(`${dependencyName}/package.json`, {
