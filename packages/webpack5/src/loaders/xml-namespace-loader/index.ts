@@ -129,7 +129,7 @@ async function parseXML(content: string): Promise<ParseResult> {
 		await resolveAsync(this.context, `${noExtFilename}.css`)
 			.then((css) => {
 				this.addDependency(css);
-				// namespaces.push({ name: `${moduleName}.css`, path: css });
+				namespaces.push({ name: `${moduleName}.css`, path: css });
 			})
 			.catch(noop);
 	};
