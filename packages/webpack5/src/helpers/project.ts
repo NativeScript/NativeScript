@@ -1,5 +1,5 @@
 import { env, Platform } from '../index';
-import { resolve, basename } from 'path';
+import { resolve, basename, dirname } from 'path';
 import { error } from './log';
 
 export function getProjectRootPath(): string {
@@ -17,6 +17,10 @@ export function getEntryPath() {
 	const packageJson = getPackageJson();
 
 	return resolve(getProjectRootPath(), packageJson.main);
+}
+
+export function getEntryDirPath() {
+	return dirname(getEntryPath());
 }
 
 export function getDistPath() {

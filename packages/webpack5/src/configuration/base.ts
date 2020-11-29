@@ -13,6 +13,7 @@ import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
 import { IWebpackEnv } from '../index';
 import {
 	getAbsoluteDistPath,
+	getEntryDirPath,
 	getEntryPath,
 	getPlatform,
 } from '../helpers/project';
@@ -106,9 +107,7 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		.add('.json');
 
 	// base aliases
-	config.resolve.alias
-		.set('~', '<TODO>appFullPath')
-		.set('@', '<TODO>appFullPath');
+	config.resolve.alias.set('~', getEntryDirPath()).set('@', getEntryDirPath());
 
 	// resolve symlinks
 	config.resolve.symlinks(true);

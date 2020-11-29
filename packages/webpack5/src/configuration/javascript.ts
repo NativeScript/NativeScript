@@ -1,16 +1,17 @@
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import Config from 'webpack-chain';
-
-import { getEntryPath } from '../helpers/project';
-import { IWebpackEnv } from '../index';
-import base from './base';
 import dedent from 'ts-dedent';
+import { join } from 'path';
 
-// todo: add base configuration for core with javascript
-export default function (config: Config, env: IWebpackEnv): Config {
+import { env as _env, IWebpackEnv } from '../index';
+import { getEntryDirPath } from '../helpers/project';
+import base from './base';
+
+export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 
-	const virtualEntryPath = getEntryPath() + '.virtual.js';
+	const virtualEntryPath = join(getEntryDirPath(), '__virtual_entry__.js');
+	const filterRE = '/.(xml|js|s?css)$/';
 
 	config.entry('bundle').add(virtualEntryPath);
 
@@ -18,11 +19,10 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	config.plugin('VirtualModulesPlugin').use(VirtualModulesPlugin, [
 		{
 			[virtualEntryPath]: dedent`
-			require('@nativescript/core/bundle-entry-points')
-
-			const context = require.context("./", /* deep: */ true);
-			global.registerWebpackModules(context);
-		`,
+				require('@nativescript/core/bundle-entry-points')
+				const context = require.context("~/", /* deep: */ true, /* filter: */ ${filterRE});
+				global.registerWebpackModules(context);
+			`,
 		},
 	]);
 

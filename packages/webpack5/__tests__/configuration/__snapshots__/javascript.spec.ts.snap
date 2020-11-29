@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`svelte configuration for android 1`] = `
+exports[`javascript configuration for android 1`] = `
 "{
   mode: 'development',
   externals: [
@@ -23,8 +23,6 @@ exports[`svelte configuration for android 1`] = `
       '@': '__jest__/src'
     },
     extensions: [
-      '.android.svelte',
-      '.svelte',
       '.android.ts',
       '.ts',
       '.android.js',
@@ -116,31 +114,13 @@ exports[`svelte configuration for android 1`] = `
           }
         ]
       },
-      /* config.module.rule('svelte') */
+      /* config.module.rule('xml') */
       {
-        test: /\\\\.svelte$/,
-        exclude: [
-          /node_modules/
-        ],
+        test: /\\\\.xml$/,
         use: [
-          /* config.module.rule('svelte').use('svelte-loader-hot') */
+          /* config.module.rule('xml').use('xml-namespace-loader') */
           {
-            loader: 'svelte-loader-hot',
-            options: {
-              dev: true,
-              preprocess: [
-                undefined,
-                {
-                  markup: function () { /* omitted long function */ }
-                }
-              ],
-              hotReload: true,
-              hotOptions: {
-                injectCss: false,
-                'native': true
-              },
-              onwarn: function () { /* omitted long function */ }
-            }
+            loader: 'xml-namespace-loader'
           }
         ]
       }
@@ -235,18 +215,25 @@ exports[`svelte configuration for android 1`] = `
       }
     ),
     /* config.plugin('WatchStatePlugin') */
-    new WatchStatePlugin()
+    new WatchStatePlugin(),
+    /* config.plugin('VirtualModulesPlugin') */
+    new VirtualModulesPlugin(
+      {
+        '__jest__/src/__virtual_entry__.js': 'require(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /.(xml|js)$/);\\\\nglobal.registerWebpackModules(context);'
+      }
+    )
   ],
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
-      '__jest__/src/app.js'
+      '__jest__/src/app.js',
+      '__jest__/src/__virtual_entry__.js'
     ]
   }
 }"
 `;
 
-exports[`svelte configuration for ios 1`] = `
+exports[`javascript configuration for ios 1`] = `
 "{
   mode: 'development',
   externals: [
@@ -269,8 +256,6 @@ exports[`svelte configuration for ios 1`] = `
       '@': '__jest__/src'
     },
     extensions: [
-      '.ios.svelte',
-      '.svelte',
       '.ios.ts',
       '.ts',
       '.ios.js',
@@ -362,31 +347,13 @@ exports[`svelte configuration for ios 1`] = `
           }
         ]
       },
-      /* config.module.rule('svelte') */
+      /* config.module.rule('xml') */
       {
-        test: /\\\\.svelte$/,
-        exclude: [
-          /node_modules/
-        ],
+        test: /\\\\.xml$/,
         use: [
-          /* config.module.rule('svelte').use('svelte-loader-hot') */
+          /* config.module.rule('xml').use('xml-namespace-loader') */
           {
-            loader: 'svelte-loader-hot',
-            options: {
-              dev: true,
-              preprocess: [
-                undefined,
-                {
-                  markup: function () { /* omitted long function */ }
-                }
-              ],
-              hotReload: true,
-              hotOptions: {
-                injectCss: false,
-                'native': true
-              },
-              onwarn: function () { /* omitted long function */ }
-            }
+            loader: 'xml-namespace-loader'
           }
         ]
       }
@@ -481,12 +448,19 @@ exports[`svelte configuration for ios 1`] = `
       }
     ),
     /* config.plugin('WatchStatePlugin') */
-    new WatchStatePlugin()
+    new WatchStatePlugin(),
+    /* config.plugin('VirtualModulesPlugin') */
+    new VirtualModulesPlugin(
+      {
+        '__jest__/src/__virtual_entry__.js': 'require(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /.(xml|js)$/);\\\\nglobal.registerWebpackModules(context);'
+      }
+    )
   ],
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
-      '__jest__/src/app.js'
+      '__jest__/src/app.js',
+      '__jest__/src/__virtual_entry__.js'
     ],
     'tns_modules/@nativescript/core/inspector_modules': [
       '@nativescript/core/inspector_modules'
