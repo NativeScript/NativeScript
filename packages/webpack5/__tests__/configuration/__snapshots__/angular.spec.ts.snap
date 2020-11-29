@@ -19,8 +19,8 @@ exports[`angular configuration for android 1`] = `
   resolve: {
     symlinks: true,
     alias: {
-      '~': '<TODO>appFullPath',
-      '@': '<TODO>appFullPath'
+      '~': '__jest__/src',
+      '@': '__jest__/src'
     },
     extensions: [
       '.android.ts',
@@ -251,8 +251,8 @@ exports[`angular configuration for ios 1`] = `
   resolve: {
     symlinks: true,
     alias: {
-      '~': '<TODO>appFullPath',
-      '@': '<TODO>appFullPath'
+      '~': '__jest__/src',
+      '@': '__jest__/src'
     },
     extensions: [
       '.ios.ts',
