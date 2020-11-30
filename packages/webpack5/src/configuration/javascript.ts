@@ -1,4 +1,5 @@
 import VirtualModulesPlugin from 'webpack-virtual-modules';
+import { ContextExclusionPlugin } from 'webpack';
 import Config from 'webpack-chain';
 import dedent from 'ts-dedent';
 import { join } from 'path';
@@ -15,7 +16,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.entry('bundle').add(virtualEntryPath);
 
-	// Add a virtual entry module
+	config
+		.plugin('ContextExclusionPluginPlugin')
+		.use(ContextExclusionPlugin, [/__virtual_entry__\.js$/]);
+
+	// Add a virtual entry module that will register all modules into
+	// the nativescript module loader/handler
 	config.plugin('VirtualModulesPlugin').use(VirtualModulesPlugin, [
 		{
 			[virtualEntryPath]: dedent`
@@ -25,6 +31,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			`,
 		},
 	]);
+
+	config.resolve.extensions.add('.xml');
 
 	// set up xml
 	config.module
