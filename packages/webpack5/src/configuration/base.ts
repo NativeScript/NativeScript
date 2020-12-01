@@ -1,15 +1,16 @@
 import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
 import Config from 'webpack-chain';
-import path from 'path';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
-import CopyWebpackPlugin from 'copy-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 
 // import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
+import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
+import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
+import { hasDependency } from '../helpers/dependencies';
 import { IWebpackEnv } from '../index';
 import {
 	getAbsoluteDistPath,
@@ -17,14 +18,11 @@ import {
 	getEntryPath,
 	getPlatform,
 } from '../helpers/project';
-import { hasDependency } from '../helpers/dependencies';
-import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();
 	const platform = getPlatform();
 	const mode = env.production ? 'production' : 'development';
-	const appPath = path.dirname(entryPath);
 
 	// set mode
 	config.mode(mode);
@@ -232,21 +230,12 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		},
 	]);
 
-	const copyPaths = ['assets/**', 'fonts/**', '**/*.+(jpg|png)'];
-	config.plugin('CopyWebpackPlugin').use(CopyWebpackPlugin, [
-		{
-			patterns: copyPaths.map((from) => ({
-				from,
-				context: appPath,
-				noErrorOnMissing: true,
-				globOptions: {
-					dot: false,
-					// todo: ignore AppResources if inside app folder!
-					// ignore: [``]
-				},
-			})),
-		},
-	]);
+	// set up default copy rules
+	addCopyRule('assets/**');
+	addCopyRule('fonts/**');
+	addCopyRule('**/*.+(jpg|png)');
+
+	applyCopyRules(config);
 
 	// add the WatchStateLogger plugin used to notify the CLI of build state
 	// config.plugin('WatchStateLoggerPlugin').use(WatchStateLoggerPlugin);
