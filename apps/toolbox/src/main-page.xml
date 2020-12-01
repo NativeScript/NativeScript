@@ -25,6 +25,18 @@
         <StackLayout boxShadow="5 5 10 10 red" height="100" backgroundColor="lightblue" padding="10" margin="10">
             <Label text="StackLayout"></Label>
         </StackLayout>
+
+        <GridLayout boxShadow="5 5 10 10 red" height="100" backgroundColor="lightblue" padding="10" margin="10">
+            <Label text="GridLayout"></Label>
+        </GridLayout>
+
+        <AbsoluteLayout boxShadow="5 5 10 10 red" height="100" backgroundColor="lightblue" padding="10" margin="10">
+            <Label text="AbsoluteLayout"></Label>
+        </AbsoluteLayout>
+
+        <FlexboxLayout boxShadow="5 5 10 10 red" height="100" backgroundColor="lightblue" padding="10" margin="10">
+            <Label text="FlexboxLayout"></Label>
+        </FlexboxLayout>
         
     </StackLayout>
 </Page>
