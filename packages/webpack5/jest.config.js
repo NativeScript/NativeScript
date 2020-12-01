@@ -8,7 +8,8 @@ module.exports = {
 		'<rootDir>/scripts/jest.setup.ts'
 	],
 	setupFilesAfterEnv: [
-		'<rootDir>/scripts/jest.mockWarn.ts'
+		'<rootDir>/scripts/jest.mockWarn.ts',
+		'<rootDir>/scripts/jest.copyRules.ts'
 	],
 	globals: {
 		__TEST__: true,
