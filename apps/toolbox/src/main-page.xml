@@ -5,7 +5,7 @@
     </Page.actionBar>
     <StackLayout class="p-t-20 p-x-20">
 
-        <Button text="Button with html boxShadow" tap="{{ onTap }}" height="50" class="btn btn-primary btn-active" boxShadow="5 5 10 navy"/>  
+        <!-- <Button text="Button with html boxShadow" tap="{{ onTap }}" height="50" class="btn btn-primary btn-active" boxShadow="5 5 10 navy"/>  
 
         <Button text="Button with css boxShadow (rgba)" tap="{{ onTap }}" height="50" marginTop="50" class="btn btn-primary btn-active"/>  
   
@@ -15,6 +15,15 @@
 
         <StackLayout boxShadow="10 10 rgba(0,0,0,1)" marginTop="50">
           <Button text="Button with css boxShadow" tap="{{ onTap }}" height="50" borderRadius="10"/>
+        </StackLayout> -->
+
+        <!-- TODO: if backgroundColor is not set, it won't call background.ios.ts hence not applying the boxShadow -->
+        <StackLayout boxShadow="5 5 10 10 red" height="100" backgroundColor="transparent" padding="10" margin="10">
+            <Label text="StackLayout with transparent background"></Label>
+        </StackLayout>
+
+        <StackLayout boxShadow="5 5 10 10 red" height="100" backgroundColor="lightblue" padding="10" margin="10">
+            <Label text="StackLayout"></Label>
         </StackLayout>
         
     </StackLayout>
