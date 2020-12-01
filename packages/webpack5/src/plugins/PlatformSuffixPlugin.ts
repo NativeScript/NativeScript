@@ -1,5 +1,5 @@
-import { existsSync } from 'fs';
 import { extname, resolve } from 'path';
+import { existsSync } from 'fs';
 
 const id = 'PlatformSuffixPlugin';
 

@@ -1,5 +1,6 @@
-import { env, Platform } from '../index';
 import { resolve, basename, dirname } from 'path';
+
+import { env, Platform } from '../index';
 import { error } from './log';
 
 export function getProjectRootPath(): string {

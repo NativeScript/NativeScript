@@ -1,11 +1,12 @@
+import { highlight } from 'cli-highlight';
 import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 import webpack from 'webpack';
-import { highlight } from 'cli-highlight';
-import { configs } from './configuration';
-import { determineProjectFlavor } from './helpers/flavor';
+
 import { applyExternalConfigs } from './helpers/externalConfigs';
+import { determineProjectFlavor } from './helpers/flavor';
 import { error, info } from './helpers/log';
+import { configs } from './configuration';
 import helpers from './helpers';
 
 export type Platform = 'android' | 'ios' | string;

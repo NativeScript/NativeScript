@@ -55,7 +55,7 @@ describe('@nativescript/webpack', () => {
 		webpack.resolveChainableConfig();
 	});
 
-	it('prints plugin name that errored out', () => {
+	it('prints plugin name that has a chain function that throws an error', () => {
 		webpack.useConfig(false);
 		webpack.setCurrentPlugin('test-plugin');
 		const chainFn = jest.fn(() => {

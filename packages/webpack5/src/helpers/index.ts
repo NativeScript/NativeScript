@@ -1,12 +1,18 @@
 import { merge } from 'webpack-merge';
-import { getValue } from './config';
-import { getAllDependencies, getDependencyPath } from './dependencies';
+
+import {
+	getAllDependencies,
+	hasDependency,
+	getDependencyPath,
+} from './dependencies';
 import { determineProjectFlavor } from './flavor';
 import { error, info, warn } from './log';
+import { getValue } from './config';
 import {
 	getAbsoluteDistPath,
 	getDistPath,
 	getEntryPath,
+	getEntryDirPath,
 	getPackageJson,
 	getPlatform,
 	getProjectRootPath,
@@ -23,6 +29,7 @@ export default {
 	},
 	dependencies: {
 		getAllDependencies,
+		hasDependency,
 		getDependencyPath,
 	},
 	flavor: {
@@ -37,6 +44,7 @@ export default {
 		getProjectRootPath,
 		getAbsoluteDistPath,
 		getEntryPath,
+		getEntryDirPath,
 		getDistPath,
 		getPlatform,
 		getPackageJson,
