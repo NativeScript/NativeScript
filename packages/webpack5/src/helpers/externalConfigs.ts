@@ -1,8 +1,10 @@
 import path from 'path';
 import fs from 'fs';
-import * as lib from '../index';
-import { error, info, warn } from './log';
+
 import { getAllDependencies, getDependencyPath } from './dependencies';
+import { info, warn } from './log';
+import * as lib from '../index';
+import { clearCurrentPlugin, setCurrentPlugin } from '../index';
 
 export function applyExternalConfigs() {
 	getAllDependencies().forEach((dependency) => {
@@ -11,7 +13,7 @@ export function applyExternalConfigs() {
 
 		if (fs.existsSync(configPath)) {
 			info(`Discovered config: ${configPath}`);
-
+			setCurrentPlugin(dependency);
 			try {
 				const externalConfig = require(configPath);
 
@@ -27,14 +29,13 @@ export function applyExternalConfigs() {
 					);
 				}
 			} catch (err) {
-				error(
-					`
-						Unable to apply config: ${configPath}.
-						Error is:
-					`,
-					err
-				);
+				warn(`
+					Unable to apply config: ${configPath}.
+					Error is: ${err}
+				`);
 			}
 		}
 	});
+
+	clearCurrentPlugin();
 }

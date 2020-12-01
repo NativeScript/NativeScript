@@ -1,15 +1,16 @@
 module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
+	preset: 'ts-jest',
+	testEnvironment: 'node',
 	moduleNameMapper: {
-  	'^@nativescript/webpack$': '<rootDir>/src'
+		'^@nativescript/webpack$': '<rootDir>/src'
 	},
 	setupFiles: [
-		'<rootDir>/jest.setup.ts'
+		'<rootDir>/scripts/jest.setup.ts'
+	],
+	setupFilesAfterEnv: [
+		'<rootDir>/scripts/jest.mockWarn.ts'
 	],
 	globals: {
-  	'ts-jest': {
-  		tsconfig: 'tsconfig.jest.json'
-		}
+		__TEST__: true,
 	}
 };

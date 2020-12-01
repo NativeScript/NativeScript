@@ -190,6 +190,12 @@ exports[`svelte configuration for android 1`] = `
         verbose: false
       }
     ),
+    /* config.plugin('PlatformSuffixPlugin') */
+    new PlatformSuffixPlugin(
+      {
+        platform: 'android'
+      }
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -434,6 +440,12 @@ exports[`svelte configuration for ios 1`] = `
           '__jest__/platforms/ios/__jest__/app/**/*'
         ],
         verbose: false
+      }
+    ),
+    /* config.plugin('PlatformSuffixPlugin') */
+    new PlatformSuffixPlugin(
+      {
+        platform: 'ios'
       }
     ),
     /* config.plugin('DefinePlugin') */
