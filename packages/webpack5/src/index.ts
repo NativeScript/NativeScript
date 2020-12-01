@@ -30,19 +30,35 @@ export interface IWebpackEnv {
 	// todo: add others
 }
 
-let webpackChains = {
-	base: [],
-	normal: [],
-	last: [],
-};
+interface IChainEntry {
+	chainFn: any;
+	order?: number;
+	plugin?: string;
+}
+
+let webpackChains: IChainEntry[] = [];
 let webpackMerges: any[] = [];
 let explicitUseConfig = false;
 let hasInitialized = false;
-
+let currentPlugin: string | undefined;
 /**
  * @internal
  */
 export let env: IWebpackEnv = {};
+
+/**
+ * @internal
+ */
+export function setCurrentPlugin(plugin: string) {
+	currentPlugin = plugin;
+}
+
+/**
+ * @internal
+ */
+export function clearCurrentPlugin() {
+	currentPlugin = undefined;
+}
 
 ////// PUBLIC API
 export const defaultConfigs = configs;
@@ -58,16 +74,22 @@ export function init(_env: IWebpackEnv) {
 export function useConfig(config: keyof typeof defaultConfigs | false) {
 	explicitUseConfig = true;
 	if (config) {
-		webpackChains.base.push(configs[config]);
+		webpackChains.push({
+			order: -1,
+			chainFn: configs[config],
+		});
 	}
 }
 
 export function chainWebpack(
 	chainFn: (config: Config, env: IWebpackEnv) => any,
-	options?: { last?: boolean }
+	options?: { order?: number }
 ) {
-	const type = options?.last ? 'last' : 'normal';
-	webpackChains[type].push(chainFn);
+	webpackChains.push({
+		order: options?.order || 0,
+		chainFn,
+		plugin: currentPlugin,
+	});
 }
 
 export function mergeWebpack(
@@ -90,19 +112,24 @@ export function resolveChainableConfig(): Config {
 	// todo: allow opt-out
 	applyExternalConfigs();
 
-	const applyChains = (chains) => {
-		// this applies the chain configs
-		chains.forEach((chainFn) => {
-			return chainFn(config, env);
+	webpackChains
+		.splice(0)
+		.sort((a, b) => {
+			return a.order - b.order;
+		})
+		.forEach(({ chainFn, plugin }) => {
+			try {
+				chainFn(config, env);
+			} catch (err) {
+				if (plugin) {
+					// print error with plugin name that causes it
+					error(`
+					Unable to apply chain function from: ${plugin}.
+					Error is: ${err}
+				`);
+				}
+			}
 		});
-	};
-
-	// first we apply base configs
-	applyChains(webpackChains.base);
-	// then regular configs
-	applyChains(webpackChains.normal);
-	// finally configs that opted to be called last
-	applyChains(webpackChains.last);
 
 	if (env.verbose) {
 		info('Resolved chainable config (before merges):');

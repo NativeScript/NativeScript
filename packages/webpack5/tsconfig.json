@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"rootDir": "./src",
+		"rootDir": ".",
 		"baseUrl": ".",
 		"target": "es2017",
 		"module": "commonjs",
@@ -20,6 +20,6 @@
 		"allowSyntheticDefaultImports": true,
 		"stripInternal": true
 	},
-	"include": ["src"],
+	"include": ["src", "scripts", "__tests__"],
 	"exclude": ["node_modules"]
 }

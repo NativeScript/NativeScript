@@ -42,7 +42,7 @@ describe('@nativescript/webpack', () => {
 			lastCalled = true;
 			expect(config.normal).toBe(true);
 		});
-		webpack.chainWebpack(chainFnLast, { last: true });
+		webpack.chainWebpack(chainFnLast, { order: 10 });
 
 		const chainFnNormal = jest.fn((config) => {
 			config.normal = true;
@@ -53,6 +53,22 @@ describe('@nativescript/webpack', () => {
 		webpack.chainWebpack(chainFnNormal);
 
 		webpack.resolveChainableConfig();
+	});
+
+	it('prints plugin name that errored out', () => {
+		webpack.useConfig(false);
+		webpack.setCurrentPlugin('test-plugin');
+		const chainFn = jest.fn(() => {
+			throw new Error('something wrong');
+		});
+		webpack.chainWebpack(chainFn);
+
+		// should not throw
+		expect(() => webpack.resolveChainableConfig()).not.toThrow();
+
+		expect(
+			'Unable to apply chain function from: test-plugin'
+		).toHaveBeenWarned();
 	});
 
 	it('applies merge configs', () => {

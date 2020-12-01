@@ -32,7 +32,8 @@ exports[`javascript configuration for android 1`] = `
       '.android.scss',
       '.scss',
       '.android.json',
-      '.json'
+      '.json',
+      '.xml'
     ]
   },
   resolveLoader: {
@@ -170,6 +171,12 @@ exports[`javascript configuration for android 1`] = `
         verbose: false
       }
     ),
+    /* config.plugin('PlatformSuffixPlugin') */
+    new PlatformSuffixPlugin(
+      {
+        platform: 'android'
+      }
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -216,10 +223,14 @@ exports[`javascript configuration for android 1`] = `
     ),
     /* config.plugin('WatchStatePlugin') */
     new WatchStatePlugin(),
+    /* config.plugin('ContextExclusionPluginPlugin') */
+    new ContextExclusionPlugin(
+      /__virtual_entry__\\\\.js$/
+    ),
     /* config.plugin('VirtualModulesPlugin') */
     new VirtualModulesPlugin(
       {
-        '__jest__/src/__virtual_entry__.js': 'require(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /.(xml|js)$/);\\\\nglobal.registerWebpackModules(context);'
+        '__jest__/src/__virtual_entry__.js': 'require(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /.(xml|js|s?css)$/);\\\\nglobal.registerWebpackModules(context);'
       }
     )
   ],
@@ -265,7 +276,8 @@ exports[`javascript configuration for ios 1`] = `
       '.ios.scss',
       '.scss',
       '.ios.json',
-      '.json'
+      '.json',
+      '.xml'
     ]
   },
   resolveLoader: {
@@ -403,6 +415,12 @@ exports[`javascript configuration for ios 1`] = `
         verbose: false
       }
     ),
+    /* config.plugin('PlatformSuffixPlugin') */
+    new PlatformSuffixPlugin(
+      {
+        platform: 'ios'
+      }
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -449,10 +467,14 @@ exports[`javascript configuration for ios 1`] = `
     ),
     /* config.plugin('WatchStatePlugin') */
     new WatchStatePlugin(),
+    /* config.plugin('ContextExclusionPluginPlugin') */
+    new ContextExclusionPlugin(
+      /__virtual_entry__\\\\.js$/
+    ),
     /* config.plugin('VirtualModulesPlugin') */
     new VirtualModulesPlugin(
       {
-        '__jest__/src/__virtual_entry__.js': 'require(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /.(xml|js)$/);\\\\nglobal.registerWebpackModules(context);'
+        '__jest__/src/__virtual_entry__.js': 'require(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /.(xml|js|s?css)$/);\\\\nglobal.registerWebpackModules(context);'
       }
     )
   ],

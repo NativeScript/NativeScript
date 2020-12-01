@@ -175,6 +175,12 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         verbose: false
       }
     ),
+    /* config.plugin('PlatformSuffixPlugin') */
+    new PlatformSuffixPlugin(
+      {
+        platform: 'android'
+      }
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -408,6 +414,12 @@ exports[`react configuration > android > base config 1`] = `
         verbose: false
       }
     ),
+    /* config.plugin('PlatformSuffixPlugin') */
+    new PlatformSuffixPlugin(
+      {
+        platform: 'android'
+      }
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -639,6 +651,12 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
           '__jest__/platforms/ios/__jest__/app/**/*'
         ],
         verbose: false
+      }
+    ),
+    /* config.plugin('PlatformSuffixPlugin') */
+    new PlatformSuffixPlugin(
+      {
+        platform: 'ios'
       }
     ),
     /* config.plugin('DefinePlugin') */
@@ -875,6 +893,12 @@ exports[`react configuration > ios > base config 1`] = `
           '__jest__/platforms/ios/__jest__/app/**/*'
         ],
         verbose: false
+      }
+    ),
+    /* config.plugin('PlatformSuffixPlugin') */
+    new PlatformSuffixPlugin(
+      {
+        platform: 'ios'
       }
     ),
     /* config.plugin('DefinePlugin') */
