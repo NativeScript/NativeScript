@@ -207,7 +207,9 @@ export class iOSApplication implements iOSApplicationDefinition {
 
 		// this._window will be undefined when NS app is embedded in a native one
 		if (this._window) {
-			this.setWindowContent(args.root);
+			if (args.root !== null) {
+				this.setWindowContent(args.root);
+			}
 		} else {
 			this._window = UIApplication.sharedApplication.delegate.window;
 		}
