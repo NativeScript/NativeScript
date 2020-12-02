@@ -398,7 +398,7 @@ export class CssState {
 
 	_onDynamicStateChangeHandler: () => void;
 	_appliedChangeMap: Readonly<ChangeMap<ViewBase>>;
-	_appliedPropertyValues: Readonly<Record<string, unknown>>;
+	_appliedPropertyValues: Record<string, unknown>;
 	_appliedAnimations: ReadonlyArray<kam.KeyframeAnimation>;
 	_appliedSelectorsVersion: number;
 
@@ -552,60 +552,47 @@ export class CssState {
 		const newPropertyValues = new view.style.PropertyBag();
 		matchingSelectors.forEach((selector) => selector.ruleset.declarations.forEach((declaration) => (newPropertyValues[declaration.property] = declaration.value)));
 
-		const oldProperties = this._appliedPropertyValues;
-
-		let isCssExpressionInUse = false;
-
+		const oldProperties = this._appliedPropertyValues || {};
 		// Update values for the scope's css-variables
 		view.style.resetScopedCssVariables();
 
+
+		const valuesToApply = {};
 		for (const property in newPropertyValues) {
-			const value = newPropertyValues[property];
+			let value = newPropertyValues[property];
+			if (property in oldProperties && oldProperties[property] === value) {
+				// Skip unchanged values
+				delete oldProperties[property] 
+				continue;
+			}
 			if (isCssVariable(property)) {
 				view.style.setScopedCssVariable(property, value);
-
+				delete oldProperties[property] 
 				delete newPropertyValues[property];
 				continue;
 			}
-
-			isCssExpressionInUse = isCssExpressionInUse || isCssVariableExpression(value) || isCssCalcExpression(value);
-		}
-
-		if (isCssExpressionInUse) {
-			// Evalute css-expressions to get the latest values.
-			for (const property in newPropertyValues) {
-				const value = evaluateCssExpressions(view, property, newPropertyValues[property]);
-				if (value === unsetValue) {
-					delete newPropertyValues[property];
-					continue;
-				}
-
-				newPropertyValues[property] = value;
+			if (isCssVariableExpression(value) || isCssCalcExpression(value)) {
+				value = evaluateCssExpressions(view, property, newPropertyValues[property]);
 			}
+			if (value === unsetValue) {
+				delete newPropertyValues[property];
+				continue;
+			}
+			valuesToApply[property] = value;
 		}
-
-		// Property values are fully updated, freeze the object to be used for next update.
-		Object.freeze(newPropertyValues);
 
 		// Unset removed values
 		for (const property in oldProperties) {
-			if (!(property in newPropertyValues)) {
-				if (property in view.style) {
-					view.style[`css:${property}`] = unsetValue;
-				} else {
-					// TRICKY: How do we unset local value?
-				}
+			if (property in view.style) {
+				view.style[`css:${property}`] = unsetValue;
+			}
+			else {
+				// TRICKY: How do we unset local value?
 			}
 		}
-
 		// Set new values to the style
-		for (const property in newPropertyValues) {
-			if (oldProperties && property in oldProperties && oldProperties[property] === newPropertyValues[property]) {
-				// Skip unchanged values
-				continue;
-			}
-
-			const value = newPropertyValues[property];
+		for (const property in valuesToApply) {
+			const value = valuesToApply[property];
 			try {
 				if (property in view.style) {
 					view.style[`css:${property}`] = value;
