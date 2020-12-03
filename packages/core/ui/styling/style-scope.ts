@@ -562,12 +562,12 @@ export class CssState {
 			let value = newPropertyValues[property];
 			if (property in oldProperties && oldProperties[property] === value) {
 				// Skip unchanged values
-				delete oldProperties[property] 
+				delete oldProperties[property];
 				continue;
 			}
+			delete oldProperties[property];
 			if (isCssVariable(property)) {
 				view.style.setScopedCssVariable(property, value);
-				delete oldProperties[property] 
 				delete newPropertyValues[property];
 				continue;
 			}
