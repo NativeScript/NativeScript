@@ -398,7 +398,7 @@ export class CssState {
 
 	_onDynamicStateChangeHandler: () => void;
 	_appliedChangeMap: Readonly<ChangeMap<ViewBase>>;
-	_appliedPropertyValues: Record<string, unknown>;
+	private _appliedPropertyValues: Record<string, unknown>;
 	_appliedAnimations: ReadonlyArray<kam.KeyframeAnimation>;
 	_appliedSelectorsVersion: number;
 
