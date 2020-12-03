@@ -553,7 +553,7 @@ export class CssState {
 		const newPropertyValues = new view.style.PropertyBag();
 		matchingSelectors.forEach((selector) => selector.ruleset.declarations.forEach((declaration) => (newPropertyValues[declaration.property] = declaration.value)));
 
-		const oldProperties = this._appliedPropertyValues || {};
+		const oldProperties = this._appliedPropertyValues;
 		// Update values for the scope's css-variables
 		view.style.resetScopedCssVariables();
 
