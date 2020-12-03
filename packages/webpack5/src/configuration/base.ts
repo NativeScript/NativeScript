@@ -166,6 +166,18 @@ export default function (config: Config, env: IWebpackEnv): Config {
 			},
 		});
 
+	// default PostCSS options to use
+	// projects can change settings
+	// via postcss.config.js
+	const postCSSOptions = {
+		postcssOptions: {
+			plugins: [
+				// inlines @imported stylesheets
+				'postcss-import',
+			],
+		},
+	};
+
 	// set up css
 	config.module
 		.rule('css')
@@ -174,7 +186,11 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		.loader('apply-css-loader')
 		.end()
 		.use('css2json-loader')
-		.loader('css2json-loader');
+		.loader('css2json-loader')
+		.end()
+		.use('postcss-loader')
+		.loader('postcss-loader')
+		.options(postCSSOptions);
 
 	// set up scss
 	config.module
@@ -185,6 +201,10 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		.end()
 		.use('css2json-loader')
 		.loader('css2json-loader')
+		.end()
+		.use('postcss-loader')
+		.loader('postcss-loader')
+		.options(postCSSOptions)
 		.end()
 		.use('sass-loader')
 		.loader('sass-loader');

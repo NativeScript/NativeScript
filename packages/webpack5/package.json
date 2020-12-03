@@ -16,6 +16,7 @@
 		"prepack": "npm run build && cp -R src/stubs dist/stubs && chmod +x dist/bin/index.js"
 	},
 	"dependencies": {
+		"@babel/core": "^7.12.9",
 		"@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 		"@types/sax": "^1.2.1",
 		"babel-loader": "^8.2.1",
@@ -29,6 +30,9 @@
 		"fork-ts-checker-webpack-plugin": "^6.0.3",
 		"loader-utils": "^2.0.0",
 		"micromatch": "^4.0.2",
+		"postcss": "^8.1.13",
+		"postcss-import": "^13.0.0",
+		"postcss-loader": "^4.1.0",
 		"raw-loader": "^4.0.2",
 		"react-refresh": "^0.9.0",
 		"sass": "^1.29.0",
