@@ -9,6 +9,11 @@ import { clearCurrentPlugin, setCurrentPlugin } from '../index';
 export function applyExternalConfigs() {
 	getAllDependencies().forEach((dependency) => {
 		const packagePath = getDependencyPath(dependency);
+
+		if (!packagePath) {
+			return;
+		}
+
 		const configPath = path.join(packagePath, 'nativescript.webpack.js');
 
 		if (fs.existsSync(configPath)) {
