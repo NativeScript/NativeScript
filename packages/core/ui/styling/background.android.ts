@@ -224,28 +224,12 @@ function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
 	const shadowOpacity = 0.8;
 	const color = boxShadow.color;
 
-	// TODO: how to get current view's background (color/image/gradient)
-
 	const shadowColor = new Color(shadowOpacity * 255, color.r, color.g, color.b);
-	// TODO: this is suppsosed to be android's background
-	const backgroundColor = new Color('#ffffff'); // new Color(this.backgroundColor);
+
 	const cornerRadiusValue = boxShadow.blurRadius * Screen.mainScreen.scale;
 	const elevationValue = cornerRadiusValue; // this.elevation;
 	const shadowColorValue = shadowColor.android;
 	const shadowSpread = boxShadow.spreadRadius * Screen.mainScreen.scale;
-
-	// Set padding to factor in elevation so shadow doesn't get cutoff
-	const shapeDrawablePadding = new android.graphics.Rect();
-	shapeDrawablePadding.left = elevationValue;
-	shapeDrawablePadding.right = elevationValue;
-	shapeDrawablePadding.top = elevationValue;
-	shapeDrawablePadding.bottom = elevationValue;
-	const shapeDrawable = new android.graphics.drawable.ShapeDrawable();
-	shapeDrawable.setPadding(shapeDrawablePadding);
-
-	// TODO: set original backgroundColor
-	const backgroundColorValue = backgroundColor.android;
-	shapeDrawable.getPaint().setColor(backgroundColorValue);
 
 	// Set shadow layer
 	const outerRadius = Array.create('float', 8);
@@ -257,19 +241,37 @@ function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
 	outerRadius[5] = cornerRadiusValue;
 	outerRadius[6] = cornerRadiusValue;
 	outerRadius[7] = cornerRadiusValue;
+
+	const rectShape = new android.graphics.drawable.shapes.RoundRectShape(outerRadius, null, null);
+	const shapeDrawable = new android.graphics.drawable.ShapeDrawable(rectShape);
+
+	// Default background if no backgroundColor is not set
+	const backgroundColor = new Color('#FFF');
+	const backgroundColorValue = backgroundColor.android;
+	shapeDrawable.getPaint().setColor(backgroundColorValue);
+
 	shapeDrawable.getPaint().setShadowLayer(shadowSpread, 0, 0, shadowColorValue);
-	nativeView.setLayerType(android.view.View.LAYER_TYPE_HARDWARE, shapeDrawable.getPaint());
-	shapeDrawable.setShape(new android.graphics.drawable.shapes.RoundRectShape(outerRadius, null, null));
 	shapeDrawable.getPaint().setAntiAlias(true);
 
 	// set shadow direction
-	const drawableArray = Array.create('android.graphics.drawable.Drawable', 1);
+	const drawableArray = Array.create('android.graphics.drawable.Drawable', 2);
 	drawableArray[0] = shapeDrawable;
-	const shadowGravity = 'center';
+	drawableArray[1] = nativeView.getBackground();
 	const drawable = new android.graphics.drawable.LayerDrawable(drawableArray);
-	const left_right = elevationValue;
-	const top_bottom = shadowGravity === 'center' ? elevationValue : elevationValue * 2;
-	drawable.setLayerInset(0, left_right, top_bottom, left_right, top_bottom);
+
+	let count = 0;
+	while (nativeView.getParent() && nativeView.getParent() instanceof android.view.ViewGroup) {
+		count++;
+		const parent = nativeView.getParent() as android.view.ViewGroup;
+		parent.setClipChildren(false);
+		parent.setClipToPadding(false);
+		// removing clipping from all breaks the ui
+		if (count === 1) {
+			break;
+		}
+		nativeView = parent;
+	}
+
 	nativeView.setBackground(drawable);
 }
 
