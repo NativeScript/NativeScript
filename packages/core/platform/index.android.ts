@@ -57,6 +57,10 @@ export class Screen {
 	static mainScreen = new MainScreen();
 }
 
+export class screen {
+	static mainScreen = Screen.mainScreen;
+}
+
 class DeviceRef {
 	private _manufacturer: string;
 	private _model: string;
@@ -144,6 +148,7 @@ class DeviceRef {
 }
 
 export const Device = new DeviceRef();
+export const device = Device;
 
 export const isAndroid = global.isAndroid;
 export const isIOS = global.isIOS;
