@@ -386,7 +386,7 @@ if (application.hasLaunched()) {
 
 export class CssState {
 	static emptyChangeMap: Readonly<ChangeMap<ViewBase>> = Object.freeze(new Map());
-	static emptyPropertyBag: Readonly<Record<string, unknown>> = Object.freeze({});
+	static emptyPropertyBag: Record<string, unknown> = {};
 	static emptyAnimationArray: ReadonlyArray<kam.KeyframeAnimation> = Object.freeze([]);
 	static emptyMatch: Readonly<SelectorsMatch<ViewBase>> = {
 		selectors: [],
@@ -398,7 +398,7 @@ export class CssState {
 
 	_onDynamicStateChangeHandler: () => void;
 	_appliedChangeMap: Readonly<ChangeMap<ViewBase>>;
-	private _appliedPropertyValues: Record<string, unknown>;
+	private _appliedPropertyValues: Record<string, unknown> = CssState.emptyPropertyBag;
 	_appliedAnimations: ReadonlyArray<kam.KeyframeAnimation>;
 	_appliedSelectorsVersion: number;
 
@@ -663,7 +663,6 @@ export class CssState {
 	}
 }
 CssState.prototype._appliedChangeMap = CssState.emptyChangeMap;
-CssState.prototype._appliedPropertyValues = CssState.emptyPropertyBag;
 CssState.prototype._appliedAnimations = CssState.emptyAnimationArray;
 CssState.prototype._matchInvalid = true;
 
