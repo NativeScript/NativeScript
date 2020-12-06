@@ -1,3 +1,13 @@
+## [6.5.24](https://github.com/NativeScript/NativeScript/compare/6.5.19...6.5.24) (2020-12-06)
+
+
+### Bug Fixes
+
+* **ios:** ListViewCell.initWithEmptyBackground ([#8985](https://github.com/NativeScript/NativeScript/issues/8985)) ([4fef132](https://github.com/NativeScript/NativeScript/commit/4fef132dea844db1c7c51c4c7e8f7f0ba04fb576))
+* **tabs:** ios safeArea calculation ([#9090](https://github.com/NativeScript/NativeScript/issues/9090)) ([6979a8d](https://github.com/NativeScript/NativeScript/commit/6979a8d0cc5be03c7505fb0abbe93e5a36846ef4))
+
+
+
 ## [6.5.20](https://github.com/NativeScript/NativeScript/compare/6.5.19...6.5.20) (2020-09-26)
 
 
