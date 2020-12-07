@@ -54,9 +54,21 @@ export class View extends ViewCommon implements ViewDefinition {
 		return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
 	}
 
+	requestlayoutIfNeeded() {
+		if ( this.isLayoutRequired) {
+			this._requetLayoutNeeded = false;
+			this.requestLayout();
+		}
+	}
+
 	public requestLayout(): void {
-		super.requestLayout();
+		if (this._suspendRequestLayout) {
+			this._requetLayoutNeeded = true;
+			return;
+		}
+		this._requetLayoutNeeded = false;
 		this._privateFlags |= PFLAG_FORCE_LAYOUT;
+		super.requestLayout();
 
 		const nativeView = this.nativeViewProtected;
 		if (nativeView && nativeView.setNeedsLayout) {
