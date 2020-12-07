@@ -348,9 +348,12 @@ export class IOSHelper {
 			fullscreen = CGRectMake(0, 0, scrollView.contentSize.width, scrollView.contentSize.height);
 		}
 
+		// We take into account the controller position inside the window.
+		// for example with a bottomsheet the controller will be "offset"
+		const controllerInWindow = viewControllerView.convertPointToView(viewControllerView.bounds.origin, null);
 		const locationInWindow = view.getLocationInWindow();
-		let inWindowLeft = locationInWindow.x;
-		let inWindowTop = locationInWindow.y;
+		let inWindowLeft = locationInWindow.x - controllerInWindow.x;
+		let inWindowTop = locationInWindow.y - controllerInWindow.y;
 
 		if (scrollView) {
 			inWindowLeft += scrollView.contentOffset.x;
