@@ -473,6 +473,9 @@ export class CssState {
 		}
 
 		const matchingSelectors = this._match.selectors.filter((sel) => (sel.dynamic ? sel.match(view) : true));
+		if (!matchingSelectors || matchingSelectors.length === 0) {
+			return;
+		}
 		view._batchUpdate(() => {
 			this.stopKeyframeAnimations();
 			this.setPropertyValues(matchingSelectors);
