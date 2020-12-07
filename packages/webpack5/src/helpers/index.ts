@@ -15,9 +15,9 @@ import {
 	getEntryPath,
 	getEntryDirPath,
 	getPackageJson,
-	getPlatform,
 	getProjectRootPath,
 } from './project';
+import { getPlatform, getPlatformName, addPlatform } from '../platforms';
 
 // intentionally populated manually
 // as this generates nicer typings
@@ -50,7 +50,11 @@ export default {
 		getEntryPath,
 		getEntryDirPath,
 		getDistPath,
-		getPlatform,
 		getPackageJson,
+	},
+	platform: {
+		getPlatform,
+		getPlatformName,
+		addPlatform,
 	},
 };

@@ -11,17 +11,17 @@ import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
 import { hasDependency } from '../helpers/dependencies';
+import { getPlatformName } from '../platforms';
 import { IWebpackEnv } from '../index';
 import {
 	getAbsoluteDistPath,
 	getEntryDirPath,
 	getEntryPath,
-	getPlatform,
 } from '../helpers/project';
 
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();
-	const platform = getPlatform();
+	const platform = getPlatformName();
 	const mode = env.production ? 'production' : 'development';
 
 	// set mode
@@ -51,7 +51,7 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		.add(entryPath);
 
 	// inspector_modules
-	config.when(shouldIncludeInspectorModules(env), (config) => {
+	config.when(shouldIncludeInspectorModules(), (config) => {
 		config
 			.entry('tns_modules/@nativescript/core/inspector_modules')
 			.add('@nativescript/core/inspector_modules');
@@ -272,8 +272,8 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	return config;
 }
 
-function shouldIncludeInspectorModules(env: IWebpackEnv): boolean {
-	const platform = getPlatform();
+function shouldIncludeInspectorModules(): boolean {
+	const platform = getPlatformName();
 	// todo: check if core modules are external
 	// todo: check if we are testing
 	return platform === 'ios';
