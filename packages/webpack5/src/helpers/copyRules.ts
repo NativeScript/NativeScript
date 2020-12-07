@@ -1,6 +1,6 @@
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 
-import { getEntryDirPath } from './project';
+import { getEntryDirPath } from './platform';
 
 /**
  * @internal

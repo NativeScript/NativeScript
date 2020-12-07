@@ -9,15 +9,16 @@ import {
 	hasDependency,
 	getDependencyPath,
 } from './dependencies';
+import { getPackageJson, getProjectRootPath } from './project';
 import {
+	addPlatform,
 	getAbsoluteDistPath,
 	getDistPath,
-	getEntryPath,
 	getEntryDirPath,
-	getPackageJson,
-	getProjectRootPath,
-} from './project';
-import { getPlatform, getPlatformName, addPlatform } from '../platforms';
+	getEntryPath,
+	getPlatform,
+	getPlatformName,
+} from './platform';
 
 // intentionally populated manually
 // as this generates nicer typings
@@ -46,15 +47,15 @@ export default {
 	},
 	project: {
 		getProjectRootPath,
-		getAbsoluteDistPath,
-		getEntryPath,
-		getEntryDirPath,
-		getDistPath,
 		getPackageJson,
 	},
 	platform: {
+		addPlatform,
+		getAbsoluteDistPath,
+		getDistPath,
+		getEntryDirPath,
+		getEntryPath,
 		getPlatform,
 		getPlatformName,
-		addPlatform,
 	},
 };

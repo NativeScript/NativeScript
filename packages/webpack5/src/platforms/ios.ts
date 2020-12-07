@@ -1,7 +1,7 @@
 import { basename } from "path";
 
+import { INativeScriptPlatform } from "../helpers/platform";
 import { getProjectRootPath } from "../helpers/project";
-import { INativeScriptPlatform } from '.';
 
 function getDistPath() {
 	const appName = basename(getProjectRootPath());
