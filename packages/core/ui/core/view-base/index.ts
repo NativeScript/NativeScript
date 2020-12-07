@@ -392,7 +392,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		if (this._isLoaded) {
 			return;
 		}
-
+		// the view is going to be layed out after
+		// no need for requestLayout which can be pretty slow because
+		// called a lot and going all up the chain to the page
+		this.suspendRequestLayout = true;
 		this._isLoaded = true;
 		this._cssState.onLoaded();
 		this._resumeNativeUpdates(SuspendType.Loaded);
@@ -403,6 +406,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 			return true;
 		});
 
+		this.suspendRequestLayout = false;
 		this._emit('loaded');
 	}
 
@@ -619,8 +623,21 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+
+	_requetLayoutNeeded = false;
+
+	get isLayoutRequestNeeded() {
+		return this._requetLayoutNeeded;
+	}
+	
+	_suspendRequestLayout = false;
+	set suspendRequestLayout(value: boolean) {
+		this._suspendRequestLayout = value;
+	}
+
 	@profile
 	public requestLayout(): void {
+
 		// Default implementation for non View instances (like TabViewItem).
 		const parent = this.parent;
 		if (parent) {
