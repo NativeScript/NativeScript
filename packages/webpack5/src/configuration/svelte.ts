@@ -3,7 +3,7 @@ import Config from 'webpack-chain';
 
 import { getProjectRootPath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
-import { getPlatformName } from '../platforms';
+import { getPlatformName } from '../helpers/platform';
 import { error } from '../helpers/log';
 import base from './base';
 

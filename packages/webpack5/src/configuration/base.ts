@@ -11,13 +11,13 @@ import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
 import { hasDependency } from '../helpers/dependencies';
-import { getPlatformName } from '../platforms';
 import { IWebpackEnv } from '../index';
 import {
+	getPlatformName,
 	getAbsoluteDistPath,
 	getEntryDirPath,
 	getEntryPath,
-} from '../helpers/project';
+} from '../helpers/platform';
 
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();

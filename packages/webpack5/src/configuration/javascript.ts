@@ -4,8 +4,8 @@ import Config from 'webpack-chain';
 import dedent from 'ts-dedent';
 import { join } from 'path';
 
+import { getEntryDirPath } from '../helpers/platform';
 import { env as _env, IWebpackEnv } from '../index';
-import { getEntryDirPath } from '../helpers/project';
 import base from './base';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {

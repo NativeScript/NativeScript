@@ -9,8 +9,6 @@ import { error, info } from './helpers/log';
 import { configs } from './configuration';
 import helpers from './helpers';
 
-export type Platform = 'android' | 'ios' | string;
-
 export interface IWebpackEnv {
 	[name: string]: any;
 
@@ -125,12 +123,16 @@ export function resolveChainableConfig(): Config {
 				chainFn(config, env);
 			} catch (err) {
 				if (plugin) {
-					// print error with plugin name that causes it
-					error(`
-					Unable to apply chain function from: ${plugin}.
-					Error is: ${err}
-				`);
+					// catch and print errors from plugins
+					return error(`
+						Unable to apply chain function from: ${plugin}.
+						Error is: ${err}
+					`);
 				}
+
+				// otherwise throw - as the error is likely from the user config
+				// or missing env flags (eg. missing platform)
+				throw err;
 			}
 		});
 

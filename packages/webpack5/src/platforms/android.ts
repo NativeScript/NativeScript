@@ -1,4 +1,4 @@
-import { INativeScriptPlatform } from '.';
+import { INativeScriptPlatform } from "../helpers/platform";
 
 function getDistPath() {
 	return `platforms/android/app/src/main/assets/app`;
