@@ -338,10 +338,12 @@ export class IOSHelper {
 
 		let fullscreen = null;
 		let safeArea = null;
+		let controllerInWindow = {x: 0, y: 0};
 
 		if (viewControllerView) {
 			safeArea = viewControllerView.safeAreaLayoutGuide.layoutFrame;
 			fullscreen = viewControllerView.frame;
+			controllerInWindow = viewControllerView.convertPointToView(viewControllerView.bounds.origin, null);
 		} else if (scrollView) {
 			const insets = scrollView.safeAreaInsets;
 			safeArea = CGRectMake(insets.left, insets.top, scrollView.contentSize.width - insets.left - insets.right, scrollView.contentSize.height - insets.top - insets.bottom);
@@ -350,7 +352,6 @@ export class IOSHelper {
 
 		// We take into account the controller position inside the window.
 		// for example with a bottomsheet the controller will be "offset"
-		const controllerInWindow = viewControllerView.convertPointToView(viewControllerView.bounds.origin, null);
 		const locationInWindow = view.getLocationInWindow();
 		let inWindowLeft = locationInWindow.x - controllerInWindow.x;
 		let inWindowTop = locationInWindow.y - controllerInWindow.y;
