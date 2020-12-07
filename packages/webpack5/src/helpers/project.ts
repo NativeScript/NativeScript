@@ -1,20 +1,20 @@
-import { resolve, basename, dirname } from 'path';
+import { resolve, dirname } from 'path';
 
-import { env, Platform } from '../index';
-import { error } from './log';
+import { getPlatform } from '../platforms';
 
 export function getProjectRootPath(): string {
-	// todo: find actual path?
-
 	return process.cwd();
-	//__dirname
-}
-
-export function getAbsoluteDistPath() {
-	return resolve(getProjectRootPath(), getDistPath());
 }
 
 export function getEntryPath() {
+	const platform = getPlatform();
+
+	// use platform specific entry path
+	if (platform.getEntryPath) {
+		return platform.getEntryPath();
+	}
+
+	// fallback to main field in package.json
 	const packageJson = getPackageJson();
 
 	return resolve(getProjectRootPath(), packageJson.main);
@@ -25,30 +25,19 @@ export function getEntryDirPath() {
 }
 
 export function getDistPath() {
-	if (env.ios) {
-		const appName = basename(getProjectRootPath());
-		return `platforms/ios/${appName}/app`;
+	const platform = getPlatform();
+
+	// use platform specific entry path
+	if (platform.getDistPath) {
+		return platform.getDistPath();
 	}
 
-	if (env.android) {
-		return `platforms/android/app/src/main/assets/app`;
-	}
-
-	// todo: additional platforms
-	// perhaps we could combine platform specifics into "plugins"
-	// 3rd party platforms would be treated the same
+	// fallback to a generic dist folder
+	return 'dist';
 }
 
-export function getPlatform(): Platform {
-	if (env?.android) {
-		return 'android';
-	}
-
-	if (env?.ios) {
-		return 'ios';
-	}
-
-	error('You need to provide a target platform!');
+export function getAbsoluteDistPath() {
+	return resolve(getProjectRootPath(), getDistPath());
 }
 
 interface IPackageJson {

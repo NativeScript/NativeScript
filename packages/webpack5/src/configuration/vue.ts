@@ -3,13 +3,13 @@ import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 
 import { env as _env, IWebpackEnv } from '../index';
-import { getPlatform } from '../helpers/project';
+import { getPlatformName } from '../platforms';
 import base from './base';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 
-	const platform = getPlatform();
+	const platform = getPlatformName();
 
 	// resolve .vue files
 	// the order is reversed because we are using prepend!

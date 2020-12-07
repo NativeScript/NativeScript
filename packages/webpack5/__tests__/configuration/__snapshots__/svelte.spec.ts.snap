@@ -95,6 +95,17 @@ exports[`svelte configuration for android 1`] = `
           /* config.module.rule('css').use('css2json-loader') */
           {
             loader: 'css2json-loader'
+          },
+          /* config.module.rule('css').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  'postcss-import'
+                ]
+              }
+            }
           }
         ]
       },
@@ -109,6 +120,17 @@ exports[`svelte configuration for android 1`] = `
           /* config.module.rule('scss').use('css2json-loader') */
           {
             loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  'postcss-import'
+                ]
+              }
+            }
           },
           /* config.module.rule('scss').use('sass-loader') */
           {
@@ -347,6 +369,17 @@ exports[`svelte configuration for ios 1`] = `
           /* config.module.rule('css').use('css2json-loader') */
           {
             loader: 'css2json-loader'
+          },
+          /* config.module.rule('css').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  'postcss-import'
+                ]
+              }
+            }
           }
         ]
       },
@@ -361,6 +394,17 @@ exports[`svelte configuration for ios 1`] = `
           /* config.module.rule('scss').use('css2json-loader') */
           {
             loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  'postcss-import'
+                ]
+              }
+            }
           },
           /* config.module.rule('scss').use('sass-loader') */
           {

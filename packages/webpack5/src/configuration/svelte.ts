@@ -1,15 +1,16 @@
 import svelteNativePreprocessor from 'svelte-native-preprocessor';
 import Config from 'webpack-chain';
 
+import { getProjectRootPath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
-import { getPlatform, getProjectRootPath } from '../helpers/project';
-import base from './base';
+import { getPlatformName } from '../platforms';
 import { error } from '../helpers/log';
+import base from './base';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 
-	const platform = getPlatform();
+	const platform = getPlatformName();
 	const mode = env.production ? 'production' : 'development';
 	const production = mode === 'production';
 

@@ -21,6 +21,8 @@ export interface IWebpackEnv {
 
 	android?: boolean;
 	ios?: boolean;
+	// for custom platforms
+	platform?: string;
 
 	production?: boolean;
 	report?: boolean;
