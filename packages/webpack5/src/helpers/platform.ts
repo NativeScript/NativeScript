@@ -22,15 +22,27 @@ const platforms: {
 	ios: iOSPlatform,
 };
 
+/**
+ * Utility to register a new supported platform.
+ *
+ * @param {string} name The name of the platform (eg. web, desktop)
+ * @param platform A platform definition of the platform specifics
+ */
 export function addPlatform(name: string, platform: INativeScriptPlatform) {
 	console.log('adding platform', name, platform);
 	platforms[name] = platform;
 }
 
+/**
+ * Utility to get the currently targeted platform definition
+ */
 export function getPlatform(): INativeScriptPlatform {
 	return platforms[getPlatformName()];
 }
 
+/**
+ * Utility to get the currently targeted platform name
+ */
 export function getPlatformName(): Platform {
 	if (env?.android) {
 		return 'android';
@@ -62,6 +74,9 @@ export function getPlatformName(): Platform {
 	`);
 }
 
+/**
+ * Utility to get the entry file path for the currently targeted platform
+ */
 export function getEntryPath() {
 	const platform = getPlatform();
 
@@ -76,10 +91,16 @@ export function getEntryPath() {
 	return resolve(getProjectRootPath(), packageJson.main);
 }
 
+/**
+ * Utility to get the entry file directory path for the currently targeted platform
+ */
 export function getEntryDirPath() {
 	return dirname(getEntryPath());
 }
 
+/**
+ * Utility to get the dist file path for the currently targeted platform
+ */
 export function getDistPath() {
 	const platform = getPlatform();
 
@@ -92,6 +113,9 @@ export function getDistPath() {
 	return `platforms/${getPlatformName()}/dist`;
 }
 
+/**
+ * Utility to get the absolute dist file path for the currently targeted platform
+ */
 export function getAbsoluteDistPath() {
 	return resolve(getProjectRootPath(), getDistPath());
 }

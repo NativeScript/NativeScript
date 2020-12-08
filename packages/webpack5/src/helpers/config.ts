@@ -11,6 +11,11 @@ function getCLILib() {
 	return require(env.nativescriptLibPath);
 }
 
+/**
+ * Utility to get a value from the nativescript.config.ts file.
+ *
+ * @param {string} key The key to get from the config. Supports dot-notation.
+ */
 export function getValue<T = any>(key: string): T {
 	const lib = getCLILib();
 

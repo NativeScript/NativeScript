@@ -1,5 +1,10 @@
 import ts from 'typescript';
 
+/**
+ * A TypeScript transform that compiles classes marked with @NativeClass as es5 & commonjs
+ *
+ * @param ctx
+ */
 export default function (ctx: ts.TransformationContext) {
 	function isNativeClassExtension(node: ts.ClassDeclaration) {
 		return (

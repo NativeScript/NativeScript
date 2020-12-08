@@ -2,6 +2,10 @@ import { defaultConfigs } from '@nativescript/webpack';
 import { getAllDependencies } from './dependencies';
 import { error } from './log';
 
+/**
+ * Utility to determine the project flavor based on installed dependencies
+ * (vue, angular, react, svelete, typescript, javascript...)
+ */
 export function determineProjectFlavor(): keyof typeof defaultConfigs | false {
 	const dependencies = getAllDependencies();
 

@@ -62,9 +62,22 @@ export function clearCurrentPlugin() {
 }
 
 ////// PUBLIC API
+/**
+ * The default flavor specific configs
+ */
 export const defaultConfigs = configs;
+
+/**
+ * Utilities to simplify various tasks
+ */
 export const Utils = helpers;
 
+/**
+ * Initialize @nativescript/webpack with the webpack env.
+ * Must be called first.
+ *
+ * @param _env The webpack env
+ */
 export function init(_env: IWebpackEnv) {
 	hasInitialized = true;
 	if (_env) {
@@ -72,6 +85,15 @@ export function init(_env: IWebpackEnv) {
 	}
 }
 
+/**
+ * Explicitly specify the base config to use.
+ * Calling this will opt-out from automatic flavor detection.
+ *
+ * Useful when the flavor cannot be detected due to the project structure
+ * for example in a custom monorepo.
+ *
+ * @param config Name of the base config to use.
+ */
 export function useConfig(config: keyof typeof defaultConfigs | false) {
 	explicitUseConfig = true;
 	if (config) {
@@ -82,6 +104,12 @@ export function useConfig(config: keyof typeof defaultConfigs | false) {
 	}
 }
 
+/**
+ * Add a new function to be called when building the internal config using webpack-chain.
+ *
+ * @param chainFn A function that accepts the internal chain config, and the current environment
+ * @param options Optional options to control the order in which the chain function should be applied.
+ */
 export function chainWebpack(
 	chainFn: (config: Config, env: IWebpackEnv) => any,
 	options?: { order?: number }
@@ -93,6 +121,11 @@ export function chainWebpack(
 	});
 }
 
+/**
+ * Merge an object into the resolved chain config.
+ *
+ * @param mergeFn An object or a function that optionally returns an object (can mutate the object directly and return nothing)
+ */
 export function mergeWebpack(
 	mergeFn: (
 		config: Partial<webpack.Configuration>,
@@ -102,6 +135,9 @@ export function mergeWebpack(
 	webpackMerges.push(mergeFn);
 }
 
+/**
+ * Resolve a new instance of the internal chain config with all chain functions applied.
+ */
 export function resolveChainableConfig(): Config {
 	const config = new Config();
 
@@ -144,6 +180,11 @@ export function resolveChainableConfig(): Config {
 	return config;
 }
 
+/**
+ * Resolve a "final" configuration that has all chain functions and merges applied.
+ *
+ * @param chainableConfig Optional chain config to use.
+ */
 export function resolveConfig(
 	chainableConfig = resolveChainableConfig()
 ): webpack.Configuration {
