@@ -15,6 +15,9 @@ interface IPackageJson {
 	// todo: add additional fields as we require them
 }
 
+/**
+ * Utility function to get the contents of the project package.json
+ */
 export function getPackageJson() {
 	const packageJsonPath = resolve(getProjectRootPath(), 'package.json');
 

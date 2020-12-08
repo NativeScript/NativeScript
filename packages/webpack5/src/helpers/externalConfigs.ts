@@ -6,6 +6,9 @@ import { info, warn } from './log';
 import * as lib from '../index';
 import { clearCurrentPlugin, setCurrentPlugin } from '../index';
 
+/**
+ * @internal
+ */
 export function applyExternalConfigs() {
 	getAllDependencies().forEach((dependency) => {
 		const packagePath = getDependencyPath(dependency);
