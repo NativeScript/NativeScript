@@ -469,23 +469,19 @@ function parseBoxShadowProperites(value: string): BoxShadow {
 		let blurRadius: number;
 		let spreadRadius: number;
 		let color: Color = new Color(colorRaw);
-		// let opacity: string;
 
 		if (arr.length === 2) {
 			offsetX = parseFloat(arr[0]);
 			offsetY = parseFloat(arr[1]);
-			// color = new Color(arr[2]);
 		} else if (arr.length === 3) {
 			offsetX = parseFloat(arr[0]);
 			offsetY = parseFloat(arr[1]);
 			blurRadius = parseFloat(arr[2]);
-			// color = new Color(arr[3]);
 		} else if (arr.length === 4) {
 			offsetX = parseFloat(arr[0]);
 			offsetY = parseFloat(arr[1]);
 			blurRadius = parseFloat(arr[2]);
 			spreadRadius = parseFloat(arr[3]);
-			// color = new Color(arr[4]);
 		} else {
 			throw new Error('Expected 3, 4 or 5 parameters. Actual: ' + value);
 		}
@@ -495,7 +491,6 @@ function parseBoxShadowProperites(value: string): BoxShadow {
 			blurRadius: blurRadius,
 			spreadRadius: spreadRadius,
 			color: color,
-			// opacity: opacity
 		};
 	} else {
 		return value;

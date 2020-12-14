@@ -732,11 +732,14 @@ function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow, background:
 		// add white background if view has a transparent background
 		layer.backgroundColor = UIColor.whiteColor.CGColor;
 	}
-	layer.shadowOpacity = 0.7; //boxShadow.shadowOpacity;
+	layer.shadowOpacity = 1; //boxShadow.shadowOpacity;
 	layer.shadowRadius = boxShadow.blurRadius;
 	layer.shadowColor = boxShadow.color.ios.CGColor;
-	layer.shadowOffset = CGSizeMake(boxShadow.offsetX, boxShadow.offsetY);
-	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, boxShadow.spreadRadius).CGPath;
+	// / 2 here since ios's shadow offset is bigger than android
+	layer.shadowOffset = CGSizeMake(boxShadow.offsetX / 2, boxShadow.offsetY / 2);
+
+	// 0 should be the view's border radius
+	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, 0).CGPath; //boxShadow.spreadRadius).CGPath;
 }
 
 function drawGradient(nativeView: NativeView, gradient: LinearGradient) {

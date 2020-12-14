@@ -221,14 +221,16 @@ function createNativeCSSValueArray(css: string): native.Array<org.nativescript.w
 }
 
 function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
-	const shadowOpacity = 0.8;
 	const color = boxShadow.color;
+	const shadowOpacity = color.a;
 
-	const shadowColor = new Color(shadowOpacity * 255, color.r, color.g, color.b);
+	const shadowColor = new Color(shadowOpacity, color.r, color.g, color.b);
 
-	const cornerRadiusValue = boxShadow.blurRadius * Screen.mainScreen.scale;
-	const elevationValue = cornerRadiusValue; // this.elevation;
+	// TODO: corner radius here should reflect the view's corner radius
+	const cornerRadiusValue = 0; //boxShadow.blurRadius * Screen.mainScreen.scale;
+	// const elevationValue = cornerRadiusValue; // this.elevation;
 	const shadowColorValue = shadowColor.android;
+
 	const shadowSpread = boxShadow.spreadRadius * Screen.mainScreen.scale;
 
 	// Set shadow layer
@@ -246,7 +248,7 @@ function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
 	const shapeDrawable = new android.graphics.drawable.ShapeDrawable(rectShape);
 
 	// Default background if no backgroundColor is not set
-	const backgroundColor = new Color('#FFF');
+	const backgroundColor = new Color('#ffffff');
 	const backgroundColorValue = backgroundColor.android;
 	shapeDrawable.getPaint().setColor(backgroundColorValue);
 
@@ -258,6 +260,39 @@ function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
 	drawableArray[0] = shapeDrawable;
 	drawableArray[1] = nativeView.getBackground();
 	const drawable = new android.graphics.drawable.LayerDrawable(drawableArray);
+
+	// workaround to show shadow offset (similar to ios's offsets)
+	const shadowInsets = {
+		left: 0,
+		top: 0,
+		right: 0,
+		bottom: 0,
+	};
+	const offsetX = boxShadow.offsetX - boxShadow.spreadRadius;
+	const insetScaleFactor = 4 / 5;
+	if (boxShadow.offsetX === 0) {
+		shadowInsets.left = shadowSpread * insetScaleFactor;
+		shadowInsets.right = shadowSpread * insetScaleFactor;
+	} else if (boxShadow.offsetX > 0) {
+		shadowInsets.left = shadowSpread * insetScaleFactor;
+		shadowInsets.right = (offsetX < 0 ? 0 : offsetX) * Screen.mainScreen.scale * insetScaleFactor; //shadowSpread;
+	} else {
+		shadowInsets.left = (offsetX < 0 ? 0 : offsetX) * Screen.mainScreen.scale * insetScaleFactor;
+		shadowInsets.right = shadowSpread * insetScaleFactor;
+	}
+	const offsetY = boxShadow.offsetY - boxShadow.spreadRadius;
+	if (boxShadow.offsetY === 0) {
+		shadowInsets.top = shadowSpread * insetScaleFactor;
+		shadowInsets.bottom = shadowSpread * insetScaleFactor;
+	} else if (boxShadow.offsetY >= 0) {
+		shadowInsets.top = shadowSpread * insetScaleFactor;
+		shadowInsets.bottom = (offsetY < 0 ? 0 : offsetY) * Screen.mainScreen.scale * insetScaleFactor;
+	} else {
+		shadowInsets.top = (offsetY < 0 ? 0 : offsetY) * Screen.mainScreen.scale * insetScaleFactor;
+		shadowInsets.bottom = shadowSpread * insetScaleFactor;
+	}
+	// drawable.setLayerInset(0, shadowSpread, shadowSpread, shadowSpread, shadowSpread);
+	drawable.setLayerInset(0, shadowInsets.left, shadowInsets.top, shadowInsets.right, shadowInsets.bottom);
 
 	let count = 0;
 	while (nativeView.getParent() && nativeView.getParent() instanceof android.view.ViewGroup) {
