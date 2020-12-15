@@ -44,8 +44,11 @@ export namespace ad {
 			const constantState = drawable.getConstantState();
 			androidView._cachedDrawable = constantState || drawable;
 		}
-
-		if (isSetColorFilterOnlyWidget(nativeView) && drawable && !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && background.color) {
+		const onlyColor = !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && background.color;
+		if (drawable instanceof  android.graphics.drawable.ColorDrawable && onlyColor) {
+			drawable.setColor(background.color.android);
+			drawable.invalidateSelf();
+		} else if (isSetColorFilterOnlyWidget(nativeView) && drawable && onlyColor) {
 			if (drawable instanceof org.nativescript.widgets.BorderDrawable && androidView._cachedDrawable) {
 				if (!(androidView._cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState)) {
 					return;
