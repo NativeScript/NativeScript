@@ -438,6 +438,7 @@ export class CssState {
 		return this.viewRef.get()._styleScope.getSelectorsVersion() === this._appliedSelectorsVersion;
 	}
 
+	@profile
 	public onLoaded(): void {
 		if (this._matchInvalid) {
 			this.updateMatch();
