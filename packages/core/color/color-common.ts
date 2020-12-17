@@ -26,10 +26,9 @@ export class Color implements definition.Color {
 					const argb = knownColors.getKnownColor(arg);
 					this._name = arg;
 					this._argb = argb;
-				} else if (HEX_REGEX.test(arg)) {
+				} else if (arg[0] === SHARP) {
 					// The parameter is a "#AARRGGBB" formatted string
-					const hex = this._normalizeHex(arg);
-					this._argb = this._argbFromString(hex);
+					this._argb = this._argbFromString(arg);
 				} else {
 					throw new Error('Invalid color: ' + arg);
 				}
@@ -71,9 +70,9 @@ export class Color implements definition.Color {
 
 	get hex(): string {
 		if (this.a === 0xff) {
-			return ('#' + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b)).toUpperCase();
+			return SHARP + ((1 << 24) + (this.r << 16) + (this.g << 8) + this.b).toString(16).slice(1);
 		} else {
-			return ('#' + this._componentToHex(this.a) + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b)).toUpperCase();
+			return SHARP + this._argb.toString(16);
 		}
 	}
 
@@ -90,18 +89,18 @@ export class Color implements definition.Color {
 	}
 
 	public _argbFromString(hex: string): number {
-		if (hex.charAt(0) === '#') {
-			hex = hex.substr(1);
-		}
-
-		if (hex.length === 3) {
+		// always called as SHARP as first char
+		hex = hex.substr(1);
+		const length = hex.length;
+		// first we normalize
+		if (length === 3) {
 			hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-		} else if (hex.length === 4) {
+		} else if (length === 4) {
 			hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
 		}
 
 		let intVal = parseInt(hex, 16);
-		if (hex.length === 6) {
+		if (length === 6) {
 			// add the alpha component since the provided string is RRGGBB
 			intVal = (intVal & 0x00ffffff) + 0xff000000;
 		}
@@ -156,14 +155,6 @@ export class Color implements definition.Color {
 		return hex;
 	}
 
-	private _normalizeHex(hexStr: string): string {
-		if (hexStr.charAt(0) === SHARP && hexStr.length === 4) {
-			// Duplicate each char after the #, so "#123" becomes "#112233"
-			hexStr = hexStr.charAt(0) + hexStr.charAt(1) + hexStr.charAt(1) + hexStr.charAt(2) + hexStr.charAt(2) + hexStr.charAt(3) + hexStr.charAt(3);
-		}
-
-		return hexStr;
-	}
 
 	public toString(): string {
 		return this.hex;
