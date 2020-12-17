@@ -63,6 +63,9 @@ const statePressed = 16842919; // android.R.attr.state_pressed
 const stateEnabled = 16842910; // android.R.attr.state_enabled
 const styleAnimationDialog = 16973826; // android.R.style.Animation_Dialog
 
+const VERTICAL_GRAVITY_MASK = 112; // android.view.Gravity.VERTICAL_GRAVITY_MASK
+const HORIZONTAL_GRAVITY_MASK = 7; // android.view.Gravity.HORIZONTAL_GRAVITY_MASK
+
 const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 const modalMap = new Map<number, DialogOptions>();
@@ -860,30 +863,32 @@ export class View extends ViewCommon {
 	[horizontalAlignmentProperty.setNative](value: HorizontalAlignment) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+		const gravity = lp.gravity;
+		const weight = lp.weight;
 		// Set only if params gravity exists.
 		if (lp.gravity !== undefined) {
 			switch (value) {
 				case 'left':
-					lp.gravity = android.view.Gravity.LEFT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-					if (lp.weight < 0) {
+					lp.gravity = 3 | (gravity & VERTICAL_GRAVITY_MASK); // android.view.Gravity.LEFT
+					if (weight < 0) {
 						lp.weight = -2;
 					}
 					break;
 				case 'center':
-					lp.gravity = android.view.Gravity.CENTER_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-					if (lp.weight < 0) {
+					lp.gravity = 1 | (gravity & VERTICAL_GRAVITY_MASK); // android.view.Gravity.CENTER_HORIZONTAL
+					if (weight < 0) {
 						lp.weight = -2;
 					}
 					break;
 				case 'right':
-					lp.gravity = android.view.Gravity.RIGHT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-					if (lp.weight < 0) {
+					lp.gravity = 5 | (gravity & VERTICAL_GRAVITY_MASK); // android.view.Gravity.RIGHT
+					if (weight < 0) {
 						lp.weight = -2;
 					}
 					break;
 				case 'stretch':
-					lp.gravity = android.view.Gravity.FILL_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-					if (lp.weight < 0) {
+					lp.gravity = 7 | (gravity & VERTICAL_GRAVITY_MASK); // android.view.Gravity.FILL_HORIZONTAL
+					if (weight < 0) {
 						lp.weight = -1;
 					}
 					break;
@@ -898,30 +903,32 @@ export class View extends ViewCommon {
 	[verticalAlignmentProperty.setNative](value: VerticalAlignment) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+		const gravity = lp.gravity;
+		const height = lp.height;
 		// Set only if params gravity exists.
-		if (lp.gravity !== undefined) {
+		if (gravity !== undefined) {
 			switch (value) {
 				case 'top':
-					lp.gravity = android.view.Gravity.TOP | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-					if (lp.height < 0) {
+					lp.gravity = 48 | (gravity & HORIZONTAL_GRAVITY_MASK); // android.view.Gravity.TOP
+					if (height < 0) {
 						lp.height = -2;
 					}
 					break;
 				case 'middle':
-					lp.gravity = android.view.Gravity.CENTER_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-					if (lp.height < 0) {
+					lp.gravity = 16 | (gravity & HORIZONTAL_GRAVITY_MASK); // android.view.Gravity.CENTER_VERTICAL
+					if (height < 0) {
 						lp.height = -2;
 					}
 					break;
 				case 'bottom':
-					lp.gravity = android.view.Gravity.BOTTOM | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-					if (lp.height < 0) {
+					lp.gravity = 80 | (gravity & HORIZONTAL_GRAVITY_MASK); // android.view.Gravity.BOTTOM
+					if (height < 0) {
 						lp.height = -2;
 					}
 					break;
 				case 'stretch':
-					lp.gravity = android.view.Gravity.FILL_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-					if (lp.height < 0) {
+					lp.gravity = 112 | (gravity & HORIZONTAL_GRAVITY_MASK); // android.view.Gravity.FILL_VERTICAL
+					if (height < 0) {
 						lp.height = -1;
 					}
 					break;
