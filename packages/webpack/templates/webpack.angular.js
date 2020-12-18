@@ -82,6 +82,17 @@ module.exports = env => {
   const appResourcesFullPath = resolve(projectRoot, appResourcesPath);
   let tsConfigName = 'tsconfig.json';
   let tsConfigPath = resolve(projectRoot, tsConfigName);
+  
+  const tsConfigAppName = 'tsconfig.app.json';
+  const tsConfigAppPath = resolve(projectRoot, tsConfigAppName);
+  let isXplatWorkspace = false;
+  if (fs.existsSync(tsConfigAppPath)) {
+    // support workspace style configurations
+    isXplatWorkspace = true;
+    tsConfigName = tsConfigAppName;
+    tsConfigPath = tsConfigAppPath;
+  }
+
   const tsConfigTnsName = 'tsconfig.tns.json';
   const tsConfigTnsPath = resolve(projectRoot, tsConfigTnsName);
   if (fs.existsSync(tsConfigTnsPath)) {
@@ -89,13 +100,39 @@ module.exports = env => {
     tsConfigName = tsConfigTnsName;
     tsConfigPath = tsConfigTnsPath;
   }
-  const tsConfigEnvName = 'tsconfig.env.json';
-  const tsConfigEnvPath = resolve(projectRoot, tsConfigEnvName);
-  if (hasConfigurations(configuration) && fs.existsSync(tsConfigEnvPath)) {
-    // when configurations are used, switch to environments supported config
-    tsConfigName = tsConfigEnvName;
-    tsConfigPath = tsConfigEnvPath;
+  
+  if (isXplatWorkspace) {
+    // add environment to tsconfig to avoid warning
+    const hasConfig = configuration !== 'undefined';
+    // default to dev environment
+    let envConfig = hasConfig ? configuration : 'dev';
+    const envFileBasePath = `src/environments/environment.`;
+    const envConfigPath = `${envFileBasePath}${envConfig}.ts`;
+    if (!hasConfig) {
+      // ensure default environment is handled
+      const rootPath = '../../..';
+      fileReplacements[resolve(__dirname, rootPath, `libs/xplat/core/src/lib/environments/environment.ts`)] = resolve(
+        __dirname,
+        envConfigPath
+      );
+    }
+    const tsConfigData = require(tsConfigPath);
+    if (!tsConfigData.files) {
+      tsConfigData.files = [];
+    }
+    const envFilePath = `./${envConfigPath}`;
+    const envFileIndex = tsConfigData.files.findIndex((f) => f.indexOf(envFileBasePath) > -1 && f !== envFilePath);
+    if (envFileIndex > -1) {
+      // remove any existing environment entries
+      tsConfigData.files.splice(envFileIndex, 1);
+    }
+    if (!tsConfigData.files.includes(envFilePath)) {
+      // add environment
+      tsConfigData.files.push(envFilePath);
+      fs.writeFileSync(tsConfigPath, JSON.stringify(tsConfigData, null, 2));
+    }
   }
+
   const entryModule = `${nsWebpack.getEntryModule(appFullPath, platform)}.ts`;
   const entryPath = `.${sep}${entryModule}`;
   const entries = { bundle: entryPath };

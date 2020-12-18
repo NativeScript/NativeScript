@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/webpack",
-  "version": "3.0.8",
+  "version": "3.1.0-rc.0",
   "main": "index",
   "description": "Webpack plugin for NativeScript",
   "homepage": "https://nativescript.org",
@@ -42,15 +42,16 @@
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
   },
   "bin": {
-    "install-ns-webpack": "./bin/install-ns-webpack",
-    "remove-ns-webpack": "./bin/remove-ns-webpack",
-    "update-ns-webpack": "./bin/update-ns-webpack",
-    "ns-bundle": "./bin/ns-bundle",
-    "ns-verify-bundle": "./bin/ns-verify-bundle",
-    "generate-android-snapshot": "./bin/generate-android-snapshot"
+    "install-ns-webpack": "bin/install-ns-webpack",
+    "remove-ns-webpack": "bin/remove-ns-webpack",
+    "update-ns-webpack": "bin/update-ns-webpack",
+    "ns-bundle": "bin/ns-bundle",
+    "ns-verify-bundle": "bin/ns-verify-bundle",
+    "generate-android-snapshot": "bin/generate-android-snapshot"
   },
   "dependencies": {
-    "@angular-devkit/core": "~10.0.0",
+    "@angular-devkit/core": "~11.0.0",
+    "@nativescript/hook": "~2.0.0",
     "clean-webpack-plugin": "~3.0.0",
     "copy-webpack-plugin": "~6.0.2",
     "css": "~3.0.0",
@@ -60,7 +61,6 @@
     "global-modules-path": "~2.3.0",
     "loader-utils": "~2.0.0",
     "minimatch": "~3.0.4",
-    "@nativescript/hook": "~2.0.0",
     "nativescript-worker-loader": "~0.12.0",
     "properties-reader": "~2.0.0",
     "proxy-lib": "0.4.0",
@@ -81,10 +81,10 @@
     "webpack-sources": "~1.4.3"
   },
   "devDependencies": {
-    "@angular/compiler": "~10.0.0",
-    "@angular/compiler-cli": "~10.0.0",
+    "@angular/compiler": "~11.0.0",
+    "@angular/compiler-cli": "~11.0.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.0",
-    "@ngtools/webpack": "~10.0.0",
+    "@ngtools/webpack": "~11.0.0",
     "@types/css": "~0.0.31",
     "@types/jasmine": "^3.5.11",
     "@types/loader-utils": "^2.0.0",
