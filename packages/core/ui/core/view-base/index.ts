@@ -635,7 +635,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 
 	_requetLayoutNeeded = false;
-
 	get isLayoutRequestNeeded() {
 		return this._requetLayoutNeeded;
 	}
@@ -1162,7 +1161,6 @@ export const classNameProperty = new Property<ViewBase, string>({
 		if (typeof newValue === 'string' && newValue !== '') {
 			newValue.split(' ').forEach((c) => cssClasses.add(c));
 		}
-
 		view._onCssStateChange();
 	},
 });
@@ -1177,7 +1175,6 @@ export const disableCssProperty = new InheritedProperty<ViewBase, boolean>({
 	name: 'disableCss',
 	defaultValue: false,
 	valueConverter: booleanConverter,
-	// valueChanged: (view, oldValue, newValue) => console.log('disableCss changed', view, newValue),
 });
 disableCssProperty.register(ViewBase);
 
