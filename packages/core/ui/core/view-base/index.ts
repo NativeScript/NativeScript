@@ -634,6 +634,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	set suspendRequestLayout(value: boolean) {
 		this._suspendRequestLayout = value;
 	}
+	get suspendRequestLayout() {
+		return this._suspendRequestLayout;
+	}
 
 	@profile
 	public requestLayout(): void {
