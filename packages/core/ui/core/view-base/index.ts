@@ -89,7 +89,8 @@ export interface ShowModalOptions {
 		cancelable?: boolean;
 
 		/**
-		 * An optional parameter specifying the windowSoftInputMode of the dialog window
+		 * An optional parameter specifying the windowSoftInputMode of the dialog window.
+		 * For possible values see https://developer.android.com/reference/android/view/WindowManager.LayoutParams#softInputMode
 		 */
 		windowSoftInputMode?: number;
 	};
