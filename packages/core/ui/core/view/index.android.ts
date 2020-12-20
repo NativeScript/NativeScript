@@ -238,7 +238,7 @@ function initializeDialogFragment() {
 			if (this._windowSoftInputMode !== undefined) {
 				window.setSoftInputMode(this._windowSoftInputMode);
 			} else {
-				// the dialog seems to not follow the default activity softinputmode,
+				// the dialog seems to not follow the default activity softInputMode,
 				// thus set we set it here.
 				window.setSoftInputMode((<androidx.appcompat.app.AppCompatActivity>owner._context).getWindow().getAttributes().softInputMode);
 			}
