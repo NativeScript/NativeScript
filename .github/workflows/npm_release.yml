@@ -6,7 +6,7 @@ on:
 
 env:
   NPM_TAG: 'next'
-  
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -34,6 +34,6 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../../.npmrc
           echo "Publishing @nativescript/core@$NPM_VERSION to NPM with tag $NPM_TAG..."
-          npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG --dry-run
+          npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG
