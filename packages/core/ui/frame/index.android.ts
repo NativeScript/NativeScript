@@ -437,7 +437,7 @@ export class Frame extends FrameBase {
 		}
 
 		if (clearHistory || isReplace) {
-		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
+			transaction.replace(this.containerViewId, newFragment, newFragmentTag);
 		} else  {
 			transaction.add(this.containerViewId, newFragment, newFragmentTag);
 		}
@@ -453,7 +453,6 @@ export class Frame extends FrameBase {
 
 		const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
 		const transaction = manager.beginTransaction();
-
 		if (!backstackEntry.fragment) {
 			// Happens on newer API levels. On older all fragments
 			// are recreated once activity is created.
