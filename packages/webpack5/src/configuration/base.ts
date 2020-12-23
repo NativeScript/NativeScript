@@ -271,10 +271,10 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		const projectRoot = getProjectRootPath();
 		config.plugin('BundleAnalyzerPlugin').use(BundleAnalyzerPlugin, [{
 			analyzerMode: 'static',
-            generateStatsFile: true,
+			generateStatsFile: true,
 			openAnalyzer: false,
-            reportFilename: resolve(projectRoot, 'report', 'report.html'),
-            statsFilename: resolve(projectRoot, 'report', 'stats.json'),
+			reportFilename: resolve(projectRoot, 'report', 'report.html'),
+			statsFilename: resolve(projectRoot, 'report', 'stats.json'),
 		}]);
 	});
 

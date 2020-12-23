@@ -39,10 +39,10 @@ export function removeCopyRule(glob: string) {
  */
 export function applyCopyRules(config) {
 
-    const context = getEntryDirPath();
+	const context = getEntryDirPath();
 	const projectRoot = getProjectRootPath();
-    const appResourcesFullPath = resolve(projectRoot, env.appResourcesPath);
-    const globOptions = { dot: false, ignore: [`**/${relative(context, appResourcesFullPath)}/**`] };
+	const appResourcesFullPath = resolve(projectRoot, env.appResourcesPath);
+	const globOptions = { dot: false, ignore: [`**/${relative(context, appResourcesFullPath)}/**`] };
 	config.plugin('CopyWebpackPlugin').use(CopyWebpackPlugin, [
 		{
 			patterns: Array.from(copyRules).map((glob) => ({
