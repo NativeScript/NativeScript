@@ -18,6 +18,8 @@ import {
 	getEntryDirPath,
 	getEntryPath,
 } from '../helpers/platform';
+import { getProjectRootPath } from '../helpers/project';
+import { resolve } from 'path';
 
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();
@@ -266,7 +268,14 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	});
 
 	config.when(env.report, (config) => {
-		config.plugin('BundleAnalyzerPlugin').use(BundleAnalyzerPlugin);
+		const projectRoot = getProjectRootPath();
+		config.plugin('BundleAnalyzerPlugin').use(BundleAnalyzerPlugin, [{
+			analyzerMode: 'static',
+            generateStatsFile: true,
+			openAnalyzer: false,
+            reportFilename: resolve(projectRoot, 'report', 'report.html'),
+            statsFilename: resolve(projectRoot, 'report', 'stats.json'),
+		}]);
 	});
 
 	return config;
