@@ -17,7 +17,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// resolve .svelte files
 	// the order is reversed because we are using prepend!
 	config.resolve.extensions.prepend('.svelte').prepend(`.${platform}.svelte`);
-
 	// add a rule for .svelte files
 	config.module
 		.rule('svelte')
@@ -30,7 +29,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			return {
 				...options,
 				dev: !production,
-				preprocess: [getSvelteConfigPreprocessor(), svelteNativePreprocessor()],
+				preprocess: getSvelteConfigPreprocessor(),
 				hotReload: !production,
 				hotOptions: {
 					injectCss: false,
