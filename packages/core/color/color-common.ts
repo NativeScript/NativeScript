@@ -363,10 +363,7 @@ export class Color implements definition.Color {
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
 	}
 
-	static mix(color1: Color, color2: Color, amount) {
-		amount = (amount === 0) ? 0 : (amount || 50);
-	
-	
+	static mix(color1: Color, color2: Color, amount = 50) {
 		const p = amount / 100;
 	
 		const rgba = {
