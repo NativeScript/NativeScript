@@ -190,4 +190,10 @@ export class Color {
 	 *
 	 */
 	public complement(): Color;
+
+	/**
+	 * returns the color complement
+	 *
+	 */
+	public static mix(color1: Color, color2: Color, amount: number): Color;
 }
