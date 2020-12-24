@@ -218,7 +218,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHsl() {
-		const hsl = rgbToHsl(this.r, this.g, this.b);
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		return { h: hsl.h * 360, s: hsl.s, l: hsl.l, a: this.a };
 	}
 	
@@ -227,7 +227,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHslString() {
-		const hsl = rgbToHsl(this.r, this.g, this.b);
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		const h = Math.round(hsl.h * 360), s = Math.round(hsl.s * 100), l = Math.round(hsl.l * 100);
 		const a = this.a;
 		return (a == 255) ?
@@ -240,7 +240,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHsv() {
-		const hsv = rgbToHsv(this.r, this.g, this.b);
+		const hsv = rgbToHsv(this.r / 255, this.g / 255, this.b / 255);
 		return { h: hsv.h * 360, s: hsv.s, v: hsv.v, a: this.a };
 	}
 	
@@ -249,7 +249,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHsvString() {
-		const hsv = rgbToHsv(this.r, this.g, this.b);
+		const hsv = rgbToHsv(this.r / 255, this.g / 255, this.b / 255);
 		const h = Math.round(hsv.h * 360), s = Math.round(hsv.s * 100), v = Math.round(hsv.v * 100);
 		const a = this.a;
 		return (a == 255) ?
@@ -275,7 +275,7 @@ export class Color implements definition.Color {
 	 */
 	public desaturate(amount: number) {
 		amount = (amount === 0) ? 0 : (amount || 10);
-		const hsl = this.toHsl();
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.s -= amount / 100;
 		hsl.s = Math.min(1, Math.max(0, hsl.s))
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
@@ -288,7 +288,7 @@ export class Color implements definition.Color {
 	 */
 	public saturate(amount: number) {
 		amount = (amount === 0) ? 0 : (amount || 10);
-		const hsl = this.toHsl();
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.s += amount / 100;
 		hsl.s = Math.min(1, Math.max(0, hsl.s))
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
@@ -309,7 +309,7 @@ export class Color implements definition.Color {
 	 */
 	public lighten (amount: number) {
 		amount = (amount === 0) ? 0 : (amount || 10);
-		const hsl = this.toHsl();
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.l += amount / 100;
 		hsl.l = Math.min(1, Math.max(0, hsl.l))
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
@@ -335,7 +335,7 @@ export class Color implements definition.Color {
 	 */
 	public darken (amount: number) {
 		amount = (amount === 0) ? 0 : (amount || 10);
-		const hsl = this.toHsl();
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.l -= amount / 100;
 		hsl.l = Math.min(1, Math.max(0, hsl.l))
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
@@ -362,6 +362,22 @@ export class Color implements definition.Color {
 		hsl.h = (hsl.h + 180) % 360;
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
 	}
+
+	static mix(color1: Color, color2: Color, amount) {
+		amount = (amount === 0) ? 0 : (amount || 50);
+	
+	
+		const p = amount / 100;
+	
+		const rgba = {
+			r: ((color2.r - color1.r) * p) + color1.r,
+			g: ((color2.g - color1.g) * p) + color1.g,
+			b: ((color2.b - color1.b) * p) + color1.b,
+			a: ((color2.a - color1.a) * p) + color1.a
+		};
+	
+		return new Color(rgba.a, rgba.r, rgba.g, rgba.b);
+	};
 }
 
 function isRgbOrRgba(value: string): boolean {
