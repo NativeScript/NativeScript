@@ -3,6 +3,8 @@ name: '@nativescript/core -> npm'
 on:
   push:
     branches: [ 'master' ]
+    paths:
+      - 'packages/core/*'
 
 env:
   NPM_TAG: 'next'
@@ -26,6 +28,7 @@ jobs:
         working-directory: packages/core
         run: npm version $NPM_VERSION
 
+      # TODO: build ui-mobile-base first
       - name: Build @nativescript/core
         run: npx nx run core:build
 
