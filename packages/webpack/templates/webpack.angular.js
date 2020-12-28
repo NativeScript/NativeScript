@@ -116,9 +116,9 @@ module.exports = env => {
 
   const copyIgnore = { ignore: [`${relative(appPath, appResourcesFullPath)}/**`] };
   const copyTargets = [
-    { from: 'assets/**', noErrorOnMissing: true, globOptions: { dot: false, ...copyIgnore } },
-    { from: 'fonts/**', noErrorOnMissing: true, globOptions: { dot: false, ...copyIgnore } },
-    ...copyReplacements
+    { from: { glob: 'assets/**', dot: false } },
+    { from: { glob: 'fonts/**', dot: false } },
+    ...copyReplacements,
   ];
 
   if (!production) {
@@ -395,9 +395,11 @@ module.exports = env => {
         verbose: !!verbose
       }),
       // Copy assets
-      new CopyWebpackPlugin({
-          patterns: copyTargets,
-      }),
+      new CopyWebpackPlugin([
+        ...copyTargets,
+        { from: { glob: '**/*.jpg', dot: false } },
+        { from: { glob: '**/*.png', dot: false } },
+      ], copyIgnore),
       new nsWebpack.GenerateNativeScriptEntryPointsPlugin('bundle'),
       // For instructions on how to set up workers with webpack
       // check out https://github.com/nativescript/worker-loader
