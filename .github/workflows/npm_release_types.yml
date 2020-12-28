@@ -1,20 +1,23 @@
 # TODO: modify to build android & ios types first and then merge into types
-#name: '@nativescript/types -> npm'
-#
-#on:
-#  push:
-#    branches: [ 'master' ]
-#    paths:
-#      - 'packages/types/*'
-#
-#env:
-#  NPM_TAG: 'next'
-#
-#jobs:
-#  release:
-#    runs-on: ubuntu-latest
-#
-#    steps:
+name: '@nativescript/types -> npm'
+
+on:
+  push:
+    branches: [ 'master' ]
+    paths:
+      - 'packages/types/*'
+
+env:
+  NPM_TAG: 'next'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Todo
+        run: |
+          echo "TODO: implement action"
 #      - uses: actions/checkout@v2
 #
 #      - name: Setup
