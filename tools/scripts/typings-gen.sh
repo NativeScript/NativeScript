@@ -47,11 +47,11 @@ echo "Moving generated typings to ios/objc-x86_64..."
 mv ios-typings-prj/typings/x86_64/* packages/types-ios/src/lib/ios/objc-x86_64/
 
 echo "Emitting (ios/ios.d.ts)..."
-rm packages/types-ios/src/lib/ios/ios.d.ts
-
-echo '/// <reference path="runtime.d.ts" />' > packages/types-ios/src/lib/ios/ios.d.ts
 
 pushd packages/types-ios/src/lib/ios
+
+rm ios.d.ts
+echo '/// <reference path="runtime.d.ts" />' > ios.d.ts
 
 for i in `ls objc-x86_64/*.d.ts`; do
 echo "/// <reference path=\"$i\" />" >> ios.d.ts
