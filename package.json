@@ -1,6 +1,6 @@
 {
 	"name": "nativescript",
-	"version": "7.0.13",
+	"version": "7.1.0",
 	"license": "MIT",
 	"scripts": {
 		"setup": "npx rimraf hooks node_modules package-lock.json && npm i && ts-patch install && nx run core:setup",
@@ -45,7 +45,7 @@
 		"mocha": "^8.0.1",
 		"mocha-typescript": "^1.1.17",
 		"module-alias": "^2.2.2",
-		"nativescript": "~7.0.6",
+		"nativescript": "~7.1.0",
 		"node-sass": "~4.14.1",
 		"parse-css": "git+https://github.com/tabatkins/parse-css.git",
 		"parserlib": "^1.1.1",
