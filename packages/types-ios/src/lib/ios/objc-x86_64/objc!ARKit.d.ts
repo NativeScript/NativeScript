@@ -56,6 +56,64 @@ declare var ARAnchorCopying: {
 	prototype: ARAnchorCopying;
 };
 
+declare class ARAppClipCodeAnchor extends ARAnchor implements ARTrackable {
+
+	static alloc(): ARAppClipCodeAnchor; // inherited from NSObject
+
+	static new(): ARAppClipCodeAnchor; // inherited from NSObject
+
+	readonly radius: number;
+
+	readonly url: NSURL;
+
+	readonly urlDecodingState: ARAppClipCodeURLDecodingState;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly isTracked: boolean; // inherited from ARTrackable
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare const enum ARAppClipCodeURLDecodingState {
+
+	Decoding = 0,
+
+	Failed = 1,
+
+	Decoded = 2
+}
+
 declare var ARBlendShapeLocationBrowDownLeft: string;
 
 declare var ARBlendShapeLocationBrowDownRight: string;
@@ -222,6 +280,8 @@ declare class ARBodyTrackingConfiguration extends ARConfiguration {
 
 	static new(): ARBodyTrackingConfiguration; // inherited from NSObject
 
+	appClipCodeTrackingEnabled: boolean;
+
 	autoFocusEnabled: boolean;
 
 	automaticImageScaleEstimationEnabled: boolean;
@@ -239,6 +299,8 @@ declare class ARBodyTrackingConfiguration extends ARConfiguration {
 	planeDetection: ARPlaneDetection;
 
 	wantsHDREnvironmentTextures: boolean;
+
+	static readonly supportsAppClipCodeTracking: boolean;
 }
 
 declare class ARCamera extends NSObject implements NSCopying {
@@ -737,6 +799,8 @@ declare class ARGeoTrackingConfiguration extends ARConfiguration {
 
 	static new(): ARGeoTrackingConfiguration; // inherited from NSObject
 
+	appClipCodeTrackingEnabled: boolean;
+
 	automaticImageScaleEstimationEnabled: boolean;
 
 	detectionImages: NSSet<ARReferenceImage>;
@@ -750,6 +814,8 @@ declare class ARGeoTrackingConfiguration extends ARConfiguration {
 	planeDetection: ARPlaneDetection;
 
 	wantsHDREnvironmentTextures: boolean;
+
+	static readonly supportsAppClipCodeTracking: boolean;
 }
 
 declare const enum ARGeoTrackingState {
@@ -1890,6 +1956,8 @@ declare class ARWorldTrackingConfiguration extends ARConfiguration {
 
 	static supportsSceneReconstruction(sceneReconstruction: ARSceneReconstruction): boolean;
 
+	appClipCodeTrackingEnabled: boolean;
+
 	autoFocusEnabled: boolean;
 
 	automaticImageScaleEstimationEnabled: boolean;
@@ -1913,6 +1981,8 @@ declare class ARWorldTrackingConfiguration extends ARConfiguration {
 	userFaceTrackingEnabled: boolean;
 
 	wantsHDREnvironmentTextures: boolean;
+
+	static readonly supportsAppClipCodeTracking: boolean;
 
 	static readonly supportsUserFaceTracking: boolean;
 }

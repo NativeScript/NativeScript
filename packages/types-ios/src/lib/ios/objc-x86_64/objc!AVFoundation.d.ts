@@ -4459,6 +4459,8 @@ declare var AVCapturePhotoCaptureDelegate: {
 
 interface AVCapturePhotoFileDataRepresentationCustomizer extends NSObjectProtocol {
 
+	replacementAppleProRAWCompressionSettingsForPhotoDefaultSettingsMaximumBitDepth?(photo: AVCapturePhoto, defaultSettings: NSDictionary<string, any>, maximumBitDepth: number): NSDictionary<string, any>;
+
 	replacementDepthDataForPhoto?(photo: AVCapturePhoto): AVDepthData;
 
 	replacementEmbeddedThumbnailPixelBufferWithPhotoFormatForPhoto?(replacementEmbeddedThumbnailPhotoFormatOut: interop.Pointer | interop.Reference<NSDictionary<string, any>>, photo: AVCapturePhoto): any;
@@ -4482,7 +4484,15 @@ declare class AVCapturePhotoOutput extends AVCaptureOutput {
 
 	static alloc(): AVCapturePhotoOutput; // inherited from NSObject
 
+	static isAppleProRAWPixelFormat(pixelFormat: number): boolean;
+
+	static isBayerRAWPixelFormat(pixelFormat: number): boolean;
+
 	static new(): AVCapturePhotoOutput; // inherited from NSObject
+
+	appleProRAWEnabled: boolean;
+
+	readonly appleProRAWSupported: boolean;
 
 	readonly autoRedEyeReductionSupported: boolean;
 
@@ -9232,6 +9242,8 @@ declare var AVVideoApertureModeCleanAperture: string;
 declare var AVVideoApertureModeEncodedPixels: string;
 
 declare var AVVideoApertureModeProductionAperture: string;
+
+declare var AVVideoAppleProRAWBitDepthKey: string;
 
 declare var AVVideoAverageBitRateKey: string;
 

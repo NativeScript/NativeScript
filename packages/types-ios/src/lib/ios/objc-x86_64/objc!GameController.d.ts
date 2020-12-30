@@ -312,6 +312,13 @@ declare class GCDeviceLight extends NSObject {
 	color: GCColor;
 }
 
+declare class GCDirectionalGamepad extends GCMicroGamepad {
+
+	static alloc(): GCDirectionalGamepad; // inherited from NSObject
+
+	static new(): GCDirectionalGamepad; // inherited from NSObject
+}
+
 declare class GCDualShockGamepad extends GCExtendedGamepad {
 
 	static alloc(): GCDualShockGamepad; // inherited from NSObject

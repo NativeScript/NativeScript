@@ -4657,6 +4657,8 @@ declare var kCIImageAuxiliarySemanticSegmentationHairMatte: string;
 
 declare var kCIImageAuxiliarySemanticSegmentationSkinMatte: string;
 
+declare var kCIImageAuxiliarySemanticSegmentationSkyMatte: string;
+
 declare var kCIImageAuxiliarySemanticSegmentationTeethMatte: string;
 
 declare var kCIImageColorSpace: string;
@@ -4686,6 +4688,8 @@ declare var kCIImageRepresentationSemanticSegmentationGlassesMatteImage: string;
 declare var kCIImageRepresentationSemanticSegmentationHairMatteImage: string;
 
 declare var kCIImageRepresentationSemanticSegmentationSkinMatteImage: string;
+
+declare var kCIImageRepresentationSemanticSegmentationSkyMatteImage: string;
 
 declare var kCIImageRepresentationSemanticSegmentationTeethMatteImage: string;
 
@@ -4750,6 +4754,8 @@ declare var kCIInputImageOrientationKey: string;
 declare var kCIInputIntensityKey: string;
 
 declare var kCIInputLinearSpaceFilter: string;
+
+declare var kCIInputLocalToneMapAmountKey: string;
 
 declare var kCIInputLuminanceNoiseReductionAmountKey: string;
 

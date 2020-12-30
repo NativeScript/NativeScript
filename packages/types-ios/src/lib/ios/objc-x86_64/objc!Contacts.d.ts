@@ -1283,6 +1283,8 @@ declare var CNLabelHome: string;
 
 declare var CNLabelOther: string;
 
+declare var CNLabelPhoneNumberAppleWatch: string;
+
 declare var CNLabelPhoneNumberHomeFax: string;
 
 declare var CNLabelPhoneNumberMain: string;

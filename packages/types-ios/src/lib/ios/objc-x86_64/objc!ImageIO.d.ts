@@ -227,6 +227,8 @@ declare var kCGImageAuxiliaryDataTypeSemanticSegmentationHairMatte: string;
 
 declare var kCGImageAuxiliaryDataTypeSemanticSegmentationSkinMatte: string;
 
+declare var kCGImageAuxiliaryDataTypeSemanticSegmentationSkyMatte: string;
+
 declare var kCGImageAuxiliaryDataTypeSemanticSegmentationTeethMatte: string;
 
 declare var kCGImageDestinationBackgroundColor: string;

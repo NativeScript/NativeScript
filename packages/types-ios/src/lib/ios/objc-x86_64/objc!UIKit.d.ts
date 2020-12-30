@@ -13589,7 +13589,11 @@ declare const enum UIPressType {
 
 	Menu = 5,
 
-	PlayPause = 6
+	PlayPause = 6,
+
+	PageUp = 30,
+
+	PageDown = 31
 }
 
 declare class UIPressesEvent extends _UIEvent {

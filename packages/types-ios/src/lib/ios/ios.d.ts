@@ -5,6 +5,7 @@
 /// <reference path="objc-x86_64/objc!Accelerate.d.ts" />
 /// <reference path="objc-x86_64/objc!Accessibility.d.ts" />
 /// <reference path="objc-x86_64/objc!Accounts.d.ts" />
+/// <reference path="objc-x86_64/objc!AdServices.d.ts" />
 /// <reference path="objc-x86_64/objc!AdSupport.d.ts" />
 /// <reference path="objc-x86_64/objc!AddressBook.d.ts" />
 /// <reference path="objc-x86_64/objc!AddressBookUI.d.ts" />

@@ -186,6 +186,17 @@ declare const enum CMError {
 
 declare var CMErrorDomain: string;
 
+declare const enum CMFallDetectionEventUserResolution {
+
+	Confirmed = 0,
+
+	Dismissed = 1,
+
+	Rejected = 2,
+
+	Unresponsive = 3
+}
+
 declare class CMGyroData extends CMLogItem {
 
 	static alloc(): CMGyroData; // inherited from NSObject

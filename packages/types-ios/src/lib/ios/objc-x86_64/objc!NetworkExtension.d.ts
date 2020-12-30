@@ -7,6 +7,8 @@ declare class NEAppProxyFlow extends NSObject {
 
 	static new(): NEAppProxyFlow; // inherited from NSObject
 
+	readonly isBound: boolean;
+
 	readonly metaData: NEFlowMetaData;
 
 	networkInterface: NSObject;

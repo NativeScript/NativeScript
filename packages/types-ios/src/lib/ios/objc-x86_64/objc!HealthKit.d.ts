@@ -101,7 +101,9 @@ declare class HKAnchoredObjectQuery extends HKQuery {
 
 declare const enum HKAppleECGAlgorithmVersion {
 
-	Version1 = 1
+	Version1 = 1,
+
+	Version2 = 2
 }
 
 declare class HKAudiogramSample extends HKSample {
@@ -335,6 +337,8 @@ declare var HKCategoryTypeIdentifierChills: string;
 
 declare var HKCategoryTypeIdentifierConstipation: string;
 
+declare var HKCategoryTypeIdentifierContraceptive: string;
+
 declare var HKCategoryTypeIdentifierCoughing: string;
 
 declare var HKCategoryTypeIdentifierDiarrhea: string;
@@ -371,9 +375,13 @@ declare var HKCategoryTypeIdentifierIntermenstrualBleeding: string;
 
 declare var HKCategoryTypeIdentifierIrregularHeartRhythmEvent: string;
 
+declare var HKCategoryTypeIdentifierLactation: string;
+
 declare var HKCategoryTypeIdentifierLossOfSmell: string;
 
 declare var HKCategoryTypeIdentifierLossOfTaste: string;
+
+declare var HKCategoryTypeIdentifierLowCardioFitnessEvent: string;
 
 declare var HKCategoryTypeIdentifierLowHeartRateEvent: string;
 
@@ -394,6 +402,8 @@ declare var HKCategoryTypeIdentifierNightSweats: string;
 declare var HKCategoryTypeIdentifierOvulationTestResult: string;
 
 declare var HKCategoryTypeIdentifierPelvicPain: string;
+
+declare var HKCategoryTypeIdentifierPregnancy: string;
 
 declare var HKCategoryTypeIdentifierRapidPoundingOrFlutteringHeartbeat: string;
 
@@ -462,6 +472,23 @@ declare const enum HKCategoryValueCervicalMucusQuality {
 	EggWhite = 5
 }
 
+declare const enum HKCategoryValueContraceptive {
+
+	Unspecified = 1,
+
+	Implant = 2,
+
+	Injection = 3,
+
+	IntrauterineDevice = 4,
+
+	IntravaginalRing = 5,
+
+	Oral = 6,
+
+	Patch = 7
+}
+
 declare const enum HKCategoryValueEnvironmentalAudioExposureEvent {
 
 	MomentaryLimit = 1
@@ -470,6 +497,11 @@ declare const enum HKCategoryValueEnvironmentalAudioExposureEvent {
 declare const enum HKCategoryValueHeadphoneAudioExposureEvent {
 
 	SevenDayLimit = 1
+}
+
+declare const enum HKCategoryValueLowCardioFitnessEvent {
+
+	LowFitness = 1
 }
 
 declare const enum HKCategoryValueMenstrualFlow {
@@ -1237,6 +1269,8 @@ declare var HKMetadataKeyInsulinDeliveryReason: string;
 
 declare var HKMetadataKeyLapLength: string;
 
+declare var HKMetadataKeyLowCardioFitnessEventThreshold: string;
+
 declare var HKMetadataKeyMaximumSpeed: string;
 
 declare var HKMetadataKeyMenstrualCycleStart: string;
@@ -1262,6 +1296,8 @@ declare var HKMetadataKeyUDIDeviceIdentifier: string;
 declare var HKMetadataKeyUDIProductionIdentifier: string;
 
 declare var HKMetadataKeyVO2MaxTestType: string;
+
+declare var HKMetadataKeyVO2MaxValue: string;
 
 declare var HKMetadataKeyWasTakenInLab: string;
 
@@ -1855,6 +1891,8 @@ declare class HKSample extends HKObject {
 	static new(): HKSample; // inherited from NSObject
 
 	readonly endDate: Date;
+
+	readonly hasUndeterminedDuration: boolean;
 
 	readonly sampleType: HKSampleType;
 
