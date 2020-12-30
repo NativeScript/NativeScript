@@ -56,3 +56,5 @@ pushd packages/types-ios/src/lib/ios
 for i in `ls objc-x86_64/*.d.ts`; do
 echo "/// <reference path=\"$i\" />" >> ios.d.ts
 done
+
+popd
