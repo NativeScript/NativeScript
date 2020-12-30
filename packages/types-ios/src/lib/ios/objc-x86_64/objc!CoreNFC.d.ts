@@ -1,12 +1,54 @@
 
-declare const enum EncryptionId {
+declare var NFCErrorDomain: string;
 
-	AES = 79,
+declare const enum NFCFeliCaEncryptionId {
 
-	AES_DES = 65
+	NFCFeliCaEncryptionIdAES = 79,
+
+	NFCFeliCaEncryptionIdAES_DES = 65,
+
+	EncryptionIdAES = 79,
+
+	EncryptionIdAES_DES = 65
 }
 
-declare var NFCErrorDomain: string;
+declare const enum NFCFeliCaPollingRequestCode {
+
+	NFCFeliCaPollingRequestCodeNoRequest = 0,
+
+	NFCFeliCaPollingRequestCodeSystemCode = 1,
+
+	NFCFeliCaPollingRequestCodeCommunicationPerformance = 2,
+
+	PollingRequestCodeNoRequest = 0,
+
+	PollingRequestCodeSystemCode = 1,
+
+	PollingRequestCodeCommunicationPerformance = 2
+}
+
+declare const enum NFCFeliCaPollingTimeSlot {
+
+	NFCFeliCaPollingTimeSlotMax1 = 0,
+
+	NFCFeliCaPollingTimeSlotMax2 = 1,
+
+	NFCFeliCaPollingTimeSlotMax4 = 3,
+
+	NFCFeliCaPollingTimeSlotMax8 = 7,
+
+	NFCFeliCaPollingTimeSlotMax16 = 15,
+
+	PollingTimeSlotMax1 = 0,
+
+	PollingTimeSlotMax2 = 1,
+
+	PollingTimeSlotMax4 = 3,
+
+	PollingTimeSlotMax8 = 7,
+
+	PollingTimeSlotMax16 = 15
+}
 
 interface NFCFeliCaTag extends NFCNDEFTag, NFCTag {
 
@@ -14,13 +56,13 @@ interface NFCFeliCaTag extends NFCNDEFTag, NFCTag {
 
 	currentSystemCode: NSData;
 
-	pollingWithSystemCodeRequestCodeTimeSlotCompletionHandler(systemCode: NSData, requestCode: PollingRequestCode, timeSlot: PollingTimeSlot, completionHandler: (p1: NSData, p2: NSData, p3: NSError) => void): void;
+	pollingWithSystemCodeRequestCodeTimeSlotCompletionHandler(systemCode: NSData, requestCode: NFCFeliCaPollingRequestCode, timeSlot: NFCFeliCaPollingTimeSlot, completionHandler: (p1: NSData, p2: NSData, p3: NSError) => void): void;
 
 	readWithoutEncryptionWithServiceCodeListBlockListCompletionHandler(serviceCodeList: NSArray<NSData> | NSData[], blockList: NSArray<NSData> | NSData[], completionHandler: (p1: number, p2: number, p3: NSArray<NSData>, p4: NSError) => void): void;
 
 	requestResponseWithCompletionHandler(completionHandler: (p1: number, p2: NSError) => void): void;
 
-	requestServiceV2WithNodeCodeListCompletionHandler(nodeCodeList: NSArray<NSData> | NSData[], completionHandler: (p1: number, p2: number, p3: EncryptionId, p4: NSArray<NSData>, p5: NSArray<NSData>, p6: NSError) => void): void;
+	requestServiceV2WithNodeCodeListCompletionHandler(nodeCodeList: NSArray<NSData> | NSData[], completionHandler: (p1: number, p2: number, p3: NFCFeliCaEncryptionId, p4: NSArray<NSData>, p5: NSArray<NSData>, p6: NSError) => void): void;
 
 	requestServiceWithNodeCodeListCompletionHandler(nodeCodeList: NSArray<NSData> | NSData[], completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
 
@@ -92,6 +134,52 @@ declare class NFCISO15693ReaderSession extends NFCReaderSession {
 	restartPolling(): void;
 }
 
+declare const enum NFCISO15693RequestFlag {
+
+	NFCISO15693RequestFlagDualSubCarriers = 1,
+
+	NFCISO15693RequestFlagHighDataRate = 2,
+
+	NFCISO15693RequestFlagProtocolExtension = 8,
+
+	NFCISO15693RequestFlagSelect = 16,
+
+	NFCISO15693RequestFlagAddress = 32,
+
+	NFCISO15693RequestFlagOption = 64,
+
+	NFCISO15693RequestFlagCommandSpecificBit8 = 128,
+
+	RequestFlagDualSubCarriers = 1,
+
+	RequestFlagHighDataRate = 2,
+
+	RequestFlagProtocolExtension = 8,
+
+	RequestFlagSelect = 16,
+
+	RequestFlagAddress = 32,
+
+	RequestFlagOption = 64
+}
+
+declare const enum NFCISO15693ResponseFlag {
+
+	Error = 1,
+
+	ResponseBufferValid = 2,
+
+	FinalResponse = 4,
+
+	ProtocolExtension = 8,
+
+	BlockSecurityStatusBit5 = 16,
+
+	BlockSecurityStatusBit6 = 32,
+
+	WaitTimeExtension = 64
+}
+
 interface NFCISO15693Tag extends NFCNDEFTag, NFCTag {
 
 	icManufacturerCode: number;
@@ -100,47 +188,69 @@ interface NFCISO15693Tag extends NFCNDEFTag, NFCTag {
 
 	identifier: NSData;
 
-	customCommandWithRequestFlagCustomCommandCodeCustomRequestParametersCompletionHandler(flags: RequestFlag, customCommandCode: number, customRequestParameters: NSData, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	authenticateWithRequestFlagsCryptoSuiteIdentifierMessageCompletionHandler(flags: NFCISO15693RequestFlag, cryptoSuiteIdentifier: number, message: NSData, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError) => void): void;
 
-	extendedLockBlockWithRequestFlagsBlockNumberCompletionHandler(flags: RequestFlag, blockNumber: number, completionHandler: (p1: NSError) => void): void;
+	challengeWithRequestFlagsCryptoSuiteIdentifierMessageCompletionHandler(flags: NFCISO15693RequestFlag, cryptoSuiteIdentifier: number, message: NSData, completionHandler: (p1: NSError) => void): void;
 
-	extendedReadMultipleBlocksWithRequestFlagsBlockRangeCompletionHandler(flags: RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
+	customCommandWithRequestFlagCustomCommandCodeCustomRequestParametersCompletionHandler(flags: NFCISO15693RequestFlag, customCommandCode: number, customRequestParameters: NSData, completionHandler: (p1: NSData, p2: NSError) => void): void;
 
-	extendedReadSingleBlockWithRequestFlagsBlockNumberCompletionHandler(flags: RequestFlag, blockNumber: number, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	extendedFastReadMultipleBlocksWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
 
-	extendedWriteSingleBlockWithRequestFlagsBlockNumberDataBlockCompletionHandler(flags: RequestFlag, blockNumber: number, dataBlock: NSData, completionHandler: (p1: NSError) => void): void;
+	extendedGetMultipleBlockSecurityStatusWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<number>, p2: NSError) => void): void;
 
-	getMultipleBlockSecurityStatusWithRequestFlagBlockRangeCompletionHandler(flags: RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<number>, p2: NSError) => void): void;
+	extendedLockBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSError) => void): void;
 
-	getSystemInfoWithRequestFlagCompletionHandler(flags: RequestFlag, completionHandler: (p1: number, p2: number, p3: number, p4: number, p5: number, p6: NSError) => void): void;
+	extendedReadMultipleBlocksWithRequestFlagsBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
 
-	lockAFIWithRequestFlagCompletionHandler(flags: RequestFlag, completionHandler: (p1: NSError) => void): void;
+	extendedReadSingleBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSData, p2: NSError) => void): void;
 
-	lockBlockWithRequestFlagsBlockNumberCompletionHandler(flags: RequestFlag, blockNumber: number, completionHandler: (p1: NSError) => void): void;
+	extendedWriteMultipleBlocksWithRequestFlagsBlockRangeDataBlocksCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, dataBlocks: NSArray<NSData> | NSData[], completionHandler: (p1: NSError) => void): void;
 
-	lockDFSIDWithRequestFlagCompletionHandler(flags: RequestFlag, completionHandler: (p1: NSError) => void): void;
+	extendedWriteSingleBlockWithRequestFlagsBlockNumberDataBlockCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, dataBlock: NSData, completionHandler: (p1: NSError) => void): void;
+
+	fastReadMultipleBlocksWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
+
+	getMultipleBlockSecurityStatusWithRequestFlagBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<number>, p2: NSError) => void): void;
+
+	getSystemInfoAndUIDWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSData, p2: number, p3: number, p4: number, p5: number, p6: number, p7: NSError) => void): void;
+
+	getSystemInfoWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: number, p2: number, p3: number, p4: number, p5: number, p6: NSError) => void): void;
+
+	keyUpdateWithRequestFlagsKeyIdentifierMessageCompletionHandler(flags: NFCISO15693RequestFlag, keyIdentifier: number, message: NSData, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError) => void): void;
+
+	lockAFIWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError) => void): void;
+
+	lockBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSError) => void): void;
+
+	lockDFSIDWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError) => void): void;
+
+	lockDSFIDWithRequestFlagCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError) => void): void;
+
+	readBufferWithRequestFlagsCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError) => void): void;
 
 	readMultipleBlocksWithConfigurationCompletionHandler(readConfiguration: NFCISO15693ReadMultipleBlocksConfiguration, completionHandler: (p1: NSData, p2: NSError) => void): void;
 
-	readMultipleBlocksWithRequestFlagsBlockRangeCompletionHandler(flags: RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
+	readMultipleBlocksWithRequestFlagsBlockRangeCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, completionHandler: (p1: NSArray<NSData>, p2: NSError) => void): void;
 
-	readSingleBlockWithRequestFlagsBlockNumberCompletionHandler(flags: RequestFlag, blockNumber: number, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	readSingleBlockWithRequestFlagsBlockNumberCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, completionHandler: (p1: NSData, p2: NSError) => void): void;
 
-	resetToReadyWithRequestFlagsCompletionHandler(flags: RequestFlag, completionHandler: (p1: NSError) => void): void;
+	resetToReadyWithRequestFlagsCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError) => void): void;
 
-	selectWithRequestFlagsCompletionHandler(flags: RequestFlag, completionHandler: (p1: NSError) => void): void;
+	selectWithRequestFlagsCompletionHandler(flags: NFCISO15693RequestFlag, completionHandler: (p1: NSError) => void): void;
 
 	sendCustomCommandWithConfigurationCompletionHandler(commandConfiguration: NFCISO15693CustomCommandConfiguration, completionHandler: (p1: NSData, p2: NSError) => void): void;
 
+	sendRequestWithFlagCommandCodeDataCompletionHandler(flags: number, commandCode: number, data: NSData, completionHandler: (p1: NFCISO15693ResponseFlag, p2: NSData, p3: NSError) => void): void;
+
 	stayQuietWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
-	writeAFIWithRequestFlagAfiCompletionHandler(flags: RequestFlag, afi: number, completionHandler: (p1: NSError) => void): void;
+	writeAFIWithRequestFlagAfiCompletionHandler(flags: NFCISO15693RequestFlag, afi: number, completionHandler: (p1: NSError) => void): void;
 
-	writeDSFIDWithRequestFlagDsfidCompletionHandler(flags: RequestFlag, dsfid: number, completionHandler: (p1: NSError) => void): void;
+	writeDSFIDWithRequestFlagDsfidCompletionHandler(flags: NFCISO15693RequestFlag, dsfid: number, completionHandler: (p1: NSError) => void): void;
 
-	writeMultipleBlocksWithRequestFlagsBlockRangeDataBlocksCompletionHandler(flags: RequestFlag, blockRange: NSRange, dataBlocks: NSArray<NSData> | NSData[], completionHandler: (p1: NSError) => void): void;
+	writeMultipleBlocksWithRequestFlagsBlockRangeDataBlocksCompletionHandler(flags: NFCISO15693RequestFlag, blockRange: NSRange, dataBlocks: NSArray<NSData> | NSData[], completionHandler: (p1: NSError) => void): void;
 
-	writeSingleBlockWithRequestFlagsBlockNumberDataBlockCompletionHandler(flags: RequestFlag, blockNumber: number, dataBlock: NSData, completionHandler: (p1: NSError) => void): void;
+	writeSingleBlockWithRequestFlagsBlockNumberDataBlockCompletionHandler(flags: NFCISO15693RequestFlag, blockNumber: number, dataBlock: NSData, completionHandler: (p1: NSError) => void): void;
 }
 declare var NFCISO15693Tag: {
 
@@ -370,6 +480,8 @@ declare const enum NFCReaderError {
 
 	ReaderErrorParameterOutOfBound = 5,
 
+	ReaderErrorRadioDisabled = 6,
+
 	ReaderTransceiveErrorTagConnectionLost = 100,
 
 	ReaderTransceiveErrorRetryExceeded = 101,
@@ -379,6 +491,8 @@ declare const enum NFCReaderError {
 	ReaderTransceiveErrorSessionInvalidated = 103,
 
 	ReaderTransceiveErrorTagNotConnected = 104,
+
+	ReaderTransceiveErrorPacketTooLong = 105,
 
 	ReaderSessionInvalidationErrorUserCanceled = 200,
 
@@ -588,17 +702,63 @@ declare class NFCVASCommandConfiguration extends NSObject implements NSCopying {
 
 	static new(): NFCVASCommandConfiguration; // inherited from NSObject
 
-	mode: VASMode;
+	mode: NFCVASMode;
 
 	passTypeIdentifier: string;
 
 	url: NSURL;
 
-	constructor(o: { VASMode: VASMode; passTypeIdentifier: string; url: NSURL; });
+	constructor(o: { VASMode: NFCVASMode; passTypeIdentifier: string; url: NSURL; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	initWithVASModePassTypeIdentifierUrl(mode: VASMode, passTypeIdentifier: string, url: NSURL): this;
+	initWithVASModePassTypeIdentifierUrl(mode: NFCVASMode, passTypeIdentifier: string, url: NSURL): this;
+}
+
+declare const enum NFCVASErrorCode {
+
+	NFCVASErrorCodeSuccess = 36864,
+
+	NFCVASErrorCodeDataNotFound = 27267,
+
+	NFCVASErrorCodeDataNotActivated = 25223,
+
+	NFCVASErrorCodeWrongParameters = 27392,
+
+	NFCVASErrorCodeWrongLCField = 26368,
+
+	NFCVASErrorCodeUserIntervention = 27012,
+
+	NFCVASErrorCodeIncorrectData = 27264,
+
+	NFCVASErrorCodeUnsupportedApplicationVersion = 25408,
+
+	VASErrorCodeSuccess = 36864,
+
+	VASErrorCodeDataNotFound = 27267,
+
+	VASErrorCodeDataNotActivated = 25223,
+
+	VASErrorCodeWrongParameters = 27392,
+
+	VASErrorCodeWrongLCField = 26368,
+
+	VASErrorCodeUserIntervention = 27012,
+
+	VASErrorCodeIncorrectData = 27264,
+
+	VASErrorCodeUnsupportedApplicationVersion = 25408
+}
+
+declare const enum NFCVASMode {
+
+	NFCVASModeURLOnly = 0,
+
+	NFCVASModeNormal = 1,
+
+	VASModeURLOnly = 0,
+
+	VASModeNormal = 1
 }
 
 declare class NFCVASReaderSession extends NFCReaderSession {
@@ -633,72 +793,9 @@ declare class NFCVASResponse extends NSObject implements NSCopying {
 
 	readonly mobileToken: NSData;
 
-	readonly status: VASErrorCode;
+	readonly status: NFCVASErrorCode;
 
 	readonly vasData: NSData;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
-}
-
-declare const enum PollingRequestCode {
-
-	NoRequest = 0,
-
-	SystemCode = 1,
-
-	CommunicationPerformance = 2
-}
-
-declare const enum PollingTimeSlot {
-
-	Max1 = 0,
-
-	Max2 = 1,
-
-	Max4 = 3,
-
-	Max8 = 7,
-
-	Max16 = 15
-}
-
-declare const enum RequestFlag {
-
-	DualSubCarriers = 1,
-
-	HighDataRate = 2,
-
-	ProtocolExtension = 8,
-
-	Select = 16,
-
-	Address = 32,
-
-	Option = 64
-}
-
-declare const enum VASErrorCode {
-
-	Success = 36864,
-
-	DataNotFound = 27267,
-
-	DataNotActivated = 25223,
-
-	WrongParameters = 27392,
-
-	WrongLCField = 26368,
-
-	UserIntervention = 27012,
-
-	IncorrectData = 27264,
-
-	UnsupportedApplicationVersion = 25408
-}
-
-declare const enum VASMode {
-
-	URLOnly = 0,
-
-	Normal = 1
 }

@@ -27,6 +27,8 @@ declare class PKCanvasView extends UIScrollView implements PKToolPickerObserver 
 
 	readonly drawingGestureRecognizer: UIGestureRecognizer;
 
+	drawingPolicy: PKCanvasViewDrawingPolicy;
+
 	rulerActive: boolean;
 
 	tool: PKTool;
@@ -89,6 +91,15 @@ declare var PKCanvasViewDelegate: {
 	prototype: PKCanvasViewDelegate;
 };
 
+declare const enum PKCanvasViewDrawingPolicy {
+
+	Default = 0,
+
+	AnyInput = 1,
+
+	PencilOnly = 2
+}
+
 declare class PKDrawing extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): PKDrawing; // inherited from NSObject
@@ -97,17 +108,23 @@ declare class PKDrawing extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly bounds: CGRect;
 
+	readonly strokes: NSArray<PKStroke>;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { data: NSData; });
 
+	constructor(o: { strokes: NSArray<PKStroke> | PKStroke[]; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	dataRepresentation(): NSData;
 
 	drawingByAppendingDrawing(drawing: PKDrawing): PKDrawing;
+
+	drawingByAppendingStrokes(strokes: NSArray<PKStroke> | PKStroke[]): PKDrawing;
 
 	drawingByApplyingTransform(transform: CGAffineTransform): PKDrawing;
 
@@ -118,6 +135,8 @@ declare class PKDrawing extends NSObject implements NSCopying, NSSecureCoding {
 	initWithCoder(coder: NSCoder): this;
 
 	initWithDataError(data: NSData): this;
+
+	initWithStrokes(strokes: NSArray<PKStroke> | PKStroke[]): this;
 }
 
 declare class PKEraserTool extends PKTool {
@@ -138,6 +157,40 @@ declare const enum PKEraserType {
 	Vector = 0,
 
 	Bitmap = 1
+}
+
+declare class PKFloatRange extends NSObject implements NSCopying {
+
+	static alloc(): PKFloatRange; // inherited from NSObject
+
+	static new(): PKFloatRange; // inherited from NSObject
+
+	readonly lowerBound: number;
+
+	readonly upperBound: number;
+
+	constructor(o: { lowerBound: number; upperBound: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithLowerBoundUpperBound(lowerBound: number, upperBound: number): this;
+}
+
+declare class PKInk extends NSObject implements NSCopying {
+
+	static alloc(): PKInk; // inherited from NSObject
+
+	static new(): PKInk; // inherited from NSObject
+
+	readonly color: UIColor;
+
+	readonly inkType: string;
+
+	constructor(o: { inkType: string; color: UIColor; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithInkTypeColor(type: string, color: UIColor): this;
 }
 
 declare var PKInkTypeMarker: string;
@@ -162,6 +215,8 @@ declare class PKInkingTool extends PKTool {
 
 	readonly color: UIColor;
 
+	readonly ink: PKInk;
+
 	readonly inkType: string;
 
 	readonly width: number;
@@ -170,9 +225,13 @@ declare class PKInkingTool extends PKTool {
 
 	constructor(o: { inkType: string; color: UIColor; width: number; });
 
+	constructor(o: { ink: PKInk; width: number; });
+
 	initWithInkTypeColor(type: string, color: UIColor): this;
 
 	initWithInkTypeColorWidth(type: string, color: UIColor, width: number): this;
+
+	initWithInkWidth(ink: PKInk, width: number): this;
 }
 
 declare class PKLassoTool extends PKTool {
@@ -180,6 +239,94 @@ declare class PKLassoTool extends PKTool {
 	static alloc(): PKLassoTool; // inherited from NSObject
 
 	static new(): PKLassoTool; // inherited from NSObject
+}
+
+declare class PKStroke extends NSObject implements NSCopying {
+
+	static alloc(): PKStroke; // inherited from NSObject
+
+	static new(): PKStroke; // inherited from NSObject
+
+	readonly ink: PKInk;
+
+	readonly mask: UIBezierPath;
+
+	readonly maskedPathRanges: NSArray<PKFloatRange>;
+
+	readonly path: PKStrokePath;
+
+	readonly renderBounds: CGRect;
+
+	readonly transform: CGAffineTransform;
+
+	constructor(o: { ink: PKInk; strokePath: PKStrokePath; transform: CGAffineTransform; mask: UIBezierPath; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithInkStrokePathTransformMask(ink: PKInk, strokePath: PKStrokePath, transform: CGAffineTransform, mask: UIBezierPath): this;
+}
+
+declare class PKStrokePath extends NSObject implements NSCopying {
+
+	static alloc(): PKStrokePath; // inherited from NSObject
+
+	static new(): PKStrokePath; // inherited from NSObject
+
+	readonly count: number;
+
+	readonly creationDate: Date;
+	[index: number]: PKStrokePoint;
+
+	constructor(o: { controlPoints: NSArray<PKStrokePoint> | PKStrokePoint[]; creationDate: Date; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	enumerateInterpolatedPointsInRangeStrideByDistanceUsingBlock(range: PKFloatRange, distanceStep: number, block: (p1: PKStrokePoint, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	enumerateInterpolatedPointsInRangeStrideByParametricStepUsingBlock(range: PKFloatRange, parametricStep: number, block: (p1: PKStrokePoint, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	enumerateInterpolatedPointsInRangeStrideByTimeUsingBlock(range: PKFloatRange, timeStep: number, block: (p1: PKStrokePoint, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	initWithControlPointsCreationDate(controlPoints: NSArray<PKStrokePoint> | PKStrokePoint[], creationDate: Date): this;
+
+	interpolatedLocationAt(parametricValue: number): CGPoint;
+
+	interpolatedPointAt(parametricValue: number): PKStrokePoint;
+
+	objectAtIndexedSubscript(i: number): PKStrokePoint;
+
+	parametricValueOffsetByDistance(parametricValue: number, distanceStep: number): number;
+
+	parametricValueOffsetByTime(parametricValue: number, timeStep: number): number;
+
+	pointAtIndex(i: number): PKStrokePoint;
+}
+
+declare class PKStrokePoint extends NSObject implements NSCopying {
+
+	static alloc(): PKStrokePoint; // inherited from NSObject
+
+	static new(): PKStrokePoint; // inherited from NSObject
+
+	readonly altitude: number;
+
+	readonly azimuth: number;
+
+	readonly force: number;
+
+	readonly location: CGPoint;
+
+	readonly opacity: number;
+
+	readonly size: CGSize;
+
+	readonly timeOffset: number;
+
+	constructor(o: { location: CGPoint; timeOffset: number; size: CGSize; opacity: number; force: number; azimuth: number; altitude: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithLocationTimeOffsetSizeOpacityForceAzimuthAltitude(location: CGPoint, timeOffset: number, size: CGSize, opacity: number, force: number, azimuth: number, altitude: number): this;
 }
 
 declare class PKTool extends NSObject implements NSCopying {
@@ -208,6 +355,10 @@ declare class PKToolPicker extends NSObject {
 	rulerActive: boolean;
 
 	selectedTool: PKTool;
+
+	showsDrawingPolicyControls: boolean;
+
+	stateAutosaveName: string;
 
 	addObserver(observer: PKToolPickerObserver): void;
 
