@@ -216,8 +216,7 @@ class CSSSource {
 					this._ast = cssTreeParse(this._source, this._file);
 					return;
 				case 'nativescript':
-					const CSS3Parser = require('../../css/parser').CSS3Parser;
-					const CSSNativeScript = require('../../css/parser').CSSNativeScript;
+					const { CSS3Parser, CSSNativeScript } = require('../../css/parser');
 					const cssparser = new CSS3Parser(this._source);
 					const stylesheet = cssparser.parseAStylesheet();
 					const cssNS = new CSSNativeScript();
