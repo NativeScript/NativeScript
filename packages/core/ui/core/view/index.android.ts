@@ -65,6 +65,14 @@ const styleAnimationDialog = 16973826; // android.R.style.Animation_Dialog
 
 const VERTICAL_GRAVITY_MASK = 112; // android.view.Gravity.VERTICAL_GRAVITY_MASK
 const HORIZONTAL_GRAVITY_MASK = 7; // android.view.Gravity.HORIZONTAL_GRAVITY_MASK
+const GRAVITY_LEFT = 3; // android.view.Gravity.LEFT
+const GRAVITY_RIGHT = 5; // android.view.Gravity.RIGHT
+const GRAVITY_TOP = 48; // android.view.Gravity.TOP
+const GRAVITY_BOTTOM = 80; // android.view.Gravity.BOTTOM
+const GRAVITY_CENTER_HORIZONTAL = 1; // android.view.Gravity.CENTER_HORIZONTAL
+const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
+const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
+const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
 
 const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
@@ -866,28 +874,28 @@ export class View extends ViewCommon {
 		const gravity = lp.gravity;
 		const weight = lp.weight;
 		// Set only if params gravity exists.
-		if (lp.gravity !== undefined) {
+		if (gravity !== undefined) {
 			switch (value) {
 				case 'left':
-					lp.gravity = 3 | (gravity & VERTICAL_GRAVITY_MASK); // android.view.Gravity.LEFT
+					lp.gravity = GRAVITY_LEFT | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
 						lp.weight = -2;
 					}
 					break;
 				case 'center':
-					lp.gravity = 1 | (gravity & VERTICAL_GRAVITY_MASK); // android.view.Gravity.CENTER_HORIZONTAL
+					lp.gravity = GRAVITY_CENTER_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
 						lp.weight = -2;
 					}
 					break;
 				case 'right':
-					lp.gravity = 5 | (gravity & VERTICAL_GRAVITY_MASK); // android.view.Gravity.RIGHT
+					lp.gravity = GRAVITY_RIGHT | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
 						lp.weight = -2;
 					}
 					break;
 				case 'stretch':
-					lp.gravity = 7 | (gravity & VERTICAL_GRAVITY_MASK); // android.view.Gravity.FILL_HORIZONTAL
+					lp.gravity = GRAVITY_FILL_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
 					if (weight < 0) {
 						lp.weight = -1;
 					}
@@ -909,25 +917,25 @@ export class View extends ViewCommon {
 		if (gravity !== undefined) {
 			switch (value) {
 				case 'top':
-					lp.gravity = 48 | (gravity & HORIZONTAL_GRAVITY_MASK); // android.view.Gravity.TOP
+					lp.gravity = GRAVITY_TOP | (gravity & HORIZONTAL_GRAVITY_MASK);
 					if (height < 0) {
 						lp.height = -2;
 					}
 					break;
 				case 'middle':
-					lp.gravity = 16 | (gravity & HORIZONTAL_GRAVITY_MASK); // android.view.Gravity.CENTER_VERTICAL
+					lp.gravity = GRAVITY_CENTER_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
 					if (height < 0) {
 						lp.height = -2;
 					}
 					break;
 				case 'bottom':
-					lp.gravity = 80 | (gravity & HORIZONTAL_GRAVITY_MASK); // android.view.Gravity.BOTTOM
+					lp.gravity = GRAVITY_BOTTOM | (gravity & HORIZONTAL_GRAVITY_MASK);
 					if (height < 0) {
 						lp.height = -2;
 					}
 					break;
 				case 'stretch':
-					lp.gravity = 112 | (gravity & HORIZONTAL_GRAVITY_MASK); // android.view.Gravity.FILL_VERTICAL
+					lp.gravity = GRAVITY_FILL_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
 					if (height < 0) {
 						lp.height = -1;
 					}
