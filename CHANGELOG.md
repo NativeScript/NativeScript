@@ -1,3 +1,32 @@
+# [7.1.0](https://github.com/NativeScript/NativeScript/compare/4.0.0-webpack...7.1.0) (2020-12-30)
+
+
+### Bug Fixes
+
+* **android:** modal not following activity windowSoftInputMode ([#9042](https://github.com/NativeScript/NativeScript/issues/9042)) ([d09a564](https://github.com/NativeScript/NativeScript/commit/d09a564296669dcffd03cd32b18f7a6454c7c472))
+* **android:** ActivityIndicator custom color affecting other indicators on the page ([#9026](https://github.com/NativeScript/NativeScript/issues/9026)) ([e16bc60](https://github.com/NativeScript/NativeScript/commit/e16bc606ef6ed506cbc38e50247a59637d898b50))
+* **android:** Tabs selected item color incorrectly applied ([#9040](https://github.com/NativeScript/NativeScript/issues/9040)) ([b47ce0a](https://github.com/NativeScript/NativeScript/commit/b47ce0a97c38547d060fb4626df02d63f518f721))
+* **compat:** add screen and device aliases ([#9088](https://github.com/NativeScript/NativeScript/issues/9088)) ([4204ac8](https://github.com/NativeScript/NativeScript/commit/4204ac8308eda902efd787ce96971463eab343ab))
+* **core:** notify object now optional ([#9032](https://github.com/NativeScript/NativeScript/issues/9032)) ([539fd1e](https://github.com/NativeScript/NativeScript/commit/539fd1eb293241dc067bfdcc77613b0eb67b099f))
+* **ios:** ios 10 tab crash ([#9018](https://github.com/NativeScript/NativeScript/issues/9018)) ([b3f9c0d](https://github.com/NativeScript/NativeScript/commit/b3f9c0d0ac656f413653d79d5eb9fcb1a6e1ca0f))
+* **list-view:** handle reusing wrong view ([#9023](https://github.com/NativeScript/NativeScript/issues/9023)) ([64e0aa6](https://github.com/NativeScript/NativeScript/commit/64e0aa6a114c414ad190696919d4b206b637f61f))
+* **tabs:** ios safeArea calculation ([#9089](https://github.com/NativeScript/NativeScript/issues/9089)) ([9391b44](https://github.com/NativeScript/NativeScript/commit/9391b44996e833fc63f0b2bc4c6c90e47c12a3b8))
+
+### Features
+
+* **android:** setInterval closer to web spec ([#9044](https://github.com/NativeScript/NativeScript/issues/9044)) ([1769de9](https://github.com/NativeScript/NativeScript/commit/1769de903392ab14ffb6c366ab86dc24b5289e81))
+* **ios:** types for latest ios 14.3 with Xcode 12.3 ([#9118](https://github.com/NativeScript/NativeScript/issues/9118)) ([9aad2db](https://github.com/NativeScript/NativeScript/commit/9aad2dbdbcf7e786183af9abbf16b4009c756ae3))
+* **ios** iosIgnoreSafeArea property ([#9092](https://github.com/NativeScript/NativeScript/issues/9092)) ([ea67422](https://github.com/NativeScript/NativeScript/commit/ea67422fcf3106db1359a358e897a63827a642f3))
+* **core:** queueMacroTask ([#8904](https://github.com/NativeScript/NativeScript/issues/8904)) ([e3dc89f](https://github.com/NativeScript/NativeScript/commit/e3dc89fbfc4dd8030097c7831479eb18cf23d8eb))
+* **core:** allow app to start without a root view ([#9056](https://github.com/NativeScript/NativeScript/issues/9056)) ([bd7c686](https://github.com/NativeScript/NativeScript/commit/bd7c686aaf55d26b2b483905bd5e0a453429cabd))
+* **frame:** add navigatingTo and navigatedTo events ([#9025](https://github.com/NativeScript/NativeScript/issues/9025)) ([cf96e72](https://github.com/NativeScript/NativeScript/commit/cf96e7252cdf66230cc03ddec907168e47d1f250))
+
+### Performance
+
+* faster color parsing ([c569236](https://github.com/NativeScript/NativeScript/commit/c5692363575821ef588b2260e80ad5bbffe45293))
+
+
+
 ## [7.0.13](https://github.com/NativeScript/NativeScript/compare/7.0.12-core...7.0.13) (2020-10-28)
 
 
