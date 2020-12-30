@@ -51,7 +51,7 @@ rm packages/types-ios/src/lib/ios/ios.d.ts
 
 echo '/// <reference path="runtime.d.ts" />' > packages/types-ios/src/lib/ios/ios.d.ts
 
-cd packages/types-ios/src/lib/ios
+pushd packages/types-ios/src/lib/ios
 
 for i in `ls objc-x86_64/*.d.ts`; do
 echo "/// <reference path=\"$i\" />" >> ios.d.ts
