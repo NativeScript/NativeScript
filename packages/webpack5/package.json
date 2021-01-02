@@ -39,7 +39,6 @@
 		"sass-loader": "^10.1.0",
 		"sax": "^1.2.4",
 		"source-map": "^0.7.3",
-		"svelte-native-preprocessor": "^0.2.0",
 		"terser-webpack-plugin": "^5.0.3",
 		"ts-dedent": "^2.0.0",
 		"ts-loader": "^8.0.11",

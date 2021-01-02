@@ -1,8 +1,10 @@
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { relative, resolve } from 'path';
-import { env } from '..';
-import { getEntryDirPath } from './platform';
+import Config from 'webpack-chain';
+
 import { getProjectRootPath } from './project';
+import { getEntryDirPath } from './platform';
+import { env } from '..';
 
 /**
  * @internal
@@ -37,17 +39,28 @@ export function removeCopyRule(glob: string) {
 /**
  * @internal
  */
-export function applyCopyRules(config) {
+export function applyCopyRules(config: Config) {
+	const entryDir = getEntryDirPath();
+	// todo: handle empty appResourcesPath?
+	// (the CLI should always pass the path - maybe not required)
+	const appResourcesFullPath = resolve(
+		getProjectRootPath(),
+		env.appResourcesPath
+	);
 
-	const context = getEntryDirPath();
-	const projectRoot = getProjectRootPath();
-	const appResourcesFullPath = resolve(projectRoot, env.appResourcesPath);
-	const globOptions = { dot: false, ignore: [`**/${relative(context, appResourcesFullPath)}/**`] };
+	const globOptions = {
+		dot: false,
+		ignore: [
+			// ignore everything in App_Resources (regardless where they are located)
+			`${relative(entryDir, appResourcesFullPath)}/**`,
+		],
+	};
+
 	config.plugin('CopyWebpackPlugin').use(CopyWebpackPlugin, [
 		{
 			patterns: Array.from(copyRules).map((glob) => ({
 				from: glob,
-				context,
+				context: entryDir,
 				noErrorOnMissing: true,
 				globOptions,
 			})),
