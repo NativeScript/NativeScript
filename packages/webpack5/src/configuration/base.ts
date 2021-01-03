@@ -19,7 +19,7 @@ import {
 	getEntryPath,
 } from '../helpers/platform';
 import { getProjectRootPath } from '../helpers/project';
-import { resolve } from 'path';
+import { join, resolve } from 'path';
 
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();
@@ -116,6 +116,22 @@ export default function (config: Config, env: IWebpackEnv): Config {
 
 	// resolve symlinks
 	config.resolve.symlinks(true);
+
+	if (platform === 'android') {
+		const modules = env.modules || [];
+		modules.push(...[
+			'@nativescript/core/ui/frame',
+			'@nativescript/core/ui/frame/activity',
+		]);
+		console.log('android-app-components-loader', entryPath, modules);
+		config.module
+			.rule('main_entry').include.add(entryPath);
+		config.module
+			.rule('main_entry')
+			.use('android-app-components-loader')
+			.loader('android-app-components-loader')
+			.options({ modules:modules.map(m => m.replace(`.${platform}`, "")) });
+	}
 
 	// set up ts support
 	config.module

@@ -9,7 +9,7 @@ import {
 	hasDependency,
 	getDependencyPath,
 } from './dependencies';
-import { getPackageJson, getProjectRootPath } from './project';
+import { convertSlashesInPath, getPackageJson, getProjectRootPath } from './project';
 import {
 	addPlatform,
 	getAbsoluteDistPath,
@@ -46,6 +46,7 @@ export default {
 		warn,
 	},
 	project: {
+		convertSlashesInPath,
 		getProjectRootPath,
 		getPackageJson,
 	},
