@@ -1,9 +1,8 @@
-import svelteNativePreprocessor from 'svelte-native-preprocessor';
 import Config from 'webpack-chain';
 
 import { getProjectRootPath } from '../helpers/project';
-import { env as _env, IWebpackEnv } from '../index';
 import { getPlatformName } from '../helpers/platform';
+import { env as _env, IWebpackEnv } from '../index';
 import { error } from '../helpers/log';
 import base from './base';
 

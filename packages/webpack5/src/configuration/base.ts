@@ -1,5 +1,6 @@
 import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
 import Config from 'webpack-chain';
+import { join, resolve } from 'path';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
@@ -10,6 +11,7 @@ import TerserPlugin from 'terser-webpack-plugin';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
+import { getProjectRootPath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
 import { IWebpackEnv } from '../index';
 import {
@@ -18,8 +20,6 @@ import {
 	getEntryDirPath,
 	getEntryPath,
 } from '../helpers/platform';
-import { getProjectRootPath } from '../helpers/project';
-import { join, resolve } from 'path';
 
 export default function (config: Config, env: IWebpackEnv): Config {
 	const entryPath = getEntryPath();
@@ -285,13 +285,15 @@ export default function (config: Config, env: IWebpackEnv): Config {
 
 	config.when(env.report, (config) => {
 		const projectRoot = getProjectRootPath();
-		config.plugin('BundleAnalyzerPlugin').use(BundleAnalyzerPlugin, [{
-			analyzerMode: 'static',
-			generateStatsFile: true,
-			openAnalyzer: false,
-			reportFilename: resolve(projectRoot, 'report', 'report.html'),
-			statsFilename: resolve(projectRoot, 'report', 'stats.json'),
-		}]);
+		config.plugin('BundleAnalyzerPlugin').use(BundleAnalyzerPlugin, [
+			{
+				analyzerMode: 'static',
+				generateStatsFile: true,
+				openAnalyzer: false,
+				reportFilename: resolve(projectRoot, 'report', 'report.html'),
+				statsFilename: resolve(projectRoot, 'report', 'stats.json'),
+			},
+		]);
 	});
 
 	return config;
