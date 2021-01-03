@@ -4,10 +4,6 @@
   </a>
 </p>
 
-<h1 align="center"> 
-NativeScript 
-</h1>
-
 [![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
 
 
