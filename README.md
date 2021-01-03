@@ -1,6 +1,6 @@
 <p align="center">
   <a href="http://www.nativescript.org">
-    <img alt="NativeScript" src="https://d1lfyz5kwt8vu9.cloudfront.net/nativescript-logo.png" width="100"/>
+    <img alt="NativeScript" src="https://d1lfyz5kwt8vu9.cloudfront.net/nativescript-logo-2021.png" width="100"/>
   </a>
 </p>
 
