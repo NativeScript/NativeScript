@@ -11,7 +11,7 @@
 
 ## Getting Started and Installation
 
-Our Getting Started Guides are hands-on tutorials that walk you through developing with NativeScript:
+Our Getting Started Guides have hands-on tutorials that walk you through developing with NativeScript:
 
 * [Get started with JavaScript](http://docs.nativescript.org/tutorial/chapter-0)
 * [Get started with TypeScript and Angular](http://docs.nativescript.org/angular/tutorial/ng-chapter-0)
@@ -81,4 +81,4 @@ In addition to the code that makes up the NativeScript framework itself, we also
 ## License
 [Apache License 2.0](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
 
-<h3 align="center">Made with ❤️</h3>
+<h3 align="center">Made with ❤️ for you.</h3>
