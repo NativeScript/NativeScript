@@ -126,7 +126,7 @@ export class Screen {
  *
  * This retains compatibility with NS6
  */
-export const screen = Screen;
+export const screen: Screen;
 
 /**
  * Gets the current device information.
@@ -138,4 +138,4 @@ export const Device: IDevice;
  *
  * This retains compatibility with NS6
  */
-export const device = Device;
+export const device: IDevice;
