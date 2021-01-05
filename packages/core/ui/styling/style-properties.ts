@@ -466,8 +466,8 @@ function parseBoxShadowProperites(value: string): BoxShadow {
 
 		let offsetX: number;
 		let offsetY: number;
-		let blurRadius: number;
-		let spreadRadius: number;
+		let blurRadius: number; // not currently in use
+		let spreadRadius: number; // maybe rename this to just radius
 		let color: Color = new Color(colorRaw);
 
 		if (arr.length === 2) {

@@ -6,5 +6,4 @@ export class BoxShadow {
 	public blurRadius: number;
 	public spreadRadius: number;
 	public color: Color;
-	// public opacity: number;
 }

@@ -3,6 +3,7 @@
         <ActionBar title="Dev Toolbox" icon="" class="action-bar">
         </ActionBar>
     </Page.actionBar>
+    <ScrollView>
     <StackLayout class="p-t-20 p-x-20">
 
         <!-- <Button text="Button with html boxShadow" tap="{{ onTap }}" height="50" class="btn btn-primary btn-active" boxShadow="5 5 10 navy"/>  
@@ -22,21 +23,27 @@
             <Label text="StackLayout with transparent background"></Label>
         </StackLayout> -->
 
+        <GridLayout boxShadow="10 -10 10 10 rgba(0,0,0,0.5)" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
+            <Label text="GridLayout"></Label>
+        </GridLayout>
+
         <StackLayout boxShadow="5 10 10 20 #000" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
             <Label text="StackLayout"></Label>
         </StackLayout>
-
-        <GridLayout boxShadow="10 -20 10 10 rgba(0,0,0,0.8)" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
-            <Label text="GridLayout"></Label>
-        </GridLayout>
 
         <AbsoluteLayout boxShadow="5 15 10 20 green" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
             <Label text="AbsoluteLayout"></Label>
         </AbsoluteLayout>
 
-        <FlexboxLayout boxShadow="15 0 10 20 red" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
+        <!-- note: the 3rd number in box shadow is currently being ignored, only the 1st, 2nd, and 4th, and color are being used-->
+        <FlexboxLayout boxShadow="0 0 10 25 red" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
             <Label text="FlexboxLayout"></Label>
+        </FlexboxLayout>
+
+        <FlexboxLayout boxShadow="15 10 10 20 #000" height="100" backgroundColor="transparent" padding="10" margin="20" tap="{{ toggleAnimation }}">
+            <Label text="FlexboxLayout (transparent background)"></Label>
         </FlexboxLayout>
         
     </StackLayout>
+    </ScrollView>
 </Page>
