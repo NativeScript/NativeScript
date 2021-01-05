@@ -344,7 +344,7 @@ export class Binding {
 		}
 
 		let newValue = value;
-		if (this.options.expression) {
+		if (!__UI_CUSTOM_FLAVOR__ && this.options.expression) {
 			const changedModel = {};
 			changedModel[bc.bindingValueKey] = value;
 			changedModel[bc.newPropertyValueKey] = value;
@@ -374,38 +374,40 @@ export class Binding {
 	}
 
 	private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
-		try {
-			const exp = PolymerExpressions.getExpression(expression);
-			if (exp) {
-				const context = (this.source && this.source.get && this.source.get()) || global;
-				const model = {};
-				const addedProps = [];
-				const resources = bindableResources.get();
-				for (const prop in resources) {
-					if (resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
-						context[prop] = resources[prop];
-						addedProps.push(prop);
+		if (!__UI_CUSTOM_FLAVOR__) {
+			try {
+				const exp = PolymerExpressions.getExpression(expression);
+				if (exp) {
+					const context = (this.source && this.source.get && this.source.get()) || global;
+					const model = {};
+					const addedProps = [];
+					const resources = bindableResources.get();
+					for (const prop in resources) {
+						if (resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
+							context[prop] = resources[prop];
+							addedProps.push(prop);
+						}
 					}
+	
+					this.prepareContextForExpression(context, expression, addedProps);
+					model[contextKey] = context;
+					const result = exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
+					// clear added props
+					const addedPropsLength = addedProps.length;
+					for (let i = 0; i < addedPropsLength; i++) {
+						delete context[addedProps[i]];
+					}
+					addedProps.length = 0;
+	
+					return result;
 				}
-
-				this.prepareContextForExpression(context, expression, addedProps);
-				model[contextKey] = context;
-				const result = exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
-				// clear added props
-				const addedPropsLength = addedProps.length;
-				for (let i = 0; i < addedPropsLength; i++) {
-					delete context[addedProps[i]];
-				}
-				addedProps.length = 0;
-
-				return result;
+	
+				return new Error(expression + ' is not a valid expression.');
+			} catch (e) {
+				const errorMessage = 'Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column;
+	
+				return new Error(errorMessage);
 			}
-
-			return new Error(expression + ' is not a valid expression.');
-		} catch (e) {
-			const errorMessage = 'Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column;
-
-			return new Error(errorMessage);
 		}
 	}
 
@@ -422,7 +424,7 @@ export class Binding {
 			}
 		}
 
-		if (this.options.expression) {
+		if (!__UI_CUSTOM_FLAVOR__ && this.options.expression) {
 			const expressionValue = this._getExpressionValue(this.options.expression, false, undefined);
 			if (expressionValue instanceof Error) {
 				Trace.write(expressionValue.message, Trace.categories.Binding, Trace.messageType.error);
@@ -517,7 +519,7 @@ export class Binding {
 	}
 
 	private getSourcePropertyValue() {
-		if (this.options.expression) {
+		if (!__UI_CUSTOM_FLAVOR__ && this.options.expression) {
 			const changedModel = {};
 			changedModel[bc.bindingValueKey] = this.source ? this.source.get() : undefined;
 			const expressionValue = this._getExpressionValue(this.options.expression, false, changedModel);

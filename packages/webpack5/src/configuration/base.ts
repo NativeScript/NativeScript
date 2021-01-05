@@ -11,6 +11,8 @@ import TerserPlugin from 'terser-webpack-plugin';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
+import { getValue } from '../helpers/config';
+import { projectUsesCustomFlavor } from '../helpers/flavor';
 import { getProjectRootPath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
 import { IWebpackEnv } from '../index';
@@ -240,7 +242,9 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		{
 			__DEV__: mode === 'development',
 			__NS_WEBPACK__: true,
-			__CSS_PARSER__: JSON.stringify('css-tree'), // todo: replace from config value
+			__UI_XML_PARSER__: true,
+			__UI_CUSTOM_FLAVOR__: projectUsesCustomFlavor(),
+			__CSS_PARSER__: JSON.stringify(getValue('cssParser')), // todo: replace from config value
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',
 			/* for compat only */ 'global.isAndroid': platform === 'android',

@@ -129,7 +129,7 @@ export class Repeater extends CustomLayoutView {
 			}
 
 			if (!viewToAdd) {
-				viewToAdd = this.itemTemplate ? Builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
+				viewToAdd = (!__UI_CUSTOM_FLAVOR__ && this.itemTemplate) ? Builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
 			}
 
 			viewToAdd.bindingContext = dataItem;
@@ -223,7 +223,11 @@ export const itemTemplatesProperty = new Property<Repeater, string | Array<Keyed
 	affectsLayout: true,
 	valueConverter: (value) => {
 		if (typeof value === 'string') {
-			return Builder.parseMultipleTemplates(value, null);
+			if (__UI_XML_PARSER__) {
+				return Builder.parseMultipleTemplates(value, null);
+			} else {
+				return null;
+			}
 		}
 
 		return value;

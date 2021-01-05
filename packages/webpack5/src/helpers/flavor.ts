@@ -6,6 +6,23 @@ import { error } from './log';
  * Utility to determine the project flavor based on installed dependencies
  * (vue, angular, react, svelete, typescript, javascript...)
  */
+export function projectUsesCustomFlavor(): boolean {
+	const dependencies = getAllDependencies();
+	
+	if (dependencies.includes('nativescript-vue') ||
+		dependencies.includes('@nativescript/angular') ||
+		dependencies.includes('react-nativescript') ||
+		dependencies.includes('svelte-native')
+	) {
+		return true;
+	}
+
+	return false;
+}
+/**
+ * Utility to determine the project flavor based on installed dependencies
+ * (vue, angular, react, svelete, typescript, javascript...)
+ */
 export function determineProjectFlavor(): keyof typeof defaultConfigs | false {
 	const dependencies = getAllDependencies();
 
