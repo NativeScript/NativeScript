@@ -5,7 +5,7 @@ on:
   push:
     branches: [ 'master' ]
     paths:
-      - 'packages/types/*'
+      - 'packages/types/**'
 
 env:
   NPM_TAG: 'next'

@@ -4,7 +4,7 @@ on:
   push:
     branches: [ 'master' ]
     paths:
-      - 'packages/webpack/*'
+      - 'packages/webpack/**'
 
 env:
   NPM_TAG: 'next'
