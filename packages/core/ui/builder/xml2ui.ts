@@ -46,7 +46,7 @@ export namespace xml2ui {
 		}
 
 		public parse(value: ParseInputData) {
-			if (__UI_XML_PARSER__) {
+			if (__UI_USE_XML_PARSER__) {
 				const xmlParser = new xml.XmlParser(
 					(args: xml.ParserEvent) => {
 						try {
@@ -264,7 +264,7 @@ export namespace xml2ui {
 		}
 
 		public buildTemplate(): Template {
-			if (__UI_XML_PARSER__) {
+			if (__UI_USE_XML_PARSER__) {
 				const context = this._context;
 				const errorFormat = this._templateProperty.errorFormat;
 				const sourceTracker = this._templateProperty.sourceTracker;

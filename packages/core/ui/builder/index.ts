@@ -223,7 +223,7 @@ export function getExports(instance: ViewBase): any {
 }
 
 function parseInternal(value: string, context: any, xmlModule?: string, moduleName?: string): ComponentModule {
-	if (__UI_XML_PARSER__) {
+	if (__UI_USE_XML_PARSER__) {
 		let start: xml2ui.XmlStringParser;
 		let ui: xml2ui.ComponentParser;
 	

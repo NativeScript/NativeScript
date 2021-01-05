@@ -195,7 +195,7 @@ export const itemTemplatesProperty = new Property<ListViewBase, string | Array<K
 	name: 'itemTemplates',
 	valueConverter: (value) => {
 		if (typeof value === 'string') {
-			if (__UI_XML_PARSER__) {
+			if (__UI_USE_XML_PARSER__) {
 				return Builder.parseMultipleTemplates(value, null);
 			} else {
 				return null;
