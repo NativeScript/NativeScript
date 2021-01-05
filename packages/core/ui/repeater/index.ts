@@ -129,7 +129,11 @@ export class Repeater extends CustomLayoutView {
 			}
 
 			if (!viewToAdd) {
-				viewToAdd = (!__UI_CUSTOM_FLAVOR__ && this.itemTemplate) ? Builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
+				if (__UI_CUSTOM_FLAVOR__) {
+					viewToAdd = this._getDefaultItemContent(i)
+				} else {
+					viewToAdd = this.itemTemplate ? Builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
+				}
 			}
 
 			viewToAdd.bindingContext = dataItem;

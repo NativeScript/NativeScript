@@ -26,7 +26,8 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public _defaultTemplate: KeyedTemplate = {
 		key: 'default',
 		createView: () => {
-			if (!__UI_CUSTOM_FLAVOR__ && this.itemTemplate) {
+			if (__UI_CUSTOM_FLAVOR__) {
+			} else if (this.itemTemplate) {
 				return Builder.parse(this.itemTemplate, this);
 			}
 

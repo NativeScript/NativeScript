@@ -344,7 +344,8 @@ export class Binding {
 		}
 
 		let newValue = value;
-		if (!__UI_CUSTOM_FLAVOR__ && this.options.expression) {
+		if (__UI_CUSTOM_FLAVOR__) {
+		} else if (this.options.expression) {
 			const changedModel = {};
 			changedModel[bc.bindingValueKey] = value;
 			changedModel[bc.newPropertyValueKey] = value;
@@ -369,6 +370,7 @@ export class Binding {
 
 			newValue = expressionValue;
 		}
+		
 
 		this.updateSource(newValue);
 	}
@@ -424,14 +426,7 @@ export class Binding {
 			}
 		}
 
-		if (!__UI_CUSTOM_FLAVOR__ && this.options.expression) {
-			const expressionValue = this._getExpressionValue(this.options.expression, false, undefined);
-			if (expressionValue instanceof Error) {
-				Trace.write(expressionValue.message, Trace.categories.Binding, Trace.messageType.error);
-			} else {
-				this.updateTarget(expressionValue);
-			}
-		} else {
+		if (__UI_CUSTOM_FLAVOR__ || !this.options.expression) {
 			if (changedPropertyIndex > -1) {
 				const props = sourceProps.slice(changedPropertyIndex + 1);
 				const propsLength = props.length;
@@ -445,6 +440,13 @@ export class Binding {
 				} else if (data.propertyName === this.sourceOptions.property) {
 					this.updateTarget(data.value);
 				}
+			}
+		} else {
+			const expressionValue = this._getExpressionValue(this.options.expression, false, undefined);
+			if (expressionValue instanceof Error) {
+				Trace.write(expressionValue.message, Trace.categories.Binding, Trace.messageType.error);
+			} else {
+				this.updateTarget(expressionValue);
 			}
 		}
 
@@ -519,7 +521,8 @@ export class Binding {
 	}
 
 	private getSourcePropertyValue() {
-		if (!__UI_CUSTOM_FLAVOR__ && this.options.expression) {
+		if (__UI_CUSTOM_FLAVOR__) {
+		} else if (this.options.expression) {
 			const changedModel = {};
 			changedModel[bc.bindingValueKey] = this.source ? this.source.get() : undefined;
 			const expressionValue = this._getExpressionValue(this.options.expression, false, changedModel);
