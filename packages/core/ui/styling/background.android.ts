@@ -227,8 +227,8 @@ function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
 	const shadowColor = new Color(shadowOpacity, color.r, color.g, color.b);
 
 	// TODO: corner radius here should reflect the view's corner radius
-	const cornerRadiusValue = 0; //boxShadow.blurRadius * Screen.mainScreen.scale;
-	// const elevationValue = cornerRadiusValue; // this.elevation;
+	const cornerRadius = 0; // this should be applied to the main view as well (try 20 with a transparent background on the xml to see the effect)
+	const cornerRadiusValue = cornerRadius * Screen.mainScreen.scale;
 	const shadowColorValue = shadowColor.android;
 
 	const shadowSpread = boxShadow.spreadRadius * Screen.mainScreen.scale;
@@ -244,21 +244,22 @@ function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
 	outerRadius[6] = cornerRadiusValue;
 	outerRadius[7] = cornerRadiusValue;
 
-	const rectShape = new android.graphics.drawable.shapes.RoundRectShape(outerRadius, null, null);
-	const shapeDrawable = new android.graphics.drawable.ShapeDrawable(rectShape);
+	// Default background for transparent background so it doesn't see through the shadow
+	const defaultBackgroundColor = new Color('#fff');
+	const backgroundRectShape = new android.graphics.drawable.shapes.RoundRectShape(outerRadius, null, null);
+	const backgroundDrawable = new android.graphics.drawable.ShapeDrawable(backgroundRectShape);
+	backgroundDrawable.getPaint().setColor(defaultBackgroundColor.android);
 
-	// Default background if no backgroundColor is not set
-	const backgroundColor = new Color('#ffffff');
-	const backgroundColorValue = backgroundColor.android;
-	shapeDrawable.getPaint().setColor(backgroundColorValue);
-
-	shapeDrawable.getPaint().setShadowLayer(shadowSpread, 0, 0, shadowColorValue);
-	shapeDrawable.getPaint().setAntiAlias(true);
+	const shadowRectShape = new android.graphics.drawable.shapes.RoundRectShape(outerRadius, null, null);
+	const shadowShapeDrawable = new android.graphics.drawable.ShapeDrawable(shadowRectShape);
+	shadowShapeDrawable.getPaint().setShadowLayer(shadowSpread, 0, 0, shadowColorValue);
+	shadowShapeDrawable.getPaint().setAntiAlias(true);
 
 	// set shadow direction
-	const drawableArray = Array.create('android.graphics.drawable.Drawable', 2);
-	drawableArray[0] = shapeDrawable;
-	drawableArray[1] = nativeView.getBackground();
+	const drawableArray = Array.create('android.graphics.drawable.Drawable', 3);
+	drawableArray[0] = shadowShapeDrawable;
+	drawableArray[1] = backgroundDrawable; //shapeDrawable;
+	drawableArray[2] = nativeView.getBackground();
 	const drawable = new android.graphics.drawable.LayerDrawable(drawableArray);
 
 	// workaround to show shadow offset (similar to ios's offsets)
@@ -271,19 +272,19 @@ function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
 	const offsetX = boxShadow.offsetX - boxShadow.spreadRadius;
 	const insetScaleFactor = 4 / 5;
 	if (boxShadow.offsetX === 0) {
-		shadowInsets.left = shadowSpread * insetScaleFactor;
-		shadowInsets.right = shadowSpread * insetScaleFactor;
+		shadowInsets.left = 0; //shadowSpread * insetScaleFactor;
+		shadowInsets.right = 0; //shadowSpread * insetScaleFactor;
 	} else if (boxShadow.offsetX > 0) {
 		shadowInsets.left = shadowSpread * insetScaleFactor;
-		shadowInsets.right = (offsetX < 0 ? 0 : offsetX) * Screen.mainScreen.scale * insetScaleFactor; //shadowSpread;
+		shadowInsets.right = (offsetX < 0 ? 0 : offsetX) * Screen.mainScreen.scale * insetScaleFactor;
 	} else {
 		shadowInsets.left = (offsetX < 0 ? 0 : offsetX) * Screen.mainScreen.scale * insetScaleFactor;
 		shadowInsets.right = shadowSpread * insetScaleFactor;
 	}
 	const offsetY = boxShadow.offsetY - boxShadow.spreadRadius;
 	if (boxShadow.offsetY === 0) {
-		shadowInsets.top = shadowSpread * insetScaleFactor;
-		shadowInsets.bottom = shadowSpread * insetScaleFactor;
+		shadowInsets.top = 0; //shadowSpread * insetScaleFactor;
+		shadowInsets.bottom = 0; //shadowSpread * insetScaleFactor;
 	} else if (boxShadow.offsetY >= 0) {
 		shadowInsets.top = shadowSpread * insetScaleFactor;
 		shadowInsets.bottom = (offsetY < 0 ? 0 : offsetY) * Screen.mainScreen.scale * insetScaleFactor;
