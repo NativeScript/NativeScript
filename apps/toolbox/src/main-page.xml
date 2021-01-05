@@ -22,19 +22,19 @@
             <Label text="StackLayout with transparent background"></Label>
         </StackLayout> -->
 
-        <StackLayout boxShadow="5 10 10 20 #000" height="100" backgroundColor="lightblue" padding="10" margin="20">
+        <StackLayout boxShadow="5 10 10 20 #000" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
             <Label text="StackLayout"></Label>
         </StackLayout>
 
-        <GridLayout boxShadow="10 -20 10 10 rgba(0,0,0,0.8)" height="100" backgroundColor="lightblue" padding="10" margin="20">
+        <GridLayout boxShadow="10 -20 10 10 rgba(0,0,0,0.8)" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
             <Label text="GridLayout"></Label>
         </GridLayout>
 
-        <AbsoluteLayout boxShadow="5 15 10 20 green" height="100" backgroundColor="lightblue" padding="10" margin="20">
+        <AbsoluteLayout boxShadow="5 15 10 20 green" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
             <Label text="AbsoluteLayout"></Label>
         </AbsoluteLayout>
 
-        <FlexboxLayout boxShadow="15 0 10 20 red" height="100" backgroundColor="lightblue" padding="10" margin="20">
+        <FlexboxLayout boxShadow="15 0 10 20 red" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
             <Label text="FlexboxLayout"></Label>
         </FlexboxLayout>
         

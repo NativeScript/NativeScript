@@ -19,6 +19,19 @@ components that have the btn class name.
     font-weight: bold;
 }
 
+.sample-animation {
+    animation-name: rotate-expand;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes rotate-expand {
+    0%, 50% { background-color: red; transform: rotate(0) scale(1,1); }
+    25%, 75% { background-color: yellow; transform: rotate(180) scale(1.2,1.2); }
+    100% { background-color: red; transform: rotate(0) scale(1,1); }
+}
+
+
 .icon-label{
     font-size: 22;
     font-family: "ns-playground-font";

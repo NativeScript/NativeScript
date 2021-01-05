@@ -1,4 +1,4 @@
-import { Observable, Frame } from '@nativescript/core';
+import { Observable, Frame, StackLayout } from '@nativescript/core';
 
 export class HelloWorldModel extends Observable {
 	private _counter: number;
@@ -20,6 +20,16 @@ export class HelloWorldModel extends Observable {
 		if (this._message !== value) {
 			this._message = value;
 			this.notifyPropertyChange('message', value);
+		}
+	}
+
+	toggleAnimation(args) {
+		console.log('toggling animation');
+		const layout = args.object as StackLayout;
+		if (!layout.className) {
+			layout.className = 'sample-animation';
+		} else {
+			layout.className = undefined;
 		}
 	}
 
