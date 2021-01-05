@@ -243,7 +243,7 @@ export default function (config: Config, env: IWebpackEnv): Config {
 			__DEV__: mode === 'development',
 			__NS_WEBPACK__: true,
 			__UI_USE_XML_PARSER__: true,
-			__UI_CUSTOM_FLAVOR__: projectUsesCustomFlavor(),
+			__UI_USE_EXTERNAL_RENDERER__: projectUsesCustomFlavor(),
 			__CSS_PARSER__: JSON.stringify(getValue('cssParser')), // todo: replace from config value
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',

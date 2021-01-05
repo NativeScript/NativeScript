@@ -344,7 +344,7 @@ export class Binding {
 		}
 
 		let newValue = value;
-		if (__UI_CUSTOM_FLAVOR__) {
+		if (__UI_USE_EXTERNAL_RENDERER__) {
 		} else if (this.options.expression) {
 			const changedModel = {};
 			changedModel[bc.bindingValueKey] = value;
@@ -376,7 +376,7 @@ export class Binding {
 	}
 
 	private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
-		if (!__UI_CUSTOM_FLAVOR__) {
+		if (!__UI_USE_EXTERNAL_RENDERER__) {
 			try {
 				const exp = PolymerExpressions.getExpression(expression);
 				if (exp) {
@@ -426,7 +426,7 @@ export class Binding {
 			}
 		}
 
-		if (__UI_CUSTOM_FLAVOR__ || !this.options.expression) {
+		if (__UI_USE_EXTERNAL_RENDERER__ || !this.options.expression) {
 			if (changedPropertyIndex > -1) {
 				const props = sourceProps.slice(changedPropertyIndex + 1);
 				const propsLength = props.length;
@@ -521,7 +521,7 @@ export class Binding {
 	}
 
 	private getSourcePropertyValue() {
-		if (__UI_CUSTOM_FLAVOR__) {
+		if (__UI_USE_EXTERNAL_RENDERER__) {
 		} else if (this.options.expression) {
 			const changedModel = {};
 			changedModel[bc.bindingValueKey] = this.source ? this.source.get() : undefined;

@@ -131,7 +131,7 @@ declare namespace NodeJS {
 declare const __DEV__: string;
 declare const __CSS_PARSER__: string;
 declare const __NS_WEBPACK__: boolean;
-declare const __UI_CUSTOM_FLAVOR__: boolean;
+declare const __UI_USE_EXTERNAL_RENDERER__: boolean;
 declare const __UI_USE_XML_PARSER__: boolean;
 declare const __ANDROID__: boolean;
 declare const __IOS__: boolean;
