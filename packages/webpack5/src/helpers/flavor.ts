@@ -8,7 +8,12 @@ import { error } from './log';
  */
 export function projectUsesCustomFlavor(): boolean {
 	const dependencies = getAllDependencies();
-	
+	return [
+	  'vue', 
+	  'angular',
+	  'react',
+	  'svelte'
+	].includes(determineProjectFlavor())
 	if (dependencies.includes('nativescript-vue') ||
 		dependencies.includes('@nativescript/angular') ||
 		dependencies.includes('react-nativescript') ||
