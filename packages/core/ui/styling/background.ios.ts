@@ -726,20 +726,28 @@ function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow, background:
 
 	layer.masksToBounds = false;
 	nativeView.clipsToBounds = false;
-	// layer.backgroundColor = UIColor.clearColor.CGColor;
 
 	if (!background.color.a) {
 		// add white background if view has a transparent background
 		layer.backgroundColor = UIColor.whiteColor.CGColor;
 	}
-	layer.shadowOpacity = 1; //boxShadow.shadowOpacity;
-	layer.shadowRadius = boxShadow.blurRadius;
+	// shadow opacity is handled on the shadow's color instance
+	layer.shadowOpacity = 1;
+	layer.shadowRadius = boxShadow.spreadRadius;
 	layer.shadowColor = boxShadow.color.ios.CGColor;
-	// / 2 here since ios's shadow offset is bigger than android
-	layer.shadowOffset = CGSizeMake(boxShadow.offsetX / 2, boxShadow.offsetY / 2);
 
-	// 0 should be the view's border radius
-	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, 0).CGPath; //boxShadow.spreadRadius).CGPath;
+	// / 2 here since ios's shadow offset is bigger than android
+	const adjustedShadowOffset = {
+		x: boxShadow.offsetX / 2,
+		y: boxShadow.offsetY / 2,
+	};
+	layer.shadowOffset = CGSizeMake(adjustedShadowOffset.x, adjustedShadowOffset.y);
+
+	// this should match the view's border radius
+	const cornerRadius = 0;
+	// factor in shadowRadius and the offsets so shadow don't spread too far
+	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(CGRectMake(nativeView.bounds.origin.x + boxShadow.blurRadius + adjustedShadowOffset.x, nativeView.bounds.origin.y + boxShadow.blurRadius + adjustedShadowOffset.y, nativeView.bounds.size.width - boxShadow.blurRadius - adjustedShadowOffset.x, nativeView.bounds.size.height - boxShadow.blurRadius - adjustedShadowOffset.y), cornerRadius).CGPath;
+	// layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, cornerRadius).CGPath;
 }
 
 function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
