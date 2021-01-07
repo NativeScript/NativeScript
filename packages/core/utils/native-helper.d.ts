@@ -88,6 +88,8 @@ export namespace ad {
 	 * Checks whether the application is running on real device and not on emulator.
 	 */
 	export function isRealDevice(): boolean;
+
+	export function isSimulatorOrEmulator(): boolean;
 }
 /**
  * Module with ios specific utilities.
@@ -168,13 +170,15 @@ export namespace iOSNativeHelper {
 	 */
 	export function applyRotateTransform(transform: any /* CATransform3D*/, x: number, y: number, z: number): any; /* CATransform3D*/
 
-  /**
-   * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
-   */
+	/**
+	 * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
+	 */
 	export function createUIDocumentInteractionControllerDelegate(): any;
 
 	/**
 	 * Checks whether the application is running on real device and not on simulator.
 	 */
 	export function isRealDevice(): boolean;
+
+	export function isSimulatorOrEmulator(): boolean;
 }

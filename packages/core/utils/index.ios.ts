@@ -47,4 +47,8 @@ export function isRealDevice(): boolean {
 	return iOSNativeHelper.isRealDevice();
 }
 
+export function isSimulatorOrEmulator(): boolean {
+	return iOSNativeHelper.isSimulatorOrEmulator();
+}
+
 export const ad = 0;
