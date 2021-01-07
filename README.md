@@ -9,7 +9,7 @@
 
 [NativeScript](http://www.nativescript.org) empowers you to access native APIs from JavaScript directly. The framework currently provides iOS and Android runtimes for rich mobile development and can be utilized in a number of diverse use cases.
 
-## Getting Started and Installation
+## Getting Started and Installation process
 
 Our Getting Started Guides are hands-on tutorials that walk you through developing with NativeScript:
 
