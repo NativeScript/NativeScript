@@ -737,6 +737,9 @@ function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow, background:
 	layer.shadowColor = boxShadow.color.ios.CGColor;
 
 	// / 2 here since ios's shadow offset is bigger than android
+	// TODO: this is just for experimenting with the amount of offset,
+	// need to use some real calculation here to gain parity with android's
+	// implementation
 	const adjustedShadowOffset = {
 		x: boxShadow.offsetX / 2,
 		y: boxShadow.offsetY / 2,
@@ -745,9 +748,16 @@ function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow, background:
 
 	// this should match the view's border radius
 	const cornerRadius = 0;
+	// This doesn't handle the offsets properly
 	// factor in shadowRadius and the offsets so shadow don't spread too far
-	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(CGRectMake(nativeView.bounds.origin.x + boxShadow.blurRadius + adjustedShadowOffset.x, nativeView.bounds.origin.y + boxShadow.blurRadius + adjustedShadowOffset.y, nativeView.bounds.size.width - boxShadow.blurRadius - adjustedShadowOffset.x, nativeView.bounds.size.height - boxShadow.blurRadius - adjustedShadowOffset.y), cornerRadius).CGPath;
-	// layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, cornerRadius).CGPath;
+	// layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(CGRectMake(
+	// 	nativeView.bounds.origin.x + boxShadow.spreadRadius + adjustedShadowOffset.x,
+	// 	nativeView.bounds.origin.y + boxShadow.spreadRadius + adjustedShadowOffset.y,
+	// 	nativeView.bounds.size.width - boxShadow.spreadRadius - adjustedShadowOffset.x,
+	// 	nativeView.bounds.size.height - boxShadow.spreadRadius - adjustedShadowOffset.y), cornerRadius).CGPath;
+
+	// This has the nice glow with box shadow of 0,0
+	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, cornerRadius).CGPath;
 }
 
 function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
