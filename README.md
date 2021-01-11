@@ -29,7 +29,7 @@ $ npm run setup
 $ npm start
 ```
 
-We love you and PR's 🤗 Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://nativescript.org/governance/) to become as involved as you want to be.
+We love you and PR's 😊 Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://nativescript.org/governance/) to become as involved as you want to be.
 
 ## @nativescript/* 
 
