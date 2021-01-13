@@ -1,3 +1,12 @@
+## [7.1.1](https://github.com/NativeScript/NativeScript/compare/7.1.0-core...7.1.1) (2021-01-13)
+
+
+### Bug Fixes
+
+* **core:** const initializer in an ambient context ([#9136](https://github.com/NativeScript/NativeScript/issues/9136)) ([47ebb1d](https://github.com/NativeScript/NativeScript/commit/47ebb1d262aa9ebf29fe445e57d19910612d047f)), closes [#9135](https://github.com/NativeScript/NativeScript/issues/9135)
+
+
+
 # [7.1.0](https://github.com/NativeScript/NativeScript/compare/4.0.0-webpack...7.1.0) (2020-12-30)
 
 
