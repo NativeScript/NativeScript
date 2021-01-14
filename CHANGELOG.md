@@ -1,3 +1,17 @@
+## [7.1.2](https://github.com/NativeScript/NativeScript/compare/7.1.1-core...7.1.2) (2021-01-14)
+
+
+### Bug Fixes
+
+* **webpack:** support other workspace config styles ([7a79a89](https://github.com/NativeScript/NativeScript/commit/7a79a8988b55e7e0896e7ad38f571aba6987edb5))
+
+
+### Features
+
+* **core:** rollup additional Utils ([882aa42](https://github.com/NativeScript/NativeScript/commit/882aa42e8573615aa5ba89396d0f0cdbb711bed3))
+
+
+
 ## [7.1.1](https://github.com/NativeScript/NativeScript/compare/7.1.0-core...7.1.1) (2021-01-13)
 
 
