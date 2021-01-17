@@ -1,3 +1,12 @@
+## [7.1.3](https://github.com/NativeScript/NativeScript/compare/7.1.2-core...7.1.3) (2021-01-17)
+
+
+### Bug Fixes
+
+* **android:** BottomNavigation fragment child already has a parent ([#9148](https://github.com/NativeScript/NativeScript/issues/9148)) ([4690162](https://github.com/NativeScript/NativeScript/commit/4690162384c731d6d652d90a9347cae06c0a0e0c))
+
+
+
 ## [7.1.2](https://github.com/NativeScript/NativeScript/compare/7.1.1-core...7.1.2) (2021-01-14)
 
 
