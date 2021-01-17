@@ -466,7 +466,7 @@ export class BottomNavigation extends TabNavigationBase {
 			if (fragment.isAdded() || fragment.isRemoving()) {
 				// ignore
 			} else {
-				var fragmentExitTransition = fragment.getExitTransition();
+				const fragmentExitTransition = fragment.getExitTransition();
 				if (fragmentExitTransition && fragmentExitTransition instanceof org.nativescript.widgets.CustomTransition) {
 					fragmentExitTransition.setResetOnTransitionEnd(true);
 				}
@@ -576,12 +576,12 @@ export class BottomNavigation extends TabNavigationBase {
 				// ignore
 				return;
 			} else {
-				var fragmentExitTransition = fragment.getExitTransition();
+				const fragmentExitTransition = fragment.getExitTransition();
 				if (fragmentExitTransition && fragmentExitTransition instanceof org.nativescript.widgets.CustomTransition) {
 					fragmentExitTransition.setResetOnTransitionEnd(true);
 				}
 				if (fragment && fragment.isAdded() && !fragment.isRemoving()) {
-					var pfm = (<any>fragment).getParentFragmentManager ? (<any>fragment).getParentFragmentManager() : null;
+					const pfm = (<any>fragment).getParentFragmentManager ? (<any>fragment).getParentFragmentManager() : null;
 					if (pfm && !pfm.isDestroyed()) {
 						try {
 							if (pfm.isStateSaved()) {
