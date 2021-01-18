@@ -9,6 +9,7 @@ export type { NativeScriptConfig } from './config';
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
 import { systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, systemAppearance } from './application';
+import { AndroidApplication, iOSApplication } from './application';
 export declare const Application: {
 	launchEvent: string;
 	displayedEvent: string;
@@ -39,8 +40,8 @@ export declare const Application: {
 	getNativeApplication: typeof getNativeApplication;
 	hasLaunched: typeof hasLaunched;
 	systemAppearance: typeof systemAppearance;
-	android: import('./application').AndroidApplication;
-	ios: import('./application').iOSApplication;
+	android: typeof AndroidApplication;
+	ios: typeof iOSApplication;
 };
 import { setString, getString, clear, flush, getAllKeys, getBoolean, getNumber, hasKey, remove, setBoolean, setNumber } from './application-settings';
 export declare const ApplicationSettings: {
@@ -73,13 +74,14 @@ export { VirtualArray } from './data/virtual-array';
 export type { ItemsLoading } from './data/virtual-array';
 export { File, FileSystemEntity, Folder, knownFolders, path, getFileAccess } from './file-system';
 export type { HttpRequestOptions, HttpResponse, Headers, HttpResponseEncoding, HttpContent } from './http';
+import { HttpRequestOptions, HttpResponse } from './http';
 import { getFile, getImage, getJSON, getString as httpGetString } from './http';
 export declare const Http: {
 	getFile: typeof getFile;
 	getImage: typeof getImage;
 	getJSON: typeof getJSON;
 	getString: typeof httpGetString;
-	request: (options: import('./http').HttpRequestOptions) => Promise<import('./http').HttpResponse>;
+	request: (options: HttpRequestOptions) => Promise<HttpResponse>;
 };
 export { ImageAsset } from './image-asset';
 export type { ImageAssetOptions } from './image-asset';

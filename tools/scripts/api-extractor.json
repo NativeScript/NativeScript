@@ -32,7 +32,7 @@
    * SUPPORTED TOKENS: <lookup>
    * DEFAULT VALUE: "<lookup>"
    */
-  "projectFolder": "nativescript-core",
+  "projectFolder": "../../packages/core",
 
   /**
    * (REQUIRED) Specifies the .d.ts file to be used as the starting point for analysis.  API Extractor

@@ -27,7 +27,7 @@ extract_snippets() {
 
     npm install markdown-snippet-injector
 
-    for SNIPPET_DIR in {tests/app,apps/app,nativescript-core} ; do
+    for SNIPPET_DIR in {apps/automated,apps/toolbox,apps/ui,packages/core} ; do
         echo "Extracting snippets from: $SNIPPET_DIR"
         node "$BIN" --root="$SNIPPET_DIR" --target="$TARGET_DIR" \
             --sourceext=".js|.ts|.xml|.html|.css"
@@ -41,9 +41,10 @@ extract_apiref() {
     rm -rf "$APIREF_DIR"
 
     npm_install
-    npm run typedoc
+    #npx api-extractor run --config tools/scripts/api-extractor.json --local --verbose && (cd packages/core && cat nativescript-core.header index.d.ts > tmp_file && mv tmp_file nativescript-core.d.ts)
+    npx typedoc --tsconfig tools/scripts/tsconfig.typedoc.json
 
-    mv "$DIST_DIR/apiref" "$APIREF_DIR"
+    mv "dist/apiref" "$APIREF_DIR"
     archive_dist_dir "api-reference"
 }
 

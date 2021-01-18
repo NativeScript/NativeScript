@@ -360,7 +360,6 @@ export const test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsSta
 export const test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStartingFromSpecifiedIndexAndRaiseChangeEventWithCorrectArgs = function () {
 	let result: ChangedData<number>;
 
-	// >> observable-array-splice-change
 	const array = new ObservableArray([1, 2, 3, 4]);
 
 	array.on(ObservableArray.changeEvent, (args: ChangedData<number>) => {
@@ -377,7 +376,6 @@ export const test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsSta
 	});
 
 	array.splice(1, 2);
-	// << observable-array-splice-change
 
 	TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Splice && result.removed.length === 2 && result.index === 1 && result.addedCount === 0, "ObservableArray splice() should raise 'change' event with correct args!");
 };
@@ -385,7 +383,6 @@ export const test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsSta
 export const test_ObservableArray_spliceShouldAddSpecifiedNumberOfElementsStartingFromSpecifiedIndexAndRaiseChangeEventWithCorrectArgs = function () {
 	let result: ChangedData<number>;
 
-	// >> observable-array-splice-change
 	const array = new ObservableArray([0]);
 
 	array.on(ObservableArray.changeEvent, (args: ChangedData<number>) => {
@@ -404,7 +401,6 @@ export const test_ObservableArray_spliceShouldAddSpecifiedNumberOfElementsStarti
 	// Because their is only one item in the above array the item index should be
 	// normalized to Index 1.
 	array.splice(2, 0, 1);
-	// << observable-array-splice-change
 
 	TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Splice && result.removed.length === 0 && result.index === 1 && result.addedCount === 1, "ObservableArray splice() should raise 'change' event with correct args!");
 };
@@ -412,7 +408,6 @@ export const test_ObservableArray_spliceShouldAddSpecifiedNumberOfElementsStarti
 export const test_ObservableArray_spliceShouldAddDeleteSpecifiedNumberOfElementsStartingFromSpecifiedIndexAndRaiseChangeEventWithCorrectArgs = function () {
 	let result: ChangedData<number>;
 
-	// >> observable-array-splice-change
 	const array = new ObservableArray([0]);
 
 	array.on(ObservableArray.changeEvent, (args: ChangedData<number>) => {
@@ -431,7 +426,6 @@ export const test_ObservableArray_spliceShouldAddDeleteSpecifiedNumberOfElements
 	// Because we are starting at index 2, their is NOTHING to delete
 	// So the Starting index should actually be normalized to Index 1
 	array.splice(2, 2, 1);
-	// << observable-array-splice-change
 
 	TKUnit.assert(result.eventName === ObservableArray.changeEvent && result.action === ChangeType.Splice && result.removed.length === 0 && result.index === 1 && result.addedCount === 1, "ObservableArray splice() should raise 'change' event with correct args!");
 };
