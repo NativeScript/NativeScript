@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/webpack",
-  "version": "3.0.8",
+  "version": "4.0.1",
   "main": "index",
   "description": "Webpack plugin for NativeScript",
   "homepage": "https://nativescript.org",
@@ -55,7 +55,7 @@
   "dependencies": {
     "@angular-devkit/core": "~10.0.0",
     "clean-webpack-plugin": "~3.0.0",
-    "copy-webpack-plugin": "~6.0.2",
+    "copy-webpack-plugin": "4.6.0",
     "css": "~3.0.0",
     "css-loader": "~4.2.0",
     "escape-string-regexp": "~4.0.0",

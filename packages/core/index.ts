@@ -110,7 +110,7 @@ export * from './trace';
 
 export * from './ui';
 
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, queueMacrotask, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, queueMacrotask, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString } from './utils';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 
 export const Utils = {
@@ -126,6 +126,8 @@ export const Utils = {
 	dispatchToMainThread,
 	queueMacrotask,
 	releaseNativeObject,
+	convertString,
+	escapeRegexSymbols,
 
 	getModuleName,
 	openFile,

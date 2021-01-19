@@ -377,11 +377,11 @@ declare class JSValue extends NSObject {
 
 	constructWithArguments(_arguments: NSArray<any> | any[]): JSValue;
 
-	definePropertyDescriptor(property: string, descriptor: any): void;
+	definePropertyDescriptor(property: any, descriptor: any): void;
 
-	deleteProperty(property: string): boolean;
+	deleteProperty(property: any): boolean;
 
-	hasProperty(property: string): boolean;
+	hasProperty(property: any): boolean;
 
 	invokeMethodWithArguments(method: string, _arguments: NSArray<any> | any[]): JSValue;
 
@@ -401,7 +401,7 @@ declare class JSValue extends NSObject {
 
 	setValueAtIndex(value: any, index: number): void;
 
-	setValueForProperty(value: any, property: string): void;
+	setValueForProperty(value: any, property: any): void;
 
 	toArray(): NSArray<any>;
 
@@ -435,7 +435,7 @@ declare class JSValue extends NSObject {
 
 	valueAtIndex(index: number): JSValue;
 
-	valueForProperty(property: string): JSValue;
+	valueForProperty(property: any): JSValue;
 }
 
 declare function JSValueCreateJSONString(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, indent: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;

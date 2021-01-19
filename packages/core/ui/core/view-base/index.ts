@@ -89,7 +89,8 @@ export interface ShowModalOptions {
 		cancelable?: boolean;
 
 		/**
-		 * An optional parameter specifying the windowSoftInputMode of the dialog window
+		 * An optional parameter specifying the windowSoftInputMode of the dialog window.
+		 * For possible values see https://developer.android.com/reference/android/view/WindowManager.LayoutParams#softInputMode
 		 */
 		windowSoftInputMode?: number;
 	};
@@ -404,7 +405,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this.suspendRequestLayout = true;
 		this._isLoaded = true;
 		if (!this.disableCss) {
-			this._cssState.onLoaded();
+		this._cssState.onLoaded();
 		}
 		this._resumeNativeUpdates(SuspendType.Loaded);
 
@@ -435,7 +436,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 		this._isLoaded = false;
 		if (!this.disableCss) {
-			this._cssState.onUnloaded();
+		this._cssState.onUnloaded();
 		}
 		this._emit('unloaded');
 	}

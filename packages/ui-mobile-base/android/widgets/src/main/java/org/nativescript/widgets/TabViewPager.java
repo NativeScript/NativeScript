@@ -56,7 +56,7 @@ public class TabViewPager extends ViewPager {
 
     @Override
     public void setCurrentItem(int item) {
-        boolean smoothScroll = this.animationEnabled && this.swipePageEnabled;
+        boolean smoothScroll = this.animationEnabled;
         super.setCurrentItem(item, smoothScroll);
     }
 }
