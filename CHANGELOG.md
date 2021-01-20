@@ -1,3 +1,35 @@
+## [7.1.3](https://github.com/NativeScript/NativeScript/compare/7.1.2-core...7.1.3) (2021-01-17)
+
+
+### Bug Fixes
+
+* **android:** BottomNavigation fragment child already has a parent ([#9148](https://github.com/NativeScript/NativeScript/issues/9148)) ([4690162](https://github.com/NativeScript/NativeScript/commit/4690162384c731d6d652d90a9347cae06c0a0e0c))
+
+
+
+## [7.1.2](https://github.com/NativeScript/NativeScript/compare/7.1.1-core...7.1.2) (2021-01-14)
+
+
+### Bug Fixes
+
+* **webpack:** support other workspace config styles ([7a79a89](https://github.com/NativeScript/NativeScript/commit/7a79a8988b55e7e0896e7ad38f571aba6987edb5))
+
+
+### Features
+
+* **core:** rollup additional Utils ([882aa42](https://github.com/NativeScript/NativeScript/commit/882aa42e8573615aa5ba89396d0f0cdbb711bed3))
+
+
+
+## [7.1.1](https://github.com/NativeScript/NativeScript/compare/7.1.0-core...7.1.1) (2021-01-13)
+
+
+### Bug Fixes
+
+* **core:** const initializer in an ambient context ([#9136](https://github.com/NativeScript/NativeScript/issues/9136)) ([47ebb1d](https://github.com/NativeScript/NativeScript/commit/47ebb1d262aa9ebf29fe445e57d19910612d047f)), closes [#9135](https://github.com/NativeScript/NativeScript/issues/9135)
+
+
+
 # [7.1.0](https://github.com/NativeScript/NativeScript/compare/4.0.0-webpack...7.1.0) (2020-12-30)
 
 

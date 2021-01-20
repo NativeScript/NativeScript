@@ -16,6 +16,8 @@ npm_install() {
 
     MARKER_FILE="./node_modules/installed"
     if [ ! -f "$MARKER_FILE" ] ; then
+				# Fixes perm issue while installing
+				npm i -g npm@^6.13.6
         npm install
         npm install @types/handlebars@4.0.33
         touch "$MARKER_FILE"
