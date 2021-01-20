@@ -21,6 +21,7 @@ npm_install() {
         echo "no marker file calling npm install"
         pwd
         rm -rf node_modules package-lock.json
+        npm -v
         npm install || echo "Something is not right..."
         echo "calling npm install @types/handlebars@4.0.33"
         npm install @types/handlebars@4.0.33
