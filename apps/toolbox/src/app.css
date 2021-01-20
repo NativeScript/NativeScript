@@ -19,6 +19,50 @@ components that have the btn class name.
     font-weight: bold;
 }
 
+.box-shadow-demo .demo-component {
+    font-size: 20;
+    font-weight: bold;
+    color: #555;
+    border-color: #555;
+    margin: 10;
+    padding: 20 25;
+    text-transform: uppercase;
+}
+
+.box-shadow-demo .box-shadow-prop-controls {
+    padding: 10;
+    color: #333;
+    font-size: 17;
+}
+
+.box-shadow-demo .box-shadow-prop-controls TextField{
+    margin-left: 10;
+    padding: 5;
+    border-bottom-width: 1;
+    border-color: #65ADF1;
+}
+.box-shadow-demo .controls Label {
+    font-size: 20;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10;
+}
+.box-shadow-demo .controls Button {
+    padding: 10 15;
+    margin: 5;
+    font-size: 17;
+    font-weight: bold;
+    color: #65ADF1;
+    border-radius: 5;
+    border-width: 1;
+    border-color: #65ADF1;
+}
+
+.box-shadow-demo .controls Button[selectedAttr=true] {
+    background-color: #65ADF1;
+    color: #fff;
+}
+
 .sample-animation {
     animation-name: rotate-expand;
     animation-duration: 5s;

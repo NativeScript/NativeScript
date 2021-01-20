@@ -727,7 +727,7 @@ function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow, background:
 	layer.masksToBounds = false;
 	nativeView.clipsToBounds = false;
 
-	if (!background.color.a) {
+	if (!background.color?.a) {
 		// add white background if view has a transparent background
 		layer.backgroundColor = UIColor.whiteColor.CGColor;
 	}

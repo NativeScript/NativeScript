@@ -3,49 +3,129 @@
         <ActionBar title="Dev Toolbox" icon="" class="action-bar">
         </ActionBar>
     </Page.actionBar>
-    <ScrollView>
-    <StackLayout class="p-t-20 p-x-20">
 
-        <!-- <Button text="Button with html boxShadow" tap="{{ onTap }}" height="50" class="btn btn-primary btn-active" boxShadow="5 5 10 navy"/>  
+    <GridLayout rows="*, auto, *" class="box-shadow-demo">
+        <StackLayout backgroundColor="#ededed" row="0" padding="20" id="boxShadowDemo">
+            <!-- layouts -->
+            <ScrollView height="100%" visibility="{{ selectedComponentType === 'layouts' ? 'visible' : 'collapsed' }}">
+                <StackLayout>
+                    <StackLayout
+                        width="300"
+                        height="100"
+                        class="demo-component"
+                        boxShadow="{{ appliedBoxShadow }}"
+                        borderWidth="{{ borderWidth }}"
+                        borderRadius="{{ borderRadius }}"
+                        background="{{ background }}"
+                    >
+                        <Label text="StackLayout"></Label>
+                    </StackLayout>
+                    <GridLayout
+                        width="300"
+                        height="100"
+                        class="demo-component"
+                        boxShadow="{{ appliedBoxShadow }}"
+                        borderWidth="{{ borderWidth }}"
+                        borderRadius="{{ borderRadius }}"
+                        background="{{ background }}"
+                    >
+                        <Label text="GridLayout"></Label>
+                    </GridLayout>
 
-        <Button text="Button with css boxShadow (rgba)" tap="{{ onTap }}" height="50" marginTop="50" class="btn btn-primary btn-active"/>  
-  
-        <Button text="Button with boxShadow 3 props" tap="{{ onTap }}" height="50" marginTop="50" boxShadow="5 5 navy" class="btn btn-primary btn-active"/>  
-        <Button text="Button with boxShadow 4 props" tap="{{ onTap }}" height="50" marginTop="50" boxShadow="5 5 10 navy" class="btn btn-primary btn-active"/>  
-        <Button text="Button with boxShadow 5 props" tap="{{ onTap }}" height="50" marginTop="50" boxShadow="5 5 10 10 navy" class="btn btn-primary btn-active"/>  
+                </StackLayout>
+            </ScrollView>
 
-        <StackLayout boxShadow="10 10 rgba(0,0,0,1)" marginTop="50">
-          <Button text="Button with css boxShadow" tap="{{ onTap }}" height="50" borderRadius="10"/>
-        </StackLayout> -->
+            <!-- labels -->
+            <GridLayout 
+                rows="*"
+                height="100%"
+                visibility="{{ selectedComponentType === 'labels' ? 'visible' : 'collapsed' }}">
 
-        <!-- TODO: if backgroundColor is not set, it won't call background.ios.ts hence not applying the boxShadow -->
-        <!-- <StackLayout boxShadow="5 5 10 10 red" height="100" backgroundColor="transparent" padding="10" margin="20">
-            <Label text="StackLayout with transparent background"></Label>
-        </StackLayout> -->
+                <Label
+                    horizontalAlignment="center"
+                    verticalAlignment="center"
+                    class="demo-component"
+                    boxShadow="{{ appliedBoxShadow }}"
+                    borderWidth="{{ borderWidth }}"
+                    borderRadius="{{ borderRadius }}"
+                    background="{{ background }}"
+                    text="Label"></Label>
 
-        <GridLayout boxShadow="10 -10 10 10 rgba(0,0,0,0.5)" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
-            <Label text="GridLayout"></Label>
-        </GridLayout>
+            </GridLayout>
 
-        <StackLayout boxShadow="5 10 10 20 #000" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
-            <Label text="StackLayout"></Label>
+            <!-- buttons -->
+            <GridLayout 
+                rows="*"
+                height="100%"
+                visibility="{{ selectedComponentType === 'buttons' ? 'visible' : 'collapsed' }}">
+
+                <Button 
+                    horizontalAlignment="center"
+                    verticalAlignment="center"
+                    class="demo-component"
+                    boxShadow="{{ appliedBoxShadow }}"
+                    borderWidth="{{ borderWidth }}"
+                    borderRadius="{{ borderRadius }}"
+                    background="{{ background }}"
+                    text="button"
+                ></Button>
+
+            </GridLayout>
+
         </StackLayout>
 
-        <AbsoluteLayout boxShadow="5 15 10 20 green" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
-            <Label text="AbsoluteLayout"></Label>
-        </AbsoluteLayout>
+        <GridLayout
+            row="1"
+            rows="auto"
+            columns="auto, *, auto"
+            class="box-shadow-prop-controls">
+            <Label
+                col="0"
+                text="box-shadow:"></Label>
+            <TextField
+                col="1"
+                placeholder="box-shadow"
+                textChange="{{ textChange }}"
+            >
+            </TextField>
+            <Button
+                col="2"
+                text="Apply"
+                tap="{{ applyBoxShadow }}"></Button>
+        </GridLayout>
+        <ScrollView row="2">
+            <StackLayout padding="10" class="controls">
+                <Label text="Components"></Label>
+                <FlexboxLayout flexDirection="row" flexWrap="wrap">
+                    <Button text="Layouts" componentType="layouts" tap="{{ selectComponentType }}"></Button>
+                    <Button text="Labels" componentType="labels" selectedAttr="{{ selectedComponentType }}" tap="{{ selectComponentType }}"></Button>
+                    <Button text="Buttons" componentType="buttons" selectedAttr="{{ selectedComponentType == 'buttons' }}" tap="{{ selectComponentType }}"></Button>
+                </FlexboxLayout>
 
-        <!-- note: the 3rd number in box shadow is currently being ignored, only the 1st, 2nd, and 4th, and color are being used-->
-        <FlexboxLayout boxShadow="0 0 10 25 red" height="100" backgroundColor="lightblue" padding="10" margin="20" tap="{{ toggleAnimation }}">
-            <Label text="FlexboxLayout"></Label>
-        </FlexboxLayout>
+                <Label text="Background"></Label>
+                <FlexboxLayout flexDirection="row" flexWrap="wrap">
+                    <Button text="Solid" backgroundType="solid" tap="{{ selectBackgroundType }}"></Button>
+                    <Button text="Transparent" backgroundType="transparent" tap="{{ selectBackgroundType }}"></Button>
+                    <Button text="Gradient" backgroundType="gradient" tap="{{ selectBackgroundType }}"></Button>
+                </FlexboxLayout>
 
-        <FlexboxLayout boxShadow="15 10 10 20 #000" height="100" backgroundColor="transparent" padding="10" margin="20" tap="{{ toggleAnimation }}">
-            <Label text="FlexboxLayout (transparent background)"></Label>
-        </FlexboxLayout>
+                <Label text="Borders"></Label>
+                <FlexboxLayout flexDirection="row" flexWrap="wrap">
+                    <Button text="Solid" borderType="solid" tap="{{ selectBorderType }}"></Button>
+                    <Button text="Rounded" borderType="rounded" tap="{{ selectBorderType }}"></Button>
+                    <Button text="None" borderType="none" tap="{{ selectBorderType }}"></Button>
+                </FlexboxLayout>
 
-        <Button marginTop="30" boxShadow="0 0 10 8 #000" backgroundColor="transparent" text="button" padding="20"></Button>
-        
-    </StackLayout>
-    </ScrollView>
+                <Label text="Animations"></Label>
+                <FlexboxLayout flexDirection="row" flexWrap="wrap">
+                    <Button text="width"></Button>
+                    <Button text="height"></Button>
+                    <Button text="translate"></Button>
+                    <Button text="scale"></Button>
+                    <Button text="rotate"></Button>
+                </FlexboxLayout>
+                
+            </StackLayout>
+        </ScrollView>
+    </GridLayout>
 </Page>
