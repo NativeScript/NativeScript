@@ -17,8 +17,11 @@ npm_install() {
 
     MARKER_FILE="./node_modules/installed"
     if [ ! -f "$MARKER_FILE" ] ; then
+        echo "no marker file calling npm install"
         npm install
+        echo "calling npm install @types/handlebars@4.0.33"
         npm install @types/handlebars@4.0.33
+        echo "toucing marker file $MARKER_FILE"
         touch "$MARKER_FILE"
         echo "npm_install installed successfully"
     fi
