@@ -129,7 +129,7 @@ class UIViewControllerImpl extends UIViewController {
 			// because changes happen in an interactive transition - IOS will animate between the the states.
 			// If canceled - viewWillAppear will be called for the current page(which is already loaded) and we need to
 			// update the action bar explicitly, so that it is not left styles as the previous page.
-			owner.actionBar.update();
+			owner.updateWithWillAppear();
 		}
 	}
 
@@ -367,6 +367,12 @@ export class Page extends PageBase {
 		if (this.hasActionBar) {
 			this.actionBar.update();
 		}
+	}
+	updateWithWillAppear() {
+		// this method is important because it allows plugins to react to modal page close
+		// for example allowing updating status bar background color
+		this.actionBar.update();
+		this.updateStatusBar();
 	}
 
 	public updateStatusBar() {
