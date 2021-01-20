@@ -7,6 +7,7 @@ TARGET_DIR="$DIST_DIR/snippets"
 PACKAGE_VERSION="${PACKAGE_VERSION:-0.0.0}"
 
 archive_dist_dir() {
+    echo "archive_dist_dir called with $1 - producing nativescript-$DIR-$ENV-$PACKAGE_VERSION.tar.gz"
     DIR="$1"
     (cd "$DIST_DIR" && tar zcvf "nativescript-$DIR-$ENV-$PACKAGE_VERSION.tar.gz" $DIR)
 }
