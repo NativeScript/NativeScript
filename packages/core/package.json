@@ -31,7 +31,7 @@
     "css-tree": "^1.0.0-alpha.39",
     "@nativescript/hook": "~2.0.0",
     "reduce-css-calc": "^2.1.7",
-        "tslib": "2.0.2"
+        "tslib": "2.1.0"
   },
   "nativescript": {
       "platforms": {
