@@ -22,6 +22,7 @@ npm_install() {
         pwd
         rm -rf node_modules package-lock.json
         npm -v
+        npm i -g npm@^6.13.6
         npm install || echo "Something is not right..."
         echo "calling npm install @types/handlebars@4.0.33"
         npm install @types/handlebars@4.0.33
