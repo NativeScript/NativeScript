@@ -12,6 +12,7 @@ archive_dist_dir() {
 }
 
 npm_install() {
+    echo "npm_install called"
     # Don't install modules twice.
 
     MARKER_FILE="./node_modules/installed"
@@ -19,6 +20,7 @@ npm_install() {
         npm install
         npm install @types/handlebars@4.0.33
         touch "$MARKER_FILE"
+        echo "npm_install installed successfully"
     fi
 }
 
@@ -51,6 +53,8 @@ rm -rf "$TARGET_DIR"
 mkdir -p "$TARGET_DIR"
 
 if [ "${BASH_SOURCE[0]}" == "$0" ] ; then
+    echo "about to extract_snippets"
     extract_snippets
+    echo "about to extract_apiref"
     extract_apiref
 fi
