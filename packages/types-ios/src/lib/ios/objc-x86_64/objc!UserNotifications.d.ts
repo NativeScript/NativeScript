@@ -37,7 +37,9 @@ declare const enum UNAuthorizationStatus {
 
 	Authorized = 2,
 
-	Provisional = 3
+	Provisional = 3,
+
+	Ephemeral = 4
 }
 
 declare class UNCalendarNotificationTrigger extends UNNotificationTrigger {
@@ -317,7 +319,11 @@ declare const enum UNNotificationPresentationOptions {
 
 	Sound = 2,
 
-	Alert = 4
+	Alert = 4,
+
+	List = 8,
+
+	Banner = 16
 }
 
 declare class UNNotificationRequest extends NSObject implements NSCopying, NSSecureCoding {

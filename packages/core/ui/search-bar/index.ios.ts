@@ -16,14 +16,14 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 	private _owner: WeakRef<SearchBar>;
 
 	public static initWithOwner(owner: WeakRef<SearchBar>): UISearchBarDelegateImpl {
-		let delegate = <UISearchBarDelegateImpl>UISearchBarDelegateImpl.new();
+		const delegate = <UISearchBarDelegateImpl>UISearchBarDelegateImpl.new();
 		delegate._owner = owner;
 
 		return delegate;
 	}
 
 	public searchBarTextDidChange(searchBar: UISearchBar, searchText: string) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (!owner) {
 			return;
 		}
@@ -38,7 +38,7 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 
 	public searchBarCancelButtonClicked(searchBar: UISearchBar) {
 		searchBar.resignFirstResponder();
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (!owner) {
 			return;
 		}
@@ -48,7 +48,7 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
 
 	public searchBarSearchButtonClicked(searchBar: UISearchBar) {
 		searchBar.resignFirstResponder();
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (!owner) {
 			return;
 		}
@@ -132,12 +132,12 @@ export class SearchBar extends SearchBarBase {
 		return this.ios.barTintColor;
 	}
 	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		let color: UIColor = value instanceof Color ? value.ios : value;
+		const color: UIColor = value instanceof Color ? value.ios : value;
 		this.ios.barTintColor = color;
 	}
 
 	[colorProperty.getDefault](): UIColor {
-		let sf = this._textField;
+		const sf = this._textField;
 		if (sf) {
 			return sf.textColor;
 		}
@@ -145,8 +145,8 @@ export class SearchBar extends SearchBarBase {
 		return null;
 	}
 	[colorProperty.setNative](value: UIColor | Color) {
-		let sf = this._textField;
-		let color = value instanceof Color ? value.ios : value;
+		const sf = this._textField;
+		const color = value instanceof Color ? value.ios : value;
 		if (sf) {
 			sf.textColor = color;
 			sf.tintColor = color;
@@ -154,12 +154,12 @@ export class SearchBar extends SearchBarBase {
 	}
 
 	[fontInternalProperty.getDefault](): UIFont {
-		let sf = this._textField;
+		const sf = this._textField;
 
 		return sf ? sf.font : null;
 	}
 	[fontInternalProperty.setNative](value: UIFont | Font) {
-		let sf = this._textField;
+		const sf = this._textField;
 		if (sf) {
 			sf.font = value instanceof Font ? value.getUIFont(sf.font) : value;
 		}

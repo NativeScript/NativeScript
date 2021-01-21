@@ -29,7 +29,7 @@ export class AbsoluteLayout extends AbsoluteLayoutBase {
 		const childMeasureSpec = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 
 		this.eachLayoutChild((child, last) => {
-			let childSize = View.measureChild(this, child, childMeasureSpec, childMeasureSpec);
+			const childSize = View.measureChild(this, child, childMeasureSpec, childMeasureSpec);
 			measureWidth = Math.max(measureWidth, child.effectiveLeft + childSize.measuredWidth);
 			measureHeight = Math.max(measureHeight, child.effectiveTop + childSize.measuredHeight);
 		});

@@ -608,7 +608,7 @@ export class ListViewTest extends UITest<ListView> {
 
 		if (isAndroid) {
 			// simulates Angular way of removing views
-			(<any>listView)._realizedItems.forEach((view, nativeView, map) => {
+			(<any>listView)._realizedItems.forEach(({ view }, nativeView, map) => {
 				//console.log("view: " + view);
 				listView._removeView(view);
 			});
@@ -900,6 +900,29 @@ export class ListViewTest extends UITest<ListView> {
 
 		TKUnit.assertEqual(firstNativeElementText, 'red', 'first element text');
 		TKUnit.assertEqual(secondNativeElementText, 'green', 'second element text');
+	}
+
+	public test_ItemTemplateSelector_DoesNotThrowWhenItemsChangeMidRender() {
+		let listView = this.testView;
+		listView.height = 200;
+
+		listView.itemTemplates = this._itemTemplatesString;
+		listView.itemTemplateSelector = "age === 0 ? 'red' : 'green'";
+		listView.items = ListViewTest.generateItemsForMultipleTemplatesTests(4);
+		listView.items[0].age = 0;
+		listView.once('itemLoading', () => {
+			if (listView.items && listView.items.length) {
+				listView.items[0].age = listView.items[0].age !== 0 ? 0 : 1;
+			}
+		});
+		listView.refresh();
+		TKUnit.wait(0.1);
+		listView.scrollToIndex(1);
+		TKUnit.wait(0.1);
+		listView.scrollToIndex(2);
+		TKUnit.wait(0.1);
+		listView.scrollToIndex(3);
+		TKUnit.wait(0.1);
 	}
 
 	public test_ItemTemplateSelector_TestVirtualization() {

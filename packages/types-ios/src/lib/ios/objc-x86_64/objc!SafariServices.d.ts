@@ -116,6 +116,8 @@ interface SFSafariViewControllerDelegate extends NSObjectProtocol {
 	safariViewControllerExcludedActivityTypesForURLTitle?(controller: SFSafariViewController, URL: NSURL, title: string): NSArray<string>;
 
 	safariViewControllerInitialLoadDidRedirectToURL?(controller: SFSafariViewController, URL: NSURL): void;
+
+	safariViewControllerWillOpenInBrowser?(controller: SFSafariViewController): void;
 }
 declare var SFSafariViewControllerDelegate: {
 

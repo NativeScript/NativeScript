@@ -29,7 +29,7 @@ const FragmentClass = (<any>org.nativescript.widgets.FragmentBase).extend('com.t
 	},
 
 	onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle) {
-		let result = this._callbacks.onCreateView(this, inflater, container, savedInstanceState, superProto.onCreateView);
+		const result = this._callbacks.onCreateView(this, inflater, container, savedInstanceState, superProto.onCreateView);
 
 		return result;
 	},

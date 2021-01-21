@@ -1,6 +1,6 @@
 ﻿import * as utils from '../utils';
 
-export module ios {
+export namespace ios {
 	export function getActualHeight(view: UIView): number {
 		if (view.window && !view.hidden) {
 			return utils.layout.toDevicePixels(view.frame.size.height);

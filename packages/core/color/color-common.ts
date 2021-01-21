@@ -13,9 +13,9 @@ export class Color implements definition.Color {
 	constructor(color: number);
 	constructor(color: string);
 	constructor(a: number, r: number, g: number, b: number);
-	constructor() {
-		if (arguments.length === 1) {
-			const arg = arguments[0];
+	constructor(...args) {
+		if (args.length === 1) {
+			const arg = args[0];
 			if (types.isString(arg)) {
 				if (isRgbOrRgba(arg)) {
 					this._argb = argbFromRgbOrRgba(arg);
@@ -23,9 +23,9 @@ export class Color implements definition.Color {
 					this._argb = argbFromHslOrHsla(arg);
 				} else if (knownColors.isKnownName(arg)) {
 					// The parameter is a known color name
-					const hex = knownColors.getKnownColor(arg);
+					const argb = knownColors.getKnownColor(arg);
 					this._name = arg;
-					this._argb = this._argbFromString(hex);
+					this._argb = argb;
 				} else if (HEX_REGEX.test(arg)) {
 					// The parameter is a "#AARRGGBB" formatted string
 					const hex = this._normalizeHex(arg);
@@ -40,8 +40,8 @@ export class Color implements definition.Color {
 			} else {
 				throw new Error('Expected 1 or 4 constructor parameters.');
 			}
-		} else if (arguments.length === 4) {
-			this._argb = (arguments[0] & 0xff) * 0x01000000 + (arguments[1] & 0xff) * 0x00010000 + (arguments[2] & 0xff) * 0x00000100 + (arguments[3] & 0xff) * 0x00000001;
+		} else if (args.length === 4) {
+			this._argb = (args[0] & 0xff) * 0x01000000 + (args[1] & 0xff) * 0x00010000 + (args[2] & 0xff) * 0x00000100 + (args[3] & 0xff) * 0x00000001;
 		} else {
 			throw new Error('Expected 1 or 4 constructor parameters.');
 		}

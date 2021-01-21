@@ -172,21 +172,45 @@ declare class NSBatchInsertRequest extends NSPersistentStoreRequest {
 
 	static alloc(): NSBatchInsertRequest; // inherited from NSObject
 
+	static batchInsertRequestWithEntityNameDictionaryHandler(entityName: string, handler: (p1: NSMutableDictionary<string, any>) => boolean): NSBatchInsertRequest;
+
+	static batchInsertRequestWithEntityNameManagedObjectHandler(entityName: string, handler: (p1: NSManagedObject) => boolean): NSBatchInsertRequest;
+
 	static batchInsertRequestWithEntityNameObjects(entityName: string, dictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): NSBatchInsertRequest;
 
 	static new(): NSBatchInsertRequest; // inherited from NSObject
+
+	dictionaryHandler: (p1: NSMutableDictionary<string, any>) => boolean;
 
 	readonly entity: NSEntityDescription;
 
 	readonly entityName: string;
 
+	managedObjectHandler: (p1: NSManagedObject) => boolean;
+
 	objectsToInsert: NSArray<NSDictionary<string, any>>;
 
 	resultType: NSBatchInsertRequestResultType;
 
+	constructor(o: { entity: NSEntityDescription; dictionaryHandler: (p1: NSMutableDictionary<string, any>) => boolean; });
+
+	constructor(o: { entity: NSEntityDescription; managedObjectHandler: (p1: NSManagedObject) => boolean; });
+
+	constructor(o: { entityName: string; dictionaryHandler: (p1: NSMutableDictionary<string, any>) => boolean; });
+
+	constructor(o: { entityName: string; managedObjectHandler: (p1: NSManagedObject) => boolean; });
+
 	constructor(o: { entityName: string; objects: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]; });
 
 	constructor(o: { entity: NSEntityDescription; objects: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]; });
+
+	initWithEntityDictionaryHandler(entity: NSEntityDescription, handler: (p1: NSMutableDictionary<string, any>) => boolean): this;
+
+	initWithEntityManagedObjectHandler(entity: NSEntityDescription, handler: (p1: NSManagedObject) => boolean): this;
+
+	initWithEntityNameDictionaryHandler(entityName: string, handler: (p1: NSMutableDictionary<string, any>) => boolean): this;
+
+	initWithEntityNameManagedObjectHandler(entityName: string, handler: (p1: NSManagedObject) => boolean): this;
 
 	initWithEntityNameObjects(entityName: string, dictionaries: NSArray<NSDictionary<string, any>> | NSDictionary<string, any>[]): this;
 
@@ -328,6 +352,8 @@ declare const enum NSDeleteRule {
 
 	DenyDeleteRule = 3
 }
+
+declare var NSDeletedObjectIDsKey: string;
 
 declare var NSDeletedObjectsKey: string;
 
@@ -488,7 +514,7 @@ declare class NSExpressionDescription extends NSPropertyDescription {
 
 declare const NSExternalRecordImportError: number;
 
-declare class NSFetchIndexDescription extends NSObject implements NSCoding {
+declare class NSFetchIndexDescription extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): NSFetchIndexDescription; // inherited from NSObject
 
@@ -506,6 +532,8 @@ declare class NSFetchIndexDescription extends NSObject implements NSCoding {
 
 	constructor(o: { name: string; elements: NSArray<NSFetchIndexElementDescription> | NSFetchIndexElementDescription[]; });
 
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
@@ -513,7 +541,7 @@ declare class NSFetchIndexDescription extends NSObject implements NSCoding {
 	initWithNameElements(name: string, elements: NSArray<NSFetchIndexElementDescription> | NSFetchIndexElementDescription[]): this;
 }
 
-declare class NSFetchIndexElementDescription extends NSObject implements NSCoding {
+declare class NSFetchIndexElementDescription extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): NSFetchIndexElementDescription; // inherited from NSObject
 
@@ -532,6 +560,8 @@ declare class NSFetchIndexElementDescription extends NSObject implements NSCodin
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { property: NSPropertyDescription; collationType: NSFetchIndexElementType; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -786,9 +816,13 @@ declare var NSInferMappingModelAutomaticallyOption: string;
 
 declare const NSInferredMappingModelError: number;
 
+declare var NSInsertedObjectIDsKey: string;
+
 declare var NSInsertedObjectsKey: string;
 
 declare var NSInvalidatedAllObjectsKey: string;
+
+declare var NSInvalidatedObjectIDsKey: string;
 
 declare var NSInvalidatedObjectsKey: string;
 
@@ -1031,7 +1065,11 @@ declare const enum NSManagedObjectContextConcurrencyType {
 	MainQueueConcurrencyType = 2
 }
 
+declare var NSManagedObjectContextDidMergeChangesObjectIDsNotification: string;
+
 declare var NSManagedObjectContextDidSaveNotification: string;
+
+declare var NSManagedObjectContextDidSaveObjectIDsNotification: string;
 
 declare const NSManagedObjectContextLockingError: number;
 
@@ -1333,6 +1371,12 @@ declare class NSPersistentCloudKitContainer extends NSPersistentContainer {
 
 	static persistentContainerWithNameManagedObjectModel(name: string, model: NSManagedObjectModel): NSPersistentCloudKitContainer; // inherited from NSPersistentContainer
 
+	canDeleteRecordForManagedObjectWithID(objectID: NSManagedObjectID): boolean;
+
+	canModifyManagedObjectsInStore(store: NSPersistentStore): boolean;
+
+	canUpdateRecordForManagedObjectWithID(objectID: NSManagedObjectID): boolean;
+
 	initializeCloudKitSchemaWithOptionsError(options: NSPersistentCloudKitContainerSchemaInitializationOptions): boolean;
 
 	recordForManagedObjectID(managedObjectID: NSManagedObjectID): CKRecord;
@@ -1344,6 +1388,77 @@ declare class NSPersistentCloudKitContainer extends NSPersistentContainer {
 	recordsForManagedObjectIDs(managedObjectIDs: NSArray<NSManagedObjectID> | NSManagedObjectID[]): NSDictionary<NSManagedObjectID, CKRecord>;
 }
 
+declare class NSPersistentCloudKitContainerEvent extends NSObject implements NSCopying {
+
+	static alloc(): NSPersistentCloudKitContainerEvent; // inherited from NSObject
+
+	static new(): NSPersistentCloudKitContainerEvent; // inherited from NSObject
+
+	readonly endDate: Date;
+
+	readonly error: NSError;
+
+	readonly identifier: NSUUID;
+
+	readonly startDate: Date;
+
+	readonly storeIdentifier: string;
+
+	readonly succeeded: boolean;
+
+	readonly type: NSPersistentCloudKitContainerEventType;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare var NSPersistentCloudKitContainerEventChangedNotification: string;
+
+declare class NSPersistentCloudKitContainerEventRequest extends NSPersistentStoreRequest {
+
+	static alloc(): NSPersistentCloudKitContainerEventRequest; // inherited from NSObject
+
+	static fetchEventsAfterDate(date: Date): NSPersistentCloudKitContainerEventRequest;
+
+	static fetchEventsAfterEvent(event: NSPersistentCloudKitContainerEvent): NSPersistentCloudKitContainerEventRequest;
+
+	static fetchEventsMatchingFetchRequest(fetchRequest: NSFetchRequest<any>): NSPersistentCloudKitContainerEventRequest;
+
+	static fetchRequestForEvents(): NSFetchRequest<any>;
+
+	static new(): NSPersistentCloudKitContainerEventRequest; // inherited from NSObject
+
+	resultType: NSPersistentCloudKitContainerEventResultType;
+}
+
+declare class NSPersistentCloudKitContainerEventResult extends NSPersistentStoreResult {
+
+	static alloc(): NSPersistentCloudKitContainerEventResult; // inherited from NSObject
+
+	static new(): NSPersistentCloudKitContainerEventResult; // inherited from NSObject
+
+	readonly result: any;
+
+	readonly resultType: NSPersistentCloudKitContainerEventResultType;
+}
+
+declare const enum NSPersistentCloudKitContainerEventResultType {
+
+	Events = 0,
+
+	CountEvents = 1
+}
+
+declare const enum NSPersistentCloudKitContainerEventType {
+
+	Setup = 0,
+
+	Import = 1,
+
+	Export = 2
+}
+
+declare var NSPersistentCloudKitContainerEventUserInfoKey: string;
+
 declare class NSPersistentCloudKitContainerOptions extends NSObject {
 
 	static alloc(): NSPersistentCloudKitContainerOptions; // inherited from NSObject
@@ -1351,6 +1466,8 @@ declare class NSPersistentCloudKitContainerOptions extends NSObject {
 	static new(): NSPersistentCloudKitContainerOptions; // inherited from NSObject
 
 	readonly containerIdentifier: string;
+
+	databaseScope: CKDatabaseScope;
 
 	constructor(o: { containerIdentifier: string; });
 
@@ -1901,6 +2018,8 @@ declare class NSQueryGenerationToken extends NSObject implements NSCopying, NSSe
 
 declare var NSReadOnlyPersistentStoreOption: string;
 
+declare var NSRefreshedObjectIDsKey: string;
+
 declare var NSRefreshedObjectsKey: string;
 
 declare class NSRelationshipDescription extends NSPropertyDescription {
@@ -1985,6 +2104,8 @@ declare var NSStoreTypeKey: string;
 declare var NSStoreUUIDKey: string;
 
 declare var NSUUIDChangedPersistentStoresKey: string;
+
+declare var NSUpdatedObjectIDsKey: string;
 
 declare var NSUpdatedObjectsKey: string;
 

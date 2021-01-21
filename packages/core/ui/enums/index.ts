@@ -2,7 +2,7 @@
 import * as animationModule from '../../ui/animation';
 
 export type KeyboardType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
-export module KeyboardType {
+export namespace KeyboardType {
 	export const datetime = 'datetime';
 	export const phone = 'phone';
 	export const number = 'number';
@@ -11,7 +11,7 @@ export module KeyboardType {
 	export const integer = 'integer';
 }
 
-export module ReturnKeyType {
+export namespace ReturnKeyType {
 	export const done = 'done';
 	export const next = 'next';
 	export const go = 'go';
@@ -25,154 +25,154 @@ export class TextAlignment {
 	static right = 'right';
 }
 
-export module TextDecoration {
+export namespace TextDecoration {
 	export const none = 'none';
 	export const underline = 'underline';
 	export const lineThrough = 'line-through';
 }
 
-export module TextTransform {
+export namespace TextTransform {
 	export const none = 'none';
 	export const capitalize = 'capitalize';
 	export const uppercase = 'uppercase';
 	export const lowercase = 'lowercase';
 }
 
-export module WhiteSpace {
+export namespace WhiteSpace {
 	export const normal = 'normal';
 	export const nowrap = 'nowrap';
 }
 
-export module Orientation {
+export namespace Orientation {
 	export const horizontal = 'horizontal';
 	export const vertical = 'vertical';
 }
 
-export module DeviceOrientation {
+export namespace DeviceOrientation {
 	export const portrait = 'portrait';
 	export const landscape = 'landscape';
 	export const unknown = 'unknown';
 }
 
-export module HorizontalAlignment {
+export namespace HorizontalAlignment {
 	export const left = 'left';
 	export const center = 'center';
 	export const right = 'right';
 	export const stretch = 'stretch';
 }
 
-export module VerticalAlignment {
+export namespace VerticalAlignment {
 	export const top = 'top';
 	export const middle = 'middle';
 	export const bottom = 'bottom';
 	export const stretch = 'stretch';
 }
 
-export module Stretch {
-	export const none: string = 'none';
-	export const aspectFill: string = 'aspectFill';
-	export const aspectFit: string = 'aspectFit';
-	export const fill: string = 'fill';
+export namespace Stretch {
+	export const none = 'none';
+	export const aspectFill = 'aspectFill';
+	export const aspectFit = 'aspectFit';
+	export const fill = 'fill';
 }
 
-export module Visibility {
-	export const visible: string = 'visible';
-	export const collapse: string = 'collapse';
-	export const collapsed: string = 'collapsed';
-	export const hidden: string = 'hidden';
+export namespace Visibility {
+	export const visible = 'visible';
+	export const collapse = 'collapse';
+	export const collapsed = 'collapsed';
+	export const hidden = 'hidden';
 }
 
-export module FontAttributes {
+export namespace FontAttributes {
 	export const Normal = 0;
 	export const Bold = 1;
 	export const Italic = 1 << 1;
 }
 
-export module DeviceType {
-	export const Phone: string = 'Phone';
-	export const Tablet: string = 'Tablet';
+export namespace DeviceType {
+	export const Phone = 'Phone';
+	export const Tablet = 'Tablet';
 }
 
-export module UpdateTextTrigger {
-	export const focusLost: string = 'focusLost';
-	export const textChanged: string = 'textChanged';
+export namespace UpdateTextTrigger {
+	export const focusLost = 'focusLost';
+	export const textChanged = 'textChanged';
 }
 
-export module Accuracy {
-	export const any: number = 300;
-	export const high: number = 3;
+export namespace Accuracy {
+	export const any = 300;
+	export const high = 3;
 }
 
-export module Dock {
-	export const left: string = 'left';
-	export const top: string = 'top';
-	export const right: string = 'right';
-	export const bottom: string = 'bottom';
+export namespace Dock {
+	export const left = 'left';
+	export const top = 'top';
+	export const right = 'right';
+	export const bottom = 'bottom';
 }
 
-export module AutocapitalizationType {
-	export const none: string = 'none';
-	export const words: string = 'words';
-	export const sentences: string = 'sentences';
-	export const allCharacters: string = 'allcharacters';
+export namespace AutocapitalizationType {
+	export const none = 'none';
+	export const words = 'words';
+	export const sentences = 'sentences';
+	export const allCharacters = 'allcharacters';
 }
 
-export module NavigationBarVisibility {
-	export const auto: string = 'auto';
-	export const never: string = 'never';
-	export const always: string = 'always';
+export namespace NavigationBarVisibility {
+	export const auto = 'auto';
+	export const never = 'never';
+	export const always = 'always';
 }
 
-export module AndroidActionBarIconVisibility {
-	export const auto: string = 'auto';
-	export const never: string = 'never';
-	export const always: string = 'always';
+export namespace AndroidActionBarIconVisibility {
+	export const auto = 'auto';
+	export const never = 'never';
+	export const always = 'always';
 }
 
-export module AndroidActionItemPosition {
-	export const actionBar: string = 'actionBar';
-	export const actionBarIfRoom: string = 'actionBarIfRoom';
-	export const popup: string = 'popup';
+export namespace AndroidActionItemPosition {
+	export const actionBar = 'actionBar';
+	export const actionBarIfRoom = 'actionBarIfRoom';
+	export const popup = 'popup';
 }
 
-export module IOSActionItemPosition {
-	export const left: string = 'left';
-	export const right: string = 'right';
+export namespace IOSActionItemPosition {
+	export const left = 'left';
+	export const right = 'right';
 }
 
-export module ImageFormat {
-	export const png: string = 'png';
-	export const jpeg: string = 'jpeg';
-	export const jpg: string = 'jpg';
+export namespace ImageFormat {
+	export const png = 'png';
+	export const jpeg = 'jpeg';
+	export const jpg = 'jpg';
 }
 
-export module FontStyle {
-	export const normal: string = 'normal';
-	export const italic: string = 'italic';
+export namespace FontStyle {
+	export const normal = 'normal';
+	export const italic = 'italic';
 }
 
-export module FontWeight {
-	export const thin: string = '100';
-	export const extraLight: string = '200';
-	export const light: string = '300';
-	export const normal: string = 'normal'; // 400
-	export const medium: string = '500';
-	export const semiBold: string = '600';
-	export const bold: string = 'bold'; // 700
-	export const extraBold: string = '800';
-	export const black: string = '900';
+export namespace FontWeight {
+	export const thin = '100';
+	export const extraLight = '200';
+	export const light = '300';
+	export const normal = 'normal'; // 400
+	export const medium = '500';
+	export const semiBold = '600';
+	export const bold = 'bold'; // 700
+	export const extraBold = '800';
+	export const black = '900';
 }
 
-export module BackgroundRepeat {
-	export const repeat: string = 'repeat';
-	export const repeatX: string = 'repeat-x';
-	export const repeatY: string = 'repeat-y';
-	export const noRepeat: string = 'no-repeat';
+export namespace BackgroundRepeat {
+	export const repeat = 'repeat';
+	export const repeatX = 'repeat-x';
+	export const repeatY = 'repeat-y';
+	export const noRepeat = 'no-repeat';
 }
 
 let animation: typeof animationModule;
 
-export module AnimationCurve {
+export namespace AnimationCurve {
 	export const ease = 'ease';
 	export const easeIn = 'easeIn';
 	export const easeOut = 'easeOut';
@@ -186,12 +186,12 @@ export module AnimationCurve {
 	}
 }
 
-export module StatusBarStyle {
+export namespace StatusBarStyle {
 	export const light = 'light';
 	export const dark = 'dark';
 }
 
-export module SystemAppearance {
+export namespace SystemAppearance {
 	export const light = 'light';
 	export const dark = 'dark';
 }

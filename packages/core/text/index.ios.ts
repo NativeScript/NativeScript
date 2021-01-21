@@ -1,6 +1,6 @@
 ﻿export * from './text-common';
 
-export module encoding {
+export namespace encoding {
 	export const ISO_8859_1 = 5; //NSISOLatin1StringEncoding
 	export const US_ASCII = 1; //NSASCIIStringEncoding
 	export const UTF_16 = 10; //NSUnicodeStringEncoding

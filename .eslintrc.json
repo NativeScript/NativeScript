@@ -4,15 +4,28 @@
 	"parserOptions": {
 		"ecmaVersion": 2018,
 		"sourceType": "module",
-		"project": "./tsconfig.json"
+		"project": ["packages/core/tsconfig.json", "packages/webpack/tsconfig.json"]
 	},
 	"ignorePatterns": ["**/*"],
 	"plugins": ["@typescript-eslint", "@nrwl/nx"],
-	"extends": ["eslint:recommended", "plugin:@typescript-eslint/eslint-recommended", "plugin:@typescript-eslint/recommended", "prettier", "prettier/@typescript-eslint"],
+	"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "prettier/@typescript-eslint"],
 	"rules": {
 		"@typescript-eslint/explicit-member-accessibility": "off",
 		"@typescript-eslint/explicit-function-return-type": "off",
 		"@typescript-eslint/no-parameter-properties": "off",
+		"@typescript-eslint/no-empty-function": "off",
+		"@typescript-eslint/no-explicit-any": "off",
+		"@typescript-eslint/no-unused-vars": "off",
+		"@typescript-eslint/no-namespace": "off",
+		"@typescript-eslint/ban-types": "off",
+		"@typescript-eslint/ban-ts-comment": "off",
+		"@typescript-eslint/no-this-alias": "off",
+		"@typescript-eslint/no-empty-interface": "off",
+		"@typescript-eslint/triple-slash-reference": "off",
+		"no-prototype-builtins": "off",
+		"no-inner-declarations": "off",
+		"no-constant-condition": "off",
+		"no-useless-escape": "off",
 		"@nrwl/nx/enforce-module-boundaries": [
 			"error",
 			{

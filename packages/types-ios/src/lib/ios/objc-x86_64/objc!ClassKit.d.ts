@@ -69,13 +69,29 @@ declare class CLSContext extends CLSObject {
 
 	readonly active: boolean;
 
+	assignable: boolean;
+
 	readonly currentActivity: CLSActivity;
+
+	customTypeName: string;
 
 	displayOrder: number;
 
 	readonly identifier: string;
 
+	readonly identifierPath: NSArray<string>;
+
 	readonly parent: CLSContext;
+
+	readonly progressReportingCapabilities: NSSet<CLSProgressReportingCapability>;
+
+	suggestedAge: NSRange;
+
+	suggestedCompletionTime: NSRange;
+
+	summary: string;
+
+	thumbnail: any;
 
 	title: string;
 
@@ -89,6 +105,8 @@ declare class CLSContext extends CLSObject {
 
 	addChildContext(child: CLSContext): void;
 
+	addProgressReportingCapabilities(capabilities: NSSet<CLSProgressReportingCapability>): void;
+
 	becomeActive(): void;
 
 	createNewActivity(): CLSActivity;
@@ -99,7 +117,11 @@ declare class CLSContext extends CLSObject {
 
 	removeFromParent(): void;
 
+	resetProgressReportingCapabilities(): void;
+
 	resignActive(): void;
+
+	setType(type: CLSContextType): void;
 }
 
 interface CLSContextProvider {
@@ -159,7 +181,11 @@ declare const enum CLSContextType {
 
 	Audio = 14,
 
-	Video = 15
+	Video = 15,
+
+	Course = 16,
+
+	Custom = 17
 }
 
 declare class CLSDataStore extends NSObject {
@@ -257,6 +283,34 @@ declare var CLSPredicateKeyPathTitle: string;
 declare var CLSPredicateKeyPathTopic: string;
 
 declare var CLSPredicateKeyPathUniversalLinkURL: string;
+
+declare class CLSProgressReportingCapability extends CLSObject {
+
+	static alloc(): CLSProgressReportingCapability; // inherited from NSObject
+
+	static new(): CLSProgressReportingCapability; // inherited from NSObject
+
+	readonly details: string;
+
+	readonly kind: CLSProgressReportingCapabilityKind;
+
+	constructor(o: { kind: CLSProgressReportingCapabilityKind; details: string; });
+
+	initWithKindDetails(kind: CLSProgressReportingCapabilityKind, details: string): this;
+}
+
+declare const enum CLSProgressReportingCapabilityKind {
+
+	Duration = 0,
+
+	Percent = 1,
+
+	Binary = 2,
+
+	Quantity = 3,
+
+	Score = 4
+}
 
 declare class CLSQuantityItem extends CLSActivityItem {
 

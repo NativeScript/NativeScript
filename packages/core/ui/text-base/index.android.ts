@@ -172,7 +172,7 @@ export class TextBase extends TextBaseCommon {
 	private _maxHeight: number;
 	private _minLines: number;
 	private _maxLines: number;
-	private _tappable: boolean = false;
+	private _tappable = false;
 	private _defaultMovementMethod: android.text.method.MovementMethod;
 
 	public initNativeView(): void {
@@ -278,7 +278,7 @@ export class TextBase extends TextBaseCommon {
 		return 'initial';
 	}
 	[textAlignmentProperty.setNative](value: TextAlignment) {
-		let verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+		const verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
 		switch (value) {
 			case 'initial':
 			case 'left':
@@ -413,7 +413,7 @@ export class TextBase extends TextBaseCommon {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
 	}
 
-	_setNativeText(reset: boolean = false): void {
+	_setNativeText(reset = false): void {
 		if (reset) {
 			this.nativeTextViewProtected.setText(null);
 
@@ -446,10 +446,10 @@ export class TextBase extends TextBaseCommon {
 }
 
 function getCapitalizedString(str: string): string {
-	let words = str.split(' ');
-	let newWords = [];
+	const words = str.split(' ');
+	const newWords = [];
 	for (let i = 0, length = words.length; i < length; i++) {
-		let word = words[i].toLowerCase();
+		const word = words[i].toLowerCase();
 		newWords.push(word.substr(0, 1).toUpperCase() + word.substring(1));
 	}
 

@@ -56,6 +56,6 @@ export interface ParsedFont {
 
 export function parseFont(fontValue: string): ParsedFont;
 
-export module ios {
+export namespace ios {
 	export function registerFont(fontFile: string);
 }

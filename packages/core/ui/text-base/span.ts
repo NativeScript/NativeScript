@@ -9,7 +9,7 @@ import { isNullOrUndefined, isString } from '../../utils/types';
 export class Span extends ViewBase implements SpanDefinition {
 	static linkTapEvent = 'linkTap';
 	private _text: string;
-	private _tappable: boolean = false;
+	private _tappable = false;
 
 	get fontFamily(): string {
 		return this.style.fontFamily;

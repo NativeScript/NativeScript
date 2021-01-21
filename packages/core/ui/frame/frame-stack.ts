@@ -1,7 +1,7 @@
 // Types.
 import { FrameBase } from './frame-common';
 
-export let frameStack: Array<FrameBase> = [];
+export const frameStack: Array<FrameBase> = [];
 
 export function topmost(): FrameBase {
 	if (frameStack.length > 0) {
