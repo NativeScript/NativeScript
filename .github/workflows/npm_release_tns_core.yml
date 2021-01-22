@@ -65,10 +65,8 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../.npmrc
 
-          ls -al
-
           echo "Publishing @nativescript/core@$NPM_VERSION to NPM with tag $NPM_TAG..."
-          # npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG --dry-run
+          npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG
 
           echo "Publishing tns-core-modules@$NPM_VERSION to NPM with tag $NPM_TAG..."
-          # npm publish tns-core-modules-$NPM_VERSION.tgz --tag $NPM_TAG --dry-run
+          npm publish tns-core-modules-$NPM_VERSION.tgz --tag $NPM_TAG
