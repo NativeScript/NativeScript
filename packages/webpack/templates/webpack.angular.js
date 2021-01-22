@@ -85,7 +85,7 @@ module.exports = env => {
   const tsConfigTnsName = 'tsconfig.tns.json';
   const tsConfigTnsPath = resolve(projectRoot, tsConfigTnsName);
   if (fs.existsSync(tsConfigTnsPath)) {
-    // support shared angular app configurations 
+    // support shared angular app configurations
     tsConfigName = tsConfigTnsName;
     tsConfigPath = tsConfigTnsPath;
   }
@@ -290,17 +290,20 @@ module.exports = env => {
               // when these options are enabled
               collapse_vars: platform !== 'android',
               sequences: platform !== 'android',
+			  // For v8 Compatibility
+			  keep_infinity: true, // for V8
+			  reduce_funcs: false, // for V8
               // custom
-              drop_console: true,
+              drop_console: production,
               drop_debugger: true,
               ecma: 6,
-              keep_infinity: platform === 'android', // for Chrome/V8
-              reduce_funcs: platform !== 'android', // for Chrome/V8
               global_defs: {
                 __UGLIFIED__: true
               }
             },
-            // custom
+  		    // Required for Element Level CSS, Observable Events, & Android Frame
+  		    keep_classnames: true,
+  		    // custom
             ecma: 6,
             safari10: platform !== 'android'
           }
@@ -390,7 +393,7 @@ module.exports = env => {
         process: 'global.process'
       }),
       // Remove all files from the out dir.
-      new CleanWebpackPlugin({ 
+      new CleanWebpackPlugin({
         cleanOnceBeforeBuildPatterns: itemsToClean,
         verbose: !!verbose
       }),

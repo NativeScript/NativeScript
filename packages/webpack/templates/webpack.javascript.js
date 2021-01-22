@@ -53,12 +53,14 @@ module.exports = env => {
         verbose, // --env.verbose
         snapshotInDocker, // --env.snapshotInDocker
         skipSnapshotTools, // --env.skipSnapshotTools
-        compileSnapshot // --env.compileSnapshot
+		ci, // --env.ci
+		compileSnapshot // --env.compileSnapshot
     } = env;
 
     const useLibs = compileSnapshot;
     const isAnySourceMapEnabled = !!sourceMap || !!hiddenSourceMap;
     const externals = nsWebpack.getConvertedExternals(env.externals);
+
     let appFullPath = resolve(projectRoot, appPath);
     if (!fs.existsSync(appFullPath)) {
       // some apps use 'app' directory
@@ -168,7 +170,7 @@ module.exports = env => {
             minimizer: [
                 new TerserPlugin({
                     parallel: true,
-                    cache: true,
+                    cache: !ci,
                     sourceMap: isAnySourceMapEnabled,
                     terserOptions: {
                         output: {
@@ -180,7 +182,18 @@ module.exports = env => {
                             // when these options are enabled
                             'collapse_vars': platform !== "android",
                             sequences: platform !== "android",
-                        }
+							// For v8 Compatibility
+							keep_infinity: true, // for V8
+							reduce_funcs: false, // for V8
+							// custom
+							drop_console: production,
+							drop_debugger: true,
+							global_defs: {
+								__UGLIFIED__: true
+							}
+						},
+						// Required for Element Level CSS, Observable Events, & Android Frame
+						keep_classnames: true,
                     }
                 })
             ],
@@ -239,7 +252,7 @@ module.exports = env => {
                 "process": "global.process",
             }),
             // Remove all files from the out dir.
-            new CleanWebpackPlugin({ 
+            new CleanWebpackPlugin({
               cleanOnceBeforeBuildPatterns: itemsToClean,
               verbose: !!verbose
             }),

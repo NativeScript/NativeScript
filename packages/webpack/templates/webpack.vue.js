@@ -53,6 +53,7 @@ module.exports = env => {
         unitTesting, // --env.unitTesting
         testing, // --env.testing
         verbose, // --env.verbose
+		ci, // --env.ci
         snapshotInDocker, // --env.snapshotInDocker
         skipSnapshotTools, // --env.skipSnapshotTools
         compileSnapshot // --env.compileSnapshot
@@ -173,7 +174,7 @@ module.exports = env => {
             minimizer: [
                 new TerserPlugin({
                     parallel: true,
-                    cache: true,
+                    cache: !ci,
                     sourceMap: isAnySourceMapEnabled,
                     terserOptions: {
                         output: {
@@ -185,8 +186,19 @@ module.exports = env => {
                             // when these options are enabled
                             'collapse_vars': platform !== "android",
                             sequences: platform !== "android",
+							// For v8 Compatibility
+							keep_infinity: true, // for V8
+							reduce_funcs: false, // for V8
+							// custom
+							drop_console: production,
+							drop_debugger: true,
+							global_defs: {
+								__UGLIFIED__: true
+							}
                         },
                         keep_fnames: true,
+						// Required for Element Level CSS, Observable Events, & Android Frame
+						keep_classnames: true
                     },
                 }),
             ],
@@ -296,7 +308,7 @@ module.exports = env => {
                 "process": "global.process"
             }),
             // Remove all files from the out dir.
-            new CleanWebpackPlugin({ 
+            new CleanWebpackPlugin({
               cleanOnceBeforeBuildPatterns: itemsToClean,
               verbose: !!verbose
             }),
