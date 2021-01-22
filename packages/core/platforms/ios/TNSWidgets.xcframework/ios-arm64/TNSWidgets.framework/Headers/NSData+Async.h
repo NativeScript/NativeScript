@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)writeToFile:(nonnull NSString*) path
          atomically:(BOOL)atomically
-         completion:(void (^) ())callback;
+         completion:(void (^) (void))callback;
 
 @end
 
