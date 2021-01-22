@@ -58,7 +58,7 @@ jobs:
       - name: Build tns-core-modules
         run: npm run build-compat
 
-      - name: Publish @nativescript/core
+      - name: Publish @nativescript/core & tns-core-modules
         working-directory: dist
         env:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
