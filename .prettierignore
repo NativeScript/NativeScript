@@ -22,3 +22,4 @@ tools/assets/App_Resources
 *.css
 *.scss
 *.sh
+!packages/webpack/templates/*.js
