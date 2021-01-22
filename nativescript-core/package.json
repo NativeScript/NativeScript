@@ -32,7 +32,7 @@
         "tns-platform-declarations": "latest"
     },
     "scripts": {
-        "version": "conventional-changelog -p angular -i ../CHANGELOG.md -s && git add ../CHANGELOG.md",
+        "chanagelog": "conventional-changelog -p angular -i ../CHANGELOG.md -s && git add ../CHANGELOG.md",
         "postinstall": "node cli-hooks/postinstall.js",
         "preuninstall": "node cli-hooks/preuninstall.js"
     },
