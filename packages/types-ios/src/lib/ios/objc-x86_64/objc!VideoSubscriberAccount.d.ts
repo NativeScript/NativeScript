@@ -126,7 +126,9 @@ declare const enum VSErrorCode {
 
 	InvalidVerificationToken = 5,
 
-	Rejected = 6
+	Rejected = 6,
+
+	Unsupported = 7
 }
 
 declare var VSErrorDomain: string;

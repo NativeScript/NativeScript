@@ -4,7 +4,7 @@
   </ActionBar>
 
   <Tabs id="tabs" swipeEnabled="false" automationText="tabNavigation"  >
-    <TabStrip>
+    <TabStrip selectedItemColor="red" unSelectedItemColor="black">
       <TabStripItem title="First Tab 11" iconSource="res://icon"></TabStripItem>
       <TabStripItem>
         <!-- <Image src="res://icon" /> -->

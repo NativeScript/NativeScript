@@ -40,6 +40,95 @@ declare var CIAffineTile: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIAreaAverage extends CIAreaReductionFilter {
+}
+declare var CIAreaAverage: {
+
+	prototype: CIAreaAverage;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIAreaHistogram extends CIAreaReductionFilter {
+
+	count: number;
+
+	scale: number;
+}
+declare var CIAreaHistogram: {
+
+	prototype: CIAreaHistogram;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIAreaMaximum extends CIAreaReductionFilter {
+}
+declare var CIAreaMaximum: {
+
+	prototype: CIAreaMaximum;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIAreaMaximumAlpha extends CIAreaReductionFilter {
+}
+declare var CIAreaMaximumAlpha: {
+
+	prototype: CIAreaMaximumAlpha;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIAreaMinMax extends CIAreaReductionFilter {
+}
+declare var CIAreaMinMax: {
+
+	prototype: CIAreaMinMax;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIAreaMinMaxRed extends CIAreaReductionFilter {
+}
+declare var CIAreaMinMaxRed: {
+
+	prototype: CIAreaMinMaxRed;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIAreaMinimum extends CIAreaReductionFilter {
+}
+declare var CIAreaMinimum: {
+
+	prototype: CIAreaMinimum;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIAreaMinimumAlpha extends CIAreaReductionFilter {
+}
+declare var CIAreaMinimumAlpha: {
+
+	prototype: CIAreaMinimumAlpha;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIAreaReductionFilter extends CIFilterProtocol {
+
+	extent: CGRect;
+
+	inputImage: CIImage;
+}
+declare var CIAreaReductionFilter: {
+
+	prototype: CIAreaReductionFilter;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIAttributedTextImageGenerator extends CIFilterProtocol {
 
 	scaleFactor: number;
@@ -314,6 +403,42 @@ declare var CIBoxBlur: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIBumpDistortion extends CIFilterProtocol {
+
+	center: CGPoint;
+
+	inputImage: CIImage;
+
+	radius: number;
+
+	scale: number;
+}
+declare var CIBumpDistortion: {
+
+	prototype: CIBumpDistortion;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIBumpDistortionLinear extends CIFilterProtocol {
+
+	angle: number;
+
+	center: CGPoint;
+
+	inputImage: CIImage;
+
+	radius: number;
+
+	scale: number;
+}
+declare var CIBumpDistortionLinear: {
+
+	prototype: CIBumpDistortionLinear;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CICMYKHalftone extends CIFilterProtocol {
 
 	angle: number;
@@ -356,6 +481,21 @@ declare var CICheckerboardGenerator: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CICircleSplashDistortion extends CIFilterProtocol {
+
+	center: CGPoint;
+
+	inputImage: CIImage;
+
+	radius: number;
+}
+declare var CICircleSplashDistortion: {
+
+	prototype: CICircleSplashDistortion;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CICircularScreen extends CIFilterProtocol {
 
 	center: CGPoint;
@@ -369,6 +509,23 @@ interface CICircularScreen extends CIFilterProtocol {
 declare var CICircularScreen: {
 
 	prototype: CICircularScreen;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CICircularWrap extends CIFilterProtocol {
+
+	angle: number;
+
+	center: CGPoint;
+
+	inputImage: CIImage;
+
+	radius: number;
+}
+declare var CICircularWrap: {
+
+	prototype: CICircularWrap;
 
 	customAttributes?(): NSDictionary<string, any>;
 };
@@ -476,6 +633,19 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithRedGreenBlueColorSpace(r: number, g: number, b: number, colorSpace: any): this;
 }
+
+interface CIColorAbsoluteDifference extends CIFilterProtocol {
+
+	inputImage: CIImage;
+
+	inputImage2: CIImage;
+}
+declare var CIColorAbsoluteDifference: {
+
+	prototype: CIColorAbsoluteDifference;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
 
 interface CIColorClamp extends CIFilterProtocol {
 
@@ -703,6 +873,39 @@ declare var CIColorPosterize: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIColorThreshold extends CIFilterProtocol {
+
+	inputImage: CIImage;
+
+	threshold: number;
+}
+declare var CIColorThreshold: {
+
+	prototype: CIColorThreshold;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIColorThresholdOtsu extends CIFilterProtocol {
+
+	inputImage: CIImage;
+}
+declare var CIColorThresholdOtsu: {
+
+	prototype: CIColorThresholdOtsu;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIColumnAverage extends CIAreaReductionFilter {
+}
+declare var CIColumnAverage: {
+
+	prototype: CIColumnAverage;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIComicEffect extends CIFilterProtocol {
 
 	inputImage: CIImage;
@@ -775,6 +978,8 @@ declare class CIContext extends NSObject {
 
 	depthBlurEffectFilterForImageDataOptions(data: NSData, options: NSDictionary<any, any>): CIFilter;
 
+	depthBlurEffectFilterForImageDisparityImagePortraitEffectsMatteHairSemanticSegmentationGlassesMatteGainMapOrientationOptions(image: CIImage, disparityImage: CIImage, portraitEffectsMatte: CIImage, hairSemanticSegmentation: CIImage, glassesMatte: CIImage, gainMap: CIImage, orientation: CGImagePropertyOrientation, options: NSDictionary<any, any>): CIFilter;
+
 	depthBlurEffectFilterForImageDisparityImagePortraitEffectsMatteHairSemanticSegmentationOrientationOptions(image: CIImage, disparityImage: CIImage, portraitEffectsMatte: CIImage, hairSemanticSegmentation: CIImage, orientation: CGImagePropertyOrientation, options: NSDictionary<any, any>): CIFilter;
 
 	depthBlurEffectFilterForImageDisparityImagePortraitEffectsMatteOrientationOptions(image: CIImage, disparityImage: CIImage, portraitEffectsMatte: CIImage, orientation: CGImagePropertyOrientation, options: NSDictionary<any, any>): CIFilter;
@@ -799,7 +1004,7 @@ declare class CIContext extends NSObject {
 
 	renderToCVPixelBufferBoundsColorSpace(image: CIImage, buffer: any, bounds: CGRect, colorSpace: any): void;
 
-	renderToIOSurfaceBoundsColorSpace(image: CIImage, surface: any, bounds: CGRect, colorSpace: any): void;
+	renderToIOSurfaceBoundsColorSpace(image: CIImage, surface: IOSurface, bounds: CGRect, colorSpace: any): void;
 
 	renderToMTLTextureCommandBufferBoundsColorSpace(image: CIImage, texture: MTLTexture, commandBuffer: MTLCommandBuffer, bounds: CGRect, colorSpace: any): void;
 
@@ -1042,6 +1247,21 @@ declare var CIDisparityToDepth: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIDisplacementDistortion extends CIFilterProtocol {
+
+	displacementImage: CIImage;
+
+	inputImage: CIImage;
+
+	scale: number;
+}
+declare var CIDisplacementDistortion: {
+
+	prototype: CIDisplacementDistortion;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIDissolveTransition extends CITransitionFilter {
 }
 declare var CIDissolveTransition: {
@@ -1092,6 +1312,29 @@ interface CIDotScreen extends CIFilterProtocol {
 declare var CIDotScreen: {
 
 	prototype: CIDotScreen;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIDroste extends CIFilterProtocol {
+
+	inputImage: CIImage;
+
+	insetPoint0: CGPoint;
+
+	insetPoint1: CGPoint;
+
+	periodicity: number;
+
+	rotation: number;
+
+	strands: number;
+
+	zoom: number;
+}
+declare var CIDroste: {
+
+	prototype: CIDroste;
 
 	customAttributes?(): NSDictionary<string, any>;
 };
@@ -1244,6 +1487,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static CMYKHalftone(): CIFilter;
 
+	static KMeansFilter(): CIFilter;
+
 	static LabDeltaE(): CIFilter;
 
 	static PDF417BarcodeGenerator(): CIFilter;
@@ -1259,6 +1504,22 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static affineTileFilter(): CIFilter;
 
 	static alloc(): CIFilter; // inherited from NSObject
+
+	static areaAverageFilter(): CIFilter;
+
+	static areaHistogramFilter(): CIFilter;
+
+	static areaMaximumAlphaFilter(): CIFilter;
+
+	static areaMaximumFilter(): CIFilter;
+
+	static areaMinMaxFilter(): CIFilter;
+
+	static areaMinMaxRedFilter(): CIFilter;
+
+	static areaMinimumAlphaFilter(): CIFilter;
+
+	static areaMinimumFilter(): CIFilter;
 
 	static attributedTextImageGeneratorFilter(): CIFilter;
 
@@ -1284,11 +1545,21 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static boxBlurFilter(): CIFilter;
 
+	static bumpDistortionFilter(): CIFilter;
+
+	static bumpDistortionLinearFilter(): CIFilter;
+
 	static checkerboardGeneratorFilter(): CIFilter;
+
+	static circleSplashDistortionFilter(): CIFilter;
 
 	static circularScreenFilter(): CIFilter;
 
+	static circularWrapFilter(): CIFilter;
+
 	static code128BarcodeGeneratorFilter(): CIFilter;
+
+	static colorAbsoluteDifferenceFilter(): CIFilter;
 
 	static colorBlendModeFilter(): CIFilter;
 
@@ -1322,6 +1593,12 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static colorPosterizeFilter(): CIFilter;
 
+	static colorThresholdFilter(): CIFilter;
+
+	static colorThresholdOtsuFilter(): CIFilter;
+
+	static columnAverageFilter(): CIFilter;
+
 	static comicEffectFilter(): CIFilter;
 
 	static convolution3X3Filter(): CIFilter;
@@ -1354,6 +1631,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static disparityToDepthFilter(): CIFilter;
 
+	static displacementDistortionFilter(): CIFilter;
+
 	static dissolveTransitionFilter(): CIFilter;
 
 	static ditherFilter(): CIFilter;
@@ -1363,6 +1642,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static documentEnhancerFilter(): CIFilter;
 
 	static dotScreenFilter(): CIFilter;
+
+	static drosteFilter(): CIFilter;
 
 	static edgePreserveUpsampleFilter(): CIFilter;
 
@@ -1412,6 +1693,10 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static gaussianGradientFilter(): CIFilter;
 
+	static glassDistortionFilter(): CIFilter;
+
+	static glassLozengeFilter(): CIFilter;
+
 	static glideReflectedTileFilter(): CIFilter;
 
 	static gloomFilter(): CIFilter;
@@ -1425,6 +1710,10 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static hexagonalPixellateFilter(): CIFilter;
 
 	static highlightShadowAdjustFilter(): CIFilter;
+
+	static histogramDisplayFilter(): CIFilter;
+
+	static holeDistortionFilter(): CIFilter;
 
 	static hueAdjustFilter(): CIFilter;
 
@@ -1443,6 +1732,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static lanczosScaleTransformFilter(): CIFilter;
 
 	static lenticularHaloGeneratorFilter(): CIFilter;
+
+	static lightTunnelFilter(): CIFilter;
 
 	static lightenBlendModeFilter(): CIFilter;
 
@@ -1506,6 +1797,10 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CIFilter; // inherited from NSObject
 
+	static ninePartStretchedFilter(): CIFilter;
+
+	static ninePartTiledFilter(): CIFilter;
+
 	static noiseReductionFilter(): CIFilter;
 
 	static opTileFilter(): CIFilter;
@@ -1550,6 +1845,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static pinLightBlendModeFilter(): CIFilter;
 
+	static pinchDistortionFilter(): CIFilter;
+
 	static pixellateFilter(): CIFilter;
 
 	static pointillizeFilter(): CIFilter;
@@ -1563,6 +1860,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static rippleTransitionFilter(): CIFilter;
 
 	static roundedRectangleGeneratorFilter(): CIFilter;
+
+	static rowAverageFilter(): CIFilter;
 
 	static sRGBToneCurveToLinearFilter(): CIFilter;
 
@@ -1604,6 +1903,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static straightenFilter(): CIFilter;
 
+	static stretchCropFilter(): CIFilter;
+
 	static stripesGeneratorFilter(): CIFilter;
 
 	static subtractBlendModeFilter(): CIFilter;
@@ -1622,11 +1923,15 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static toneCurveFilter(): CIFilter;
 
+	static torusLensDistortionFilter(): CIFilter;
+
 	static triangleKaleidoscopeFilter(): CIFilter;
 
 	static triangleTileFilter(): CIFilter;
 
 	static twelvefoldReflectedTileFilter(): CIFilter;
+
+	static twirlDistortionFilter(): CIFilter;
 
 	static unsharpMaskFilter(): CIFilter;
 
@@ -1635,6 +1940,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	static vignetteEffectFilter(): CIFilter;
 
 	static vignetteFilter(): CIFilter;
+
+	static vortexDistortionFilter(): CIFilter;
 
 	static whitePointAdjustFilter(): CIFilter;
 
@@ -1867,6 +2174,42 @@ declare var CIGaussianGradient: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIGlassDistortion extends CIFilterProtocol {
+
+	center: CGPoint;
+
+	inputImage: CIImage;
+
+	scale: number;
+
+	textureImage: CIImage;
+}
+declare var CIGlassDistortion: {
+
+	prototype: CIGlassDistortion;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIGlassLozenge extends CIFilterProtocol {
+
+	inputImage: CIImage;
+
+	point0: CGPoint;
+
+	point1: CGPoint;
+
+	radius: number;
+
+	refraction: number;
+}
+declare var CIGlassLozenge: {
+
+	prototype: CIGlassLozenge;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIGlideReflectedTile extends CIFilterProtocol {
 
 	angle: number;
@@ -1963,6 +2306,38 @@ declare var CIHighlightShadowAdjust: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIHistogramDisplay extends CIFilterProtocol {
+
+	height: number;
+
+	highLimit: number;
+
+	inputImage: CIImage;
+
+	lowLimit: number;
+}
+declare var CIHistogramDisplay: {
+
+	prototype: CIHistogramDisplay;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIHoleDistortion extends CIFilterProtocol {
+
+	center: CGPoint;
+
+	inputImage: CIImage;
+
+	radius: number;
+}
+declare var CIHoleDistortion: {
+
+	prototype: CIHoleDistortion;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIHueAdjust extends CIFilterProtocol {
 
 	angle: number;
@@ -2031,9 +2406,9 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static imageWithDepthDataOptions(data: AVDepthData, options: NSDictionary<string, any>): CIImage;
 
-	static imageWithIOSurface(surface: any): CIImage;
+	static imageWithIOSurface(surface: IOSurface): CIImage;
 
-	static imageWithIOSurfaceOptions(surface: any, options: NSDictionary<string, any>): CIImage;
+	static imageWithIOSurfaceOptions(surface: IOSurface, options: NSDictionary<string, any>): CIImage;
 
 	static imageWithImageProviderSizeFormatColorSpaceOptions(p: any, width: number, height: number, f: number, cs: any, options: NSDictionary<string, any>): CIImage;
 
@@ -2123,9 +2498,9 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { depthData: AVDepthData; options: NSDictionary<string, any>; });
 
-	constructor(o: { IOSurface: any; });
+	constructor(o: { IOSurface: IOSurface; });
 
-	constructor(o: { IOSurface: any; options: NSDictionary<string, any>; });
+	constructor(o: { IOSurface: IOSurface; options: NSDictionary<string, any>; });
 
 	constructor(o: { image: UIImage; });
 
@@ -2229,9 +2604,9 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithDepthDataOptions(data: AVDepthData, options: NSDictionary<string, any>): this;
 
-	initWithIOSurface(surface: any): this;
+	initWithIOSurface(surface: IOSurface): this;
 
-	initWithIOSurfaceOptions(surface: any, options: NSDictionary<string, any>): this;
+	initWithIOSurfaceOptions(surface: IOSurface, options: NSDictionary<string, any>): this;
 
 	initWithImage(image: UIImage): this;
 
@@ -2299,7 +2674,7 @@ interface CIImageProcessorInput {
 
 	region: CGRect;
 
-	surface: any;
+	surface: IOSurface;
 }
 declare var CIImageProcessorInput: {
 
@@ -2343,11 +2718,28 @@ interface CIImageProcessorOutput {
 
 	region: CGRect;
 
-	surface: any;
+	surface: IOSurface;
 }
 declare var CIImageProcessorOutput: {
 
 	prototype: CIImageProcessorOutput;
+};
+
+interface CIKMeans extends CIAreaReductionFilter {
+
+	count: number;
+
+	inputMeans: CIImage;
+
+	passes: number;
+
+	perceptual: boolean;
+}
+declare var CIKMeans: {
+
+	prototype: CIKMeans;
+
+	customAttributes?(): NSDictionary<string, any>;
 };
 
 interface CIKaleidoscope extends CIFilterProtocol {
@@ -2370,6 +2762,8 @@ declare var CIKaleidoscope: {
 declare class CIKernel extends NSObject {
 
 	static alloc(): CIKernel; // inherited from NSObject
+
+	static kernelNamesFromMetalLibraryData(data: NSData): NSArray<string>;
 
 	static kernelWithFunctionNameFromMetalLibraryDataError(name: string, data: NSData): CIKernel;
 
@@ -2470,6 +2864,23 @@ interface CILenticularHaloGenerator extends CIFilterProtocol {
 declare var CILenticularHaloGenerator: {
 
 	prototype: CILenticularHaloGenerator;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CILightTunnel extends CIFilterProtocol {
+
+	center: CGPoint;
+
+	inputImage: CIImage;
+
+	radius: number;
+
+	rotation: number;
+}
+declare var CILightTunnel: {
+
+	prototype: CILightTunnel;
 
 	customAttributes?(): NSDictionary<string, any>;
 };
@@ -2732,6 +3143,42 @@ declare var CIMotionBlur: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CINinePartStretched extends CIFilterProtocol {
+
+	breakpoint0: CGPoint;
+
+	breakpoint1: CGPoint;
+
+	growAmount: CGPoint;
+
+	inputImage: CIImage;
+}
+declare var CINinePartStretched: {
+
+	prototype: CINinePartStretched;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CINinePartTiled extends CIFilterProtocol {
+
+	breakpoint0: CGPoint;
+
+	breakpoint1: CGPoint;
+
+	flipYTiles: boolean;
+
+	growAmount: CGPoint;
+
+	inputImage: CIImage;
+}
+declare var CINinePartTiled: {
+
+	prototype: CINinePartTiled;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CINoiseReduction extends CIFilterProtocol {
 
 	inputImage: CIImage;
@@ -2987,6 +3434,23 @@ interface CIPhotoEffect extends CIFilterProtocol {
 declare var CIPhotoEffect: {
 
 	prototype: CIPhotoEffect;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIPinchDistortion extends CIFilterProtocol {
+
+	center: CGPoint;
+
+	inputImage: CIImage;
+
+	radius: number;
+
+	scale: number;
+}
+declare var CIPinchDistortion: {
+
+	prototype: CIPinchDistortion;
 
 	customAttributes?(): NSDictionary<string, any>;
 };
@@ -3252,6 +3716,15 @@ declare var CIRoundedRectangleGenerator: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIRowAverage extends CIAreaReductionFilter {
+}
+declare var CIRowAverage: {
+
+	prototype: CIRowAverage;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CISRGBToneCurveToLinear extends CIFilterProtocol {
 
 	inputImage: CIImage;
@@ -3489,6 +3962,23 @@ declare var CIStraighten: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CIStretchCrop extends CIFilterProtocol {
+
+	centerStretchAmount: number;
+
+	cropAmount: number;
+
+	inputImage: CIImage;
+
+	size: CGPoint;
+}
+declare var CIStretchCrop: {
+
+	prototype: CIStretchCrop;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CIStripesGenerator extends CIFilterProtocol {
 
 	center: CGPoint;
@@ -3631,6 +4121,25 @@ declare var CIToneCurve: {
 	customAttributes?(): NSDictionary<string, any>;
 };
 
+interface CITorusLensDistortion extends CIFilterProtocol {
+
+	center: CGPoint;
+
+	inputImage: CIImage;
+
+	radius: number;
+
+	refraction: number;
+
+	width: number;
+}
+declare var CITorusLensDistortion: {
+
+	prototype: CITorusLensDistortion;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
 interface CITransitionFilter extends CIFilterProtocol {
 
 	inputImage: CIImage;
@@ -3695,6 +4204,23 @@ interface CITwelvefoldReflectedTile extends CIFilterProtocol {
 declare var CITwelvefoldReflectedTile: {
 
 	prototype: CITwelvefoldReflectedTile;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CITwirlDistortion extends CIFilterProtocol {
+
+	angle: number;
+
+	center: CGPoint;
+
+	inputImage: CIImage;
+
+	radius: number;
+}
+declare var CITwirlDistortion: {
+
+	prototype: CITwirlDistortion;
 
 	customAttributes?(): NSDictionary<string, any>;
 };
@@ -3848,6 +4374,23 @@ interface CIVignetteEffect extends CIFilterProtocol {
 declare var CIVignetteEffect: {
 
 	prototype: CIVignetteEffect;
+
+	customAttributes?(): NSDictionary<string, any>;
+};
+
+interface CIVortexDistortion extends CIFilterProtocol {
+
+	angle: number;
+
+	center: CGPoint;
+
+	inputImage: CIImage;
+
+	radius: number;
+}
+declare var CIVortexDistortion: {
+
+	prototype: CIVortexDistortion;
 
 	customAttributes?(): NSDictionary<string, any>;
 };
@@ -4022,6 +4565,8 @@ declare var kCIContextCacheIntermediates: string;
 
 declare var kCIContextHighQualityDownsample: string;
 
+declare var kCIContextName: string;
+
 declare var kCIContextOutputColorSpace: string;
 
 declare var kCIContextOutputPremultiplied: string;
@@ -4106,9 +4651,13 @@ declare var kCIImageAuxiliaryDisparity: string;
 
 declare var kCIImageAuxiliaryPortraitEffectsMatte: string;
 
+declare var kCIImageAuxiliarySemanticSegmentationGlassesMatte: string;
+
 declare var kCIImageAuxiliarySemanticSegmentationHairMatte: string;
 
 declare var kCIImageAuxiliarySemanticSegmentationSkinMatte: string;
+
+declare var kCIImageAuxiliarySemanticSegmentationSkyMatte: string;
 
 declare var kCIImageAuxiliarySemanticSegmentationTeethMatte: string;
 
@@ -4134,11 +4683,17 @@ declare var kCIImageRepresentationDisparityImage: string;
 
 declare var kCIImageRepresentationPortraitEffectsMatteImage: string;
 
+declare var kCIImageRepresentationSemanticSegmentationGlassesMatteImage: string;
+
 declare var kCIImageRepresentationSemanticSegmentationHairMatteImage: string;
 
 declare var kCIImageRepresentationSemanticSegmentationSkinMatteImage: string;
 
+declare var kCIImageRepresentationSemanticSegmentationSkyMatteImage: string;
+
 declare var kCIImageRepresentationSemanticSegmentationTeethMatteImage: string;
+
+declare var kCIImageToneMapHDRtoSDR: string;
 
 declare var kCIInputAllowDraftModeKey: string;
 
@@ -4199,6 +4754,8 @@ declare var kCIInputImageOrientationKey: string;
 declare var kCIInputIntensityKey: string;
 
 declare var kCIInputLinearSpaceFilter: string;
+
+declare var kCIInputLocalToneMapAmountKey: string;
 
 declare var kCIInputLuminanceNoiseReductionAmountKey: string;
 

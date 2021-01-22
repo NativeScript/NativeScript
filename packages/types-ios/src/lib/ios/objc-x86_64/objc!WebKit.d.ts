@@ -81,6 +81,21 @@ declare class WKContentRuleListStore extends NSObject {
 	removeContentRuleListForIdentifierCompletionHandler(identifier: string, completionHandler: (p1: NSError) => void): void;
 }
 
+declare class WKContentWorld extends NSObject {
+
+	static alloc(): WKContentWorld; // inherited from NSObject
+
+	static new(): WKContentWorld; // inherited from NSObject
+
+	static worldWithName(name: string): WKContentWorld;
+
+	readonly name: string;
+
+	static readonly defaultClientWorld: WKContentWorld;
+
+	static readonly pageWorld: WKContentWorld;
+}
+
 declare class WKContextMenuElementInfo extends NSObject {
 
 	static alloc(): WKContextMenuElementInfo; // inherited from NSObject
@@ -135,10 +150,42 @@ declare const enum WKErrorCode {
 
 	AttributedStringContentFailedToLoad = 10,
 
-	AttributedStringContentLoadTimedOut = 11
+	AttributedStringContentLoadTimedOut = 11,
+
+	JavaScriptInvalidFrameTarget = 12,
+
+	NavigationAppBoundDomain = 13,
+
+	JavaScriptAppBoundDomain = 14
 }
 
 declare var WKErrorDomain: string;
+
+declare class WKFindConfiguration extends NSObject implements NSCopying {
+
+	static alloc(): WKFindConfiguration; // inherited from NSObject
+
+	static new(): WKFindConfiguration; // inherited from NSObject
+
+	backwards: boolean;
+
+	caseSensitive: boolean;
+
+	wraps: boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class WKFindResult extends NSObject implements NSCopying {
+
+	static alloc(): WKFindResult; // inherited from NSObject
+
+	static new(): WKFindResult; // inherited from NSObject
+
+	readonly matchFound: boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
 
 declare class WKFrameInfo extends NSObject implements NSCopying {
 
@@ -216,6 +263,8 @@ declare const enum WKNavigationActionPolicy {
 
 interface WKNavigationDelegate extends NSObjectProtocol {
 
+	webViewAuthenticationChallengeShouldAllowDeprecatedTLS?(webView: WKWebView, challenge: NSURLAuthenticationChallenge, decisionHandler: (p1: boolean) => void): void;
+
 	webViewDecidePolicyForNavigationActionDecisionHandler?(webView: WKWebView, navigationAction: WKNavigationAction, decisionHandler: (p1: WKNavigationActionPolicy) => void): void;
 
 	webViewDecidePolicyForNavigationActionPreferencesDecisionHandler?(webView: WKWebView, navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: (p1: WKNavigationActionPolicy, p2: WKWebpagePreferences) => void): void;
@@ -278,6 +327,17 @@ declare const enum WKNavigationType {
 	Other = -1
 }
 
+declare class WKPDFConfiguration extends NSObject implements NSCopying {
+
+	static alloc(): WKPDFConfiguration; // inherited from NSObject
+
+	static new(): WKPDFConfiguration; // inherited from NSObject
+
+	rect: CGRect;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
 declare class WKPreferences extends NSObject implements NSSecureCoding {
 
 	static alloc(): WKPreferences; // inherited from NSObject
@@ -286,15 +346,11 @@ declare class WKPreferences extends NSObject implements NSSecureCoding {
 
 	fraudulentWebsiteWarningEnabled: boolean;
 
-	javaEnabled: boolean;
-
 	javaScriptCanOpenWindowsAutomatically: boolean;
 
 	javaScriptEnabled: boolean;
 
 	minimumFontSize: number;
-
-	plugInsEnabled: boolean;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -361,6 +417,8 @@ declare class WKScriptMessage extends NSObject {
 	readonly name: string;
 
 	readonly webView: WKWebView;
+
+	readonly world: WKContentWorld;
 }
 
 interface WKScriptMessageHandler extends NSObjectProtocol {
@@ -370,6 +428,15 @@ interface WKScriptMessageHandler extends NSObjectProtocol {
 declare var WKScriptMessageHandler: {
 
 	prototype: WKScriptMessageHandler;
+};
+
+interface WKScriptMessageHandlerWithReply extends NSObjectProtocol {
+
+	userContentControllerDidReceiveScriptMessageReplyHandler(userContentController: WKUserContentController, message: WKScriptMessage, replyHandler: (p1: any, p2: string) => void): void;
+}
+declare var WKScriptMessageHandlerWithReply: {
+
+	prototype: WKScriptMessageHandlerWithReply;
 };
 
 declare class WKSecurityOrigin extends NSObject {
@@ -480,7 +547,11 @@ declare class WKUserContentController extends NSObject implements NSSecureCoding
 
 	addContentRuleList(contentRuleList: WKContentRuleList): void;
 
+	addScriptMessageHandlerContentWorldName(scriptMessageHandler: WKScriptMessageHandler, world: WKContentWorld, name: string): void;
+
 	addScriptMessageHandlerName(scriptMessageHandler: WKScriptMessageHandler, name: string): void;
+
+	addScriptMessageHandlerWithReplyContentWorldName(scriptMessageHandlerWithReply: WKScriptMessageHandlerWithReply, contentWorld: WKContentWorld, name: string): void;
 
 	addUserScript(userScript: WKUserScript): void;
 
@@ -490,11 +561,17 @@ declare class WKUserContentController extends NSObject implements NSSecureCoding
 
 	removeAllContentRuleLists(): void;
 
+	removeAllScriptMessageHandlers(): void;
+
+	removeAllScriptMessageHandlersFromContentWorld(contentWorld: WKContentWorld): void;
+
 	removeAllUserScripts(): void;
 
 	removeContentRuleList(contentRuleList: WKContentRuleList): void;
 
 	removeScriptMessageHandlerForName(name: string): void;
+
+	removeScriptMessageHandlerForNameContentWorld(name: string, contentWorld: WKContentWorld): void;
 }
 
 declare class WKUserScript extends NSObject implements NSCopying {
@@ -511,9 +588,13 @@ declare class WKUserScript extends NSObject implements NSCopying {
 
 	constructor(o: { source: string; injectionTime: WKUserScriptInjectionTime; forMainFrameOnly: boolean; });
 
+	constructor(o: { source: string; injectionTime: WKUserScriptInjectionTime; forMainFrameOnly: boolean; inContentWorld: WKContentWorld; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	initWithSourceInjectionTimeForMainFrameOnly(source: string, injectionTime: WKUserScriptInjectionTime, forMainFrameOnly: boolean): this;
+
+	initWithSourceInjectionTimeForMainFrameOnlyInContentWorld(source: string, injectionTime: WKUserScriptInjectionTime, forMainFrameOnly: boolean, contentWorld: WKContentWorld): this;
 }
 
 declare const enum WKUserScriptInjectionTime {
@@ -569,7 +650,11 @@ declare class WKWebView extends UIView {
 
 	readonly loading: boolean;
 
+	mediaType: string;
+
 	navigationDelegate: WKNavigationDelegate;
+
+	pageZoom: number;
 
 	readonly scrollView: UIScrollView;
 
@@ -579,7 +664,17 @@ declare class WKWebView extends UIView {
 
 	constructor(o: { frame: CGRect; configuration: WKWebViewConfiguration; });
 
+	callAsyncJavaScriptArgumentsInFrameInContentWorldCompletionHandler(functionBody: string, _arguments: NSDictionary<string, any>, frame: WKFrameInfo, contentWorld: WKContentWorld, completionHandler: (p1: any, p2: NSError) => void): void;
+
+	createPDFWithConfigurationCompletionHandler(pdfConfiguration: WKPDFConfiguration, completionHandler: (p1: NSData, p2: NSError) => void): void;
+
+	createWebArchiveDataWithCompletionHandler(completionHandler: (p1: NSData, p2: NSError) => void): void;
+
 	evaluateJavaScriptCompletionHandler(javaScriptString: string, completionHandler: (p1: any, p2: NSError) => void): void;
+
+	evaluateJavaScriptInFrameInContentWorldCompletionHandler(javaScriptString: string, frame: WKFrameInfo, contentWorld: WKContentWorld, completionHandler: (p1: any, p2: NSError) => void): void;
+
+	findStringWithConfigurationCompletionHandler(string: string, configuration: WKFindConfiguration, completionHandler: (p1: WKFindResult) => void): void;
 
 	goBack(): WKNavigation;
 
@@ -626,6 +721,8 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSe
 
 	ignoresViewportScaleLimits: boolean;
 
+	limitsNavigationsToAppBoundDomains: boolean;
+
 	mediaPlaybackAllowsAirPlay: boolean;
 
 	mediaPlaybackRequiresUserAction: boolean;
@@ -666,6 +763,8 @@ declare class WKWebpagePreferences extends NSObject {
 	static alloc(): WKWebpagePreferences; // inherited from NSObject
 
 	static new(): WKWebpagePreferences; // inherited from NSObject
+
+	allowsContentJavaScript: boolean;
 
 	preferredContentMode: WKContentMode;
 }
