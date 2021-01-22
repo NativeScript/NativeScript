@@ -510,6 +510,8 @@ export class DatePicker extends View {
 
     ios: any /* UIDatePicker */;
 
+    iosPreferredDatePickerStyle: number;
+
     maxDate: Date;
 
     minDate: Date;
@@ -2533,6 +2535,8 @@ export class TimePicker extends View {
     hour: number;
 
     ios: any /* UIDatePicker */;
+
+    iosPreferredDatePickerStyle: number;
 
     maxHour: number;
 
