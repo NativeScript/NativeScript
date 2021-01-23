@@ -3,7 +3,7 @@
   "main": "index",
   "types": "index.d.ts",
   "description": "NativeScript Core Modules",
-  "version": "7.1.3",
+  "version": "7.1.4",
   "homepage": "https://nativescript.org",
   "repository": {
       "type": "git",

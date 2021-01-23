@@ -1,3 +1,12 @@
+## [7.1.4](https://github.com/NativeScript/NativeScript/compare/7.1.3-core...7.1.4) (2021-01-23)
+
+
+### Bug Fixes
+
+* **ios:** getVisibleViewController maximum call stack exceeded ([#9168](https://github.com/NativeScript/NativeScript/issues/9168)) ([1a3523e](https://github.com/NativeScript/NativeScript/commit/1a3523ef22f15574ce5658429a4c18eb141ab881))
+
+
+
 ## [7.1.3](https://github.com/NativeScript/NativeScript/compare/7.1.2-core...7.1.3) (2021-01-17)
 
 
