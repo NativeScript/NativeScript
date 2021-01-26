@@ -194,7 +194,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		const view = this.nativeTextViewProtected;
 		if (stop !== undefined) {
 			const begin = view.beginningOfDocument;
-			view.selectedTextRange = view.textRangeFromPositionToPosition(view.positionFromPositionOffset(begin, start), view.positionFromPositionOffset(begin, stop));
+			view.selectedTextRange = view.textRangeFromPositionToPosition(
+				view.positionFromPositionOffset(begin, start), 
+				view.positionFromPositionOffset(begin, stop)
+			);
 		} else {
 			const begin = view.beginningOfDocument;
 			const pos = view.positionFromPositionOffset(begin, start);
