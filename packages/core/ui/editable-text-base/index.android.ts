@@ -144,6 +144,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	/* tslint:enable */
 
 	nativeViewProtected: android.widget.EditText;
+	nativeTextViewProtected: android.widget.EditText;
 	private _keyListenerCache: android.text.method.KeyListener;
 	private _inputType: number;
 
@@ -464,6 +465,17 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 			newFilters.push(lengthFilter);
 			this.nativeTextViewProtected.setFilters(newFilters);
+		}
+	}
+
+	public setSelection(start: number, stop?: number) {
+		const view = this.nativeTextViewProtected;
+		if (view) {
+			if (stop !== undefined) {
+				view.setSelection(start, stop);
+			} else {
+				view.setSelection(start);
+			}
 		}
 	}
 }
