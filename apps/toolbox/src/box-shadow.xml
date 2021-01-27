@@ -20,6 +20,7 @@
                     >
                         <Label text="StackLayout"></Label>
                     </StackLayout>
+
                     <GridLayout
                         width="300"
                         height="100"
@@ -31,6 +32,42 @@
                     >
                         <Label text="GridLayout"></Label>
                     </GridLayout>
+
+                    <AbsoluteLayout
+                        width="300"
+                        height="100"
+                        class="demo-component"
+                        boxShadow="{{ appliedBoxShadow }}"
+                        borderWidth="{{ borderWidth }}"
+                        borderRadius="{{ borderRadius }}"
+                        background="{{ background }}"
+                    >
+                        <Label text="AbsoluteLayout"></Label>
+                    </AbsoluteLayout>
+
+                    <DockLayout
+                        width="300"
+                        height="100"
+                        class="demo-component"
+                        boxShadow="{{ appliedBoxShadow }}"
+                        borderWidth="{{ borderWidth }}"
+                        borderRadius="{{ borderRadius }}"
+                        background="{{ background }}"
+                    >
+                        <Label text="DockLayout"></Label>
+                    </DockLayout>
+
+                    <FlexboxLayout
+                        width="300"
+                        height="100"
+                        class="demo-component"
+                        boxShadow="{{ appliedBoxShadow }}"
+                        borderWidth="{{ borderWidth }}"
+                        borderRadius="{{ borderRadius }}"
+                        background="{{ background }}"
+                    >
+                        <Label text="FlexboxLayout"></Label>
+                    </FlexboxLayout>
 
                 </StackLayout>
             </ScrollView>
@@ -90,7 +127,8 @@
             </TextField>
             <Button
                 col="2"
-                text="Apply"
+                text="APPLY"
+                class="btn-apply"
                 tap="{{ applyBoxShadow }}"></Button>
         </GridLayout>
         <ScrollView row="2">
@@ -117,6 +155,7 @@
                 </FlexboxLayout>
 
                 <Label text="Animations"></Label>
+                <Label text="Tap on the component to start and stop animation" class="description"></Label>
                 <FlexboxLayout flexDirection="row" flexWrap="wrap">
                     <Button text="width"></Button>
                     <Button text="height"></Button>

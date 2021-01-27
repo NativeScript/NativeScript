@@ -46,6 +46,13 @@ components that have the btn class name.
     color: #333;
     margin-top: 10;
 }
+
+.box-shadow-demo .controls .description {
+    font-size: 15;
+    font-weight: normal;
+    color: #333;
+    margin-bottom: 10;
+}
 .box-shadow-demo .controls Button {
     padding: 10 15;
     margin: 5;
@@ -60,6 +67,16 @@ components that have the btn class name.
 .box-shadow-demo .controls Button[selectedAttr=true] {
     background-color: #65ADF1;
     color: #fff;
+}
+
+.box-shadow-prop-controls .btn-apply {
+    background-color: #65ADF1;
+    color: #fff;
+    padding: 10 15;
+    border-radius: 4;
+    margin-left: 10;
+    font-size: 17;
+    font-weight: bold;
 }
 
 .sample-animation {
