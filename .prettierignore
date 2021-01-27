@@ -16,7 +16,7 @@ packages/ui-mobile-base
 tools/assets/App_Resources
 *.cmd
 *.md
-*.json
+package.json
 *.js
 *.map
 *.css
