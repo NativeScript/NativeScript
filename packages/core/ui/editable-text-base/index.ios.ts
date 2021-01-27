@@ -192,13 +192,12 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 	public setSelection(start: number, stop?: number) {
 		const view = this.nativeTextViewProtected;
-			if (view) {
-				if (stop !== undefined) {
+		if (view) {
+			if (stop !== undefined) {
 				const begin = view.beginningOfDocument;
-				view.selectedTextRange = view.textRangeFromPositionToPosition(
-					view.positionFromPositionOffset(begin, start), 
-					view.positionFromPositionOffset(begin, stop)
-				);
+				const fromPosition = view.positionFromPositionOffset(begin, start);
+				const toPosition = view.positionFromPositionOffset(begin, stop);
+				view.selectedTextRange = view.textRangeFromPositionToPosition(fromPosition, toPosition);
 			} else {
 				const begin = view.beginningOfDocument;
 				const pos = view.positionFromPositionOffset(begin, start);
