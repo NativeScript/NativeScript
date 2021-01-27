@@ -10,6 +10,7 @@ export class BoxShadowModel extends Observable {
 	private _selectedComponentType: string;
 	private _selectedBackgroundType: string;
 	private _selectedBorderType: string;
+	private _selectedAnimation: string;
 	private _boxShadow: string;
 
 	background: string;
@@ -95,7 +96,7 @@ export class BoxShadowModel extends Observable {
 	}
 
 	selectAnimationType(args): void {
-		this.notifyPropertyChange('animationType', args.object.animationType);
+		this._selectedAnimation = args.object.animationType;
 	}
 
 	applyBoxShadow(): void {
@@ -116,12 +117,61 @@ export class BoxShadowModel extends Observable {
 	}
 
 	toggleAnimation(args) {
-		console.log('toggling animation');
-		const layout = args.object as StackLayout;
-		if (!layout.className) {
-			layout.className = 'sample-animation';
+		const view = args.object;
+		const animationDuration = 500;
+		if (this._selectedAnimation === 'width') {
+			const originalWidth = args.object.getActualSize().width;
+			view
+				.animate({
+					width: originalWidth / 2,
+					duration: animationDuration,
+				})
+				.then(() =>
+					view.animate({
+						width: originalWidth,
+						duration: animationDuration,
+					})
+				)
+				.catch((err) => {
+					console.error('animation error', err);
+				});
+		} else if (this._selectedAnimation === 'height') {
+			const originalHeight = args.object.getActualSize().height;
+			view
+				.animate({
+					height: originalHeight / 2,
+					duration: animationDuration,
+				})
+				.then(() =>
+					view.animate({
+						height: originalHeight,
+						duration: animationDuration,
+					})
+				)
+				.catch((err) => {
+					console.error('animation error', err);
+				});
 		} else {
-			layout.className = undefined;
+			view
+				.animate({
+					opacity: this._selectedAnimation === 'opacity' ? 0 : 1,
+					scale: this._selectedAnimation === 'scale' ? { x: 0.5, y: 0.6 } : { x: 1, y: 1 },
+					rotate: this._selectedAnimation === 'rotate' ? 180 : 0,
+					translate: this._selectedAnimation === 'translate' ? { x: 100, y: 100 } : { x: 0, y: 0 },
+					duration: 500,
+				})
+				.then(() =>
+					view.animate({
+						opacity: 1,
+						scale: { x: 1, y: 1 },
+						rotate: 0,
+						translate: { x: 0, y: 0 },
+						duration: 500,
+					})
+				)
+				.catch((err) => {
+					console.error('animation error', err);
+				});
 		}
 	}
 }

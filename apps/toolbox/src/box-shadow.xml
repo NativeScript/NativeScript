@@ -17,6 +17,7 @@
                         borderWidth="{{ borderWidth }}"
                         borderRadius="{{ borderRadius }}"
                         background="{{ background }}"
+                        tap="{{ toggleAnimation }}"
                     >
                         <Label text="StackLayout"></Label>
                     </StackLayout>
@@ -29,6 +30,7 @@
                         borderWidth="{{ borderWidth }}"
                         borderRadius="{{ borderRadius }}"
                         background="{{ background }}"
+                        tap="{{ toggleAnimation }}"
                     >
                         <Label text="GridLayout"></Label>
                     </GridLayout>
@@ -41,6 +43,7 @@
                         borderWidth="{{ borderWidth }}"
                         borderRadius="{{ borderRadius }}"
                         background="{{ background }}"
+                        tap="{{ toggleAnimation }}"
                     >
                         <Label text="AbsoluteLayout"></Label>
                     </AbsoluteLayout>
@@ -53,6 +56,7 @@
                         borderWidth="{{ borderWidth }}"
                         borderRadius="{{ borderRadius }}"
                         background="{{ background }}"
+                        tap="{{ toggleAnimation }}"
                     >
                         <Label text="DockLayout"></Label>
                     </DockLayout>
@@ -65,6 +69,7 @@
                         borderWidth="{{ borderWidth }}"
                         borderRadius="{{ borderRadius }}"
                         background="{{ background }}"
+                        tap="{{ toggleAnimation }}"
                     >
                         <Label text="FlexboxLayout"></Label>
                     </FlexboxLayout>
@@ -86,6 +91,7 @@
                     borderWidth="{{ borderWidth }}"
                     borderRadius="{{ borderRadius }}"
                     background="{{ background }}"
+                    tap="{{ toggleAnimation }}"
                     text="Label"></Label>
 
             </GridLayout>
@@ -104,6 +110,7 @@
                     borderWidth="{{ borderWidth }}"
                     borderRadius="{{ borderRadius }}"
                     background="{{ background }}"
+                    tap="{{ toggleAnimation }}"
                     text="button"
                 ></Button>
 
@@ -157,11 +164,12 @@
                 <Label text="Animations"></Label>
                 <Label text="Tap on the component to start and stop animation" class="description"></Label>
                 <FlexboxLayout flexDirection="row" flexWrap="wrap">
-                    <Button text="width"></Button>
-                    <Button text="height"></Button>
-                    <Button text="translate"></Button>
-                    <Button text="scale"></Button>
-                    <Button text="rotate"></Button>
+                    <Button text="Width" animationType="width" tap="{{ selectAnimationType }}"></Button>
+                    <Button text="Height" animationType="height" tap="{{ selectAnimationType }}"></Button>
+                    <Button text="Opacity" animationType="opacity" tap="{{ selectAnimationType }}"></Button>
+                    <Button text="Translate" animationType="translate" tap="{{ selectAnimationType }}"></Button>
+                    <Button text="Scale" animationType="scale" tap="{{ selectAnimationType }}"></Button>
+                    <Button text="Rotate" animationType="rotate" tap="{{ selectAnimationType }}"></Button>
                 </FlexboxLayout>
                 
             </StackLayout>
