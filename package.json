@@ -38,6 +38,7 @@
 		"dotenv": "~8.2.0",
 		"eslint": "~7.10.0",
 		"eslint-config-prettier": "~6.11.0",
+		"eslint-plugin-prettier": "^3.3.1",
 		"gonzales": "^1.0.7",
 		"husky": "^4.2.5",
 		"jest": "~26.2.2",
