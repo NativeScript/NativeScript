@@ -125,6 +125,7 @@
             class="box-shadow-prop-controls">
             <Label
                 col="0"
+                verticalAlignment="center"
                 text="box-shadow:"></Label>
             <TextField
                 col="1"
