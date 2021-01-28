@@ -27,8 +27,8 @@ export class DockLayout extends DockLayoutBase {
 		let remainingWidth = widthMode === layout.UNSPECIFIED ? Number.MAX_VALUE : width - horizontalPaddingsAndMargins;
 		let remainingHeight = heightMode === layout.UNSPECIFIED ? Number.MAX_VALUE : height - verticalPaddingsAndMargins;
 
-		let tempHeight: number = 0;
-		let tempWidth: number = 0;
+		let tempHeight = 0;
+		let tempWidth = 0;
 		let childWidthMeasureSpec: number;
 		let childHeightMeasureSpec: number;
 
@@ -42,7 +42,7 @@ export class DockLayout extends DockLayoutBase {
 				childHeightMeasureSpec = layout.makeMeasureSpec(remainingHeight, heightMode === layout.EXACTLY ? layout.AT_MOST : heightMode);
 			}
 
-			let childSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
+			const childSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
 
 			switch (child.dock) {
 				case 'top':
@@ -103,7 +103,7 @@ export class DockLayout extends DockLayoutBase {
 				return;
 			}
 
-			let dock = DockLayout.getDock(child);
+			const dock = DockLayout.getDock(child);
 			switch (dock) {
 				case 'top':
 					childLeft = x;

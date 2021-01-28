@@ -43,7 +43,7 @@ export function setTimeout(callback: Function, milliseconds = 0, ...args): numbe
 }
 
 export function clearTimeout(id: number): void {
-	let index = id;
+	const index = id;
 	if (timeoutCallbacks[index]) {
 		timeoutHandler.removeCallbacks(timeoutCallbacks[index]);
 		delete timeoutCallbacks[index];
@@ -58,12 +58,16 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
 	const handler = timeoutHandler;
 	const invoke = () => callback(...args);
 	const zoneBound = zonedCallback(invoke);
+	const startOffset = milliseconds > 0 ? Date.now() % milliseconds : 0;
+	function nextCallMs() {
+		return milliseconds > 0 ? milliseconds - ((Date.now() - startOffset) % milliseconds) : milliseconds;
+	}
 
 	const runnable = new java.lang.Runnable({
 		run: () => {
 			zoneBound();
 			if (timeoutCallbacks[id]) {
-				handler.postDelayed(runnable, long(milliseconds));
+				handler.postDelayed(runnable, long(nextCallMs()));
 			}
 		},
 	});
@@ -72,7 +76,7 @@ export function setInterval(callback: Function, milliseconds = 0, ...args): numb
 		timeoutCallbacks[id] = runnable;
 	}
 
-	timeoutHandler.postDelayed(runnable, long(milliseconds));
+	timeoutHandler.postDelayed(runnable, long(nextCallMs()));
 
 	return id;
 }

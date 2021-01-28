@@ -5,6 +5,11 @@ export interface EventData {
 	object: Observable;
 }
 
+export interface NotifyData extends Partial<EventData> {
+	eventName: string;
+	object?: Observable;
+}
+
 export interface PropertyChangeData extends EventData {
 	propertyName: string;
 	value: any;
@@ -262,16 +267,18 @@ export class Observable implements ObservableDefinition {
 		}
 	}
 
-	public notify<T extends EventData>(data: T): void {
+	public notify<T extends NotifyData>(data: T): void {
+		const eventData = data as EventData;
+		eventData.object = eventData.object || this;
 		const eventClass = this.constructor.name;
-		this._globalNotify(eventClass, 'First', data);
+		this._globalNotify(eventClass, 'First', eventData);
 
 		const observers = <Array<ListenerEntry>>this._observers[data.eventName];
 		if (observers) {
-			Observable._handleEvent(observers, data);
+			Observable._handleEvent(observers, eventData);
 		}
 
-		this._globalNotify(eventClass, '', data);
+		this._globalNotify(eventClass, '', eventData);
 	}
 
 	private static _handleEvent<T extends EventData>(observers: Array<ListenerEntry>, data: T): void {

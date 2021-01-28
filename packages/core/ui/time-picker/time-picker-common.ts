@@ -11,7 +11,7 @@ const dateComparer = (x: Date, y: Date): boolean => x <= y && x >= y;
 
 export function getValidTime(picker: TimePickerDefinition, hour: number, minute: number): Time {
 	if (picker.minuteInterval > 1) {
-		let minuteFloor = minute - (minute % picker.minuteInterval);
+		const minuteFloor = minute - (minute % picker.minuteInterval);
 		minute = minuteFloor + (minute === minuteFloor + 1 ? picker.minuteInterval : 0);
 
 		if (minute === 60) {

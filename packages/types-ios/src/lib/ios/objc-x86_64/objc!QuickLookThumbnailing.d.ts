@@ -37,6 +37,8 @@ declare class QLThumbnailGenerationRequest extends NSObject implements NSCopying
 
 	static new(): QLThumbnailGenerationRequest; // inherited from NSObject
 
+	contentType: UTType;
+
 	iconMode: boolean;
 
 	minimumDimension: number;

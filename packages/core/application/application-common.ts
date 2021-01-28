@@ -8,7 +8,6 @@ import { EventData } from '../data/observable';
 import { View } from '../ui/core/view';
 
 // Requires
-import { Observable } from '../data/observable';
 import * as bindableResources from '../ui/core/bindable/bindable-resources';
 import { CSSUtils } from '../css/system-classes';
 import { Enums } from '../ui/enums';
@@ -34,7 +33,7 @@ const ORIENTATION_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientat
 
 const SYSTEM_APPEARANCE_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${Enums.SystemAppearance.light}`, `${CSSUtils.CLASS_PREFIX}${Enums.SystemAppearance.dark}`];
 
-let cssFile: string = './app.css';
+let cssFile = './app.css';
 
 export function getResources() {
 	return bindableResources.get();
@@ -44,8 +43,8 @@ export function setResources(res: any) {
 	bindableResources.set(res);
 }
 
-export let android: AndroidApplication = undefined;
-export let ios: iOSApplication = undefined;
+export const android: AndroidApplication = undefined;
+export const ios: iOSApplication = undefined;
 
 export const on = global.NativeScriptGlobals.events.on.bind(global.NativeScriptGlobals.events);
 export const off = global.NativeScriptGlobals.events.off.bind(global.NativeScriptGlobals.events);

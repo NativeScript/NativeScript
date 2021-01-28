@@ -137,6 +137,13 @@ declare const enum CGImagePropertyOrientation {
 	kCGImagePropertyOrientationLeft = 8
 }
 
+declare const enum CGImagePropertyTGACompression {
+
+	kCGImageTGACompressionNone = 0,
+
+	kCGImageTGACompressionRLE = 1
+}
+
 declare function CGImageSourceCopyAuxiliaryDataInfoAtIndex(isrc: any, index: number, auxiliaryImageDataType: string): NSDictionary<any, any>;
 
 declare function CGImageSourceCopyMetadataAtIndex(isrc: any, index: number, options: NSDictionary<any, any>): any;
@@ -210,11 +217,17 @@ declare var kCGImageAuxiliaryDataTypeDepth: string;
 
 declare var kCGImageAuxiliaryDataTypeDisparity: string;
 
+declare var kCGImageAuxiliaryDataTypeHDRGainMap: string;
+
 declare var kCGImageAuxiliaryDataTypePortraitEffectsMatte: string;
+
+declare var kCGImageAuxiliaryDataTypeSemanticSegmentationGlassesMatte: string;
 
 declare var kCGImageAuxiliaryDataTypeSemanticSegmentationHairMatte: string;
 
 declare var kCGImageAuxiliaryDataTypeSemanticSegmentationSkinMatte: string;
+
+declare var kCGImageAuxiliaryDataTypeSemanticSegmentationSkyMatte: string;
 
 declare var kCGImageAuxiliaryDataTypeSemanticSegmentationTeethMatte: string;
 
@@ -235,6 +248,8 @@ declare var kCGImageDestinationMetadata: string;
 declare var kCGImageDestinationOptimizeColorForSharing: string;
 
 declare var kCGImageDestinationOrientation: string;
+
+declare var kCGImageDestinationPreserveGainMap: string;
 
 declare var kCGImageMetadataEnumerateRecursively: string;
 
@@ -1456,6 +1471,10 @@ declare var kCGImagePropertyProfileName: string;
 
 declare var kCGImagePropertyRawDictionary: string;
 
+declare var kCGImagePropertyTGACompression: string;
+
+declare var kCGImagePropertyTGADictionary: string;
+
 declare var kCGImagePropertyTIFFArtist: string;
 
 declare var kCGImagePropertyTIFFCompression: string;
@@ -1499,6 +1518,20 @@ declare var kCGImagePropertyTIFFXResolution: string;
 declare var kCGImagePropertyTIFFYResolution: string;
 
 declare var kCGImagePropertyThumbnailImages: string;
+
+declare var kCGImagePropertyWebPCanvasPixelHeight: string;
+
+declare var kCGImagePropertyWebPCanvasPixelWidth: string;
+
+declare var kCGImagePropertyWebPDelayTime: string;
+
+declare var kCGImagePropertyWebPDictionary: string;
+
+declare var kCGImagePropertyWebPFrameInfoArray: string;
+
+declare var kCGImagePropertyWebPLoopCount: string;
+
+declare var kCGImagePropertyWebPUnclampedDelayTime: string;
 
 declare var kCGImagePropertyWidth: string;
 

@@ -288,7 +288,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	[returnKeyTypeProperty.getDefault](): 'done' | 'next' | 'go' | 'search' | 'send' | string {
-		let ime = this.nativeTextViewProtected.getImeOptions();
+		const ime = this.nativeTextViewProtected.getImeOptions();
 		switch (ime) {
 			case android.view.inputmethod.EditorInfo.IME_ACTION_DONE:
 				return 'done';
@@ -327,14 +327,15 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			case 'send':
 				newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEND;
 				break;
-			default:
-				let ime = +value;
+			default:{
+				const ime = +value;
 				if (!isNaN(ime)) {
 					newImeOptions = ime;
 				} else {
 					newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED;
 				}
 				break;
+			}
 		}
 
 		this.nativeTextViewProtected.setImeOptions(newImeOptions);
@@ -353,7 +354,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	[autocapitalizationTypeProperty.getDefault](): 'none' | 'words' | 'sentences' | 'allcharacters' | string {
-		let inputType = this.nativeTextViewProtected.getInputType();
+		const inputType = this.nativeTextViewProtected.getInputType();
 		if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) {
 			return 'words';
 		} else if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) === android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) {
@@ -381,8 +382,8 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			case 'allcharacters':
 				inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS; //4096 (0x00010000) 13th bit
 				break;
-			default:
-				let number = +value;
+			default:{
+				const number = +value;
 				// We set the default value.
 				if (!isNaN(number)) {
 					inputType = number;
@@ -390,13 +391,14 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 					inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
 				}
 				break;
+			}
 		}
 
 		this._setInputType(inputType);
 	}
 
 	[autocorrectProperty.getDefault](): boolean {
-		let autocorrect = this.nativeTextViewProtected.getInputType();
+		const autocorrect = this.nativeTextViewProtected.getInputType();
 		if ((autocorrect & android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT) === android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT) {
 			return true;
 		}

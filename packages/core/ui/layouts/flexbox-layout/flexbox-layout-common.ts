@@ -11,10 +11,10 @@ export const FLEX_SHRINK_DEFAULT = 1.0;
 
 export type FlexDirection = 'row' | 'row-reverse' | 'column' | 'column-reverse';
 export namespace FlexDirection {
-	export const ROW: 'row' = 'row';
-	export const ROW_REVERSE: 'row-reverse' = 'row-reverse';
-	export const COLUMN: 'column' = 'column';
-	export const COLUMN_REVERSE: 'column-reverse' = 'column-reverse';
+	export const ROW = 'row';
+	export const ROW_REVERSE = 'row-reverse';
+	export const COLUMN = 'column';
+	export const COLUMN_REVERSE = 'column-reverse';
 
 	export const isValid = makeValidator<FlexDirection>(ROW, ROW_REVERSE, COLUMN, COLUMN_REVERSE);
 	export const parse = makeParser<FlexDirection>(isValid);
@@ -22,9 +22,9 @@ export namespace FlexDirection {
 
 export type FlexWrap = 'nowrap' | 'wrap' | 'wrap-reverse';
 export namespace FlexWrap {
-	export const NOWRAP: 'nowrap' = 'nowrap';
-	export const WRAP: 'wrap' = 'wrap';
-	export const WRAP_REVERSE: 'wrap-reverse' = 'wrap-reverse';
+	export const NOWRAP = 'nowrap';
+	export const WRAP = 'wrap';
+	export const WRAP_REVERSE = 'wrap-reverse';
 
 	export const isValid = makeValidator<FlexWrap>(NOWRAP, WRAP, WRAP_REVERSE);
 	export const parse = makeParser<FlexWrap>(isValid);
@@ -32,11 +32,11 @@ export namespace FlexWrap {
 
 export type JustifyContent = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around';
 export namespace JustifyContent {
-	export const FLEX_START: 'flex-start' = 'flex-start';
-	export const FLEX_END: 'flex-end' = 'flex-end';
-	export const CENTER: 'center' = 'center';
-	export const SPACE_BETWEEN: 'space-between' = 'space-between';
-	export const SPACE_AROUND: 'space-around' = 'space-around';
+	export const FLEX_START = 'flex-start' as const;
+	export const FLEX_END = 'flex-end' as const;
+	export const CENTER = 'center' as const;
+	export const SPACE_BETWEEN = 'space-between';
+	export const SPACE_AROUND= 'space-around';
 
 	export const isValid = makeValidator<JustifyContent>(FLEX_START, FLEX_END, CENTER, SPACE_BETWEEN, SPACE_AROUND);
 	export const parse = makeParser<JustifyContent>(isValid);
@@ -44,16 +44,16 @@ export namespace JustifyContent {
 
 export type FlexBasisPercent = number;
 export namespace FlexBasisPercent {
-	export const DEFAULT: number = -1;
+	export const DEFAULT = -1;
 }
 
 export type AlignItems = 'flex-start' | 'flex-end' | 'center' | 'baseline' | 'stretch';
 export namespace AlignItems {
-	export const FLEX_START: 'flex-start' = 'flex-start';
-	export const FLEX_END: 'flex-end' = 'flex-end';
-	export const CENTER: 'center' = 'center';
-	export const BASELINE: 'baseline' = 'baseline';
-	export const STRETCH: 'stretch' = 'stretch';
+	export const FLEX_START = 'flex-start';
+	export const FLEX_END= 'flex-end';
+	export const CENTER = 'center';
+	export const BASELINE = 'baseline';
+	export const STRETCH = 'stretch';
 
 	export const isValid = makeValidator<AlignItems>(FLEX_START, FLEX_END, CENTER, BASELINE, STRETCH);
 	export const parse = makeParser<AlignItems>(isValid);
@@ -61,12 +61,12 @@ export namespace AlignItems {
 
 export type AlignContent = 'flex-start' | 'flex-end' | 'center' | 'space-between' | 'space-around' | 'stretch';
 export namespace AlignContent {
-	export const FLEX_START: 'flex-start' = 'flex-start';
-	export const FLEX_END: 'flex-end' = 'flex-end';
-	export const CENTER: 'center' = 'center';
-	export const SPACE_BETWEEN: 'space-between' = 'space-between';
-	export const SPACE_AROUND: 'space-around' = 'space-around';
-	export const STRETCH: 'stretch' = 'stretch';
+	export const FLEX_START = 'flex-start';
+	export const FLEX_END = 'flex-end';
+	export const CENTER = 'center';
+	export const SPACE_BETWEEN = 'space-between';
+	export const SPACE_AROUND = 'space-around';
+	export const STRETCH = 'stretch';
 
 	export const isValid = makeValidator<AlignContent>(FLEX_START, FLEX_END, CENTER, SPACE_BETWEEN, SPACE_AROUND, STRETCH);
 	export const parse = makeParser<AlignContent>(isValid);
@@ -121,12 +121,12 @@ export namespace FlexWrapBefore {
 
 export type AlignSelf = 'auto' | AlignItems;
 export namespace AlignSelf {
-	export const AUTO: 'auto' = 'auto';
-	export const FLEX_START: 'flex-start' = 'flex-start';
-	export const FLEX_END: 'flex-end' = 'flex-end';
-	export const CENTER: 'center' = 'center';
-	export const BASELINE: 'baseline' = 'baseline';
-	export const STRETCH: 'stretch' = 'stretch';
+	export const AUTO = 'auto';
+	export const FLEX_START = 'flex-start';
+	export const FLEX_END = 'flex-end';
+	export const CENTER = 'center';
+	export const BASELINE = 'baseline';
+	export const STRETCH = 'stretch';
 
 	export const isValid = makeValidator<AlignSelf>(AUTO, FLEX_START, FLEX_END, CENTER, BASELINE, STRETCH);
 	export const parse = makeParser<AlignSelf>(isValid);

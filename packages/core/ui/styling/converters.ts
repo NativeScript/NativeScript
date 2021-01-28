@@ -36,7 +36,7 @@ function parseCubicBezierCurve(value: string) {
 }
 
 function stringToBezieCoords(value: string): number {
-	let result = parseFloat(value);
+	const result = parseFloat(value);
 	if (result < 0) {
 		return 0;
 	} else if (result > 1) {

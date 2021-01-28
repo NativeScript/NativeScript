@@ -17,7 +17,7 @@ interface AndroidView {
 
 // TODO: Change this implementation to use
 // We are using "ad" here to avoid namespace collision with the global android object
-export module ad {
+export namespace ad {
 	let SDK: number;
 	function getSDK() {
 		if (!SDK) {
@@ -130,7 +130,7 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
 	return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);
 }
 
-const pattern: RegExp = /url\(('|")(.*?)\1\)/;
+const pattern = /url\(('|")(.*?)\1\)/;
 function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
 	const nativeView = <android.view.View>view.nativeViewProtected;
 	const context = nativeView.getContext();
@@ -223,105 +223,19 @@ function createNativeCSSValueArray(css: string): native.Array<org.nativescript.w
 function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
 	const color = boxShadow.color;
 	const shadowOpacity = color.a;
-
 	const shadowColor = new Color(shadowOpacity, color.r, color.g, color.b);
-
 	// TODO: corner radius here should reflect the view's corner radius
 	const cornerRadius = 0; // this should be applied to the main view as well (try 20 with a transparent background on the xml to see the effect)
-	const cornerRadiusValue = cornerRadius * Screen.mainScreen.scale;
-	const shadowColorValue = shadowColor.android;
-
-	const shadowSpread = boxShadow.spreadRadius * Screen.mainScreen.scale;
-
-	// Set shadow layer
-	const outerRadius = Array.create('float', 8);
-	outerRadius[0] = cornerRadiusValue;
-	outerRadius[1] = cornerRadiusValue;
-	outerRadius[2] = cornerRadiusValue;
-	outerRadius[3] = cornerRadiusValue;
-	outerRadius[4] = cornerRadiusValue;
-	outerRadius[5] = cornerRadiusValue;
-	outerRadius[6] = cornerRadiusValue;
-	outerRadius[7] = cornerRadiusValue;
-
-	// Default background for transparent/semi-transparent background so it doesn't see through the shadow
-	const defaultBackgroundColor = new Color('#fff');
-	const backgroundRectShape = new android.graphics.drawable.shapes.RoundRectShape(outerRadius, null, null);
-	const backgroundDrawable = new android.graphics.drawable.ShapeDrawable(backgroundRectShape);
-	backgroundDrawable.getPaint().setColor(defaultBackgroundColor.android);
-
-	// shadow layer setup
-	const shadowRectShape = new android.graphics.drawable.shapes.RoundRectShape(outerRadius, null, null);
-	const shadowShapeDrawable = new android.graphics.drawable.ShapeDrawable(shadowRectShape);
-	shadowShapeDrawable.getPaint().setShadowLayer(shadowSpread, 0, 0, shadowColorValue);
-	shadowShapeDrawable.getPaint().setAntiAlias(true);
-
-	// set shadow direction
-	const drawableArray = Array.create('android.graphics.drawable.Drawable', 3);
-	drawableArray[0] = shadowShapeDrawable;
-	drawableArray[1] = backgroundDrawable;
-	drawableArray[2] = nativeView.getBackground();
-	const drawable = new android.graphics.drawable.LayerDrawable(drawableArray);
-
-	// workaround to show shadow offset (similar to ios's offsets)
-	const shadowInsets = {
-		left: 0,
-		top: 0,
-		right: 0,
-		bottom: 0,
+	const config = {
+		shadowColor: shadowColor.android,
+		cornerRadius,
+		spreadRadius: boxShadow.spreadRadius,
+		blurRadius: boxShadow.blurRadius,
+		offsetX: boxShadow.offsetX,
+		offsetY: boxShadow.offsetY,
+		scale: Screen.mainScreen.scale,
 	};
-	const offsetX = boxShadow.offsetX - boxShadow.spreadRadius;
-	// ignore the following line, this is similar to the adjustedShadowOffset on ios.
-	// it is just used to experiment the amount of insets that need to be applied based
-	// on the offset provided. Need to use some real calculation to gain parity (ask Osei)
-	const insetScaleFactor = 4 / 5;
-
-	if (boxShadow.offsetX === 0) {
-		shadowInsets.left = 0;
-		shadowInsets.right = 0;
-	} else if (boxShadow.offsetX > 0) {
-		shadowInsets.left = shadowSpread * insetScaleFactor;
-		shadowInsets.right = (offsetX < 0 ? 0 : offsetX) * Screen.mainScreen.scale * insetScaleFactor;
-	} else {
-		shadowInsets.left = (offsetX < 0 ? 0 : offsetX) * Screen.mainScreen.scale * insetScaleFactor;
-		shadowInsets.right = shadowSpread * insetScaleFactor;
-	}
-	const offsetY = boxShadow.offsetY - boxShadow.spreadRadius;
-	if (boxShadow.offsetY === 0) {
-		shadowInsets.top = 0;
-		shadowInsets.bottom = 0;
-	} else if (boxShadow.offsetY >= 0) {
-		shadowInsets.top = shadowSpread * insetScaleFactor;
-		shadowInsets.bottom = (offsetY < 0 ? 0 : offsetY) * Screen.mainScreen.scale * insetScaleFactor;
-	} else {
-		shadowInsets.top = (offsetY < 0 ? 0 : offsetY) * Screen.mainScreen.scale * insetScaleFactor;
-		shadowInsets.bottom = shadowSpread * insetScaleFactor;
-	}
-
-	// TODO: this isn't really a shadow offset per se, but just having the some layer
-	// drawable layer have an inset to mimic an offset (feels very hacky ugh)
-	drawable.setLayerInset(0, shadowInsets.left, shadowInsets.top, shadowInsets.right, shadowInsets.bottom);
-
-	// this is what it shadows look like without offsets - uncomment the following line,
-	// and comment out line above to see what the shadow without any inset modification looks like
-	// on android
-	// drawable.setLayerInset(0, shadowSpread, shadowSpread, shadowSpread, shadowSpread);
-
-	// make sure parent doesn't clip the shadows
-	let count = 0;
-	while (nativeView.getParent() && nativeView.getParent() instanceof android.view.ViewGroup) {
-		count++;
-		const parent = nativeView.getParent() as android.view.ViewGroup;
-		parent.setClipChildren(false);
-		parent.setClipToPadding(false);
-		// removing clipping from all breaks the ui
-		if (count === 1) {
-			break;
-		}
-		nativeView = parent;
-	}
-
-	nativeView.setBackground(drawable);
+	org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
 }
 
 export enum CacheMode {
@@ -333,7 +247,7 @@ export enum CacheMode {
 let currentCacheMode: CacheMode;
 let imageFetcher: org.nativescript.widgets.image.Fetcher;
 
-export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize: number = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
+export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
 	if (currentCacheMode === mode) {
 		return;
 	}

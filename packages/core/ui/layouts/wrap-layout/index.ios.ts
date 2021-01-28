@@ -47,16 +47,16 @@ export class WrapLayout extends WrapLayoutBase {
 
 		const isVertical = this.orientation === 'vertical';
 
-		let useItemWidth: boolean = this.effectiveItemWidth > 0;
-		let useItemHeight: boolean = this.effectiveItemHeight > 0;
-		let itemWidth = this.effectiveItemWidth;
-		let itemHeight = this.effectiveItemHeight;
+		const useItemWidth: boolean = this.effectiveItemWidth > 0;
+		const useItemHeight: boolean = this.effectiveItemHeight > 0;
+		const itemWidth = this.effectiveItemWidth;
+		const itemHeight = this.effectiveItemHeight;
 
 		this.eachLayoutChild((child, last) => {
 			const desiredSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
-			let childMeasuredWidth = useItemWidth ? itemWidth : desiredSize.measuredWidth;
-			let childMeasuredHeight = useItemHeight ? itemHeight : desiredSize.measuredHeight;
-			let isFirst = this._lengths.length <= rowOrColumn;
+			const childMeasuredWidth = useItemWidth ? itemWidth : desiredSize.measuredWidth;
+			const childMeasuredHeight = useItemHeight ? itemHeight : desiredSize.measuredHeight;
+			const isFirst = this._lengths.length <= rowOrColumn;
 
 			if (isVertical) {
 				if (childMeasuredHeight > remainingHeight) {
@@ -126,8 +126,8 @@ export class WrapLayout extends WrapLayoutBase {
 
 		let childLeft = paddingLeft;
 		let childTop = paddingTop;
-		let childrenHeight = bottom - top - paddingBottom;
-		let childrenWidth = right - left - paddingRight;
+		const childrenHeight = bottom - top - paddingBottom;
+		const childrenWidth = right - left - paddingRight;
 		let rowOrColumn = 0;
 
 		this.eachLayoutChild((child, last) => {
@@ -136,11 +136,11 @@ export class WrapLayout extends WrapLayoutBase {
 			let childHeight = child.getMeasuredHeight() + child.effectiveMarginTop + child.effectiveMarginBottom;
 			let childWidth = child.getMeasuredWidth() + child.effectiveMarginLeft + child.effectiveMarginRight;
 
-			let length = this._lengths[rowOrColumn];
+			const length = this._lengths[rowOrColumn];
 			if (isVertical) {
 				childWidth = length;
 				childHeight = this.effectiveItemHeight > 0 ? this.effectiveItemHeight : childHeight;
-				let isFirst = childTop === paddingTop;
+				const isFirst = childTop === paddingTop;
 				if (childTop + childHeight > childrenHeight && childLeft + childWidth <= childrenWidth) {
 					// Move to top.
 					childTop = paddingTop;
@@ -166,7 +166,7 @@ export class WrapLayout extends WrapLayoutBase {
 			} else {
 				childWidth = this.effectiveItemWidth > 0 ? this.effectiveItemWidth : childWidth;
 				childHeight = length;
-				let isFirst = childLeft === paddingLeft;
+				const isFirst = childLeft === paddingLeft;
 				if (childLeft + childWidth > childrenWidth && childTop + childHeight <= childrenHeight) {
 					// Move to left.
 					childLeft = paddingLeft;

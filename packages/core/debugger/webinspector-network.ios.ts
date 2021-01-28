@@ -1,11 +1,12 @@
 import * as inspectorCommandTypes from './InspectorBackendCommands.ios';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const inspectorCommands: typeof inspectorCommandTypes = require('./InspectorBackendCommands');
 
 import * as debuggerDomains from '.';
 
-declare var __inspectorSendEvent;
+declare let __inspectorSendEvent;
 
-declare var __inspectorTimestamp;
+declare let __inspectorTimestamp;
 
 const frameId = 'NativeScriptMainFrameIdentifier';
 const loaderId = 'Loader Identifier';
@@ -222,11 +223,11 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
 	 * Loads a resource in the context of a frame on the inspected page without cross origin checks.
 	 */
 	loadResource(params: inspectorCommandTypes.NetworkDomain.LoadResourceMethodArguments): { content: string; mimeType: string; status: number } {
-		let appPath = NSBundle.mainBundle.bundlePath;
-		let pathUrl = params.url.replace('file://', appPath);
-		let fileManager = NSFileManager.defaultManager;
-		let data = fileManager.fileExistsAtPath(pathUrl) ? fileManager.contentsAtPath(pathUrl) : undefined;
-		let content = data ? NSString.alloc().initWithDataEncoding(data, NSUTF8StringEncoding) : '';
+		const appPath = NSBundle.mainBundle.bundlePath;
+		const pathUrl = params.url.replace('file://', appPath);
+		const fileManager = NSFileManager.defaultManager;
+		const data = fileManager.fileExistsAtPath(pathUrl) ? fileManager.contentsAtPath(pathUrl) : undefined;
+		const content = data ? NSString.alloc().initWithDataEncoding(data, NSUTF8StringEncoding) : '';
 
 		return {
 			content: content.toString(), // Not sure why however we need to call toString() for NSString
@@ -235,10 +236,10 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
 		};
 	}
 
-	public static idSequence: number = 0;
+	public static idSequence = 0;
 	create(): Request {
-		let id = (++NetworkDomainDebugger.idSequence).toString();
-		let resourceData = new Request(this, id);
+		const id = (++NetworkDomainDebugger.idSequence).toString();
+		const resourceData = new Request(this, id);
 		resources_datas[id] = resourceData;
 
 		return resourceData;

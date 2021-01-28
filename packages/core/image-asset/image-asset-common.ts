@@ -36,9 +36,9 @@ export class ImageAssetBase extends Observable implements ImageAssetDefinition {
 }
 
 export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, reqHeight) {
-	let widthCoef = sourceWidth / reqWidth;
-	let heightCoef = sourceHeight / reqHeight;
-	let aspectCoef = Math.min(widthCoef, heightCoef);
+	const widthCoef = sourceWidth / reqWidth;
+	const heightCoef = sourceHeight / reqHeight;
+	const aspectCoef = Math.min(widthCoef, heightCoef);
 
 	return {
 		width: Math.floor(sourceWidth / aspectCoef),
@@ -51,7 +51,7 @@ export function getRequestedImageSize(src: { width: number; height: number }, op
 	let reqHeight = options.height || Math.min(src.height, Screen.mainScreen.heightPixels);
 
 	if (options && options.keepAspectRatio) {
-		let safeAspectSize = getAspectSafeDimensions(src.width, src.height, reqWidth, reqHeight);
+		const safeAspectSize = getAspectSafeDimensions(src.width, src.height, reqWidth, reqHeight);
 		reqWidth = safeAspectSize.width;
 		reqHeight = safeAspectSize.height;
 	}

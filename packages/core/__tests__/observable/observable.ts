@@ -5,7 +5,7 @@ describe('observable', () => {
 	describe('once', () => {
 		let observable: Observable;
 		let handler: () => void;
-		let callCount: number = 0;
+		let callCount = 0;
 
 		beforeEach('create handlers', () => {
 			handler = function () {

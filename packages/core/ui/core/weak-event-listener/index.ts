@@ -81,7 +81,7 @@ function validateArgs(source: Observable, eventName: string, handler: (eventData
 export function addWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any) {
 	validateArgs(source, eventName, handler, target);
 
-	let shouldAttach: boolean = false;
+	let shouldAttach = false;
 
 	let sourceEventMap = sourcesMap.get(source);
 	if (!sourceEventMap) {

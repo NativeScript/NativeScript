@@ -1,3 +1,4 @@
+/* eslint-disable no-var */
 declare var global: NodeJS.Global & typeof globalThis;
 
 interface ModuleResolver {
@@ -253,17 +254,17 @@ declare function NativeClass<T extends { new (...args: any[]): {} }>(options?: N
 declare function Interfaces(...interfaces): ClassDecorator;
 
 /**
- * Decorates class that extends native Java class
- * @param nativeClassName The name of the newly generated class. Must be unique in the application.
- */
-declare function JavaProxy(nativeClassName: string): ClassDecorator;
-
-/**
  * Important: Not applicable to Objective-C classes (iOS platform)
  * Decorates class that extends native Java class
  * @param interfaces An array of fully-classified Java interface names that the class must implement.
  */
 declare function Interfaces(interfaces: any[]): ClassDecorator;
+
+/**
+ * Decorates class that extends native Java class
+ * @param nativeClassName The name of the newly generated class. Must be unique in the application.
+ */
+declare function JavaProxy(nativeClassName: string): ClassDecorator;
 
 /**
  * Important: Not applicable to Java classes (Android platform)

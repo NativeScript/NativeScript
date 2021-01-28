@@ -171,6 +171,40 @@ export function test_setInterval_callbackCalledWithExtraArgs(done) {
 	);
 }
 
+export function test_setInterval_callbackNotDelayedByBusyWork() {
+	let calls = 0;
+
+	let firstCall = true;
+	const id = timer.setInterval(() => {
+		calls++;
+		if (firstCall) {
+			firstCall = false;
+			TKUnit.wait(0.025);
+		}
+	}, 50);
+
+	TKUnit.wait(0.11);
+	timer.clearInterval(id);
+	TKUnit.assertEqual(calls, 2, 'Callback should be called multiple times with busy wait');
+}
+
+export function test_setInterval_callbackSkippedByBusyWork() {
+	let calls = 0;
+
+	let firstCall = true;
+	const id = timer.setInterval(() => {
+		calls++;
+		if (firstCall) {
+			firstCall = false;
+			TKUnit.wait(0.051);
+		}
+	}, 50);
+
+	TKUnit.wait(0.16);
+	timer.clearInterval(id);
+	TKUnit.assertEqual(calls, 2, 'Callback should be called skipped when it takes too long to process');
+}
+
 export function test_setInterval_callbackShouldBeCleared(done) {
 	const start = TKUnit.time();
 	// >> timer-set-interval

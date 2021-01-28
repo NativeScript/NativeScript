@@ -1,4 +1,5 @@
 import * as inspectorCommandTypes from './InspectorBackendCommands.ios';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const inspectorCommands: typeof inspectorCommandTypes = require('./InspectorBackendCommands');
 
 import * as debuggerDomains from '.';

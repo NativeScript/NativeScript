@@ -35,7 +35,7 @@ export namespace ad {
 	/**
 	 * Utility module dealing with some android collections.
 	 */
-	module collections {
+	namespace collections {
 		/**
 		 * Converts string array into a String [hash set](http://developer.android.com/reference/java/util/HashSet.html).
 		 * @param str - An array of strings to convert.
@@ -52,7 +52,7 @@ export namespace ad {
 	/**
 	 * Utility module related to android resources.
 	 */
-	export module resources {
+	export namespace resources {
 		/**
 		 * Gets the drawable id from a given name.
 		 * @param name - Name of the resource.

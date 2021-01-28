@@ -245,7 +245,7 @@ export class TextField extends TextFieldBase {
 	}
 	[colorProperty.setNative](value: Color | { textColor: UIColor; tintColor: UIColor }) {
 		if (value instanceof Color) {
-			let color = value instanceof Color ? value.ios : value;
+			const color = value instanceof Color ? value.ios : value;
 			this.nativeTextViewProtected.textColor = color;
 			this.nativeTextViewProtected.tintColor = color;
 		} else {

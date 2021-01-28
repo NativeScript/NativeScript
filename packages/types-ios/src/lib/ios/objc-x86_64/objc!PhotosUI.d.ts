@@ -82,3 +82,83 @@ declare const enum PHLivePhotoViewPlaybackStyle {
 
 	Hint = 2
 }
+
+declare class PHPickerConfiguration extends NSObject implements NSCopying {
+
+	static alloc(): PHPickerConfiguration; // inherited from NSObject
+
+	static new(): PHPickerConfiguration; // inherited from NSObject
+
+	filter: PHPickerFilter;
+
+	preferredAssetRepresentationMode: PHPickerConfigurationAssetRepresentationMode;
+
+	selectionLimit: number;
+
+	constructor(o: { photoLibrary: PHPhotoLibrary; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithPhotoLibrary(photoLibrary: PHPhotoLibrary): this;
+}
+
+declare const enum PHPickerConfigurationAssetRepresentationMode {
+
+	Automatic = 0,
+
+	Current = 1,
+
+	Compatible = 2
+}
+
+declare class PHPickerFilter extends NSObject implements NSCopying {
+
+	static alloc(): PHPickerFilter; // inherited from NSObject
+
+	static anyFilterMatchingSubfilters(subfilters: NSArray<PHPickerFilter> | PHPickerFilter[]): PHPickerFilter;
+
+	static new(): PHPickerFilter; // inherited from NSObject
+
+	static readonly imagesFilter: PHPickerFilter;
+
+	static readonly livePhotosFilter: PHPickerFilter;
+
+	static readonly videosFilter: PHPickerFilter;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class PHPickerResult extends NSObject {
+
+	static alloc(): PHPickerResult; // inherited from NSObject
+
+	static new(): PHPickerResult; // inherited from NSObject
+
+	readonly assetIdentifier: string;
+
+	readonly itemProvider: NSItemProvider;
+}
+
+declare class PHPickerViewController extends UIViewController {
+
+	static alloc(): PHPickerViewController; // inherited from NSObject
+
+	static new(): PHPickerViewController; // inherited from NSObject
+
+	readonly configuration: PHPickerConfiguration;
+
+	delegate: PHPickerViewControllerDelegate;
+
+	constructor(o: { configuration: PHPickerConfiguration; });
+
+	initWithConfiguration(configuration: PHPickerConfiguration): this;
+}
+
+interface PHPickerViewControllerDelegate extends NSObjectProtocol {
+
+	pickerDidFinishPicking(picker: PHPickerViewController, results: NSArray<PHPickerResult> | PHPickerResult[]): void;
+}
+declare var PHPickerViewControllerDelegate: {
+
+	prototype: PHPickerViewControllerDelegate;
+};
