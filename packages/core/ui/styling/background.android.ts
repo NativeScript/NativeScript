@@ -89,7 +89,7 @@ export namespace ad {
 		const boxShadow = view.style.boxShadow;
 		if (boxShadow) {
 			console.log('boxShadow', boxShadow);
-			drawBoxShadow(nativeView, boxShadow);
+			drawBoxShadow(nativeView, view, boxShadow);
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
@@ -220,15 +220,15 @@ function createNativeCSSValueArray(css: string): native.Array<org.nativescript.w
 	return nativeArray;
 }
 
-function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
+function drawBoxShadow(nativeView: android.view.View, view: View, boxShadow: BoxShadow) {
 	const color = boxShadow.color;
 	const shadowOpacity = color.a;
 	const shadowColor = new Color(shadowOpacity, color.r, color.g, color.b);
 	// TODO: corner radius here should reflect the view's corner radius
-	const cornerRadius = 0; // this should be applied to the main view as well (try 20 with a transparent background on the xml to see the effect)
+	const cornerRadius = view.borderRadius; // this should be applied to the main view as well (try 20 with a transparent background on the xml to see the effect)
 	const config = {
 		shadowColor: shadowColor.android,
-		cornerRadius,
+		cornerRadius: cornerRadius,
 		spreadRadius: boxShadow.spreadRadius,
 		blurRadius: boxShadow.blurRadius,
 		offsetX: boxShadow.offsetX,
