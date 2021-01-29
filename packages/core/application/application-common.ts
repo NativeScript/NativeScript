@@ -28,6 +28,7 @@ export const uncaughtErrorEvent = 'uncaughtError';
 export const discardedErrorEvent = 'discardedError';
 export const orientationChangedEvent = 'orientationChanged';
 export const systemAppearanceChangedEvent = 'systemAppearanceChanged';
+export const fontScaleChangedEvent = 'fontScaleChanged';
 
 const ORIENTATION_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.portrait}`, `${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.landscape}`, `${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.unknown}`];
 
@@ -122,7 +123,7 @@ function increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
 	}
 }
 
-function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string) {
+export function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void {
 	if (!rootView.cssClasses.has(newCssClass)) {
 		cssClasses.forEach((cssClass) => removeCssClass(rootView, cssClass));
 		addCssClass(rootView, newCssClass);
@@ -146,7 +147,7 @@ export function orientationChanged(rootView: View, newOrientation: 'portrait' | 
 }
 export let autoSystemAppearanceChanged = true;
 
-export function setAutoSystemAppearanceChanged(value: boolean) {
+export function setAutoSystemAppearanceChanged(value: boolean): void {
 	autoSystemAppearanceChanged = value;
 }
 

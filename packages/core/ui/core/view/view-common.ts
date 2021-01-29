@@ -22,6 +22,9 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import { TextTransform } from '../../text-base';
 
 import * as am from '../../animation';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
+import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
+import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, getCurrentFontScale } from '../../../accessibility';
 import { BoxShadow } from '../../styling/box-shadow';
 
 // helpers (these are okay re-exported here)
@@ -68,6 +71,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
+	public static accessibilityBlurEvent = accessibilityBlurEvent;
+	public static accessibilityFocusEvent = accessibilityFocusEvent;
+	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
 
 	protected _closeModalCallback: Function;
 	public _manager: any;
@@ -90,6 +96,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	_setMinHeightNative: (value: Length) => void;
 
 	public _gestureObservers = {};
+
+	_androidContentDescriptionUpdated?: boolean;
 
 	get css(): string {
 		const scope = this._styleScope;
@@ -360,6 +368,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		modalRootViewCssClasses.forEach((c) => this.cssClasses.add(c));
 
 		parent._modal = this;
+		this.style._fontScale = getCurrentFontScale();
 		this._modalParent = parent;
 		this._modalContext = options.context;
 		const that = this;
@@ -743,6 +752,71 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.scaleY = value;
 	}
 
+	get accessible(): boolean {
+		return this.style.accessible;
+	}
+	set accessible(value: boolean) {
+		this.style.accessible = value;
+	}
+
+	get accessibilityHidden(): boolean {
+		return this.style.accessibilityHidden;
+	}
+	set accessibilityHidden(value: boolean) {
+		this.style.accessibilityHidden = value;
+	}
+
+	public accessibilityIdentifier: string;
+
+	get accessibilityRole(): AccessibilityRole {
+		return this.style.accessibilityRole;
+	}
+	set accessibilityRole(value: AccessibilityRole) {
+		this.style.accessibilityRole = value;
+	}
+
+	get accessibilityState(): AccessibilityState {
+		return this.style.accessibilityState;
+	}
+	set accessibilityState(value: AccessibilityState) {
+		this.style.accessibilityState = value;
+	}
+
+	public accessibilityLabel: string;
+	public accessibilityValue: string;
+	public accessibilityHint: string;
+
+	get accessibilityLiveRegion(): AccessibilityLiveRegion {
+		return this.style.accessibilityLiveRegion;
+	}
+	set accessibilityLiveRegion(value: AccessibilityLiveRegion) {
+		this.style.accessibilityLiveRegion = value;
+	}
+
+	get accessibilityLanguage(): string {
+		return this.style.accessibilityLanguage;
+	}
+	set accessibilityLanguage(value: string) {
+		this.style.accessibilityLanguage = value;
+	}
+
+	get accessibilityMediaSession(): boolean {
+		return this.style.accessibilityMediaSession;
+	}
+	set accessibilityMediaSession(value: boolean) {
+		this.style.accessibilityMediaSession = value;
+	}
+
+	public accessibilityTraits?: AccessibilityTrait[];
+
+	get automationText(): string {
+		return this.accessibilityIdentifier;
+	}
+
+	set automationText(value: string) {
+		this.accessibilityIdentifier = value;
+	}
+
 	get androidElevation(): number {
 		return this.style.androidElevation;
 	}
@@ -759,7 +833,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	//END Style property shortcuts
 
-	public automationText: string;
 	public originX: number;
 	public originY: number;
 	public isEnabled: boolean;
@@ -1013,12 +1086,23 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 		return false;
 	}
-}
 
-export const automationTextProperty = new Property<ViewCommon, string>({
-	name: 'automationText',
-});
-automationTextProperty.register(ViewCommon);
+	public androidSendAccessibilityEvent(eventName: AndroidAccessibilityEvent, msg?: string): void {
+		return;
+	}
+
+	public iosPostAccessibilityNotification(notificationType: IOSPostAccessibilityNotificationType, msg?: string): void {
+		return;
+	}
+
+	public accessibilityAnnouncement(msg?: string): void {
+		return;
+	}
+
+	public accessibilityScreenChanged(): void {
+		return;
+	}
+}
 
 export const originXProperty = new Property<ViewCommon, number>({
 	name: 'originX',
@@ -1070,3 +1154,9 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
     valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
+
+accessibilityIdentifierProperty.register(ViewCommon);
+accessibilityLabelProperty.register(ViewCommon);
+accessibilityValueProperty.register(ViewCommon);
+accessibilityHintProperty.register(ViewCommon);
+accessibilityTraitsProperty.register(ViewCommon);

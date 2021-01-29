@@ -15,7 +15,7 @@ export abstract class Font implements FontDefinition {
 		return this.fontWeight === FontWeight.SEMI_BOLD || this.fontWeight === FontWeight.BOLD || this.fontWeight === '700' || this.fontWeight === FontWeight.EXTRA_BOLD || this.fontWeight === FontWeight.BLACK;
 	}
 
-	protected constructor(public readonly fontFamily: string, public readonly fontSize: number, public readonly fontStyle: FontStyle, public readonly fontWeight: FontWeight) {}
+	protected constructor(public readonly fontFamily: string, public readonly fontSize: number, public readonly fontStyle: FontStyle, public readonly fontWeight: FontWeight, public readonly fontScale: number) {}
 
 	public abstract getAndroidTypeface(): any /* android.graphics.Typeface */;
 	public abstract getUIFont(defaultFont: any /* UIFont */): any /* UIFont */;
@@ -23,6 +23,7 @@ export abstract class Font implements FontDefinition {
 	public abstract withFontStyle(style: string): Font;
 	public abstract withFontWeight(weight: string): Font;
 	public abstract withFontSize(size: number): Font;
+	public abstract withFontScale(scale: number): Font;
 
 	public static equals(value1: Font, value2: Font): boolean {
 		// both values are falsy
