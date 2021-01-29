@@ -22,3 +22,4 @@ package.json
 *.css
 *.scss
 *.sh
+!packages/webpack/templates/*.js
