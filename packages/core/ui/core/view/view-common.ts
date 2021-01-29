@@ -22,6 +22,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import { TextTransform } from '../../text-base';
 
 import * as am from '../../animation';
+import { BoxShadow } from '../../styling/box-shadow';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -579,6 +580,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 	set backgroundRepeat(value: BackgroundRepeat) {
 		this.style.backgroundRepeat = value;
+	}
+
+	get boxShadow(): BoxShadow {
+		return this.style.boxShadow;
+	}
+	set boxShadow(value: BoxShadow) {
+		this.style.boxShadow = value;
 	}
 
 	get minWidth(): Length {
