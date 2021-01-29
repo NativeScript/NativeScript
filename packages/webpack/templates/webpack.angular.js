@@ -56,6 +56,8 @@ module.exports = (env) => {
 		snapshotInDocker, // --env.snapshotInDocker
 		skipSnapshotTools, // --env.skipSnapshotTools
 		compileSnapshot, // --env.compileSnapshot
+    appComponents = [],
+    entries = {}
 	} = env;
 
 	const { fileReplacements, copyReplacements } = parseWorkspaceConfig(platform, configuration, projectName);
@@ -83,7 +85,7 @@ module.exports = (env) => {
 	}
 	const entryModule = `${nsWebpack.getEntryModule(appFullPath, platform)}.ts`;
 	const entryPath = `.${sep}${entryModule}`;
-	const entries = { bundle: entryPath };
+	Object.assign(entries, { bundle: entryPath }, entries);
 	const areCoreModulesExternal = Array.isArray(env.externals) && env.externals.some((e) => e.indexOf('@nativescript') > -1);
 	if (platform === 'ios' && !areCoreModulesExternal && !testing) {
 		entries['tns_modules/@nativescript/core/inspector_modules'] = 'inspector_modules';
@@ -141,6 +143,9 @@ module.exports = (env) => {
 	}
 
 	const noEmitOnErrorFromTSConfig = getNoEmitOnErrorFromTSConfig(tsConfigName);
+  
+  appComponents.push("@nativescript/core/ui/frame", 
+                     "@nativescript/core/ui/frame/activity");
 
 	nsWebpack.processAppComponents(appComponents, platform);
 	const config = {
