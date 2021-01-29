@@ -186,9 +186,9 @@ export class TextBase extends TextBaseCommon {
 
 	[lineHeightProperty.setNative](value: number) {
 		this._setNativeText();
-  }
-  
-  [textShadowProperty.setNative](value: TextShadow) {
+	}
+
+	[textShadowProperty.setNative](value: TextShadow) {
 		this._setShadow(value);
 	}
 
