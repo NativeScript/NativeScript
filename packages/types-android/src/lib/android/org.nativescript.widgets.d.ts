@@ -1,6 +1,11 @@
 ﻿declare module org {
     module nativescript {
         module widgets {
+
+            export class Utils {
+                public static drawBoxShadow(view: android.view.View, value: string);
+            }
+
             export class CustomTransition extends androidx.transition.Visibility {
                 constructor(animatorSet: android.animation.AnimatorSet, transitionName: string);
                 public setResetOnTransitionEnd(resetOnTransitionEnd: boolean): void;
