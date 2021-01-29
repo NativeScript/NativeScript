@@ -185,6 +185,7 @@ export namespace Trace {
 	 * all predefined categories.
 	 */
 	export namespace categories {
+		export const Accessibility = 'Accessibility';
 		export const VisualTreeEvents = 'VisualTreeEvents';
 		export const Layout = 'Layout';
 		export const Style = 'Style';
