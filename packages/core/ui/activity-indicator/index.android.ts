@@ -48,10 +48,12 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		return -1;
 	}
 	[colorProperty.setNative](value: number | Color) {
-		if (value instanceof Color) {
-			this.nativeViewProtected.getIndeterminateDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+		const color = value instanceof Color ? value.android : value;
+		const drawable = this.nativeViewProtected.getIndeterminateDrawable().mutate();
+		if (color) {
+			drawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
 		} else {
-			this.nativeViewProtected.getIndeterminateDrawable().clearColorFilter();
+			drawable.clearColorFilter();
 		}
 	}
 }

@@ -119,6 +119,36 @@ declare const UNWIND_ARM64_MODE_FRAMELESS: number;
 
 declare const UNWIND_ARM64_MODE_MASK: number;
 
+declare const UNWIND_ARM_DWARF_SECTION_OFFSET: number;
+
+declare const UNWIND_ARM_FRAME_D_REG_COUNT_MASK: number;
+
+declare const UNWIND_ARM_FRAME_FIRST_PUSH_R4: number;
+
+declare const UNWIND_ARM_FRAME_FIRST_PUSH_R5: number;
+
+declare const UNWIND_ARM_FRAME_FIRST_PUSH_R6: number;
+
+declare const UNWIND_ARM_FRAME_SECOND_PUSH_R10: number;
+
+declare const UNWIND_ARM_FRAME_SECOND_PUSH_R11: number;
+
+declare const UNWIND_ARM_FRAME_SECOND_PUSH_R12: number;
+
+declare const UNWIND_ARM_FRAME_SECOND_PUSH_R8: number;
+
+declare const UNWIND_ARM_FRAME_SECOND_PUSH_R9: number;
+
+declare const UNWIND_ARM_FRAME_STACK_ADJUST_MASK: number;
+
+declare const UNWIND_ARM_MODE_DWARF: number;
+
+declare const UNWIND_ARM_MODE_FRAME: number;
+
+declare const UNWIND_ARM_MODE_FRAME_D: number;
+
+declare const UNWIND_ARM_MODE_MASK: number;
+
 declare const UNWIND_HAS_LSDA: number;
 
 declare const UNWIND_IS_NOT_FUNCTION_START: number;
@@ -215,6 +245,8 @@ declare function _dyld_register_func_for_add_image(func: interop.FunctionReferen
 
 declare function _dyld_register_func_for_remove_image(func: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<mach_header>, p2: number) => void>): void;
 
+declare function _dyld_shared_cache_contains_path(path: string | interop.Pointer | interop.Reference<any>): boolean;
+
 declare var _mh_bundle_header: mach_header_64;
 
 declare var _mh_dylib_header: mach_header_64;
@@ -250,67 +282,6 @@ interface data_in_code_entry {
 }
 declare var data_in_code_entry: interop.StructType<data_in_code_entry>;
 
-interface dyld_all_image_infos {
-	version: number;
-	infoArrayCount: number;
-	infoArray: interop.Pointer | interop.Reference<dyld_image_info>;
-	notification: interop.FunctionReference<(p1: dyld_image_mode, p2: number, p3: interop.Reference<dyld_image_info>) => void>;
-	processDetachedFromSharedRegion: boolean;
-	libSystemInitialized: boolean;
-	dyldImageLoadAddress: interop.Pointer | interop.Reference<mach_header>;
-	jitInfo: interop.Pointer | interop.Reference<any>;
-	dyldVersion: string;
-	errorMessage: string;
-	terminationFlags: number;
-	coreSymbolicationShmPage: interop.Pointer | interop.Reference<any>;
-	systemOrderFlag: number;
-	uuidArrayCount: number;
-	uuidArray: interop.Pointer | interop.Reference<dyld_uuid_info>;
-	dyldAllImageInfosAddress: interop.Pointer | interop.Reference<dyld_all_image_infos>;
-	initialImageCount: number;
-	errorKind: number;
-	errorClientOfDylibPath: string;
-	errorTargetDylibPath: string;
-	errorSymbol: string;
-	sharedCacheSlide: number;
-	sharedCacheUUID: interop.Reference<number>;
-	sharedCacheBaseAddress: number;
-	infoArrayChangeTimestamp: number;
-	dyldPath: string;
-	notifyPorts: interop.Reference<number>;
-	reserved: interop.Reference<number>;
-	compact_dyld_image_info_addr: number;
-	compact_dyld_image_info_size: number;
-	platform: number;
-}
-declare var dyld_all_image_infos: interop.StructType<dyld_all_image_infos>;
-
-declare const dyld_error_kind_dylib_missing: number;
-
-declare const dyld_error_kind_dylib_version: number;
-
-declare const dyld_error_kind_dylib_wrong_arch: number;
-
-declare const dyld_error_kind_none: number;
-
-declare const dyld_error_kind_symbol_missing: number;
-
-interface dyld_image_info {
-	imageLoadAddress: interop.Pointer | interop.Reference<mach_header>;
-	imageFilePath: string;
-	imageFileModDate: number;
-}
-declare var dyld_image_info: interop.StructType<dyld_image_info>;
-
-declare const enum dyld_image_mode {
-
-	dyld_image_adding = 0,
-
-	dyld_image_removing = 1,
-
-	dyld_image_info_change = 2
-}
-
 interface dyld_info_command {
 	cmd: number;
 	cmdsize: number;
@@ -326,20 +297,6 @@ interface dyld_info_command {
 	export_size: number;
 }
 declare var dyld_info_command: interop.StructType<dyld_info_command>;
-
-declare var dyld_shared_cache_ranges: dyld_shared_cache_rangesStruct;
-
-interface dyld_shared_cache_rangesStruct {
-	sharedRegionsCount: number;
-	ranges: interop.Reference<{ start: number; length: number; }>;
-}
-declare var dyld_shared_cache_rangesStruct: interop.StructType<dyld_shared_cache_rangesStruct>;
-
-interface dyld_uuid_info {
-	imageLoadAddress: interop.Pointer | interop.Reference<mach_header>;
-	imageUUID: interop.Reference<number>;
-}
-declare var dyld_uuid_info: interop.StructType<dyld_uuid_info>;
 
 interface dylib_module {
 	module_name: number;

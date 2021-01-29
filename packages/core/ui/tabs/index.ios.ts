@@ -172,20 +172,22 @@ class UIPageViewControllerImpl extends UIPageViewController {
 			safeAreaInsetsTop = this.topLayoutGuide.length;
 		}
 
+		let conditionalSafeAreaBottom = owner.iosOverflowSafeArea ? safeAreaInsetsBottom : 0;
 		let scrollViewTop = 0;
-		let scrollViewHeight = this.view.bounds.size.height + safeAreaInsetsBottom;
+		let scrollViewHeight = this.view.bounds.size.height + conditionalSafeAreaBottom;
 
 		if (owner.tabStrip) {
-			scrollViewTop = this.tabBar.frame.size.height;
-			scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + safeAreaInsetsBottom;
-			let tabBarTop = safeAreaInsetsTop;
 			const tabBarHeight = this.tabBar.frame.size.height;
+			let tabBarTop = safeAreaInsetsTop;
+
+			scrollViewTop = tabBarHeight;
+			scrollViewHeight = this.view.bounds.size.height - tabBarHeight + conditionalSafeAreaBottom;
 
 			const tabsPosition = owner.tabsPosition;
 			if (tabsPosition === 'bottom') {
-				tabBarTop = this.view.frame.size.height - this.tabBar.frame.size.height - safeAreaInsetsBottom;
+				tabBarTop = this.view.frame.size.height - tabBarHeight - safeAreaInsetsBottom;
 				scrollViewTop = this.view.frame.origin.y;
-				scrollViewHeight = this.view.frame.size.height - safeAreaInsetsBottom;
+				scrollViewHeight = this.view.frame.size.height - tabBarHeight;
 			}
 
 			let parent = owner.parent;

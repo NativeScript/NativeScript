@@ -83,6 +83,11 @@ export interface ShowModalOptions {
 		 * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
 		 */
 		cancelable?: boolean;
+		/**
+		 * An optional parameter specifying the windowSoftInputMode of the dialog window
+		 * For possible values see https://developer.android.com/reference/android/view/WindowManager.LayoutParams#softInputMode
+		 */
+		windowSoftInputMode?: number;
 	};
 	/**
 	 * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
@@ -232,6 +237,12 @@ export abstract class ViewBase extends Observable {
 	public bindingContext: any;
 
 	/**
+     * Gets or sets if the view is reusable.
+     * Reusable views are not automatically destroyed when removed from the View tree.
+     */
+    public reusable: boolean;
+
+	/**
 	 * Gets the name of the constructor function for this instance. E.g. for a Button class this will return "Button".
 	 */
 	public typeName: string;
@@ -359,6 +370,13 @@ export abstract class ViewBase extends Observable {
 	 * This method should *not* be overridden by derived views.
 	 */
 	_tearDownUI(force?: boolean): void;
+
+	/**
+     * Tears down the UI of a reusable node by making it no longer reusable.
+     * @see _tearDownUI
+     * @param forceDestroyChildren Force destroy the children (even if they are reusable)
+     */
+    destroyNode(forceDestroyChildren?: boolean): void;
 
 	/**
 	 * Creates a native view.

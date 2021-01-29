@@ -93,6 +93,8 @@ declare class AUAudioUnit extends NSObject {
 
 	musicalContextBlock: (p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<number>, p6: interop.Pointer | interop.Reference<number>) => boolean;
 
+	readonly osWorkgroup: OS_os_workgroup;
+
 	readonly outputBusses: AUAudioUnitBusArray;
 
 	outputEnabled: boolean;
@@ -106,6 +108,8 @@ declare class AUAudioUnit extends NSObject {
 	readonly providesUserInterface: boolean;
 
 	readonly renderBlock: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>, p6: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>) => number) => number;
+
+	readonly renderContextObserver: (p1: interop.Pointer | interop.Reference<AudioUnitRenderContext>) => void;
 
 	renderQuality: number;
 
@@ -645,11 +649,38 @@ declare const enum AUSpatialMixerAttenuationCurve {
 	kSpatialMixerAttenuationCurve_Linear = 3
 }
 
+declare const enum AUSpatialMixerOutputType {
+
+	kSpatialMixerOutputType_Headphones = 1,
+
+	kSpatialMixerOutputType_BuiltInSpeakers = 2,
+
+	kSpatialMixerOutputType_ExternalSpeakers = 3
+}
+
+declare const enum AUSpatialMixerPointSourceInHeadMode {
+
+	kSpatialMixerPointSourceInHeadMode_Mono = 0,
+
+	kSpatialMixerPointSourceInHeadMode_Bypass = 1
+}
+
 declare const enum AUSpatialMixerRenderingFlags {
 
 	kSpatialMixerRenderingFlags_InterAuralDelay = 1,
 
 	kSpatialMixerRenderingFlags_DistanceAttenuation = 4
+}
+
+declare const enum AUSpatialMixerSourceMode {
+
+	kSpatialMixerSourceMode_SpatializeIfMono = 0,
+
+	kSpatialMixerSourceMode_Bypass = 1,
+
+	kSpatialMixerSourceMode_PointSource = 2,
+
+	kSpatialMixerSourceMode_AmbienceBed = 3
 }
 
 declare const enum AUSpatializationAlgorithm {
@@ -666,7 +697,9 @@ declare const enum AUSpatializationAlgorithm {
 
 	kSpatializationAlgorithm_StereoPassThrough = 5,
 
-	kSpatializationAlgorithm_HRTFHQ = 6
+	kSpatializationAlgorithm_HRTFHQ = 6,
+
+	kSpatializationAlgorithm_UseOutputType = 7
 }
 
 interface AudioBalanceFade {
@@ -728,6 +761,8 @@ declare function AudioCodecReset(inCodec: interop.Pointer | interop.Reference<an
 declare function AudioCodecSetProperty(inCodec: interop.Pointer | interop.Reference<any>, inPropertyID: number, inPropertyDataSize: number, inPropertyData: interop.Pointer | interop.Reference<any>): number;
 
 declare function AudioCodecUninitialize(inCodec: interop.Pointer | interop.Reference<any>): number;
+
+declare function AudioComponentCopyIcon(comp: interop.Pointer | interop.Reference<any>): UIImage;
 
 declare function AudioComponentCopyName(inComponent: interop.Pointer | interop.Reference<any>, outName: interop.Pointer | interop.Reference<string>): number;
 
@@ -1295,13 +1330,6 @@ interface AudioUnitParameterHistoryInfo {
 }
 declare var AudioUnitParameterHistoryInfo: interop.StructType<AudioUnitParameterHistoryInfo>;
 
-interface AudioUnitParameterIDName {
-	inID: number;
-	inDesiredLength: number;
-	outName: string;
-}
-declare var AudioUnitParameterIDName: interop.StructType<AudioUnitParameterIDName>;
-
 interface AudioUnitParameterInfo {
 	name: interop.Reference<number>;
 	unitName: string;
@@ -1314,6 +1342,13 @@ interface AudioUnitParameterInfo {
 	flags: AudioUnitParameterOptions;
 }
 declare var AudioUnitParameterInfo: interop.StructType<AudioUnitParameterInfo>;
+
+interface AudioUnitParameterNameInfo {
+	inID: number;
+	inDesiredLength: number;
+	outName: string;
+}
+declare var AudioUnitParameterNameInfo: interop.StructType<AudioUnitParameterNameInfo>;
 
 declare const enum AudioUnitParameterOptions {
 
@@ -1478,6 +1513,12 @@ declare const enum AudioUnitRenderActionFlags {
 
 	kAudioUnitRenderAction_DoNotCheckRenderArgs = 512
 }
+
+interface AudioUnitRenderContext {
+	workgroup: OS_os_workgroup;
+	reserved: interop.Reference<number>;
+}
+declare var AudioUnitRenderContext: interop.StructType<AudioUnitRenderContext>;
 
 declare function AudioUnitReset(inUnit: interop.Pointer | interop.Reference<any>, inScope: number, inElement: number): number;
 
@@ -2572,6 +2613,8 @@ declare const kAudioFileAIFFType: number;
 
 declare const kAudioFileAMRType: number;
 
+declare const kAudioFileBW64Type: number;
+
 declare const kAudioFileBadPropertySizeError: number;
 
 declare const kAudioFileCAFType: number;
@@ -2695,6 +2738,8 @@ declare const kAudioFilePropertyFormatList: number;
 declare const kAudioFilePropertyFrameToPacket: number;
 
 declare const kAudioFilePropertyID3Tag: number;
+
+declare const kAudioFilePropertyID3TagOffset: number;
 
 declare const kAudioFilePropertyInfoDictionary: number;
 
@@ -2820,6 +2865,8 @@ declare const kAudioFileUnsupportedPropertyError: number;
 
 declare const kAudioFileWAVEType: number;
 
+declare const kAudioFileWave64Type: number;
+
 declare const kAudioFormatBadPropertySizeError: number;
 
 declare const kAudioFormatBadSpecifierSizeError: number;
@@ -2829,6 +2876,8 @@ declare const kAudioFormatProperty_ASBDFromESDS: number;
 declare const kAudioFormatProperty_ASBDFromMPEGPacket: number;
 
 declare const kAudioFormatProperty_AreChannelLayoutsEquivalent: number;
+
+declare const kAudioFormatProperty_AvailableDecodeNumberChannels: number;
 
 declare const kAudioFormatProperty_AvailableEncodeBitRates: number;
 
@@ -2929,6 +2978,8 @@ declare const kAudioOutputUnitProperty_IsRunning: number;
 declare const kAudioOutputUnitProperty_MIDICallbacks: number;
 
 declare const kAudioOutputUnitProperty_NodeComponentDescription: number;
+
+declare const kAudioOutputUnitProperty_OSWorkgroup: number;
 
 declare const kAudioOutputUnitProperty_RemoteControlToHost: number;
 
@@ -3460,6 +3511,8 @@ declare const kAudioUnitProperty_PresentationLatency: number;
 
 declare const kAudioUnitProperty_RemoteControlEventListener: number;
 
+declare const kAudioUnitProperty_RenderContextObserver: number;
+
 declare const kAudioUnitProperty_RenderQuality: number;
 
 declare const kAudioUnitProperty_RequestViewController: number;
@@ -3494,7 +3547,13 @@ declare const kAudioUnitProperty_SpatialMixerAttenuationCurve: number;
 
 declare const kAudioUnitProperty_SpatialMixerDistanceParams: number;
 
+declare const kAudioUnitProperty_SpatialMixerOutputType: number;
+
+declare const kAudioUnitProperty_SpatialMixerPointSourceInHeadMode: number;
+
 declare const kAudioUnitProperty_SpatialMixerRenderingFlags: number;
+
+declare const kAudioUnitProperty_SpatialMixerSourceMode: number;
 
 declare const kAudioUnitProperty_SpatializationAlgorithm: number;
 
@@ -3864,6 +3923,10 @@ declare const kExtAudioFileError_MaxPacketSizeUnknown: number;
 
 declare const kExtAudioFileError_NonPCMClientFormat: number;
 
+declare const kExtAudioFilePacketTableInfoOverride_UseFileValue: number;
+
+declare const kExtAudioFilePacketTableInfoOverride_UseFileValueIfValid: number;
+
 declare const kExtAudioFileProperty_AudioConverter: number;
 
 declare const kExtAudioFileProperty_AudioFile: number;
@@ -4082,6 +4145,8 @@ declare const kRoundTripAACParam_Format: number;
 
 declare const kRoundTripAACParam_RateOrQuality: number;
 
+declare const kSampleDelayParam_DelayFrames: number;
+
 declare const kSequenceTrackProperty_AutomatedParameters: number;
 
 declare const kSequenceTrackProperty_LoopInfo: number;
@@ -4107,6 +4172,12 @@ declare const kSpatialMixerParam_Enable: number;
 declare const kSpatialMixerParam_Gain: number;
 
 declare const kSpatialMixerParam_GlobalReverbGain: number;
+
+declare const kSpatialMixerParam_HeadPitch: number;
+
+declare const kSpatialMixerParam_HeadRoll: number;
+
+declare const kSpatialMixerParam_HeadYaw: number;
 
 declare const kSpatialMixerParam_MaxGain: number;
 

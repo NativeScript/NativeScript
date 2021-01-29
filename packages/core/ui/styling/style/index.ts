@@ -11,6 +11,8 @@ import { Observable } from '../../../data/observable';
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
 import { Enums } from '../../enums';
+import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from '../../text-base';
+import { BoxShadow } from '../box-shadow';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -136,6 +138,8 @@ export class Style extends Observable implements StyleDefinition {
 	public borderTopRightRadius: LengthType;
 	public borderBottomRightRadius: LengthType;
 	public borderBottomLeftRadius: LengthType;
+
+	public boxShadow: BoxShadow;
 
 	public fontSize: number;
 	public fontFamily: string;

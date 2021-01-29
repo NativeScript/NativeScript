@@ -1,4 +1,11 @@
 
+declare const enum PHAccessLevel {
+
+	AddOnly = 1,
+
+	ReadWrite = 2
+}
+
 declare class PHAdjustmentData extends NSObject {
 
 	static alloc(): PHAdjustmentData; // inherited from NSObject
@@ -432,7 +439,9 @@ declare const enum PHAuthorizationStatus {
 
 	Denied = 2,
 
-	Authorized = 3
+	Authorized = 3,
+
+	Limited = 4
 }
 
 declare class PHCachingImageManager extends PHImageManager {
@@ -542,6 +551,8 @@ declare class PHCollectionListChangeRequest extends PHChangeRequest {
 	static changeRequestForCollectionList(collectionList: PHCollectionList): PHCollectionListChangeRequest;
 
 	static changeRequestForCollectionListChildCollections(collectionList: PHCollectionList, childCollections: PHFetchResult<PHCollection>): PHCollectionListChangeRequest;
+
+	static changeRequestForTopLevelCollectionListUserCollections(childCollections: PHFetchResult<PHCollection>): PHCollectionListChangeRequest;
 
 	static creationRequestForCollectionListWithTitle(title: string): PHCollectionListChangeRequest;
 
@@ -852,7 +863,7 @@ declare var PHInvalidAssetResourceDataRequestID: number;
 
 declare var PHInvalidImageRequestID: number;
 
-declare class PHLivePhoto extends NSObject implements NSCopying, NSSecureCoding {
+declare class PHLivePhoto extends NSObject implements NSCopying, NSItemProviderReading, NSSecureCoding {
 
 	static alloc(): PHLivePhoto; // inherited from NSObject
 
@@ -860,19 +871,57 @@ declare class PHLivePhoto extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): PHLivePhoto; // inherited from NSObject
 
+	static objectWithItemProviderDataTypeIdentifierError(data: NSData, typeIdentifier: string): PHLivePhoto;
+
 	static requestLivePhotoWithResourceFileURLsPlaceholderImageTargetSizeContentModeResultHandler(fileURLs: NSArray<NSURL> | NSURL[], image: UIImage, targetSize: CGSize, contentMode: PHImageContentMode, resultHandler: (p1: PHLivePhoto, p2: NSDictionary<any, any>) => void): number;
 
 	readonly size: CGSize;
 
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly readableTypeIdentifiersForItemProvider: NSArray<string>; // inherited from NSItemProviderReading
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 declare class PHLivePhotoEditingContext extends NSObject {
@@ -1001,9 +1050,13 @@ declare class PHPhotoLibrary extends NSObject {
 
 	static authorizationStatus(): PHAuthorizationStatus;
 
+	static authorizationStatusForAccessLevel(accessLevel: PHAccessLevel): PHAuthorizationStatus;
+
 	static new(): PHPhotoLibrary; // inherited from NSObject
 
 	static requestAuthorization(handler: (p1: PHAuthorizationStatus) => void): void;
+
+	static requestAuthorizationForAccessLevelHandler(accessLevel: PHAccessLevel, handler: (p1: PHAuthorizationStatus) => void): void;
 
 	static sharedPhotoLibrary(): PHPhotoLibrary;
 
@@ -1012,6 +1065,8 @@ declare class PHPhotoLibrary extends NSObject {
 	performChangesAndWaitError(changeBlock: () => void): boolean;
 
 	performChangesCompletionHandler(changeBlock: () => void, completionHandler: (p1: boolean, p2: NSError) => void): void;
+
+	presentLimitedLibraryPickerFromViewController(controller: UIViewController): void;
 
 	registerAvailabilityObserver(observer: PHPhotoLibraryAvailabilityObserver): void;
 
@@ -1040,17 +1095,22 @@ declare var PHPhotoLibraryChangeObserver: {
 	prototype: PHPhotoLibraryChangeObserver;
 };
 
+declare const enum PHPhotosError {
+
+	Invalid = -1,
+
+	UserCancelled = 3072,
+
+	LibraryVolumeOffline = 3114,
+
+	RelinquishingLibraryBundleToWriter = 3142,
+
+	SwitchingSystemPhotoLibrary = 3143,
+
+	NetworkAccessRequired = 3164
+}
+
 declare var PHPhotosErrorDomain: string;
-
-declare const PHPhotosErrorInvalid: number;
-
-declare const PHPhotosErrorLibraryVolumeOffline: number;
-
-declare const PHPhotosErrorRelinquishingLibraryBundleToWriter: number;
-
-declare const PHPhotosErrorSwitchingSystemPhotoLibrary: number;
-
-declare const PHPhotosErrorUserCancelled: number;
 
 declare class PHVideoRequestOptions extends NSObject {
 

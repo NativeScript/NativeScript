@@ -141,6 +141,7 @@ function initializeNativeClasses() {
 		public items: Array<TabContentItem>;
 		private mCurTransaction: androidx.fragment.app.FragmentTransaction;
 		private mCurrentPrimaryItem: androidx.fragment.app.Fragment;
+		private mCurrentPosition = -1;
 
 		constructor(public owner: Tabs) {
 			super();
@@ -238,9 +239,27 @@ function initializeNativeClasses() {
 				}
 
 				this.mCurrentPrimaryItem = fragment;
-				this.owner.selectedIndex = position;
+				const previousPosition = this.mCurrentPosition;
+				this.mCurrentPosition = position;
 
 				const tab = this.owner;
+				tab.selectedIndex = position;
+
+				// Update tabstrip items
+				if (position != previousPosition) {
+					const tabStripItems = tab.tabStrip && tab.tabStrip.items;
+
+					if (position >= 0 && tabStripItems && tabStripItems[position]) {
+						tabStripItems[position]._emit(TabStripItem.selectEvent);
+						tab._setItemColor(tabStripItems[position]);
+					}
+
+					if (previousPosition >= 0 && tabStripItems && tabStripItems[previousPosition]) {
+						tabStripItems[previousPosition]._emit(TabStripItem.unselectEvent);
+						tab._setItemColor(tabStripItems[previousPosition]);
+					}
+				}
+
 				const tabItems = tab.items;
 				const newTabItem = tabItems ? tabItems[position] : null;
 
@@ -288,25 +307,6 @@ function initializeNativeClasses() {
 			super(context);
 
 			return global.__native(this);
-		}
-
-		public onSelectedPositionChange(position: number, prevPosition: number): void {
-			const owner = this.owner;
-			if (!owner) {
-				return;
-			}
-
-			const tabStripItems = owner.tabStrip && owner.tabStrip.items;
-
-			if (position >= 0 && tabStripItems && tabStripItems[position]) {
-				tabStripItems[position]._emit(TabStripItem.selectEvent);
-				owner._setItemColor(tabStripItems[position]);
-			}
-
-			if (prevPosition >= 0 && tabStripItems && tabStripItems[prevPosition]) {
-				tabStripItems[prevPosition]._emit(TabStripItem.unselectEvent);
-				owner._setItemColor(tabStripItems[prevPosition]);
-			}
 		}
 
 		public onTap(position: number): boolean {
@@ -952,11 +952,9 @@ export class Tabs extends TabsBase {
 	}
 
 	[selectedIndexProperty.setNative](value: number) {
-		// TODO
-		// if (Trace.isEnabled()) {
-		//     Trace.write("TabView this._viewPager.setCurrentItem(" + value + ", " + smoothScroll + ");", traceCategory);
-		// }
-		this._viewPager.setCurrentItem(value, this.animationEnabled);
+		if (this._viewPager.getCurrentItem() != value) {
+			this._viewPager.setCurrentItem(value);
+		}
 	}
 
 	[itemsProperty.getDefault](): TabContentItem[] {

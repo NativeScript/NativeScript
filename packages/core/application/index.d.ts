@@ -103,8 +103,9 @@ export interface LaunchEventData extends ApplicationEventData {
 	/**
 	 * The root view for this Window on iOS or Activity for Android.
 	 * If not set a new Frame will be created as a root view in order to maintain backwards compatibility.
+	 * If explicitly set to null, there will be no root view.
 	 */
-	root?: View;
+	root?: View | null;
 
 	savedInstanceState?: any /* android.os.Bundle */;
 }

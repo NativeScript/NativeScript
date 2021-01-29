@@ -21,21 +21,26 @@ const parseWorkspaceConfig = function(platform, envConfigs, projectName, debug) 
     if (workspaceConfig && projectName) {
       const projectSettings = workspaceConfig.projects[projectName];
       if (projectSettings) {
-
+        var targetProp = 'architect';
+        if (!projectSettings.architect) {
+          targetProp = 'targets'; // Nx
+        }
         // default project configurations
         for (const envConfig of envConfigs) {
-          if (projectSettings.architect.default && projectSettings.architect.default.configurations) {
-            const defaultConfigurations = projectSettings.architect.default.configurations;
-            if (defaultConfigurations && defaultConfigurations[envConfig]) {
-              if (defaultConfigurations[envConfig].fileReplacements) {
-                for (const fileReplace of defaultConfigurations[envConfig].fileReplacements) {
-                  if (debug) {
-                    console.log('project fileReplacement:', fileReplace);
-                  }
-                  if (fileReplace.replace.indexOf('.ts') > -1) {
-                    fileReplacements[resolve(__dirname, `${rootPath}${fileReplace.replace}`)] = resolve(__dirname, `${rootPath}${fileReplace.with}`);
-                  } else {
-                    copyReplacements.push({ from: resolve(__dirname, `${rootPath}${fileReplace.with}`), to: resolve(__dirname, `${rootPath}${fileReplace.replace}`), force: true });
+          if (projectSettings[targetProp]) {
+            if (projectSettings[targetProp].default && projectSettings[targetProp].default.configurations) {
+              const defaultConfigurations = projectSettings[targetProp].default.configurations;
+              if (defaultConfigurations && defaultConfigurations[envConfig]) {
+                if (defaultConfigurations[envConfig].fileReplacements) {
+                  for (const fileReplace of defaultConfigurations[envConfig].fileReplacements) {
+                    if (debug) {
+                      console.log('project fileReplacement:', fileReplace);
+                    }
+                    if (fileReplace.replace.indexOf('.ts') > -1) {
+                      fileReplacements[resolve(__dirname, `${rootPath}${fileReplace.replace}`)] = resolve(__dirname, `${rootPath}${fileReplace.with}`);
+                    } else {
+                      copyReplacements.push({ from: resolve(__dirname, `${rootPath}${fileReplace.with}`), to: resolve(__dirname, `${rootPath}${fileReplace.replace}`), force: true });
+                    }
                   }
                 }
               }
@@ -44,17 +49,19 @@ const parseWorkspaceConfig = function(platform, envConfigs, projectName, debug) 
         }
         // platform specific configurations (always override top level project configurations)
         for (const envConfig of envConfigs) {
-          if (projectSettings.architect && projectSettings.architect[platform]) {
-            const platformConfig = projectSettings.architect[platform].configurations;
-            if (platformConfig && platformConfig[envConfig] && platformConfig[envConfig].fileReplacements) {
-              for (const fileReplace of platformConfig[envConfig].fileReplacements) {
-                if (debug) {
-                  console.log(`"${platform}" specific fileReplacement:`, fileReplace);
-                }
-                if (fileReplace.replace.indexOf('.ts') > -1) {
-                  fileReplacements[resolve(__dirname, `${rootPath}${fileReplace.replace}`)] = resolve(__dirname, `${rootPath}${fileReplace.with}`);
-                } else {
-                  copyReplacements.push({ from: resolve(__dirname, `${rootPath}${fileReplace.with}`), to: resolve(__dirname, `${rootPath}${fileReplace.replace}`), force: true });
+          if (projectSettings[targetProp]) {
+            if (projectSettings[targetProp] && projectSettings[targetProp][platform]) {
+              const platformConfig = projectSettings[targetProp][platform].configurations;
+              if (platformConfig && platformConfig[envConfig] && platformConfig[envConfig].fileReplacements) {
+                for (const fileReplace of platformConfig[envConfig].fileReplacements) {
+                  if (debug) {
+                    console.log(`"${platform}" specific fileReplacement:`, fileReplace);
+                  }
+                  if (fileReplace.replace.indexOf('.ts') > -1) {
+                    fileReplacements[resolve(__dirname, `${rootPath}${fileReplace.replace}`)] = resolve(__dirname, `${rootPath}${fileReplace.with}`);
+                  } else {
+                    copyReplacements.push({ from: resolve(__dirname, `${rootPath}${fileReplace.with}`), to: resolve(__dirname, `${rootPath}${fileReplace.replace}`), force: true });
+                  }
                 }
               }
             }

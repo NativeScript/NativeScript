@@ -22,6 +22,7 @@ import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
 
 import * as am from '../../animation';
+import { BoxShadow } from '../../styling/box-shadow';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -581,9 +582,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.backgroundRepeat = value;
 	}
 
-	get minWidth(): LengthType {
-		return this.style.minWidth;
+	get boxShadow(): BoxShadow {
+		return this.style.boxShadow;
 	}
+	set boxShadow(value: BoxShadow) {
+		this.style.boxShadow = value;
+	}
+
+  get minWidth(): LengthType {
+    return this.style.minWidth;
+	}
+  
 	set minWidth(value: LengthType) {
 		this.style.minWidth = value;
 	}
@@ -758,7 +767,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public isUserInteractionEnabled: boolean;
 	public iosOverflowSafeArea: boolean;
 	public iosOverflowSafeAreaEnabled: boolean;
-
+	public iosIgnoreSafeArea: boolean;
+	
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;
 	}
@@ -1055,3 +1065,9 @@ export const iosOverflowSafeAreaEnabledProperty = new InheritedProperty<ViewComm
 	valueConverter: booleanConverter,
 });
 iosOverflowSafeAreaEnabledProperty.register(ViewCommon);
+export const iosIgnoreSafeAreaProperty = new InheritedProperty({
+    name: 'iosIgnoreSafeArea',
+    defaultValue: false,
+    valueConverter: booleanConverter,
+});
+iosIgnoreSafeAreaProperty.register(ViewCommon);

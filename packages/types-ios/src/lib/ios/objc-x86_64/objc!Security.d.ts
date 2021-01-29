@@ -490,6 +490,8 @@ declare function SecTrustCopyCustomAnchorCertificates(trust: any, anchors: inter
 
 declare function SecTrustCopyExceptions(trust: any): NSData;
 
+declare function SecTrustCopyKey(trust: any): any;
+
 declare function SecTrustCopyPolicies(trust: any, policies: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
 declare function SecTrustCopyProperties(trust: any): NSArray<any>;
@@ -877,6 +879,8 @@ declare const errSSLDecompressFail: number;
 
 declare const errSSLDecryptionFail: number;
 
+declare const errSSLEarlyDataRejected: number;
+
 declare const errSSLFatalAlert: number;
 
 declare const errSSLHandshakeFail: number;
@@ -1034,6 +1038,8 @@ declare const errSecCallbackFailed: number;
 declare const errSecCertificateCannotOperate: number;
 
 declare const errSecCertificateExpired: number;
+
+declare const errSecCertificateIsCA: number;
 
 declare const errSecCertificateNameNotAllowed: number;
 
@@ -1598,6 +1604,8 @@ declare const errSecRequestRejected: number;
 declare const errSecResourceSignBadCertChainLength: number;
 
 declare const errSecResourceSignBadExtKeyUsage: number;
+
+declare const errSecRestrictedAPI: number;
 
 declare const errSecSMIMEBadExtendedKeyUsage: number;
 

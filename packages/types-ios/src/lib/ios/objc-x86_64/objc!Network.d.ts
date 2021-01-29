@@ -34,6 +34,13 @@ declare var OS_nw_connection: {
 	prototype: OS_nw_connection;
 };
 
+interface OS_nw_connection_group extends NSObjectProtocol {
+}
+declare var OS_nw_connection_group: {
+
+	prototype: OS_nw_connection_group;
+};
+
 interface OS_nw_content_context extends NSObjectProtocol {
 }
 declare var OS_nw_content_context: {
@@ -83,6 +90,13 @@ declare var OS_nw_framer: {
 	prototype: OS_nw_framer;
 };
 
+interface OS_nw_group_descriptor extends NSObjectProtocol {
+}
+declare var OS_nw_group_descriptor: {
+
+	prototype: OS_nw_group_descriptor;
+};
+
 interface OS_nw_interface extends NSObjectProtocol {
 }
 declare var OS_nw_interface: {
@@ -125,6 +139,13 @@ declare var OS_nw_path_monitor: {
 	prototype: OS_nw_path_monitor;
 };
 
+interface OS_nw_privacy_context extends NSObjectProtocol {
+}
+declare var OS_nw_privacy_context: {
+
+	prototype: OS_nw_privacy_context;
+};
+
 interface OS_nw_protocol_definition extends NSObjectProtocol {
 }
 declare var OS_nw_protocol_definition: {
@@ -151,6 +172,20 @@ interface OS_nw_protocol_stack extends NSObjectProtocol {
 declare var OS_nw_protocol_stack: {
 
 	prototype: OS_nw_protocol_stack;
+};
+
+interface OS_nw_resolution_report extends NSObjectProtocol {
+}
+declare var OS_nw_resolution_report: {
+
+	prototype: OS_nw_resolution_report;
+};
+
+interface OS_nw_resolver_config extends NSObjectProtocol {
+}
+declare var OS_nw_resolver_config: {
+
+	prototype: OS_nw_resolver_config;
 };
 
 interface OS_nw_txt_record extends NSObjectProtocol {
@@ -187,6 +222,8 @@ declare var _nw_data_transfer_report_all_paths: number;
 declare var _nw_parameters_configure_protocol_default_configuration: (p1: NSObject) => void;
 
 declare var _nw_parameters_configure_protocol_disable: (p1: NSObject) => void;
+
+declare var _nw_privacy_context_default_context: NSObject;
 
 declare var kNWErrorDomainDNS: string;
 
@@ -264,7 +301,9 @@ declare const enum nw_browser_state_t {
 
 	nw_browser_state_failed = 2,
 
-	nw_browser_state_cancelled = 3
+	nw_browser_state_cancelled = 3,
+
+	nw_browser_state_waiting = 4
 }
 
 declare function nw_connection_access_establishment_report(connection: NSObject, queue: NSObject, access_block: (p1: NSObject) => void): void;
@@ -292,6 +331,47 @@ declare function nw_connection_create_new_data_transfer_report(connection: NSObj
 declare function nw_connection_force_cancel(connection: NSObject): void;
 
 declare function nw_connection_get_maximum_datagram_size(connection: NSObject): number;
+
+declare function nw_connection_group_cancel(group: NSObject): void;
+
+declare function nw_connection_group_copy_descriptor(group: NSObject): NSObject;
+
+declare function nw_connection_group_copy_local_endpoint_for_message(group: NSObject, context: NSObject): NSObject;
+
+declare function nw_connection_group_copy_parameters(group: NSObject): NSObject;
+
+declare function nw_connection_group_copy_path_for_message(group: NSObject, context: NSObject): NSObject;
+
+declare function nw_connection_group_copy_remote_endpoint_for_message(group: NSObject, context: NSObject): NSObject;
+
+declare function nw_connection_group_create(group_descriptor: NSObject, parameters: NSObject): NSObject;
+
+declare function nw_connection_group_extract_connection_for_message(group: NSObject, context: NSObject): NSObject;
+
+declare function nw_connection_group_reply(group: NSObject, inbound_message: NSObject, outbound_message: NSObject, content: NSObject): void;
+
+declare function nw_connection_group_send_message(group: NSObject, content: NSObject, endpoint: NSObject, context: NSObject, completion: (p1: NSObject) => void): void;
+
+declare function nw_connection_group_set_queue(group: NSObject, queue: NSObject): void;
+
+declare function nw_connection_group_set_receive_handler(group: NSObject, maximum_message_size: number, reject_oversized_messages: boolean, receive_handler: (p1: NSObject, p2: NSObject, p3: boolean) => void): void;
+
+declare function nw_connection_group_set_state_changed_handler(group: NSObject, state_changed_handler: (p1: nw_connection_group_state_t, p2: NSObject) => void): void;
+
+declare function nw_connection_group_start(group: NSObject): void;
+
+declare const enum nw_connection_group_state_t {
+
+	nw_connection_group_state_invalid = 0,
+
+	nw_connection_group_state_waiting = 1,
+
+	nw_connection_group_state_ready = 2,
+
+	nw_connection_group_state_failed = 3,
+
+	nw_connection_group_state_cancelled = 4
+}
 
 declare function nw_connection_receive(connection: NSObject, minimum_incomplete_length: number, maximum_length: number, completion: (p1: NSObject, p2: NSObject, p3: boolean, p4: NSObject) => void): void;
 
@@ -457,6 +537,8 @@ declare function nw_establishment_report_copy_proxy_endpoint(report: NSObject): 
 
 declare function nw_establishment_report_enumerate_protocols(report: NSObject, enumerate_block: (p1: NSObject, p2: number, p3: number) => boolean): void;
 
+declare function nw_establishment_report_enumerate_resolution_reports(report: NSObject, enumerate_block: (p1: NSObject) => boolean): void;
+
 declare function nw_establishment_report_enumerate_resolutions(report: NSObject, enumerate_block: (p1: nw_report_resolution_source_t, p2: number, p3: number, p4: NSObject, p5: NSObject) => boolean): void;
 
 declare function nw_establishment_report_get_attempt_started_after_milliseconds(report: NSObject): number;
@@ -551,6 +633,12 @@ declare function nw_framer_write_output_data(framer: NSObject, output_data: NSOb
 
 declare function nw_framer_write_output_no_copy(framer: NSObject, output_length: number): boolean;
 
+declare function nw_group_descriptor_add_endpoint(descriptor: NSObject, endpoint: NSObject): boolean;
+
+declare function nw_group_descriptor_create_multicast(multicast_group: NSObject): NSObject;
+
+declare function nw_group_descriptor_enumerate_endpoints(descriptor: NSObject, enumerate_block: (p1: NSObject) => boolean): void;
+
 declare function nw_interface_get_index(interface: NSObject): number;
 
 declare function nw_interface_get_name(interface: NSObject): string;
@@ -605,6 +693,8 @@ declare function nw_ip_metadata_set_service_class(metadata: NSObject, service_cl
 declare function nw_ip_options_set_calculate_receive_time(options: NSObject, calculate_receive_time: boolean): void;
 
 declare function nw_ip_options_set_disable_fragmentation(options: NSObject, disable_fragmentation: boolean): void;
+
+declare function nw_ip_options_set_disable_multicast_loopback(options: NSObject, disable_multicast_loopback: boolean): void;
 
 declare function nw_ip_options_set_hop_limit(options: NSObject, hop_limit: number): void;
 
@@ -661,6 +751,12 @@ declare const enum nw_listener_state_t {
 
 	nw_listener_state_cancelled = 4
 }
+
+declare function nw_multicast_group_descriptor_get_disable_unicast_traffic(multicast_descriptor: NSObject): boolean;
+
+declare function nw_multicast_group_descriptor_set_disable_unicast_traffic(multicast_descriptor: NSObject, disable_unicast_traffic: boolean): void;
+
+declare function nw_multicast_group_descriptor_set_specific_source(multicast_descriptor: NSObject, source: NSObject): void;
 
 declare const enum nw_multipath_service_t {
 
@@ -746,6 +842,8 @@ declare function nw_parameters_set_multipath_service(parameters: NSObject, multi
 
 declare function nw_parameters_set_prefer_no_proxy(parameters: NSObject, prefer_no_proxy: boolean): void;
 
+declare function nw_parameters_set_privacy_context(parameters: NSObject, privacy_context: NSObject): void;
+
 declare function nw_parameters_set_prohibit_constrained(parameters: NSObject, prohibit_constrained: boolean): void;
 
 declare function nw_parameters_set_prohibit_expensive(parameters: NSObject, prohibit_expensive: boolean): void;
@@ -766,6 +864,8 @@ declare function nw_path_enumerate_interfaces(path: NSObject, enumerate_block: (
 
 declare function nw_path_get_status(path: NSObject): nw_path_status_t;
 
+declare function nw_path_get_unsatisfied_reason(path: NSObject): nw_path_unsatisfied_reason_t;
+
 declare function nw_path_has_dns(path: NSObject): boolean;
 
 declare function nw_path_has_ipv4(path: NSObject): boolean;
@@ -783,6 +883,8 @@ declare function nw_path_monitor_cancel(monitor: NSObject): void;
 declare function nw_path_monitor_create(): NSObject;
 
 declare function nw_path_monitor_create_with_type(required_interface_type: nw_interface_type_t): NSObject;
+
+declare function nw_path_monitor_prohibit_interface_type(monitor: NSObject, interface_type: nw_interface_type_t): void;
 
 declare function nw_path_monitor_set_cancel_handler(monitor: NSObject, cancel_handler: () => void): void;
 
@@ -803,7 +905,26 @@ declare const enum nw_path_status_t {
 	nw_path_status_satisfiable = 3
 }
 
+declare const enum nw_path_unsatisfied_reason_t {
+
+	nw_path_unsatisfied_reason_not_available = 0,
+
+	nw_path_unsatisfied_reason_cellular_denied = 1,
+
+	nw_path_unsatisfied_reason_wifi_denied = 2,
+
+	nw_path_unsatisfied_reason_local_network_denied = 3
+}
+
 declare function nw_path_uses_interface_type(path: NSObject, interface_type: nw_interface_type_t): boolean;
+
+declare function nw_privacy_context_create(description: string | interop.Pointer | interop.Reference<any>): NSObject;
+
+declare function nw_privacy_context_disable_logging(privacy_context: NSObject): void;
+
+declare function nw_privacy_context_flush_cache(privacy_context: NSObject): void;
+
+declare function nw_privacy_context_require_encrypted_name_resolution(privacy_context: NSObject, require_encrypted_name_resolution: boolean, fallback_resolver_config: NSObject): void;
 
 declare function nw_protocol_copy_ip_definition(): NSObject;
 
@@ -847,6 +968,19 @@ declare function nw_protocol_stack_set_transport_protocol(stack: NSObject, proto
 
 declare function nw_release(obj: interop.Pointer | interop.Reference<any>): void;
 
+declare const enum nw_report_resolution_protocol_t {
+
+	nw_report_resolution_protocol_unknown = 0,
+
+	nw_report_resolution_protocol_udp = 1,
+
+	nw_report_resolution_protocol_tcp = 2,
+
+	nw_report_resolution_protocol_tls = 3,
+
+	nw_report_resolution_protocol_https = 4
+}
+
 declare const enum nw_report_resolution_source_t {
 
 	nw_report_resolution_source_query = 1,
@@ -855,6 +989,24 @@ declare const enum nw_report_resolution_source_t {
 
 	nw_report_resolution_source_expired_cache = 3
 }
+
+declare function nw_resolution_report_copy_preferred_endpoint(resolution_report: NSObject): NSObject;
+
+declare function nw_resolution_report_copy_successful_endpoint(resolution_report: NSObject): NSObject;
+
+declare function nw_resolution_report_get_endpoint_count(resolution_report: NSObject): number;
+
+declare function nw_resolution_report_get_milliseconds(resolution_report: NSObject): number;
+
+declare function nw_resolution_report_get_protocol(resolution_report: NSObject): nw_report_resolution_protocol_t;
+
+declare function nw_resolution_report_get_source(resolution_report: NSObject): nw_report_resolution_source_t;
+
+declare function nw_resolver_config_add_server_address(config: NSObject, server_address: NSObject): void;
+
+declare function nw_resolver_config_create_https(url_endpoint: NSObject): NSObject;
+
+declare function nw_resolver_config_create_tls(server_endpoint: NSObject): NSObject;
 
 declare function nw_retain(obj: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
