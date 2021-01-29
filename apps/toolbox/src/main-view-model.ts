@@ -24,7 +24,6 @@ export class HelloWorldModel extends Observable {
 	}
 
 	toggleAnimation(args) {
-		console.log('toggling animation');
 		const layout = args.object as StackLayout;
 		if (!layout.className) {
 			layout.className = 'sample-animation';
