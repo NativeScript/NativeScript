@@ -2,7 +2,7 @@
 import { Point, View as ViewDefinition, dip } from '.';
 
 // Requires
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty } from './view-common';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
 import { ShowModalOptions } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
@@ -10,6 +10,8 @@ import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, Visibility, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
+import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
+import { setupAccessibleView, IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties } from '../../../accessibility';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -52,6 +54,12 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	get isLayoutRequested(): boolean {
 		return (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
+	}
+
+	constructor() {
+		super();
+
+		this.once(View.loadedEvent, () => setupAccessibleView(this));
 	}
 
 	public requestLayout(): void {
@@ -553,12 +561,63 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.updateOriginPoint(this.originX, value);
 	}
 
-	[automationTextProperty.getDefault](): string {
+	[accessibilityEnabledProperty.setNative](value: boolean): void {
+		this.nativeViewProtected.isAccessibilityElement = !!value;
+
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityIdentifierProperty.getDefault](): string {
 		return this.nativeViewProtected.accessibilityLabel;
 	}
-	[automationTextProperty.setNative](value: string) {
+	[accessibilityIdentifierProperty.setNative](value: string): void {
 		this.nativeViewProtected.accessibilityIdentifier = value;
+	}
+
+	[accessibilityRoleProperty.setNative](): void {
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityTraitsProperty.setNative](): void {
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityValueProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityValue = value;
+	}
+
+	[accessibilityLabelProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
 		this.nativeViewProtected.accessibilityLabel = value;
+	}
+
+	[accessibilityHintProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityHint = value;
+	}
+
+	[accessibilityLanguageProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityLanguage = value;
+	}
+
+	[accessibilityHiddenProperty.setNative](value: boolean): void {
+		this.nativeViewProtected.accessibilityElementsHidden = !!value;
+
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityLiveRegionProperty.setNative](): void {
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityStateProperty.setNative](): void {
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityMediaSessionProperty.setNative](): void {
+		updateAccessibilityProperties(this);
 	}
 
 	[isUserInteractionEnabledProperty.getDefault](): boolean {
@@ -671,6 +730,54 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (this.isLayoutValid) {
 			this._redrawNativeBackground(value);
 		}
+	}
+
+	public iosPostAccessibilityNotification(notificationType: IOSPostAccessibilityNotificationType, msg?: string): void {
+		if (!notificationType) {
+			return;
+		}
+
+		let notification: number;
+		let args: string | UIView | null = this.nativeViewProtected;
+		if (typeof msg === 'string' && msg) {
+			args = msg;
+		}
+
+		switch (notificationType) {
+			case IOSPostAccessibilityNotificationType.Announcement: {
+				notification = UIAccessibilityAnnouncementNotification;
+				break;
+			}
+			case IOSPostAccessibilityNotificationType.Layout: {
+				notification = UIAccessibilityLayoutChangedNotification;
+				break;
+			}
+			case IOSPostAccessibilityNotificationType.Screen: {
+				notification = UIAccessibilityScreenChangedNotification;
+				break;
+			}
+			default: {
+				return;
+			}
+		}
+
+		UIAccessibilityPostNotification(notification, args ?? null);
+	}
+
+	public accessibilityAnnouncement(msg = this.accessibilityLabel): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		this.iosPostAccessibilityNotification(IOSPostAccessibilityNotificationType.Announcement, msg);
+	}
+
+	public accessibilityScreenChanged(): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		this.iosPostAccessibilityNotification(IOSPostAccessibilityNotificationType.Screen);
 	}
 
 	_getCurrentLayoutBounds(): {

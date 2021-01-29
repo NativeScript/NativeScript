@@ -11,28 +11,32 @@ const DEFAULT_MONOSPACE = 'Courier New';
 const SUPPORT_FONT_WEIGHTS = parseFloat(Device.osVersion) >= 10.0;
 
 export class Font extends FontBase {
-	public static default = new Font(undefined, undefined, FontStyle.NORMAL, FontWeight.NORMAL);
+	public static default = new Font(undefined, undefined, FontStyle.NORMAL, FontWeight.NORMAL, 1);
 
 	private _uiFont: UIFont;
 
-	constructor(family: string, size: number, style: FontStyle, weight: FontWeight) {
-		super(family, size, style, weight);
+	constructor(family: string, size: number, style: FontStyle, weight: FontWeight, scale: number) {
+		super(family, size, style, weight, scale);
 	}
 
 	public withFontFamily(family: string): Font {
-		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight);
+		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight, this.fontScale);
 	}
 
 	public withFontStyle(style: FontStyle): Font {
-		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
+		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight, this.fontScale);
 	}
 
 	public withFontWeight(weight: FontWeight): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight, this.fontScale);
 	}
 
 	public withFontSize(size: number): Font {
-		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight);
+		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight, this.fontScale);
+	}
+
+	public withFontScale(scale: number): Font {
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, scale);
 	}
 
 	public getUIFont(defaultFont: UIFont): UIFont {
