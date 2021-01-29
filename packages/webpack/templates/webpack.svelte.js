@@ -16,10 +16,6 @@ const preprocessConfig = require('./svelte.config.js');
 const svelteNativePreprocessor = require('svelte-native-preprocessor');
 
 module.exports = (env) => {
-	// Add your custom Activities, Services and other Android app components here.
-	const appComponents = env.appComponents || [];
-	appComponents.push(...['@nativescript/core/ui/frame', '@nativescript/core/ui/frame/activity']);
-
 	const platform = env && ((env.android && 'android') || (env.ios && 'ios') || env.platform);
 	if (!platform) {
 		throw new Error('You need to provide a target platform!');
@@ -56,6 +52,8 @@ module.exports = (env) => {
 		snapshotInDocker, // --env.snapshotInDocker
 		skipSnapshotTools, // --env.skipSnapshotTools
 		compileSnapshot, // --env.compileSnapshot
+		appComponents = [],
+		entries = {},
 	} = env;
 
 	const useLibs = compileSnapshot;
@@ -83,8 +81,7 @@ module.exports = (env) => {
 
 	const entryModule = nsWebpack.getEntryModule(appFullPath, platform);
 	const entryPath = `.${sep}${entryModule}.ts`;
-	const entries = env.entries || {};
-	entries.bundle = entryPath;
+	Object.assign(entries, { bundle: entryPath }, entries);
 
 	const tsConfigPath = resolve(projectRoot, 'tsconfig.json');
 
@@ -102,6 +99,9 @@ module.exports = (env) => {
 	}
 
 	const noEmitOnErrorFromTSConfig = getNoEmitOnErrorFromTSConfig(tsConfigPath);
+
+	// Add your custom Activities, Services and other android app components here.
+	appComponents.push('@nativescript/core/ui/frame', '@nativescript/core/ui/frame/activity');
 
 	nsWebpack.processAppComponents(appComponents, platform);
 	const config = {

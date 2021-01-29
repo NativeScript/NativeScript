@@ -12,10 +12,6 @@ const TerserPlugin = require('terser-webpack-plugin');
 const hashSalt = Date.now().toString();
 
 module.exports = (env) => {
-	// Add your custom Activities, Services and other android app components here.
-	const appComponents = env.appComponents || [];
-	appComponents.push(...['@nativescript/core/ui/frame', '@nativescript/core/ui/frame/activity']);
-
 	const platform = env && ((env.android && 'android') || (env.ios && 'ios') || env.platform);
 	if (!platform) {
 		throw new Error('You need to provide a target platform!');
@@ -52,6 +48,8 @@ module.exports = (env) => {
 		skipSnapshotTools, // --env.skipSnapshotTools
 		ci, // --env.ci
 		compileSnapshot, // --env.compileSnapshot
+		appComponents = [],
+		entries = {},
 	} = env;
 
 	const useLibs = compileSnapshot;
@@ -79,8 +77,7 @@ module.exports = (env) => {
 
 	const entryModule = nsWebpack.getEntryModule(appFullPath, platform);
 	const entryPath = `.${sep}${entryModule}.js`;
-	const entries = env.entries || {};
-	entries.bundle = entryPath;
+	Object.assign(entries, { bundle: entryPath }, entries);
 
 	const areCoreModulesExternal = Array.isArray(env.externals) && env.externals.some((e) => e.indexOf('@nativescript') > -1);
 	if (platform === 'ios' && !areCoreModulesExternal && !testing) {
@@ -94,6 +91,9 @@ module.exports = (env) => {
 		itemsToClean.push(`${join(projectRoot, 'platforms', 'android', 'app', 'src', 'main', 'assets', 'snapshots')}`);
 		itemsToClean.push(`${join(projectRoot, 'platforms', 'android', 'app', 'build', 'configurations', 'nativescript-android-snapshot')}`);
 	}
+
+	// Add your custom Activities, Services and other android app components here.
+	appComponents.push('@nativescript/core/ui/frame', '@nativescript/core/ui/frame/activity');
 
 	nsWebpack.processAppComponents(appComponents, platform);
 	const config = {

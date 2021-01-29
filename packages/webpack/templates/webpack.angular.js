@@ -56,8 +56,8 @@ module.exports = (env) => {
 		snapshotInDocker, // --env.snapshotInDocker
 		skipSnapshotTools, // --env.skipSnapshotTools
 		compileSnapshot, // --env.compileSnapshot
-    appComponents = [],
-    entries = {}
+		appComponents = [],
+		entries = {},
 	} = env;
 
 	const { fileReplacements, copyReplacements } = parseWorkspaceConfig(platform, configuration, projectName);
@@ -143,9 +143,9 @@ module.exports = (env) => {
 	}
 
 	const noEmitOnErrorFromTSConfig = getNoEmitOnErrorFromTSConfig(tsConfigName);
-  
-  appComponents.push("@nativescript/core/ui/frame", 
-                     "@nativescript/core/ui/frame/activity");
+
+	// Add your custom Activities, Services and other android app components here.
+	appComponents.push('@nativescript/core/ui/frame', '@nativescript/core/ui/frame/activity');
 
 	nsWebpack.processAppComponents(appComponents, platform);
 	const config = {
