@@ -48,3 +48,6 @@ Thumbs.db
 # core
 # https://github.com/NativeScript/nativescript-dev-webpack/issues/932
 !packages/core/xml/index.js
+
+# types
+ios-typings-prj

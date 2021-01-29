@@ -21,30 +21,30 @@ describe('ui', () => {
 					);
 				});
 
-				function create(css: string, source: string = 'css-selectors.ts@test'): { rules: selector.RuleSet[]; map: selector.SelectorsMap<any> } {
-					let parse = parser.parse(css, { source });
-					let rulesAst = parse.stylesheet.rules.filter((n) => n.type === 'rule');
-					let rules = selector.fromAstNodes(rulesAst);
-					let map = new selector.SelectorsMap(rules);
+				function create(css: string, source = 'css-selectors.ts@test'): { rules: selector.RuleSet[]; map: selector.SelectorsMap<any> } {
+					const parse = parser.parse(css, { source });
+					const rulesAst = parse.stylesheet.rules.filter((n) => n.type === 'rule');
+					const rules = selector.fromAstNodes(rulesAst);
+					const map = new selector.SelectorsMap(rules);
 
 					return { rules, map };
 				}
 
-				function createOne(css: string, source: string = 'css-selectors.ts@test'): selector.RuleSet {
-					let { rules } = create(css, source);
+				function createOne(css: string, source = 'css-selectors.ts@test'): selector.RuleSet {
+					const { rules } = create(css, source);
 					assert.equal(rules.length, 1);
 
 					return rules[0];
 				}
 
 				it('single selector', () => {
-					let rule = createOne(`* { color: red; }`);
+					const rule = createOne(`* { color: red; }`);
 					assert.isTrue(rule.selectors[0].match({ cssType: 'button' }));
 					assert.isTrue(rule.selectors[0].match({ cssType: 'image' }));
 				});
 
 				it('two selectors', () => {
-					let rule = createOne(`button, image { color: red; }`);
+					const rule = createOne(`button, image { color: red; }`);
 					assert.isTrue(rule.selectors[0].match({ cssType: 'button' }));
 					assert.isTrue(rule.selectors[1].match({ cssType: 'image' }));
 					assert.isFalse(rule.selectors[0].match({ cssType: 'stacklayout' }));
@@ -52,24 +52,24 @@ describe('ui', () => {
 				});
 
 				it('narrow selection', () => {
-					let { map } = create(`
+					const { map } = create(`
                         .login { color: blue; }
                         button { color: red; }
                         image { color: green; }
                     `);
 
-					let buttonQuerry = map.query({ cssType: 'button' }).selectors;
+					const buttonQuerry = map.query({ cssType: 'button' }).selectors;
 					assert.equal(buttonQuerry.length, 1);
 					assert.includeDeepMembers(buttonQuerry[0].ruleset.declarations, [{ property: 'color', value: 'red' }]);
 
-					let imageQuerry = map.query({ cssType: 'image', cssClasses: new Set(['login']) }).selectors;
+					const imageQuerry = map.query({ cssType: 'image', cssClasses: new Set(['login']) }).selectors;
 					assert.equal(imageQuerry.length, 2);
 					// Note class before type
 					assert.includeDeepMembers(imageQuerry[0].ruleset.declarations, [{ property: 'color', value: 'green' }]);
 					assert.includeDeepMembers(imageQuerry[1].ruleset.declarations, [{ property: 'color', value: 'blue' }]);
 				});
 
-				let positiveMatches = {
+				const positiveMatches = {
 					'*': (view) => true,
 					type: (view) => view.cssType === 'type',
 					'#id': (view) => view.id === 'id',
@@ -79,7 +79,7 @@ describe('ui', () => {
 					"[src2='src-value']": (view) => view['src2'] === 'src-value',
 				};
 
-				let positivelyMatchingView = {
+				const positivelyMatchingView = {
 					cssType: 'type',
 					id: 'id',
 					cssClasses: new Set(['class']),
@@ -88,7 +88,7 @@ describe('ui', () => {
 					src2: 'src-value',
 				};
 
-				let negativelyMatchingView = {
+				const negativelyMatchingView = {
 					cssType: 'nottype',
 					id: 'notid',
 					cssClasses: new Set(['notclass']),
@@ -98,9 +98,9 @@ describe('ui', () => {
 				};
 
 				it('simple selectors match', () => {
-					for (let sel in positiveMatches) {
-						let css = sel + ' { color: red; }';
-						let rule = createOne(css);
+					for (const sel in positiveMatches) {
+						const css = sel + ' { color: red; }';
+						const rule = createOne(css);
 						assert.isTrue(rule.selectors[0].match(positivelyMatchingView), 'Expected successful match for: ' + css);
 						if (sel !== '*') {
 							assert.isFalse(rule.selectors[0].match(negativelyMatchingView), 'Expected match failure for: ' + css);
@@ -109,11 +109,11 @@ describe('ui', () => {
 				});
 
 				it('two selector sequence positive match', () => {
-					for (let firstStr in positiveMatches) {
-						for (let secondStr in positiveMatches) {
+					for (const firstStr in positiveMatches) {
+						for (const secondStr in positiveMatches) {
 							if (secondStr !== firstStr && secondStr !== '*' && secondStr !== 'type') {
-								let css = firstStr + secondStr + ' { color: red; }';
-								let rule = createOne(css);
+								const css = firstStr + secondStr + ' { color: red; }';
+								const rule = createOne(css);
 								assert.isTrue(rule.selectors[0].match(positivelyMatchingView), 'Expected successful match for: ' + css);
 								if (firstStr !== '*') {
 									assert.isFalse(rule.selectors[0].match(negativelyMatchingView), 'Expected match failure for: ' + css);
@@ -124,7 +124,7 @@ describe('ui', () => {
 				});
 
 				it('direct parent combinator', () => {
-					let rule = createOne(`listview > item:selected { color: red; }`);
+					const rule = createOne(`listview > item:selected { color: red; }`);
 					assert.isTrue(
 						rule.selectors[0].match({
 							cssType: 'item',
@@ -151,7 +151,7 @@ describe('ui', () => {
 				});
 
 				it('ancestor combinator', () => {
-					let rule = createOne(`listview item:selected { color: red; }`);
+					const rule = createOne(`listview item:selected { color: red; }`);
 					assert.isTrue(
 						rule.selectors[0].match({
 							cssType: 'item',
@@ -191,8 +191,8 @@ describe('ui', () => {
 				});
 
 				it('backtracking css selector', () => {
-					let sel = createOne(`a>b c { color: red; }`).selectors[0];
-					let child = {
+					const sel = createOne(`a>b c { color: red; }`).selectors[0];
+					const child = {
 						cssType: 'c',
 						parent: {
 							cssType: 'b',
@@ -216,7 +216,7 @@ describe('ui', () => {
 				}
 
 				it('simple query match', () => {
-					let { map } = create(`list grid[promotion] button:highlighted { color: red; }`);
+					const { map } = create(`list grid[promotion] button:highlighted { color: red; }`);
 
 					let list, grid, button;
 
@@ -235,16 +235,16 @@ describe('ui', () => {
 						},
 					};
 
-					let match = map.query(button);
+					const match = map.query(button);
 					assert.equal(match.selectors.length, 1, 'Expected match to have one selector.');
 
-					let expected = new Map<selector.Node, selector.Changes>().set(grid, { attributes: new Set(['promotion']) }).set(button, { pseudoClasses: new Set(['highlighted']) });
+					const expected = new Map<selector.Node, selector.Changes>().set(grid, { attributes: new Set(['promotion']) }).set(button, { pseudoClasses: new Set(['highlighted']) });
 
 					assert.deepEqual(match.changeMap, expected);
 				});
 
 				it('query match one child group', () => {
-					let { map } = create(`#prod[special] > gridlayout { color: red; }`);
+					const { map } = create(`#prod[special] > gridlayout { color: red; }`);
 					let gridlayout, prod;
 
 					gridlayout = {
@@ -257,15 +257,15 @@ describe('ui', () => {
 						},
 					};
 
-					let match = map.query(gridlayout);
+					const match = map.query(gridlayout);
 					assert.equal(match.selectors.length, 1, 'Expected match to have one selector.');
 
-					let expected = new Map<selector.Node, selector.Changes>().set(prod, { attributes: new Set(['special']) });
+					const expected = new Map<selector.Node, selector.Changes>().set(prod, { attributes: new Set(['special']) });
 					assert.deepEqual(match.changeMap, expected);
 				});
 
 				it('query match one sibling group (deepEqual does not compare Map?)', () => {
-					let { map } = create(`list button:highlighted+button:disabled { color: red; }`);
+					const { map } = create(`list button:highlighted+button:disabled { color: red; }`);
 					let list, button, disabledButton;
 
 					list = {
@@ -289,10 +289,10 @@ describe('ui', () => {
 						parent: list,
 					};
 
-					let match = map.query(disabledButton);
+					const match = map.query(disabledButton);
 					assert.equal(match.selectors.length, 1, 'Expected match to have one selector.');
 
-					let expected = new Map<selector.Node, selector.Changes>().set(disabledButton, { pseudoClasses: new Set(['disabled']) }).set(button, { pseudoClasses: new Set(['highlighted']) });
+					const expected = new Map<selector.Node, selector.Changes>().set(disabledButton, { pseudoClasses: new Set(['disabled']) }).set(button, { pseudoClasses: new Set(['highlighted']) });
 
 					assert.deepEqual(match.changeMap, expected);
 				});

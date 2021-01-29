@@ -19,10 +19,10 @@ then
     exit -2
 fi
 
-echo "Creating typings project with tns-ios@$IOS_RUNTIME_VERSION..."
+echo "Creating typings project with @nativescript/ios@$IOS_RUNTIME_VERSION..."
 rm -rf ios-typings-prj
-tns create --js ios-typings-prj
-tns platform add ios@$IOS_RUNTIME_VERSION --path ios-typings-prj/
+ns create --js ios-typings-prj
+ns platform add ios@$IOS_RUNTIME_VERSION --path ios-typings-prj/
 
 if [ -n "$METADATA_GENERATOR_PATH" ]
 then
@@ -33,10 +33,10 @@ then
 fi
 
 echo "Building project and generating typings..."
-TNS_TYPESCRIPT_DECLARATIONS_PATH=$(pwd)/ios-typings-prj/typings tns build ios --debug --path ios-typings-prj/
+TNS_TYPESCRIPT_DECLARATIONS_PATH=$(pwd)/ios-typings-prj/typings ns build ios --debug --path ios-typings-prj/
 
 echo "Deleting old ios typings (ios/objc-x86_64)..."
-rm ios/objc-x86_64/*
+rm packages/types-ios/src/lib/ios/objc-x86_64/*
 
 echo "Deleting Material Components typings..."
 rm ios-typings-prj/typings/x86_64/objc\!MaterialComponents.d.ts
@@ -44,11 +44,13 @@ rm ios-typings-prj/typings/x86_64/objc\!MaterialComponents.d.ts
 perl -pi -e 's/.*\s(mdc_|MDCFontTextStyle|MDCAnimationTimingFunction).*\s*//g' ios-typings-prj/typings/x86_64/*.d.ts
 
 echo "Moving generated typings to ios/objc-x86_64..."
-mv ios-typings-prj/typings/x86_64/* ios/objc-x86_64/
+mv ios-typings-prj/typings/x86_64/* packages/types-ios/src/lib/ios/objc-x86_64/
 
 echo "Emitting (ios/ios.d.ts)..."
-pushd ios
 
+pushd packages/types-ios/src/lib/ios
+
+rm ios.d.ts
 echo '/// <reference path="runtime.d.ts" />' > ios.d.ts
 
 for i in `ls objc-x86_64/*.d.ts`; do

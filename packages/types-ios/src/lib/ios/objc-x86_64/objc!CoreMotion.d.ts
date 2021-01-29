@@ -114,7 +114,18 @@ declare class CMDeviceMotion extends CMLogItem {
 
 	readonly rotationRate: CMRotationRate;
 
+	readonly sensorLocation: CMDeviceMotionSensorLocation;
+
 	readonly userAcceleration: CMAcceleration;
+}
+
+declare const enum CMDeviceMotionSensorLocation {
+
+	Default = 0,
+
+	HeadphoneLeft = 1,
+
+	HeadphoneRight = 2
 }
 
 declare class CMDyskineticSymptomResult extends NSObject implements NSCopying, NSSecureCoding {
@@ -166,10 +177,25 @@ declare const enum CMError {
 
 	NotEntitled = 110,
 
-	NotAuthorized = 111
+	NotAuthorized = 111,
+
+	NilData = 112,
+
+	Size = 113
 }
 
 declare var CMErrorDomain: string;
+
+declare const enum CMFallDetectionEventUserResolution {
+
+	Confirmed = 0,
+
+	Dismissed = 1,
+
+	Rejected = 2,
+
+	Unresponsive = 3
+}
 
 declare class CMGyroData extends CMLogItem {
 
@@ -179,6 +205,40 @@ declare class CMGyroData extends CMLogItem {
 
 	readonly rotationRate: CMRotationRate;
 }
+
+declare class CMHeadphoneMotionManager extends NSObject {
+
+	static alloc(): CMHeadphoneMotionManager; // inherited from NSObject
+
+	static authorizationStatus(): CMAuthorizationStatus;
+
+	static new(): CMHeadphoneMotionManager; // inherited from NSObject
+
+	delegate: CMHeadphoneMotionManagerDelegate;
+
+	readonly deviceMotion: CMDeviceMotion;
+
+	readonly deviceMotionActive: boolean;
+
+	readonly deviceMotionAvailable: boolean;
+
+	startDeviceMotionUpdates(): void;
+
+	startDeviceMotionUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMDeviceMotion, p2: NSError) => void): void;
+
+	stopDeviceMotionUpdates(): void;
+}
+
+interface CMHeadphoneMotionManagerDelegate extends NSObjectProtocol {
+
+	headphoneMotionManagerDidConnect?(manager: CMHeadphoneMotionManager): void;
+
+	headphoneMotionManagerDidDisconnect?(manager: CMHeadphoneMotionManager): void;
+}
+declare var CMHeadphoneMotionManagerDelegate: {
+
+	prototype: CMHeadphoneMotionManagerDelegate;
+};
 
 declare class CMLogItem extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -461,6 +521,15 @@ declare class CMRecordedAccelerometerData extends CMAccelerometerData {
 	readonly startDate: Date;
 }
 
+declare class CMRecordedRotationRateData extends CMRotationRateData {
+
+	static alloc(): CMRecordedRotationRateData; // inherited from NSObject
+
+	static new(): CMRecordedRotationRateData; // inherited from NSObject
+
+	readonly startDate: Date;
+}
+
 interface CMRotationMatrix {
 	m11: number;
 	m12: number;
@@ -480,6 +549,15 @@ interface CMRotationRate {
 	z: number;
 }
 declare var CMRotationRate: interop.StructType<CMRotationRate>;
+
+declare class CMRotationRateData extends CMLogItem {
+
+	static alloc(): CMRotationRateData; // inherited from NSObject
+
+	static new(): CMRotationRateData; // inherited from NSObject
+
+	readonly rotationRate: CMRotationRate;
+}
 
 declare class CMSensorDataList extends NSObject implements NSFastEnumeration {
 

@@ -8,7 +8,7 @@ export { Source } from './debug';
 export function openFile(filePath: string): boolean {
 	try {
 		const appPath = iOSNativeHelper.getCurrentAppPath();
-		let path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
+		const path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
 
 		const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
 		controller.delegate = iOSNativeHelper.createUIDocumentInteractionControllerDelegate();

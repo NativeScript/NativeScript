@@ -7,7 +7,7 @@ export * from './scroll-view-common';
 
 export class ScrollView extends ScrollViewBase {
 	nativeViewProtected: org.nativescript.widgets.VerticalScrollView | org.nativescript.widgets.HorizontalScrollView;
-	private _androidViewId: number = -1;
+	private _androidViewId = -1;
 	private handler: android.view.ViewTreeObserver.OnScrollChangedListener;
 
 	get horizontalOffset(): number {
@@ -135,15 +135,15 @@ export class ScrollView extends ScrollViewBase {
 		this.nativeViewProtected.getViewTreeObserver().addOnScrollChangedListener(this.handler);
 	}
 
-	private _lastScrollX: number = -1;
-	private _lastScrollY: number = -1;
+	private _lastScrollX = -1;
+	private _lastScrollY = -1;
 	private _onScrollChanged() {
 		const nativeView = this.nativeViewProtected;
 		if (nativeView) {
 			// Event is only raised if the scroll values differ from the last time in order to wokraround a native Android bug.
 			// https://github.com/NativeScript/NativeScript/issues/2362
-			let newScrollX = nativeView.getScrollX();
-			let newScrollY = nativeView.getScrollY();
+			const newScrollX = nativeView.getScrollX();
+			const newScrollY = nativeView.getScrollY();
 			if (newScrollX !== this._lastScrollX || newScrollY !== this._lastScrollY) {
 				this.notify(<ScrollEventData>{
 					object: this,

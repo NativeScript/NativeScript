@@ -183,8 +183,7 @@
 					"builder": "@nrwl/workspace:run-commands",
 					"outputs": ["dist/packages"],
 					"options": {
-						"commands": ["mkdir -p ../../dist/packages/types-ios", "cp -R src/* ../../dist/packages/types-ios", "cp package.json *.md ../../dist/packages/types-ios"],
-						"cwd": "packages/types-ios",
+						"commands": ["./tools/scripts/typings-gen.sh latest", "mkdir -p dist/packages/types-ios", "cp -R packages/types-ios/src/* dist/packages/types-ios", "cp packages/types-ios/package.json dist/packages/types-ios", "cp packages/types-ios/README.md dist/packages/types-ios/README.md"],
 						"parallel": false
 					}
 				}

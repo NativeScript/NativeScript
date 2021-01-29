@@ -7,6 +7,9 @@ import { Color } from '../../color';
 import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
+import { BoxShadow } from './box-shadow';
+import { Screen } from '../../platform';
+import { StackLayout } from '../layouts/stack-layout';
 
 export * from './background-common';
 
@@ -24,6 +27,7 @@ interface NativeView extends UIView {
 	leftBorderLayer: CALayer;
 
 	gradientLayer: CAGradientLayer;
+	boxShadowLayer: CALayer;
 }
 
 interface Rect {
@@ -40,7 +44,7 @@ export enum CacheMode {
 	none,
 }
 
-export module ios {
+export namespace ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
 		const background = view.style.backgroundInternal;
 		const nativeView = <NativeView>view.nativeViewProtected;
@@ -84,6 +88,15 @@ export module ios {
 			callback(uiColor);
 		} else {
 			setUIColorFromImage(view, nativeView, callback, flip);
+		}
+
+		const boxShadow = view.style.boxShadow;
+		if (boxShadow) {
+
+			// this is required (if not, shadow will get cutoff at parent's dimensions)
+			// nativeView.clipsToBounds doesn't work
+			view.setProperty('clipToBounds', false);
+			drawBoxShadow(nativeView, boxShadow, background);
 		}
 	}
 }
@@ -159,7 +172,7 @@ function clearNonUniformBorders(nativeView: NativeView): void {
 	}
 }
 
-const pattern: RegExp = /url\(('|")(.*?)\1\)/;
+const pattern = /url\(('|")(.*?)\1\)/;
 function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor: UIColor) => void, flip?: boolean): void {
 	const frame = nativeView.frame;
 	const boundsWidth = view.scaleX ? frame.size.width / view.scaleX : frame.size.width;
@@ -704,6 +717,46 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
 	}
 
 	nativeView.hasNonUniformBorder = hasNonUniformBorder;
+}
+
+// TODO: use sublayer if its applied to a layout
+function drawBoxShadow(nativeView: NativeView, boxShadow: BoxShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
+	const layer: CALayer = nativeView.layer;
+
+	layer.masksToBounds = false;
+	nativeView.clipsToBounds = false;
+
+	if (!background.color.a) {
+		// add white background if view has a transparent background
+		layer.backgroundColor = UIColor.whiteColor.CGColor;
+	}
+	// shadow opacity is handled on the shadow's color instance
+	layer.shadowOpacity = 1;
+	layer.shadowRadius = boxShadow.spreadRadius;
+	layer.shadowColor = boxShadow.color.ios.CGColor;
+
+	// / 2 here since ios's shadow offset is bigger than android
+	// TODO: this is just for experimenting with the amount of offset,
+	// need to use some real calculation here to gain parity with android's
+	// implementation
+	const adjustedShadowOffset = {
+		x: boxShadow.offsetX / 2,
+		y: boxShadow.offsetY / 2,
+	};
+	layer.shadowOffset = CGSizeMake(adjustedShadowOffset.x, adjustedShadowOffset.y);
+
+	// this should match the view's border radius
+	const cornerRadius = 0;
+	// This doesn't handle the offsets properly
+	// factor in shadowRadius and the offsets so shadow don't spread too far
+	// layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(CGRectMake(
+	// 	nativeView.bounds.origin.x + boxShadow.spreadRadius + adjustedShadowOffset.x,
+	// 	nativeView.bounds.origin.y + boxShadow.spreadRadius + adjustedShadowOffset.y,
+	// 	nativeView.bounds.size.width - boxShadow.spreadRadius - adjustedShadowOffset.x,
+	// 	nativeView.bounds.size.height - boxShadow.spreadRadius - adjustedShadowOffset.y), cornerRadius).CGPath;
+
+	// This has the nice glow with box shadow of 0,0
+	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, cornerRadius).CGPath;
 }
 
 function drawGradient(nativeView: NativeView, gradient: LinearGradient) {

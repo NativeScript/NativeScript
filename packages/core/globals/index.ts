@@ -1,4 +1,5 @@
 import * as tslibType from 'tslib';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const tslib: typeof tslibType = require('tslib');
 import { Observable } from '../data/observable';
 import { trace as profilingTrace, time, uptime, level as profilingLevel } from '../profiling';
@@ -18,10 +19,10 @@ function registerOnGlobalContext(moduleName: string, exportName: string): void {
 	Object.defineProperty(global, exportName, {
 		get: function () {
 			// We do not need to cache require() call since it is already cached in the runtime.
-			let m = global.loadModule(moduleName);
+			const m = global.loadModule(moduleName);
 
 			// Redefine the property to make sure the above code is executed only once.
-			let resolvedValue = m[exportName];
+			const resolvedValue = m[exportName];
 			Object.defineProperty(global, exportName, {
 				value: resolvedValue,
 				configurable: true,
@@ -117,7 +118,7 @@ export function initGlobal() {
 		// Required by V8 snapshot generator
 		if (!(<any>global).__extends) {
 			(<any>global).__extends = function (d, b) {
-				for (let p in b) {
+				for (const p in b) {
 					if (b.hasOwnProperty(p)) {
 						d[p] = b[p];
 					}
@@ -234,7 +235,7 @@ export function initGlobal() {
 			return modules.has(name);
 		};
 
-		global.loadModule = function loadModule(name: string, isUIModule: boolean = false): any {
+		global.loadModule = function loadModule(name: string, isUIModule = false): any {
 			const moduleInfo = modules.get(name);
 			if (moduleInfo) {
 				if (isUIModule) {
@@ -250,7 +251,7 @@ export function initGlobal() {
 				return result;
 			}
 
-			for (let resolver of (<any>global).moduleResolvers) {
+			for (const resolver of (<any>global).moduleResolvers) {
 				const result = resolver(name);
 				if (result) {
 					modules.set(name, { moduleId: name, loader: () => result });
@@ -270,7 +271,7 @@ export function initGlobal() {
 		// This method iterates all the keys in the source exports object and copies them to the destination exports one.
 		// Note: the method will not check for naming collisions and will override any already existing entries in the destination exports.
 		global.moduleMerge = function (sourceExports: any, destExports: any) {
-			for (let key in sourceExports) {
+			for (const key in sourceExports) {
 				destExports[key] = sourceExports[key];
 			}
 		};

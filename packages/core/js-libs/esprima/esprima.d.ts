@@ -25,7 +25,7 @@ export interface Options {
     source?: boolean
 }
 
-export module Syntax {
+export namespace Syntax {
     // Node
     interface Node {
         type: string
@@ -69,10 +69,8 @@ export module Syntax {
     }
 
     // Statement
-    interface Statement extends Node {
-    }
-    interface EmptyStatement extends Statement {
-    }
+    type Statement = Node
+    type EmptyStatement = Statement
     interface BlockStatement extends Statement {
         body: SomeStatement[]
     }
@@ -137,8 +135,7 @@ export module Syntax {
     }
     interface VariableDeclaratorOrExpression extends VariableDeclarator, SomeExpression {
     }
-    interface DebuggerStatement extends Statement {
-    }
+    type DebuggerStatement = Statement
     interface SomeStatement extends
         EmptyStatement, ExpressionStatement, BlockStatement, IfStatement,
         LabeledStatement, BreakStatement, ContinueStatement, WithStatement,
@@ -150,8 +147,7 @@ export module Syntax {
     }
 
     // Declration
-    interface Declration extends Statement {
-    }
+    type Declration = Statement
     interface FunctionDeclration extends Declration {
         id: Identifier
         params: Identifier[] // Pattern
@@ -171,16 +167,14 @@ export module Syntax {
     }
 
     // Expression
-    interface Expression extends Node { // | Pattern
-    }
+    type Expression = Node
     interface SomeExpression extends
         ThisExpression, ArrayExpression, ObjectExpression, FunctionExpression,
         ArrowFunctionExpression, SequenceExpression, UnaryExpression, BinaryExpression,
         AssignmentExpression, UpdateExpression, LogicalExpression, ConditionalExpression,
         NewExpression, CallExpression, MemberExpression {
     }
-    interface ThisExpression extends Expression {
-    }
+    type ThisExpression = Expression
     interface ArrayExpression extends Expression {
         elements: SomeExpression[] // [ Expression | null ]
     }

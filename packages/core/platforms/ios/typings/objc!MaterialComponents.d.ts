@@ -227,51 +227,51 @@ declare var MDCInkViewDelegate: {
 	prototype: MDCInkViewDelegate;
 };
 
-declare var MDCShadowElevationAppBar: number;
+declare let MDCShadowElevationAppBar: number;
 
-declare var MDCShadowElevationBottomNavigationBar: number;
+declare let MDCShadowElevationBottomNavigationBar: number;
 
-declare var MDCShadowElevationCardPickedUp: number;
+declare let MDCShadowElevationCardPickedUp: number;
 
-declare var MDCShadowElevationCardResting: number;
+declare let MDCShadowElevationCardResting: number;
 
-declare var MDCShadowElevationDialog: number;
+declare let MDCShadowElevationDialog: number;
 
-declare var MDCShadowElevationFABPressed: number;
+declare let MDCShadowElevationFABPressed: number;
 
-declare var MDCShadowElevationFABResting: number;
+declare let MDCShadowElevationFABResting: number;
 
-declare var MDCShadowElevationMenu: number;
+declare let MDCShadowElevationMenu: number;
 
-declare var MDCShadowElevationModalBottomSheet: number;
+declare let MDCShadowElevationModalBottomSheet: number;
 
-declare var MDCShadowElevationNavDrawer: number;
+declare let MDCShadowElevationNavDrawer: number;
 
-declare var MDCShadowElevationNone: number;
+declare let MDCShadowElevationNone: number;
 
-declare var MDCShadowElevationPicker: number;
+declare let MDCShadowElevationPicker: number;
 
-declare var MDCShadowElevationQuickEntry: number;
+declare let MDCShadowElevationQuickEntry: number;
 
-declare var MDCShadowElevationQuickEntryResting: number;
+declare let MDCShadowElevationQuickEntryResting: number;
 
-declare var MDCShadowElevationRaisedButtonPressed: number;
+declare let MDCShadowElevationRaisedButtonPressed: number;
 
-declare var MDCShadowElevationRaisedButtonResting: number;
+declare let MDCShadowElevationRaisedButtonResting: number;
 
-declare var MDCShadowElevationRefresh: number;
+declare let MDCShadowElevationRefresh: number;
 
-declare var MDCShadowElevationRightDrawer: number;
+declare let MDCShadowElevationRightDrawer: number;
 
-declare var MDCShadowElevationSearchBarResting: number;
+declare let MDCShadowElevationSearchBarResting: number;
 
-declare var MDCShadowElevationSearchBarScrolled: number;
+declare let MDCShadowElevationSearchBarScrolled: number;
 
-declare var MDCShadowElevationSnackbar: number;
+declare let MDCShadowElevationSnackbar: number;
 
-declare var MDCShadowElevationSubMenu: number;
+declare let MDCShadowElevationSubMenu: number;
 
-declare var MDCShadowElevationSwitch: number;
+declare let MDCShadowElevationSwitch: number;
 
 declare class MDCShadowLayer extends CALayer implements CALayerDelegate {
 
@@ -716,7 +716,7 @@ declare class MDCTabBarViewController extends UIViewController implements MDCTab
 	tabBarWillSelectItem(tabBar: MDCTabBar, item: UITabBarItem): void;
 }
 
-declare var MDCTabBarViewControllerAnimationDuration: number;
+declare let MDCTabBarViewControllerAnimationDuration: number;
 
 declare class MDCTypography extends NSObject {
 
@@ -804,6 +804,6 @@ declare var MDCTypographyFontLoading: {
 	prototype: MDCTypographyFontLoading;
 };
 
-declare var MaterialComponentsVersionNumber: number;
+declare let MaterialComponentsVersionNumber: number;
 
-declare var MaterialComponentsVersionString: interop.Reference<number>;
+declare let MaterialComponentsVersionString: interop.Reference<number>;

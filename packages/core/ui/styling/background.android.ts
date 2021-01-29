@@ -6,6 +6,9 @@ import { parse } from '../../css-value';
 import { path, knownFolders } from '../../file-system';
 import * as application from '../../application';
 import { profile } from '../../profiling';
+import { BoxShadow } from './box-shadow';
+import { Color } from '../../color';
+import { Screen } from '../../platform';
 export * from './background-common';
 
 interface AndroidView {
@@ -14,7 +17,7 @@ interface AndroidView {
 
 // TODO: Change this implementation to use
 // We are using "ad" here to avoid namespace collision with the global android object
-export module ad {
+export namespace ad {
 	let SDK: number;
 	function getSDK() {
 		if (!SDK) {
@@ -83,6 +86,11 @@ export module ad {
 			nativeView.setBackground(defaultDrawable);
 		}
 
+		const boxShadow = view.style.boxShadow;
+		if (boxShadow) {
+			drawBoxShadow(nativeView, boxShadow);
+		}
+
 		// TODO: Can we move BorderWidths as separate native setter?
 		// This way we could skip setPadding if borderWidth is not changed.
 		const leftPadding = Math.ceil(view.effectiveBorderLeftWidth + view.effectivePaddingLeft);
@@ -121,7 +129,7 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
 	return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);
 }
 
-const pattern: RegExp = /url\(('|")(.*?)\1\)/;
+const pattern = /url\(('|")(.*?)\1\)/;
 function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
 	const nativeView = <android.view.View>view.nativeViewProtected;
 	const context = nativeView.getContext();
@@ -211,6 +219,24 @@ function createNativeCSSValueArray(css: string): native.Array<org.nativescript.w
 	return nativeArray;
 }
 
+function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
+	const color = boxShadow.color;
+	const shadowOpacity = color.a;
+	const shadowColor = new Color(shadowOpacity, color.r, color.g, color.b);
+	// TODO: corner radius here should reflect the view's corner radius
+	const cornerRadius = 0; // this should be applied to the main view as well (try 20 with a transparent background on the xml to see the effect)
+	const config = {
+		shadowColor: shadowColor.android,
+		cornerRadius,
+		spreadRadius: boxShadow.spreadRadius,
+		blurRadius: boxShadow.blurRadius,
+		offsetX: boxShadow.offsetX,
+		offsetY: boxShadow.offsetY,
+		scale: Screen.mainScreen.scale,
+	};
+	org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
+}
+
 export enum CacheMode {
 	none,
 	memory,
@@ -220,7 +246,7 @@ export enum CacheMode {
 let currentCacheMode: CacheMode;
 let imageFetcher: org.nativescript.widgets.image.Fetcher;
 
-export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize: number = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
+export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
 	if (currentCacheMode === mode) {
 		return;
 	}

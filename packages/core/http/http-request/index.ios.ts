@@ -87,7 +87,7 @@ export function request(options: httpModule.HttpRequestOptions): Promise<httpMod
 			urlRequest.setValueForHTTPHeaderField(USER_AGENT, USER_AGENT_HEADER);
 
 			if (options.headers) {
-				for (let header in options.headers) {
+				for (const header in options.headers) {
 					urlRequest.setValueForHTTPHeaderField(options.headers[header] + '', header);
 				}
 			}

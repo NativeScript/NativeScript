@@ -2,6 +2,7 @@ import { Color } from '../../color';
 import { View } from '../core/view';
 import { BackgroundRepeat } from '../../css/parser';
 import { LinearGradient } from '../styling/linear-gradient';
+import { BoxShadow } from './box-shadow';
 
 export enum CacheMode {
 	none,
@@ -29,6 +30,7 @@ export declare class Background {
 	public borderBottomRightRadius: number;
 	public borderBottomLeftRadius: number;
 	public clipPath: string;
+	public boxShadow: string | BoxShadow;
 
 	public withColor(value: Color): Background;
 	public withImage(value: string | LinearGradient): Background;
@@ -65,10 +67,10 @@ export declare class Background {
 	public getUniformBorderRadius(): number;
 }
 
-export module ios {
+export namespace ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: any /* UIColor */) => void, flip?: boolean): void;
 }
 
-export module ad {
+export namespace ad {
 	export function onBackgroundOrBorderPropertyChanged(v: View);
 }

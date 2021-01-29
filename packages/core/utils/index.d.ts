@@ -1,6 +1,7 @@
 import { dip, px } from '../ui/core/view';
 
 export * from './mainthread-helper';
+export * from './macrotask-scheduler';
 export { Source } from './debug';
 
 export * from './native-helper';
@@ -131,7 +132,7 @@ export namespace ad {
 	/**
 	 * Utility module dealing with some android collections.
 	 */
-	module collections {
+	namespace collections {
 		/**
 		 * Converts string array into a String [hash set](http://developer.android.com/reference/java/util/HashSet.html).
 		 * @param str - An array of strings to convert.
@@ -148,7 +149,7 @@ export namespace ad {
 	/**
 	 * Utility module related to android resources.
 	 */
-	export module resources {
+	export namespace resources {
 		/**
 		 * Gets the drawable id from a given name.
 		 * @param name - Name of the resource.
@@ -191,6 +192,12 @@ export function GC();
  * @param object The Java/Objective-C object to release.
  */
 export function releaseNativeObject(object: any /*java.lang.Object | NSObject*/);
+
+/**
+ * Queues the passed function to be ran in a macroTask
+ * @param task the function to execute as a macroTask
+ */
+export function queueMacrotask(task: () => void): void;
 
 /**
  * Checks if the current thread is the main thread. Directly calls the passed function

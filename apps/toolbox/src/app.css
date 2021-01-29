@@ -7,11 +7,30 @@ components that have the btn class name.
 */
 .btn {
   font-size: 18;
+  /* box-shadow: -5 -5 10 10 navy; */
+  box-shadow: -5 -5 rgba(0,0,0,0.5);
+  background-color: #add8e6;
+  color: navy;
+  /* TODO: adding border radius breaks shadow */
+  /* border-radius: 10; */
 }
 
 .bold{
     font-weight: bold;
 }
+
+.sample-animation {
+    animation-name: rotate-expand;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes rotate-expand {
+    0%, 50% { background-color: red; width: 200; transform: rotate(0) scale(1,1); }
+    25%, 75% { background-color: yellow; width: 100; transform: rotate(180) scale(1.2,1.2); }
+    100% { background-color: red; width: 200; transform: rotate(0) scale(1,1); }
+}
+
 
 .icon-label{
     font-size: 22;

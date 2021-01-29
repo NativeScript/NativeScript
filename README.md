@@ -1,12 +1,8 @@
 <p align="center">
   <a href="http://www.nativescript.org">
-    <img alt="NativeScript" src="https://d1lfyz5kwt8vu9.cloudfront.net/nativescript-logo.png" width="100"/>
+    <img alt="NativeScript" src="https://d1lfyz5kwt8vu9.cloudfront.net/nativescript-logo-2021.png" width="100"/>
   </a>
 </p>
-
-<h1 align="center"> 
-NativeScript 
-</h1>
 
 [![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
 

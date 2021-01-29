@@ -31,6 +31,7 @@ export function loadExamples() {
 	examples.set('nested-bottom-navigation', 'tabs/nested-bottom-navigation-page');
 	examples.set('custom-tabstrip', 'tabs/custom-tabstrip-page');
 	examples.set('frame-in-tabs', 'tabs/frame-in-tabs');
+	examples.set('frame-in-tabs-overflow', 'tabs/frame-in-tabs-overflow');
 	examples.set('item-color', 'tabs/item-color-page');
 	examples.set('dynamic-color-change', 'tabs/dynamic-color-change-page');
 

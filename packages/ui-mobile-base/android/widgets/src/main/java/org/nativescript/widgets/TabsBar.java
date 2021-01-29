@@ -317,10 +317,6 @@ public class TabsBar extends HorizontalScrollView {
         return true;
     }
 
-    public void onSelectedPositionChange(int position, int prevPosition) {
-        // to be overridden in JS
-    }
-
     private void populateTabStrip() {
         final PagerAdapter adapter = mViewPager.getAdapter();
         final OnClickListener tabClickListener = new TabClickListener();
@@ -392,12 +388,6 @@ public class TabsBar extends HorizontalScrollView {
             int tabStripChildCount = mTabStrip.getChildCount();
             if ((tabStripChildCount == 0) || (position < 0) || (position >= tabStripChildCount)) {
                 return;
-            }
-
-            int prevPosition = mTabStrip.getSelectedPosition();
-
-            if (prevPosition != position) {
-                onSelectedPositionChange(position, prevPosition);
             }
 
             mTabStrip.onTabsViewPagerPageChanged(position, positionOffset);

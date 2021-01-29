@@ -101,7 +101,7 @@ function getNativeFontWeight(fontWeight: FontWeight): number {
 function getSystemFont(size: number, nativeWeight: number, italic: boolean, symbolicTraits: number): UIFont {
 	let result = UIFont.systemFontOfSizeWeight(size, nativeWeight);
 	if (italic) {
-		let descriptor = result.fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits);
+		const descriptor = result.fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits);
 		result = UIFont.fontWithDescriptorSize(descriptor, size);
 	}
 
@@ -114,7 +114,7 @@ function createUIFont(font: Font, defaultFont: UIFont): UIFont {
 	const nativeWeight = getNativeFontWeight(font.fontWeight);
 	const fontFamilies = parseFontFamily(font.fontFamily);
 
-	let symbolicTraits: number = 0;
+	let symbolicTraits = 0;
 	if (font.isBold) {
 		symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitBold;
 	}
@@ -122,7 +122,7 @@ function createUIFont(font: Font, defaultFont: UIFont): UIFont {
 		symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitItalic;
 	}
 
-	let fontDescriptorTraits = {
+	const fontDescriptorTraits = {
 		[UIFontSymbolicTrait]: symbolicTraits,
 	};
 
@@ -147,7 +147,7 @@ function createUIFont(font: Font, defaultFont: UIFont): UIFont {
 			let descriptor = UIFontDescriptor.fontDescriptorWithFontAttributes(<any>fontAttributes);
 			result = UIFont.fontWithDescriptorSize(descriptor, size);
 
-			let actualItalic = result.fontDescriptor.symbolicTraits & UIFontDescriptorSymbolicTraits.TraitItalic;
+			const actualItalic = result.fontDescriptor.symbolicTraits & UIFontDescriptorSymbolicTraits.TraitItalic;
 			if (font.isItalic && !actualItalic && EMULATE_OBLIQUE) {
 				// The font we got is not actually italic so emulate that with a matrix
 				descriptor = descriptor.fontDescriptorWithMatrix(OBLIQUE_TRANSFORM);
@@ -172,7 +172,7 @@ function createUIFont(font: Font, defaultFont: UIFont): UIFont {
 	return result;
 }
 
-export module ios {
+export namespace ios {
 	export function registerFont(fontFile: string) {
 		let filePath = fs.path.join(fs.knownFolders.currentApp().path, 'fonts', fontFile);
 		if (!fs.File.exists(filePath)) {

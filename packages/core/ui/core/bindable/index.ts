@@ -3,13 +3,14 @@ import { ViewBase } from '../view-base';
 
 // Requires
 import { unsetValue } from '../properties';
-import { Observable, WrappedValue, PropertyChangeData, EventData } from '../../../data/observable';
+import { Observable, PropertyChangeData } from '../../../data/observable';
 import { addWeakEventListener, removeWeakEventListener } from '../weak-event-listener';
 import { bindingConstants, parentsRegex } from '../../builder/binding-builder';
 import { escapeRegexSymbols } from '../../../utils';
 import { Trace } from '../../../trace';
 import * as types from '../../../utils/types';
 import * as bindableResources from './bindable-resources';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const polymerExpressions = require('../../../js-libs/polymer-expressions');
 import { PolymerExpressions } from '../../../js-libs/polymer-expressions';
 
@@ -94,7 +95,7 @@ export function getEventOrGestureName(name: string): string {
 
 // NOTE: method fromString from "ui/gestures";
 export function isGesture(eventOrGestureName: string): boolean {
-	let t = eventOrGestureName.trim().toLowerCase();
+	const t = eventOrGestureName.trim().toLowerCase();
 
 	return t === 'tap' || t === 'doubletap' || t === 'pinch' || t === 'pan' || t === 'swipe' || t === 'rotation' || t === 'longpress' || t === 'touch';
 }
@@ -103,8 +104,8 @@ export function isGesture(eventOrGestureName: string): boolean {
 // in controls. They will just override this one and provide their own event support.
 export function isEventOrGesture(name: string, view: ViewBase): boolean {
 	if (typeof name === 'string') {
-		let eventOrGestureName = getEventOrGestureName(name);
-		let evt = `${eventOrGestureName}Event`;
+		const eventOrGestureName = getEventOrGestureName(name);
+		const evt = `${eventOrGestureName}Event`;
 
 		return (view.constructor && evt in view.constructor) || isGesture(eventOrGestureName.toLowerCase());
 	}
@@ -149,7 +150,7 @@ export class Binding {
 	}
 
 	public loadedHandlerVisualTreeBinding(args) {
-		let target = args.object;
+		const target = args.object;
 		target.off('loaded', this.loadedHandlerVisualTreeBinding, this);
 		const context = target.bindingContext;
 		if (context !== undefined && context !== null) {
@@ -176,7 +177,7 @@ export class Binding {
 
 	private sourceAsObject(source: any): any {
 		/* tslint:disable */
-		let objectType = typeof source;
+		const objectType = typeof source;
 		if (objectType === 'number') {
 			source = new Number(source);
 		} else if (objectType === 'boolean') {
@@ -228,12 +229,12 @@ export class Binding {
 			this.source = new WeakRef(source);
 			this.sourceOptions = this.resolveOptions(source, this.sourceProperties);
 
-			let sourceValue = this.getSourcePropertyValue();
+			const sourceValue = this.getSourcePropertyValue();
 			this.updateTarget(sourceValue);
 			this.addPropertyChangeListeners(this.source, this.sourceProperties);
 		} else if (!this.sourceIsBindingContext) {
 			// TODO: if oneWay - call target.unbind();
-			let sourceValue = this.getSourcePropertyValue();
+			const sourceValue = this.getSourcePropertyValue();
 			this.updateTarget(sourceValue ? sourceValue : source);
 		}
 	}
@@ -264,21 +265,21 @@ export class Binding {
 
 	// Consider returning single {} instead of array for performance.
 	private resolveObjectsAndProperties(source: Object, properties: Array<string>): Array<{ instance: Object; property: string }> {
-		let result = [];
+		const result = [];
 		let currentObject = source;
 		let currentObjectChanged = false;
 		for (let i = 0, propsArrayLength = properties.length; i < propsArrayLength; i++) {
-			let property = properties[i];
+			const property = properties[i];
 			if (property === bc.bindingValueKey) {
 				currentObjectChanged = true;
 			}
 
 			if (property === bc.parentValueKey || property.indexOf(bc.parentsValueKey) === 0) {
-				let parentView = this.getParentView(this.target.get(), property).view;
+				const parentView = this.getParentView(this.target.get(), property).view;
 				if (parentView) {
 					currentObject = parentView.bindingContext;
 				} else {
-					let targetInstance = this.target.get();
+					const targetInstance = this.target.get();
 					targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
 					targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
 				}
@@ -304,13 +305,13 @@ export class Binding {
 	}
 
 	private addPropertyChangeListeners(source: WeakRef<Object>, sourceProperty: Array<string>, parentProperies?: string) {
-		let objectsAndProperties = this.resolveObjectsAndProperties(source.get(), sourceProperty);
+		const objectsAndProperties = this.resolveObjectsAndProperties(source.get(), sourceProperty);
 		let prop = parentProperies || '';
 
 		for (let i = 0, length = objectsAndProperties.length; i < length; i++) {
 			const propName = objectsAndProperties[i].property;
 			prop += '$' + propName;
-			let currentObject = objectsAndProperties[i].instance;
+			const currentObject = objectsAndProperties[i].instance;
 			if (!this.propertyChangeListeners.has(prop) && currentObject instanceof Observable && currentObject._isViewBase) {
 				// Add listener for properties created with after 3.0 version
 				addWeakEventListener(currentObject, `${propName}Change`, this.onSourcePropertyChanged, this);
@@ -330,9 +331,9 @@ export class Binding {
 		// text="{{ sourceProperty = $parents['ListView'].test, expression = $parents['ListView'].test + 2}}"
 		// update expression will be '$newPropertyValue + 2'
 		// then on expression execution the new value will be taken and target property will be updated with the value of the expression.
-		let escapedSourceProperty = escapeRegexSymbols(this.options.sourceProperty);
-		let expRegex = new RegExp(escapedSourceProperty, 'g');
-		let resultExp = this.options.expression.replace(expRegex, bc.newPropertyValueKey);
+		const escapedSourceProperty = escapeRegexSymbols(this.options.sourceProperty);
+		const expRegex = new RegExp(escapedSourceProperty, 'g');
+		const resultExp = this.options.expression.replace(expRegex, bc.newPropertyValueKey);
 
 		return resultExp;
 	}
@@ -344,7 +345,7 @@ export class Binding {
 
 		let newValue = value;
 		if (this.options.expression) {
-			let changedModel = {};
+			const changedModel = {};
 			changedModel[bc.bindingValueKey] = value;
 			changedModel[bc.newPropertyValueKey] = value;
 			let sourcePropertyName = '';
@@ -358,10 +359,10 @@ export class Binding {
 				changedModel[sourcePropertyName] = value;
 			}
 
-			let updateExpression = this.prepareExpressionForUpdate();
+			const updateExpression = this.prepareExpressionForUpdate();
 			this.prepareContextForExpression(changedModel, updateExpression, undefined);
 
-			let expressionValue = this._getExpressionValue(updateExpression, true, changedModel);
+			const expressionValue = this._getExpressionValue(updateExpression, true, changedModel);
 			if (expressionValue instanceof Error) {
 				Trace.write((<Error>expressionValue).message, Trace.categories.Binding, Trace.messageType.error);
 			}
@@ -374,13 +375,13 @@ export class Binding {
 
 	private _getExpressionValue(expression: string, isBackConvert: boolean, changedModel: any): any {
 		try {
-			let exp = PolymerExpressions.getExpression(expression);
+			const exp = PolymerExpressions.getExpression(expression);
 			if (exp) {
-				let context = (this.source && this.source.get && this.source.get()) || global;
-				let model = {};
-				let addedProps = [];
+				const context = (this.source && this.source.get && this.source.get()) || global;
+				const model = {};
+				const addedProps = [];
 				const resources = bindableResources.get();
-				for (let prop in resources) {
+				for (const prop in resources) {
 					if (resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
 						context[prop] = resources[prop];
 						addedProps.push(prop);
@@ -389,9 +390,9 @@ export class Binding {
 
 				this.prepareContextForExpression(context, expression, addedProps);
 				model[contextKey] = context;
-				let result = exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
+				const result = exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
 				// clear added props
-				let addedPropsLength = addedProps.length;
+				const addedPropsLength = addedProps.length;
 				for (let i = 0; i < addedPropsLength; i++) {
 					delete context[addedProps[i]];
 				}
@@ -402,7 +403,7 @@ export class Binding {
 
 			return new Error(expression + ' is not a valid expression.');
 		} catch (e) {
-			let errorMessage = 'Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column;
+			const errorMessage = 'Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column;
 
 			return new Error(errorMessage);
 		}
@@ -472,16 +473,16 @@ export class Binding {
 	private prepareContextForExpression(model: Object, expression: string, newProps: Array<string>) {
 		let parentViewAndIndex: { view: ViewBase; index: number };
 		let parentView;
-		let addedProps = newProps || [];
+		const addedProps = newProps || [];
 		let expressionCP = expression;
 		if (expressionCP.indexOf(bc.bindingValueKey) > -1) {
 			model[bc.bindingValueKey] = model;
 			addedProps.push(bc.bindingValueKey);
 		}
 
-		let success: boolean = true;
+		let success = true;
 
-		let parentsArray = expressionCP.match(parentsRegex);
+		const parentsArray = expressionCP.match(parentsRegex);
 		if (parentsArray) {
 			for (let i = 0; i < parentsArray.length; i++) {
 				// This prevents later checks to mistake $parents[] for $parent
@@ -509,7 +510,7 @@ export class Binding {
 
 		// For expressions, there are also cases when binding must be updated after component is loaded (e.g. ListView)
 		if (!success) {
-			let targetInstance = this.target.get();
+			const targetInstance = this.target.get();
 			targetInstance.off('loaded', this.loadedHandlerVisualTreeBinding, this);
 			targetInstance.on('loaded', this.loadedHandlerVisualTreeBinding, this);
 		}
@@ -517,9 +518,9 @@ export class Binding {
 
 	private getSourcePropertyValue() {
 		if (this.options.expression) {
-			let changedModel = {};
+			const changedModel = {};
 			changedModel[bc.bindingValueKey] = this.source ? this.source.get() : undefined;
-			let expressionValue = this._getExpressionValue(this.options.expression, false, changedModel);
+			const expressionValue = this._getExpressionValue(this.options.expression, false, changedModel);
 			if (expressionValue instanceof Error) {
 				Trace.write((<Error>expressionValue).message, Trace.categories.Binding, Trace.messageType.error);
 			} else {
@@ -528,7 +529,7 @@ export class Binding {
 		}
 
 		if (this.sourceOptions) {
-			let sourceOptionsInstance = this.sourceOptions.instance.get();
+			const sourceOptionsInstance = this.sourceOptions.instance.get();
 			if (this.sourceOptions.property === bc.bindingValueKey) {
 				return sourceOptionsInstance;
 			} else if (sourceOptionsInstance instanceof Observable && this.sourceOptions.property && this.sourceOptions.property !== '') {
@@ -577,7 +578,7 @@ export class Binding {
 		let index = null;
 		if (property.indexOf(bc.parentsValueKey) === 0) {
 			result = target.parent;
-			let indexParams = paramsRegex.exec(property);
+			const indexParams = paramsRegex.exec(property);
 			if (indexParams && indexParams.length > 1) {
 				index = indexParams[2];
 			}
@@ -599,10 +600,10 @@ export class Binding {
 	}
 
 	private resolveOptions(obj: Object, properties: Array<string>): { instance: WeakRef<Object>; property: any } {
-		let objectsAndProperties = this.resolveObjectsAndProperties(obj, properties);
+		const objectsAndProperties = this.resolveObjectsAndProperties(obj, properties);
 		if (objectsAndProperties.length > 0) {
-			let resolvedObj = objectsAndProperties[objectsAndProperties.length - 1].instance;
-			let prop = objectsAndProperties[objectsAndProperties.length - 1].property;
+			const resolvedObj = objectsAndProperties[objectsAndProperties.length - 1].instance;
+			const prop = objectsAndProperties[objectsAndProperties.length - 1].property;
 
 			return {
 				instance: new WeakRef(this.sourceAsObject(resolvedObj)),

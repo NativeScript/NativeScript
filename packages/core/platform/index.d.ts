@@ -122,6 +122,20 @@ export class Screen {
 }
 
 /**
+ * An object describing general information about a display.
+ *
+ * This retains compatibility with NS6
+ */
+export const screen: Screen;
+
+/**
  * Gets the current device information.
  */
 export const Device: IDevice;
+
+/**
+ * Gets the current device information.
+ *
+ * This retains compatibility with NS6
+ */
+export const device: IDevice;

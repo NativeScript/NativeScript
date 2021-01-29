@@ -1,10 +1,10 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform, WhiteSpace, getClosestPropertyValue } from './text-base-common';
+import { TextDecoration, TextAlignment, TextTransform, TextShadow, WhiteSpace, getClosestPropertyValue } from './text-base-common';
 
 // Requires
 import { Font } from '../styling/font';
 import { backgroundColorProperty, VerticalAlignment } from '../styling/style-properties';
-import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
+import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
 import { FormattedString } from './formatted-string';
@@ -172,7 +172,7 @@ export class TextBase extends TextBaseCommon {
 	private _maxHeight: number;
 	private _minLines: number;
 	private _maxLines: number;
-	private _tappable: boolean = false;
+	private _tappable = false;
 	private _defaultMovementMethod: android.text.method.MovementMethod;
 
 	public initNativeView(): void {
@@ -278,7 +278,7 @@ export class TextBase extends TextBaseCommon {
 		return 'initial';
 	}
 	[textAlignmentProperty.setNative](value: TextAlignment) {
-		let verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+		const verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
 		switch (value) {
 			case 'initial':
 			case 'left':
@@ -378,6 +378,19 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
+	[textShadowProperty.getDefault](value: number) {
+		return {
+			radius: this.nativeTextViewProtected.getShadowRadius(),
+			offsetX: this.nativeTextViewProtected.getShadowDx(),
+			offsetY: this.nativeTextViewProtected.getShadowDy(),
+			color: this.nativeTextViewProtected.getShadowColor(),
+		};
+	}
+
+	[textShadowProperty.setNative](value: TextShadow) {
+		this.nativeViewProtected.setShadowLayer(Length.toDevicePixels(value.blurRadius, 0), Length.toDevicePixels(value.offsetX, 0), Length.toDevicePixels(value.offsetY, 0), value.color.android);
+	}
+
 	[letterSpacingProperty.getDefault](): number {
 		return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeTextViewProtected);
 	}
@@ -413,7 +426,7 @@ export class TextBase extends TextBaseCommon {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
 	}
 
-	_setNativeText(reset: boolean = false): void {
+	_setNativeText(reset = false): void {
 		if (reset) {
 			this.nativeTextViewProtected.setText(null);
 
@@ -446,10 +459,10 @@ export class TextBase extends TextBaseCommon {
 }
 
 function getCapitalizedString(str: string): string {
-	let words = str.split(' ');
-	let newWords = [];
+	const words = str.split(' ');
+	const newWords = [];
 	for (let i = 0, length = words.length; i < length; i++) {
-		let word = words[i].toLowerCase();
+		const word = words[i].toLowerCase();
 		newWords.push(word.substr(0, 1).toUpperCase() + word.substring(1));
 	}
 

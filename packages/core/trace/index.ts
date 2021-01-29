@@ -22,8 +22,8 @@ export interface TraceErrorHandler {
 
 let enabled = false;
 let _categories = {};
-let _writers: Array<TraceWriter> = [];
-let _eventListeners: Array<TraceEventListener> = [];
+const _writers: Array<TraceWriter> = [];
+const _eventListeners: Array<TraceEventListener> = [];
 let _errorHandler: TraceErrorHandler;
 
 export namespace Trace {
@@ -63,7 +63,7 @@ export namespace Trace {
 	 * @param writer The TraceWriter instance to remove.
 	 */
 	export function removeWriter(writer: TraceWriter) {
-		let index = _writers.indexOf(writer);
+		const index = _writers.indexOf(writer);
 		if (index >= 0) {
 			_writers.splice(index, 1);
 		}
@@ -92,7 +92,7 @@ export namespace Trace {
 	 * @param categories The comma-separated list of categories. If not specified all messages from all categories will be traced.
 	 */
 	export function addCategories(categories: string) {
-		let split = categories.split(',');
+		const split = categories.split(',');
 		for (let i = 0; i < split.length; i++) {
 			_categories[split[i].trim()] = true;
 		}
@@ -174,7 +174,7 @@ export namespace Trace {
 		}
 	}
 
-	export module messageType {
+	export namespace messageType {
 		export const log = 0;
 		export const info = 1;
 		export const warn = 2;
@@ -184,7 +184,7 @@ export namespace Trace {
 	/**
 	 * all predefined categories.
 	 */
-	export module categories {
+	export namespace categories {
 		export const VisualTreeEvents = 'VisualTreeEvents';
 		export const Layout = 'Layout';
 		export const Style = 'Style';
@@ -206,13 +206,13 @@ export namespace Trace {
 
 		export function concat(...args: any): string {
 			let result: string;
-			for (let i = 0; i < arguments.length; i++) {
+			for (let i = 0; i < args.length; i++) {
 				if (!result) {
-					result = arguments[i];
+					result = args[i];
 					continue;
 				}
 
-				result = result.concat(separator, arguments[i]);
+				result = result.concat(separator, args[i]);
 			}
 
 			return result;

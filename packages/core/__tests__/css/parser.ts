@@ -278,8 +278,8 @@ describe('css', () => {
 					const cssparser = new CSS3Parser(themeCoreLightIos);
 					const stylesheet = cssparser.tokenize();
 
-					let original = themeCoreLightIos.replace(/\/\*([^\/]|\/[^\*])*\*\//g, '').replace(/\n/g, ' ');
-					let roundtrip = stylesheet
+					const original = themeCoreLightIos.replace(/\/\*([^\/]|\/[^\*])*\*\//g, '').replace(/\n/g, ' ');
+					const roundtrip = stylesheet
 						.map((m) => {
 							if (!m) {
 								return '';
@@ -293,8 +293,8 @@ describe('css', () => {
 						})
 						.join('');
 
-					let lastIndex = Math.min(original.length, roundtrip.length);
-					for (var i = 0; i < lastIndex; i++) {
+					const lastIndex = Math.min(original.length, roundtrip.length);
+					for (let i = 0; i < lastIndex; i++) {
 						if (original[i] !== roundtrip[i]) {
 							assert.equal(roundtrip.substr(i, 50), original.substr(i, 50), 'Round-tripped CSS string differ at index: ' + i);
 						}

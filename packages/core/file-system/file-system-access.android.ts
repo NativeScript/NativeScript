@@ -449,7 +449,7 @@ export class FileSystemAccess {
 		}
 
 		let childFile: java.io.File;
-		let success: boolean = false;
+		let success = false;
 
 		for (let i = 0; i < filesList.length; i++) {
 			childFile = filesList[i];

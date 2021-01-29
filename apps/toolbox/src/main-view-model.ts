@@ -24,6 +24,15 @@ export class HelloWorldModel extends Observable {
 		}
 	}
 
+	toggleAnimation(args) {
+		const layout = args.object as StackLayout;
+		if (!layout.className) {
+			layout.className = 'sample-animation';
+		} else {
+			layout.className = undefined;
+		}
+	}
+
 	onTap() {
 		this._counter--;
 		this.updateMessage();

@@ -12,7 +12,7 @@ export * from '../tab-navigation-base/tab-navigation-base';
 export * from '../tab-navigation-base/tab-strip';
 export * from '../tab-navigation-base/tab-strip-item';
 
-export const traceCategory = 'TabView';
+export const traceCategory = 'Tabs';
 
 @CSSType('Tabs')
 export class TabsBase extends TabNavigationBase implements TabsDefinition {

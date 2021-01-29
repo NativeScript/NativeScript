@@ -1,4 +1,30 @@
 
+declare const enum HKActivityMoveMode {
+
+	ActiveEnergy = 1,
+
+	AppleMoveTime = 2
+}
+
+declare class HKActivityMoveModeObject extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKActivityMoveModeObject; // inherited from NSObject
+
+	static new(): HKActivityMoveModeObject; // inherited from NSObject
+
+	readonly activityMoveMode: HKActivityMoveMode;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare class HKActivitySummary extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKActivitySummary; // inherited from NSObject
@@ -9,9 +35,15 @@ declare class HKActivitySummary extends NSObject implements NSCopying, NSSecureC
 
 	activeEnergyBurnedGoal: HKQuantity;
 
+	activityMoveMode: HKActivityMoveMode;
+
 	appleExerciseTime: HKQuantity;
 
 	appleExerciseTimeGoal: HKQuantity;
+
+	appleMoveTime: HKQuantity;
+
+	appleMoveTimeGoal: HKQuantity;
 
 	appleStandHours: HKQuantity;
 
@@ -65,6 +97,13 @@ declare class HKAnchoredObjectQuery extends HKQuery {
 	initWithTypePredicateAnchorLimitCompletionHandler(type: HKSampleType, predicate: NSPredicate, anchor: number, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: number, p4: NSError) => void): this;
 
 	initWithTypePredicateAnchorLimitResultsHandler(type: HKSampleType, predicate: NSPredicate, anchor: HKQueryAnchor, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void): this;
+}
+
+declare const enum HKAppleECGAlgorithmVersion {
+
+	Version1 = 1,
+
+	Version2 = 2
 }
 
 declare class HKAudiogramSample extends HKSample {
@@ -274,35 +313,138 @@ declare class HKCategoryType extends HKSampleType {
 	static new(): HKCategoryType; // inherited from NSObject
 }
 
+declare var HKCategoryTypeIdentifierAbdominalCramps: string;
+
+declare var HKCategoryTypeIdentifierAcne: string;
+
+declare var HKCategoryTypeIdentifierAppetiteChanges: string;
+
 declare var HKCategoryTypeIdentifierAppleStandHour: string;
 
 declare var HKCategoryTypeIdentifierAudioExposureEvent: string;
 
+declare var HKCategoryTypeIdentifierBladderIncontinence: string;
+
+declare var HKCategoryTypeIdentifierBloating: string;
+
+declare var HKCategoryTypeIdentifierBreastPain: string;
+
 declare var HKCategoryTypeIdentifierCervicalMucusQuality: string;
 
+declare var HKCategoryTypeIdentifierChestTightnessOrPain: string;
+
+declare var HKCategoryTypeIdentifierChills: string;
+
+declare var HKCategoryTypeIdentifierConstipation: string;
+
+declare var HKCategoryTypeIdentifierContraceptive: string;
+
+declare var HKCategoryTypeIdentifierCoughing: string;
+
+declare var HKCategoryTypeIdentifierDiarrhea: string;
+
+declare var HKCategoryTypeIdentifierDizziness: string;
+
+declare var HKCategoryTypeIdentifierDrySkin: string;
+
+declare var HKCategoryTypeIdentifierEnvironmentalAudioExposureEvent: string;
+
+declare var HKCategoryTypeIdentifierFainting: string;
+
+declare var HKCategoryTypeIdentifierFatigue: string;
+
+declare var HKCategoryTypeIdentifierFever: string;
+
+declare var HKCategoryTypeIdentifierGeneralizedBodyAche: string;
+
+declare var HKCategoryTypeIdentifierHairLoss: string;
+
+declare var HKCategoryTypeIdentifierHandwashingEvent: string;
+
+declare var HKCategoryTypeIdentifierHeadache: string;
+
+declare var HKCategoryTypeIdentifierHeadphoneAudioExposureEvent: string;
+
+declare var HKCategoryTypeIdentifierHeartburn: string;
+
 declare var HKCategoryTypeIdentifierHighHeartRateEvent: string;
+
+declare var HKCategoryTypeIdentifierHotFlashes: string;
 
 declare var HKCategoryTypeIdentifierIntermenstrualBleeding: string;
 
 declare var HKCategoryTypeIdentifierIrregularHeartRhythmEvent: string;
 
+declare var HKCategoryTypeIdentifierLactation: string;
+
+declare var HKCategoryTypeIdentifierLossOfSmell: string;
+
+declare var HKCategoryTypeIdentifierLossOfTaste: string;
+
+declare var HKCategoryTypeIdentifierLowCardioFitnessEvent: string;
+
 declare var HKCategoryTypeIdentifierLowHeartRateEvent: string;
+
+declare var HKCategoryTypeIdentifierLowerBackPain: string;
+
+declare var HKCategoryTypeIdentifierMemoryLapse: string;
 
 declare var HKCategoryTypeIdentifierMenstrualFlow: string;
 
 declare var HKCategoryTypeIdentifierMindfulSession: string;
 
+declare var HKCategoryTypeIdentifierMoodChanges: string;
+
+declare var HKCategoryTypeIdentifierNausea: string;
+
+declare var HKCategoryTypeIdentifierNightSweats: string;
+
 declare var HKCategoryTypeIdentifierOvulationTestResult: string;
+
+declare var HKCategoryTypeIdentifierPelvicPain: string;
+
+declare var HKCategoryTypeIdentifierPregnancy: string;
+
+declare var HKCategoryTypeIdentifierRapidPoundingOrFlutteringHeartbeat: string;
+
+declare var HKCategoryTypeIdentifierRunnyNose: string;
 
 declare var HKCategoryTypeIdentifierSexualActivity: string;
 
+declare var HKCategoryTypeIdentifierShortnessOfBreath: string;
+
+declare var HKCategoryTypeIdentifierSinusCongestion: string;
+
+declare var HKCategoryTypeIdentifierSkippedHeartbeat: string;
+
 declare var HKCategoryTypeIdentifierSleepAnalysis: string;
 
+declare var HKCategoryTypeIdentifierSleepChanges: string;
+
+declare var HKCategoryTypeIdentifierSoreThroat: string;
+
 declare var HKCategoryTypeIdentifierToothbrushingEvent: string;
+
+declare var HKCategoryTypeIdentifierVaginalDryness: string;
+
+declare var HKCategoryTypeIdentifierVomiting: string;
+
+declare var HKCategoryTypeIdentifierWheezing: string;
 
 declare const enum HKCategoryValue {
 
 	NotApplicable = 0
+}
+
+declare const enum HKCategoryValueAppetiteChanges {
+
+	Unspecified = 0,
+
+	NoChange = 1,
+
+	Decreased = 2,
+
+	Increased = 3
 }
 
 declare const enum HKCategoryValueAppleStandHour {
@@ -328,6 +470,38 @@ declare const enum HKCategoryValueCervicalMucusQuality {
 	Watery = 4,
 
 	EggWhite = 5
+}
+
+declare const enum HKCategoryValueContraceptive {
+
+	Unspecified = 1,
+
+	Implant = 2,
+
+	Injection = 3,
+
+	IntrauterineDevice = 4,
+
+	IntravaginalRing = 5,
+
+	Oral = 6,
+
+	Patch = 7
+}
+
+declare const enum HKCategoryValueEnvironmentalAudioExposureEvent {
+
+	MomentaryLimit = 1
+}
+
+declare const enum HKCategoryValueHeadphoneAudioExposureEvent {
+
+	SevenDayLimit = 1
+}
+
+declare const enum HKCategoryValueLowCardioFitnessEvent {
+
+	LowFitness = 1
 }
 
 declare const enum HKCategoryValueMenstrualFlow {
@@ -356,6 +530,26 @@ declare const enum HKCategoryValueOvulationTestResult {
 	EstrogenSurge = 4
 }
 
+declare const enum HKCategoryValuePresence {
+
+	Present = 0,
+
+	NotPresent = 1
+}
+
+declare const enum HKCategoryValueSeverity {
+
+	Unspecified = 0,
+
+	NotPresent = 1,
+
+	Mild = 2,
+
+	Moderate = 3,
+
+	Severe = 4
+}
+
 declare const enum HKCategoryValueSleepAnalysis {
 
 	InBed = 0,
@@ -371,6 +565,8 @@ declare class HKCharacteristicType extends HKObjectType {
 
 	static new(): HKCharacteristicType; // inherited from NSObject
 }
+
+declare var HKCharacteristicTypeIdentifierActivityMoveMode: string;
 
 declare var HKCharacteristicTypeIdentifierBiologicalSex: string;
 
@@ -415,6 +611,8 @@ declare class HKClinicalType extends HKSampleType {
 declare var HKClinicalTypeIdentifierAllergyRecord: string;
 
 declare var HKClinicalTypeIdentifierConditionRecord: string;
+
+declare var HKClinicalTypeIdentifierCoverageRecord: string;
 
 declare var HKClinicalTypeIdentifierImmunizationRecord: string;
 
@@ -563,6 +761,17 @@ declare class HKDevice extends NSObject implements NSCopying, NSSecureCoding {
 	initWithNameManufacturerModelHardwareVersionFirmwareVersionSoftwareVersionLocalIdentifierUDIDeviceIdentifier(name: string, manufacturer: string, model: string, hardwareVersion: string, firmwareVersion: string, softwareVersion: string, localIdentifier: string, UDIDeviceIdentifier: string): this;
 }
 
+declare const enum HKDevicePlacementSide {
+
+	Unknown = 0,
+
+	Left = 1,
+
+	Right = 2,
+
+	Central = 3
+}
+
 declare var HKDevicePropertyKeyFirmwareVersion: string;
 
 declare var HKDevicePropertyKeyHardwareVersion: string;
@@ -637,6 +846,85 @@ declare class HKDocumentType extends HKSampleType {
 
 declare var HKDocumentTypeIdentifierCDA: string;
 
+declare class HKElectrocardiogram extends HKSample {
+
+	static alloc(): HKElectrocardiogram; // inherited from NSObject
+
+	static new(): HKElectrocardiogram; // inherited from NSObject
+
+	readonly averageHeartRate: HKQuantity;
+
+	readonly classification: HKElectrocardiogramClassification;
+
+	readonly numberOfVoltageMeasurements: number;
+
+	readonly samplingFrequency: HKQuantity;
+
+	readonly symptomsStatus: HKElectrocardiogramSymptomsStatus;
+}
+
+declare const enum HKElectrocardiogramClassification {
+
+	NotSet = 0,
+
+	SinusRhythm = 1,
+
+	AtrialFibrillation = 2,
+
+	InconclusiveLowHeartRate = 3,
+
+	InconclusiveHighHeartRate = 4,
+
+	InconclusivePoorReading = 5,
+
+	InconclusiveOther = 6,
+
+	Unrecognized = 100
+}
+
+declare const enum HKElectrocardiogramLead {
+
+	AppleWatchSimilarToLeadI = 1
+}
+
+declare class HKElectrocardiogramQuery extends HKQuery {
+
+	static alloc(): HKElectrocardiogramQuery; // inherited from NSObject
+
+	static new(): HKElectrocardiogramQuery; // inherited from NSObject
+
+	constructor(o: { electrocardiogram: HKElectrocardiogram; dataHandler: (p1: HKElectrocardiogramQuery, p2: HKElectrocardiogramVoltageMeasurement, p3: boolean, p4: NSError) => void; });
+
+	initWithElectrocardiogramDataHandler(electrocardiogram: HKElectrocardiogram, dataHandler: (p1: HKElectrocardiogramQuery, p2: HKElectrocardiogramVoltageMeasurement, p3: boolean, p4: NSError) => void): this;
+}
+
+declare const enum HKElectrocardiogramSymptomsStatus {
+
+	NotSet = 0,
+
+	None = 1,
+
+	Present = 2
+}
+
+declare class HKElectrocardiogramType extends HKSampleType {
+
+	static alloc(): HKElectrocardiogramType; // inherited from NSObject
+
+	static new(): HKElectrocardiogramType; // inherited from NSObject
+}
+
+declare class HKElectrocardiogramVoltageMeasurement extends NSObject {
+
+	static alloc(): HKElectrocardiogramVoltageMeasurement; // inherited from NSObject
+
+	static new(): HKElectrocardiogramVoltageMeasurement; // inherited from NSObject
+
+	readonly timeSinceSampleStart: number;
+
+	quantityForLead(lead: HKElectrocardiogramLead): HKQuantity;
+}
+
 declare const enum HKErrorCode {
 
 	NoError = 0,
@@ -659,16 +947,26 @@ declare const enum HKErrorCode {
 
 	ErrorUserExitedWorkoutSession = 9,
 
-	ErrorRequiredAuthorizationDenied = 10
+	ErrorRequiredAuthorizationDenied = 10,
+
+	ErrorNoData = 11
 }
 
 declare var HKErrorDomain: string;
+
+declare var HKFHIRReleaseDSTU2: string;
+
+declare var HKFHIRReleaseR4: string;
+
+declare var HKFHIRReleaseUnknown: string;
 
 declare class HKFHIRResource extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): HKFHIRResource; // inherited from NSObject
 
 	static new(): HKFHIRResource; // inherited from NSObject
+
+	readonly FHIRVersion: HKFHIRVersion;
 
 	readonly data: NSData;
 
@@ -693,17 +991,54 @@ declare var HKFHIRResourceTypeAllergyIntolerance: string;
 
 declare var HKFHIRResourceTypeCondition: string;
 
+declare var HKFHIRResourceTypeCoverage: string;
+
 declare var HKFHIRResourceTypeImmunization: string;
 
 declare var HKFHIRResourceTypeMedicationDispense: string;
 
 declare var HKFHIRResourceTypeMedicationOrder: string;
 
+declare var HKFHIRResourceTypeMedicationRequest: string;
+
 declare var HKFHIRResourceTypeMedicationStatement: string;
 
 declare var HKFHIRResourceTypeObservation: string;
 
 declare var HKFHIRResourceTypeProcedure: string;
+
+declare class HKFHIRVersion extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKFHIRVersion; // inherited from NSObject
+
+	static new(): HKFHIRVersion; // inherited from NSObject
+
+	static primaryDSTU2Version(): HKFHIRVersion;
+
+	static primaryR4Version(): HKFHIRVersion;
+
+	static versionFromVersionStringError(versionString: string): HKFHIRVersion;
+
+	readonly FHIRRelease: string;
+
+	readonly majorVersion: number;
+
+	readonly minorVersion: number;
+
+	readonly patchVersion: number;
+
+	readonly stringRepresentation: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
 
 declare const enum HKFitzpatrickSkinType {
 
@@ -748,6 +1083,8 @@ declare class HKHealthStore extends NSObject {
 	static isHealthDataAvailable(): boolean;
 
 	static new(): HKHealthStore; // inherited from NSObject
+
+	activityMoveModeWithError(): HKActivityMoveModeObject;
 
 	addSamplesToWorkoutCompletion(samples: NSArray<HKSample> | HKSample[], workout: HKWorkout, completion: (p1: boolean, p2: NSError) => void): void;
 
@@ -874,11 +1211,19 @@ declare const enum HKInsulinDeliveryReason {
 
 declare var HKMetadataKeyAlpineSlopeGrade: string;
 
+declare var HKMetadataKeyAppleDeviceCalibrated: string;
+
+declare var HKMetadataKeyAppleECGAlgorithmVersion: string;
+
+declare var HKMetadataKeyAudioExposureDuration: string;
+
 declare var HKMetadataKeyAudioExposureLevel: string;
 
 declare var HKMetadataKeyAverageMETs: string;
 
 declare var HKMetadataKeyAverageSpeed: string;
+
+declare var HKMetadataKeyBarometricPressure: string;
 
 declare var HKMetadataKeyBloodGlucoseMealTime: string;
 
@@ -891,6 +1236,8 @@ declare var HKMetadataKeyCrossTrainerDistance: string;
 declare var HKMetadataKeyDeviceManufacturerName: string;
 
 declare var HKMetadataKeyDeviceName: string;
+
+declare var HKMetadataKeyDevicePlacementSide: string;
 
 declare var HKMetadataKeyDeviceSerialNumber: string;
 
@@ -922,6 +1269,8 @@ declare var HKMetadataKeyInsulinDeliveryReason: string;
 
 declare var HKMetadataKeyLapLength: string;
 
+declare var HKMetadataKeyLowCardioFitnessEventThreshold: string;
+
 declare var HKMetadataKeyMaximumSpeed: string;
 
 declare var HKMetadataKeyMenstrualCycleStart: string;
@@ -947,6 +1296,8 @@ declare var HKMetadataKeyUDIDeviceIdentifier: string;
 declare var HKMetadataKeyUDIProductionIdentifier: string;
 
 declare var HKMetadataKeyVO2MaxTestType: string;
+
+declare var HKMetadataKeyVO2MaxValue: string;
 
 declare var HKMetadataKeyWasTakenInLab: string;
 
@@ -1036,6 +1387,8 @@ declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding
 
 	static documentTypeForIdentifier(identifier: string): HKDocumentType;
 
+	static electrocardiogramType(): HKElectrocardiogramType;
+
 	static new(): HKObjectType; // inherited from NSObject
 
 	static quantityTypeForIdentifier(identifier: string): HKQuantityType;
@@ -1070,6 +1423,8 @@ declare class HKObserverQuery extends HKQuery {
 
 declare var HKPredicateKeyPathAverage: string;
 
+declare var HKPredicateKeyPathAverageHeartRate: string;
+
 declare var HKPredicateKeyPathCDAAuthorName: string;
 
 declare var HKPredicateKeyPathCDACustodianName: string;
@@ -1091,6 +1446,10 @@ declare var HKPredicateKeyPathCount: string;
 declare var HKPredicateKeyPathDateComponents: string;
 
 declare var HKPredicateKeyPathDevice: string;
+
+declare var HKPredicateKeyPathECGClassification: string;
+
+declare var HKPredicateKeyPathECGSymptomsStatus: string;
 
 declare var HKPredicateKeyPathEndDate: string;
 
@@ -1402,6 +1761,12 @@ declare var HKQuantityTypeIdentifierRespiratoryRate: string;
 
 declare var HKQuantityTypeIdentifierRestingHeartRate: string;
 
+declare var HKQuantityTypeIdentifierSixMinuteWalkTestDistance: string;
+
+declare var HKQuantityTypeIdentifierStairAscentSpeed: string;
+
+declare var HKQuantityTypeIdentifierStairDescentSpeed: string;
+
 declare var HKQuantityTypeIdentifierStepCount: string;
 
 declare var HKQuantityTypeIdentifierSwimmingStrokeCount: string;
@@ -1412,7 +1777,15 @@ declare var HKQuantityTypeIdentifierVO2Max: string;
 
 declare var HKQuantityTypeIdentifierWaistCircumference: string;
 
+declare var HKQuantityTypeIdentifierWalkingAsymmetryPercentage: string;
+
+declare var HKQuantityTypeIdentifierWalkingDoubleSupportPercentage: string;
+
 declare var HKQuantityTypeIdentifierWalkingHeartRateAverage: string;
+
+declare var HKQuantityTypeIdentifierWalkingSpeed: string;
+
+declare var HKQuantityTypeIdentifierWalkingStepLength: string;
 
 declare class HKQuery extends NSObject {
 
@@ -1430,7 +1803,13 @@ declare class HKQuery extends NSObject {
 
 	static predicateForClinicalRecordsWithFHIRResourceType(resourceType: string): NSPredicate;
 
+	static predicateForElectrocardiogramsWithClassification(classification: HKElectrocardiogramClassification): NSPredicate;
+
+	static predicateForElectrocardiogramsWithSymptomsStatus(symptomsStatus: HKElectrocardiogramSymptomsStatus): NSPredicate;
+
 	static predicateForObjectWithUUID(UUID: NSUUID): NSPredicate;
+
+	static predicateForObjectsAssociatedWithElectrocardiogram(electrocardiogram: HKElectrocardiogram): NSPredicate;
 
 	static predicateForObjectsFromDevices(devices: NSSet<HKDevice>): NSPredicate;
 
@@ -1512,6 +1891,8 @@ declare class HKSample extends HKObject {
 	static new(): HKSample; // inherited from NSObject
 
 	readonly endDate: Date;
+
+	readonly hasUndeterminedDuration: boolean;
 
 	readonly sampleType: HKSampleType;
 
@@ -1836,6 +2217,8 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static inchUnit(): HKUnit;
 
+	static inchesOfMercuryUnit(): HKUnit;
+
 	static internationalUnit(): HKUnit;
 
 	static jouleUnit(): HKUnit;
@@ -1905,6 +2288,10 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 	static unitFromMassFormatterUnit(massFormatterUnit: NSMassFormatterUnit): HKUnit;
 
 	static unitFromString(string: string): HKUnit;
+
+	static voltUnit(): HKUnit;
+
+	static voltUnitWithMetricPrefix(prefix: HKMetricPrefix): HKUnit;
 
 	static yardUnit(): HKUnit;
 
@@ -2228,6 +2615,14 @@ declare const enum HKWorkoutActivityType {
 	DiscSports = 75,
 
 	FitnessGaming = 76,
+
+	CardioDance = 77,
+
+	SocialDance = 78,
+
+	Pickleball = 79,
+
+	Cooldown = 80,
 
 	Other = 3000
 }

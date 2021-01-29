@@ -244,14 +244,12 @@ module.exports = env => {
               verbose: !!verbose
             }),
             // Copy assets
-            new CopyWebpackPlugin({
-              patterns: [
-                { from: 'assets/**', noErrorOnMissing: true, globOptions: { dot: false, ...copyIgnore } },
-                { from: 'fonts/**', noErrorOnMissing: true, globOptions: { dot: false, ...copyIgnore } },
-                { from: '**/*.jpg', noErrorOnMissing: true, globOptions: { dot: false, ...copyIgnore } },
-                { from: '**/*.png', noErrorOnMissing: true, globOptions: { dot: false, ...copyIgnore } },
-              ],
-            }),
+            new CopyWebpackPlugin([
+                { from: { glob: 'assets/**', dot: false } },
+                { from: { glob: 'fonts/**', dot: false } },
+                { from: { glob: '**/*.jpg', dot: false } },
+                { from: { glob: '**/*.png', dot: false } },
+            ], copyIgnore),
             new nsWebpack.GenerateNativeScriptEntryPointsPlugin("bundle"),
 
             // For instructions on how to set up workers with webpack

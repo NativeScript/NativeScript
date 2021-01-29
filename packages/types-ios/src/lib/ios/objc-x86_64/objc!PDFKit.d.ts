@@ -766,7 +766,9 @@ declare const enum PDFMarkupType {
 
 	kPDFMarkupTypeStrikeOut = 1,
 
-	kPDFMarkupTypeUnderline = 2
+	kPDFMarkupTypeUnderline = 2,
+
+	kPDFMarkupTypeRedact = 3
 }
 
 declare class PDFOutline extends NSObject {
@@ -1090,6 +1092,8 @@ declare class PDFView extends UIView implements UIGestureRecognizerDelegate {
 	gestureRecognizerShouldBeRequiredToFailByGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean;
 
 	gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer): boolean;
+
+	gestureRecognizerShouldReceiveEvent(gestureRecognizer: UIGestureRecognizer, event: _UIEvent): boolean;
 
 	gestureRecognizerShouldReceivePress(gestureRecognizer: UIGestureRecognizer, press: UIPress): boolean;
 
