@@ -90,7 +90,6 @@ export namespace ios {
 
 		const boxShadow = view.style.boxShadow;
 		if (boxShadow) {
-
 			// this is required (if not, shadow will get cutoff at parent's dimensions)
 			// nativeView.clipsToBounds doesn't work
 			view.setProperty('clipToBounds', false);

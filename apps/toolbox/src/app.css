@@ -7,11 +7,20 @@ components that have the btn class name.
 */
 .btn-view-demo {
   font-size: 18;
+<<<<<<< HEAD
   background-color: #65ADF1;
   border-radius: 5;
   font-size: 17;
   padding: 15;
   font-weight: bold;
+=======
+  /* box-shadow: -5 -5 10 10 navy; */
+  box-shadow: -5 -5 rgba(0,0,0,0.5);
+  background-color: #add8e6;
+  color: navy;
+  /* TODO: adding border radius breaks shadow */
+  /* border-radius: 10; */
+>>>>>>> upstream/release/8.0.0
 }
 
 .bold{
@@ -78,6 +87,19 @@ components that have the btn class name.
     font-size: 17;
     font-weight: bold;
 }
+
+.sample-animation {
+    animation-name: rotate-expand;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes rotate-expand {
+    0%, 50% { background-color: red; width: 200; transform: rotate(0) scale(1,1); }
+    25%, 75% { background-color: yellow; width: 100; transform: rotate(180) scale(1.2,1.2); }
+    100% { background-color: red; width: 200; transform: rotate(0) scale(1,1); }
+}
+
 
 .icon-label{
     font-size: 22;
