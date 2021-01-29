@@ -18,9 +18,6 @@ const { getAngularCompilerPlugin } = require('@nativescript/webpack/plugins/Nati
 const hashSalt = Date.now().toString();
 
 module.exports = (env) => {
-	// Add your custom Activities, Services and other Android app components here.
-	const appComponents = ['@nativescript/core/ui/frame', '@nativescript/core/ui/frame/activity'];
-
 	const platform = env && ((env.android && 'android') || (env.ios && 'ios'));
 	if (!platform) {
 		throw new Error('You need to provide a target platform!');
