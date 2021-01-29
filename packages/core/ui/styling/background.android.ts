@@ -14,7 +14,7 @@ interface AndroidView {
 
 // TODO: Change this implementation to use
 // We are using "ad" here to avoid namespace collision with the global android object
-export module ad {
+export namespace ad {
 	let SDK: number;
 	function getSDK() {
 		if (!SDK) {
@@ -44,8 +44,12 @@ export module ad {
 			const constantState = drawable.getConstantState();
 			androidView._cachedDrawable = constantState || drawable;
 		}
-
-		if (isSetColorFilterOnlyWidget(nativeView) && drawable && !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && background.color) {
+		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
+		const onlyColor = !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && !!background.color;
+		if (drawable instanceof android.graphics.drawable.ColorDrawable && onlyColor) {
+			drawable.setColor(background.color.android);
+			drawable.invalidateSelf();
+		} else if (isSetColorFilterOnlyWidget(nativeView) && drawable && onlyColor) {
 			if (drawable instanceof org.nativescript.widgets.BorderDrawable && androidView._cachedDrawable) {
 				if (!(androidView._cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState)) {
 					return;
@@ -60,9 +64,12 @@ export module ad {
 			drawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
 			drawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
 			(<any>drawable).backgroundColor = backgroundColor;
+		} else if (!isBorderDrawable && onlyColor) {
+			// this is the fastest way to change only background color
+			nativeView.setBackgroundColor(background.color.android);
 		} else if (!background.isEmpty()) {
 			let backgroundDrawable = drawable as org.nativescript.widgets.BorderDrawable;
-			if (!(drawable instanceof org.nativescript.widgets.BorderDrawable)) {
+			if (!isBorderDrawable) {
 				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
 				refreshBorderDrawable(view, backgroundDrawable);
 				nativeView.setBackground(backgroundDrawable);
@@ -121,7 +128,7 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
 	return new org.nativescript.widgets.LinearGradientDefinition(startX, startY, endX, endY, colors, hasStops ? stops : null);
 }
 
-const pattern: RegExp = /url\(('|")(.*?)\1\)/;
+const pattern = /url\(('|")(.*?)\1\)/;
 function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
 	const nativeView = <android.view.View>view.nativeViewProtected;
 	const context = nativeView.getContext();
@@ -220,7 +227,7 @@ export enum CacheMode {
 let currentCacheMode: CacheMode;
 let imageFetcher: org.nativescript.widgets.image.Fetcher;
 
-export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize: number = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
+export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
 	if (currentCacheMode === mode) {
 		return;
 	}

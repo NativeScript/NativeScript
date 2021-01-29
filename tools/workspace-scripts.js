@@ -87,8 +87,8 @@ module.exports = {
 			// @nativescript/core
 			core: {
 				build: {
-          script: 'nx run core:build.npm',
-          description: '@nativescript/core: Build for npm'
+          script: 'nx run core:build',
+          description: '@nativescript/core: Build'
         },
 				test: {
           script: 'nx run core:unit',
@@ -98,13 +98,6 @@ module.exports = {
             description: '@nativescript/core: Unit tests with watcher'
 					},
 				},
-			},
-			// tns-core-modules (old historic compatibility)
-			'core-compat': {
-				build: {
-          script: 'nx run core-compat:build',
-          description: 'tns-core-modules: (Compatibility package) Build for npm'
-        },
 			},
 			// @nativescript/ui-mobile-base
 			'ui-mobile-base': {

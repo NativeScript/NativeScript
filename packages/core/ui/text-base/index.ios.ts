@@ -20,20 +20,20 @@ class UILabelClickHandlerImpl extends NSObject {
 	private _owner: WeakRef<TextBase>;
 
 	public static initWithOwner(owner: WeakRef<TextBase>): UILabelClickHandlerImpl {
-		let handler = <UILabelClickHandlerImpl>UILabelClickHandlerImpl.new();
+		const handler = <UILabelClickHandlerImpl>UILabelClickHandlerImpl.new();
 		handler._owner = owner;
 
 		return handler;
 	}
 
 	public linkTap(tapGesture: UITapGestureRecognizer) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			// https://stackoverflow.com/a/35789589
-			let label = <UILabel>owner.nativeTextViewProtected;
-			let layoutManager = NSLayoutManager.alloc().init();
-			let textContainer = NSTextContainer.alloc().initWithSize(CGSizeZero);
-			let textStorage = NSTextStorage.alloc().initWithAttributedString(owner.nativeTextViewProtected['attributedText']);
+			const label = <UILabel>owner.nativeTextViewProtected;
+			const layoutManager = NSLayoutManager.alloc().init();
+			const textContainer = NSTextContainer.alloc().initWithSize(CGSizeZero);
+			const textStorage = NSTextStorage.alloc().initWithAttributedString(owner.nativeTextViewProtected['attributedText']);
 
 			layoutManager.addTextContainer(textContainer);
 			textStorage.addLayoutManager(layoutManager);
@@ -41,22 +41,22 @@ class UILabelClickHandlerImpl extends NSObject {
 			textContainer.lineFragmentPadding = 0;
 			textContainer.lineBreakMode = label.lineBreakMode;
 			textContainer.maximumNumberOfLines = label.numberOfLines;
-			let labelSize = label.bounds.size;
+			const labelSize = label.bounds.size;
 			textContainer.size = labelSize;
 
-			let locationOfTouchInLabel = tapGesture.locationInView(label);
-			let textBoundingBox = layoutManager.usedRectForTextContainer(textContainer);
+			const locationOfTouchInLabel = tapGesture.locationInView(label);
+			const textBoundingBox = layoutManager.usedRectForTextContainer(textContainer);
 
-			let textContainerOffset = CGPointMake((labelSize.width - textBoundingBox.size.width) * 0.5 - textBoundingBox.origin.x, (labelSize.height - textBoundingBox.size.height) * 0.5 - textBoundingBox.origin.y);
+			const textContainerOffset = CGPointMake((labelSize.width - textBoundingBox.size.width) * 0.5 - textBoundingBox.origin.x, (labelSize.height - textBoundingBox.size.height) * 0.5 - textBoundingBox.origin.y);
 
-			let locationOfTouchInTextContainer = CGPointMake(locationOfTouchInLabel.x - textContainerOffset.x, locationOfTouchInLabel.y - textContainerOffset.y);
+			const locationOfTouchInTextContainer = CGPointMake(locationOfTouchInLabel.x - textContainerOffset.x, locationOfTouchInLabel.y - textContainerOffset.y);
 
-			let indexOfCharacter = layoutManager.characterIndexForPointInTextContainerFractionOfDistanceBetweenInsertionPoints(locationOfTouchInTextContainer, textContainer, null);
+			const indexOfCharacter = layoutManager.characterIndexForPointInTextContainerFractionOfDistanceBetweenInsertionPoints(locationOfTouchInTextContainer, textContainer, null);
 
 			let span: Span = null;
 			// try to find the corresponding span using the spanRanges
 			for (let i = 0; i < owner._spanRanges.length; i++) {
-				let range = owner._spanRanges[i];
+				const range = owner._spanRanges[i];
 				if (range.location <= indexOfCharacter && range.location + range.length > indexOfCharacter) {
 					if (owner.formattedText && owner.formattedText.spans.length > i) {
 						span = owner.formattedText.spans.getItem(i);
@@ -79,8 +79,9 @@ class UILabelClickHandlerImpl extends NSObject {
 
 export class TextBase extends TextBaseCommon {
 	public nativeViewProtected: UITextField | UITextView | UILabel | UIButton;
+	// @ts-ignore
 	public nativeTextViewProtected: UITextField | UITextView | UILabel | UIButton;
-	private _tappable: boolean = false;
+	private _tappable = false;
 	private _tapGestureRecognizer: UITapGestureRecognizer;
 	public _spanRanges: NSRange[];
 
@@ -128,7 +129,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[colorProperty.getDefault](): UIColor {
-		let nativeView = this.nativeTextViewProtected;
+		const nativeView = this.nativeTextViewProtected;
 		if (nativeView instanceof UIButton) {
 			return nativeView.titleColorForState(UIControlState.Normal);
 		} else {
@@ -187,7 +188,7 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
-	_setNativeText(reset: boolean = false): void {
+	_setNativeText(reset = false): void {
 		if (reset) {
 			const nativeView = this.nativeTextViewProtected;
 			if (nativeView instanceof UIButton) {
@@ -343,7 +344,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	createNSMutableAttributedString(formattedString: FormattedString): NSMutableAttributedString {
-		let mas = NSMutableAttributedString.alloc().init();
+		const mas = NSMutableAttributedString.alloc().init();
 		this._spanRanges = [];
 		if (formattedString && formattedString.parent) {
 			for (let i = 0, spanStart = 0, length = formattedString.spans.length; i < length; i++) {

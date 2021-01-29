@@ -20,6 +20,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		return view;
 	}
 
+	// @ts-ignore
 	get ios(): UIActivityIndicatorView {
 		return this.nativeViewProtected;
 	}
@@ -32,7 +33,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		}
 	}
 	[busyProperty.setNative](value: boolean) {
-		let nativeView = this.nativeViewProtected;
+		const nativeView = this.nativeViewProtected;
 		if (value) {
 			nativeView.startAnimating();
 		} else {

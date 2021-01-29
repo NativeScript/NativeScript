@@ -48,16 +48,16 @@ export interface CssAnimationPropertyOptions<T, U> {
 	readonly valueConverter?: (value: string) => U;
 }
 
-let cssPropertyNames: string[] = [];
-let symbolPropertyMap = {};
-let cssSymbolPropertyMap = {};
+const cssPropertyNames: string[] = [];
+const symbolPropertyMap = {};
+const cssSymbolPropertyMap = {};
 
-let inheritableProperties = new Array<InheritedProperty<any, any>>();
-let inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
+const inheritableProperties = new Array<InheritedProperty<any, any>>();
+const inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
 
 function print(map) {
-	let symbols = Object.getOwnPropertySymbols(map);
-	for (let symbol of symbols) {
+	const symbols = Object.getOwnPropertySymbols(map);
+	for (const symbol of symbols) {
 		const prop = map[symbol];
 		if (!prop.registered) {
 			console.log(`Property ${prop.name} not Registered!!!!!`);
@@ -183,8 +183,8 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
 	public get: () => U;
 	public set: (value: U) => void;
-	public enumerable: boolean = true;
-	public configurable: boolean = true;
+	public enumerable = true;
+	public configurable = true;
 
 	constructor(options: PropertyOptions<T, U>) {
 		const propertyName = options.name;
@@ -193,10 +193,10 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 		const key = Symbol(propertyName + ':propertyKey');
 		this.key = key;
 
-		const getDefault: symbol = Symbol(propertyName + ':getDefault');
+		const getDefault = Symbol(propertyName + ':getDefault');
 		this.getDefault = getDefault;
 
-		const setNative: symbol = Symbol(propertyName + ':setNative');
+		const setNative = Symbol(propertyName + ':setNative');
 		this.setNative = setNative;
 
 		const defaultValueKey = Symbol(propertyName + ':nativeDefaultValue');
@@ -1062,8 +1062,8 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 				let unsetNativeValue = false;
 				if (reset) {
 					// If unsetValue - we want to reset this property.
-					let parent = view.parent;
-					let style = parent ? parent.style : null;
+					const parent = view.parent;
+					const style = parent ? parent.style : null;
 					// If we have parent and it has non-default value we use as our inherited value.
 					if (style && style[sourceKey] > ValueSource.Default) {
 						value = style[propertyName];
@@ -1192,7 +1192,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 			}
 
 			view._batchUpdate(() => {
-				for (let [p, v] of converter(value)) {
+				for (const [p, v] of converter(value)) {
 					this[p.name] = v;
 				}
 			});
@@ -1207,7 +1207,7 @@ export class ShorthandProperty<T extends Style, P> implements ShorthandProperty<
 			}
 
 			view._batchUpdate(() => {
-				for (let [p, v] of converter(value)) {
+				for (const [p, v] of converter(value)) {
 					this[p.cssName] = v;
 				}
 			});
@@ -1261,7 +1261,7 @@ function inheritablePropertyValuesOn(view: ViewBase): Array<{ property: Inherite
 		property: InheritedProperty<any, any>;
 		value: any;
 	}>();
-	for (let prop of inheritableProperties) {
+	for (const prop of inheritableProperties) {
 		const sourceKey = prop.sourceKey;
 		const valueSource: number = view[sourceKey] || ValueSource.Default;
 		if (valueSource !== ValueSource.Default) {
@@ -1279,7 +1279,7 @@ function inheritableCssPropertyValuesOn(style: Style): Array<{ property: Inherit
 		property: InheritedCssProperty<any, any>;
 		value: any;
 	}>();
-	for (let prop of inheritableCssProperties) {
+	for (const prop of inheritableCssProperties) {
 		const sourceKey = prop.sourceKey;
 		const valueSource: number = style[sourceKey] || ValueSource.Default;
 		if (valueSource !== ValueSource.Default) {
@@ -1307,7 +1307,7 @@ export const initNativeView = profile('"properties".initNativeView', function in
 export function applyPendingNativeSetters(view: ViewBase): void {
 	// TODO: Check what happens if a view was suspended and its value was reset, or set back to default!
 	const suspendedUpdates = view._suspendedUpdates;
-	for (let propertyName in suspendedUpdates) {
+	for (const propertyName in suspendedUpdates) {
 		const property = <PropertyInterface>suspendedUpdates[propertyName];
 		const setNative = property.setNative;
 		if (view[setNative]) {
@@ -1341,7 +1341,7 @@ export function applyPendingNativeSetters(view: ViewBase): void {
 
 export function applyAllNativeSetters(view: ViewBase): void {
 	let symbols = Object.getOwnPropertySymbols(view);
-	for (let symbol of symbols) {
+	for (const symbol of symbols) {
 		const property: Property<any, any> = symbolPropertyMap[symbol];
 		if (!property) {
 			continue;
@@ -1362,7 +1362,7 @@ export function applyAllNativeSetters(view: ViewBase): void {
 
 	const style = view.style;
 	symbols = Object.getOwnPropertySymbols(style);
-	for (let symbol of symbols) {
+	for (const symbol of symbols) {
 		const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
 		if (!property) {
 			continue;
@@ -1382,7 +1382,7 @@ export function applyAllNativeSetters(view: ViewBase): void {
 
 export function resetNativeView(view: ViewBase): void {
 	let symbols = Object.getOwnPropertySymbols(view);
-	for (let symbol of symbols) {
+	for (const symbol of symbols) {
 		const property: Property<any, any> = symbolPropertyMap[symbol];
 		if (!property) {
 			continue;
@@ -1401,7 +1401,7 @@ export function resetNativeView(view: ViewBase): void {
 	const style = view.style;
 
 	symbols = Object.getOwnPropertySymbols(style);
-	for (let symbol of symbols) {
+	for (const symbol of symbols) {
 		const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
 		if (!property) {
 			continue;
@@ -1419,7 +1419,7 @@ export function resetNativeView(view: ViewBase): void {
 }
 
 export function clearInheritedProperties(view: ViewBase): void {
-	for (let prop of inheritableProperties) {
+	for (const prop of inheritableProperties) {
 		const sourceKey = prop.sourceKey;
 		if (view[sourceKey] === ValueSource.Inherited) {
 			prop.set.call(view, unsetValue);
@@ -1427,7 +1427,7 @@ export function clearInheritedProperties(view: ViewBase): void {
 	}
 
 	const style = view.style;
-	for (let prop of inheritableCssProperties) {
+	for (const prop of inheritableCssProperties) {
 		const sourceKey = prop.sourceKey;
 		if (style[sourceKey] === ValueSource.Inherited) {
 			prop.setInheritedValue.call(style, unsetValue);
@@ -1436,8 +1436,8 @@ export function clearInheritedProperties(view: ViewBase): void {
 }
 
 export function resetCSSProperties(style: Style): void {
-	let symbols = Object.getOwnPropertySymbols(style);
-	for (let symbol of symbols) {
+	const symbols = Object.getOwnPropertySymbols(style);
+	for (const symbol of symbols) {
 		let cssProperty;
 		if ((cssProperty = cssSymbolPropertyMap[symbol])) {
 			style[cssProperty.cssName] = unsetValue;
@@ -1450,7 +1450,7 @@ export function resetCSSProperties(style: Style): void {
 
 export function propagateInheritableProperties(view: ViewBase, child: ViewBase): void {
 	const inheritablePropertyValues = inheritablePropertyValuesOn(view);
-	for (let pair of inheritablePropertyValues) {
+	for (const pair of inheritablePropertyValues) {
 		const prop = pair.property;
 		const sourceKey = prop.sourceKey;
 		const currentValueSource: number = child[sourceKey] || ValueSource.Default;
@@ -1462,7 +1462,7 @@ export function propagateInheritableProperties(view: ViewBase, child: ViewBase):
 
 export function propagateInheritableCssProperties(parentStyle: Style, childStyle: Style): void {
 	const inheritableCssPropertyValues = inheritableCssPropertyValuesOn(parentStyle);
-	for (let pair of inheritableCssPropertyValues) {
+	for (const pair of inheritableCssPropertyValues) {
 		const prop = pair.property;
 		const sourceKey = prop.sourceKey;
 		const currentValueSource: number = childStyle[sourceKey] || ValueSource.Default;
@@ -1496,8 +1496,8 @@ export function getSetProperties(view: ViewBase): [string, any][] {
 		result.push([prop, view[prop]]);
 	});
 
-	let symbols = Object.getOwnPropertySymbols(view);
-	for (let symbol of symbols) {
+	const symbols = Object.getOwnPropertySymbols(view);
+	for (const symbol of symbols) {
 		const property = symbolPropertyMap[symbol];
 		if (!property) {
 			continue;
@@ -1513,7 +1513,7 @@ export function getSetProperties(view: ViewBase): [string, any][] {
 export function getComputedCssValues(view: ViewBase): [string, any][] {
 	const result = [];
 	const style = view.style;
-	for (let prop of cssPropertyNames) {
+	for (const prop of cssPropertyNames) {
 		result.push([prop, style[prop]]);
 	}
 

@@ -129,7 +129,7 @@ class UIViewControllerImpl extends UIViewController {
 			// because changes happen in an interactive transition - IOS will animate between the the states.
 			// If canceled - viewWillAppear will be called for the current page(which is already loaded) and we need to
 			// update the action bar explicitly, so that it is not left styles as the previous page.
-			owner.actionBar.update();
+			owner.updateWithWillAppear(animated);
 		}
 	}
 
@@ -158,7 +158,7 @@ class UIViewControllerImpl extends UIViewController {
 			frame.setCurrent(newEntry, navigationContext.navigationType);
 
 			if (isReplace) {
-				let controller = newEntry.resolvedPage.ios;
+				const controller = newEntry.resolvedPage.ios;
 				if (controller) {
 					const animated = frame._getIsAnimatedNavigation(newEntry.entry);
 					if (animated) {
@@ -221,6 +221,7 @@ class UIViewControllerImpl extends UIViewController {
 				owner.onNavigatingFrom(isBack);
 			}
 		}
+		owner.updateWithWillDisappear(animated);
 	}
 
 	@profile
@@ -309,6 +310,7 @@ class UIViewControllerImpl extends UIViewController {
 		}
 	}
 
+	// @ts-ignore
 	public get preferredStatusBarStyle(): UIStatusBarStyle {
 		const owner = this._owner.get();
 		if (owner) {
@@ -340,6 +342,7 @@ export class Page extends PageBase {
 		return this.viewController.view;
 	}
 
+	// @ts-ignore
 	get ios(): UIViewController {
 		return this._ios;
 	}
@@ -365,6 +368,17 @@ export class Page extends PageBase {
 		if (this.hasActionBar) {
 			this.actionBar.update();
 		}
+	}
+	updateWithWillAppear(animated: boolean) {
+		// this method is important because it allows plugins to react to modal page close
+		// for example allowing updating status bar background color
+		this.actionBar.update();
+		this.updateStatusBar();
+	}
+
+	updateWithWillDisappear(animated: boolean) {
+		// this method is important because it allows plugins to react to modal page close
+		// for example allowing updating status bar background color
 	}
 
 	public updateStatusBar() {
@@ -430,7 +444,7 @@ export class Page extends PageBase {
 		const childLeft = 0 + insets.left;
 		const childTop = 0 + insets.top;
 		const childRight = right - insets.right;
-		let childBottom = bottom - insets.bottom;
+		const childBottom = bottom - insets.bottom;
 
 		View.layoutChild(this, this.layoutView, childLeft, childTop, childRight, childBottom);
 	}

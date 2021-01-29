@@ -40,7 +40,7 @@ export enum CacheMode {
 	none,
 }
 
-export module ios {
+export namespace ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
 		const background = view.style.backgroundInternal;
 		const nativeView = <NativeView>view.nativeViewProtected;
@@ -159,7 +159,7 @@ function clearNonUniformBorders(nativeView: NativeView): void {
 	}
 }
 
-const pattern: RegExp = /url\(('|")(.*?)\1\)/;
+const pattern = /url\(('|")(.*?)\1\)/;
 function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor: UIColor) => void, flip?: boolean): void {
 	const frame = nativeView.frame;
 	const boundsWidth = view.scaleX ? frame.size.width / view.scaleX : frame.size.width;

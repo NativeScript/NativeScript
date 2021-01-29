@@ -8,13 +8,13 @@ import { EventData } from '../../data/observable';
 
 @CSSType('SegmentedBarItem')
 export abstract class SegmentedBarItemBase extends ViewBase implements SegmentedBarItemDefinition {
-	private _title: string = '';
+	private _title = '';
 
 	get title(): string {
 		return this._title;
 	}
 	set title(value: string) {
-		let strValue = value !== null && value !== undefined ? value.toString() : '';
+		const strValue = value !== null && value !== undefined ? value.toString() : '';
 		if (this._title !== strValue) {
 			this._title = strValue;
 			this._update();
@@ -110,9 +110,9 @@ export const selectedIndexProperty = new CoercibleProperty<SegmentedBarBase, num
 		});
 	},
 	coerceValue: (target, value) => {
-		let items = target.items;
+		const items = target.items;
 		if (items) {
-			let max = items.length - 1;
+			const max = items.length - 1;
 			if (value < 0) {
 				value = 0;
 			}

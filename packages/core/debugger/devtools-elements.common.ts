@@ -6,11 +6,13 @@ import { getNodeById } from './dom-node';
 import { mainThreadify } from '../utils';
 
 // Use lazy requires for core modules
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const getAppRootView = () => require('../application').getRootView();
 
 let unsetValue;
 function unsetViewValue(view, name) {
 	if (!unsetValue) {
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		unsetValue = require('../ui/core/properties').unsetValue;
 	}
 
@@ -55,7 +57,7 @@ export const removeNode = mainThreadify(function removeNode(nodeId) {
 	const view = getViewById(nodeId);
 	if (view) {
 		// Avoid importing layout and content view
-		let parent = <any>view.parent;
+		const parent = <any>view.parent;
 		if (parent.removeChild) {
 			parent.removeChild(view);
 		} else if (parent.content === view) {
@@ -70,14 +72,14 @@ export const setAttributeAsText = mainThreadify(function setAttributeAsText(node
 	const view = getViewById(nodeId);
 	if (view) {
 		// attribute is registered for the view instance
-		let hasOriginalAttribute = !!name.trim();
+		const hasOriginalAttribute = !!name.trim();
 
 		if (text) {
-			let textParts = text.split('=');
+			const textParts = text.split('=');
 
 			if (textParts.length === 2) {
-				let attrName = textParts[0];
-				let attrValue = textParts[1].replace(/['"]+/g, '');
+				const attrName = textParts[0];
+				const attrValue = textParts[1].replace(/['"]+/g, '');
 
 				// if attr name is being replaced with another
 				if (name !== attrName && hasOriginalAttribute) {

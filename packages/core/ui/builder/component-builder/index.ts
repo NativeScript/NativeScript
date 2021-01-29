@@ -100,6 +100,7 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 		// Create instance of the component.
 		instance = new instanceType();
 	} catch (ex) {
+		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const debug: typeof debugModule = require('../../../utils/debug');
 		throw new debug.ScopeError(ex, "Module '" + (resolvedModuleName || elementName) + "' not found for element '" + (namespace ? namespace + ':' : '') + elementName + "'.");
 	}
@@ -131,7 +132,7 @@ const applyComponentCss = profile('applyComponentCss', (instance: View, moduleNa
 	let cssApplied = false;
 
 	if (attributes && attributes[CSS_FILE]) {
-		let resolvedCssModuleName = resolveModuleName(sanitizeModuleName(attributes[CSS_FILE]), 'css');
+		const resolvedCssModuleName = resolveModuleName(sanitizeModuleName(attributes[CSS_FILE]), 'css');
 
 		if (resolvedCssModuleName) {
 			instance.addCssFile(resolvedCssModuleName);
@@ -142,7 +143,7 @@ const applyComponentCss = profile('applyComponentCss', (instance: View, moduleNa
 	}
 
 	if (moduleName && !cssApplied) {
-		let resolvedCssModuleName = resolveModuleName(moduleName, 'css');
+		const resolvedCssModuleName = resolveModuleName(moduleName, 'css');
 		if (resolvedCssModuleName) {
 			instance.addCssFile(resolvedCssModuleName);
 		}
@@ -252,7 +253,7 @@ function isBinding(value: any): boolean {
 }
 
 // For example, ListView.itemTemplateSelector
-let KNOWN_FUNCTIONS = 'knownFunctions';
+const KNOWN_FUNCTIONS = 'knownFunctions';
 function isKnownFunction(name: string, instance: View): boolean {
 	return instance.constructor && KNOWN_FUNCTIONS in instance.constructor && instance.constructor[KNOWN_FUNCTIONS].indexOf(name) !== -1;
 }

@@ -41,7 +41,7 @@ class MDCTabBarDelegateImpl extends NSObject implements MDCTabBarDelegate {
 	private _owner: WeakRef<Tabs>;
 
 	public static initWithOwner(owner: WeakRef<Tabs>): MDCTabBarDelegateImpl {
-		let delegate = <MDCTabBarDelegateImpl>MDCTabBarDelegateImpl.new();
+		const delegate = <MDCTabBarDelegateImpl>MDCTabBarDelegateImpl.new();
 		delegate._owner = owner;
 
 		return delegate;
@@ -85,7 +85,7 @@ class BackgroundIndicatorTemplate extends NSObject implements MDCTabBarIndicator
 	public static ObjCProtocols = [MDCTabBarIndicatorTemplate];
 
 	public indicatorAttributesForContext(context: MDCTabBarIndicatorContext): MDCTabBarIndicatorAttributes {
-		let attributes = new MDCTabBarIndicatorAttributes();
+		const attributes = new MDCTabBarIndicatorAttributes();
 		attributes.path = UIBezierPath.bezierPathWithRect(context.bounds);
 
 		return attributes;
@@ -172,20 +172,22 @@ class UIPageViewControllerImpl extends UIPageViewController {
 			safeAreaInsetsTop = this.topLayoutGuide.length;
 		}
 
+		let conditionalSafeAreaBottom = owner.iosOverflowSafeArea ? safeAreaInsetsBottom : 0;
 		let scrollViewTop = 0;
-		let scrollViewHeight = this.view.bounds.size.height + safeAreaInsetsBottom;
+		let scrollViewHeight = this.view.bounds.size.height + conditionalSafeAreaBottom;
 
 		if (owner.tabStrip) {
-			scrollViewTop = this.tabBar.frame.size.height;
-			scrollViewHeight = this.view.bounds.size.height - this.tabBar.frame.size.height + safeAreaInsetsBottom;
+			const tabBarHeight = this.tabBar.frame.size.height;
 			let tabBarTop = safeAreaInsetsTop;
-			let tabBarHeight = this.tabBar.frame.size.height;
+
+			scrollViewTop = tabBarHeight;
+			scrollViewHeight = this.view.bounds.size.height - tabBarHeight + conditionalSafeAreaBottom;
 
 			const tabsPosition = owner.tabsPosition;
 			if (tabsPosition === 'bottom') {
-				tabBarTop = this.view.frame.size.height - this.tabBar.frame.size.height - safeAreaInsetsBottom;
+				tabBarTop = this.view.frame.size.height - tabBarHeight - safeAreaInsetsBottom;
 				scrollViewTop = this.view.frame.origin.y;
-				scrollViewHeight = this.view.frame.size.height - safeAreaInsetsBottom;
+				scrollViewHeight = this.view.frame.size.height - tabBarHeight;
 			}
 
 			let parent = owner.parent;
@@ -269,7 +271,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
 	private _owner: WeakRef<Tabs>;
 
 	public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerDataSourceImpl {
-		let dataSource = <UIPageViewControllerDataSourceImpl>UIPageViewControllerDataSourceImpl.new();
+		const dataSource = <UIPageViewControllerDataSourceImpl>UIPageViewControllerDataSourceImpl.new();
 		dataSource._owner = owner;
 
 		return dataSource;
@@ -290,7 +292,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
 
 		selectedIndex--;
 		const prevItem = owner.items[selectedIndex];
-		let prevViewController = (<any>prevItem).__controller;
+		const prevViewController = (<any>prevItem).__controller;
 
 		// if (!prevViewController) {
 		//     prevViewController = owner.getViewController(prevItem);
@@ -317,7 +319,7 @@ class UIPageViewControllerDataSourceImpl extends NSObject implements UIPageViewC
 
 		selectedIndex++;
 		const nextItem = owner.items[selectedIndex];
-		let nextViewController = (<any>nextItem).__controller;
+		const nextViewController = (<any>nextItem).__controller;
 
 		// if (!nextViewController) {
 		//     nextViewController = owner.getViewController(nextItem);
@@ -356,7 +358,7 @@ class UIPageViewControllerDelegateImpl extends NSObject implements UIPageViewCon
 	private _owner: WeakRef<Tabs>;
 
 	public static initWithOwner(owner: WeakRef<Tabs>): UIPageViewControllerDelegateImpl {
-		let delegate = <UIPageViewControllerDelegateImpl>UIPageViewControllerDelegateImpl.new();
+		const delegate = <UIPageViewControllerDelegateImpl>UIPageViewControllerDelegateImpl.new();
 		delegate._owner = owner;
 
 		return delegate;
@@ -404,7 +406,7 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
 function updateBackgroundPositions(tabStrip: TabStrip, tabStripItem: TabStripItem, color: UIColor = null) {
 	let bgView = (<any>tabStripItem).bgView;
 	const index = tabStripItem._index;
-	let width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
+	const width = tabStrip.nativeView.frame.size.width / tabStrip.items.length;
 	const frame = CGRectMake(width * index, 0, width, tabStrip.nativeView.frame.size.width);
 	if (!bgView) {
 		bgView = UIView.alloc().initWithFrame(frame);
@@ -466,6 +468,7 @@ export class Tabs extends TabsBase {
 	// public offscreenTabLimit: number;
 	// public tabsPosition: "top" | "bottom";
 	public _canSelectItem: boolean;
+	// @ts-ignore
 	public isLoaded: boolean;
 	public viewController: UIPageViewControllerImpl;
 	public items: TabContentItem[];
@@ -530,6 +533,7 @@ export class Tabs extends TabsBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UIPageViewController {
 		return this._ios;
 	}
@@ -592,8 +596,8 @@ export class Tabs extends TabsBase {
 		const lastIndex = items.length - 1;
 		const offsideItems = this.offscreenTabLimit;
 
-		let toUnload = [];
-		let toLoad = [];
+		const toUnload = [];
+		const toLoad = [];
 
 		iterateIndexRange(newIndex, offsideItems, lastIndex, (i) => toLoad.push(i));
 
@@ -892,7 +896,7 @@ export class Tabs extends TabsBase {
 
 		UIGraphicsBeginImageContextWithOptions({ width: widthPts, height: heightPts }, false, layout.getDisplayDensity());
 		image.drawInRect(CGRectMake(0, 0, widthPts, heightPts));
-		let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+		const resultImage = UIGraphicsGetImageFromCurrentImageContext();
 		UIGraphicsEndImageContext();
 
 		return resultImage;
@@ -938,7 +942,7 @@ export class Tabs extends TabsBase {
 			return;
 		}
 
-		let newColor = value instanceof Color ? value.ios : value;
+		const newColor = value instanceof Color ? value.ios : value;
 		const itemSelectedAndHighlighted = this.isSelectedAndHightlightedItem(tabStripItem);
 
 		// As we cannot implement selected item background color in Tabs we are using the Indicator for this
@@ -977,7 +981,7 @@ export class Tabs extends TabsBase {
 		}
 	}
 
-	private setIconColor(tabStripItem: TabStripItem, forceReload: boolean = false): void {
+	private setIconColor(tabStripItem: TabStripItem, forceReload = false): void {
 		// if there is no change in the css color and there is no item color set
 		// we don't need to reload the icon
 		if (!forceReload && !this._selectedItemColor && !this._unSelectedItemColor) {
@@ -1098,7 +1102,7 @@ export class Tabs extends TabsBase {
 			const item = this.items[value];
 			const controllers = NSMutableArray.alloc<UIViewController>().initWithCapacity(1);
 
-			let itemController = (<any>item).__controller;
+			const itemController = (<any>item).__controller;
 
 			// if (!itemController) {
 			//     itemController = this.getViewController(item);
@@ -1117,16 +1121,31 @@ export class Tabs extends TabsBase {
 			// do not make layout changes while the animation is in progress https://stackoverflow.com/a/47031524/613113
 			this.visitFrames(item, (frame) => (frame._animationInProgress = true));
 
+			const doneAnimating = () => {
+				this.visitFrames(item, (frame) => (frame._animationInProgress = false));
+
+				this._canSelectItem = true;
+				this._setCanBeLoaded(value);
+				this._loadUnloadTabItems(value);
+			};
+
 			invokeOnRunLoop(() =>
 				this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, this.animationEnabled, (finished: boolean) => {
-					this.visitFrames(item, (frame) => (frame._animationInProgress = false));
 					if (finished) {
-						// HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
-						invokeOnRunLoop(() => this.viewController.setViewControllersDirectionAnimatedCompletion(controllers, navigationDirection, false, null));
+						if (this.animationEnabled) {
+							// HACK: UIPageViewController fix; see https://stackoverflow.com/a/17330606
+							// Prior Hack fails on iOS 10.3 during tests with v8 engine...
+							// Leaving the above link in case we need to special case this for only iOS > 10.3?
 
-						this._canSelectItem = true;
-						this._setCanBeLoaded(value);
-						this._loadUnloadTabItems(value);
+							// HACK: UIPageViewController fix; see https://stackoverflow.com/questions/15325891
+							invokeOnRunLoop(() => {
+								this.viewController.dataSource = null;
+								(<any>this.viewController).dataSource = this.viewController;
+								doneAnimating();
+							});
+						} else {
+							doneAnimating();
+						}
 					}
 				})
 			);
@@ -1176,7 +1195,7 @@ export class Tabs extends TabsBase {
 			return 'justified';
 		}
 
-		let alignment = this.viewController.tabBar.alignment.toString();
+		const alignment = this.viewController.tabBar.alignment.toString();
 
 		return <any>(alignment.charAt(0).toLowerCase() + alignment.substring(1));
 	}
@@ -1201,7 +1220,7 @@ export class Tabs extends TabsBase {
 		this.viewController.tabBar.alignment = alignment;
 	}
 
-	private setViewTextAttributes(view: View, setSelected: boolean = false): any {
+	private setViewTextAttributes(view: View, setSelected = false): any {
 		if (!view) {
 			return null;
 		}

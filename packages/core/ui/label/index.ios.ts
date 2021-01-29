@@ -27,6 +27,7 @@ export class Label extends TextBase implements LabelDefinition {
 		return view;
 	}
 
+	// @ts-ignore
 	get ios(): TNSLabel {
 		return this.nativeTextViewProtected;
 	}
@@ -54,7 +55,7 @@ export class Label extends TextBase implements LabelDefinition {
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		let nativeView = this.nativeTextViewProtected;
+		const nativeView = this.nativeTextViewProtected;
 		if (nativeView) {
 			const width = layout.getMeasureSpecSize(widthMeasureSpec);
 			const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);

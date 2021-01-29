@@ -2,8 +2,11 @@
 import { AndroidApplication as AndroidApplicationDefinition } from '.';
 import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, ApplicationEventData, CssChangedEventData, OrientationChangedEventData, SystemAppearanceChangedEventData } from './application-interfaces';
 
+// TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const appCommon = require('./application-common');
+
 // First reexport so that app module is initialized.
 export * from './application-common';
 
@@ -188,7 +191,7 @@ export function addCss(cssText: string, attributeScoped?: boolean): void {
 const CALLBACKS = '_callbacks';
 
 export function _resetRootView(entry?: NavigationEntry | string): void {
-	const activity = androidApp.foregroundActivity;
+	const activity = androidApp.foregroundActivity || androidApp.startActivity;
 	if (!activity) {
 		throw new Error('Cannot find android activity.');
 	}
@@ -504,3 +507,8 @@ declare namespace com {
 		}
 	}
 }
+
+// core exports this symbol so apps may import them in general
+// technically they are only available for use when running that platform
+// helps avoid a webpack nonexistent warning
+export const iOSApplication = undefined;

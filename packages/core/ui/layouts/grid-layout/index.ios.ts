@@ -71,13 +71,13 @@ export class GridLayout extends GridLayoutBase {
 	}
 
 	private updateMeasureSpecs(child: View, measureSpec: MeasureSpecs): void {
-		let column = this.getColumnSpec(child);
-		let columnIndex = this.getColumnIndex(child);
-		let columnSpan = this.getColumnSpan(child, columnIndex);
+		const column = this.getColumnSpec(child);
+		const columnIndex = this.getColumnIndex(child);
+		const columnSpan = this.getColumnSpan(child, columnIndex);
 
-		let row = this.getRowSpec(child);
-		let rowIndex = this.getRowIndex(child);
-		let rowSpan = this.getRowSpan(child, rowIndex);
+		const row = this.getRowSpec(child);
+		const rowIndex = this.getRowIndex(child);
+		const rowSpan = this.getRowSpan(child, rowIndex);
 
 		measureSpec.setColumn(column);
 		measureSpec.setColumnIndex(columnIndex);
@@ -119,8 +119,8 @@ export class GridLayout extends GridLayoutBase {
 		const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
 		const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
 
-		let infinityWidth = widthMode === layout.UNSPECIFIED;
-		let infinityHeight = heightMode === layout.UNSPECIFIED;
+		const infinityWidth = widthMode === layout.UNSPECIFIED;
+		const infinityHeight = heightMode === layout.UNSPECIFIED;
 
 		this.helper.width = Math.max(0, width - horizontalPaddingsAndMargins);
 		this.helper.height = Math.max(0, height - verticalPaddingsAndMargins);
@@ -135,7 +135,7 @@ export class GridLayout extends GridLayoutBase {
 		this.helper.init();
 
 		this.eachLayoutChild((child, last) => {
-			let measureSpecs = this.map.get(child);
+			const measureSpecs = this.map.get(child);
 			if (!measureSpecs) {
 				return;
 			}
@@ -165,8 +165,8 @@ export class GridLayout extends GridLayoutBase {
 
 		const insets = this.getSafeAreaInsets();
 
-		let paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
-		let paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
+		const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + insets.left;
+		const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + insets.top;
 
 		this.columnOffsets.length = 0;
 		this.rowOffsets.length = 0;
@@ -180,7 +180,7 @@ export class GridLayout extends GridLayoutBase {
 		let actualLength = 0;
 
 		for (let i = 0, size = this.helper.columns.length; i < size; i++) {
-			let columnGroup = this.helper.columns[i];
+			const columnGroup = this.helper.columns[i];
 			offset += columnGroup.length;
 
 			actualLength = offset - roundedOffset;
@@ -197,7 +197,7 @@ export class GridLayout extends GridLayoutBase {
 		actualLength = 0;
 
 		for (let i = 0, size = this.helper.rows.length; i < size; i++) {
-			let rowGroup = this.helper.rows[i];
+			const rowGroup = this.helper.rows[i];
 			offset += rowGroup.length;
 
 			actualLength = offset - roundedOffset;
@@ -209,13 +209,13 @@ export class GridLayout extends GridLayoutBase {
 		}
 
 		for (let i = 0, columns = this.helper.columns.length; i < columns; i++) {
-			let columnGroup = this.helper.columns[i];
+			const columnGroup = this.helper.columns[i];
 			for (let j = 0, children = columnGroup.children.length; j < children; j++) {
-				let measureSpec = columnGroup.children[j];
-				let childLeft = this.columnOffsets[measureSpec.getColumnIndex()];
-				let childRight = this.columnOffsets[measureSpec.getColumnIndex() + measureSpec.getColumnSpan()];
-				let childTop = this.rowOffsets[measureSpec.getRowIndex()];
-				let childBottom = this.rowOffsets[measureSpec.getRowIndex() + measureSpec.getRowSpan()];
+				const measureSpec = columnGroup.children[j];
+				const childLeft = this.columnOffsets[measureSpec.getColumnIndex()];
+				const childRight = this.columnOffsets[measureSpec.getColumnIndex() + measureSpec.getColumnSpan()];
+				const childTop = this.rowOffsets[measureSpec.getRowIndex()];
+				const childBottom = this.rowOffsets[measureSpec.getRowIndex() + measureSpec.getRowSpan()];
 
 				// No need to include margins in the width, height
 				View.layoutChild(this, measureSpec.child, childLeft, childTop, childRight, childBottom);
@@ -242,8 +242,8 @@ class MeasureSpecs {
 	public child: View;
 	private column: ItemSpec;
 	private row: ItemSpec;
-	private columnIndex: number = 0;
-	private rowIndex: number = 0;
+	private columnIndex = 0;
+	private rowIndex = 0;
 
 	constructor(child: View) {
 		this.child = child;
@@ -362,25 +362,25 @@ class MeasureHelper {
 	rows: Array<ItemGroup> = new Array<ItemGroup>();
 	columns: Array<ItemGroup> = new Array<ItemGroup>();
 
-	width: number = 0;
-	height: number = 0;
-	stretchedHorizontally: boolean = false;
-	stretchedVertically: boolean = false;
+	width = 0;
+	height = 0;
+	stretchedHorizontally = false;
+	stretchedVertically = false;
 
-	infinityWidth: boolean = false;
-	infinityHeight: boolean = false;
+	infinityWidth = false;
+	infinityHeight = false;
 
-	private minColumnStarValue: number = 0;
-	private maxColumnStarValue: number = 0;
+	private minColumnStarValue = 0;
+	private maxColumnStarValue = 0;
 
-	private minRowStarValue: number = 0;
-	private maxRowStarValue: number = 0;
+	private minRowStarValue = 0;
+	private maxRowStarValue = 0;
 
-	measuredWidth: number = 0;
-	measuredHeight: number = 0;
+	measuredWidth = 0;
+	measuredHeight = 0;
 
-	private fakeRowAdded: boolean = false;
-	private fakeColumnAdded: boolean = false;
+	private fakeRowAdded = false;
+	private fakeColumnAdded = false;
 
 	private singleRowGroup: ItemGroup;
 	private singleColumnGroup: ItemGroup;
@@ -396,7 +396,7 @@ class MeasureHelper {
 	public setInfinityWidth(value: boolean): void {
 		this.infinityWidth = value;
 		for (let i = 0, size = this.columns.length; i < size; i++) {
-			let columnGroup: ItemGroup = this.columns[i];
+			const columnGroup: ItemGroup = this.columns[i];
 			columnGroup.setIsLengthInfinity(value);
 		}
 	}
@@ -404,7 +404,7 @@ class MeasureHelper {
 	public setInfinityHeight(value: boolean): void {
 		this.infinityHeight = value;
 		for (let i = 0, size = this.rows.length; i < size; i++) {
-			let rowGroup: ItemGroup = this.rows[i];
+			const rowGroup: ItemGroup = this.rows[i];
 			rowGroup.setIsLengthInfinity(value);
 		}
 	}
@@ -413,7 +413,7 @@ class MeasureHelper {
 		// Get column stats
 		let size = measureSpec.getColumnIndex() + measureSpec.getColumnSpan();
 		for (let i = measureSpec.getColumnIndex(); i < size; i++) {
-			let columnGroup: ItemGroup = this.columns[i];
+			const columnGroup: ItemGroup = this.columns[i];
 			if (columnGroup.getIsAuto()) {
 				measureSpec.autoColumnsCount++;
 			} else if (columnGroup.getIsStar()) {
@@ -426,7 +426,7 @@ class MeasureHelper {
 		if (measureSpec.autoColumnsCount > 0 && measureSpec.starColumnsCount === 0) {
 			// Determine which auto columns are affected by this element
 			for (let i = measureSpec.getColumnIndex(); i < size; i++) {
-				let columnGroup: ItemGroup = this.columns[i];
+				const columnGroup: ItemGroup = this.columns[i];
 				if (columnGroup.getIsAuto()) {
 					columnGroup.measureToFix++;
 				}
@@ -436,7 +436,7 @@ class MeasureHelper {
 		// Get row stats
 		size = measureSpec.getRowIndex() + measureSpec.getRowSpan();
 		for (let i = measureSpec.getRowIndex(); i < size; i++) {
-			let rowGroup: ItemGroup = this.rows[i];
+			const rowGroup: ItemGroup = this.rows[i];
 			if (rowGroup.getIsAuto()) {
 				measureSpec.autoRowsCount++;
 			} else if (rowGroup.getIsStar()) {
@@ -449,7 +449,7 @@ class MeasureHelper {
 		if (measureSpec.autoRowsCount > 0 && measureSpec.starRowsCount === 0) {
 			// Determine which auto rows are affected by this element
 			for (let i = measureSpec.getRowIndex(); i < size; i++) {
-				let rowGroup: ItemGroup = this.rows[i];
+				const rowGroup: ItemGroup = this.rows[i];
 				if (rowGroup.getIsAuto()) {
 					rowGroup.measureToFix++;
 				}
@@ -471,15 +471,15 @@ class MeasureHelper {
 	}
 
 	private static initList(list: Array<ItemGroup>): void {
-		let density = layout.getDisplayDensity();
+		const density = layout.getDisplayDensity();
 		for (let i = 0, size = list.length; i < size; i++) {
-			let item: ItemGroup = list[i];
+			const item: ItemGroup = list[i];
 			item.init(density);
 		}
 	}
 
 	init(): void {
-		let rows = this.rows.length;
+		const rows = this.rows.length;
 		if (rows === 0) {
 			this.singleRowGroup.setIsLengthInfinity(this.infinityHeight);
 			this.rows.push(this.singleRowGroup);
@@ -489,7 +489,7 @@ class MeasureHelper {
 			this.fakeRowAdded = false;
 		}
 
-		let cols = this.columns.length;
+		const cols = this.columns.length;
 		if (cols === 0) {
 			this.fakeColumnAdded = true;
 			this.singleColumnGroup.setIsLengthInfinity(this.infinityWidth);
@@ -516,9 +516,9 @@ class MeasureHelper {
 		}
 
 		if (measureSpec.autoColumnsCount > 0 && measureSpec.starColumnsCount === 0) {
-			let size = measureSpec.getColumnIndex() + measureSpec.getColumnSpan();
+			const size = measureSpec.getColumnIndex() + measureSpec.getColumnSpan();
 			for (let i = measureSpec.getColumnIndex(); i < size; i++) {
-				let columnGroup: ItemGroup = this.columns[i];
+				const columnGroup: ItemGroup = this.columns[i];
 				if (columnGroup.getIsAuto()) {
 					columnGroup.currentMeasureToFixCount++;
 				}
@@ -526,9 +526,9 @@ class MeasureHelper {
 		}
 
 		if (measureSpec.autoRowsCount > 0 && measureSpec.starRowsCount === 0) {
-			let size = measureSpec.getRowIndex() + measureSpec.getRowSpan();
+			const size = measureSpec.getRowIndex() + measureSpec.getRowSpan();
 			for (let i = measureSpec.getRowIndex(); i < size; i++) {
-				let rowGroup: ItemGroup = this.rows[i];
+				const rowGroup: ItemGroup = this.rows[i];
 				if (rowGroup.getIsAuto()) {
 					rowGroup.currentMeasureToFixCount++;
 				}
@@ -540,9 +540,9 @@ class MeasureHelper {
 		let currentColumnWidth = 0;
 		let columnStarCount = 0;
 
-		let columnCount = this.columns.length;
+		const columnCount = this.columns.length;
 		for (let i = 0; i < columnCount; i++) {
-			let item: ItemGroup = this.columns[i];
+			const item: ItemGroup = this.columns[i];
 			if (item.rowOrColumn.isStar) {
 				columnStarCount += item.rowOrColumn.value;
 			} else {
@@ -551,7 +551,7 @@ class MeasureHelper {
 			}
 		}
 
-		let widthForStarColumns = Math.max(0, this.width - currentColumnWidth);
+		const widthForStarColumns = Math.max(0, this.width - currentColumnWidth);
 		this.maxColumnStarValue = columnStarCount > 0 ? widthForStarColumns / columnStarCount : 0;
 
 		MeasureHelper.updateStarLength(this.columns, this.maxColumnStarValue);
@@ -561,9 +561,9 @@ class MeasureHelper {
 		let currentRowHeight = 0;
 		let rowStarCount = 0;
 
-		let rowCount = this.rows.length;
+		const rowCount = this.rows.length;
 		for (let i = 0; i < rowCount; i++) {
-			let item: ItemGroup = this.rows[i];
+			const item: ItemGroup = this.rows[i];
 			if (item.rowOrColumn.isStar) {
 				rowStarCount += item.rowOrColumn.value;
 			} else {
@@ -572,7 +572,7 @@ class MeasureHelper {
 			}
 		}
 
-		let heightForStarRows = Math.max(0, this.height - currentRowHeight);
+		const heightForStarRows = Math.max(0, this.height - currentRowHeight);
 		this.maxRowStarValue = rowStarCount > 0 ? heightForStarRows / rowStarCount : 0;
 
 		MeasureHelper.updateStarLength(this.rows, this.maxRowStarValue);
@@ -582,12 +582,12 @@ class MeasureHelper {
 		let offset = 0;
 		let roundedOffset = 0;
 		for (let i = 0, rowCount = list.length; i < rowCount; i++) {
-			let item = list[i];
+			const item = list[i];
 			if (item.getIsStar()) {
 				offset += item.rowOrColumn.value * starValue;
 
-				let actualLength = offset - roundedOffset;
-				let roundedLength = Math.round(actualLength);
+				const actualLength = offset - roundedOffset;
+				const roundedLength = Math.round(actualLength);
 				item.length = roundedLength;
 				roundedOffset += roundedLength;
 			}
@@ -597,13 +597,13 @@ class MeasureHelper {
 	private fakeMeasure(): void {
 		// Fake measure - measure all elements that have star rows and auto columns - with infinity Width and infinity Height
 		for (let i = 0, size = this.columns.length; i < size; i++) {
-			let columnGroup: ItemGroup = this.columns[i];
+			const columnGroup: ItemGroup = this.columns[i];
 			if (columnGroup.getAllMeasured()) {
 				continue;
 			}
 
 			for (let j = 0, childrenCount = columnGroup.children.length; j < childrenCount; j++) {
-				let measureSpec: MeasureSpecs = columnGroup.children[j];
+				const measureSpec: MeasureSpecs = columnGroup.children[j];
 				if (measureSpec.starRowsCount > 0 && measureSpec.autoColumnsCount > 0 && measureSpec.starColumnsCount === 0) {
 					this.measureChild(measureSpec, true);
 				}
@@ -613,9 +613,9 @@ class MeasureHelper {
 
 	private measureFixedColumnsNoStarRows(): void {
 		for (let i = 0, size = this.columns.length; i < size; i++) {
-			let columnGroup: ItemGroup = this.columns[i];
+			const columnGroup: ItemGroup = this.columns[i];
 			for (let j = 0, childrenCount = columnGroup.children.length; j < childrenCount; j++) {
-				let measureSpec: MeasureSpecs = columnGroup.children[j];
+				const measureSpec: MeasureSpecs = columnGroup.children[j];
 				if (measureSpec.starColumnsCount > 0 && measureSpec.starRowsCount === 0) {
 					this.measureChildFixedColumns(measureSpec);
 				}
@@ -625,9 +625,9 @@ class MeasureHelper {
 
 	private measureNoStarColumnsFixedRows(): void {
 		for (let i = 0, size = this.columns.length; i < size; i++) {
-			let columnGroup: ItemGroup = this.columns[i];
+			const columnGroup: ItemGroup = this.columns[i];
 			for (let j = 0, childrenCount = columnGroup.children.length; j < childrenCount; j++) {
-				let measureSpec: MeasureSpecs = columnGroup.children[j];
+				const measureSpec: MeasureSpecs = columnGroup.children[j];
 				if (measureSpec.starRowsCount > 0 && measureSpec.starColumnsCount === 0) {
 					this.measureChildFixedRows(measureSpec);
 				}
@@ -637,7 +637,7 @@ class MeasureHelper {
 
 	private static canFix(list: Array<ItemGroup>): boolean {
 		for (let i = 0, size = list.length; i < size; i++) {
-			let item: ItemGroup = list[i];
+			const item: ItemGroup = list[i];
 			if (!item.getCanBeFixed()) {
 				return false;
 			}
@@ -649,7 +649,7 @@ class MeasureHelper {
 	private static getMeasureLength(list: Array<ItemGroup>): number {
 		let result = 0;
 		for (let i = 0, size = list.length; i < size; i++) {
-			let item: ItemGroup = list[i];
+			const item: ItemGroup = list[i];
 			result += item.length;
 		}
 
@@ -660,9 +660,9 @@ class MeasureHelper {
 		// Measure auto & pixel columns and rows (no spans).
 		let size = this.columns.length;
 		for (let i = 0; i < size; i++) {
-			let columnGroup: ItemGroup = this.columns[i];
+			const columnGroup: ItemGroup = this.columns[i];
 			for (let j = 0, childrenCount = columnGroup.children.length; j < childrenCount; j++) {
-				let measureSpec: MeasureSpecs = columnGroup.children[j];
+				const measureSpec: MeasureSpecs = columnGroup.children[j];
 				if (measureSpec.getIsStar() || measureSpec.getSpanned()) {
 					continue;
 				}
@@ -673,9 +673,9 @@ class MeasureHelper {
 
 		// Measure auto & pixel columns and rows (with spans).
 		for (let i = 0; i < size; i++) {
-			let columnGroup: ItemGroup = this.columns[i];
+			const columnGroup: ItemGroup = this.columns[i];
 			for (let j = 0, childrenCount = columnGroup.children.length; j < childrenCount; j++) {
-				let measureSpec = columnGroup.children[j];
+				const measureSpec = columnGroup.children[j];
 				if (measureSpec.getIsStar() || !measureSpec.getSpanned()) {
 					continue;
 				}
@@ -685,8 +685,8 @@ class MeasureHelper {
 		}
 
 		// try fix stars!
-		let fixColumns: boolean = MeasureHelper.canFix(this.columns);
-		let fixRows: boolean = MeasureHelper.canFix(this.rows);
+		const fixColumns: boolean = MeasureHelper.canFix(this.columns);
+		const fixRows: boolean = MeasureHelper.canFix(this.rows);
 
 		if (fixColumns) {
 			this.fixColumns();
@@ -724,9 +724,9 @@ class MeasureHelper {
 		// Rows and columns are fixed here - measure remaining elements
 		size = this.columns.length;
 		for (let i = 0; i < size; i++) {
-			let columnGroup: ItemGroup = this.columns[i];
+			const columnGroup: ItemGroup = this.columns[i];
 			for (let j = 0, childCount = columnGroup.children.length; j < childCount; j++) {
-				let measureSpec: MeasureSpecs = columnGroup.children[j];
+				const measureSpec: MeasureSpecs = columnGroup.children[j];
 				if (!measureSpec.measured) {
 					this.measureChildFixedColumnsAndRows(measureSpec);
 				}
@@ -750,28 +750,28 @@ class MeasureHelper {
 	}
 
 	private measureChild(measureSpec: MeasureSpecs, isFakeMeasure: boolean): void {
-		let widthMeasureSpec = measureSpec.autoColumnsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
-		let heightMeasureSpec = isFakeMeasure || measureSpec.autoRowsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
+		const widthMeasureSpec = measureSpec.autoColumnsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
+		const heightMeasureSpec = isFakeMeasure || measureSpec.autoRowsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
 
-		let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
-		let childMeasuredWidth: number = childSize.measuredWidth;
-		let childMeasuredHeight: number = childSize.measuredHeight;
+		const childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+		const childMeasuredWidth: number = childSize.measuredWidth;
+		const childMeasuredHeight: number = childSize.measuredHeight;
 
-		let columnSpanEnd: number = measureSpec.getColumnIndex() + measureSpec.getColumnSpan();
-		let rowSpanEnd: number = measureSpec.getRowIndex() + measureSpec.getRowSpan();
+		const columnSpanEnd: number = measureSpec.getColumnIndex() + measureSpec.getColumnSpan();
+		const rowSpanEnd: number = measureSpec.getRowIndex() + measureSpec.getRowSpan();
 
 		if (measureSpec.autoColumnsCount > 0) {
 			let remainingSpace = childMeasuredWidth;
 
 			for (let i = measureSpec.getColumnIndex(); i < columnSpanEnd; i++) {
-				let columnGroup: ItemGroup = this.columns[i];
+				const columnGroup: ItemGroup = this.columns[i];
 				remainingSpace -= columnGroup.length;
 			}
 
 			if (remainingSpace > 0) {
-				let growSize = remainingSpace / measureSpec.autoColumnsCount;
+				const growSize = remainingSpace / measureSpec.autoColumnsCount;
 				for (let i = measureSpec.getColumnIndex(); i < columnSpanEnd; i++) {
-					let columnGroup: ItemGroup = this.columns[i];
+					const columnGroup: ItemGroup = this.columns[i];
 					if (columnGroup.getIsAuto()) {
 						columnGroup.length += growSize;
 					}
@@ -783,14 +783,14 @@ class MeasureHelper {
 			let remainingSpace: number = childMeasuredHeight;
 
 			for (let i = measureSpec.getRowIndex(); i < rowSpanEnd; i++) {
-				let rowGroup: ItemGroup = this.rows[i];
+				const rowGroup: ItemGroup = this.rows[i];
 				remainingSpace -= rowGroup.length;
 			}
 
 			if (remainingSpace > 0) {
-				let growSize = remainingSpace / measureSpec.autoRowsCount;
+				const growSize = remainingSpace / measureSpec.autoRowsCount;
 				for (let i = measureSpec.getRowIndex(); i < rowSpanEnd; i++) {
-					let rowGroup: ItemGroup = this.rows[i];
+					const rowGroup: ItemGroup = this.rows[i];
 					if (rowGroup.getIsAuto()) {
 						rowGroup.length += growSize;
 					}
@@ -802,25 +802,25 @@ class MeasureHelper {
 	}
 
 	private measureChildFixedColumns(measureSpec: MeasureSpecs): void {
-		let columnIndex = measureSpec.getColumnIndex();
-		let columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
-		let rowIndex = measureSpec.getRowIndex();
-		let rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+		const columnIndex = measureSpec.getColumnIndex();
+		const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
+		const rowIndex = measureSpec.getRowIndex();
+		const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
 
 		let measureWidth = 0;
 		let growSize = 0;
 
 		for (let i = columnIndex; i < columnSpanEnd; i++) {
-			let columnGroup: ItemGroup = this.columns[i];
+			const columnGroup: ItemGroup = this.columns[i];
 			measureWidth += columnGroup.length;
 		}
 
-		let widthMeasureSpec = layout.makeMeasureSpec(measureWidth, this.stretchedHorizontally ? layout.EXACTLY : layout.AT_MOST);
-		let heightMeasureSpec = measureSpec.autoRowsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
+		const widthMeasureSpec = layout.makeMeasureSpec(measureWidth, this.stretchedHorizontally ? layout.EXACTLY : layout.AT_MOST);
+		const heightMeasureSpec = measureSpec.autoRowsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
 
-		let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
-		let childMeasuredWidth = childSize.measuredWidth;
-		let childMeasuredHeight = childSize.measuredHeight;
+		const childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+		const childMeasuredWidth = childSize.measuredWidth;
+		const childMeasuredHeight = childSize.measuredHeight;
 
 		this.updateMinColumnStarValueIfNeeded(measureSpec, childMeasuredWidth);
 
@@ -829,14 +829,14 @@ class MeasureHelper {
 			let remainingSpace = childMeasuredHeight;
 
 			for (let i = rowIndex; i < rowSpanEnd; i++) {
-				let rowGroup: ItemGroup = this.rows[i];
+				const rowGroup: ItemGroup = this.rows[i];
 				remainingSpace -= rowGroup.length;
 			}
 
 			if (remainingSpace > 0) {
 				growSize = remainingSpace / measureSpec.autoRowsCount;
 				for (let i = rowIndex; i < rowSpanEnd; i++) {
-					let rowGroup: ItemGroup = this.rows[i];
+					const rowGroup: ItemGroup = this.rows[i];
 					if (rowGroup.getIsAuto()) {
 						rowGroup.length += growSize;
 					}
@@ -848,23 +848,23 @@ class MeasureHelper {
 	}
 
 	private measureChildFixedRows(measureSpec: MeasureSpecs): void {
-		let columnIndex = measureSpec.getColumnIndex();
-		let columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
-		let rowIndex = measureSpec.getRowIndex();
-		let rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+		const columnIndex = measureSpec.getColumnIndex();
+		const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
+		const rowIndex = measureSpec.getRowIndex();
+		const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
 		let measureHeight = 0;
 
 		for (let i = rowIndex; i < rowSpanEnd; i++) {
-			let rowGroup: ItemGroup = this.rows[i];
+			const rowGroup: ItemGroup = this.rows[i];
 			measureHeight += rowGroup.length;
 		}
 
-		let widthMeasureSpec = measureSpec.autoColumnsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
-		let heightMeasureSpec = layout.makeMeasureSpec(measureHeight, this.stretchedVertically ? layout.EXACTLY : layout.AT_MOST);
+		const widthMeasureSpec = measureSpec.autoColumnsCount > 0 ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
+		const heightMeasureSpec = layout.makeMeasureSpec(measureHeight, this.stretchedVertically ? layout.EXACTLY : layout.AT_MOST);
 
-		let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
-		let childMeasuredWidth = childSize.measuredWidth;
-		let childMeasuredHeight = childSize.measuredHeight;
+		const childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+		const childMeasuredWidth = childSize.measuredWidth;
+		const childMeasuredHeight = childSize.measuredHeight;
 
 		let remainingSpace = 0;
 		let growSize = 0;
@@ -874,14 +874,14 @@ class MeasureHelper {
 			remainingSpace = childMeasuredWidth;
 
 			for (let i = columnIndex; i < columnSpanEnd; i++) {
-				let columnGroup: ItemGroup = this.columns[i];
+				const columnGroup: ItemGroup = this.columns[i];
 				remainingSpace -= columnGroup.length;
 			}
 
 			if (remainingSpace > 0) {
 				growSize = remainingSpace / measureSpec.autoColumnsCount;
 				for (let i = columnIndex; i < columnSpanEnd; i++) {
-					let columnGroup: ItemGroup = this.columns[i];
+					const columnGroup: ItemGroup = this.columns[i];
 
 					if (columnGroup.getIsAuto()) {
 						columnGroup.length += growSize;
@@ -895,31 +895,31 @@ class MeasureHelper {
 	}
 
 	private measureChildFixedColumnsAndRows(measureSpec: MeasureSpecs): void {
-		let columnIndex = measureSpec.getColumnIndex();
-		let columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
-		let rowIndex = measureSpec.getRowIndex();
-		let rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+		const columnIndex = measureSpec.getColumnIndex();
+		const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
+		const rowIndex = measureSpec.getRowIndex();
+		const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
 
 		let measureWidth = 0;
 		for (let i = columnIndex; i < columnSpanEnd; i++) {
-			let columnGroup: ItemGroup = this.columns[i];
+			const columnGroup: ItemGroup = this.columns[i];
 			measureWidth += columnGroup.length;
 		}
 
 		let measureHeight = 0;
 		for (let i = rowIndex; i < rowSpanEnd; i++) {
-			let rowGroup: ItemGroup = this.rows[i];
+			const rowGroup: ItemGroup = this.rows[i];
 			measureHeight += rowGroup.length;
 		}
 
 		// if (have stars) & (not stretch) - at most
-		let widthMeasureSpec = layout.makeMeasureSpec(measureWidth, measureSpec.starColumnsCount > 0 && !this.stretchedHorizontally ? layout.AT_MOST : layout.EXACTLY);
+		const widthMeasureSpec = layout.makeMeasureSpec(measureWidth, measureSpec.starColumnsCount > 0 && !this.stretchedHorizontally ? layout.AT_MOST : layout.EXACTLY);
 
-		let heightMeasureSpec = layout.makeMeasureSpec(measureHeight, measureSpec.starRowsCount > 0 && !this.stretchedVertically ? layout.AT_MOST : layout.EXACTLY);
+		const heightMeasureSpec = layout.makeMeasureSpec(measureHeight, measureSpec.starRowsCount > 0 && !this.stretchedVertically ? layout.AT_MOST : layout.EXACTLY);
 
-		let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
-		let childMeasuredWidth = childSize.measuredWidth;
-		let childMeasuredHeight = childSize.measuredHeight;
+		const childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+		const childMeasuredWidth = childSize.measuredWidth;
+		const childMeasuredHeight = childSize.measuredHeight;
 
 		this.updateMinColumnStarValueIfNeeded(measureSpec, childMeasuredWidth);
 		this.updateMinRowStarValueIfNeeded(measureSpec, childMeasuredHeight);
@@ -929,10 +929,10 @@ class MeasureHelper {
 	private updateMinRowStarValueIfNeeded(measureSpec: MeasureSpecs, childMeasuredHeight: number): void {
 		if (!this.stretchedVertically && measureSpec.starRowsCount > 0) {
 			let remainingSpace = childMeasuredHeight;
-			let rowIndex = measureSpec.getRowIndex();
-			let rowSpanEnd = rowIndex + measureSpec.getRowSpan();
+			const rowIndex = measureSpec.getRowIndex();
+			const rowSpanEnd = rowIndex + measureSpec.getRowSpan();
 			for (let i = rowIndex; i < rowSpanEnd; i++) {
-				let rowGroup = this.rows[i];
+				const rowGroup = this.rows[i];
 				if (!rowGroup.getIsStar()) {
 					remainingSpace -= rowGroup.length;
 				}
@@ -949,10 +949,10 @@ class MeasureHelper {
 		// if there is an element that spans on multiple columns
 		if (!this.stretchedHorizontally && measureSpec.starColumnsCount > 0) {
 			let remainingSpace = childMeasuredWidth;
-			let columnIndex = measureSpec.getColumnIndex();
-			let columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
+			const columnIndex = measureSpec.getColumnIndex();
+			const columnSpanEnd = columnIndex + measureSpec.getColumnSpan();
 			for (let i = columnIndex; i < columnSpanEnd; i++) {
-				let columnGroup = this.columns[i];
+				const columnGroup = this.columns[i];
 				if (!columnGroup.getIsStar()) {
 					remainingSpace -= columnGroup.length;
 				}

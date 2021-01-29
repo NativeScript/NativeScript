@@ -145,6 +145,7 @@ export class TextField extends TextFieldBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UITextField {
 		return this.nativeViewProtected;
 	}
@@ -216,7 +217,10 @@ export class TextField extends TextFieldBase {
 		if (this.formattedText) {
 			_updateCharactersInRangeReplacementString(this.formattedText, range.location, range.length, replacementString);
 		}
-
+		if (this.width === 'auto') {
+			// if the textfield is in auto size we need to request a layout to take the new text width into account
+			this.requestLayout();
+		}
 		this.firstEdit = false;
 
 		return true;
@@ -244,7 +248,7 @@ export class TextField extends TextFieldBase {
 	}
 	[colorProperty.setNative](value: Color | { textColor: UIColor; tintColor: UIColor }) {
 		if (value instanceof Color) {
-			let color = value instanceof Color ? value.ios : value;
+			const color = value instanceof Color ? value.ios : value;
 			this.nativeTextViewProtected.textColor = color;
 			this.nativeTextViewProtected.tintColor = color;
 		} else {

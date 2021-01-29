@@ -40,14 +40,14 @@ class TapBarItemHandlerImpl extends NSObject {
 	private _owner: WeakRef<ActionItemDefinition>;
 
 	public static initWithOwner(owner: WeakRef<ActionItemDefinition>): TapBarItemHandlerImpl {
-		let handler = <TapBarItemHandlerImpl>TapBarItemHandlerImpl.new();
+		const handler = <TapBarItemHandlerImpl>TapBarItemHandlerImpl.new();
 		handler._owner = owner;
 
 		return handler;
 	}
 
 	public tap(args) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			owner._raiseTap();
 		}
@@ -64,6 +64,7 @@ export class ActionItem extends ActionItemBase {
 		systemIcon: undefined,
 	};
 
+	// @ts-ignore
 	public get ios(): IOSActionItemSettings {
 		return this._ios;
 	}
@@ -183,8 +184,8 @@ export class ActionBar extends ActionBarBase {
 		// Set back button text
 		if (previousController) {
 			if (this.navigationButton) {
-				let tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
-				let barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + '', UIBarButtonItemStyle.Plain, tapHandler, 'tap');
+				const tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
+				const barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + '', UIBarButtonItemStyle.Plain, tapHandler, 'tap');
 				previousController.navigationItem.backBarButtonItem = barButtonItem;
 			} else {
 				previousController.navigationItem.backBarButtonItem = null;
@@ -201,7 +202,7 @@ export class ActionBar extends ActionBarBase {
 		// show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
 		// Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
 		if (img) {
-			let image = img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+			const image = img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 			navigationBar.backIndicatorImage = image;
 			navigationBar.backIndicatorTransitionMaskImage = image;
 		} else {
@@ -256,7 +257,7 @@ export class ActionBar extends ActionBarBase {
 
 		let barButtonItem: UIBarButtonItem;
 		if (item.actionView && item.actionView.ios) {
-			let recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, 'tap');
+			const recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, 'tap');
 			item.actionView.ios.addGestureRecognizer(recognizer);
 			barButtonItem = UIBarButtonItem.alloc().initWithCustomView(item.actionView.ios);
 		} else if (item.ios.systemIcon !== undefined) {
@@ -319,7 +320,7 @@ export class ActionBar extends ActionBarBase {
 			page.frame._updateActionBar();
 		}
 
-		let navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
+		const navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
 		navigationItem.title = this.title;
 	}
 
@@ -407,9 +408,9 @@ export class ActionBar extends ActionBarBase {
 		return null;
 	}
 	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		let navBar = this.navBar;
+		const navBar = this.navBar;
 		if (navBar) {
-			let color = value instanceof Color ? value.ios : value;
+			const color = value instanceof Color ? value.ios : value;
 			navBar.barTintColor = color;
 		}
 	}

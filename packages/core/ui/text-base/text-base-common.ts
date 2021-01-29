@@ -181,13 +181,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 
 	eachChild(callback: (child: ViewBase) => boolean): void {
-		let text = this.formattedText;
+		const text = this.formattedText;
 		if (text) {
 			callback(text);
 		}
 	}
 
-	_setNativeText(reset: boolean = false): void {
+	_setNativeText(reset = false): void {
 		//
 	}
 }

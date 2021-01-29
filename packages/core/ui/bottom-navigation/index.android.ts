@@ -103,9 +103,9 @@ function initializeNativeClasses() {
 				this.owner.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
 				this.backgroundBitmap = null;
 
-				let thisView = this.getView();
+				const thisView = this.getView();
 				if (thisView) {
-					let thisViewParent = thisView.getParent();
+					const thisViewParent = thisView.getParent();
 					if (thisViewParent && thisViewParent instanceof android.view.ViewGroup) {
 						thisViewParent.removeView(thisView);
 					}
@@ -250,7 +250,7 @@ function iterateIndexRange(index: number, eps: number, lastIndex: number, callba
 @CSSType('BottomNavigation')
 export class BottomNavigation extends TabNavigationBase {
 	private _contentView: org.nativescript.widgets.ContentLayout;
-	private _contentViewId: number = -1;
+	private _contentViewId = -1;
 	private _bottomNavigationBar: org.nativescript.widgets.BottomNavigationBar;
 	private _currentFragment: androidx.fragment.app.Fragment;
 	private _currentTransaction: androidx.fragment.app.FragmentTransaction;
@@ -347,8 +347,8 @@ export class BottomNavigation extends TabNavigationBase {
 		const lastIndex = this.items.length - 1;
 		const offsideItems = 0;
 
-		let toUnload = [];
-		let toLoad = [];
+		const toUnload = [];
+		const toLoad = [];
 
 		iterateIndexRange(newIndex, offsideItems, lastIndex, (i) => toLoad.push(i));
 
@@ -428,7 +428,7 @@ export class BottomNavigation extends TabNavigationBase {
 		const fragmentToDetach = this._currentFragment;
 		if (fragmentToDetach) {
 			this.destroyItem((<any>fragmentToDetach).index, fragmentToDetach);
-			this.commitCurrentTransaction();
+			this.removeFragment(fragmentToDetach);
 		}
 	}
 
@@ -454,28 +454,42 @@ export class BottomNavigation extends TabNavigationBase {
 
 	private disposeTabFragments(): void {
 		const fragmentManager = this._getFragmentManager();
-		const transaction = fragmentManager.beginTransaction();
 		const fragments = fragmentManager.getFragments().toArray();
 		for (let i = 0; i < fragments.length; i++) {
-			transaction.remove(fragments[i]);
+			this.removeFragment(fragments[i]);
 		}
-
-		transaction.commitNowAllowingStateLoss();
 	}
 
-	private get currentTransaction(): androidx.fragment.app.FragmentTransaction {
-		if (!this._currentTransaction) {
-			const fragmentManager = this._getFragmentManager();
-			this._currentTransaction = fragmentManager.beginTransaction();
-		}
-
-		return this._currentTransaction;
-	}
-
-	private commitCurrentTransaction(): void {
-		if (this._currentTransaction) {
-			this._currentTransaction.commitNowAllowingStateLoss();
-			this._currentTransaction = null;
+	private attachFragment(fragment: androidx.fragment.app.Fragment, id?: number, name?: string): void {
+		const fragmentManager = this._getFragmentManager();
+		if (fragment) {
+			if (fragment.isAdded() || fragment.isRemoving()) {
+				// ignore
+			} else {
+				const fragmentExitTransition = fragment.getExitTransition();
+				if (fragmentExitTransition && fragmentExitTransition instanceof org.nativescript.widgets.CustomTransition) {
+					fragmentExitTransition.setResetOnTransitionEnd(true);
+				}
+				if (fragmentManager) {
+					if (!fragmentManager.isDestroyed()) {
+						try {
+							if (fragmentManager.isStateSaved()) {
+								if (id && name) {
+									fragmentManager.beginTransaction().add(id, fragment, name).commitNowAllowingStateLoss();
+								} else {
+									fragmentManager.beginTransaction().attach(fragment).commitNowAllowingStateLoss();
+								}
+							} else {
+								if (id && name) {
+									fragmentManager.beginTransaction().add(id, fragment, name).commitNow();
+								} else {
+									fragmentManager.beginTransaction().attach(fragment).commitNow();
+								}
+							}
+						} catch (e) {}
+					}
+				}
+			}
 		}
 	}
 
@@ -495,8 +509,6 @@ export class BottomNavigation extends TabNavigationBase {
 
 		const fragment = this.instantiateItem(this._contentView, index);
 		this.setPrimaryItem(index, fragment);
-
-		this.commitCurrentTransaction();
 	}
 
 	private instantiateItem(container: android.view.ViewGroup, position: number): androidx.fragment.app.Fragment {
@@ -505,10 +517,10 @@ export class BottomNavigation extends TabNavigationBase {
 		const fragmentManager = this._getFragmentManager();
 		let fragment: androidx.fragment.app.Fragment = fragmentManager.findFragmentByTag(name);
 		if (fragment != null) {
-			this.currentTransaction.attach(fragment);
+			this.attachFragment(fragment);
 		} else {
 			fragment = TabFragment.newInstance(this._domId, position);
-			this.currentTransaction.add(container.getId(), fragment, name);
+			this.attachFragment(fragment, container.getId(), name);
 		}
 
 		if (fragment !== this._currentFragment) {
@@ -545,7 +557,7 @@ export class BottomNavigation extends TabNavigationBase {
 
 	private destroyItem(position: number, fragment: androidx.fragment.app.Fragment): void {
 		if (fragment) {
-			this.currentTransaction.detach(fragment);
+			this.removeFragment(fragment);
 			if (this._currentFragment === fragment) {
 				this._currentFragment = null;
 			}
@@ -553,6 +565,34 @@ export class BottomNavigation extends TabNavigationBase {
 
 		if (this.items && this.items[position]) {
 			this.items[position].canBeLoaded = false;
+		}
+	}
+	private removeFragment(fragment: androidx.fragment.app.Fragment, fragmentManager?: any) {
+		if (!fragmentManager) {
+			fragmentManager = this._getFragmentManager();
+		}
+		if (fragment) {
+			if (!fragment.isAdded() || fragment.isRemoving()) {
+				// ignore
+				return;
+			} else {
+				const fragmentExitTransition = fragment.getExitTransition();
+				if (fragmentExitTransition && fragmentExitTransition instanceof org.nativescript.widgets.CustomTransition) {
+					fragmentExitTransition.setResetOnTransitionEnd(true);
+				}
+				if (fragment && fragment.isAdded() && !fragment.isRemoving()) {
+					const pfm = (<any>fragment).getParentFragmentManager ? (<any>fragment).getParentFragmentManager() : null;
+					if (pfm && !pfm.isDestroyed()) {
+						try {
+							if (pfm.isStateSaved()) {
+								pfm.beginTransaction().remove(fragment).commitNowAllowingStateLoss();
+							} else {
+								pfm.beginTransaction().remove(fragment).commitNow();
+							}
+						} catch (e) {}
+					}
+				}
+			}
 		}
 	}
 
@@ -610,7 +650,7 @@ export class BottomNavigation extends TabNavigationBase {
 			tabItemSpec.backgroundColor = backgroundColor ? backgroundColor.android : this.getTabBarBackgroundArgbColor();
 
 			// COLOR
-			let itemColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
+			const itemColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;
 			const color = itemColor || titleLabel.style.color;
 			tabItemSpec.color = color && color.android;
 
@@ -669,7 +709,7 @@ export class BottomNavigation extends TabNavigationBase {
 				image = this.getFixedSizeIcon(image);
 			}
 
-			let imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
+			const imageDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), image);
 
 			return {
 				drawable: imageDrawable,
@@ -681,7 +721,7 @@ export class BottomNavigation extends TabNavigationBase {
 	}
 
 	private getIconInfo(tabStripItem: TabStripItem, color?: Color): IconInfo {
-		let originalIcon = this.getOriginalIcon(tabStripItem, color);
+		const originalIcon = this.getOriginalIcon(tabStripItem, color);
 
 		return this.getDrawableInfo(originalIcon);
 	}
@@ -841,7 +881,7 @@ export class BottomNavigation extends TabNavigationBase {
 	}
 
 	public setTabBarTextTransform(value: TextTransform): void {
-		let items = this.tabStrip && this.tabStrip.items;
+		const items = this.tabStrip && this.tabStrip.items;
 		if (items) {
 			items.forEach((tabStripItem) => {
 				if (tabStripItem.label && tabStripItem.nativeViewProtected) {

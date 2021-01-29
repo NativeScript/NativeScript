@@ -16,6 +16,16 @@ Other modules which will be used in the code samples in this article:
   {%raw%}<Repeater items="{{ myItems }}" />{%endraw%}
 </Page>
 ```
+### Define the Repeater itemsLayout property. Default is StackLayout with orientation="vertical".
+``` XML
+<Page>
+ {%raw%}<Repeater items="{{ myItems }}">
+    <Repeater.itemsLayout>
+       <StackLayout orientation="horizontal" />
+    </Repeater.itemsLayout>
+ </Repeater>{%endraw%}
+</Page>
+```
 ### Define the Repeater itemTemplate property.
 ``` XML
 <Page>
@@ -26,13 +36,52 @@ Other modules which will be used in the code samples in this article:
  </Repeater>{%endraw%}
 </Page>
 ```
-### Define the Repeater itemsLayout property. Default is StackLayout with orientation="vertical".
+### Define multiple item templates and an item template selector in XML.
+The itemTemplateSelector can be an expression specified directly in XML. The context of the expression is the data item for each row.
 ``` XML
 <Page>
- {%raw%}<Repeater items="{{ myItems }}">
-    <Repeater.itemsLayout>
-       <StackLayout orientation="horizontal" />
-    </Repeater.itemsLayout>
+ {%raw%}<Repeater items="{{ myItems }}" itemTemplateSelector="age > 18 ? 'green' : 'red'">
+    <Repeater.itemTemplates>
+      <template key="green">
+        <Label text="{{ age }}" style.backgroundColor="green" />
+      </template>
+      <template key="red">
+        <Label text="{{ age }}" style.backgroundColor="red" />
+      </template>
+    </Repeater.itemTemplates>
+ </Repeater>{%endraw%}
+</Page>
+```
+### Specifying the item template selector as a function in the code-behind file
+In case your item template selector involves complicated logic which cannot be expressed with an expression, you can create an item template selector function in the code behind of the page in which the RepeaterRepeater resides. The function receives the respective data item, the row index and the entire Repeater items collection as parameters. It has to return the the key of the template to be used based on the supplied information.
+``` XML
+<Page>
+ {%raw%}<Repeater items="{{ myItems }}" itemTemplateSelector="selectItemTemplate">
+    <Repeater.itemTemplates>
+      <template key="green">
+        <Label text="{{ age }}" style.backgroundColor="green" />
+      </template>
+      <template key="red">
+        <Label text="{{ age }}" style.backgroundColor="red" />
+      </template>
+    </Repeater.itemTemplates>
+ </Repeater>{%endraw%}
+</Page>
+```
+{%snippet article-item-template-selector-function%}
+### Alternating row colors
+You can use the special value '$index' in the item template selector expression which represents the row index.
+``` XML
+<Page>
+ {%raw%}<Repeater items="{{ myItems }}" itemTemplateSelector="$index % 2 === 0 ? 'even' : 'odd'">
+    <Repeater.itemTemplates>
+      <template key="even">
+        <Label text="{{ age }}" style.backgroundColor="white" />
+      </template>
+      <template key="odd">
+        <Label text="{{ age }}" style.backgroundColor="gray" />
+      </template>
+    </Repeater.itemTemplates>
  </Repeater>{%endraw%}
 </Page>
 ```

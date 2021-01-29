@@ -3,4 +3,5 @@ dist
 *.tgz
 **/*.ts
 !**/*.d.ts
+jest.config.js
 npm-debug.log

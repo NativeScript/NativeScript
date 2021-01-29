@@ -12,6 +12,11 @@ export interface EventData {
 	object: Observable;
 }
 
+export interface NotifyData extends Partial<EventData> {
+	eventName: string;
+	object?: Observable;
+}
+
 /**
  * Data for the "propertyChange" event.
  */
@@ -136,7 +141,7 @@ export class Observable {
 	 * Notifies all the registered listeners for the event provided in the data.eventName.
 	 * @param data The data associated with the event.
 	 */
-	notify<T extends EventData>(data: T): void;
+	notify<T extends NotifyData>(data: T): void;
 
 	/**
 	 * Notifies all the registered listeners for the property change event.

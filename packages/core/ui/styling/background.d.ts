@@ -65,10 +65,10 @@ export declare class Background {
 	public getUniformBorderRadius(): number;
 }
 
-export module ios {
+export namespace ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: any /* UIColor */) => void, flip?: boolean): void;
 }
 
-export module ad {
+export namespace ad {
 	export function onBackgroundOrBorderPropertyChanged(v: View);
 }

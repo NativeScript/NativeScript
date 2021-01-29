@@ -5,7 +5,7 @@ import { FadeTransition } from '../transition/fade-transition';
 
 import { Trace } from '../../trace';
 
-module UIViewControllerAnimatedTransitioningMethods {
+namespace UIViewControllerAnimatedTransitioningMethods {
 	const methodSignature = NSMethodSignature.signatureWithObjCTypes('v@:c');
 	const invocation = NSInvocation.invocationWithMethodSignature(methodSignature);
 	invocation.selector = 'completeTransition:';

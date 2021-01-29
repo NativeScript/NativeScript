@@ -201,7 +201,7 @@ export class IOSHelper {
 
 	static initLayoutGuide(controller: UIViewController) {
 		const rootView = controller.view;
-		const layoutGuide = UILayoutGuide.alloc().init();
+		const layoutGuide = UILayoutGuide.new();
 		rootView.addLayoutGuide(layoutGuide);
 		NSLayoutConstraint.activateConstraints(<any>[layoutGuide.topAnchor.constraintEqualToAnchor(controller.topLayoutGuide.bottomAnchor), layoutGuide.bottomAnchor.constraintEqualToAnchor(controller.bottomLayoutGuide.topAnchor), layoutGuide.leadingAnchor.constraintEqualToAnchor(rootView.leadingAnchor), layoutGuide.trailingAnchor.constraintEqualToAnchor(rootView.trailingAnchor)]);
 
@@ -338,19 +338,23 @@ export class IOSHelper {
 
 		let fullscreen = null;
 		let safeArea = null;
+		let controllerInWindow = { x: 0, y: 0 };
 
 		if (viewControllerView) {
 			safeArea = viewControllerView.safeAreaLayoutGuide.layoutFrame;
 			fullscreen = viewControllerView.frame;
+			controllerInWindow = viewControllerView.convertPointToView(viewControllerView.bounds.origin, null);
 		} else if (scrollView) {
 			const insets = scrollView.safeAreaInsets;
 			safeArea = CGRectMake(insets.left, insets.top, scrollView.contentSize.width - insets.left - insets.right, scrollView.contentSize.height - insets.top - insets.bottom);
 			fullscreen = CGRectMake(0, 0, scrollView.contentSize.width, scrollView.contentSize.height);
 		}
 
+		// We take into account the controller position inside the window.
+		// for example with a bottomsheet the controller will be "offset"
 		const locationInWindow = view.getLocationInWindow();
-		let inWindowLeft = locationInWindow.x;
-		let inWindowTop = locationInWindow.y;
+		let inWindowLeft = locationInWindow.x - controllerInWindow.x;
+		let inWindowTop = locationInWindow.y - controllerInWindow.y;
 
 		if (scrollView) {
 			inWindowLeft += scrollView.contentOffset.x;

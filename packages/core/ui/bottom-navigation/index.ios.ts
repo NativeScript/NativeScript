@@ -316,6 +316,7 @@ export class BottomNavigation extends TabNavigationBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UITabBarController {
 		return this._ios;
 	}
@@ -399,7 +400,7 @@ export class BottomNavigation extends TabNavigationBase {
 		}
 	}
 
-	private setIconColor(tabStripItem: TabStripItem, forceReload: boolean = false): void {
+	private setIconColor(tabStripItem: TabStripItem, forceReload = false): void {
 		if (forceReload || (!this._unSelectedItemColor && !this._selectedItemColor)) {
 			// if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
 			const tabStripColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;

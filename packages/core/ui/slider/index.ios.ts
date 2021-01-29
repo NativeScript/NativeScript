@@ -11,14 +11,14 @@ class SliderChangeHandlerImpl extends NSObject {
 	private _owner: WeakRef<Slider>;
 
 	public static initWithOwner(owner: WeakRef<Slider>): SliderChangeHandlerImpl {
-		let handler = <SliderChangeHandlerImpl>SliderChangeHandlerImpl.new();
+		const handler = <SliderChangeHandlerImpl>SliderChangeHandlerImpl.new();
 		handler._owner = owner;
 
 		return handler;
 	}
 
 	public sliderValueChanged(sender: UISlider) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			valueProperty.nativeValueChange(owner, sender.value);
 		}
@@ -52,6 +52,7 @@ export class Slider extends SliderBase {
 		super.disposeNativeView();
 	}
 
+	// @ts-ignore
 	get ios(): UISlider {
 		return this.nativeViewProtected;
 	}
@@ -79,7 +80,7 @@ export class Slider extends SliderBase {
 		return this.ios.thumbTintColor;
 	}
 	[colorProperty.setNative](value: UIColor | Color) {
-		let color = value instanceof Color ? value.ios : value;
+		const color = value instanceof Color ? value.ios : value;
 		this.ios.thumbTintColor = color;
 	}
 
@@ -87,7 +88,7 @@ export class Slider extends SliderBase {
 		return this.ios.minimumTrackTintColor;
 	}
 	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		let color = value instanceof Color ? value.ios : value;
+		const color = value instanceof Color ? value.ios : value;
 		this.ios.minimumTrackTintColor = color;
 	}
 

@@ -96,7 +96,7 @@ export function getAllKeys(): Array<string> {
 	const iterator = mappedPreferences.keySet().iterator();
 	const result = [];
 	while (iterator.hasNext()) {
-		let key = iterator.next();
+		const key = iterator.next();
 		result.push(key);
 	}
 

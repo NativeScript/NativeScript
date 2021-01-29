@@ -49,13 +49,13 @@ function initializeWebViewClient(): void {
 			}
 		}
 
-		public onReceivedError() {
-			let view: android.webkit.WebView = arguments[0];
+		public onReceivedError(...args) {
+			const view: android.webkit.WebView = args[0];
 
 			if (arguments.length === 4) {
-				let errorCode: number = arguments[1];
-				let description: string = arguments[2];
-				let failingUrl: string = arguments[3];
+				const errorCode: number = args[1];
+				const description: string = args[2];
+				const failingUrl: string = args[3];
 
 				super.onReceivedError(view, errorCode, description, failingUrl);
 
@@ -67,8 +67,8 @@ function initializeWebViewClient(): void {
 					owner._onLoadFinished(failingUrl, description + '(' + errorCode + ')');
 				}
 			} else {
-				let request: any = arguments[1];
-				let error: any = arguments[2];
+				const request: any = args[1];
+				const error: any = args[2];
 
 				// before API version 23 there's no onReceiveError with 3 parameters, so it shouldn't come here
 				// but we don't have the onReceivedError with 3 parameters there and that's why we are ignorint tye typescript error

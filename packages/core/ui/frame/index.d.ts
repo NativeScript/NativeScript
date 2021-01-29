@@ -1,10 +1,16 @@
 ﻿import { NavigationType, FrameBase } from './frame-common';
-import { Page } from '../page';
+import { NavigatedData, Page } from '../page';
 import { Observable, EventData } from '../../data/observable';
 import { View } from '../core/view';
 import { Transition } from '../transition';
 
 export * from './frame-interfaces';
+
+export interface NavigationData extends EventData {
+	entry?: NavigationEntry;
+	fromEntry?: NavigationEntry;
+	isBack?: boolean;
+}
 
 /**
  * Represents the logical View unit that is responsible for navigation within an application.
@@ -210,6 +216,16 @@ export class Frame extends FrameBase {
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
 	on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
+
+	/**
+	 * Raised when navigation to the page has started.
+	 */
+	public on(event: 'navigatingTo', callback: (args: NavigationData) => void, thisArg?: any);
+
+	/**
+	 * Raised when navigation to the page has finished.
+	 */
+	public on(event: 'navigatedTo', callback: (args: NavigationData) => void, thisArg?: any);
 }
 
 /**
@@ -440,7 +456,7 @@ export interface AndroidActivityCallbacks {
 	onPostResume(activity: any, superFunc: Function): void;
 	onDestroy(activity: any, superFunc: Function): void;
 	onBackPressed(activity: any, superFunc: Function): void;
-	onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void;
+	onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<string>, grantResults: Array<number>, superFunc: Function): void;
 	onActivityResult(activity: any, requestCode: number, resultCode: number, data: any, superFunc: Function);
 	onNewIntent(activity: any, intent: any, superSetIntentFunc: Function, superFunc: Function): void;
 }

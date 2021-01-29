@@ -1,5 +1,5 @@
 /* tslint:disable:class-name */
-import { getNativeApplication, on, off, orientationChangedEvent, android as AndroidApplication } from '../application';
+import { getNativeApplication, on, orientationChangedEvent, android as AndroidApplication } from '../application';
 
 const MIN_TABLET_PIXELS = 600;
 
@@ -56,6 +56,9 @@ class MainScreen {
 export class Screen {
 	static mainScreen = new MainScreen();
 }
+
+// This retains compatibility with NS6
+export const screen = Screen;
 
 class DeviceRef {
 	private _manufacturer: string;
@@ -144,6 +147,9 @@ class DeviceRef {
 }
 
 export const Device = new DeviceRef();
+
+// This retains compatibility with NS6
+export const device = Device;
 
 export const isAndroid = global.isAndroid;
 export const isIOS = global.isIOS;

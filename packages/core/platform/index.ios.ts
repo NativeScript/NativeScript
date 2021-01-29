@@ -119,9 +119,15 @@ class MainScreen {
 
 export const Device = new DeviceRef();
 
+// This retains compatibility with NS6
+export const device = Device;
+
 export class Screen {
 	static mainScreen = new MainScreen();
 }
+
+// This retains compatibility with NS6
+export const screen = Screen;
 
 export const isAndroid = global.isAndroid;
 export const isIOS = global.isIOS;

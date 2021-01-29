@@ -9,7 +9,7 @@ import { PercentLength } from '../styling/style-properties';
 
 export * from './animation-interfaces';
 
-export module Properties {
+export namespace Properties {
 	export const opacity = 'opacity';
 	export const backgroundColor = 'backgroundColor';
 	export const translate = 'translate';
@@ -101,6 +101,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		};
 		const _then = promise.then;
 		promise.then = function () {
+			// eslint-disable-next-line prefer-rest-params
 			const r = _then.apply(promise, arguments);
 			_this.fixupAnimationPromise(r);
 
@@ -108,6 +109,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 		};
 		const _catch = promise.catch;
 		promise.catch = function () {
+			// eslint-disable-next-line prefer-rest-params
 			const r = _catch.apply(promise, arguments);
 			_this.fixupAnimationPromise(r);
 
@@ -138,7 +140,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 			throw new Error('No animation target specified.');
 		}
 
-		for (let item in animationDefinition) {
+		for (const item in animationDefinition) {
 			const value = animationDefinition[item];
 			if (value === undefined) {
 				continue;

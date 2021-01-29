@@ -394,6 +394,11 @@ export abstract class View extends ViewBase {
 	iosOverflowSafeAreaEnabled: boolean;
 
 	/**
+	 * Gets or sets a value indicating whether the the view should totally ignore safe areas computation. This property is iOS specific. Default value: false
+	 */
+	iosIgnoreSafeArea: boolean;
+
+	/**
 	 * Gets is layout is valid. This is a read-only property.
 	 */
 	isLayoutValid: boolean;
@@ -511,20 +516,20 @@ export abstract class View extends ViewBase {
 	public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
 
 	/**
-	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change") or you can use gesture types.
-	 * @param callback - Callback function which will be executed when event is raised.
-	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
-	 */
-	on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
-
-	/**
 	 * Removes listener(s) for the specified event name.
 	 * @param eventNames Comma delimited names of the events or gesture types the specified listener is associated with.
 	 * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
 	 */
 	off(eventNames: string | GestureTypes, callback?: (args: EventData) => void, thisArg?: any);
+
+	/**
+	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change") or you can use gesture types.
+	 * @param callback - Callback function which will be executed when event is raised.
+	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+	 */
+	on(eventNames: string | GestureTypes, callback: (args: EventData) => void, thisArg?: any);
 
 	/**
 	 * Raised when a loaded event occurs.

@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/webpack",
-  "version": "3.0.5",
+  "version": "4.0.2",
   "main": "index",
   "description": "Webpack plugin for NativeScript",
   "homepage": "https://nativescript.org",
@@ -52,7 +52,7 @@
   "dependencies": {
     "@angular-devkit/core": "~10.0.0",
     "clean-webpack-plugin": "~3.0.0",
-    "copy-webpack-plugin": "~6.0.2",
+    "copy-webpack-plugin": "4.6.0",
     "css": "~3.0.0",
     "css-loader": "~4.2.0",
     "escape-string-regexp": "~4.0.0",
@@ -99,6 +99,6 @@
     "nyc": "^15.1.0",
     "proxyquire": "~2.1.0",
     "source-map-support": "^0.5.13",
-    "typescript": "~3.9.0"
+    "typescript": "~4.0.0"
   }
 }

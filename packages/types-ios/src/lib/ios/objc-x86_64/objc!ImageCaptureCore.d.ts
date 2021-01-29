@@ -1,4 +1,12 @@
 
+declare var ICAuthorizationStatusAuthorized: string;
+
+declare var ICAuthorizationStatusDenied: string;
+
+declare var ICAuthorizationStatusNotDetermined: string;
+
+declare var ICAuthorizationStatusRestricted: string;
+
 declare class ICCameraDevice extends ICDevice {
 
 	static alloc(): ICCameraDevice; // inherited from NSObject
@@ -22,6 +30,8 @@ declare class ICCameraDevice extends ICDevice {
 	readonly locked: boolean;
 
 	readonly mediaFiles: NSArray<ICCameraItem>;
+
+	mediaPresentation: ICMediaPresentation;
 
 	ptpEventHandler: (p1: NSData) => void;
 
@@ -105,6 +115,8 @@ declare var ICCameraDeviceDownloadDelegate: {
 
 	prototype: ICCameraDeviceDownloadDelegate;
 };
+
+declare var ICCameraDeviceSupportsHEIF: string;
 
 declare class ICCameraFile extends ICCameraItem {
 
@@ -298,6 +310,16 @@ declare class ICDeviceBrowser extends NSObject {
 
 	readonly devices: NSArray<ICDevice>;
 
+	readonly suspended: boolean;
+
+	contentsAuthorizationStatus(): string;
+
+	controlAuthorizationStatus(): string;
+
+	requestContentsAuthorizationWithCompletion(completion: (p1: string) => void): void;
+
+	requestControlAuthorizationWithCompletion(completion: (p1: string) => void): void;
+
 	start(): void;
 
 	stop(): void;
@@ -311,7 +333,15 @@ interface ICDeviceBrowserDelegate extends NSObjectProtocol {
 
 	deviceBrowserDidAddDeviceMoreComing(browser: ICDeviceBrowser, device: ICDevice, moreComing: boolean): void;
 
+	deviceBrowserDidCancelSuspendOperations?(browser: ICDeviceBrowser): void;
+
 	deviceBrowserDidRemoveDeviceMoreGoing(browser: ICDeviceBrowser, device: ICDevice, moreGoing: boolean): void;
+
+	deviceBrowserDidResumeOperations?(browser: ICDeviceBrowser): void;
+
+	deviceBrowserDidSuspendOperations?(browser: ICDeviceBrowser): void;
+
+	deviceBrowserWillSuspendOperations?(browser: ICDeviceBrowser): void;
 }
 declare var ICDeviceBrowserDelegate: {
 
@@ -426,6 +456,13 @@ declare const enum ICLegacyReturnCode {
 	InvalidSessionErr = -9921
 }
 
+declare const enum ICMediaPresentation {
+
+	ConvertedAssets = 1,
+
+	OriginalAssets = 2
+}
+
 declare var ICOverwrite: string;
 
 declare const enum ICReturnCode {
@@ -506,7 +543,7 @@ declare const enum ICReturnCode {
 
 	SessionNotOpened = -9958,
 
-	ExFATVolumeInvalid = -21200,
+	ExFATVolumeInvalid = 21200,
 
 	MultiErrorDictionary = -30000
 }
@@ -538,62 +575,68 @@ declare const enum ICReturnConnectionErrorCode {
 
 	DriverExited = -21350,
 
-	ClosedSessionSuddenly = -21351,
+	ClosedSessionSuddenly = -21349,
 
-	EjectedSuddenly = -21352,
+	EjectedSuddenly = -21348,
 
-	SessionAlreadyOpen = -21353,
+	SessionAlreadyOpen = -21347,
 
-	EjectFailed = -21354,
+	EjectFailed = -21346,
 
-	FailedToOpen = -21355,
+	FailedToOpen = -21345,
 
-	FailedToOpenDevice = -21356
+	FailedToOpenDevice = -21344,
+
+	NotAuthorizedToOpenDevice = -21343
 }
 
 declare const enum ICReturnDownloadErrorCode {
 
 	PathInvalid = -21100,
 
-	FileWritable = -21101
+	FileWritable = -21099
 }
 
 declare const enum ICReturnMetadataErrorCode {
 
-	NotAvailable = -21050,
+	NotAvailable = -20150,
 
-	AlreadyFetching = -21051,
+	AlreadyFetching = -20149,
 
-	Canceled = -21052,
+	Canceled = -20148,
 
-	Invalid = -21053
+	Invalid = -20147
 }
 
 declare const enum ICReturnObjectErrorCode {
 
 	CodeObjectDoesNotExist = -21450,
 
-	CodeObjectDataOffsetInvalid = -21451,
+	CodeObjectDataOffsetInvalid = -21449,
 
-	CodeObjectCouldNotBeRead = -21452,
+	CodeObjectCouldNotBeRead = -21448,
 
-	CodeObjectDataEmpty = -21453
+	CodeObjectDataEmpty = -21447,
+
+	CodeObjectDataRequestTooLarge = -21446
 }
 
 declare const enum ICReturnPTPDeviceErrorCode {
 
-	FailedToSendCommand = -21100
+	FailedToSendCommand = -21250,
+
+	NotAuthorizedToSendCommand = -21249
 }
 
 declare const enum ICReturnThumbnailErrorCode {
 
 	NotAvailable = -21000,
 
-	AlreadyFetching = -21001,
+	AlreadyFetching = -20999,
 
-	Canceled = -21002,
+	Canceled = -20098,
 
-	Invalid = -21003
+	Invalid = -20097
 }
 
 declare var ICSaveAsFilename: string;
@@ -611,3 +654,5 @@ declare var ICTransportTypeMassStorage: string;
 declare var ICTransportTypeTCPIP: string;
 
 declare var ICTransportTypeUSB: string;
+
+declare var ICTruncateAfterSuccessfulDownload: string;

@@ -69,8 +69,8 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		let measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
-		let forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
+		const measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
+		const forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
 		if (forceLayout || measureSpecsChanged) {
 			// first clears the measured dimension flag
 			this._privateFlags &= ~PFLAG_MEASURED_DIMENSION_SET;
@@ -156,7 +156,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public _setNativeViewFrame(nativeView: UIView, frame: CGRect): void {
-		let oldFrame = this._cachedFrame || nativeView.frame;
+		const oldFrame = this._cachedFrame || nativeView.frame;
 		if (!CGRectEqualToRect(oldFrame, frame)) {
 			if (Trace.isEnabled()) {
 				Trace.write(this + ' :_setNativeViewFrame: ' + JSON.stringify(IOSHelper.getPositionFromFrame(frame)), Trace.categories.Layout);
@@ -262,7 +262,9 @@ export class View extends ViewCommon implements ViewDefinition {
 		if (majorVersion <= 10) {
 			return null;
 		}
-
+		if (this.iosIgnoreSafeArea) {
+			return frame;
+		}
 		if (!this.iosOverflowSafeArea || !this.iosOverflowSafeAreaEnabled) {
 			return IOSHelper.shrinkToSafeArea(this, frame);
 		} else if (this.nativeViewProtected && this.nativeViewProtected.window) {
@@ -274,8 +276,10 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	public getSafeAreaInsets(): { left; top; right; bottom } {
 		const safeAreaInsets = this.nativeViewProtected && this.nativeViewProtected.safeAreaInsets;
-		let insets = { left: 0, top: 0, right: 0, bottom: 0 };
-
+		const insets = { left: 0, top: 0, right: 0, bottom: 0 };
+		if (this.iosIgnoreSafeArea) {
+			return insets;
+		}
 		if (safeAreaInsets) {
 			insets.left = layout.round(layout.toDevicePixels(safeAreaInsets.left));
 			insets.top = layout.round(layout.toDevicePixels(safeAreaInsets.top));
@@ -443,9 +447,9 @@ export class View extends ViewCommon implements ViewDefinition {
 				controller.preferredContentSize = CGSizeMake(options.ios.width, options.ios.height);
 			} else {
 				//use CSS & attribute width & height if option is not provided
-				let handler = () => {
-					let w = <number>(this.width || this.style.width);
-					let h = <number>(this.height || this.style.height);
+				const handler = () => {
+					const w = <number>(this.width || this.style.width);
+					const h = <number>(this.height || this.style.height);
 
 					//TODO: only numeric value is supported, percentage value is not supported like Android
 					if (w > 0 && h > 0) {
@@ -585,8 +589,8 @@ export class View extends ViewCommon implements ViewDefinition {
 		return this.nativeViewProtected.alpha;
 	}
 	[opacityProperty.setNative](value: number) {
-		let nativeView = this.nativeViewProtected;
-		let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+		const nativeView = this.nativeViewProtected;
+		const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}
@@ -693,7 +697,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	_redrawNativeBackground(value: UIColor | Background): void {
-		let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+		const updateSuspended = this._isPresentationLayerUpdateSuspeneded();
 		if (!updateSuspended) {
 			CATransaction.begin();
 		}

@@ -41,23 +41,23 @@ export abstract class Font implements FontDefinition {
 
 export type FontStyle = 'normal' | 'italic';
 export namespace FontStyle {
-	export const NORMAL: 'normal' = 'normal';
-	export const ITALIC: 'italic' = 'italic';
+	export const NORMAL = 'normal';
+	export const ITALIC = 'italic';
 	export const isValid = makeValidator<FontStyle>(NORMAL, ITALIC);
 	export const parse = makeParser<FontStyle>(isValid);
 }
 
 export type FontWeight = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900';
 export namespace FontWeight {
-	export const THIN: '100' = '100';
-	export const EXTRA_LIGHT: '200' = '200';
-	export const LIGHT: '300' = '300';
-	export const NORMAL: 'normal' = 'normal';
-	export const MEDIUM: '500' = '500';
-	export const SEMI_BOLD: '600' = '600';
-	export const BOLD: 'bold' = 'bold';
-	export const EXTRA_BOLD: '800' = '800';
-	export const BLACK: '900' = '900';
+	export const THIN = '100';
+	export const EXTRA_LIGHT = '200';
+	export const LIGHT = '300';
+	export const NORMAL = 'normal';
+	export const MEDIUM = '500';
+	export const SEMI_BOLD = '600';
+	export const BOLD = 'bold';
+	export const EXTRA_BOLD = '800';
+	export const BLACK = '900';
 	export const isValid = makeValidator<FontWeight>(THIN, EXTRA_LIGHT, LIGHT, NORMAL, '400', MEDIUM, SEMI_BOLD, BOLD, '700', EXTRA_BOLD, BLACK);
 	export const parse = makeParser<FontStyle>(isValid);
 }
@@ -70,7 +70,7 @@ export function parseFontFamily(value: string): Array<string> {
 
 	const split = value.split(',');
 	for (let i = 0; i < split.length; i++) {
-		let str = split[i].trim().replace(/['"]+/g, '');
+		const str = split[i].trim().replace(/['"]+/g, '');
 		if (str) {
 			result.push(str);
 		}
@@ -79,7 +79,7 @@ export function parseFontFamily(value: string): Array<string> {
 	return result;
 }
 
-export module genericFontFamilies {
+export namespace genericFontFamilies {
 	export const serif = 'serif';
 	export const sansSerif = 'sans-serif';
 	export const monospace = 'monospace';
@@ -105,7 +105,7 @@ const weights = new Set();
 [FontWeight.THIN, FontWeight.EXTRA_LIGHT, FontWeight.LIGHT, FontWeight.NORMAL, '400', FontWeight.MEDIUM, FontWeight.SEMI_BOLD, FontWeight.BOLD, '700', FontWeight.EXTRA_BOLD, FontWeight.BLACK].forEach((val, i, a) => weights.add(val));
 
 export function parseFont(fontValue: string): ParsedFont {
-	let result: ParsedFont = {
+	const result: ParsedFont = {
 		fontStyle: 'normal',
 		fontVariant: 'normal',
 		fontWeight: 'normal',
@@ -124,7 +124,7 @@ export function parseFont(fontValue: string): ParsedFont {
 		} else if (weights.has(part)) {
 			result.fontWeight = <any>part;
 		} else if (!result.fontSize) {
-			let sizes = part.split('/');
+			const sizes = part.split('/');
 			result.fontSize = sizes[0];
 			result.lineHeight = sizes.length > 1 ? sizes[1] : undefined;
 		} else {
