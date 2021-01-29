@@ -3,7 +3,8 @@
 	"version": "7.1.4",
 	"license": "MIT",
 	"scripts": {
-		"setup": "npx rimraf hooks node_modules package-lock.json && npm i && ts-patch install && nx run core:setup",
+		"clean": "git clean -f -X -d",
+		"setup": "npm run clean && npm i && ts-patch install && nx run core:setup",
 		"start": "nps",
 		"changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
 	},

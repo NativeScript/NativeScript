@@ -311,10 +311,7 @@ export class ImageSource implements ImageSourceDefinition {
 
 		const data = getImageData(this.ios, format, quality);
 		if (data) {
-			const result = NSFileManager.defaultManager.createFileAtPathContentsAttributes(path, data, null);
-			// release native memory earlier
-			releaseNativeObject(data);
-			return result;
+			return NSFileManager.defaultManager.createFileAtPathContentsAttributes(path, data, null);
 		}
 
 		return false;
