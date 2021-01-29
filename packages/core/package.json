@@ -3,14 +3,16 @@
   "main": "index",
   "types": "index.d.ts",
   "description": "NativeScript Core Modules",
-  "version": "7.0.5",
+  "version": "7.1.4",
   "homepage": "https://nativescript.org",
   "repository": {
       "type": "git",
       "url": "https://github.com/NativeScript/NativeScript"
   },
   "sideEffects": [
-    "./globals/index.js"
+    "bundle-entry-points.js",
+    "./globals/index.js",
+    "./globals"
   ],
   "files": [
       "**/*.d.ts",
@@ -29,7 +31,7 @@
     "css-tree": "^1.0.0-alpha.39",
     "@nativescript/hook": "~2.0.0",
     "reduce-css-calc": "^2.1.7",
-    "tslib": "2.0.0"
+    "tslib": "~2.0.0"
   },
   "nativescript": {
       "platforms": {

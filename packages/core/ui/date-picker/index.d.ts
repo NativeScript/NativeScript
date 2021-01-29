@@ -7,6 +7,7 @@ export const dayProperty: Property<DatePicker, number>;
 export const dateProperty: Property<DatePicker, Date>;
 export const maxDate: Property<DatePicker, Date>;
 export const minDate: Property<DatePicker, Date>;
+export const iosPreferredDatePickerStyleProperty: Property<DatePicker, number>;
 
 /**
  * Represents an date picker.
@@ -51,4 +52,14 @@ export class DatePicker extends View {
 	 * Gets or sets the min date.
 	 */
 	minDate: Date;
+
+	/**
+	 * Gets or set the UIDatePickerStyle of the date picker in iOS 13.4+. Defaults to 0.
+	 * Valid values are numbers:
+	 *  - 0: automatic (system picks the concrete style based on the current platform and date picker mode)
+	 *  - 1: wheels (the date picker displays as a wheel picker)
+	 *  - 2: compact (the date picker displays as a label that when tapped displays a calendar-style editor)
+	 *  - 3: inline  (the date pickers displays as an inline, editable field)
+	 */
+	iosPreferredDatePickerStyle: number;
 }

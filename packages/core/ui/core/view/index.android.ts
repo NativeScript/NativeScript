@@ -76,6 +76,7 @@ interface DialogOptions {
 	animated: boolean;
 	stretched: boolean;
 	cancelable: boolean;
+	windowSoftInputMode: number;
 	shownCallback: () => void;
 	dismissCallback: () => void;
 }
@@ -111,7 +112,7 @@ function initializeTouchListener(): void {
 			}
 			owner.handleGestureTouch(event);
 
-			let nativeView = owner.nativeViewProtected;
+			const nativeView = owner.nativeViewProtected;
 			if (!nativeView || !nativeView.onTouchEvent) {
 				return false;
 			}
@@ -168,6 +169,7 @@ function initializeDialogFragment() {
 	class DialogFragmentImpl extends androidx.fragment.app.DialogFragment {
 		public owner: View;
 		private _fullscreen: boolean;
+		private _windowSoftInputMode: number;
 		private _animated: boolean;
 		private _stretched: boolean;
 		private _cancelable: boolean;
@@ -192,6 +194,7 @@ function initializeDialogFragment() {
 			this._stretched = options.stretched;
 			this._dismissCallback = options.dismissCallback;
 			this._shownCallback = options.shownCallback;
+			this._windowSoftInputMode = options.windowSoftInputMode;
 			this.setStyle(androidx.fragment.app.DialogFragment.STYLE_NO_TITLE, 0);
 
 			let theme = this.getTheme();
@@ -229,6 +232,16 @@ function initializeDialogFragment() {
 			owner._setupAsRootView(this.getActivity());
 			owner._isAddedToNativeVisualTree = true;
 
+			// we need to set the window SoftInputMode here.
+			// it wont work is set in onStart
+			const window = this.getDialog().getWindow();
+			if (this._windowSoftInputMode !== undefined) {
+				window.setSoftInputMode(this._windowSoftInputMode);
+			} else {
+				// the dialog seems to not follow the default activity softInputMode,
+				// thus set we set it here.
+				window.setSoftInputMode((<androidx.appcompat.app.AppCompatActivity>owner._context).getWindow().getAttributes().softInputMode);
+			}
 			return owner.nativeViewProtected;
 		}
 
@@ -420,7 +433,7 @@ export class View extends ViewCommon {
 	}
 
 	public onBackPressed(): boolean {
-		let topmostFrame = topmost();
+		const topmostFrame = topmost();
 
 		// Delegate back navigation handling to the topmost Frame
 		// when it's a child of the current View.
@@ -432,8 +445,8 @@ export class View extends ViewCommon {
 	}
 
 	public handleGestureTouch(event: android.view.MotionEvent): any {
-		for (let type in this._gestureObservers) {
-			let list = this._gestureObservers[type];
+		for (const type in this._gestureObservers) {
+			const list = this._gestureObservers[type];
 			list.forEach((element) => {
 				element.androidOnTouchEvent(event);
 			});
@@ -542,7 +555,7 @@ export class View extends ViewCommon {
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-		let view = this.nativeViewProtected;
+		const view = this.nativeViewProtected;
 		if (view) {
 			view.measure(widthMeasureSpec, heightMeasureSpec);
 			this.setMeasuredDimension(view.getMeasuredWidth(), view.getMeasuredHeight());
@@ -550,7 +563,7 @@ export class View extends ViewCommon {
 	}
 
 	public onLayout(left: number, top: number, right: number, bottom: number): void {
-		let view = this.nativeViewProtected;
+		const view = this.nativeViewProtected;
 		if (view) {
 			this.layoutNativeView(left, top, right, bottom);
 		}
@@ -603,7 +616,7 @@ export class View extends ViewCommon {
 			return undefined;
 		}
 
-		let nativeArray = (<any>Array).create('int', 2);
+		const nativeArray = (<any>Array).create('int', 2);
 		this.nativeViewProtected.getLocationInWindow(nativeArray);
 
 		return {
@@ -617,7 +630,7 @@ export class View extends ViewCommon {
 			return undefined;
 		}
 
-		let nativeArray = (<any>Array).create('int', 2);
+		const nativeArray = (<any>Array).create('int', 2);
 		this.nativeViewProtected.getLocationOnScreen(nativeArray);
 
 		return {
@@ -631,9 +644,9 @@ export class View extends ViewCommon {
 			return undefined;
 		}
 
-		let myArray = (<any>Array).create('int', 2);
+		const myArray = (<any>Array).create('int', 2);
 		this.nativeViewProtected.getLocationOnScreen(myArray);
-		let otherArray = (<any>Array).create('int', 2);
+		const otherArray = (<any>Array).create('int', 2);
 		otherView.nativeViewProtected.getLocationOnScreen(otherArray);
 
 		return {
@@ -672,10 +685,14 @@ export class View extends ViewCommon {
 		df.setArguments(args);
 
 		let cancelable = true;
+		let windowSoftInputMode: number;
 
-		if (options.android && (<any>options).android.cancelable !== undefined) {
-			cancelable = !!(<any>options).android.cancelable;
-			console.log('ShowModalOptions.android.cancelable is deprecated. Use ShowModalOptions.cancelable instead.');
+		if (options.android) {
+			if ((<any>options).android.cancelable !== undefined) {
+				cancelable = !!(<any>options).android.cancelable;
+				console.log('ShowModalOptions.android.cancelable is deprecated. Use ShowModalOptions.cancelable instead.');
+			}
+			windowSoftInputMode = (<any>options).android.windowSoftInputMode;
 		}
 
 		cancelable = options.cancelable !== undefined ? !!options.cancelable : cancelable;
@@ -686,6 +703,7 @@ export class View extends ViewCommon {
 			animated: !!options.animated,
 			stretched: !!options.stretched,
 			cancelable: cancelable,
+			windowSoftInputMode: windowSoftInputMode,
 			shownCallback: () => this._raiseShownModallyEvent(),
 			dismissCallback: () => this.closeModal(),
 		};
@@ -739,7 +757,7 @@ export class View extends ViewCommon {
 	}
 
 	[visibilityProperty.getDefault](): Visibility {
-		let nativeVisibility = this.nativeViewProtected.getVisibility();
+		const nativeVisibility = this.nativeViewProtected.getVisibility();
 		switch (nativeVisibility) {
 			case android.view.View.VISIBLE:
 				return 'visible';

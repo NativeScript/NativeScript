@@ -11,6 +11,7 @@ export class Progress extends ProgressBase {
 		return UIProgressView.new();
 	}
 
+	// @ts-ignore
 	get ios() {
 		return this.nativeViewProtected;
 	}
@@ -40,7 +41,7 @@ export class Progress extends ProgressBase {
 		return this.ios.trackTintColor;
 	}
 	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		let color = value instanceof Color ? value.ios : value;
+		const color = value instanceof Color ? value.ios : value;
 		this.ios.trackTintColor = color;
 	}
 

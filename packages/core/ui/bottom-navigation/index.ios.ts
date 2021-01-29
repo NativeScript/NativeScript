@@ -1,24 +1,18 @@
 ﻿// Types
-import {TabContentItem} from '../tab-navigation-base/tab-content-item';
-import {TabStrip} from '../tab-navigation-base/tab-strip';
-import {TabStripItem} from '../tab-navigation-base/tab-strip-item';
-import {getTransformedText, TextTransform} from '../text-base';
+import { TabContentItem } from '../tab-navigation-base/tab-content-item';
+import { TabStrip } from '../tab-navigation-base/tab-strip';
+import { TabStripItem } from '../tab-navigation-base/tab-strip-item';
+import { getTransformedText, TextTransform } from '../text-base';
 
 // Requires
-import {Color} from '../../color';
-import {ImageSource} from '../../image-source';
-import {Device} from '../../platform';
-import {iOSNativeHelper, isFontIconURI, layout} from '../../utils';
-import {CSSType, IOSHelper, View} from '../core/view';
-import {Frame} from '../frame';
-import {Font} from '../styling/font';
-import {
-	getIconSpecSize,
-	itemsProperty,
-	selectedIndexProperty,
-	TabNavigationBase,
-	tabStripProperty
-} from '../tab-navigation-base/tab-navigation-base';
+import { Color } from '../../color';
+import { ImageSource } from '../../image-source';
+import { Device } from '../../platform';
+import { iOSNativeHelper, isFontIconURI, layout } from '../../utils';
+import { CSSType, IOSHelper, View } from '../core/view';
+import { Frame } from '../frame';
+import { Font } from '../styling/font';
+import { getIconSpecSize, itemsProperty, selectedIndexProperty, TabNavigationBase, tabStripProperty } from '../tab-navigation-base/tab-navigation-base';
 
 // TODO:
 // import { profile } from "../../profiling";
@@ -322,6 +316,7 @@ export class BottomNavigation extends TabNavigationBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UITabBarController {
 		return this._ios;
 	}
@@ -405,7 +400,7 @@ export class BottomNavigation extends TabNavigationBase {
 		}
 	}
 
-	private setIconColor(tabStripItem: TabStripItem, forceReload: boolean = false): void {
+	private setIconColor(tabStripItem: TabStripItem, forceReload = false): void {
 		if (forceReload || (!this._unSelectedItemColor && !this._selectedItemColor)) {
 			// if selectedItemColor or unSelectedItemColor is set we don't respect the color from the style
 			const tabStripColor = this.selectedIndex === tabStripItem._index ? this._selectedItemColor : this._unSelectedItemColor;

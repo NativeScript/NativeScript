@@ -2,10 +2,10 @@
   "main": "main.js",
   "description": "NativeScript Application",
   "license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/NativeScript/NativeScript.git"
-	},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NativeScript/NativeScript.git"
+  },
   "scripts": {
     "clean": "npx rimraf hooks node_modules platforms package-lock.json && npm i"
   },
@@ -14,7 +14,8 @@
     "@nativescript/core": "file:../../packages/core"
   },
   "devDependencies": {
-    "@nativescript/ios": "7.0.0",
+    "@nativescript/android": "7.0.1",
+    "@nativescript/ios": "7.1.0",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
     "typescript": "file:../../node_modules/typescript"
   },

@@ -12,7 +12,7 @@ export const traceCategory = 'TabView';
 
 @CSSType('TabViewItem')
 export abstract class TabViewItemBase extends ViewBase implements TabViewItemDefinition, AddChildFromBuilder {
-	private _title: string = '';
+	private _title = '';
 	private _view: View;
 	private _iconSource: string;
 
@@ -147,7 +147,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 	}
 
 	get _selectedView(): View {
-		let selectedIndex = this.selectedIndex;
+		const selectedIndex = this.selectedIndex;
 
 		return selectedIndex > -1 ? this.items[selectedIndex].view : null;
 	}
@@ -220,9 +220,9 @@ export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>(
 		target.onSelectedIndexChanged(oldValue, newValue);
 	},
 	coerceValue: (target, value) => {
-		let items = target.items;
+		const items = target.items;
 		if (items) {
-			let max = items.length - 1;
+			const max = items.length - 1;
 			if (value < 0) {
 				value = 0;
 			}

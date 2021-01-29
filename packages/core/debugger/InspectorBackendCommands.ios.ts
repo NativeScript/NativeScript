@@ -1,5 +1,5 @@
-declare var __registerDomainDispatcher;
-declare var __inspectorSendEvent;
+declare let __registerDomainDispatcher;
+declare let __inspectorSendEvent;
 export function DomainDispatcher(domain: string): ClassDecorator {
 	return (klass) => __registerDomainDispatcher(domain, klass);
 }

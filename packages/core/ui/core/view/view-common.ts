@@ -49,8 +49,8 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
 
 	return <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
 		function update(change: number) {
-			let prev = this[listeners] || 0;
-			let next = prev + change;
+			const prev = this[listeners] || 0;
+			const next = prev + change;
 			if (prev <= 0 && next > 0) {
 				this[propertyKey](true);
 			} else if (prev > 0 && next <= 0) {
@@ -236,15 +236,15 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		if (typeof arg === 'string') {
 			arg = getEventOrGestureName(arg);
 
-			let gesture = gestureFromString(arg);
+			const gesture = gestureFromString(arg);
 			if (gesture && !this._isEvent(arg)) {
 				this._observe(gesture, callback, thisArg);
 			} else {
-				let events = arg.split(',');
+				const events = arg.split(',');
 				if (events.length > 0) {
 					for (let i = 0; i < events.length; i++) {
-						let evt = events[i].trim();
-						let gst = gestureFromString(evt);
+						const evt = events[i].trim();
+						const gst = gestureFromString(evt);
 						if (gst && !this._isEvent(arg)) {
 							this._observe(gst, callback, thisArg);
 						} else {
@@ -262,15 +262,15 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	public removeEventListener(arg: string | GestureTypes, callback?: any, thisArg?: any) {
 		if (typeof arg === 'string') {
-			let gesture = gestureFromString(arg);
+			const gesture = gestureFromString(arg);
 			if (gesture && !this._isEvent(arg)) {
 				this._disconnectGestureObservers(gesture);
 			} else {
-				let events = arg.split(',');
+				const events = arg.split(',');
 				if (events.length > 0) {
 					for (let i = 0; i < events.length; i++) {
-						let evt = events[i].trim();
-						let gst = gestureFromString(evt);
+						const evt = events[i].trim();
+						const gst = gestureFromString(evt);
 						if (gst && !this._isEvent(arg)) {
 							this._disconnectGestureObservers(gst);
 						} else {
@@ -294,7 +294,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return undefined;
 	}
 
-	private getModalOptions(args: IArguments): { view: ViewCommon; options: ShowModalOptions } {
+	private getModalOptions(args: any[]): { view: ViewCommon; options: ShowModalOptions } {
 		if (args.length === 0) {
 			throw new Error('showModal without parameters is deprecated. Please call showModal on a view instance instead.');
 		} else {
@@ -327,8 +327,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		}
 	}
 
-	public showModal(): ViewDefinition {
-		const { view, options } = this.getModalOptions(arguments);
+	public showModal(...args): ViewDefinition {
+		const { view, options } = this.getModalOptions(args);
 
 		view._showNativeModalView(this, options);
 
@@ -336,11 +336,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public closeModal(...args) {
-		let closeCallback = this._closeModalCallback;
+		const closeCallback = this._closeModalCallback;
 		if (closeCallback) {
-			closeCallback.apply(undefined, arguments);
+			closeCallback(...args);
 		} else {
-			let parent = this.parent;
+			const parent = this.parent;
 			if (parent) {
 				parent.closeModal(...args);
 			}
@@ -418,7 +418,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	private _disconnectGestureObservers(type: GestureTypes): void {
-		let observers = this.getGestureObservers(type);
+		const observers = this.getGestureObservers(type);
 		if (observers) {
 			for (let i = 0; i < observers.length; i++) {
 				observers[i].disconnect();
@@ -758,6 +758,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public isUserInteractionEnabled: boolean;
 	public iosOverflowSafeArea: boolean;
 	public iosOverflowSafeAreaEnabled: boolean;
+	public iosIgnoreSafeArea: boolean;
 
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;
@@ -823,7 +824,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return ViewHelper.combineMeasuredStates(curState, newState);
 	}
 
-	public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number, setFrame: boolean = true): void {
+	public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number, setFrame = true): void {
 		ViewHelper.layoutChild(parent, child, left, top, right, bottom);
 	}
 
@@ -832,7 +833,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	_setCurrentMeasureSpecs(widthMeasureSpec: number, heightMeasureSpec: number): boolean {
-		let changed: boolean = this._currentWidthMeasureSpec !== widthMeasureSpec || this._currentHeightMeasureSpec !== heightMeasureSpec;
+		const changed: boolean = this._currentWidthMeasureSpec !== widthMeasureSpec || this._currentHeightMeasureSpec !== heightMeasureSpec;
 		this._currentWidthMeasureSpec = widthMeasureSpec;
 		this._currentHeightMeasureSpec = heightMeasureSpec;
 
@@ -853,8 +854,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	 */
 	_setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): { boundsChanged: boolean; sizeChanged: boolean } {
 		this._isLayoutValid = true;
-		let boundsChanged: boolean = this._oldLeft !== left || this._oldTop !== top || this._oldRight !== right || this._oldBottom !== bottom;
-		let sizeChanged: boolean = this._oldRight - this._oldLeft !== right - left || this._oldBottom - this._oldTop !== bottom - top;
+		const boundsChanged: boolean = this._oldLeft !== left || this._oldTop !== top || this._oldRight !== right || this._oldBottom !== bottom;
+		const sizeChanged: boolean = this._oldRight - this._oldLeft !== right - left || this._oldBottom - this._oldTop !== bottom - top;
 		this._oldLeft = left;
 		this._oldTop = top;
 		this._oldRight = right;
@@ -900,7 +901,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	public getActualSize(): Size {
-		let currentBounds = this._getCurrentLayoutBounds();
+		const currentBounds = this._getCurrentLayoutBounds();
 		if (!currentBounds) {
 			return undefined;
 		}
@@ -994,7 +995,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	_hasAncestorView(ancestorView: ViewDefinition): boolean {
-		let matcher = (view: ViewDefinition) => view === ancestorView;
+		const matcher = (view: ViewDefinition) => view === ancestorView;
 
 		for (let parent = this.parent; parent != null; parent = parent.parent) {
 			if (matcher(<ViewDefinition>parent)) {
@@ -1055,3 +1056,9 @@ export const iosOverflowSafeAreaEnabledProperty = new InheritedProperty<ViewComm
 	valueConverter: booleanConverter,
 });
 iosOverflowSafeAreaEnabledProperty.register(ViewCommon);
+export const iosIgnoreSafeAreaProperty = new InheritedProperty({
+	name: 'iosIgnoreSafeArea',
+	defaultValue: false,
+	valueConverter: booleanConverter,
+});
+iosIgnoreSafeAreaProperty.register(ViewCommon);

@@ -249,6 +249,12 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		newPage.onNavigatedTo(isBack);
+		this.notify({
+			eventName: Page.navigatedToEvent,
+			object: this,
+			isBack,
+			entry,
+		});
 
 		// Reset executing context after NavigatedTo is raised;
 		// we do not want to execute two navigations in parallel in case
@@ -282,6 +288,7 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	private isNestedWithin(parentFrameCandidate: FrameBase): boolean {
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		let frameAncestor: FrameBase = this;
 		while (frameAncestor) {
 			frameAncestor = <FrameBase>getAncestor(frameAncestor, FrameBase);
@@ -416,6 +423,13 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
+		this.notify({
+			eventName: Page.navigatingToEvent,
+			object: this,
+			isBack,
+			entry: backstackEntry.entry,
+			fromEntry: this.currentEntry,
+		});
 	}
 
 	public get animated(): boolean {
@@ -565,7 +579,7 @@ export class FrameBase extends CustomLayoutView {
 		let i = length - 1;
 		console.log(`Frame Back Stack: `);
 		while (i >= 0) {
-			let backstackEntry = <BackstackEntry>this.backStack[i--];
+			const backstackEntry = <BackstackEntry>this.backStack[i--];
 			console.log(`\t${backstackEntry.resolvedPage}`);
 		}
 	}

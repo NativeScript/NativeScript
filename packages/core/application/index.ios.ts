@@ -2,7 +2,9 @@
 import { iOSApplication as iOSApplicationDefinition } from '.';
 import { ApplicationEventData, CssChangedEventData, LaunchEventData, LoadAppCSSEventData, OrientationChangedEventData, SystemAppearanceChangedEventData } from './application-interfaces';
 
+// TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common');
 // First reexport so that app module is initialized.
 export * from './application-common';
@@ -205,7 +207,9 @@ export class iOSApplication implements iOSApplicationDefinition {
 
 		// this._window will be undefined when NS app is embedded in a native one
 		if (this._window) {
-			this.setWindowContent(args.root);
+			if (args.root !== null) {
+				this.setWindowContent(args.root);
+			}
 		} else {
 			this._window = UIApplication.sharedApplication.delegate.window;
 		}
@@ -381,7 +385,7 @@ export function getRootView() {
 	return iosApp.rootView;
 }
 
-let started: boolean = false;
+let started = false;
 export function run(entry?: string | NavigationEntry) {
 	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
 	started = true;
@@ -400,11 +404,11 @@ export function run(entry?: string | NavigationEntry) {
 				if (rootController) {
 					const controller = getViewController(rootView);
 					rootView._setupAsRootView({});
-					let embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
+					const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
 					if (embedderDelegate) {
 						embedderDelegate.presentNativeScriptApp(controller);
 					} else {
-						let visibleVC = getVisibleViewController(rootController);
+						const visibleVC = getVisibleViewController(rootController);
 						visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
 					}
 
@@ -528,3 +532,8 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
 	const rootView = getRootView();
 	livesync(rootView, context);
 };
+
+// core exports this symbol so apps may import them in general
+// technically they are only available for use when running that platform
+// helps avoid a webpack nonexistent warning
+export const AndroidApplication = undefined;

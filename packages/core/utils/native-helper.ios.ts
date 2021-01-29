@@ -1,6 +1,6 @@
 import { Trace } from '../trace';
 
-declare var UIImagePickerControllerSourceType: any;
+declare let UIImagePickerControllerSourceType: any;
 
 const radToDeg = Math.PI / 180;
 
@@ -11,10 +11,10 @@ function isOrientationLandscape(orientation: number) {
 function openFileAtRootModule(filePath: string): boolean {
 	try {
 		const appPath = iOSNativeHelper.getCurrentAppPath();
-		let path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
+		const path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
 
 		const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
-		controller.delegate = new iOSNativeHelper.UIDocumentInteractionControllerDelegateImpl();
+		controller.delegate = iOSNativeHelper.createUIDocumentInteractionControllerDelegate();
 
 		return controller.presentPreviewAnimated(true);
 	} catch (e) {
@@ -43,7 +43,7 @@ export namespace iOSNativeHelper {
 		export function nsArrayToJSArray(a: NSArray<any>): Array<Object> {
 			const arr = [];
 			if (a !== undefined) {
-				let count = a.count;
+				const count = a.count;
 				for (let i = 0; i < count; i++) {
 					arr.push(a.objectAtIndex(i));
 				}
@@ -96,19 +96,12 @@ export namespace iOSNativeHelper {
 	}
 
 	export function getVisibleViewController(rootViewController: UIViewController): UIViewController {
-		if (rootViewController.presentedViewController) {
-			return getVisibleViewController(rootViewController.presentedViewController);
-		}
+		let viewController = rootViewController;
 
-		if (rootViewController.isKindOfClass(UINavigationController.class())) {
-			return getVisibleViewController((<UINavigationController>rootViewController).visibleViewController);
+		while (viewController && viewController.presentedViewController) {
+			viewController = viewController.presentedViewController;
 		}
-
-		if (rootViewController.isKindOfClass(UITabBarController.class())) {
-			return getVisibleViewController(<UITabBarController>rootViewController);
-		}
-
-		return rootViewController;
+		return viewController;
 	}
 
 	export function applyRotateTransform(transform: CATransform3D, x: number, y: number, z: number): CATransform3D {
@@ -127,27 +120,30 @@ export namespace iOSNativeHelper {
 		return transform;
 	}
 
-	@NativeClass
-	export class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
-		public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
+	export function createUIDocumentInteractionControllerDelegate(): NSObject {
+		@NativeClass
+		class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
+			public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
 
-		public getViewController(): UIViewController {
-			const app = UIApplication.sharedApplication;
+			public getViewController(): UIViewController {
+				const app = UIApplication.sharedApplication;
 
-			return app.keyWindow.rootViewController;
+				return app.keyWindow.rootViewController;
+			}
+
+			public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
+				return this.getViewController();
+			}
+
+			public documentInteractionControllerViewForPreview(controller: UIDocumentInteractionController) {
+				return this.getViewController().view;
+			}
+
+			public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
+				return this.getViewController().view.frame;
+			}
 		}
-
-		public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
-			return this.getViewController();
-		}
-
-		public documentInteractionControllerViewForPreview(controller: UIDocumentInteractionController) {
-			return this.getViewController().view;
-		}
-
-		public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
-			return this.getViewController().view.frame;
-		}
+		return new UIDocumentInteractionControllerDelegateImpl();
 	}
 
 	export function isRealDevice() {

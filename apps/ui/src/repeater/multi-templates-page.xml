@@ -1,0 +1,18 @@
+<Page loaded="pageLoaded">
+    <ScrollView>
+        <Repeater items="{{ items }}" itemTemplateSelector="getOddEvenTemplate">
+            <Repeater.itemTemplate>
+                <StackLayout backgroundColor="blue" height="40">
+                    <Label text="{{ $value }}" class="p-r-10" color="#fff" fontSize="16" />
+                </StackLayout>
+            </Repeater.itemTemplate>
+            <Repeater.itemTemplates>
+                <template key="even">
+                    <StackLayout backgroundColor="green" height="40">
+                        <Label text="{{ $value }}" class="p-r-10" color="#fff" fontSize="16" />
+                    </StackLayout>
+                </template>
+            </Repeater.itemTemplates>
+        </Repeater>
+    </ScrollView>
+</Page>

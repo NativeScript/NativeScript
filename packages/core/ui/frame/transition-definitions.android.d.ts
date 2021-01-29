@@ -1,6 +1,6 @@
 // Definitions for Android API lvl 21 transitions
-declare module android {
-	export module transition {
+declare namespace android {
+	export namespace transition {
 		export abstract class Transition extends java.lang.Object {
 			addListener(transition: Transition.TransitionListener): Transition;
 			removeListener(transition: Transition.TransitionListener): Transition;
@@ -26,7 +26,7 @@ declare module android {
 			constructor();
 		}
 
-		export module Transition {
+		export namespace Transition {
 			export interface TransitionListener {
 				onTransitionStart(transition: android.transition.Transition): void;
 				onTransitionEnd(transition: android.transition.Transition): void;
@@ -37,7 +37,7 @@ declare module android {
 		}
 	}
 
-	export module app {
+	export namespace app {
 		export interface Fragment {
 			getEnterTransition(): android.transition.Transition;
 			getExitTransition(): android.transition.Transition;

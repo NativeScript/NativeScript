@@ -1,7 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 
-const { isTypeScript, isAngular, isVue, isReact, isShared, isPlugin } = require("./projectHelpers");
+const { isTypeScript, isAngular, isVue, isReact, isSvelte, isShared, isPlugin } = require("./projectHelpers");
 
 function addProjectFiles(projectDir) {
     const projectTemplates = getProjectTemplates(projectDir);
@@ -73,6 +73,8 @@ function getProjectTemplates(projectDir) {
         templates = getVueTemplates(WEBPACK_CONFIG_NAME);
     } else if (isReact({ projectDir })) {
       templates = getReactTemplates(WEBPACK_CONFIG_NAME);
+    } else if (isSvelte({ projectDir })) {
+      templates = getSvelteTemplates(WEBPACK_CONFIG_NAME);
     } else if (isTypeScript({ projectDir })) {
         templates = getTypeScriptTemplates(WEBPACK_CONFIG_NAME);
     } else {
@@ -110,6 +112,12 @@ function getReactTemplates(webpackConfigName) {
   return {
       "webpack.typescript.js": "webpack.typescript.js",
       "webpack.react.js": webpackConfigName
+  };
+}
+
+function getSvelteTemplates(webpackConfigName) {
+  return {
+      "webpack.svelte.js": webpackConfigName
   };
 }
 

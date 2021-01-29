@@ -1,4 +1,4 @@
-import type {InstrumentationMode} from '../profiling'
+import type { InstrumentationMode } from '../profiling';
 
 interface IConfigPlatform {
 	/**
@@ -144,4 +144,3 @@ export interface NativeScriptConfig {
 	 */
 	cssParser?: 'rework' | 'nativescript' | 'css-tree';
 }
-

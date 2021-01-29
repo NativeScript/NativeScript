@@ -536,7 +536,7 @@ export class Folder extends FileSystemEntity {
 	}
 }
 
-export module knownFolders {
+export namespace knownFolders {
 	let _documents: Folder;
 	let _temp: Folder;
 	let _app: Folder;
@@ -574,7 +574,7 @@ export module knownFolders {
 		return _app;
 	}
 
-	export module ios {
+	export namespace ios {
 		function _checkPlatform(knownFolderName: string) {
 			if (!global.isIOS) {
 				throw new Error(`The "${knownFolderName}" known folder is available on iOS only!`);
@@ -585,7 +585,7 @@ export module knownFolders {
 		export function library(): Folder {
 			_checkPlatform('library');
 			if (!_library) {
-				let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.LibraryDirectory);
+				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.LibraryDirectory);
 
 				if (existingFolderInfo) {
 					_library = existingFolderInfo.folder;
@@ -601,7 +601,7 @@ export module knownFolders {
 		export function developer(): Folder {
 			_checkPlatform('developer');
 			if (!_developer) {
-				let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DeveloperDirectory);
+				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DeveloperDirectory);
 
 				if (existingFolderInfo) {
 					_developer = existingFolderInfo.folder;
@@ -617,7 +617,7 @@ export module knownFolders {
 		export function desktop(): Folder {
 			_checkPlatform('desktop');
 			if (!_desktop) {
-				let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DesktopDirectory);
+				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DesktopDirectory);
 
 				if (existingFolderInfo) {
 					_desktop = existingFolderInfo.folder;
@@ -633,7 +633,7 @@ export module knownFolders {
 		export function downloads(): Folder {
 			_checkPlatform('downloads');
 			if (!_downloads) {
-				let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DownloadsDirectory);
+				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.DownloadsDirectory);
 
 				if (existingFolderInfo) {
 					_downloads = existingFolderInfo.folder;
@@ -649,7 +649,7 @@ export module knownFolders {
 		export function movies(): Folder {
 			_checkPlatform('movies');
 			if (!_movies) {
-				let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MoviesDirectory);
+				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MoviesDirectory);
 
 				if (existingFolderInfo) {
 					_movies = existingFolderInfo.folder;
@@ -665,7 +665,7 @@ export module knownFolders {
 		export function music(): Folder {
 			_checkPlatform('music');
 			if (!_music) {
-				let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MusicDirectory);
+				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.MusicDirectory);
 
 				if (existingFolderInfo) {
 					_music = existingFolderInfo.folder;
@@ -681,7 +681,7 @@ export module knownFolders {
 		export function pictures(): Folder {
 			_checkPlatform('pictures');
 			if (!_pictures) {
-				let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.PicturesDirectory);
+				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.PicturesDirectory);
 
 				if (existingFolderInfo) {
 					_pictures = existingFolderInfo.folder;
@@ -697,7 +697,7 @@ export module knownFolders {
 		export function sharedPublic(): Folder {
 			_checkPlatform('sharedPublic');
 			if (!_sharedPublic) {
-				let existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.SharedPublicDirectory);
+				const existingFolderInfo = getExistingFolderInfo(NSSearchPathDirectory.SharedPublicDirectory);
 
 				if (existingFolderInfo) {
 					_sharedPublic = existingFolderInfo.folder;
@@ -726,7 +726,7 @@ export module knownFolders {
 	}
 }
 
-export module path {
+export namespace path {
 	export function normalize(path: string): string {
 		return getFileAccess().normalizePath(path);
 	}

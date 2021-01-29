@@ -102,10 +102,12 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 		this.style.androidContentInsetRight = value;
 	}
 
+	// @ts-ignore
 	get ios(): any {
 		return undefined;
 	}
 
+	// @ts-ignore
 	get android(): AndroidActionBarSettings {
 		return undefined;
 	}
@@ -262,7 +264,9 @@ export class ActionItemBase extends ViewBase implements ActionItemDefinition {
 	private _actionBar: ActionBarDefinition;
 	private _actionView: View;
 
+	// @ts-ignore
 	public ios: IOSActionItemSettings;
+	// @ts-ignore
 	public android: AndroidActionItemSettings;
 
 	public text: string;
@@ -361,7 +365,7 @@ export function traceMissingIcon(icon: string) {
 
 function convertToContentInset(this: void, value: string | Length): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
-		let insets = value.split(/[ ,]+/);
+		const insets = value.split(/[ ,]+/);
 
 		return [
 			[androidContentInsetLeftProperty, Length.parse(insets[0])],

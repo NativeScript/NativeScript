@@ -366,7 +366,7 @@ export class TabViewItem extends TabViewItemBase {
 		let tabFragment = null;
 		const fragmentManager = tabView._getFragmentManager();
 		const fragments = fragmentManager.getFragments().toArray();
-		for (let i=0;i<fragments.length;i++) {
+		for (let i = 0; i < fragments.length; i++) {
 			if (fragments[i].index === this.index) {
 				tabFragment = fragments[i];
 				break;
@@ -442,7 +442,7 @@ export class TabView extends TabViewBase {
 	private _tabLayout: org.nativescript.widgets.TabLayout;
 	private _viewPager: androidx.viewpager.widget.ViewPager;
 	private _pagerAdapter: androidx.viewpager.widget.PagerAdapter;
-	private _androidViewId: number = -1;
+	private _androidViewId = -1;
 	public _originalBackground: any;
 
 	constructor() {
@@ -549,8 +549,8 @@ export class TabView extends TabViewBase {
 		const lastIndex = items.length - 1;
 		const offsideItems = this.androidTabsPosition === 'top' ? this.androidOffscreenTabLimit : 1;
 
-		let toUnload = [];
-		let toLoad = [];
+		const toUnload = [];
+		const toLoad = [];
 
 		iterateIndexRange(newIndex, offsideItems, lastIndex, (i) => toLoad.push(i));
 
@@ -623,8 +623,8 @@ export class TabView extends TabViewBase {
 	private disposeCurrentFragments(): void {
 		const fragmentManager = this._getFragmentManager();
 		const transaction = fragmentManager.beginTransaction();
-		let fragments = <Array<any>>fragmentManager.getFragments().toArray();
-		for (let i=0;i<fragments.length;i++) {
+		const fragments = <Array<any>>fragmentManager.getFragments().toArray();
+		for (let i = 0; i < fragments.length; i++) {
 			transaction.remove(fragments[i]);
 		}
 		transaction.commitNowAllowingStateLoss();
@@ -769,7 +769,7 @@ export class TabView extends TabViewBase {
 		return getDefaultAccentColor(this._context);
 	}
 	[androidSelectedTabHighlightColorProperty.setNative](value: number | Color) {
-		let tabLayout = this._tabLayout;
+		const tabLayout = this._tabLayout;
 		const color = value instanceof Color ? value.android : value;
 		tabLayout.setSelectedIndicatorColors([color]);
 	}

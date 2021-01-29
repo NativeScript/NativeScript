@@ -246,7 +246,9 @@ declare const enum CFNetServicesError {
 
 	kCFNetServicesErrorInvalid = -72006,
 
-	kCFNetServicesErrorTimeout = -72007
+	kCFNetServicesErrorTimeout = -72007,
+
+	kCFNetServicesErrorMissingRequiredConfiguration = -72008
 }
 
 declare function CFNetworkCopyProxiesForAutoConfigurationScript(proxyAutoConfigurationScript: string, targetURL: NSURL, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSArray<any>>;
@@ -511,6 +513,8 @@ declare var kCFHTTPVersion1_0: string;
 declare var kCFHTTPVersion1_1: string;
 
 declare var kCFHTTPVersion2_0: string;
+
+declare var kCFHTTPVersion3_0: string;
 
 declare var kCFNetworkProxiesHTTPEnable: string;
 

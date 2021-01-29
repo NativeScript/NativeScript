@@ -2,7 +2,7 @@
 /**
  * Defines the input type for prompt dialog.
  */
-export module inputType {
+export namespace inputType {
 	/**
 	 * Plain text input type.
 	 */
@@ -37,7 +37,7 @@ export module inputType {
 /**
  * Defines the capitalization type for prompt dialog.
  */
-export module capitalizationType {
+export namespace capitalizationType {
 	/**
 	 * No automatic capitalization.
 	 */

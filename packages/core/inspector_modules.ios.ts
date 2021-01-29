@@ -1,5 +1,5 @@
 console.log('Loading inspector modules...');
-import  './globals';
+import './globals';
 require('./debugger/webinspector-network');
 require('./debugger/webinspector-dom');
 require('./debugger/webinspector-css');

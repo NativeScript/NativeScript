@@ -16,12 +16,12 @@ export class ListPickerBase extends View {
 	public selectedValue: any;
 
 	public _getItemAsString(index: number): any {
-		let items = this.items;
+		const items = this.items;
 		if (!items) {
 			return ' ';
 		}
 
-		let item = this.isItemsSource ? (<ItemsSource>this.items).getItem(index) : this.items[index];
+		const item = this.isItemsSource ? (<ItemsSource>this.items).getItem(index) : this.items[index];
 
 		return item === undefined || item === null ? index + '' : this.parseItem(item);
 	}
@@ -51,9 +51,9 @@ export const selectedIndexProperty = new CoercibleProperty<ListPickerBase, numbe
 	defaultValue: -1,
 	valueConverter: (v) => parseInt(v),
 	coerceValue: (target, value) => {
-		let items = target.items;
+		const items = target.items;
 		if (items) {
-			let max = items.length - 1;
+			const max = items.length - 1;
 			if (value < 0) {
 				value = 0;
 			}
@@ -74,7 +74,7 @@ selectedIndexProperty.register(ListPickerBase);
 export const itemsProperty = new Property<ListPickerBase, any[] | ItemsSource>({
 	name: 'items',
 	valueChanged: (target, oldValue, newValue) => {
-		let getItem = newValue && (<ItemsSource>newValue).getItem;
+		const getItem = newValue && (<ItemsSource>newValue).getItem;
 		target.isItemsSource = typeof getItem === 'function';
 	},
 });

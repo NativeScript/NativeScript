@@ -30,7 +30,7 @@ class ListViewCell extends UITableViewCell {
 	public static initWithEmptyBackground(): ListViewCell {
 		const cell = <ListViewCell>ListViewCell.new();
 		// Clear background by default - this will make cells transparent
-		cell.backgroundColor = null;
+		cell.backgroundColor = UIColor.clearColor;
 
 		return cell;
 	}
@@ -38,13 +38,13 @@ class ListViewCell extends UITableViewCell {
 	initWithStyleReuseIdentifier(style: UITableViewCellStyle, reuseIdentifier: string): this {
 		const cell = <this>super.initWithStyleReuseIdentifier(style, reuseIdentifier);
 		// Clear background by default - this will make cells transparent
-		cell.backgroundColor = null;
+		cell.backgroundColor = UIColor.clearColor;
 
 		return cell;
 	}
 
 	public willMoveToSuperview(newSuperview: UIView): void {
-		let parent = <ListView>(this.view ? this.view.parent : null);
+		const parent = <ListView>(this.view ? this.view.parent : null);
 
 		// When inside ListView and there is no newSuperview this cell is
 		// removed from native visual tree so we remove it from our tree too.
@@ -61,7 +61,7 @@ class ListViewCell extends UITableViewCell {
 }
 
 function notifyForItemAtIndex(listView: ListViewBase, cell: any, view: View, eventName: string, indexPath: NSIndexPath) {
-	let args = <ItemEventData>{
+	const args = <ItemEventData>{
 		eventName: eventName,
 		object: listView,
 		index: indexPath.row,
@@ -81,34 +81,34 @@ class DataSource extends NSObject implements UITableViewDataSource {
 	private _owner: WeakRef<ListView>;
 
 	public static initWithOwner(owner: WeakRef<ListView>): DataSource {
-		let dataSource = <DataSource>DataSource.new();
+		const dataSource = <DataSource>DataSource.new();
 		dataSource._owner = owner;
 
 		return dataSource;
 	}
 
 	public tableViewNumberOfRowsInSection(tableView: UITableView, section: number) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 
 		return owner && owner.items ? owner.items.length : 0;
 	}
 
 	public tableViewCellForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): UITableViewCell {
 		// We call this method because ...ForIndexPath calls tableViewHeightForRowAtIndexPath immediately (before we can prepare and measure it).
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		let cell: ListViewCell;
 		if (owner) {
-			let template = owner._getItemTemplate(indexPath.row);
+			const template = owner._getItemTemplate(indexPath.row);
 			cell = <ListViewCell>(tableView.dequeueReusableCellWithIdentifier(template.key) || ListViewCell.initWithEmptyBackground());
 			owner._prepareCell(cell, indexPath);
 
-			let cellView: View = cell.view;
+			const cellView: View = cell.view;
 			if (cellView && cellView.isLayoutRequired) {
 				// Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called
 				// from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
-				let width = layout.getMeasureSpecSize(owner.widthMeasureSpec);
-				let rowHeight = owner._effectiveRowHeight;
-				let cellHeight = rowHeight > 0 ? rowHeight : owner.getHeight(indexPath.row);
+				const width = layout.getMeasureSpecSize(owner.widthMeasureSpec);
+				const rowHeight = owner._effectiveRowHeight;
+				const cellHeight = rowHeight > 0 ? rowHeight : owner.getHeight(indexPath.row);
 				cellView.iosOverflowSafeAreaEnabled = false;
 				View.layoutChild(owner, cellView, 0, 0, width, cellHeight);
 			}
@@ -192,14 +192,14 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 	private _owner: WeakRef<ListView>;
 
 	public static initWithOwner(owner: WeakRef<ListView>): UITableViewRowHeightDelegateImpl {
-		let delegate = <UITableViewRowHeightDelegateImpl>UITableViewRowHeightDelegateImpl.new();
+		const delegate = <UITableViewRowHeightDelegateImpl>UITableViewRowHeightDelegateImpl.new();
 		delegate._owner = owner;
 
 		return delegate;
 	}
 
 	public tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner && indexPath.row === owner.items.length - 1) {
 			owner.notify(<EventData>{
 				eventName: LOADMOREITEMS,
@@ -209,8 +209,8 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 	}
 
 	public tableViewWillSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
-		let cell = <ListViewCell>tableView.cellForRowAtIndexPath(indexPath);
-		let owner = this._owner.get();
+		const cell = <ListViewCell>tableView.cellForRowAtIndexPath(indexPath);
+		const owner = this._owner.get();
 		if (owner) {
 			notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
 		}
@@ -225,7 +225,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 	}
 
 	public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (!owner) {
 			return tableView.estimatedRowHeight;
 		}
@@ -243,7 +243,7 @@ export class ListView extends ListViewBase {
 	private _preparingCell: boolean;
 	private _isDataDirty: boolean;
 	private _map: Map<ListViewCell, ItemView>;
-	widthMeasureSpec: number = 0;
+	widthMeasureSpec = 0;
 
 	constructor() {
 		super();
@@ -291,6 +291,7 @@ export class ListView extends ListViewBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UITableView {
 		return this.nativeViewProtected;
 	}
@@ -313,7 +314,7 @@ export class ListView extends ListViewBase {
 		this._scrollToIndex(index);
 	}
 
-	private _scrollToIndex(index: number, animated: boolean = true) {
+	private _scrollToIndex(index: number, animated = true) {
 		if (!this.ios) {
 			return;
 		}
@@ -412,10 +413,10 @@ export class ListView extends ListViewBase {
 		super.onLayout(left, top, right, bottom);
 
 		this._map.forEach((childView, listViewCell) => {
-			let rowHeight = this._effectiveRowHeight;
-			let cellHeight = rowHeight > 0 ? rowHeight : this.getHeight(childView._listViewItemIndex);
+			const rowHeight = this._effectiveRowHeight;
+			const cellHeight = rowHeight > 0 ? rowHeight : this.getHeight(childView._listViewItemIndex);
 			if (cellHeight) {
-				let width = layout.getMeasureSpecSize(this.widthMeasureSpec);
+				const width = layout.getMeasureSpecSize(this.widthMeasureSpec);
 				childView.iosOverflowSafeAreaEnabled = false;
 				View.layoutChild(this, childView, 0, 0, width, cellHeight);
 			}
@@ -445,13 +446,13 @@ export class ListView extends ListViewBase {
 				view = this._getItemTemplate(indexPath.row).createView();
 			}
 
-			let args = notifyForItemAtIndex(this, cell, view, ITEMLOADING, indexPath);
+			const args = notifyForItemAtIndex(this, cell, view, ITEMLOADING, indexPath);
 			view = args.view || this._getDefaultItemContent(indexPath.row);
 
 			// Proxy containers should not get treated as layouts.
 			// Wrap them in a real layout as well.
 			if (view instanceof ProxyViewContainer) {
-				let sp = new StackLayout();
+				const sp = new StackLayout();
 				sp.addChild(view);
 				view = sp;
 			}
@@ -484,7 +485,7 @@ export class ListView extends ListViewBase {
 	}
 
 	public _removeContainer(cell: ListViewCell): void {
-		let view: ItemView = cell.view;
+		const view: ItemView = cell.view;
 		// This is to clear the StackLayout that is used to wrap ProxyViewContainer instances.
 		if (!(view.parent instanceof ListView)) {
 			this._removeView(view.parent);

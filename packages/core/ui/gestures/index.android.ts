@@ -29,7 +29,7 @@ function initializeTapAndDoubleTapGestureListener() {
 		private _target: View;
 		private _type: number;
 
-		private _lastUpTime: number = 0;
+		private _lastUpTime = 0;
 		private _tapTimeoutId: number;
 
 		private static DoubleTapTimeout = android.view.ViewConfiguration.getDoubleTapTimeout();
@@ -187,8 +187,8 @@ function initializeSwipeGestureListener() {
 			let result = false;
 			let args: SwipeGestureEventData;
 			try {
-				let deltaY = currentEvent.getY() - initialEvent.getY();
-				let deltaX = currentEvent.getX() - initialEvent.getX();
+				const deltaY = currentEvent.getY() - initialEvent.getY();
+				const deltaX = currentEvent.getX() - initialEvent.getX();
 
 				if (Math.abs(deltaX) > Math.abs(deltaY)) {
 					if (Math.abs(deltaX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
@@ -479,7 +479,7 @@ class CustomPanGestureDetector {
 
 	private trackStop(currentEvent: android.view.MotionEvent, cacheEvent: boolean) {
 		if (this.isTracking) {
-			let args = _getPanArgs(this.deltaX, this.deltaY, this.target, GestureStateTypes.ended, null, currentEvent);
+			const args = _getPanArgs(this.deltaX, this.deltaY, this.target, GestureStateTypes.ended, null, currentEvent);
 			_executeCallback(this.observer, args);
 
 			this.deltaX = undefined;
@@ -495,21 +495,21 @@ class CustomPanGestureDetector {
 	}
 
 	private trackStart(currentEvent: android.view.MotionEvent) {
-		let inital = this.getEventCoordinates(this.lastEventCache ? this.lastEventCache : currentEvent);
+		const inital = this.getEventCoordinates(this.lastEventCache ? this.lastEventCache : currentEvent);
 		this.initialX = inital.x;
 		this.initialY = inital.y;
 		this.isTracking = true;
 
-		let args = _getPanArgs(0, 0, this.target, GestureStateTypes.began, null, currentEvent);
+		const args = _getPanArgs(0, 0, this.target, GestureStateTypes.began, null, currentEvent);
 		_executeCallback(this.observer, args);
 	}
 
 	private trackChange(currentEvent: android.view.MotionEvent) {
-		let current = this.getEventCoordinates(currentEvent);
+		const current = this.getEventCoordinates(currentEvent);
 		this.deltaX = current.x - this.initialX;
 		this.deltaY = current.y - this.initialY;
 
-		let args = _getPanArgs(this.deltaX, this.deltaY, this.target, GestureStateTypes.changed, null, currentEvent);
+		const args = _getPanArgs(this.deltaX, this.deltaY, this.target, GestureStateTypes.changed, null, currentEvent);
 		_executeCallback(this.observer, args);
 	}
 
@@ -523,7 +523,7 @@ class CustomPanGestureDetector {
 		} else {
 			const offX = event.getRawX() - event.getX();
 			const offY = event.getRawY() - event.getY();
-			let res = { x: 0, y: 0 };
+			const res = { x: 0, y: 0 };
 
 			for (let i = 0; i < count; i++) {
 				res.x += event.getX(i) + offX;
@@ -560,12 +560,12 @@ class CustomRotateGestureDetector {
 	}
 
 	public onTouchEvent(event: android.view.MotionEvent) {
-		let pointerID = event.getPointerId(event.getActionIndex());
-		let wasTracking = this.isTracking;
+		const pointerID = event.getPointerId(event.getActionIndex());
+		const wasTracking = this.isTracking;
 
 		switch (event.getActionMasked()) {
 			case android.view.MotionEvent.ACTION_DOWN:
-			case android.view.MotionEvent.ACTION_POINTER_DOWN:
+			case android.view.MotionEvent.ACTION_POINTER_DOWN: {
 				let assigned = false;
 				if (this.trackedPtrId1 === INVALID_POINTER_ID && pointerID !== this.trackedPtrId2) {
 					this.trackedPtrId1 = pointerID;
@@ -582,7 +582,7 @@ class CustomRotateGestureDetector {
 					this.executeCallback(event, GestureStateTypes.began);
 				}
 				break;
-
+			}
 			case android.view.MotionEvent.ACTION_MOVE:
 				if (this.isTracking) {
 					this.updateAngle(event);
@@ -617,7 +617,7 @@ class CustomRotateGestureDetector {
 	}
 
 	private executeCallback(event: android.view.MotionEvent, state: GestureStateTypes) {
-		let args = <RotationGestureEventData>{
+		const args = <RotationGestureEventData>{
 			type: GestureTypes.rotation,
 			view: this.target,
 			android: event,
@@ -632,7 +632,7 @@ class CustomRotateGestureDetector {
 	}
 
 	private updateAngle(event: android.view.MotionEvent) {
-		let newPointersAngle = this.getPointersAngle(event);
+		const newPointersAngle = this.getPointersAngle(event);
 		let result = ((newPointersAngle - this.initalPointersAngle) * TO_DEGREES) % 360;
 
 		if (result < -180) {
@@ -646,10 +646,10 @@ class CustomRotateGestureDetector {
 	}
 
 	private getPointersAngle(event: android.view.MotionEvent) {
-		let firstX = event.getX(event.findPointerIndex(this.trackedPtrId1));
-		let firstY = event.getY(event.findPointerIndex(this.trackedPtrId1));
-		let secondX = event.getX(event.findPointerIndex(this.trackedPtrId2));
-		let secondY = event.getY(event.findPointerIndex(this.trackedPtrId2));
+		const firstX = event.getX(event.findPointerIndex(this.trackedPtrId1));
+		const firstY = event.getY(event.findPointerIndex(this.trackedPtrId1));
+		const secondX = event.getX(event.findPointerIndex(this.trackedPtrId2));
+		const secondY = event.getY(event.findPointerIndex(this.trackedPtrId2));
 
 		return Math.atan2(secondY - firstY, secondX - firstX);
 	}

@@ -17,14 +17,14 @@ export class Background implements BackgroundDefinition {
 	public borderRightColor: Color;
 	public borderBottomColor: Color;
 	public borderLeftColor: Color;
-	public borderTopWidth: number = 0;
-	public borderRightWidth: number = 0;
-	public borderBottomWidth: number = 0;
-	public borderLeftWidth: number = 0;
-	public borderTopLeftRadius: number = 0;
-	public borderTopRightRadius: number = 0;
-	public borderBottomLeftRadius: number = 0;
-	public borderBottomRightRadius: number = 0;
+	public borderTopWidth = 0;
+	public borderRightWidth = 0;
+	public borderBottomWidth = 0;
+	public borderLeftWidth = 0;
+	public borderTopLeftRadius = 0;
+	public borderTopRightRadius = 0;
+	public borderBottomLeftRadius = 0;
+	public borderBottomRightRadius = 0;
 	public clipPath: string;
 
 	private clone(): Background {

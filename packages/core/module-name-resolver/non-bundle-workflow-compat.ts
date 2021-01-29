@@ -25,7 +25,7 @@ function processFile(file: fs.File) {
 	const loadContent = () => file.readTextSync();
 
 	switch (file.extension.toLocaleLowerCase()) {
-		case '.js':
+		case '.js': {
 			const noExtPath = filePathRelativeToApp.substr(0, filePathRelativeToApp.length - '.js'.length);
 
 			register(filePathRelativeToApp, function () {
@@ -35,6 +35,7 @@ function processFile(file: fs.File) {
 				return global.require(file.path);
 			});
 			break;
+		}
 
 		case '.css':
 			register(filePathRelativeToApp, loadContent);
@@ -48,8 +49,8 @@ function processFile(file: fs.File) {
 	if (file.name === 'package.json') {
 		const json = global.require(file.path);
 		if (json.main) {
-			let name = filePathRelativeToApp.substr(0, filePathRelativeToApp.length - 'package.json'.length - 1);
-			let requirePath = fs.path.join(file.parent.path, json.main);
+			const name = filePathRelativeToApp.substr(0, filePathRelativeToApp.length - 'package.json'.length - 1);
+			const requirePath = fs.path.join(file.parent.path, json.main);
 
 			register(name, () => global.require(requirePath));
 		}

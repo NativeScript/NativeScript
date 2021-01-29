@@ -1,6 +1,6 @@
 ﻿export * from './text-common';
 
-export module encoding {
+export namespace encoding {
 	export const ISO_8859_1 = 'ISO-8859-1';
 	export const US_ASCII = 'US-ASCII';
 	export const UTF_16 = 'UTF-16';

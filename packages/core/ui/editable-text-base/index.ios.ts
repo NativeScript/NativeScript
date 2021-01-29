@@ -5,13 +5,14 @@ export * from './editable-text-base-common';
 
 export abstract class EditableTextBase extends EditableTextBaseCommon {
 	public nativeViewProtected: UITextField | UITextView;
+	public readonly nativeTextViewProtected: UITextField | UITextView;
 	public dismissSoftInput() {
 		this.nativeTextViewProtected.resignFirstResponder();
 		this.notify({ eventName: EditableTextBase.blurEvent, object: this });
 	}
 
 	[keyboardTypeProperty.getDefault](): 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer' | string {
-		let keyboardType = this.nativeTextViewProtected.keyboardType;
+		const keyboardType = this.nativeTextViewProtected.keyboardType;
 		switch (keyboardType) {
 			case UIKeyboardType.NumbersAndPunctuation:
 				return 'number';
@@ -59,7 +60,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				break;
 
 			default:
-				let kt = +value;
+				const kt = +value;
 				if (!isNaN(kt)) {
 					newKeyboardType = <UIKeyboardType>kt;
 				} else {
@@ -72,7 +73,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	[returnKeyTypeProperty.getDefault](): 'done' | 'next' | 'go' | 'search' | 'send' | string {
-		let returnKeyType = this.nativeTextViewProtected.returnKeyType;
+		const returnKeyType = this.nativeTextViewProtected.returnKeyType;
 		switch (returnKeyType) {
 			case UIReturnKeyType.Done:
 				return 'done';
@@ -112,7 +113,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				newValue = UIReturnKeyType.Send;
 				break;
 			default:
-				let rkt = +value;
+				const rkt = +value;
 				if (!isNaN(rkt)) {
 					newValue = <UIKeyboardType>rkt;
 				} else {
@@ -125,7 +126,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	[autocapitalizationTypeProperty.getDefault](): 'none' | 'words' | 'sentences' | 'allcharacters' {
-		let autocapitalizationType = this.nativeTextViewProtected.autocapitalizationType;
+		const autocapitalizationType = this.nativeTextViewProtected.autocapitalizationType;
 		switch (autocapitalizationType) {
 			case UITextAutocapitalizationType.None:
 				return 'none';
@@ -167,7 +168,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	[autocorrectProperty.getDefault](): boolean | number {
-		let autocorrectionType = this.nativeTextViewProtected.autocorrectionType;
+		const autocorrectionType = this.nativeTextViewProtected.autocorrectionType;
 		switch (autocorrectionType) {
 			case UITextAutocorrectionType.Yes:
 				return true;
@@ -189,15 +190,30 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 		this.nativeTextViewProtected.autocorrectionType = newValue;
 	}
+	public setSelection(start: number, stop?: number) {
+		const view = this.nativeTextViewProtected;
+		if (view) {
+			if (stop !== undefined) {
+				const begin = view.beginningOfDocument;
+				const fromPosition = view.positionFromPositionOffset(begin, start);
+				const toPosition = view.positionFromPositionOffset(begin, stop);
+				view.selectedTextRange = view.textRangeFromPositionToPosition(fromPosition, toPosition);
+			} else {
+				const begin = view.beginningOfDocument;
+				const pos = view.positionFromPositionOffset(begin, start);
+				view.selectedTextRange = view.textRangeFromPositionToPosition(pos, pos);
+			}
+		}
+	}
 }
 
 export function _updateCharactersInRangeReplacementString(formattedText: FormattedString, rangeLocation: number, rangeLength: number, replacementString: string): void {
-	let deletingText = !replacementString;
+	const deletingText = !replacementString;
 	let currentLocation = 0;
 	for (let i = 0, length = formattedText.spans.length; i < length; i++) {
-		let span = formattedText.spans.getItem(i);
+		const span = formattedText.spans.getItem(i);
 		if (currentLocation <= rangeLocation && rangeLocation < currentLocation + span.text.length) {
-			let newText = splice(span.text, rangeLocation - currentLocation, deletingText ? rangeLength : 0, replacementString);
+			const newText = splice(span.text, rangeLocation - currentLocation, deletingText ? rangeLength : 0, replacementString);
 			span._setTextInternal(newText);
 
 			return;

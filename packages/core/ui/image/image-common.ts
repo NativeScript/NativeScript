@@ -41,7 +41,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 			this.isLoading = true;
 
 			const imageLoaded = (source: ImageSource) => {
-				let currentValue = this.src;
+				const currentValue = this.src;
 				if (currentValue !== originalValue) {
 					return;
 				}

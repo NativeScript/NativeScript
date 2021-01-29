@@ -2,15 +2,17 @@
   "main": "main.js",
   "description": "NativeScript Application",
   "license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/NativeScript/NativeScript.git"
-	},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NativeScript/NativeScript.git"
+  },
   "dependencies": {
     "nativescript-theme-core": "file:../../node_modules/nativescript-theme-core",
     "@nativescript/core": "file:../../packages/core"
   },
   "devDependencies": {
+    "@nativescript/android": "7.0.1",
+    "@nativescript/ios": "7.1.0",
     "@nativescript/webpack": "file:../../dist/packages/nativescript-webpack.tgz",
     "typescript": "file:../../node_modules/typescript"
   }

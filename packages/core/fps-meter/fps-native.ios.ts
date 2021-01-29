@@ -5,14 +5,14 @@ class FrameHandlerImpl extends NSObject {
 	private _owner: WeakRef<FPSCallback>;
 
 	public static initWithOwner(owner: WeakRef<FPSCallback>): FrameHandlerImpl {
-		let handler = <FrameHandlerImpl>FrameHandlerImpl.new();
+		const handler = <FrameHandlerImpl>FrameHandlerImpl.new();
 		handler._owner = owner;
 
 		return handler;
 	}
 
 	public handleFrame(sender: CADisplayLink): void {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			owner._handleFrame(sender);
 		}

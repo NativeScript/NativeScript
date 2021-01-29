@@ -44,7 +44,7 @@ export class Builder {
 		} else if (entry.moduleName) {
 			const moduleName = sanitizeModuleName(entry.moduleName);
 			const resolvedCodeModuleName = resolveModuleName(moduleName, ''); //`${moduleName}.xml`;
-			let moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName, true) : null;
+			const moduleExports = resolvedCodeModuleName ? global.loadModule(resolvedCodeModuleName, true) : null;
 
 			if (moduleExports && moduleExports.createPage) {
 				// Exports has a createPage() method
@@ -147,7 +147,7 @@ function loadInternal(moduleName: string, moduleExports: any): ComponentModule {
 	return componentModule;
 }
 
-function loadCustomComponent(componentNamespace: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: View, isRootComponent: boolean = true, moduleNamePath?: string): ComponentModule {
+function loadCustomComponent(componentNamespace: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: View, isRootComponent = true, moduleNamePath?: string): ComponentModule {
 	if (!parentPage && context) {
 		// Read the parent page that was passed down below
 		// https://github.com/NativeScript/NativeScript/issues/1639
@@ -183,7 +183,7 @@ function loadCustomComponent(componentNamespace: string, componentName?: string,
 
 		// Attributes will be transferred to the custom component
 		if (isDefined(result) && isDefined(result.component) && isDefined(attributes)) {
-			for (let attr in attributes) {
+			for (const attr in attributes) {
 				setPropertyValue(result.component, subExports, context, attr, attributes[attr]);
 			}
 		}
@@ -489,7 +489,7 @@ namespace xml2ui {
 				this._state = TemplateParser.State.FINISHED;
 
 				if (this._setTemplateProperty && this._templateProperty.name in this._templateProperty.parent.component) {
-					let template = this.buildTemplate();
+					const template = this.buildTemplate();
 					this._templateProperty.parent.component[this._templateProperty.name] = template;
 				}
 			}
@@ -528,7 +528,7 @@ namespace xml2ui {
 
 		public parse(args: xml.ParserEvent): XmlStateConsumer {
 			if (args.eventType === xml.ParserEventType.StartElement && args.elementName === 'template') {
-				let childParser = new TemplateParser(this, this.templateProperty, false);
+				const childParser = new TemplateParser(this, this.templateProperty, false);
 				childParser['key'] = args.attributes['key'];
 				this._childParsers.push(childParser);
 
@@ -536,9 +536,9 @@ namespace xml2ui {
 			}
 
 			if (args.eventType === xml.ParserEventType.EndElement) {
-				let name = ComponentParser.getComplexPropertyName(args.elementName);
+				const name = ComponentParser.getComplexPropertyName(args.elementName);
 				if (name === this.templateProperty.name) {
-					let templates = new Array<KeyedTemplate>();
+					const templates = new Array<KeyedTemplate>();
 					for (let i = 0; i < this._childParsers.length; i++) {
 						templates.push({
 							key: this._childParsers[i]['key'],

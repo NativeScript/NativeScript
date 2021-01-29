@@ -5,12 +5,11 @@ import { Device } from '../../platform';
 
 export * from './time-picker-common';
 
-const SUPPORT_DATE_PICKER_STYLE = parseFloat(Device.os) >= 14.0;
-const SUPPORT_TEXT_COLOR = parseFloat(Device.os) < 14.0;
-const DEFAULT_DATE_PICKER_STYLE = 1;
+const SUPPORT_DATE_PICKER_STYLE = parseFloat(Device.osVersion) >= 13.4;
+const SUPPORT_TEXT_COLOR = parseFloat(Device.osVersion) < 14.0;
 
 function getDate(hour: number, minute: number): Date {
-	let components = NSDateComponents.alloc().init();
+	const components = NSDateComponents.alloc().init();
 	components.hour = hour;
 	components.minute = minute;
 
@@ -27,7 +26,7 @@ export class TimePicker extends TimePickerBase {
 
 	constructor() {
 		super();
-		let components = getComponents(NSDate.date());
+		const components = getComponents(NSDate.date());
 		this.hour = components.hour;
 		this.minute = components.minute;
 	}
@@ -36,7 +35,7 @@ export class TimePicker extends TimePickerBase {
 		const picker = UIDatePicker.new();
 		picker.datePickerMode = UIDatePickerMode.Time;
 		if (SUPPORT_DATE_PICKER_STYLE) {
-			picker.preferredDatePickerStyle = DEFAULT_DATE_PICKER_STYLE;
+			picker.preferredDatePickerStyle = this.iosPreferredDatePickerStyle;
 		}
 		return picker;
 	}
@@ -52,6 +51,7 @@ export class TimePicker extends TimePickerBase {
 		super.initNativeView();
 	}
 
+	// @ts-ignore
 	get ios(): UIDatePicker {
 		return this.nativeViewProtected;
 	}
@@ -128,19 +128,19 @@ class UITimePickerChangeHandlerImpl extends NSObject {
 	private _owner: WeakRef<TimePicker>;
 
 	public static initWithOwner(owner: WeakRef<TimePicker>): UITimePickerChangeHandlerImpl {
-		let handler = <UITimePickerChangeHandlerImpl>UITimePickerChangeHandlerImpl.new();
+		const handler = <UITimePickerChangeHandlerImpl>UITimePickerChangeHandlerImpl.new();
 		handler._owner = owner;
 
 		return handler;
 	}
 
 	public valueChanged(sender: UIDatePicker) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (!owner) {
 			return;
 		}
 
-		let components = getComponents(sender.date);
+		const components = getComponents(sender.date);
 
 		let timeChanged = false;
 		if (components.hour !== owner.hour) {

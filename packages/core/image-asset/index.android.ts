@@ -15,6 +15,7 @@ export class ImageAsset extends ImageAssetBase {
 		this.android = fileName;
 	}
 
+	// @ts-ignore
 	get android(): string {
 		return this._android;
 	}
@@ -24,19 +25,19 @@ export class ImageAsset extends ImageAssetBase {
 	}
 
 	public getImageAsync(callback: (image, error) => void) {
-		let bitmapOptions = new android.graphics.BitmapFactory.Options();
+		const bitmapOptions = new android.graphics.BitmapFactory.Options();
 		bitmapOptions.inJustDecodeBounds = true;
 		// read only the file size
 		let bitmap = android.graphics.BitmapFactory.decodeFile(this.android, bitmapOptions);
-		let sourceSize = {
+		const sourceSize = {
 			width: bitmapOptions.outWidth,
 			height: bitmapOptions.outHeight,
 		};
-		let requestedSize = getRequestedImageSize(sourceSize, this.options);
+		const requestedSize = getRequestedImageSize(sourceSize, this.options);
 
-		let sampleSize = org.nativescript.widgets.image.Fetcher.calculateInSampleSize(bitmapOptions.outWidth, bitmapOptions.outHeight, requestedSize.width, requestedSize.height);
+		const sampleSize = org.nativescript.widgets.image.Fetcher.calculateInSampleSize(bitmapOptions.outWidth, bitmapOptions.outHeight, requestedSize.width, requestedSize.height);
 
-		let finalBitmapOptions = new android.graphics.BitmapFactory.Options();
+		const finalBitmapOptions = new android.graphics.BitmapFactory.Options();
 		finalBitmapOptions.inSampleSize = sampleSize;
 		try {
 			let error = null;

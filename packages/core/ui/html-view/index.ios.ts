@@ -32,6 +32,7 @@ export class HtmlView extends HtmlViewBase {
 		this.nativeViewProtected.textContainerInset = (UIEdgeInsets as any).zero;
 	}
 
+	// @ts-ignore
 	get ios(): UITextView {
 		return this.nativeViewProtected;
 	}
