@@ -7,6 +7,7 @@ import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLeng
 import { GestureTypes, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/gradient';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
+import { BoxShadow } from '../../styling/box-shadow';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -329,6 +330,11 @@ export abstract class View extends ViewBase {
 	backgroundImage: string | LinearGradient;
 
 	/**
+	 * Gets or sets the box shadow of the view.
+	 */
+	boxShadow: string | BoxShadow;
+
+	/**
 	 * Gets or sets the minimum width the view may grow to.
 	 */
 	minWidth: Length;
@@ -465,6 +471,11 @@ export abstract class View extends ViewBase {
 	 * Enables or disables the iosOverflowSafeArea property for all children. This property is iOS specific. Default value: true
 	 */
 	iosOverflowSafeAreaEnabled: boolean;
+	
+	/**
+	 * Gets or sets a value indicating whether the the view should totally ignore safe areas computation. This property is iOS specific. Default value: false
+	 */
+	iosIgnoreSafeArea: boolean;
 
 	/**
 	 * Gets is layout is valid. This is a read-only property.
