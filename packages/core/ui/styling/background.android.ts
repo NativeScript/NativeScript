@@ -88,7 +88,6 @@ export namespace ad {
 
 		const boxShadow = view.style.boxShadow;
 		if (boxShadow) {
-			console.log('boxShadow', boxShadow);
 			drawBoxShadow(nativeView, boxShadow);
 		}
 
