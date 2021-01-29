@@ -22,7 +22,6 @@ export class LayoutBase extends LayoutBaseCommon {
 	}
 
 	_setNativeClipToBounds() {
-		console.log('setting clip to bounds', this.clipToBounds);
 		if (this.clipToBounds) {
 			// TODO: temporarily setting this to false as it crops the shadow
 			this.nativeViewProtected.clipsToBounds = true;

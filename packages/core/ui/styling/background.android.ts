@@ -88,8 +88,12 @@ export namespace ad {
 
 		const boxShadow = view.style.boxShadow;
 		if (boxShadow) {
+<<<<<<< HEAD
 			console.log('boxShadow', boxShadow);
 			drawBoxShadow(nativeView, view, boxShadow);
+=======
+			drawBoxShadow(nativeView, boxShadow);
+>>>>>>> feat/box-shadow
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
