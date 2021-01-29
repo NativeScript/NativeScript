@@ -7,7 +7,7 @@ import { Color } from '../color';
 
 // Types.
 import { path as fsPath, knownFolders } from '../file-system';
-import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from '../utils';
+import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject } from '../utils';
 
 import { getScaledDimensions } from './image-source-common';
 
@@ -311,7 +311,10 @@ export class ImageSource implements ImageSourceDefinition {
 
 		const data = getImageData(this.ios, format, quality);
 		if (data) {
-			return NSFileManager.defaultManager.createFileAtPathContentsAttributes(path, data, null);
+			const result = NSFileManager.defaultManager.createFileAtPathContentsAttributes(path, data, null);
+			// release native memory earlier
+			releaseNativeObject(data);
+			return result;
 		}
 
 		return false;
