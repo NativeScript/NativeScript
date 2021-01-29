@@ -79,6 +79,6 @@ Outside of the source centralized in this repo, the NativeScript framework consi
 In addition to the code that makes up the NativeScript framework itself, we also provide a number of [open-source sample apps](https://www.nativescript.org/app-samples-with-code) from which you can take reference while building your NativeScript application.
 
 ## License
-[Apache License 2.0](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
 
 <h3 align="center">Made with ❤️</h3>
