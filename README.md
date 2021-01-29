@@ -39,19 +39,14 @@ We love you and PR's 🤗 Please follow our [contributing guide](https://github.
 
 * [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/master/packages/core)
   * Core iOS/Android for NativeScript
-	
 * [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
   * Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
-	
 * [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/master/packages/types-ios)
   * Types for iOS
-	
 * [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/master/packages/types-android)
   * Types for Android
-	
 * [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/master/packages/ui-mobile-base)
   * UI mobile base native classes used by core
-	
 * [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/master/packages/webpack)
   * Webpack build utilities and configs used by NativeScript apps
 
