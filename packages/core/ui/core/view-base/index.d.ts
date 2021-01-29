@@ -237,6 +237,12 @@ export abstract class ViewBase extends Observable {
 	public bindingContext: any;
 
 	/**
+     * Gets or sets if the view is reusable.
+     * Reusable views are not automatically destroyed when removed from the View tree.
+     */
+    public reusable: boolean;
+
+	/**
 	 * Gets the name of the constructor function for this instance. E.g. for a Button class this will return "Button".
 	 */
 	public typeName: string;
@@ -364,6 +370,13 @@ export abstract class ViewBase extends Observable {
 	 * This method should *not* be overridden by derived views.
 	 */
 	_tearDownUI(force?: boolean): void;
+
+	/**
+     * Tears down the UI of a reusable node by making it no longer reusable.
+     * @see _tearDownUI
+     * @param forceDestroyChildren Force destroy the children (even if they are reusable)
+     */
+    destroyNode(forceDestroyChildren?: boolean): void;
 
 	/**
 	 * Creates a native view.
