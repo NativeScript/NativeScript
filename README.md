@@ -37,22 +37,22 @@ We love you and PR's 🤗 Please follow our [contributing guide](https://github.
 
 ## @nativescript/* 
 
-:diamond_shape_with_a_dot_inside: [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/master/packages/core)
+* [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/master/packages/core)
   * Core iOS/Android for NativeScript
 	
-:diamond_shape_with_a_dot_inside: [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
+* [@nativescript/types](https://www.npmjs.com/package/@nativescript/types)
   * Types for both iOS/Android below wrapped up as a convenience. *Most commonly used.*
 	
-:diamond_shape_with_a_dot_inside: [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/master/packages/types-ios)
+* [@nativescript/types-ios](https://github.com/NativeScript/NativeScript/tree/master/packages/types-ios)
   * Types for iOS
 	
-:diamond_shape_with_a_dot_inside: [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/master/packages/types-android)
+* [@nativescript/types-android](https://github.com/NativeScript/NativeScript/tree/master/packages/types-android)
   * Types for Android
 	
-:diamond_shape_with_a_dot_inside: [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/master/packages/ui-mobile-base)
+* [@nativescript/ui-mobile-base](https://github.com/NativeScript/NativeScript/tree/master/packages/ui-mobile-base)
   * UI mobile base native classes used by core
 	
-:diamond_shape_with_a_dot_inside: [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/master/packages/webpack)
+* [@nativescript/webpack](https://github.com/NativeScript/NativeScript/tree/master/packages/webpack)
   * Webpack build utilities and configs used by NativeScript apps
 
 ## Quick Links
