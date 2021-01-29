@@ -47,7 +47,7 @@ export interface ShowModalOptions {
 	/**
 	 * A function that will be called when the view is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
 	 */
-	closeCallback: (...args)=>void;
+	closeCallback: (...args) => void;
 
 	/**
 	 * An optional parameter specifying whether to show the modal view in full-screen mode.
@@ -100,7 +100,7 @@ export interface ShowModalOptions {
 	cancelable?: boolean;
 }
 
-export function getAncestor(view: ViewBaseDefinition, criterion: string | { new() }): ViewBaseDefinition {
+export function getAncestor(view: ViewBaseDefinition, criterion: string | { new () }): ViewBaseDefinition {
 	let matcher: (view: ViewBaseDefinition) => boolean = null;
 	if (typeof criterion === 'string') {
 		matcher = (view: ViewBaseDefinition) => view.typeName === criterion;
@@ -306,6 +306,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _isPaddingRelative: boolean;
 
 	public _moduleName: string;
+
+	public reusable: boolean;
 
 	constructor() {
 		super();
@@ -767,6 +769,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	@profile
 	public _setupUI(context: any, atIndex?: number, parentIsLoaded?: boolean): void {
 		if (this._context === context) {
+			// this check is unnecessary as this function should never be called when this._context === context as it means the view was somehow detached,
+			// which is only possible by setting reusable = true. Adding it either way for feature flag safety
+			if (this.reusable) {
+				if (this.parent && !this._isAddedToNativeVisualTree) {
+					const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
+					this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
+				}
+			}
 			return;
 		} else if (this._context) {
 			this._tearDownUI(true);
@@ -789,35 +799,39 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 
 		if (global.isAndroid) {
-			this._androidView = nativeView;
-			if (nativeView) {
-				if (this._isPaddingRelative === undefined) {
-					this._isPaddingRelative = nativeView.isPaddingRelative();
-				}
+			// this check is also unecessary as this code should never be reached with _androidView != null unless reusable = true
+			// also adding this check for feature flag safety
+			if (this._androidView !== nativeView || !this.reusable) {
+				this._androidView = nativeView;
+				if (nativeView) {
+					if (this._isPaddingRelative === undefined) {
+						this._isPaddingRelative = nativeView.isPaddingRelative();
+					}
 
-				let result: any /* android.graphics.Rect */ = (<any>nativeView).defaultPaddings;
-				if (result === undefined) {
-					result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
-					(<any>nativeView).defaultPaddings = result;
-				}
+					let result: any /* android.graphics.Rect */ = (<any>nativeView).defaultPaddings;
+					if (result === undefined) {
+						result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
+						(<any>nativeView).defaultPaddings = result;
+					}
 
-				this._defaultPaddingTop = result.top;
-				this._defaultPaddingRight = result.right;
-				this._defaultPaddingBottom = result.bottom;
-				this._defaultPaddingLeft = result.left;
+					this._defaultPaddingTop = result.top;
+					this._defaultPaddingRight = result.right;
+					this._defaultPaddingBottom = result.bottom;
+					this._defaultPaddingLeft = result.left;
 
-				const style = this.style;
-				if (!paddingTopProperty.isSet(style)) {
-					this.effectivePaddingTop = this._defaultPaddingTop;
-				}
-				if (!paddingRightProperty.isSet(style)) {
-					this.effectivePaddingRight = this._defaultPaddingRight;
-				}
-				if (!paddingBottomProperty.isSet(style)) {
-					this.effectivePaddingBottom = this._defaultPaddingBottom;
-				}
-				if (!paddingLeftProperty.isSet(style)) {
-					this.effectivePaddingLeft = this._defaultPaddingLeft;
+					const style = this.style;
+					if (!paddingTopProperty.isSet(style)) {
+						this.effectivePaddingTop = this._defaultPaddingTop;
+					}
+					if (!paddingRightProperty.isSet(style)) {
+						this.effectivePaddingRight = this._defaultPaddingRight;
+					}
+					if (!paddingBottomProperty.isSet(style)) {
+						this.effectivePaddingBottom = this._defaultPaddingBottom;
+					}
+					if (!paddingLeftProperty.isSet(style)) {
+						this.effectivePaddingLeft = this._defaultPaddingLeft;
+					}
 				}
 			}
 		} else {
@@ -858,20 +872,28 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	public destroyNode(forceDestroyChildren?: boolean): void {
+		this.reusable = false;
+		this._tearDownUI(forceDestroyChildren);
+	}
+
 	@profile
 	public _tearDownUI(force?: boolean): void {
 		// No context means we are already teared down.
 		if (!this._context) {
 			return;
 		}
+		const preserveNativeView = this.reusable && !force;
 
 		this.resetNativeViewInternal();
 
-		this.eachChild((child) => {
-			child._tearDownUI(force);
+		if (!preserveNativeView) {
+			this.eachChild((child) => {
+				child._tearDownUI(force);
 
-			return true;
-		});
+				return true;
+			});
+		}
 
 		if (this.parent) {
 			this.parent._removeViewFromNativeVisualTree(this);
@@ -896,18 +918,20 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		//     }
 		// }
 
-		this.disposeNativeView();
+		if (!preserveNativeView) {
+			this.disposeNativeView();
 
-		this._suspendNativeUpdates(SuspendType.UISetup);
+			this._suspendNativeUpdates(SuspendType.UISetup);
 
-		if (global.isAndroid) {
-			this.setNativeView(null);
-			this._androidView = null;
+			if (global.isAndroid) {
+				this.setNativeView(null);
+				this._androidView = null;
+			}
+
+			// this._iosView = null;
+
+			this._context = null;
 		}
-
-		// this._iosView = null;
-
-		this._context = null;
 
 		if (this.domNode) {
 			this.domNode.dispose();
@@ -1099,6 +1123,7 @@ ViewBase.prototype._defaultPaddingBottom = 0;
 ViewBase.prototype._defaultPaddingLeft = 0;
 ViewBase.prototype._isViewBase = true;
 ViewBase.prototype.recycleNativeView = 'never';
+ViewBase.prototype.reusable = false;
 
 ViewBase.prototype._suspendNativeUpdatesCount = SuspendType.Loaded | SuspendType.NativeView | SuspendType.UISetup;
 
