@@ -14,7 +14,7 @@
 /**
  * Get the milliseconds since the process started.
  */
-double __tns_uptime();
+double __tns_uptime(void);
 
 /**
  * Provides access to NSLog. The runtime implementation of console.log is filtered in release.
