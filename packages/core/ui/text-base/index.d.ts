@@ -52,6 +52,11 @@ export class TextBase extends View implements AddChildFromBuilder {
 	textTransform: TextTransform;
 
 	/**
+	 * Gets or sets text shadow style property.
+	 */
+	textShadow: TextShadow;
+
+	/**
 	 * Gets or sets white space style property.
 	 */
 	whiteSpace: WhiteSpace;
@@ -120,10 +125,17 @@ export type WhiteSpace = 'initial' | 'normal' | 'nowrap';
 export type TextAlignment = 'initial' | 'left' | 'center' | 'right';
 export type TextTransform = 'initial' | 'none' | 'capitalize' | 'uppercase' | 'lowercase';
 export type TextDecoration = 'none' | 'underline' | 'line-through' | 'underline line-through';
+export type TextShadow = {
+	offsetX: Length;
+	offsetY: Length;
+	blurRadius: Length;
+	color: Color;
+};
 
 export const textAlignmentProperty: InheritedCssProperty<Style, TextAlignment>;
 export const textDecorationProperty: CssProperty<Style, TextDecoration>;
 export const textTransformProperty: CssProperty<Style, TextTransform>;
+export const textShadowProperty: CssProperty<Style, TextShadow>;
 export const whiteSpaceProperty: CssProperty<Style, WhiteSpace>;
 export const letterSpacingProperty: CssProperty<Style, number>;
 export const lineHeightProperty: CssProperty<Style, number>;
