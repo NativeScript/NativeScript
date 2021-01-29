@@ -218,7 +218,7 @@ class CSSSource {
 					this._ast = cssTreeParse(this._source, this._file);
 
 					return;
-				case 'nativescript':{
+				case 'nativescript': {
 					const cssparser = new CSS3Parser(this._source);
 					const stylesheet = cssparser.parseAStylesheet();
 					const cssNS = new CSSNativeScript();

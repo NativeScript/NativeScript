@@ -759,7 +759,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public iosOverflowSafeArea: boolean;
 	public iosOverflowSafeAreaEnabled: boolean;
 	public iosIgnoreSafeArea: boolean;
-	
+
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;
 	}
@@ -1057,8 +1057,8 @@ export const iosOverflowSafeAreaEnabledProperty = new InheritedProperty<ViewComm
 });
 iosOverflowSafeAreaEnabledProperty.register(ViewCommon);
 export const iosIgnoreSafeAreaProperty = new InheritedProperty({
-    name: 'iosIgnoreSafeArea',
-    defaultValue: false,
-    valueConverter: booleanConverter,
+	name: 'iosIgnoreSafeArea',
+	defaultValue: false,
+	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);

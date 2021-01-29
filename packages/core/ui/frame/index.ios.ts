@@ -249,7 +249,7 @@ export class Frame extends FrameBase {
 					case 'never':
 						return false;
 
-					case 'auto':{
+					case 'auto': {
 						let newValue: boolean;
 
 						if (page && page.actionBarHidden !== undefined) {

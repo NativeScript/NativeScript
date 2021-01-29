@@ -46,7 +46,7 @@ export namespace ad {
 		}
 		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
 		const onlyColor = !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && !!background.color;
-		if (drawable instanceof  android.graphics.drawable.ColorDrawable && onlyColor) {
+		if (drawable instanceof android.graphics.drawable.ColorDrawable && onlyColor) {
 			drawable.setColor(background.color.android);
 			drawable.invalidateSelf();
 		} else if (isSetColorFilterOnlyWidget(nativeView) && drawable && onlyColor) {
