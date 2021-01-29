@@ -23,6 +23,7 @@ export class LayoutBase extends LayoutBaseCommon {
 
 	_setNativeClipToBounds() {
 		if (this.clipToBounds) {
+			// TODO: temporarily setting this to false as it crops the shadow
 			this.nativeViewProtected.clipsToBounds = true;
 		} else {
 			super._setNativeClipToBounds();

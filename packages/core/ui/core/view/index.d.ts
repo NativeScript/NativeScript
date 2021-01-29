@@ -6,6 +6,7 @@ import { Animation, AnimationDefinition, AnimationPromise } from '../../animatio
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from '../../styling/style-properties';
 import { GestureTypes, GestureEventData, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/gradient';
+import { BoxShadow } from '../../styling/box-shadow';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -249,6 +250,11 @@ export abstract class View extends ViewBase {
 	 * Gets or sets the background image of the view.
 	 */
 	backgroundImage: string | LinearGradient;
+
+	/**
+	 * Gets or sets the box shadow of the view.
+	 */
+	boxShadow: string | BoxShadow;
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.
