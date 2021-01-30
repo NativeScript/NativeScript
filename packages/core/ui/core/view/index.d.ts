@@ -471,7 +471,7 @@ export abstract class View extends ViewBase {
 	 * Enables or disables the iosOverflowSafeArea property for all children. This property is iOS specific. Default value: true
 	 */
 	iosOverflowSafeAreaEnabled: boolean;
-	
+
 	/**
 	 * Gets or sets a value indicating whether the the view should totally ignore safe areas computation. This property is iOS specific. Default value: false
 	 */
