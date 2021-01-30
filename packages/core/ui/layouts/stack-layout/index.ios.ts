@@ -113,11 +113,11 @@ export class StackLayout extends StackLayoutBase {
 
 		switch (this.verticalAlignment) {
 			case VerticalAlignment.MIDDLE:
-				childTop = (bottom - top - this._totalLength) / 2 + paddingTop - paddingBottom;
+				childTop = (bottom - top - this._totalLength) / 2 + paddingTop;
 				break;
 
 			case VerticalAlignment.BOTTOM:
-				childTop = bottom - top - this._totalLength + paddingTop - paddingBottom;
+				childTop = bottom - top - this._totalLength + paddingTop;
 				break;
 
 			case VerticalAlignment.TOP:
@@ -147,11 +147,11 @@ export class StackLayout extends StackLayoutBase {
 
 		switch (this.horizontalAlignment) {
 			case HorizontalAlignment.CENTER:
-				childLeft = (right - left - this._totalLength) / 2 + paddingLeft - paddingRight;
+				childLeft = (right - left - this._totalLength) / 2 + paddingLeft;
 				break;
 
 			case HorizontalAlignment.RIGHT:
-				childLeft = right - left - this._totalLength + paddingLeft - paddingRight;
+				childLeft = right - left - this._totalLength + paddingLeft;
 				break;
 
 			case HorizontalAlignment.LEFT:
