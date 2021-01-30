@@ -83,5 +83,5 @@ module.exports = (env) => {
 		baseConfig.plugins = baseConfig.plugins.filter((p) => !(p && p.constructor && p.constructor.name === 'HotModuleReplacementPlugin'));
 	}
 
-	return baseConfig;
+    return baseConfig;
 };

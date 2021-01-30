@@ -15,7 +15,7 @@ export class Font extends FontBase {
 	private _typeface: android.graphics.Typeface;
 
 	constructor(family: string, size: number, style: 'normal' | 'italic', weight: FontWeight) {
-		super(family, size, style, weight);
+		super(family, size, style, weight, 1);
 	}
 
 	public withFontFamily(family: string): Font {
@@ -32,6 +32,10 @@ export class Font extends FontBase {
 
 	public withFontSize(size: number): Font {
 		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight);
+	}
+
+	public withFontScale(scale: number): Font {
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight);
 	}
 
 	public getAndroidTypeface(): android.graphics.Typeface {

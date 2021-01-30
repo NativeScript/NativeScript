@@ -32,6 +32,7 @@ export class PageBase extends ContentView {
 	public enableSwipeBackNavigation: boolean;
 	public backgroundSpanUnderStatusBar: boolean;
 	public hasActionBar: boolean;
+	public accessibilityAnnouncePageEnabled = true;
 
 	get navigationContext(): any {
 		return this._navigationContext;
@@ -125,8 +126,12 @@ export class PageBase extends ContentView {
 	}
 
 	@profile
-	public onNavigatedTo(isBackNavigation: boolean) {
+	public onNavigatedTo(isBackNavigation: boolean): void {
 		this.notify(this.createNavigatedData(PageBase.navigatedToEvent, isBackNavigation));
+
+		if (this.accessibilityAnnouncePageEnabled) {
+			this.accessibilityScreenChanged(!!isBackNavigation);
+		}
 	}
 
 	@profile
@@ -150,6 +155,10 @@ export class PageBase extends ContentView {
 
 	get _childrenCount(): number {
 		return (this.content ? 1 : 0) + (this._actionBar ? 1 : 0);
+	}
+
+	public accessibilityScreenChanged(refocus?: boolean): void {
+		return;
 	}
 }
 

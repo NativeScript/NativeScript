@@ -17,6 +17,7 @@ import { Trace } from '../../trace';
 
 import * as parser from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
+import { BoxShadow } from './box-shadow';
 
 export type LengthDipUnit = { readonly unit: 'dip'; readonly value: dip };
 export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
@@ -450,6 +451,51 @@ export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignmen
 	valueConverter: VerticalAlignment.parse,
 });
 verticalAlignmentProperty.register(Style);
+
+function parseBoxShadowProperites(value: string): BoxShadow {
+	if (typeof value === 'string') {
+		let arr;
+		let colorRaw;
+		if (value.indexOf('rgb') > -1) {
+			arr = value.split(' ');
+			colorRaw = arr.pop();
+		} else {
+			arr = value.split(/[ ,]+/);
+			colorRaw = arr.pop();
+		}
+
+		let offsetX: number;
+		let offsetY: number;
+		let blurRadius: number; // not currently in use
+		let spreadRadius: number; // maybe rename this to just radius
+		let color: Color = new Color(colorRaw);
+
+		if (arr.length === 2) {
+			offsetX = parseFloat(arr[0]);
+			offsetY = parseFloat(arr[1]);
+		} else if (arr.length === 3) {
+			offsetX = parseFloat(arr[0]);
+			offsetY = parseFloat(arr[1]);
+			blurRadius = parseFloat(arr[2]);
+		} else if (arr.length === 4) {
+			offsetX = parseFloat(arr[0]);
+			offsetY = parseFloat(arr[1]);
+			blurRadius = parseFloat(arr[2]);
+			spreadRadius = parseFloat(arr[3]);
+		} else {
+			throw new Error('Expected 3, 4 or 5 parameters. Actual: ' + value);
+		}
+		return {
+			offsetX: offsetX,
+			offsetY: offsetY,
+			blurRadius: blurRadius,
+			spreadRadius: spreadRadius,
+			color: color,
+		};
+	} else {
+		return value;
+	}
+}
 
 interface Thickness {
 	top: string;
@@ -1275,6 +1321,18 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, Length>({
 });
 borderBottomLeftRadiusProperty.register(Style);
 
+const boxShadowProperty = new CssProperty<Style, BoxShadow>({
+	name: 'boxShadow',
+	cssName: 'box-shadow',
+	valueChanged: (target, oldValue, newValue) => {
+		target.boxShadow = newValue;
+	},
+	valueConverter: (value) => {
+		return parseBoxShadowProperites(value);
+	},
+});
+boxShadowProperty.register(Style);
+
 function isNonNegativeFiniteNumber(value: number): boolean {
 	return isFinite(value) && !isNaN(value) && value >= 0;
 }
@@ -1363,6 +1421,27 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 	},
 });
 fontFamilyProperty.register(Style);
+
+export const fontScaleProperty = new InheritedCssProperty<Style, number>({
+	name: '_fontScale',
+	cssName: '_fontScale',
+	affectsLayout: global.isIOS,
+	valueChanged: (target, oldValue, newValue) => {
+		if (global.isIOS) {
+			if (target.viewRef['handleFontSize'] === true) {
+				return;
+			}
+
+			const currentFont = target.fontInternal || Font.default;
+			if (currentFont.fontScale !== newValue) {
+				const newFont = currentFont.withFontScale(newValue);
+				target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
+			}
+		}
+	},
+	valueConverter: (v) => parseFloat(v),
+});
+fontScaleProperty.register(Style);
 
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',

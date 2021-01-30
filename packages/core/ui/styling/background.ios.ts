@@ -7,6 +7,7 @@ import { Color } from '../../color';
 import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
+import { BoxShadow } from './box-shadow';
 
 export * from './background-common';
 
@@ -24,6 +25,7 @@ interface NativeView extends UIView {
 	leftBorderLayer: CALayer;
 
 	gradientLayer: CAGradientLayer;
+	boxShadowLayer: CALayer;
 }
 
 interface Rect {
@@ -84,6 +86,14 @@ export namespace ios {
 			callback(uiColor);
 		} else {
 			setUIColorFromImage(view, nativeView, callback, flip);
+		}
+
+		const boxShadow = view.style.boxShadow;
+		if (boxShadow) {
+			// this is required (if not, shadow will get cutoff at parent's dimensions)
+			// nativeView.clipsToBounds doesn't work
+			view.setProperty('clipToBounds', false);
+			drawBoxShadow(nativeView, view, boxShadow, background);
 		}
 	}
 }
@@ -704,6 +714,35 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
 	}
 
 	nativeView.hasNonUniformBorder = hasNonUniformBorder;
+}
+
+// TODO: use sublayer if its applied to a layout
+function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: BoxShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
+	const layer: CALayer = nativeView.layer;
+
+	layer.masksToBounds = false;
+	nativeView.clipsToBounds = false;
+
+	if (!background.color?.a) {
+		// add white background if view has a transparent background
+		layer.backgroundColor = UIColor.whiteColor.CGColor;
+	}
+	// shadow opacity is handled on the shadow's color instance
+	layer.shadowOpacity = 1;
+	layer.shadowRadius = layout.toDeviceIndependentPixels(boxShadow.spreadRadius);
+	layer.shadowColor = boxShadow.color.ios.CGColor;
+
+	const adjustedShadowOffset = {
+		x: layout.toDeviceIndependentPixels(boxShadow.offsetX),
+		y: layout.toDeviceIndependentPixels(boxShadow.offsetY),
+	};
+	layer.shadowOffset = CGSizeMake(adjustedShadowOffset.x, adjustedShadowOffset.y);
+
+	// this should match the view's border radius
+	const cornerRadius = 0; // layout.toDeviceIndependentPixels(view.style.borderRadius);
+
+	// This has the nice glow with box shadow of 0,0
+	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, cornerRadius).CGPath;
 }
 
 function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
