@@ -1,7 +1,60 @@
 import * as TKUnit from '../tk-unit';
 // >> observable-array-require
-import { Label, ObservableArray, ChangedData, ChangeType } from '@nativescript/core';
+import { Label, Observable, ObservableArray, ChangedData, ChangeType } from '@nativescript/core';
 // << observable-array-require
+
+export const test_ObservableArray_shouldBeInstanceOfObservableArray = function () {
+	const sa = [1, 2, 3];
+	const array = new ObservableArray(sa);
+
+	TKUnit.assertEqual(array instanceof ObservableArray, true, 'ObservableArray should be an instance of ObservableArray');
+	TKUnit.assertEqual(array instanceof Observable, true, 'ObservableArray should be an instance of Observable');
+};
+
+export const test_ObservableArray_shouldPrintLikeAnArray = function () {
+	const sa = [1, 2, 3];
+	const array = new ObservableArray(sa);
+
+	TKUnit.assertEqual(sa.toString(), array.toString(), 'ObservableArray should print like array does');
+};
+
+export const test_ObservableArray_shouldNotModifySource = function () {
+	const sa = [1, 2, 3];
+	const array = new ObservableArray(sa);
+	array[1] = 3;
+
+	TKUnit.assertEqual(sa[1], 2, 'ObservableArray should not modify source array');
+};
+
+export const test_ObservableArray_shouldSupportArrayLikeOperator = function () {
+	const sa = [1, 2, 3];
+	const array = new ObservableArray<number>(sa);
+	array[1] = 3;
+
+	TKUnit.assert(array[1] === array.getItem(1) && array.getItem(1) === 3, 'ObservableArray [] operator should work like setItem');
+};
+
+export const test_ObservableArray_operatorShouldRaiseCorrectEvent = function () {
+	// >> observable-array-eventdata
+	let index: number;
+	let action: string;
+	let addedCount: number;
+	let removed: Array<number>;
+
+	const array = new ObservableArray([1, 2, 3]);
+	array.on('change', (args) => {
+		index = args.index; // Index of the changed item.
+		action = args.action; // Action. In this case Update.
+		addedCount = args.addedCount; // Number of added items. In this case 1.
+		removed = args.removed; // Array of removed items. In this case with single item (2).
+	});
+	array[1] =  5;
+	// << observable-array-eventdata
+	TKUnit.assertEqual(index, 1);
+	TKUnit.assertEqual(action, ChangeType.Update);
+	TKUnit.assertEqual(addedCount, 1);
+	TKUnit.assertEqual(removed[0], 2);
+};
 
 export const test_ObservableArray_shouldCopySourceArrayItems = function () {
 	// >> observable-array-create
