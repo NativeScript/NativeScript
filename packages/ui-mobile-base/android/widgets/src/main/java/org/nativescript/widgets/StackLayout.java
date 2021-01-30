@@ -154,11 +154,11 @@ public class StackLayout extends LayoutBase {
         
         switch (verticalGravity) {
             case Gravity.CENTER_VERTICAL:
-                childTop = (bottom - top - this._totalLength) / 2 + paddingTop - paddingBottom;
+                childTop = (bottom - top - this._totalLength) / 2 + paddingTop;
                 break;
 
             case Gravity.BOTTOM:
-                childTop = bottom - top - this._totalLength + paddingTop - paddingBottom;
+                childTop = bottom - top - this._totalLength + paddingTop;
                 break;
 
             case Gravity.TOP:
@@ -197,11 +197,11 @@ public class StackLayout extends LayoutBase {
         
         switch (horizontalGravity) {
             case Gravity.CENTER_HORIZONTAL:
-                childLeft = (right - left - this._totalLength) / 2 + paddingLeft - paddingRight;
+                childLeft = (right - left - this._totalLength) / 2 + paddingLeft;
                 break;
 
             case Gravity.RIGHT:
-                childLeft = right - left - this._totalLength + paddingLeft - paddingRight;
+                childLeft = right - left - this._totalLength + paddingLeft;
                 break;
 
             case Gravity.LEFT:
