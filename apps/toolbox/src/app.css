@@ -7,24 +7,33 @@ components that have the btn class name.
 */
 .btn-view-demo {
   font-size: 18;
-<<<<<<< HEAD
   background-color: #65ADF1;
   border-radius: 5;
   font-size: 17;
   padding: 15;
   font-weight: bold;
-=======
-  /* box-shadow: -5 -5 10 10 navy; */
-  box-shadow: -5 -5 rgba(0,0,0,0.5);
-  background-color: #add8e6;
-  color: navy;
-  /* TODO: adding border radius breaks shadow */
-  /* border-radius: 10; */
->>>>>>> upstream/release/8.0.0
 }
 
 .bold{
   font-weight: bold;
+}
+
+.controls Label {
+    font-size: 20;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10;
+}
+
+.controls Button {
+    padding: 10 15;
+    margin: 5;
+    font-size: 17;
+    font-weight: bold;
+    color: #65ADF1;
+    border-radius: 5;
+    border-width: 1;
+    border-color: #65ADF1;
 }
 
 .box-shadow-demo .demo-component {
@@ -49,28 +58,12 @@ components that have the btn class name.
     border-bottom-width: 1;
     border-color: #65ADF1;
 }
-.box-shadow-demo .controls Label {
-    font-size: 20;
-    font-weight: bold;
-    color: #333;
-    margin-top: 10;
-}
 
 .box-shadow-demo .controls .description {
     font-size: 15;
     font-weight: normal;
     color: #333;
     margin-bottom: 10;
-}
-.box-shadow-demo .controls Button {
-    padding: 10 15;
-    margin: 5;
-    font-size: 17;
-    font-weight: bold;
-    color: #65ADF1;
-    border-radius: 5;
-    border-width: 1;
-    border-color: #65ADF1;
 }
 
 .box-shadow-demo .controls Button[selectedAttr=true] {

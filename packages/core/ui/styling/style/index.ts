@@ -10,12 +10,8 @@ import { Observable } from '../../../data/observable';
 
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
-<<<<<<< HEAD
-import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from '../../text-base';
-=======
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace, TextShadow } from '../../text-base';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
->>>>>>> upstream/release/8.0.0
 import { BoxShadow } from '../box-shadow';
 
 export interface CommonLayoutParams {

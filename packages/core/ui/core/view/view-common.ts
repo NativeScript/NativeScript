@@ -22,12 +22,9 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import { TextTransform } from '../../text-base';
 
 import * as am from '../../animation';
-<<<<<<< HEAD
-=======
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, getCurrentFontScale } from '../../../accessibility';
->>>>>>> upstream/release/8.0.0
 import { BoxShadow } from '../../styling/box-shadow';
 
 // helpers (these are okay re-exported here)
@@ -843,7 +840,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public iosOverflowSafeArea: boolean;
 	public iosOverflowSafeAreaEnabled: boolean;
 	public iosIgnoreSafeArea: boolean;
-	
+
 	get isLayoutValid(): boolean {
 		return this._isLayoutValid;
 	}
@@ -1152,9 +1149,9 @@ export const iosOverflowSafeAreaEnabledProperty = new InheritedProperty<ViewComm
 });
 iosOverflowSafeAreaEnabledProperty.register(ViewCommon);
 export const iosIgnoreSafeAreaProperty = new InheritedProperty({
-    name: 'iosIgnoreSafeArea',
-    defaultValue: false,
-    valueConverter: booleanConverter,
+	name: 'iosIgnoreSafeArea',
+	defaultValue: false,
+	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
 

@@ -6,10 +6,7 @@ import { Animation, AnimationDefinition, AnimationPromise } from '../../animatio
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from '../../styling/style-properties';
 import { GestureTypes, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/gradient';
-<<<<<<< HEAD
-=======
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
->>>>>>> upstream/release/8.0.0
 import { BoxShadow } from '../../styling/box-shadow';
 
 // helpers (these are okay re-exported here)

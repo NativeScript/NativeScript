@@ -1,4 +1,4 @@
-import { Observable, StackLayout } from '@nativescript/core';
+import { Observable } from '@nativescript/core';
 import { EventData, Page } from '@nativescript/core';
 
 export function navigatingTo(args: EventData) {
