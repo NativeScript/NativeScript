@@ -1154,7 +1154,6 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
-
 accessibilityIdentifierProperty.register(ViewCommon);
 accessibilityLabelProperty.register(ViewCommon);
 accessibilityValueProperty.register(ViewCommon);
