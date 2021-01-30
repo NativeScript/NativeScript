@@ -689,6 +689,8 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { contentType: UTType; });
+
 	constructor(o: { itemContentType: string; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -696,6 +698,8 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	initWithContentType(contentType: UTType): this;
 
 	initWithItemContentType(itemContentType: string): this;
 

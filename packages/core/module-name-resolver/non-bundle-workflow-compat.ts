@@ -25,7 +25,7 @@ function processFile(file: fs.File) {
 	const loadContent = () => file.readTextSync();
 
 	switch (file.extension.toLocaleLowerCase()) {
-		case '.js':{
+		case '.js': {
 			const noExtPath = filePathRelativeToApp.substr(0, filePathRelativeToApp.length - '.js'.length);
 
 			register(filePathRelativeToApp, function () {

@@ -33,7 +33,6 @@ export interface ChangedData<T> extends EventData {
 	 * Number of added items.
 	 */
 	addedCount: number;
-
 }
 
 const CHANGE = 'change';
@@ -116,8 +115,8 @@ export class ObservableArray<T> extends Observable {
 
 	set length(value: number) {
 		if (types.isNumber(value) && this._array && this._array.length !== value) {
-			const added=[];
-			for (let i=this._array.length;i < value;++i) {
+			const added = [];
+			for (let i = this._array.length; i < value; ++i) {
 				added.push(undefined);
 			}
 			this.splice(value, this._array.length - value, ...added);

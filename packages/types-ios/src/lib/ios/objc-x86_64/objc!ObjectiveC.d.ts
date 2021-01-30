@@ -345,13 +345,6 @@ declare const OBJC_SYNC_SUCCESS: number;
 
 declare const OBJC_WAIT_UNTIL_DONE: number;
 
-declare class Protocol extends NSObject {
-
-	static alloc(): Protocol; // inherited from NSObject
-
-	static new(): Protocol; // inherited from NSObject
-}
-
 declare function _objc_flush_caches(cls: typeof NSObject): void;
 
 declare function _objc_msgForward(): void;
@@ -580,7 +573,7 @@ declare function objc_setHook_getClass(newValue: interop.FunctionReference<(p1: 
 
 declare function objc_setHook_getImageName(newValue: interop.FunctionReference<(p1: typeof NSObject, p2: interop.Pointer | interop.Reference<string>) => boolean>, outOldValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: typeof NSObject, p2: interop.Pointer | interop.Reference<string>) => boolean>>): void;
 
-declare function objc_setHook_setAssociatedObject(newValue: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>, p3: any, p4: objc_AssociationPolicy) => void>, outOldValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>, p3: any, p4: objc_AssociationPolicy) => void>>): void;
+declare function objc_setHook_lazyClassNamer(newValue: interop.FunctionReference<(p1: typeof NSObject) => string>, oldOutValue: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: typeof NSObject) => string>>): void;
 
 declare function objc_setUncaughtExceptionHandler(fn: interop.FunctionReference<(p1: any) => void>): interop.FunctionReference<(p1: any) => void>;
 

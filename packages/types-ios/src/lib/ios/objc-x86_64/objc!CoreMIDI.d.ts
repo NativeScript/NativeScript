@@ -8,6 +8,71 @@ interface MIDICIDeviceIdentification {
 }
 declare var MIDICIDeviceIdentification: interop.StructType<MIDICIDeviceIdentification>;
 
+declare class MIDICIDeviceInfo extends NSObject implements NSSecureCoding {
+
+	static alloc(): MIDICIDeviceInfo; // inherited from NSObject
+
+	static new(): MIDICIDeviceInfo; // inherited from NSObject
+
+	readonly family: NSData;
+
+	readonly manufacturerID: NSData;
+
+	readonly midiDestination: number;
+
+	readonly modelNumber: NSData;
+
+	readonly revisionLevel: NSData;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { destination: number; manufacturer: NSData; family: NSData; model: NSData; revision: NSData; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithDestinationManufacturerFamilyModelRevision(midiDestination: number, manufacturer: NSData, family: NSData, modelNumber: NSData, revisionLevel: NSData): this;
+}
+
+declare class MIDICIDiscoveredNode extends NSObject implements NSSecureCoding {
+
+	static alloc(): MIDICIDiscoveredNode; // inherited from NSObject
+
+	static new(): MIDICIDiscoveredNode; // inherited from NSObject
+
+	readonly destination: number;
+
+	readonly deviceInfo: MIDICIDeviceInfo;
+
+	readonly maximumSysExSize: number;
+
+	readonly supportsProfiles: boolean;
+
+	readonly supportsProperties: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class MIDICIDiscoveryManager extends NSObject {
+
+	static alloc(): MIDICIDiscoveryManager; // inherited from NSObject
+
+	static new(): MIDICIDiscoveryManager; // inherited from NSObject
+
+	static sharedInstance(): MIDICIDiscoveryManager;
+
+	discoverWithHandler(completedHandler: (p1: NSArray<MIDICIDiscoveredNode>) => void): void;
+}
+
 declare class MIDICIProfile extends NSObject implements NSSecureCoding {
 
 	static alloc(): MIDICIProfile; // inherited from NSObject
@@ -22,14 +87,33 @@ declare class MIDICIProfile extends NSObject implements NSSecureCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { data: NSData; });
+
 	constructor(o: { data: NSData; name: string; });
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
 
+	initWithData(data: NSData): this;
+
 	initWithDataName(data: NSData, inName: string): this;
 }
+
+interface MIDICIProfileResponderDelegate extends NSObjectProtocol {
+
+	connectInitiatorWithDeviceInfo(initiatorMUID: number, deviceInfo: MIDICIDeviceInfo): boolean;
+
+	handleDataForProfileOnChannelData?(aProfile: MIDICIProfile, channel: number, inData: NSData): void;
+
+	initiatorDisconnected(initiatorMUID: number): void;
+
+	willSetProfileOnChannelEnabled?(aProfile: MIDICIProfile, channel: number, shouldEnable: boolean): boolean;
+}
+declare var MIDICIProfileResponderDelegate: {
+
+	prototype: MIDICIProfileResponderDelegate;
+};
 
 declare class MIDICIProfileState extends NSObject implements NSSecureCoding {
 
@@ -41,7 +125,11 @@ declare class MIDICIProfileState extends NSObject implements NSSecureCoding {
 
 	readonly enabledProfiles: NSArray<MIDICIProfile>;
 
+	readonly midiChannel: number;
+
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { channel: number; enabledProfiles: NSArray<MIDICIProfile> | MIDICIProfile[]; disabledProfiles: NSArray<MIDICIProfile> | MIDICIProfile[]; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -49,9 +137,36 @@ declare class MIDICIProfileState extends NSObject implements NSSecureCoding {
 
 	encodeWithCoder(coder: NSCoder): void;
 
+	initWithChannelEnabledProfilesDisabledProfiles(midiChannelNum: number, enabled: NSArray<MIDICIProfile> | MIDICIProfile[], disabled: NSArray<MIDICIProfile> | MIDICIProfile[]): this;
+
 	initWithCoder(coder: NSCoder): this;
 
 	initWithEnabledProfilesDisabledProfiles(enabled: NSArray<MIDICIProfile> | MIDICIProfile[], disabled: NSArray<MIDICIProfile> | MIDICIProfile[]): this;
+}
+
+declare class MIDICIResponder extends NSObject {
+
+	static alloc(): MIDICIResponder; // inherited from NSObject
+
+	static new(): MIDICIResponder; // inherited from NSObject
+
+	readonly deviceInfo: MIDICIDeviceInfo;
+
+	readonly initiators: NSArray<number>;
+
+	readonly profileDelegate: MIDICIProfileResponderDelegate;
+
+	constructor(o: { deviceInfo: MIDICIDeviceInfo; profileDelegate: MIDICIProfileResponderDelegate; profileStates: NSArray<MIDICIProfileState> | MIDICIProfileState[]; supportProperties: boolean; });
+
+	initWithDeviceInfoProfileDelegateProfileStatesSupportProperties(deviceInfo: MIDICIDeviceInfo, delegate: MIDICIProfileResponderDelegate, profileList: NSArray<MIDICIProfileState> | MIDICIProfileState[], propertiesSupported: boolean): this;
+
+	notifyProfileOnChannelIsEnabled(aProfile: MIDICIProfile, channel: number, enabledState: boolean): boolean;
+
+	sendProfileOnChannelProfileData(aProfile: MIDICIProfile, channel: number, profileSpecificData: NSData): boolean;
+
+	start(): boolean;
+
+	stop(): void;
 }
 
 declare class MIDICISession extends NSObject {
@@ -60,33 +175,66 @@ declare class MIDICISession extends NSObject {
 
 	static new(): MIDICISession; // inherited from NSObject
 
-	readonly deviceIdentification: MIDICIDeviceIdentification;
+	readonly deviceInfo: MIDICIDeviceInfo;
 
-	readonly entity: number;
+	readonly maxPropertyRequests: number;
+
+	readonly maxSysExSize: number;
+
+	readonly midiDestination: number;
 
 	profileChangedCallback: (p1: MIDICISession, p2: number, p3: MIDICIProfile, p4: boolean) => void;
 
-	propertyChangedCallback: (p1: MIDICISession, p2: number, p3: NSData) => void;
+	profileSpecificDataHandler: (p1: MIDICISession, p2: number, p3: MIDICIProfile, p4: NSData) => void;
 
 	readonly supportsProfileCapability: boolean;
 
 	readonly supportsPropertyCapability: boolean;
 
-	constructor(o: { MIDIEntity: number; dataReadyHandler: () => void; });
+	constructor(o: { discoveredNode: MIDICIDiscoveredNode; dataReadyHandler: () => void; disconnectHandler: (p1: MIDICISession, p2: NSError) => void; });
 
 	disableProfileOnChannelError(profile: MIDICIProfile, channel: number): boolean;
 
 	enableProfileOnChannelError(profile: MIDICIProfile, channel: number): boolean;
 
-	getPropertyOnChannelResponseHandler(inquiry: NSData, channel: number, handler: (p1: MIDICISession, p2: number, p3: NSData, p4: NSError) => void): void;
-
-	hasPropertyOnChannelResponseHandler(inquiry: NSData, channel: number, handler: (p1: MIDICISession, p2: number, p3: NSData, p4: NSError) => void): void;
-
-	initWithMIDIEntityDataReadyHandler(entity: number, handler: () => void): this;
+	initWithDiscoveredNodeDataReadyHandlerDisconnectHandler(discoveredNode: MIDICIDiscoveredNode, handler: () => void, disconnectHandler: (p1: MIDICISession, p2: NSError) => void): this;
 
 	profileStateForChannel(channel: number): MIDICIProfileState;
 
-	setPropertyOnChannelResponseHandler(inquiry: NSData, channel: number, handler: (p1: MIDICISession, p2: number, p3: NSData, p4: NSError) => void): void;
+	sendProfileOnChannelProfileData(profile: MIDICIProfile, channel: number, profileSpecificData: NSData): boolean;
+}
+
+declare const enum MIDICVStatus {
+
+	kMIDICVStatusNoteOff = 8,
+
+	kMIDICVStatusNoteOn = 9,
+
+	kMIDICVStatusPolyPressure = 10,
+
+	kMIDICVStatusControlChange = 11,
+
+	kMIDICVStatusProgramChange = 12,
+
+	kMIDICVStatusChannelPressure = 13,
+
+	kMIDICVStatusPitchBend = 14,
+
+	kMIDICVStatusRegisteredPNC = 0,
+
+	kMIDICVStatusAssignablePNC = 1,
+
+	kMIDICVStatusRegisteredControl = 2,
+
+	kMIDICVStatusAssignableControl = 3,
+
+	kMIDICVStatusRelRegisteredControl = 4,
+
+	kMIDICVStatusRelAssignableControl = 5,
+
+	kMIDICVStatusPerNotePitchBend = 6,
+
+	kMIDICVStatusPerNoteMgmt = 15
 }
 
 declare var MIDIChannelsWholePort: number;
@@ -110,6 +258,8 @@ declare function MIDIDestinationCreate(client: number, name: string, readProc: i
 
 declare function MIDIDestinationCreateWithBlock(client: number, name: string, outDest: interop.Pointer | interop.Reference<number>, readBlock: (p1: interop.Pointer | interop.Reference<MIDIPacketList>, p2: interop.Pointer | interop.Reference<any>) => void): number;
 
+declare function MIDIDestinationCreateWithProtocol(client: number, name: string, protocol: MIDIProtocolID, outDest: interop.Pointer | interop.Reference<number>, readBlock: (p1: interop.Pointer | interop.Reference<MIDIEventList>, p2: interop.Pointer | interop.Reference<any>) => void): number;
+
 declare function MIDIDeviceAddEntity(device: number, name: string, embedded: boolean, numSourceEndpoints: number, numDestinationEndpoints: number, newEntity: interop.Pointer | interop.Reference<number>): number;
 
 declare function MIDIDeviceCreate(owner: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, name: string, manufacturer: string, model: string, outDevice: interop.Pointer | interop.Reference<number>): number;
@@ -128,6 +278,8 @@ declare function MIDIDeviceListGetDevice(devList: number, index0: number): numbe
 
 declare function MIDIDeviceListGetNumberOfDevices(devList: number): number;
 
+declare function MIDIDeviceNewEntity(device: number, name: string, protocol: MIDIProtocolID, embedded: boolean, numSourceEndpoints: number, numDestinationEndpoints: number, newEntity: interop.Pointer | interop.Reference<number>): number;
+
 declare function MIDIDeviceRemoveEntity(device: number, entity: number): number;
 
 interface MIDIDriverInterface {
@@ -143,6 +295,8 @@ interface MIDIDriverInterface {
 	EnableSource: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: number, p3: boolean) => number>;
 	Flush: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>;
 	Monitor: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: number, p3: interop.Pointer | interop.Reference<MIDIPacketList>) => number>;
+	SendPackets: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: interop.Pointer | interop.Reference<MIDIEventList>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>;
+	MonitorEvents: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList>) => number>;
 }
 declare var MIDIDriverInterface: interop.StructType<MIDIDriverInterface>;
 
@@ -165,6 +319,24 @@ declare function MIDIEntityGetNumberOfDestinations(entity: number): number;
 declare function MIDIEntityGetNumberOfSources(entity: number): number;
 
 declare function MIDIEntityGetSource(entity: number, sourceIndex0: number): number;
+
+interface MIDIEventList {
+	protocol: MIDIProtocolID;
+	numPackets: number;
+	packet: interop.Reference<MIDIEventPacket>;
+}
+declare var MIDIEventList: interop.StructType<MIDIEventList>;
+
+declare function MIDIEventListAdd(evtlist: interop.Pointer | interop.Reference<MIDIEventList>, listSize: number, curPacket: interop.Pointer | interop.Reference<MIDIEventPacket>, time: number, wordCount: number, words: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<MIDIEventPacket>;
+
+declare function MIDIEventListInit(evtlist: interop.Pointer | interop.Reference<MIDIEventList>, protocol: MIDIProtocolID): interop.Pointer | interop.Reference<MIDIEventPacket>;
+
+interface MIDIEventPacket {
+	timeStamp: number;
+	wordCount: number;
+	words: interop.Reference<number>;
+}
+declare var MIDIEventPacket: interop.StructType<MIDIEventPacket>;
 
 declare function MIDIExternalDeviceCreate(name: string, manufacturer: string, model: string, outDevice: interop.Pointer | interop.Reference<number>): number;
 
@@ -201,6 +373,44 @@ declare var MIDIIOErrorNotification: interop.StructType<MIDIIOErrorNotification>
 declare function MIDIInputPortCreate(client: number, portName: string, readProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<MIDIPacketList>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>, refCon: interop.Pointer | interop.Reference<any>, outPort: interop.Pointer | interop.Reference<number>): number;
 
 declare function MIDIInputPortCreateWithBlock(client: number, portName: string, outPort: interop.Pointer | interop.Reference<number>, readBlock: (p1: interop.Pointer | interop.Reference<MIDIPacketList>, p2: interop.Pointer | interop.Reference<any>) => void): number;
+
+declare function MIDIInputPortCreateWithProtocol(client: number, portName: string, protocol: MIDIProtocolID, outPort: interop.Pointer | interop.Reference<number>, receiveBlock: (p1: interop.Pointer | interop.Reference<MIDIEventList>, p2: interop.Pointer | interop.Reference<any>) => void): number;
+
+declare const enum MIDIMessageType {
+
+	kMIDIMessageTypeUtility = 0,
+
+	kMIDIMessageTypeSystem = 1,
+
+	kMIDIMessageTypeChannelVoice1 = 2,
+
+	kMIDIMessageTypeSysEx = 3,
+
+	kMIDIMessageTypeChannelVoice2 = 4,
+
+	kMIDIMessageTypeData128 = 5
+}
+
+interface MIDIMessage_128 {
+	word0: number;
+	word1: number;
+	word2: number;
+	word3: number;
+}
+declare var MIDIMessage_128: interop.StructType<MIDIMessage_128>;
+
+interface MIDIMessage_64 {
+	word0: number;
+	word1: number;
+}
+declare var MIDIMessage_64: interop.StructType<MIDIMessage_64>;
+
+interface MIDIMessage_96 {
+	word0: number;
+	word1: number;
+	word2: number;
+}
+declare var MIDIMessage_96: interop.StructType<MIDIMessage_96>;
 
 declare var MIDINetworkBonjourServiceType: string;
 
@@ -398,11 +608,22 @@ declare function MIDIPortDisconnectSource(port: number, source: number): number;
 
 declare function MIDIPortDispose(port: number): number;
 
+declare const enum MIDIProtocolID {
+
+	kMIDIProtocol_1_0 = 1,
+
+	kMIDIProtocol_2_0 = 2
+}
+
 declare function MIDIReceived(src: number, pktlist: interop.Pointer | interop.Reference<MIDIPacketList>): number;
+
+declare function MIDIReceivedEventList(src: number, evtlist: interop.Pointer | interop.Reference<MIDIEventList>): number;
 
 declare function MIDIRestart(): number;
 
 declare function MIDISend(port: number, dest: number, pktlist: interop.Pointer | interop.Reference<MIDIPacketList>): number;
+
+declare function MIDISendEventList(port: number, dest: number, evtlist: interop.Pointer | interop.Reference<MIDIEventList>): number;
 
 declare function MIDISendSysex(request: interop.Pointer | interop.Reference<MIDISysexSendRequest>): number;
 
@@ -416,6 +637,19 @@ declare function MIDISetupRemoveExternalDevice(device: number): number;
 
 declare function MIDISourceCreate(client: number, name: string, outSrc: interop.Pointer | interop.Reference<number>): number;
 
+declare function MIDISourceCreateWithProtocol(client: number, name: string, protocol: MIDIProtocolID, outSrc: interop.Pointer | interop.Reference<number>): number;
+
+declare const enum MIDISysExStatus {
+
+	kMIDISysExStatusComplete = 0,
+
+	kMIDISysExStatusStart = 1,
+
+	kMIDISysExStatusContinue = 2,
+
+	kMIDISysExStatusEnd = 3
+}
+
 interface MIDISysexSendRequest {
 	destination: number;
 	data: string;
@@ -426,6 +660,33 @@ interface MIDISysexSendRequest {
 	completionRefCon: interop.Pointer | interop.Reference<any>;
 }
 declare var MIDISysexSendRequest: interop.StructType<MIDISysexSendRequest>;
+
+declare const enum MIDISystemStatus {
+
+	kMIDIStatusStartOfExclusive = 240,
+
+	kMIDIStatusEndOfExclusive = 247,
+
+	kMIDIStatusMTC = 241,
+
+	kMIDIStatusSongPosPointer = 242,
+
+	kMIDIStatusSongSelect = 243,
+
+	kMIDIStatusTuneRequest = 246,
+
+	kMIDIStatusTimingClock = 248,
+
+	kMIDIStatusStart = 250,
+
+	kMIDIStatusContinue = 251,
+
+	kMIDIStatusStop = 252,
+
+	kMIDIStatusActiveSending = 254,
+
+	kMIDIStatusSystemReset = 255
+}
 
 declare function MIDIThruConnectionCreate(inPersistentOwnerID: string, inConnectionParams: NSData, outConnection: interop.Pointer | interop.Reference<number>): number;
 
@@ -535,6 +796,14 @@ declare const kMIDINoCurrentSetup: number;
 
 declare const kMIDINotPermitted: number;
 
+declare const kMIDINoteAttributeManufacturerSpecific: number;
+
+declare const kMIDINoteAttributeNone: number;
+
+declare const kMIDINoteAttributePitch: number;
+
+declare const kMIDINoteAttributeProfileSpecific: number;
+
 declare const kMIDIObjectNotFound: number;
 
 declare var kMIDIObjectType_ExternalMask: MIDIObjectType;
@@ -590,6 +859,8 @@ declare var kMIDIPropertyOffline: string;
 declare var kMIDIPropertyPanDisruptsStereo: string;
 
 declare var kMIDIPropertyPrivate: string;
+
+declare var kMIDIPropertyProtocolID: string;
 
 declare var kMIDIPropertyReceiveChannels: string;
 

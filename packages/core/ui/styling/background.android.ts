@@ -44,8 +44,12 @@ export namespace ad {
 			const constantState = drawable.getConstantState();
 			androidView._cachedDrawable = constantState || drawable;
 		}
-
-		if (isSetColorFilterOnlyWidget(nativeView) && drawable && !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && background.color) {
+		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
+		const onlyColor = !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && !!background.color;
+		if (drawable instanceof android.graphics.drawable.ColorDrawable && onlyColor) {
+			drawable.setColor(background.color.android);
+			drawable.invalidateSelf();
+		} else if (isSetColorFilterOnlyWidget(nativeView) && drawable && onlyColor) {
 			if (drawable instanceof org.nativescript.widgets.BorderDrawable && androidView._cachedDrawable) {
 				if (!(androidView._cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState)) {
 					return;
@@ -60,9 +64,12 @@ export namespace ad {
 			drawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
 			drawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
 			(<any>drawable).backgroundColor = backgroundColor;
+		} else if (!isBorderDrawable && onlyColor) {
+			// this is the fastest way to change only background color
+			nativeView.setBackgroundColor(background.color.android);
 		} else if (!background.isEmpty()) {
 			let backgroundDrawable = drawable as org.nativescript.widgets.BorderDrawable;
-			if (!(drawable instanceof org.nativescript.widgets.BorderDrawable)) {
+			if (!isBorderDrawable) {
 				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
 				refreshBorderDrawable(view, backgroundDrawable);
 				nativeView.setBackground(backgroundDrawable);

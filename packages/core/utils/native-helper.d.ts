@@ -168,9 +168,9 @@ export namespace iOSNativeHelper {
 	 */
 	export function applyRotateTransform(transform: any /* CATransform3D*/, x: number, y: number, z: number): any; /* CATransform3D*/
 
-  /**
-   * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
-   */
+	/**
+	 * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
+	 */
 	export function createUIDocumentInteractionControllerDelegate(): any;
 
 	/**

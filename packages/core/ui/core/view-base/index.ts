@@ -47,7 +47,7 @@ export interface ShowModalOptions {
 	/**
 	 * A function that will be called when the view is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
 	 */
-	closeCallback: (...args)=>void;
+	closeCallback: (...args) => void;
 
 	/**
 	 * An optional parameter specifying whether to show the modal view in full-screen mode.
@@ -87,6 +87,12 @@ export interface ShowModalOptions {
 		 * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
 		 */
 		cancelable?: boolean;
+
+		/**
+		 * An optional parameter specifying the windowSoftInputMode of the dialog window.
+		 * For possible values see https://developer.android.com/reference/android/view/WindowManager.LayoutParams#softInputMode
+		 */
+		windowSoftInputMode?: number;
 	};
 	/**
 	 * An optional parameter specifying whether the modal view can be dismissed when not in full-screen mode.
@@ -94,7 +100,7 @@ export interface ShowModalOptions {
 	cancelable?: boolean;
 }
 
-export function getAncestor(view: ViewBaseDefinition, criterion: string | { new() }): ViewBaseDefinition {
+export function getAncestor(view: ViewBaseDefinition, criterion: string | { new () }): ViewBaseDefinition {
 	let matcher: (view: ViewBaseDefinition) => boolean = null;
 	if (typeof criterion === 'string') {
 		matcher = (view: ViewBaseDefinition) => view.typeName === criterion;
