@@ -246,7 +246,7 @@ export class ObservableArray<T> extends Observable {
 	 */
 	splice(start: number, deleteCount?: number, ...items: any): T[] {
 		const length = this._array.length;
-		const result = this._array.splice(start, deleteCount, ...items);
+		const result = arguments.length === 1 ? this._array.splice(start) : this._array.splice(start, deleteCount, ...items);
 
 		this.notify(<ChangedData<T>>{
 			eventName: CHANGE,
