@@ -630,10 +630,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	}
 
 
-	_requetLayoutNeeded = false;
+	_requestLayoutNeeded = false;
 
 	get isLayoutRequestNeeded() {
-		return this._requetLayoutNeeded;
+		return this._requestLayoutNeeded;
 	}
 	
 	_suspendRequestLayout = false;
