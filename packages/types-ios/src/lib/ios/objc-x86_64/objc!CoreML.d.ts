@@ -87,7 +87,7 @@ declare class MLDictionaryConstraint extends NSObject implements NSSecureCoding 
 	initWithCoder(coder: NSCoder): this;
 }
 
-declare class MLDictionaryFeatureProvider extends NSObject implements MLFeatureProvider, NSFastEnumeration {
+declare class MLDictionaryFeatureProvider extends NSObject implements MLFeatureProvider, NSFastEnumeration, NSSecureCoding {
 
 	static alloc(): MLDictionaryFeatureProvider; // inherited from NSObject
 
@@ -96,11 +96,19 @@ declare class MLDictionaryFeatureProvider extends NSObject implements MLFeatureP
 	readonly dictionary: NSDictionary<string, MLFeatureValue>;
 
 	readonly featureNames: NSSet<string>; // inherited from MLFeatureProvider
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 	[Symbol.iterator](): Iterator<any>;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { dictionary: NSDictionary<string, any>; });
 
+	encodeWithCoder(coder: NSCoder): void;
+
 	featureValueForName(featureName: string): MLFeatureValue;
+
+	initWithCoder(coder: NSCoder): this;
 
 	initWithDictionaryError(dictionary: NSDictionary<string, any>): this;
 
@@ -170,7 +178,7 @@ declare const enum MLFeatureType {
 	Sequence = 7
 }
 
-declare class MLFeatureValue extends NSObject implements NSCopying {
+declare class MLFeatureValue extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): MLFeatureValue; // inherited from NSObject
 
@@ -226,7 +234,15 @@ declare class MLFeatureValue extends NSObject implements NSCopying {
 
 	readonly undefined: boolean;
 
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 
 	isEqualToFeatureValue(value: MLFeatureValue): boolean;
 }
@@ -349,6 +365,8 @@ declare class MLModel extends NSObject {
 
 	static compileModelAtURLError(modelURL: NSURL): NSURL;
 
+	static loadContentsOfURLConfigurationCompletionHandler(url: NSURL, configuration: MLModelConfiguration, handler: (p1: MLModel, p2: NSError) => void): void;
+
 	static modelWithContentsOfURLConfigurationError(url: NSURL, configuration: MLModelConfiguration): MLModel;
 
 	static modelWithContentsOfURLError(url: NSURL): MLModel;
@@ -371,6 +389,38 @@ declare class MLModel extends NSObject {
 }
 
 declare var MLModelAuthorKey: string;
+
+declare class MLModelCollection extends NSObject {
+
+	static alloc(): MLModelCollection; // inherited from NSObject
+
+	static beginAccessingModelCollectionWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: MLModelCollection, p2: NSError) => void): NSProgress;
+
+	static endAccessingModelCollectionWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: boolean, p2: NSError) => void): void;
+
+	static new(): MLModelCollection; // inherited from NSObject
+
+	readonly deploymentID: string;
+
+	readonly entries: NSDictionary<string, MLModelCollectionEntry>;
+
+	readonly identifier: string;
+}
+
+declare var MLModelCollectionDidChangeNotification: string;
+
+declare class MLModelCollectionEntry extends NSObject {
+
+	static alloc(): MLModelCollectionEntry; // inherited from NSObject
+
+	static new(): MLModelCollectionEntry; // inherited from NSObject
+
+	readonly modelIdentifier: string;
+
+	readonly modelURL: NSURL;
+
+	isEqualToModelCollectionEntry(entry: MLModelCollectionEntry): boolean;
+}
 
 declare class MLModelConfiguration extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -404,6 +454,8 @@ declare class MLModelDescription extends NSObject implements NSSecureCoding {
 	static alloc(): MLModelDescription; // inherited from NSObject
 
 	static new(): MLModelDescription; // inherited from NSObject
+
+	readonly classLabels: NSArray<any>;
 
 	readonly inputDescriptionsByName: NSDictionary<string, MLFeatureDescription>;
 
@@ -446,7 +498,13 @@ declare const enum MLModelError {
 
 	Update = 6,
 
-	Parameters = 7
+	Parameters = 7,
+
+	ModelDecryptionKeyFetch = 8,
+
+	ModelDecryption = 9,
+
+	ModelCollection = 10
 }
 
 declare var MLModelErrorDomain: string;
@@ -455,9 +513,11 @@ declare var MLModelLicenseKey: string;
 
 declare var MLModelVersionStringKey: string;
 
-declare class MLMultiArray extends NSObject {
+declare class MLMultiArray extends NSObject implements NSSecureCoding {
 
 	static alloc(): MLMultiArray; // inherited from NSObject
+
+	static multiArrayByConcatenatingMultiArraysAlongAxisDataType(multiArrays: NSArray<MLMultiArray> | MLMultiArray[], axis: number, dataType: MLMultiArrayDataType): MLMultiArray;
 
 	static new(): MLMultiArray; // inherited from NSObject
 
@@ -470,11 +530,19 @@ declare class MLMultiArray extends NSObject {
 	readonly shape: NSArray<number>;
 
 	readonly strides: NSArray<number>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 	[index: number]: number;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { dataPointer: interop.Pointer | interop.Reference<any>; shape: NSArray<number> | number[]; dataType: MLMultiArrayDataType; strides: NSArray<number> | number[]; deallocator: (p1: interop.Pointer | interop.Reference<any>) => void; });
 
 	constructor(o: { shape: NSArray<number> | number[]; dataType: MLMultiArrayDataType; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 
 	initWithDataPointerShapeDataTypeStridesDeallocatorError(dataPointer: interop.Pointer | interop.Reference<any>, shape: NSArray<number> | number[], dataType: MLMultiArrayDataType, strides: NSArray<number> | number[], deallocator: (p1: interop.Pointer | interop.Reference<any>) => void): this;
 
@@ -514,7 +582,11 @@ declare const enum MLMultiArrayDataType {
 
 	Double = 65600,
 
+	Float64 = 65600,
+
 	Float32 = 65568,
+
+	Float = 65568,
 
 	Int32 = 131104
 }
@@ -637,7 +709,7 @@ declare class MLPredictionOptions extends NSObject {
 	usesCPUOnly: boolean;
 }
 
-declare class MLSequence extends NSObject {
+declare class MLSequence extends NSObject implements NSSecureCoding {
 
 	static alloc(): MLSequence; // inherited from NSObject
 
@@ -654,6 +726,14 @@ declare class MLSequence extends NSObject {
 	readonly stringValues: NSArray<string>;
 
 	readonly type: MLFeatureType;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class MLSequenceConstraint extends NSObject implements NSSecureCoding {
@@ -748,9 +828,13 @@ declare class MLUpdateTask extends MLTask {
 
 	static new(): MLUpdateTask; // inherited from NSObject
 
+	static updateTaskForModelAtURLTrainingDataCompletionHandlerError(modelURL: NSURL, trainingData: MLBatchProvider, completionHandler: (p1: MLUpdateContext) => void): MLUpdateTask;
+
 	static updateTaskForModelAtURLTrainingDataConfigurationCompletionHandlerError(modelURL: NSURL, trainingData: MLBatchProvider, configuration: MLModelConfiguration, completionHandler: (p1: MLUpdateContext) => void): MLUpdateTask;
 
 	static updateTaskForModelAtURLTrainingDataConfigurationProgressHandlersError(modelURL: NSURL, trainingData: MLBatchProvider, configuration: MLModelConfiguration, progressHandlers: MLUpdateProgressHandlers): MLUpdateTask;
+
+	static updateTaskForModelAtURLTrainingDataProgressHandlersError(modelURL: NSURL, trainingData: MLBatchProvider, progressHandlers: MLUpdateProgressHandlers): MLUpdateTask;
 
 	resumeWithParameters(updateParameters: NSDictionary<MLParameterKey, any>): void;
 }

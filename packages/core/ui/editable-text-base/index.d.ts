@@ -64,6 +64,11 @@ export class EditableTextBase extends TextBase {
 	 */
 	public _setInputType(inputType: number): void;
 	//@endprivate
+
+	/**
+	 * Set the selection anchor to start and the selection edge to stop
+	 */
+	public setSelection(start: number, stop?: number);
 }
 
 export type ReturnKeyType = 'done' | 'next' | 'go' | 'search' | 'send';

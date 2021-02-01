@@ -19,9 +19,9 @@ export type TransformFunctionsInfo = {
 };
 
 export interface AnimationPromise extends Promise<any>, Cancelable {
-	then(...args):AnimationPromise
-	catch(...args):AnimationPromise
-};
+	then(...args): AnimationPromise;
+	catch(...args): AnimationPromise;
+}
 
 export interface Pair {
 	x: number;

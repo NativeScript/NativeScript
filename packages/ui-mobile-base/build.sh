@@ -14,7 +14,7 @@ export SKIP_PACK=true
 ./build.android.sh
 ./build.ios.sh
 
-echo "Copy NPM artefacts"
+echo "Copy NPM artifacts"
 cp .npmignore README.md package.json dist/package
 cp ../../LICENSE dist/package
 

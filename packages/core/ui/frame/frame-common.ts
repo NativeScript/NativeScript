@@ -428,7 +428,7 @@ export class FrameBase extends CustomLayoutView {
 			object: this,
 			isBack,
 			entry: backstackEntry.entry,
-			fromEntry:this.currentEntry
+			fromEntry: this.currentEntry,
 		});
 	}
 

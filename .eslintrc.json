@@ -7,9 +7,10 @@
 		"project": ["packages/core/tsconfig.json", "packages/webpack/tsconfig.json"]
 	},
 	"ignorePatterns": ["**/*"],
-	"plugins": ["@typescript-eslint", "@nrwl/nx"],
-	"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier", "prettier/@typescript-eslint"],
+	"plugins": ["prettier", "@typescript-eslint", "@nrwl/nx"],
+	"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier/@typescript-eslint", "plugin:prettier/recommended"],
 	"rules": {
+		"prettier/prettier": "warn",
 		"@typescript-eslint/explicit-member-accessibility": "off",
 		"@typescript-eslint/explicit-function-return-type": "off",
 		"@typescript-eslint/no-parameter-properties": "off",

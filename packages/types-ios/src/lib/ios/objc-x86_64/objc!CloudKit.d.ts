@@ -118,8 +118,6 @@ declare class CKContainer extends NSObject {
 
 	databaseWithDatabaseScope(databaseScope: CKDatabaseScope): CKDatabase;
 
-	discoverAllContactUserInfosWithCompletionHandler(completionHandler: (p1: NSArray<CKDiscoveredUserInfo>, p2: NSError) => void): void;
-
 	discoverAllIdentitiesWithCompletionHandler(completionHandler: (p1: NSArray<CKUserIdentity>, p2: NSError) => void): void;
 
 	discoverUserIdentityWithEmailAddressCompletionHandler(email: string, completionHandler: (p1: CKUserIdentity, p2: NSError) => void): void;
@@ -127,10 +125,6 @@ declare class CKContainer extends NSObject {
 	discoverUserIdentityWithPhoneNumberCompletionHandler(phoneNumber: string, completionHandler: (p1: CKUserIdentity, p2: NSError) => void): void;
 
 	discoverUserIdentityWithUserRecordIDCompletionHandler(userRecordID: CKRecordID, completionHandler: (p1: CKUserIdentity, p2: NSError) => void): void;
-
-	discoverUserInfoWithEmailAddressCompletionHandler(email: string, completionHandler: (p1: CKDiscoveredUserInfo, p2: NSError) => void): void;
-
-	discoverUserInfoWithUserRecordIDCompletionHandler(userRecordID: CKRecordID, completionHandler: (p1: CKDiscoveredUserInfo, p2: NSError) => void): void;
 
 	fetchAllLongLivedOperationIDsWithCompletionHandler(completionHandler: (p1: NSArray<string>, p2: NSError) => void): void;
 
@@ -240,15 +234,6 @@ declare class CKDatabaseSubscription extends CKSubscription implements NSCopying
 	initWithSubscriptionID(subscriptionID: string): this;
 }
 
-declare class CKDiscoverAllContactsOperation extends CKOperation {
-
-	static alloc(): CKDiscoverAllContactsOperation; // inherited from NSObject
-
-	static new(): CKDiscoverAllContactsOperation; // inherited from NSObject
-
-	discoverAllContactsCompletionBlock: (p1: NSArray<CKDiscoveredUserInfo>, p2: NSError) => void;
-}
-
 declare class CKDiscoverAllUserIdentitiesOperation extends CKOperation {
 
 	static alloc(): CKDiscoverAllUserIdentitiesOperation; // inherited from NSObject
@@ -275,38 +260,6 @@ declare class CKDiscoverUserIdentitiesOperation extends CKOperation {
 	constructor(o: { userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo> | CKUserIdentityLookupInfo[]; });
 
 	initWithUserIdentityLookupInfos(userIdentityLookupInfos: NSArray<CKUserIdentityLookupInfo> | CKUserIdentityLookupInfo[]): this;
-}
-
-declare class CKDiscoverUserInfosOperation extends CKOperation {
-
-	static alloc(): CKDiscoverUserInfosOperation; // inherited from NSObject
-
-	static new(): CKDiscoverUserInfosOperation; // inherited from NSObject
-
-	discoverUserInfosCompletionBlock: (p1: NSDictionary<string, CKDiscoveredUserInfo>, p2: NSDictionary<CKRecordID, CKDiscoveredUserInfo>, p3: NSError) => void;
-
-	emailAddresses: NSArray<string>;
-
-	userRecordIDs: NSArray<CKRecordID>;
-
-	constructor(o: { emailAddresses: NSArray<string> | string[]; userRecordIDs: NSArray<CKRecordID> | CKRecordID[]; });
-
-	initWithEmailAddressesUserRecordIDs(emailAddresses: NSArray<string> | string[], userRecordIDs: NSArray<CKRecordID> | CKRecordID[]): this;
-}
-
-declare class CKDiscoveredUserInfo extends NSObject {
-
-	static alloc(): CKDiscoveredUserInfo; // inherited from NSObject
-
-	static new(): CKDiscoveredUserInfo; // inherited from NSObject
-
-	readonly displayContact: CNContact;
-
-	readonly firstName: string;
-
-	readonly lastName: string;
-
-	readonly userRecordID: CKRecordID;
 }
 
 declare const enum CKErrorCode {
@@ -802,6 +755,8 @@ declare class CKNotification extends NSObject {
 
 	readonly subscriptionID: string;
 
+	readonly subscriptionOwnerUserRecordID: CKRecordID;
+
 	readonly subtitle: string;
 
 	readonly subtitleLocalizationArgs: NSArray<string>;
@@ -1044,8 +999,6 @@ declare class CKQueryNotification extends CKNotification {
 
 	readonly databaseScope: CKDatabaseScope;
 
-	readonly isPublicDatabase: boolean;
-
 	readonly queryNotificationReason: CKQueryNotificationReason;
 
 	readonly recordFields: NSDictionary<string, any>;
@@ -1099,17 +1052,31 @@ declare class CKQuerySubscription extends CKSubscription implements NSCopying, N
 
 	static new(): CKQuerySubscription; // inherited from NSObject
 
+	readonly predicate: NSPredicate;
+
 	readonly querySubscriptionOptions: CKQuerySubscriptionOptions;
+
+	readonly recordType: string;
+
+	zoneID: CKRecordZoneID;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { recordType: string; predicate: NSPredicate; options: CKQuerySubscriptionOptions; });
+
+	constructor(o: { recordType: string; predicate: NSPredicate; subscriptionID: string; options: CKQuerySubscriptionOptions; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	initWithRecordTypePredicateOptions(recordType: string, predicate: NSPredicate, querySubscriptionOptions: CKQuerySubscriptionOptions): this;
+
+	initWithRecordTypePredicateSubscriptionIDOptions(recordType: string, predicate: NSPredicate, subscriptionID: string, querySubscriptionOptions: CKQuerySubscriptionOptions): this;
 }
 
 declare const enum CKQuerySubscriptionOptions {
@@ -1498,7 +1465,7 @@ declare class CKServerChangeToken extends NSObject implements NSCopying, NSSecur
 	initWithCoder(coder: NSCoder): this;
 }
 
-declare class CKShare extends CKRecord implements NSSecureCoding {
+declare class CKShare extends CKRecord implements NSCopying, NSSecureCoding {
 
 	static alloc(): CKShare; // inherited from NSObject
 
@@ -1523,6 +1490,8 @@ declare class CKShare extends CKRecord implements NSSecureCoding {
 	constructor(o: { rootRecord: CKRecord; shareID: CKRecordID; });
 
 	addParticipant(participant: CKShareParticipant): void;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
@@ -1655,54 +1624,19 @@ declare class CKSubscription extends NSObject implements NSCopying, NSSecureCodi
 
 	notificationInfo: CKNotificationInfo;
 
-	readonly predicate: NSPredicate;
-
-	readonly recordType: string;
-
 	readonly subscriptionID: string;
 
-	readonly subscriptionOptions: CKSubscriptionOptions;
-
 	readonly subscriptionType: CKSubscriptionType;
-
-	zoneID: CKRecordZoneID;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { recordType: string; predicate: NSPredicate; options: CKSubscriptionOptions; });
-
-	constructor(o: { recordType: string; predicate: NSPredicate; subscriptionID: string; options: CKSubscriptionOptions; });
-
-	constructor(o: { zoneID: CKRecordZoneID; options: CKSubscriptionOptions; });
-
-	constructor(o: { zoneID: CKRecordZoneID; subscriptionID: string; options: CKSubscriptionOptions; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
-
-	initWithRecordTypePredicateOptions(recordType: string, predicate: NSPredicate, subscriptionOptions: CKSubscriptionOptions): this;
-
-	initWithRecordTypePredicateSubscriptionIDOptions(recordType: string, predicate: NSPredicate, subscriptionID: string, subscriptionOptions: CKSubscriptionOptions): this;
-
-	initWithZoneIDOptions(zoneID: CKRecordZoneID, subscriptionOptions: CKSubscriptionOptions): this;
-
-	initWithZoneIDSubscriptionIDOptions(zoneID: CKRecordZoneID, subscriptionID: string, subscriptionOptions: CKSubscriptionOptions): this;
-}
-
-declare const enum CKSubscriptionOptions {
-
-	FiresOnRecordCreation = 1,
-
-	FiresOnRecordUpdate = 2,
-
-	FiresOnRecordDeletion = 4,
-
-	FiresOnce = 8
 }
 
 declare const enum CKSubscriptionType {
