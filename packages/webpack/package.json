@@ -29,12 +29,11 @@
     "url": "https://github.com/NativeScript/nativescript-dev-webpack.git"
   },
   "scripts": {
-    "clean": "npx rimraf -- node_modules package-lock.json && npm i --ignore-scripts",
+    "clean": "git clean -f -X -d",
     "tsc": "tsc",
     "postinstall": "node postinstall.js",
     "preuninstall": "node preuninstall.js",
-    "postpack": "rm -rf node_modules",
-    "setup": "npm run clean && npm run build",
+    "setup": "npm run clean && npm i --ignore-scripts && npm run build",
     "build": "npm run tsc && npm run jasmine",
     "test": "npm run build",
     "jasmine": "jasmine --config=jasmine-config/jasmine.json",
