@@ -6,9 +6,18 @@ on:
     paths:
       - 'nativescript-core/**'
   workflow_dispatch:
+    inputs:
+      tag: 
+        description: 'NPM Tag'     
+        required: false
+        default: 'tns-next'
+      version: 
+        description: 'NPM Version'     
+        required: false
 
 env:
-  NPM_TAG: 'tns-next'
+  NPM_TAG: ${{ github.event.inputs.tag || 'tns-next' }}
+  NPM_VERSION: ${{ github.event.inputs.version }}
 
 jobs:
   release:
@@ -21,6 +30,7 @@ jobs:
         run: npm install
 
       - name: Generate Version
+        if: ${{ !env.NPM_VERSION }}
         run: |
           echo NPM_VERSION=$(node -e "console.log(require('./package.json').version);")-$NPM_TAG-$(date +"%m-%d-%Y")-$GITHUB_RUN_ID >> $GITHUB_ENV
 
@@ -63,10 +73,10 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../.npmrc
+          #echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../.npmrc
 
           echo "Publishing @nativescript/core@$NPM_VERSION to NPM with tag $NPM_TAG..."
-          npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG
+          #npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG
 
           echo "Publishing tns-core-modules@$NPM_VERSION to NPM with tag $NPM_TAG..."
-          npm publish tns-core-modules-$NPM_VERSION.tgz --tag $NPM_TAG
+          #npm publish tns-core-modules-$NPM_VERSION.tgz --tag $NPM_TAG
