@@ -85,7 +85,7 @@ module.exports = (env) => {
 	Object.assign(entries, { bundle: entryPath }, entries);
 	const areCoreModulesExternal = Array.isArray(env.externals) && env.externals.some((e) => e.indexOf('@nativescript') > -1);
 	if (platform === 'ios' && !areCoreModulesExternal && !testing) {
-		entries['tns_modules/@nativescript/core/inspector_modules'] = 'inspector_modules';
+		entries['tns_modules/inspector_modules'] = '@nativescript/core/inspector_modules';
 	}
 
 	const compilerOptions = getCompilerOptionsFromTSConfig(tsConfigPath);
