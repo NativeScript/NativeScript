@@ -26,6 +26,12 @@ env:
 
 jobs:
   release:
+    if: | 
+      !(
+        contains(github.event.head_commit.message, 'skip ci') ||
+        contains(github.event.head_commit.message, 'ci skip') ||
+        contains(github.event.head_commit.message, 'no ci')
+      )
     runs-on: ubuntu-latest
 
     steps:
@@ -78,10 +84,10 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
-          #echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../.npmrc
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../.npmrc
 
           echo "Publishing @nativescript/core@$NPM_VERSION to NPM with tag $NPM_TAG..."
-          #npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG
+          npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG
 
           echo "Publishing tns-core-modules@$NPM_VERSION to NPM with tag $NPM_TAG_TNS..."
-          #npm publish tns-core-modules-$NPM_VERSION.tgz --tag $NPM_TAG_TNS
+          npm publish tns-core-modules-$NPM_VERSION.tgz --tag $NPM_TAG_TNS
