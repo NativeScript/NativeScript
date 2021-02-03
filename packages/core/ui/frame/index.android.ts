@@ -84,6 +84,7 @@ export class Frame extends FrameBase {
 	private _containerViewId = -1;
 	private _tearDownPending = false;
 	private _attachedToWindow = false;
+	private _wasReset = false;
 	private _cachedTransitionState: TransitionState;
 
 	constructor() {
@@ -150,6 +151,7 @@ export class Frame extends FrameBase {
 		}
 
 		this._attachedToWindow = true;
+		this._wasReset = false;
 		this._processNextNavigationEntry();
 	}
 
@@ -164,7 +166,16 @@ export class Frame extends FrameBase {
 		// In this case call _navigateCore in order to recreate the current fragment.
 		// Don't call navigate because it will fire navigation events.
 		// As JS instances are alive it is already done for the current page.
-		if (!this.isLoaded || this._executingContext || !this._attachedToWindow) {
+		if (!this.isLoaded || this._executingContext) {
+			return;
+		}
+		
+		// in case the activity is "reset" using resetRootView we must wait for
+		// the attachedToWindow event to make the first navigation or it will crash
+		// https://github.com/NativeScript/NativeScript/commit/9dd3e1a8076e5022e411f2f2eeba34aabc68d112
+		// though we should not do it on app "start" 
+		// or it will create a "flash" to activity background color
+		if (this._wasReset && !this._attachedToWindow) {
 			return;
 		}
 
@@ -224,7 +235,8 @@ export class Frame extends FrameBase {
 
 	public _onRootViewReset(): void {
 		super._onRootViewReset();
-
+		// used to handle the "first" navigate differently on first run and on reset
+		this._wasReset = true;
 		// call this AFTER the super call to ensure descendants apply their rootview-reset logic first
 		// i.e. in a scenario with nested frames / frame with tabview let the descendandt cleanup the inner
 		// fragments first, and then cleanup the parent fragments
