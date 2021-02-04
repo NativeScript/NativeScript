@@ -1,0 +1,36 @@
+name: 'apps/automated'
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Python
+        uses: actions/setup-python@v1
+
+      - name: Install NativeScript
+        run: |
+          python -m pip install --upgrade pip six
+          npm i -g nativescript --ignore-scripts
+          ns usage-reporting disable
+          ns error-reporting disable
+          ns doctor
+
+      - name: Setup
+        run: npm run setup
+
+      - name: Create Emulator
+        uses: rigor789/action-create-emulator@master
+
+      - name: Test (Android)
+        run: node tools/scripts/run-automated.js android
+
+      - name: Test (iOS)
+        run: node tools/scripts/run-automated.js ios
