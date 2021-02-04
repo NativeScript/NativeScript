@@ -473,7 +473,10 @@ export class CssState {
 
 		const matchingSelectors = this._match.selectors.filter((sel) => (sel.dynamic ? sel.match(view) : true));
 		if (!matchingSelectors || matchingSelectors.length === 0) {
-			return;
+			// Ideally we should return here if there are no matching selectors, however
+			// if there are property removals, returning here would not remove them
+			// this is seen in STYLE test in automated.
+			// return;
 		}
 		view._batchUpdate(() => {
 			this.stopKeyframeAnimations();
