@@ -41,16 +41,18 @@ allTests['PLATFORM'] = platformTests;
 import * as fsTests from './file-system/file-system-tests';
 allTests['FILE-SYSTEM'] = fsTests;
 
-// Disabled tests as they have external dependencies
-// TODO: find a way to run these tests locally, but don't run them on the CI as they are flaky
-// import * as httpTests from "./http/http-tests";
-// allTests["HTTP"] = httpTests;
+import * as httpTests from './http/http-tests';
+import * as xhrTests from './xhr/xhr-tests';
+import * as fetchTests from './fetch/fetch-tests';
+import * as timerTests from './timer/timer-tests';
 
-// import * as xhrTests from "./xhr/xhr-tests";
-// allTests["XHR"] = xhrTests;
-
-// import * as fetchTests from "./fetch/fetch-tests";
-// allTests["FETCH"] = fetchTests;
+// don't run these on CI as they are flaky
+if (!__CI__) {
+	allTests['HTTP'] = httpTests;
+	allTests['XHR'] = xhrTests;
+	allTests['FETCH'] = fetchTests;
+	allTests['TIMER'] = timerTests;
+}
 
 import * as appSettingsTests from './application-settings/application-settings-tests';
 allTests['APPLICATION-SETTINGS'] = appSettingsTests;
@@ -69,9 +71,6 @@ allTests['VIRTUAL-ARRAY'] = virtualArrayTests;
 
 import * as observableTests from './data/observable-tests';
 allTests['OBSERVABLE'] = observableTests;
-
-import * as timerTests from './timer/timer-tests';
-allTests['TIMER'] = timerTests;
 
 import * as animationFrameTests from './animation-frame/animation-frame';
 allTests['ANIMATION-FRAME'] = animationFrameTests;
