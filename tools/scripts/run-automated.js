@@ -16,16 +16,18 @@ const {stdout, stderr} = spawned_process
 stdout.pipe(process.stdout)
 stderr.pipe(process.stderr)
 
-let ok;
+let lineBuffer = []
 
 stdout.on('data', data => {
 	const line = data.toString();
 
-	if(line.includes('=== ALL TESTS COMPLETE ===')) {
-		ok = line.includes('OK, 0 failed')
+	// start buffering lines when tests are complete
+	if(lineBuffer.length || line.includes('=== ALL TESTS COMPLETE ===')) {
+		lineBuffer.push(line)
 	}
 
 	if(line.includes('Tests EOF!')) {
+		let ok = lineBuffer.join('\n').includes('OK, 0 failed')
 		console.log(ok ? 'Tests PASSED' : 'Tests FAILED');
 		kill(spawned_process.pid)
 		process.exit(ok ? 0 : 1)
