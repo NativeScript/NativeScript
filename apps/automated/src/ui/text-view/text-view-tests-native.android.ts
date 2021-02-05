@@ -1,13 +1,10 @@
-import * as textViewModule from '@nativescript/core/ui/text-view';
-import * as colorModule from '@nativescript/core/color';
-import * as utilsModule from '@nativescript/core/utils/utils';
-import * as enums from '@nativescript/core/ui/enums';
+import { TextView, Color, Utils, Enums } from '@nativescript/core';
 
-export function getNativeText(textView: textViewModule.TextView): string {
+export function getNativeText(textView: TextView): string {
 	return textView.android.getText().toString();
 }
 
-export function getNativeEditable(textView: textViewModule.TextView): boolean {
+export function getNativeEditable(textView: TextView): boolean {
 	if (textView.android.getKeyListener()) {
 		return true;
 	} else {
@@ -15,53 +12,55 @@ export function getNativeEditable(textView: textViewModule.TextView): boolean {
 	}
 }
 
-export function getNativeHint(textView: textViewModule.TextView): string {
+export function getNativeHint(textView: TextView): string {
 	return textView.android.getHint();
 }
 
-export function getNativeFontSize(textView: textViewModule.TextView): number {
-	var density = utilsModule.layout.getDisplayDensity();
+export function getNativeFontSize(textView: TextView): number {
+	let density = Utils.layout.getDisplayDensity();
 
 	return textView.android.getTextSize() / density;
 }
 
-export function getNativeColor(textView: textViewModule.TextView): colorModule.Color {
-	return new colorModule.Color(textView.android.getTextColors().getDefaultColor());
+export function getNativeColor(textView: TextView): Color {
+	return new Color(textView.android.getTextColors().getDefaultColor());
 }
 
-export function getNativeBackgroundColor(textView: textViewModule.TextView): colorModule.Color {
-	var bkg = <any>textView.android.getBackground();
-	if (bkg instanceof org.nativescript.widgets.BorderDrawable) {
-		return new colorModule.Color((<org.nativescript.widgets.BorderDrawable>bkg).getBackgroundColor());
+export function getNativeBackgroundColor(textView: TextView): Color {
+	let bg = <any>textView.android.getBackground();
+	if (bg instanceof org.nativescript.widgets.BorderDrawable) {
+		return new Color(bg.getBackgroundColor());
+	} else if (bg instanceof android.graphics.drawable.ColorDrawable) {
+		return new Color(bg.getColor());
 	} else {
-		return new colorModule.Color(bkg.backgroundColor);
+		return new Color(bg.backgroundColor);
 	}
 }
 
-export function getNativeTextAlignment(textView: textViewModule.TextView): string {
-	var gravity = textView.android.getGravity();
+export function getNativeTextAlignment(textView: TextView): string {
+	let gravity = textView.android.getGravity();
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.LEFT) {
-		return enums.TextAlignment.left;
+		return Enums.TextAlignment.left;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.CENTER_HORIZONTAL) {
-		return enums.TextAlignment.center;
+		return Enums.TextAlignment.center;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.RIGHT) {
-		return enums.TextAlignment.right;
+		return Enums.TextAlignment.right;
 	}
 
 	return 'unexpected value';
 }
 
-export function typeTextNatively(textView: textViewModule.TextView, text: string): void {
+export function typeTextNatively(textView: TextView, text: string): void {
 	textView.android.requestFocus();
 	textView.android.setText(text);
 	textView.android.clearFocus();
 }
 
-export function getNativeMaxLines(textView: textViewModule.TextView): number {
+export function getNativeMaxLines(textView: TextView): number {
 	return textView.android.getMaxLines();
 }
