@@ -22,7 +22,7 @@ stdout.on('data', data => {
 	const line = data.toString();
 
 	if(line.includes('=== ALL TESTS COMPLETE ===')) {
-		ok = line.includes('0 failed')
+		ok = line.includes('OK, 0 failed')
 	}
 
 	if(line.includes('Tests EOF!')) {
