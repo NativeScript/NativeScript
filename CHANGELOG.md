@@ -1,3 +1,12 @@
+## [7.2.1](https://github.com/NativeScript/NativeScript/compare/7.2.0-core...7.2.1) (2021-02-07)
+
+
+### Bug Fixes
+
+* **core:** conflicting node global types ([#9197](https://github.com/NativeScript/NativeScript/issues/9197)) ([de7006b](https://github.com/NativeScript/NativeScript/commit/de7006b04d1fb2209b8f6efeafbc2a16d4a1d83d))
+
+
+
 # [7.2.0](https://github.com/NativeScript/NativeScript/compare/7.1.4-core...7.2.0) (2021-02-05)
 
 
