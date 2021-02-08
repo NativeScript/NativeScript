@@ -9,6 +9,7 @@ export class ScrollView extends ScrollViewBase {
 	nativeViewProtected: org.nativescript.widgets.VerticalScrollView | org.nativescript.widgets.HorizontalScrollView;
 	private _androidViewId = -1;
 	private handler: android.view.ViewTreeObserver.OnScrollChangedListener;
+	private scrollChangeHandler: androidx.core.widget.NestedScrollView.OnScrollChangeListener;
 
 	get horizontalOffset(): number {
 		const nativeView = this.nativeViewProtected;
@@ -123,16 +124,35 @@ export class ScrollView extends ScrollViewBase {
 
 	protected attachNative() {
 		const that = new WeakRef(this);
-		this.handler = new android.view.ViewTreeObserver.OnScrollChangedListener({
-			onScrollChanged: function () {
-				const owner: ScrollView = that.get();
-				if (owner) {
-					owner._onScrollChanged();
+		if (this.orientation === 'vertical') {
+			this.scrollChangeHandler = new androidx.core.widget.NestedScrollView.OnScrollChangeListener({
+				onScrollChange(view, scrollX, scrollY) {
+					const owner: ScrollView = that.get();
+					if (owner) {
+						owner.notify({
+							object: owner,
+							eventName: ScrollView.scrollEvent,
+							scrollX: layout.toDeviceIndependentPixels(scrollX),
+							scrollY: layout.toDeviceIndependentPixels(scrollY)
+						});
+					}
 				}
-			},
-		});
-
-		this.nativeViewProtected.getViewTreeObserver().addOnScrollChangedListener(this.handler);
+			});
+	
+			this.nativeView.setOnScrollChangeListener(this.scrollChangeHandler);
+		} else  {
+			this.handler = new android.view.ViewTreeObserver.OnScrollChangedListener({
+				onScrollChanged: function () {
+					const owner: ScrollView = that.get();
+					if (owner) {
+						owner._onScrollChanged();
+					}
+				},
+			});
+	
+			this.nativeViewProtected.getViewTreeObserver().addOnScrollChangedListener(this.handler);
+		}
+		
 	}
 
 	private _lastScrollX = -1;
@@ -158,8 +178,14 @@ export class ScrollView extends ScrollViewBase {
 	}
 
 	protected dettachNative() {
-		this.nativeViewProtected.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
-		this.handler = null;
+		if (this.handler) {
+			this.nativeViewProtected.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
+			this.handler = null;
+		}
+		if (this.scrollChangeHandler) {
+			this.nativeView.setOnScrollChangeListener(null);
+			this.scrollChangeHandler = null;
+		}
 	}
 }
 
