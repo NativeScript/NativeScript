@@ -7,6 +7,7 @@ import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { EventData } from '../../data/observable';
 import type { Frame } from '../frame';
+import { isFrame } from '../frame/frame-helpers';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
@@ -92,9 +93,9 @@ export class PageBase extends ContentView {
 	}
 
 	get frame(): Frame {
-		const frame = this.parent;
+		const parent = this.parent;
 
-		return frame && frame.constructor.name === 'Frame' ? (frame as Frame) : undefined;
+		return isFrame(parent) ? (parent as Frame) : undefined;
 	}
 
 	private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {

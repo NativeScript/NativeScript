@@ -1,8 +1,8 @@
-import * as http from '@nativescript/core/http';
+import { Http } from '@nativescript/core';
 
 declare var postMessage: any;
 
-http.getString('https://httpbin.org/get').then(
+Http.getString('https://httpbin.org/get').then(
 	function (r) {
 		postMessage(r);
 	},

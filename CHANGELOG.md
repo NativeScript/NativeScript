@@ -1,3 +1,41 @@
+## [7.2.1](https://github.com/NativeScript/NativeScript/compare/7.2.0-core...7.2.1) (2021-02-07)
+
+
+### Bug Fixes
+
+* **core:** conflicting node global types ([#9197](https://github.com/NativeScript/NativeScript/issues/9197)) ([de7006b](https://github.com/NativeScript/NativeScript/commit/de7006b04d1fb2209b8f6efeafbc2a16d4a1d83d))
+
+
+
+# [7.2.0](https://github.com/NativeScript/NativeScript/compare/7.1.4-core...7.2.0) (2021-02-05)
+
+
+### Bug Fixes
+
+* **core:** ObservableArray splice with start only ([#9159](https://github.com/NativeScript/NativeScript/issues/9159)) ([3ddfb5c](https://github.com/NativeScript/NativeScript/commit/3ddfb5c34a3f7d7ad9d092a87b1cfebbc2ab5b07))
+* **ios:** allow navigationFrom event for deep navigation within modal frame ([#9187](https://github.com/NativeScript/NativeScript/issues/9187)) ([8f1455e](https://github.com/NativeScript/NativeScript/commit/8f1455eef71a4feaaffe4fb2aca4e49da0bc0670))
+* **ios:** force release of nsdata after saving image ([#9177](https://github.com/NativeScript/NativeScript/issues/9177)) ([e002d72](https://github.com/NativeScript/NativeScript/commit/e002d72d41b7a006788fcd38feb51a7b3c1ef870))
+* **ios:** navigation via swipe crash fix ([#9132](https://github.com/NativeScript/NativeScript/issues/9132)) ([28061e3](https://github.com/NativeScript/NativeScript/commit/28061e3d39fe713d78f1191a5c7e31dda7941ac1))
+* **ios:** textfield resizing (auto width) on text change ([#9176](https://github.com/NativeScript/NativeScript/issues/9176)) ([c31bab1](https://github.com/NativeScript/NativeScript/commit/c31bab1bf73af7f90ff3c5c90a22b86a682137ea))
+* **page:** frame getter for custom Frames ([#9195](https://github.com/NativeScript/NativeScript/issues/9195)) ([6da7d90](https://github.com/NativeScript/NativeScript/commit/6da7d90e256d220db79e245228b91d5fa8e41984))
+* **webpack:** --env.uglify works properly now ([#9165](https://github.com/NativeScript/NativeScript/issues/9165)) ([be52cef](https://github.com/NativeScript/NativeScript/commit/be52cefe672aaca6d707c1c3b78cee7ee8abe8f1))
+* **webpack:** Angular no longer has issues handling {N} plugins without nativescript in name ([#9172](https://github.com/NativeScript/NativeScript/issues/9172)) ([79a5fc8](https://github.com/NativeScript/NativeScript/commit/79a5fc89750ea467a2d44d5d9b5264c9fdad1a94))
+* **webpack:** inspector_modules ([87418cd](https://github.com/NativeScript/NativeScript/commit/87418cdb119e4114285be81999968438d2094929))
+
+
+### Features
+
+* **android:** FlexboxLayout support for isPassThroughParentEnabled ([#8798](https://github.com/NativeScript/NativeScript/issues/8798)) ([5fe2742](https://github.com/NativeScript/NativeScript/commit/5fe27428e07a267454a5fcfa8584ba688bf0baef))
+* **core:** setSelection method for editable text components ([#9175](https://github.com/NativeScript/NativeScript/issues/9175)) ([58b2542](https://github.com/NativeScript/NativeScript/commit/58b254299770b362e0c5baee36000ec81b57335a))
+* **ios:** build TNSWidgets as XCFramework ([#9167](https://github.com/NativeScript/NativeScript/issues/9167)) ([04a7641](https://github.com/NativeScript/NativeScript/commit/04a76415b785ca419d057d570fc71f61b7d3bb83))
+* **webpack:** allow passing env.appComponents and env.entries ([#8898](https://github.com/NativeScript/NativeScript/issues/8898)) ([90d208c](https://github.com/NativeScript/NativeScript/commit/90d208c115b582e37844494d10b0eaf6a3d74122))
+
+
+### Performance Improvements
+
+* **android:** faster background color setter ([#9120](https://github.com/NativeScript/NativeScript/issues/9120)) ([e501273](https://github.com/NativeScript/NativeScript/commit/e501273d166b0e6f8b3746d508e97099525cea0a))
+
+
 ## [7.1.4](https://github.com/NativeScript/NativeScript/compare/7.1.3-core...7.1.4) (2021-01-23)
 
 

@@ -1,6 +1,6 @@
 {
 	"name": "nativescript",
-	"version": "7.1.4",
+	"version": "7.2.1",
 	"license": "MIT",
 	"scripts": {
 		"clean": "git clean -f -X -d",
@@ -47,7 +47,7 @@
 		"mocha": "^8.0.1",
 		"mocha-typescript": "^1.1.17",
 		"module-alias": "^2.2.2",
-		"nativescript": "~7.1.0",
+		"nativescript": "~7.2.0",
 		"node-sass": "~4.14.1",
 		"parse-css": "git+https://github.com/tabatkins/parse-css.git",
 		"parserlib": "^1.1.1",
@@ -55,6 +55,7 @@
 		"reduce-css-calc": "~2.1.7",
 		"shady-css-parser": "^0.1.0",
 		"terser-webpack-plugin": "~3.0.6",
+		"tree-kill": "^1.2.2",
 		"ts-jest": "26.4.0",
 		"ts-node": "~8.10.2",
 		"ts-patch": "^1.2.5",
