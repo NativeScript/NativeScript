@@ -47,7 +47,7 @@ export interface ShowModalOptions {
 	/**
 	 * A function that will be called when the view is closed. Any arguments provided when calling ShownModallyData.closeCallback will be available here.
 	 */
-	closeCallback: (...args)=>void;
+	closeCallback: (...args) => void;
 
 	/**
 	 * An optional parameter specifying whether to show the modal view in full-screen mode.
@@ -100,7 +100,7 @@ export interface ShowModalOptions {
 	cancelable?: boolean;
 }
 
-export function getAncestor(view: ViewBaseDefinition, criterion: string | { new() }): ViewBaseDefinition {
+export function getAncestor(view: ViewBaseDefinition, criterion: string | { new () }): ViewBaseDefinition {
 	let matcher: (view: ViewBaseDefinition) => boolean = null;
 	if (typeof criterion === 'string') {
 		matcher = (view: ViewBaseDefinition) => view.typeName === criterion;

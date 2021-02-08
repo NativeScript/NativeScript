@@ -7,7 +7,7 @@ import { Color } from '../color';
 
 // Types.
 import { path as fsPath, knownFolders } from '../file-system';
-import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from '../utils';
+import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject } from '../utils';
 
 import { getScaledDimensions } from './image-source-common';
 

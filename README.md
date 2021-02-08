@@ -31,7 +31,7 @@ $ npm start
 
 We love you and PR's 🤗 Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://nativescript.org/governance/) to become as involved as you want to be.
 
-## @nativescript/* 
+## @nativescript/*
 
 * [@nativescript/core](https://github.com/NativeScript/NativeScript/tree/master/packages/core)
   * Core iOS/Android for NativeScript
@@ -59,16 +59,16 @@ We love you and PR's 🤗 Please follow our [contributing guide](https://github.
 - [NativeScript marketplace](https://market.nativescript.org/)
 - [NativeScript roadmap](https://www.nativescript.org/roadmap)
 
-## Other framework source repos
+## Other framework source repositories
 
-Outside of the source centralized in this repo, the NativeScript framework consists of a number of components, all of which are open source and on GitHub. Here are the major ones:
+Outside of the source centralized in this repo, the NativeScript framework consists of a number of components, all of which are open source available on GitHub. Here are the major ones:
 
 - **[iOS runtime](https://github.com/NativeScript/ns-v8ios-runtime)**
 	- [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/@nativescript/ios) 
 	- This repo contains the NativeScript iOS runtime — the code that hosts NativeScript iOS apps, and allows JavaScript code to be executed on iOS devices. The iOS runtime is written in a fun mix of C++, Objective-C, and more.
 - **[Android runtime](https://github.com/NativeScript/android-runtime)**
 	- [![npm](https://img.shields.io/npm/dm/tns-android.svg)](https://www.npmjs.com/package/tns-android) 
-	- This repo contains the NativeScript Android — the code that hosts NativeScript Android apps, and allows JavaScript code to be executed on Android devices. The Android runtime is written in a fun mix of C++ and Java.
+	- This repo contains the NativeScript Android runtime — the code that hosts NativeScript Android apps, and allows JavaScript code to be executed on Android devices. The Android runtime is written in a fun mix of C++ and Java.
 - **[CLI](//github.com/NativeScript/nativescript-cli)**
 	- [![npm](https://img.shields.io/npm/dm/nativescript.svg)](https://www.npmjs.com/package/nativescript) 
 	- This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using the NativeScript framework. The CLI is written in TypeScript.
@@ -76,9 +76,9 @@ Outside of the source centralized in this repo, the NativeScript framework consi
 	- [![Docs](https://img.shields.io/badge/Docs-NativeScript-brightgreen)](https://docs.nativescript.org/)
 	- This repo contains the NativeScript framework documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
 
-In addition to the code that makes up the NativeScript framework itself, we also provide a number of [open-source sample apps](https://www.nativescript.org/app-samples-with-code) that you can reference while building your NativeScript application.
+In addition to the code that makes up the NativeScript framework itself, we also provide a number of [open-source sample apps](https://www.nativescript.org/app-samples-with-code) from which you can take reference while building your NativeScript application.
 
 ## License
-[Apache License 2.0](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/NativeScript/NativeScript/blob/master/LICENSE)
 
 <h3 align="center">Made with ❤️</h3>

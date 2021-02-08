@@ -275,8 +275,8 @@ export class View extends ViewCommon implements ViewDefinition {
 			return null;
 		}
 		if (this.iosIgnoreSafeArea) {
-            return frame;
-        }
+			return frame;
+		}
 		if (!this.iosOverflowSafeArea || !this.iosOverflowSafeAreaEnabled) {
 			return IOSHelper.shrinkToSafeArea(this, frame);
 		} else if (this.nativeViewProtected && this.nativeViewProtected.window) {
@@ -290,8 +290,8 @@ export class View extends ViewCommon implements ViewDefinition {
 		const safeAreaInsets = this.nativeViewProtected && this.nativeViewProtected.safeAreaInsets;
 		const insets = { left: 0, top: 0, right: 0, bottom: 0 };
 		if (this.iosIgnoreSafeArea) {
-            return insets;
-        }
+			return insets;
+		}
 		if (safeAreaInsets) {
 			insets.left = layout.round(layout.toDevicePixels(safeAreaInsets.left));
 			insets.top = layout.round(layout.toDevicePixels(safeAreaInsets.top));

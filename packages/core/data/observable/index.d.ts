@@ -12,12 +12,10 @@ export interface EventData {
 	object: Observable;
 }
 
-
 export interface NotifyData extends Partial<EventData> {
 	eventName: string;
 	object?: Observable;
 }
-
 
 /**
  * Data for the "propertyChange" event.

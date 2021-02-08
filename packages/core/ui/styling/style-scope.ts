@@ -216,7 +216,7 @@ class CSSSource {
 					const cssTreeParse = require('../../css/css-tree-parser').cssTreeParse;
 					this._ast = cssTreeParse(this._source, this._file);
 					return;
-				case 'nativescript':{
+				case 'nativescript': {
 					const CSS3Parser = require('../../css/parser').CSS3Parser;
 					const CSSNativeScript = require('../../css/parser').CSSNativeScript;
 					const cssparser = new CSS3Parser(this._source);
@@ -475,7 +475,10 @@ export class CssState {
 
 		const matchingSelectors = this._match.selectors.filter((sel) => (sel.dynamic ? sel.match(view) : true));
 		if (!matchingSelectors || matchingSelectors.length === 0) {
-			return;
+			// Ideally we should return here if there are no matching selectors, however
+			// if there are property removals, returning here would not remove them
+			// this is seen in STYLE test in automated.
+			// return;
 		}
 		view._batchUpdate(() => {
 			this.stopKeyframeAnimations();
@@ -578,23 +581,23 @@ export class CssState {
 			}
 			if (isCssVariableExpression(value) || isCssCalcExpression(value)) {
 				value = evaluateCssExpressions(view, property, newPropertyValues[property]);
-			}
-			if (value === unsetValue) {
-				delete newPropertyValues[property];
-				continue;
-			}
+		}
+				if (value === unsetValue) {
+					delete newPropertyValues[property];
+					continue;
+				}
 			valuesToApply[property] = value;
 		}
 
 		// Unset removed values
 		for (const property in oldProperties) {
-			if (property in view.style) {
-				view.style[`css:${property}`] = unsetValue;
+				if (property in view.style) {
+					view.style[`css:${property}`] = unsetValue;
 			}
 			else {
-				// TRICKY: How do we unset local value?
+					// TRICKY: How do we unset local value?
+				}
 			}
-		}
 		// Set new values to the style
 		for (const property in valuesToApply) {
 			const value = valuesToApply[property];

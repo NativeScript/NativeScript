@@ -463,7 +463,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
 		switch (flexDirection) {
 			case FlexDirection.ROW:
-			case FlexDirection.ROW_REVERSE:{
+			case FlexDirection.ROW_REVERSE: {
 				const widthMode = getMeasureSpecMode(widthMeasureSpec);
 				const widthSize = getMeasureSpecSize(widthMeasureSpec);
 				if (widthMode === EXACTLY) {
@@ -475,7 +475,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				break;
 			}
 			case FlexDirection.COLUMN:
-			case FlexDirection.COLUMN_REVERSE:{
+			case FlexDirection.COLUMN_REVERSE: {
 				const heightMode = getMeasureSpecMode(heightMeasureSpec);
 				const heightSize = getMeasureSpecSize(heightMeasureSpec);
 				if (heightMode === EXACTLY) {
@@ -1019,7 +1019,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					childLeft = paddingLeft + spaceBetweenItem / 2.0;
 					childRight = width - paddingRight - spaceBetweenItem / 2.0;
 					break;
-				case JustifyContent.SPACE_BETWEEN:{
+				case JustifyContent.SPACE_BETWEEN: {
 					childLeft = paddingLeft;
 					const denominator = flexLine.itemCount !== 1 ? flexLine.itemCount - 1 : 1.0;
 					spaceBetweenItem = (width - insets.left - insets.right - flexLine.mainSize) / denominator;
@@ -1110,7 +1110,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					view.layout(left, top - crossSize + view.getMeasuredHeight() + lp.effectiveMarginTop, right, bottom - crossSize + view.getMeasuredHeight() + lp.effectiveMarginTop);
 				}
 				break;
-			case AlignItems.CENTER:{
+			case AlignItems.CENTER: {
 				const topFromCrossAxis = (crossSize - view.getMeasuredHeight()) / 2;
 				if (flexWrap !== FlexWrap.WRAP_REVERSE) {
 					view.layout(left, top + topFromCrossAxis + lp.effectiveMarginTop - lp.effectiveMarginBottom, right, top + topFromCrossAxis + view.getMeasuredHeight() + lp.effectiveMarginTop - lp.effectiveMarginBottom);
@@ -1163,7 +1163,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					childTop = paddingTop + spaceBetweenItem / 2.0;
 					childBottom = height - paddingBottom - spaceBetweenItem / 2.0;
 					break;
-				case JustifyContent.SPACE_BETWEEN:{
+				case JustifyContent.SPACE_BETWEEN: {
 					childTop = paddingTop;
 					const denominator = flexLine.itemCount !== 1 ? flexLine.itemCount - 1 : 1.0;
 					spaceBetweenItem = (height - insets.top - insets.bottom - flexLine.mainSize) / denominator;
@@ -1244,7 +1244,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					view.layout(left - crossSize + view.getMeasuredWidth() + lp.effectiveMarginLeft, top, right - crossSize + view.getMeasuredWidth() + lp.effectiveMarginLeft, bottom);
 				}
 				break;
-			case AlignItems.CENTER:{
+			case AlignItems.CENTER: {
 				const leftFromCrossAxis = (crossSize - view.getMeasuredWidth()) / 2;
 				if (!isRtl) {
 					view.layout(left + leftFromCrossAxis + lp.effectiveMarginLeft - lp.effectiveMarginRight, top, right + leftFromCrossAxis + lp.effectiveMarginLeft - lp.effectiveMarginRight, bottom);

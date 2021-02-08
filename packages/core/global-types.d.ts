@@ -152,13 +152,6 @@ interface ModuleContext {
 	path: string;
 }
 
-// Define a minimal subset of NodeRequire and NodeModule so user apps can compile without
-// installing @types/node
-
-interface NodeRequire {
-	(id: string): any;
-}
-
 interface NodeModule {
 	exports: any;
 	id: string;
@@ -221,12 +214,8 @@ interface RequireContext {
 	resolve(id: string): string;
 }
 
-interface NodeRequire {
-	context(path: string, deep?: boolean, filter?: RegExp): RequireContext;
-}
-
-declare let __dirname: string;
-declare let __filename: string;
+declare var __dirname: string;
+declare var __filename: string;
 
 declare let module: NodeModule;
 // Same as module.exports
