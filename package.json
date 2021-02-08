@@ -6,11 +6,10 @@
 		"npm_alias": "npm"
 	},
 	"scripts": {
-        "clean": "git clean -f -X -d",
+		"clean": "rimraf -- hooks node_modules platforms package-lock.json webpack.config.js",
 		"setup": "npm run clean && $npm_package_config_npm_alias i && ts-patch install && npm run core:setup",
 		"start": "nps",
 		"changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
-		"clean": "rimraf -- hooks node_modules platforms package-lock.json webpack.config.js",
 		"apps-automated:ios": "cd apps/automated && tns debug ios --no-hmr --emulator --env.testing",
 		"apps-automated:android": "cd apps/automated && tns debug android --no-hmr --emulator --env.testing",
 		"apps-automated:clean": "cd apps/automated && rimraf -- hooks node_modules platforms package-lock.json webpack.config.js && $npm_package_config_npm_alias i && rimraf -- package-lock.json",
