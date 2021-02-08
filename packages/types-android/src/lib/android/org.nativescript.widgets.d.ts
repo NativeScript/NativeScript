@@ -359,7 +359,7 @@
                 constructor(context: android.content.Context);
             }
 
-            export class VerticalScrollView extends android.widget.ScrollView {
+            export class VerticalScrollView extends androidx.core.widget.NestedScrollView {
                 constructor(context: android.content.Context);
                 public getScrollableLength(): number;
                 public getScrollEnabled(): boolean;
