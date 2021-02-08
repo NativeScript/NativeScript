@@ -222,13 +222,13 @@ public class VerticalScrollView extends NestedScrollView {
 	}
 
 	@Override
-	protected void onAttachedToWindow() {
+	public void onAttachedToWindow() {
 		super.onAttachedToWindow();
 		this.isFirstLayout = true;
 	}
 
 	@Override
-	protected void onDetachedFromWindow() {
+	public void onDetachedFromWindow() {
 		super.onDetachedFromWindow();
 		this.isFirstLayout = true;
 	}
