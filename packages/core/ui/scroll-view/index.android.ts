@@ -100,7 +100,13 @@ export class ScrollView extends ScrollViewBase {
 	}
 
 	public createNativeView() {
-		return this.orientation === 'horizontal' ? new org.nativescript.widgets.HorizontalScrollView(this._context) : new org.nativescript.widgets.VerticalScrollView(this._context);
+		if (this.orientation === 'horizontal') {
+			return new org.nativescript.widgets.HorizontalScrollView(this._context);
+		} else {
+			const view = new org.nativescript.widgets.VerticalScrollView(this._context);
+			view.setVerticalScrollBarEnabled(true);
+			return view;
+		}
 	}
 
 	public initNativeView(): void {
@@ -138,9 +144,8 @@ export class ScrollView extends ScrollViewBase {
 					}
 				}
 			});
-	
 			this.nativeView.setOnScrollChangeListener(this.scrollChangeHandler);
-		} else  {
+		} else {
 			this.handler = new android.view.ViewTreeObserver.OnScrollChangedListener({
 				onScrollChanged: function () {
 					const owner: ScrollView = that.get();
@@ -149,10 +154,8 @@ export class ScrollView extends ScrollViewBase {
 					}
 				},
 			});
-	
 			this.nativeViewProtected.getViewTreeObserver().addOnScrollChangedListener(this.handler);
 		}
-		
 	}
 
 	private _lastScrollX = -1;
