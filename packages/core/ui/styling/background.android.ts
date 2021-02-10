@@ -45,7 +45,7 @@ export namespace ad {
 			androidView._cachedDrawable = constantState || drawable;
 		}
 		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
-		const onlyColor = !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && !!background.color;
+		const onlyColor = !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && !background.color;
 		if (!isBorderDrawable && drawable instanceof android.graphics.drawable.ColorDrawable && onlyColor) {
 			drawable.setColor(background.color.android);
 			drawable.invalidateSelf();
