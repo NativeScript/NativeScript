@@ -32,7 +32,7 @@ function onTimeout() {
 
 function healthCheck() {
 	clearTimeout(timeout_id)
-	setTimeout(onTimeout, TIMEOUT_MS)
+	timeout_id = setTimeout(onTimeout, TIMEOUT_MS)
 }
 
 stdout.on('data', data => {
