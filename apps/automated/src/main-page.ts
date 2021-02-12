@@ -18,7 +18,7 @@ Trace.addCategories(Trace.categories.Test + ',' + Trace.categories.Error);
 // ));
 
 function runTests() {
-	setTimeout(() => tests.runAll(''), 10);
+	setTimeout(() => tests.runAll('VIEW'), 10);
 }
 
 export function onNavigatedTo(args) {
