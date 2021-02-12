@@ -36,12 +36,22 @@ export function getUniformNativeCornerRadius(v: View): number {
 export function checkNativeBackgroundColor(v: View): boolean {
 	if (v.ios instanceof UILabel) {
 		var cgColor1 = (<UILabel>v.ios).layer.backgroundColor;
-		var cgColor2 = (<UIColor>(<Color>v.backgroundColor).ios).CGColor;
+		var cgColor2 = (<UIColor>(<Color>v.backgroundColor)?.ios)?.CGColor;
 
-		return v.backgroundColor && !!CGColorEqualToColor(cgColor1, cgColor2);
+		if (v.backgroundColor) {
+			return v.backgroundColor && !!CGColorEqualToColor(cgColor1, cgColor2);
+	
+		} else {
+			return !cgColor1 && !cgColor2;
+		}
+	}
+	if (v.backgroundColor) {
+		return (<UIView>v.ios)?.backgroundColor.isEqual((<Color>v.backgroundColor)?.ios);
+
+	} else {
+		return !(<UIView>v.ios).backgroundColor && !v.backgroundColor;
 	}
 
-	return v.backgroundColor && (<UIView>v.ios).backgroundColor.isEqual((<Color>v.backgroundColor).ios);
 }
 
 export function checkNativeBackgroundImage(v: View): boolean {
