@@ -53,6 +53,8 @@ export interface ActionOptions extends CancelableOptions {
 	 * [iOS only] Gets or sets the indexes of destructive actions.
 	 */
 	destructiveActionsIndexes?: Array<number>;
+
+  theme?: number;
 }
 
 /**
