@@ -142,6 +142,11 @@ export interface CancelableOptions {
 	 * [Android only] Gets or sets if the dialog can be canceled by taping outside of the dialog.
 	 */
 	cancelable?: boolean;
+
+	/**
+	 * [Android only] Sets the theme of the Dialog. Usable themes can be found: https://developer.android.com/reference/android/R.style
+	 */
+	theme?: number;
 }
 
 /**
