@@ -54,7 +54,7 @@ export class Frame extends FrameBase {
 	public setCurrent(entry: BackstackEntry, navigationType: NavigationType): void {
 		const current = this._currentEntry;
 		const currentEntryChanged = current !== entry;
-		if (currentEntryChanged) {
+		if (entry?.resolvedPage && currentEntryChanged) {
 			this._updateBackstack(entry, navigationType);
 
 			super.setCurrent(entry, navigationType);
@@ -249,7 +249,7 @@ export class Frame extends FrameBase {
 					case 'never':
 						return false;
 
-					case 'auto':{
+					case 'auto': {
 						let newValue: boolean;
 
 						if (page && page.actionBarHidden !== undefined) {

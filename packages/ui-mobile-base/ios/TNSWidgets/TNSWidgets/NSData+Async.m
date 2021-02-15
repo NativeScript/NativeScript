@@ -25,7 +25,7 @@
 
 - (void)writeToFile:(nonnull NSString*) path
          atomically:(BOOL)atomically
-         completion:(void (^) ())callback {
+         completion:(void (^) (void))callback {
     
     dispatch_queue_t asyncQueue = dispatch_queue_create("org.nativescript.TNSWidgets.data", NULL);
     dispatch_async(asyncQueue, ^(void) {
