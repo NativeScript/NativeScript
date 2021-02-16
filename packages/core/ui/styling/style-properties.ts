@@ -1325,7 +1325,9 @@ const boxShadowProperty = new CssProperty<Style, BoxShadow>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
 	valueChanged: (target, oldValue, newValue) => {
-		target.boxShadow = newValue;
+		// target.boxShadow = newValue;
+		const background = target.backgroundInternal.withBoxShadow(newValue);
+		target.backgroundInternal = background;
 	},
 	valueConverter: (value) => {
 		return parseBoxShadowProperites(value);
