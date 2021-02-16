@@ -245,7 +245,6 @@ function drawBoxShadow(nativeView: android.view.View, view: View, boxShadow: Box
 }
 
 function clearBoxShadow(nativeView: android.view.View) {
-	// TODO: add clear box shadow
 	// org.nativescript.widgets.Utils.clearBoxShadow(nativeView);
 }
 
