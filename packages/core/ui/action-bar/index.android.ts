@@ -6,12 +6,18 @@ import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import * as application from '../../application';
+import type { Background } from 'ui/styling/background';
+import { Device } from '../../platform';
+import lazy from '../../utils/lazy';
 
 export * from './action-bar-common';
 
 const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 10000;
 const DEFAULT_ELEVATION = 4;
+
+const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
+
 
 let AppCompatTextView;
 let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
@@ -58,7 +64,7 @@ function initializeMenuItemClickListener(): void {
 		return;
 	}
 
-	apiLevel = android.os.Build.VERSION.SDK_INT;
+	apiLevel = sdkVersion();
 
 	AppCompatTextView = androidx.appcompat.widget.AppCompatTextView;
 
@@ -213,6 +219,24 @@ export class ActionBar extends ActionBarBase {
 
 		// Set navigation button
 		this._updateNavigationButton();
+	}
+
+	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
+		const nativeView = this.nativeViewProtected;
+		if (backgroundDrawable && onlyColor && sdkVersion() >= 21) {
+			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
+				backgroundDrawable = (<any>nativeView)._cachedDrawable.newDrawable(nativeView.getResources());
+				nativeView.setBackground(backgroundDrawable);
+			}
+
+			const backgroundColor = ((<any>backgroundDrawable).backgroundColor = background.color.android);
+			backgroundDrawable.mutate();
+			backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
+			backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
+			(<any>backgroundDrawable).backgroundColor = backgroundColor;
+		} else {
+			super._applyBackground(background, isBorderDrawable, onlyColor, backgroundDrawable);
+		}
 	}
 
 	public _onAndroidItemSelected(itemId: number): boolean {
