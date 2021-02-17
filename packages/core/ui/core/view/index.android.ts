@@ -42,6 +42,7 @@ import {
 } from '../../styling/style-properties';
 
 import { Background, ad as androidBackground } from '../../styling/background';
+import { refreshBorderDrawable } from '../../styling/background.android';
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
@@ -1002,21 +1003,19 @@ export class View extends ViewCommon {
 
 	[backgroundInternalProperty.getDefault](): android.graphics.drawable.Drawable {
 		const nativeView = this.nativeViewProtected;
-		const drawable = nativeView.getBackground();
+		let drawable = nativeView.getBackground();
 		if (drawable) {
 			const constantState = drawable.getConstantState();
 			if (constantState) {
 				try {
-					return constantState.newDrawable(nativeView.getResources());
-				} catch (e) {
-					return drawable;
-				}
-			} else {
-				return drawable;
+					drawable = constantState.newDrawable(nativeView.getResources());
+				// eslint-disable-next-line no-empty
+				} catch {}
 			}
 		}
+		(<any>nativeView)._cachedDrawable = drawable;
 
-		return null;
+		return drawable;
 	}
 	[backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
 		this._redrawNativeBackground(value);
@@ -1038,9 +1037,56 @@ export class View extends ViewCommon {
 		}
 	}
 
+	public _applyBackground(background: Background, isBorderDrawable: boolean, onlyColor: boolean, backgroundDrawable: any) {
+		const nativeView = this.nativeViewProtected;
+		if (!isBorderDrawable && onlyColor) {
+			if (backgroundDrawable && backgroundDrawable.setColor) {
+				backgroundDrawable.setColor(background.color.android);
+				backgroundDrawable.invalidateSelf();
+			} else {
+				nativeView.setBackgroundColor(background.color.android);
+			}
+		} else if (!background.isEmpty()) {
+			if (!isBorderDrawable) {
+				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), this.toString());
+				refreshBorderDrawable(this, backgroundDrawable);
+				nativeView.setBackground(backgroundDrawable);
+			} else {
+				refreshBorderDrawable(this, backgroundDrawable);
+			}
+		} else {
+			//empty background let s reset
+			const cachedDrawable = (<any>nativeView)._cachedDrawable;
+			nativeView.setBackground(cachedDrawable);
+		}
+	}
+	protected onBackgroundOrBorderPropertyChanged() {
+		const nativeView = <android.view.View & { _cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable }>this.nativeViewProtected;
+		if (!nativeView) {
+			return;
+		}
+
+		const background = this.style.backgroundInternal;
+		const drawable = nativeView.getBackground();
+		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
+		const onlyColor = !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && !!background.color;
+		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);
+
+		// TODO: Can we move BorderWidths as separate native setter?
+		// This way we could skip setPadding if borderWidth is not changed.
+		const leftPadding = Math.ceil(this.effectiveBorderLeftWidth + this.effectivePaddingLeft);
+		const topPadding = Math.ceil(this.effectiveBorderTopWidth + this.effectivePaddingTop);
+		const rightPadding = Math.ceil(this.effectiveBorderRightWidth + this.effectivePaddingRight);
+		const bottomPadding = Math.ceil(this.effectiveBorderBottomWidth + this.effectivePaddingBottom);
+		if (this._isPaddingRelative) {
+			nativeView.setPaddingRelative(leftPadding, topPadding, rightPadding, bottomPadding);
+		} else {
+			nativeView.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
+		}
+	}
 	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
 		if (value instanceof Background) {
-			androidBackground.onBackgroundOrBorderPropertyChanged(this);
+			this.onBackgroundOrBorderPropertyChanged();
 		} else {
 			const nativeView = this.nativeViewProtected;
 			nativeView.setBackground(value);
@@ -1056,8 +1102,6 @@ export class View extends ViewCommon {
 			} else {
 				nativeView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
 			}
-
-			(<any>nativeView).background = undefined;
 		}
 	}
 }

@@ -15,90 +15,7 @@ interface AndroidView {
 // TODO: Change this implementation to use
 // We are using "ad" here to avoid namespace collision with the global android object
 export namespace ad {
-	let SDK: number;
-	function getSDK() {
-		if (!SDK) {
-			SDK = android.os.Build.VERSION.SDK_INT;
-		}
-
-		return SDK;
-	}
-
-	function isSetColorFilterOnlyWidget(nativeView: android.view.View): boolean {
-		return (
-			nativeView instanceof android.widget.Button || (nativeView instanceof androidx.appcompat.widget.Toolbar && getSDK() >= 21) // There is an issue with the DrawableContainer which was fixed for API version 21 and above: https://code.google.com/p/android/issues/detail?id=60183
-		);
-	}
-
-	export function onBackgroundOrBorderPropertyChanged(view: View) {
-		const nativeView = <android.view.View>view.nativeViewProtected;
-		if (!nativeView) {
-			return;
-		}
-
-		const background = view.style.backgroundInternal;
-		let drawable = nativeView.getBackground();
-		const androidView = (<any>view) as AndroidView;
-		// use undefined as not set. getBackground will never return undefined only Drawable or null;
-		if (androidView._cachedDrawable === undefined && drawable) {
-			const constantState = drawable.getConstantState();
-			androidView._cachedDrawable = constantState || drawable;
-		}
-		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
-		const onlyColor = !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && !!background.color;
-		if (!isBorderDrawable && drawable instanceof android.graphics.drawable.ColorDrawable && onlyColor) {
-			drawable.setColor(background.color.android);
-			drawable.invalidateSelf();
-		} else if (isSetColorFilterOnlyWidget(nativeView) && drawable && onlyColor) {
-			if (isBorderDrawable && androidView._cachedDrawable) {
-				if (!(androidView._cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState)) {
-					return;
-				}
-
-				drawable = androidView._cachedDrawable.newDrawable(nativeView.getResources());
-				nativeView.setBackground(drawable);
-			}
-
-			const backgroundColor = ((<any>drawable).backgroundColor = background.color.android);
-			drawable.mutate();
-			drawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
-			drawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
-			(<any>drawable).backgroundColor = backgroundColor;
-		} else if (!isBorderDrawable && onlyColor) {
-			// this is the fastest way to change only background color
-			nativeView.setBackgroundColor(background.color.android);
-		} else if (!background.isEmpty()) {
-			let backgroundDrawable = drawable as org.nativescript.widgets.BorderDrawable;
-			if (!isBorderDrawable) {
-				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
-				refreshBorderDrawable(view, backgroundDrawable);
-				nativeView.setBackground(backgroundDrawable);
-			} else {
-				refreshBorderDrawable(view, backgroundDrawable);
-			}
-		} else {
-			const cachedDrawable = androidView._cachedDrawable;
-			let defaultDrawable: android.graphics.drawable.Drawable = null;
-			if (cachedDrawable) {
-				if (cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState) {
-					defaultDrawable = cachedDrawable.newDrawable(nativeView.getResources());
-				} else if (cachedDrawable instanceof android.graphics.drawable.Drawable) {
-					defaultDrawable = cachedDrawable;
-				}
-			}
-
-			nativeView.setBackground(defaultDrawable);
-		}
-
-		// TODO: Can we move BorderWidths as separate native setter?
-		// This way we could skip setPadding if borderWidth is not changed.
-		const leftPadding = Math.ceil(view.effectiveBorderLeftWidth + view.effectivePaddingLeft);
-		const topPadding = Math.ceil(view.effectiveBorderTopWidth + view.effectivePaddingTop);
-		const rightPadding = Math.ceil(view.effectiveBorderRightWidth + view.effectivePaddingRight);
-		const bottomPadding = Math.ceil(view.effectiveBorderBottomWidth + view.effectivePaddingBottom);
-
-		nativeView.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
-	}
+	
 }
 
 function fromBase64(source: string): android.graphics.Bitmap {
@@ -129,7 +46,7 @@ function fromGradient(gradient: LinearGradient): org.nativescript.widgets.Linear
 }
 
 const pattern = /url\(('|")(.*?)\1\)/;
-function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
+export function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
 	const nativeView = <android.view.View>view.nativeViewProtected;
 	const context = nativeView.getContext();
 

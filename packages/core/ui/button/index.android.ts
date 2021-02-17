@@ -7,6 +7,7 @@ import { profile } from '../../profiling';
 import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
 import { Device } from '../../platform';
 import lazy from '../../utils/lazy';
+import type { Background } from 'ui/styling/background';
 
 export * from './button-common';
 
@@ -57,6 +58,26 @@ export class Button extends ButtonBase {
 
 	private _stateListAnimator: any;
 	private _highlightedHandler: (args: TouchGestureEventData) => void;
+
+
+	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
+		const nativeView = this.nativeViewProtected;
+		console.log('_applyBackground', nativeView, backgroundDrawable, onlyColor, isBorderDrawable);
+		if (backgroundDrawable && onlyColor) {
+			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
+				backgroundDrawable = (<any>nativeView)._cachedDrawable.newDrawable(nativeView.getResources());
+				nativeView.setBackground(backgroundDrawable);
+			}
+
+			const backgroundColor = ((<any>backgroundDrawable).backgroundColor = background.color.android);
+			backgroundDrawable.mutate();
+			backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
+			backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
+			(<any>backgroundDrawable).backgroundColor = backgroundColor;
+		} else {
+			super._applyBackground(background, isBorderDrawable, onlyColor, backgroundDrawable);
+		}
+	}
 
 	@profile
 	public createNativeView() {
