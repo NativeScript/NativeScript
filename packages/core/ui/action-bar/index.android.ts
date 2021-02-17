@@ -235,7 +235,6 @@ export class ActionBar extends ActionBarBase {
 					} catch {}
 				}
 				nativeView.setBackground(backgroundDrawable);
-				nativeView.setBackground(backgroundDrawable);
 			}
 
 			const backgroundColor = ((<any>backgroundDrawable).backgroundColor = background.color.android);
