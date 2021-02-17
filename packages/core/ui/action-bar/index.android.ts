@@ -225,7 +225,15 @@ export class ActionBar extends ActionBarBase {
 		const nativeView = this.nativeViewProtected;
 		if (backgroundDrawable && onlyColor && sdkVersion() >= 21) {
 			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
-				backgroundDrawable = (<any>nativeView)._cachedDrawable.newDrawable(nativeView.getResources());
+				backgroundDrawable = (<any>nativeView)._cachedDrawable;
+				// we need to duplicate the drawable or we lose the "default" cached drawable
+				const constantState = backgroundDrawable.getConstantState();
+				if (constantState) {
+					try {
+						backgroundDrawable = constantState.newDrawable(nativeView.getResources());
+						// eslint-disable-next-line no-empty
+					} catch {}
+				}
 				nativeView.setBackground(backgroundDrawable);
 			}
 

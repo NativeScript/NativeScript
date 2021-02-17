@@ -1009,7 +1009,7 @@ export class View extends ViewCommon {
 			if (constantState) {
 				try {
 					drawable = constantState.newDrawable(nativeView.getResources());
-				// eslint-disable-next-line no-empty
+					// eslint-disable-next-line no-empty
 				} catch {}
 			}
 		}

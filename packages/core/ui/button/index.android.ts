@@ -62,10 +62,17 @@ export class Button extends ButtonBase {
 
 	public _applyBackground(background: Background, isBorderDrawable, onlyColor: boolean, backgroundDrawable: any) {
 		const nativeView = this.nativeViewProtected;
-		console.log('_applyBackground', nativeView, backgroundDrawable, onlyColor, isBorderDrawable);
 		if (backgroundDrawable && onlyColor) {
 			if (isBorderDrawable && (<any>nativeView)._cachedDrawable) {
-				backgroundDrawable = (<any>nativeView)._cachedDrawable.newDrawable(nativeView.getResources());
+				backgroundDrawable = (<any>nativeView)._cachedDrawable;
+				// we need to duplicate the drawable or we lose the "default" cached drawable
+				const constantState = backgroundDrawable.getConstantState();
+				if (constantState) {
+					try {
+						backgroundDrawable = constantState.newDrawable(nativeView.getResources());
+						// eslint-disable-next-line no-empty
+					} catch {}
+				}
 				nativeView.setBackground(backgroundDrawable);
 			}
 
