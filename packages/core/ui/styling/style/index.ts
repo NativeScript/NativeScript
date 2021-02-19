@@ -12,7 +12,7 @@ import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Orde
 import { Trace } from '../../../trace';
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace, TextShadow } from '../../text-base';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
-import { BoxShadow } from '../box-shadow';
+import { CSSShadow } from '../css-shadow';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -140,7 +140,7 @@ export class Style extends Observable implements StyleDefinition {
 	public borderBottomRightRadius: Length;
 	public borderBottomLeftRadius: Length;
 
-	public boxShadow: BoxShadow;
+	public boxShadow: CSSShadow;
 
 	public fontSize: number;
 	public fontFamily: string;

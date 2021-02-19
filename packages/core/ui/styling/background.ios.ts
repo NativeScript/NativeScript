@@ -7,7 +7,7 @@ import { Color } from '../../color';
 import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
-import { BoxShadow } from './box-shadow';
+import { CSSShadow } from './css-shadow';
 
 export * from './background-common';
 
@@ -717,7 +717,7 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
 }
 
 // TODO: use sublayer if its applied to a layout
-function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: BoxShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
+function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
 	const layer: CALayer = nativeView.layer;
 
 	layer.masksToBounds = false;
