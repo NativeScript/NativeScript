@@ -17,7 +17,7 @@ import { Trace } from '../../trace';
 
 import * as parser from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
-import { CSSShadow } from './css-shadow';
+import { CSSShadow, parseCSSShadow } from './css-shadow';
 
 export type LengthDipUnit = { readonly unit: 'dip'; readonly value: dip };
 export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
@@ -451,53 +451,6 @@ export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignmen
 	valueConverter: VerticalAlignment.parse,
 });
 verticalAlignmentProperty.register(Style);
-
-export function parseShadowProperites(value: string): CSSShadow {
-	if (typeof value === 'string') {
-		let arr;
-		let colorRaw = 'black';
-		if (value.indexOf('rgb') > -1) {
-			arr = value.split(' ');
-			colorRaw = arr.pop();
-		} else {
-			arr = value.split(/[ ,]+/);
-			colorRaw = arr.pop();
-		}
-
-		let offsetX = 0;
-		let offsetY = 0;
-		let blurRadius = 0; // not currently in use
-		let spreadRadius = 0; // maybe rename this to just radius
-		let color: Color = new Color(colorRaw);
-
-		if (arr.length === 1) {
-			Trace.write('Expected 3, 4 or 5 parameters. Actual: ' + value, Trace.categories.Error, Trace.messageType.error);
-		}
-
-		if (arr.length > 1) {
-			offsetX = parseFloat(arr[0]);
-			offsetY = parseFloat(arr[1]);
-		}
-
-		if (arr.length > 2) {
-			blurRadius = parseFloat(arr[2]);
-		}
-
-		if (arr.length > 3) {
-			spreadRadius = parseFloat(arr[3]);
-		}
-
-		return {
-			offsetX: offsetX,
-			offsetY: offsetY,
-			blurRadius: blurRadius,
-			spreadRadius: spreadRadius,
-			color: color,
-		};
-	} else {
-		return value;
-	}
-}
 
 interface Thickness {
 	top: string;
@@ -1330,7 +1283,7 @@ const boxShadowProperty = new CssProperty<Style, CSSShadow>({
 		target.boxShadow = newValue;
 	},
 	valueConverter: (value) => {
-		return parseShadowProperites(value);
+		return parseCSSShadow(value);
 	},
 });
 boxShadowProperty.register(Style);
