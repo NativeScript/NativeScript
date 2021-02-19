@@ -1,5 +1,6 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform, TextShadow, getClosestPropertyValue } from './text-base-common';
+import { TextDecoration, TextAlignment, TextTransform, getClosestPropertyValue } from './text-base-common';
+import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
@@ -8,7 +9,7 @@ import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { colorProperty, fontInternalProperty, Length, VerticalAlignment } from '../styling/style-properties';
-import { isString, isDefined, isNullOrUndefined } from '../../utils/types';
+import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
 import { Trace } from '../../trace';
 
@@ -152,8 +153,7 @@ export class TextBase extends TextBaseCommon {
 		if (!(value instanceof Font) || !this.formattedText) {
 			let nativeView = this.nativeTextViewProtected;
 			nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
-			const font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
-			nativeView.font = font;
+			nativeView.font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
 		}
 	}
 
@@ -189,7 +189,7 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
-	[textShadowProperty.setNative](value: TextShadow) {
+	[textShadowProperty.setNative](value: CSSShadow) {
 		this._setShadow(value);
 	}
 
@@ -348,7 +348,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	_setShadow(value: TextShadow): void {
+	_setShadow(value: CSSShadow): void {
 		const layer = getShadowLayer(this);
 		if (!layer) {
 			Trace.write('text-shadow not applied, no layer.', Trace.categories.Style, Trace.messageType.info);
@@ -377,7 +377,7 @@ export class TextBase extends TextBaseCommon {
 		// layer.shadowOffset = CGSizeMake(Length.toDevicePixels(value.offsetX), Length.toDevicePixels(value.offsetY));
 		layer.masksToBounds = false;
 
-		// NOTE: generally should not need shouldRaterize
+		// NOTE: generally should not need shouldRasterize
 		// however for various detailed animation work which involves text-shadow applicable layers, we may want to give users the control of enabling this with text-shadow
 		// if (!(this.nativeTextViewProtected instanceof UITextView)) {
 		//   layer.shouldRasterize = true;
@@ -504,6 +504,7 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
 	}
 }
 
+// todo: clean up nesting & logs
 export function getShadowLayer(view: TextBase): CALayer {
 	let layer: CALayer;
 	const name = 'shadow-layer';

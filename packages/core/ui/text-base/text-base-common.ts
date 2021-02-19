@@ -9,13 +9,13 @@ import { Span } from './span';
 import { View } from '../core/view';
 import { Property, CssProperty, InheritedCssProperty, makeValidator, makeParser } from '../core/properties';
 import { Style } from '../styling/style';
-import { Length, parseShadowProperites } from '../styling/style-properties';
+import { Length } from '../styling/style-properties';
 import { Observable } from '../../data/observable';
 
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from './text-base-interfaces';
 import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
-import { CSSShadow } from '../styling/css-shadow';
+import { CSSShadow, parseCSSShadow } from '../styling/css-shadow';
 
 export * from './text-base-interfaces';
 
@@ -115,10 +115,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.textTransform = value;
 	}
 
-	get textShadow(): TextShadow {
+	get textShadow(): CSSShadow {
 		return this.style.textShadow;
 	}
-	set textShadow(value: TextShadow) {
+	set textShadow(value: CSSShadow) {
 		this.style.textShadow = value;
 	}
 
@@ -273,7 +273,7 @@ export const textShadowProperty = new CssProperty<Style, string | CSSShadow>({
 	cssName: 'text-shadow',
 	affectsLayout: global.isIOS,
 	valueConverter: (value) => {
-		return parseShadowProperites(value);
+		return parseCSSShadow(value);
 	},
 });
 textShadowProperty.register(Style);
