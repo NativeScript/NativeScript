@@ -1,5 +1,6 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform, TextShadow, getClosestPropertyValue } from './text-base-common';
+import { TextDecoration, TextAlignment, TextTransform, getClosestPropertyValue } from './text-base-common';
+import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
@@ -348,7 +349,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	_setShadow(value: TextShadow): void {
+	_setShadow(value: CSSShadow): void {
 		const layer = getShadowLayer(this);
 		if (!layer) {
 			Trace.write('text-shadow not applied, no layer.', Trace.categories.Style, Trace.messageType.info);
@@ -504,6 +505,7 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
 	}
 }
 
+// todo: clean up nesting & logs
 export function getShadowLayer(view: TextBase): CALayer {
 	let layer: CALayer;
 	const name = 'shadow-layer';
