@@ -25,7 +25,7 @@ import * as am from '../../animation';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, getCurrentFontScale } from '../../../accessibility';
-import { BoxShadow } from '../../styling/box-shadow';
+import { CSSShadow } from '../../styling/css-shadow';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -591,10 +591,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.backgroundRepeat = value;
 	}
 
-	get boxShadow(): BoxShadow {
+	get boxShadow(): CSSShadow {
 		return this.style.boxShadow;
 	}
-	set boxShadow(value: BoxShadow) {
+	set boxShadow(value: CSSShadow) {
 		this.style.boxShadow = value;
 	}
 
