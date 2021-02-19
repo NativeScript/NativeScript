@@ -1,5 +1,5 @@
 import { Color } from '../../color';
-import { Length } from './style-properties';
+import { Length, zeroLength } from './style-properties';
 
 export interface CSSShadow {
 	inset: boolean;
@@ -49,8 +49,11 @@ export function parseCSSShadow(value: string): CSSShadow {
 		.filter((n) => n !== 'inset')
 		.filter((n) => n !== colorRaw)
 		.map((val) => {
-			console.log(val);
-			return Length.parse(val);
+			try {
+				return Length.parse(val);
+			} catch (err) {
+				return zeroLength;
+			}
 		});
 	const [offsetX, offsetY, blurRadius, spreadRadius] = nums;
 
