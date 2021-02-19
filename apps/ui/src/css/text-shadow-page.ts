@@ -1,6 +1,6 @@
 ﻿import { EventData, TextBase } from '@nativescript/core';
 
-const possibleValues = ['2 10 4 rgb(255, 100, 100)', '2 10 2 rgba(10, 10, 10, 0.5)', '1 1 1 #55a', '2 2 2 #aaa', ''];
+const possibleValues = ['2 10 4 rgb(255, 100, 100)', '2 10 2 rgba(10, 10, 10, 0.5)', '1 1 1 #55a', '2 2 2 #aaa', '0 0 1 yellow', '-1 -1 1 #aaa', ''];
 let currentIndex = 0;
 
 export function butonTap(args: EventData) {
