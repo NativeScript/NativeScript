@@ -9,12 +9,13 @@ import { Span } from './span';
 import { View } from '../core/view';
 import { Property, CssProperty, InheritedCssProperty, makeValidator, makeParser } from '../core/properties';
 import { Style } from '../styling/style';
-import { Length } from '../styling/style-properties';
+import { Length, parseShadowProperites } from '../styling/style-properties';
 import { Observable } from '../../data/observable';
 
-import { TextAlignment, TextDecoration, TextTransform, WhiteSpace, TextShadow } from './text-base-interfaces';
+import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from './text-base-interfaces';
 import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
+import { CSSShadow } from '../styling/css-shadow';
 
 export * from './text-base-interfaces';
 
@@ -27,6 +28,26 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	public text: string;
 	public formattedText: FormattedString;
 
+	/***
+	 * In the NativeScript Core; by default the nativeTextViewProtected points to the same value as nativeViewProtected.
+	 * At this point no internal NS components need this indirection functionality.
+	 * This indirection is used to allow support usage by third party components so they don't have to duplicate functionality.
+	 *
+	 * A third party component can just override the `nativeTextViewProtected` getter and return a different internal view and that view would be
+	 * what all TextView/TextInput class features would be applied to.
+	 *
+	 * A example is the Android MaterialDesign TextInput class, it has a wrapper view of a TextInputLayout
+	 *    https://developer.android.com/reference/com/google/android/material/textfield/TextInputLayout
+	 * which wraps the actual TextInput.  This wrapper layout (TextInputLayout) must be assigned to the nativeViewProtected as the entire
+	 * NS Core uses nativeViewProtected for everything related to layout, so that it can be measured, added to the parent view as a child, ect.
+	 *
+	 * However, its internal view would be the actual TextView/TextInput and to allow that sub-view to have the normal TextView/TextInput
+	 * class features, which we expose and to allow them to work on it, the internal TextView/TextInput is what the needs to have the class values applied to it.
+	 *
+	 * So all code that works on what is expected to be a TextView/TextInput should use `nativeTextViewProtected` so that any third party
+	 * components that need to have two separate components can work properly without them having to duplicate all the TextBase (and decendants) functionality
+	 * by just overriding the nativeTextViewProtected getter.
+	 **/
 	get nativeTextViewProtected() {
 		return this.nativeViewProtected;
 	}
@@ -247,18 +268,12 @@ export const textTransformProperty = new CssProperty<Style, TextTransform>({
 });
 textTransformProperty.register(Style);
 
-export const textShadowProperty = new CssProperty<Style, string | TextShadow>({
+export const textShadowProperty = new CssProperty<Style, string | CSSShadow>({
 	name: 'textShadow',
 	cssName: 'text-shadow',
 	affectsLayout: global.isIOS,
 	valueConverter: (value) => {
-		const params = value.split(' ');
-		return {
-			offsetX: Length.parse(params[0]),
-			offsetY: Length.parse(params[1]),
-			blurRadius: Length.parse(params[2]),
-			color: new Color(params.slice(3).join('')),
-		};
+		return parseShadowProperites(value);
 	},
 });
 textShadowProperty.register(Style);
