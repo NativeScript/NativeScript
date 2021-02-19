@@ -8,10 +8,11 @@
 # dependencies
 node_modules
 package-lock.json
-yarn-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # IDEs and editors
-/.idea
+.idea
 .project
 .classpath
 .c9/
