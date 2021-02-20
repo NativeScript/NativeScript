@@ -6,9 +6,9 @@ import { parse } from '../../css-value';
 import { path, knownFolders } from '../../file-system';
 import * as application from '../../application';
 import { profile } from '../../profiling';
-import { BoxShadow } from './box-shadow';
 import { Color } from '../../color';
 import { Screen } from '../../platform';
+import { CSSShadow } from './css-shadow';
 export * from './background-common';
 
 interface AndroidView {
@@ -227,7 +227,7 @@ function createNativeCSSValueArray(css: string): native.Array<org.nativescript.w
 	return nativeArray;
 }
 
-function drawBoxShadow(nativeView: android.view.View, view: View, boxShadow: BoxShadow) {
+function drawBoxShadow(nativeView: android.view.View, view: View, boxShadow: CSSShadow) {
 	const color = boxShadow.color;
 	const shadowOpacity = color.a;
 	const shadowColor = new Color(shadowOpacity, color.r, color.g, color.b);
