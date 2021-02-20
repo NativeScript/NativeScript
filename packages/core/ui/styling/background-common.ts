@@ -4,7 +4,7 @@ import { BackgroundRepeat } from '../styling/style-properties';
 import { LinearGradient } from './linear-gradient';
 // Types.
 import { Color } from '../../color';
-import { BoxShadow } from './box-shadow';
+import { CSSShadow } from './css-shadow';
 
 export class Background implements BackgroundDefinition {
 	public static default = new Background();
@@ -27,7 +27,7 @@ export class Background implements BackgroundDefinition {
 	public borderBottomLeftRadius = 0;
 	public borderBottomRightRadius = 0;
 	public clipPath: string;
-	public boxShadow: BoxShadow;
+	public boxShadow: CSSShadow;
 
 	private clone(): Background {
 		const clone = new Background();
@@ -181,7 +181,7 @@ export class Background implements BackgroundDefinition {
 		return clone;
 	}
 
-	public withBoxShadow(value: BoxShadow): Background {
+	public withBoxShadow(value: CSSShadow): Background {
 		const clone = this.clone();
 		clone.boxShadow = value;
 
@@ -288,7 +288,7 @@ export class Background implements BackgroundDefinition {
 		return !!this.boxShadow;
 	}
 
-	public getBoxShadow(): BoxShadow {
+	public getBoxShadow(): CSSShadow {
 		return this.boxShadow;
 	}
 
