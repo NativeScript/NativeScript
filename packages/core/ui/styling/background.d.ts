@@ -50,6 +50,7 @@ export declare class Background {
 	public withBorderBottomRightRadius(value: number): Background;
 	public withBorderBottomLeftRadius(value: number): Background;
 	public withClipPath(value: string): Background;
+	public withBoxShadow(value: BoxShadow): Background;
 
 	public isEmpty(): boolean;
 
@@ -65,6 +66,8 @@ export declare class Background {
 	public getUniformBorderColor(): Color;
 	public getUniformBorderWidth(): number;
 	public getUniformBorderRadius(): number;
+	public hasBoxShadow(): boolean;
+	public getBoxShadow(): BoxShadow;
 }
 
 export namespace ios {

@@ -93,9 +93,10 @@ export namespace ad {
 			nativeView.setBackground(defaultDrawable);
 		}
 
-		const boxShadow = view.style.boxShadow;
-		if (boxShadow) {
-			drawBoxShadow(nativeView, view, boxShadow);
+		if (background.hasBoxShadow()) {
+			drawBoxShadow(nativeView, view, background.getBoxShadow());
+		} else {
+			clearBoxShadow(nativeView);
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
@@ -241,6 +242,10 @@ function drawBoxShadow(nativeView: android.view.View, view: View, boxShadow: Box
 		scale: Screen.mainScreen.scale,
 	};
 	org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
+}
+
+function clearBoxShadow(nativeView: android.view.View) {
+	// org.nativescript.widgets.Utils.clearBoxShadow(nativeView);
 }
 
 export enum CacheMode {
