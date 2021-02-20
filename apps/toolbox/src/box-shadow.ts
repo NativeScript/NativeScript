@@ -105,11 +105,6 @@ export class BoxShadowModel extends Observable {
 		}
 		this.appliedBoxShadow = this._boxShadow;
 		this.notifyPropertyChange('appliedBoxShadow', this.appliedBoxShadow);
-
-		// TODO: this is a workaround to apply shadow immediately,
-		// since the box-shadow logic is currently inside background.ts
-		this.notifyPropertyChange('background', '');
-		this.notifyPropertyChange('background', this.background);
 	}
 
 	textChange(args): void {
