@@ -88,12 +88,11 @@ export namespace ios {
 			setUIColorFromImage(view, nativeView, callback, flip);
 		}
 
-		const boxShadow = view.style.boxShadow;
-		if (boxShadow) {
-			// this is required (if not, shadow will get cutoff at parent's dimensions)
-			// nativeView.clipsToBounds doesn't work
-			view.setProperty('clipToBounds', false);
-			drawBoxShadow(nativeView, view, boxShadow, background);
+		if (background.hasBoxShadow()) {
+			drawBoxShadow(nativeView, view, background.getBoxShadow(), background);
+		} else {
+			view.setProperty('clipToBounds', true);
+			clearBoxShadow(nativeView);
 		}
 	}
 }
@@ -722,6 +721,10 @@ function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow,
 
 	layer.masksToBounds = false;
 	nativeView.clipsToBounds = false;
+  
+  // this is required (if not, shadow will get cutoff at parent's dimensions)
+	// nativeView.clipsToBounds doesn't work
+	view.setProperty('clipToBounds', false);
 
 	if (!background.color?.a) {
 		// add white background if view has a transparent background
@@ -743,6 +746,17 @@ function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow,
 
 	// This has the nice glow with box shadow of 0,0
 	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, cornerRadius).CGPath;
+}
+
+function clearBoxShadow(nativeView: NativeView) {
+	nativeView.clipsToBounds = true;
+	const layer: CALayer = nativeView.layer;
+	layer.masksToBounds = true;
+	layer.shadowOffset = CGSizeMake(0, 0);
+	layer.shadowColor = UIColor.clearColor.CGColor;
+	layer.cornerRadius = 0.0;
+	layer.shadowRadius = 0.0;
+	layer.shadowOpacity = 0.0;
 }
 
 function drawGradient(nativeView: NativeView, gradient: LinearGradient) {
