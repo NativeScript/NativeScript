@@ -8,6 +8,8 @@ import { FlipTransition } from '../transition/flip-transition';
 import { _resolveAnimationCurve } from '../animation';
 import lazy from '../../utils/lazy';
 import { Trace } from '../../trace';
+import { FadeTransition } from 'ui/transition/fade-transition.android';
+import { SlideTransition } from 'ui/transition/slide-transition.android';
 
 interface TransitionListener {
 	new (entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener;
@@ -66,43 +68,39 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 	allowTransitionOverlap(newFragment);
 
 	let name = '';
-	let transition: Transition;
+	let customTransition: Transition;
 
 	if (navigationTransition) {
-		transition = navigationTransition.instance;
+		customTransition = navigationTransition.instance;
 		name = navigationTransition.name ? navigationTransition.name.toLowerCase() : '';
 	}
 
 	if (!animated) {
 		name = 'none';
-	} else if (transition) {
+	} else if (customTransition) {
 		name = 'custom';
-	} else if (name.indexOf('slide') !== 0 && name !== 'fade' && name.indexOf('flip') !== 0 && name.indexOf('explode') !== 0) {
+	} else if (name.indexOf('slide') !== 0 && name !== 'fade' && name.indexOf('flip') !== 0) {
 		// If we are given name that doesn't match any of ours - fallback to default.
 		name = 'default';
 	}
-
 	let currentFragmentNeedsDifferentAnimation = false;
 	if (currentEntry) {
 		_updateTransitions(currentEntry);
-		if (currentEntry.transitionName !== name || currentEntry.transition !== transition || isNestedDefaultTransition) {
+		if (currentEntry.transitionName !== name || currentEntry.transition !== customTransition || isNestedDefaultTransition) {
 			clearExitAndReenterTransitions(currentEntry, true);
 			currentFragmentNeedsDifferentAnimation = true;
 		}
 	}
-
+	let transition: Transition;
 	if (name === 'none') {
 		const noTransition = new NoTransition(0, null);
-
-		// Setup empty/immediate animator when transitioning to nested frame for first time.
-		// Also setup empty/immediate transition to be executed when navigating back to this page.
-		// TODO: Consider removing empty/immediate animator when migrating to official androidx.fragment.app.Fragment:1.2.
 		if (isNestedDefaultTransition) {
-			fragmentTransaction.setCustomAnimations(animFadeIn, animFadeOut);
-			setupAllAnimation(newEntry, noTransition);
-			setupNewFragmentCustomTransition({ duration: 0, curve: null }, newEntry, noTransition);
-		} else {
-			setupNewFragmentCustomTransition({ duration: 0, curve: null }, newEntry, noTransition);
+			// with androidx.fragment 1.3.0 the first fragment animation is not triggered
+			// so let's simulate a transition end
+			setTimeout(() => {
+				addToWaitingQueue(newEntry);
+				transitionOrAnimationCompleted(newEntry, null);
+			});
 		}
 
 		newEntry.isNestedDefaultTransition = isNestedDefaultTransition;
@@ -110,52 +108,40 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 		if (currentFragmentNeedsDifferentAnimation) {
 			setupCurrentFragmentCustomTransition({ duration: 0, curve: null }, currentEntry, noTransition);
 		}
-	} else if (name === 'custom') {
+	} else if (customTransition) {
 		setupNewFragmentCustomTransition(
 			{
-				duration: transition.getDuration(),
-				curve: transition.getCurve(),
+				duration: customTransition.getDuration(),
+				curve: customTransition.getCurve(),
 			},
 			newEntry,
-			transition
+			customTransition
 		);
 		if (currentFragmentNeedsDifferentAnimation) {
 			setupCurrentFragmentCustomTransition(
 				{
-					duration: transition.getDuration(),
-					curve: transition.getCurve(),
+					duration: customTransition.getDuration(),
+					curve: customTransition.getCurve(),
 				},
 				currentEntry,
-				transition
+				customTransition
 			);
 		}
 	} else if (name === 'default') {
-		setupNewFragmentFadeTransition({ duration: 150, curve: null }, newEntry);
-		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentFadeTransition({ duration: 150, curve: null }, currentEntry);
-		}
+		transition = new FadeTransition(150, null);
 	} else if (name.indexOf('slide') === 0) {
-		setupNewFragmentSlideTransition(navigationTransition, newEntry, name);
-		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentSlideTransition(navigationTransition, currentEntry, name);
-		}
+		const direction = name.substr('slide'.length) || 'left'; //Extract the direction from the string
+		transition = new SlideTransition(direction, navigationTransition.duration, navigationTransition.curve);
 	} else if (name === 'fade') {
-		setupNewFragmentFadeTransition(navigationTransition, newEntry);
-		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentFadeTransition(navigationTransition, currentEntry);
-		}
-	} else if (name === 'explode') { 
-		setupNewFragmentExplodeTransition(navigationTransition, newEntry);
-		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentExplodeTransition(navigationTransition, currentEntry);
-		}
+		transition = new FadeTransition(navigationTransition.duration, navigationTransition.curve);
 	} else if (name.indexOf('flip') === 0) {
 		const direction = name.substr('flip'.length) || 'right'; //Extract the direction from the string
-		const flipTransition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
-
-		setupNewFragmentCustomTransition(navigationTransition, newEntry, flipTransition);
+		transition = new FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
+	}
+	if (transition) {
+		setupNewFragmentCustomTransition(navigationTransition, newEntry, transition);
 		if (currentFragmentNeedsDifferentAnimation) {
-			setupCurrentFragmentCustomTransition(navigationTransition, currentEntry, flipTransition);
+			setupCurrentFragmentCustomTransition(navigationTransition, currentEntry, transition);
 		}
 	}
 

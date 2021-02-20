@@ -476,10 +476,10 @@ export class Frame extends FrameBase {
 
 		_reverseTransitions(backstackEntry, this._currentEntry);
 
-		const currentIndex =this.backStack.length;
+		const currentIndex = this.backStack.length;
 		const goBackToIndex = this.backStack.indexOf(backstackEntry);
-		
-		// the order is important so that the transition listener called be 
+
+		// the order is important so that the transition listener called be
 		// the one from the current entry we are going back from
 		if (this._currentEntry !== backstackEntry) {
 			const entry = this._currentEntry as ExpandedEntry;
@@ -489,8 +489,9 @@ export class Frame extends FrameBase {
 			if (entry.returnTransitionListener) {
 				entry.returnTransitionListener.backEntry = backstackEntry;
 			}
-			
-			transaction.remove((this._currentEntry).fragment);	
+
+			// we only did hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
+			transaction.hide(this._currentEntry.fragment);
 		}
 		for (let index = goBackToIndex + 1; index < currentIndex; index++) {
 			transaction.remove(this.backStack[index].fragment);
@@ -501,8 +502,13 @@ export class Frame extends FrameBase {
 
 	public _removeEntry(removed: BackstackEntry): void {
 		super._removeEntry(removed);
-
 		if (removed.fragment) {
+			// we only did hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
+			// so lets remove it
+			const manager: androidx.fragment.app.FragmentManager = this._getFragmentManager();
+			const transaction = manager.beginTransaction();
+			transaction.remove(removed.fragment);
+			transaction.commitAllowingStateLoss();
 			_clearEntry(removed);
 		}
 
@@ -788,11 +794,11 @@ function findPageForFragment(fragment: androidx.fragment.app.Fragment, frame: Fr
 	} else if (executingContext && executingContext.entry && executingContext.entry.fragmentTag === fragmentTag) {
 		entry = executingContext.entry;
 	} else {
-		frame.backStack.forEach(e=>{
+		frame.backStack.forEach((e) => {
 			if (e && e.fragmentTag === fragmentTag) {
 				entry = e;
 			}
-		})
+		});
 	}
 
 	let page: Page;
@@ -873,14 +879,23 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 	public onCreateAnimator(fragment: androidx.fragment.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
 		let animator = null;
 		const entry = <any>this.entry;
+		if (Trace.isEnabled()) {
+			Trace.write(`${fragment}.onCreateAnimator(${transit},${enter}, ${nextAnim})`, Trace.categories.Animation);
+		}
 
 		// Return enterAnimator only when new (no current entry) nested transition.
 		if (enter && entry.isNestedDefaultTransition) {
 			animator = entry.enterAnimator;
 			entry.isNestedDefaultTransition = false;
 		}
-
 		return animator || superFunc.call(fragment, transit, enter, nextAnim);
+	}
+	@profile
+	public onCreateAnimation(fragment: androidx.fragment.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): globalAndroid.view.animation.Animation {
+		if (Trace.isEnabled()) {
+			Trace.write(`${fragment}.onCreateAnimation(${transit},${enter}, ${nextAnim})`, Trace.categories.Animation);
+		}
+		return superFunc.call(fragment, transit, enter, nextAnim);
 	}
 
 	@profile
@@ -988,11 +1003,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
 	@profile
 	public onDestroyView(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-			if (Trace.isEnabled()) {
-				Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
-			}
-			superFunc.call(fragment);
+		if (Trace.isEnabled()) {
+			Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
 		}
+		superFunc.call(fragment);
+	}
 
 	@profile
 	public onDestroy(fragment: androidx.fragment.app.Fragment, superFunc: Function): void {
@@ -1014,18 +1029,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 		// "IllegalStateException: Failure saving state: active fragment has cleared index: -1"
 		// in a specific mixed parent / nested frame navigation scenario
 		entry.fragment = null;
-
-		const page = entry.resolvedPage;
-		if (!page) {
-			Trace.error(`${fragment}.onDestroy: entry has no resolvedPage`);
-
-			return null;
-		}
 	}
 
 	@profile
 	public onPause(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-			superFunc.call(fragment);
+		superFunc.call(fragment);
 	}
 
 	@profile
