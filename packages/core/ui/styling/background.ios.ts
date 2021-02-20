@@ -8,6 +8,7 @@ import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
 import { CSSShadow } from './css-shadow';
+import { Length } from './style-properties';
 
 export * from './background-common';
 
@@ -717,12 +718,13 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
 
 // TODO: use sublayer if its applied to a layout
 function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
+	// TODO: fine named 'shadow-layer' first and otherwise need to search through sublayers (need logic used in text-shadow for layer - see getShadowLayer)
 	const layer: CALayer = nativeView.layer;
 
 	layer.masksToBounds = false;
 	nativeView.clipsToBounds = false;
-  
-  // this is required (if not, shadow will get cutoff at parent's dimensions)
+
+	// this is required (if not, shadow will get cutoff at parent's dimensions)
 	// nativeView.clipsToBounds doesn't work
 	view.setProperty('clipToBounds', false);
 
@@ -731,13 +733,13 @@ function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow,
 		layer.backgroundColor = UIColor.whiteColor.CGColor;
 	}
 	// shadow opacity is handled on the shadow's color instance
-	layer.shadowOpacity = 1;
-	layer.shadowRadius = layout.toDeviceIndependentPixels(boxShadow.spreadRadius);
+	layer.shadowOpacity = background.color?.a ? background.color?.a / 255 : 1;
+	layer.shadowRadius = Length.toDevicePixels(boxShadow.spreadRadius);
 	layer.shadowColor = boxShadow.color.ios.CGColor;
 
 	const adjustedShadowOffset = {
-		x: layout.toDeviceIndependentPixels(boxShadow.offsetX),
-		y: layout.toDeviceIndependentPixels(boxShadow.offsetY),
+		x: Length.toDevicePixels(boxShadow.offsetX),
+		y: Length.toDevicePixels(boxShadow.offsetY),
 	};
 	layer.shadowOffset = CGSizeMake(adjustedShadowOffset.x, adjustedShadowOffset.y);
 
