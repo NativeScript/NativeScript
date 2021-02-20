@@ -1,5 +1,6 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform, TextShadow, WhiteSpace, getClosestPropertyValue } from './text-base-common';
+import { TextDecoration, TextAlignment, TextTransform, WhiteSpace, getClosestPropertyValue } from './text-base-common';
+import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
@@ -387,7 +388,7 @@ export class TextBase extends TextBaseCommon {
 		};
 	}
 
-	[textShadowProperty.setNative](value: TextShadow) {
+	[textShadowProperty.setNative](value: CSSShadow) {
 		this.nativeViewProtected.setShadowLayer(Length.toDevicePixels(value.blurRadius, 0), Length.toDevicePixels(value.offsetX, 0), Length.toDevicePixels(value.offsetY, 0), value.color.android);
 	}
 
