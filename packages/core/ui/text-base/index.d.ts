@@ -3,6 +3,7 @@ import { FormattedString } from './formatted-string';
 import { Style } from '../styling/style';
 import { Length } from '../styling/style-properties';
 import { Property, CssProperty, InheritedCssProperty } from '../core/properties';
+import { CSSShadow } from '../styling/css-shadow';
 
 export class TextBase extends View implements AddChildFromBuilder {
 	/**
@@ -54,7 +55,7 @@ export class TextBase extends View implements AddChildFromBuilder {
 	/**
 	 * Gets or sets text shadow style property.
 	 */
-	textShadow: TextShadow;
+	textShadow: CSSShadow;
 
 	/**
 	 * Gets or sets white space style property.
@@ -125,12 +126,6 @@ export type WhiteSpace = 'initial' | 'normal' | 'nowrap';
 export type TextAlignment = 'initial' | 'left' | 'center' | 'right';
 export type TextTransform = 'initial' | 'none' | 'capitalize' | 'uppercase' | 'lowercase';
 export type TextDecoration = 'none' | 'underline' | 'line-through' | 'underline line-through';
-export type TextShadow = {
-	offsetX: Length;
-	offsetY: Length;
-	blurRadius: Length;
-	color: Color;
-};
 
 export const textAlignmentProperty: InheritedCssProperty<Style, TextAlignment>;
 export const textDecorationProperty: CssProperty<Style, TextDecoration>;

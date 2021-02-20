@@ -1,5 +1,6 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform, TextShadow, getClosestPropertyValue } from './text-base-common';
+import { TextDecoration, TextAlignment, TextTransform, getClosestPropertyValue } from './text-base-common';
+import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
@@ -7,9 +8,10 @@ import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentPrope
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, VerticalAlignment } from '../styling/style-properties';
-import { isString, isDefined, isNullOrUndefined } from '../../utils/types';
+import { colorProperty, fontInternalProperty, Length, VerticalAlignment } from '../styling/style-properties';
+import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
+import { Trace } from '../../trace';
 
 export * from './text-base-common';
 
@@ -151,8 +153,7 @@ export class TextBase extends TextBaseCommon {
 		if (!(value instanceof Font) || !this.formattedText) {
 			let nativeView = this.nativeTextViewProtected;
 			nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
-			const font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
-			nativeView.font = font;
+			nativeView.font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
 		}
 	}
 
@@ -188,7 +189,7 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
-	[textShadowProperty.setNative](value: TextShadow) {
+	[textShadowProperty.setNative](value: CSSShadow) {
 		this._setShadow(value);
 	}
 
@@ -347,13 +348,11 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	_setShadow(value: TextShadow): void {
-		let layer;
-
-		if (this.nativeTextViewProtected instanceof UITextView) {
-			layer = this.nativeTextViewProtected.layer.sublayers.objectAtIndex(1);
-		} else {
-			layer = this.nativeTextViewProtected.layer;
+	_setShadow(value: CSSShadow): void {
+		const layer = getShadowLayer(this);
+		if (!layer) {
+			Trace.write('text-shadow not applied, no layer.', Trace.categories.Style, Trace.messageType.info);
+			return;
 		}
 
 		if (isNullOrUndefined(value)) {
@@ -365,12 +364,24 @@ export class TextBase extends TextBaseCommon {
 			return;
 		}
 
-		layer.shadowOpacity = 1;
-		layer.shadowRadius = value.blurRadius;
-		layer.shadowColor = value.color.ios.CGColor;
-		layer.shadowOffset = CGSizeMake(value.offsetX, value.offsetY);
-		layer.shouldRasterize = true;
+		if (value.color) {
+			layer.shadowOpacity = value.color.a / 255;
+			layer.shadowColor = value.color.ios.CGColor;
+		}
+
+		if (value.blurRadius) {
+			layer.shadowRadius = Length.toDevicePixels(value.blurRadius);
+		}
+
+		layer.shadowOffset = CGSizeMake(Length.toDevicePixels(value.offsetX), Length.toDevicePixels(value.offsetY));
+		// layer.shadowOffset = CGSizeMake(Length.toDevicePixels(value.offsetX), Length.toDevicePixels(value.offsetY));
 		layer.masksToBounds = false;
+
+		// NOTE: generally should not need shouldRasterize
+		// however for various detailed animation work which involves text-shadow applicable layers, we may want to give users the control of enabling this with text-shadow
+		// if (!(this.nativeTextViewProtected instanceof UITextView)) {
+		//   layer.shouldRasterize = true;
+		// }
 	}
 
 	createNSMutableAttributedString(formattedString: FormattedString): NSMutableAttributedString {
@@ -491,6 +502,42 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
 		default:
 			return text;
 	}
+}
+
+// todo: clean up nesting & logs
+export function getShadowLayer(view: TextBase): CALayer {
+	let layer: CALayer;
+	const name = 'shadow-layer';
+	const nativeView = view && view.nativeTextViewProtected;
+	if (nativeView) {
+		if (nativeView.layer) {
+			if (nativeView.layer.name === name) {
+				return nativeView.layer;
+			} else {
+				if (nativeView.layer.sublayers && nativeView.layer.sublayers.count) {
+					console.log('this.nativeTextViewProtected.layer.sublayers.count:', nativeView.layer.sublayers.count);
+					for (let i = 0; i < nativeView.layer.sublayers.count; i++) {
+						console.log(`layer ${i}:`, nativeView.layer.sublayers.objectAtIndex(i));
+						if (nativeView.layer.sublayers.objectAtIndex(i).name === name) {
+							return nativeView.layer.sublayers.objectAtIndex(i);
+						}
+					}
+					if (nativeView instanceof UITextView) {
+						layer = nativeView.layer.sublayers.objectAtIndex(1);
+					} else {
+						layer = nativeView.layer.sublayers.objectAtIndex(nativeView.layer.sublayers.count - 1);
+					}
+				} else {
+					layer = nativeView.layer;
+				}
+			}
+		} else {
+			// could this occur?
+			console.log('no layer!');
+		}
+	}
+	layer.name = name;
+	return layer;
 }
 
 function NSStringFromNSAttributedString(source: NSAttributedString | string): NSString {

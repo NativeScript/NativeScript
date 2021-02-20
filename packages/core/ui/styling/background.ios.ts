@@ -7,7 +7,7 @@ import { Color } from '../../color';
 import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
-import { BoxShadow } from './box-shadow';
+import { CSSShadow } from './css-shadow';
 
 export * from './background-common';
 
@@ -715,15 +715,16 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
 	nativeView.hasNonUniformBorder = hasNonUniformBorder;
 }
 
-function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: BoxShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
-	// this is required (if not, shadow will get cutoff at parent's dimensions)
-	// nativeView.clipsToBounds doesn't work
-	view.setProperty('clipToBounds', false);
-
+// TODO: use sublayer if its applied to a layout
+function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
 	const layer: CALayer = nativeView.layer;
 
 	layer.masksToBounds = false;
 	nativeView.clipsToBounds = false;
+  
+  // this is required (if not, shadow will get cutoff at parent's dimensions)
+	// nativeView.clipsToBounds doesn't work
+	view.setProperty('clipToBounds', false);
 
 	if (!background.color?.a) {
 		// add white background if view has a transparent background
