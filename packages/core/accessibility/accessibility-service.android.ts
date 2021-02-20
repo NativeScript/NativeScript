@@ -20,6 +20,7 @@ class AndroidSharedA11YObservable extends SharedA11YObservable {
 	[accessibilityStateEnabledPropName]: boolean;
 	[touchExplorationStateEnabledPropName]: boolean;
 
+	// @ts-ignore todo: fix
 	get accessibilityServiceEnabled(): boolean {
 		return !!this[accessibilityStateEnabledPropName] && !!this[touchExplorationStateEnabledPropName];
 	}
