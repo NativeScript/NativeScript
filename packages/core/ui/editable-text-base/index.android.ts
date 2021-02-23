@@ -144,7 +144,6 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	/* tslint:enable */
 
 	nativeViewProtected: android.widget.EditText;
-	nativeTextViewProtected: android.widget.EditText;
 	private _keyListenerCache: android.text.method.KeyListener;
 	private _inputType: number;
 
@@ -216,7 +215,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		const nativeView = this.nativeTextViewProtected;
 		try {
 			this._changeFromCode = true;
-			nativeView.setInputType(inputType);
+			nativeView.setInputType(parseInt(<any>inputType,10));
 		} finally {
 			this._changeFromCode = false;
 		}
@@ -281,7 +280,12 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				break;
 
 			default:
-				newInputType = value;
+				const inputType = +value;
+				if (!isNaN(inputType)) {
+					newInputType = inputType;
+				} else {
+					newInputType = android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL;
+				}
 				break;
 		}
 
@@ -328,7 +332,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			case 'send':
 				newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEND;
 				break;
-			default: {
+			default:{
 				const ime = +value;
 				if (!isNaN(ime)) {
 					newImeOptions = ime;
@@ -383,7 +387,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 			case 'allcharacters':
 				inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS; //4096 (0x00010000) 13th bit
 				break;
-			default: {
+			default:{
 				const number = +value;
 				// We set the default value.
 				if (!isNaN(number)) {
@@ -465,17 +469,6 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
 			newFilters.push(lengthFilter);
 			this.nativeTextViewProtected.setFilters(newFilters);
-		}
-	}
-
-	public setSelection(start: number, stop?: number) {
-		const view = this.nativeTextViewProtected;
-		if (view) {
-			if (stop !== undefined) {
-				view.setSelection(start, stop);
-			} else {
-				view.setSelection(start);
-			}
 		}
 	}
 }
