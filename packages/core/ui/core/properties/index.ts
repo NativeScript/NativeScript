@@ -557,7 +557,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 							}
 						} else {
 							if (childValueSource <= ValueSource.Inherited) {
-								setFunc(ValueSource.Inherited).call(child, newValue);
+								setInheritedValue.call(child, newValue);
 							}
 						}
 
@@ -566,7 +566,8 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
 				}
 			};
 
-		this.setInheritedValue = setFunc(ValueSource.Inherited);
+		const setInheritedValue = setFunc(ValueSource.Inherited);
+		this.setInheritedValue = setInheritedValue;
 
 		this.set = setFunc(ValueSource.Local);
 
@@ -1205,7 +1206,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 							}
 						} else {
 							if (childValueSource <= ValueSource.Inherited) {
-								setFunc(ValueSource.Inherited).call(childStyle, value);
+								setInheritedFunc.call(childStyle, value);
 							}
 						}
 
@@ -1215,8 +1216,9 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 			};
 
 		const setDefaultFunc = setFunc(ValueSource.Default);
+		const setInheritedFunc = setFunc(ValueSource.Inherited);
 
-		this.setInheritedValue = setFunc(ValueSource.Inherited);
+		this.setInheritedValue = setInheritedFunc;
 		this.cssValueDescriptor.set = setFunc(ValueSource.Css);
 		this.localValueDescriptor.set = setFunc(ValueSource.Local);
 
