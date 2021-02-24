@@ -582,8 +582,8 @@ export class BottomNavigation extends TabNavigationBase {
                     fragmentExitTransition.setResetOnTransitionEnd(true);
                 }
                 if (fragment && fragment.isAdded() && !fragment.isRemoving()) {
-                    const pfm = (<any>fragment).getParentFragmentManager ? (<any>fragment).getParentFragmentManager() : null;
-                    if (pfm && !pfm.isDestroyed()) {
+                    const pfm = (<any>fragment).getParentFragmentManager ? (<any>fragment).getParentFragmentManager() : fragmentManager;
+                    if (pfm) {
                         try {
                             if (pfm.isStateSaved()) {
                                 pfm.beginTransaction().remove(fragment).commitNowAllowingStateLoss();
