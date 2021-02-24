@@ -285,7 +285,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				if (!isNaN(inputType)) {
 					newInputType = inputType;
 				} else {
-					newInputType = android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL;
+					newInputType = android.text.InputType.TYPE_CLASS_TEXT;
 				}
 				break;
 		}
