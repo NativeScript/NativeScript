@@ -540,7 +540,9 @@ export class BottomNavigation extends TabNavigationBase {
 
             if (fragment != null) {
                 fragment.setMenuVisibility(true);
-                fragment.setUserVisibleHint(true);
+                // commenting out as it fixes rare crash when going
+                // back from deeply nested/modally shown fragments
+                // fragment.setUserVisibleHint(true);
             }
 
             this._currentFragment = fragment;
