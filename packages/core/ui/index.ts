@@ -60,6 +60,7 @@ export { Slider } from './slider';
 export { addTaggedAdditionalCSS, removeTaggedAdditionalCSS, resolveFileNameFromUrl } from './styling/style-scope';
 export { Background } from './styling/background';
 export type { CacheMode } from './styling/background';
+export { parseCSSShadow } from './styling/css-shadow';
 export { animationTimingFunctionConverter, timeConverter } from './styling/converters';
 export { Font } from './styling/font';
 export { Style } from './styling/style';

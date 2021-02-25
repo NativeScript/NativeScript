@@ -4,7 +4,7 @@ import { Background as BackgroundDefinition } from './background';
 import { View, Point } from '../core/view';
 import { LinearGradient } from './linear-gradient';
 import { Color } from '../../color';
-import { isDataURI, isFileOrResourcePath, layout } from '../../utils';
+import { iOSNativeHelper, isDataURI, isFileOrResourcePath, layout } from '../../utils';
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
 import { CSSShadow } from './css-shadow';
@@ -718,8 +718,7 @@ function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: Backg
 
 // TODO: use sublayer if its applied to a layout
 function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow, background: BackgroundDefinition, useSubLayer: boolean = false) {
-	// TODO: fine named 'shadow-layer' first and otherwise need to search through sublayers (need logic used in text-shadow for layer - see getShadowLayer)
-	const layer: CALayer = nativeView.layer;
+	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow');
 
 	layer.masksToBounds = false;
 	nativeView.clipsToBounds = false;
@@ -752,7 +751,7 @@ function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow,
 
 function clearBoxShadow(nativeView: NativeView) {
 	nativeView.clipsToBounds = true;
-	const layer: CALayer = nativeView.layer;
+	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow');
 	layer.masksToBounds = true;
 	layer.shadowOffset = CGSizeMake(0, 0);
 	layer.shadowColor = UIColor.clearColor.CGColor;
