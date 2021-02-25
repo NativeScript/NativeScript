@@ -87,26 +87,31 @@ export class Frame extends FrameBase {
 	/**
 	 * Gets the back stack of this instance.
 	 */
+	// @ts-ignore
 	backStack: Array<BackstackEntry>;
 
 	/**
 	 * Gets the Page instance the Frame is currently navigated to.
 	 */
+	// @ts-ignore
 	currentPage: Page;
 
 	/**
 	 * Gets the NavigationEntry instance the Frame is currently navigated to.
 	 */
+	// @ts-ignore
 	currentEntry: NavigationEntry;
 
 	/**
 	 * Gets or sets if navigation transitions should be animated.
 	 */
+	// @ts-ignore
 	animated: boolean;
 
 	/**
 	 * Gets or sets the default navigation transition for this frame.
 	 */
+	// @ts-ignore
 	transition: NavigationTransition;
 
 	/**
@@ -149,6 +154,7 @@ export class Frame extends FrameBase {
 	/**
 	 * @private
 	 */
+	// @ts-ignore
 	navigationBarHeight: number;
 	/**
 	 * @private
