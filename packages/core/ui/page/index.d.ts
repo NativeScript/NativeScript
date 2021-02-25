@@ -56,16 +56,19 @@ export declare class Page extends PageBase {
 	/**
 	 * Gets or sets the style of the status bar.
 	 */
+	// @ts-ignore
 	public statusBarStyle: 'light' | 'dark';
 
 	/**
 	 * Gets or sets the color of the status bar in Android.
 	 */
+	// @ts-ignore
 	public androidStatusBarBackground: Color;
 
 	/**
 	 * Used to hide the Navigation Bar in iOS and the Action Bar in Android.
 	 */
+	// @ts-ignore
 	public actionBarHidden: boolean;
 
 	/**
@@ -81,16 +84,19 @@ export declare class Page extends PageBase {
 	/**
 	 * A property that is used to pass a data from another page (while navigate to).
 	 */
+	// @ts-ignore
 	public navigationContext: any;
 
 	/**
 	 * Gets the Frame object controlling this instance.
 	 */
+	// @ts-ignore
 	public frame: Frame;
 
 	/**
 	 * Gets the ActionBar for this page.
 	 */
+	// @ts-ignore
 	public actionBar: ActionBar;
 
 	/**
