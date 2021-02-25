@@ -16,6 +16,7 @@ moduleAlias.addAliases({
 	'@nativescript/core/color': path.resolve(tnsCoreModules, 'color/color-common'),
 	'@nativescript/core/ui/styling/font': path.resolve(tnsCoreModules, 'ui/styling/font-common'),
 	'@nativescript/core/ui/styling/background': path.resolve(tnsCoreModules, 'ui/styling/background-common'),
+	'@nativescript/core/ui/styling/css-shadow': path.resolve(tnsCoreModules, 'ui/styling/css-shadow'),
 
 	'@nativescript/core': tnsCoreModules,
 	'~': __dirname,
