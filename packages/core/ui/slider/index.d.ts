@@ -1,6 +1,7 @@
 ﻿import { View } from '../core/view';
 import { Property, CoercibleProperty } from '../core/properties';
 import { EventData } from '../../data/observable';
+import type { SliderBase } from './slider-common';
 
 /**
  * Represents a slider component.
