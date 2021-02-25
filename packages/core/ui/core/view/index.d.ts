@@ -3,12 +3,12 @@ import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
 import { Color } from '../../../color';
 import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
-import { HorizontalAlignment, VerticalAlignment, Visibility, LengthType, PercentLengthType } from '../../styling/style-properties';
+import { LengthType, PercentLengthType } from '../../styling/style-properties';
 import { GestureTypes, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/gradient';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
 import { Enums } from '../../enums';
-import { BoxShadow } from '../../styling/box-shadow';
+import { CSSShadow } from '../../styling/css-shadow';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -333,7 +333,7 @@ export abstract class View extends ViewBase {
 	/**
 	 * Gets or sets the box shadow of the view.
 	 */
-	boxShadow: string | BoxShadow;
+	boxShadow: string | CSSShadow;
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.

@@ -16,22 +16,22 @@ export class EditableTextBase extends TextBase {
 	/**
 	 * Gets or sets the soft keyboard type.
 	 */
-	keyboardType: KeyboardInputType;
+	keyboardType: Enums.KeyboardInputType;
 
 	/**
 	 * Gets or sets the soft keyboard return key flavor.
 	 */
-	returnKeyType: ReturnKeyButtonType;
+	returnKeyType: Enums.ReturnKeyButtonType;
 
 	/**
 	 * Gets or sets a value indicating when the text property will be updated.
 	 */
-	updateTextTrigger: UpdateTextTrigger;
+	updateTextTrigger: Enums.UpdateTextTriggerType;
 
 	/**
 	 * Gets or sets the autocapitalization type.
 	 */
-	autocapitalizationType: AutocapitalizationType;
+	autocapitalizationType: Enums.AutocapitalizationType;
 
 	/**
 	 * Gets or sets whether the instance is editable.
@@ -71,11 +71,11 @@ export class EditableTextBase extends TextBase {
 	public setSelection(start: number, stop?: number);
 }
 
-export const keyboardTypeProperty: Property<EditableTextBase, KeyboardInputType>;
-export const returnKeyTypeProperty: Property<EditableTextBase, ReturnKeyButtonType>;
+export const keyboardTypeProperty: Property<EditableTextBase, Enums.KeyboardInputType>;
+export const returnKeyTypeProperty: Property<EditableTextBase, Enums.ReturnKeyButtonType>;
 export const editableProperty: Property<EditableTextBase, boolean>;
-export const updateTextTriggerProperty: Property<EditableTextBase, UpdateTextTriggerType>;
-export const autocapitalizationTypeProperty: Property<EditableTextBase, AutocapitalizationInputType>;
+export const updateTextTriggerProperty: Property<EditableTextBase, Enums.UpdateTextTriggerType>;
+export const autocapitalizationTypeProperty: Property<EditableTextBase, Enums.AutocapitalizationInputType>;
 export const autocorrectProperty: Property<EditableTextBase, boolean>;
 export const hintProperty: Property<EditableTextBase, string>;
 export const placeholderColorProperty: CssProperty<Style, Color>;

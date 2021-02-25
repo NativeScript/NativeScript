@@ -1,3 +1,4 @@
+import type { Page } from '../ui/page';
 import { View } from '../ui/core/view';
 import { AndroidAccessibilityEvent } from './accessibility-types';
 
