@@ -96,7 +96,7 @@ export declare class Page extends PageBase {
 	/**
 	 * Should page changed be annnounced to the screen reader.
 	 */
-	public accessibilityAnnouncePageEnabled = true;
+	public accessibilityAnnouncePageEnabled: boolean;
 
 	/**
 	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).

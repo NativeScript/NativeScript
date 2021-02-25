@@ -130,7 +130,7 @@ export type TextDecoration = 'none' | 'underline' | 'line-through' | 'underline 
 export const textAlignmentProperty: InheritedCssProperty<Style, TextAlignment>;
 export const textDecorationProperty: CssProperty<Style, TextDecoration>;
 export const textTransformProperty: CssProperty<Style, TextTransform>;
-export const textShadowProperty: CssProperty<Style, TextShadow>;
+export const textShadowProperty: CssProperty<Style, CSSShadow>;
 export const whiteSpaceProperty: CssProperty<Style, WhiteSpace>;
 export const letterSpacingProperty: CssProperty<Style, number>;
 export const lineHeightProperty: CssProperty<Style, number>;
