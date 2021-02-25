@@ -32,25 +32,25 @@ allTests['GLOBALS'] = globalsTests;
 import * as domNodeTest from './debugger/dom-node-tests';
 allTests['DOM-NODE'] = domNodeTest;
 
-import * as profilingTests from './profiling/profiling-tests';
-allTests['PROFILING'] = profilingTests;
-
 import * as platformTests from './platform/platform-tests';
 allTests['PLATFORM'] = platformTests;
 
 import * as fsTests from './file-system/file-system-tests';
 allTests['FILE-SYSTEM'] = fsTests;
 
-// Disabled tests as they have external dependencies
-// TODO: find a way to run these tests locally, but don't run them on the CI as they are flaky
-// import * as httpTests from "./http/http-tests";
-// allTests["HTTP"] = httpTests;
-
-// import * as xhrTests from "./xhr/xhr-tests";
-// allTests["XHR"] = xhrTests;
-
-// import * as fetchTests from "./fetch/fetch-tests";
-// allTests["FETCH"] = fetchTests;
+import * as httpTests from './http/http-tests';
+import * as xhrTests from './xhr/xhr-tests';
+import * as fetchTests from './fetch/fetch-tests';
+import * as timerTests from './timer/timer-tests';
+import * as profilingTests from './profiling/profiling-tests';
+// don't run these on CI as they are flaky
+if (!__CI__) {
+	allTests['HTTP'] = httpTests;
+	allTests['XHR'] = xhrTests;
+	allTests['FETCH'] = fetchTests;
+	allTests['TIMER'] = timerTests;
+	allTests['PROFILING'] = profilingTests;
+}
 
 import * as appSettingsTests from './application-settings/application-settings-tests';
 allTests['APPLICATION-SETTINGS'] = appSettingsTests;
@@ -69,9 +69,6 @@ allTests['VIRTUAL-ARRAY'] = virtualArrayTests;
 
 import * as observableTests from './data/observable-tests';
 allTests['OBSERVABLE'] = observableTests;
-
-import * as timerTests from './timer/timer-tests';
-allTests['TIMER'] = timerTests;
 
 import * as animationFrameTests from './animation-frame/animation-frame';
 allTests['ANIMATION-FRAME'] = animationFrameTests;
@@ -197,8 +194,7 @@ import * as bottomNavigationTestsNew from './ui/bottom-navigation/bottom-navigat
 allTests['BOTTOM-NAVIGATION-NEW'] = bottomNavigationTestsNew;
 
 import * as bottomNavigationNavigationTests from './ui/bottom-navigation/bottom-navigation-navigation-tests';
-// TODO: uncomment this
-// allTests["BOTTOM-NAVIGATION-NAVIGATION"] = bottomNavigationNavigationTests;
+isIOS && (allTests['BOTTOM-NAVIGATION-NAVIGATION'] = bottomNavigationNavigationTests);
 
 import * as tabsTests from './ui/tabs/tabs-tests';
 allTests['TABS'] = tabsTests;
@@ -300,8 +296,8 @@ import * as bottomNavigationRootTests from './ui/bottom-navigation/bottom-naviga
 allTests['BOTTOM-NAVIGATION-ROOT'] = bottomNavigationRootTests;
 
 // Reset root view didn't work with android tabs
-// import * as tabsRootTests from "./ui/tabs/tabs-root-tests";
-// allTests["TABS-ROOT"] = tabsRootTests;
+import * as tabsRootTests from './ui/tabs/tabs-root-tests';
+isIOS && (allTests['TABS-ROOT'] = tabsRootTests);
 
 import * as resetRootViewTests from './ui/root-view/reset-root-view-tests';
 allTests['RESET-ROOT-VIEW'] = resetRootViewTests;

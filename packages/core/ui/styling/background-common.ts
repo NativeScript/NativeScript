@@ -4,6 +4,7 @@ import { Enums } from '../enums';
 import { LinearGradient } from './linear-gradient';
 // Types.
 import { Color } from '../../color';
+import { CSSShadow } from './css-shadow';
 
 export class Background implements BackgroundDefinition {
 	public static default = new Background();
@@ -26,6 +27,7 @@ export class Background implements BackgroundDefinition {
 	public borderBottomLeftRadius = 0;
 	public borderBottomRightRadius = 0;
 	public clipPath: string;
+	public boxShadow: CSSShadow;
 
 	private clone(): Background {
 		const clone = new Background();
@@ -48,6 +50,7 @@ export class Background implements BackgroundDefinition {
 		clone.borderBottomRightRadius = this.borderBottomRightRadius;
 		clone.borderBottomLeftRadius = this.borderBottomLeftRadius;
 		clone.clipPath = this.clipPath;
+		clone.boxShadow = this.boxShadow;
 
 		return clone;
 	}
@@ -178,6 +181,13 @@ export class Background implements BackgroundDefinition {
 		return clone;
 	}
 
+	public withBoxShadow(value: CSSShadow): Background {
+		const clone = this.clone();
+		clone.boxShadow = value;
+
+		return clone;
+	}
+
 	public isEmpty(): boolean {
 		return !this.color && !this.image && !this.hasBorderWidth() && !this.hasBorderRadius() && !this.clipPath;
 	}
@@ -272,6 +282,14 @@ export class Background implements BackgroundDefinition {
 		}
 
 		return 0;
+	}
+
+	public hasBoxShadow(): boolean {
+		return !!this.boxShadow;
+	}
+
+	public getBoxShadow(): CSSShadow {
+		return this.boxShadow;
 	}
 
 	public toString(): string {

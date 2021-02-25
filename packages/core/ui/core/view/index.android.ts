@@ -1,15 +1,16 @@
 // Definitions.
-import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from '.';
-import { GestureTypes, GestureEventData } from '../../gestures';
+import type { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from '.';
+import type { GestureTypes, GestureEventData } from '../../gestures';
+
 // Types.
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, LengthType, PercentLengthType } from '../../styling/style-properties';
+import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions } from '../view-base';
 import { EventData } from '../../../data/observable';
 
-import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
+import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty, LengthType, PercentLengthType } from '../../styling/style-properties';
 import { Enums } from '../../enums';
 
 import { Background, ad as androidBackground } from '../../styling/background';
@@ -19,6 +20,9 @@ import { Screen } from '../../../platform';
 import { AndroidActivityBackPressedEventData, android as androidApp } from '../../../application';
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
+import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, setupAccessibleView, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription } from '../../../accessibility';
+import * as Utils from '../../../utils';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -293,6 +297,12 @@ export class View extends ViewCommon {
 	private _rootManager: androidx.fragment.app.FragmentManager;
 
 	nativeViewProtected: android.view.View;
+
+	constructor() {
+		super();
+
+		this.on(View.loadedEvent, () => setupAccessibleView(this));
+	}
 
 	// TODO: Implement unobserve that detach the touchListener.
 	_observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
@@ -715,13 +725,6 @@ export class View extends ViewCommon {
 		org.nativescript.widgets.OriginPoint.setY(this.nativeViewProtected, value);
 	}
 
-	[automationTextProperty.getDefault](): string {
-		return this.nativeViewProtected.getContentDescription();
-	}
-	[automationTextProperty.setNative](value: string) {
-		this.nativeViewProtected.setContentDescription(value);
-	}
-
 	[isUserInteractionEnabledProperty.setNative](value: boolean) {
 		this.nativeViewProtected.setClickable(value);
 		this.nativeViewProtected.setFocusable(value);
@@ -761,6 +764,77 @@ export class View extends ViewCommon {
 	}
 	[opacityProperty.setNative](value: number) {
 		this.nativeViewProtected.setAlpha(float(value));
+	}
+
+	[accessibilityEnabledProperty.setNative](value: boolean): void {
+		this.nativeViewProtected.setFocusable(!!value);
+
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityIdentifierProperty.setNative](value: string): void {
+		const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+
+		if (id) {
+			this.nativeViewProtected.setTag(id, value);
+			this.nativeViewProtected.setTag(value);
+		}
+	}
+
+	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
+		updateAccessibilityProperties(this);
+
+		if (android.os.Build.VERSION.SDK_INT >= 28) {
+			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);
+		}
+	}
+
+	[accessibilityValueProperty.setNative](): void {
+		this._androidContentDescriptionUpdated = true;
+		updateContentDescription(this);
+	}
+
+	[accessibilityLabelProperty.setNative](): void {
+		this._androidContentDescriptionUpdated = true;
+		updateContentDescription(this);
+	}
+
+	[accessibilityHintProperty.setNative](): void {
+		this._androidContentDescriptionUpdated = true;
+		updateContentDescription(this);
+	}
+
+	[accessibilityHiddenProperty.setNative](value: boolean): void {
+		if (value) {
+			this.nativeViewProtected.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+		} else {
+			this.nativeViewProtected.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+		}
+	}
+
+	[accessibilityLiveRegionProperty.setNative](value: AccessibilityLiveRegion): void {
+		switch (value) {
+			case AccessibilityLiveRegion.Assertive: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_ASSERTIVE);
+				break;
+			}
+			case AccessibilityLiveRegion.Polite: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_POLITE);
+				break;
+			}
+			default: {
+				this.nativeViewProtected.setAccessibilityLiveRegion(android.view.View.ACCESSIBILITY_LIVE_REGION_NONE);
+				break;
+			}
+		}
+	}
+
+	[accessibilityStateProperty.setNative](): void {
+		updateAccessibilityProperties(this);
+	}
+
+	[accessibilityMediaSessionProperty.setNative](): void {
+		updateAccessibilityProperties(this);
 	}
 
 	[androidElevationProperty.getDefault](): number {
@@ -1017,6 +1091,30 @@ export class View extends ViewCommon {
 
 			(<any>nativeView).background = undefined;
 		}
+	}
+
+	public androidSendAccessibilityEvent(eventName: AndroidAccessibilityEvent, msg?: string): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		sendAccessibilityEvent(this, eventName, msg);
+	}
+
+	public accessibilityAnnouncement(msg = this.accessibilityLabel): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.ANNOUNCEMENT, msg);
+	}
+
+	public accessibilityScreenChanged(): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
 	}
 }
 

@@ -7,6 +7,7 @@ import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { EventData } from '../../data/observable';
 import type { Frame } from '../frame';
+import { isFrame } from '../frame/frame-helpers';
 import { ActionBar } from '../action-bar';
 import { KeyframeAnimationInfo } from '../animation/keyframe-animation';
 import { profile } from '../../profiling';
@@ -32,6 +33,7 @@ export class PageBase extends ContentView {
 	public enableSwipeBackNavigation: boolean;
 	public backgroundSpanUnderStatusBar: boolean;
 	public hasActionBar: boolean;
+	public accessibilityAnnouncePageEnabled = true;
 
 	get navigationContext(): any {
 		return this._navigationContext;
@@ -92,9 +94,9 @@ export class PageBase extends ContentView {
 	}
 
 	get frame(): Frame {
-		const frame = this.parent;
+		const parent = this.parent;
 
-		return (frame && frame.constructor.name === 'Frame') ? frame as Frame : undefined;
+		return isFrame(parent) ? (parent as Frame) : undefined;
 	}
 
 	private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
@@ -125,8 +127,12 @@ export class PageBase extends ContentView {
 	}
 
 	@profile
-	public onNavigatedTo(isBackNavigation: boolean) {
+	public onNavigatedTo(isBackNavigation: boolean): void {
 		this.notify(this.createNavigatedData(PageBase.navigatedToEvent, isBackNavigation));
+
+		if (this.accessibilityAnnouncePageEnabled) {
+			this.accessibilityScreenChanged(!!isBackNavigation);
+		}
 	}
 
 	@profile
@@ -150,6 +156,10 @@ export class PageBase extends ContentView {
 
 	get _childrenCount(): number {
 		return (this.content ? 1 : 0) + (this._actionBar ? 1 : 0);
+	}
+
+	public accessibilityScreenChanged(refocus?: boolean): void {
+		return;
 	}
 }
 

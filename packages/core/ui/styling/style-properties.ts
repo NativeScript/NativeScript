@@ -18,7 +18,7 @@ import { Enums } from '../enums';
 
 import * as parser from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
-import { BoxShadow } from './box-shadow';
+import { CSSShadow, parseCSSShadow } from './css-shadow';
 
 export type LengthDipUnit = { readonly unit: 'dip'; readonly value: dip };
 export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
@@ -1286,14 +1286,15 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, LengthType>
 });
 borderBottomLeftRadiusProperty.register(Style);
 
-const boxShadowProperty = new CssProperty<Style, BoxShadow>({
+const boxShadowProperty = new CssProperty<Style, CSSShadow>({
 	name: 'boxShadow',
 	cssName: 'box-shadow',
 	valueChanged: (target, oldValue, newValue) => {
-		target.boxShadow = newValue;
+		const background = target.backgroundInternal.withBoxShadow(newValue);
+		target.backgroundInternal = background;
 	},
 	valueConverter: (value) => {
-		return parseBoxShadowProperites(value);
+		return parseCSSShadow(value);
 	},
 });
 boxShadowProperty.register(Style);
@@ -1386,6 +1387,27 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 	},
 });
 fontFamilyProperty.register(Style);
+
+export const fontScaleProperty = new InheritedCssProperty<Style, number>({
+	name: '_fontScale',
+	cssName: '_fontScale',
+	affectsLayout: global.isIOS,
+	valueChanged: (target, oldValue, newValue) => {
+		if (global.isIOS) {
+			if (target.viewRef['handleFontSize'] === true) {
+				return;
+			}
+
+			const currentFont = target.fontInternal || Font.default;
+			if (currentFont.fontScale !== newValue) {
+				const newFont = currentFont.withFontScale(newValue);
+				target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
+			}
+		}
+	},
+	valueConverter: (v) => parseFloat(v),
+});
+fontScaleProperty.register(Style);
 
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',

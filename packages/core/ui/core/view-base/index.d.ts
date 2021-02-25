@@ -34,6 +34,14 @@ export function isEventOrGesture(name: string, view: ViewBase): boolean;
  */
 export function getViewById(view: ViewBase, id: string): ViewBase;
 
+/**
+ * Gets a child view by domId.
+ * @param view - The parent (container) view of the view to look for.
+ * @param domId - The id of the view to look for.
+ * Returns an instance of a view (if found), otherwise undefined.
+ */
+export function getViewByDomId(view: ViewBase, domId: number): ViewBase;
+
 export interface ShowModalOptions {
 	/**
 	 * Any context you want to pass to the modally shown view. This same context will be available in the arguments of the shownModally event handler.
@@ -237,10 +245,10 @@ export abstract class ViewBase extends Observable {
 	public bindingContext: any;
 
 	/**
-     * Gets or sets if the view is reusable.
-     * Reusable views are not automatically destroyed when removed from the View tree.
-     */
-    public reusable: boolean;
+	 * Gets or sets if the view is reusable.
+	 * Reusable views are not automatically destroyed when removed from the View tree.
+	 */
+	public reusable: boolean;
 
 	/**
 	 * Gets the name of the constructor function for this instance. E.g. for a Button class this will return "Button".
@@ -288,6 +296,11 @@ export abstract class ViewBase extends Observable {
 	 * Returns the child view with the specified id.
 	 */
 	public getViewById<T extends ViewBase>(id: string): T;
+
+	/**
+	 * Returns the child view with the specified domId.
+	 */
+	public getViewByDomId<T extends ViewBase>(id: number): T;
 
 	/**
 	 * Load view.
@@ -372,11 +385,11 @@ export abstract class ViewBase extends Observable {
 	_tearDownUI(force?: boolean): void;
 
 	/**
-     * Tears down the UI of a reusable node by making it no longer reusable.
-     * @see _tearDownUI
-     * @param forceDestroyChildren Force destroy the children (even if they are reusable)
-     */
-    destroyNode(forceDestroyChildren?: boolean): void;
+	 * Tears down the UI of a reusable node by making it no longer reusable.
+	 * @see _tearDownUI
+	 * @param forceDestroyChildren Force destroy the children (even if they are reusable)
+	 */
+	destroyNode(forceDestroyChildren?: boolean): void;
 
 	/**
 	 * Creates a native view.

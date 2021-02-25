@@ -13,6 +13,8 @@ import { Length, LengthType } from '../styling/style-properties';
 import { Observable } from '../../data/observable';
 import { Enums } from '../enums';
 import { TextBase as TextBaseDefinition } from '.';
+import { Color } from '../../color';
+import { CSSShadow, parseCSSShadow } from '../styling/css-shadow';
 
 const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
@@ -108,6 +110,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 	set textTransform(value: Enums.TextTransformType) {
 		this.style.textTransform = value;
+	}
+
+	get textShadow(): CSSShadow {
+		return this.style.textShadow;
+	}
+	set textShadow(value: CSSShadow) {
+		this.style.textShadow = value;
 	}
 
 	get whiteSpace(): Enums.WhiteSpaceType {
@@ -255,6 +264,16 @@ export const textTransformProperty = new CssProperty<Style, Enums.TextTransformT
 	valueConverter: textTransformConverter,
 });
 textTransformProperty.register(Style);
+
+export const textShadowProperty = new CssProperty<Style, string | CSSShadow>({
+	name: 'textShadow',
+	cssName: 'text-shadow',
+	affectsLayout: global.isIOS,
+	valueConverter: (value) => {
+		return parseCSSShadow(value);
+	},
+});
+textShadowProperty.register(Style);
 
 const whiteSpaceConverter = makeParser<Enums.WhiteSpaceType>(makeValidator<Enums.WhiteSpaceType>('initial', 'normal', 'nowrap'));
 export const whiteSpaceProperty = new CssProperty<Style, Enums.WhiteSpaceType>({

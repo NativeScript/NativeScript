@@ -143,6 +143,32 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
 	return retVal;
 }
 
+export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBaseDefinition {
+	if (!view) {
+		return undefined;
+	}
+
+	if (view._domId === domId) {
+		return view;
+	}
+
+	let retVal: ViewBaseDefinition;
+	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+		if (view._domId === domId) {
+			retVal = child;
+
+			// break the iteration by returning false
+			return false;
+		}
+
+		return true;
+	};
+
+	eachDescendant(view, descendantsCallback);
+
+	return retVal;
+}
+
 export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewBaseDefinition) => boolean) {
 	if (!callback || !view) {
 		return;
@@ -371,6 +397,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	getViewById<T extends ViewBaseDefinition>(id: string): T {
 		return <T>getViewById(this, id);
+	}
+
+	getViewByDomId<T extends ViewBaseDefinition>(domId: number): T {
+		return <T>getViewByDomId(this, domId);
 	}
 
 	get page(): Page {

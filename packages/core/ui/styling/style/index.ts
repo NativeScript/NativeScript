@@ -11,8 +11,8 @@ import { Observable } from '../../../data/observable';
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
 import { Enums } from '../../enums';
-import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from '../../text-base';
-import { BoxShadow } from '../box-shadow';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
+import { CSSShadow } from '../css-shadow';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -99,6 +99,7 @@ export class Style extends Observable implements StyleDefinition {
 	}
 
 	public fontInternal: Font;
+	public _fontScale: number;
 	public backgroundInternal: Background;
 
 	public rotate: number;
@@ -139,7 +140,7 @@ export class Style extends Observable implements StyleDefinition {
 	public borderBottomRightRadius: LengthType;
 	public borderBottomLeftRadius: LengthType;
 
-	public boxShadow: BoxShadow;
+	public boxShadow: CSSShadow;
 
 	public fontSize: number;
 	public fontFamily: string;
@@ -158,6 +159,7 @@ export class Style extends Observable implements StyleDefinition {
 	public textAlignment: Enums.TextAlignmentType;
 	public textDecoration: Enums.TextDecorationType;
 	public textTransform: Enums.TextTransformType;
+	public textShadow: CSSShadow;
 	public whiteSpace: Enums.WhiteSpaceType;
 
 	public minWidth: LengthType;
@@ -210,6 +212,16 @@ export class Style extends Observable implements StyleDefinition {
 	public flexShrink: FlexShrink;
 	public flexWrapBefore: FlexWrapBefore;
 	public alignSelf: AlignSelf;
+
+	// Accessibility properties
+	public accessible: boolean;
+	public accessibilityHidden: boolean;
+	public accessibilityRole: AccessibilityRole;
+	public accessibilityState: AccessibilityState;
+	public accessibilityLiveRegion: AccessibilityLiveRegion;
+	public accessibilityLanguage: string;
+	public accessibilityMediaSession: boolean;
+	public accessibilityStep: number;
 
 	public PropertyBag: {
 		new (): { [property: string]: string };

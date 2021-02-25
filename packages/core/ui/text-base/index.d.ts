@@ -4,6 +4,7 @@ import { Style } from '../styling/style';
 import { Length } from '../styling/style-properties';
 import { Property, CssProperty, InheritedCssProperty } from '../core/properties';
 import { Enums } from '../enums';
+import { CSSShadow } from '../styling/css-shadow';
 
 export class TextBase extends View implements AddChildFromBuilder {
 	/**
@@ -51,6 +52,11 @@ export class TextBase extends View implements AddChildFromBuilder {
 	 * Gets or sets text transform style property.
 	 */
 	textTransform: Enums.TextTransformType;
+
+	/**
+	 * Gets or sets text shadow style property.
+	 */
+	textShadow: CSSShadow;
 
 	/**
 	 * Gets or sets white space style property.
@@ -120,6 +126,7 @@ export const formattedTextProperty: Property<TextBase, FormattedString>;
 export const textAlignmentProperty: InheritedCssProperty<Style, Enums.TextAlignmentType>;
 export const textDecorationProperty: CssProperty<Style, Enums.TextDecorationType>;
 export const textTransformProperty: CssProperty<Style, Enums.TextTransformType>;
+export const textShadowProperty: CssProperty<Style, CSSShadow>;
 export const whiteSpaceProperty: CssProperty<Style, Enums.WhiteSpaceType>;
 export const letterSpacingProperty: CssProperty<Style, number>;
 export const lineHeightProperty: CssProperty<Style, number>;

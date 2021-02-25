@@ -1,4 +1,15 @@
 
+declare const enum ENActivityFlags {
+
+	Reserved1 = 1,
+
+	Reserved2 = 2,
+
+	PeriodicRun = 4,
+
+	PreAuthorizedKeyReleaseNotificationTapped = 8
+}
+
 declare const ENAttenuationMax: number;
 
 declare const ENAttenuationMin: number;
@@ -252,6 +263,10 @@ declare class ENManager extends NSObject {
 
 	static new(): ENManager; // inherited from NSObject
 
+	activityHandler: (p1: ENActivityFlags) => void;
+
+	diagnosisKeysAvailableHandler: (p1: NSArray<ENTemporaryExposureKey>) => void;
+
 	dispatchQueue: NSObject;
 
 	readonly exposureNotificationEnabled: boolean;
@@ -279,6 +294,10 @@ declare class ENManager extends NSObject {
 	getUserTraveledWithCompletionHandler(completionHandler: (p1: boolean, p2: NSError) => void): void;
 
 	invalidate(): void;
+
+	preAuthorizeDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
+
+	requestPreAuthorizedDiagnosisKeysWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	setExposureNotificationEnabledCompletionHandler(enabled: boolean, completionHandler: (p1: NSError) => void): void;
 }

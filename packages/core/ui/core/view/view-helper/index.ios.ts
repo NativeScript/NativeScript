@@ -338,7 +338,7 @@ export class IOSHelper {
 
 		let fullscreen = null;
 		let safeArea = null;
-		let controllerInWindow = {x: 0, y: 0};
+		let controllerInWindow = { x: 0, y: 0 };
 
 		if (viewControllerView) {
 			safeArea = viewControllerView.safeAreaLayoutGuide.layoutFrame;

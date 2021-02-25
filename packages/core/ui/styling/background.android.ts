@@ -6,9 +6,9 @@ import { parse } from '../../css-value';
 import { path, knownFolders } from '../../file-system';
 import * as application from '../../application';
 import { profile } from '../../profiling';
-import { BoxShadow } from './box-shadow';
 import { Color } from '../../color';
 import { Screen } from '../../platform';
+import { CSSShadow } from './css-shadow';
 export * from './background-common';
 
 interface AndroidView {
@@ -47,9 +47,13 @@ export namespace ad {
 			const constantState = drawable.getConstantState();
 			androidView._cachedDrawable = constantState || drawable;
 		}
-
-		if (isSetColorFilterOnlyWidget(nativeView) && drawable && !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && background.color) {
-			if (drawable instanceof org.nativescript.widgets.BorderDrawable && androidView._cachedDrawable) {
+		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
+		const onlyColor = !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && !!background.color;
+		if (!isBorderDrawable && drawable instanceof android.graphics.drawable.ColorDrawable && onlyColor) {
+			drawable.setColor(background.color.android);
+			drawable.invalidateSelf();
+		} else if (isSetColorFilterOnlyWidget(nativeView) && drawable && onlyColor) {
+			if (isBorderDrawable && androidView._cachedDrawable) {
 				if (!(androidView._cachedDrawable instanceof android.graphics.drawable.Drawable.ConstantState)) {
 					return;
 				}
@@ -63,9 +67,12 @@ export namespace ad {
 			drawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
 			drawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
 			(<any>drawable).backgroundColor = backgroundColor;
+		} else if (!isBorderDrawable && onlyColor) {
+			// this is the fastest way to change only background color
+			nativeView.setBackgroundColor(background.color.android);
 		} else if (!background.isEmpty()) {
 			let backgroundDrawable = drawable as org.nativescript.widgets.BorderDrawable;
-			if (!(drawable instanceof org.nativescript.widgets.BorderDrawable)) {
+			if (!isBorderDrawable) {
 				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
 				refreshBorderDrawable(view, backgroundDrawable);
 				nativeView.setBackground(backgroundDrawable);
@@ -86,9 +93,10 @@ export namespace ad {
 			nativeView.setBackground(defaultDrawable);
 		}
 
-		const boxShadow = view.style.boxShadow;
-		if (boxShadow) {
-			drawBoxShadow(nativeView, boxShadow);
+		if (background.hasBoxShadow()) {
+			drawBoxShadow(nativeView, view, background.getBoxShadow());
+		} else {
+			clearBoxShadow(nativeView);
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
@@ -219,15 +227,14 @@ function createNativeCSSValueArray(css: string): native.Array<org.nativescript.w
 	return nativeArray;
 }
 
-function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
+function drawBoxShadow(nativeView: android.view.View, view: View, boxShadow: CSSShadow) {
 	const color = boxShadow.color;
 	const shadowOpacity = color.a;
 	const shadowColor = new Color(shadowOpacity, color.r, color.g, color.b);
-	// TODO: corner radius here should reflect the view's corner radius
-	const cornerRadius = 0; // this should be applied to the main view as well (try 20 with a transparent background on the xml to see the effect)
+	const cornerRadius = view.borderRadius; // this should be applied to the main view as well (try 20 with a transparent background on the xml to see the effect)
 	const config = {
 		shadowColor: shadowColor.android,
-		cornerRadius,
+		cornerRadius: cornerRadius,
 		spreadRadius: boxShadow.spreadRadius,
 		blurRadius: boxShadow.blurRadius,
 		offsetX: boxShadow.offsetX,
@@ -235,6 +242,10 @@ function drawBoxShadow(nativeView: android.view.View, boxShadow: BoxShadow) {
 		scale: Screen.mainScreen.scale,
 	};
 	org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
+}
+
+function clearBoxShadow(nativeView: android.view.View) {
+	// org.nativescript.widgets.Utils.clearBoxShadow(nativeView);
 }
 
 export enum CacheMode {

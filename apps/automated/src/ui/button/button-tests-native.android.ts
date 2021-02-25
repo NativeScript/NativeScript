@@ -1,37 +1,37 @@
-import * as buttonModule from '@nativescript/core/ui/button';
-import * as colorModule from '@nativescript/core/color';
-import * as utilsModule from '@nativescript/core/utils/utils';
-import { Enums } from '@nativescript/core';
+import { Color, Button, Utils, Enums } from '@nativescript/core';
 
-export function getNativeText(button: buttonModule.Button): string {
+export function getNativeText(button: Button): string {
 	return button.android.getText();
 }
 
-export function getNativeTextWrap(button: buttonModule.Button): boolean {
+export function getNativeTextWrap(button: Button): boolean {
 	return (<android.widget.Button>button.android).getLineCount() === 1;
 }
 
-export function getNativeFontSize(button: buttonModule.Button): number {
-	var density = utilsModule.layout.getDisplayDensity();
+export function getNativeFontSize(button: Button): number {
+	let density = Utils.layout.getDisplayDensity();
 
 	return button.android.getTextSize() / density;
 }
 
-export function getNativeColor(button: buttonModule.Button): colorModule.Color {
-	return new colorModule.Color(button.android.getTextColors().getDefaultColor());
+export function getNativeColor(button: Button): Color {
+	return new Color(button.android.getTextColors().getDefaultColor());
 }
 
-export function getNativeBackgroundColor(button: buttonModule.Button): colorModule.Color {
-	var bkg = <any>button.android.getBackground();
-	if (bkg instanceof org.nativescript.widgets.BorderDrawable) {
-		return new colorModule.Color((<org.nativescript.widgets.BorderDrawable>bkg).getBackgroundColor());
+export function getNativeBackgroundColor(button: Button): Color {
+	let bg = <any>button.android.getBackground();
+	if (bg instanceof org.nativescript.widgets.BorderDrawable) {
+		return new Color(bg.getBackgroundColor());
+	} else if (bg instanceof android.graphics.drawable.ColorDrawable) {
+		console.log(bg);
+		return new Color(bg.getColor());
 	} else {
-		return new colorModule.Color(bkg.backgroundColor);
+		return new Color(bg.backgroundColor);
 	}
 }
 
-export function getNativeTextAlignment(button: buttonModule.Button): string {
-	var gravity = button.android.getGravity();
+export function getNativeTextAlignment(button: Button): string {
+	let gravity = button.android.getGravity();
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.LEFT) {
 		return Enums.TextAlignment.left;
@@ -48,6 +48,6 @@ export function getNativeTextAlignment(button: buttonModule.Button): string {
 	return 'unexpected value';
 }
 
-export function performNativeClick(button: buttonModule.Button): void {
+export function performNativeClick(button: Button): void {
 	button.android.performClick();
 }

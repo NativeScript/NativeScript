@@ -3,9 +3,10 @@ import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
 import { Color } from '../../../color';
 import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
-import { HorizontalAlignment, VerticalAlignment, LengthType, PercentLengthType } from '../../styling/style-properties';
-import { GestureTypes, GestureEventData, GesturesObserver } from '../../gestures';
+import { HorizontalAlignment, VerticalAlignment, Visibility, LengthType, PercentLengthType } from '../../styling/style-properties';
+import { GestureTypes, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/gradient';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
 import { Enums } from '../../enums';
 import { BoxShadow } from '../../styling/box-shadow';
 
@@ -133,6 +134,21 @@ export abstract class View extends ViewBase {
 	public static shownModallyEvent: string;
 
 	/**
+	 * String value used when hooking to accessibilityBlur event.
+	 */
+	public static accessibilityBlurEvent: string;
+
+	/**
+	 * String value used when hooking to accessibilityFocus event.
+	 */
+	public static accessibilityFocusEvent: string;
+
+	/**
+	 * String value used when hooking to accessibilityFocusChanged event.
+	 */
+	public static accessibilityFocusChangedEvent: string;
+
+	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
 	 */
 	public android: any;
@@ -226,6 +242,68 @@ export abstract class View extends ViewBase {
 	 * Gets or sets the color of the view.
 	 */
 	color: Color;
+
+	/**
+	 * If `true` the element is an accessibility element and all the children will be treated as a single selectable component.
+	 */
+	accessible: boolean;
+
+	/**
+	 * Hide the view and its children from the a11y service
+	 */
+	accessibilityHidden: boolean;
+
+	/**
+	 * The view's unique accessibilityIdentifier.
+	 *
+	 * This is used for automated testing.
+	 */
+	accessibilityIdentifier: string;
+
+	/**
+	 * Which role should this view be treated by the a11y service?
+	 */
+	accessibilityRole: AccessibilityRole;
+
+	/**
+	 * Which state should this view be treated as by the a11y service?
+	 */
+	accessibilityState: AccessibilityState;
+
+	/**
+	 * Short description of the element, ideally one word.
+	 */
+	accessibilityLabel: string;
+
+	/**
+	 * Current value of the element in a localized string.
+	 */
+	accessibilityValue: string;
+
+	/**
+	 * A hint describes the elements behavior. Example: 'Tap change playback speed'
+	 */
+	accessibilityHint: string;
+	accessibilityTraits?: AccessibilityTrait[];
+	accessibilityLiveRegion: AccessibilityLiveRegion;
+
+	/**
+	 * Sets the language in which to speak the element's label and value.
+	 * Accepts language ID tags that follows the "BCP 47" specification.
+	 */
+	accessibilityLanguage: string;
+
+	/**
+	 * This view starts a media session. Equivalent to trait = startsMedia
+	 */
+	accessibilityMediaSession: boolean;
+
+	/**
+	 * Internal use only. This is used to limit the number of updates to android.view.View.setContentDescription()
+	 */
+	_androidContentDescriptionUpdated?: boolean;
+
+	automationText: string;
 
 	/**
 	 * Gets or sets the elevation of the android view.
@@ -366,11 +444,6 @@ export abstract class View extends ViewBase {
 	//END Style property shortcuts
 
 	/**
-	 * Gets or sets the automation text of the view.
-	 */
-	automationText: string;
-
-	/**
 	 * Gets or sets the X component of the origin point around which the view will be transformed. The default value is 0.5 representing the center of the view.
 	 */
 	originX: number;
@@ -399,7 +472,7 @@ export abstract class View extends ViewBase {
 	 * Enables or disables the iosOverflowSafeArea property for all children. This property is iOS specific. Default value: true
 	 */
 	iosOverflowSafeAreaEnabled: boolean;
-	
+
 	/**
 	 * Gets or sets a value indicating whether the the view should totally ignore safe areas computation. This property is iOS specific. Default value: false
 	 */
@@ -674,6 +747,29 @@ export abstract class View extends ViewBase {
 	 */
 	public eachChildView(callback: (view: View) => boolean): void;
 
+	/**
+	 * Android: Send accessibility event
+	 */
+	public androidSendAccessibilityEvent(eventName: AndroidAccessibilityEvent, msg?: string): void;
+
+	/**
+	 * iOS: post accessibility notification.
+	 * type = 'announcement' will announce `args` via VoiceOver. If no args element will be announced instead.
+	 * type = 'layout' used when the layout of a screen changes.
+	 * type = 'screen' large change made to the screen.
+	 */
+	public iosPostAccessibilityNotification(notificationType: IOSPostAccessibilityNotificationType, msg?: string): void;
+
+	/**
+	 * Make an announcement to the screen reader.
+	 */
+	public accessibilityAnnouncement(msg?: string): void;
+
+	/**
+	 * Announce screen changed
+	 */
+	public accessibilityScreenChanged(): void;
+
 	//@private
 	/**
 	 * @private
@@ -880,7 +976,6 @@ export interface AddChildFromBuilder {
 	_addChildFromBuilder(name: string, value: any): void;
 }
 
-export const automationTextProperty: Property<View, string>;
 export const originXProperty: Property<View, number>;
 export const originYProperty: Property<View, number>;
 export const isEnabledProperty: Property<View, boolean>;

@@ -94,6 +94,11 @@ export declare class Page extends PageBase {
 	public actionBar: ActionBar;
 
 	/**
+	 * Should page changed be annnounced to the screen reader.
+	 */
+	public accessibilityAnnouncePageEnabled: boolean;
+
+	/**
 	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
 	 * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change").
 	 * @param callback - Callback function which will be executed when event is raised.
@@ -161,6 +166,11 @@ export declare class Page extends PageBase {
 	 */
 	public onNavigatedFrom(isBackNavigation: boolean): void;
 	//@endprivate
+
+	/**
+	 * Announce screen changed
+	 */
+	public accessibilityScreenChanged(refocus?: boolean): void;
 }
 
 /**

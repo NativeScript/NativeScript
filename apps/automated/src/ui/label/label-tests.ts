@@ -330,8 +330,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 			normalColor = actualColors.getDefaultColor();
 			TKUnit.assert(normalColor, 'Expected: ' + expColor + ', Actual: ' + normalColor);
 
-			const bkg = <org.nativescript.widgets.BorderDrawable>testLabel.android.getBackground();
-			actualBackgroundColor = bkg.getBackgroundColor();
+			const bg = testLabel.android.getBackground();
+			actualBackgroundColor = bg['getBackgroundColor'] ? bg.getBackgroundColor() : bg.getColor();
 			expBackgroundColor = android.graphics.Color.parseColor(backgroundColor);
 			TKUnit.assertEqual(actualBackgroundColor, expBackgroundColor);
 		} else {

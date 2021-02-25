@@ -1,10 +1,11 @@
 // Types
 import { getClosestPropertyValue } from './text-base-common';
+import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
-import { backgroundColorProperty, LengthType } from '../styling/style-properties';
-import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
+import { backgroundColorProperty } from '../styling/style-properties';
+import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
 import { FormattedString } from './formatted-string';
@@ -377,6 +378,19 @@ export class TextBase extends TextBaseCommon {
 				this.nativeTextViewProtected.setPaintFlags(value);
 				break;
 		}
+	}
+
+	[textShadowProperty.getDefault](value: number) {
+		return {
+			radius: this.nativeTextViewProtected.getShadowRadius(),
+			offsetX: this.nativeTextViewProtected.getShadowDx(),
+			offsetY: this.nativeTextViewProtected.getShadowDy(),
+			color: this.nativeTextViewProtected.getShadowColor(),
+		};
+	}
+
+	[textShadowProperty.setNative](value: CSSShadow) {
+		this.nativeViewProtected.setShadowLayer(Length.toDevicePixels(value.blurRadius, 0), Length.toDevicePixels(value.offsetX, 0), Length.toDevicePixels(value.offsetY, 0), value.color.android);
 	}
 
 	[letterSpacingProperty.getDefault](): number {

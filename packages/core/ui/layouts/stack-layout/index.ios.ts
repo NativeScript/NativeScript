@@ -113,11 +113,11 @@ export class StackLayout extends StackLayoutBase {
 
 		switch (this.verticalAlignment) {
 			case Enums.VerticalAlignment.middle:
-				childTop = (bottom - top - this._totalLength) / 2 + paddingTop - paddingBottom;
+				childTop = (bottom - top - this._totalLength) / 2 + paddingTop;
 				break;
 
 			case Enums.VerticalAlignment.bottom:
-				childTop = bottom - top - this._totalLength + paddingTop - paddingBottom;
+				childTop = bottom - top - this._totalLength + paddingTop;
 				break;
 
 			case Enums.VerticalAlignment.top:
@@ -147,11 +147,11 @@ export class StackLayout extends StackLayoutBase {
 
 		switch (this.horizontalAlignment) {
 			case Enums.HorizontalAlignment.center:
-				childLeft = (right - left - this._totalLength) / 2 + paddingLeft - paddingRight;
+				childLeft = (right - left - this._totalLength) / 2 + paddingLeft;
 				break;
 
 			case Enums.HorizontalAlignment.right:
-				childLeft = right - left - this._totalLength + paddingLeft - paddingRight;
+				childLeft = right - left - this._totalLength + paddingLeft;
 				break;
 
 			case Enums.HorizontalAlignment.left:

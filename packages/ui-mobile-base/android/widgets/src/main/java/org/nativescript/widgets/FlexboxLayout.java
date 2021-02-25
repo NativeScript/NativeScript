@@ -74,7 +74,7 @@ import java.util.List;
  * <li>{@code layout_wrapBefore}</li>
  * </ul>
  */
-public class FlexboxLayout extends ViewGroup {
+public class FlexboxLayout extends LayoutBase {
 
     @IntDef({FLEX_DIRECTION_ROW, FLEX_DIRECTION_ROW_REVERSE, FLEX_DIRECTION_COLUMN,
             FLEX_DIRECTION_COLUMN_REVERSE})
@@ -2224,6 +2224,11 @@ public class FlexboxLayout extends ViewGroup {
         mDividerDrawableHorizontal
                 .setBounds(left, top, left + length, top + mDividerHorizontalHeight);
         mDividerDrawableHorizontal.draw(canvas);
+    }
+
+    @Override
+    protected LayoutParams generateDefaultLayoutParams() {
+        return new FlexboxLayout.LayoutParams();
     }
 
     @Override

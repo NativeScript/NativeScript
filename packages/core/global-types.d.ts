@@ -126,6 +126,9 @@ declare namespace NodeJS {
 		isIOS?: boolean;
 		isAndroid?: boolean;
 		__requireOverride?: (name: string, dir: string) => any;
+
+		// used to get the rootlayout instance to add/remove childviews
+		rootLayout: any;
 	}
 }
 
@@ -149,13 +152,6 @@ interface ModuleContext {
 	 * The path of the module for replacement.
 	 */
 	path: string;
-}
-
-// Define a minimal subset of NodeRequire and NodeModule so user apps can compile without
-// installing @types/node
-
-interface NodeRequire {
-	(id: string): any;
 }
 
 interface NodeModule {
@@ -218,10 +214,6 @@ interface RequireContext {
 	(id: string): any;
 	<T>(id: string): T;
 	resolve(id: string): string;
-}
-
-interface NodeRequire {
-	context(path: string, deep?: boolean, filter?: RegExp): RequireContext;
 }
 
 declare var __dirname: string;
