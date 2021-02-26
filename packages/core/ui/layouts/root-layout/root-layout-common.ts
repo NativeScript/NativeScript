@@ -1,4 +1,4 @@
-import { AnimationCurve } from '../../enums';
+import { Enums } from '../../enums';
 import { Trace } from '../../../trace';
 import { CSSType, View } from '../../core/view';
 import { GridLayout } from '../grid-layout';
@@ -369,7 +369,7 @@ export const defaultTransitionAnimation: TransitionAnimation = {
 	rotate: 0,
 	opacity: 1,
 	duration: 300,
-	curve: AnimationCurve.easeIn,
+	curve: Enums.AnimationCurve.easeIn,
 };
 
 export const defaultShadeCoverTransitionAnimation: TransitionAnimation = {

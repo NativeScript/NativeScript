@@ -7,7 +7,7 @@ import { ObservableArray } from '../../data/observable-array';
 import { ViewBase } from '../core/view-base';
 import { Color } from '../../color';
 import { FontStyle, FontWeight } from '../styling/font';
-import { TextDecoration } from '../text-base';
+import { Enums } from '../enums';
 
 /**
  * A class used to create a formatted (rich text) string.
@@ -46,7 +46,7 @@ export class FormattedString extends ViewBase {
 	/**
 	 * Gets or sets text decorations which will be used for all spans that doesn't have a specific value.
 	 */
-	public textDecoration: TextDecoration;
+	public textDecoration: Enums.TextDecorationType;
 
 	/**
 	 * Gets or sets the font foreground color which will be used for all spans that doesn't have a specific value.

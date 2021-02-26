@@ -9,15 +9,12 @@ import { Span } from './span';
 import { View } from '../core/view';
 import { Property, CssProperty, InheritedCssProperty, makeValidator, makeParser } from '../core/properties';
 import { Style } from '../styling/style';
-import { Length } from '../styling/style-properties';
+import { Length, LengthType } from '../styling/style-properties';
 import { Observable } from '../../data/observable';
-
-import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from './text-base-interfaces';
+import { Enums } from '../enums';
 import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
 import { CSSShadow, parseCSSShadow } from '../styling/css-shadow';
-
-export * from './text-base-interfaces';
 
 const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
@@ -94,24 +91,24 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.lineHeight = value;
 	}
 
-	get textAlignment(): TextAlignment {
+	get textAlignment(): Enums.TextAlignmentType {
 		return this.style.textAlignment;
 	}
-	set textAlignment(value: TextAlignment) {
+	set textAlignment(value: Enums.TextAlignmentType) {
 		this.style.textAlignment = value;
 	}
 
-	get textDecoration(): TextDecoration {
+	get textDecoration(): Enums.TextDecorationType {
 		return this.style.textDecoration;
 	}
-	set textDecoration(value: TextDecoration) {
+	set textDecoration(value: Enums.TextDecorationType) {
 		this.style.textDecoration = value;
 	}
 
-	get textTransform(): TextTransform {
+	get textTransform(): Enums.TextTransformType {
 		return this.style.textTransform;
 	}
-	set textTransform(value: TextTransform) {
+	set textTransform(value: Enums.TextTransformType) {
 		this.style.textTransform = value;
 	}
 
@@ -122,45 +119,45 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.textShadow = value;
 	}
 
-	get whiteSpace(): WhiteSpace {
+	get whiteSpace(): Enums.WhiteSpaceType {
 		return this.style.whiteSpace;
 	}
-	set whiteSpace(value: WhiteSpace) {
+	set whiteSpace(value: Enums.WhiteSpaceType) {
 		this.style.whiteSpace = value;
 	}
 
-	get padding(): string | Length {
+	get padding(): string | LengthType {
 		return this.style.padding;
 	}
-	set padding(value: string | Length) {
+	set padding(value: string | LengthType) {
 		this.style.padding = value;
 	}
 
-	get paddingTop(): Length {
+	get paddingTop(): LengthType {
 		return this.style.paddingTop;
 	}
-	set paddingTop(value: Length) {
+	set paddingTop(value: LengthType) {
 		this.style.paddingTop = value;
 	}
 
-	get paddingRight(): Length {
+	get paddingRight(): LengthType {
 		return this.style.paddingRight;
 	}
-	set paddingRight(value: Length) {
+	set paddingRight(value: LengthType) {
 		this.style.paddingRight = value;
 	}
 
-	get paddingBottom(): Length {
+	get paddingBottom(): LengthType {
 		return this.style.paddingBottom;
 	}
-	set paddingBottom(value: Length) {
+	set paddingBottom(value: LengthType) {
 		this.style.paddingBottom = value;
 	}
 
-	get paddingLeft(): Length {
+	get paddingLeft(): LengthType {
 		return this.style.paddingLeft;
 	}
-	set paddingLeft(value: Length) {
+	set paddingLeft(value: LengthType) {
 		this.style.paddingLeft = value;
 	}
 
@@ -250,8 +247,8 @@ export function getClosestPropertyValue<T>(property: CssProperty<any, T>, span: 
 	}
 }
 
-const textAlignmentConverter = makeParser<TextAlignment>(makeValidator<TextAlignment>('initial', 'left', 'center', 'right'));
-export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({
+const textAlignmentConverter = makeParser<Enums.TextAlignmentType>(makeValidator<Enums.TextAlignmentType>('initial', 'left', 'center', 'right'));
+export const textAlignmentProperty = new InheritedCssProperty<Style, Enums.TextAlignmentType>({
 	name: 'textAlignment',
 	cssName: 'text-align',
 	defaultValue: 'initial',
@@ -259,8 +256,8 @@ export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignme
 });
 textAlignmentProperty.register(Style);
 
-const textTransformConverter = makeParser<TextTransform>(makeValidator<TextTransform>('initial', 'none', 'capitalize', 'uppercase', 'lowercase'));
-export const textTransformProperty = new CssProperty<Style, TextTransform>({
+const textTransformConverter = makeParser<Enums.TextTransformType>(makeValidator<Enums.TextTransformType>('initial', 'none', 'capitalize', 'uppercase', 'lowercase'));
+export const textTransformProperty = new CssProperty<Style, Enums.TextTransformType>({
 	name: 'textTransform',
 	cssName: 'text-transform',
 	defaultValue: 'initial',
@@ -278,8 +275,8 @@ export const textShadowProperty = new CssProperty<Style, string | CSSShadow>({
 });
 textShadowProperty.register(Style);
 
-const whiteSpaceConverter = makeParser<WhiteSpace>(makeValidator<WhiteSpace>('initial', 'normal', 'nowrap'));
-export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({
+const whiteSpaceConverter = makeParser<Enums.WhiteSpaceType>(makeValidator<Enums.WhiteSpaceType>('initial', 'normal', 'nowrap'));
+export const whiteSpaceProperty = new CssProperty<Style, Enums.WhiteSpaceType>({
 	name: 'whiteSpace',
 	cssName: 'white-space',
 	defaultValue: 'initial',
@@ -288,8 +285,8 @@ export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({
 });
 whiteSpaceProperty.register(Style);
 
-const textDecorationConverter = makeParser<TextDecoration>(makeValidator<TextDecoration>('none', 'underline', 'line-through', 'underline line-through'));
-export const textDecorationProperty = new CssProperty<Style, TextDecoration>({
+const textDecorationConverter = makeParser<Enums.TextDecorationType>(makeValidator<Enums.TextDecorationType>('none', 'underline', 'line-through', 'underline line-through'));
+export const textDecorationProperty = new CssProperty<Style, Enums.TextDecorationType>({
 	name: 'textDecoration',
 	cssName: 'text-decoration',
 	defaultValue: 'none',

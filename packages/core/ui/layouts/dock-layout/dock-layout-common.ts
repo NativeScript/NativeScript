@@ -1,4 +1,5 @@
-import { DockLayout as DockLayoutDefinition, Dock } from '.';
+import { DockLayout as DockLayoutDefinition } from '.';
+import { Enums } from '../../enums';
 import { LayoutBase } from '../layout-base';
 import { View, CSSType } from '../../core/view';
 import { Property, makeValidator, makeParser } from '../../core/properties';
@@ -16,25 +17,25 @@ export * from '../layout-base';
 
 @CSSType('DockLayout')
 export class DockLayoutBase extends LayoutBase implements DockLayoutDefinition {
-	public static getDock(element: View): Dock {
+	public static getDock(element: View): Enums.DockType {
 		return validateArgs(element).dock;
 	}
 
-	public static setDock(element: View, value: Dock): void {
+	public static setDock(element: View, value: Enums.DockType): void {
 		validateArgs(element).dock = value;
 	}
 
 	public stretchLastChild: boolean;
 
-	public onDockChanged(view: View, oldValue: Dock, newValue: Dock) {
+	public onDockChanged(view: View, oldValue: Enums.DockType, newValue: Enums.DockType) {
 		//
 	}
 }
 
 DockLayoutBase.prototype.recycleNativeView = 'auto';
 
-const dockConverter = makeParser<Dock>(makeValidator<Dock>('left', 'top', 'right', 'bottom'));
-export const dockProperty = new Property<View, Dock>({
+const dockConverter = makeParser<Enums.DockType>(makeValidator<Enums.DockType>(Enums.Dock.left, Enums.Dock.top, Enums.Dock.right, Enums.Dock.bottom));
+export const dockProperty = new Property<View, Enums.DockType>({
 	name: 'dock',
 	defaultValue: 'left',
 	valueChanged: (target, oldValue, newValue) => {
