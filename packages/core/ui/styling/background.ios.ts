@@ -9,8 +9,6 @@ import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
 import { CSSShadow } from './css-shadow';
 import { Length, LengthType } from './style-properties';
-import { Properties } from '../animation/animation-common';
-import height = Properties.height;
 
 export * from './background-common';
 
