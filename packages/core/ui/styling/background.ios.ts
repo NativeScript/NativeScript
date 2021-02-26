@@ -733,15 +733,25 @@ function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow,
 	}
 	// shadow opacity is handled on the shadow's color instance
 	layer.shadowOpacity = boxShadow.color?.a ? boxShadow.color?.a / 255 : 1;
-	layer.shadowRadius = Length.toDevicePixels(boxShadow.blurRadius);
+	layer.shadowRadius = Length.toDevicePixels(boxShadow.blurRadius, 0.0);
 	layer.shadowColor = boxShadow.color.ios.CGColor;
-	layer.shadowOffset = CGSizeMake(Length.toDevicePixels(boxShadow.offsetX), Length.toDevicePixels(boxShadow.offsetY));
+
+	// prettier-ignore
+	layer.shadowOffset = CGSizeMake(
+		Length.toDevicePixels(boxShadow.offsetX, 0.0),
+		Length.toDevicePixels(boxShadow.offsetY, 0.0)
+	);
 
 	// this should match the view's border radius
 	const cornerRadius = Length.toDevicePixels(<LengthType>view.style.borderRadius);
 
 	// apply spreadRadius by expanding shadow layer bounds
-	const bounds = boxShadow.spreadRadius ? CGRectInset(nativeView.bounds, -Length.toDevicePixels(boxShadow.spreadRadius), -Length.toDevicePixels(boxShadow.spreadRadius)) : nativeView.bounds;
+	// prettier-ignore
+	const bounds = boxShadow.spreadRadius ?
+		CGRectInset(nativeView.bounds,
+			-Length.toDevicePixels(boxShadow.spreadRadius),
+			-Length.toDevicePixels(boxShadow.spreadRadius)
+		) : nativeView.bounds;
 
 	// This has the nice glow with box shadow of 0,0
 	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(bounds, cornerRadius).CGPath;

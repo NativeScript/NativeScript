@@ -34,7 +34,7 @@ const isLength = (v) => v === '0' || LENGTH_RE.test(v);
  * @param value
  */
 export function parseCSSShadow(value: string): CSSShadow {
-	const parts = value.split(PARTS_RE);
+	const parts = value.trim().split(PARTS_RE);
 	const inset = parts.includes('inset');
 	const first = parts[0];
 	const last = parts[parts.length - 1];
