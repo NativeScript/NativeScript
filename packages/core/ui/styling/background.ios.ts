@@ -760,7 +760,10 @@ function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow,
 
 function clearBoxShadow(nativeView: NativeView) {
 	nativeView.clipsToBounds = true;
-	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow');
+	const layer: CALayer = iOSNativeHelper.getShadowLayer(nativeView, 'ns-box-shadow', false);
+	if (!layer) {
+		return;
+	}
 	layer.masksToBounds = true;
 	layer.shadowOffset = CGSizeMake(0, 0);
 	layer.shadowColor = UIColor.clearColor.CGColor;
