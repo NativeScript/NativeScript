@@ -134,6 +134,7 @@ function unsubscribeFromScrollNotifications(view: View) {
 		view.off('scroll', onScroll);
 	}
 }
+
 function subscribeForScrollNotifications(view: View) {
 	if (view.nativeViewProtected instanceof UIScrollView) {
 		view.on('scroll', onScroll);
@@ -170,6 +171,7 @@ function clearNonUniformBorders(nativeView: NativeView): void {
 }
 
 const pattern = /url\(('|")(.*?)\1\)/;
+
 function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor: UIColor) => void, flip?: boolean): void {
 	const frame = nativeView.frame;
 	const boundsWidth = view.scaleX ? frame.size.width / view.scaleX : frame.size.width;
@@ -743,15 +745,14 @@ function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow,
 	);
 
 	// this should match the view's border radius
-	const cornerRadius = Length.toDevicePixels(<LengthType>view.style.borderRadius);
+	const cornerRadius = Length.toDevicePixels(<LengthType>view.style.borderRadius, 0.0);
 
 	// apply spreadRadius by expanding shadow layer bounds
 	// prettier-ignore
-	const bounds = boxShadow.spreadRadius ?
-		CGRectInset(nativeView.bounds,
-			-Length.toDevicePixels(boxShadow.spreadRadius),
-			-Length.toDevicePixels(boxShadow.spreadRadius)
-		) : nativeView.bounds;
+	const bounds = CGRectInset(nativeView.bounds,
+		-Length.toDevicePixels(boxShadow.spreadRadius, 0.0),
+		-Length.toDevicePixels(boxShadow.spreadRadius, 0.0)
+	);
 
 	// This has the nice glow with box shadow of 0,0
 	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(bounds, cornerRadius).CGPath;
