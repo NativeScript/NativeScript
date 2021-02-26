@@ -9,6 +9,8 @@ import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
 import { CSSShadow } from './css-shadow';
 import { Length, LengthType } from './style-properties';
+import { Properties } from '../animation/animation-common';
+import height = Properties.height;
 
 export * from './background-common';
 
@@ -732,16 +734,19 @@ function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow,
 		layer.backgroundColor = UIColor.whiteColor.CGColor;
 	}
 	// shadow opacity is handled on the shadow's color instance
-	layer.shadowOpacity = background.color?.a ? background.color?.a / 255 : 1;
-	layer.shadowRadius = Length.toDevicePixels(boxShadow.spreadRadius);
+	layer.shadowOpacity = boxShadow.color?.a ? boxShadow.color?.a / 255 : 1;
+	layer.shadowRadius = Length.toDevicePixels(boxShadow.blurRadius);
 	layer.shadowColor = boxShadow.color.ios.CGColor;
 	layer.shadowOffset = CGSizeMake(Length.toDevicePixels(boxShadow.offsetX), Length.toDevicePixels(boxShadow.offsetY));
 
 	// this should match the view's border radius
 	const cornerRadius = Length.toDevicePixels(<LengthType>view.style.borderRadius);
 
+	// apply spreadRadius by expanding shadow layer bounds
+	const bounds = boxShadow.spreadRadius ? CGRectInset(nativeView.bounds, -Length.toDevicePixels(boxShadow.spreadRadius), -Length.toDevicePixels(boxShadow.spreadRadius)) : nativeView.bounds;
+
 	// This has the nice glow with box shadow of 0,0
-	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, cornerRadius).CGPath;
+	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(bounds, cornerRadius).CGPath;
 }
 
 function clearBoxShadow(nativeView: NativeView) {
