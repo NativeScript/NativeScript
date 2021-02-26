@@ -151,11 +151,13 @@ export abstract class View extends ViewBase {
 	/**
 	 * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
 	 */
+	// @ts-ignore
 	public android: any;
 
 	/**
 	 * Gets the ios-specific native instance that lies behind this proxy. Will be available if running on an iOS platform.
 	 */
+	// @ts-ignore
 	public ios: any;
 
 	/**

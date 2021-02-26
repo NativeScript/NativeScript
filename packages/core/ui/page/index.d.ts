@@ -68,6 +68,7 @@ export declare class Page extends PageBase {
 	/**
 	 * Used to hide the Navigation Bar in iOS and the Action Bar in Android.
 	 */
+	// @ts-ignore
 	public actionBarHidden: boolean;
 
 	/**

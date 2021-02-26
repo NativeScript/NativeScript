@@ -350,7 +350,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	_setShadow(value: CSSShadow): void {
-		const layer = getShadowLayer(this);
+		const layer = iOSNativeHelper.getShadowLayer(this.nativeTextViewProtected, 'ns-text-shadow');
 		if (!layer) {
 			Trace.write('text-shadow not applied, no layer.', Trace.categories.Style, Trace.messageType.info);
 			return;
@@ -503,42 +503,6 @@ export function getTransformedText(text: string, textTransform: Enums.TextTransf
 		default:
 			return text;
 	}
-}
-
-// todo: clean up nesting & logs
-export function getShadowLayer(view: TextBase): CALayer {
-	let layer: CALayer;
-	const name = 'shadow-layer';
-	const nativeView = view && view.nativeTextViewProtected;
-	if (nativeView) {
-		if (nativeView.layer) {
-			if (nativeView.layer.name === name) {
-				return nativeView.layer;
-			} else {
-				if (nativeView.layer.sublayers && nativeView.layer.sublayers.count) {
-					console.log('this.nativeTextViewProtected.layer.sublayers.count:', nativeView.layer.sublayers.count);
-					for (let i = 0; i < nativeView.layer.sublayers.count; i++) {
-						console.log(`layer ${i}:`, nativeView.layer.sublayers.objectAtIndex(i));
-						if (nativeView.layer.sublayers.objectAtIndex(i).name === name) {
-							return nativeView.layer.sublayers.objectAtIndex(i);
-						}
-					}
-					if (nativeView instanceof UITextView) {
-						layer = nativeView.layer.sublayers.objectAtIndex(1);
-					} else {
-						layer = nativeView.layer.sublayers.objectAtIndex(nativeView.layer.sublayers.count - 1);
-					}
-				} else {
-					layer = nativeView.layer;
-				}
-			}
-		} else {
-			// could this occur?
-			console.log('no layer!');
-		}
-	}
-	layer.name = name;
-	return layer;
 }
 
 function NSStringFromNSAttributedString(source: NSAttributedString | string): NSString {

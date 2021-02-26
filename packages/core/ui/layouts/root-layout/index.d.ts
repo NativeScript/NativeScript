@@ -39,5 +39,5 @@ export interface TransitionAnimation {
 	rotate?: number; // in degrees
 	opacity?: number;
 	duration?: number; // in milliseconds
-	curve?: AnimationCurve;
+	curve?: any; // TODO: type collisision branch fixes this! AnimationCurve;
 }
