@@ -6,7 +6,6 @@ The following CSS rule changes the font size of all UI
 components that have the btn class name.
 */
 .btn-view-demo {
-  font-size: 18;
   background-color: #65ADF1;
   border-radius: 5;
   font-size: 17;

@@ -1,5 +1,5 @@
 import { EventData, Page, Observable, RootLayoutOptions, getRootLayout, StackLayout, View } from '@nativescript/core';
-import { AnimationCurve } from '@nativescript/core/ui/enums';
+import { Enums } from '@nativescript/core';
 
 export function navigatingTo(args: EventData) {
 	const page = <Page>args.object;
@@ -78,7 +78,7 @@ export class BoxShadowModel extends Observable {
 						rotate: 180,
 						opacity: 0,
 						duration: 300,
-						curve: AnimationCurve.spring,
+						curve: Enums.AnimationCurve.spring,
 					},
 				},
 			},

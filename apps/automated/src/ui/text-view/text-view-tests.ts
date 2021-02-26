@@ -4,7 +4,7 @@ import * as viewModule from '@nativescript/core/ui/core/view';
 import * as pagesModule from '@nativescript/core/ui/page';
 import * as textViewTestsNative from './text-view-tests-native';
 import * as colorModule from '@nativescript/core/color';
-import * as enums from '@nativescript/core/ui/enums';
+import { Enums } from '@nativescript/core';
 import * as platform from '@nativescript/core/platform';
 
 // >> require-textmodules
@@ -537,8 +537,8 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
 		view.text = 'NormalText';
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
 
-		TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, 'TextTransform');
-		TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, 'TextDecoration');
+		TKUnit.assertEqual(view.style.textTransform, Enums.TextTransform.uppercase, 'TextTransform');
+		TKUnit.assertEqual(view.style.textDecoration, Enums.TextDecoration.underline, 'TextDecoration');
 		TKUnit.assertEqual(view.style.letterSpacing, 1, 'LetterSpacing');
 	});
 }
@@ -550,8 +550,8 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
 		view.formattedText = formattedString;
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
 
-		TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, 'TextTransform');
-		TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, 'TextDecoration');
+		TKUnit.assertEqual(view.style.textTransform, Enums.TextTransform.uppercase, 'TextTransform');
+		TKUnit.assertEqual(view.style.textDecoration, Enums.TextDecoration.underline, 'TextDecoration');
 		TKUnit.assertEqual(view.style.letterSpacing, 1, 'LetterSpacing');
 	});
 }

@@ -1,7 +1,7 @@
 import { ListView as ListViewDefinition, ItemsSource, ItemEventData, TemplatedItemsView } from '.';
 import { View, ContainerView, Template, KeyedTemplate, CSSType } from '../core/view';
 import { Property, CoercibleProperty, CssProperty } from '../core/properties';
-import { Length } from '../styling/style-properties';
+import { Length, LengthType } from '../styling/style-properties';
 import { Style } from '../styling/style';
 import { Color } from '../../color';
 import { Builder } from '../builder';
@@ -36,8 +36,8 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 
 	public _itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
 	public _effectiveRowHeight: number = autoEffectiveRowHeight;
-	public rowHeight: Length;
-	public iosEstimatedRowHeight: Length;
+	public rowHeight: LengthType;
+	public iosEstimatedRowHeight: LengthType;
 	public items: any[] | ItemsSource;
 	public itemTemplate: string | Template;
 	public itemTemplates: string | Array<KeyedTemplate>;
@@ -137,7 +137,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 		this.refresh();
 	}
 
-	public _onRowHeightPropertyChanged(oldValue: Length, newValue: Length) {
+	public _onRowHeightPropertyChanged(oldValue: LengthType, newValue: LengthType) {
 		this.refresh();
 	}
 
@@ -203,11 +203,11 @@ export const itemTemplatesProperty = new Property<ListViewBase, string | Array<K
 });
 itemTemplatesProperty.register(ListViewBase);
 
-const defaultRowHeight: Length = 'auto';
+const defaultRowHeight: LengthType = 'auto';
 /**
  * Represents the observable property backing the rowHeight property of each ListView instance.
  */
-export const rowHeightProperty = new CoercibleProperty<ListViewBase, Length>({
+export const rowHeightProperty = new CoercibleProperty<ListViewBase, LengthType>({
 	name: 'rowHeight',
 	defaultValue: defaultRowHeight,
 	equalityComparer: Length.equals,
@@ -223,7 +223,7 @@ export const rowHeightProperty = new CoercibleProperty<ListViewBase, Length>({
 });
 rowHeightProperty.register(ListViewBase);
 
-export const iosEstimatedRowHeightProperty = new Property<ListViewBase, Length>({
+export const iosEstimatedRowHeightProperty = new Property<ListViewBase, LengthType>({
 	name: 'iosEstimatedRowHeight',
 	valueConverter: (v) => Length.parse(v),
 });

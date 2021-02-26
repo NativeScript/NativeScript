@@ -1,6 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { isAndroid, isIOS, Button, Label, TextField, TextView, StackLayout, View, Color, Length, PercentLength, LengthPercentUnit, LengthPxUnit } from '@nativescript/core';
+import { isAndroid, isIOS, Button, Label, TextField, TextView, StackLayout, View, Color, Length, PercentLength, LengthPercentUnit, LengthPxUnit, LengthType } from '@nativescript/core';
 import * as fontModule from '@nativescript/core/ui/styling/font';
 
 export function test_setting_textDecoration_property_from_CSS_is_applied_to_Style() {
@@ -821,7 +821,7 @@ export function test_border_width() {
 
 	testView.style.borderWidth = 10;
 	TKUnit.assertEqual(testView.style.borderWidth, 10, 'all');
-	let expected: Length = { value: 10, unit: 'dip' };
+	let expected: LengthType = { value: 10, unit: 'dip' };
 	TKUnit.assertTrue(Length.equals(testView.style.borderTopWidth, expected));
 	TKUnit.assertTrue(Length.equals(testView.style.borderRightWidth, expected));
 	TKUnit.assertTrue(Length.equals(testView.style.borderBottomWidth, expected));
@@ -841,7 +841,7 @@ export function test_border_radius() {
 	let testView = new Button();
 
 	testView.style.borderRadius = 10;
-	let expected: Length = { value: 10, unit: 'dip' };
+	let expected: LengthType = { value: 10, unit: 'dip' };
 
 	TKUnit.assertTrue(Length.equals(testView.style.borderRadius, expected), 'all');
 	TKUnit.assertTrue(Length.equals(testView.style.borderTopLeftRadius, expected), 'top');
