@@ -169,6 +169,12 @@ export namespace iOSNativeHelper {
 	export function applyRotateTransform(transform: any /* CATransform3D*/, x: number, y: number, z: number): any; /* CATransform3D*/
 
 	/**
+	 * @param nativeView UIView to find shadow layer with
+	 * @param name Name of the shadow layer if looking for specifically named layer
+	 */
+	export function getShadowLayer(nativeView: any /* UIView */, name?: string): any; /* CALayer */
+
+	/**
 	 * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
 	 */
 	export function createUIDocumentInteractionControllerDelegate(): any;

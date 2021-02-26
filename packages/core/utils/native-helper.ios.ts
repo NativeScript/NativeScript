@@ -120,6 +120,46 @@ export namespace iOSNativeHelper {
 		return transform;
 	}
 
+	export function getShadowLayer(nativeView: UIView, name?: string): CALayer {
+		let layer: CALayer;
+		name = name || 'ns-shadow-layer';
+		if (nativeView) {
+			if (nativeView.layer) {
+				if (nativeView.layer.name === name) {
+					console.log('- found shadow layer - reusing.');
+					return nativeView.layer;
+				} else {
+					if (nativeView.layer.sublayers && nativeView.layer.sublayers.count) {
+						console.log('nativeView.layer.sublayers.count:', nativeView.layer.sublayers.count);
+						for (let i = 0; i < nativeView.layer.sublayers.count; i++) {
+							console.log(`layer ${i}:`, nativeView.layer.sublayers.objectAtIndex(i));
+							console.log(`layer ${i} name:`, nativeView.layer.sublayers.objectAtIndex(i).name);
+							if (nativeView.layer.sublayers.objectAtIndex(i).name === name) {
+								return nativeView.layer.sublayers.objectAtIndex(i);
+							}
+						}
+						if (nativeView instanceof UITextView) {
+							layer = nativeView.layer.sublayers.objectAtIndex(1);
+						} else {
+							layer = nativeView.layer.sublayers.objectAtIndex(nativeView.layer.sublayers.count - 1);
+						}
+					} else {
+						layer = nativeView.layer;
+					}
+				}
+			} else {
+				// could this occur?
+				console.log('no layer!');
+			}
+		}
+		console.log('layer.name:', layer.name);
+		if (!layer.name) {
+			// only explicitly name if the developer had not named it themselves and/or some other integration
+			layer.name = name;
+		}
+		return layer;
+	}
+
 	export function createUIDocumentInteractionControllerDelegate(): NSObject {
 		@NativeClass
 		class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
