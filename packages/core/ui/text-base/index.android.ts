@@ -7,7 +7,7 @@ import { Font } from '../styling/font';
 import { backgroundColorProperty } from '../styling/style-properties';
 import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
+import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, LengthType } from '../styling/style-properties';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
 import { Enums } from '../enums';

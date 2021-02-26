@@ -375,7 +375,6 @@ export class TextBase extends TextBaseCommon {
 		}
 
 		layer.shadowOffset = CGSizeMake(Length.toDevicePixels(value.offsetX), Length.toDevicePixels(value.offsetY));
-		// layer.shadowOffset = CGSizeMake(Length.toDevicePixels(value.offsetX), Length.toDevicePixels(value.offsetY));
 		layer.masksToBounds = false;
 
 		// NOTE: generally should not need shouldRasterize
