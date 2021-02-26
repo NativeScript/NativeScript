@@ -6,7 +6,7 @@ import { View, CSSType } from '../core/view';
 import { ViewBase, booleanConverter } from '../core/view-base';
 import { Trace } from '../../trace';
 import { ShorthandProperty, CssProperty, Property, unsetValue } from '../core/properties';
-import { Length, horizontalAlignmentProperty, verticalAlignmentProperty } from '../styling/style-properties';
+import { Length, horizontalAlignmentProperty, verticalAlignmentProperty, LengthType } from '../styling/style-properties';
 import { Style } from '../styling/style';
 
 @CSSType('ActionBar')
@@ -81,24 +81,24 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 		}
 	}
 
-	public get androidContentInset(): string | Length {
+	public get androidContentInset(): string | LengthType {
 		return this.style.androidContentInset;
 	}
-	public set androidContentInset(value: string | Length) {
+	public set androidContentInset(value: string | LengthType) {
 		this.style.androidContentInset = value;
 	}
 
-	public get androidContentInsetLeft(): Length {
+	public get androidContentInsetLeft(): LengthType {
 		return this.style.androidContentInsetLeft;
 	}
-	public set androidContentInsetLeft(value: Length) {
+	public set androidContentInsetLeft(value: LengthType) {
 		this.style.androidContentInsetLeft = value;
 	}
 
-	public get androidContentInsetRight(): Length {
+	public get androidContentInsetRight(): LengthType {
 		return this.style.androidContentInsetRight;
 	}
-	public set androidContentInsetRight(value: Length) {
+	public set androidContentInsetRight(value: LengthType) {
 		this.style.androidContentInsetRight = value;
 	}
 
@@ -363,7 +363,7 @@ export function traceMissingIcon(icon: string) {
 	Trace.write('Could not load action bar icon: ' + icon, Trace.categories.Error, Trace.messageType.error);
 }
 
-function convertToContentInset(this: void, value: string | Length): [CssProperty<any, any>, any][] {
+function convertToContentInset(this: void, value: string | LengthType): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
 		const insets = value.split(/[ ,]+/);
 
@@ -409,7 +409,7 @@ export const flatProperty = new Property<ActionBarBase, boolean>({
 });
 flatProperty.register(ActionBarBase);
 
-const androidContentInsetProperty = new ShorthandProperty<Style, string | Length>({
+const androidContentInsetProperty = new ShorthandProperty<Style, string | LengthType>({
 	name: 'androidContentInset',
 	cssName: 'android-content-inset',
 	getter: function (this: Style) {
@@ -423,7 +423,7 @@ const androidContentInsetProperty = new ShorthandProperty<Style, string | Length
 });
 androidContentInsetProperty.register(Style);
 
-export const androidContentInsetLeftProperty = new CssProperty<Style, Length>({
+export const androidContentInsetLeftProperty = new CssProperty<Style, LengthType>({
 	name: 'androidContentInsetLeft',
 	cssName: 'android-content-inset-left',
 	defaultValue: 'auto',
@@ -440,7 +440,7 @@ export const androidContentInsetLeftProperty = new CssProperty<Style, Length>({
 });
 androidContentInsetLeftProperty.register(Style);
 
-export const androidContentInsetRightProperty = new CssProperty<Style, Length>({
+export const androidContentInsetRightProperty = new CssProperty<Style, LengthType>({
 	name: 'androidContentInsetRight',
 	cssName: 'android-content-inset-right',
 	defaultValue: 'auto',

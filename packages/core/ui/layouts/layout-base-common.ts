@@ -2,7 +2,7 @@ import { LayoutBase as LayoutBaseDefinition } from './layout-base';
 import { View, CustomLayoutView, AddChildFromBuilder } from '../core/view';
 import { booleanConverter, getViewById } from '../core/view-base';
 import { Property } from '../core/properties';
-import { Length } from '../styling/style-properties';
+import { LengthType } from '../styling/style-properties';
 
 export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefinition, AddChildFromBuilder {
 	private _subViews = new Array<View>();
@@ -70,38 +70,38 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		}
 	}
 
-	get padding(): string | Length {
+	get padding(): string | LengthType {
 		return this.style.padding;
 	}
-	set padding(value: string | Length) {
+	set padding(value: string | LengthType) {
 		this.style.padding = value;
 	}
 
-	get paddingTop(): Length {
+	get paddingTop(): LengthType {
 		return this.style.paddingTop;
 	}
-	set paddingTop(value: Length) {
+	set paddingTop(value: LengthType) {
 		this.style.paddingTop = value;
 	}
 
-	get paddingRight(): Length {
+	get paddingRight(): LengthType {
 		return this.style.paddingRight;
 	}
-	set paddingRight(value: Length) {
+	set paddingRight(value: LengthType) {
 		this.style.paddingRight = value;
 	}
 
-	get paddingBottom(): Length {
+	get paddingBottom(): LengthType {
 		return this.style.paddingBottom;
 	}
-	set paddingBottom(value: Length) {
+	set paddingBottom(value: LengthType) {
 		this.style.paddingBottom = value;
 	}
 
-	get paddingLeft(): Length {
+	get paddingLeft(): LengthType {
 		return this.style.paddingLeft;
 	}
-	set paddingLeft(value: Length) {
+	set paddingLeft(value: LengthType) {
 		this.style.paddingLeft = value;
 	}
 

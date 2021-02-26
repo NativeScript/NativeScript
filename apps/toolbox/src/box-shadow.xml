@@ -1,6 +1,6 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
     <Page.actionBar>
-        <ActionBar title="Dev Toolbox" icon="" class="action-bar">
+        <ActionBar title="Box Shadow" icon="" class="action-bar">
         </ActionBar>
     </Page.actionBar>
 
@@ -16,7 +16,7 @@
                         boxShadow="{{ appliedBoxShadow }}"
                         borderWidth="{{ borderWidth }}"
                         borderRadius="{{ borderRadius }}"
-                        background="{{ background }}"
+                        backgroundColor="{{ background }}"
                         tap="{{ toggleAnimation }}"
                     >
                         <Label text="StackLayout"></Label>
@@ -29,7 +29,7 @@
                         boxShadow="{{ appliedBoxShadow }}"
                         borderWidth="{{ borderWidth }}"
                         borderRadius="{{ borderRadius }}"
-                        background="{{ background }}"
+                        backgroundColor="{{ background }}"
                         tap="{{ toggleAnimation }}"
                     >
                         <Label text="GridLayout"></Label>
@@ -42,7 +42,7 @@
                         boxShadow="{{ appliedBoxShadow }}"
                         borderWidth="{{ borderWidth }}"
                         borderRadius="{{ borderRadius }}"
-                        background="{{ background }}"
+                        backgroundColor="{{ background }}"
                         tap="{{ toggleAnimation }}"
                     >
                         <Label text="AbsoluteLayout"></Label>
@@ -55,7 +55,7 @@
                         boxShadow="{{ appliedBoxShadow }}"
                         borderWidth="{{ borderWidth }}"
                         borderRadius="{{ borderRadius }}"
-                        background="{{ background }}"
+                        backgroundColor="{{ background }}"
                         tap="{{ toggleAnimation }}"
                     >
                         <Label text="DockLayout"></Label>
@@ -68,7 +68,7 @@
                         boxShadow="{{ appliedBoxShadow }}"
                         borderWidth="{{ borderWidth }}"
                         borderRadius="{{ borderRadius }}"
-                        background="{{ background }}"
+                        backgroundColor="{{ background }}"
                         tap="{{ toggleAnimation }}"
                     >
                         <Label text="FlexboxLayout"></Label>
@@ -90,7 +90,7 @@
                     boxShadow="{{ appliedBoxShadow }}"
                     borderWidth="{{ borderWidth }}"
                     borderRadius="{{ borderRadius }}"
-                    background="{{ background }}"
+                    backgroundColor="{{ background }}"
                     tap="{{ toggleAnimation }}"
                     text="Label"></Label>
 
@@ -109,7 +109,7 @@
                     boxShadow="{{ appliedBoxShadow }}"
                     borderWidth="{{ borderWidth }}"
                     borderRadius="{{ borderRadius }}"
-                    background="{{ background }}"
+                    backgroundColor="{{ background }}"
                     tap="{{ toggleAnimation }}"
                     text="button"
                 ></Button>

@@ -1,6 +1,6 @@
 import { StackLayoutBase } from './stack-layout-common';
 import { View } from '../../core/view';
-import { VerticalAlignment, HorizontalAlignment } from '../../styling/style-properties';
+import { Enums } from '../../enums';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 
@@ -112,16 +112,16 @@ export class StackLayout extends StackLayoutBase {
 		const childRight = right - left - paddingRight;
 
 		switch (this.verticalAlignment) {
-			case VerticalAlignment.MIDDLE:
+			case Enums.VerticalAlignment.middle:
 				childTop = (bottom - top - this._totalLength) / 2 + paddingTop;
 				break;
 
-			case VerticalAlignment.BOTTOM:
+			case Enums.VerticalAlignment.bottom:
 				childTop = bottom - top - this._totalLength + paddingTop;
 				break;
 
-			case VerticalAlignment.TOP:
-			case VerticalAlignment.STRETCH:
+			case Enums.VerticalAlignment.top:
+			case Enums.VerticalAlignment.stretch:
 			default:
 				childTop = paddingTop;
 				break;
@@ -146,16 +146,16 @@ export class StackLayout extends StackLayoutBase {
 		const childBottom = bottom - top - paddingBottom;
 
 		switch (this.horizontalAlignment) {
-			case HorizontalAlignment.CENTER:
+			case Enums.HorizontalAlignment.center:
 				childLeft = (right - left - this._totalLength) / 2 + paddingLeft;
 				break;
 
-			case HorizontalAlignment.RIGHT:
+			case Enums.HorizontalAlignment.right:
 				childLeft = right - left - this._totalLength + paddingLeft;
 				break;
 
-			case HorizontalAlignment.LEFT:
-			case HorizontalAlignment.STRETCH:
+			case Enums.HorizontalAlignment.left:
+			case Enums.HorizontalAlignment.stretch:
 			default:
 				childLeft = paddingLeft;
 				break;

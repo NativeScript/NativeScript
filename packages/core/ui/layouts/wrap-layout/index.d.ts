@@ -26,8 +26,6 @@ export class WrapLayout extends LayoutBase {
 	itemHeight: Length;
 }
 
-export type Orientation = 'horizontal' | 'vertical';
-
 /**
  * Represents the observable property backing the orientation property of each WrapLayout instance.
  */

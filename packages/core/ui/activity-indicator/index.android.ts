@@ -1,6 +1,7 @@
 import { ActivityIndicatorBase, busyProperty } from './activity-indicator-common';
-import { colorProperty, visibilityProperty, Visibility } from '../styling/style-properties';
+import { colorProperty, visibilityProperty } from '../styling/style-properties';
 import { Color } from '../../color';
+import { Enums } from '../enums';
 
 export * from './activity-indicator-common';
 
@@ -19,27 +20,27 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		return false;
 	}
 	[busyProperty.setNative](value: boolean) {
-		if (this.visibility === Visibility.VISIBLE) {
+		if (this.visibility === Enums.Visibility.visible) {
 			this.nativeViewProtected.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
 		}
 	}
 
-	[visibilityProperty.getDefault](): Visibility {
-		return Visibility.HIDDEN;
+	[visibilityProperty.getDefault](): Enums.VisibilityType {
+		return Enums.Visibility.hidden;
 	}
-	[visibilityProperty.setNative](value: Visibility) {
+	[visibilityProperty.setNative](value: Enums.VisibilityType) {
 		switch (value) {
-			case Visibility.VISIBLE:
+			case Enums.Visibility.visible:
 				this.nativeViewProtected.setVisibility(this.busy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
 				break;
-			case Visibility.HIDDEN:
+			case Enums.Visibility.hidden:
 				this.nativeViewProtected.setVisibility(android.view.View.INVISIBLE);
 				break;
-			case Visibility.COLLAPSE:
+			case Enums.Visibility.collapse:
 				this.nativeViewProtected.setVisibility(android.view.View.GONE);
 				break;
 			default:
-				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
+				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Enums.Visibility.visible}", "${Enums.Visibility.hidden}", "${Enums.Visibility.collapse}".`);
 		}
 	}
 

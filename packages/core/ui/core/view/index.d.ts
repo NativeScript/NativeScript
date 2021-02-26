@@ -3,11 +3,12 @@ import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
 import { Color } from '../../../color';
 import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
-import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from '../../styling/style-properties';
+import { LengthType, PercentLengthType } from '../../styling/style-properties';
 import { GestureTypes, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/gradient';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
-import { BoxShadow } from '../../styling/box-shadow';
+import { Enums } from '../../enums';
+import { CSSShadow } from '../../styling/css-shadow';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -192,52 +193,52 @@ export abstract class View extends ViewBase {
 	/**
 	 * Gets or sets the border width of the view.
 	 */
-	borderWidth: string | Length;
+	borderWidth: string | LengthType;
 
 	/**
 	 * Gets or sets the top border width of the view.
 	 */
-	borderTopWidth: Length;
+	borderTopWidth: LengthType;
 
 	/**
 	 * Gets or sets the right border width of the view.
 	 */
-	borderRightWidth: Length;
+	borderRightWidth: LengthType;
 
 	/**
 	 * Gets or sets the bottom border width of the view.
 	 */
-	borderBottomWidth: Length;
+	borderBottomWidth: LengthType;
 
 	/**
 	 * Gets or sets the left border width of the view.
 	 */
-	borderLeftWidth: Length;
+	borderLeftWidth: LengthType;
 
 	/**
 	 * Gets or sets the border radius of the view.
 	 */
-	borderRadius: string | Length;
+	borderRadius: string | LengthType;
 
 	/**
 	 * Gets or sets the top left border radius of the view.
 	 */
-	borderTopLeftRadius: Length;
+	borderTopLeftRadius: LengthType;
 
 	/**
 	 * Gets or sets the top right border radius of the view.
 	 */
-	borderTopRightRadius: Length;
+	borderTopRightRadius: LengthType;
 
 	/**
 	 * Gets or sets the bottom right border radius of the view.
 	 */
-	borderBottomRightRadius: Length;
+	borderBottomRightRadius: LengthType;
 
 	/**
 	 * Gets or sets the bottom left border radius of the view.
 	 */
-	borderBottomLeftRadius: Length;
+	borderBottomLeftRadius: LengthType;
 
 	/**
 	 * Gets or sets the color of the view.
@@ -334,67 +335,67 @@ export abstract class View extends ViewBase {
 	/**
 	 * Gets or sets the box shadow of the view.
 	 */
-	boxShadow: string | BoxShadow;
+	boxShadow: string | CSSShadow;
 
 	/**
 	 * Gets or sets the minimum width the view may grow to.
 	 */
-	minWidth: Length;
+	minWidth: LengthType;
 
 	/**
 	 * Gets or sets the minimum height the view may grow to.
 	 */
-	minHeight: Length;
+	minHeight: LengthType;
 
 	/**
 	 * Gets or sets the desired width of the view.
 	 */
-	width: PercentLength;
+	width: PercentLengthType;
 
 	/**
 	 * Gets or sets the desired height of the view.
 	 */
-	height: PercentLength;
+	height: PercentLengthType;
 
 	/**
 	 * Gets or sets margin style property.
 	 */
-	margin: string | PercentLength;
+	margin: string | PercentLengthType;
 
 	/**
 	 * Specifies extra space on the left side of this view.
 	 */
-	marginLeft: PercentLength;
+	marginLeft: PercentLengthType;
 
 	/**
 	 * Specifies extra space on the top side of this view.
 	 */
-	marginTop: PercentLength;
+	marginTop: PercentLengthType;
 
 	/**
 	 * Specifies extra space on the right side of this view.
 	 */
-	marginRight: PercentLength;
+	marginRight: PercentLengthType;
 
 	/**
 	 * Specifies extra space on the bottom side of this view.
 	 */
-	marginBottom: PercentLength;
+	marginBottom: PercentLengthType;
 
 	/**
 	 * Gets or sets the alignment of this view within its parent along the Horizontal axis.
 	 */
-	horizontalAlignment: HorizontalAlignment;
+	horizontalAlignment: Enums.HorizontalAlignmentType;
 
 	/**
 	 * Gets or sets the alignment of this view within its parent along the Vertical axis.
 	 */
-	verticalAlignment: VerticalAlignment;
+	verticalAlignment: Enums.VerticalAlignmentType;
 
 	/**
 	 * Gets or sets the visibility of the view.
 	 */
-	visibility: Visibility;
+	visibility: Enums.VisibilityType;
 
 	/**
 	 * Gets or sets the opacity style property.
@@ -837,11 +838,11 @@ export abstract class View extends ViewBase {
 	/**
 	 * @private
 	 */
-	_setMinWidthNative(value: Length): void;
+	_setMinWidthNative(value: LengthType): void;
 	/**
 	 * @private
 	 */
-	_setMinHeightNative(value: Length): void;
+	_setMinHeightNative(value: LengthType): void;
 	/**
 	 * @private
 	 */
@@ -917,11 +918,11 @@ export class CustomLayoutView extends ContainerView {
 	/**
 	 * @private
 	 */
-	_setChildMinWidthNative(child: View, value: Length): void;
+	_setChildMinWidthNative(child: View, value: LengthType): void;
 	/**
 	 * @private
 	 */
-	_setChildMinHeightNative(child: View, value: Length): void;
+	_setChildMinHeightNative(child: View, value: LengthType): void;
 	//@endprivate
 }
 
