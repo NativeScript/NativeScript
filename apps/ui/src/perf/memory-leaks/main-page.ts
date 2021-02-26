@@ -1,4 +1,4 @@
-import { EventData } from '@nativescript/core/data/observable';
+import { EventData, getViewById } from '@nativescript/core';
 import { TestPageMainViewModel } from '../../test-page-main-view-model';
 import { WrapLayout } from '@nativescript/core/ui/layouts/wrap-layout';
 import { Page } from '@nativescript/core/ui/page';
@@ -6,9 +6,8 @@ import { isAndroid } from '@nativescript/core/platform';
 
 export function pageLoaded(args: EventData) {
 	let page = <Page>args.object;
-	let view = require('@nativescript/core/ui/core/view');
 
-	let wrapLayout = view.getViewById(page, 'wrapLayoutWithExamples');
+	let wrapLayout = <WrapLayout>getViewById(page, 'wrapLayoutWithExamples');
 
 	let examples: Map<string, string> = new Map<string, string>();
 	if (isAndroid) {

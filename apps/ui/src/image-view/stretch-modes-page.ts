@@ -1,4 +1,4 @@
-import { Image, Stretch } from '@nativescript/core/ui/image';
+import { Image, Enums } from '@nativescript/core';
 import { Label } from '@nativescript/core/ui/label';
 import { LayoutBase } from '@nativescript/core/ui/layouts/layout-base';
 
@@ -7,12 +7,12 @@ const sources = [
 	{ w: 32, h: 32, src: 'i32x32' },
 	{ w: 18, h: 32, src: 'i18x32' },
 ].map(({ w, h, src }) => ({ w, h, src: `res://${src}` }));
-const stretchModes: Stretch[] = ['none', 'aspectFill', 'aspectFit', 'fill'];
+const stretchModes: Enums.ImageStretchType[] = ['none', 'aspectFill', 'aspectFit', 'fill'];
 const widths = [+8, 0, -8];
 const heights = [+8, 0, -8];
 
 export function navigatingTo(args) {
-	const variants: { src: string; stretch: Stretch; width: number; height: number }[] = [];
+	const variants: { src: string; stretch: Enums.ImageStretchType; width: number; height: number }[] = [];
 
 	// Better way for cartesian product?
 	sources.forEach((src) => stretchModes.forEach((stretch) => widths.forEach((width) => heights.forEach((height) => variants.push({ src: src.src, stretch, width: src.w + width, height: src.h + height })))));

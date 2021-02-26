@@ -8,7 +8,7 @@ import { iOSNativeHelper, isDataURI, isFileOrResourcePath, layout } from '../../
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
 import { CSSShadow } from './css-shadow';
-import { Length } from './style-properties';
+import { Length, LengthType } from './style-properties';
 
 export * from './background-common';
 
@@ -735,15 +735,10 @@ function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow,
 	layer.shadowOpacity = background.color?.a ? background.color?.a / 255 : 1;
 	layer.shadowRadius = Length.toDevicePixels(boxShadow.spreadRadius);
 	layer.shadowColor = boxShadow.color.ios.CGColor;
-
-	const adjustedShadowOffset = {
-		x: Length.toDevicePixels(boxShadow.offsetX),
-		y: Length.toDevicePixels(boxShadow.offsetY),
-	};
-	layer.shadowOffset = CGSizeMake(adjustedShadowOffset.x, adjustedShadowOffset.y);
+	layer.shadowOffset = CGSizeMake(Length.toDevicePixels(boxShadow.offsetX), Length.toDevicePixels(boxShadow.offsetY));
 
 	// this should match the view's border radius
-	const cornerRadius = 0; // layout.toDeviceIndependentPixels(view.style.borderRadius);
+	const cornerRadius = Length.toDevicePixels(<LengthType>view.style.borderRadius);
 
 	// This has the nice glow with box shadow of 0,0
 	layer.shadowPath = UIBezierPath.bezierPathWithRoundedRectCornerRadius(nativeView.bounds, cornerRadius).CGPath;

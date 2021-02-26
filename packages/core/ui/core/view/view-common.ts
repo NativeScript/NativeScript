@@ -8,9 +8,10 @@ import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
 import { Trace } from '../../../trace';
+import { Enums } from '../../enums';
 import { ViewHelper } from './view-helper';
 
-import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength, BackgroundRepeat } from '../../styling/style-properties';
+import { PercentLength, LengthType, PercentLengthType } from '../../styling/style-properties';
 
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString } from '../../gestures';
 
@@ -19,7 +20,6 @@ import { Builder } from '../../builder';
 import { sanitizeModuleName } from '../../builder/module-name-sanitizer';
 import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
-import { TextTransform } from '../../text-base';
 
 import * as am from '../../animation';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
@@ -92,8 +92,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	_currentWidthMeasureSpec: number;
 	_currentHeightMeasureSpec: number;
 
-	_setMinWidthNative: (value: Length) => void;
-	_setMinHeightNative: (value: Length) => void;
+	_setMinWidthNative: (value: LengthType) => void;
+	_setMinHeightNative: (value: LengthType) => void;
 
 	public _gestureObservers = {};
 
@@ -472,73 +472,73 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.borderLeftColor = value;
 	}
 
-	get borderWidth(): string | Length {
+	get borderWidth(): string | LengthType {
 		return this.style.borderWidth;
 	}
-	set borderWidth(value: string | Length) {
+	set borderWidth(value: string | LengthType) {
 		this.style.borderWidth = value;
 	}
 
-	get borderTopWidth(): Length {
+	get borderTopWidth(): LengthType {
 		return this.style.borderTopWidth;
 	}
-	set borderTopWidth(value: Length) {
+	set borderTopWidth(value: LengthType) {
 		this.style.borderTopWidth = value;
 	}
 
-	get borderRightWidth(): Length {
+	get borderRightWidth(): LengthType {
 		return this.style.borderRightWidth;
 	}
-	set borderRightWidth(value: Length) {
+	set borderRightWidth(value: LengthType) {
 		this.style.borderRightWidth = value;
 	}
 
-	get borderBottomWidth(): Length {
+	get borderBottomWidth(): LengthType {
 		return this.style.borderBottomWidth;
 	}
-	set borderBottomWidth(value: Length) {
+	set borderBottomWidth(value: LengthType) {
 		this.style.borderBottomWidth = value;
 	}
 
-	get borderLeftWidth(): Length {
+	get borderLeftWidth(): LengthType {
 		return this.style.borderLeftWidth;
 	}
-	set borderLeftWidth(value: Length) {
+	set borderLeftWidth(value: LengthType) {
 		this.style.borderLeftWidth = value;
 	}
 
-	get borderRadius(): string | Length {
+	get borderRadius(): string | LengthType {
 		return this.style.borderRadius;
 	}
-	set borderRadius(value: string | Length) {
+	set borderRadius(value: string | LengthType) {
 		this.style.borderRadius = value;
 	}
 
-	get borderTopLeftRadius(): Length {
+	get borderTopLeftRadius(): LengthType {
 		return this.style.borderTopLeftRadius;
 	}
-	set borderTopLeftRadius(value: Length) {
+	set borderTopLeftRadius(value: LengthType) {
 		this.style.borderTopLeftRadius = value;
 	}
 
-	get borderTopRightRadius(): Length {
+	get borderTopRightRadius(): LengthType {
 		return this.style.borderTopRightRadius;
 	}
-	set borderTopRightRadius(value: Length) {
+	set borderTopRightRadius(value: LengthType) {
 		this.style.borderTopRightRadius = value;
 	}
 
-	get borderBottomRightRadius(): Length {
+	get borderBottomRightRadius(): LengthType {
 		return this.style.borderBottomRightRadius;
 	}
-	set borderBottomRightRadius(value: Length) {
+	set borderBottomRightRadius(value: LengthType) {
 		this.style.borderBottomRightRadius = value;
 	}
 
-	get borderBottomLeftRadius(): Length {
+	get borderBottomLeftRadius(): LengthType {
 		return this.style.borderBottomLeftRadius;
 	}
-	set borderBottomLeftRadius(value: Length) {
+	set borderBottomLeftRadius(value: LengthType) {
 		this.style.borderBottomLeftRadius = value;
 	}
 
@@ -584,10 +584,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.backgroundPosition = value;
 	}
 
-	get backgroundRepeat(): BackgroundRepeat {
+	get backgroundRepeat(): Enums.BackgroundRepeatType {
 		return this.style.backgroundRepeat;
 	}
-	set backgroundRepeat(value: BackgroundRepeat) {
+	set backgroundRepeat(value: Enums.BackgroundRepeatType) {
 		this.style.backgroundRepeat = value;
 	}
 
@@ -598,87 +598,88 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.boxShadow = value;
 	}
 
-	get minWidth(): Length {
+	get minWidth(): LengthType {
 		return this.style.minWidth;
 	}
-	set minWidth(value: Length) {
+
+	set minWidth(value: LengthType) {
 		this.style.minWidth = value;
 	}
 
-	get minHeight(): Length {
+	get minHeight(): LengthType {
 		return this.style.minHeight;
 	}
-	set minHeight(value: Length) {
+	set minHeight(value: LengthType) {
 		this.style.minHeight = value;
 	}
 
-	get width(): PercentLength {
+	get width(): PercentLengthType {
 		return this.style.width;
 	}
-	set width(value: PercentLength) {
+	set width(value: PercentLengthType) {
 		this.style.width = value;
 	}
 
-	get height(): PercentLength {
+	get height(): PercentLengthType {
 		return this.style.height;
 	}
-	set height(value: PercentLength) {
+	set height(value: PercentLengthType) {
 		this.style.height = value;
 	}
 
-	get margin(): string | PercentLength {
+	get margin(): string | PercentLengthType {
 		return this.style.margin;
 	}
-	set margin(value: string | PercentLength) {
+	set margin(value: string | PercentLengthType) {
 		this.style.margin = value;
 	}
 
-	get marginLeft(): PercentLength {
+	get marginLeft(): PercentLengthType {
 		return this.style.marginLeft;
 	}
-	set marginLeft(value: PercentLength) {
+	set marginLeft(value: PercentLengthType) {
 		this.style.marginLeft = value;
 	}
 
-	get marginTop(): PercentLength {
+	get marginTop(): PercentLengthType {
 		return this.style.marginTop;
 	}
-	set marginTop(value: PercentLength) {
+	set marginTop(value: PercentLengthType) {
 		this.style.marginTop = value;
 	}
 
-	get marginRight(): PercentLength {
+	get marginRight(): PercentLengthType {
 		return this.style.marginRight;
 	}
-	set marginRight(value: PercentLength) {
+	set marginRight(value: PercentLengthType) {
 		this.style.marginRight = value;
 	}
 
-	get marginBottom(): PercentLength {
+	get marginBottom(): PercentLengthType {
 		return this.style.marginBottom;
 	}
-	set marginBottom(value: PercentLength) {
+	set marginBottom(value: PercentLengthType) {
 		this.style.marginBottom = value;
 	}
 
-	get horizontalAlignment(): HorizontalAlignment {
+	get horizontalAlignment(): Enums.HorizontalAlignmentType {
 		return this.style.horizontalAlignment;
 	}
-	set horizontalAlignment(value: HorizontalAlignment) {
+	set horizontalAlignment(value: Enums.HorizontalAlignmentType) {
 		this.style.horizontalAlignment = value;
 	}
 
-	get verticalAlignment(): VerticalAlignment {
+	get verticalAlignment(): Enums.VerticalAlignmentType {
 		return this.style.verticalAlignment;
 	}
-	set verticalAlignment(value: VerticalAlignment) {
+	set verticalAlignment(value: Enums.VerticalAlignmentType) {
 		this.style.verticalAlignment = value;
 	}
 
-	get visibility(): Visibility {
+	get visibility(): Enums.VisibilityType {
 		return this.style.visibility;
 	}
-	set visibility(value: Visibility) {
+	set visibility(value: Enums.VisibilityType) {
 		this.style.visibility = value;
 	}
 
@@ -717,10 +718,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.perspective = value;
 	}
 
-	get textTransform(): TextTransform {
+	get textTransform(): Enums.TextTransformType {
 		return this.style.textTransform;
 	}
-	set textTransform(value: TextTransform) {
+	set textTransform(value: Enums.TextTransformType) {
 		this.style.textTransform = value;
 	}
 
