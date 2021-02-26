@@ -11,12 +11,16 @@ export class BoxShadowModel extends Observable {
 	private _selectedBackgroundType: string;
 	private _selectedBorderType: string;
 	private _selectedAnimation: string;
-	private _boxShadow: string;
+	private _boxShadow: string = '5 5 1 1 rgba(255, 0, 0, .9)';
 
 	background: string;
 	borderWidth: number;
 	borderRadius: number;
 	appliedBoxShadow: string;
+
+	get boxShadow(): string {
+		return this._boxShadow;
+	}
 
 	constructor() {
 		super();
