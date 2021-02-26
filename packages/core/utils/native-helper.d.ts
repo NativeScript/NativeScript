@@ -171,8 +171,9 @@ export namespace iOSNativeHelper {
 	/**
 	 * @param nativeView UIView to find shadow layer with
 	 * @param name Name of the shadow layer if looking for specifically named layer
+	 * @param create should we create a new layer if not found
 	 */
-	export function getShadowLayer(nativeView: any /* UIView */, name?: string): any; /* CALayer */
+	export function getShadowLayer(nativeView: any /* UIView */, name?: string, create?: boolean): any; /* CALayer */
 
 	/**
 	 * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
