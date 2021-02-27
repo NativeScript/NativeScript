@@ -1,3 +1,47 @@
+# [7.3.0](https://github.com/NativeScript/NativeScript/compare/7.2.2-core...7.3.0) (2021-02-27)
+
+
+### Bug Fixes
+
+* **core:** AndroidTransitionType symbol export handling ([#9252](https://github.com/NativeScript/NativeScript/issues/9252)) ([ac7f041](https://github.com/NativeScript/NativeScript/commit/ac7f041deada46bfe3bbd8359c02e9224155efd8))
+
+
+### Features
+
+* **android:** types for API Level 30 and cleanup ([#9219](https://github.com/NativeScript/NativeScript/issues/9219)) ([ebcc0e2](https://github.com/NativeScript/NativeScript/commit/ebcc0e2cc0e14d2042582901d36d4cfece7fae58))
+
+
+### BREAKING CHANGES
+
+* **core:** AndroidTransitionType is now a static member of the Transition class.
+
+BEFORE:
+
+```
+import { AndroidTransitionType } from '@nativescript/core/ui/transition';
+```
+
+AFTER:
+
+```
+import { Transition } from '@nativescript/core';
+Transition.AndroidTransitionType.enter; // etc.
+```
+
+* **android:** If you were using`native.Array` for any of your own custom plugin typings, you can switch them to `androidNative.Array`
+
+BEFORE:
+
+```
+public writeAsync(path: string, bytes: native.Array<number>) ...
+```
+
+AFTER:
+
+```
+public writeAsync(path: string, bytes: androidNative.Array<number>) ...
+```
+
 ## [7.2.2](https://github.com/NativeScript/NativeScript/compare/7.2.1-core...7.2.2) (2021-02-27)
 
 
