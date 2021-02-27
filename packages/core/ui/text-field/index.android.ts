@@ -27,6 +27,13 @@ export class TextField extends TextFieldBase {
 	setSecureAndKeyboardType(): void {
 		let inputType: number;
 
+		// Check for a passed in Number value
+		const value = +this.keyboardType;
+		if (!isNaN(value)) {
+			this._setInputType(value);
+			return;
+		}
+
 		// Password variations are supported only for Text and Number classes.
 		if (this.secure) {
 			if (this.keyboardType === 'number') {
