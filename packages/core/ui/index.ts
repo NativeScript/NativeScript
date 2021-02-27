@@ -83,6 +83,6 @@ export { Span } from './text-base/span';
 export { TextField } from './text-field';
 export { TextView } from './text-view';
 export { TimePicker } from './time-picker';
-export { Transition, AndroidTransitionType } from './transition';
+export { Transition } from './transition';
 export { WebView } from './web-view';
 export type { LoadEventData, WebViewNavigationType } from './web-view';

@@ -4,15 +4,14 @@ import lazy from '../../utils/lazy';
 
 const _defaultInterpolator = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
 
-export namespace AndroidTransitionType {
-	export const enter = 'enter';
-	export const exit = 'exit';
-	export const popEnter = 'popEnter';
-	export const popExit = 'popExit';
-}
-
 let transitionId = 0;
 export class Transition {
+	static AndroidTransitionType = {
+		enter: 'enter',
+		exit: 'exit',
+		popEnter: 'popEnter',
+		popExit: 'popExit',
+	};
 	private _duration: number;
 	private _interpolator: android.view.animation.Interpolator;
 	private _id: number;
