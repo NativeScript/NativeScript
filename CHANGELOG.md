@@ -1,3 +1,21 @@
+## [7.2.2](https://github.com/NativeScript/NativeScript/compare/7.2.1-core...7.2.2) (2021-02-27)
+
+
+### Bug Fixes
+
+* **android:** KeyboardType now respects numbers ([#9240](https://github.com/NativeScript/NativeScript/issues/9240)) ([f08fcb1](https://github.com/NativeScript/NativeScript/commit/f08fcb17b49540126367f75d28499e5904e12106))
+* **bottom-navigation:** fragment handling ([#9244](https://github.com/NativeScript/NativeScript/issues/9244)) ([c8ef6f2](https://github.com/NativeScript/NativeScript/commit/c8ef6f2ab3d3cd854a92dfecd0e8b2605c00f3af))
+* **xhr:** remove unnecessary throw when event not supported ([#9251](https://github.com/NativeScript/NativeScript/issues/9251)) ([11ef943](https://github.com/NativeScript/NativeScript/commit/11ef94349588aca23e27b2cfaf0a3e4f93df649e))
+
+
+### Features
+
+* **android:** Add possibility to choose theme in android dialogs ([#9212](https://github.com/NativeScript/NativeScript/issues/9212)) ([e7951b3](https://github.com/NativeScript/NativeScript/commit/e7951b320f4178024a4cb5b92bab0761517a68bb))
+* **core:** allow property overrides at runtime ([#9241](https://github.com/NativeScript/NativeScript/issues/9241)) ([c04e1b5](https://github.com/NativeScript/NativeScript/commit/c04e1b59e5f1a1fa48d2048c02821b97807a2c5e))
+* add npm scripts for different package managers, ie: yarn, pnpm ([#9230](https://github.com/NativeScript/NativeScript/issues/9230)) ([d7b2c84](https://github.com/NativeScript/NativeScript/commit/d7b2c84da87f9f9381d04886a3ddb0c3f031abfa))
+
+
+
 ## [7.2.1](https://github.com/NativeScript/NativeScript/compare/7.2.0-core...7.2.1) (2021-02-07)
 
 
