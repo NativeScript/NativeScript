@@ -1,6 +1,6 @@
-﻿import * as transition from '@nativescript/core/ui/transition';
+﻿import { Transition } from '@nativescript/core';
 
-export class CustomTransition extends transition.Transition {
+export class CustomTransition extends Transition {
 	constructor(duration: number, curve: any) {
 		super(duration, curve);
 	}
@@ -8,13 +8,13 @@ export class CustomTransition extends transition.Transition {
 	public createAndroidAnimator(transitionType: string): android.animation.Animator {
 		var scaleValues = Array.create('float', 2);
 		switch (transitionType) {
-			case transition.AndroidTransitionType.enter:
-			case transition.AndroidTransitionType.popEnter:
+			case Transition.AndroidTransitionType.enter:
+			case Transition.AndroidTransitionType.popEnter:
 				scaleValues[0] = 0;
 				scaleValues[1] = 1;
 				break;
-			case transition.AndroidTransitionType.exit:
-			case transition.AndroidTransitionType.popExit:
+			case Transition.AndroidTransitionType.exit:
+			case Transition.AndroidTransitionType.popExit:
 				scaleValues[0] = 1;
 				scaleValues[1] = 0;
 				break;
