@@ -8,7 +8,7 @@ BREAKING CHANGES:
    
    For example (given we have a `src` directory where our app is):
    
-   `"main": "app.js"` becomes `"main": "src/app.js"`
+   `"main": "app.js"` becomes `"main": "src/app.js"`  **OR** `"main": "src/app.ts"` (whether using JS or TS)
    
    This simplifies things, and will allow ctrl/cmd + clicking on the filename in some editors.
  
