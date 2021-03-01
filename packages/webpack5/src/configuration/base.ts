@@ -5,6 +5,7 @@ import { resolve } from 'path';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
+import FilterWarningsPlugin from 'webpack-filter-warnings-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 
 // import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
@@ -232,6 +233,13 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	config.plugin('PlatformSuffixPlugin').use(PlatformSuffixPlugin, [
 		{
 			platform,
+		},
+	]);
+
+	// useful for filtering common undesirable warnings
+	config.plugin('FilterWarningsPlugin').use(FilterWarningsPlugin, [
+		{
+			exclude: /System.import/,
 		},
 	]);
 
