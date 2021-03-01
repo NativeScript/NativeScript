@@ -20,7 +20,7 @@ jest.mock('path', () => {
 		...path,
 		resolve(...args) {
 			if (args[0] === '__jest__') {
-				return path.join(...args);
+				return path.join(...args.filter(Boolean));
 			}
 
 			const resolved = path.resolve(...args);

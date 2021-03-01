@@ -227,7 +227,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -235,7 +238,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -243,7 +249,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           }
         ]
@@ -488,7 +497,10 @@ exports[`react configuration > android > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -496,7 +508,10 @@ exports[`react configuration > android > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -504,7 +519,10 @@ exports[`react configuration > android > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           }
         ]
@@ -532,7 +550,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
   devtool: 'inline-source-map',
   target: 'node',
   output: {
-    path: '__jest__/platforms/ios/__jest__/app',
+    path: '__jest__/platforms/ios/jest/app',
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
@@ -714,7 +732,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/ios/__jest__/app/**/*'
+          '__jest__/platforms/ios/jest/app/**/*'
         ],
         verbose: false
       }
@@ -749,7 +767,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -757,7 +778,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -765,7 +789,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           }
         ]
@@ -807,7 +834,7 @@ exports[`react configuration > ios > base config 1`] = `
   devtool: 'inline-source-map',
   target: 'node',
   output: {
-    path: '__jest__/platforms/ios/__jest__/app',
+    path: '__jest__/platforms/ios/jest/app',
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
@@ -978,7 +1005,7 @@ exports[`react configuration > ios > base config 1`] = `
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/ios/__jest__/app/**/*'
+          '__jest__/platforms/ios/jest/app/**/*'
         ],
         verbose: false
       }
@@ -1013,7 +1040,10 @@ exports[`react configuration > ios > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -1021,7 +1051,10 @@ exports[`react configuration > ios > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -1029,7 +1062,10 @@ exports[`react configuration > ios > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           }
         ]

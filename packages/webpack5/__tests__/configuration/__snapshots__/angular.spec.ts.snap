@@ -216,7 +216,10 @@ exports[`angular configuration for android 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -224,7 +227,10 @@ exports[`angular configuration for android 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -232,7 +238,10 @@ exports[`angular configuration for android 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           }
         ]
@@ -270,7 +279,7 @@ exports[`angular configuration for ios 1`] = `
   devtool: 'inline-source-map',
   target: 'node',
   output: {
-    path: '__jest__/platforms/ios/__jest__/app',
+    path: '__jest__/platforms/ios/jest/app',
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
@@ -443,7 +452,7 @@ exports[`angular configuration for ios 1`] = `
     new CleanWebpackPlugin(
       {
         cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/ios/__jest__/app/**/*'
+          '__jest__/platforms/ios/jest/app/**/*'
         ],
         verbose: false
       }
@@ -476,7 +485,10 @@ exports[`angular configuration for ios 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -484,7 +496,10 @@ exports[`angular configuration for ios 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           },
           {
@@ -492,7 +507,10 @@ exports[`angular configuration for ios 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: [
+                '../**'
+              ]
             }
           }
         ]
