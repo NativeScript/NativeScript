@@ -103,7 +103,7 @@ export function loadAppCss(): void {
 		});
 	} catch (e) {
 		if (Trace.isEnabled()) {
-			Trace.write(`The app CSS file ${getCssFileName()} couldn't be loaded!`, Trace.categories.Style, Trace.messageType.error);
+			Trace.write(`The app CSS file ${getCssFileName()} couldn't be loaded!`, Trace.categories.Style, Trace.messageType.warn);
 		}
 	}
 }
