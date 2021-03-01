@@ -11,6 +11,7 @@ import { View } from '../ui/core/view';
 import * as bindableResources from '../ui/core/bindable/bindable-resources';
 import { CSSUtils } from '../css/system-classes';
 import { Enums } from '../ui/enums';
+import { Trace } from '../trace';
 
 export * from './application-interfaces';
 
@@ -101,7 +102,9 @@ export function loadAppCss(): void {
 			cssFile: getCssFileName(),
 		});
 	} catch (e) {
-		throw new Error(`The app CSS file ${getCssFileName()} couldn't be loaded!`);
+		if (Trace.isEnabled()) {
+			Trace.write(`The app CSS file ${getCssFileName()} couldn't be loaded!`, Trace.categories.Style, Trace.messageType.error);
+		}
 	}
 }
 
