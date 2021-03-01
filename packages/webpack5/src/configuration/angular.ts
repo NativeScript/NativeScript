@@ -14,6 +14,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// remove default ts rule
 	config.module.rules.delete('ts');
 
+	// remove fork ts checked as not needed
+	config.plugins.delete('ForkTsCheckerWebpackPlugin');
+
 	config.module
 		.rule('angular')
 		.test(/(?:\.ngfactory.js|\.ngstyle\.js|\.ts)$/)
