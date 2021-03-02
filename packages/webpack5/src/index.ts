@@ -12,6 +12,8 @@ import helpers from './helpers';
 export interface IWebpackEnv {
 	[name: string]: any;
 
+	env?: string;
+
 	appPath?: string;
 	appResourcesPath?: string;
 

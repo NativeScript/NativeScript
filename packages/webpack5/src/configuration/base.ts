@@ -14,7 +14,8 @@ import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
 import { getProjectRootPath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
-import { IWebpackEnv } from '../index';
+import { applyDotEnvPlugin } from '../helpers/dotEnv';
+import { env as _env, IWebpackEnv } from '../index';
 import {
 	getPlatformName,
 	getAbsoluteDistPath,
@@ -22,7 +23,7 @@ import {
 	getEntryPath,
 } from '../helpers/platform';
 
-export default function (config: Config, env: IWebpackEnv): Config {
+export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const entryPath = getEntryPath();
 	const platform = getPlatformName();
 	const mode = env.production ? 'production' : 'development';
@@ -267,6 +268,9 @@ export default function (config: Config, env: IWebpackEnv): Config {
 			// profile: '() => {}',
 		},
 	]);
+
+	// enable DotEnv
+	applyDotEnvPlugin(config);
 
 	// set up default copy rules
 	addCopyRule('assets/**');
