@@ -17,6 +17,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// remove fork ts checked as not needed
 	config.plugins.delete('ForkTsCheckerWebpackPlugin');
 
+	// explicitly define mainFields to make sure ngcc compiles as es2015 (module field)
+	// instead of umd (main field).
+	config.resolve.mainFields.add('module').add('main');
+
 	config.module
 		.rule('angular')
 		.test(/(?:\.ngfactory.js|\.ngstyle\.js|\.ts)$/)
