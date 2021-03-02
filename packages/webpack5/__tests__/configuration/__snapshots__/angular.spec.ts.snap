@@ -171,14 +171,6 @@ exports[`angular configuration for android 1`] = `
     ]
   },
   plugins: [
-    /* config.plugin('ForkTsCheckerWebpackPlugin') */
-    new ForkTsCheckerWebpackPlugin(
-      {
-        typescript: {
-          memoryLimit: 4096
-        }
-      }
-    ),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
@@ -192,6 +184,12 @@ exports[`angular configuration for android 1`] = `
     new PlatformSuffixPlugin(
       {
         platform: 'android'
+      }
+    ),
+    /* config.plugin('FilterWarningsPlugin') */
+    new FilterWarningsPlugin(
+      {
+        exclude: /System.import\\\\(\\\\) is deprecated/
       }
     ),
     /* config.plugin('DefinePlugin') */
@@ -440,14 +438,6 @@ exports[`angular configuration for ios 1`] = `
     ]
   },
   plugins: [
-    /* config.plugin('ForkTsCheckerWebpackPlugin') */
-    new ForkTsCheckerWebpackPlugin(
-      {
-        typescript: {
-          memoryLimit: 4096
-        }
-      }
-    ),
     /* config.plugin('CleanWebpackPlugin') */
     new CleanWebpackPlugin(
       {
@@ -461,6 +451,12 @@ exports[`angular configuration for ios 1`] = `
     new PlatformSuffixPlugin(
       {
         platform: 'ios'
+      }
+    ),
+    /* config.plugin('FilterWarningsPlugin') */
+    new FilterWarningsPlugin(
+      {
+        exclude: /System.import\\\\(\\\\) is deprecated/
       }
     ),
     /* config.plugin('DefinePlugin') */
