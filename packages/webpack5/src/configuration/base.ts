@@ -3,9 +3,9 @@ import Config from 'webpack-chain';
 import { resolve } from 'path';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+import FilterWarningsPlugin from 'webpack-filter-warnings-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
-import FilterWarningsPlugin from 'webpack-filter-warnings-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 
 // import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
