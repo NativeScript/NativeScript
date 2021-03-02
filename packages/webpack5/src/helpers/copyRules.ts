@@ -41,20 +41,22 @@ export function removeCopyRule(glob: string) {
  */
 export function applyCopyRules(config: Config) {
 	const entryDir = getEntryDirPath();
-	// todo: handle empty appResourcesPath?
-	// (the CLI should always pass the path - maybe not required)
-	const appResourcesFullPath = resolve(
-		getProjectRootPath(),
-		env.appResourcesPath
-	);
-
 	const globOptions = {
 		dot: false,
-		ignore: [
-			// ignore everything in App_Resources (regardless where they are located)
-			`${relative(entryDir, appResourcesFullPath)}/**`,
-		],
+		ignore: [],
 	};
+
+	// todo: do we need to handle empty appResourcesPath?
+	// (the CLI should always pass the path - maybe not required)
+	if (env.appResourcesPath) {
+		const appResourcesFullPath = resolve(
+			getProjectRootPath(),
+			env.appResourcesPath
+		);
+
+		// ignore everything in App_Resources (regardless where they are located)
+		globOptions.ignore.push(`${relative(entryDir, appResourcesFullPath)}/**`);
+	}
 
 	config.plugin('CopyWebpackPlugin').use(CopyWebpackPlugin, [
 		{

@@ -14,7 +14,7 @@ jest.mock(
 	{ virtual: true }
 );
 
-describe.only('angular configuration', () => {
+describe('angular configuration', () => {
 	const platforms = ['ios', 'android'];
 
 	for (let platform of platforms) {
