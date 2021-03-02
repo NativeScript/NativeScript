@@ -7,7 +7,7 @@ mockFile('./svelte.config.js', '');
 // jest.mock('__jest__/svelte.config.js', () => {
 // }, { virtual: true })
 
-describe.only('svelte configuration', () => {
+describe('svelte configuration', () => {
 	const platforms = ['ios', 'android'];
 
 	for (let platform of platforms) {

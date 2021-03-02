@@ -242,9 +242,7 @@ exports[`svelte configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           },
           {
@@ -253,9 +251,7 @@ exports[`svelte configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           },
           {
@@ -264,9 +260,7 @@ exports[`svelte configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           }
         ]
@@ -526,9 +520,7 @@ exports[`svelte configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           },
           {
@@ -537,9 +529,7 @@ exports[`svelte configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           },
           {
@@ -548,9 +538,7 @@ exports[`svelte configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           }
         ]

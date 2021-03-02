@@ -249,9 +249,7 @@ exports[`vue configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           },
           {
@@ -260,9 +258,7 @@ exports[`vue configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           },
           {
@@ -271,9 +267,7 @@ exports[`vue configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           }
         ]
@@ -540,9 +534,7 @@ exports[`vue configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           },
           {
@@ -551,9 +543,7 @@ exports[`vue configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           },
           {
@@ -562,9 +552,7 @@ exports[`vue configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: [
-                '../**'
-              ]
+              ignore: []
             }
           }
         ]
