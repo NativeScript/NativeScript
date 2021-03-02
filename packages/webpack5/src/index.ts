@@ -16,6 +16,7 @@ export interface IWebpackEnv {
 
 	appPath?: string;
 	appResourcesPath?: string;
+	appComponents?: string[];
 
 	nativescriptLibPath?: string;
 

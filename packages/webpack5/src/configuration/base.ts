@@ -54,10 +54,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.add('@nativescript/core/globals/index.js')
 		.add(entryPath);
 
+	// Add android app components to the bundle to SBG can generate the java classes
+	if (platform === 'android') {
+		const appComponents = env.appComponents || [];
+		appComponents.push('@nativescript/core/ui/frame');
+		appComponents.push('@nativescript/core/ui/frame/activity');
+		appComponents.map((component) => {
+			config.entry('bundle').add(component);
+		});
+	}
+
 	// inspector_modules
 	config.when(shouldIncludeInspectorModules(), (config) => {
 		config
-			.entry('tns_modules/@nativescript/core/inspector_modules')
+			.entry('tns_modules/inspector_modules')
 			.add('@nativescript/core/inspector_modules');
 	});
 

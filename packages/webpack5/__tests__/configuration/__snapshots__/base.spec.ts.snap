@@ -247,7 +247,9 @@ exports[`base configuration for android 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
-      '__jest__/src/app.js'
+      '__jest__/src/app.js',
+      '@nativescript/core/ui/frame',
+      '@nativescript/core/ui/frame/activity'
     ]
   }
 }"
@@ -502,7 +504,7 @@ exports[`base configuration for ios 1`] = `
       '@nativescript/core/globals/index.js',
       '__jest__/src/app.js'
     ],
-    'tns_modules/@nativescript/core/inspector_modules': [
+    'tns_modules/inspector_modules': [
       '@nativescript/core/inspector_modules'
     ]
   }
