@@ -70,7 +70,7 @@ export function getPlatformName(): Platform {
 
 		Available platforms: ${Object.keys(platforms).join(', ')}
 
-		Use --env=platform=<platform> or --env=android, --env=ios to specify the target platform.
+		Use --env.platform=<platform> or --env.android, --env.ios to specify the target platform.
 	`);
 }
 
