@@ -33,6 +33,10 @@ exports[`angular configuration for android 1`] = `
       '.scss',
       '.android.json',
       '.json'
+    ],
+    mainFields: [
+      'module',
+      'main'
     ]
   },
   resolveLoader: {
@@ -300,6 +304,10 @@ exports[`angular configuration for ios 1`] = `
       '.scss',
       '.ios.json',
       '.json'
+    ],
+    mainFields: [
+      'module',
+      'main'
     ]
   },
   resolveLoader: {
