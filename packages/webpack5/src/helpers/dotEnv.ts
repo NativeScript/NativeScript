@@ -1,10 +1,10 @@
 import DotEnvPlugin from 'dotenv-webpack';
 import Config from 'webpack-chain';
+import { existsSync } from 'fs';
 import { resolve } from 'path';
 
 import { getProjectRootPath } from './project';
 import { env } from '..';
-import { existsSync } from 'fs';
 
 /**
  * @internal
