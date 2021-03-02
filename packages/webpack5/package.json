@@ -47,6 +47,7 @@
 		"webpack-bundle-analyzer": "^4.4.0",
 		"webpack-chain": "^6.5.1",
 		"webpack-cli": "^4.5.0",
+		"webpack-filter-warnings-plugin": "^1.2.1",
 		"webpack-merge": "^5.4.0",
 		"webpack-virtual-modules": "^0.4.2",
 		"worker-plugin": "^5.0.0"
