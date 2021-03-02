@@ -1,7 +1,7 @@
 import { merge } from 'webpack-merge';
 
 import { addCopyRule, removeCopyRule } from './copyRules';
-import { determineProjectFlavor } from './flavor';
+import { determineProjectFlavor, projectUsesCustomFlavor } from './flavor';
 import { error, info, warn } from './log';
 import { getValue } from './config';
 import {
@@ -39,6 +39,7 @@ export default {
 	},
 	flavor: {
 		determineProjectFlavor,
+		projectUsesCustomFlavor
 	},
 	log: {
 		error,

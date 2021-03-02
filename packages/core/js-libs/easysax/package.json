@@ -1,6 +1,7 @@
 {
   "name": "easysax",
   "description": "pure javascript xml parser",
+  "sideEffects": false,
   "keywords": [
     "xml",
     "sax",
