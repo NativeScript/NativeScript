@@ -199,6 +199,12 @@ exports[`javascript configuration for android 1`] = `
         platform: 'android'
       }
     ),
+    /* config.plugin('FilterWarningsPlugin') */
+    new FilterWarningsPlugin(
+      {
+        exclude: /System.import\\\\(\\\\) is deprecated/
+      }
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -472,6 +478,12 @@ exports[`javascript configuration for ios 1`] = `
     new PlatformSuffixPlugin(
       {
         platform: 'ios'
+      }
+    ),
+    /* config.plugin('FilterWarningsPlugin') */
+    new FilterWarningsPlugin(
+      {
+        exclude: /System.import\\\\(\\\\) is deprecated/
       }
     ),
     /* config.plugin('DefinePlugin') */

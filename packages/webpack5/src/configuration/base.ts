@@ -236,10 +236,18 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		},
 	]);
 
-	// useful for filtering common undesirable warnings
+	// Filter common undesirable warnings
 	config.plugin('FilterWarningsPlugin').use(FilterWarningsPlugin, [
 		{
-			exclude: /System.import/,
+			/**
+			 * This rule hides
+			 * +-------------------------------------------------------------------------------+
+			 * | WARNING in ./node_modules/@angular/core/fesm2015/core.js 29714:15-102         |
+			 * | System.import() is deprecated and will be removed soon. Use import() instead. |
+			 * | For more info visit https://webpack.js.org/guides/code-splitting/             |
+			 * +-------------------------------------------------------------------------------+
+			 */
+			exclude: /System.import\(\) is deprecated/,
 		},
 	]);
 
