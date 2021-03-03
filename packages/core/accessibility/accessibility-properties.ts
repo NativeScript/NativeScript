@@ -24,12 +24,16 @@ function makePropertyEnumConverter<T>(enumValues) {
 	};
 }
 
-export const accessibilityEnabledProperty = new CssProperty<Style, boolean>({
+export const accessibilityEnabledProperty = new Property<View, boolean>({
 	name: 'accessible',
-	cssName: 'a11y-enabled',
-	valueConverter: booleanConverter,
+	// cssName: 'a11y-enabled',
+	defaultValue: false,
+	valueConverter: (v) => {
+		console.log('accessibilityEnabledProperty:', v);
+		return booleanConverter(v);
+	},
 });
-accessibilityEnabledProperty.register(Style);
+// accessibilityEnabledProperty.register(Style);
 
 const accessibilityHiddenPropertyName = 'accessibilityHidden';
 const accessibilityHiddenCssName = 'a11y-hidden';

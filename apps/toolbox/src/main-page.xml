@@ -9,6 +9,7 @@
         <Button text="list-page" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
         <Button text="box-shadow" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
         <Button text="root-layout" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
+        <Button text="a11y" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
       </StackLayout>
     </ScrollView>
   </StackLayout>

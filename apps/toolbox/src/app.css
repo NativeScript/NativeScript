@@ -182,3 +182,8 @@ components that have the btn class name.
 .list-group .list-group-item-heading {
 	margin-bottom: 5
 }
+
+.a11y-item {
+  margin-bottom: 12;
+  font-size: 18;
+}

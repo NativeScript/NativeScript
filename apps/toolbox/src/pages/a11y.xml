@@ -1,0 +1,17 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="a11y" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <GridLayout padding="20">   
+      <ScrollView>
+          <StackLayout>
+            <Label text="Accessible Label" class="a11y-item text-center"></Label>
+            <Button text="Accessible Button" class="a11y-item"></Button>
+            <!-- <Label text="Accessible Label" accessible="true" class="a11y-item text-center"></Label>
+            <Button text="Accessible Button" accessible="true" class="a11y-item"></Button> -->
+          </StackLayout>
+      </ScrollView>
+    </GridLayout>
+</Page>
