@@ -23,7 +23,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 
 import * as am from '../../animation';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
-import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
+import { accessibilityEnabledProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, getCurrentFontScale } from '../../../accessibility';
 import { CSSShadow } from '../../styling/css-shadow';
 
@@ -98,6 +98,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public _gestureObservers = {};
 
 	_androidContentDescriptionUpdated?: boolean;
+
+	// a11y
+	_accessible: boolean;
 
 	get css(): string {
 		const scope = this._styleScope;
@@ -754,10 +757,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	get accessible(): boolean {
-		return this.style.accessible;
+		// return this.style.accessible;
+		return this._accessible;
 	}
 	set accessible(value: boolean) {
-		this.style.accessible = value;
+		// this.style.accessible = value;
+		this._accessible = value;
 	}
 
 	get accessibilityHidden(): boolean {
@@ -1155,6 +1160,7 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
+accessibilityEnabledProperty.register(ViewCommon);
 accessibilityIdentifierProperty.register(ViewCommon);
 accessibilityLabelProperty.register(ViewCommon);
 accessibilityValueProperty.register(ViewCommon);
