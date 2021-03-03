@@ -235,7 +235,7 @@ function ensureNativeClasses() {
 				}
 			}
 
-			if (view.accessible === true) {
+			if (view.accessible) {
 				info.setFocusable(true);
 			}
 		}
