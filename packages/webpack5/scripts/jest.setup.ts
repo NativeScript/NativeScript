@@ -14,6 +14,38 @@ jest.mock('cosmiconfig', () => ({
 	},
 }));
 
+jest.mock('os', () => {
+	const os = jest.requireActual('os');
+
+	return {
+		...os,
+		networkInterfaces() {
+			return {
+				in0: [
+					{
+						address: '127.0.0.1',
+						family: 'IPv4'
+					},
+					{
+						address: 'in0-ipv6-should-not-use',
+						family: 'IPv6'
+					}
+				],
+				in1: [
+					{
+						address: '192.168.0.10',
+						family: 'IPv4'
+					},
+					{
+						address: 'in1-ipv6-should-not-use',
+						family: 'IPv6'
+					}
+				]
+			}
+		}
+	}
+})
+
 jest.mock('path', () => {
 	const path = jest.requireActual('path');
 	return {
