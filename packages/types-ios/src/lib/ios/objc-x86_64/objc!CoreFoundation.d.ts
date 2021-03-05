@@ -2678,6 +2678,8 @@ declare var kCFBuddhistCalendar: any;
 
 declare var kCFBundleDevelopmentRegionKey: string;
 
+declare const kCFBundleExecutableArchitectureARM64: number;
+
 declare const kCFBundleExecutableArchitectureI386: number;
 
 declare const kCFBundleExecutableArchitecturePPC: number;
@@ -3148,6 +3150,8 @@ declare var kCFURLEffectiveIconKey: string;
 
 declare var kCFURLFileAllocatedSizeKey: string;
 
+declare var kCFURLFileContentIdentifierKey: string;
+
 declare var kCFURLFileDirectoryContents: string;
 
 declare var kCFURLFileExists: string;
@@ -3218,9 +3222,13 @@ declare var kCFURLIsMountTriggerKey: string;
 
 declare var kCFURLIsPackageKey: string;
 
+declare var kCFURLIsPurgeableKey: string;
+
 declare var kCFURLIsReadableKey: string;
 
 declare var kCFURLIsRegularFileKey: string;
+
+declare var kCFURLIsSparseKey: string;
 
 declare var kCFURLIsSymbolicLinkKey: string;
 
@@ -3247,6 +3255,10 @@ declare var kCFURLLocalizedLabelKey: string;
 declare var kCFURLLocalizedNameKey: string;
 
 declare var kCFURLLocalizedTypeDescriptionKey: string;
+
+declare var kCFURLMayHaveExtendedAttributesKey: string;
+
+declare var kCFURLMayShareFileContentKey: string;
 
 declare var kCFURLNameKey: string;
 
@@ -3343,6 +3355,8 @@ declare var kCFURLVolumeSupportsExclusiveRenamingKey: string;
 declare var kCFURLVolumeSupportsExtendedSecurityKey: string;
 
 declare var kCFURLVolumeSupportsFileCloningKey: string;
+
+declare var kCFURLVolumeSupportsFileProtectionKey: string;
 
 declare var kCFURLVolumeSupportsHardLinksKey: string;
 

@@ -29,6 +29,8 @@ declare class AVPictureInPictureController extends NSObject {
 
 	static pictureInPictureButtonStopImageCompatibleWithTraitCollection(traitCollection: UITraitCollection): UIImage;
 
+	canStartPictureInPictureAutomaticallyFromInline: boolean;
+
 	delegate: AVPictureInPictureControllerDelegate;
 
 	readonly pictureInPictureActive: boolean;
@@ -38,6 +40,8 @@ declare class AVPictureInPictureController extends NSObject {
 	readonly pictureInPictureSuspended: boolean;
 
 	readonly playerLayer: AVPlayerLayer;
+
+	requiresLinearPlayback: boolean;
 
 	static readonly pictureInPictureButtonStartImage: UIImage;
 
@@ -81,6 +85,8 @@ declare class AVPlayerViewController extends UIViewController {
 
 	allowsPictureInPicturePlayback: boolean;
 
+	canStartPictureInPictureAutomaticallyFromInline: boolean;
+
 	readonly contentOverlayView: UIView;
 
 	delegate: AVPlayerViewControllerDelegate;
@@ -95,7 +101,11 @@ declare class AVPlayerViewController extends UIViewController {
 
 	readonly readyForDisplay: boolean;
 
+	requiresLinearPlayback: boolean;
+
 	showsPlaybackControls: boolean;
+
+	showsTimecodes: boolean;
 
 	updatesNowPlayingInfoCenter: boolean;
 

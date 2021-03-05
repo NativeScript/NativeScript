@@ -218,7 +218,7 @@ class CSSSource {
 					this._ast = cssTreeParse(this._source, this._file);
 
 					return;
-				case 'nativescript':{
+				case 'nativescript': {
 					const cssparser = new CSS3Parser(this._source);
 					const stylesheet = cssparser.parseAStylesheet();
 					const cssNS = new CSSNativeScript();
@@ -472,6 +472,12 @@ export class CssState {
 		}
 
 		const matchingSelectors = this._match.selectors.filter((sel) => (sel.dynamic ? sel.match(view) : true));
+		if (!matchingSelectors || matchingSelectors.length === 0) {
+			// Ideally we should return here if there are no matching selectors, however
+			// if there are property removals, returning here would not remove them
+			// this is seen in STYLE test in automated.
+			// return;
+		}
 		view._batchUpdate(() => {
 			this.stopKeyframeAnimations();
 			this.setPropertyValues(matchingSelectors);

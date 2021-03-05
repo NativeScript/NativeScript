@@ -217,7 +217,10 @@ export class TextField extends TextFieldBase {
 		if (this.formattedText) {
 			_updateCharactersInRangeReplacementString(this.formattedText, range.location, range.length, replacementString);
 		}
-
+		if (this.width === 'auto') {
+			// if the textfield is in auto size we need to request a layout to take the new text width into account
+			this.requestLayout();
+		}
 		this.firstEdit = false;
 
 		return true;

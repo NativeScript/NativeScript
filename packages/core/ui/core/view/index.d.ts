@@ -394,6 +394,11 @@ export abstract class View extends ViewBase {
 	iosOverflowSafeAreaEnabled: boolean;
 
 	/**
+	 * Gets or sets a value indicating whether the the view should totally ignore safe areas computation. This property is iOS specific. Default value: false
+	 */
+	iosIgnoreSafeArea: boolean;
+
+	/**
 	 * Gets is layout is valid. This is a read-only property.
 	 */
 	isLayoutValid: boolean;

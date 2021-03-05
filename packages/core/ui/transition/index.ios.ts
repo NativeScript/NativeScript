@@ -1,5 +1,6 @@
 ﻿let transitionId = 0;
 export class Transition {
+	static AndroidTransitionType = {};
 	private _duration: number;
 	private _curve: UIViewAnimationCurve;
 	private _id: number;

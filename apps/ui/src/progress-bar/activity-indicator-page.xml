@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Page>
-  <ActivityIndicator busy="true" verticalAlignment="center" horizontalAlignment="center"/>
+  <StackLayout>
+    <ActivityIndicator busy="true" color="red" verticalAlignment="center" horizontalAlignment="center"/>
+    <ActivityIndicator busy="true" color="green" verticalAlignment="center" horizontalAlignment="center"/>
+    <ActivityIndicator busy="true" color="blue" verticalAlignment="center" horizontalAlignment="center"/>
+    <ActivityIndicator busy="true" color="" verticalAlignment="center" horizontalAlignment="center"/>
+  </StackLayout>
 </Page>

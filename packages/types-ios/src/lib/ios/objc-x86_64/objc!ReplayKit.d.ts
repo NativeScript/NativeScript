@@ -188,13 +188,6 @@ declare var RPPreviewViewControllerDelegate: {
 	prototype: RPPreviewViewControllerDelegate;
 };
 
-declare const enum RPPreviewViewControllerMode {
-
-	Preview = 0,
-
-	Share = 1
-}
-
 declare const enum RPRecordingErrorCode {
 
 	Unknown = -5800,
@@ -265,6 +258,10 @@ declare const enum RPRecordingErrorCode {
 
 	FailedToStartCaptureStack = -5833,
 
+	InvalidParameter = -5834,
+
+	FilePermissions = -5835,
+
 	CodeSuccessful = 0
 }
 
@@ -312,6 +309,8 @@ declare class RPScreenRecorder extends NSObject {
 	stopCaptureWithHandler(handler: (p1: NSError) => void): void;
 
 	stopRecordingWithHandler(handler: (p1: RPPreviewViewController, p2: NSError) => void): void;
+
+	stopRecordingWithOutputURLCompletionHandler(url: NSURL, completionHandler: (p1: NSError) => void): void;
 }
 
 interface RPScreenRecorderDelegate extends NSObjectProtocol {
