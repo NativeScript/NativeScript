@@ -2,8 +2,8 @@ import { VueLoaderPlugin } from 'vue-loader';
 import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 
-import { env as _env, IWebpackEnv } from '../index';
 import { getPlatformName } from '../helpers/platform';
+import { env as _env, IWebpackEnv } from '../index';
 import base from './base';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {

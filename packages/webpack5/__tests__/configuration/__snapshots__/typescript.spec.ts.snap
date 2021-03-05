@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`javascript configuration for android 1`] = `
+exports[`typescript configuration for android 1`] = `
 "{
   mode: 'development',
   externals: [
@@ -256,12 +256,12 @@ exports[`javascript configuration for android 1`] = `
     new WatchStatePlugin(),
     /* config.plugin('ContextExclusionPluginPlugin') */
     new ContextExclusionPlugin(
-      /__@nativescript_webpack_virtual_entry_javascript__.js$/
+      /__@nativescript_webpack_virtual_entry_typescript__.js$/
     ),
     /* config.plugin('VirtualModulesPlugin') */
     new VirtualModulesPlugin(
       {
-        '__jest__/src/__@nativescript_webpack_virtual_entry_javascript__': '// VIRTUAL ENTRY START\\\\nrequire(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /.(xml|js|s?css)$/);\\\\nglobal.registerWebpackModules(context);\\\\n// VIRTUAL ENTRY END'
+        '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__': '// VIRTUAL ENTRY START\\\\nrequire(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /.(xml|js|ts|s?css)$/);\\\\nglobal.registerWebpackModules(context);\\\\n// VIRTUAL ENTRY END'
       }
     )
   ],
@@ -271,13 +271,13 @@ exports[`javascript configuration for android 1`] = `
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity',
-      '__jest__/src/__@nativescript_webpack_virtual_entry_javascript__'
+      '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__'
     ]
   }
 }"
 `;
 
-exports[`javascript configuration for ios 1`] = `
+exports[`typescript configuration for ios 1`] = `
 "{
   mode: 'development',
   externals: [
@@ -533,12 +533,12 @@ exports[`javascript configuration for ios 1`] = `
     new WatchStatePlugin(),
     /* config.plugin('ContextExclusionPluginPlugin') */
     new ContextExclusionPlugin(
-      /__@nativescript_webpack_virtual_entry_javascript__.js$/
+      /__@nativescript_webpack_virtual_entry_typescript__.js$/
     ),
     /* config.plugin('VirtualModulesPlugin') */
     new VirtualModulesPlugin(
       {
-        '__jest__/src/__@nativescript_webpack_virtual_entry_javascript__': '// VIRTUAL ENTRY START\\\\nrequire(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /.(xml|js|s?css)$/);\\\\nglobal.registerWebpackModules(context);\\\\n// VIRTUAL ENTRY END'
+        '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__': '// VIRTUAL ENTRY START\\\\nrequire(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /.(xml|js|ts|s?css)$/);\\\\nglobal.registerWebpackModules(context);\\\\n// VIRTUAL ENTRY END'
       }
     )
   ],
@@ -546,7 +546,7 @@ exports[`javascript configuration for ios 1`] = `
     bundle: [
       '@nativescript/core/globals/index.js',
       '__jest__/src/app.js',
-      '__jest__/src/__@nativescript_webpack_virtual_entry_javascript__'
+      '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__'
     ],
     'tns_modules/inspector_modules': [
       '@nativescript/core/inspector_modules'

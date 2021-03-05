@@ -16,12 +16,14 @@ import { getProjectRootPath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
+import { getIPS } from '../helpers/host';
 import {
 	getPlatformName,
 	getAbsoluteDistPath,
 	getEntryDirPath,
 	getEntryPath,
 } from '../helpers/platform';
+import os from 'os';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const entryPath = getEntryPath();
@@ -267,6 +269,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		{
 			__DEV__: mode === 'development',
 			__NS_WEBPACK__: true,
+			__NS_DEV_HOST_IPS__:
+				mode === 'development' ? JSON.stringify(getIPS()) : `[]`,
 			__CSS_PARSER__: JSON.stringify('css-tree'), // todo: replace from config value
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',

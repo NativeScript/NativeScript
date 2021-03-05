@@ -72,7 +72,7 @@ describe('@nativescript/webpack', () => {
 	});
 
 	it('applies merge configs', () => {
-		const dummyEnv = { env: true };
+		const dummyEnv = { foo: true };
 		webpack.init(dummyEnv);
 		webpack.useConfig(false);
 
@@ -96,7 +96,7 @@ describe('@nativescript/webpack', () => {
 	});
 
 	it('merges mutate config', () => {
-		const dummyEnv = { env: true };
+		const dummyEnv = { foo: true };
 		webpack.init(dummyEnv);
 		webpack.useConfig(false);
 
@@ -110,7 +110,7 @@ describe('@nativescript/webpack', () => {
 	});
 
 	it('merges returned config', () => {
-		const dummyEnv = { env: true };
+		const dummyEnv = { foo: true };
 		webpack.init(dummyEnv);
 		webpack.useConfig(false);
 
@@ -126,7 +126,7 @@ describe('@nativescript/webpack', () => {
 	});
 
 	it('merges objects', () => {
-		const dummyEnv = { env: true };
+		const dummyEnv = { foo: true };
 		webpack.init(dummyEnv);
 		webpack.useConfig(false);
 
