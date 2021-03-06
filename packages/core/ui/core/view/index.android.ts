@@ -21,7 +21,7 @@ import { AndroidActivityBackPressedEventData, android as androidApp } from '../.
 import { Device } from '../../../platform';
 import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, setupAccessibleView, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription } from '../../../accessibility';
+import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, setupAccessibleView, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
 
 export * from './view-common';
@@ -782,6 +782,7 @@ export class View extends ViewCommon {
 	}
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
+		this.accessibilityRole = value;
 		updateAccessibilityProperties(this);
 
 		if (android.os.Build.VERSION.SDK_INT >= 28) {
@@ -829,7 +830,8 @@ export class View extends ViewCommon {
 		}
 	}
 
-	[accessibilityStateProperty.setNative](): void {
+	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
+		this.accessibilityState = value;
 		updateAccessibilityProperties(this);
 	}
 
@@ -1102,18 +1104,10 @@ export class View extends ViewCommon {
 	}
 
 	public accessibilityAnnouncement(msg = this.accessibilityLabel): void {
-		if (!isAccessibilityServiceEnabled()) {
-			return;
-		}
-
 		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.ANNOUNCEMENT, msg);
 	}
 
 	public accessibilityScreenChanged(): void {
-		if (!isAccessibilityServiceEnabled()) {
-			return;
-		}
-
 		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
 	}
 }

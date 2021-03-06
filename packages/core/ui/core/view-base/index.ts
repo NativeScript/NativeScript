@@ -20,6 +20,7 @@ import { profile } from '../../../profiling';
 import * as dnm from '../../../debugger/dom-node';
 import * as ssm from '../../styling/style-scope';
 import { ViewBase as ViewBaseDefinition } from '.';
+import type { AccessibilityEventPerformEscape } from '../../../accessibility';
 
 let domNodeModule: typeof dnm;
 
@@ -80,6 +81,8 @@ export interface ShowModalOptions {
 		 * height of the popup dialog
 		 */
 		height?: number;
+
+		onAccessibilityEscape?: (event: AccessibilityEventPerformEscape) => Promise<any>;
 	};
 	android?: {
 		/**

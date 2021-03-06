@@ -1,6 +1,6 @@
 import type { Page } from '../ui/page';
-import { View } from '../ui/core/view';
-import { AndroidAccessibilityEvent } from './accessibility-types';
+import type { View } from '../ui/core/view';
+import type { AndroidAccessibilityEvent } from './accessibility-types';
 
 export * from './accessibility-common';
 export * from './accessibility-types';
@@ -9,7 +9,7 @@ export * from './font-scale';
 /**
  * Initialize accessibility for View. This should be called on loaded-event.
  */
-export function setupAccessibleView(view: View): void;
+export function setupAccessibleView(view: Partial<View>): void;
 
 /**
  * Update accessibility properties on nativeView
@@ -17,12 +17,12 @@ export function setupAccessibleView(view: View): void;
 export function updateAccessibilityProperties(view: View): void;
 
 /**
- * Android helper function for triggering accessibility events
+ * Android: helper function for triggering accessibility events
  */
 export function sendAccessibilityEvent(View: View, eventName: AndroidAccessibilityEvent, text?: string): void;
 
 /**
- * Update the content description for android views
+ * Android: Update the content description for views
  */
 export function updateContentDescription(View: View, forceUpdate?: boolean): string | null;
 

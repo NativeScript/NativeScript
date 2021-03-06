@@ -21,7 +21,7 @@ export class SliderBase extends View implements SliderDefinition {
 		this.style.accessibilityStep = value;
 	}
 
-	// accessible = true;
+	accessible = true;
 	accessibilityRole = AccessibilityRole.Adjustable;
 }
 

@@ -1,77 +1,6 @@
 import type { EventData } from '../data/observable';
-import type { View } from '../ui/core/view';
 
 export enum AccessibilityTrait {
-	/**
-	 * The element has no traits.
-	 */
-	None = 'none',
-
-	/**
-	 * The element should be treated as a button.
-	 */
-	Button = 'button',
-
-	/**
-	 * The element should be treated as a link.
-	 */
-	Link = 'link',
-
-	/**
-	 * The element should be treated as a search field.
-	 */
-	SearchField = 'search',
-
-	/**
-	 * The element should be treated as an image.
-	 */
-	Image = 'image',
-
-	/**
-	 * The element is currently selected.
-	 */
-	Selected = 'selected',
-
-	/**
-	 * The element plays its own sound when activated.
-	 */
-	PlaysSound = 'plays',
-
-	/**
-	 * The element behaves as a keyboard key.
-	 */
-	KeyboardKey = 'key',
-
-	/**
-	 * The element should be treated as static text that cannot change.
-	 */
-	StaticText = 'text',
-
-	/**
-	 * The element provides summary information when the application starts.
-	 */
-	SummaryElement = 'summary',
-
-	/**
-	 * The element is not enabled and does not respond to user interaction.
-	 */
-	NotEnabled = 'disabled',
-
-	/**
-	 * The element frequently updates its label or value.
-	 */
-	UpdatesFrequently = 'frequentUpdates',
-
-	/**
-	 * The element starts a media session when it is activated.
-	 */
-	StartsMediaSession = 'startsMedia',
-
-	/**
-	 * The element allows continuous adjustment through a range of values.
-	 */
-	Adjustable = 'adjustable',
-
 	/**
 	 * The element allows direct touch interaction for VoiceOver users.
 	 */
@@ -84,16 +13,26 @@ export enum AccessibilityTrait {
 	CausesPageTurn = 'pageTurn',
 
 	/**
-	 * The element is a header that divides content into sections, such as the title of a navigation bar.
+	 * The element is not enabled and does not respond to user interaction.
 	 */
-	Header = 'header',
+	NotEnabled = 'disabled',
+
+	/**
+	 * The element is currently selected.
+	 */
+	Selected = 'selected',
+
+	/**
+	 * The element frequently updates its label or value.
+	 */
+	UpdatesFrequently = 'frequentUpdates',
 }
 
 export enum AccessibilityRole {
 	/**
-	 * The element has no traits.
+	 * The element allows continuous adjustment through a range of values.
 	 */
-	None = 'none',
+	Adjustable = 'adjustable',
 
 	/**
 	 * The element should be treated as a button.
@@ -101,14 +40,14 @@ export enum AccessibilityRole {
 	Button = 'button',
 
 	/**
-	 * The element should be treated as a link.
+	 * The element behaves like a Checkbox
 	 */
-	Link = 'link',
+	Checkbox = 'checkbox',
 
 	/**
-	 * The element should be treated as a search field.
+	 * The element is a header that divides content into sections, such as the title of a navigation bar.
 	 */
-	Search = 'search',
+	Header = 'header',
 
 	/**
 	 * The element should be treated as an image.
@@ -126,29 +65,19 @@ export enum AccessibilityRole {
 	KeyboardKey = 'keyboardKey',
 
 	/**
-	 * The element should be treated as static text that cannot change.
+	 * The element should be treated as a link.
 	 */
-	StaticText = 'textField',
+	Link = 'link',
 
 	/**
-	 * The element allows continuous adjustment through a range of values.
+	 * The element has no traits.
 	 */
-	Adjustable = 'adjustable',
+	None = 'none',
 
 	/**
-	 * The element provides summary information when the application starts.
+	 * The element plays its own sound when activated.
 	 */
-	Summary = 'summary',
-
-	/**
-	 * The element is a header that divides content into sections, such as the title of a navigation bar.
-	 */
-	Header = 'header',
-
-	/**
-	 * The element behaves like a Checkbox
-	 */
-	Checkbox = 'checkbox',
+	PlaysSound = 'plays',
 
 	/**
 	 * The element behaves like a ProgressBar
@@ -161,9 +90,29 @@ export enum AccessibilityRole {
 	RadioButton = 'radioButton',
 
 	/**
+	 * The element should be treated as a search field.
+	 */
+	Search = 'search',
+
+	/**
 	 * The element behaves like a SpinButton
 	 */
 	SpinButton = 'spinButton',
+
+	/**
+	 * The element starts a media session when it is activated.
+	 */
+	StartsMediaSession = 'startsMedia',
+
+	/**
+	 * The element should be treated as static text that cannot change.
+	 */
+	StaticText = 'text',
+
+	/**
+	 * The element provides summary information when the application starts.
+	 */
+	Summary = 'summary',
 
 	/**
 	 * The element behaves like a switch
@@ -182,16 +131,6 @@ export enum AccessibilityLiveRegion {
 	None = 'none',
 	Polite = 'polite',
 	Assertive = 'assertive',
-}
-
-export interface AccessibilityFocusEventData extends EventData {
-	object: View;
-}
-
-export type AccessibilityBlurEventData = AccessibilityFocusEventData;
-
-export interface AccessibilityFocusChangedEventData extends AccessibilityFocusEventData {
-	value: boolean;
 }
 
 export enum IOSPostAccessibilityNotificationType {
@@ -323,4 +262,14 @@ export enum AndroidAccessibilityEvent {
 	 * Mask for AccessibilityEvent all types.
 	 */
 	ALL_MASK = 'all',
+}
+
+export interface AccessibilityEventPerformEscape extends EventData {
+	cancel?: boolean;
+}
+
+export interface AccessibilityEventOptions {
+	androidAccessibilityEvent?: AndroidAccessibilityEvent;
+	iosNotificationType?: IOSPostAccessibilityNotificationType;
+	message?: string;
 }

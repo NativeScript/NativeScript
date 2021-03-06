@@ -10,8 +10,8 @@ import { IOSHelper } from './view-helper';
 import { ios as iosBackground, Background } from '../../styling/background';
 import { perspectiveProperty, visibilityProperty, opacityProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, clipPathProperty } from '../../styling/style-properties';
 import { profile } from '../../../profiling';
-import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { setupAccessibleView, IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties } from '../../../accessibility';
+import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
+import { setupAccessibleView, IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
 import { Enums } from '../../enums';
 
 export * from './view-common';
@@ -504,6 +504,7 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 		this._modalAnimatedOptions.push(animated);
 
+		controller.accessibilityViewIsModal = true;
 		parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
 		const transitionCoordinator = parentController.transitionCoordinator;
 		if (transitionCoordinator) {
@@ -575,11 +576,8 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.nativeViewProtected.accessibilityIdentifier = value;
 	}
 
-	[accessibilityRoleProperty.setNative](): void {
-		updateAccessibilityProperties(this);
-	}
-
-	[accessibilityTraitsProperty.setNative](): void {
+	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
+		this.accessibilityRole = value;
 		updateAccessibilityProperties(this);
 	}
 
@@ -598,6 +596,11 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.nativeViewProtected.accessibilityHint = value;
 	}
 
+	[accessibilityIgnoresInvertColorsProperty.setNative](value: boolean) {
+		console.log('accessibilityIgnoresInvertColorsProperty:', !!value);
+		this.nativeViewProtected.accessibilityIgnoresInvertColors = !!value;
+	}
+
 	[accessibilityLanguageProperty.setNative](value: string): void {
 		value = value == null ? null : `${value}`;
 		this.nativeViewProtected.accessibilityLanguage = value;
@@ -613,7 +616,8 @@ export class View extends ViewCommon implements ViewDefinition {
 		updateAccessibilityProperties(this);
 	}
 
-	[accessibilityStateProperty.setNative](): void {
+	[accessibilityStateProperty.setNative](value: AccessibilityState): void {
+		this.accessibilityState = value;
 		updateAccessibilityProperties(this);
 	}
 
@@ -733,8 +737,12 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 	}
 
-	public iosPostAccessibilityNotification(notificationType: IOSPostAccessibilityNotificationType, msg?: string): void {
-		if (!notificationType) {
+	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		if (!options.iosNotificationType) {
 			return;
 		}
 
@@ -744,7 +752,7 @@ export class View extends ViewCommon implements ViewDefinition {
 			args = msg;
 		}
 
-		switch (notificationType) {
+		switch (options.iosNotificationType) {
 			case IOSPostAccessibilityNotificationType.Announcement: {
 				notification = UIAccessibilityAnnouncementNotification;
 				break;
@@ -766,19 +774,16 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 
 	public accessibilityAnnouncement(msg = this.accessibilityLabel): void {
-		if (!isAccessibilityServiceEnabled()) {
-			return;
-		}
-
-		this.iosPostAccessibilityNotification(IOSPostAccessibilityNotificationType.Announcement, msg);
+		this.sendAccessibilityEvent({
+			iosNotificationType: IOSPostAccessibilityNotificationType.Announcement,
+			message: msg,
+		});
 	}
 
 	public accessibilityScreenChanged(): void {
-		if (!isAccessibilityServiceEnabled()) {
-			return;
-		}
-
-		this.iosPostAccessibilityNotification(IOSPostAccessibilityNotificationType.Screen);
+		this.sendAccessibilityEvent({
+			iosNotificationType: IOSPostAccessibilityNotificationType.Screen,
+		});
 	}
 
 	_getCurrentLayoutBounds(): {

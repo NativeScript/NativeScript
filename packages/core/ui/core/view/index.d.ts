@@ -6,7 +6,7 @@ import { Animation, AnimationDefinition, AnimationPromise } from '../../animatio
 import { LengthType, PercentLengthType } from '../../styling/style-properties';
 import { GestureTypes, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/gradient';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AccessibilityEventOptions } from '../../../accessibility/accessibility-types';
 import { Enums } from '../../enums';
 import { CSSShadow } from '../../styling/css-shadow';
 
@@ -286,7 +286,6 @@ export abstract class View extends ViewBase {
 	 * A hint describes the elements behavior. Example: 'Tap change playback speed'
 	 */
 	accessibilityHint: string;
-	accessibilityTraits?: AccessibilityTrait[];
 	accessibilityLiveRegion: AccessibilityLiveRegion;
 
 	/**
@@ -750,17 +749,18 @@ export abstract class View extends ViewBase {
 	public eachChildView(callback: (view: View) => boolean): void;
 
 	/**
-	 * Android: Send accessibility event
+	 * Send accessibility event
+	 * @params options AccessibilityEventOptions
+	 * androidAccessibilityEvent: AndroidAccessibilityEvent;
+	 * iosNotificationType: IOSPostAccessibilityNotificationType;
+	 * message: string;
+	 *
+	 * iOS Notes:
+	 *  type = 'announcement' will announce `args` via VoiceOver. If no args element will be announced instead.
+	 *  type = 'layout' used when the layout of a screen changes.
+	 *  type = 'screen' large change made to the screen.
 	 */
-	public androidSendAccessibilityEvent(eventName: AndroidAccessibilityEvent, msg?: string): void;
-
-	/**
-	 * iOS: post accessibility notification.
-	 * type = 'announcement' will announce `args` via VoiceOver. If no args element will be announced instead.
-	 * type = 'layout' used when the layout of a screen changes.
-	 * type = 'screen' large change made to the screen.
-	 */
-	public iosPostAccessibilityNotification(notificationType: IOSPostAccessibilityNotificationType, msg?: string): void;
+	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void;
 
 	/**
 	 * Make an announcement to the screen reader.

@@ -12,8 +12,8 @@ export * from './font-scale';
 
 let clickableRolesMap = new Set<string>();
 
-let lastFocusedView: WeakRef<View>;
-function accessibilityEventHelper(view: View, eventType: number) {
+let lastFocusedView: WeakRef<Partial<View>>;
+function accessibilityEventHelper(view: Partial<View>, eventType: number) {
 	const eventName = accessibilityEventTypeMap.get(eventType);
 	if (!isAccessibilityServiceEnabled()) {
 		if (Trace.isEnabled()) {
@@ -102,7 +102,7 @@ function accessibilityEventHelper(view: View, eventType: number) {
 
 let TNSAccessibilityDelegate: android.view.View.androidviewViewAccessibilityDelegate;
 
-const androidViewToTNSView = new WeakMap<android.view.View, WeakRef<View>>();
+const androidViewToTNSView = new WeakMap<android.view.View, WeakRef<Partial<View>>>();
 
 let accessibilityEventMap: Map<AndroidAccessibilityEvent, number>;
 let accessibilityEventTypeMap: Map<number, string>;
@@ -437,11 +437,11 @@ export function isAccessibilityServiceEnabled(): boolean {
 	return accessibilityServiceEnabled;
 }
 
-export function setupAccessibleView(view: View): void {
+export function setupAccessibleView(view: Partial<View>): void {
 	updateAccessibilityProperties(view);
 }
 
-export function updateAccessibilityProperties(view: View): void {
+export function updateAccessibilityProperties(view: Partial<View>): void {
 	if (!view.nativeViewProtected) {
 		return;
 	}
@@ -537,7 +537,7 @@ export function updateContentDescription(view: View, forceUpdate?: boolean): str
 	return applyContentDescription(view, forceUpdate);
 }
 
-function setAccessibilityDelegate(view: View): void {
+function setAccessibilityDelegate(view: Partial<View>): void {
 	if (!view.nativeViewProtected) {
 		return;
 	}
@@ -560,7 +560,7 @@ function setAccessibilityDelegate(view: View): void {
 	androidView.setAccessibilityDelegate(TNSAccessibilityDelegate);
 }
 
-function applyContentDescription(view: View, forceUpdate?: boolean) {
+function applyContentDescription(view: Partial<View>, forceUpdate?: boolean) {
 	let androidView = view.nativeViewProtected as android.view.View;
 	if (!androidView) {
 		return;

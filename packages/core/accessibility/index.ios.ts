@@ -46,38 +46,30 @@ function ensureNativeClasses() {
 	}
 
 	AccessibilityTraitsMap = new Map<AccessibilityTrait, number>([
-		[AccessibilityTrait.None, UIAccessibilityTraitNone],
-		[AccessibilityTrait.Button, UIAccessibilityTraitButton],
-		[AccessibilityTrait.Link, UIAccessibilityTraitLink],
-		[AccessibilityTrait.SearchField, UIAccessibilityTraitSearchField],
-		[AccessibilityTrait.Image, UIAccessibilityTraitImage],
-		[AccessibilityTrait.Selected, UIAccessibilityTraitSelected],
-		[AccessibilityTrait.PlaysSound, UIAccessibilityTraitPlaysSound],
-		[AccessibilityTrait.StaticText, UIAccessibilityTraitStaticText],
-		[AccessibilityTrait.SummaryElement, UIAccessibilityTraitSummaryElement],
-		[AccessibilityTrait.NotEnabled, UIAccessibilityTraitNotEnabled],
-		[AccessibilityTrait.UpdatesFrequently, UIAccessibilityTraitUpdatesFrequently],
-		[AccessibilityTrait.StartsMediaSession, UIAccessibilityTraitStartsMediaSession],
-		[AccessibilityTrait.Adjustable, UIAccessibilityTraitAdjustable],
 		[AccessibilityTrait.AllowsDirectInteraction, UIAccessibilityTraitAllowsDirectInteraction],
 		[AccessibilityTrait.CausesPageTurn, UIAccessibilityTraitCausesPageTurn],
-		[AccessibilityTrait.Header, UIAccessibilityTraitHeader],
+		[AccessibilityTrait.NotEnabled, UIAccessibilityTraitNotEnabled],
+		[AccessibilityTrait.Selected, UIAccessibilityTraitSelected],
+		[AccessibilityTrait.UpdatesFrequently, UIAccessibilityTraitUpdatesFrequently],
 	]);
 
 	RoleTypeMap = new Map<AccessibilityRole, number>([
+		[AccessibilityRole.Adjustable, UIAccessibilityTraitAdjustable],
 		[AccessibilityRole.Button, UIAccessibilityTraitButton],
+		[AccessibilityRole.Checkbox, UIAccessibilityTraitButton],
 		[AccessibilityRole.Header, UIAccessibilityTraitHeader],
-		[AccessibilityRole.Link, UIAccessibilityTraitLink],
-		[AccessibilityRole.Search, UIAccessibilityTraitSearchField],
+		[AccessibilityRole.KeyboardKey, UIAccessibilityTraitKeyboardKey],
 		[AccessibilityRole.Image, UIAccessibilityTraitImage],
 		[AccessibilityRole.ImageButton, UIAccessibilityTraitImage | UIAccessibilityTraitButton],
-		[AccessibilityRole.KeyboardKey, UIAccessibilityTraitKeyboardKey],
-		[AccessibilityRole.StaticText, UIAccessibilityTraitStaticText],
-		[AccessibilityRole.Summary, UIAccessibilityTraitSummaryElement],
-		[AccessibilityRole.Adjustable, UIAccessibilityTraitAdjustable],
-		[AccessibilityRole.Checkbox, UIAccessibilityTraitButton],
-		[AccessibilityRole.Switch, UIAccessibilityTraitButton],
+		[AccessibilityRole.Link, UIAccessibilityTraitLink],
+		[AccessibilityRole.None, UIAccessibilityTraitNone],
+		[AccessibilityRole.PlaysSound, UIAccessibilityTraitPlaysSound],
 		[AccessibilityRole.RadioButton, UIAccessibilityTraitButton],
+		[AccessibilityRole.Search, UIAccessibilityTraitSearchField],
+		[AccessibilityRole.StaticText, UIAccessibilityTraitStaticText],
+		[AccessibilityRole.StartsMediaSession, UIAccessibilityTraitStartsMediaSession],
+		[AccessibilityRole.Summary, UIAccessibilityTraitSummaryElement],
+		[AccessibilityRole.Switch, UIAccessibilityTraitButton],
 	]);
 
 	nativeFocusedNotificationObserver = Application.ios.addNotificationObserver(UIAccessibilityElementFocusedNotification, (args: NSNotification) => {
@@ -159,6 +151,10 @@ export function updateAccessibilityProperties(view: View): void {
 
 		return;
 	}
+	console.log('--- Accessible element: ', view.constructor.name);
+	console.log('accessibilityRole: ', accessibilityRole);
+	console.log('accessibilityState: ', accessibilityState);
+	console.log('accessibilityValue: ', view.accessibilityValue);
 
 	let a11yTraits = UIAccessibilityTraitNone;
 	if (RoleTypeMap.has(accessibilityRole)) {
@@ -198,15 +194,23 @@ export function updateAccessibilityProperties(view: View): void {
 			break;
 		}
 	}
+	if (view.accessibilityLiveRegion) {
+		console.log('accessibilityLiveRegion:', view.accessibilityLiveRegion);
+	}
 
 	if (view.accessibilityMediaSession) {
-		a11yTraits |= AccessibilityTraitsMap.get(AccessibilityTrait.StartsMediaSession);
+		a11yTraits |= RoleTypeMap.get(AccessibilityRole.StartsMediaSession);
 	}
 
-	if (view.accessibilityTraits) {
-		a11yTraits |= inputArrayToBitMask(view.accessibilityTraits, AccessibilityTraitsMap);
-	}
-
+	// NOTE: There were duplicated types in traits and roles previously which we conslidated
+	// not sure if this is still needed
+	// accessibilityTraits used to be stored on {N} view component but if the above
+	// is combining all traits fresh each time through, don't believe we need to keep track or previous traits
+	// if (view.accessibilityTraits) {
+	// 	a11yTraits |= inputArrayToBitMask(view.accessibilityTraits, AccessibilityTraitsMap);
+	// }
+	console.log('a11yTraits:', a11yTraits);
+	console.log('    ');
 	uiView.accessibilityTraits = a11yTraits;
 }
 

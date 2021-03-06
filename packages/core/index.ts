@@ -58,6 +58,14 @@ export const ApplicationSettings = {
 	setNumber,
 };
 
+import { accessibilityBlurEvent, accessibilityFocusEvent, accessibilityFocusChangedEvent } from './accessibility';
+export const AccessibilityEvents = {
+	accessibilityBlurEvent,
+	accessibilityFocusEvent,
+	accessibilityFocusChangedEvent,
+};
+export { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, FontScaleCategory } from './accessibility';
+
 export { Color } from './color';
 
 import { connectionType, getConnectionType, startMonitoring, stopMonitoring } from './connectivity';
