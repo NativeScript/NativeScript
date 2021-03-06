@@ -207,8 +207,8 @@ function initializeNativeClasses() {
         destroyItem(container: android.view.ViewGroup, position: number, object: java.lang.Object): void {
             const fragment: androidx.fragment.app.Fragment = <androidx.fragment.app.Fragment>object;
 
-            if (!this.mCurTransaction) {
-              if(fragment.isAdded()) {
+            if(fragment.isAdded()) {
+              if (!this.mCurTransaction) {
                 try {
                   // try to get the correct FragmentManager
                   // @ts-ignore
@@ -218,11 +218,11 @@ function initializeNativeClasses() {
                   const fragmentManager = this.owner._getFragmentManager();
                   this.mCurTransaction = fragmentManager.beginTransaction();
                 }
+
               }
 
+              this.mCurTransaction.detach(fragment);
             }
-
-            this.mCurTransaction.detach(fragment);
 
             if (this.mCurrentPrimaryItem === fragment) {
                 this.mCurrentPrimaryItem = null;
