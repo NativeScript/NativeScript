@@ -58,11 +58,12 @@ export const ApplicationSettings = {
 	setNumber,
 };
 
-import { accessibilityBlurEvent, accessibilityFocusEvent, accessibilityFocusChangedEvent } from './accessibility';
+import { accessibilityBlurEvent, accessibilityFocusEvent, accessibilityFocusChangedEvent, accessibilityPerformEscapeEvent } from './accessibility';
 export const AccessibilityEvents = {
 	accessibilityBlurEvent,
 	accessibilityFocusEvent,
 	accessibilityFocusChangedEvent,
+	accessibilityPerformEscapeEvent,
 };
 export { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, FontScaleCategory } from './accessibility';
 
