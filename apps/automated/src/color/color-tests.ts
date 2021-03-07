@@ -39,7 +39,7 @@ export var test_Argb_Color = function () {
 	TKUnit.assertEqual(color.r, 255, 'Color.r not properly parsed');
 	TKUnit.assertEqual(color.g, 100, 'Color.g not properly parsed');
 	TKUnit.assertEqual(color.b, 100, 'Color.b not properly parsed');
-	TKUnit.assertEqual(color.hex, '#64FF6464', 'Color.hex not properly parsed');
+	TKUnit.assertEqual(color.hex, '#FF646464', 'Color.hex not properly parsed');
 	TKUnit.assertEqual(color.argb, 0x64ff6464, 'Color.argb not properly parsed');
 };
 
@@ -86,6 +86,6 @@ export var test_rgba_Color_CSS = function () {
 	TKUnit.assertEqual(color.r, 255, 'Color.r not properly parsed');
 	TKUnit.assertEqual(color.g, 100, 'Color.g not properly parsed');
 	TKUnit.assertEqual(color.b, 100, 'Color.b not properly parsed');
-	TKUnit.assertEqual(color.hex, '#80FF6464', 'Color.hex not properly parsed');
+	TKUnit.assertEqual(color.hex, '#FF646480', 'Color.hex not properly parsed');
 	TKUnit.assertEqual(color.argb, 0x80ff6464, 'Color.argb not properly parsed');
 };
