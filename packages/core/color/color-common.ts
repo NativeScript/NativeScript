@@ -26,8 +26,10 @@ export class Color implements definition.Color {
 					const argb = knownColors.getKnownColor(arg);
 					this._name = arg;
 					this._argb = argb;
-				} else if (HEX_REGEX.test(arg)) {
-					// The parameter is a "#AARRGGBB" formatted string
+				} else if (arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
+					// we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
+					// strange that it would not be. And if it is not a thrown error seems best
+					// The parameter is a "#RRGGBBAA" formatted string
 					const hex = this._normalizeHex(arg);
 					this._argb = this._argbFromString(hex);
 				} else {
@@ -73,7 +75,7 @@ export class Color implements definition.Color {
 		if (this.a === 0xff) {
 			return ('#' + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b)).toUpperCase();
 		} else {
-			return ('#' + this._componentToHex(this.a) + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b)).toUpperCase();
+			return ('#' + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b) + this._componentToHex(this.a)).toUpperCase();
 		}
 	}
 
@@ -104,6 +106,11 @@ export class Color implements definition.Color {
 		if (hex.length === 6) {
 			// add the alpha component since the provided string is RRGGBB
 			intVal = (intVal & 0x00ffffff) + 0xff000000;
+		} else {
+			// the new format is #RRGGBBAA
+			// we need to shift the alpha value to 0x01000000 position
+			const a = (intVal / 0x00000001) & 0xff;
+			intVal = (intVal >>> 8) + (a & 0xff) * 0x01000000;
 		}
 
 		return intVal;
@@ -157,7 +164,8 @@ export class Color implements definition.Color {
 	}
 
 	private _normalizeHex(hexStr: string): string {
-		if (hexStr.charAt(0) === SHARP && hexStr.length === 4) {
+		// we expect this to already has a # as first char as it is supposed to be tested before
+		if (hexStr.length === 4) {
 			// Duplicate each char after the #, so "#123" becomes "#112233"
 			hexStr = hexStr.charAt(0) + hexStr.charAt(1) + hexStr.charAt(1) + hexStr.charAt(2) + hexStr.charAt(2) + hexStr.charAt(3) + hexStr.charAt(3);
 		}
