@@ -19,7 +19,15 @@ interface IPackageJson {
  * Utility function to get the contents of the project package.json
  */
 export function getPackageJson() {
-	const packageJsonPath = resolve(getProjectRootPath(), 'package.json');
+	return require(
+		getProjectFilePath('package.json')
+	) as IPackageJson;
+}
 
-	return require(packageJsonPath) as IPackageJson;
+/**
+ * Utility to get project files relative to the project root.
+ * @param filePath path to get
+ */
+export function getProjectFilePath(filePath: string): string {
+	return resolve(getProjectRootPath(), filePath);
 }

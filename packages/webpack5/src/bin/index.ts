@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/bin/env node
 
 import { redBright, green, greenBright } from 'chalk';
 import { program } from 'commander';

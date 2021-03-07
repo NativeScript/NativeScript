@@ -1,6 +1,6 @@
 import Config from 'webpack-chain';
 
-import { getProjectRootPath } from '../helpers/project';
+import { getProjectFilePath, getProjectRootPath } from '../helpers/project';
 import { getPlatformName } from '../helpers/platform';
 import { env as _env, IWebpackEnv } from '../index';
 import { error } from '../helpers/log';
@@ -52,15 +52,16 @@ function getSvelteConfigPreprocessor(): any {
 	return config?.preprocess;
 }
 
-function getSvelteConfig(): { preprocess: any } | undefined {
+interface ISvelteConfig {
+	preprocess: any
+}
+
+function getSvelteConfig(): ISvelteConfig | undefined {
 	try {
-		const resolvedPath = require.resolve(`./svelte.config.js`, {
-			paths: [getProjectRootPath()],
-		});
-		return require(resolvedPath);
+		return require(
+			getProjectFilePath('svelte.config.js')
+		) as ISvelteConfig;
 	} catch (err) {
-		// todo: remove when jest supports mocking require.resolve
-		if (__TEST__) return;
 		error('Could not find svelte.config.js.', err);
 	}
 }
