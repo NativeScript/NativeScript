@@ -65,6 +65,19 @@ exports[`angular configuration for android 1`] = `
           }
         ]
       },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
+        exclude: [
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
       /* config.module.rule('css') */
       {
         test: /\\\\.css$/,
@@ -330,6 +343,19 @@ exports[`angular configuration for ios 1`] = `
                 compact: false
               }
             }
+          }
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
+        exclude: [
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
+          {
+            loader: 'nativescript-worker-loader'
           }
         ]
       },
