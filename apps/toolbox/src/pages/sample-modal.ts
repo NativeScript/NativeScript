@@ -14,7 +14,10 @@ export function onShownModally(args: ShownModallyData) {
 
 export class SampleModal extends Observable {
 	close() {
-		(<UIViewController>page.ios).view.accessibilityPerformEscape();
-		// closeCallback();
+		// TODO: a11y
+		// if (global.isIOS) {
+		//   (<UIViewController>page.ios).view.accessibilityPerformEscape();
+		// }
+		closeCallback();
 	}
 }

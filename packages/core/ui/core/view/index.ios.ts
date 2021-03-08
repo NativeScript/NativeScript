@@ -504,7 +504,13 @@ export class View extends ViewCommon implements ViewDefinition {
 		}
 		this._modalAnimatedOptions.push(animated);
 
-		controller.accessibilityViewIsModal = true;
+		// TODO: a11y
+		// controller.accessibilityViewIsModal = true;
+		// controller.accessibilityPerformEscape = () => {
+		//   console.log('accessibilityPerformEscape!!')
+		//   return true;
+		// }
+
 		parentController.presentViewControllerAnimatedCompletion(controller, animated, null);
 		const transitionCoordinator = parentController.transitionCoordinator;
 		if (transitionCoordinator) {
@@ -588,7 +594,12 @@ export class View extends ViewCommon implements ViewDefinition {
 
 	[accessibilityLabelProperty.setNative](value: string): void {
 		value = value == null ? null : `${value}`;
+		// not sure if needed for Label:
+		// if ((<any>this).nativeTextViewProtected) {
+		//   (<any>this).nativeTextViewProtected.accessibilityLabel = value;
+		// } else {
 		this.nativeViewProtected.accessibilityLabel = value;
+		// }
 	}
 
 	[accessibilityHintProperty.setNative](value: string): void {

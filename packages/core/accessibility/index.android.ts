@@ -551,7 +551,10 @@ function setAccessibilityDelegate(view: Partial<View>): void {
 
 	androidViewToTNSView.set(androidView, new WeakRef(view));
 
-	const hasOldDelegate = androidView.getAccessibilityDelegate() === TNSAccessibilityDelegate;
+	let hasOldDelegate = false;
+	if (typeof androidView.getAccessibilityDelegate === 'function') {
+		hasOldDelegate = androidView.getAccessibilityDelegate() === TNSAccessibilityDelegate;
+	}
 
 	if (hasOldDelegate) {
 		return;

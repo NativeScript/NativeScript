@@ -152,6 +152,7 @@ export function updateAccessibilityProperties(view: View): void {
 		return;
 	}
 	console.log('--- Accessible element: ', view.constructor.name);
+	console.log('accessibilityLabel: ', view.accessibilityLabel);
 	console.log('accessibilityRole: ', accessibilityRole);
 	console.log('accessibilityState: ', accessibilityState);
 	console.log('accessibilityValue: ', view.accessibilityValue);

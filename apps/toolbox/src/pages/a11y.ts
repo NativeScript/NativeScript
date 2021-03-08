@@ -1,5 +1,4 @@
 import { Observable, EventData, Page, Switch, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, ShowModalOptions } from '@nativescript/core';
-import { AccessibilityEventPerformEscape } from 'packages/core/accessibility';
 
 let page: Page;
 
@@ -30,19 +29,6 @@ export class AccessibilityModel extends Observable {
 	}
 
 	openModal() {
-		page.showModal('pages/sample-modal', <ShowModalOptions>{
-			ios: {
-				onAccessibilityEscape: (event: AccessibilityEventPerformEscape) => {
-					return new Promise((resolve) => {
-						console.log('onAccessibilityEscape!');
-						event.cancel = true;
-						const ok = confirm('Are you sure you want to close?');
-						if (ok) {
-							resolve(true);
-						}
-					});
-				},
-			},
-		});
+		page.showModal('pages/sample-modal');
 	}
 }
