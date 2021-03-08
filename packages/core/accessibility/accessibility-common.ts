@@ -1,12 +1,13 @@
+import { EventData, EventDataValue } from '../data/observable';
 import type { View } from '../ui/core/view';
 import type { Page } from '../ui/page';
-import type { AccessibilityBlurEventData, AccessibilityFocusChangedEventData, AccessibilityFocusEventData } from './accessibility-types';
 
 const lastFocusedViewOnPageKeyName = '__lastFocusedViewOnPage';
 
 export const accessibilityBlurEvent = 'accessibilityBlur';
 export const accessibilityFocusEvent = 'accessibilityFocus';
 export const accessibilityFocusChangedEvent = 'accessibilityFocusChanged';
+export const accessibilityPerformEscapeEvent = 'accessibilityPerformEscape';
 
 /**
  * Send notification when accessibility focus state changes.
@@ -18,7 +19,7 @@ export const accessibilityFocusChangedEvent = 'accessibilityFocusChanged';
  * @param {boolean} receivedFocus
  * @param {boolean} lostFocus
  */
-export function notifyAccessibilityFocusState(view: View, receivedFocus: boolean, lostFocus: boolean): void {
+export function notifyAccessibilityFocusState(view: Partial<View>, receivedFocus: boolean, lostFocus: boolean): void {
 	if (!receivedFocus && !lostFocus) {
 		return;
 	}
@@ -27,7 +28,7 @@ export function notifyAccessibilityFocusState(view: View, receivedFocus: boolean
 		eventName: accessibilityFocusChangedEvent,
 		object: view,
 		value: !!receivedFocus,
-	} as AccessibilityFocusChangedEventData);
+	} as EventDataValue);
 
 	if (receivedFocus) {
 		if (view.page) {
@@ -37,12 +38,12 @@ export function notifyAccessibilityFocusState(view: View, receivedFocus: boolean
 		view.notify({
 			eventName: accessibilityFocusEvent,
 			object: view,
-		} as AccessibilityFocusEventData);
+		} as EventData);
 	} else if (lostFocus) {
 		view.notify({
 			eventName: accessibilityBlurEvent,
 			object: view,
-		} as AccessibilityBlurEventData);
+		} as EventData);
 	}
 }
 

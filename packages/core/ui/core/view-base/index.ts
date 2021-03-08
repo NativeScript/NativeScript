@@ -815,7 +815,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this._context = context;
 
 		// This will account for nativeView that is created in createNativeView, recycled
-		// or for backward compatability - set before _setupUI in iOS contructor.
+		// or for backward compatibility - set before _setupUI in iOS constructor.
 		let nativeView = this.nativeViewProtected;
 
 		// if (global.isAndroid) {

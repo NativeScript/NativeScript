@@ -183,7 +183,19 @@ components that have the btn class name.
 	margin-bottom: 5
 }
 
-.a11y-item {
+.a11y-demo-page .view-item {
   margin-bottom: 12;
   font-size: 18;
+}
+
+.a11y-demo-page .a11y {
+  a11y-enabled: true;
+}
+
+.a11y-demo-page .a11y-role-image {
+  a11y-role: image;
+}
+
+.a11y-demo-page .a11y-state-checked {
+  a11y-state: checked;
 }

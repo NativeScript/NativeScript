@@ -30,8 +30,8 @@ class AndroidSharedA11YObservable extends SharedA11YObservable {
 	}
 }
 
-let accessibilityStateChangeListener: androidx.core.view.accessibility.AccessibilityManagerCompat.AccessibilityStateChangeListener;
-let touchExplorationStateChangeListener: androidx.core.view.accessibility.AccessibilityManagerCompat.TouchExplorationStateChangeListener;
+let accessibilityStateChangeListener: android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
+let touchExplorationStateChangeListener: android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
 let sharedA11YObservable: AndroidSharedA11YObservable;
 
 function updateAccessibilityState(): void {
@@ -72,7 +72,7 @@ function ensureStateListener(): SharedA11YObservable {
 		},
 	});
 
-	touchExplorationStateChangeListener = new androidx.core.view.accessibility.AccessibilityManagerCompat.TouchExplorationStateChangeListener({
+	touchExplorationStateChangeListener = new android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener({
 		onTouchExplorationStateChanged(enabled) {
 			updateAccessibilityState();
 
@@ -83,7 +83,7 @@ function ensureStateListener(): SharedA11YObservable {
 	});
 
 	accessibilityManager.addAccessibilityStateChangeListener(accessibilityStateChangeListener);
-	androidx.core.view.accessibility.AccessibilityManagerCompat.addTouchExplorationStateChangeListener(accessibilityManager, touchExplorationStateChangeListener);
+	accessibilityManager.addTouchExplorationStateChangeListener(touchExplorationStateChangeListener);
 
 	updateAccessibilityState();
 
@@ -109,7 +109,7 @@ Application.on(Application.exitEvent, (args: Application.ApplicationEventData) =
 		}
 
 		if (touchExplorationStateChangeListener) {
-			androidx.core.view.accessibility.AccessibilityManagerCompat.removeTouchExplorationStateChangeListener(accessibilityManager, touchExplorationStateChangeListener);
+			accessibilityManager.removeTouchExplorationStateChangeListener(touchExplorationStateChangeListener);
 		}
 	}
 

@@ -66,6 +66,10 @@ function isBackNavigationFrom(controller: UIViewControllerImpl, page: Page): boo
 
 @NativeClass
 class UIViewControllerImpl extends UIViewController {
+	// TODO: a11y
+	// static ObjCExposedMethods = {
+	// 	accessibilityPerformEscape: { returns: interop.types.bool, params: [interop.types.void] },
+	// };
 	private _owner: WeakRef<Page>;
 
 	public isBackstackSkipped: boolean;
@@ -311,6 +315,21 @@ class UIViewControllerImpl extends UIViewController {
 		}
 	}
 
+	// TODO: a11y
+	// public accessibilityPerformEscape() {
+	// 	const owner = this._owner.get();
+	// 	if (!owner) {
+	// 		return false;
+	// 	}
+	// 	console.log('page accessibilityPerformEscape');
+	// 	if (owner.onAccessibilityPerformEscape) {
+	// 		const result = owner.onAccessibilityPerformEscape();
+	// 		return result;
+	// 	} else {
+	// 		return false;
+	// 	}
+	// }
+
 	// @ts-ignore
 	public get preferredStatusBarStyle(): UIStatusBarStyle {
 		const owner = this._owner.get();
@@ -325,6 +344,7 @@ class UIViewControllerImpl extends UIViewController {
 export class Page extends PageBase {
 	nativeViewProtected: UIView;
 	viewController: UIViewControllerImpl;
+	onAccessibilityPerformEscape: () => boolean;
 
 	private _backgroundColor = majorVersion <= 12 && !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 	private _ios: UIViewControllerImpl;
