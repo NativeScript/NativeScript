@@ -29,6 +29,7 @@
     "@nrwl/workspace": "11.4.0",
     "@nstudio/focus": "~11.1.0",
     "@nstudio/nps-i": "~1.1.0",
+    "@prettier/plugin-xml": "^0.13.1",
     "@types/chai": "^4.2.11",
     "@types/jest": "~26.0.8",
     "@types/mocha": "^7.0.2",
