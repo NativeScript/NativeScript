@@ -48,12 +48,12 @@ export const placeholderColorProperty = new CssProperty<Style, Color>({
 });
 placeholderColorProperty.register(Style);
 
-const keyboardTypeConverter = makeParser<KeyboardType>(makeValidator<KeyboardType>('datetime', 'phone', 'number', 'url', 'email', 'integer'));
+const keyboardTypeConverter = makeParser<KeyboardType>(makeValidator<KeyboardType>('datetime', 'phone', 'number', 'url', 'email', 'integer'), true);
 
 export const keyboardTypeProperty = new Property<EditableTextBase, KeyboardType>({ name: 'keyboardType', valueConverter: keyboardTypeConverter });
 keyboardTypeProperty.register(EditableTextBase);
 
-const returnKeyTypeConverter = makeParser<ReturnKeyType>(makeValidator<ReturnKeyType>('done', 'next', 'go', 'search', 'send'));
+const returnKeyTypeConverter = makeParser<ReturnKeyType>(makeValidator<ReturnKeyType>('done', 'next', 'go', 'search', 'send'), true);
 
 export const returnKeyTypeProperty = new Property<EditableTextBase, ReturnKeyType>({ name: 'returnKeyType', valueConverter: returnKeyTypeConverter });
 returnKeyTypeProperty.register(EditableTextBase);
@@ -68,7 +68,7 @@ editableProperty.register(EditableTextBase);
 export const updateTextTriggerProperty = new Property<EditableTextBase, UpdateTextTrigger>({ name: 'updateTextTrigger', defaultValue: 'textChanged' });
 updateTextTriggerProperty.register(EditableTextBase);
 
-const autocapitalizationTypeConverter = makeParser<AutocapitalizationType>(makeValidator<AutocapitalizationType>('none', 'words', 'sentences', 'allcharacters'));
+const autocapitalizationTypeConverter = makeParser<AutocapitalizationType>(makeValidator<AutocapitalizationType>('none', 'words', 'sentences', 'allcharacters'), true);
 
 export const autocapitalizationTypeProperty = new Property<EditableTextBase, AutocapitalizationType>({
 	name: 'autocapitalizationType',

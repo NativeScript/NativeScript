@@ -1,6 +1,3 @@
-/* eslint-disable no-var */
-declare var global: NodeJS.Global & typeof globalThis;
-
 interface ModuleResolver {
 	/**
 	 * A function used to resolve the exports for a module.

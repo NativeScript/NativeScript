@@ -1,3 +1,65 @@
+# [7.3.0](https://github.com/NativeScript/NativeScript/compare/7.2.2-core...7.3.0) (2021-02-27)
+
+
+### Bug Fixes
+
+* **core:** AndroidTransitionType symbol export handling ([#9252](https://github.com/NativeScript/NativeScript/issues/9252)) ([ac7f041](https://github.com/NativeScript/NativeScript/commit/ac7f041deada46bfe3bbd8359c02e9224155efd8))
+
+
+### Features
+
+* **android:** types for API Level 30 and cleanup ([#9219](https://github.com/NativeScript/NativeScript/issues/9219)) ([ebcc0e2](https://github.com/NativeScript/NativeScript/commit/ebcc0e2cc0e14d2042582901d36d4cfece7fae58))
+
+
+### BREAKING CHANGES
+
+* **core:** AndroidTransitionType is now a static member of the Transition class.
+
+BEFORE:
+
+```
+import { AndroidTransitionType } from '@nativescript/core/ui/transition';
+```
+
+AFTER:
+
+```
+import { Transition } from '@nativescript/core';
+Transition.AndroidTransitionType.enter; // etc.
+```
+
+* **android:** If you were using`native.Array` for any of your own custom plugin typings, you can switch them to `androidNative.Array`
+
+BEFORE:
+
+```
+public writeAsync(path: string, bytes: native.Array<number>) ...
+```
+
+AFTER:
+
+```
+public writeAsync(path: string, bytes: androidNative.Array<number>) ...
+```
+
+## [7.2.2](https://github.com/NativeScript/NativeScript/compare/7.2.1-core...7.2.2) (2021-02-27)
+
+
+### Bug Fixes
+
+* **android:** KeyboardType now respects numbers ([#9240](https://github.com/NativeScript/NativeScript/issues/9240)) ([f08fcb1](https://github.com/NativeScript/NativeScript/commit/f08fcb17b49540126367f75d28499e5904e12106))
+* **bottom-navigation:** fragment handling ([#9244](https://github.com/NativeScript/NativeScript/issues/9244)) ([c8ef6f2](https://github.com/NativeScript/NativeScript/commit/c8ef6f2ab3d3cd854a92dfecd0e8b2605c00f3af))
+* **xhr:** remove unnecessary throw when event not supported ([#9251](https://github.com/NativeScript/NativeScript/issues/9251)) ([11ef943](https://github.com/NativeScript/NativeScript/commit/11ef94349588aca23e27b2cfaf0a3e4f93df649e))
+
+
+### Features
+
+* **android:** Add possibility to choose theme in android dialogs ([#9212](https://github.com/NativeScript/NativeScript/issues/9212)) ([e7951b3](https://github.com/NativeScript/NativeScript/commit/e7951b320f4178024a4cb5b92bab0761517a68bb))
+* **core:** allow property overrides at runtime ([#9241](https://github.com/NativeScript/NativeScript/issues/9241)) ([c04e1b5](https://github.com/NativeScript/NativeScript/commit/c04e1b59e5f1a1fa48d2048c02821b97807a2c5e))
+* add npm scripts for different package managers, ie: yarn, pnpm ([#9230](https://github.com/NativeScript/NativeScript/issues/9230)) ([d7b2c84](https://github.com/NativeScript/NativeScript/commit/d7b2c84da87f9f9381d04886a3ddb0c3f031abfa))
+
+
+
 ## [7.2.1](https://github.com/NativeScript/NativeScript/compare/7.2.0-core...7.2.1) (2021-02-07)
 
 

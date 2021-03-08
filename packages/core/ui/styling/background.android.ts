@@ -121,7 +121,7 @@ export function refreshBorderDrawable(this: void, view: View, borderDrawable: or
 	}
 }
 
-function createNativeCSSValueArray(css: string): native.Array<org.nativescript.widgets.CSSValue> {
+function createNativeCSSValueArray(css: string): androidNative.Array<org.nativescript.widgets.CSSValue> {
 	if (!css) {
 		return null;
 	}

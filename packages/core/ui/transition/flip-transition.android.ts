@@ -1,4 +1,4 @@
-import { Transition, AndroidTransitionType } from '.';
+import { Transition } from '.';
 
 //http://developer.android.com/training/animation/cardflip.html
 export class FlipTransition extends Transition {
@@ -19,7 +19,7 @@ export class FlipTransition extends Transition {
 		const rotationY = this._direction === 'right' ? 180 : -180;
 
 		switch (transitionType) {
-			case AndroidTransitionType.enter: // card_flip_right_in
+			case Transition.AndroidTransitionType.enter: // card_flip_right_in
 				objectAnimators = Array.create(android.animation.Animator, 2);
 
 				values = Array.create('float', 2);
@@ -38,7 +38,7 @@ export class FlipTransition extends Transition {
 				animator.setDuration(fullDuration / 2);
 				objectAnimators[1] = animator;
 				break;
-			case AndroidTransitionType.exit: // card_flip_right_out
+			case Transition.AndroidTransitionType.exit: // card_flip_right_out
 				objectAnimators = Array.create(android.animation.Animator, 2);
 
 				values = Array.create('float', 2);
@@ -57,7 +57,7 @@ export class FlipTransition extends Transition {
 				animator.setDuration(fullDuration / 2);
 				objectAnimators[1] = animator;
 				break;
-			case AndroidTransitionType.popEnter: // card_flip_left_in
+			case Transition.AndroidTransitionType.popEnter: // card_flip_left_in
 				objectAnimators = Array.create(android.animation.Animator, 2);
 
 				values = Array.create('float', 2);
@@ -76,7 +76,7 @@ export class FlipTransition extends Transition {
 				animator.setDuration(fullDuration / 2);
 				objectAnimators[1] = animator;
 				break;
-			case AndroidTransitionType.popExit: // card_flip_left_out
+			case Transition.AndroidTransitionType.popExit: // card_flip_left_out
 				objectAnimators = Array.create(android.animation.Animator, 2);
 
 				values = Array.create('float', 2);
