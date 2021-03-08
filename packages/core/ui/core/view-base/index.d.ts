@@ -6,7 +6,7 @@ import { Style } from '../../styling/style';
 import { Page } from '../../page';
 
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
-import { Length } from '../../styling/style-properties';
+import { Length, LengthType } from '../../styling/style-properties';
 import { DOMNode } from '../../../debugger/dom-node';
 
 /**
@@ -105,8 +105,8 @@ export interface ShowModalOptions {
 
 export abstract class ViewBase extends Observable {
 	// Dynamic properties.
-	left: Length;
-	top: Length;
+	left: LengthType;
+	top: LengthType;
 	effectiveLeft: number;
 	effectiveTop: number;
 	dock: 'left' | 'top' | 'right' | 'bottom';

@@ -100,6 +100,12 @@ export declare class Page extends PageBase {
 	public actionBar: ActionBar;
 
 	/**
+	 * iOS Only
+	 * Perform an action when user performans the "escape" gesture
+	 */
+	public onAccessibilityPerformEscape?: () => boolean;
+
+	/**
 	 * Should page changed be annnounced to the screen reader.
 	 */
 	public accessibilityAnnouncePageEnabled: boolean;

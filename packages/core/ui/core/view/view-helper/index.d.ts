@@ -46,21 +46,21 @@ export namespace IOSHelper {
 	 * Returns a view with viewController or undefined if no such found along the view's parent chain.
 	 * @param view The view form which to start the search.
 	 */
-	export function getParentWithViewController(view: View): View;
-	export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: View): void;
-	export function updateConstraints(controller: any /* UIViewController */, owner: View): void;
-	export function layoutView(controller: any /* UIViewController */, owner: View): void;
+	export function getParentWithViewController(view: Partial<View>): View;
+	export function updateAutoAdjustScrollInsets(controller: any /* UIViewController */, owner: Partial<View>): void;
+	export function updateConstraints(controller: any /* UIViewController */, owner: Partial<View>): void;
+	export function layoutView(controller: any /* UIViewController */, owner: Partial<View>): void;
 	export function getPositionFromFrame(frame: any /* CGRect */): { left; top; right; bottom };
 	export function getFrameFromPosition(position: { left; top; right; bottom }, insets?: { left; top; right; bottom }): any; /* CGRect */
-	export function shrinkToSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
-	export function expandBeyondSafeArea(view: View, frame: any /* CGRect */): any; /* CGRect */
+	export function shrinkToSafeArea(view: Partial<View>, frame: any /* CGRect */): any; /* CGRect */
+	export function expandBeyondSafeArea(view: Partial<View>, frame: any /* CGRect */): any; /* CGRect */
 	export class UILayoutViewController {
-		public static initWithOwner(owner: WeakRef<View>): UILayoutViewController;
+		public static initWithOwner(owner: WeakRef<Partial<View>>): UILayoutViewController;
 	}
 	export class UIAdaptivePresentationControllerDelegateImp {
-		public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp;
+		public static initWithOwnerAndCallback(owner: WeakRef<Partial<View>>, whenClosedCallback: Function): UIAdaptivePresentationControllerDelegateImp;
 	}
 	export class UIPopoverPresentationControllerDelegateImp {
-		public static initWithOwnerAndCallback(owner: WeakRef<View>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp;
+		public static initWithOwnerAndCallback(owner: WeakRef<Partial<View>>, whenClosedCallback: Function): UIPopoverPresentationControllerDelegateImp;
 	}
 }

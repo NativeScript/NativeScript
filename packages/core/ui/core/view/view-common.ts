@@ -22,9 +22,9 @@ import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
 
 import * as am from '../../animation';
-import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AndroidAccessibilityEvent, IOSPostAccessibilityNotificationType } from '../../../accessibility/accessibility-types';
-import { accessibilityEnabledProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityTraitsProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
-import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, getCurrentFontScale } from '../../../accessibility';
+import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../accessibility/accessibility-types';
+import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
+import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
 import { CSSShadow } from '../../styling/css-shadow';
 
 // helpers (these are okay re-exported here)
@@ -74,6 +74,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static accessibilityBlurEvent = accessibilityBlurEvent;
 	public static accessibilityFocusEvent = accessibilityFocusEvent;
 	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
+	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
+
+	public accessibilityIdentifier: string;
+	public accessibilityLabel: string;
+	public accessibilityValue: string;
+	public accessibilityHint: string;
 
 	protected _closeModalCallback: Function;
 	public _manager: any;
@@ -98,9 +104,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public _gestureObservers = {};
 
 	_androidContentDescriptionUpdated?: boolean;
-
-	// a11y
-	_accessible: boolean;
 
 	get css(): string {
 		const scope = this._styleScope;
@@ -757,12 +760,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 
 	get accessible(): boolean {
-		// return this.style.accessible;
-		return this._accessible;
+		return this.style.accessible;
+		// return this._accessible;
 	}
 	set accessible(value: boolean) {
-		// this.style.accessible = value;
-		this._accessible = value;
+		this.style.accessible = value;
+		// this._accessible = value;
 	}
 
 	get accessibilityHidden(): boolean {
@@ -771,8 +774,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	set accessibilityHidden(value: boolean) {
 		this.style.accessibilityHidden = value;
 	}
-
-	public accessibilityIdentifier: string;
 
 	get accessibilityRole(): AccessibilityRole {
 		return this.style.accessibilityRole;
@@ -787,10 +788,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	set accessibilityState(value: AccessibilityState) {
 		this.style.accessibilityState = value;
 	}
-
-	public accessibilityLabel: string;
-	public accessibilityValue: string;
-	public accessibilityHint: string;
 
 	get accessibilityLiveRegion(): AccessibilityLiveRegion {
 		return this.style.accessibilityLiveRegion;
@@ -812,8 +809,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	set accessibilityMediaSession(value: boolean) {
 		this.style.accessibilityMediaSession = value;
 	}
-
-	public accessibilityTraits?: AccessibilityTrait[];
 
 	get automationText(): string {
 		return this.accessibilityIdentifier;
@@ -1093,11 +1088,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		return false;
 	}
 
-	public androidSendAccessibilityEvent(eventName: AndroidAccessibilityEvent, msg?: string): void {
-		return;
-	}
-
-	public iosPostAccessibilityNotification(notificationType: IOSPostAccessibilityNotificationType, msg?: string): void {
+	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void {
 		return;
 	}
 
@@ -1160,9 +1151,8 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
-accessibilityEnabledProperty.register(ViewCommon);
 accessibilityIdentifierProperty.register(ViewCommon);
 accessibilityLabelProperty.register(ViewCommon);
 accessibilityValueProperty.register(ViewCommon);
 accessibilityHintProperty.register(ViewCommon);
-accessibilityTraitsProperty.register(ViewCommon);
+accessibilityIgnoresInvertColorsProperty.register(ViewCommon);
