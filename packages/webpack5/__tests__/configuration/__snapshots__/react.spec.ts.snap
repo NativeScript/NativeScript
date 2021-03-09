@@ -14,7 +14,8 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
-    globalObject: 'global'
+    globalObject: 'global',
+    clean: true
   },
   resolve: {
     symlinks: true,
@@ -201,15 +202,6 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         }
       }
     ),
-    /* config.plugin('CleanWebpackPlugin') */
-    new CleanWebpackPlugin(
-      {
-        cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/android/app/src/main/assets/app/**/*'
-        ],
-        verbose: false
-      }
-    ),
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
@@ -311,7 +303,8 @@ exports[`react configuration > android > base config 1`] = `
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
-    globalObject: 'global'
+    globalObject: 'global',
+    clean: true
   },
   resolve: {
     symlinks: true,
@@ -487,15 +480,6 @@ exports[`react configuration > android > base config 1`] = `
         }
       }
     ),
-    /* config.plugin('CleanWebpackPlugin') */
-    new CleanWebpackPlugin(
-      {
-        cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/android/app/src/main/assets/app/**/*'
-        ],
-        verbose: false
-      }
-    ),
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
@@ -586,7 +570,8 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
-    globalObject: 'global'
+    globalObject: 'global',
+    clean: true
   },
   resolve: {
     symlinks: true,
@@ -771,15 +756,6 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         typescript: {
           memoryLimit: 4096
         }
-      }
-    ),
-    /* config.plugin('CleanWebpackPlugin') */
-    new CleanWebpackPlugin(
-      {
-        cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/ios/jest/app/**/*'
-        ],
-        verbose: false
       }
     ),
     /* config.plugin('PlatformSuffixPlugin') */
@@ -884,7 +860,8 @@ exports[`react configuration > ios > base config 1`] = `
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
-    globalObject: 'global'
+    globalObject: 'global',
+    clean: true
   },
   resolve: {
     symlinks: true,
@@ -1058,15 +1035,6 @@ exports[`react configuration > ios > base config 1`] = `
         typescript: {
           memoryLimit: 4096
         }
-      }
-    ),
-    /* config.plugin('CleanWebpackPlugin') */
-    new CleanWebpackPlugin(
-      {
-        cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/ios/jest/app/**/*'
-        ],
-        verbose: false
       }
     ),
     /* config.plugin('PlatformSuffixPlugin') */

@@ -14,7 +14,8 @@ exports[`vue configuration for android 1`] = `
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
-    globalObject: 'global'
+    globalObject: 'global',
+    clean: true
   },
   resolve: {
     symlinks: true,
@@ -218,15 +219,6 @@ exports[`vue configuration for android 1`] = `
         }
       }
     ),
-    /* config.plugin('CleanWebpackPlugin') */
-    new CleanWebpackPlugin(
-      {
-        cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/android/app/src/main/assets/app/**/*'
-        ],
-        verbose: false
-      }
-    ),
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
@@ -315,7 +307,8 @@ exports[`vue configuration for ios 1`] = `
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
-    globalObject: 'global'
+    globalObject: 'global',
+    clean: true
   },
   resolve: {
     symlinks: true,
@@ -517,15 +510,6 @@ exports[`vue configuration for ios 1`] = `
             }
           }
         }
-      }
-    ),
-    /* config.plugin('CleanWebpackPlugin') */
-    new CleanWebpackPlugin(
-      {
-        cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/ios/jest/app/**/*'
-        ],
-        verbose: false
       }
     ),
     /* config.plugin('PlatformSuffixPlugin') */

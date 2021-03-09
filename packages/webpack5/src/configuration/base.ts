@@ -5,7 +5,6 @@ import { resolve } from 'path';
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import FilterWarningsPlugin from 'webpack-filter-warnings-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
-import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 
 // import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
@@ -78,7 +77,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.pathinfo(false)
 		.publicPath('')
 		.libraryTarget('commonjs')
-		.globalObject('global');
+		.globalObject('global')
+		.set('clean', true);
 
 	// Set up Terser options
 	config.optimization.minimizer('TerserPlugin').use(TerserPlugin, [
@@ -232,14 +232,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.end()
 		.use('sass-loader')
 		.loader('sass-loader');
-
-	// items to clean
-	config.plugin('CleanWebpackPlugin').use(CleanWebpackPlugin, [
-		{
-			cleanOnceBeforeBuildPatterns: [`${getAbsoluteDistPath()}/**/*`],
-			verbose: !!env.verbose,
-		},
-	]);
 
 	// config.plugin('NormalModuleReplacementPlugin').use(NormalModuleReplacementPlugin, [
 	// 	/.*/,
