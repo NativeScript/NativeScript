@@ -178,11 +178,21 @@ async function parseXML(content: string): Promise<ParseResult> {
 		.replace(/\u2028/g, '\\u2028')
 		.replace(/\u2029/g, '\\u2029');
 
+	const hmrCode = this.hot
+		? dedent`
+			if(module.hot) {
+				module.hot.accept()
+				// module.hot.dispose(() => {})
+			}
+		`
+		: ``;
+
 	const code = dedent`
 		${moduleRegisters.join('\n')}
 		/* XML-NAMESPACE-LOADER */
 		const ___XML_NAMESPACE_LOADER_EXPORT___ = ${xml}
 		export default ___XML_NAMESPACE_LOADER_EXPORT___
+		${hmrCode}
 	`;
 
 	if (errors.length) {

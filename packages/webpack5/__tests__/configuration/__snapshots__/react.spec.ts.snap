@@ -9,6 +9,12 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
   ],
   devtool: 'inline-source-map',
   target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
     pathinfo: false,
@@ -298,6 +304,12 @@ exports[`react configuration > android > base config 1`] = `
   ],
   devtool: 'inline-source-map',
   target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
     pathinfo: false,
@@ -565,6 +577,12 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
   ],
   devtool: 'inline-source-map',
   target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
   output: {
     path: '__jest__/platforms/ios/jest/app',
     pathinfo: false,
@@ -855,6 +873,12 @@ exports[`react configuration > ios > base config 1`] = `
   ],
   devtool: 'inline-source-map',
   target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
   output: {
     path: '__jest__/platforms/ios/jest/app',
     pathinfo: false,

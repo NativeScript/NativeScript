@@ -9,6 +9,12 @@ exports[`base configuration for android 1`] = `
   ],
   devtool: 'inline-source-map',
   target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
     pathinfo: false,
@@ -270,6 +276,12 @@ exports[`base configuration for ios 1`] = `
   ],
   devtool: 'inline-source-map',
   target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
   output: {
     path: '__jest__/platforms/ios/jest/app',
     pathinfo: false,

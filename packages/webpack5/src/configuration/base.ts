@@ -1,7 +1,6 @@
 import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
 import Config from 'webpack-chain';
 import { resolve } from 'path';
-import os from 'os';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import FilterWarningsPlugin from 'webpack-filter-warnings-plugin';
@@ -9,10 +8,10 @@ import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
 // import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
+import { getProjectFilePath, getProjectRootPath } from '../helpers/project';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
-import { getProjectRootPath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
@@ -79,6 +78,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.libraryTarget('commonjs')
 		.globalObject('global')
 		.set('clean', true);
+
+	config.watchOptions({
+		ignored: [
+			`${getProjectFilePath('platforms')}/platforms/**`,
+			`${env.appResourcesPath ?? getProjectFilePath('App_Resources')}/**`
+		]
+	})
 
 	// Set up Terser options
 	config.optimization.minimizer('TerserPlugin').use(TerserPlugin, [
