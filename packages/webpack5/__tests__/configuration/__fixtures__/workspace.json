@@ -1,0 +1,20 @@
+{
+	"projects": {
+		"testProject": {
+			"architect": {
+				"default": {
+					"configurations": {
+						"dev": {
+							"fileReplacements": [
+								{
+									"replace": "src/something.ts",
+									"with": "src/something.replaced.ts"
+								}
+							]
+						}
+					}
+				}
+			}
+		}
+	}
+}

@@ -25,6 +25,10 @@ export interface IWebpackEnv {
 	// for custom platforms
 	platform?: string;
 
+	// angular specific
+	configuration?: string;
+	projectName?: string;
+
 	production?: boolean;
 	report?: boolean;
 	hmr?: boolean;

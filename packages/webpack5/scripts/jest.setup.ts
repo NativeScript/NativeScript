@@ -1,4 +1,3 @@
-import './jest.mockFiles';
 // we are mocking the cwd for the tests, since webpack needs absolute paths
 // and we don't want them in tests
 process.cwd = () => '__jest__';
@@ -65,3 +64,15 @@ jest.mock('path', () => {
 		},
 	};
 });
+
+// a virtual mock for package.json
+jest.mock(
+	'__jest__/package.json',
+	() => ({
+		main: 'src/app.js',
+		devDependencies: {
+			typescript: '*',
+		},
+	}),
+	{ virtual: true }
+);

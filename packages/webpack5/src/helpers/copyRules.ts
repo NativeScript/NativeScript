@@ -12,17 +12,29 @@ import { env } from '..';
 export let copyRules = new Set([]);
 
 /**
- * Utility to add new copy rules. Accepts a glob. For example
+ * @internal
+ */
+export let additionalCopyRules = []
+
+/**
+ * Utility to add new copy rules. Accepts a glob or an object. For example
  *  - **\/*.html - copy all .html files found in any sub dir.
  *  - myFolder/* - copy all files from myFolder
+ *
+ * When passing an object - no additional processing is done, and it's
+ * applied as-is. Make sure to set every required property.
  *
  * The path is relative to the folder of the entry file
  * (specified in the main field of the package.json)
  *
- * @param {string} glob
+ * @param {string|object} globOrObject
  */
-export function addCopyRule(glob: string) {
-	copyRules.add(glob);
+export function addCopyRule(globOrObject: string | object) {
+	if(typeof globOrObject === 'string') {
+		return copyRules.add(globOrObject);
+	}
+
+	additionalCopyRules.push(globOrObject)
 }
 
 /**
@@ -65,7 +77,7 @@ export function applyCopyRules(config: Config) {
 				context: entryDir,
 				noErrorOnMissing: true,
 				globOptions,
-			})),
+			})).concat(additionalCopyRules),
 		},
 	]);
 }

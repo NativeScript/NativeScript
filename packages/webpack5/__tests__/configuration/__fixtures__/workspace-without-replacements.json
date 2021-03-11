@@ -1,0 +1,14 @@
+{
+	"projects": {
+		"testProject": {
+			"architect": {
+				"default": {
+					"configurations": {
+						"dev": {
+						}
+					}
+				}
+			}
+		}
+	}
+}

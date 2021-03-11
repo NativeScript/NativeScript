@@ -15,7 +15,7 @@ export function applyDotEnvPlugin(config: Config) {
 	config.when(path !== null, (config) => {
 		config.plugin('DotEnvPlugin').use(DotEnvPlugin, [
 			{
-				path: getDotEnvPath(),
+				path,
 				silent: true, // hide any errors
 			},
 		]);
