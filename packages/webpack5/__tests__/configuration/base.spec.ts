@@ -1,5 +1,6 @@
 import Config from 'webpack-chain';
 import fs from 'fs';
+
 import base from '../../src/configuration/base';
 import { init } from '../../src';
 

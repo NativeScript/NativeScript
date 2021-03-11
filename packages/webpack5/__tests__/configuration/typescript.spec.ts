@@ -1,4 +1,5 @@
 import Config from 'webpack-chain';
+
 import typescript from '../../src/configuration/typescript';
 import { init } from '../../src';
 

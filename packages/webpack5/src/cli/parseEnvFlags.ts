@@ -1,4 +1,4 @@
-import { IWebpackEnv } from '@nativescript/webpack';
+import type { IWebpackEnv } from '@nativescript/webpack';
 
 const ENV_FLAG_RE = /--env\.(\w+)(?:=(.+))?/;
 

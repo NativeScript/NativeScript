@@ -1,5 +1,6 @@
-import xmlNsLoader from '../../src/loaders/xml-namespace-loader';
 import dedent from 'ts-dedent';
+
+import xmlNsLoader from '../../src/loaders/xml-namespace-loader';
 
 const CODE_FILE = dedent`
 	<Page xmlns="http://www.nativescript.org/tns.xsd">

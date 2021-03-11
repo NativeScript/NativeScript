@@ -1,6 +1,7 @@
 import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
 import Config from 'webpack-chain';
 import { resolve } from 'path';
+import os from 'os';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import FilterWarningsPlugin from 'webpack-filter-warnings-plugin';
@@ -22,7 +23,6 @@ import {
 	getEntryDirPath,
 	getEntryPath,
 } from '../helpers/platform';
-import os from 'os';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const entryPath = getEntryPath();

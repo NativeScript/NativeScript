@@ -1,5 +1,6 @@
-import { getPackageJson, getProjectRootPath } from './project';
 import path from 'path';
+
+import { getPackageJson, getProjectRootPath } from './project';
 
 // todo: memoize
 /**

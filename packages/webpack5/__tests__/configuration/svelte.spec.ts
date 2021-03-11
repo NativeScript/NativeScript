@@ -1,4 +1,5 @@
 import Config from 'webpack-chain';
+
 import svelte from '../../src/configuration/svelte';
 import { init } from '../../src';
 

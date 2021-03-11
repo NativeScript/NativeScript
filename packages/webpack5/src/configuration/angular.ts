@@ -1,5 +1,5 @@
-import Config from 'webpack-chain';
 import { resolve, dirname } from 'path';
+import Config from 'webpack-chain';
 import { existsSync } from 'fs';
 import get from 'lodash.get'
 

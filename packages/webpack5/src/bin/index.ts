@@ -6,6 +6,7 @@ import dedent from 'ts-dedent';
 import webpack from 'webpack';
 import path from 'path';
 import fs from 'fs';
+
 import { parseEnvFlags } from '../cli/parseEnvFlags';
 
 const defaultConfig = path.resolve(

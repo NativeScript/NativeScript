@@ -1,4 +1,5 @@
 import Config from 'webpack-chain';
+
 import vue from '../../src/configuration/vue';
 import { init } from '../../src';
 

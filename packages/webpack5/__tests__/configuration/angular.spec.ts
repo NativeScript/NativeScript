@@ -1,13 +1,13 @@
 import Config from 'webpack-chain';
+import { resolve } from 'path'
+
+import { additionalCopyRules } from '../../src/helpers/copyRules'
 import {
 	default as angular,
 	getFileReplacementsFromWorkspaceConfig,
 	applyFileReplacements
 } from '../../src/configuration/angular';
 import { init } from '../../src';
-import { additionalCopyRules } from '../../src/helpers/copyRules'
-
-import { resolve } from 'path'
 
 jest.mock(
 	'@ngtools/webpack',
