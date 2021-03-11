@@ -6,7 +6,3 @@ declare namespace jest {
 		toHaveBeenPrinted(): R;
 	}
 }
-
-declare global {
-	function mockFile(path: string, content: string);
-}
