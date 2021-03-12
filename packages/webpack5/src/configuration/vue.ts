@@ -1,15 +1,22 @@
 import { VueLoaderPlugin } from 'vue-loader';
 import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
+import fs from 'fs';
 
 import { getPlatformName } from '../helpers/platform';
 import { env as _env, IWebpackEnv } from '../index';
+import { error } from "../helpers/log";
 import base from './base';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 
 	const platform = getPlatformName();
+
+	// we need to patch VueLoader if we want to enable hmr
+	if(env.hmr) {
+		patchVueLoaderForHMR()
+	}
 
 	// resolve .vue files
 	// the order is reversed because we are using prepend!
@@ -64,4 +71,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.resolve.alias.set('vue', 'nativescript-vue');
 
 	return config;
+}
+
+/**
+ * Patches source of vue-loader to set the isServer flag to false
+ * so hmr gets enabled.
+ */
+function patchVueLoaderForHMR() {
+	try {
+		const vueLoaderPath = require.resolve('vue-loader/lib/index.js')
+		const source = fs.readFileSync(vueLoaderPath).toString();
+		const patchedSource = source.replace(/(isServer\s=\s)(target\s===\s'node')/g, '$1false;')
+		fs.writeFileSync(vueLoaderPath, patchedSource)
+		delete require.cache[vueLoaderPath]
+	} catch (err) {
+		error('Failed to patch VueLoader - HMR may not work properly!')
+	}
 }
