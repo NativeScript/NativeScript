@@ -615,19 +615,10 @@ function setupCurrentFragmentFadeTransition(navTransition: NavigationTransition,
 	setReenterTransition(navTransition, entry, fadeInReenter);
 }
 
-function setupCurrentFragmentExplodeTransition(navTransition: NavigationTransition, entry: ExpandedEntry): void {
-	setExitTransition(navTransition, entry, new androidx.transition.Explode());
-	setReenterTransition(navTransition, entry, new androidx.transition.Explode());
-}
-
-function setupNewFragmentExplodeTransition(navTransition: NavigationTransition, entry: ExpandedEntry): void {
-	setupCurrentFragmentExplodeTransition(navTransition, entry);
-
-	setEnterTransition(navTransition, entry, new androidx.transition.Explode());
-	setReturnTransition(navTransition, entry, new androidx.transition.Explode());
-}
-
 function setUpNativeTransition(navigationTransition: NavigationTransition, nativeTransition: androidx.transition.Transition) {
+	if (!navigationTransition) {
+		return;
+	}
 	if (navigationTransition.duration) {
 		nativeTransition.setDuration(navigationTransition.duration);
 	}
