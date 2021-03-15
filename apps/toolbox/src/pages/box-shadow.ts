@@ -7,11 +7,13 @@ export function navigatingTo(args: EventData) {
 }
 
 export class BoxShadowModel extends Observable {
-	private _selectedComponentType: string;
+	private _selectedComponentType: string = 'buttons';
 	private _selectedBackgroundType: string;
 	private _selectedBorderType: string;
 	private _selectedAnimation: string;
-	private _boxShadow: string = '5 5 1 1 rgba(255, 0, 0, .9)';
+	private _boxShadow: string = '0 10 15 -3 rgba(200, 0, 0, 0.4)';
+	// private _boxShadow: string = '5 5 1 1 rgba(255, 0, 0, .9)';
+	// private _boxShadow: string = '5 5 5 10 rgba(255, 0, 0, .9)';
 
 	background: string;
 	borderWidth: number;
