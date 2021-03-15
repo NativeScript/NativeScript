@@ -5,10 +5,10 @@
     </Page.actionBar>
 
     <GridLayout rows="*, auto, *" class="box-shadow-demo">
-        <StackLayout backgroundColor="#ededed" row="0" padding="20" id="boxShadowDemo">
+        <StackLayout backgroundColor="#ededed" row="0" id="boxShadowDemo">
             <!-- layouts -->
             <ScrollView height="100%" visibility="{{ selectedComponentType === 'layouts' ? 'visible' : 'collapsed' }}">
-                <StackLayout>
+                <StackLayout padding="20">
 									<StackLayout
                         width="300"
                         height="100"
@@ -73,22 +73,6 @@
                     >
                         <Label text="FlexboxLayout"></Label>
                     </FlexboxLayout>
-
-										<GridLayout
-											width="300"
-											height="100"
-											padding="4"
-											boxShadow="{{ appliedBoxShadow }}"
-											tap="{{ toggleAnimation }}"
-										>
-											<StackLayout
-												borderWidth="4"
-												borderRadius="20"
-												backgroundColor="white"
-											>
-												<Label text="BorderRadius + BoxShadow on parent container"></Label>
-											</StackLayout>
-										</GridLayout>
 
                 </StackLayout>
             </ScrollView>

@@ -1,5 +1,7 @@
 package org.nativescript.widgets;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.View;
@@ -10,10 +12,12 @@ public class Utils {
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 			return;
 		}
-		Log.d("BoxShadowDrawable", "drawBoxShadow. Current bg class is: " + view.getBackground().getClass().getName());
+		Log.d("BoxShadowDrawable", "drawBoxShadow");
 
 		Drawable wrap = view.getBackground();
-		if(wrap instanceof BoxShadowDrawable) {
+		if(wrap == null) {
+			wrap = new ColorDrawable(Color.TRANSPARENT);
+		} else if(wrap instanceof BoxShadowDrawable) {
 			wrap = ((BoxShadowDrawable) view.getBackground()).getWrappedDrawable();
 			Log.d("BoxShadowDrawable", "already a BoxShadowDrawable, getting wrapped drawable:" + wrap.getClass().getName());
 		}
