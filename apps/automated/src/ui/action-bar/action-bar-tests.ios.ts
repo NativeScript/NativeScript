@@ -95,7 +95,7 @@ export function test_actionItem_visibility() {
 
 	var leftBarButtonItemsCount = navigationItem.leftBarButtonItems ? navigationItem.leftBarButtonItems.count : 0;
 	TKUnit.assertEqual(leftBarButtonItemsCount, 1, 'Visibility does not work');
-	actionItem.visibility = Enums.Visibility.collapse;
+	actionItem.visibility = CoreTypes.Visibility.collapse;
 
 	TKUnit.waitUntilReady(() => {
 		leftBarButtonItemsCount = navigationItem.leftBarButtonItems ? navigationItem.leftBarButtonItems.count : 0;
@@ -118,7 +118,7 @@ export function test_navigationButton_visibility() {
 	var navigationItem: UINavigationItem = viewController.navigationItem;
 
 	TKUnit.assertFalse(navigationItem.hidesBackButton, 'Visibility does not work');
-	actionItem.visibility = Enums.Visibility.collapse;
+	actionItem.visibility = CoreTypes.Visibility.collapse;
 
 	TKUnit.waitUntilReady(() => {
 		return navigationItem.hidesBackButton;

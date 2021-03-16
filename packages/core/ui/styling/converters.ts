@@ -1,12 +1,12 @@
-import { Enums } from '../enums';
+import { CoreTypes } from '../../core-types';
 
 const STYLE_CURVE_MAP = Object.freeze({
-	ease: Enums.AnimationCurve.ease,
-	linear: Enums.AnimationCurve.linear,
-	'ease-in': Enums.AnimationCurve.easeIn,
-	'ease-out': Enums.AnimationCurve.easeOut,
-	'ease-in-out': Enums.AnimationCurve.easeInOut,
-	spring: Enums.AnimationCurve.spring,
+	ease: CoreTypes.AnimationCurve.ease,
+	linear: CoreTypes.AnimationCurve.linear,
+	'ease-in': CoreTypes.AnimationCurve.easeIn,
+	'ease-out': CoreTypes.AnimationCurve.easeOut,
+	'ease-in-out': CoreTypes.AnimationCurve.easeInOut,
+	spring: CoreTypes.AnimationCurve.spring,
 });
 
 export function timeConverter(value: string): number {
@@ -19,7 +19,7 @@ export function timeConverter(value: string): number {
 }
 
 export function animationTimingFunctionConverter(value: string): any {
-	return value ? STYLE_CURVE_MAP[value] || parseCubicBezierCurve(value) : Enums.AnimationCurve.ease;
+	return value ? STYLE_CURVE_MAP[value] || parseCubicBezierCurve(value) : CoreTypes.AnimationCurve.ease;
 }
 
 function parseCubicBezierCurve(value: string) {
@@ -29,7 +29,7 @@ function parseCubicBezierCurve(value: string) {
 	if (value.startsWith('cubic-bezier') && coordsString && coords.length === 4) {
 		const [x1, x2, y1, y2] = [...coords];
 
-		return Enums.AnimationCurve.cubicBezier(x1, x2, y1, y2);
+		return CoreTypes.AnimationCurve.cubicBezier(x1, x2, y1, y2);
 	} else {
 		throw new Error(`Invalid value for animation: ${value}`);
 	}

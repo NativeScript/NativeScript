@@ -1,6 +1,6 @@
 import { StackLayoutBase } from './stack-layout-common';
+import { CoreTypes } from '../../../core-types';
 import { View } from '../../core/view';
-import { Enums } from '../../enums';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 
@@ -112,16 +112,16 @@ export class StackLayout extends StackLayoutBase {
 		const childRight = right - left - paddingRight;
 
 		switch (this.verticalAlignment) {
-			case Enums.VerticalAlignment.middle:
+			case CoreTypes.VerticalAlignment.middle:
 				childTop = (bottom - top - this._totalLength) / 2 + paddingTop;
 				break;
 
-			case Enums.VerticalAlignment.bottom:
+			case CoreTypes.VerticalAlignment.bottom:
 				childTop = bottom - top - this._totalLength + paddingTop;
 				break;
 
-			case Enums.VerticalAlignment.top:
-			case Enums.VerticalAlignment.stretch:
+			case CoreTypes.VerticalAlignment.top:
+			case CoreTypes.VerticalAlignment.stretch:
 			default:
 				childTop = paddingTop;
 				break;
@@ -146,16 +146,16 @@ export class StackLayout extends StackLayoutBase {
 		const childBottom = bottom - top - paddingBottom;
 
 		switch (this.horizontalAlignment) {
-			case Enums.HorizontalAlignment.center:
+			case CoreTypes.HorizontalAlignment.center:
 				childLeft = (right - left - this._totalLength) / 2 + paddingLeft;
 				break;
 
-			case Enums.HorizontalAlignment.right:
+			case CoreTypes.HorizontalAlignment.right:
 				childLeft = right - left - this._totalLength + paddingLeft;
 				break;
 
-			case Enums.HorizontalAlignment.left:
-			case Enums.HorizontalAlignment.stretch:
+			case CoreTypes.HorizontalAlignment.left:
+			case CoreTypes.HorizontalAlignment.stretch:
 			default:
 				childLeft = paddingLeft;
 				break;

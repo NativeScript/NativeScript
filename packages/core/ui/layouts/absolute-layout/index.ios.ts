@@ -1,16 +1,17 @@
 ﻿import { AbsoluteLayoutBase } from './absolute-layout-common';
+import { CoreTypes } from '../../../core-types';
 import { View } from '../../core/view';
-import { Length, LengthType } from '../../styling/style-properties';
+import { Length } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 
 export * from './absolute-layout-common';
 
 export class AbsoluteLayout extends AbsoluteLayoutBase {
-	onLeftChanged(view: View, oldValue: LengthType, newValue: LengthType) {
+	onLeftChanged(view: View, oldValue: CoreTypes.LengthType, newValue: CoreTypes.LengthType) {
 		this.requestLayout();
 	}
 
-	onTopChanged(view: View, oldValue: LengthType, newValue: LengthType) {
+	onTopChanged(view: View, oldValue: CoreTypes.LengthType, newValue: CoreTypes.LengthType) {
 		this.requestLayout();
 	}
 

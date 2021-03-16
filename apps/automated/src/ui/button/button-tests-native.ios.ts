@@ -26,11 +26,11 @@ export function getNativeBackgroundColor(button: buttonModule.Button): colorModu
 export function getNativeTextAlignment(button: buttonModule.Button): string {
 	switch (button.ios.titleLabel.textAlignment) {
 		case NSTextAlignment.Left:
-			return Enums.TextAlignment.left;
+			return CoreTypes.TextAlignment.left;
 		case NSTextAlignment.Center:
-			return Enums.TextAlignment.center;
+			return CoreTypes.TextAlignment.center;
 		case NSTextAlignment.Right:
-			return Enums.TextAlignment.right;
+			return CoreTypes.TextAlignment.right;
 		default:
 			return 'unexpected value';
 	}

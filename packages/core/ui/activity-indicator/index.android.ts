@@ -1,7 +1,7 @@
 import { ActivityIndicatorBase, busyProperty } from './activity-indicator-common';
-import { colorProperty, visibilityProperty } from '../styling/style-properties';
+import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { Enums } from '../enums';
+import { colorProperty, visibilityProperty } from '../styling/style-properties';
 
 export * from './activity-indicator-common';
 
@@ -20,27 +20,27 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		return false;
 	}
 	[busyProperty.setNative](value: boolean) {
-		if (this.visibility === Enums.Visibility.visible) {
+		if (this.visibility === CoreTypes.Visibility.visible) {
 			this.nativeViewProtected.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
 		}
 	}
 
-	[visibilityProperty.getDefault](): Enums.VisibilityType {
-		return Enums.Visibility.hidden;
+	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
+		return CoreTypes.Visibility.hidden;
 	}
-	[visibilityProperty.setNative](value: Enums.VisibilityType) {
+	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
 		switch (value) {
-			case Enums.Visibility.visible:
+			case CoreTypes.Visibility.visible:
 				this.nativeViewProtected.setVisibility(this.busy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
 				break;
-			case Enums.Visibility.hidden:
+			case CoreTypes.Visibility.hidden:
 				this.nativeViewProtected.setVisibility(android.view.View.INVISIBLE);
 				break;
-			case Enums.Visibility.collapse:
+			case CoreTypes.Visibility.collapse:
 				this.nativeViewProtected.setVisibility(android.view.View.GONE);
 				break;
 			default:
-				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Enums.Visibility.visible}", "${Enums.Visibility.hidden}", "${Enums.Visibility.collapse}".`);
+				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}".`);
 		}
 	}
 

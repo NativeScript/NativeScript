@@ -1,14 +1,15 @@
 import { TextFieldBase, secureProperty } from './text-field-common';
 import { textProperty } from '../text-base';
 import { hintProperty, placeholderColorProperty, _updateCharactersInRangeReplacementString } from '../editable-text-base';
+import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { colorProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, LengthType } from '../styling/style-properties';
+import { colorProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
 import { layout } from '../../utils';
 import { profile } from '../../profiling';
 
 export * from './text-field-common';
 
-const zeroLength: LengthType = {
+const zeroLength: CoreTypes.LengthType = {
 	value: 0,
 	unit: 'px',
 };
@@ -284,31 +285,31 @@ export class TextField extends TextFieldBase {
 		this.nativeTextViewProtected.attributedPlaceholder = attributedPlaceholder;
 	}
 
-	[paddingTopProperty.getDefault](): LengthType {
+	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
 		return zeroLength;
 	}
-	[paddingTopProperty.setNative](value: LengthType) {
+	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
-	[paddingRightProperty.getDefault](): LengthType {
+	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
 		return zeroLength;
 	}
-	[paddingRightProperty.setNative](value: LengthType) {
+	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
-	[paddingBottomProperty.getDefault](): LengthType {
+	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
 		return zeroLength;
 	}
-	[paddingBottomProperty.setNative](value: LengthType) {
+	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 
-	[paddingLeftProperty.getDefault](): LengthType {
+	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
 		return zeroLength;
 	}
-	[paddingLeftProperty.setNative](value: LengthType) {
+	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		// Padding is realized via UITextFieldImpl.textRectForBounds method
 	}
 }

@@ -1,13 +1,13 @@
 import { Image as ImageDefinition } from '.';
 import { View, CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
-import { Enums } from '../enums';
+import { CoreTypes } from '../../core-types';
 import { ImageAsset } from '../../image-asset';
 import { ImageSource } from '../../image-source';
 import { isDataURI, isFontIconURI, isFileOrResourcePath, RESOURCE_PREFIX } from '../../utils';
 import { Color } from '../../color';
 import { Style } from '../styling/style';
-import { Length, LengthType } from '../styling/style-properties';
+import { Length } from '../styling/style-properties';
 import { Property, InheritedCssProperty } from '../core/properties';
 import { Trace } from '../../trace';
 
@@ -16,10 +16,10 @@ export abstract class ImageBase extends View implements ImageDefinition {
 	public imageSource: ImageSource;
 	public src: string | ImageSource;
 	public isLoading: boolean;
-	public stretch: Enums.ImageStretchType;
+	public stretch: CoreTypes.ImageStretchType;
 	public loadMode: 'sync' | 'async';
-	public decodeWidth: LengthType;
-	public decodeHeight: LengthType;
+	public decodeWidth: CoreTypes.LengthType;
+	public decodeHeight: CoreTypes.LengthType;
 
 	get tintColor(): Color {
 		return this.style.tintColor;
@@ -144,7 +144,7 @@ export const isLoadingProperty = new Property<ImageBase, boolean>({
 });
 isLoadingProperty.register(ImageBase);
 
-export const stretchProperty = new Property<ImageBase, Enums.ImageStretchType>({
+export const stretchProperty = new Property<ImageBase, CoreTypes.ImageStretchType>({
 	name: 'stretch',
 	defaultValue: 'aspectFit',
 	affectsLayout: global.isIOS,
@@ -159,14 +159,14 @@ export const tintColorProperty = new InheritedCssProperty<Style, Color>({
 });
 tintColorProperty.register(Style);
 
-export const decodeHeightProperty = new Property<ImageBase, LengthType>({
+export const decodeHeightProperty = new Property<ImageBase, CoreTypes.LengthType>({
 	name: 'decodeHeight',
 	defaultValue: { value: 0, unit: 'dip' },
 	valueConverter: Length.parse,
 });
 decodeHeightProperty.register(ImageBase);
 
-export const decodeWidthProperty = new Property<ImageBase, LengthType>({
+export const decodeWidthProperty = new Property<ImageBase, CoreTypes.LengthType>({
 	name: 'decodeWidth',
 	defaultValue: { value: 0, unit: 'dip' },
 	valueConverter: Length.parse,

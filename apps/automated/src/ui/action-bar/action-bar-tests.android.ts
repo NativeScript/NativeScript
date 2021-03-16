@@ -15,7 +15,7 @@ export function test_actionItem_visibility() {
 	const menu = toolbar.getMenu();
 
 	TKUnit.assertTrue(menu.hasVisibleItems(), 'Visibility does not work');
-	actionItem.visibility = Enums.Visibility.collapse;
+	actionItem.visibility = CoreTypes.Visibility.collapse;
 	TKUnit.assertFalse(menu.hasVisibleItems(), 'Visibility does not work');
 }
 
@@ -28,7 +28,7 @@ export function test_navigationButton_visibility() {
 	const toolbar = <androidx.appcompat.widget.Toolbar>page.actionBar.nativeViewProtected;
 
 	TKUnit.assertNotNull(toolbar.getNavigationIcon(), 'Visibility does not work');
-	actionItem.visibility = Enums.Visibility.collapse;
+	actionItem.visibility = CoreTypes.Visibility.collapse;
 	TKUnit.assertNull(toolbar.getNavigationIcon(), 'Visibility does not work');
 }
 

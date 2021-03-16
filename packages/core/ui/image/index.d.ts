@@ -3,8 +3,7 @@ import { Style } from '../styling/style';
 import { ImageSource } from '../../image-source';
 import { Color } from '../../color';
 import { Property, InheritedCssProperty } from '../core/properties';
-import { Length } from '../styling/style-properties';
-import { Enums } from '../enums';
+import { CoreTypes } from '../../core-types';
 
 /**
  * Represents a class that provides functionality for loading and streching image(s).
@@ -70,7 +69,7 @@ export const imageSourceProperty: Property<Image, ImageSource>;
 export const srcProperty: Property<Image, any>;
 export const isLoadingProperty: Property<Image, string>;
 export const loadMode: Property<Image, 'sync' | 'async'>;
-export const stretchProperty: Property<Image, Enums.ImageStretchType>;
+export const stretchProperty: Property<Image, CoreTypes.ImageStretchType>;
 export const tintColorProperty: InheritedCssProperty<Style, Color>;
 export const decodeHeightProperty: Property<Image, Length>;
 export const decodeWidthProperty: Property<Image, Length>;

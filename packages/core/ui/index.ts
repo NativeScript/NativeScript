@@ -2,8 +2,6 @@ export { ActionBar, ActionItem, ActionItems, NavigationButton } from './action-b
 export { ActivityIndicator } from './activity-indicator';
 export { Animation, KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './animation';
 export type { AnimationDefinition } from './animation';
-export { BottomNavigation } from './bottom-navigation';
-export type { SelectedIndexChangedEventData } from './bottom-navigation';
 export { Builder } from './builder';
 export type { LoadOptions } from './builder';
 export type { ComponentModule } from './builder/component-builder';
@@ -26,7 +24,6 @@ export { DialogStrings, action, alert, confirm, login, prompt, getCurrentPage, D
 export type { DialogOptions, CancelableOptions, AlertOptions, PromptResult, PromptOptions, ActionOptions, ConfirmOptions, LoginResult, LoginOptions } from './dialogs';
 
 export * from './editable-text-base';
-export { Enums } from './enums';
 export { Frame, setActivityCallbacks } from './frame';
 export type { NavigationEntry, NavigationContext, NavigationTransition, BackstackEntry, ViewEntry, AndroidActivityCallbacks } from './frame';
 
@@ -70,13 +67,7 @@ export { CssAnimationParser, parseKeyframeDeclarations } from './styling/css-ani
 export { CSSHelper } from './styling/css-selector';
 
 export { Switch } from './switch';
-export { TabContentItem } from './tab-navigation-base/tab-content-item';
-export { TabNavigationBase, getIconSpecSize, tabStripProperty } from './tab-navigation-base/tab-navigation-base';
-export { TabStrip } from './tab-navigation-base/tab-strip';
-export type { TabStripItemEventData } from './tab-navigation-base/tab-strip';
-export { TabStripItem } from './tab-navigation-base/tab-strip-item';
 export { TabView, TabViewItem } from './tab-view';
-export { Tabs } from './tabs';
 export { TextBase, getTransformedText, letterSpacingProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, whiteSpaceProperty, lineHeightProperty } from './text-base';
 export { FormattedString } from './text-base/formatted-string';
 export { Span } from './text-base/span';

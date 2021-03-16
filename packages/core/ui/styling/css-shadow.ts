@@ -1,12 +1,13 @@
+import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { Length, LengthType, zeroLength } from './style-properties';
+import { Length, zeroLength } from './style-properties';
 
 export interface CSSShadow {
 	inset: boolean;
-	offsetX: LengthType;
-	offsetY: LengthType;
-	blurRadius?: LengthType;
-	spreadRadius?: LengthType;
+	offsetX: CoreTypes.LengthType;
+	offsetY: CoreTypes.LengthType;
+	blurRadius?: CoreTypes.LengthType;
+	spreadRadius?: CoreTypes.LengthType;
 	color: Color;
 }
 

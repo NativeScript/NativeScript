@@ -1,4 +1,5 @@
 import { PageBase, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from './page-common';
+import { CoreTypes } from '../../core-types';
 import { View } from '../core/view';
 import { Color } from '../../color';
 import { ActionBar } from '../action-bar';
@@ -143,7 +144,9 @@ export class Page extends PageBase {
 		}
 
 		if (this.actionBarHidden || this.accessibilityLabel) {
-			this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
+			this.sendAccessibilityEvent({
+				androidAccessibilityEvent: AndroidAccessibilityEvent.WINDOW_STATE_CHANGED,
+			});
 
 			return;
 		}

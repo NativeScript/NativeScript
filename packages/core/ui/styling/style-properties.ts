@@ -3,8 +3,6 @@ import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, Inher
 import { Style } from '../styling/style';
 import { Transformation, TransformationValue, TransformFunctionsInfo } from '../animation';
 
-import { dip, px, percent } from '../core/view';
-
 import { Color } from '../../color';
 import { Font, parseFont, FontStyle, FontWeight } from '../../ui/styling/font';
 import { layout, hasDuplicates } from '../../utils';
@@ -14,22 +12,15 @@ import { radiansToDegrees } from '../../utils/number-utils';
 
 import { decompose2DTransformMatrix, getTransformMatrix, matrixArrayToCssMatrix, multiplyAffine2d } from '../../matrix';
 import { Trace } from '../../trace';
-import { Enums } from '../enums';
+import { CoreTypes } from '../../core-types';
 
 import * as parser from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
 import { CSSShadow, parseCSSShadow } from './css-shadow';
 
-export type LengthDipUnit = { readonly unit: 'dip'; readonly value: dip };
-export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
-export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
-
-export type LengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit;
-export type PercentLengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
-
-function equalsCommon(a: LengthType, b: LengthType): boolean;
-function equalsCommon(a: PercentLengthType, b: PercentLengthType): boolean;
-function equalsCommon(a: PercentLengthType, b: PercentLengthType): boolean {
+function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
+function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
+function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean {
 	if (a == 'auto') {
 		// tslint:disable-line
 		return b == 'auto'; // tslint:disable-line
@@ -60,7 +51,7 @@ function equalsCommon(a: PercentLengthType, b: PercentLengthType): boolean {
 	return a.value == b.value && a.unit == b.unit; // tslint:disable-line
 }
 
-function convertToStringCommon(length: LengthType | PercentLengthType): string {
+function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentLengthType): string {
 	if (length == 'auto') {
 		// tslint:disable-line
 		return 'auto';
@@ -78,7 +69,7 @@ function convertToStringCommon(length: LengthType | PercentLengthType): string {
 	return val + length.unit;
 }
 
-function toDevicePixelsCommon(length: PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
+function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
 	if (length == 'auto') {
 		// tslint:disable-line
 		return auto;
@@ -101,7 +92,7 @@ function toDevicePixelsCommon(length: PercentLengthType, auto: number = Number.N
 }
 
 export namespace PercentLength {
-	export function parse(fromValue: string | LengthType): PercentLengthType {
+	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.PercentLengthType {
 		if (fromValue == 'auto') {
 			// tslint:disable-line
 			return 'auto';
@@ -110,7 +101,7 @@ export namespace PercentLength {
 			let stringValue = fromValue.trim();
 			const percentIndex = stringValue.indexOf('%');
 			if (percentIndex !== -1) {
-				let value: percent;
+				let value: CoreTypes.percent;
 				// if only % or % is not last we treat it as invalid value.
 				if (percentIndex !== stringValue.length - 1 || percentIndex === 0) {
 					value = Number.NaN;
@@ -126,14 +117,14 @@ export namespace PercentLength {
 				return { unit: '%', value };
 			} else if (stringValue.indexOf('px') !== -1) {
 				stringValue = stringValue.replace('px', '').trim();
-				const value: px = parseFloat(stringValue);
+				const value: CoreTypes.px = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${fromValue}`);
 				}
 
 				return { unit: 'px', value };
 			} else {
-				const value: dip = parseFloat(stringValue);
+				const value: CoreTypes.dip = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${fromValue}`);
 				}
@@ -146,18 +137,18 @@ export namespace PercentLength {
 	}
 
 	export const equals: {
-		(a: PercentLengthType, b: PercentLengthType): boolean;
+		(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
 	} = equalsCommon;
 	export const toDevicePixels: {
-		(length: PercentLengthType, auto: number, parentAvailableWidth: number): number;
+		(length: CoreTypes.PercentLengthType, auto: number, parentAvailableWidth: number): number;
 	} = toDevicePixelsCommon;
 	export const convertToString: {
-		(length: PercentLengthType): string;
+		(length: CoreTypes.PercentLengthType): string;
 	} = convertToStringCommon;
 }
 
 export namespace Length {
-	export function parse(fromValue: string | LengthType): LengthType {
+	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.LengthType {
 		if (fromValue == 'auto') {
 			// tslint:disable-line
 			return 'auto';
@@ -166,14 +157,14 @@ export namespace Length {
 			let stringValue = fromValue.trim();
 			if (stringValue.indexOf('px') !== -1) {
 				stringValue = stringValue.replace('px', '').trim();
-				const value: px = parseFloat(stringValue);
+				const value: CoreTypes.px = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${stringValue}`);
 				}
 
 				return { unit: 'px', value };
 			} else {
-				const value: dip = parseFloat(stringValue);
+				const value: CoreTypes.dip = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${stringValue}`);
 				}
@@ -184,18 +175,18 @@ export namespace Length {
 			return fromValue;
 		}
 	}
-	export const equals: { (a: LengthType, b: LengthType): boolean } = equalsCommon;
+	export const equals: { (a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean } = equalsCommon;
 	export const toDevicePixels: {
-		(length: LengthType, auto?: number): number;
+		(length: CoreTypes.LengthType, auto?: number): number;
 	} = toDevicePixelsCommon;
 	export const convertToString: {
-		(length: LengthType): string;
+		(length: CoreTypes.LengthType): string;
 	} = convertToStringCommon;
 }
 
-export const zeroLength: LengthType = { value: 0, unit: 'px' };
+export const zeroLength: CoreTypes.LengthType = { value: 0, unit: 'px' };
 
-export const minWidthProperty = new CssProperty<Style, LengthType>({
+export const minWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minWidth',
 	cssName: 'min-width',
 	defaultValue: zeroLength,
@@ -213,7 +204,7 @@ export const minWidthProperty = new CssProperty<Style, LengthType>({
 });
 minWidthProperty.register(Style);
 
-export const minHeightProperty = new CssProperty<Style, LengthType>({
+export const minHeightProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minHeight',
 	cssName: 'min-height',
 	defaultValue: zeroLength,
@@ -231,7 +222,7 @@ export const minHeightProperty = new CssProperty<Style, LengthType>({
 });
 minHeightProperty.register(Style);
 
-export const widthProperty = new CssAnimationProperty<Style, PercentLengthType>({
+export const widthProperty = new CssAnimationProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'width',
 	cssName: 'width',
 	defaultValue: 'auto',
@@ -250,7 +241,7 @@ export const widthProperty = new CssAnimationProperty<Style, PercentLengthType>(
 });
 widthProperty.register(Style);
 
-export const heightProperty = new CssAnimationProperty<Style, PercentLengthType>({
+export const heightProperty = new CssAnimationProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'height',
 	cssName: 'height',
 	defaultValue: 'auto',
@@ -269,7 +260,7 @@ export const heightProperty = new CssAnimationProperty<Style, PercentLengthType>
 });
 heightProperty.register(Style);
 
-const marginProperty = new ShorthandProperty<Style, string | PercentLengthType>({
+const marginProperty = new ShorthandProperty<Style, string | CoreTypes.PercentLengthType>({
 	name: 'margin',
 	cssName: 'margin',
 	getter: function (this: Style) {
@@ -283,7 +274,7 @@ const marginProperty = new ShorthandProperty<Style, string | PercentLengthType>(
 });
 marginProperty.register(Style);
 
-export const marginLeftProperty = new CssProperty<Style, PercentLengthType>({
+export const marginLeftProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginLeft',
 	cssName: 'margin-left',
 	defaultValue: zeroLength,
@@ -293,7 +284,7 @@ export const marginLeftProperty = new CssProperty<Style, PercentLengthType>({
 });
 marginLeftProperty.register(Style);
 
-export const marginRightProperty = new CssProperty<Style, PercentLengthType>({
+export const marginRightProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginRight',
 	cssName: 'margin-right',
 	defaultValue: zeroLength,
@@ -303,7 +294,7 @@ export const marginRightProperty = new CssProperty<Style, PercentLengthType>({
 });
 marginRightProperty.register(Style);
 
-export const marginTopProperty = new CssProperty<Style, PercentLengthType>({
+export const marginTopProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginTop',
 	cssName: 'margin-top',
 	defaultValue: zeroLength,
@@ -313,7 +304,7 @@ export const marginTopProperty = new CssProperty<Style, PercentLengthType>({
 });
 marginTopProperty.register(Style);
 
-export const marginBottomProperty = new CssProperty<Style, PercentLengthType>({
+export const marginBottomProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginBottom',
 	cssName: 'margin-bottom',
 	defaultValue: zeroLength,
@@ -323,7 +314,7 @@ export const marginBottomProperty = new CssProperty<Style, PercentLengthType>({
 });
 marginBottomProperty.register(Style);
 
-const paddingProperty = new ShorthandProperty<Style, string | LengthType>({
+const paddingProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
 	name: 'padding',
 	cssName: 'padding',
 	getter: function (this: Style) {
@@ -337,7 +328,7 @@ const paddingProperty = new ShorthandProperty<Style, string | LengthType>({
 });
 paddingProperty.register(Style);
 
-export const paddingLeftProperty = new CssProperty<Style, LengthType>({
+export const paddingLeftProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingLeft',
 	cssName: 'padding-left',
 	defaultValue: zeroLength,
@@ -355,7 +346,7 @@ export const paddingLeftProperty = new CssProperty<Style, LengthType>({
 });
 paddingLeftProperty.register(Style);
 
-export const paddingRightProperty = new CssProperty<Style, LengthType>({
+export const paddingRightProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingRight',
 	cssName: 'padding-right',
 	defaultValue: zeroLength,
@@ -373,7 +364,7 @@ export const paddingRightProperty = new CssProperty<Style, LengthType>({
 });
 paddingRightProperty.register(Style);
 
-export const paddingTopProperty = new CssProperty<Style, LengthType>({
+export const paddingTopProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingTop',
 	cssName: 'padding-top',
 	defaultValue: zeroLength,
@@ -391,7 +382,7 @@ export const paddingTopProperty = new CssProperty<Style, LengthType>({
 });
 paddingTopProperty.register(Style);
 
-export const paddingBottomProperty = new CssProperty<Style, LengthType>({
+export const paddingBottomProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingBottom',
 	cssName: 'padding-bottom',
 	defaultValue: zeroLength,
@@ -409,21 +400,21 @@ export const paddingBottomProperty = new CssProperty<Style, LengthType>({
 });
 paddingBottomProperty.register(Style);
 
-export const horizontalAlignmentProperty = new CssProperty<Style, Enums.HorizontalAlignmentType>({
+export const horizontalAlignmentProperty = new CssProperty<Style, CoreTypes.HorizontalAlignmentType>({
 	name: 'horizontalAlignment',
 	cssName: 'horizontal-align',
-	defaultValue: Enums.HorizontalAlignment.stretch,
+	defaultValue: CoreTypes.HorizontalAlignment.stretch,
 	affectsLayout: global.isIOS,
-	valueConverter: Enums.HorizontalAlignment.parse,
+	valueConverter: CoreTypes.HorizontalAlignment.parse,
 });
 horizontalAlignmentProperty.register(Style);
 
-export const verticalAlignmentProperty = new CssProperty<Style, Enums.VerticalAlignmentTextType>({
+export const verticalAlignmentProperty = new CssProperty<Style, CoreTypes.VerticalAlignmentTextType>({
 	name: 'verticalAlignment',
 	cssName: 'vertical-align',
-	defaultValue: Enums.VerticalAlignmentText.stretch,
+	defaultValue: CoreTypes.VerticalAlignmentText.stretch,
 	affectsLayout: global.isIOS,
-	valueConverter: Enums.VerticalAlignmentText.parse,
+	valueConverter: CoreTypes.VerticalAlignmentText.parse,
 });
 verticalAlignmentProperty.register(Style);
 
@@ -478,7 +469,7 @@ function parseThickness(value: string): Thickness {
 	}
 }
 
-function convertToMargins(this: void, value: string | PercentLengthType): [CssProperty<any, any>, any][] {
+function convertToMargins(this: void, value: string | CoreTypes.PercentLengthType): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
 		const thickness = parseThickness(value);
 
@@ -498,7 +489,7 @@ function convertToMargins(this: void, value: string | PercentLengthType): [CssPr
 	}
 }
 
-function convertToPaddings(this: void, value: string | LengthType): [CssProperty<any, any>, any][] {
+function convertToPaddings(this: void, value: string | CoreTypes.LengthType): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
 		const thickness = parseThickness(value);
 
@@ -566,7 +557,7 @@ export const scaleYProperty = new CssAnimationProperty<Style, number>({
 });
 scaleYProperty.register(Style);
 
-function parseDIPs(value: string): dip {
+function parseDIPs(value: string): CoreTypes.dip {
 	if (value.indexOf('px') !== -1) {
 		return layout.toDeviceIndependentPixels(parseFloat(value.replace('px', '').trim()));
 	} else {
@@ -574,7 +565,7 @@ function parseDIPs(value: string): dip {
 	}
 }
 
-export const translateXProperty = new CssAnimationProperty<Style, dip>({
+export const translateXProperty = new CssAnimationProperty<Style, CoreTypes.dip>({
 	name: 'translateX',
 	cssName: 'translateX',
 	defaultValue: 0,
@@ -582,7 +573,7 @@ export const translateXProperty = new CssAnimationProperty<Style, dip>({
 });
 translateXProperty.register(Style);
 
-export const translateYProperty = new CssAnimationProperty<Style, dip>({
+export const translateYProperty = new CssAnimationProperty<Style, CoreTypes.dip>({
 	name: 'translateY',
 	cssName: 'translateY',
 	defaultValue: 0,
@@ -810,10 +801,10 @@ export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 });
 backgroundColorProperty.register(Style);
 
-export const backgroundRepeatProperty = new CssProperty<Style, Enums.BackgroundRepeatType>({
+export const backgroundRepeatProperty = new CssProperty<Style, CoreTypes.BackgroundRepeatType>({
 	name: 'backgroundRepeat',
 	cssName: 'background-repeat',
-	valueConverter: Enums.BackgroundRepeat.parse,
+	valueConverter: CoreTypes.BackgroundRepeat.parse,
 	valueChanged: (target, oldValue, newValue) => {
 		target.backgroundInternal = target.backgroundInternal.withRepeat(newValue);
 	},
@@ -998,7 +989,7 @@ export const borderLeftColorProperty = new CssProperty<Style, Color>({
 borderLeftColorProperty.register(Style);
 
 // Border Width properties.
-const borderWidthProperty = new ShorthandProperty<Style, string | LengthType>({
+const borderWidthProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
 	name: 'borderWidth',
 	cssName: 'border-width',
 	getter: function (this: Style) {
@@ -1030,7 +1021,7 @@ const borderWidthProperty = new ShorthandProperty<Style, string | LengthType>({
 });
 borderWidthProperty.register(Style);
 
-export const borderTopWidthProperty = new CssProperty<Style, LengthType>({
+export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderTopWidth',
 	cssName: 'border-top-width',
 	defaultValue: zeroLength,
@@ -1054,7 +1045,7 @@ export const borderTopWidthProperty = new CssProperty<Style, LengthType>({
 });
 borderTopWidthProperty.register(Style);
 
-export const borderRightWidthProperty = new CssProperty<Style, LengthType>({
+export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderRightWidth',
 	cssName: 'border-right-width',
 	defaultValue: zeroLength,
@@ -1078,7 +1069,7 @@ export const borderRightWidthProperty = new CssProperty<Style, LengthType>({
 });
 borderRightWidthProperty.register(Style);
 
-export const borderBottomWidthProperty = new CssProperty<Style, LengthType>({
+export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderBottomWidth',
 	cssName: 'border-bottom-width',
 	defaultValue: zeroLength,
@@ -1102,7 +1093,7 @@ export const borderBottomWidthProperty = new CssProperty<Style, LengthType>({
 });
 borderBottomWidthProperty.register(Style);
 
-export const borderLeftWidthProperty = new CssProperty<Style, LengthType>({
+export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderLeftWidth',
 	cssName: 'border-left-width',
 	defaultValue: zeroLength,
@@ -1127,7 +1118,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, LengthType>({
 borderLeftWidthProperty.register(Style);
 
 // Border Radius properties.
-const borderRadiusProperty = new ShorthandProperty<Style, string | LengthType>({
+const borderRadiusProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
 	name: 'borderRadius',
 	cssName: 'border-radius',
 	getter: function (this: Style) {
@@ -1159,7 +1150,7 @@ const borderRadiusProperty = new ShorthandProperty<Style, string | LengthType>({
 });
 borderRadiusProperty.register(Style);
 
-export const borderTopLeftRadiusProperty = new CssProperty<Style, LengthType>({
+export const borderTopLeftRadiusProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderTopLeftRadius',
 	cssName: 'border-top-left-radius',
 	defaultValue: 0,
@@ -1175,7 +1166,7 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, LengthType>({
 });
 borderTopLeftRadiusProperty.register(Style);
 
-export const borderTopRightRadiusProperty = new CssProperty<Style, LengthType>({
+export const borderTopRightRadiusProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderTopRightRadius',
 	cssName: 'border-top-right-radius',
 	defaultValue: 0,
@@ -1191,7 +1182,7 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, LengthType>({
 });
 borderTopRightRadiusProperty.register(Style);
 
-export const borderBottomRightRadiusProperty = new CssProperty<Style, LengthType>({
+export const borderBottomRightRadiusProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderBottomRightRadius',
 	cssName: 'border-bottom-right-radius',
 	defaultValue: 0,
@@ -1207,7 +1198,7 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, LengthType
 });
 borderBottomRightRadiusProperty.register(Style);
 
-export const borderBottomLeftRadiusProperty = new CssProperty<Style, LengthType>({
+export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderBottomLeftRadius',
 	cssName: 'border-bottom-left-radius',
 	defaultValue: 0,
@@ -1423,16 +1414,16 @@ const fontProperty = new ShorthandProperty<Style, string>({
 });
 fontProperty.register(Style);
 
-export const visibilityProperty = new CssProperty<Style, Enums.VisibilityType>({
+export const visibilityProperty = new CssProperty<Style, CoreTypes.VisibilityType>({
 	name: 'visibility',
 	cssName: 'visibility',
-	defaultValue: Enums.Visibility.visible,
+	defaultValue: CoreTypes.Visibility.visible,
 	affectsLayout: global.isIOS,
-	valueConverter: Enums.Visibility.parse,
+	valueConverter: CoreTypes.Visibility.parse,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
 		if (view) {
-			view.isCollapsed = newValue === Enums.Visibility.collapse;
+			view.isCollapsed = newValue === CoreTypes.Visibility.collapse;
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}

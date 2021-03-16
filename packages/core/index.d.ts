@@ -70,6 +70,7 @@ export declare const Connectivity: {
 	startMonitoring: typeof startMonitoring;
 	stopMonitoring: typeof stopMonitoring;
 };
+export { CoreTypes, Enums } from './core-types';
 export { CSSUtils } from './css/system-classes';
 export { ObservableArray, ChangeType } from './data/observable-array';
 export type { ChangedData } from './data/observable-array';

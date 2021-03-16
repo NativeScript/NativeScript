@@ -537,8 +537,8 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
 		view.text = 'NormalText';
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
 
-		TKUnit.assertEqual(view.style.textTransform, Enums.TextTransform.uppercase, 'TextTransform');
-		TKUnit.assertEqual(view.style.textDecoration, Enums.TextDecoration.underline, 'TextDecoration');
+		TKUnit.assertEqual(view.style.textTransform, CoreTypes.TextTransform.uppercase, 'TextTransform');
+		TKUnit.assertEqual(view.style.textDecoration, CoreTypes.TextDecoration.underline, 'TextDecoration');
 		TKUnit.assertEqual(view.style.letterSpacing, 1, 'LetterSpacing');
 	});
 }
@@ -550,8 +550,8 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
 		view.formattedText = formattedString;
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
 
-		TKUnit.assertEqual(view.style.textTransform, Enums.TextTransform.uppercase, 'TextTransform');
-		TKUnit.assertEqual(view.style.textDecoration, Enums.TextDecoration.underline, 'TextDecoration');
+		TKUnit.assertEqual(view.style.textTransform, CoreTypes.TextTransform.uppercase, 'TextTransform');
+		TKUnit.assertEqual(view.style.textDecoration, CoreTypes.TextDecoration.underline, 'TextDecoration');
 		TKUnit.assertEqual(view.style.letterSpacing, 1, 'LetterSpacing');
 	});
 }
