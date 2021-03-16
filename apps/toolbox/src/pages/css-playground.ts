@@ -31,11 +31,13 @@ export class CssPlaygroundModel extends Observable {
 		removeTaggedAdditionalCSS(CSSTag);
 
 		playLabel._onCssStateChange();
+		playLabel.requestLayout();
 	}
 
 	applyCSS(args) {
 		this.resetCSS();
 		addTaggedAdditionalCSS(`#play { ${this.currentCSS}`, CSSTag);
 		playLabel._onCssStateChange();
+		playLabel.requestLayout();
 	}
 }
