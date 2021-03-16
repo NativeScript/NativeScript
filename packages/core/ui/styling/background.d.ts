@@ -31,6 +31,7 @@ export declare class Background {
 	public borderBottomLeftRadius: number;
 	public clipPath: string;
 	public boxShadow: string | CSSShadow;
+	public clearFlags: number;
 
 	public withColor(value: Color): Background;
 	public withImage(value: string | LinearGradient): Background;

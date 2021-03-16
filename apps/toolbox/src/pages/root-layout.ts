@@ -1,5 +1,4 @@
-import { EventData, Page, Observable, RootLayoutOptions, getRootLayout, StackLayout, View } from '@nativescript/core';
-import { Enums } from '@nativescript/core';
+import { EventData, Page, Observable, RootLayoutOptions, getRootLayout, StackLayout, View, CoreTypes } from '@nativescript/core';
 
 export function navigatingTo(args: EventData) {
 	const page = <Page>args.object;

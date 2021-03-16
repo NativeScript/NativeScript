@@ -8,6 +8,7 @@ import * as application from '../../application';
 import { profile } from '../../profiling';
 import { CSSShadow } from './css-shadow';
 import { Length } from './style-properties';
+import { BackgroundClearFlags } from './background-common';
 export * from './background-common';
 
 interface AndroidView {
@@ -43,6 +44,13 @@ export namespace ad {
 		}
 
 		const background = view.style.backgroundInternal;
+
+		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW || background.clearFlags & BackgroundClearFlags.CLEAR_BACKGROUND_COLOR) {
+			// clear background if we're clearing the box shadow
+			// or the background has been removed
+			nativeView.setBackground(null);
+		}
+
 		let drawable = nativeView.getBackground();
 		const androidView = (<any>view) as AndroidView;
 		// use undefined as not set. getBackground will never return undefined only Drawable or null;
@@ -112,8 +120,6 @@ export namespace ad {
 
 		if (background.hasBoxShadow()) {
 			drawBoxShadow(nativeView, view, background.getBoxShadow());
-		} else {
-			clearBoxShadow(nativeView);
 		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
@@ -124,6 +130,9 @@ export namespace ad {
 		const bottomPadding = Math.ceil(view.effectiveBorderBottomWidth + view.effectivePaddingBottom);
 
 		nativeView.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
+
+		// reset clear flags
+		background.clearFlags = BackgroundClearFlags.NONE;
 	}
 }
 
@@ -254,10 +263,6 @@ function drawBoxShadow(nativeView: android.view.View, view: View, boxShadow: CSS
 		offsetY: Length.toDevicePixels(boxShadow.offsetY, 0.0),
 	};
 	org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
-}
-
-function clearBoxShadow(nativeView: android.view.View) {
-	org.nativescript.widgets.Utils.clearBoxShadow(nativeView);
 }
 
 export enum CacheMode {

@@ -6,6 +6,21 @@ import { LinearGradient } from './linear-gradient';
 import { Color } from '../../color';
 import { CSSShadow } from './css-shadow';
 
+/**
+ * Flags used to hint the background handler if it has to clear a specific property
+ *
+ * Flags can be combined with the | operator
+ * for example: BackgroundClearFlags.CLEAR_BACKGROUND_COLOR | BackgroundClearFlags.CLEAR_BOX_SHADOW
+ *
+ * Flags can be checked for using the & operator
+ * for example: if(clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW) { ...clear box shadow... }
+ */
+export const enum BackgroundClearFlags {
+	NONE = 0,
+	CLEAR_BACKGROUND_COLOR = 1 << 0,
+	CLEAR_BOX_SHADOW = 2 << 0,
+}
+
 export class Background implements BackgroundDefinition {
 	public static default = new Background();
 
@@ -28,6 +43,7 @@ export class Background implements BackgroundDefinition {
 	public borderBottomRightRadius = 0;
 	public clipPath: string;
 	public boxShadow: CSSShadow;
+	public clearFlags: number = BackgroundClearFlags.NONE;
 
 	private clone(): Background {
 		const clone = new Background();
@@ -51,6 +67,7 @@ export class Background implements BackgroundDefinition {
 		clone.borderBottomLeftRadius = this.borderBottomLeftRadius;
 		clone.clipPath = this.clipPath;
 		clone.boxShadow = this.boxShadow;
+		clone.clearFlags = this.clearFlags;
 
 		return clone;
 	}
@@ -58,6 +75,9 @@ export class Background implements BackgroundDefinition {
 	public withColor(value: Color): Background {
 		const clone = this.clone();
 		clone.color = value;
+		if (!value) {
+			clone.clearFlags |= BackgroundClearFlags.CLEAR_BACKGROUND_COLOR;
+		}
 
 		return clone;
 	}
@@ -184,6 +204,9 @@ export class Background implements BackgroundDefinition {
 	public withBoxShadow(value: CSSShadow): Background {
 		const clone = this.clone();
 		clone.boxShadow = value;
+		if (!value) {
+			clone.clearFlags |= BackgroundClearFlags.CLEAR_BOX_SHADOW;
+		}
 
 		return clone;
 	}
@@ -229,6 +252,7 @@ export class Background implements BackgroundDefinition {
 			value1.borderBottomRightRadius === value2.borderBottomRightRadius &&
 			value1.borderBottomLeftRadius === value2.borderBottomLeftRadius &&
 			value1.clipPath === value2.clipPath
+			// && value1.clearFlags === value2.clearFlags
 		);
 	}
 
