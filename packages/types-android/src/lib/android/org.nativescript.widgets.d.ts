@@ -4,7 +4,6 @@
 
 						export class Utils {
 								public static drawBoxShadow(view: android.view.View, value: string): void;
-								public static clearBoxShadow(view: android.view.View): void;
 						}
 
 						export class BoxShadowDrawable {

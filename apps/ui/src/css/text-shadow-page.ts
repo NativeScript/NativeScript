@@ -12,7 +12,7 @@ const possibleValues = [
 ];
 let currentIndex = 0;
 
-export function butonTap(args: EventData) {
+export function buttonTap(args: EventData) {
 	let page = (<TextBase>args.object).page;
 	let lbl = <TextBase>page.getViewById('Label');
 	let btn = <TextBase>page.getViewById('Button');
@@ -20,7 +20,7 @@ export function butonTap(args: EventData) {
 	let textView = <TextBase>page.getViewById('TextView');
 
 	let newIndex = currentIndex++ % possibleValues.length;
-	let newValue = <any>possibleValues[newIndex];
+	let newValue = possibleValues[newIndex];
 
 	lbl.textShadow = newValue;
 	btn.textShadow = newValue;

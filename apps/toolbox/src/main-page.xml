@@ -10,6 +10,7 @@
         <Button text="box-shadow" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
         <Button text="root-layout" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
         <Button text="a11y" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
+        <Button text="css-playground" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
       </StackLayout>
     </ScrollView>
   </StackLayout>
