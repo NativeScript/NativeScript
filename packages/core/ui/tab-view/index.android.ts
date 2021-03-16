@@ -3,7 +3,7 @@ import { Font } from '../styling/font';
 
 import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tabTextColorProperty, tabBackgroundColorProperty, tabTextFontSizeProperty, selectedTabTextColorProperty, androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty, traceCategory, traceMissingIcon } from './tab-view-common';
 import { textTransformProperty, getTransformedText } from '../text-base';
-import { Enums } from '../enums';
+import { CoreTypes } from '../../core-types';
 import { ImageSource } from '../../image-source';
 import { Trace } from '../../trace';
 import { Color } from '../../color';
@@ -407,7 +407,7 @@ export class TabViewItem extends TabViewItemBase {
 	[textTransformProperty.getDefault](): 'default' {
 		return 'default';
 	}
-	[textTransformProperty.setNative](value: Enums.TextTransformType | 'default') {
+	[textTransformProperty.setNative](value: CoreTypes.TextTransformType | 'default') {
 		const tv = this.nativeViewProtected;
 		if (value === 'default') {
 			tv.setTransformationMethod(this._defaultTransformationMethod);

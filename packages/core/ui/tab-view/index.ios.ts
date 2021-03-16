@@ -8,7 +8,7 @@ import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { fontInternalProperty } from '../styling/style-properties';
 import { textTransformProperty, getTransformedText } from '../text-base';
-import { Enums } from '../enums';
+import { CoreTypes } from '../../core-types';
 import { ImageSource } from '../../image-source';
 import { profile } from '../../profiling';
 import { Frame } from '../frame';
@@ -280,7 +280,7 @@ export class TabViewItem extends TabViewItemBase {
 		updateTitleAndIconPositions(this, this.__controller.tabBarItem, this.__controller);
 	}
 
-	[textTransformProperty.setNative](value: Enums.TextTransformType) {
+	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
 		this._update();
 	}
 }

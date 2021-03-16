@@ -9,9 +9,8 @@ import { Span } from './span';
 import { View } from '../core/view';
 import { Property, CssProperty, InheritedCssProperty, makeValidator, makeParser } from '../core/properties';
 import { Style } from '../styling/style';
-import { Length, LengthType } from '../styling/style-properties';
 import { Observable } from '../../data/observable';
-import { Enums } from '../enums';
+import { CoreTypes } from '../../core-types';
 import { TextBase as TextBaseDefinition } from '.';
 import { Color } from '../../color';
 import { CSSShadow, parseCSSShadow } from '../styling/css-shadow';
@@ -91,24 +90,24 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.lineHeight = value;
 	}
 
-	get textAlignment(): Enums.TextAlignmentType {
+	get textAlignment(): CoreTypes.TextAlignmentType {
 		return this.style.textAlignment;
 	}
-	set textAlignment(value: Enums.TextAlignmentType) {
+	set textAlignment(value: CoreTypes.TextAlignmentType) {
 		this.style.textAlignment = value;
 	}
 
-	get textDecoration(): Enums.TextDecorationType {
+	get textDecoration(): CoreTypes.TextDecorationType {
 		return this.style.textDecoration;
 	}
-	set textDecoration(value: Enums.TextDecorationType) {
+	set textDecoration(value: CoreTypes.TextDecorationType) {
 		this.style.textDecoration = value;
 	}
 
-	get textTransform(): Enums.TextTransformType {
+	get textTransform(): CoreTypes.TextTransformType {
 		return this.style.textTransform;
 	}
-	set textTransform(value: Enums.TextTransformType) {
+	set textTransform(value: CoreTypes.TextTransformType) {
 		this.style.textTransform = value;
 	}
 
@@ -119,45 +118,45 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.textShadow = value;
 	}
 
-	get whiteSpace(): Enums.WhiteSpaceType {
+	get whiteSpace(): CoreTypes.WhiteSpaceType {
 		return this.style.whiteSpace;
 	}
-	set whiteSpace(value: Enums.WhiteSpaceType) {
+	set whiteSpace(value: CoreTypes.WhiteSpaceType) {
 		this.style.whiteSpace = value;
 	}
 
-	get padding(): string | LengthType {
+	get padding(): string | CoreTypes.LengthType {
 		return this.style.padding;
 	}
-	set padding(value: string | LengthType) {
+	set padding(value: string | CoreTypes.LengthType) {
 		this.style.padding = value;
 	}
 
-	get paddingTop(): LengthType {
+	get paddingTop(): CoreTypes.LengthType {
 		return this.style.paddingTop;
 	}
-	set paddingTop(value: LengthType) {
+	set paddingTop(value: CoreTypes.LengthType) {
 		this.style.paddingTop = value;
 	}
 
-	get paddingRight(): LengthType {
+	get paddingRight(): CoreTypes.LengthType {
 		return this.style.paddingRight;
 	}
-	set paddingRight(value: LengthType) {
+	set paddingRight(value: CoreTypes.LengthType) {
 		this.style.paddingRight = value;
 	}
 
-	get paddingBottom(): LengthType {
+	get paddingBottom(): CoreTypes.LengthType {
 		return this.style.paddingBottom;
 	}
-	set paddingBottom(value: LengthType) {
+	set paddingBottom(value: CoreTypes.LengthType) {
 		this.style.paddingBottom = value;
 	}
 
-	get paddingLeft(): LengthType {
+	get paddingLeft(): CoreTypes.LengthType {
 		return this.style.paddingLeft;
 	}
-	set paddingLeft(value: LengthType) {
+	set paddingLeft(value: CoreTypes.LengthType) {
 		this.style.paddingLeft = value;
 	}
 
@@ -247,8 +246,8 @@ export function getClosestPropertyValue<T>(property: CssProperty<any, T>, span: 
 	}
 }
 
-const textAlignmentConverter = makeParser<Enums.TextAlignmentType>(makeValidator<Enums.TextAlignmentType>('initial', 'left', 'center', 'right'));
-export const textAlignmentProperty = new InheritedCssProperty<Style, Enums.TextAlignmentType>({
+const textAlignmentConverter = makeParser<CoreTypes.TextAlignmentType>(makeValidator<CoreTypes.TextAlignmentType>('initial', 'left', 'center', 'right'));
+export const textAlignmentProperty = new InheritedCssProperty<Style, CoreTypes.TextAlignmentType>({
 	name: 'textAlignment',
 	cssName: 'text-align',
 	defaultValue: 'initial',
@@ -256,8 +255,8 @@ export const textAlignmentProperty = new InheritedCssProperty<Style, Enums.TextA
 });
 textAlignmentProperty.register(Style);
 
-const textTransformConverter = makeParser<Enums.TextTransformType>(makeValidator<Enums.TextTransformType>('initial', 'none', 'capitalize', 'uppercase', 'lowercase'));
-export const textTransformProperty = new CssProperty<Style, Enums.TextTransformType>({
+const textTransformConverter = makeParser<CoreTypes.TextTransformType>(makeValidator<CoreTypes.TextTransformType>('initial', 'none', 'capitalize', 'uppercase', 'lowercase'));
+export const textTransformProperty = new CssProperty<Style, CoreTypes.TextTransformType>({
 	name: 'textTransform',
 	cssName: 'text-transform',
 	defaultValue: 'initial',
@@ -275,8 +274,8 @@ export const textShadowProperty = new CssProperty<Style, string | CSSShadow>({
 });
 textShadowProperty.register(Style);
 
-const whiteSpaceConverter = makeParser<Enums.WhiteSpaceType>(makeValidator<Enums.WhiteSpaceType>('initial', 'normal', 'nowrap'));
-export const whiteSpaceProperty = new CssProperty<Style, Enums.WhiteSpaceType>({
+const whiteSpaceConverter = makeParser<CoreTypes.WhiteSpaceType>(makeValidator<CoreTypes.WhiteSpaceType>('initial', 'normal', 'nowrap'));
+export const whiteSpaceProperty = new CssProperty<Style, CoreTypes.WhiteSpaceType>({
 	name: 'whiteSpace',
 	cssName: 'white-space',
 	defaultValue: 'initial',
@@ -285,8 +284,8 @@ export const whiteSpaceProperty = new CssProperty<Style, Enums.WhiteSpaceType>({
 });
 whiteSpaceProperty.register(Style);
 
-const textDecorationConverter = makeParser<Enums.TextDecorationType>(makeValidator<Enums.TextDecorationType>('none', 'underline', 'line-through', 'underline line-through'));
-export const textDecorationProperty = new CssProperty<Style, Enums.TextDecorationType>({
+const textDecorationConverter = makeParser<CoreTypes.TextDecorationType>(makeValidator<CoreTypes.TextDecorationType>('none', 'underline', 'line-through', 'underline line-through'));
+export const textDecorationProperty = new CssProperty<Style, CoreTypes.TextDecorationType>({
 	name: 'textDecoration',
 	cssName: 'text-decoration',
 	defaultValue: 'none',

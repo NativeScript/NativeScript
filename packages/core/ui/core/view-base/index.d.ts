@@ -2,11 +2,11 @@ import { Property, CssProperty, CssAnimationProperty, InheritedProperty } from '
 import { BindingOptions } from '../bindable';
 import { Observable } from '../../../data/observable';
 import { Style } from '../../styling/style';
-
+import { CoreTypes } from '../../../core-types';
 import { Page } from '../../page';
 
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
-import { Length, LengthType } from '../../styling/style-properties';
+import { Length } from '../../styling/style-properties';
 import { DOMNode } from '../../../debugger/dom-node';
 
 /**
@@ -105,8 +105,8 @@ export interface ShowModalOptions {
 
 export abstract class ViewBase extends Observable {
 	// Dynamic properties.
-	left: LengthType;
-	top: LengthType;
+	left: CoreTypes.LengthType;
+	top: CoreTypes.LengthType;
 	effectiveLeft: number;
 	effectiveTop: number;
 	dock: 'left' | 'top' | 'right' | 'bottom';

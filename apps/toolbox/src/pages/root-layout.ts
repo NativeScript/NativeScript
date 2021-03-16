@@ -78,7 +78,7 @@ export class BoxShadowModel extends Observable {
 						rotate: 180,
 						opacity: 0,
 						duration: 300,
-						curve: Enums.AnimationCurve.spring,
+						curve: CoreTypes.AnimationCurve.spring,
 					},
 				},
 			},

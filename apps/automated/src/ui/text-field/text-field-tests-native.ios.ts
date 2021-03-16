@@ -34,11 +34,11 @@ export function getNativeBackgroundColor(textField: textFieldModule.TextField): 
 export function getNativeTextAlignment(textField: textFieldModule.TextField): string {
 	switch (textField.ios.textAlignment) {
 		case NSTextAlignment.Left:
-			return Enums.TextAlignment.left;
+			return CoreTypes.TextAlignment.left;
 		case NSTextAlignment.Center:
-			return Enums.TextAlignment.center;
+			return CoreTypes.TextAlignment.center;
 		case NSTextAlignment.Right:
-			return Enums.TextAlignment.right;
+			return CoreTypes.TextAlignment.right;
 		default:
 			return 'unexpected value';
 	}

@@ -1,7 +1,8 @@
 import { ItemEventData } from '.';
 import { ListViewBase, separatorColorProperty, itemTemplatesProperty, iosEstimatedRowHeightProperty } from './list-view-common';
+import { CoreTypes } from '../../core-types';
 import { View, KeyedTemplate } from '../core/view';
-import { Length, LengthType } from '../styling/style-properties';
+import { Length } from '../styling/style-properties';
 import { Observable, EventData } from '../../data/observable';
 import { Color } from '../../color';
 import { layout } from '../../utils';
@@ -365,7 +366,7 @@ export class ListView extends ListViewBase {
 		this._heights[index] = value;
 	}
 
-	public _onRowHeightPropertyChanged(oldValue: LengthType, newValue: LengthType) {
+	public _onRowHeightPropertyChanged(oldValue: CoreTypes.LengthType, newValue: CoreTypes.LengthType) {
 		const value = layout.toDeviceIndependentPixels(this._effectiveRowHeight);
 		const nativeView = this.ios;
 		if (value < 0) {
@@ -522,10 +523,10 @@ export class ListView extends ListViewBase {
 		this.refresh();
 	}
 
-	[iosEstimatedRowHeightProperty.getDefault](): LengthType {
+	[iosEstimatedRowHeightProperty.getDefault](): CoreTypes.LengthType {
 		return DEFAULT_HEIGHT;
 	}
-	[iosEstimatedRowHeightProperty.setNative](value: LengthType) {
+	[iosEstimatedRowHeightProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.ios;
 		const estimatedHeight = Length.toDevicePixels(value, 0);
 		nativeView.estimatedRowHeight = estimatedHeight < 0 ? DEFAULT_HEIGHT : estimatedHeight;

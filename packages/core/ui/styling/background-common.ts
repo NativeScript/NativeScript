@@ -1,6 +1,6 @@
 // Deifinitions.
 import { Background as BackgroundDefinition } from './background';
-import { Enums } from '../enums';
+import { CoreTypes } from '../../core-types';
 import { LinearGradient } from './linear-gradient';
 // Types.
 import { Color } from '../../color';
@@ -11,7 +11,7 @@ export class Background implements BackgroundDefinition {
 
 	public color: Color;
 	public image: string | LinearGradient;
-	public repeat: Enums.BackgroundRepeatType;
+	public repeat: CoreTypes.BackgroundRepeatType;
 	public position: string;
 	public size: string;
 	public borderTopColor: Color;
@@ -69,7 +69,7 @@ export class Background implements BackgroundDefinition {
 		return clone;
 	}
 
-	public withRepeat(value: Enums.BackgroundRepeatType): Background {
+	public withRepeat(value: CoreTypes.BackgroundRepeatType): Background {
 		const clone = this.clone();
 		clone.repeat = value;
 

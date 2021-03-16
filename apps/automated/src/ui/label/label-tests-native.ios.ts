@@ -6,11 +6,11 @@ import { getColor } from '../../ui-helper';
 export function getNativeTextAlignment(label: labelModule.Label): string {
 	switch (label.ios.textAlignment) {
 		case NSTextAlignment.Left:
-			return Enums.TextAlignment.left;
+			return CoreTypes.TextAlignment.left;
 		case NSTextAlignment.Center:
-			return Enums.TextAlignment.center;
+			return CoreTypes.TextAlignment.center;
 		case NSTextAlignment.Right:
-			return Enums.TextAlignment.right;
+			return CoreTypes.TextAlignment.right;
 		default:
 			return 'unexpected value';
 	}

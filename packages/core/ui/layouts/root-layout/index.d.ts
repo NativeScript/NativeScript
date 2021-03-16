@@ -1,6 +1,6 @@
 import { GridLayout } from '../grid-layout';
 import { View } from '../../core/view';
-import { AnimationCurve } from '../../enums';
+import { AnimationCurve } from '../../../core-types';
 
 export class RootLayout extends GridLayout {
 	open(view: View, options?: RootLayoutOptions): Promise<void>;

@@ -1,8 +1,32 @@
-﻿import { CubicBezierAnimationCurve } from '../animation';
-import { FontStyleType, FontWeightType } from '../styling/font-common';
+﻿import { CubicBezierAnimationCurve } from '../ui/animation';
+import { FontStyleType, FontWeightType } from '../ui/styling/font-common';
 
-export namespace Enums {
-  
+export namespace CoreTypes {
+	/**
+	 * Denotes a length number that is in device independent pixel units.
+	 */
+	export type dip = number;
+
+	/**
+	 * Denotes a length number that is in physical device pixels.
+	 */
+	export type px = number;
+
+	/**
+	 * Denotes a normalized percent number.
+	 * 0% is represented as 0
+	 * 50% is represented as 0.5
+	 * 100% is represented as 1
+	 */
+	export type percent = number;
+
+	export type LengthDipUnit = { readonly unit: 'dip'; readonly value: dip };
+	export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
+	export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
+
+	export type LengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit;
+	export type PercentLengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
+
 	export type KeyboardInputType = 'datetime' | 'phone' | 'number' | 'url' | 'email' | 'integer';
 	/**
 	 * Represents a soft keyboard flavor.
@@ -44,7 +68,7 @@ export namespace Enums {
 		export const integer: KeyboardInputType;
 	}
 
-  export type ReturnKeyButtonType = 'done' | 'next' | 'go' | 'search' | 'send';
+	export type ReturnKeyButtonType = 'done' | 'next' | 'go' | 'search' | 'send';
 	/**
 	 * Represents the flavor of the return key on the soft keyboard.
 	 */
@@ -80,7 +104,7 @@ export namespace Enums {
 		export const send: string;
 	}
 
-  export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right';
+	export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right';
 	/**
 	 * Represents a text-align enumeration.
 	 */
@@ -116,7 +140,7 @@ export namespace Enums {
 		export const vertical: OrientationType;
 	}
 
-  export type DeviceOrientationType = 'portrait' | 'landscape' | 'unknown';
+	export type DeviceOrientationType = 'portrait' | 'landscape' | 'unknown';
 	/**
 	 * Orientation of a device.
 	 */
@@ -135,7 +159,7 @@ export namespace Enums {
 		export const unknown: string;
 	}
 
-  export type HorizontalAlignmentType = 'left' | 'center' | 'right' | 'stretch';
+	export type HorizontalAlignmentType = 'left' | 'center' | 'right' | 'stretch';
 	/**
 	 * HorizontalAlignment indicates where an element should be displayed on the horizontal axis relative to the allocated layout slot of the parent element.
 	 */
@@ -161,8 +185,8 @@ export namespace Enums {
 		export const stretch: HorizontalAlignmentType;
 	}
 
-  export type VerticalAlignmentType = 'top' | 'middle' | 'bottom' | 'stretch';
-  export type VerticalAlignmentTextType = VerticalAlignmentType & 'text-top' | 'text-bottom' | 'super' | 'sub' | 'baseline';
+	export type VerticalAlignmentType = 'top' | 'middle' | 'bottom' | 'stretch';
+	export type VerticalAlignmentTextType = (VerticalAlignmentType & 'text-top') | 'text-bottom' | 'super' | 'sub' | 'baseline';
 	/**
 	 * VerticalAlignment indicates where an element should be displayed on the horizontal axis relative to the allocated layout slot of the parent element.
 	 */
@@ -193,7 +217,7 @@ export namespace Enums {
 		export const stretch: VerticalAlignmentType;
 	}
 
-  export type ImageStretchType = 'none' | 'aspectFill' | 'aspectFit' | 'fill';
+	export type ImageStretchType = 'none' | 'aspectFill' | 'aspectFit' | 'fill';
 	/**
 	 * Describes how content is resized to fill its allocated space.
 	 */
@@ -222,7 +246,7 @@ export namespace Enums {
 		export const fill: ImageStretchType;
 	}
 
-  export type VisibilityType = 'visible' | 'hidden' | 'collapse' | 'collapsed';
+	export type VisibilityType = 'visible' | 'hidden' | 'collapse' | 'collapsed';
 	/**
 	 * Represents the visibility mode of a view.
 	 */
@@ -235,12 +259,12 @@ export namespace Enums {
 		/**
 		 * The view is not visible and won't take place in the layout.
 		 */
-    export const collapse: VisibilityType;
-    
-    /**
-     * @deprecated Use collapse instead
-     */
-    export const collapsed: VisibilityType;
+		export const collapse: VisibilityType;
+
+		/**
+		 * @deprecated Use collapse instead
+		 */
+		export const collapsed: VisibilityType;
 
 		/**
 		 * The view is not visible but will take place in the layout.
@@ -283,7 +307,7 @@ export namespace Enums {
 		export const Tablet: string;
 	}
 
-  export type UpdateTextTriggerType = 'focusLost' | 'textChanged';
+	export type UpdateTextTriggerType = 'focusLost' | 'textChanged';
 	/**
 	 * Represents an enumeration specifying when the text property of an EditableTextBase will be updated.
 	 */
@@ -314,7 +338,7 @@ export namespace Enums {
 		export const high: number;
 	}
 
-  export type DockType = 'left' | 'top' | 'right' | 'bottom';
+	export type DockType = 'left' | 'top' | 'right' | 'bottom';
 	/**
 	 * Specifies the Dock position of a child element that is inside a DockLayout.
 	 */
@@ -340,7 +364,7 @@ export namespace Enums {
 		export const bottom: DockType;
 	}
 
-  export type AutocapitalizationInputType = 'none' | 'words' | 'sentences' | 'allcharacters';
+	export type AutocapitalizationInputType = 'none' | 'words' | 'sentences' | 'allcharacters';
 	/**
 	 * Represents the auto-capitalization style for a text input.
 	 */
@@ -450,7 +474,7 @@ export namespace Enums {
 		export const italic: FontStyleType;
 	}
 
-  export type TextDecorationType = 'none' | 'underline' | 'line-through' | 'underline line-through';
+	export type TextDecorationType = 'none' | 'underline' | 'line-through' | 'underline line-through';
 	/**
 	 * Specifies different text decorations.
 	 */
@@ -471,7 +495,7 @@ export namespace Enums {
 		export const lineThrough: TextDecorationType;
 	}
 
-  export type TextTransformType = 'initial' | 'none' | 'capitalize' | 'uppercase' | 'lowercase';
+	export type TextTransformType = 'initial' | 'none' | 'capitalize' | 'uppercase' | 'lowercase';
 	/**
 	 * Specifies different text transforms.
 	 */
@@ -497,7 +521,7 @@ export namespace Enums {
 		export const lowercase: TextTransformType;
 	}
 
-  export type WhiteSpaceType = 'initial' | 'normal' | 'nowrap';
+	export type WhiteSpaceType = 'initial' | 'normal' | 'nowrap';
 	/**
 	 * Specifies different white spaces.
 	 */
@@ -563,7 +587,7 @@ export namespace Enums {
 		export const black: FontWeightType;
 	}
 
-  export type BackgroundRepeatType = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
+	export type BackgroundRepeatType = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
 	/**
 	 * Specifies background repeat.
 	 */
@@ -571,9 +595,9 @@ export namespace Enums {
 		export const repeat: BackgroundRepeatType;
 		export const repeatX: BackgroundRepeatType;
 		export const repeatY: BackgroundRepeatType;
-    export const noRepeat: BackgroundRepeatType;
-    export const isValid: (value: any) => BackgroundRepeatType;
-    export const parse: (value: any) => BackgroundRepeatType;
+		export const noRepeat: BackgroundRepeatType;
+		export const isValid: (value: any) => BackgroundRepeatType;
+		export const parse: (value: any) => BackgroundRepeatType;
 	}
 
 	/**
@@ -729,3 +753,8 @@ export namespace Enums {
 	// WhiteSpace: typeof WhiteSpace;
 	// WhiteSpaceType: WhiteSpaceType;
 }
+
+/**
+ * @deprecated Use `CoreTypes` instead. Enums will be removed in 9.0
+ */
+export const Enums: typeof CoreTypes;
