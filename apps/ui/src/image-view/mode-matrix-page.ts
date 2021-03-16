@@ -9,7 +9,7 @@ const sources = [
 	{ src: 'upflip', rotation: 180 },
 	{ src: 'upccw', rotation: 90 },
 ].map(({ src, rotation }) => ({ src: `res://${src}`, rotation }));
-const stretchModes: Enums.ImageStretchType[] = ['none', 'aspectFill', 'aspectFit', 'fill'];
+const stretchModes: CoreTypes.ImageStretchType[] = ['none', 'aspectFill', 'aspectFit', 'fill'];
 
 export function navigatingTo(args) {
 	const grid: GridLayout = args.object.getViewById('root');

@@ -2,7 +2,7 @@
 import { Span as SpanDefinition } from './span';
 import { ViewBase } from '../core/view-base';
 import { FontStyle, FontWeight } from '../styling/font';
-import { Enums } from '../enums';
+import { CoreTypes } from '../../core-types';
 import { EventData } from '../../data/observable';
 import { isNullOrUndefined, isString } from '../../utils/types';
 
@@ -41,10 +41,10 @@ export class Span extends ViewBase implements SpanDefinition {
 		this.style.fontWeight = value;
 	}
 
-	get textDecoration(): Enums.TextDecorationType {
+	get textDecoration(): CoreTypes.TextDecorationType {
 		return this.style.textDecoration;
 	}
-	set textDecoration(value: Enums.TextDecorationType) {
+	set textDecoration(value: CoreTypes.TextDecorationType) {
 		this.style.textDecoration = value;
 	}
 

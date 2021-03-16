@@ -10,7 +10,7 @@ import * as colorModule from '@nativescript/core/color';
 import * as utils from '@nativescript/core/utils/utils';
 import * as observableModule from '@nativescript/core/data/observable';
 import * as bindable from '@nativescript/core/ui/core/bindable';
-import { Enums } from '@nativescript/core';
+import { CoreTypes } from '@nativescript/core';
 import * as labelTestsNative from './label-tests-native';
 import * as fs from '@nativescript/core/file-system';
 
@@ -489,7 +489,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 		const actualResult = view.style.textAlignment;
 		TKUnit.assertEqual(actualResult, this.expectedTextAlignment);
 
-		page.addCss('label { text-align: ' + Enums.TextAlignment.left + '; }');
+		page.addCss('label { text-align: ' + CoreTypes.TextAlignment.left + '; }');
 		TKUnit.assertEqual(view.style.textAlignment, view.style.textAlignment);
 	}
 
@@ -500,7 +500,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
 		view.id = 'testLabel';
 		page.addCss('#testLabel { text-align: ' + this.expectedTextAlignment + '; }');
-		page.addCss('label { text-align: ' + Enums.TextAlignment.left + '; }');
+		page.addCss('label { text-align: ' + CoreTypes.TextAlignment.left + '; }');
 
 		const actualResult = view.style.textAlignment;
 		// actual result is taken from #testLabel tag, because it has a greater priority (id vs type).
@@ -585,8 +585,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 		this.waitUntilTestElementIsLoaded();
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
 
-		TKUnit.assertEqual(view.style.textTransform, Enums.TextTransform.uppercase, 'TextTransform');
-		TKUnit.assertEqual(view.style.textDecoration, Enums.TextDecoration.underline, 'TextDecoration');
+		TKUnit.assertEqual(view.style.textTransform, CoreTypes.TextTransform.uppercase, 'TextTransform');
+		TKUnit.assertEqual(view.style.textDecoration, CoreTypes.TextDecoration.underline, 'TextDecoration');
 		TKUnit.assertEqual(view.style.letterSpacing, 1, 'LetterSpacing');
 	}
 
@@ -597,8 +597,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 		view.formattedText = formattedString;
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
 
-		TKUnit.assertEqual(view.style.textTransform, Enums.TextTransform.uppercase, 'TextTransform');
-		TKUnit.assertEqual(view.style.textDecoration, Enums.TextDecoration.underline, 'TextDecoration');
+		TKUnit.assertEqual(view.style.textTransform, CoreTypes.TextTransform.uppercase, 'TextTransform');
+		TKUnit.assertEqual(view.style.textDecoration, CoreTypes.TextDecoration.underline, 'TextDecoration');
 		TKUnit.assertEqual(view.style.letterSpacing, 1, 'LetterSpacing');
 	}
 

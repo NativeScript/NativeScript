@@ -7,10 +7,10 @@ import { Font } from '../styling/font';
 import { backgroundColorProperty } from '../styling/style-properties';
 import { TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, whiteSpaceProperty, lineHeightProperty, isBold, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
-import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, LengthType } from '../styling/style-properties';
+import { colorProperty, fontSizeProperty, fontInternalProperty, paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../styling/style-properties';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { Enums } from '../enums';
+import { CoreTypes } from '../../core-types';
 import { layout } from '../../utils';
 import { isString, isNullOrUndefined } from '../../utils/types';
 
@@ -95,7 +95,7 @@ function initializeClickableSpan(): void {
 }
 
 interface BaselineAdjustedSpan {
-	new (fontSize: number, align?: Enums.VerticalAlignmentTextType): android.text.style.MetricAffectingSpan;
+	new (fontSize: number, align?: CoreTypes.VerticalAlignmentTextType): android.text.style.MetricAffectingSpan;
 }
 
 let BaselineAdjustedSpan: BaselineAdjustedSpan;
@@ -107,9 +107,9 @@ function initializeBaselineAdjustedSpan(): void {
 	@NativeClass
 	class BaselineAdjustedSpanImpl extends android.text.style.MetricAffectingSpan {
 		fontSize: number;
-		align: Enums.VerticalAlignmentTextType = 'baseline';
+		align: CoreTypes.VerticalAlignmentTextType = 'baseline';
 
-		constructor(fontSize: number, align?: Enums.VerticalAlignmentTextType) {
+		constructor(fontSize: number, align?: CoreTypes.VerticalAlignmentTextType) {
 			super();
 
 			this.align = align;
@@ -261,7 +261,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textTransformProperty.setNative](value: Enums.TextTransformType) {
+	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
 		if (value === 'initial') {
 			this.nativeTextViewProtected.setTransformationMethod(this._defaultTransformationMethod);
 
@@ -276,10 +276,10 @@ export class TextBase extends TextBaseCommon {
 		this.nativeTextViewProtected.setTransformationMethod(new TextTransformation(this));
 	}
 
-	[textAlignmentProperty.getDefault](): Enums.TextAlignmentType {
+	[textAlignmentProperty.getDefault](): CoreTypes.TextAlignmentType {
 		return 'initial';
 	}
-	[textAlignmentProperty.setNative](value: Enums.TextAlignmentType) {
+	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		const verticalGravity = this.nativeTextViewProtected.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
 		switch (value) {
 			case 'initial':
@@ -299,7 +299,7 @@ export class TextBase extends TextBaseCommon {
 
 	// Overridden in TextField because setSingleLine(false) will remove methodTransformation.
 	// and we don't want to allow TextField to be multiline
-	[whiteSpaceProperty.setNative](value: Enums.WhiteSpaceType) {
+	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
 		const nativeView = this.nativeTextViewProtected;
 		switch (value) {
 			case 'initial':
@@ -360,7 +360,7 @@ export class TextBase extends TextBaseCommon {
 		return (this._paintFlags = this.nativeTextViewProtected.getPaintFlags());
 	}
 
-	[textDecorationProperty.setNative](value: number | Enums.TextDecorationType) {
+	[textDecorationProperty.setNative](value: number | CoreTypes.TextDecorationType) {
 		switch (value) {
 			case 'none':
 				this.nativeTextViewProtected.setPaintFlags(0);
@@ -400,31 +400,31 @@ export class TextBase extends TextBaseCommon {
 		org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeTextViewProtected, value);
 	}
 
-	[paddingTopProperty.getDefault](): LengthType {
+	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingTop, unit: 'px' };
 	}
-	[paddingTopProperty.setNative](value: LengthType) {
+	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
 	}
 
-	[paddingRightProperty.getDefault](): LengthType {
+	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingRight, unit: 'px' };
 	}
-	[paddingRightProperty.setNative](value: LengthType) {
+	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
 	}
 
-	[paddingBottomProperty.getDefault](): LengthType {
+	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingBottom, unit: 'px' };
 	}
-	[paddingBottomProperty.setNative](value: LengthType) {
+	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
 	}
 
-	[paddingLeftProperty.getDefault](): LengthType {
+	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingLeft, unit: 'px' };
 	}
-	[paddingLeftProperty.setNative](value: LengthType) {
+	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
 	}
 
@@ -471,7 +471,7 @@ function getCapitalizedString(str: string): string {
 	return newWords.join(' ');
 }
 
-export function getTransformedText(text: string, textTransform: Enums.TextTransformType): string {
+export function getTransformedText(text: string, textTransform: CoreTypes.TextTransformType): string {
 	if (!text || !isString(text)) {
 		return '';
 	}
@@ -567,7 +567,7 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
 		ssb.setSpan(new android.text.style.BackgroundColorSpan(backgroundColor.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 	}
 
-	const textDecoration: Enums.TextDecorationType = getClosestPropertyValue(textDecorationProperty, span);
+	const textDecoration: CoreTypes.TextDecorationType = getClosestPropertyValue(textDecorationProperty, span);
 
 	if (textDecoration) {
 		const underline = textDecoration.indexOf('underline') !== -1;

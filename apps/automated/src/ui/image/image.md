@@ -126,7 +126,7 @@ The second example shows, how we could set up the property via code behind. In t
 import * as Enums from "tns-core-modules/ui/enums"
 
 const image = new ImageModule.Image();
-image.stretch=Enums.Stretch.none;
+image.stretch=CoreTypes.Stretch.none;
 ```
 
 

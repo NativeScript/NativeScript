@@ -1,5 +1,5 @@
 // Definitions.
-import type { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from '.';
+import type { Point, CustomLayoutView as CustomLayoutViewDefinition } from '.';
 import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
@@ -10,8 +10,8 @@ import { Trace } from '../../../trace';
 import { ShowModalOptions } from '../view-base';
 import { EventData } from '../../../data/observable';
 
-import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty, LengthType, PercentLengthType } from '../../styling/style-properties';
-import { Enums } from '../../enums';
+import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
+import { CoreTypes } from '../../../core-types';
 
 import { Background, ad as androidBackground } from '../../styling/background';
 import { profile } from '../../../profiling';
@@ -730,7 +730,7 @@ export class View extends ViewCommon {
 		this.nativeViewProtected.setFocusable(value);
 	}
 
-	[visibilityProperty.getDefault](): Enums.VisibilityType {
+	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
 		const nativeVisibility = this.nativeViewProtected.getVisibility();
 		switch (nativeVisibility) {
 			case android.view.View.VISIBLE:
@@ -743,7 +743,7 @@ export class View extends ViewCommon {
 				throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
 		}
 	}
-	[visibilityProperty.setNative](value: Enums.VisibilityType) {
+	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
 		switch (value) {
 			case 'visible':
 				this.nativeViewProtected.setVisibility(android.view.View.VISIBLE);
@@ -919,10 +919,10 @@ export class View extends ViewCommon {
 		nativeView.setStateListAnimator(stateListAnimator);
 	}
 
-	[horizontalAlignmentProperty.getDefault](): Enums.HorizontalAlignmentType {
-		return <Enums.HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
+	[horizontalAlignmentProperty.getDefault](): CoreTypes.HorizontalAlignmentType {
+		return <CoreTypes.HorizontalAlignmentType>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
 	}
-	[horizontalAlignmentProperty.setNative](value: Enums.HorizontalAlignmentType) {
+	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		// Set only if params gravity exists.
@@ -957,10 +957,10 @@ export class View extends ViewCommon {
 		}
 	}
 
-	[verticalAlignmentProperty.getDefault](): Enums.VerticalAlignmentType {
-		return <Enums.VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
+	[verticalAlignmentProperty.getDefault](): CoreTypes.VerticalAlignmentType {
+		return <CoreTypes.VerticalAlignmentType>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
 	}
-	[verticalAlignmentProperty.setNative](value: Enums.VerticalAlignmentType) {
+	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
 		// Set only if params gravity exists.
@@ -1019,11 +1019,11 @@ export class View extends ViewCommon {
 		org.nativescript.widgets.ViewHelper.setScaleY(this.nativeViewProtected, float(value));
 	}
 
-	[translateXProperty.setNative](value: dip) {
+	[translateXProperty.setNative](value: CoreTypes.dip) {
 		org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeViewProtected, layout.toDevicePixels(value));
 	}
 
-	[translateYProperty.setNative](value: dip) {
+	[translateYProperty.setNative](value: CoreTypes.dip) {
 		org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeViewProtected, layout.toDevicePixels(value));
 	}
 
@@ -1056,7 +1056,7 @@ export class View extends ViewCommon {
 		this._redrawNativeBackground(value);
 	}
 
-	[minWidthProperty.setNative](value: LengthType) {
+	[minWidthProperty.setNative](value: CoreTypes.LengthType) {
 		if (this.parent instanceof CustomLayoutView && this.parent.nativeViewProtected) {
 			this.parent._setChildMinWidthNative(this, value);
 		} else {
@@ -1064,7 +1064,7 @@ export class View extends ViewCommon {
 		}
 	}
 
-	[minHeightProperty.setNative](value: LengthType) {
+	[minHeightProperty.setNative](value: CoreTypes.LengthType) {
 		if (this.parent instanceof CustomLayoutView && this.parent.nativeViewProtected) {
 			this.parent._setChildMinHeightNative(this, value);
 		} else {
@@ -1095,20 +1095,17 @@ export class View extends ViewCommon {
 		}
 	}
 
-	public androidSendAccessibilityEvent(eventName: AndroidAccessibilityEvent, msg?: string): void {
-		if (!isAccessibilityServiceEnabled()) {
-			return;
-		}
-
-		sendAccessibilityEvent(this, eventName, msg);
-	}
-
-	public accessibilityAnnouncement(msg = this.accessibilityLabel): void {
-		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.ANNOUNCEMENT, msg);
+	public accessibilityAnnouncement(message = this.accessibilityLabel): void {
+		this.sendAccessibilityEvent({
+			androidAccessibilityEvent: AndroidAccessibilityEvent.ANNOUNCEMENT,
+			message,
+		});
 	}
 
 	public accessibilityScreenChanged(): void {
-		this.androidSendAccessibilityEvent(AndroidAccessibilityEvent.WINDOW_STATE_CHANGED);
+		this.sendAccessibilityEvent({
+			androidAccessibilityEvent: AndroidAccessibilityEvent.WINDOW_STATE_CHANGED,
+		});
 	}
 }
 
@@ -1145,11 +1142,11 @@ export class CustomLayoutView extends ContainerView implements CustomLayoutViewD
 		// noop
 	}
 
-	public _setChildMinWidthNative(child: View, value: LengthType): void {
+	public _setChildMinWidthNative(child: View, value: CoreTypes.LengthType): void {
 		child._setMinWidthNative(value);
 	}
 
-	public _setChildMinHeightNative(child: View, value: LengthType): void {
+	public _setChildMinHeightNative(child: View, value: CoreTypes.LengthType): void {
 		child._setMinHeightNative(value);
 	}
 
@@ -1186,7 +1183,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 	const { getter, setter, auto = 0 } = options;
 	let setPixels, getPixels, setPercent;
 	if (getter) {
-		View.prototype[getter] = function (this: View): PercentLengthType {
+		View.prototype[getter] = function (this: View): CoreTypes.PercentLengthType {
 			if (options) {
 				setPixels = options.setPixels;
 				getPixels = options.getPixels;
@@ -1203,7 +1200,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 		};
 	}
 	if (setter) {
-		View.prototype[setter] = function (this: View, length: PercentLengthType) {
+		View.prototype[setter] = function (this: View, length: CoreTypes.PercentLengthType) {
 			if (options) {
 				setPixels = options.setPixels;
 				getPixels = options.getPixels;

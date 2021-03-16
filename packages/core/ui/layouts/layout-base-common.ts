@@ -1,8 +1,8 @@
 import { LayoutBase as LayoutBaseDefinition } from './layout-base';
+import { CoreTypes } from '../../core-types';
 import { View, CustomLayoutView, AddChildFromBuilder } from '../core/view';
 import { booleanConverter, getViewById } from '../core/view-base';
 import { Property } from '../core/properties';
-import { LengthType } from '../styling/style-properties';
 
 export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefinition, AddChildFromBuilder {
 	private _subViews = new Array<View>();
@@ -70,38 +70,38 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 		}
 	}
 
-	get padding(): string | LengthType {
+	get padding(): string | CoreTypes.LengthType {
 		return this.style.padding;
 	}
-	set padding(value: string | LengthType) {
+	set padding(value: string | CoreTypes.LengthType) {
 		this.style.padding = value;
 	}
 
-	get paddingTop(): LengthType {
+	get paddingTop(): CoreTypes.LengthType {
 		return this.style.paddingTop;
 	}
-	set paddingTop(value: LengthType) {
+	set paddingTop(value: CoreTypes.LengthType) {
 		this.style.paddingTop = value;
 	}
 
-	get paddingRight(): LengthType {
+	get paddingRight(): CoreTypes.LengthType {
 		return this.style.paddingRight;
 	}
-	set paddingRight(value: LengthType) {
+	set paddingRight(value: CoreTypes.LengthType) {
 		this.style.paddingRight = value;
 	}
 
-	get paddingBottom(): LengthType {
+	get paddingBottom(): CoreTypes.LengthType {
 		return this.style.paddingBottom;
 	}
-	set paddingBottom(value: LengthType) {
+	set paddingBottom(value: CoreTypes.LengthType) {
 		this.style.paddingBottom = value;
 	}
 
-	get paddingLeft(): LengthType {
+	get paddingLeft(): CoreTypes.LengthType {
 		return this.style.paddingLeft;
 	}
-	set paddingLeft(value: LengthType) {
+	set paddingLeft(value: CoreTypes.LengthType) {
 		this.style.paddingLeft = value;
 	}
 

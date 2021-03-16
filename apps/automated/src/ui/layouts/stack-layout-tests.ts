@@ -30,7 +30,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 	}
 
 	public test_orientation_DefaultValue() {
-		TKUnit.assertEqual(this.rootLayout.orientation, Enums.Orientation.vertical, 'Default orientation should be Vertical.');
+		TKUnit.assertEqual(this.rootLayout.orientation, CoreTypes.Orientation.vertical, 'Default orientation should be Vertical.');
 	}
 
 	public test_SetWrongOrientation_ShouldThrowError() {
@@ -42,7 +42,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 	public test_Orientation_Change() {
 		this.waitUntilTestElementLayoutIsValid();
 
-		TKUnit.assertEqual(this.rootLayout.orientation, Enums.Orientation.vertical, 'Default orientation should be Vertical.');
+		TKUnit.assertEqual(this.rootLayout.orientation, CoreTypes.Orientation.vertical, 'Default orientation should be Vertical.');
 
 		this.rootLayout.orientation = 'horizontal';
 		this.waitUntilTestElementLayoutIsValid();
@@ -54,7 +54,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 	public test_ShouldMeasureWith_AtMost_OnVertical() {
 		this.waitUntilTestElementLayoutIsValid();
 
-		TKUnit.assertEqual(this.rootLayout.orientation, Enums.Orientation.vertical, 'StackLayout should be vertical.');
+		TKUnit.assertEqual(this.rootLayout.orientation, CoreTypes.Orientation.vertical, 'StackLayout should be vertical.');
 		TKUnit.assertTrue(this.rootLayout.measured, 'Layout should be measured.');
 		TKUnit.assertTrue(this.rootLayout.arranged, 'Layout should be arranged.');
 

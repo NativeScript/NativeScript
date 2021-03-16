@@ -1,13 +1,13 @@
 import { View } from '../core/view';
 import { LinearGradient } from './linear-gradient';
-
+import { CoreTypes } from '../../core-types';
 import { isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFIX, FILE_PREFIX } from '../../utils';
 import { parse } from '../../css-value';
 import { path, knownFolders } from '../../file-system';
 import * as application from '../../application';
 import { profile } from '../../profiling';
 import { CSSShadow } from './css-shadow';
-import { Length, LengthType } from './style-properties';
+import { Length } from './style-properties';
 export * from './background-common';
 
 interface AndroidView {
@@ -93,7 +93,7 @@ export namespace ad {
 				refreshBorderDrawable(view, backgroundDrawable);
 			} else {
 				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
-				refreshBorderDrawable(view, backgroundDrawable);
+				refreshBorderDrawable(view, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
 				nativeView.setBackground(backgroundDrawable);
 			}
 		} else {
@@ -247,7 +247,7 @@ function createNativeCSSValueArray(css: string): androidNative.Array<org.natives
 function drawBoxShadow(nativeView: android.view.View, view: View, boxShadow: CSSShadow) {
 	const config = {
 		shadowColor: boxShadow.color.android,
-		cornerRadius: Length.toDevicePixels(view.borderRadius as LengthType, 0.0),
+		cornerRadius: Length.toDevicePixels(view.borderRadius as CoreTypes.LengthType, 0.0),
 		spreadRadius: Length.toDevicePixels(boxShadow.spreadRadius, 0.0),
 		blurRadius: Length.toDevicePixels(boxShadow.blurRadius, 0.0),
 		offsetX: Length.toDevicePixels(boxShadow.offsetX, 0.0),

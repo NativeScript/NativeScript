@@ -2,23 +2,23 @@
 import { LayoutBase } from '../layout-base';
 import { CSSType } from '../../core/view';
 import { Property, makeValidator, makeParser } from '../../core/properties';
-import { Length, LengthType } from '../../styling/style-properties';
-import { Enums } from '../../enums';
+import { Length } from '../../styling/style-properties';
+import { CoreTypes } from '../../../core-types';
 
 export * from '../layout-base';
 
 @CSSType('WrapLayout')
 export class WrapLayoutBase extends LayoutBase implements WrapLayoutDefinition {
-	public orientation: Enums.OrientationType;
-	public itemWidth: LengthType;
-	public itemHeight: LengthType;
+	public orientation: CoreTypes.OrientationType;
+	public itemWidth: CoreTypes.LengthType;
+	public itemHeight: CoreTypes.LengthType;
 	public effectiveItemWidth: number;
 	public effectiveItemHeight: number;
 }
 
 WrapLayoutBase.prototype.recycleNativeView = 'auto';
 
-export const itemWidthProperty = new Property<WrapLayoutBase, LengthType>({
+export const itemWidthProperty = new Property<WrapLayoutBase, CoreTypes.LengthType>({
 	name: 'itemWidth',
 	defaultValue: 'auto',
 	affectsLayout: global.isIOS,
@@ -27,7 +27,7 @@ export const itemWidthProperty = new Property<WrapLayoutBase, LengthType>({
 });
 itemWidthProperty.register(WrapLayoutBase);
 
-export const itemHeightProperty = new Property<WrapLayoutBase, LengthType>({
+export const itemHeightProperty = new Property<WrapLayoutBase, CoreTypes.LengthType>({
 	name: 'itemHeight',
 	defaultValue: 'auto',
 	affectsLayout: global.isIOS,
@@ -36,10 +36,10 @@ export const itemHeightProperty = new Property<WrapLayoutBase, LengthType>({
 });
 itemHeightProperty.register(WrapLayoutBase);
 
-const converter = makeParser<Enums.OrientationType>(makeValidator<Enums.OrientationType>(Enums.Orientation.horizontal, Enums.Orientation.vertical));
-export const orientationProperty = new Property<WrapLayoutBase, Enums.OrientationType>({
+const converter = makeParser<CoreTypes.OrientationType>(makeValidator<CoreTypes.OrientationType>(CoreTypes.Orientation.horizontal, CoreTypes.Orientation.vertical));
+export const orientationProperty = new Property<WrapLayoutBase, CoreTypes.OrientationType>({
 	name: 'orientation',
-	defaultValue: Enums.Orientation.horizontal,
+	defaultValue: CoreTypes.Orientation.horizontal,
 	affectsLayout: global.isIOS,
 	valueConverter: converter,
 });

@@ -3,6 +3,7 @@ import { AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../la
 import { Page } from '../../page';
 
 // Types.
+import { CoreTypes } from '../../../core-types';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
 import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug';
@@ -10,7 +11,7 @@ import { Binding, BindingOptions } from '../bindable';
 import { Trace } from '../../../trace';
 import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
-import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, LengthType } from '../../styling/style-properties';
+import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
@@ -284,8 +285,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _automaticallyAdjustsScrollViewInsets: boolean;
 
 	// Dynamic properties.
-	left: LengthType;
-	top: LengthType;
+	left: CoreTypes.LengthType;
+	top: CoreTypes.LengthType;
 	effectiveLeft: number;
 	effectiveTop: number;
 	dock: 'left' | 'top' | 'right' | 'bottom';

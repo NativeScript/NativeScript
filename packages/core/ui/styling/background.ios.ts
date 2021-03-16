@@ -1,5 +1,5 @@
 import { ScrollEventData } from '../scroll-view';
-
+import { CoreTypes } from '../../core-types';
 import { Background as BackgroundDefinition } from './background';
 import { View, Point } from '../core/view';
 import { LinearGradient } from './linear-gradient';
@@ -8,7 +8,7 @@ import { iOSNativeHelper, isDataURI, isFileOrResourcePath, layout } from '../../
 import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
 import { CSSShadow } from './css-shadow';
-import { Length, LengthType } from './style-properties';
+import { Length } from './style-properties';
 
 export * from './background-common';
 
@@ -745,7 +745,7 @@ function drawBoxShadow(nativeView: NativeView, view: View, boxShadow: CSSShadow,
 	);
 
 	// this should match the view's border radius
-	const cornerRadius = Length.toDevicePixels(<LengthType>view.style.borderRadius, 0.0);
+	const cornerRadius = Length.toDevicePixels(<CoreTypes.LengthType>view.style.borderRadius, 0.0);
 
 	// apply spreadRadius by expanding shadow layer bounds
 	// prettier-ignore

@@ -12,8 +12,8 @@ const genericFontFamilies = ['system', 'sans-serif', 'serif', 'monospace'];
 let fontFamilies = [];
 let fontNames = [];
 const embeddedFontNames = ['FontAwesome', 'Pacifico', 'Sofia'];
-const fontStyles = [Enums.FontStyle.normal, Enums.FontStyle.italic];
-const fontWeights = [Enums.FontWeight.thin, Enums.FontWeight.extraLight, Enums.FontWeight.light, Enums.FontWeight.normal, Enums.FontWeight.medium, Enums.FontWeight.semiBold, Enums.FontWeight.bold, Enums.FontWeight.extraBold, Enums.FontWeight.black];
+const fontStyles = [CoreTypes.FontStyle.normal, CoreTypes.FontStyle.italic];
+const fontWeights = [CoreTypes.FontWeight.thin, CoreTypes.FontWeight.extraLight, CoreTypes.FontWeight.light, CoreTypes.FontWeight.normal, CoreTypes.FontWeight.medium, CoreTypes.FontWeight.semiBold, CoreTypes.FontWeight.bold, CoreTypes.FontWeight.extraBold, CoreTypes.FontWeight.black];
 
 let green = new Color('Green');
 let red = new Color('Red');
@@ -111,8 +111,8 @@ function prepareLabel(fontFamily: string, fontStyle: string, fontWeight: string)
 	let label = new Label();
 	label['font-family'] = fontFamily;
 	let fontFamilyCss = `font-family: ${fontFamily}; `;
-	let fontStyleCss = fontStyle !== Enums.FontStyle.normal ? `font-style: ${fontStyle}; ` : '';
-	let fontWeightCss = fontWeight !== Enums.FontWeight.normal ? `font-weight: ${fontWeight}; ` : '';
+	let fontStyleCss = fontStyle !== CoreTypes.FontStyle.normal ? `font-style: ${fontStyle}; ` : '';
+	let fontWeightCss = fontWeight !== CoreTypes.FontWeight.normal ? `font-weight: ${fontWeight}; ` : '';
 	let css = `${fontFamilyCss}${fontStyleCss}${fontWeightCss}`;
 	label.text = `${typeUtils.getClass(label)} {${css}};`;
 	label.textWrap = true;

@@ -12,7 +12,7 @@ import { colorProperty, fontInternalProperty, Length } from '../styling/style-pr
 import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
 import { Trace } from '../../trace';
-import { Enums } from '../enums';
+import { CoreTypes } from '../../core-types';
 
 export * from './text-base-common';
 
@@ -158,7 +158,7 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textAlignmentProperty.setNative](value: Enums.TextAlignmentType) {
+	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		const nativeView = <UITextField | UITextView | UILabel>this.nativeTextViewProtected;
 		switch (value) {
 			case 'initial':
@@ -174,11 +174,11 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textDecorationProperty.setNative](value: Enums.TextDecorationType) {
+	[textDecorationProperty.setNative](value: CoreTypes.TextDecorationType) {
 		this._setNativeText();
 	}
 
-	[textTransformProperty.setNative](value: Enums.TextTransformType) {
+	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
 		this._setNativeText();
 	}
 
@@ -410,7 +410,7 @@ export class TextBase extends TextBaseCommon {
 		return mas;
 	}
 
-	getBaselineOffset(font: UIFont, align?: Enums.VerticalAlignmentTextType): number {
+	getBaselineOffset(font: UIFont, align?: CoreTypes.VerticalAlignmentTextType): number {
 		if (!align || ['stretch', 'baseline'].includes(align)) {
 			return 0;
 		}
@@ -465,7 +465,7 @@ export class TextBase extends TextBaseCommon {
 			attrDict[NSBackgroundColorAttributeName] = backgroundColor.ios;
 		}
 
-		const textDecoration: Enums.TextDecorationType = getClosestPropertyValue(textDecorationProperty, span);
+		const textDecoration: CoreTypes.TextDecorationType = getClosestPropertyValue(textDecorationProperty, span);
 
 		if (textDecoration) {
 			const underline = textDecoration.indexOf('underline') !== -1;
@@ -487,7 +487,7 @@ export class TextBase extends TextBaseCommon {
 	}
 }
 
-export function getTransformedText(text: string, textTransform: Enums.TextTransformType): string {
+export function getTransformedText(text: string, textTransform: CoreTypes.TextTransformType): string {
 	if (!text || !isString(text)) {
 		return '';
 	}

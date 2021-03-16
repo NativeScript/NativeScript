@@ -9,10 +9,10 @@ export function onLoaded(args: { eventName: string; object: any }) {
 
 export function onOrientation(args: { eventName: string; object: any }) {
 	var layout = args.object.parent;
-	if (layout.orientation === Enums.Orientation.vertical) {
-		layout.orientation = Enums.Orientation.horizontal;
+	if (layout.orientation === CoreTypes.Orientation.vertical) {
+		layout.orientation = CoreTypes.Orientation.horizontal;
 	} else {
-		layout.orientation = Enums.Orientation.vertical;
+		layout.orientation = CoreTypes.Orientation.vertical;
 	}
 }
 

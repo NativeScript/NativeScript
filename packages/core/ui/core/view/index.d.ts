@@ -3,11 +3,10 @@ import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
 import { Color } from '../../../color';
 import { Animation, AnimationDefinition, AnimationPromise } from '../../animation';
-import { LengthType, PercentLengthType } from '../../styling/style-properties';
 import { GestureTypes, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/gradient';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AccessibilityEventOptions } from '../../../accessibility/accessibility-types';
-import { Enums } from '../../enums';
+import { CoreTypes } from '../../core-types';
 import { CSSShadow } from '../../styling/css-shadow';
 
 // helpers (these are okay re-exported here)
@@ -41,24 +40,6 @@ export function CSSType(type: string): ClassDecorator;
  * @param type Type of the ModuleType to be matched
  */
 export function viewMatchesModuleContext(view: View, context: ModuleContext, type: ModuleType[]): boolean;
-
-/**
- * Denotes a length number that is in device independent pixel units.
- */
-export type dip = number;
-
-/**
- * Denotes a length number that is in physical device pixels.
- */
-export type px = number;
-
-/**
- * Denotes a normalized percent number.
- * 0% is represented as 0
- * 50% is represented as 0.5
- * 100% is represented as 1
- */
-export type percent = number;
 
 /**
  * The Point interface describes a two dimensional location.
@@ -193,52 +174,52 @@ export abstract class View extends ViewBase {
 	/**
 	 * Gets or sets the border width of the view.
 	 */
-	borderWidth: string | LengthType;
+	borderWidth: string | CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top border width of the view.
 	 */
-	borderTopWidth: LengthType;
+	borderTopWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the right border width of the view.
 	 */
-	borderRightWidth: LengthType;
+	borderRightWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom border width of the view.
 	 */
-	borderBottomWidth: LengthType;
+	borderBottomWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the left border width of the view.
 	 */
-	borderLeftWidth: LengthType;
+	borderLeftWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the border radius of the view.
 	 */
-	borderRadius: string | LengthType;
+	borderRadius: string | CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top left border radius of the view.
 	 */
-	borderTopLeftRadius: LengthType;
+	borderTopLeftRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the top right border radius of the view.
 	 */
-	borderTopRightRadius: LengthType;
+	borderTopRightRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom right border radius of the view.
 	 */
-	borderBottomRightRadius: LengthType;
+	borderBottomRightRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the bottom left border radius of the view.
 	 */
-	borderBottomLeftRadius: LengthType;
+	borderBottomLeftRadius: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the color of the view.
@@ -339,62 +320,62 @@ export abstract class View extends ViewBase {
 	/**
 	 * Gets or sets the minimum width the view may grow to.
 	 */
-	minWidth: LengthType;
+	minWidth: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the minimum height the view may grow to.
 	 */
-	minHeight: LengthType;
+	minHeight: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the desired width of the view.
 	 */
-	width: PercentLengthType;
+	width: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets the desired height of the view.
 	 */
-	height: PercentLengthType;
+	height: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets margin style property.
 	 */
-	margin: string | PercentLengthType;
+	margin: string | CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the left side of this view.
 	 */
-	marginLeft: PercentLengthType;
+	marginLeft: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the top side of this view.
 	 */
-	marginTop: PercentLengthType;
+	marginTop: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the right side of this view.
 	 */
-	marginRight: PercentLengthType;
+	marginRight: CoreTypes.PercentLengthType;
 
 	/**
 	 * Specifies extra space on the bottom side of this view.
 	 */
-	marginBottom: PercentLengthType;
+	marginBottom: CoreTypes.PercentLengthType;
 
 	/**
 	 * Gets or sets the alignment of this view within its parent along the Horizontal axis.
 	 */
-	horizontalAlignment: Enums.HorizontalAlignmentType;
+	horizontalAlignment: CoreTypes.HorizontalAlignmentType;
 
 	/**
 	 * Gets or sets the alignment of this view within its parent along the Vertical axis.
 	 */
-	verticalAlignment: Enums.VerticalAlignmentType;
+	verticalAlignment: CoreTypes.VerticalAlignmentType;
 
 	/**
 	 * Gets or sets the visibility of the view.
 	 */
-	visibility: Enums.VisibilityType;
+	visibility: CoreTypes.VisibilityType;
 
 	/**
 	 * Gets or sets the opacity style property.
@@ -838,11 +819,11 @@ export abstract class View extends ViewBase {
 	/**
 	 * @private
 	 */
-	_setMinWidthNative(value: LengthType): void;
+	_setMinWidthNative(value: CoreTypes.LengthType): void;
 	/**
 	 * @private
 	 */
-	_setMinHeightNative(value: LengthType): void;
+	_setMinHeightNative(value: CoreTypes.LengthType): void;
 	/**
 	 * @private
 	 */
@@ -918,11 +899,11 @@ export class CustomLayoutView extends ContainerView {
 	/**
 	 * @private
 	 */
-	_setChildMinWidthNative(child: View, value: LengthType): void;
+	_setChildMinWidthNative(child: View, value: CoreTypes.LengthType): void;
 	/**
 	 * @private
 	 */
-	_setChildMinHeightNative(child: View, value: LengthType): void;
+	_setChildMinHeightNative(child: View, value: CoreTypes.LengthType): void;
 	//@endprivate
 }
 

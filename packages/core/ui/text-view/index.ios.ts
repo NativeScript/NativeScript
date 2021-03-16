@@ -2,9 +2,10 @@ import { ScrollEventData } from '../scroll-view';
 import { textProperty } from '../text-base';
 import { TextViewBase as TextViewBaseCommon, maxLinesProperty } from './text-view-common';
 import { editableProperty, hintProperty, placeholderColorProperty, _updateCharactersInRangeReplacementString } from '../editable-text-base';
+import { CoreTypes } from '../../core-types';
 import { CSSType } from '../core/view';
 import { Color } from '../../color';
-import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length, LengthType } from '../styling/style-properties';
+import { colorProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length } from '../styling/style-properties';
 import { iOSNativeHelper, layout } from '../../utils';
 
 import { profile } from '../../profiling';
@@ -269,13 +270,13 @@ export class TextView extends TextViewBaseCommon {
 		this._refreshColor();
 	}
 
-	[borderTopWidthProperty.getDefault](): LengthType {
+	[borderTopWidthProperty.getDefault](): CoreTypes.LengthType {
 		return {
 			value: this.nativeTextViewProtected.textContainerInset.top,
 			unit: 'px',
 		};
 	}
-	[borderTopWidthProperty.setNative](value: LengthType) {
+	[borderTopWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const inset = this.nativeTextViewProtected.textContainerInset;
 		const top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
 		this.nativeTextViewProtected.textContainerInset = {
@@ -286,13 +287,13 @@ export class TextView extends TextViewBaseCommon {
 		};
 	}
 
-	[borderRightWidthProperty.getDefault](): LengthType {
+	[borderRightWidthProperty.getDefault](): CoreTypes.LengthType {
 		return {
 			value: this.nativeTextViewProtected.textContainerInset.right,
 			unit: 'px',
 		};
 	}
-	[borderRightWidthProperty.setNative](value: LengthType) {
+	[borderRightWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const inset = this.nativeTextViewProtected.textContainerInset;
 		const right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
 		this.nativeTextViewProtected.textContainerInset = {
@@ -303,13 +304,13 @@ export class TextView extends TextViewBaseCommon {
 		};
 	}
 
-	[borderBottomWidthProperty.getDefault](): LengthType {
+	[borderBottomWidthProperty.getDefault](): CoreTypes.LengthType {
 		return {
 			value: this.nativeTextViewProtected.textContainerInset.bottom,
 			unit: 'px',
 		};
 	}
-	[borderBottomWidthProperty.setNative](value: LengthType) {
+	[borderBottomWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const inset = this.nativeTextViewProtected.textContainerInset;
 		const bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
 		this.nativeTextViewProtected.textContainerInset = {
@@ -320,13 +321,13 @@ export class TextView extends TextViewBaseCommon {
 		};
 	}
 
-	[borderLeftWidthProperty.getDefault](): LengthType {
+	[borderLeftWidthProperty.getDefault](): CoreTypes.LengthType {
 		return {
 			value: this.nativeTextViewProtected.textContainerInset.left,
 			unit: 'px',
 		};
 	}
-	[borderLeftWidthProperty.setNative](value: LengthType) {
+	[borderLeftWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const inset = this.nativeTextViewProtected.textContainerInset;
 		const left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
 		this.nativeTextViewProtected.textContainerInset = {
@@ -337,13 +338,13 @@ export class TextView extends TextViewBaseCommon {
 		};
 	}
 
-	[paddingTopProperty.getDefault](): LengthType {
+	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
 		return {
 			value: this.nativeTextViewProtected.textContainerInset.top,
 			unit: 'px',
 		};
 	}
-	[paddingTopProperty.setNative](value: LengthType) {
+	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
 		const inset = this.nativeTextViewProtected.textContainerInset;
 		const top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
 		this.nativeTextViewProtected.textContainerInset = {
@@ -354,13 +355,13 @@ export class TextView extends TextViewBaseCommon {
 		};
 	}
 
-	[paddingRightProperty.getDefault](): LengthType {
+	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
 		return {
 			value: this.nativeTextViewProtected.textContainerInset.right,
 			unit: 'px',
 		};
 	}
-	[paddingRightProperty.setNative](value: LengthType) {
+	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
 		const inset = this.nativeTextViewProtected.textContainerInset;
 		const right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
 		this.nativeTextViewProtected.textContainerInset = {
@@ -371,13 +372,13 @@ export class TextView extends TextViewBaseCommon {
 		};
 	}
 
-	[paddingBottomProperty.getDefault](): LengthType {
+	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
 		return {
 			value: this.nativeTextViewProtected.textContainerInset.bottom,
 			unit: 'px',
 		};
 	}
-	[paddingBottomProperty.setNative](value: LengthType) {
+	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
 		const inset = this.nativeTextViewProtected.textContainerInset;
 		const bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
 		this.nativeTextViewProtected.textContainerInset = {
@@ -387,13 +388,13 @@ export class TextView extends TextViewBaseCommon {
 			right: inset.right,
 		};
 	}
-	[paddingLeftProperty.getDefault](): LengthType {
+	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
 		return {
 			value: this.nativeTextViewProtected.textContainerInset.left,
 			unit: 'px',
 		};
 	}
-	[paddingLeftProperty.setNative](value: LengthType) {
+	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		const inset = this.nativeTextViewProtected.textContainerInset;
 		const left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
 		this.nativeTextViewProtected.textContainerInset = {

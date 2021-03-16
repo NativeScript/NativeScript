@@ -1,6 +1,6 @@
 // Types
 import { View as ViewDefinition } from '..';
-import { Enums } from '../../../enums';
+import { CoreTypes } from '../../../../core-types';
 
 // Requires
 import { layout } from '../../../../utils';
@@ -58,7 +58,7 @@ export class ViewHelper {
 		const effectiveMarginTop = child.effectiveMarginTop;
 		const effectiveMarginBottom = child.effectiveMarginBottom;
 
-		let vAlignment: Enums.VerticalAlignmentType;
+		let vAlignment: CoreTypes.VerticalAlignmentType;
 		if (child.effectiveHeight >= 0 && childStyle.verticalAlignment === 'stretch') {
 			vAlignment = 'middle';
 		} else {
@@ -88,7 +88,7 @@ export class ViewHelper {
 		const effectiveMarginLeft = child.effectiveMarginLeft;
 		const effectiveMarginRight = child.effectiveMarginRight;
 
-		let hAlignment: Enums.HorizontalAlignmentType;
+		let hAlignment: CoreTypes.HorizontalAlignmentType;
 		if (child.effectiveWidth >= 0 && childStyle.horizontalAlignment === 'stretch') {
 			hAlignment = 'center';
 		} else {

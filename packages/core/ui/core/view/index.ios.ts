@@ -1,5 +1,5 @@
 // Types.
-import { Point, View as ViewDefinition, dip } from '.';
+import { Point, View as ViewDefinition } from '.';
 
 // Requires
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
@@ -12,7 +12,7 @@ import { perspectiveProperty, visibilityProperty, opacityProperty, rotatePropert
 import { profile } from '../../../profiling';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
 import { setupAccessibleView, IOSPostAccessibilityNotificationType, isAccessibilityServiceEnabled, updateAccessibilityProperties, AccessibilityEventOptions, AccessibilityRole, AccessibilityState } from '../../../accessibility';
-import { Enums } from '../../enums';
+import { CoreTypes } from '../../../core-types';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -643,20 +643,20 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.nativeViewProtected.userInteractionEnabled = value;
 	}
 
-	[visibilityProperty.getDefault](): Enums.VisibilityType {
-		return this.nativeViewProtected.hidden ? Enums.Visibility.collapse : Enums.Visibility.visible;
+	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
+		return this.nativeViewProtected.hidden ? CoreTypes.Visibility.collapse : CoreTypes.Visibility.visible;
 	}
-	[visibilityProperty.setNative](value: Enums.VisibilityType) {
+	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
 		switch (value) {
-			case Enums.Visibility.visible:
+			case CoreTypes.Visibility.visible:
 				this.nativeViewProtected.hidden = false;
 				break;
-			case Enums.Visibility.hidden:
-			case Enums.Visibility.collapse:
+			case CoreTypes.Visibility.hidden:
+			case CoreTypes.Visibility.collapse:
 				this.nativeViewProtected.hidden = true;
 				break;
 			default:
-				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Enums.Visibility.visible}", "${Enums.Visibility.hidden}", "${Enums.Visibility.collapse}".`);
+				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}".`);
 		}
 	}
 
@@ -717,17 +717,17 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.updateNativeTransform();
 	}
 
-	[translateXProperty.getDefault](): dip {
+	[translateXProperty.getDefault](): CoreTypes.dip {
 		return 0;
 	}
-	[translateXProperty.setNative](value: dip) {
+	[translateXProperty.setNative](value: CoreTypes.dip) {
 		this.updateNativeTransform();
 	}
 
-	[translateYProperty.getDefault](): dip {
+	[translateYProperty.getDefault](): CoreTypes.dip {
 		return 0;
 	}
-	[translateYProperty.setNative](value: dip) {
+	[translateYProperty.setNative](value: CoreTypes.dip) {
 		this.updateNativeTransform();
 	}
 
