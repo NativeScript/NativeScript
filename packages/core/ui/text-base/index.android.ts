@@ -390,7 +390,13 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[textShadowProperty.setNative](value: CSSShadow) {
-		this.nativeViewProtected.setShadowLayer(Length.toDevicePixels(value.blurRadius, 0), Length.toDevicePixels(value.offsetX, 0), Length.toDevicePixels(value.offsetY, 0), value.color.android);
+		// prettier-ignore
+		this.nativeViewProtected.setShadowLayer(
+			Length.toDevicePixels(value.blurRadius, java.lang.Float.MIN_VALUE),
+			Length.toDevicePixels(value.offsetX, 0),
+			Length.toDevicePixels(value.offsetY, 0),
+			value.color.android
+		);
 	}
 
 	[letterSpacingProperty.getDefault](): number {

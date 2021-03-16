@@ -9,6 +9,7 @@ import { ImageSource } from '../../image-source';
 import { CSSValue, parse as cssParse } from '../../css-value';
 import { CSSShadow } from './css-shadow';
 import { Length } from './style-properties';
+import { BackgroundClearFlags } from './background-common';
 
 export * from './background-common';
 
@@ -47,6 +48,12 @@ export namespace ios {
 	export function createBackgroundUIColor(view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
 		const background = view.style.backgroundInternal;
 		const nativeView = <NativeView>view.nativeViewProtected;
+
+		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW) {
+			// clear box shadow if it has been removed!
+			view.setProperty('clipToBounds', true);
+			clearBoxShadow(nativeView);
+		}
 
 		if (nativeView.hasNonUniformBorder) {
 			unsubscribeFromScrollNotifications(view);
@@ -91,10 +98,10 @@ export namespace ios {
 
 		if (background.hasBoxShadow()) {
 			drawBoxShadow(nativeView, view, background.getBoxShadow(), background);
-		} else {
-			view.setProperty('clipToBounds', true);
-			clearBoxShadow(nativeView);
 		}
+
+		// reset clear flags
+		background.clearFlags = BackgroundClearFlags.NONE;
 	}
 }
 

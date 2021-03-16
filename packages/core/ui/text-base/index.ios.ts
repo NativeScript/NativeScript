@@ -365,16 +365,17 @@ export class TextBase extends TextBaseCommon {
 			return;
 		}
 
-		if (value.color) {
-			layer.shadowOpacity = value.color.a / 255;
-			layer.shadowColor = value.color.ios.CGColor;
-		}
+		// shadow opacity is handled on the shadow's color instance
+		layer.shadowOpacity = value.color?.a ? value.color?.a / 255 : 1;
+		layer.shadowColor = value.color.ios.CGColor;
+		layer.shadowRadius = Length.toDevicePixels(value.blurRadius, 0.0);
 
-		if (value.blurRadius) {
-			layer.shadowRadius = Length.toDevicePixels(value.blurRadius);
-		}
+		// prettier-ignore
+		layer.shadowOffset = CGSizeMake(
+			Length.toDevicePixels(value.offsetX, 0.0),
+			Length.toDevicePixels(value.offsetY, 0.0)
+		);
 
-		layer.shadowOffset = CGSizeMake(Length.toDevicePixels(value.offsetX), Length.toDevicePixels(value.offsetY));
 		layer.masksToBounds = false;
 
 		// NOTE: generally should not need shouldRasterize

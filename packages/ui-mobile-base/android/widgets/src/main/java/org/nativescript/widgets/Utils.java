@@ -14,17 +14,28 @@ public class Utils {
 		}
 		Log.d("BoxShadowDrawable", "drawBoxShadow");
 
-		Drawable wrap = view.getBackground();
-		if(wrap == null) {
-			wrap = new ColorDrawable(Color.TRANSPARENT);
-		} else if(wrap instanceof BoxShadowDrawable) {
-			wrap = ((BoxShadowDrawable) view.getBackground()).getWrappedDrawable();
-			Log.d("BoxShadowDrawable", "already a BoxShadowDrawable, getting wrapped drawable:" + wrap.getClass().getName());
+		Drawable currentBg = view.getBackground();
+
+		if(currentBg != null) {
+			Log.d("BoxShadowDrawable", "current BG is: " + currentBg.getClass().getName());
+		}
+
+		if(currentBg == null) {
+			Log.d("BoxShadowDrawable", "view had no background!");
+			currentBg = new ColorDrawable(Color.TRANSPARENT);
+		} else if(currentBg instanceof BoxShadowDrawable) {
+			currentBg = ((BoxShadowDrawable) view.getBackground()).getWrappedDrawable();
+			Log.d("BoxShadowDrawable", "already a BoxShadowDrawable, getting wrapped drawable:" + currentBg.getClass().getName());
 		}
 
 		// replace background
 		Log.d("BoxShadowDrawable", "replacing background with new BoxShadowDrawable...");
-		view.setBackground(new BoxShadowDrawable(wrap, value));
+		view.setBackground(new BoxShadowDrawable(currentBg, value));
+
+		Drawable bg = view.getBackground();
+		if(bg != null) {
+			Log.d("BoxShadowDrawable", "new current bg: " + bg.getClass().getName());
+		}
 
 		int count = 0;
 		while (view.getParent() != null && view.getParent() instanceof ViewGroup) {
@@ -39,17 +50,21 @@ public class Utils {
 			}
 	}
 
-	public static void clearBoxShadow(View view) {
-		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
-			return;
-		}
-		Log.d("BoxShadowDrawable", "clearBoxShadow.");
-
-		Drawable bg = view.getBackground();
-		if(bg instanceof BoxShadowDrawable) {
-			Drawable original = ((BoxShadowDrawable) view.getBackground()).getWrappedDrawable();
-			Log.d("BoxShadowDrawable", "BoxShadowDrawable found, resetting to original: " + original.getClass().getName());
-			view.setBackground(original);
-		}
-	}
+//	public static void clearBoxShadow(View view) {
+//		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
+//			return;
+//		}
+//		Log.d("BoxShadowDrawable", "clearBoxShadow.");
+//
+//		Drawable bg = view.getBackground();
+//		if(bg != null) {
+//			Log.d("BoxShadowDrawable", "current bg: " + bg.getClass().getName());
+//		}
+//		if(bg instanceof BoxShadowDrawable) {
+//			Drawable original = ((BoxShadowDrawable) view.getBackground()).getWrappedDrawable();
+//			Log.d("BoxShadowDrawable", "BoxShadowDrawable found, resetting to original: " + original.getClass().getName());
+//			view.setBackground(null);
+////			view.setBackground(original);
+//		}
+//	}
 }
