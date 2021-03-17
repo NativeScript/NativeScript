@@ -744,7 +744,12 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     public updateAndroidItemAt(index: number, spec: org.nativescript.widgets.TabItemSpec) {
-        this._bottomNavigationBar.updateItemAt(index, spec);
+        // this can throw when switching light/dark theme mode on device, just ignore
+        try {
+            this._bottomNavigationBar.updateItemAt(index, spec);
+        } catch (err) {
+            // ignore
+        }
     }
 
     public getTabBarBackgroundColor(): android.graphics.drawable.Drawable {
