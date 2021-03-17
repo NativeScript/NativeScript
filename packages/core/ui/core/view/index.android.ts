@@ -7,7 +7,7 @@ import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUser
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
-import { ShowModalOptions } from '../view-base';
+import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { EventData } from '../../../data/observable';
 
 import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty, minWidthProperty, minHeightProperty, widthProperty, heightProperty, marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, rotateProperty, rotateXProperty, rotateYProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty, androidElevationProperty, androidDynamicElevationOffsetProperty } from '../../styling/style-properties';
@@ -728,6 +728,13 @@ export class View extends ViewCommon {
 	[isUserInteractionEnabledProperty.setNative](value: boolean) {
 		this.nativeViewProtected.setClickable(value);
 		this.nativeViewProtected.setFocusable(value);
+	}
+
+	[hiddenProperty.getDefault](): boolean {
+		return this.nativeViewProtected.getVisibility() === android.view.View.GONE;
+	}
+	[hiddenProperty.setNative](value: boolean) {
+		this.nativeViewProtected.setVisibility(value ? android.view.View.GONE : android.view.View.VISIBLE);
 	}
 
 	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {

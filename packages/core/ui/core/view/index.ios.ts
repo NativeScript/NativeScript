@@ -3,7 +3,7 @@ import { Point, View as ViewDefinition } from '.';
 
 // Requires
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
-import { ShowModalOptions } from '../view-base';
+import { ShowModalOptions, hiddenProperty } from '../view-base';
 import { Trace } from '../../../trace';
 import { layout, iOSNativeHelper } from '../../../utils';
 import { IOSHelper } from './view-helper';
@@ -641,6 +641,13 @@ export class View extends ViewCommon implements ViewDefinition {
 	}
 	[isUserInteractionEnabledProperty.setNative](value: boolean) {
 		this.nativeViewProtected.userInteractionEnabled = value;
+	}
+
+	[hiddenProperty.getDefault](): boolean {
+		return this.nativeViewProtected.hidden;
+	}
+	[hiddenProperty.setNative](value: boolean) {
+		this.nativeViewProtected.hidden = value;
 	}
 
 	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
