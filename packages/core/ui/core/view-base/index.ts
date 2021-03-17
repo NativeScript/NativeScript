@@ -1163,6 +1163,19 @@ export const bindingContextProperty = new InheritedProperty<ViewBase, any>({
 });
 bindingContextProperty.register(ViewBase);
 
+export const hiddenProperty = new Property<ViewBase, boolean>({
+	name: 'hidden',
+	defaultValue: false,
+	affectsLayout: global.isIOS,
+	valueConverter: booleanConverter,
+	valueChanged: (target, oldValue, newValue) => {
+		if (target) {
+			target.isCollapsed = !!newValue;
+		}
+	},
+});
+hiddenProperty.register(ViewBase);
+
 export const classNameProperty = new Property<ViewBase, string>({
 	name: 'className',
 	valueChanged(view: ViewBase, oldValue: string, newValue: string) {
