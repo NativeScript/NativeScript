@@ -830,13 +830,18 @@ export class BottomNavigation extends TabNavigationBase {
     }
 
     private setIconColor(tabStripItem: TabStripItem, color?: Color) {
-        const tabBarItem = this._bottomNavigationBar.getViewForItemAt(tabStripItem._index);
+        // this can throw when switching light/dark theme mode on device, just ignore
+        try {
+            const tabBarItem = this._bottomNavigationBar.getViewForItemAt(tabStripItem._index);
 
-        const drawableInfo = this.getIconInfo(tabStripItem, color);
-        const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
-        imgView.setImageDrawable(drawableInfo.drawable);
-        if (color) {
-            imgView.setColorFilter(color.android);
+            const drawableInfo = this.getIconInfo(tabStripItem, color);
+            const imgView = <android.widget.ImageView>tabBarItem.getChildAt(0);
+            imgView.setImageDrawable(drawableInfo.drawable);
+            if (color) {
+                imgView.setColorFilter(color.android);
+            }
+        } catch (err) {
+            // ignore
         }
     }
 
