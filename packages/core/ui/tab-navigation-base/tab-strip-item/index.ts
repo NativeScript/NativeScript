@@ -16,6 +16,8 @@ import { textTransformProperty, TextTransform } from '../../text-base';
 
 @CSSType('TabStripItem')
 export class TabStripItem extends View implements TabStripItemDefinition, AddChildFromBuilder {
+	// defining this here means tap event wont be handled
+	// by the gesture observers
 	public static tapEvent = 'tap';
 	public static selectEvent = 'select';
 	public static unselectEvent = 'unselect';
