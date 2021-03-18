@@ -1,4 +1,4 @@
 import { SpecReporter } from 'jasmine-spec-reporter';
 
 jasmine.getEnv().clearReporters();
-jasmine.getEnv().addReporter(new SpecReporter());
+jasmine.getEnv().addReporter(new SpecReporter() as any);
