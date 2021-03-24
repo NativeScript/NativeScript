@@ -45,21 +45,25 @@ export class RootLayoutBase extends GridLayout {
 						this.updateShadeCover(this.shadeCover, options.shadeCover);
 					}
 
+					view.opacity = 0; // always begin with view invisible when adding dynamically
 					this.insertChild(view, this.getChildrenCount() + 1);
 
 					if (options?.animation?.enterFrom) {
-						this.applyInitialState(view, options.animation.enterFrom);
-						this.getEnterAnimation(view, options.animation.enterFrom)
-							.play()
-							.then(() => {
-								this.applyDefaultState(view);
-								resolve();
-							})
-							.catch((ex) => {
-								if (Trace.isEnabled()) {
-									Trace.write(`Error playing enter animation: ${ex}`, Trace.categories.Layout, Trace.messageType.error);
-								}
-							});
+						setTimeout(() => {
+							// only apply initial state and animate after the first tick - ensures safe areas and other measurements apply correctly
+							this.applyInitialState(view, options.animation.enterFrom);
+							this.getEnterAnimation(view, options.animation.enterFrom)
+								.play()
+								.then(() => {
+									this.applyDefaultState(view);
+									resolve();
+								})
+								.catch((ex) => {
+									if (Trace.isEnabled()) {
+										Trace.write(`Error playing enter animation: ${ex}`, Trace.categories.Layout, Trace.messageType.error);
+									}
+								});
+						});
 					} else {
 						resolve();
 					}
