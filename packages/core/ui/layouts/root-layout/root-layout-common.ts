@@ -88,7 +88,7 @@ export class RootLayoutBase extends GridLayout {
 
 					// update shade cover with the topmost popupView options (if not specifically told to ignore)
 					const shadeCoverOptions = this.popupViews[this.popupViews.length - 1]?.options?.shadeCover;
-					if (shadeCoverOptions && !poppedView?.options?.shadeCover.ignoreShadeRestore) {
+					if (this.shadeCover && shadeCoverOptions && !poppedView?.options?.shadeCover.ignoreShadeRestore) {
 						this.updateShadeCover(this.shadeCover, shadeCoverOptions);
 					}
 
@@ -97,7 +97,7 @@ export class RootLayoutBase extends GridLayout {
 						const exitAnimations: Promise<any>[] = [exitAnimation.play()];
 
 						// add remove shade cover animation if this is the last opened popup view
-						if (this.popupViews.length === 0) {
+						if (this.popupViews.length === 0 && this.shadeCover) {
 							exitAnimations.push(this.closeShadeCover(poppedView.options.shadeCover));
 						}
 						return Promise.all(exitAnimations)
@@ -341,6 +341,7 @@ export class RootLayoutBase extends GridLayout {
 					resolve();
 				});
 			}
+			resolve();
 		});
 	}
 
