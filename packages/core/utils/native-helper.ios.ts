@@ -36,11 +36,11 @@ export namespace iOSNativeHelper {
 	}
 
 	export namespace collections {
-		export function jsArrayToNSArray(str: string[]): NSArray<any> {
-			return NSArray.arrayWithArray(<any>str);
+		export function jsArrayToNSArray<T>(str: T[]): NSArray<T> {
+			return NSArray.arrayWithArray(str);
 		}
 
-		export function nsArrayToJSArray(a: NSArray<any>): Array<Object> {
+		export function nsArrayToJSArray<T>(a: NSArray<T>): Array<T> {
 			const arr = [];
 			if (a !== undefined) {
 				const count = a.count;

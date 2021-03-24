@@ -112,13 +112,13 @@ export namespace iOSNativeHelper {
 		 * Converts JavaScript array to [NSArray](https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSArray_Class/).
 		 * @param str - JavaScript string array to convert.
 		 */
-		export function jsArrayToNSArray(str: string[]): any;
+		export function jsArrayToNSArray<T>(str: T[]): NSArray<T>;
 
 		/**
 		 * Converts NSArray to JavaScript array.
 		 * @param a - NSArray to convert.
 		 */
-		export function nsArrayToJSArray(a: any): string[];
+		export function nsArrayToJSArray<T>(a: NSArray<T>): T[];
 	}
 
 	/**
