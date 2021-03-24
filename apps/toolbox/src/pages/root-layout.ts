@@ -2,10 +2,10 @@ import { EventData, Page, Observable, RootLayoutOptions, getRootLayout, StackLay
 
 export function navigatingTo(args: EventData) {
 	const page = <Page>args.object;
-	page.bindingContext = new BoxShadowModel();
+	page.bindingContext = new RootLayoutModel();
 }
 
-export class BoxShadowModel extends Observable {
+export class RootLayoutModel extends Observable {
 	popupViews: { view: View; options: RootLayoutOptions; extra?: any }[] = [
 		{
 			view: this.getPopup('#EA5936', 110, -30),
