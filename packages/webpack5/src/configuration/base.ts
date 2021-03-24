@@ -81,7 +81,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	config.watchOptions({
 		ignored: [
-			`${getProjectFilePath('platforms')}/platforms/**`,
+			`${getProjectFilePath('platforms')}/**`,
 			`${env.appResourcesPath ?? getProjectFilePath('App_Resources')}/**`
 		]
 	})
@@ -136,6 +136,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// resolve symlinks
 	config.resolve.symlinks(true);
+
+	config.module.rule('bundle')
+		.enforce('post')
+		.test(entryPath)
+		.use('nativescript-hot-loader')
+		.loader('nativescript-hot-loader')
+		.options({
+			injectHMRRuntime: true
+		})
 
 	// set up ts support
 	config.module

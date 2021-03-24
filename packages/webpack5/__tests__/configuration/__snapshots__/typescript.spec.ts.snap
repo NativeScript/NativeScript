@@ -11,7 +11,7 @@ exports[`typescript configuration for android 1`] = `
   target: 'node',
   watchOptions: {
     ignored: [
-      '__jest__/platforms/platforms/**',
+      '__jest__/platforms/**',
       '__jest__/App_Resources/**'
     ]
   },
@@ -50,6 +50,20 @@ exports[`typescript configuration for android 1`] = `
   },
   module: {
     rules: [
+      /* config.module.rule('bundle') */
+      {
+        enforce: 'post',
+        test: '__jest__/src/app.js',
+        use: [
+          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          {
+            loader: 'nativescript-hot-loader',
+            options: {
+              injectHMRRuntime: true
+            }
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [
@@ -315,7 +329,7 @@ exports[`typescript configuration for ios 1`] = `
   target: 'node',
   watchOptions: {
     ignored: [
-      '__jest__/platforms/platforms/**',
+      '__jest__/platforms/**',
       '__jest__/App_Resources/**'
     ]
   },
@@ -354,6 +368,20 @@ exports[`typescript configuration for ios 1`] = `
   },
   module: {
     rules: [
+      /* config.module.rule('bundle') */
+      {
+        enforce: 'post',
+        test: '__jest__/src/app.js',
+        use: [
+          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          {
+            loader: 'nativescript-hot-loader',
+            options: {
+              injectHMRRuntime: true
+            }
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [

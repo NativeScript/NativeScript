@@ -3,6 +3,7 @@ import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 import fs from 'fs';
 
+import { hasDependency } from "../helpers/dependencies";
 import { getPlatformName } from '../helpers/platform';
 import { env as _env, IWebpackEnv } from '../index';
 import { error } from "../helpers/log";
@@ -46,18 +47,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			});
 		});
 
-	config.plugin('ForkTsCheckerWebpackPlugin').tap((args) => {
-		args[0] = merge(args[0], {
-			typescript: {
-				extensions: {
-					vue: {
-						enabled: true,
-						compiler: 'nativescript-vue-template-compiler',
+	config.when(hasDependency('typescript'), (config) => {
+		config.plugin('ForkTsCheckerWebpackPlugin').tap((args) => {
+			args[0] = merge(args[0], {
+				typescript: {
+					extensions: {
+						vue: {
+							enabled: true,
+							compiler: 'nativescript-vue-template-compiler',
+						},
 					},
 				},
-			},
+			});
+			return args;
 		});
-		return args;
 	});
 
 	// add VueLoaderPlugin as the first plugin
