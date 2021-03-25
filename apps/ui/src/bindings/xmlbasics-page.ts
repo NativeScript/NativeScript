@@ -16,7 +16,7 @@ export function stack0Loaded(args: observable.EventData) {
 	target.bind(bindingOptions, source);
 	source.set('textSource', 'Text');
 
-	button.on(buttonModule.Button.tapEvent, function () {
+	button.on(buttonModule.tapEvent, function () {
 		button.text = source.get('textSource');
 	});
 }

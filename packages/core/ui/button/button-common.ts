@@ -3,9 +3,11 @@ import { TextBase } from '../text-base';
 import { CSSType } from '../core/view';
 import { booleanConverter } from '../core/view-base';
 
+
+export const tapEvent = 'tap';
+
 @CSSType('Button')
 export abstract class ButtonBase extends TextBase implements ButtonDefinition {
-	public static tapEvent = 'tap';
 
 	get textWrap(): boolean {
 		return this.style.whiteSpace === 'normal';

@@ -7,7 +7,7 @@ import { Frame } from '@nativescript/core/ui/frame';
 import { Page } from '@nativescript/core/ui/page';
 import { ListView, ItemEventData } from '@nativescript/core/ui/list-view';
 import { TabView, TabViewItem } from '@nativescript/core/ui/tab-view';
-import { Button } from '@nativescript/core/ui/button';
+import { Button, tapEvent} from '@nativescript/core/ui/button';
 
 var ASYNC = 2;
 
@@ -44,7 +44,7 @@ function _createListView(): ListView {
 		var button = <Button>args.view;
 		if (!button) {
 			button = new Button();
-			button.on(Button.tapEvent, _clickHandlerFactory(args.index));
+			button.on(tapEvent, _clickHandlerFactory(args.index));
 			args.view = button;
 		}
 
