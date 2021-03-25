@@ -1,4 +1,4 @@
-import { TextView, Color, Utils, Enums } from '@nativescript/core';
+import { TextView, Color, Utils, CoreTypes } from '@nativescript/core';
 
 export function getNativeText(textView: TextView): string {
 	return textView.android.getText().toString();

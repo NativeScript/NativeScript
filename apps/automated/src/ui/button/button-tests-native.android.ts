@@ -1,4 +1,4 @@
-import { Color, Button, Utils, Enums } from '@nativescript/core';
+import { Color, Button, Utils, CoreTypes } from '@nativescript/core';
 
 export function getNativeText(button: Button): string {
 	return button.android.getText();

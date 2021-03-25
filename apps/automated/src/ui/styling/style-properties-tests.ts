@@ -1,6 +1,6 @@
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { isAndroid, isIOS, Button, Label, TextField, TextView, StackLayout, View, Color, Length, PercentLength, LengthPercentUnit, LengthPxUnit, LengthType } from '@nativescript/core';
+import { isAndroid, isIOS, Button, Label, TextField, TextView, StackLayout, View, Color, Length, PercentLength, CoreTypes } from '@nativescript/core';
 import * as fontModule from '@nativescript/core/ui/styling/font';
 
 export function test_setting_textDecoration_property_from_CSS_is_applied_to_Style() {
@@ -821,7 +821,7 @@ export function test_border_width() {
 
 	testView.style.borderWidth = 10;
 	TKUnit.assertEqual(testView.style.borderWidth, 10, 'all');
-	let expected: LengthType = { value: 10, unit: 'dip' };
+	let expected: CoreTypes.LengthType = { value: 10, unit: 'dip' };
 	TKUnit.assertTrue(Length.equals(testView.style.borderTopWidth, expected));
 	TKUnit.assertTrue(Length.equals(testView.style.borderRightWidth, expected));
 	TKUnit.assertTrue(Length.equals(testView.style.borderBottomWidth, expected));
@@ -841,7 +841,7 @@ export function test_border_radius() {
 	let testView = new Button();
 
 	testView.style.borderRadius = 10;
-	let expected: LengthType = { value: 10, unit: 'dip' };
+	let expected: CoreTypes.LengthType = { value: 10, unit: 'dip' };
 
 	TKUnit.assertTrue(Length.equals(testView.style.borderRadius, expected), 'all');
 	TKUnit.assertTrue(Length.equals(testView.style.borderTopLeftRadius, expected), 'top');
@@ -861,7 +861,7 @@ export function test_border_radius() {
 
 function assertPercentLengthParseInputOutputPairs(pairs: [string, any][]) {
 	pairs.forEach((pair: [string, any]) => {
-		const output = PercentLength.parse(pair[0]) as LengthPxUnit | LengthPercentUnit;
+		const output = PercentLength.parse(pair[0]) as CoreTypes.LengthPxUnit | CoreTypes.LengthPercentUnit;
 		TKUnit.assertEqual(pair[1].unit, output.unit, `PercentLength.parse('${pair[0]}') should return unit '${pair[1].unit}' but returned '${output.unit}'`);
 		TKUnit.assertEqual(pair[1].value.toFixed(2), output.value.toFixed(2), `PercentLength.parse('${pair[0]}') should return value '${pair[1].value}' but returned '${output.value}'`);
 	});

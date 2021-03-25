@@ -2,7 +2,7 @@ import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import { Button } from '@nativescript/core/ui/button';
 import * as TKUnit from '../../tk-unit';
 import * as helper from '../../ui-helper';
-import { Enums } from '@nativescript/core';
+import { CoreTypes } from '@nativescript/core';
 import * as utils from '@nativescript/core/utils/utils';
 import * as testModule from '../../ui-test';
 import * as layoutHelper from './layout-helper';
