@@ -1,4 +1,5 @@
 ﻿import { EventData, TextBase } from '@nativescript/core';
+import { parseCSSShadow } from '@nativescript/core/ui/styling/css-shadow';
 
 // prettier-ignore
 const possibleValues = [
@@ -22,10 +23,10 @@ export function buttonTap(args: EventData) {
 	let newIndex = currentIndex++ % possibleValues.length;
 	let newValue = possibleValues[newIndex];
 
-	lbl.textShadow = newValue;
-	btn.textShadow = newValue;
-	textField.textShadow = newValue;
-	textView.textShadow = newValue;
+	lbl.textShadow = parseCSSShadow(newValue);
+	btn.textShadow = parseCSSShadow(newValue);
+	textField.textShadow = parseCSSShadow(newValue);
+	textView.textShadow = parseCSSShadow(newValue);
 
 	if (lbl.text === 'Change text') {
 		lbl.text = btn.text = textField.text = textView.text = 'Text changed';

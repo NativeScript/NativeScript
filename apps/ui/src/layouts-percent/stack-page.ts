@@ -1,4 +1,4 @@
-﻿import { Enums } from '@nativescript/core';
+﻿import { CoreTypes } from '@nativescript/core';
 import * as pageModule from '@nativescript/core/ui/page';
 import * as model from './myview';
 

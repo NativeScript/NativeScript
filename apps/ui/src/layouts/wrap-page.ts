@@ -1,6 +1,6 @@
-﻿import { Enums } from '@nativescript/core';
-import * as pageModule from '@nativescript/core/ui/page';
+﻿import * as pageModule from '@nativescript/core/ui/page';
 import * as model from './myview';
+import { CoreTypes } from '@nativescript/core/core-types/index';
 
 export function onLoaded(args: { eventName: string; object: any }) {
 	var page = <pageModule.Page>args.object;
