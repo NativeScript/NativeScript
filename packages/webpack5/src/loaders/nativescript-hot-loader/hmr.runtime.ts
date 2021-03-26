@@ -1,125 +1,46 @@
 // @ts-nocheck
 // This is a runtime module - included by nativescript-hot-loader
-// todo: log correct message format for CLI to pick up
-// todo: build CLI service to listen for state changes
+// this file should not include external dependencies
 // ---
 
-import type { IHMRStatusData } from "../../bin/devServer";
-import { Http, Device } from '@nativescript/core'
-
-const uuid = Device.uuid;
-
-console.log(`[HMR] uuid = ${uuid}`)
-
-let __NS_DEV_HOST_URL__;
-Promise.race(__NS_DEV_HOST_IPS__
-	.map(ip => `http://${ip}:8238/`)
-	.map(async url => {
-		await Http.request({
-			method: 'get',
-			url: url + 'ping'
-		})
-
-		return url;
-	})).then(winner => {
-	__NS_DEV_HOST_URL__ = winner
-})
-
-let __SEQ = 0;
-
 if (module.hot) {
-	module.hot.dispose(() => {
-		console.log('Disposing entry file?!')
-		// require('@nativescript/core').Application.resetRootView()
-	})
-
-	const send = (content: object) => {
-		if (__NS_DEV_HOST_URL__) {
-			Http.request({
-				method: 'post',
-				url: __NS_DEV_HOST_URL__,
-				content: JSON.stringify(content)
-			}).catch(err => {
-				console.log(err)
-			})
-		}
+	const setStatus = (hash: string, status: 'success' | 'failure') => {
+		// format is important - CLI expects this exact format
+		console.log(`[HMR][${hash}] ${status}`)
 	}
-
-	const sendStatus = (status, hash) => {
-		send({
-			seq: __SEQ++,
-			uuid,
-			hash,
-			status
-		} as IHMRStatusData)
-	}
-
-	const orig = global.__onLiveSync
-	const log = (type, info) => {
-		// console.log(`[nds] HMR ${type}:`, info)
-	}
-
-	log('init')
-
-	module.hot.addStatusHandler(status => {
-		log('status', status)
-		// sendStatus(status)
-	})
-
+	const originalOnLiveSync = global.__onLiveSync
 	global.__onLiveSync = async function () {
-		// handle hot updates on LiveSync
-		console.log('~~~ livesync ~~~')
-
-		log('checking')
-
 		const hash = __webpack_require__.h();
-
 		await module.hot.check().catch(err => {
-			log('checking-failed', err)
-			sendStatus('failure', hash)
+			setStatus(hash, 'failure')
 		});
-
-		log('checked')
-		log('applying')
-
 		await module.hot.apply({
 			ignoreUnaccepted: false,
 			ignoreDeclined: false,
 			ignoreErrored: false,
-
 			onDeclined(info) {
-				log('declined', info)
-				sendStatus('failure', hash);
+				setStatus(hash, 'failure')
 			},
 			onUnaccepted(info) {
-				log('unaccepted', info)
-				sendStatus('failure', hash);
+				setStatus(hash, 'failure')
 			},
 			onAccepted(info) {
-				log('accepted', info)
+				// console.log('accepted', info)
 			},
 			onDisposed(info) {
-				log('disposed', info)
+				// console.log('disposed', info)
 			},
 			onErrored(info) {
-				log('errored', info)
-				sendStatus('failure', hash);
+				setStatus(hash, 'failure')
 			}
 		}).then(() => {
-			sendStatus('success', hash)
+			setStatus(hash, 'success')
 		}).catch((err) => {
-			sendStatus('failure', hash)
-			log('applying-failed', err)
+			setStatus(hash, 'failure')
 		})
 
-		// log('applying')
-		// await module.hot.apply()
-		log('applying-done')
-		// await module.hot.apply()
 		setTimeout(() => {
-			orig();
-		});
+			originalOnLiveSync();
+		})
 	};
-
-	// global.__onLiveSync()
 }

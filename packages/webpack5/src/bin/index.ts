@@ -8,7 +8,6 @@ import path from 'path';
 import fs from 'fs';
 
 import { parseEnvFlags } from '../cli/parseEnvFlags';
-import { run } from "./devServer";
 
 const defaultConfig = path.resolve(
 	__dirname,
@@ -108,9 +107,6 @@ program
 		}
 
 		if (options.watch) {
-			// run dev server
-			run();
-
 			console.log('webpack is watching the files...')
 			compiler.watch(
 				configuration.watchOptions ?? {},
