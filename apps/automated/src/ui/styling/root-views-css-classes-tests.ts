@@ -1,7 +1,7 @@
 import * as helper from '../../ui-helper';
 import * as TKUnit from '../../tk-unit';
 
-import { Application, isAndroid, isIOS, Device, Button, Page, ShownModallyData, ShowModalOptions, View, Utils, Enums } from '@nativescript/core';
+import { Application, isAndroid, isIOS, Device, Button, Page, ShownModallyData, ShowModalOptions, View, Utils, CoreTypes } from '@nativescript/core';
 import { _rootModalViews } from '@nativescript/core/ui/core/view/view-common';
 
 const CLASS_NAME = 'class-name';

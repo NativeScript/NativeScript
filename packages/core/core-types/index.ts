@@ -310,6 +310,43 @@ export namespace CoreTypes {
 }
 
 /**
- * @deprecated Use `CoreTypes` instead. Enums will be removed in 9.0
+ * @deprecated Use `CoreTypes.dip` instead.
+ */
+export type dip = number;
+
+/**
+ * @deprecated Use `CoreTypes.px` instead.
+ */
+export type px = number;
+
+/**
+ * @deprecated Use `CoreTypes.percent` instead.
+ */
+export type percent = number;
+
+/**
+ * @deprecated Use `CoreTypes.LengthDipUnit` instead.
+ */
+export type LengthDipUnit = { readonly unit: 'dip'; readonly value: dip };
+/**
+ * @deprecated Use `CoreTypes.LengthPxUnit` instead.
+ */
+export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
+/**
+ * @deprecated Use `CoreTypes.LengthPercentUnit` instead.
+ */
+export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
+
+/**
+ * @deprecated Use `CoreTypes.LengthType` instead.
+ */
+export type LengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit;
+/**
+ * @deprecated Use `CoreTypes.PercentLengthType` instead.
+ */
+export type PercentLengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
+
+/**
+ * @deprecated Use `CoreTypes` instead.
  */
 export const Enums: typeof CoreTypes = CoreTypes;

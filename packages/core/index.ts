@@ -77,7 +77,7 @@ export const Connectivity = {
 	stopMonitoring,
 };
 
-export { CoreTypes, Enums } from './core-types';
+export * from './core-types';
 
 export { CSSUtils } from './css/system-classes';
 
