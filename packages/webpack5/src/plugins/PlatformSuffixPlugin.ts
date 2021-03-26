@@ -34,10 +34,6 @@ export class PlatformSuffixPlugin {
 	}
 
 	apply(compiler: any) {
-		console.log(
-			// this.extensions,
-			this.platform
-		);
 		const platformRE = new RegExp(`\.${this.platform}\.`);
 
 		// require.context

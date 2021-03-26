@@ -1,5 +1,6 @@
 const id = 'WatchStatePlugin';
 const version = 1;
+const DEBUG = false;
 
 export enum messages {
 	compilationComplete = 'Webpack compilation complete.',
@@ -12,8 +13,6 @@ export enum messages {
  * So the {N} CLI can get some idea when compilation completes.
  */
 export class WatchStatePlugin {
-	isRunningWatching: boolean;
-
 	apply(compiler: any) {
 		let isWatchMode = false;
 		let prevAssets = [];
@@ -21,8 +20,24 @@ export class WatchStatePlugin {
 		compiler.hooks.watchRun.tapAsync(id, function (compiler, callback) {
 			callback();
 
+			if (isWatchMode) {
+				console.log(messages.changeDetected);
+
+				if (DEBUG) {
+					if (compiler.modifiedFiles) {
+						Array.from(compiler.modifiedFiles).forEach(file => {
+							console.log(`MODIFIED: ${file}`)
+						})
+					}
+
+					if (compiler.removedFiles) {
+						Array.from(compiler.removedFiles).forEach(file => {
+							console.log(`REMOVED: ${file}`)
+						})
+					}
+				}
+			}
 			isWatchMode = true;
-			console.log(messages.changeDetected);
 		});
 
 		compiler.hooks.afterEmit.tapAsync(id, function (compilation, callback) {
@@ -53,21 +68,23 @@ export class WatchStatePlugin {
 			notify({
 				type: 'compilation',
 				version,
-
-				emittedAssets,
-				staleAssets,
 				hash: compilation.hash,
+
+				data: {
+					emittedAssets,
+					staleAssets,
+				}
 			});
 		});
 	}
 }
 
 function notify(message: any) {
+	DEBUG && console.log(`[${id}] Notify: `, message);
 	if (!process.send) {
 		return;
 	}
 
-	console.log(`[${id}] Notify: `, message);
 	process.send(message, (error) => {
 		if (error) {
 			console.error(`[${id}] Process Send Error: `, error);

@@ -8,6 +8,7 @@ import path from 'path';
 import fs from 'fs';
 
 import { parseEnvFlags } from '../cli/parseEnvFlags';
+import { run } from "./devServer";
 
 const defaultConfig = path.resolve(
 	__dirname,
@@ -43,9 +44,10 @@ program
 program
 	.command('build')
 	.description('Build...')
-	.option('--env [name]', 'environment options')
-	.option('--hmr', 'enable HMR')
-	.option('--no-hmr', 'disable HMR')
+	.option('--env [name]', 'environment name')
+	.option('--config [path]', 'config path')
+	// .option('--hmr', 'enable HMR')
+	// .option('--no-hmr', 'disable HMR')
 	.option('--watch', 'watch for changes')
 	.allowUnknownOption()
 	.action((options, command) => {
@@ -56,47 +58,69 @@ program
 		if (options.env) {
 			env['env'] = options.env;
 		}
-		// const env = {
-		// 	platform: 'ios',
-		// 	verbose: true,
-		// 	appResourcesPath: 'App_Resources',
-		// 	appPath: 'src'
-		// }
 
-		const configPath = path.resolve(process.cwd(), 'webpack.config.js');
+		const configPath = (() => {
+			if (options.config) {
+				return path.resolve(options.config);
+			}
+
+			return path.resolve(process.cwd(), 'webpack.config.js')
+		})();
+
 		// todo: validate config exists
 		// todo: guard against invalid config
-		let configuration;
+		let configuration: webpack.Configuration;
 		try {
 			configuration = require(configPath)(env);
-		} catch (ignore) {
-			console.log(ignore);
+		} catch (err) {
+			console.log(err);
 		}
 
 		if (!configuration) {
-			console.log('No configuration!!!!!');
+			console.log('No configuration!');
 			return;
 		}
 
 		const compiler = webpack(configuration);
 
-		// todo: handle --watch flag
-		// todo: promisify callback?
-		compiler.watch(
-			{
-				ignored: ['platforms'],
-			},
-			(err, stats) => {
-				if (stats) {
-					console.log(
-						stats.toString({
-							colors: true,
-						})
-					);
+		const webpackCompilationCallback = (err: webpack.WebpackError, stats: webpack.Stats) => {
+			if (err) {
+				// Do not keep cache anymore
+				compiler.purgeInputFileSystem();
+
+				console.error(err.stack || err);
+				if (err.details) {
+					console.error(err.details);
 				}
-				// err && console.log(err)
+
+				process.exitCode = 1;
+				return;
 			}
-		);
+
+			if (stats) {
+				console.log(
+					stats.toString({
+						chunks: false,
+						colors: true,
+					})
+				);
+			}
+		}
+
+		if (options.watch) {
+			// run dev server
+			run();
+
+			console.log('webpack is watching the files...')
+			compiler.watch(
+				configuration.watchOptions ?? {},
+				webpackCompilationCallback
+			);
+		} else {
+			compiler.run(
+				webpackCompilationCallback
+			);
+		}
 	});
 
 program.parse(process.argv);
