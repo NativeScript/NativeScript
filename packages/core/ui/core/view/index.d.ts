@@ -6,7 +6,7 @@ import { Animation, AnimationDefinition, AnimationPromise } from '../../animatio
 import { GestureTypes, GesturesObserver } from '../../gestures';
 import { LinearGradient } from '../../styling/gradient';
 import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, AccessibilityEventOptions } from '../../../accessibility/accessibility-types';
-import { CoreTypes } from '../../core-types';
+import { CoreTypes } from '../../../core-types';
 import { CSSShadow } from '../../styling/css-shadow';
 
 // helpers (these are okay re-exported here)

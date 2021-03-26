@@ -10,12 +10,12 @@ export class DockLayout extends LayoutBase {
 	/**
 	 * Gets the value of the Dock property from a given View.
 	 */
-	static getDock(view: View): Dock;
+	static getDock(view: View): CoreTypes.DockType;
 
 	/**
 	 * Sets the value of the Dock property from a given View.
 	 */
-	static setDock(view: View, value: Dock): void;
+	static setDock(view: View, value: CoreTypes.DockType): void;
 
 	/**
 	 * Gets or sets a value that indicates whether the last child element within a DockLayout stretches to fill the remaining available space.

@@ -66,27 +66,27 @@ export class TextBase extends View implements AddChildFromBuilder {
 	/**
 	 * Gets or sets padding style property.
 	 */
-	padding: string | Length;
+	padding: string | CoreTypes.LengthType;
 
 	/**
 	 * Specify the bottom padding of this layout.
 	 */
-	paddingBottom: Length;
+	paddingBottom: CoreTypes.LengthType;
 
 	/**
 	 * Specify the left padding of this layout.
 	 */
-	paddingLeft: Length;
+	paddingLeft: CoreTypes.LengthType;
 
 	/**
 	 * Specify the right padding of this layout.
 	 */
-	paddingRight: Length;
+	paddingRight: CoreTypes.LengthType;
 
 	/**
 	 * Specify the top padding of this layout.
 	 */
-	paddingTop: Length;
+	paddingTop: CoreTypes.LengthType;
 
 	/**
 	 * Called for every child element declared in xml.

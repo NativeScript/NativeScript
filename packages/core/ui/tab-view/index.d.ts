@@ -7,6 +7,7 @@ import { ViewBase } from '../core/view-base';
 import { Property, CssProperty } from '../core/properties';
 import { EventData } from '../../data/observable';
 import { Color } from '../../color';
+import { CoreTypes } from '../../core-types';
 import { Style } from '../styling/style';
 import { TextTransform } from '../text-base';
 /**
@@ -31,7 +32,7 @@ export class TabViewItem extends ViewBase {
 	/**
 	 * Gets or sets the text transform of the tab titles.
 	 */
-	textTransform: TextTransform;
+	textTransform: CoreTypes.TextTransformType;
 
 	/**
 	 * @private
