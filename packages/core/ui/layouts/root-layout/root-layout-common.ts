@@ -48,25 +48,21 @@ export class RootLayoutBase extends GridLayout {
 					view.opacity = 0; // always begin with view invisible when adding dynamically
 					this.insertChild(view, this.getChildrenCount() + 1);
 
-					if (options?.animation?.enterFrom) {
-						setTimeout(() => {
-							// only apply initial state and animate after the first tick - ensures safe areas and other measurements apply correctly
-							this.applyInitialState(view, options.animation.enterFrom);
-							this.getEnterAnimation(view, options.animation.enterFrom)
-								.play()
-								.then(() => {
-									this.applyDefaultState(view);
-									resolve();
-								})
-								.catch((ex) => {
-									if (Trace.isEnabled()) {
-										Trace.write(`Error playing enter animation: ${ex}`, Trace.categories.Layout, Trace.messageType.error);
-									}
-								});
-						});
-					} else {
-						resolve();
-					}
+					setTimeout(() => {
+						// only apply initial state and animate after the first tick - ensures safe areas and other measurements apply correctly
+						this.applyInitialState(view, options.animation ? options.animation.enterFrom : null);
+						this.getEnterAnimation(view, options.animation ? options.animation.enterFrom : null)
+							.play()
+							.then(() => {
+								this.applyDefaultState(view);
+								resolve();
+							})
+							.catch((ex) => {
+								if (Trace.isEnabled()) {
+									Trace.write(`Error playing enter animation: ${ex}`, Trace.categories.Layout, Trace.messageType.error);
+								}
+							});
+					});
 				}
 			} catch (ex) {
 				if (Trace.isEnabled()) {
@@ -253,7 +249,7 @@ export class RootLayoutBase extends GridLayout {
 	private applyInitialState(targetView: View, enterFrom: TransitionAnimation): void {
 		const animationOptions = {
 			...defaultTransitionAnimation,
-			...enterFrom,
+			...(enterFrom || {}),
 		};
 		targetView.translateX = animationOptions.translateX;
 		targetView.translateY = animationOptions.translateY;
@@ -275,7 +271,7 @@ export class RootLayoutBase extends GridLayout {
 	private getEnterAnimation(targetView: View, enterFrom: TransitionAnimation): Animation {
 		const animationOptions = {
 			...defaultTransitionAnimation,
-			...enterFrom,
+			...(enterFrom || {}),
 		};
 		return new Animation([
 			{
