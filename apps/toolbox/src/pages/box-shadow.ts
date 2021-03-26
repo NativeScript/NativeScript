@@ -1,5 +1,4 @@
-import { Observable } from '@nativescript/core';
-import { EventData, Page } from '@nativescript/core';
+import { Observable, EventData, Page } from '@nativescript/core';
 
 export function navigatingTo(args: EventData) {
 	const page = <Page>args.object;

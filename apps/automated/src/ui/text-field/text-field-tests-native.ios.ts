@@ -1,7 +1,7 @@
 ﻿import * as textFieldModule from '@nativescript/core/ui/text-field';
 import * as colorModule from '@nativescript/core/color';
 import { getColor } from '../../ui-helper';
-import { Enums } from '@nativescript/core';
+import { CoreTypes } from '@nativescript/core';
 
 export function getNativeText(textField: textFieldModule.TextField): string {
 	return textField.ios.text;

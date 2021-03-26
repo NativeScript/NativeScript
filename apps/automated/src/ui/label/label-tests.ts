@@ -10,7 +10,7 @@ import * as colorModule from '@nativescript/core/color';
 import * as utils from '@nativescript/core/utils/utils';
 import * as observableModule from '@nativescript/core/data/observable';
 import * as bindable from '@nativescript/core/ui/core/bindable';
-import { CoreTypes } from '@nativescript/core';
+import { CoreTypes, Span, FormattedString } from '@nativescript/core';
 import * as labelTestsNative from './label-tests-native';
 import * as fs from '@nativescript/core/file-system';
 
@@ -20,7 +20,6 @@ import { isIOS, isAndroid } from '@nativescript/core/platform';
 import { Label } from '@nativescript/core/ui/label';
 import { LayoutBase } from '@nativescript/core/ui/layouts/layout-base';
 import * as helper from '../../ui-helper';
-import { Span, FormattedString } from '@nativescript/core';
 
 const testDir = 'ui/label';
 

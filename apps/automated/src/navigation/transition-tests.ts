@@ -1,10 +1,9 @@
 import * as helper from '../ui-helper';
 import * as platform from '@nativescript/core/platform';
-import { Trace } from '@nativescript/core';
+import { Trace, CoreTypes } from '@nativescript/core';
 import { Color } from '@nativescript/core/color';
 import { NavigationEntry, NavigationTransition } from '@nativescript/core/ui/frame';
 import { Page } from '@nativescript/core/ui/page';
-import { CoreTypes } from '@nativescript/core';
 import { CustomTransition } from './custom-transition';
 
 function _testTransition(navigationTransition: NavigationTransition) {

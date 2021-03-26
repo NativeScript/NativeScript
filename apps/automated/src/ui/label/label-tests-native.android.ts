@@ -1,5 +1,5 @@
 import * as labelModule from '@nativescript/core/ui/label';
-import { Enums } from '@nativescript/core';
+import { CoreTypes } from '@nativescript/core';
 import * as colorModule from '@nativescript/core/color';
 
 export function getNativeTextAlignment(label: labelModule.Label): string {

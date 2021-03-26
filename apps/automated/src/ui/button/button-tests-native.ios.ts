@@ -1,6 +1,6 @@
 ﻿import * as buttonModule from '@nativescript/core/ui/button';
 import * as colorModule from '@nativescript/core/color';
-import { Enums } from '@nativescript/core';
+import { CoreTypes } from '@nativescript/core';
 import { getColor } from '../../ui-helper';
 
 export function getNativeText(button: buttonModule.Button): string {
