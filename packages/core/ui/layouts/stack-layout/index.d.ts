@@ -1,6 +1,6 @@
 ﻿import { LayoutBase } from '../layout-base';
 import { Property } from '../../core/properties';
-import { CoreTypes } from '../../core-types';
+import { CoreTypes } from '../../../core-types';
 
 /**
  * A Layout that arranges its children horizontally or vertically. The direction can be set by orientation property.
