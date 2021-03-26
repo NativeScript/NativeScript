@@ -703,55 +703,6 @@ export namespace CoreTypes {
 		 */
 		export const dark: string;
 	}
-
-	/**
-	 * Singular rollup for convenience of all enums
-	 */
-	// export namespace Enums {
-	// Accuracy: typeof Accuracy;
-	// AndroidActionBarIconVisibility: typeof AndroidActionBarIconVisibility;
-	// AndroidActionItemPosition: typeof AndroidActionItemPosition;
-	// AnimationCurve: typeof AnimationCurve;
-	// AutocapitalizationType: typeof AutocapitalizationType;
-	// AutocapitalizationInputType: AutocapitalizationInputType;
-	// BackgroundRepeat: typeof BackgroundRepeat;
-	// BackgroundRepeatType: BackgroundRepeatType;
-	// DeviceOrientation: typeof DeviceOrientation;
-	// DeviceType: typeof DeviceType;
-	// Dock: typeof Dock;
-	// FontAttributes: typeof FontAttributes;
-	// FontStyle: typeof FontStyle;
-	// FontStyleType: FontStyleType;
-	// FontWeight: typeof FontWeight;
-	// FontWeightType: FontWeightType;
-	// HorizontalAlignment: typeof HorizontalAlignment;
-	// HorizontalAlignmentType: HorizontalAlignmentType;
-	// IOSActionItemPosition: typeof IOSActionItemPosition;
-	// ImageFormat: typeof ImageFormat;
-	// KeyboardType: typeof KeyboardType;
-	// KeyboardInputType: KeyboardInputType;
-	// NavigationBarVisibility: typeof NavigationBarVisibility;
-	// Orientation: typeof Orientation;
-	// OrientationType: OrientationType;
-	// ReturnKeyType: typeof ReturnKeyType;
-	// ReturnKeyButtonType: ReturnKeyButtonType;
-	// StatusBarStyle: typeof StatusBarStyle;
-	// Stretch: typeof Stretch;
-	// SystemAppearance: typeof SystemAppearance;
-	// TextAlignment: typeof TextAlignment;
-	// TextAlignmentType: typeof TextAlignment;
-	// TextDecoration: typeof TextDecoration;
-	// TextDecorationType: TextDecorationType;
-	// TextTransform: typeof TextTransform;
-	// TextTransformType: TextTransformType;
-	// UpdateTextTrigger: typeof UpdateTextTrigger;
-	// UpdateTextTriggerType: UpdateTextTriggerType;
-	// VerticalAlignment: typeof VerticalAlignment;
-	// VerticalAlignmentType: VerticalAlignmentType;
-	// Visibility: typeof Visibility;
-	// VisibilityType: VisibilityType;
-	// WhiteSpace: typeof WhiteSpace;
-	// WhiteSpaceType: WhiteSpaceType;
 }
 
 /**
@@ -804,3 +755,18 @@ export namespace Enums {
 	export type TextTransformType = CoreTypes.TextTransformType;
 	export type VisibilityType = CoreTypes.VisibilityType;
 }
+
+/**
+ * @deprecated Use `CoreTypes.AnimationCurve` instead.
+ */
+export const AnimationCurve: typeof CoreTypes.AnimationCurve;
+
+/**
+ * @deprecated Use `CoreTypes.HorizontalAlignmentType` instead.
+ */
+export type HorizontalAlignment = CoreTypes.HorizontalAlignmentType;
+
+/**
+ * @deprecated Use `CoreTypes.VerticalAlignmentType` instead.
+ */
+export type VerticalAlignment = CoreTypes.VerticalAlignmentType;

@@ -266,6 +266,10 @@ export namespace CoreTypes {
 }
 
 /**
+ * NOTE: Auto migrate deprecations via eslint-plugin in future
+ */
+
+/**
  * @deprecated Use `CoreTypes.dip` instead.
  */
 export type dip = number;
@@ -315,3 +319,18 @@ export namespace Enums {
 	export type TextTransformType = CoreTypes.TextTransformType;
 	export type VisibilityType = CoreTypes.VisibilityType;
 }
+
+/**
+ * @deprecated Use `CoreTypes.AnimationCurve` instead.
+ */
+export const AnimationCurve = CoreTypes.AnimationCurve;
+
+/**
+ * @deprecated Use `CoreTypes.HorizontalAlignmentType` instead.
+ */
+export type HorizontalAlignment = CoreTypes.HorizontalAlignmentType;
+
+/**
+ * @deprecated Use `CoreTypes.VerticalAlignmentType` instead.
+ */
+export type VerticalAlignment = CoreTypes.VerticalAlignmentType;
