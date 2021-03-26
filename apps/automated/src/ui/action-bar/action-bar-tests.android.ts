@@ -1,7 +1,7 @@
 ﻿import * as TKUnit from '../../tk-unit';
 import { createPageAndNavigate } from './action-bar-tests-common';
 import { ActionItem } from '@nativescript/core/ui/action-bar';
-import { Enums } from '@nativescript/core';
+import { CoreTypes } from '@nativescript/core';
 import { Button } from '@nativescript/core/ui/button';
 
 export * from './action-bar-tests-common';

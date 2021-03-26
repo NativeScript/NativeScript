@@ -151,11 +151,13 @@ export function updateAccessibilityProperties(view: View): void {
 
 		return;
 	}
-	console.log('--- Accessible element: ', view.constructor.name);
-	console.log('accessibilityLabel: ', view.accessibilityLabel);
-	console.log('accessibilityRole: ', accessibilityRole);
-	console.log('accessibilityState: ', accessibilityState);
-	console.log('accessibilityValue: ', view.accessibilityValue);
+
+	// NOTE: left here for various core inspection passes while running the toolbox app
+	// console.log('--- Accessible element: ', view.constructor.name);
+	// console.log('accessibilityLabel: ', view.accessibilityLabel);
+	// console.log('accessibilityRole: ', accessibilityRole);
+	// console.log('accessibilityState: ', accessibilityState);
+	// console.log('accessibilityValue: ', view.accessibilityValue);
 
 	let a11yTraits = UIAccessibilityTraitNone;
 	if (RoleTypeMap.has(accessibilityRole)) {
@@ -195,9 +197,11 @@ export function updateAccessibilityProperties(view: View): void {
 			break;
 		}
 	}
-	if (view.accessibilityLiveRegion) {
-		console.log('accessibilityLiveRegion:', view.accessibilityLiveRegion);
-	}
+
+	// NOTE: left here for various core inspection passes while running the toolbox app
+	// if (view.accessibilityLiveRegion) {
+	// 	console.log('accessibilityLiveRegion:', view.accessibilityLiveRegion);
+	// }
 
 	if (view.accessibilityMediaSession) {
 		a11yTraits |= RoleTypeMap.get(AccessibilityRole.StartsMediaSession);
@@ -210,8 +214,11 @@ export function updateAccessibilityProperties(view: View): void {
 	// if (view.accessibilityTraits) {
 	// 	a11yTraits |= inputArrayToBitMask(view.accessibilityTraits, AccessibilityTraitsMap);
 	// }
-	console.log('a11yTraits:', a11yTraits);
-	console.log('    ');
+
+	// NOTE: left here for various core inspection passes while running the toolbox app
+	// console.log('a11yTraits:', a11yTraits);
+	// console.log('    ');
+
 	uiView.accessibilityTraits = a11yTraits;
 }
 

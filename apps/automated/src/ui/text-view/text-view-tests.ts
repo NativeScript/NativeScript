@@ -4,7 +4,7 @@ import * as viewModule from '@nativescript/core/ui/core/view';
 import * as pagesModule from '@nativescript/core/ui/page';
 import * as textViewTestsNative from './text-view-tests-native';
 import * as colorModule from '@nativescript/core/color';
-import { Enums } from '@nativescript/core';
+import { CoreTypes } from '@nativescript/core';
 import * as platform from '@nativescript/core/platform';
 
 // >> require-textmodules

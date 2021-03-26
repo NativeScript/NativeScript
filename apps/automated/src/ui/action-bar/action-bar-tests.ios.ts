@@ -5,7 +5,7 @@ import * as LabelModule from '@nativescript/core/ui/label';
 import * as helper from '../../ui-helper';
 import * as view from '@nativescript/core/ui/core/view';
 import * as actionBar from '@nativescript/core/ui/action-bar';
-import { Enums } from '@nativescript/core';
+import { CoreTypes } from '@nativescript/core';
 
 export * from './action-bar-tests-common';
 
