@@ -794,4 +794,13 @@ export type PercentLengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit | Le
 /**
  * @deprecated Use `CoreTypes` instead. Enums will be removed in 9.0
  */
-export const Enums: typeof CoreTypes;
+export namespace Enums {
+	export type DeviceOrientationType = CoreTypes.DeviceOrientationType;
+	export type HorizontalAlignmentType = CoreTypes.HorizontalAlignmentType;
+	export type VerticalAlignmentTextType = CoreTypes.VerticalAlignmentTextType;
+	export type VerticalAlignmentType = CoreTypes.VerticalAlignmentType;
+	export type OrientationType = CoreTypes.OrientationType;
+	export type TextAlignmentType = CoreTypes.TextAlignmentType;
+	export type TextTransformType = CoreTypes.TextTransformType;
+	export type VisibilityType = CoreTypes.VisibilityType;
+}
