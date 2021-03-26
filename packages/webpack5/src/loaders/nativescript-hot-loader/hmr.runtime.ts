@@ -1,6 +1,7 @@
 // @ts-nocheck
 // This is a runtime module - included by nativescript-hot-loader
 // this file should not include external dependencies
+// todo: add verbose logs when enabled
 // ---
 
 if (module.hot) {

@@ -7,7 +7,6 @@ import FilterWarningsPlugin from 'webpack-filter-warnings-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
-// import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
 import { getProjectFilePath, getProjectRootPath } from '../helpers/project';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
@@ -308,8 +307,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	applyCopyRules(config);
 
-	// add the WatchStateLogger plugin used to notify the CLI of build state
-	// config.plugin('WatchStateLoggerPlugin').use(WatchStateLoggerPlugin);
 	config.plugin('WatchStatePlugin').use(WatchStatePlugin);
 
 	config.when(env.hmr, (config) => {

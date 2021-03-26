@@ -9,8 +9,8 @@ export enum messages {
 }
 
 /**
- * This little plugin will report the webpack state through the console.
- * So the {N} CLI can get some idea when compilation completes.
+ * This little plugin will report the webpack state through the console
+ * and send status updates through IPC to the {N} CLI.
  */
 export class WatchStatePlugin {
 	apply(compiler: any) {
