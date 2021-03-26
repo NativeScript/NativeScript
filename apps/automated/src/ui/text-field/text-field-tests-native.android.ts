@@ -1,4 +1,4 @@
-import { TextField, Color, Utils, Enums } from '@nativescript/core';
+import { TextField, Color, Utils, CoreTypes } from '@nativescript/core';
 
 export function getNativeText(textField: TextField): string {
 	return textField.android.getText().toString();

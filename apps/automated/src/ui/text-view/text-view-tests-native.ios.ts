@@ -1,7 +1,7 @@
 ﻿import * as textViewModule from '@nativescript/core/ui/text-view';
 import * as colorModule from '@nativescript/core/color';
 import { getColor } from '../../ui-helper';
-import { Enums } from '@nativescript/core';
+import { CoreTypes } from '@nativescript/core';
 
 export function getNativeText(textView: textViewModule.TextView): string {
 	return textView.ios.text;

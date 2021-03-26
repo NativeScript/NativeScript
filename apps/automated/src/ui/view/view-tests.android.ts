@@ -5,9 +5,8 @@ import { Button } from '@nativescript/core/ui/button';
 import * as types from '@nativescript/core/utils/types';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import { Label } from '@nativescript/core/ui/label';
-import { Trace } from '@nativescript/core';
+import { Trace, isIOS } from '@nativescript/core';
 import { Color } from '@nativescript/core/color';
-import { isIOS } from '@nativescript/core';
 
 // enable the trace, it is disabled by default
 Trace.enable();
