@@ -47,7 +47,7 @@ export const colorProperty: InheritedCssProperty<Style, Color>;
 export const backgroundProperty: ShorthandProperty<Style, string>;
 export const backgroundColorProperty: CssAnimationProperty<Style, Color>;
 export const backgroundImageProperty: CssProperty<Style, string>;
-export const backgroundRepeatProperty: CssProperty<Style, BackgroundRepeatType>;
+export const backgroundRepeatProperty: CssProperty<Style, CoreTypes.BackgroundRepeatType>;
 export const backgroundSizeProperty: CssProperty<Style, string>;
 export const backgroundPositionProperty: CssProperty<Style, string>;
 
@@ -70,7 +70,7 @@ export const borderBottomRightRadiusProperty: CssProperty<Style, CoreTypes.Lengt
 export const borderBottomLeftRadiusProperty: CssProperty<Style, CoreTypes.LengthType>;
 
 export const zIndexProperty: CssProperty<Style, number>;
-export const visibilityProperty: CssProperty<Style, VisibilityType>;
+export const visibilityProperty: CssProperty<Style, CoreTypes.VisibilityType>;
 export const opacityProperty: CssAnimationProperty<Style, number>;
 
 export const minWidthProperty: CssProperty<Style, CoreTypes.dip | CoreTypes.LengthDipUnit | CoreTypes.LengthPxUnit>;
@@ -90,8 +90,8 @@ export const paddingRightProperty: CssProperty<Style, CoreTypes.LengthType>;
 export const paddingTopProperty: CssProperty<Style, CoreTypes.LengthType>;
 export const paddingBottomProperty: CssProperty<Style, CoreTypes.LengthType>;
 
-export const horizontalAlignmentProperty: CssProperty<Style, HorizontalAlignmentType>;
-export const verticalAlignmentProperty: CssProperty<Style, VerticalAlignmentType>;
+export const horizontalAlignmentProperty: CssProperty<Style, CoreTypes.HorizontalAlignmentType>;
+export const verticalAlignmentProperty: CssProperty<Style, CoreTypes.VerticalAlignmentType>;
 
 export const fontSizeProperty: InheritedCssProperty<Style, number>;
 export const fontFamilyProperty: InheritedCssProperty<Style, string>;
@@ -103,25 +103,3 @@ export const fontInternalProperty: InheritedCssProperty<Style, Font>;
 
 export const androidElevationProperty: CssProperty<Style, number>;
 export const androidDynamicElevationOffsetProperty: CssProperty<Style, number>;
-
-export type BackgroundRepeatType = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
-export type VisibilityType = 'visible' | 'hidden' | 'collapse';
-export type HorizontalAlignmentType = 'left' | 'center' | 'right' | 'stretch';
-export namespace HorizontalAlignment {
-	export const LEFT: 'left';
-	export const CENTER: 'center';
-	export const RIGHT: 'right';
-	export const STRETCH: 'stretch';
-}
-export type VerticalAlignmentType = 'top' | 'middle' | 'bottom' | 'stretch' | 'text-top' | 'text-bottom' | 'super' | 'sub' | 'baseline';
-export namespace VerticalAlignment {
-	export const TOP: 'top';
-	export const MIDDLE: 'middle';
-	export const BOTTOM: 'bottom';
-	export const STRETCH: 'stretch';
-	export const TEXTTOP: 'text-top';
-	export const TEXTBOTTOM: 'text-bottom';
-	export const SUPER: 'super';
-	export const SUB: 'sub';
-	export const BASELINE: 'baseline';
-}
