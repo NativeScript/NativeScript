@@ -406,12 +406,12 @@ export abstract class View extends ViewBase {
 	/**
 	 * Gets or sets the translateX affine transform of the view in device independent pixels.
 	 */
-	translateX: dip;
+	translateX: CoreTypes.dip;
 
 	/**
 	 * Gets or sets the translateY affine transform of the view in device independent pixels.
 	 */
-	translateY: dip;
+	translateY: CoreTypes.dip;
 
 	/**
 	 * Gets or sets the scaleX affine transform of the view.

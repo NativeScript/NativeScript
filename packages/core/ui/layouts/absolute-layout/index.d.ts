@@ -16,7 +16,7 @@ export class AbsoluteLayout extends LayoutBase {
 	/**
 	 * Sets the value of the Left property from a given View.
 	 */
-	static setLeft(view: View, value: Length): void;
+	static setLeft(view: View, value: CoreTypes.LengthType): void;
 
 	/**
 	 * Gets the value of the Top property from a given View.

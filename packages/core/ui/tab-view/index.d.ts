@@ -9,7 +9,6 @@ import { EventData } from '../../data/observable';
 import { Color } from '../../color';
 import { CoreTypes } from '../../core-types';
 import { Style } from '../styling/style';
-import { TextTransform } from '../text-base';
 /**
  * Represents a tab view entry.
  */

@@ -191,12 +191,12 @@ export const separatorColor: Property<ListView, Color>;
 /**
  * Represents the observable property backing the rowHeight property of each ListView instance.
  */
-export const rowHeightProperty: Property<ListView, Length>;
+export const rowHeightProperty: Property<ListView, CoreTypes.LengthType>;
 
 /**
  * Represents the observable property backing the iosEstimatedRowHeight property of each ListView instance.
  */
-export const iosEstimatedRowHeightProperty: Property<ListView, Length>;
+export const iosEstimatedRowHeightProperty: Property<ListView, CoreTypes.LengthType>;
 
 /**
  * Backing property for separator color property.

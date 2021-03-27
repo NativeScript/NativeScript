@@ -708,39 +708,39 @@ export namespace CoreTypes {
 /**
  * @deprecated Use `CoreTypes.dip` instead.
  */
-export type dip = number;
+export type dip = CoreTypes.dip;
 
 /**
  * @deprecated Use `CoreTypes.px` instead.
  */
-export type px = number;
+export type px = CoreTypes.px;
 
 /**
  * @deprecated Use `CoreTypes.percent` instead.
  */
-export type percent = number;
+export type percent = CoreTypes.percent;
 
 /**
  * @deprecated Use `CoreTypes.LengthDipUnit` instead.
  */
-export type LengthDipUnit = { readonly unit: 'dip'; readonly value: dip };
+export type LengthDipUnit = CoreTypes.LengthDipUnit;
 /**
  * @deprecated Use `CoreTypes.LengthPxUnit` instead.
  */
-export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
+export type LengthPxUnit = CoreTypes.LengthPxUnit;
 /**
  * @deprecated Use `CoreTypes.LengthPercentUnit` instead.
  */
-export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
+export type LengthPercentUnit = CoreTypes.LengthPercentUnit;
 
 /**
  * @deprecated Use `CoreTypes.LengthType` instead.
  */
-export type LengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit;
+export type LengthType = CoreTypes.LengthType;
 /**
  * @deprecated Use `CoreTypes.PercentLengthType` instead.
  */
-export type PercentLengthType = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
+export type PercentLengthType = CoreTypes.PercentLengthType;
 
 /**
  * @deprecated Use `CoreTypes` instead. Enums will be removed in 9.0
