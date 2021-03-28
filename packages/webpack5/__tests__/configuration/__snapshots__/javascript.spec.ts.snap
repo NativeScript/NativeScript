@@ -184,7 +184,8 @@ exports[`javascript configuration for android 1`] = `
       {
         test: /\\\\.js$/,
         exclude: [
-          /node_modules/
+          /node_modules/,
+          '__jest__/src/app.js'
         ],
         use: [
           /* config.module.rule('hmr-core').use('nativescript-hot-loader') */
@@ -503,7 +504,8 @@ exports[`javascript configuration for ios 1`] = `
       {
         test: /\\\\.js$/,
         exclude: [
-          /node_modules/
+          /node_modules/,
+          '__jest__/src/app.js'
         ],
         use: [
           /* config.module.rule('hmr-core').use('nativescript-hot-loader') */
