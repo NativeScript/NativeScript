@@ -250,6 +250,7 @@ exports[`javascript configuration for android 1`] = `
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
+        __NS_ENV_VERBOSE__: false,
         __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
         __ANDROID__: true,
@@ -568,6 +569,7 @@ exports[`javascript configuration for ios 1`] = `
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
+        __NS_ENV_VERBOSE__: false,
         __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
         __ANDROID__: false,
