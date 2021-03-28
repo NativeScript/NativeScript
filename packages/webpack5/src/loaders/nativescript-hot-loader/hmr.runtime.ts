@@ -1,47 +1,97 @@
 // @ts-nocheck
 // This is a runtime module - included by nativescript-hot-loader
 // this file should not include external dependencies
-// todo: add verbose logs when enabled
 // ---
 
 if (module.hot) {
-	const setStatus = (hash: string, status: 'success' | 'failure') => {
-		// format is important - CLI expects this exact format
-		console.log(`[HMR][${hash}] ${status}`)
-	}
-	const originalOnLiveSync = global.__onLiveSync
-	global.__onLiveSync = async function () {
-		const hash = __webpack_require__.h();
-		await module.hot.check().catch(err => {
-			setStatus(hash, 'failure')
-		});
-		await module.hot.apply({
-			ignoreUnaccepted: false,
-			ignoreDeclined: false,
-			ignoreErrored: false,
-			onDeclined(info) {
-				setStatus(hash, 'failure')
-			},
-			onUnaccepted(info) {
-				setStatus(hash, 'failure')
-			},
-			onAccepted(info) {
-				// console.log('accepted', info)
-			},
-			onDisposed(info) {
-				// console.log('disposed', info)
-			},
-			onErrored(info) {
-				setStatus(hash, 'failure')
+	let hash = __webpack_require__.h();
+
+	const logVerbose = (title: string, ...info?: any) => {
+		if (__NS_ENV_VERBOSE__) {
+			console.log(`[HMR][Verbose] ${title}`)
+
+			if (info?.length) {
+				console.log(...info)
+				console.log('---')
 			}
-		}).then(() => {
-			setStatus(hash, 'success')
-		}).catch((err) => {
-			setStatus(hash, 'failure')
+		}
+	}
+
+	const setStatus = (hash: string, status: 'success' | 'failure', message?: string, ...info?: any): boolean => {
+		// format is important - CLI expects this exact format
+		console.log(`[HMR][${hash}] ${status} | ${message}`)
+		if (info?.length) {
+			logVerbose('Additional Info', info)
+		}
+
+		// return true if operation was successful
+		return status === 'success'
+	}
+
+	const applyOptions = {
+		ignoreUnaccepted: false,
+		ignoreDeclined: false,
+		ignoreErrored: false,
+		onDeclined(info) {
+			setStatus(hash, 'failure', 'A module has been declined.', info)
+		},
+		onUnaccepted(info) {
+			setStatus(hash, 'failure', 'A module has not been accepted.', info)
+		},
+		onAccepted(info) {
+			// console.log('accepted', info)
+			logVerbose('Module Accepted', info)
+		},
+		onDisposed(info) {
+			// console.log('disposed', info)
+			logVerbose('Module Disposed', info)
+		},
+		onErrored(info) {
+			setStatus(hash, 'failure', 'A module has errored.', info)
+		}
+	}
+
+	const checkAndApply = async () => {
+		hash = __webpack_require__.h();
+		const modules = await module.hot.check().catch(error => {
+			return setStatus(hash, 'failure', 'Failed to check.', error.message || error.stack)
 		})
 
-		setTimeout(() => {
-			originalOnLiveSync();
+		if (!modules) {
+			logVerbose('No modules to apply.')
+			return false;
+		}
+
+		const appliedModules = await module.hot.apply(applyOptions).catch(error => {
+			return setStatus(hash, 'failure', 'Failed to apply.', error.message || error.stack)
 		})
+
+		if (!appliedModules) {
+			logVerbose('No modules applied.')
+			return false;
+		}
+
+		return setStatus(hash, 'success', 'Successfully applied update.')
+	}
+
+	const hasUpdate = () => {
+		try {
+			__non_webpack_require__(`~/bundle.${__webpack_hash__}.hot-update.json`)
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
+
+	const originalOnLiveSync = global.__onLiveSync
+	global.__onLiveSync = async function () {
+		logVerbose('LiveSync')
+
+		if (!hasUpdate()) {
+			return;
+		}
+
+		await checkAndApply()
+		originalOnLiveSync();
 	};
 }

@@ -283,6 +283,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		{
 			__DEV__: mode === 'development',
 			__NS_WEBPACK__: true,
+			__NS_ENV_VERBOSE__: !!env.verbose,
 			__NS_DEV_HOST_IPS__:
 				mode === 'development' ? JSON.stringify(getIPS()) : `[]`,
 			__CSS_PARSER__: JSON.stringify('css-tree'), // todo: replace from config value

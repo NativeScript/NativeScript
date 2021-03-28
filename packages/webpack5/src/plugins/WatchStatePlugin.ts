@@ -1,6 +1,7 @@
+import { env } from "../";
+
 const id = 'WatchStatePlugin';
 const version = 1;
-const DEBUG = false;
 
 export enum messages {
 	compilationComplete = 'Webpack compilation complete.',
@@ -23,7 +24,7 @@ export class WatchStatePlugin {
 			if (isWatchMode) {
 				console.log(messages.changeDetected);
 
-				if (DEBUG) {
+				if (env.verbose) {
 					if (compiler.modifiedFiles) {
 						Array.from(compiler.modifiedFiles).forEach(file => {
 							console.log(`MODIFIED: ${file}`)
@@ -80,7 +81,7 @@ export class WatchStatePlugin {
 }
 
 function notify(message: any) {
-	DEBUG && console.log(`[${id}] Notify: `, message);
+	env.verbose && console.log(`[${id}] Notify: `, message);
 	if (!process.send) {
 		return;
 	}
