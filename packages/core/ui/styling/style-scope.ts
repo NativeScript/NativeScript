@@ -207,7 +207,9 @@ class CSSSource {
 				this._selectors = [];
 			}
 		} catch (e) {
-			Trace.write('Css styling failed: ' + e, Trace.categories.Error, Trace.messageType.error);
+			if (Trace.isEnabled()) {
+				Trace.write('Css styling failed: ' + e, Trace.categories.Style, Trace.messageType.error);
+			}
 			this._selectors = [];
 		}
 	}
