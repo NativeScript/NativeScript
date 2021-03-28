@@ -2,6 +2,7 @@ import { merge } from 'webpack-merge';
 
 import { addVirtualEntry, addVirtualModule } from './virtualModules';
 import { getPackageJson, getProjectRootPath } from './project';
+import { applyFileReplacements } from './fileReplacements';
 import { addCopyRule, removeCopyRule } from './copyRules';
 import { determineProjectFlavor } from './flavor';
 import { error, info, warn } from './log';
@@ -21,7 +22,6 @@ import {
 	getPlatform,
 	getPlatformName,
 } from './platform';
-import { applyFileReplacements } from './fileReplacements';
 
 // intentionally populated manually
 // as this generates nicer typings

@@ -3,6 +3,8 @@ import fs from 'fs';
 
 import base from '../../src/configuration/base';
 import { init } from '../../src';
+import { applyFileReplacements } from "../../src/helpers/fileReplacements";
+import { additionalCopyRules } from "../../src/helpers/copyRules";
 
 describe('base configuration', () => {
 	const platforms = ['ios', 'android'];
@@ -77,4 +79,25 @@ describe('base configuration', () => {
 		});
 		fsSpy.mockRestore()
 	});
+
+	it('applies file replacements', () => {
+		const config = new Config();
+		applyFileReplacements(config, {
+			// should apply as an alias
+			'foo.ts': 'foo.replaced.ts',
+			'bar.js': 'bar.replaced.js',
+
+			// should apply as a file replacement using the copy plugin
+			'foo.json': 'foo.replaced.json'
+		})
+
+		expect(config.resolve.alias.get('foo.ts')).toBe('foo.replaced.ts')
+		expect(config.resolve.alias.get('bar.js')).toBe('bar.replaced.js')
+		expect(additionalCopyRules.length).toBe(1)
+		expect(additionalCopyRules[0]).toEqual({
+			from: 'foo.replaced.json',
+			to: 'foo.json',
+			force: true,
+		})
+	})
 });

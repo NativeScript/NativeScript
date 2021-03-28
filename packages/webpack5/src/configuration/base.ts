@@ -304,7 +304,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	applyDotEnvPlugin(config);
 
 	// replacements
-	applyFileReplacements(config, env);
+	applyFileReplacements(config);
 
 	// set up default copy rules
 	addCopyRule('assets/**');

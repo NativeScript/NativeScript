@@ -1,34 +1,49 @@
-import { IWebpackEnv } from '../index';
+import { env as _env, IWebpackEnv } from '../index';
 import { addCopyRule } from './copyRules';
 
 interface IReplacementMap {
-	[from: string]: string;
+	[_replace: string]: /* _with */ string;
 }
 
-function getFileReplacementsFromEnv(env: IWebpackEnv): IReplacementMap | null {
+/**
+ * @internal
+ */
+export function getFileReplacementsFromEnv(env: IWebpackEnv = _env): IReplacementMap {
 	const fileReplacements: IReplacementMap = {};
-	if (env.replace) {
-		(Array.isArray(env.replace)
-			? env.replace
-			: typeof env.replace === 'string'
-			? [env.replace]
-			: []
-		).forEach((replaceEntry) => {
-			replaceEntry.split(',').map((r: string) => {
-				const keyValue = r.split(':');
-				fileReplacements[keyValue[0]] = keyValue[1];
-			});
+
+	const entries: string[] = (() => {
+		if (Array.isArray(env.replace)) {
+			return env.replace;
+		}
+
+		if (typeof env.replace === 'string') {
+			return [env.replace]
+		}
+
+		return []
+	})();
+
+	entries.forEach((replaceEntry) => {
+		replaceEntry.split(/,\s*/).forEach((r: string) => {
+			const [_replace, _with] = r.split(':');
+			if (!_replace || !_with) {
+				return;
+			}
+
+			fileReplacements[_replace] = _with;
 		});
-	}
+	});
+
 	return fileReplacements;
 }
 
-export function applyFileReplacements(config, env: IWebpackEnv) {
-	const fileReplacements = getFileReplacementsFromEnv(env);
-
+export function applyFileReplacements(
+	config,
+	fileReplacements: IReplacementMap = getFileReplacementsFromEnv()
+) {
 	Object.entries(fileReplacements).forEach(([_replace, _with]) => {
 		// in case we are replacing source files - we'll use aliases
-		if (_replace.match(/\.ts$/)) {
+		if (_replace.match(/\.(ts|js)$/)) {
 			return config.resolve.alias.set(_replace, _with);
 		}
 
