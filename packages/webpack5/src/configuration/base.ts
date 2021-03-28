@@ -15,6 +15,7 @@ import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
 import { getIPS } from '../helpers/host';
+import { applyFileReplacements } from '../helpers/fileReplacements';
 import {
 	getPlatformName,
 	getAbsoluteDistPath,
@@ -81,9 +82,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.watchOptions({
 		ignored: [
 			`${getProjectFilePath('platforms')}/**`,
-			`${env.appResourcesPath ?? getProjectFilePath('App_Resources')}/**`
-		]
-	})
+			`${env.appResourcesPath ?? getProjectFilePath('App_Resources')}/**`,
+		],
+	});
 
 	// Set up Terser options
 	config.optimization.minimizer('TerserPlugin').use(TerserPlugin, [
@@ -136,14 +137,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// resolve symlinks
 	config.resolve.symlinks(true);
 
-	config.module.rule('bundle')
+	config.module
+		.rule('bundle')
 		.enforce('post')
 		.test(entryPath)
 		.use('nativescript-hot-loader')
 		.loader('nativescript-hot-loader')
 		.options({
-			injectHMRRuntime: true
-		})
+			injectHMRRuntime: true,
+		});
 
 	// set up ts support
 	config.module
@@ -202,7 +204,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.exclude.add(/node_modules/)
 		.end()
 		.use('nativescript-worker-loader')
-		.loader('nativescript-worker-loader')
+		.loader('nativescript-worker-loader');
 
 	// default PostCSS options to use
 	// projects can change settings
@@ -300,6 +302,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// enable DotEnv
 	applyDotEnvPlugin(config);
+
+	// replacements
+	applyFileReplacements(config, env);
 
 	// set up default copy rules
 	addCopyRule('assets/**');
