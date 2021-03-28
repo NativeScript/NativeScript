@@ -1,6 +1,6 @@
 import Config from 'webpack-chain';
 
-import { getEntryPath, getEntryDirPath } from "../helpers/platform";
+import { getEntryPath, getEntryDirPath } from '../helpers/platform';
 import { addVirtualEntry } from '../helpers/virtualModules';
 import { env as _env, IWebpackEnv } from '../index';
 import base from './base';
@@ -36,15 +36,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.module
 		.rule('hmr-core')
 		.test(/\.js$/)
-		.exclude
-		.add(/node_modules/)
+		.exclude.add(/node_modules/)
 		.add(entryPath)
 		.end()
 		.use('nativescript-hot-loader')
 		.loader('nativescript-hot-loader')
 		.options({
-			appPath: getEntryDirPath()
-		})
+			appPath: getEntryDirPath(),
+		});
 
 	return config;
 }

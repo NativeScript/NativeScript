@@ -1,31 +1,33 @@
-import { relative, resolve } from "path";
-import dedent from "ts-dedent";
+import { relative, resolve } from 'path';
+import dedent from 'ts-dedent';
 import fs from 'fs';
 
 // note: this will bail even if module.hot appears in a comment
-const MODULE_HOT_RE = /module\.hot/
+const MODULE_HOT_RE = /module\.hot/;
 
 export default function loader(content: string, map: any) {
 	if (MODULE_HOT_RE.test(content)) {
 		// Code already handles HMR - we don't need to do anything
-		return this.callback(null, content, map)
+		return this.callback(null, content, map);
 	}
 	const opts = this.getOptions();
 
 	// used to inject the HMR runtime into the entry file
-	if(opts.injectHMRRuntime) {
-		const hmrRuntimePath = resolve(__dirname, './hmr.runtime.js')
-		const hmrRuntime = fs.readFileSync(hmrRuntimePath).toString()
+	if (opts.injectHMRRuntime) {
+		const hmrRuntimePath = resolve(__dirname, './hmr.runtime.js');
+		const hmrRuntime = fs
+			.readFileSync(hmrRuntimePath)
+			.toString()
 			.split('// ---')[1]
-			.replace('//# sourceMappingURL=hmr.runtime.js.map', '')
+			.replace('//# sourceMappingURL=hmr.runtime.js.map', '');
 
-		return this.callback(null, `${content}\n${hmrRuntime}`, map)
+		return this.callback(null, `${content}\n${hmrRuntime}`, map);
 	}
 
 	const relativePath = relative(
 		opts.appPath ?? this.rootContext,
 		this.resourcePath
-	).replace(/\\/g, '/')
+	).replace(/\\/g, '/');
 
 	const hmrCode = this.hot
 		? dedent`
@@ -36,8 +38,7 @@ export default function loader(content: string, map: any) {
 		`
 		: ``;
 
-	const source = `${content}\n${hmrCode}`
+	const source = `${content}\n${hmrCode}`;
 
-	this.callback(null, source, map)
+	this.callback(null, source, map);
 }
-

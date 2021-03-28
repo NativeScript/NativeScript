@@ -63,7 +63,7 @@ program
 				return path.resolve(options.config);
 			}
 
-			return path.resolve(process.cwd(), 'webpack.config.js')
+			return path.resolve(process.cwd(), 'webpack.config.js');
 		})();
 
 		// todo: validate config exists
@@ -82,7 +82,10 @@ program
 
 		const compiler = webpack(configuration);
 
-		const webpackCompilationCallback = (err: webpack.WebpackError, stats: webpack.Stats) => {
+		const webpackCompilationCallback = (
+			err: webpack.WebpackError,
+			stats: webpack.Stats
+		) => {
 			if (err) {
 				// Do not keep cache anymore
 				compiler.purgeInputFileSystem();
@@ -104,18 +107,16 @@ program
 					})
 				);
 			}
-		}
+		};
 
 		if (options.watch) {
-			console.log('webpack is watching the files...')
+			console.log('webpack is watching the files...');
 			compiler.watch(
 				configuration.watchOptions ?? {},
 				webpackCompilationCallback
 			);
 		} else {
-			compiler.run(
-				webpackCompilationCallback
-			);
+			compiler.run(webpackCompilationCallback);
 		}
 	});
 

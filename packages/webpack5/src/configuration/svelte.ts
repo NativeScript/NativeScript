@@ -53,14 +53,12 @@ function getSvelteConfigPreprocessor(): any {
 }
 
 interface ISvelteConfig {
-	preprocess: any
+	preprocess: any;
 }
 
 function getSvelteConfig(): ISvelteConfig | undefined {
 	try {
-		return require(
-			getProjectFilePath('svelte.config.js')
-		) as ISvelteConfig;
+		return require(getProjectFilePath('svelte.config.js')) as ISvelteConfig;
 	} catch (err) {
 		error('Could not find svelte.config.js.', err);
 	}

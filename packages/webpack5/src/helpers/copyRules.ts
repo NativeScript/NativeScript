@@ -14,7 +14,7 @@ export let copyRules = new Set([]);
 /**
  * @internal
  */
-export let additionalCopyRules = []
+export let additionalCopyRules = [];
 
 /**
  * Utility to add new copy rules. Accepts a glob or an object. For example
@@ -30,11 +30,11 @@ export let additionalCopyRules = []
  * @param {string|object} globOrObject
  */
 export function addCopyRule(globOrObject: string | object) {
-	if(typeof globOrObject === 'string') {
+	if (typeof globOrObject === 'string') {
 		return copyRules.add(globOrObject);
 	}
 
-	additionalCopyRules.push(globOrObject)
+	additionalCopyRules.push(globOrObject);
 }
 
 /**
@@ -72,12 +72,14 @@ export function applyCopyRules(config: Config) {
 
 	config.plugin('CopyWebpackPlugin').use(CopyWebpackPlugin, [
 		{
-			patterns: Array.from(copyRules).map((glob) => ({
-				from: glob,
-				context: entryDir,
-				noErrorOnMissing: true,
-				globOptions,
-			})).concat(additionalCopyRules),
+			patterns: Array.from(copyRules)
+				.map((glob) => ({
+					from: glob,
+					context: entryDir,
+					noErrorOnMissing: true,
+					globOptions,
+				}))
+				.concat(additionalCopyRules),
 		},
 	]);
 }

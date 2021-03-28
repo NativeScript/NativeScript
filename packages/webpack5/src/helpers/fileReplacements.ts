@@ -8,7 +8,9 @@ interface IReplacementMap {
 /**
  * @internal
  */
-export function getFileReplacementsFromEnv(env: IWebpackEnv = _env): IReplacementMap {
+export function getFileReplacementsFromEnv(
+	env: IWebpackEnv = _env
+): IReplacementMap {
 	const fileReplacements: IReplacementMap = {};
 
 	const entries: string[] = (() => {
@@ -17,10 +19,10 @@ export function getFileReplacementsFromEnv(env: IWebpackEnv = _env): IReplacemen
 		}
 
 		if (typeof env.replace === 'string') {
-			return [env.replace]
+			return [env.replace];
 		}
 
-		return []
+		return [];
 	})();
 
 	entries.forEach((replaceEntry) => {

@@ -1,4 +1,4 @@
-import { env } from "../";
+import { env } from '../';
 
 const id = 'WatchStatePlugin';
 const version = 1;
@@ -26,15 +26,15 @@ export class WatchStatePlugin {
 
 				if (env.verbose) {
 					if (compiler.modifiedFiles) {
-						Array.from(compiler.modifiedFiles).forEach(file => {
-							console.log(`MODIFIED: ${file}`)
-						})
+						Array.from(compiler.modifiedFiles).forEach((file) => {
+							console.log(`MODIFIED: ${file}`);
+						});
 					}
 
 					if (compiler.removedFiles) {
-						Array.from(compiler.removedFiles).forEach(file => {
-							console.log(`REMOVED: ${file}`)
-						})
+						Array.from(compiler.removedFiles).forEach((file) => {
+							console.log(`REMOVED: ${file}`);
+						});
 					}
 				}
 			}
@@ -74,7 +74,7 @@ export class WatchStatePlugin {
 				data: {
 					emittedAssets,
 					staleAssets,
-				}
+				},
 			});
 		});
 	}

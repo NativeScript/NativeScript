@@ -37,7 +37,7 @@ export interface IWebpackEnv {
 	verbose?: boolean;
 
 	// misc
-	replace?: string[] | string
+	replace?: string[] | string;
 }
 
 interface IChainEntry {

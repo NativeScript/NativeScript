@@ -3,10 +3,10 @@ import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 import fs from 'fs';
 
-import { hasDependency } from "../helpers/dependencies";
+import { hasDependency } from '../helpers/dependencies';
 import { getPlatformName } from '../helpers/platform';
 import { env as _env, IWebpackEnv } from '../index';
-import { error } from "../helpers/log";
+import { error } from '../helpers/log';
 import base from './base';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
@@ -15,8 +15,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const platform = getPlatformName();
 
 	// we need to patch VueLoader if we want to enable hmr
-	if(env.hmr) {
-		patchVueLoaderForHMR()
+	if (env.hmr) {
+		patchVueLoaderForHMR();
 	}
 
 	// resolve .vue files
@@ -82,12 +82,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
  */
 function patchVueLoaderForHMR() {
 	try {
-		const vueLoaderPath = require.resolve('vue-loader/lib/index.js')
+		const vueLoaderPath = require.resolve('vue-loader/lib/index.js');
 		const source = fs.readFileSync(vueLoaderPath).toString();
-		const patchedSource = source.replace(/(isServer\s=\s)(target\s===\s'node')/g, '$1false;')
-		fs.writeFileSync(vueLoaderPath, patchedSource)
-		delete require.cache[vueLoaderPath]
+		const patchedSource = source.replace(
+			/(isServer\s=\s)(target\s===\s'node')/g,
+			'$1false;'
+		);
+		fs.writeFileSync(vueLoaderPath, patchedSource);
+		delete require.cache[vueLoaderPath];
 	} catch (err) {
-		error('Failed to patch VueLoader - HMR may not work properly!')
+		error('Failed to patch VueLoader - HMR may not work properly!');
 	}
 }

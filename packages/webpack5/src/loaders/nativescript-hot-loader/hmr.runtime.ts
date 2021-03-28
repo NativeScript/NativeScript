@@ -6,92 +6,109 @@
 if (module.hot) {
 	let hash = __webpack_require__.h();
 
-	const logVerbose = (title: string, ...info?: any) => {
+	const logVerbose = (title: string, ...info: any) => {
 		if (__NS_ENV_VERBOSE__) {
-			console.log(`[HMR][Verbose] ${title}`)
+			console.log(`[HMR][Verbose] ${title}`);
 
 			if (info?.length) {
-				console.log(...info)
-				console.log('---')
+				console.log(...info);
+				console.log('---');
 			}
 		}
-	}
+	};
 
-	const setStatus = (hash: string, status: 'success' | 'failure', message?: string, ...info?: any): boolean => {
+	const setStatus = (
+		hash: string,
+		status: 'success' | 'failure',
+		message?: string,
+		...info: any
+	): boolean => {
 		// format is important - CLI expects this exact format
-		console.log(`[HMR][${hash}] ${status} | ${message}`)
+		console.log(`[HMR][${hash}] ${status} | ${message}`);
 		if (info?.length) {
-			logVerbose('Additional Info', info)
+			logVerbose('Additional Info', info);
 		}
 
 		// return true if operation was successful
-		return status === 'success'
-	}
+		return status === 'success';
+	};
 
 	const applyOptions = {
 		ignoreUnaccepted: false,
 		ignoreDeclined: false,
 		ignoreErrored: false,
 		onDeclined(info) {
-			setStatus(hash, 'failure', 'A module has been declined.', info)
+			setStatus(hash, 'failure', 'A module has been declined.', info);
 		},
 		onUnaccepted(info) {
-			setStatus(hash, 'failure', 'A module has not been accepted.', info)
+			setStatus(hash, 'failure', 'A module has not been accepted.', info);
 		},
 		onAccepted(info) {
 			// console.log('accepted', info)
-			logVerbose('Module Accepted', info)
+			logVerbose('Module Accepted', info);
 		},
 		onDisposed(info) {
 			// console.log('disposed', info)
-			logVerbose('Module Disposed', info)
+			logVerbose('Module Disposed', info);
 		},
 		onErrored(info) {
-			setStatus(hash, 'failure', 'A module has errored.', info)
-		}
-	}
+			setStatus(hash, 'failure', 'A module has errored.', info);
+		},
+	};
 
 	const checkAndApply = async () => {
 		hash = __webpack_require__.h();
-		const modules = await module.hot.check().catch(error => {
-			return setStatus(hash, 'failure', 'Failed to check.', error.message || error.stack)
-		})
+		const modules = await module.hot.check().catch((error) => {
+			return setStatus(
+				hash,
+				'failure',
+				'Failed to check.',
+				error.message || error.stack
+			);
+		});
 
 		if (!modules) {
-			logVerbose('No modules to apply.')
+			logVerbose('No modules to apply.');
 			return false;
 		}
 
-		const appliedModules = await module.hot.apply(applyOptions).catch(error => {
-			return setStatus(hash, 'failure', 'Failed to apply.', error.message || error.stack)
-		})
+		const appliedModules = await module.hot
+			.apply(applyOptions)
+			.catch((error) => {
+				return setStatus(
+					hash,
+					'failure',
+					'Failed to apply.',
+					error.message || error.stack
+				);
+			});
 
 		if (!appliedModules) {
-			logVerbose('No modules applied.')
+			logVerbose('No modules applied.');
 			return false;
 		}
 
-		return setStatus(hash, 'success', 'Successfully applied update.')
-	}
+		return setStatus(hash, 'success', 'Successfully applied update.');
+	};
 
 	const hasUpdate = () => {
 		try {
-			__non_webpack_require__(`~/bundle.${__webpack_hash__}.hot-update.json`)
+			__non_webpack_require__(`~/bundle.${__webpack_hash__}.hot-update.json`);
 			return true;
 		} catch (err) {
 			return false;
 		}
-	}
+	};
 
-	const originalOnLiveSync = global.__onLiveSync
+	const originalOnLiveSync = global.__onLiveSync;
 	global.__onLiveSync = async function () {
-		logVerbose('LiveSync')
+		logVerbose('LiveSync');
 
 		if (!hasUpdate()) {
 			return;
 		}
 
-		await checkAndApply()
+		await checkAndApply();
 		originalOnLiveSync();
 	};
 }

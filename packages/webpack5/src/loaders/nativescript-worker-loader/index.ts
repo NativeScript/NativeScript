@@ -1,5 +1,5 @@
 const WorkerDependency = require('webpack/lib/dependencies/WorkerDependency');
-const RuntimeGlobals = require("webpack/lib/RuntimeGlobals");
+const RuntimeGlobals = require('webpack/lib/RuntimeGlobals');
 
 /**
  * Patch WorkerDependency to change:
@@ -14,15 +14,19 @@ const RuntimeGlobals = require("webpack/lib/RuntimeGlobals");
  * break when the dependency range changes, for example if this PR is merged:
  *  - https://github.com/webpack/webpack/pull/12750
  */
-WorkerDependency.Template.prototype.apply = function apply(dependency, source, templateContext) {
+WorkerDependency.Template.prototype.apply = function apply(
+	dependency,
+	source,
+	templateContext
+) {
 	const { chunkGraph, moduleGraph, runtimeRequirements } = templateContext;
-	const dep = /** @type {WorkerDependency} */ (dependency);
-	const block = /** @type {AsyncDependenciesBlock} */ (moduleGraph.getParentBlock(
+	const dep = /** @type {WorkerDependency} */ dependency;
+	const block = /** @type {AsyncDependenciesBlock} */ moduleGraph.getParentBlock(
 		dependency
-	));
-	const entrypoint = /** @type {Entrypoint} */ (chunkGraph.getBlockChunkGroup(
+	);
+	const entrypoint = /** @type {Entrypoint} */ chunkGraph.getBlockChunkGroup(
 		block
-	));
+	);
 	const chunk = entrypoint.getEntrypointChunk();
 
 	// runtimeRequirements.add(RuntimeGlobals.publicPath);
@@ -40,9 +44,9 @@ WorkerDependency.Template.prototype.apply = function apply(dependency, source, t
 			RuntimeGlobals.getChunkScriptFilename
 		}(${JSON.stringify(chunk.id)})`
 	);
-}
+};
 
-const NEW_WORKER_WITH_STRING_RE = /new\s+Worker\((['"`].+['"`])\)/
+const NEW_WORKER_WITH_STRING_RE = /new\s+Worker\((['"`].+['"`])\)/;
 
 /**
  * Replaces
@@ -51,7 +55,9 @@ const NEW_WORKER_WITH_STRING_RE = /new\s+Worker\((['"`].+['"`])\)/
  * new Worker(new URL('./somePath', import.meta.url))
  */
 export default function loader(content: string, map: any) {
-	const source = content.replace(NEW_WORKER_WITH_STRING_RE, 'new Worker(new URL($1, import.meta.url))')
-	this.callback(null, source, map)
+	const source = content.replace(
+		NEW_WORKER_WITH_STRING_RE,
+		'new Worker(new URL($1, import.meta.url))'
+	);
+	this.callback(null, source, map);
 }
-
