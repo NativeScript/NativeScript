@@ -12,7 +12,10 @@ import base from './base';
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 
-	const tsConfigPath = getProjectFilePath('tsconfig.json')
+	const tsConfigPath = [
+		getProjectFilePath('tsconfig.app.json'),
+		getProjectFilePath('tsconfig.json')
+	].find(path => existsSync(path))
 
 	applyFileReplacements(config)
 
