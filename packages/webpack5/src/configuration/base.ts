@@ -9,13 +9,13 @@ import TerserPlugin from 'terser-webpack-plugin';
 
 import { getProjectFilePath, getProjectRootPath } from '../helpers/project';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
+import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
 import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
 import { getIPS } from '../helpers/host';
-import { applyFileReplacements } from '../helpers/fileReplacements';
 import {
 	getPlatformName,
 	getAbsoluteDistPath,

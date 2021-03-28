@@ -1,11 +1,9 @@
-import { resolve, dirname } from 'path';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
-import get from 'lodash.get';
 
-import { getProjectFilePath, getProjectRootPath } from '../helpers/project';
-import { getEntryPath, getPlatformName } from '../helpers/platform';
+import { getProjectFilePath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
+import { getEntryPath } from '../helpers/platform';
 import base from './base';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
@@ -58,38 +56,4 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 function getAngularCompilerPlugin() {
 	const { AngularCompilerPlugin } = require('@ngtools/webpack');
 	return AngularCompilerPlugin;
-}
-
-// todo: move into project helper if used elsewhere
-// todo: write tests
-function findFile(fileName, currentDir): string | null {
-	// console.log(`findFile(${fileName}, ${currentDir})`)
-	const path = resolve(currentDir, fileName);
-
-	if (existsSync(path)) {
-		return path;
-	}
-
-	// bail if we reached the root dir
-	if (currentDir === resolve('/')) {
-		return null;
-	}
-
-	// traverse to the parent folder
-	return findFile(fileName, resolve(currentDir, '..'));
-}
-
-function findWorkspaceConfig(): string {
-	const possibleConfigNames = ['angular.json', 'workspace.json'];
-
-	for (const name of possibleConfigNames) {
-		const path = findFile(name, getProjectRootPath());
-
-		if (path) {
-			return path;
-		}
-	}
-
-	// not found
-	return null;
 }
