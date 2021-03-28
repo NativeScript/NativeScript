@@ -1,12 +1,13 @@
 import { merge } from 'webpack-merge';
 
-import { addVirtualEntry, addVirtualModule } from './virtualModules'
+import { addVirtualEntry, addVirtualModule } from './virtualModules';
 import { getPackageJson, getProjectRootPath } from './project';
+import { applyFileReplacements } from './fileReplacements';
 import { addCopyRule, removeCopyRule } from './copyRules';
 import { determineProjectFlavor } from './flavor';
 import { error, info, warn } from './log';
 import { getValue } from './config';
-import { getIPS } from './host'
+import { getIPS } from './host';
 import {
 	getAllDependencies,
 	hasDependency,
@@ -22,7 +23,6 @@ import {
 	getPlatformName,
 } from './platform';
 
-
 // intentionally populated manually
 // as this generates nicer typings
 // that show all the utils inline
@@ -32,6 +32,7 @@ export default {
 	merge,
 	addCopyRule,
 	removeCopyRule,
+	applyFileReplacements,
 	config: {
 		getValue,
 	},
@@ -66,6 +67,6 @@ export default {
 	},
 	virtualModules: {
 		addVirtualEntry,
-		addVirtualModule
-	}
+		addVirtualModule,
+	},
 };

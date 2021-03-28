@@ -35,7 +35,9 @@ export interface IWebpackEnv {
 
 	// enable verbose output
 	verbose?: boolean;
-	// todo: add others
+
+	// misc
+	replace?: string[] | string
 }
 
 interface IChainEntry {
