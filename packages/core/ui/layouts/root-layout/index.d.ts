@@ -24,8 +24,8 @@ export interface ShadeCoverOptions {
 	color?: string;
 	tapToClose?: boolean;
 	animation?: {
-		enterFrom?: TransitionAnimation; // these will only be applied if its the first one to be opened
-		exitTo?: TransitionAnimation; // these will only be applied if its the last one to be closed
+		enterFrom?: TransitionAnimation; // only applied if first one to be opened
+		exitTo?: TransitionAnimation; // only applied if last one to be closed
 	};
 	ignoreShadeRestore?: boolean;
 }
@@ -38,5 +38,5 @@ export interface TransitionAnimation {
 	rotate?: number; // in degrees
 	opacity?: number;
 	duration?: number; // in milliseconds
-	curve?: any; // TODO: type collisision branch fixes this! AnimationCurve;
+	curve?: any; // CoreTypes.AnimationCurve (string, cubicBezier, etc.)
 }
