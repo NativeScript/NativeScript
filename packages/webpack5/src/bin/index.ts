@@ -45,8 +45,6 @@ program
 	.description('Build...')
 	.option('--env [name]', 'environment name')
 	.option('--config [path]', 'config path')
-	// .option('--hmr', 'enable HMR')
-	// .option('--no-hmr', 'disable HMR')
 	.option('--watch', 'watch for changes')
 	.allowUnknownOption()
 	.action((options, command) => {
@@ -104,6 +102,7 @@ program
 					stats.toString({
 						chunks: false,
 						colors: true,
+						errorDetails: env.verbose,
 					})
 				);
 			}
