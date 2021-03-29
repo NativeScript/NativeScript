@@ -69,5 +69,10 @@
 	},
 	"peerDependencies": {
 		"nativescript-vue-template-compiler": "^2.8.1"
+	},
+	"peerDependenciesMeta": {
+		"nativescript-vue-template-compiler": {
+			"optional": true
+		}
 	}
 }
