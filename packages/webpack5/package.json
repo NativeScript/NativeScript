@@ -48,6 +48,7 @@
 		"webpack": "^5.28.0",
 		"webpack-bundle-analyzer": "^4.4.0",
 		"webpack-chain": "^6.5.1",
+		"webpack-cli": "^4.6.0",
 		"webpack-merge": "^5.4.0",
 		"webpack-virtual-modules": "^0.4.2",
 		"worker-plugin": "^5.0.0"

@@ -140,6 +140,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.rule('bundle')
 		.enforce('post')
 		.test(entryPath)
+		.use('app-css-loader')
+		.loader('app-css-loader')
+		.end()
 		.use('nativescript-hot-loader')
 		.loader('nativescript-hot-loader')
 		.options({

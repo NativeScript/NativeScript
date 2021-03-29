@@ -63,6 +63,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * +-----------------------------------------------------------------------------------------+
 			 */
 			/Zone\.js does not support native async\/await/,
+			/**
+			 * This rule hides
+			 * +-----------------------------------------------------------------------------------------+
+			 * | WARNING in environment.*.ts is part of the TypeScript compilation but it's unused.      |
+			 * | Add only entry points to the 'files' or 'include' properties in your tsconfig.          |
+			 * +-----------------------------------------------------------------------------------------+
+			 */
+			/environment.(\w+).ts is part of the TypeScript compilation but it's unused/,
 		])
 	);
 

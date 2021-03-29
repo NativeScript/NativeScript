@@ -61,6 +61,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         enforce: 'post',
         test: '__jest__/src/app.js',
         use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader'
+          },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {
             loader: 'nativescript-hot-loader',
@@ -368,6 +372,10 @@ exports[`react configuration > android > base config 1`] = `
         enforce: 'post',
         test: '__jest__/src/app.js',
         use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader'
+          },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {
             loader: 'nativescript-hot-loader',
@@ -653,6 +661,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         enforce: 'post',
         test: '__jest__/src/app.js',
         use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader'
+          },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {
             loader: 'nativescript-hot-loader',
@@ -961,6 +973,10 @@ exports[`react configuration > ios > base config 1`] = `
         enforce: 'post',
         test: '__jest__/src/app.js',
         use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader'
+          },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {
             loader: 'nativescript-hot-loader',

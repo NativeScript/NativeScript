@@ -61,6 +61,10 @@ exports[`vue configuration for android 1`] = `
         enforce: 'post',
         test: '__jest__/src/app.js',
         use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader'
+          },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {
             loader: 'nativescript-hot-loader',
@@ -372,6 +376,10 @@ exports[`vue configuration for ios 1`] = `
         enforce: 'post',
         test: '__jest__/src/app.js',
         use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader'
+          },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {
             loader: 'nativescript-hot-loader',
