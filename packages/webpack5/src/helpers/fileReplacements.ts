@@ -1,5 +1,8 @@
+import { resolve } from 'path';
+
 import { env as _env, IWebpackEnv } from '../index';
 import { addCopyRule } from './copyRules';
+import { getProjectRootPath } from './project';
 
 interface IReplacementMap {
 	[_replace: string]: /* _with */ string;
@@ -27,10 +30,16 @@ export function getFileReplacementsFromEnv(
 
 	entries.forEach((replaceEntry) => {
 		replaceEntry.split(/,\s*/).forEach((r: string) => {
-			const [_replace, _with] = r.split(':');
+			let [_replace, _with] = r.split(':');
+
 			if (!_replace || !_with) {
 				return;
 			}
+
+			// make sure to resolve replacements to a full path
+			// relative to the project root
+			_replace = resolve(getProjectRootPath(), _replace);
+			_with = resolve(getProjectRootPath(), _with);
 
 			fileReplacements[_replace] = _with;
 		});
