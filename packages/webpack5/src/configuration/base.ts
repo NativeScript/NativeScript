@@ -3,7 +3,6 @@ import Config from 'webpack-chain';
 import { resolve } from 'path';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
-import FilterWarningsPlugin from 'webpack-filter-warnings-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
@@ -266,19 +265,20 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	]);
 
 	// Filter common undesirable warnings
-	config.plugin('FilterWarningsPlugin').use(FilterWarningsPlugin, [
-		{
+	config.set(
+		'ignoreWarnings',
+		(config.get('ignoreWarnings') ?? []).concat([
 			/**
 			 * This rule hides
-			 * +-------------------------------------------------------------------------------+
-			 * | WARNING in ./node_modules/@angular/core/fesm2015/core.js 29714:15-102         |
-			 * | System.import() is deprecated and will be removed soon. Use import() instead. |
-			 * | For more info visit https://webpack.js.org/guides/code-splitting/             |
-			 * +-------------------------------------------------------------------------------+
+			 * +-----------------------------------------------------------------------------------------+
+			 * | WARNING in ./node_modules/@angular/core/fesm2015/core.js 29714:15-102                   |
+			 * | System.import() is deprecated and will be removed soon. Use import() instead.           |
+			 * | For more info visit https://webpack.js.org/guides/code-splitting/                       |
+			 * +-----------------------------------------------------------------------------------------+
 			 */
-			exclude: /System.import\(\) is deprecated/,
-		},
-	]);
+			/System.import\(\) is deprecated/,
+		])
+	);
 
 	// todo: refine defaults
 	config.plugin('DefinePlugin').use(DefinePlugin, [

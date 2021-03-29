@@ -50,6 +50,22 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		},
 	]);
 
+	// Filter common undesirable warnings
+	config.set(
+		'ignoreWarnings',
+		(config.get('ignoreWarnings') ?? []).concat([
+			/**
+			 * This rule hides
+			 * +-----------------------------------------------------------------------------------------+
+			 * | WARNING in Zone.js does not support native async/await in ES2017+.                      |
+			 * | These blocks are not intercepted by zone.js and will not triggering change detection.   |
+			 * | See: https://github.com/angular/zone.js/pull/1140 for more information.                 |
+			 * +-----------------------------------------------------------------------------------------+
+			 */
+			/Zone\.js does not support native async\/await/,
+		])
+	);
+
 	return config;
 }
 

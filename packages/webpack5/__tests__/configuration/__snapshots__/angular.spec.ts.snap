@@ -15,6 +15,10 @@ exports[`angular configuration for android 1`] = `
       '__jest__/App_Resources/**'
     ]
   },
+  ignoreWarnings: [
+    /System.import\\\\(\\\\) is deprecated/,
+    /Zone\\\\.js does not support native async\\\\/await/
+  ],
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
     pathinfo: false,
@@ -215,12 +219,6 @@ exports[`angular configuration for android 1`] = `
         platform: 'android'
       }
     ),
-    /* config.plugin('FilterWarningsPlugin') */
-    new FilterWarningsPlugin(
-      {
-        exclude: /System.import\\\\(\\\\) is deprecated/
-      }
-    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -309,6 +307,10 @@ exports[`angular configuration for ios 1`] = `
       '__jest__/App_Resources/**'
     ]
   },
+  ignoreWarnings: [
+    /System.import\\\\(\\\\) is deprecated/,
+    /Zone\\\\.js does not support native async\\\\/await/
+  ],
   output: {
     path: '__jest__/platforms/ios/jest/app',
     pathinfo: false,
@@ -507,12 +509,6 @@ exports[`angular configuration for ios 1`] = `
     new PlatformSuffixPlugin(
       {
         platform: 'ios'
-      }
-    ),
-    /* config.plugin('FilterWarningsPlugin') */
-    new FilterWarningsPlugin(
-      {
-        exclude: /System.import\\\\(\\\\) is deprecated/
       }
     ),
     /* config.plugin('DefinePlugin') */

@@ -15,6 +15,9 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
       '__jest__/App_Resources/**'
     ]
   },
+  ignoreWarnings: [
+    /System.import\\\\(\\\\) is deprecated/
+  ],
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
     pathinfo: false,
@@ -228,12 +231,6 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         platform: 'android'
       }
     ),
-    /* config.plugin('FilterWarningsPlugin') */
-    new FilterWarningsPlugin(
-      {
-        exclude: /System.import\\\\(\\\\) is deprecated/
-      }
-    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -325,6 +322,9 @@ exports[`react configuration > android > base config 1`] = `
       '__jest__/App_Resources/**'
     ]
   },
+  ignoreWarnings: [
+    /System.import\\\\(\\\\) is deprecated/
+  ],
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
     pathinfo: false,
@@ -527,12 +527,6 @@ exports[`react configuration > android > base config 1`] = `
         platform: 'android'
       }
     ),
-    /* config.plugin('FilterWarningsPlugin') */
-    new FilterWarningsPlugin(
-      {
-        exclude: /System.import\\\\(\\\\) is deprecated/
-      }
-    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -613,6 +607,9 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
       '__jest__/App_Resources/**'
     ]
   },
+  ignoreWarnings: [
+    /System.import\\\\(\\\\) is deprecated/
+  ],
   output: {
     path: '__jest__/platforms/ios/jest/app',
     pathinfo: false,
@@ -824,12 +821,6 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     new PlatformSuffixPlugin(
       {
         platform: 'ios'
-      }
-    ),
-    /* config.plugin('FilterWarningsPlugin') */
-    new FilterWarningsPlugin(
-      {
-        exclude: /System.import\\\\(\\\\) is deprecated/
       }
     ),
     /* config.plugin('DefinePlugin') */
@@ -924,6 +915,9 @@ exports[`react configuration > ios > base config 1`] = `
       '__jest__/App_Resources/**'
     ]
   },
+  ignoreWarnings: [
+    /System.import\\\\(\\\\) is deprecated/
+  ],
   output: {
     path: '__jest__/platforms/ios/jest/app',
     pathinfo: false,
@@ -1124,12 +1118,6 @@ exports[`react configuration > ios > base config 1`] = `
     new PlatformSuffixPlugin(
       {
         platform: 'ios'
-      }
-    ),
-    /* config.plugin('FilterWarningsPlugin') */
-    new FilterWarningsPlugin(
-      {
-        exclude: /System.import\\\\(\\\\) is deprecated/
       }
     ),
     /* config.plugin('DefinePlugin') */
