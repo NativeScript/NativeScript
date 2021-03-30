@@ -27,13 +27,13 @@ export class WatchStatePlugin {
 				if (env.verbose) {
 					if (compiler.modifiedFiles) {
 						Array.from(compiler.modifiedFiles).forEach((file) => {
-							console.log(`MODIFIED: ${file}`);
+							console.log(`[${id}][WatchTriggers] MODIFIED: ${file}`);
 						});
 					}
 
 					if (compiler.removedFiles) {
 						Array.from(compiler.removedFiles).forEach((file) => {
-							console.log(`REMOVED: ${file}`);
+							console.log(`[${id}][WatchTriggers] REMOVED: ${file}`);
 						});
 					}
 				}

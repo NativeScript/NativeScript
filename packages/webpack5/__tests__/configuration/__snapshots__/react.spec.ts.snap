@@ -63,7 +63,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         use: [
           /* config.module.rule('bundle').use('app-css-loader') */
           {
-            loader: 'app-css-loader'
+            loader: 'app-css-loader',
+            options: {
+              platform: 'android'
+            }
           },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {
@@ -374,7 +377,10 @@ exports[`react configuration > android > base config 1`] = `
         use: [
           /* config.module.rule('bundle').use('app-css-loader') */
           {
-            loader: 'app-css-loader'
+            loader: 'app-css-loader',
+            options: {
+              platform: 'android'
+            }
           },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {
@@ -663,7 +669,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         use: [
           /* config.module.rule('bundle').use('app-css-loader') */
           {
-            loader: 'app-css-loader'
+            loader: 'app-css-loader',
+            options: {
+              platform: 'ios'
+            }
           },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {
@@ -975,7 +984,10 @@ exports[`react configuration > ios > base config 1`] = `
         use: [
           /* config.module.rule('bundle').use('app-css-loader') */
           {
-            loader: 'app-css-loader'
+            loader: 'app-css-loader',
+            options: {
+              platform: 'ios'
+            }
           },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {

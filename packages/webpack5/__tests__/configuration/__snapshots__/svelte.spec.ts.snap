@@ -62,7 +62,10 @@ exports[`svelte configuration for android 1`] = `
         use: [
           /* config.module.rule('bundle').use('app-css-loader') */
           {
-            loader: 'app-css-loader'
+            loader: 'app-css-loader',
+            options: {
+              platform: 'android'
+            }
           },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {
@@ -370,7 +373,10 @@ exports[`svelte configuration for ios 1`] = `
         use: [
           /* config.module.rule('bundle').use('app-css-loader') */
           {
-            loader: 'app-css-loader'
+            loader: 'app-css-loader',
+            options: {
+              platform: 'ios'
+            }
           },
           /* config.module.rule('bundle').use('nativescript-hot-loader') */
           {
