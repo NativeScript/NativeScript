@@ -1,5 +1,5 @@
 import { dedent } from 'ts-dedent';
-
+import { basename } from 'path';
 /**
  * This loader tries to load an `app.scss` or and `app.css` relative to the main entry
  */
@@ -19,7 +19,7 @@ export default function loader(content: string, map: any) {
 
 		const code = dedent`
 			// Added by app-css-loader
-			import "${res}";
+			import "./${basename(res)}";
 			${content}
 		`;
 
