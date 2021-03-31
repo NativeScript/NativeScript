@@ -225,6 +225,7 @@ export function test_automation_text_set_to_native() {
 	const test = function (views: Array<View>) {
 		const newButton = new Button();
 		newButton.automationText = 'Button1';
+		newButton.accessibilityLabel = 'Button1';
 		(<StackLayout>views[1]).addChild(newButton);
 		TKUnit.assertEqual((<android.widget.Button>newButton.android).getContentDescription(), 'Button1', 'contentDescription not set to native ');
 	};
