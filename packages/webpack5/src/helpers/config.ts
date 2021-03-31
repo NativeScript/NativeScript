@@ -16,10 +16,10 @@ function getCLILib() {
  *
  * @param {string} key The key to get from the config. Supports dot-notation.
  */
-export function getValue<T = any>(key: string): T {
+export function getValue<T = any>(key: string, defaultValue?: any): T {
 	const lib = getCLILib();
 
-	return (lib.projectConfigService as { getValue(key: string): T }).getValue(
-		key
-	);
+	return (lib.projectConfigService as {
+		getValue(key: string, defaultValue?: any): T;
+	}).getValue(key, defaultValue);
 }
