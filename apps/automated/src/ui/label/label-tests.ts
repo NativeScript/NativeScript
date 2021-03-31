@@ -551,15 +551,15 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 		TKUnit.assertNotEqual(this.errorMessage, undefined);
 	}
 
-	public testErrorMessageWhenWrongCssIsAdded() {
-		const view = this.testView;
-		const page = this.testPage;
-		this.waitUntilTestElementIsLoaded();
+	// public testErrorMessageWhenWrongCssIsAdded() {
+	// 	const view = this.testView;
+	// 	const page = this.testPage;
+	// 	this.waitUntilTestElementIsLoaded();
 
-		view.id = 'testLabel';
-		page.addCss('label { < !--Test wrong comment-- > background-color: red; }');
-		TKUnit.assertNotEqual(this.errorMessage, undefined);
-	}
+	// 	view.id = 'testLabel';
+	// 	page.addCss('label { < !--Test wrong comment-- > background-color: red; }');
+	// 	TKUnit.assertNotEqual(this.errorMessage, undefined);
+	// }
 
 	public test_applying_disabled_visual_State_when_label_is_disable = function () {
 		let view = this.testView;
