@@ -294,7 +294,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			__NS_ENV_VERBOSE__: !!env.verbose,
 			__NS_DEV_HOST_IPS__:
 				mode === 'development' ? JSON.stringify(getIPS()) : `[]`,
-			__CSS_PARSER__: JSON.stringify('css-tree'), // todo: replace from config value
+			__CSS_PARSER__: JSON.stringify(getValue('cssParser')),
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',
 			/* for compat only */ 'global.isAndroid': platform === 'android',
