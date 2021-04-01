@@ -54,7 +54,9 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
   },
   resolveLoader: {
     modules: [
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
       'node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
       'node_modules'
     ]
   },
@@ -372,7 +374,9 @@ exports[`react configuration > android > base config 1`] = `
   },
   resolveLoader: {
     modules: [
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
       'node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
       'node_modules'
     ]
   },
@@ -668,7 +672,9 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
   },
   resolveLoader: {
     modules: [
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
       'node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
       'node_modules'
     ]
   },
@@ -987,7 +993,9 @@ exports[`react configuration > ios > base config 1`] = `
   },
   resolveLoader: {
     modules: [
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
       'node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
       'node_modules'
     ]
   },

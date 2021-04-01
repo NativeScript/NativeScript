@@ -116,7 +116,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	//  - node_modules
 	// allows for cleaner rules, without having to specify full paths to loaders
 	config.resolveLoader.modules
+		.add(getProjectFilePath('node_modules/@nativescript/webpack/dist/loaders'))
 		.add('node_modules/@nativescript/webpack/dist/loaders')
+		.add(getProjectFilePath('node_modules'))
 		.add('node_modules');
 
 	config.resolve.extensions

@@ -53,7 +53,9 @@ exports[`svelte configuration for android 1`] = `
   },
   resolveLoader: {
     modules: [
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
       'node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
       'node_modules'
     ]
   },
@@ -368,7 +370,9 @@ exports[`svelte configuration for ios 1`] = `
   },
   resolveLoader: {
     modules: [
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
       'node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
       'node_modules'
     ]
   },
