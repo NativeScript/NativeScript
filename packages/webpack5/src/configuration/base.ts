@@ -137,6 +137,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// resolve symlinks
 	config.resolve.symlinks(true);
 
+	// resolve modules in project node_modules first
+	// then fall-back to default node resolution (up the parent folder chain)
+	config.resolve.modules
+		.add(getProjectFilePath('node_modules'))
+		.add('node_modules');
+
 	config.module
 		.rule('bundle')
 		.enforce('post')

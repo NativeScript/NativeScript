@@ -49,6 +49,10 @@ exports[`angular configuration for android 1`] = `
     mainFields: [
       'module',
       'main'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {
@@ -349,6 +353,10 @@ exports[`angular configuration for ios 1`] = `
     mainFields: [
       'module',
       'main'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {

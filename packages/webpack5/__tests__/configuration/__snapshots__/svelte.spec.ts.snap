@@ -45,6 +45,10 @@ exports[`svelte configuration for android 1`] = `
       '.scss',
       '.android.json',
       '.json'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {
@@ -356,6 +360,10 @@ exports[`svelte configuration for ios 1`] = `
       '.scss',
       '.ios.json',
       '.json'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {

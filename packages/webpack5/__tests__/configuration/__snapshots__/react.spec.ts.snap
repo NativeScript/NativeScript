@@ -46,6 +46,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
       '.scss',
       '.android.json',
       '.json'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {
@@ -360,6 +364,10 @@ exports[`react configuration > android > base config 1`] = `
       '.scss',
       '.android.json',
       '.json'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {
@@ -652,6 +660,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
       '.scss',
       '.ios.json',
       '.json'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {
@@ -967,6 +979,10 @@ exports[`react configuration > ios > base config 1`] = `
       '.scss',
       '.ios.json',
       '.json'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {
