@@ -1,11 +1,15 @@
 import { merge } from 'webpack-merge';
 
+import {
+	getPackageJson,
+	getProjectRootPath,
+	getProjectFilePath,
+} from './project';
 import { addVirtualEntry, addVirtualModule } from './virtualModules';
-import { getPackageJson, getProjectRootPath } from './project';
 import { applyFileReplacements } from './fileReplacements';
 import { addCopyRule, removeCopyRule } from './copyRules';
+import { error, info, warn, warnOnce } from './log';
 import { determineProjectFlavor } from './flavor';
-import { error, info, warn } from './log';
 import { getValue } from './config';
 import { getIPS } from './host';
 import {
@@ -51,6 +55,7 @@ export default {
 		error,
 		info,
 		warn,
+		warnOnce,
 	},
 	platform: {
 		addPlatform,
@@ -62,6 +67,7 @@ export default {
 		getPlatformName,
 	},
 	project: {
+		getProjectFilePath,
 		getProjectRootPath,
 		getPackageJson,
 	},

@@ -28,6 +28,16 @@ export function warn(...data: any): void {
 	console.warn(`[@nativescript/webpack] Warn: \n`, ...cleanup(data));
 }
 
+const warnedMap: any = {};
+export function warnOnce(key: string, ...data: any): void {
+	if (warnedMap[key]) {
+		return;
+	}
+
+	warnedMap[key] = true;
+	warn(...data);
+}
+
 export function info(...data: any): void {
 	if (env.verbose) {
 		console.log(`[@nativescript/webpack] Info: \n`, ...cleanup(data));

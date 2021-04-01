@@ -1,7 +1,7 @@
 import { dirname, resolve } from 'path';
 
 import { getPackageJson, getProjectRootPath } from './project';
-import { error, info } from './log';
+import { error, info, warnOnce } from './log';
 import { env } from '../';
 
 import AndroidPlatform from '../platforms/android';
@@ -65,13 +65,20 @@ export function getPlatformName(): Platform {
 		`);
 	}
 
-	throw error(`
+	warnOnce(
+		'getPlatformName',
+		`
 		You need to provide a target platform!
 
 		Available platforms: ${Object.keys(platforms).join(', ')}
 
 		Use --env.platform=<platform> or --env.android, --env.ios to specify the target platform.
-	`);
+
+		Defaulting to "ios".
+	`
+	);
+
+	return 'ios';
 }
 
 /**
