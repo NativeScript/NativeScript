@@ -66,6 +66,22 @@ jest.mock('path', () => {
 				return resolved.substr(li);
 			}
 
+			// handle resolutions with __dirname
+			// used in base config's resolveLoader
+			const root = path.resolve(__dirname, '..');
+			if (resolved.startsWith(root)) {
+				const newPath = resolved.replace(root, '__jest__');
+
+				if (newPath.startsWith('__jest__/src')) {
+					return newPath.replace(
+						'__jest__/src',
+						'__jest__/node_modules/@nativescript/webpack/dist'
+					);
+				}
+
+				return newPath;
+			}
+
 			return resolved;
 		},
 	};
