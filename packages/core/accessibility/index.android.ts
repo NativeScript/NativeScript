@@ -545,7 +545,7 @@ function setAccessibilityDelegate(view: Partial<View>): void {
 	ensureNativeClasses();
 
 	const androidView = view.nativeViewProtected as android.view.View;
-	if (!androidView) {
+	if (!androidView || !androidView.setAccessibilityDelegate) {
 		return;
 	}
 
@@ -559,7 +559,7 @@ function setAccessibilityDelegate(view: Partial<View>): void {
 	if (hasOldDelegate) {
 		return;
 	}
-
+	
 	androidView.setAccessibilityDelegate(TNSAccessibilityDelegate);
 }
 
