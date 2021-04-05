@@ -25,8 +25,11 @@ export function addVirtualModule(
 ): string {
 	const virtualEntryPath = join(getEntryDirPath(), `${name}`);
 
+	// add the virtual entry to the context exclusions
+	// makes sure that require.context will never
+	// include the virtual entry.
 	config
-		.plugin('ContextExclusionPluginPlugin')
+		.plugin(`ContextExclusionPlugin|${name}`)
 		.use(ContextExclusionPlugin, [new RegExp(`${name}\.js$`)]);
 
 	const options = {
