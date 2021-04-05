@@ -1,4 +1,8 @@
-import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
+import {
+	ContextExclusionPlugin,
+	DefinePlugin,
+	HotModuleReplacementPlugin,
+} from 'webpack';
 import Config from 'webpack-chain';
 import { resolve } from 'path';
 
@@ -279,6 +283,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			platform,
 		},
 	]);
+
+	// Makes sure that require.context will never include
+	// App_Resources, regardless where they are located.
+	config
+		.plugin('ContextExclusionPlugin|App_Resources')
+		.use(ContextExclusionPlugin, [new RegExp(`(.*)App_Resources(.*)`)]);
 
 	// Filter common undesirable warnings
 	config.set(
