@@ -37,7 +37,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			return {
 				...options,
 				compilerOptions: {
-					...svelteConfig.compilerOptions,
+					...svelteConfig?.compilerOptions,
 					dev: !production,
 				},
 				preprocess: svelteConfig?.preprocess,
