@@ -24,6 +24,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// the order is reversed because we are using prepend!
 	config.resolve.extensions.prepend('.svelte').prepend(`.${platform}.svelte`);
 
+	// add worker support to .svelte files (new Worker('./path'))
+	config.module.rule('workers').test(/\.(js|ts|svelte)$/);
+
 	// add a rule for .svelte files
 	config.module
 		.rule('svelte')
@@ -48,6 +51,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				},
 			};
 		});
+
 	return config;
 }
 
