@@ -255,6 +255,10 @@ exports[`javascript configuration for android 1`] = `
         platform: 'android'
       }
     ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -306,7 +310,7 @@ exports[`javascript configuration for android 1`] = `
     ),
     /* config.plugin('WatchStatePlugin') */
     new WatchStatePlugin(),
-    /* config.plugin('ContextExclusionPluginPlugin') */
+    /* config.plugin('ContextExclusionPlugin|__@nativescript_webpack_virtual_entry_javascript__') */
     new ContextExclusionPlugin(
       /__@nativescript_webpack_virtual_entry_javascript__.js$/
     ),
@@ -584,6 +588,10 @@ exports[`javascript configuration for ios 1`] = `
         platform: 'ios'
       }
     ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -635,7 +643,7 @@ exports[`javascript configuration for ios 1`] = `
     ),
     /* config.plugin('WatchStatePlugin') */
     new WatchStatePlugin(),
-    /* config.plugin('ContextExclusionPluginPlugin') */
+    /* config.plugin('ContextExclusionPlugin|__@nativescript_webpack_virtual_entry_javascript__') */
     new ContextExclusionPlugin(
       /__@nativescript_webpack_virtual_entry_javascript__.js$/
     ),

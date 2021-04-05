@@ -232,6 +232,10 @@ exports[`angular configuration for android 1`] = `
         platform: 'android'
       }
     ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -536,6 +540,10 @@ exports[`angular configuration for ios 1`] = `
       {
         platform: 'ios'
       }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(

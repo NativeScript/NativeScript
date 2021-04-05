@@ -243,6 +243,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         platform: 'android'
       }
     ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -550,6 +554,10 @@ exports[`react configuration > android > base config 1`] = `
       {
         platform: 'android'
       }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -859,6 +867,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         platform: 'ios'
       }
     ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -1167,6 +1179,10 @@ exports[`react configuration > ios > base config 1`] = `
       {
         platform: 'ios'
       }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(

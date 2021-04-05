@@ -228,6 +228,10 @@ exports[`base configuration for android 1`] = `
         platform: 'android'
       }
     ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
@@ -518,6 +522,10 @@ exports[`base configuration for ios 1`] = `
       {
         platform: 'ios'
       }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
