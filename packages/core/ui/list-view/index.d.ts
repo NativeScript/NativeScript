@@ -1,5 +1,6 @@
 ﻿import { View, Template, KeyedTemplate } from '../core/view';
 import { Color } from '../../color';
+import { CoreTypes } from '../../core-types';
 import { EventData } from '../../data/observable';
 import { Length } from '../styling/style-properties';
 import { Style } from '../styling/style';
@@ -66,13 +67,13 @@ export class ListView extends View {
 	/**
 	 * Gets or set row height of the ListView.
 	 */
-	rowHeight: Length;
+	rowHeight: CoreTypes.LengthType;
 
 	/**
 	 * Gets or set the estimated height of rows in the ListView.
 	 * The default value is 44px.
 	 */
-	iosEstimatedRowHeight: Length;
+	iosEstimatedRowHeight: CoreTypes.LengthType;
 
 	/**
 	 * Forces the ListView to reload all its items.
@@ -190,12 +191,12 @@ export const separatorColor: Property<ListView, Color>;
 /**
  * Represents the observable property backing the rowHeight property of each ListView instance.
  */
-export const rowHeightProperty: Property<ListView, Length>;
+export const rowHeightProperty: Property<ListView, CoreTypes.LengthType>;
 
 /**
  * Represents the observable property backing the iosEstimatedRowHeight property of each ListView instance.
  */
-export const iosEstimatedRowHeightProperty: Property<ListView, Length>;
+export const iosEstimatedRowHeightProperty: Property<ListView, CoreTypes.LengthType>;
 
 /**
  * Backing property for separator color property.

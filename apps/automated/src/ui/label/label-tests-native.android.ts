@@ -1,20 +1,20 @@
 import * as labelModule from '@nativescript/core/ui/label';
-import * as enums from '@nativescript/core/ui/enums';
+import { CoreTypes } from '@nativescript/core';
 import * as colorModule from '@nativescript/core/color';
 
 export function getNativeTextAlignment(label: labelModule.Label): string {
 	let gravity = label.android.getGravity();
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.LEFT) {
-		return enums.TextAlignment.left;
+		return CoreTypes.TextAlignment.left;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.CENTER_HORIZONTAL) {
-		return enums.TextAlignment.center;
+		return CoreTypes.TextAlignment.center;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.RIGHT) {
-		return enums.TextAlignment.right;
+		return CoreTypes.TextAlignment.right;
 	}
 
 	return 'unexpected value';

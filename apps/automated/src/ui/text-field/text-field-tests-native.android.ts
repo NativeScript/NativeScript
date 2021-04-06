@@ -1,4 +1,4 @@
-import { TextField, Color, Utils, Enums } from '@nativescript/core';
+import { TextField, Color, Utils, CoreTypes } from '@nativescript/core';
 
 export function getNativeText(textField: TextField): string {
 	return textField.android.getText().toString();
@@ -44,15 +44,15 @@ export function getNativeTextAlignment(textField: TextField): string {
 	var gravity = textField.android.getGravity();
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.LEFT) {
-		return Enums.TextAlignment.left;
+		return CoreTypes.TextAlignment.left;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.CENTER_HORIZONTAL) {
-		return Enums.TextAlignment.center;
+		return CoreTypes.TextAlignment.center;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.RIGHT) {
-		return Enums.TextAlignment.right;
+		return CoreTypes.TextAlignment.right;
 	}
 
 	return 'unexpected value';

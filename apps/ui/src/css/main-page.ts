@@ -17,6 +17,7 @@ export function loadExamples() {
 	examples.set('line-height', 'css/line-height-page');
 	examples.set('decoration', 'css/text-decoration-page');
 	examples.set('transform', 'css/text-transform-page');
+	examples.set('shadow', 'css/text-shadow-page');
 	examples.set('whitespace', 'css/white-space-page');
 	examples.set('progress-switch', 'css/progress-switch-page');
 	examples.set('zindex', 'css/zindex-page');

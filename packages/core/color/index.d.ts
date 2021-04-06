@@ -75,4 +75,119 @@ export class Color {
 	 * Creates color from iOS-specific UIColor value representation.
 	 */
 	public static fromIosColor(value: any /* UIColor */): Color;
+
+	/**
+	 * return true if brightenss < 128
+	 *
+	 */
+	public isDark(): boolean;
+
+	/**
+	 * return true if brightenss >= 128
+	 *
+	 */
+	public isLight(): boolean;
+
+	/**
+	 * return the [brightness](http://www.w3.org/TR/AERT#color-contrast)
+	 *
+	 */
+	public getBrightness(): number;
+	/**
+	 * return the [luminance](http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef)
+	 *
+	 */
+	public getLuminance(): number;
+
+	/**
+	 * Return this color (as a new Color instance) with the provided alpha
+	 *
+	 * @param alpha (between 0 and 255)
+	 */
+	public setAlpha(a: number): Color;
+	/**
+	 * return the hsl representation of the color
+	 *
+	 */
+	public toHsl(): { h: number; s: number; l: number; a: number };
+
+	/**
+	 * return the [CSS hsv](https://www.w3schools.com/Css/css_colors_hsl.asp) representation of the color
+	 *
+	 */
+	public toHslString(): string;
+
+	/**
+	 * return the hsv representation of the color
+	 *
+	 */
+	public toHsv(): { h: number; s: number; v: number; a: number };
+
+	/**
+	 * return the [CSS hsv](https://www.w3schools.com/Css/css_colors_rgb.asp) representation of the color
+	 *
+	 */
+	public toHsvString(): string;
+
+	/**
+	 * return the [CSS rgb](https://www.w3schools.com/Css/css_colors_rgb.asp) representation of the color
+	 *
+	 */
+	public toRgbString(): string;
+
+	/**
+	 *  Desaturate the color a given amount, from 0 to 100. Providing 100 will is the same as calling greyscale.
+	 *
+	 * @param amount (between 0 and 100)
+	 */
+	public desaturate(amount: number): Color;
+
+	/**
+	 * Saturate the color a given amount, from 0 to 100.
+	 *
+	 * @param amount (between 0 and 100)
+	 */
+	public saturate(amount: number): Color;
+
+	/**
+	 * Completely desaturates a color into greyscale. Same as calling desaturate(100).
+	 *
+	 * @returns
+	 */
+	public greyscale(): Color;
+
+	/**
+	 * Lighten the color a given amount, from 0 to 100. Providing 100 will always return white.
+	 *
+	 * @param amount (between 0 and 100)
+	 * @returns olor : Color
+	 */
+	public lighten(amount: number): Color;
+
+	/**
+	 * Brighten the color a given amount, from 0 to 100.
+	 *
+	 * @param amount (between 0 and 100)
+	 */
+	public brighten(amount: number): Color;
+
+	/**
+	 * Darken the color a given amount, from 0 to 100. Providing 100 will always return black.
+	 *
+	 * @param amount (between 0 and 100)
+	 */
+	public darken(amount: number): Color;
+
+	/**
+	 * Spin the hue a given amount, from -360 to 360. Calling with 0, 360, or -360 will do nothing (since it sets the hue back to what it was before).
+	 *
+	 * @param amount (between 0 and 100)
+	 */
+	public spin(amount: number): Color;
+
+	/**
+	 * returns the color complement
+	 *
+	 */
+	public complement(): Color;
 }

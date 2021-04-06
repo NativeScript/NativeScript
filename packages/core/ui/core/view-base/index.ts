@@ -3,6 +3,7 @@ import { AlignSelf, FlexGrow, FlexShrink, FlexWrapBefore, Order } from '../../la
 import { Page } from '../../page';
 
 // Types.
+import { CoreTypes } from '../../../core-types';
 import { Property, CssProperty, CssAnimationProperty, InheritedProperty, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, initNativeView } from '../properties';
 import { CSSUtils } from '../../../css/system-classes';
 import { Source } from '../../../utils/debug';
@@ -10,7 +11,7 @@ import { Binding, BindingOptions } from '../bindable';
 import { Trace } from '../../../trace';
 import { Observable, PropertyChangeData, WrappedValue } from '../../../data/observable';
 import { Style } from '../../styling/style';
-import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
+import { paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../../styling/style-properties';
 
 // TODO: Remove this import!
 import { getClass } from '../../../utils/types';
@@ -143,6 +144,32 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
 	return retVal;
 }
 
+export function getViewByDomId(view: ViewBaseDefinition, domId: number): ViewBaseDefinition {
+	if (!view) {
+		return undefined;
+	}
+
+	if (view._domId === domId) {
+		return view;
+	}
+
+	let retVal: ViewBaseDefinition;
+	const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+		if (view._domId === domId) {
+			retVal = child;
+
+			// break the iteration by returning false
+			return false;
+		}
+
+		return true;
+	};
+
+	eachDescendant(view, descendantsCallback);
+
+	return retVal;
+}
+
 export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewBaseDefinition) => boolean) {
 	if (!callback || !view) {
 		return;
@@ -258,8 +285,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _automaticallyAdjustsScrollViewInsets: boolean;
 
 	// Dynamic properties.
-	left: Length;
-	top: Length;
+	left: CoreTypes.LengthType;
+	top: CoreTypes.LengthType;
 	effectiveLeft: number;
 	effectiveTop: number;
 	dock: 'left' | 'top' | 'right' | 'bottom';
@@ -306,6 +333,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	public _isPaddingRelative: boolean;
 
 	public _moduleName: string;
+
+	public reusable: boolean;
 
 	constructor() {
 		super();
@@ -369,6 +398,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	getViewById<T extends ViewBaseDefinition>(id: string): T {
 		return <T>getViewById(this, id);
+	}
+
+	getViewByDomId<T extends ViewBaseDefinition>(domId: number): T {
+		return <T>getViewByDomId(this, domId);
 	}
 
 	get page(): Page {
@@ -767,6 +800,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 	@profile
 	public _setupUI(context: any, atIndex?: number, parentIsLoaded?: boolean): void {
 		if (this._context === context) {
+			// this check is unnecessary as this function should never be called when this._context === context as it means the view was somehow detached,
+			// which is only possible by setting reusable = true. Adding it either way for feature flag safety
+			if (this.reusable) {
+				if (this.parent && !this._isAddedToNativeVisualTree) {
+					const nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
+					this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
+				}
+			}
 			return;
 		} else if (this._context) {
 			this._tearDownUI(true);
@@ -775,7 +816,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this._context = context;
 
 		// This will account for nativeView that is created in createNativeView, recycled
-		// or for backward compatability - set before _setupUI in iOS contructor.
+		// or for backward compatibility - set before _setupUI in iOS constructor.
 		let nativeView = this.nativeViewProtected;
 
 		// if (global.isAndroid) {
@@ -789,35 +830,39 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 
 		if (global.isAndroid) {
-			this._androidView = nativeView;
-			if (nativeView) {
-				if (this._isPaddingRelative === undefined) {
-					this._isPaddingRelative = nativeView.isPaddingRelative();
-				}
+			// this check is also unecessary as this code should never be reached with _androidView != null unless reusable = true
+			// also adding this check for feature flag safety
+			if (this._androidView !== nativeView || !this.reusable) {
+				this._androidView = nativeView;
+				if (nativeView) {
+					if (this._isPaddingRelative === undefined) {
+						this._isPaddingRelative = nativeView.isPaddingRelative();
+					}
 
-				let result: any /* android.graphics.Rect */ = (<any>nativeView).defaultPaddings;
-				if (result === undefined) {
-					result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
-					(<any>nativeView).defaultPaddings = result;
-				}
+					let result: any /* android.graphics.Rect */ = (<any>nativeView).defaultPaddings;
+					if (result === undefined) {
+						result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
+						(<any>nativeView).defaultPaddings = result;
+					}
 
-				this._defaultPaddingTop = result.top;
-				this._defaultPaddingRight = result.right;
-				this._defaultPaddingBottom = result.bottom;
-				this._defaultPaddingLeft = result.left;
+					this._defaultPaddingTop = result.top;
+					this._defaultPaddingRight = result.right;
+					this._defaultPaddingBottom = result.bottom;
+					this._defaultPaddingLeft = result.left;
 
-				const style = this.style;
-				if (!paddingTopProperty.isSet(style)) {
-					this.effectivePaddingTop = this._defaultPaddingTop;
-				}
-				if (!paddingRightProperty.isSet(style)) {
-					this.effectivePaddingRight = this._defaultPaddingRight;
-				}
-				if (!paddingBottomProperty.isSet(style)) {
-					this.effectivePaddingBottom = this._defaultPaddingBottom;
-				}
-				if (!paddingLeftProperty.isSet(style)) {
-					this.effectivePaddingLeft = this._defaultPaddingLeft;
+					const style = this.style;
+					if (!paddingTopProperty.isSet(style)) {
+						this.effectivePaddingTop = this._defaultPaddingTop;
+					}
+					if (!paddingRightProperty.isSet(style)) {
+						this.effectivePaddingRight = this._defaultPaddingRight;
+					}
+					if (!paddingBottomProperty.isSet(style)) {
+						this.effectivePaddingBottom = this._defaultPaddingBottom;
+					}
+					if (!paddingLeftProperty.isSet(style)) {
+						this.effectivePaddingLeft = this._defaultPaddingLeft;
+					}
 				}
 			}
 		} else {
@@ -858,20 +903,28 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
+	public destroyNode(forceDestroyChildren?: boolean): void {
+		this.reusable = false;
+		this._tearDownUI(forceDestroyChildren);
+	}
+
 	@profile
 	public _tearDownUI(force?: boolean): void {
 		// No context means we are already teared down.
 		if (!this._context) {
 			return;
 		}
+		const preserveNativeView = this.reusable && !force;
 
 		this.resetNativeViewInternal();
 
-		this.eachChild((child) => {
-			child._tearDownUI(force);
+		if (!preserveNativeView) {
+			this.eachChild((child) => {
+				child._tearDownUI(force);
 
-			return true;
-		});
+				return true;
+			});
+		}
 
 		if (this.parent) {
 			this.parent._removeViewFromNativeVisualTree(this);
@@ -896,18 +949,20 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		//     }
 		// }
 
-		this.disposeNativeView();
+		if (!preserveNativeView) {
+			this.disposeNativeView();
 
-		this._suspendNativeUpdates(SuspendType.UISetup);
+			this._suspendNativeUpdates(SuspendType.UISetup);
 
-		if (global.isAndroid) {
-			this.setNativeView(null);
-			this._androidView = null;
+			if (global.isAndroid) {
+				this.setNativeView(null);
+				this._androidView = null;
+			}
+
+			// this._iosView = null;
+
+			this._context = null;
 		}
-
-		// this._iosView = null;
-
-		this._context = null;
 
 		if (this.domNode) {
 			this.domNode.dispose();
@@ -1099,6 +1154,7 @@ ViewBase.prototype._defaultPaddingBottom = 0;
 ViewBase.prototype._defaultPaddingLeft = 0;
 ViewBase.prototype._isViewBase = true;
 ViewBase.prototype.recycleNativeView = 'never';
+ViewBase.prototype.reusable = false;
 
 ViewBase.prototype._suspendNativeUpdatesCount = SuspendType.Loaded | SuspendType.NativeView | SuspendType.UISetup;
 
@@ -1106,6 +1162,19 @@ export const bindingContextProperty = new InheritedProperty<ViewBase, any>({
 	name: 'bindingContext',
 });
 bindingContextProperty.register(ViewBase);
+
+export const hiddenProperty = new Property<ViewBase, boolean>({
+	name: 'hidden',
+	defaultValue: false,
+	affectsLayout: global.isIOS,
+	valueConverter: booleanConverter,
+	valueChanged: (target, oldValue, newValue) => {
+		if (target) {
+			target.isCollapsed = !!newValue;
+		}
+	},
+});
+hiddenProperty.register(ViewBase);
 
 export const classNameProperty = new Property<ViewBase, string>({
 	name: 'className',

@@ -120,6 +120,88 @@ export namespace iOSNativeHelper {
 		return transform;
 	}
 
+	export function getShadowLayer(nativeView: UIView, name: string = 'ns-shadow-layer', create: boolean = true): CALayer {
+		return nativeView.layer;
+
+		console.log(`--- ${create ? 'CREATE' : 'READ'}`);
+
+		/**
+		 * UIView
+		 *  -> Shadow
+		 *
+		 *
+		 *  UIView
+		 *   -> UIView
+		 *   -> Shadow
+		 */
+
+		if (!nativeView) {
+			return null;
+		}
+
+		if (!nativeView.layer) {
+			// should never hit this?
+			console.log('- no layer! -');
+			return null;
+		}
+
+		// if the nativeView's layer is the shadow layer?
+		if (nativeView.layer.name === name) {
+			console.log('- found shadow layer - reusing.');
+			return nativeView.layer;
+		}
+
+		console.log('>> layer                :', nativeView.layer);
+		if (nativeView.layer.sublayers?.count) {
+			const count = nativeView.layer.sublayers.count;
+			for (let i = 0; i < count; i++) {
+				const subLayer = nativeView.layer.sublayers.objectAtIndex(i);
+
+				console.log(`>> subLayer ${i + 1}/${count}         :`, subLayer);
+				console.log(`>> subLayer ${i + 1}/${count} name    :`, subLayer.name);
+
+				if (subLayer.name === name) {
+					console.log('- found shadow sublayer - reusing.');
+					return subLayer;
+				}
+			}
+			// if (nativeView instanceof UITextView) {
+			// 	return nativeView.layer.sublayers.objectAtIndex(1);
+			// } else {
+			// 	return nativeView.layer.sublayers.objectAtIndex(nativeView.layer.sublayers.count - 1);
+			// }
+		}
+		// else {
+		// 		layer = nativeView.layer;
+		// }
+
+		// we're not interested in creating a new layer
+		if (!create) {
+			return null;
+		}
+
+		console.log(`- adding a new layer for - ${name}`);
+
+		const viewLayer = nativeView.layer;
+		const newLayer = CALayer.layer();
+
+		newLayer.name = name;
+		newLayer.zPosition = 0.0;
+		// nativeView.layer.insertSublayerBelow(newLayer, nativeView.layer)
+		// newLayer.insertSublayerAtIndex(nativeView.layer, 0)
+		// nativeView.layer.zPosition = 1.0;
+		// nativeView.layer.addSublayer(newLayer);
+
+		// nativeView.layer = CALayer.layer()
+
+		nativeView.layer.insertSublayerAtIndex(newLayer, 0);
+		// nativeView.layer.insertSublayerAtIndex(viewLayer, 1)
+
+		// nativeView.layer.replaceSublayerWith(newLayer, nativeView.layer);
+
+		return newLayer;
+	}
+
 	export function createUIDocumentInteractionControllerDelegate(): NSObject {
 		@NativeClass
 		class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
