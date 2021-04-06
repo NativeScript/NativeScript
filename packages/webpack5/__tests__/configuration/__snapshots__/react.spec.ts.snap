@@ -220,9 +220,15 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
           terserOptions: {
             compress: {
               collapse_vars: false,
-              sequences: false
+              sequences: false,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -532,9 +538,15 @@ exports[`react configuration > android > base config 1`] = `
           terserOptions: {
             compress: {
               collapse_vars: false,
-              sequences: false
+              sequences: false,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -844,9 +856,15 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
           terserOptions: {
             compress: {
               collapse_vars: true,
-              sequences: true
+              sequences: true,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -1157,9 +1175,15 @@ exports[`react configuration > ios > base config 1`] = `
           terserOptions: {
             compress: {
               collapse_vars: true,
-              sequences: true
+              sequences: true,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )

@@ -229,9 +229,15 @@ exports[`vue configuration for android 1`] = `
           terserOptions: {
             compress: {
               collapse_vars: false,
-              sequences: false
+              sequences: false,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -556,9 +562,15 @@ exports[`vue configuration for ios 1`] = `
           terserOptions: {
             compress: {
               collapse_vars: true,
-              sequences: true
+              sequences: true,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )

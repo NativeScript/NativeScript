@@ -97,9 +97,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				compress: {
 					collapse_vars: platform !== 'android',
 					sequences: platform !== 'android',
+					keep_infinity: true,
+					drop_console: mode === 'production',
+					global_defs: {
+						__UGLIFIED__: true,
+					},
 				},
-				// todo: move into vue.ts if not required in other flavors?
 				keep_fnames: true,
+				keep_classnames: true,
 			},
 		},
 	]);
