@@ -119,6 +119,9 @@ exports[`angular configuration for android 1`] = `
       /* config.module.rule('css') */
       {
         test: /\\\\.css$/,
+        exclude: [
+          /\\\\.component\\\\.css$/
+        ],
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
           {
@@ -144,6 +147,9 @@ exports[`angular configuration for android 1`] = `
       /* config.module.rule('scss') */
       {
         test: /\\\\.scss$/,
+        exclude: [
+          /\\\\.component\\\\.scss$/
+        ],
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
           {
@@ -194,6 +200,41 @@ exports[`angular configuration for android 1`] = `
           /* config.module.rule('html').use('raw-loader') */
           {
             loader: 'raw-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css|component') */
+      {
+        test: /\\\\.component\\\\.css$/,
+        use: [
+          /* config.module.rule('css|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss|component') */
+      {
+        test: /\\\\.component\\\\.scss$/,
+        use: [
+          /* config.module.rule('scss|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          },
+          /* config.module.rule('scss|component').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  'postcss-import'
+                ]
+              }
+            }
+          },
+          /* config.module.rule('scss|component').use('sass-loader') */
+          {
+            loader: 'sass-loader'
           }
         ]
       }
@@ -428,6 +469,9 @@ exports[`angular configuration for ios 1`] = `
       /* config.module.rule('css') */
       {
         test: /\\\\.css$/,
+        exclude: [
+          /\\\\.component\\\\.css$/
+        ],
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
           {
@@ -453,6 +497,9 @@ exports[`angular configuration for ios 1`] = `
       /* config.module.rule('scss') */
       {
         test: /\\\\.scss$/,
+        exclude: [
+          /\\\\.component\\\\.scss$/
+        ],
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
           {
@@ -503,6 +550,41 @@ exports[`angular configuration for ios 1`] = `
           /* config.module.rule('html').use('raw-loader') */
           {
             loader: 'raw-loader'
+          }
+        ]
+      },
+      /* config.module.rule('css|component') */
+      {
+        test: /\\\\.component\\\\.css$/,
+        use: [
+          /* config.module.rule('css|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss|component') */
+      {
+        test: /\\\\.component\\\\.scss$/,
+        use: [
+          /* config.module.rule('scss|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          },
+          /* config.module.rule('scss|component').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  'postcss-import'
+                ]
+              }
+            }
+          },
+          /* config.module.rule('scss|component').use('sass-loader') */
+          {
+            loader: 'sass-loader'
           }
         ]
       }

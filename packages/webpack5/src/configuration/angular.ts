@@ -42,6 +42,39 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('raw-loader')
 		.loader('raw-loader');
 
+	// exclude component css files from the normal css rule
+	config.module.rule('css').exclude.add(/\.component\.css$/);
+
+	// and instead use raw-loader, since that's what angular expects
+	config.module
+		.rule('css|component')
+		.test(/\.component\.css$/)
+		.use('raw-loader')
+		.loader('raw-loader');
+
+	// get base postCSS options
+	const postCSSOptions = config.module
+		.rule('scss')
+		.uses.get('postcss-loader')
+		.get('options');
+
+	// exclude component css files from the normal css rule
+	config.module.rule('scss').exclude.add(/\.component\.scss$/);
+
+	// and instead use raw-loader, since that's what angular expects
+	config.module
+		.rule('scss|component')
+		.test(/\.component\.scss$/)
+		.use('raw-loader')
+		.loader('raw-loader')
+		.end()
+		.use('postcss-loader')
+		.loader('postcss-loader')
+		.options(postCSSOptions)
+		.end()
+		.use('sass-loader')
+		.loader('sass-loader');
+
 	config.plugin('AngularCompilerPlugin').use(getAngularCompilerPlugin(), [
 		{
 			tsConfigPath,
