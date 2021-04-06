@@ -559,7 +559,7 @@ function setAccessibilityDelegate(view: Partial<View>): void {
 	if (hasOldDelegate) {
 		return;
 	}
-	
+
 	androidView.setAccessibilityDelegate(TNSAccessibilityDelegate);
 }
 
