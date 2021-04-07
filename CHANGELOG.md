@@ -1,3 +1,14 @@
+## [8.0.1](https://github.com/NativeScript/NativeScript/compare/8.0.0-core...8.0.1) (2021-04-07)
+
+
+### Bug Fixes
+
+* **android:** accessibility crash on View not extending android.view.View ([#9303](https://github.com/NativeScript/NativeScript/issues/9303)) ([fde666d](https://github.com/NativeScript/NativeScript/commit/fde666de28ae58cd00cae6ce37705427b579a58f))
+* **android:** crash on slide transition ([#9289](https://github.com/NativeScript/NativeScript/issues/9289)) ([e73cebf](https://github.com/NativeScript/NativeScript/commit/e73cebf7650474cb71de4a17576860a3499f9c05))
+* **core:** Enums deprecation adjustment ([#9306](https://github.com/NativeScript/NativeScript/issues/9306)) ([f42acd8](https://github.com/NativeScript/NativeScript/commit/f42acd817f5353f86ba353ff483ff8d0e7bf7a61))
+
+
+
 # [8.0.0](https://github.com/NativeScript/NativeScript/compare/7.3.0-core...8.0.0) (2021-04-06)
 
 
