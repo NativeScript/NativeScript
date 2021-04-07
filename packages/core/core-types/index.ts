@@ -307,20 +307,6 @@ export type LengthType = CoreTypes.LengthType;
 export type PercentLengthType = CoreTypes.PercentLengthType;
 
 /**
- * @deprecated Use `CoreTypes` instead. Enums will be removed in 9.0
- */
-export namespace Enums {
-	export type DeviceOrientationType = CoreTypes.DeviceOrientationType;
-	export type HorizontalAlignmentType = CoreTypes.HorizontalAlignmentType;
-	export type VerticalAlignmentTextType = CoreTypes.VerticalAlignmentTextType;
-	export type VerticalAlignmentType = CoreTypes.VerticalAlignmentType;
-	export type OrientationType = CoreTypes.OrientationType;
-	export type TextAlignmentType = CoreTypes.TextAlignmentType;
-	export type TextTransformType = CoreTypes.TextTransformType;
-	export type VisibilityType = CoreTypes.VisibilityType;
-}
-
-/**
  * @deprecated Use `CoreTypes.AnimationCurve` instead.
  */
 export const AnimationCurve = CoreTypes.AnimationCurve;
@@ -334,3 +320,38 @@ export type HorizontalAlignment = CoreTypes.HorizontalAlignmentType;
  * @deprecated Use `CoreTypes.VerticalAlignmentType` instead.
  */
 export type VerticalAlignment = CoreTypes.VerticalAlignmentType;
+
+/**
+ * @deprecated Use `CoreTypes` instead. Enums will be removed in 9.0
+ */
+export const Enums = {
+	Accuracy: CoreTypes.Accuracy,
+	AndroidActionBarIconVisibility: CoreTypes.AndroidActionBarIconVisibility,
+	AndroidActionItemPosition: CoreTypes.AndroidActionItemPosition,
+	AnimationCurve: CoreTypes.AnimationCurve,
+	AutocapitalizationType: CoreTypes.AutocapitalizationType,
+	BackgroundRepeat: CoreTypes.BackgroundRepeat,
+	DeviceOrientation: CoreTypes.DeviceOrientation,
+	DeviceType: CoreTypes.DeviceType,
+	Dock: CoreTypes.Dock,
+	FontAttributes: CoreTypes.FontAttributes,
+	FontStyle: CoreTypes.FontStyle,
+	FontWeight: CoreTypes.FontWeight,
+	HorizontalAlignment: CoreTypes.HorizontalAlignment,
+	IOSActionItemPosition: CoreTypes.IOSActionItemPosition,
+	ImageFormat: CoreTypes.ImageFormat,
+	KeyboardType: CoreTypes.KeyboardType,
+	NavigationBarVisibility: CoreTypes.NavigationBarVisibility,
+	Orientation: CoreTypes.Orientation,
+	ReturnKeyType: CoreTypes.ReturnKeyType,
+	StatusBarStyle: CoreTypes.StatusBarStyle,
+	Stretch: CoreTypes.ImageStretch,
+	SystemAppearance: CoreTypes.SystemAppearance,
+	TextAlignment: CoreTypes.TextAlignment,
+	TextDecoration: CoreTypes.TextDecoration,
+	TextTransform: CoreTypes.TextTransform,
+	UpdateTextTrigger: CoreTypes.UpdateTextTrigger,
+	VerticalAlignment: CoreTypes.VerticalAlignment,
+	Visibility: CoreTypes.Visibility,
+	WhiteSpace: CoreTypes.WhiteSpace,
+};
