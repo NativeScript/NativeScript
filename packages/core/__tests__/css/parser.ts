@@ -39,7 +39,7 @@ describe('css', () => {
 			describe('color', () => {
 				test(parseColor, '  #369 ', { start: 0, end: 7, value: 0xff336699 });
 				test(parseColor, '  #456789 ', { start: 0, end: 10, value: 0xff456789 });
-				test(parseColor, '  #85456789 ', { start: 0, end: 12, value: 0x85456789 });
+				test(parseColor, '  #45678985 ', { start: 0, end: 12, value: 0x45678985 });
 				test(parseColor, '  rgb(255, 8, 128) ', { start: 0, end: 18, value: 0xffff0880 });
 				test(parseColor, '  rgba(255, 8, 128, 0.5) ', { start: 0, end: 24, value: 0x80ff0880 });
 				test(parseColor, '  hsl(330.9, 100%, 51.6%) ', { start: 0, end: 25, value: 0xffff0880 });

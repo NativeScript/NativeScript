@@ -4,12 +4,11 @@ import * as viewModule from '@nativescript/core/ui/core/view';
 import { Label } from '@nativescript/core/ui/label';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import * as colorModule from '@nativescript/core/color';
-import * as enums from '@nativescript/core/ui/enums';
+import { CoreTypes, PercentLength } from '@nativescript/core';
 import { AnimationPromise } from '@nativescript/core/ui/animation';
 
 // >> animation-require
 import * as animation from '@nativescript/core/ui/animation';
-import { PercentLength } from '@nativescript/core/ui/styling/style-properties';
 // << animation-require
 
 function prepareTest(parentHeight?: number, parentWidth?: number): Label {
@@ -46,7 +45,7 @@ export function test_AnimatingProperties(done) {
 			duration: 5,
 			delay: 10,
 			iterations: 3,
-			curve: enums.AnimationCurve.easeIn,
+			curve: CoreTypes.AnimationCurve.easeIn,
 		})
 		.then(() => {
 			//console.log("Animation finished.");
@@ -418,7 +417,7 @@ export function test_AnimateRotate(done) {
 		});
 }
 
-function animateExtentAndAssertExpected(along: 'height' | 'width', value: PercentLength, pixelExpected: PercentLength): Promise<void> {
+function animateExtentAndAssertExpected(along: 'height' | 'width', value: CoreTypes.PercentLengthType, pixelExpected: CoreTypes.PercentLengthType): Promise<void> {
 	function pretty(val) {
 		return JSON.stringify(val, null, 2);
 	}
@@ -478,7 +477,7 @@ export function test_AnimateExtent_Should_AcceptStringPixelValues(done) {
 		const expected = {
 			unit: 'px',
 			value: pair[1],
-		} as PercentLength;
+		} as CoreTypes.PercentLengthType;
 		promise = promise.then(() => {
 			return animateExtentAndAssertExpected('height', input, expected);
 		});

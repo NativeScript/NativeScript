@@ -289,6 +289,15 @@ export class ObservableArray<T> extends Observable {
 	}
 
 	/**
+	 * Returns the index of the first element in the array where predicate is true, and -1 otherwise.
+	 * @param predicate
+	 * @param thisArg If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead.
+	 */
+	findIndex(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): number {
+		return this._array.findIndex(predicate, thisArg);
+	}
+
+	/**
 	 * Returns the index of the first occurrence of a value in an array.
 	 * @param searchElement The value to locate in the array.
 	 * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.

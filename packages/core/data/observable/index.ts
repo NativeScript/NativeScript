@@ -2,12 +2,16 @@ import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinit
 
 export interface EventData {
 	eventName: string;
-	object: Observable;
+	object: Partial<Observable>;
+}
+
+export interface EventDataValue extends EventData {
+	value?: boolean;
 }
 
 export interface NotifyData extends Partial<EventData> {
 	eventName: string;
-	object?: Observable;
+	object?: Partial<Observable>;
 }
 
 export interface PropertyChangeData extends EventData {
