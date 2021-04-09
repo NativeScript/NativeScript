@@ -4,7 +4,7 @@ import type { GestureTypes, GestureEventData } from '../../gestures';
 
 // Types.
 import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, isUserInteractionEnabledProperty } from './view-common';
-import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty } from '../../styling/style-properties';
+import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 import { ShowModalOptions, hiddenProperty } from '../view-base';
@@ -14,7 +14,7 @@ import { perspectiveProperty, visibilityProperty, opacityProperty, horizontalAli
 import { CoreTypes } from '../../../core-types';
 
 import { Background, ad as androidBackground } from '../../styling/background';
-import { refreshBorderDrawable } from '../../styling/background.android';
+import { BackgroundClearFlags, refreshBorderDrawable } from '../../styling/background.android';
 import { profile } from '../../../profiling';
 import { topmost } from '../../frame/frame-stack';
 import { Screen } from '../../../platform';
@@ -24,6 +24,7 @@ import lazy from '../../../utils/lazy';
 import { accessibilityEnabledProperty, accessibilityHiddenProperty, accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityLiveRegionProperty, accessibilityMediaSessionProperty, accessibilityRoleProperty, accessibilityStateProperty, accessibilityValueProperty } from '../../../accessibility/accessibility-properties';
 import { AccessibilityLiveRegion, AccessibilityRole, AndroidAccessibilityEvent, setupAccessibleView, isAccessibilityServiceEnabled, sendAccessibilityEvent, updateAccessibilityProperties, updateContentDescription, AccessibilityState } from '../../../accessibility';
 import * as Utils from '../../../utils';
+import { CSSShadow } from 'ui/styling/css-shadow';
 
 export * from './view-common';
 // helpers (these are okay re-exported here)
@@ -45,6 +46,10 @@ const modalMap = new Map<number, DialogOptions>();
 
 let TouchListener: TouchListener;
 let DialogFragment: DialogFragment;
+
+interface AndroidView {
+	_cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable;
+}
 
 interface DialogOptions {
 	owner: View;
@@ -1101,6 +1106,19 @@ export class View extends ViewCommon {
 			nativeView.setBackground(cachedDrawable);
 		}
 	}
+
+	protected _drawBoxShadow(boxShadow: CSSShadow) {
+		const nativeView = this.nativeViewProtected;
+		const config = {
+			shadowColor: boxShadow.color.android,
+			cornerRadius: Length.toDevicePixels(this.borderRadius as CoreTypes.LengthType, 0.0),
+			spreadRadius: Length.toDevicePixels(boxShadow.spreadRadius, 0.0),
+			blurRadius: Length.toDevicePixels(boxShadow.blurRadius, 0.0),
+			offsetX: Length.toDevicePixels(boxShadow.offsetX, 0.0),
+			offsetY: Length.toDevicePixels(boxShadow.offsetY, 0.0),
+		};
+		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
+	}
 	protected onBackgroundOrBorderPropertyChanged() {
 		const nativeView = <android.view.View & { _cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable }>this.nativeViewProtected;
 		if (!nativeView) {
@@ -1108,10 +1126,35 @@ export class View extends ViewCommon {
 		}
 
 		const background = this.style.backgroundInternal;
+
+		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW || background.clearFlags & BackgroundClearFlags.CLEAR_BACKGROUND_COLOR) {
+			// clear background if we're clearing the box shadow
+			// or the background has been removed
+			nativeView.setBackground(null);
+		}
+
 		const drawable = nativeView.getBackground();
+		const androidView = (<any>this) as AndroidView;
+		// use undefined as not set. getBackground will never return undefined only Drawable or null;
+		if (androidView._cachedDrawable === undefined && drawable) {
+			const constantState = drawable.getConstantState();
+			androidView._cachedDrawable = constantState || drawable;
+		}
 		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
-		const onlyColor = !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && !!background.color;
+
+		// prettier-ignore
+		const onlyColor = !background.hasBorderWidth() 
+			&& !background.hasBorderRadius() 
+			&& !background.hasBoxShadow() 
+			&& !background.clipPath 
+			&& !background.image 
+			&& !!background.color;
+
 		this._applyBackground(background, isBorderDrawable, onlyColor, drawable);
+
+		if (background.hasBoxShadow()) {
+			this._drawBoxShadow(background.getBoxShadow());
+		}
 
 		// TODO: Can we move BorderWidths as separate native setter?
 		// This way we could skip setPadding if borderWidth is not changed.
@@ -1124,6 +1167,8 @@ export class View extends ViewCommon {
 		} else {
 			nativeView.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
 		}
+		// reset clear flags
+		background.clearFlags = BackgroundClearFlags.NONE;
 	}
 	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
 		if (value instanceof Background) {
