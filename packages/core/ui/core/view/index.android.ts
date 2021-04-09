@@ -713,6 +713,7 @@ export class View extends ViewCommon {
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
+		this._raiseClosingModallyEvent();
 		const manager = this._dialogFragment.getFragmentManager();
 		if (manager) {
 			this._dialogFragment.dismissAllowingStateLoss();

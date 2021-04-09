@@ -543,6 +543,7 @@ export class View extends ViewCommon implements ViewDefinition {
 
 			return;
 		}
+		this._raiseClosingModallyEvent();
 
 		// modal view has already been closed by UI, probably as a popover
 		if (!parent.viewController.presentedViewController) {
