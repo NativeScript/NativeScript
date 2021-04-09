@@ -1,6 +1,3 @@
-/* eslint-disable no-var */
-declare var global: NodeJS.Global & typeof globalThis;
-
 interface ModuleResolver {
 	/**
 	 * A function used to resolve the exports for a module.
@@ -126,6 +123,9 @@ declare namespace NodeJS {
 		isIOS?: boolean;
 		isAndroid?: boolean;
 		__requireOverride?: (name: string, dir: string) => any;
+
+		// used to get the rootlayout instance to add/remove childviews
+		rootLayout: any;
 	}
 }
 

@@ -1,4 +1,4 @@
-import { Image, Stretch } from '@nativescript/core/ui/image';
+import { Image, Enums } from '@nativescript/core';
 import { GridLayout } from '@nativescript/core/ui/layouts/grid-layout';
 import { Color } from '@nativescript/core/color';
 import * as imageSource from '@nativescript/core/image-source';
@@ -9,7 +9,7 @@ const sources = [
 	{ src: 'upflip', rotation: 180 },
 	{ src: 'upccw', rotation: 90 },
 ].map(({ src, rotation }) => ({ src: `res://${src}`, rotation }));
-const stretchModes: Stretch[] = ['none', 'aspectFill', 'aspectFit', 'fill'];
+const stretchModes: CoreTypes.ImageStretchType[] = ['none', 'aspectFill', 'aspectFit', 'fill'];
 
 export function navigatingTo(args) {
 	const grid: GridLayout = args.object.getViewById('root');

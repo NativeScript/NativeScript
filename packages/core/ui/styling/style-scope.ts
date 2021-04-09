@@ -114,7 +114,9 @@ class CSSSource {
 				return CSSSource.fromDetect(cssOrAst, keyframes, resolvedModuleName);
 			}
 		} catch (e) {
-			Trace.write(`Could not load CSS from ${uri}: ${e}`, Trace.categories.Error, Trace.messageType.error);
+			if (Trace.isEnabled()) {
+				Trace.write(`Could not load CSS from ${uri}: ${e}`, Trace.categories.Error, Trace.messageType.warn);
+			}
 		}
 
 		return CSSSource.fromFile(appRelativeUri, keyframes);
@@ -205,7 +207,9 @@ class CSSSource {
 				this._selectors = [];
 			}
 		} catch (e) {
-			Trace.write('Css styling failed: ' + e, Trace.categories.Error, Trace.messageType.error);
+			if (Trace.isEnabled()) {
+				Trace.write('Css styling failed: ' + e, Trace.categories.Style, Trace.messageType.error);
+			}
 			this._selectors = [];
 		}
 	}

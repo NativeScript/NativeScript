@@ -114,7 +114,8 @@
 					"options": {
 						"jestConfig": "packages/core/jest.config.js",
 						"passWithNoTests": true
-					}
+					},
+					"outputs": ["coverage/packages/core"]
 				},
 				"setup": {
 					"builder": "@nrwl/workspace:run-commands",

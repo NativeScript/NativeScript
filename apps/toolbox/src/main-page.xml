@@ -1,20 +1,18 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
-    <Page.actionBar>
-        <ActionBar title="Dev Toolbox" icon="" class="action-bar">
-        </ActionBar>
-    </Page.actionBar>
-    <StackLayout class="p-t-20 p-x-20">
-        <Label text="Tap the button" class="h1 text-center"/>
-        <Button text="TAP" tap="{{ onTap }}" class="btn btn-primary btn-active"/>
-        <Label text="{{ message }}" class="h2 text-center" textWrap="true"/>
-        <StackLayout class="c-bg-grey w-full m-y-5" height="1"></StackLayout>
-        <ScrollView class="h-full">
-          <StackLayout>
-            <Label text="More things to tool around with:" class="t-12 text-center font-italic m-t-10"/>
-            <Button text="View List" tap="{{ viewList }}" class="btn"/>
-            <!-- add more examples below as desired to test and play around -->
-          </StackLayout>
-        </ScrollView>
-        
-    </StackLayout>
+  <Page.actionBar>
+    <ActionBar title="Dev Toolbox" icon="" class="action-bar">
+    </ActionBar>
+  </Page.actionBar>
+  <StackLayout class="p-20">
+    <ScrollView class="h-full">
+      <StackLayout>
+        <Button text="list-page" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
+        <Button text="box-shadow" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
+        <Button text="root-layout" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
+        <Button text="a11y" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
+        <Button text="css-playground" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
+        <Button text="visibility-vs-hidden" tap="{{ viewDemo }}" class="btn btn-primary btn-view-demo"/>
+      </StackLayout>
+    </ScrollView>
+  </StackLayout>
 </Page>

@@ -1,6 +1,6 @@
 import { View } from '../core/view';
+import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { PercentLength } from '../styling/style-properties';
 
 export declare const ANIMATION_PROPERTIES;
 
@@ -10,8 +10,8 @@ interface Keyframe {
 	translate?: { x: number; y: number };
 	rotate?: { x: number; y: number; z: number };
 	opacity?: number;
-	width?: PercentLength;
-	height?: PercentLength;
+	width?: CoreTypes.PercentLengthType;
+	height?: CoreTypes.PercentLengthType;
 	valueSource?: 'keyframe' | 'animation';
 	duration?: number;
 	curve?: any;

@@ -1,0 +1,37 @@
+<Page
+    xmlns="http://schemas.nativescript.org/tns.xsd" class="page" loaded="pageLoaded" unloaded="pageUnloaded">
+    <StackLayout class="p-20">
+        <Button text="Swap locations" tap="test"/>
+        <Button id="vcToggle" text="" tap="toggleVCReusable"/>
+        <Label text="Longpress items to toggle reusability"></Label>
+        <Label id="fpslabel" text=""></Label>
+        <StackLayout id="reusableItem" loaded="makeReusable">
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <Label longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" text="abc"></Label>
+          <WebView longPress="toggleReusable" loaded="makeReusable" unloaded="onReusableUnloaded" width="100" height="100" src="https://google.com"></WebView>
+        </StackLayout>
+        <StackLayout id="stack1" class="stack1">
+          <Label text="Stack 1"></Label>
+        </StackLayout>
+        <StackLayout id="stack2" class="stack2">
+          <Label text="Stack 2"></Label>
+        </StackLayout>
+    </StackLayout>
+</Page>

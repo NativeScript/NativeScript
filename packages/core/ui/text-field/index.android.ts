@@ -1,6 +1,7 @@
 import { TextFieldBase, secureProperty } from './text-field-common';
-import { whiteSpaceProperty, WhiteSpace } from '../text-base';
+import { whiteSpaceProperty } from '../text-base';
 import { keyboardTypeProperty } from '../editable-text-base';
+import { CoreTypes } from '../../core-types';
 
 export * from './text-field-common';
 
@@ -26,6 +27,13 @@ export class TextField extends TextFieldBase {
 
 	setSecureAndKeyboardType(): void {
 		let inputType: number;
+
+		// Check for a passed in Number value
+		const value = +this.keyboardType;
+		if (!isNaN(value)) {
+			this._setInputType(value);
+			return;
+		}
 
 		// Password variations are supported only for Text and Number classes.
 		if (this.secure) {
@@ -89,10 +97,10 @@ export class TextField extends TextFieldBase {
 		this._setInputType(inputType);
 	}
 
-	[whiteSpaceProperty.getDefault](): WhiteSpace {
+	[whiteSpaceProperty.getDefault](): CoreTypes.WhiteSpaceType {
 		return 'nowrap';
 	}
-	[whiteSpaceProperty.setNative](value: WhiteSpace) {
+	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
 		// Don't change it otherwise TextField will go to multiline mode.
 	}
 }

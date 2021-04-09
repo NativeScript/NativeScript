@@ -5,6 +5,7 @@ import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import { layout, iOSNativeHelper, isFontIconURI } from '../../utils';
+import { accessibilityHintProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityValueProperty } from '../../accessibility/accessibility-properties';
 
 export * from './action-bar-common';
 
@@ -99,6 +100,46 @@ export class ActionBar extends ActionBarBase {
 		return null;
 	}
 
+	[accessibilityValueProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityValue = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityValue = value;
+		}
+	}
+
+	[accessibilityLabelProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityLabel = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityLabel = value;
+		}
+	}
+
+	[accessibilityHintProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityHint = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityHint = value;
+		}
+	}
+
+	[accessibilityLanguageProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityLanguage = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityLanguage = value;
+		}
+	}
+
 	public createNativeView(): UIView {
 		return this.ios;
 	}
@@ -148,7 +189,18 @@ export class ActionBar extends ActionBarBase {
 		}
 	}
 
-	public update() {
+	private _getNavigationItem(): UINavigationItem | null {
+		const page = this.page;
+		// Page should be attached to frame to update the action bar.
+		if (!page || !page.frame) {
+			return null;
+		}
+
+		const viewController = <UIViewController>page.ios;
+		return viewController.navigationItem;
+	}
+
+	public update(): void {
 		const page = this.page;
 		// Page should be attached to frame to update the action bar.
 		if (!page || !page.frame) {
@@ -228,6 +280,12 @@ export class ActionBar extends ActionBarBase {
 		if (!this.isLayoutValid) {
 			this.layoutInternal();
 		}
+
+		// Make sure accessibility values are up-to-date on the navigationItem
+		navigationItem.accessibilityValue = this.accessibilityValue;
+		navigationItem.accessibilityLabel = this.accessibilityLabel;
+		navigationItem.accessibilityLanguage = this.accessibilityLanguage;
+		navigationItem.accessibilityHint = this.accessibilityHint;
 	}
 
 	private populateMenuItems(navigationItem: UINavigationItem) {

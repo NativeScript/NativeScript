@@ -1,10 +1,15 @@
 ﻿import { View } from '../core/view';
 import { Property, CoercibleProperty } from '../core/properties';
+import { EventData } from '../../data/observable';
+import type { SliderBase } from './slider-common';
 
 /**
  * Represents a slider component.
  */
 export class Slider extends View {
+	static readonly accessibilityDecrementEvent = 'accessibilityDecrement';
+	static readonly accessibilityIncrementEvent = 'accessibilityIncrement';
+
 	/**
 	 * Gets the native [android widget](http://developer.android.com/reference/android/widget/SeekBar.html) that represents the user interface for this component. Valid only when running on Android OS.
 	 */
@@ -29,6 +34,11 @@ export class Slider extends View {
 	 * Gets or sets a slider max value. The default value is 100.
 	 */
 	maxValue: number;
+
+	/**
+	 * Increase/Decrease step size for iOS Increment-/Decrement events
+	 */
+	accessibilityStep: number;
 }
 
 /**
@@ -45,3 +55,18 @@ export const minValueProperty: Property<Slider, number>;
  * Represents the observable property backing the maxValue property of each Slider instance.
  */
 export const maxValueProperty: CoercibleProperty<Slider, number>;
+
+/**
+ * Represents the observable property backing the accessibilityStep property of each Slider instance.
+ */
+export const accessibilityStepProperty: Property<SliderBase, number>;
+
+interface AccessibilityIncrementEventData extends EventData {
+	object: Slider;
+	value?: number;
+}
+
+interface AccessibilityDecrementEventData extends EventData {
+	object: Slider;
+	value?: number;
+}

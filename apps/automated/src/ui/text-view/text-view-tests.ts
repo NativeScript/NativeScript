@@ -4,7 +4,7 @@ import * as viewModule from '@nativescript/core/ui/core/view';
 import * as pagesModule from '@nativescript/core/ui/page';
 import * as textViewTestsNative from './text-view-tests-native';
 import * as colorModule from '@nativescript/core/color';
-import * as enums from '@nativescript/core/ui/enums';
+import { CoreTypes } from '@nativescript/core';
 import * as platform from '@nativescript/core/platform';
 
 // >> require-textmodules
@@ -270,11 +270,11 @@ export var testHintColoriOS = function () {
 
 		actualValue = textViewTestsNative.getNativeColor(textView).hex;
 
-		TKUnit.assertEqual(actualValue, '#38FF0000', 'Expected hint color to be a subtle transparent red: #38FF0000');
+		TKUnit.assertEqual(actualValue, '#FF000038', 'Expected hint color to be a subtle transparent red: #FF000038');
 
 		textView.text = 'text';
 
-		expectedValue = '#FFFF0000'; // red
+		expectedValue = '#FF0000FF'; // red
 		expectedNormalizedValue = '#FF0000';
 		actualValue = textViewTestsNative.getNativeColor(textView).hex;
 		TKUnit.assert(actualValue === expectedNormalizedValue, 'Actual: ' + actualValue + '; Expected: ' + expectedNormalizedValue);
@@ -403,7 +403,7 @@ export var testLocalLineHeightFromCss = function () {
 	});
 };
 
-var expectedColorHex = '#FFFF0000';
+var expectedColorHex = '#FF0000FF';
 var expectedNormalizedColorHex = '#FF0000';
 export var testLocalColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -437,7 +437,7 @@ export var testNativeColorFromLocal = function () {
 	});
 };
 
-var expectedBackgroundColorHex = '#FF00FF00';
+var expectedBackgroundColorHex = '#00FF00FF';
 var expectedNormalizedBackgroundColorHex = '#00FF00';
 export var testLocalBackgroundColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
@@ -537,8 +537,8 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
 		view.text = 'NormalText';
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
 
-		TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, 'TextTransform');
-		TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, 'TextDecoration');
+		TKUnit.assertEqual(view.style.textTransform, CoreTypes.TextTransform.uppercase, 'TextTransform');
+		TKUnit.assertEqual(view.style.textDecoration, CoreTypes.TextDecoration.underline, 'TextDecoration');
 		TKUnit.assertEqual(view.style.letterSpacing, 1, 'LetterSpacing');
 	});
 }
@@ -550,8 +550,8 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
 		view.formattedText = formattedString;
 		view.setInlineStyle('text-transform: uppercase; text-decoration: underline; letter-spacing: 1;');
 
-		TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, 'TextTransform');
-		TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, 'TextDecoration');
+		TKUnit.assertEqual(view.style.textTransform, CoreTypes.TextTransform.uppercase, 'TextTransform');
+		TKUnit.assertEqual(view.style.textDecoration, CoreTypes.TextDecoration.underline, 'TextDecoration');
 		TKUnit.assertEqual(view.style.letterSpacing, 1, 'LetterSpacing');
 	});
 }
