@@ -1,11 +1,14 @@
 import { View } from '../core/view';
 import { LinearGradient } from './linear-gradient';
-
+import { CoreTypes } from '../../core-types';
 import { isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFIX, FILE_PREFIX } from '../../utils';
 import { parse } from '../../css-value';
 import { path, knownFolders } from '../../file-system';
 import * as application from '../../application';
 import { profile } from '../../profiling';
+import { CSSShadow } from './css-shadow';
+import { Length } from './style-properties';
+import { BackgroundClearFlags } from './background-common';
 export * from './background-common';
 
 interface AndroidView {
@@ -25,8 +28,12 @@ export namespace ad {
 	}
 
 	function isSetColorFilterOnlyWidget(nativeView: android.view.View): boolean {
+		// prettier-ignore
 		return (
-			nativeView instanceof android.widget.Button || (nativeView instanceof androidx.appcompat.widget.Toolbar && getSDK() >= 21) // There is an issue with the DrawableContainer which was fixed for API version 21 and above: https://code.google.com/p/android/issues/detail?id=60183
+			nativeView instanceof android.widget.Button
+			|| (nativeView instanceof androidx.appcompat.widget.Toolbar && getSDK() >= 21)
+			// There is an issue with the DrawableContainer which was fixed
+			// for API version 21 and above: https://code.google.com/p/android/issues/detail?id=60183
 		);
 	}
 
@@ -37,6 +44,13 @@ export namespace ad {
 		}
 
 		const background = view.style.backgroundInternal;
+
+		if (background.clearFlags & BackgroundClearFlags.CLEAR_BOX_SHADOW || background.clearFlags & BackgroundClearFlags.CLEAR_BACKGROUND_COLOR) {
+			// clear background if we're clearing the box shadow
+			// or the background has been removed
+			nativeView.setBackground(null);
+		}
+
 		let drawable = nativeView.getBackground();
 		const androidView = (<any>view) as AndroidView;
 		// use undefined as not set. getBackground will never return undefined only Drawable or null;
@@ -45,7 +59,15 @@ export namespace ad {
 			androidView._cachedDrawable = constantState || drawable;
 		}
 		const isBorderDrawable = drawable instanceof org.nativescript.widgets.BorderDrawable;
-		const onlyColor = !background.hasBorderWidth() && !background.hasBorderRadius() && !background.clipPath && !background.image && !!background.color;
+
+		// prettier-ignore
+		const onlyColor = !background.hasBorderWidth()
+			&& !background.hasBorderRadius()
+			&& !background.hasBoxShadow()
+			&& !background.clipPath
+			&& !background.image
+			&& !!background.color;
+
 		if (!isBorderDrawable && drawable instanceof android.graphics.drawable.ColorDrawable && onlyColor) {
 			drawable.setColor(background.color.android);
 			drawable.invalidateSelf();
@@ -68,13 +90,19 @@ export namespace ad {
 			// this is the fastest way to change only background color
 			nativeView.setBackgroundColor(background.color.android);
 		} else if (!background.isEmpty()) {
-			let backgroundDrawable = drawable as org.nativescript.widgets.BorderDrawable;
-			if (!isBorderDrawable) {
-				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
+			let backgroundDrawable = drawable;
+
+			if (drawable instanceof org.nativescript.widgets.BoxShadowDrawable) {
+				// if we have BoxShadow's we have to get the underlying drawable
+				backgroundDrawable = drawable.getWrappedDrawable();
+			}
+
+			if (backgroundDrawable instanceof org.nativescript.widgets.BorderDrawable) {
 				refreshBorderDrawable(view, backgroundDrawable);
-				nativeView.setBackground(backgroundDrawable);
 			} else {
-				refreshBorderDrawable(view, backgroundDrawable);
+				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
+				refreshBorderDrawable(view, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
+				nativeView.setBackground(backgroundDrawable);
 			}
 		} else {
 			const cachedDrawable = androidView._cachedDrawable;
@@ -90,6 +118,10 @@ export namespace ad {
 			nativeView.setBackground(defaultDrawable);
 		}
 
+		if (background.hasBoxShadow()) {
+			drawBoxShadow(nativeView, view, background.getBoxShadow());
+		}
+
 		// TODO: Can we move BorderWidths as separate native setter?
 		// This way we could skip setPadding if borderWidth is not changed.
 		const leftPadding = Math.ceil(view.effectiveBorderLeftWidth + view.effectivePaddingLeft);
@@ -98,6 +130,9 @@ export namespace ad {
 		const bottomPadding = Math.ceil(view.effectiveBorderBottomWidth + view.effectivePaddingBottom);
 
 		nativeView.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
+
+		// reset clear flags
+		background.clearFlags = BackgroundClearFlags.NONE;
 	}
 }
 
@@ -218,6 +253,18 @@ function createNativeCSSValueArray(css: string): androidNative.Array<org.natives
 	return nativeArray;
 }
 
+function drawBoxShadow(nativeView: android.view.View, view: View, boxShadow: CSSShadow) {
+	const config = {
+		shadowColor: boxShadow.color.android,
+		cornerRadius: Length.toDevicePixels(view.borderRadius as CoreTypes.LengthType, 0.0),
+		spreadRadius: Length.toDevicePixels(boxShadow.spreadRadius, 0.0),
+		blurRadius: Length.toDevicePixels(boxShadow.blurRadius, 0.0),
+		offsetX: Length.toDevicePixels(boxShadow.offsetX, 0.0),
+		offsetY: Length.toDevicePixels(boxShadow.offsetY, 0.0),
+	};
+	org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
+}
+
 export enum CacheMode {
 	none,
 	memory,
@@ -249,13 +296,13 @@ export function initImageCache(context: android.content.Context, mode = CacheMod
 	imageFetcher.initCache();
 }
 
-function onLivesync(args): void {
+function onLiveSync(args): void {
 	if (imageFetcher) {
 		imageFetcher.clearCache();
 	}
 }
 
-global.NativeScriptGlobals.events.on('livesync', onLivesync);
+global.NativeScriptGlobals.events.on('livesync', onLiveSync);
 
 global.NativeScriptGlobals.addEventWiring(() => {
 	application.android.on('activityStarted', (args) => {

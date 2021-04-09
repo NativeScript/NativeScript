@@ -2,7 +2,7 @@ import { Property, CssProperty, CssAnimationProperty, InheritedProperty } from '
 import { BindingOptions } from '../bindable';
 import { Observable } from '../../../data/observable';
 import { Style } from '../../styling/style';
-
+import { CoreTypes } from '../../../core-types';
 import { Page } from '../../page';
 
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
@@ -33,6 +33,14 @@ export function isEventOrGesture(name: string, view: ViewBase): boolean;
  * Returns an instance of a view (if found), otherwise undefined.
  */
 export function getViewById(view: ViewBase, id: string): ViewBase;
+
+/**
+ * Gets a child view by domId.
+ * @param view - The parent (container) view of the view to look for.
+ * @param domId - The id of the view to look for.
+ * Returns an instance of a view (if found), otherwise undefined.
+ */
+export function getViewByDomId(view: ViewBase, domId: number): ViewBase;
 
 export interface ShowModalOptions {
 	/**
@@ -97,8 +105,8 @@ export interface ShowModalOptions {
 
 export abstract class ViewBase extends Observable {
 	// Dynamic properties.
-	left: Length;
-	top: Length;
+	left: CoreTypes.LengthType;
+	top: CoreTypes.LengthType;
 	effectiveLeft: number;
 	effectiveTop: number;
 	dock: 'left' | 'top' | 'right' | 'bottom';
@@ -237,6 +245,12 @@ export abstract class ViewBase extends Observable {
 	public bindingContext: any;
 
 	/**
+	 * Gets or sets if the view is reusable.
+	 * Reusable views are not automatically destroyed when removed from the View tree.
+	 */
+	public reusable: boolean;
+
+	/**
 	 * Gets the name of the constructor function for this instance. E.g. for a Button class this will return "Button".
 	 */
 	public typeName: string;
@@ -282,6 +296,11 @@ export abstract class ViewBase extends Observable {
 	 * Returns the child view with the specified id.
 	 */
 	public getViewById<T extends ViewBase>(id: string): T;
+
+	/**
+	 * Returns the child view with the specified domId.
+	 */
+	public getViewByDomId<T extends ViewBase>(id: number): T;
 
 	/**
 	 * Load view.
@@ -364,6 +383,13 @@ export abstract class ViewBase extends Observable {
 	 * This method should *not* be overridden by derived views.
 	 */
 	_tearDownUI(force?: boolean): void;
+
+	/**
+	 * Tears down the UI of a reusable node by making it no longer reusable.
+	 * @see _tearDownUI
+	 * @param forceDestroyChildren Force destroy the children (even if they are reusable)
+	 */
+	destroyNode(forceDestroyChildren?: boolean): void;
 
 	/**
 	 * Creates a native view.

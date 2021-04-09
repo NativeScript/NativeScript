@@ -123,6 +123,9 @@ declare namespace NodeJS {
 		isIOS?: boolean;
 		isAndroid?: boolean;
 		__requireOverride?: (name: string, dir: string) => any;
+
+		// used to get the rootlayout instance to add/remove childviews
+		rootLayout: any;
 	}
 }
 

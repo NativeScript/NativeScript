@@ -601,10 +601,14 @@ class TouchGestureEventData implements TouchGestureEventData {
 	}
 
 	getX(): number {
-		return this.getMainPointer().locationInView(this.view.nativeViewProtected).x;
+		const offset = this.view.nativeViewProtected.contentOffset;
+		const offsetX = offset ? offset.x : 0;
+		return this.getMainPointer().locationInView(this.view.nativeViewProtected).x - offsetX;
 	}
 
 	getY(): number {
-		return this.getMainPointer().locationInView(this.view.nativeViewProtected).y;
+		const offset = this.view.nativeViewProtected.contentOffset;
+		const offsetY = offset ? offset.y : 0;
+		return this.getMainPointer().locationInView(this.view.nativeViewProtected).y - offsetY;
 	}
 }

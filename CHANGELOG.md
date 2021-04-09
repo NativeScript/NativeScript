@@ -1,3 +1,79 @@
+## [8.0.1](https://github.com/NativeScript/NativeScript/compare/8.0.0-core...8.0.1) (2021-04-07)
+
+
+### Bug Fixes
+
+* **android:** accessibility crash on View not extending android.view.View ([#9303](https://github.com/NativeScript/NativeScript/issues/9303)) ([fde666d](https://github.com/NativeScript/NativeScript/commit/fde666de28ae58cd00cae6ce37705427b579a58f))
+* **android:** crash on slide transition ([#9289](https://github.com/NativeScript/NativeScript/issues/9289)) ([e73cebf](https://github.com/NativeScript/NativeScript/commit/e73cebf7650474cb71de4a17576860a3499f9c05))
+* **core:** Enums deprecation adjustment ([#9306](https://github.com/NativeScript/NativeScript/issues/9306)) ([f42acd8](https://github.com/NativeScript/NativeScript/commit/f42acd817f5353f86ba353ff483ff8d0e7bf7a61))
+
+
+
+# [8.0.0](https://github.com/NativeScript/NativeScript/compare/7.3.0-core...8.0.0) (2021-04-06)
+
+
+### Bug Fixes
+
+* **color:** support web standard #rrggbbaa format ([aaeab99](https://github.com/NativeScript/NativeScript/commit/aaeab990c8f73d206bf19e1c918ec45e30d9e3a5)), closes [#ff00ff00](https://github.com/NativeScript/NativeScript/issues/ff00ff00) [#ff00ff00](https://github.com/NativeScript/NativeScript/issues/ff00ff00) [#00ff00](https://github.com/NativeScript/NativeScript/issues/00ff00) [#00ff00](https://github.com/NativeScript/NativeScript/issues/00ff00)
+* **core:** stack layout padding ([#9183](https://github.com/NativeScript/NativeScript/issues/9183)) ([a12c188](https://github.com/NativeScript/NativeScript/commit/a12c188d0fa752f35be3daeafd14099e8589d815)), closes [#8810](https://github.com/NativeScript/NativeScript/issues/8810)
+* **core:** trace instead of throw ([cc592b6](https://github.com/NativeScript/NativeScript/commit/cc592b63fddda324755f8abc0e0c4029a7dbeb22))
+* **layouts:** rootlayout not closing when no shadecover transition specified ([#9278](https://github.com/NativeScript/NativeScript/issues/9278)) ([3c569ef](https://github.com/NativeScript/NativeScript/commit/3c569effedbc593e845c42bd396ff68a0d72171d))
+* move BottomNavigation and Tabs to [@nativescript-community](https://github.com/nativescript-community) ([e62acba](https://github.com/NativeScript/NativeScript/commit/e62acba79243a91da6a0e915b47751daac3c985e))
+* safeguards against invalid values ([f5db584](https://github.com/NativeScript/NativeScript/commit/f5db58414a7d5ab7052c5fbd94a602fd870826b4))
+* **core:** type collisions with namespace ([#8809](https://github.com/NativeScript/NativeScript/issues/8809)) ([7330509](https://github.com/NativeScript/NativeScript/commit/733050995c5b28692e11c3bc122430c8634e29d4))
+* **ios:** gesture touch event coordinates improvements ([#8998](https://github.com/NativeScript/NativeScript/issues/8998)) ([d46f956](https://github.com/NativeScript/NativeScript/commit/d46f9562b4cb5a6f31c0afd4b63ff640583193c3))
+
+
+### Features
+
+* **observable-array:** findIndex now supported ([770030e](https://github.com/NativeScript/NativeScript/commit/770030e7f61cd5006c67994051d4bfad5ce6c502))
+* **view:** "hidden" property binding is now supported ([f00144e](https://github.com/NativeScript/NativeScript/commit/f00144e872c908f98949e0173db778ccec8fdcf0))
+* implement BoxShadowDrawable ([9a7d3ec](https://github.com/NativeScript/NativeScript/commit/9a7d3ecb34887fffa572ce105ebc23bf21ba11ec))
+* implement spreadRadius ([fca3466](https://github.com/NativeScript/NativeScript/commit/fca3466408f282d2763d4501b8489ece54d29905))
+* improved css-shadow parser ([d2f50e5](https://github.com/NativeScript/NativeScript/commit/d2f50e50bba6e3b11fee14fa2f64034f02f8672f))
+* **core:** box shadow demo ([#9182](https://github.com/NativeScript/NativeScript/issues/9182)) ([3bd2d96](https://github.com/NativeScript/NativeScript/commit/3bd2d96f296b57a1b7bedc48530e55c15f963ac2))
+* **core:** box-shadow support ([#9161](https://github.com/NativeScript/NativeScript/issues/9161)) ([67e2fe4](https://github.com/NativeScript/NativeScript/commit/67e2fe42b7dc8fcc907c40d8c27a08e1e6d3e683))
+* **core:** convenient color utilities ([#9066](https://github.com/NativeScript/NativeScript/issues/9066)) ([304633d](https://github.com/NativeScript/NativeScript/commit/304633d6b26e8181bdd052300e40f138c09ebddc))
+* **core:** first class a11y support ([#8909](https://github.com/NativeScript/NativeScript/issues/8909)) ([d5a8a25](https://github.com/NativeScript/NativeScript/commit/d5a8a25aba1ee38b62c7cf424047a5c65e3bd9e1))
+* **core:** reusable views ([#9163](https://github.com/NativeScript/NativeScript/issues/9163)) ([6cc130f](https://github.com/NativeScript/NativeScript/commit/6cc130fa6f9a716789e00e64f92a5b09dba7f358))
+* **core:** RootLayout with api to fluidly handle dynamic layers ([#8980](https://github.com/NativeScript/NativeScript/issues/8980)) ([a90609a](https://github.com/NativeScript/NativeScript/commit/a90609a670ebbdfda7f31bea0e42e7de93875e69))
+* **core:** text-shadow support ([#8991](https://github.com/NativeScript/NativeScript/issues/8991)) ([a6b1bde](https://github.com/NativeScript/NativeScript/commit/a6b1bde655aff61ac1afa682672026817971c2a5))
+
+### BREAKING CHANGES
+
+* **core:** `BottomNavigation` and `Tabs` moved to `@nativescript-community`
+
+If using `BottomNavigation`, just install `@nativescript-community/ui-material-bottom-navigation` and update your imports to use it.
+
+If using `Tabs`, just install `@nativescript-community/ui-material-tabs` and update your imports to use it.
+
+* **core:** support web standard #rrggbbaa format
+
+BEFORE:
+
+```
+// #aarrggbb
+
+const color = new Color('#ff00ff00');
+
+Label {
+    background-color: #ff00ff00;
+}
+```
+
+AFTER:
+
+```
+// #rrggbbaa
+
+const color = new Color('#00ff00ff');
+
+Label {
+    background-color: #00ff00ff;
+}
+```
+
+
 # [7.3.0](https://github.com/NativeScript/NativeScript/compare/7.2.2-core...7.3.0) (2021-02-27)
 
 

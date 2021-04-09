@@ -2,6 +2,7 @@ import { Color } from '../../color';
 import { View } from '../core/view';
 import { BackgroundRepeat } from '../../css/parser';
 import { LinearGradient } from '../styling/linear-gradient';
+import { CSSShadow } from './css-shadow';
 
 export enum CacheMode {
 	none,
@@ -29,6 +30,8 @@ export declare class Background {
 	public borderBottomRightRadius: number;
 	public borderBottomLeftRadius: number;
 	public clipPath: string;
+	public boxShadow: string | CSSShadow;
+	public clearFlags: number;
 
 	public withColor(value: Color): Background;
 	public withImage(value: string | LinearGradient): Background;
@@ -48,6 +51,7 @@ export declare class Background {
 	public withBorderBottomRightRadius(value: number): Background;
 	public withBorderBottomLeftRadius(value: number): Background;
 	public withClipPath(value: string): Background;
+	public withBoxShadow(value: CSSShadow): Background;
 
 	public isEmpty(): boolean;
 
@@ -63,6 +67,8 @@ export declare class Background {
 	public getUniformBorderColor(): Color;
 	public getUniformBorderWidth(): number;
 	public getUniformBorderRadius(): number;
+	public hasBoxShadow(): boolean;
+	public getBoxShadow(): CSSShadow;
 }
 
 export namespace ios {

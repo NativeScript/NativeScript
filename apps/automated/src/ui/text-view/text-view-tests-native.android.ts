@@ -1,4 +1,4 @@
-import { TextView, Color, Utils, Enums } from '@nativescript/core';
+import { TextView, Color, Utils, CoreTypes } from '@nativescript/core';
 
 export function getNativeText(textView: TextView): string {
 	return textView.android.getText().toString();
@@ -41,15 +41,15 @@ export function getNativeTextAlignment(textView: TextView): string {
 	let gravity = textView.android.getGravity();
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.LEFT) {
-		return Enums.TextAlignment.left;
+		return CoreTypes.TextAlignment.left;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.CENTER_HORIZONTAL) {
-		return Enums.TextAlignment.center;
+		return CoreTypes.TextAlignment.center;
 	}
 
 	if ((gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK) === android.view.Gravity.RIGHT) {
-		return Enums.TextAlignment.right;
+		return CoreTypes.TextAlignment.right;
 	}
 
 	return 'unexpected value';

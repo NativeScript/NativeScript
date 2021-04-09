@@ -1,5 +1,5 @@
 // Definitions.
-import { View as ViewDefinition, Point, Size, dip, ShownModallyData } from '.';
+import { View as ViewDefinition, Point, Size, ShownModallyData } from '.';
 
 import { booleanConverter, ShowModalOptions, ViewBase } from '../view-base';
 import { getEventOrGestureName } from '../bindable';
@@ -8,9 +8,10 @@ import { Color } from '../../../color';
 import { Property, InheritedProperty } from '../properties';
 import { EventData } from '../../../data/observable';
 import { Trace } from '../../../trace';
+import { CoreTypes } from '../../../core-types';
 import { ViewHelper } from './view-helper';
 
-import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength, BackgroundRepeat } from '../../styling/style-properties';
+import { PercentLength } from '../../styling/style-properties';
 
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData, fromString as gestureFromString } from '../../gestures';
 
@@ -19,9 +20,12 @@ import { Builder } from '../../builder';
 import { sanitizeModuleName } from '../../builder/module-name-sanitizer';
 import { StyleScope } from '../../styling/style-scope';
 import { LinearGradient } from '../../styling/linear-gradient';
-import { TextTransform } from '../../text-base';
 
 import * as am from '../../animation';
+import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../accessibility/accessibility-types';
+import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
+import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
+import { CSSShadow } from '../../styling/css-shadow';
 
 // helpers (these are okay re-exported here)
 export * from './view-helper';
@@ -67,6 +71,15 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static layoutChangedEvent = 'layoutChanged';
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
+	public static accessibilityBlurEvent = accessibilityBlurEvent;
+	public static accessibilityFocusEvent = accessibilityFocusEvent;
+	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
+	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
+
+	public accessibilityIdentifier: string;
+	public accessibilityLabel: string;
+	public accessibilityValue: string;
+	public accessibilityHint: string;
 
 	protected _closeModalCallback: Function;
 	public _manager: any;
@@ -85,10 +98,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	_currentWidthMeasureSpec: number;
 	_currentHeightMeasureSpec: number;
 
-	_setMinWidthNative: (value: Length) => void;
-	_setMinHeightNative: (value: Length) => void;
+	_setMinWidthNative: (value: CoreTypes.LengthType) => void;
+	_setMinHeightNative: (value: CoreTypes.LengthType) => void;
 
 	public _gestureObservers = {};
+
+	_androidContentDescriptionUpdated?: boolean;
 
 	get css(): string {
 		const scope = this._styleScope;
@@ -359,6 +374,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		modalRootViewCssClasses.forEach((c) => this.cssClasses.add(c));
 
 		parent._modal = this;
+		this.style._fontScale = getCurrentFontScale();
 		this._modalParent = parent;
 		this._modalContext = options.context;
 		const that = this;
@@ -462,73 +478,73 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.borderLeftColor = value;
 	}
 
-	get borderWidth(): string | Length {
+	get borderWidth(): string | CoreTypes.LengthType {
 		return this.style.borderWidth;
 	}
-	set borderWidth(value: string | Length) {
+	set borderWidth(value: string | CoreTypes.LengthType) {
 		this.style.borderWidth = value;
 	}
 
-	get borderTopWidth(): Length {
+	get borderTopWidth(): CoreTypes.LengthType {
 		return this.style.borderTopWidth;
 	}
-	set borderTopWidth(value: Length) {
+	set borderTopWidth(value: CoreTypes.LengthType) {
 		this.style.borderTopWidth = value;
 	}
 
-	get borderRightWidth(): Length {
+	get borderRightWidth(): CoreTypes.LengthType {
 		return this.style.borderRightWidth;
 	}
-	set borderRightWidth(value: Length) {
+	set borderRightWidth(value: CoreTypes.LengthType) {
 		this.style.borderRightWidth = value;
 	}
 
-	get borderBottomWidth(): Length {
+	get borderBottomWidth(): CoreTypes.LengthType {
 		return this.style.borderBottomWidth;
 	}
-	set borderBottomWidth(value: Length) {
+	set borderBottomWidth(value: CoreTypes.LengthType) {
 		this.style.borderBottomWidth = value;
 	}
 
-	get borderLeftWidth(): Length {
+	get borderLeftWidth(): CoreTypes.LengthType {
 		return this.style.borderLeftWidth;
 	}
-	set borderLeftWidth(value: Length) {
+	set borderLeftWidth(value: CoreTypes.LengthType) {
 		this.style.borderLeftWidth = value;
 	}
 
-	get borderRadius(): string | Length {
+	get borderRadius(): string | CoreTypes.LengthType {
 		return this.style.borderRadius;
 	}
-	set borderRadius(value: string | Length) {
+	set borderRadius(value: string | CoreTypes.LengthType) {
 		this.style.borderRadius = value;
 	}
 
-	get borderTopLeftRadius(): Length {
+	get borderTopLeftRadius(): CoreTypes.LengthType {
 		return this.style.borderTopLeftRadius;
 	}
-	set borderTopLeftRadius(value: Length) {
+	set borderTopLeftRadius(value: CoreTypes.LengthType) {
 		this.style.borderTopLeftRadius = value;
 	}
 
-	get borderTopRightRadius(): Length {
+	get borderTopRightRadius(): CoreTypes.LengthType {
 		return this.style.borderTopRightRadius;
 	}
-	set borderTopRightRadius(value: Length) {
+	set borderTopRightRadius(value: CoreTypes.LengthType) {
 		this.style.borderTopRightRadius = value;
 	}
 
-	get borderBottomRightRadius(): Length {
+	get borderBottomRightRadius(): CoreTypes.LengthType {
 		return this.style.borderBottomRightRadius;
 	}
-	set borderBottomRightRadius(value: Length) {
+	set borderBottomRightRadius(value: CoreTypes.LengthType) {
 		this.style.borderBottomRightRadius = value;
 	}
 
-	get borderBottomLeftRadius(): Length {
+	get borderBottomLeftRadius(): CoreTypes.LengthType {
 		return this.style.borderBottomLeftRadius;
 	}
-	set borderBottomLeftRadius(value: Length) {
+	set borderBottomLeftRadius(value: CoreTypes.LengthType) {
 		this.style.borderBottomLeftRadius = value;
 	}
 
@@ -574,94 +590,102 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.backgroundPosition = value;
 	}
 
-	get backgroundRepeat(): BackgroundRepeat {
+	get backgroundRepeat(): CoreTypes.BackgroundRepeatType {
 		return this.style.backgroundRepeat;
 	}
-	set backgroundRepeat(value: BackgroundRepeat) {
+	set backgroundRepeat(value: CoreTypes.BackgroundRepeatType) {
 		this.style.backgroundRepeat = value;
 	}
 
-	get minWidth(): Length {
+	get boxShadow(): CSSShadow {
+		return this.style.boxShadow;
+	}
+	set boxShadow(value: CSSShadow) {
+		this.style.boxShadow = value;
+	}
+
+	get minWidth(): CoreTypes.LengthType {
 		return this.style.minWidth;
 	}
-	set minWidth(value: Length) {
+
+	set minWidth(value: CoreTypes.LengthType) {
 		this.style.minWidth = value;
 	}
 
-	get minHeight(): Length {
+	get minHeight(): CoreTypes.LengthType {
 		return this.style.minHeight;
 	}
-	set minHeight(value: Length) {
+	set minHeight(value: CoreTypes.LengthType) {
 		this.style.minHeight = value;
 	}
 
-	get width(): PercentLength {
+	get width(): CoreTypes.PercentLengthType {
 		return this.style.width;
 	}
-	set width(value: PercentLength) {
+	set width(value: CoreTypes.PercentLengthType) {
 		this.style.width = value;
 	}
 
-	get height(): PercentLength {
+	get height(): CoreTypes.PercentLengthType {
 		return this.style.height;
 	}
-	set height(value: PercentLength) {
+	set height(value: CoreTypes.PercentLengthType) {
 		this.style.height = value;
 	}
 
-	get margin(): string | PercentLength {
+	get margin(): string | CoreTypes.PercentLengthType {
 		return this.style.margin;
 	}
-	set margin(value: string | PercentLength) {
+	set margin(value: string | CoreTypes.PercentLengthType) {
 		this.style.margin = value;
 	}
 
-	get marginLeft(): PercentLength {
+	get marginLeft(): CoreTypes.PercentLengthType {
 		return this.style.marginLeft;
 	}
-	set marginLeft(value: PercentLength) {
+	set marginLeft(value: CoreTypes.PercentLengthType) {
 		this.style.marginLeft = value;
 	}
 
-	get marginTop(): PercentLength {
+	get marginTop(): CoreTypes.PercentLengthType {
 		return this.style.marginTop;
 	}
-	set marginTop(value: PercentLength) {
+	set marginTop(value: CoreTypes.PercentLengthType) {
 		this.style.marginTop = value;
 	}
 
-	get marginRight(): PercentLength {
+	get marginRight(): CoreTypes.PercentLengthType {
 		return this.style.marginRight;
 	}
-	set marginRight(value: PercentLength) {
+	set marginRight(value: CoreTypes.PercentLengthType) {
 		this.style.marginRight = value;
 	}
 
-	get marginBottom(): PercentLength {
+	get marginBottom(): CoreTypes.PercentLengthType {
 		return this.style.marginBottom;
 	}
-	set marginBottom(value: PercentLength) {
+	set marginBottom(value: CoreTypes.PercentLengthType) {
 		this.style.marginBottom = value;
 	}
 
-	get horizontalAlignment(): HorizontalAlignment {
+	get horizontalAlignment(): CoreTypes.HorizontalAlignmentType {
 		return this.style.horizontalAlignment;
 	}
-	set horizontalAlignment(value: HorizontalAlignment) {
+	set horizontalAlignment(value: CoreTypes.HorizontalAlignmentType) {
 		this.style.horizontalAlignment = value;
 	}
 
-	get verticalAlignment(): VerticalAlignment {
+	get verticalAlignment(): CoreTypes.VerticalAlignmentType {
 		return this.style.verticalAlignment;
 	}
-	set verticalAlignment(value: VerticalAlignment) {
+	set verticalAlignment(value: CoreTypes.VerticalAlignmentType) {
 		this.style.verticalAlignment = value;
 	}
 
-	get visibility(): Visibility {
+	get visibility(): CoreTypes.VisibilityType {
 		return this.style.visibility;
 	}
-	set visibility(value: Visibility) {
+	set visibility(value: CoreTypes.VisibilityType) {
 		this.style.visibility = value;
 	}
 
@@ -700,24 +724,24 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 		this.style.perspective = value;
 	}
 
-	get textTransform(): TextTransform {
+	get textTransform(): CoreTypes.TextTransformType {
 		return this.style.textTransform;
 	}
-	set textTransform(value: TextTransform) {
+	set textTransform(value: CoreTypes.TextTransformType) {
 		this.style.textTransform = value;
 	}
 
-	get translateX(): dip {
+	get translateX(): CoreTypes.dip {
 		return this.style.translateX;
 	}
-	set translateX(value: dip) {
+	set translateX(value: CoreTypes.dip) {
 		this.style.translateX = value;
 	}
 
-	get translateY(): dip {
+	get translateY(): CoreTypes.dip {
 		return this.style.translateY;
 	}
-	set translateY(value: dip) {
+	set translateY(value: CoreTypes.dip) {
 		this.style.translateY = value;
 	}
 
@@ -733,6 +757,65 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	}
 	set scaleY(value: number) {
 		this.style.scaleY = value;
+	}
+
+	get accessible(): boolean {
+		return this.style.accessible;
+		// return this._accessible;
+	}
+	set accessible(value: boolean) {
+		this.style.accessible = value;
+		// this._accessible = value;
+	}
+
+	get accessibilityHidden(): boolean {
+		return this.style.accessibilityHidden;
+	}
+	set accessibilityHidden(value: boolean) {
+		this.style.accessibilityHidden = value;
+	}
+
+	get accessibilityRole(): AccessibilityRole {
+		return this.style.accessibilityRole;
+	}
+	set accessibilityRole(value: AccessibilityRole) {
+		this.style.accessibilityRole = value;
+	}
+
+	get accessibilityState(): AccessibilityState {
+		return this.style.accessibilityState;
+	}
+	set accessibilityState(value: AccessibilityState) {
+		this.style.accessibilityState = value;
+	}
+
+	get accessibilityLiveRegion(): AccessibilityLiveRegion {
+		return this.style.accessibilityLiveRegion;
+	}
+	set accessibilityLiveRegion(value: AccessibilityLiveRegion) {
+		this.style.accessibilityLiveRegion = value;
+	}
+
+	get accessibilityLanguage(): string {
+		return this.style.accessibilityLanguage;
+	}
+	set accessibilityLanguage(value: string) {
+		this.style.accessibilityLanguage = value;
+	}
+
+	get accessibilityMediaSession(): boolean {
+		return this.style.accessibilityMediaSession;
+	}
+	set accessibilityMediaSession(value: boolean) {
+		this.style.accessibilityMediaSession = value;
+	}
+
+	get automationText(): string {
+		return this.accessibilityIdentifier;
+	}
+
+	set automationText(value: string) {
+		this.accessibilityIdentifier = value;
 	}
 
 	get androidElevation(): number {
@@ -751,7 +834,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 	//END Style property shortcuts
 
-	public automationText: string;
 	public originX: number;
 	public originY: number;
 	public isEnabled: boolean;
@@ -1005,12 +1087,19 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
 		return false;
 	}
-}
 
-export const automationTextProperty = new Property<ViewCommon, string>({
-	name: 'automationText',
-});
-automationTextProperty.register(ViewCommon);
+	public sendAccessibilityEvent(options: Partial<AccessibilityEventOptions>): void {
+		return;
+	}
+
+	public accessibilityAnnouncement(msg?: string): void {
+		return;
+	}
+
+	public accessibilityScreenChanged(): void {
+		return;
+	}
+}
 
 export const originXProperty = new Property<ViewCommon, number>({
 	name: 'originX',
@@ -1062,3 +1151,8 @@ export const iosIgnoreSafeAreaProperty = new InheritedProperty({
 	valueConverter: booleanConverter,
 });
 iosIgnoreSafeAreaProperty.register(ViewCommon);
+accessibilityIdentifierProperty.register(ViewCommon);
+accessibilityLabelProperty.register(ViewCommon);
+accessibilityValueProperty.register(ViewCommon);
+accessibilityHintProperty.register(ViewCommon);
+accessibilityIgnoresInvertColorsProperty.register(ViewCommon);

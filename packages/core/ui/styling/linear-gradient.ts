@@ -1,4 +1,4 @@
-import { LengthPercentUnit } from './style-properties';
+import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { ColorStop } from './gradient';
 import { LinearGradient as CSSLinearGradient } from '../../css/parser';
@@ -12,7 +12,7 @@ export class LinearGradient {
 		result.angle = value.angle;
 		result.colorStops = value.colors.map((color) => {
 			const offset = color.offset || null;
-			let offsetUnit: LengthPercentUnit;
+			let offsetUnit: CoreTypes.LengthPercentUnit;
 
 			if (offset && offset.unit === '%') {
 				offsetUnit = {
