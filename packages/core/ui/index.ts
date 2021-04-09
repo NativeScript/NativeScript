@@ -69,7 +69,6 @@ export { CSSHelper } from './styling/css-selector';
 export { Switch } from './switch';
 export { TabView, TabViewItem } from './tab-view';
 export { TextBase, getTransformedText, letterSpacingProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, whiteSpaceProperty, lineHeightProperty } from './text-base';
-export type { TextTransform } from './text-base';
 export { FormattedString } from './text-base/formatted-string';
 export { Span } from './text-base/span';
 export { TextField } from './text-field';
