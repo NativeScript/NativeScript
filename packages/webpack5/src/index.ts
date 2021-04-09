@@ -1,3 +1,11 @@
+// Make sure the Acorn Parser (used by Webpack) can parse ES-Stage3 code
+// This must be at the top BEFORE webpack is loaded so that we can extend
+// and replace the parser before webpack uses it
+// Based on the issue: https://github.com/webpack/webpack/issues/10216
+const stage3 = require('acorn-stage3');
+const acorn = require('acorn');
+acorn.Parser = acorn.Parser.extend(stage3);
+
 import { highlight } from 'cli-highlight';
 import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';

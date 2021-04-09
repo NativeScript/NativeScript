@@ -208,19 +208,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	});
 
 	// set up js
-	// todo: do we need babel-loader? It's useful to support it
 	config.module
 		.rule('js')
 		.test(/\.js$/)
 		.exclude.add(/node_modules/)
-		.end()
-		.use('babel-loader')
-		.loader('babel-loader')
-		.options({
-			generatorOpts: {
-				compact: false,
-			},
-		});
+		.end();
 
 	config.module
 		.rule('workers')

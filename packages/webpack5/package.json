@@ -19,6 +19,7 @@
 	"dependencies": {
 		"@babel/core": "7.13.14",
 		"@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
+		"acorn-stage3": "^4.0.0",
 		"babel-loader": "8.2.2",
 		"chalk": "4.1.0",
 		"cli-highlight": "2.1.11",
