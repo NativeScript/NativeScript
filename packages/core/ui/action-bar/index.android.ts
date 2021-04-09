@@ -7,7 +7,7 @@ import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import * as application from '../../application';
 import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
-import type { Background } from 'ui/styling/background';
+import type { Background } from '../styling/background';
 import { Device } from '../../platform';
 import lazy from '../../utils/lazy';
 
