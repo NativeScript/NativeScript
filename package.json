@@ -3,7 +3,7 @@
   "version": "8.0.1",
   "license": "MIT",
   "scripts": {
-    "clean": "git clean -f -X -d",
+    "clean": "git clean -f -X -d --exclude=!.idea/ --exclude=!.vscode/*",
     "setup": "npm run clean && npm install",
     "setup:yarn": "yarn run clean && yarn",
     "setup:pnpm": "pnpm run clean && pnpm install",
