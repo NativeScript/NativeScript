@@ -238,7 +238,7 @@
 				"test": {
 					"builder": "@nrwl/workspace:run-commands",
 					"options": {
-						"commands": ["npm run tsc", "npm run jasmine"],
+						"commands": ["npm run test"],
 						"cwd": "packages/webpack",
 						"parallel": false
 					}
@@ -247,7 +247,7 @@
 					"builder": "@nrwl/workspace:run-commands",
 					"outputs": ["dist/packages"],
 					"options": {
-						"commands": ["npm run setup", "mkdir -p ../../dist/packages", "mv \"$(npm pack | tail -n 1)\" ../../dist/packages/nativescript-webpack.tgz"],
+						"commands": ["npm run setup", "npx mkdirp ../../dist/packages", "npm pack", "mv *.tgz ../../dist/packages/nativescript-webpack.tgz"],
 						"cwd": "packages/webpack",
 						"parallel": false
 					}
