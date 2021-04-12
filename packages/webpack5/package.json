@@ -1,7 +1,7 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.0-dev",
-	"private": true,
+	"version": "5.0.0-beta.5",
+	"private": false,
 	"main": "dist/index.js",
 	"files": [
 		"dist"
@@ -17,23 +17,24 @@
 		"prepack": "npm test && npm run build && npm run copy-stubs && chmod +x dist/bin/index.js"
 	},
 	"dependencies": {
-		"@babel/core": "7.13.14",
+		"@babel/core": "7.13.15",
 		"@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
+		"acorn": "^8.1.1",
 		"acorn-stage3": "^4.0.0",
 		"babel-loader": "8.2.2",
 		"chalk": "4.1.0",
 		"cli-highlight": "2.1.11",
 		"commander": "7.2.0",
-		"copy-webpack-plugin": "8.1.0",
+		"copy-webpack-plugin": "8.1.1",
 		"css": "3.0.0",
-		"css-loader": "5.2.0",
+		"css-loader": "5.2.1",
 		"dotenv-webpack": "7.0.2",
-		"fork-ts-checker-webpack-plugin": "6.2.0",
+		"fork-ts-checker-webpack-plugin": "6.2.1",
 		"loader-utils": "2.0.0",
 		"lodash.get": "4.4.2",
-		"micromatch": "4.0.2",
-		"postcss": "8.2.8",
-		"postcss-import": "14.0.0",
+		"micromatch": "4.0.4",
+		"postcss": "8.2.10",
+		"postcss-import": "14.0.1",
 		"postcss-loader": "5.2.0",
 		"raw-loader": "4.0.2",
 		"react-refresh": "0.10.0",
@@ -42,10 +43,10 @@
 		"sax": "1.2.4",
 		"source-map": "0.7.3",
 		"terser-webpack-plugin": "5.1.1",
-		"ts-dedent": "2.1.0",
+		"ts-dedent": "2.1.1",
 		"ts-loader": "8.1.0",
 		"vue-loader": "15.9.6",
-		"webpack": "5.28.0",
+		"webpack": "5.31.2",
 		"webpack-bundle-analyzer": "4.4.0",
 		"webpack-chain": "6.5.1",
 		"webpack-cli": "4.6.0",
@@ -53,19 +54,19 @@
 		"webpack-virtual-modules": "0.4.2"
 	},
 	"devDependencies": {
-		"@types/lodash.get": "4.4.6",
-		"@types/sax": "1.2.1",
 		"@types/css": "0.0.31",
 		"@types/jest": "26.0.22",
 		"@types/loader-utils": "2.0.2",
+		"@types/lodash.get": "4.4.6",
 		"@types/micromatch": "4.0.1",
+		"@types/sax": "1.2.1",
 		"@types/terser-webpack-plugin": "5.0.3",
 		"@types/webpack-virtual-modules": "0.1.1",
 		"jest": "26.6.3",
 		"jest-matcher-utils": "26.6.2",
-		"nativescript-vue-template-compiler": "2.8.4",
+		"nativescript-vue-template-compiler": "2.9.0",
 		"ts-jest": "26.5.4",
-		"typescript": "4.2.3"
+		"typescript": "4.2.4"
 	},
 	"peerDependencies": {
 		"nativescript-vue-template-compiler": "^2.8.1"

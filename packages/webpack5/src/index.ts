@@ -2,7 +2,9 @@
 // This must be at the top BEFORE webpack is loaded so that we can extend
 // and replace the parser before webpack uses it
 // Based on the issue: https://github.com/webpack/webpack/issues/10216
-const stage3 = require('acorn-stage3');
+import stage3 from 'acorn-stage3';
+
+// we use require to be able to override the exports
 const acorn = require('acorn');
 acorn.Parser = acorn.Parser.extend(stage3);
 
@@ -33,6 +35,7 @@ export interface IWebpackEnv {
 	// for custom platforms
 	platform?: string;
 
+	sourceMap?: string | boolean;
 	production?: boolean;
 	report?: boolean;
 	hmr?: boolean;

@@ -1,4 +1,4 @@
-import {
+import webpack, {
 	ContextExclusionPlugin,
 	DefinePlugin,
 	HotModuleReplacementPlugin,
@@ -44,8 +44,30 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// resolved at runtime
 	config.externals(['package.json', '~/package.json']);
 
-	// todo: devtool
-	config.devtool('inline-source-map');
+	const getSourceMapType = (map: string | boolean): Config.DevTool => {
+		const defaultSourceMap = 'inline-source-map';
+
+		if (typeof map === 'undefined') {
+			// source-maps disabled in production by default
+			// enabled with --env.sourceMap=<type>
+			if (mode === 'production') {
+				// todo: we may set up SourceMapDevToolPlugin to generate external maps in production
+				return false;
+			}
+
+			return defaultSourceMap;
+		}
+
+		// when --env.sourceMap=true is passed, use default
+		if (typeof map === 'boolean' && map) {
+			return defaultSourceMap;
+		}
+
+		// pass any type of sourceMap with --env.sourceMap=<type>
+		return map as Config.DevTool;
+	};
+
+	config.devtool(getSourceMapType(env.sourceMap));
 
 	// todo: figure out easiest way to make "node" target work in ns
 	// rather than the custom ns target implementation that's hard to maintain
