@@ -67,7 +67,7 @@ export function applyCopyRules(config: Config) {
 		);
 
 		// ignore everything in App_Resources (regardless where they are located)
-		globOptions.ignore.push(`${relative(entryDir, appResourcesFullPath)}/**`);
+		globOptions.ignore.push(`**/${relative(entryDir, appResourcesFullPath)}/**`);
 	}
 
 	config.plugin('CopyWebpackPlugin').use(CopyWebpackPlugin, [
