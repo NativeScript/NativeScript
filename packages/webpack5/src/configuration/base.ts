@@ -1,4 +1,4 @@
-import webpack, {
+import {
 	ContextExclusionPlugin,
 	DefinePlugin,
 	HotModuleReplacementPlugin,
