@@ -120,17 +120,6 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
@@ -438,17 +427,6 @@ exports[`react configuration > android > base config 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
@@ -756,17 +734,6 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
@@ -1075,17 +1042,6 @@ exports[`react configuration > ios > base config 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
