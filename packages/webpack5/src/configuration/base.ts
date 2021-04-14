@@ -10,11 +10,11 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
-import { getProjectFilePath, getProjectRootPath } from '../helpers/project';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
+import { getProjectFilePath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
@@ -374,14 +374,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	});
 
 	config.when(env.report, (config) => {
-		const projectRoot = getProjectRootPath();
 		config.plugin('BundleAnalyzerPlugin').use(BundleAnalyzerPlugin, [
 			{
 				analyzerMode: 'static',
 				generateStatsFile: true,
 				openAnalyzer: false,
-				reportFilename: resolve(projectRoot, 'report', 'report.html'),
-				statsFilename: resolve(projectRoot, 'report', 'stats.json'),
+				reportFilename: getProjectFilePath('report/report.html'),
+				statsFilename: getProjectFilePath('report/stats.json'),
 			},
 		]);
 	});
