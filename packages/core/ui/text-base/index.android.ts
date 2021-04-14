@@ -40,7 +40,7 @@ function initializeTextTransformation(): void {
 			// NOTE: Do we need to transform the new text here?
 			const formattedText = this.textBase.formattedText;
 			if (formattedText) {
-				return createSpannableStringBuilder(formattedText, (<android.widget.TextView>view).getTextSize());
+				return this.textBase.createFormattedTextNative(formattedText);
 			} else {
 				const text = this.textBase.text;
 				const stringValue = isNullOrUndefined(text) ? '' : text.toString();
@@ -233,7 +233,9 @@ export class TextBase extends TextBaseCommon {
 
 		this._setNativeText(reset);
 	}
-
+	createFormattedTextNative(value: FormattedString) {
+		return createSpannableStringBuilder(value, this.style.fontSize);
+	}
 	[formattedTextProperty.setNative](value: FormattedString) {
 		const nativeView = this.nativeTextViewProtected;
 		if (!value) {
@@ -247,7 +249,7 @@ export class TextBase extends TextBaseCommon {
 			return;
 		}
 
-		const spannableStringBuilder = createSpannableStringBuilder(value, this.style.fontSize);
+		const spannableStringBuilder = this.createFormattedTextNative(value);
 		nativeView.setText(<any>spannableStringBuilder);
 		this._setTappableState(isStringTappable(value));
 
@@ -443,7 +445,7 @@ export class TextBase extends TextBaseCommon {
 
 		let transformedText: any;
 		if (this.formattedText) {
-			transformedText = createSpannableStringBuilder(this.formattedText, this.style.fontSize);
+			transformedText = this.createFormattedTextNative(this.formattedText);
 		} else {
 			const text = this.text;
 			const stringValue = text === null || text === undefined ? '' : text.toString();
