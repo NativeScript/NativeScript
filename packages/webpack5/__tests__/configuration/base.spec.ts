@@ -16,7 +16,7 @@ describe('base configuration', () => {
 
 				// only test in base config to make sure App_Resources
 				// are properly excluded from the copy-rules
-				appResourcesPath: '__jest__/custom_app_resources',
+				appResourcesPath: 'custom_app_resources',
 			});
 			expect(base(new Config()).toString()).toMatchSnapshot();
 		});

@@ -117,7 +117,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.watchOptions({
 		ignored: [
 			`${getProjectFilePath('platforms')}/**`,
-			`${env.appResourcesPath ?? getProjectFilePath('App_Resources')}/**`,
+			`${getProjectFilePath(env.appResourcesPath ?? 'App_Resources')}/**`,
 		],
 	});
 
