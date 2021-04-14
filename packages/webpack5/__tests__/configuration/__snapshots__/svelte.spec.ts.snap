@@ -7,6 +7,9 @@ exports[`svelte configuration for android 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
@@ -322,6 +325,9 @@ exports[`svelte configuration for ios 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {

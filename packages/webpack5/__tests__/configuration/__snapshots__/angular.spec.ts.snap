@@ -7,6 +7,9 @@ exports[`angular configuration for android 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
@@ -352,6 +355,9 @@ exports[`angular configuration for ios 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {

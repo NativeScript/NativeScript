@@ -7,6 +7,9 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
@@ -325,6 +328,9 @@ exports[`react configuration > android > base config 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
@@ -621,6 +627,9 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
@@ -940,6 +949,9 @@ exports[`react configuration > ios > base config 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {

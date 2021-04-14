@@ -44,6 +44,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// resolved at runtime
 	config.externals(['package.json', '~/package.json']);
 
+	// disable marking built-in node modules as external
+	// since they are not available at runtime and
+	// should be bundled (requires polyfills)
+	// for example `npm i --save url` to
+	// polyfill the node url module.
+	config.set('externalsPresets', {
+		node: false,
+	});
+
 	const getSourceMapType = (map: string | boolean): Config.DevTool => {
 		const defaultSourceMap = 'inline-source-map';
 
