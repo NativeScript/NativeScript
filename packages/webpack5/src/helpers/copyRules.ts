@@ -1,5 +1,5 @@
 import CopyWebpackPlugin from 'copy-webpack-plugin';
-import { relative, resolve } from 'path';
+import { basename, relative, resolve } from 'path';
 import Config from 'webpack-chain';
 
 import { getProjectRootPath } from './project';
@@ -61,13 +61,10 @@ export function applyCopyRules(config: Config) {
 	// todo: do we need to handle empty appResourcesPath?
 	// (the CLI should always pass the path - maybe not required)
 	if (env.appResourcesPath) {
-		const appResourcesFullPath = resolve(
-			getProjectRootPath(),
-			env.appResourcesPath
-		);
+		const appResourcesFolderName = basename(env.appResourcesPath);
 
 		// ignore everything in App_Resources (regardless where they are located)
-		globOptions.ignore.push(`**/${relative(entryDir, appResourcesFullPath)}/**`);
+		globOptions.ignore.push(`**/${appResourcesFolderName}/**`);
 	}
 
 	config.plugin('CopyWebpackPlugin').use(CopyWebpackPlugin, [

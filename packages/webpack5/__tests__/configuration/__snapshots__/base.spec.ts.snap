@@ -15,7 +15,7 @@ exports[`base configuration for android 1`] = `
   watchOptions: {
     ignored: [
       '__jest__/platforms/**',
-      '__jest__/App_Resources/**'
+      '__jest__/custom_app_resources/**'
     ]
   },
   ignoreWarnings: [
@@ -255,7 +255,9 @@ exports[`base configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           },
           {
@@ -264,7 +266,9 @@ exports[`base configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           },
           {
@@ -273,7 +277,9 @@ exports[`base configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           }
         ]
@@ -308,7 +314,7 @@ exports[`base configuration for ios 1`] = `
   watchOptions: {
     ignored: [
       '__jest__/platforms/**',
-      '__jest__/App_Resources/**'
+      '__jest__/custom_app_resources/**'
     ]
   },
   ignoreWarnings: [
@@ -548,7 +554,9 @@ exports[`base configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           },
           {
@@ -557,7 +565,9 @@ exports[`base configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           },
           {
@@ -566,7 +576,9 @@ exports[`base configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           }
         ]
