@@ -331,6 +331,7 @@ exports[`angular configuration for android 1`] = `
       {
         tsConfigPath: '__jest__/tsconfig.json',
         mainPath: '__jest__/src/app.js',
+        forkTypeChecker: false,
         hostReplacementPaths: function () { /* omitted long function */ },
         platformTransformers: [
           function () { /* omitted long function */ }
@@ -680,6 +681,7 @@ exports[`angular configuration for ios 1`] = `
       {
         tsConfigPath: '__jest__/tsconfig.json',
         mainPath: '__jest__/src/app.js',
+        forkTypeChecker: false,
         hostReplacementPaths: function () { /* omitted long function */ },
         platformTransformers: [
           function () { /* omitted long function */ }

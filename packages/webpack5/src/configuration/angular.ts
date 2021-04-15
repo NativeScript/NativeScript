@@ -48,7 +48,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// exclude component css files from the normal css rule
 	config.module
 		.rule('css')
-		.exclude// exclude *.component.{platform}.css
+		.exclude // exclude *.component.{platform}.css
 		.add(/\.component(\.\w+)?\.css$/);
 
 	// and instead use raw-loader, since that's what angular expects
@@ -67,7 +67,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// exclude component css files from the normal css rule
 	config.module
 		.rule('scss')
-		.exclude// exclude *.component.{platform}.scss
+		.exclude // exclude *.component.{platform}.scss
 		.add(/\.component(\.\w+)?\.scss$/);
 
 	// and instead use raw-loader, since that's what angular expects
@@ -88,6 +88,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		{
 			tsConfigPath,
 			mainPath: getEntryPath(),
+			// disable type checking in a forked process - it ignores
+			// the hostReplacementPaths and prints errors about
+			// platform suffixed files, even though they are
+			// working as expected.
+			forkTypeChecker: false,
 			hostReplacementPaths(path: string) {
 				const ext = extname(path);
 				const platformExt = `.${platform}${ext}`;
