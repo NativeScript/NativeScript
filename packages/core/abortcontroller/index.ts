@@ -1,5 +1,4 @@
 import AbortSignal, { abortSignal, createAbortSignal } from "./abortsignal"
-console.log('AbortController')
 /**
  * The AbortController.
  * @see https://dom.spec.whatwg.org/#abortcontroller
