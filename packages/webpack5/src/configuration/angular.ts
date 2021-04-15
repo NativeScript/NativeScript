@@ -1,13 +1,16 @@
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
+import { extname } from 'path';
 
+import { getEntryPath, getPlatformName } from '../helpers/platform';
 import { getProjectFilePath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
-import { getEntryPath } from '../helpers/platform';
 import base from './base';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
+
+	const platform = getPlatformName();
 
 	const tsConfigPath = [
 		getProjectFilePath('tsconfig.app.json'),
@@ -43,12 +46,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.loader('raw-loader');
 
 	// exclude component css files from the normal css rule
-	config.module.rule('css').exclude.add(/\.component\.css$/);
+	config.module
+		.rule('css')
+		.exclude// exclude *.component.{platform}.css
+		.add(/\.component(\.\w+)?\.css$/);
 
 	// and instead use raw-loader, since that's what angular expects
 	config.module
 		.rule('css|component')
-		.test(/\.component\.css$/)
+		.test(/\.component(\.\w+)?\.css$/)
 		.use('raw-loader')
 		.loader('raw-loader');
 
@@ -59,12 +65,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.get('options');
 
 	// exclude component css files from the normal css rule
-	config.module.rule('scss').exclude.add(/\.component\.scss$/);
+	config.module
+		.rule('scss')
+		.exclude// exclude *.component.{platform}.scss
+		.add(/\.component(\.\w+)?\.scss$/);
 
 	// and instead use raw-loader, since that's what angular expects
 	config.module
 		.rule('scss|component')
-		.test(/\.component\.scss$/)
+		.test(/\.component(\.\w+)?\.scss$/)
 		.use('raw-loader')
 		.loader('raw-loader')
 		.end()
@@ -79,6 +88,25 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		{
 			tsConfigPath,
 			mainPath: getEntryPath(),
+			hostReplacementPaths(path: string) {
+				const ext = extname(path);
+				const platformExt = `.${platform}${ext}`;
+
+				// already includes a platform specific extension - ignore
+				if (path.includes(platformExt)) {
+					return path;
+				}
+
+				const platformPath = path.replace(ext, platformExt);
+				// check if the same file exists with a platform suffix and return if it does.
+				if (existsSync(platformPath)) {
+					// console.log(`[hostReplacementPaths] resolving "${path}" to "${platformPath}"`);
+					return platformPath;
+				}
+
+				// just return the original path otherwise
+				return path;
+			},
 			platformTransformers: [require('../transformers/NativeClass').default],
 		},
 	]);
@@ -110,7 +138,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	return config;
 }
 
-function getAngularCompilerPlugin() {
+function getAngularCompilerPlugin(): any {
 	const { AngularCompilerPlugin } = require('@ngtools/webpack');
 	return AngularCompilerPlugin;
 }

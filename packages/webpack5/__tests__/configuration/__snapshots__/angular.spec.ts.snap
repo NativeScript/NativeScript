@@ -112,7 +112,7 @@ exports[`angular configuration for android 1`] = `
       {
         test: /\\\\.css$/,
         exclude: [
-          /\\\\.component\\\\.css$/
+          /\\\\.component(\\\\.\\\\w+)?\\\\.css$/
         ],
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
@@ -140,7 +140,7 @@ exports[`angular configuration for android 1`] = `
       {
         test: /\\\\.scss$/,
         exclude: [
-          /\\\\.component\\\\.scss$/
+          /\\\\.component(\\\\.\\\\w+)?\\\\.scss$/
         ],
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
@@ -197,7 +197,7 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('css|component') */
       {
-        test: /\\\\.component\\\\.css$/,
+        test: /\\\\.component(\\\\.\\\\w+)?\\\\.css$/,
         use: [
           /* config.module.rule('css|component').use('raw-loader') */
           {
@@ -207,7 +207,7 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('scss|component') */
       {
-        test: /\\\\.component\\\\.scss$/,
+        test: /\\\\.component(\\\\.\\\\w+)?\\\\.scss$/,
         use: [
           /* config.module.rule('scss|component').use('raw-loader') */
           {
@@ -331,6 +331,7 @@ exports[`angular configuration for android 1`] = `
       {
         tsConfigPath: '__jest__/tsconfig.json',
         mainPath: '__jest__/src/app.js',
+        hostReplacementPaths: function () { /* omitted long function */ },
         platformTransformers: [
           function () { /* omitted long function */ }
         ]
@@ -460,7 +461,7 @@ exports[`angular configuration for ios 1`] = `
       {
         test: /\\\\.css$/,
         exclude: [
-          /\\\\.component\\\\.css$/
+          /\\\\.component(\\\\.\\\\w+)?\\\\.css$/
         ],
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
@@ -488,7 +489,7 @@ exports[`angular configuration for ios 1`] = `
       {
         test: /\\\\.scss$/,
         exclude: [
-          /\\\\.component\\\\.scss$/
+          /\\\\.component(\\\\.\\\\w+)?\\\\.scss$/
         ],
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
@@ -545,7 +546,7 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('css|component') */
       {
-        test: /\\\\.component\\\\.css$/,
+        test: /\\\\.component(\\\\.\\\\w+)?\\\\.css$/,
         use: [
           /* config.module.rule('css|component').use('raw-loader') */
           {
@@ -555,7 +556,7 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('scss|component') */
       {
-        test: /\\\\.component\\\\.scss$/,
+        test: /\\\\.component(\\\\.\\\\w+)?\\\\.scss$/,
         use: [
           /* config.module.rule('scss|component').use('raw-loader') */
           {
@@ -679,6 +680,7 @@ exports[`angular configuration for ios 1`] = `
       {
         tsConfigPath: '__jest__/tsconfig.json',
         mainPath: '__jest__/src/app.js',
+        hostReplacementPaths: function () { /* omitted long function */ },
         platformTransformers: [
           function () { /* omitted long function */ }
         ]
