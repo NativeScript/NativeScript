@@ -26,7 +26,7 @@
 				"clean": {
 					"builder": "@nrwl/workspace:run-commands",
 					"options": {
-						"commands": ["npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js", "npm i", "npx rimraf -- package-lock.json"],
+						"commands": ["npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js", "npm i --legacy-peer-deps", "npx rimraf -- package-lock.json"],
 						"cwd": "apps/automated",
 						"parallel": false
 					}
@@ -58,7 +58,7 @@
 				"clean": {
 					"builder": "@nrwl/workspace:run-commands",
 					"options": {
-						"commands": ["npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js", "npm i", "npx rimraf -- package-lock.json"],
+						"commands": ["npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js", "npm i --legacy-peer-deps", "npx rimraf -- package-lock.json"],
 						"cwd": "apps/toolbox",
 						"parallel": false
 					}
@@ -90,7 +90,7 @@
 				"clean": {
 					"builder": "@nrwl/workspace:run-commands",
 					"options": {
-						"commands": ["npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js", "npm i", "npx rimraf -- package-lock.json"],
+						"commands": ["npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js", "npm i --legacy-peer-deps", "npx rimraf -- package-lock.json"],
 						"cwd": "apps/ui",
 						"parallel": false
 					}
