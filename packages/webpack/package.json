@@ -32,7 +32,7 @@
     "npm_alias":"npm"
   },
   "scripts": {
-    "clean": "npx rimraf -- node_modules package-lock.json && $npm_package_config_npm_alias i --ignore-scripts --legacy-peer-deps",
+    "clean": "npx rimraf -- node_modules package-lock.json && $npm_package_config_npm_alias i --ignore-scripts",
     "tsc": "tsc",
     "postinstall": "node postinstall.js",
     "preuninstall": "node preuninstall.js",
