@@ -88,10 +88,12 @@ task cleanBuildDir (type: Delete) {
     delete "../build/"
 }
 
-task copyAar << {
+task copyAar {
+    doLast {
     copy {
         from "build/outputs/aar/widgets-release.aar"
         into "../build/"
+    }
     }
 }
 
