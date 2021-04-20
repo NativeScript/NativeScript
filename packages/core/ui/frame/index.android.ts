@@ -20,6 +20,7 @@ import { CSSUtils } from '../../css/system-classes';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
 import { ExpandedEntry } from './fragment.transitions.android';
+import { android as androidApplication } from '../../application';
 
 export * from './frame-common';
 
@@ -146,8 +147,9 @@ export class Frame extends FrameBase {
 		super._onAttachedToWindow();
 
 		// _onAttachedToWindow called from OS again after it was detach
-		// TODO: Consider testing and removing it when update to androidx.fragment:1.2.0
-		if (this._manager && this._manager.isDestroyed()) {
+		// still happens with androidx.fragment:1.3.2
+		const activity = androidApplication.foregroundActivity;
+		if ((this._manager && this._manager.isDestroyed()) || !activity.getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
 			return;
 		}
 
@@ -170,11 +172,11 @@ export class Frame extends FrameBase {
 		if (!this.isLoaded || this._executingContext) {
 			return;
 		}
-		
+
 		// in case the activity is "reset" using resetRootView we must wait for
 		// the attachedToWindow event to make the first navigation or it will crash
 		// https://github.com/NativeScript/NativeScript/commit/9dd3e1a8076e5022e411f2f2eeba34aabc68d112
-		// though we should not do it on app "start" 
+		// though we should not do it on app "start"
 		// or it will create a "flash" to activity background color
 		if (this._wasReset && !this._attachedToWindow) {
 			return;
@@ -334,8 +336,6 @@ export class Frame extends FrameBase {
 
 			// If we had real navigation process queue.
 			this._processNavigationQueue(entry.resolvedPage);
-
-
 		} else {
 			// Otherwise currentPage was recreated so this wasn't real navigation.
 			// Continue with next item in the queue.
