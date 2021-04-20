@@ -19,6 +19,7 @@ import { Builder } from '../builder';
 import { CSSUtils } from '../../css/system-classes';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
+import { android as androidApplication } from '../../application';
 
 export * from './frame-common';
 
@@ -144,8 +145,9 @@ export class Frame extends FrameBase {
 		super._onAttachedToWindow();
 
 		// _onAttachedToWindow called from OS again after it was detach
-		// TODO: Consider testing and removing it when update to androidx.fragment:1.2.0
-		if (this._manager && this._manager.isDestroyed()) {
+		// still happens with androidx.fragment:1.3.2
+		const activity = androidApplication.foregroundActivity;
+		if ((this._manager && this._manager.isDestroyed()) || !activity.getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
 			return;
 		}
 
