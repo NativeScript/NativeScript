@@ -450,7 +450,7 @@ export class Frame extends FrameBase {
 
 		if (clearHistory || isReplace) {
 			transaction.replace(this.containerViewId, newFragment, newFragmentTag);
-		} else  {
+		} else {
 			transaction.add(this.containerViewId, newFragment, newFragmentTag);
 		}
 		if (this._currentEntry && this._currentEntry.entry.backstackVisible === false) {
