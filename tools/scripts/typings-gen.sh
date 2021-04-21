@@ -21,7 +21,7 @@ fi
 
 echo "Creating typings project with @nativescript/ios@$IOS_RUNTIME_VERSION..."
 rm -rf ios-typings-prj
-ns create --js ios-typings-prj
+ns create --template @nativescript/template-blank@7.0.4 ios-typings-prj
 ns platform add ios@$IOS_RUNTIME_VERSION --path ios-typings-prj/
 
 if [ -n "$METADATA_GENERATOR_PATH" ]
