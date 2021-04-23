@@ -1,5 +1,6 @@
 import { AbsoluteLayout as AbsoluteLayoutDefinition } from '.';
 import { LayoutBase } from '../layout-base';
+import { CoreTypes } from '../../../core-types';
 import { View, CSSType } from '../../core/view';
 import { Property } from '../../core/properties';
 import { Length, zeroLength } from '../../styling/style-properties';
@@ -20,37 +21,37 @@ function validateArgs(element: View): View {
 @CSSType('AbsoluteLayout')
 export class AbsoluteLayoutBase extends LayoutBase implements AbsoluteLayoutDefinition {
 	// TODO: Do we still need this? it can be get like view.left
-	public static getLeft(element: View): Length {
+	public static getLeft(element: View): CoreTypes.LengthType {
 		return validateArgs(element).left;
 	}
 
 	// TODO: Do we still need this? it can be set like view.left=value
-	public static setLeft(element: View, value: Length): void {
+	public static setLeft(element: View, value: CoreTypes.LengthType): void {
 		validateArgs(element).left = value;
 	}
 
 	// TODO: Do we still need this? it can be get like view.top
-	public static getTop(element: View): Length {
+	public static getTop(element: View): CoreTypes.LengthType {
 		return validateArgs(element).top;
 	}
 
 	// TODO: Do we still need this? it can be set like view.top=value
-	public static setTop(element: View, value: Length): void {
+	public static setTop(element: View, value: CoreTypes.LengthType): void {
 		validateArgs(element).top = value;
 	}
 
-	onLeftChanged(view: View, oldValue: Length, newValue: Length) {
+	onLeftChanged(view: View, oldValue: CoreTypes.LengthType, newValue: CoreTypes.LengthType) {
 		//
 	}
 
-	onTopChanged(view: View, oldValue: Length, newValue: Length) {
+	onTopChanged(view: View, oldValue: CoreTypes.LengthType, newValue: CoreTypes.LengthType) {
 		//
 	}
 }
 
 AbsoluteLayoutBase.prototype.recycleNativeView = 'auto';
 
-export const leftProperty = new Property<View, Length>({
+export const leftProperty = new Property<View, CoreTypes.LengthType>({
 	name: 'left',
 	defaultValue: zeroLength,
 	valueChanged: (target, oldValue, newValue) => {
@@ -64,7 +65,7 @@ export const leftProperty = new Property<View, Length>({
 });
 leftProperty.register(View);
 
-export const topProperty = new Property<View, Length>({
+export const topProperty = new Property<View, CoreTypes.LengthType>({
 	name: 'top',
 	defaultValue: zeroLength,
 	valueChanged: (target, oldValue, newValue) => {

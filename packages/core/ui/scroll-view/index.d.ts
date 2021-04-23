@@ -1,6 +1,7 @@
 ﻿import { ContentView } from '../content-view';
 import { Property } from '../core/properties';
 import { EventData } from '../../data/observable';
+import { CoreTypes } from '../../core-types';
 
 /**
  * Represents a scrollable area that can have content that is larger than its bounds.
@@ -58,7 +59,7 @@ export class ScrollView extends ContentView {
 	/**
 	 * Gets or sets direction in which the content can be scrolled.
 	 */
-	orientation: Orientation;
+	orientation: CoreTypes.OrientationType;
 
 	/**
 	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -81,6 +82,4 @@ export interface ScrollEventData extends EventData {
 	scrollY: number;
 }
 
-export type Orientation = 'horizontal' | 'vertical';
-
-export const orientationProperty: Property<ScrollView, Orientation>;
+export const orientationProperty: Property<ScrollView, CoreTypes.OrientationType>;

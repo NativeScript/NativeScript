@@ -1,6 +1,7 @@
 import { ActivityIndicatorBase, busyProperty } from './activity-indicator-common';
-import { colorProperty, visibilityProperty, Visibility } from '../styling/style-properties';
+import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
+import { colorProperty, visibilityProperty } from '../styling/style-properties';
 
 export * from './activity-indicator-common';
 
@@ -19,27 +20,27 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 		return false;
 	}
 	[busyProperty.setNative](value: boolean) {
-		if (this.visibility === Visibility.VISIBLE) {
+		if (this.visibility === CoreTypes.Visibility.visible) {
 			this.nativeViewProtected.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
 		}
 	}
 
-	[visibilityProperty.getDefault](): Visibility {
-		return Visibility.HIDDEN;
+	[visibilityProperty.getDefault](): CoreTypes.VisibilityType {
+		return CoreTypes.Visibility.hidden;
 	}
-	[visibilityProperty.setNative](value: Visibility) {
+	[visibilityProperty.setNative](value: CoreTypes.VisibilityType) {
 		switch (value) {
-			case Visibility.VISIBLE:
+			case CoreTypes.Visibility.visible:
 				this.nativeViewProtected.setVisibility(this.busy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
 				break;
-			case Visibility.HIDDEN:
+			case CoreTypes.Visibility.hidden:
 				this.nativeViewProtected.setVisibility(android.view.View.INVISIBLE);
 				break;
-			case Visibility.COLLAPSE:
+			case CoreTypes.Visibility.collapse:
 				this.nativeViewProtected.setVisibility(android.view.View.GONE);
 				break;
 			default:
-				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
+				throw new Error(`Invalid visibility value: ${value}. Valid values are: "${CoreTypes.Visibility.visible}", "${CoreTypes.Visibility.hidden}", "${CoreTypes.Visibility.collapse}".`);
 		}
 	}
 

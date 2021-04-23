@@ -10,7 +10,8 @@ import { View } from '../ui/core/view';
 // Requires
 import * as bindableResources from '../ui/core/bindable/bindable-resources';
 import { CSSUtils } from '../css/system-classes';
-import { Enums } from '../ui/enums';
+import { CoreTypes } from '../core-types';
+import { Trace } from '../trace';
 
 export * from './application-interfaces';
 
@@ -28,10 +29,11 @@ export const uncaughtErrorEvent = 'uncaughtError';
 export const discardedErrorEvent = 'discardedError';
 export const orientationChangedEvent = 'orientationChanged';
 export const systemAppearanceChangedEvent = 'systemAppearanceChanged';
+export const fontScaleChangedEvent = 'fontScaleChanged';
 
-const ORIENTATION_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.portrait}`, `${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.landscape}`, `${CSSUtils.CLASS_PREFIX}${Enums.DeviceOrientation.unknown}`];
+const ORIENTATION_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.portrait}`, `${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.landscape}`, `${CSSUtils.CLASS_PREFIX}${CoreTypes.DeviceOrientation.unknown}`];
 
-const SYSTEM_APPEARANCE_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${Enums.SystemAppearance.light}`, `${CSSUtils.CLASS_PREFIX}${Enums.SystemAppearance.dark}`];
+const SYSTEM_APPEARANCE_CSS_CLASSES = [`${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.light}`, `${CSSUtils.CLASS_PREFIX}${CoreTypes.SystemAppearance.dark}`];
 
 let cssFile = './app.css';
 
@@ -100,7 +102,9 @@ export function loadAppCss(): void {
 			cssFile: getCssFileName(),
 		});
 	} catch (e) {
-		throw new Error(`The app CSS file ${getCssFileName()} couldn't be loaded!`);
+		if (Trace.isEnabled()) {
+			Trace.write(`The app CSS file ${getCssFileName()} couldn't be loaded!`, Trace.categories.Style, Trace.messageType.warn);
+		}
 	}
 }
 
@@ -122,7 +126,7 @@ function increaseStyleScopeApplicationCssSelectorVersion(rootView: View) {
 	}
 }
 
-function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string) {
+export function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void {
 	if (!rootView.cssClasses.has(newCssClass)) {
 		cssClasses.forEach((cssClass) => removeCssClass(rootView, cssClass));
 		addCssClass(rootView, newCssClass);
@@ -146,7 +150,7 @@ export function orientationChanged(rootView: View, newOrientation: 'portrait' | 
 }
 export let autoSystemAppearanceChanged = true;
 
-export function setAutoSystemAppearanceChanged(value: boolean) {
+export function setAutoSystemAppearanceChanged(value: boolean): void {
 	autoSystemAppearanceChanged = value;
 }
 

@@ -1,0 +1,9 @@
+﻿<Page>
+  <StackLayout>
+    <Button id="Change" automationText="Change" text="Change" tap="buttonTap" />
+    <Label id="Label" automationText="Label" text="Label" />
+    <Button id="Button" automationText="Button" text="Button" />
+    <TextField id="TextField" automationText="TextField" text="TextField" />
+    <TextView id="TextView" automationText="TextView" text="TextView" />
+  </StackLayout>
+</Page>

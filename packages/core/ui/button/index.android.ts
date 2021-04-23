@@ -2,7 +2,7 @@ import { ButtonBase } from './button-common';
 import { PseudoClassHandler } from '../core/view';
 import { paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty, minWidthProperty, minHeightProperty } from '../styling/style-properties';
 import { textAlignmentProperty } from '../text-base';
-import { TextAlignment } from '../enums';
+import { CoreTypes } from '../../core-types';
 import { profile } from '../../profiling';
 import { TouchGestureEventData, GestureTypes, TouchAction } from '../gestures';
 import { Device } from '../../platform';
@@ -114,43 +114,43 @@ export class Button extends ButtonBase {
 		}
 	}
 
-	[minWidthProperty.getDefault](): Length {
+	[minWidthProperty.getDefault](): CoreTypes.LengthType {
 		const dips = org.nativescript.widgets.ViewHelper.getMinWidth(this.nativeViewProtected);
 
 		return { value: dips, unit: 'px' };
 	}
 
-	[minHeightProperty.getDefault](): Length {
+	[minHeightProperty.getDefault](): CoreTypes.LengthType {
 		const dips = org.nativescript.widgets.ViewHelper.getMinHeight(this.nativeViewProtected);
 
 		return { value: dips, unit: 'px' };
 	}
 
-	[paddingTopProperty.getDefault](): Length {
+	[paddingTopProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingTop, unit: 'px' };
 	}
-	[paddingTopProperty.setNative](value: Length) {
+	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
 	}
 
-	[paddingRightProperty.getDefault](): Length {
+	[paddingRightProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingRight, unit: 'px' };
 	}
-	[paddingRightProperty.setNative](value: Length) {
+	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
 	}
 
-	[paddingBottomProperty.getDefault](): Length {
+	[paddingBottomProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingBottom, unit: 'px' };
 	}
-	[paddingBottomProperty.setNative](value: Length) {
+	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
 	}
 
-	[paddingLeftProperty.getDefault](): Length {
+	[paddingLeftProperty.getDefault](): CoreTypes.LengthType {
 		return { value: this._defaultPaddingLeft, unit: 'px' };
 	}
-	[paddingLeftProperty.setNative](value: Length) {
+	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
 	}
 
@@ -167,7 +167,7 @@ export class Button extends ButtonBase {
 		org.nativescript.widgets.ViewHelper.setZIndex(this.nativeViewProtected, value);
 	}
 
-	[textAlignmentProperty.setNative](value: TextAlignment) {
+	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		// Button initial value is center.
 		const newValue = value === 'initial' ? 'center' : value;
 		super[textAlignmentProperty.setNative](newValue);

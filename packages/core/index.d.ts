@@ -56,6 +56,12 @@ export declare const ApplicationSettings: {
 	getNumber: typeof getNumber;
 	setNumber: typeof setNumber;
 };
+export declare const AccessibilityEvents: {
+	accessibilityBlurEvent: string;
+	accessibilityFocusEvent: string;
+	accessibilityFocusChangedEvent: string;
+};
+export { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, FontScaleCategory } from './accessibility';
 export { Color } from './color';
 import { connectionType, getConnectionType, startMonitoring, stopMonitoring } from './connectivity';
 export declare const Connectivity: {
@@ -64,6 +70,7 @@ export declare const Connectivity: {
 	startMonitoring: typeof startMonitoring;
 	stopMonitoring: typeof stopMonitoring;
 };
+export * from './core-types';
 export { CSSUtils } from './css/system-classes';
 export { ObservableArray, ChangeType } from './data/observable-array';
 export type { ChangedData } from './data/observable-array';

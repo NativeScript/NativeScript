@@ -15,7 +15,7 @@ export abstract class Font implements FontDefinition {
 		return this.fontWeight === FontWeight.SEMI_BOLD || this.fontWeight === FontWeight.BOLD || this.fontWeight === '700' || this.fontWeight === FontWeight.EXTRA_BOLD || this.fontWeight === FontWeight.BLACK;
 	}
 
-	protected constructor(public readonly fontFamily: string, public readonly fontSize: number, public readonly fontStyle: FontStyle, public readonly fontWeight: FontWeight) {}
+	protected constructor(public readonly fontFamily: string, public readonly fontSize: number, public readonly fontStyle: FontStyleType, public readonly fontWeight: FontWeightType, public readonly fontScale: number) {}
 
 	public abstract getAndroidTypeface(): any /* android.graphics.Typeface */;
 	public abstract getUIFont(defaultFont: any /* UIFont */): any /* UIFont */;
@@ -23,6 +23,7 @@ export abstract class Font implements FontDefinition {
 	public abstract withFontStyle(style: string): Font;
 	public abstract withFontWeight(weight: string): Font;
 	public abstract withFontSize(size: number): Font;
+	public abstract withFontScale(scale: number): Font;
 
 	public static equals(value1: Font, value2: Font): boolean {
 		// both values are falsy
@@ -39,15 +40,15 @@ export abstract class Font implements FontDefinition {
 	}
 }
 
-export type FontStyle = 'normal' | 'italic';
+export type FontStyleType = 'normal' | 'italic';
 export namespace FontStyle {
 	export const NORMAL = 'normal';
 	export const ITALIC = 'italic';
-	export const isValid = makeValidator<FontStyle>(NORMAL, ITALIC);
-	export const parse = makeParser<FontStyle>(isValid);
+	export const isValid = makeValidator<FontStyleType>(NORMAL, ITALIC);
+	export const parse = makeParser<FontStyleType>(isValid);
 }
 
-export type FontWeight = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900';
+export type FontWeightType = '100' | '200' | '300' | 'normal' | '400' | '500' | '600' | 'bold' | '700' | '800' | '900';
 export namespace FontWeight {
 	export const THIN = '100';
 	export const EXTRA_LIGHT = '200';
@@ -58,8 +59,8 @@ export namespace FontWeight {
 	export const BOLD = 'bold';
 	export const EXTRA_BOLD = '800';
 	export const BLACK = '900';
-	export const isValid = makeValidator<FontWeight>(THIN, EXTRA_LIGHT, LIGHT, NORMAL, '400', MEDIUM, SEMI_BOLD, BOLD, '700', EXTRA_BOLD, BLACK);
-	export const parse = makeParser<FontStyle>(isValid);
+	export const isValid = makeValidator<FontWeightType>(THIN, EXTRA_LIGHT, LIGHT, NORMAL, '400', MEDIUM, SEMI_BOLD, BOLD, '700', EXTRA_BOLD, BLACK);
+	export const parse = makeParser<FontWeightType>(isValid);
 }
 
 export function parseFontFamily(value: string): Array<string> {
