@@ -1,3 +1,13 @@
+## [8.0.3](https://github.com/NativeScript/NativeScript/compare/8.0.2-core...8.0.3) (2021-04-24)
+
+
+### Bug Fixes
+
+* **core:** protected class getter/setter webpack issue ([6076047](https://github.com/NativeScript/NativeScript/commit/6076047c4fa557e2eb1217e174c4b700ca4ab61c))
+* **core:** typings issue around Trace.categories.All ([27c545d](https://github.com/NativeScript/NativeScript/commit/27c545db00bb57a8989612002aba859ff43581f2))
+
+
+
 ## [8.0.2](https://github.com/NativeScript/NativeScript/compare/8.0.1-core...8.0.2) (2021-04-20)
 
 
