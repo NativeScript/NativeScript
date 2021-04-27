@@ -268,7 +268,6 @@ let textField: View;
 
 export function getButtonColors(): { color: Color; backgroundColor: Color } {
 	if (!button) {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const Button = require('../button').Button;
 		button = new Button();
 		if (global.isIOS) {
@@ -288,7 +287,6 @@ export function getButtonColors(): { color: Color; backgroundColor: Color } {
 
 export function getLabelColor(): Color {
 	if (!label) {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const Label = require('../label').Label;
 		label = new Label();
 		if (global.isIOS) {
@@ -306,7 +304,6 @@ export function getLabelColor(): Color {
 
 export function getTextFieldColor(): Color {
 	if (!textField) {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const TextField = require('../text-field').TextField;
 		textField = new TextField();
 		if (global.isIOS) {

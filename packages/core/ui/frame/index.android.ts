@@ -39,7 +39,6 @@ let fragmentId = -1;
 export let moduleLoaded: boolean;
 
 if (global && global.__inspector) {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const devtools = require('../../debugger/devtools-elements');
 	devtools.attachDOMInspectorEventCallbacks(global.__inspector);
 	devtools.attachDOMInspectorCommandCallbacks(global.__inspector);

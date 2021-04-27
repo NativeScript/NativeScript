@@ -4,7 +4,6 @@ import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, An
 
 // TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const appCommon = require('./application-common');
 
 // First reexport so that app module is initialized.

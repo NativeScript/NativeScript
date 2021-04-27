@@ -10,7 +10,6 @@ import { escapeRegexSymbols } from '../../../utils';
 import { Trace } from '../../../trace';
 import * as types from '../../../utils/types';
 import * as bindableResources from './bindable-resources';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const polymerExpressions = require('../../../js-libs/polymer-expressions');
 import { PolymerExpressions } from '../../../js-libs/polymer-expressions';
 
