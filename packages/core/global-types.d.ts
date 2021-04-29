@@ -371,7 +371,7 @@ declare function double(value: number): any;
 /**
 * Create a Java float from a number
 */
-declare function float(value: numer): any;
+declare function float(value: number): any;
 
 /**
 * Create a Java char from a string
