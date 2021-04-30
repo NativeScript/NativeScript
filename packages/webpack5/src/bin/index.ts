@@ -98,6 +98,9 @@ program
 			}
 
 			if (stats) {
+				// Set the process exit code depending on errors
+				process.exitCode = stats.hasErrors() ? 1 : 0;
+
 				console.log(
 					stats.toString({
 						chunks: false,
