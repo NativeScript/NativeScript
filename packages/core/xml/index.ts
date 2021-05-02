@@ -2,7 +2,6 @@
 // https://github.com/NativeScript/nativescript-dev-webpack/issues/932
 
 import * as definition from '.';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const easysax = require('../js-libs/easysax');
 import { EasySAXParser } from '../js-libs/easysax';
 

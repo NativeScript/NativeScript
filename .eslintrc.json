@@ -1,10 +1,14 @@
 {
+	"extends": ["plugin:prettier/recommended"],
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
+		"ecmaVersion": 2018,
 		"sourceType": "module",
-		"ecmaVersion": 2015
+		"parser": "@typescript-eslint/parser",
+		"project": "tsconfig.eslint.json",
+		"warnOnUnsupportedTypeScriptVersion": false
 	},
-	"plugins": ["@nativescript"],
+	"plugins": ["prettier", "@nativescript"],
 	"rules": {
 		"@nativescript/no-nativescript-angular-imports": "warn",
 		"@nativescript/no-tns-core-modules-imports": "warn",

@@ -33,7 +33,6 @@ function ensureCssAnimationParserModule() {
 
 let parser: 'rework' | 'nativescript' | 'css-tree' = 'css-tree';
 try {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const appConfig = require('~/package.json');
 	if (appConfig) {
 		if (appConfig.cssParser === 'rework') {
