@@ -131,7 +131,7 @@ exports.getSourceMapFilename = (hiddenSourceMap, appFolderPath, outputPath) => {
         sourceMapFilename = path.join(appFolderRelativePath, "sourceMap", "[file].map");
     }
 
-    return sourceMapFilename;
+    return sourceMapFilename; //returning sourcemapfilename
 }
 
 /**
@@ -191,7 +191,7 @@ exports.getUserDefinedEntries = (entries, platform) => {
 const sanitize = name => name
     .split("")
     .filter(char => /[a-zA-Z0-9]/.test(char))
-    .join("");
+    .join("");//joining
 
 function hasPlatformPlugin(appDirectory, platform) {
     const packageJsonSource = getPackageJson(appDirectory);
@@ -208,7 +208,7 @@ function getPackageJsonEntry(appDirectory) {
         throw new Error(`${appDirectory}/package.json must contain a 'main' attribute!`);
     }
 
-    return entry.replace(/\.js$/i, "");
+    return entry.replace(/\.js$/i, ""); //returning by replacing
 }
 
 function verifyEntryModuleDirectory(appDirectory) {
@@ -231,7 +231,7 @@ function hasRootLevelPackage({ projectDir, packageName }) {
         hasRootLevelPackage = false;
     }
 
-    return hasRootLevelPackage;
+    return hasRootLevelPackage;	//returnind hasRootLevelPackage
 }
 
 function replacePathInCompilerOptions({ compilerOptions, targetPath, replacementPath }) {
