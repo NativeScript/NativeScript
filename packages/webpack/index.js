@@ -147,7 +147,7 @@ exports.getSourceMapFilename = (hiddenSourceMap, appFolderPath, outputPath) => {
  */
 exports.getConvertedExternals = (externals) => {
     const modifiedExternals = (externals || []).map((e) => {
-        return new RegExp(`^${e}((/.*)|$)`);
+        return new RegExp(`^${e}((/.*)|$)`); //RegExp gives authentication
     });
 
     return modifiedExternals;
