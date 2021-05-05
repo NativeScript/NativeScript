@@ -1,3 +1,17 @@
+## [8.0.4](https://github.com/NativeScript/NativeScript/compare/8.0.3-core...8.0.4) (2021-05-05)
+
+
+### Bug Fixes
+
+* **core:** typings for showModal correction ([#9374](https://github.com/NativeScript/NativeScript/issues/9374)) ([9ec4042](https://github.com/NativeScript/NativeScript/commit/9ec404225ef0cff5f82d759fcdc7b85952e65c0d))
+
+
+### Features
+
+* add additional android global methods ([#9365](https://github.com/NativeScript/NativeScript/issues/9365)) ([a6cb46d](https://github.com/NativeScript/NativeScript/commit/a6cb46dac2d671221d9c0e972e8db89961b3e7c2))
+
+
+
 ## [8.0.3](https://github.com/NativeScript/NativeScript/compare/8.0.2-core...8.0.3) (2021-04-24)
 
 

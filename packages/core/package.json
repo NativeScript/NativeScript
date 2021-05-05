@@ -2,8 +2,8 @@
   "name": "@nativescript/core",
   "main": "index",
   "types": "index.d.ts",
-  "description": "NativeScript Core Modules",
-  "version": "8.0.3",
+  "description": "A JavaScript library providing an easy to use api for interacting with iOS and Android platform APIs.",
+  "version": "8.0.4",
   "homepage": "https://nativescript.org",
   "repository": {
       "type": "git",
