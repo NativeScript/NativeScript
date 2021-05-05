@@ -349,31 +349,31 @@ declare class WeakRef<T> {
 }
 
 /**
-* Create a Java long from a number
-*/
+ * Create a Java long from a number
+ */
 declare function long(value: number): any;
 
 /**
-* Create a Java byte from a number
-*/
+ * Create a Java byte from a number
+ */
 declare function byte(value: number): any;
 
 /**
-* Create a Java short from a number
-*/
+ * Create a Java short from a number
+ */
 declare function short(value: number): any;
 
 /**
-* Create a Java double from a number
-*/
+ * Create a Java double from a number
+ */
 declare function double(value: number): any;
 
 /**
-* Create a Java float from a number
-*/
+ * Create a Java float from a number
+ */
 declare function float(value: number): any;
 
 /**
-* Create a Java char from a string
-*/
+ * Create a Java char from a string
+ */
 declare function char(value: string): any;
