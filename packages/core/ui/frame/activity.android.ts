@@ -1,6 +1,5 @@
 import '../../globals';
 import { setActivityCallbacks, AndroidActivityCallbacks } from '.';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const appModule = require('../../application');
 
 /**

@@ -187,14 +187,14 @@ export abstract class ViewBase extends Observable {
 	 * @param moduleName - The name of the module to load starting from the application root.
 	 * @param modalOptions - A ShowModalOptions instance
 	 */
-	showModal(moduleName: string, modalOptions: ShowModalOptions): ViewBase;
+	showModal(moduleName: string, modalOptions?: ShowModalOptions): ViewBase;
 
 	/**
 	 * Shows the view passed as parameter as a modal view.
 	 * @param view - View instance to be shown modally.
 	 * @param modalOptions - A ShowModalOptions instance
 	 */
-	showModal(view: ViewBase, modalOptions: ShowModalOptions): ViewBase;
+	showModal(view: ViewBase, modalOptions?: ShowModalOptions): ViewBase;
 
 	/**
 	 * Closes the current modal view that this page is showing.

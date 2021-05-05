@@ -3,7 +3,7 @@ import { Page, NavigatedData } from '@nativescript/core/ui/page';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import { ScrollView } from '@nativescript/core/ui/scroll-view';
 import { Label } from '@nativescript/core/ui/label';
-import { Enums } from '@nativescript/core';
+import { CoreTypes } from '@nativescript/core';
 import * as typeUtils from '@nativescript/core/utils/types';
 import { Color } from '@nativescript/core/color';
 import { isIOS } from '@nativescript/core/platform';

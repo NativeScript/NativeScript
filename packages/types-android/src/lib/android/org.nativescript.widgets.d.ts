@@ -37,7 +37,7 @@
                     export function readText(path: string, encoding: string, callback: CompleteCallback, context: any);
                     export function read(path: string, callback: CompleteCallback, context: any);
                     export function writeText(path: string, content: string, encoding: string, callback: CompleteCallback, context: any);
-                    export function write(path: string, content: native.Array<number>, callback: CompleteCallback, context: any);
+                    export function write(path: string, content: androidNative.Array<number>, callback: CompleteCallback, context: any);
                 }
 
                 export module Http {
@@ -108,9 +108,9 @@
                     context: android.content.Context,
                     backgroundRepeat: string,
                     backgroundPosition: string,
-                    backgroundPositionParsedCSSValues: native.Array<CSSValue>,
+                    backgroundPositionParsedCSSValues: androidNative.Array<CSSValue>,
                     backgroundSize: string,
-                    backgroundSizeParsedCSSValues: native.Array<CSSValue>
+                    backgroundSizeParsedCSSValues: androidNative.Array<CSSValue>
                 );
 
                 public getBorderTopColor(): number;

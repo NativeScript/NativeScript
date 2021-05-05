@@ -1,3 +1,28 @@
+## [8.0.3](https://github.com/NativeScript/NativeScript/compare/8.0.2-core...8.0.3) (2021-04-24)
+
+
+### Bug Fixes
+
+* **core:** protected class getter/setter webpack issue ([6076047](https://github.com/NativeScript/NativeScript/commit/6076047c4fa557e2eb1217e174c4b700ca4ab61c))
+* **core:** typings issue around Trace.categories.All ([27c545d](https://github.com/NativeScript/NativeScript/commit/27c545db00bb57a8989612002aba859ff43581f2))
+
+
+
+## [8.0.2](https://github.com/NativeScript/NativeScript/compare/8.0.1-core...8.0.2) (2021-04-20)
+
+
+### Bug Fixes
+
+* **a11y:** Accessibility breaks limiting metadata ([#9332](https://github.com/NativeScript/NativeScript/issues/9332)) ([cbdff1f](https://github.com/NativeScript/NativeScript/commit/cbdff1f1550a4e7cf06ccd4f01c5cd743c68e265))
+* **a11y:** ios voiceover crash during touch ([#9318](https://github.com/NativeScript/NativeScript/issues/9318)) ([9a407ce](https://github.com/NativeScript/NativeScript/commit/9a407ce98964832c52cd51dc0ab60662fc65abb5))
+
+
+### Features
+
+* **text-base:** allow subclass to override createFormattedTextNative ([#9334](https://github.com/NativeScript/NativeScript/issues/9334)) ([b29e145](https://github.com/NativeScript/NativeScript/commit/b29e1452bda27183993c2f27ab13f95d9da5ceee))
+
+
+
 ## [8.0.1](https://github.com/NativeScript/NativeScript/compare/8.0.0-core...8.0.1) (2021-04-07)
 
 

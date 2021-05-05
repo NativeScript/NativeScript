@@ -160,7 +160,6 @@ export function enable(mode: InstrumentationMode = 'counters') {
 }
 
 try {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const appConfig = require('~/package.json');
 	if (appConfig && appConfig.profiling) {
 		enable(appConfig.profiling);

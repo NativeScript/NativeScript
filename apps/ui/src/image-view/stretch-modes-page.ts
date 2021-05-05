@@ -1,4 +1,4 @@
-import { Image, Enums } from '@nativescript/core';
+import { Image, CoreTypes } from '@nativescript/core';
 import { Label } from '@nativescript/core/ui/label';
 import { LayoutBase } from '@nativescript/core/ui/layouts/layout-base';
 

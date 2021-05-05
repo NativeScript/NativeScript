@@ -1,6 +1,6 @@
 {
   "name": "@nativescript/types",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "description": "NativeScript Types for all supported platforms.",
   "homepage": "https://nativescript.org",
   "repository": {
@@ -12,7 +12,7 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@nativescript/types-ios": "8.0.0",
-    "@nativescript/types-android": "8.0.0"
+    "@nativescript/types-ios": "8.0.1",
+    "@nativescript/types-android": "8.0.1"
   }
 }

@@ -1,12 +1,12 @@
 {
-    "extends": ["plugin:prettier/recommended"],
+	"extends": ["plugin:prettier/recommended"],
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
 		"ecmaVersion": 2018,
-        "sourceType": "module",
-        "parser": "@typescript-eslint/parser",
-        "project": "tsconfig.eslint.json",
-        "warnOnUnsupportedTypeScriptVersion": false
+		"sourceType": "module",
+		"parser": "@typescript-eslint/parser",
+		"project": "tsconfig.eslint.json",
+		"warnOnUnsupportedTypeScriptVersion": false
 	},
 	"plugins": ["prettier", "@nativescript"],
 	"rules": {
