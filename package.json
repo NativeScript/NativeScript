@@ -54,6 +54,7 @@
     "mocha-typescript": "^1.1.17",
     "module-alias": "^2.2.2",
     "nativescript": "~7.2.0",
+    "nativescript-typedoc-theme": "1.0.0",
     "parse-css": "git+https://github.com/tabatkins/parse-css.git",
     "parserlib": "^1.1.1",
     "prettier": "~2.2.1",

@@ -25,7 +25,7 @@
 		"entryPoints": ["../../packages/core/index.d.ts", "../../packages/core"],
 		"out": "dist/apiref",
 		"name": "NativeScript",
-		"theme": "/Users/janoshrubosimac/Code/nativescript-typedoc-theme",
+		"theme": "../../node_modules/nativescript-typedoc-theme",
 		"excludeExternals": true,
 		"externalPattern": "**/+(tns-core-modules|module).d.ts",
 		"exclude": ["../../packages/core/__tests__", "../../packages/core/**/*.ts"]
