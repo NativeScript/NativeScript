@@ -25,13 +25,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	// config.resolve.extensions.add('.xml');
 
-	// set up xml
-	config.module
-		.rule('xml')
-		.test(/\.xml$/)
-		.use('xml-namespace-loader')
-		.loader('xml-namespace-loader');
-
 	// set up core HMR
 	config.module
 		.rule('hmr-core')

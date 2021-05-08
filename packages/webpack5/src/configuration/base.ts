@@ -253,6 +253,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('nativescript-worker-loader')
 		.loader('nativescript-worker-loader');
 
+	// config.resolve.extensions.add('.xml');
+	// set up xml
+	config.module
+		.rule('xml')
+		.test(/\.xml$/)
+		.use('xml-namespace-loader')
+		.loader('xml-namespace-loader');
+
 	// default PostCSS options to use
 	// projects can change settings
 	// via postcss.config.js
