@@ -84,37 +84,49 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.use('sass-loader')
 		.loader('sass-loader');
 
-	config.plugin('AngularCompilerPlugin').use(getAngularCompilerPlugin(), [
-		{
-			tsConfigPath,
-			mainPath: getEntryPath(),
-			// disable type checking in a forked process - it ignores
-			// the hostReplacementPaths and prints errors about
-			// platform suffixed files, even though they are
-			// working as expected.
-			forkTypeChecker: false,
-			hostReplacementPaths(path: string) {
-				const ext = extname(path);
-				const platformExt = `.${platform}${ext}`;
+	const angularCompilerPlugin = getAngularCompilerPlugin();
+	if (angularCompilerPlugin) {
+		config.plugin('AngularCompilerPlugin').use(angularCompilerPlugin, [
+			{
+				tsConfigPath,
+				mainPath: getEntryPath(),
+				// disable type checking in a forked process - it ignores
+				// the hostReplacementPaths and prints errors about
+				// platform suffixed files, even though they are
+				// working as expected.
+				forkTypeChecker: false,
+				hostReplacementPaths(path: string) {
+					const ext = extname(path);
+					const platformExt = `.${platform}${ext}`;
 
-				// already includes a platform specific extension - ignore
-				if (path.includes(platformExt)) {
+					// already includes a platform specific extension - ignore
+					if (path.includes(platformExt)) {
+						return path;
+					}
+
+					const platformPath = path.replace(ext, platformExt);
+					// check if the same file exists with a platform suffix and return if it does.
+					if (existsSync(platformPath)) {
+						// console.log(`[hostReplacementPaths] resolving "${path}" to "${platformPath}"`);
+						return platformPath;
+					}
+
+					// just return the original path otherwise
 					return path;
-				}
-
-				const platformPath = path.replace(ext, platformExt);
-				// check if the same file exists with a platform suffix and return if it does.
-				if (existsSync(platformPath)) {
-					// console.log(`[hostReplacementPaths] resolving "${path}" to "${platformPath}"`);
-					return platformPath;
-				}
-
-				// just return the original path otherwise
-				return path;
+				},
+				platformTransformers: [require('../transformers/NativeClass').default],
 			},
-			platformTransformers: [require('../transformers/NativeClass').default],
-		},
-	]);
+		]);
+	}
+
+	const angularWebpackPlugin = getAngularWebpackPlugin();
+	if (angularWebpackPlugin) {
+		config.plugin('AngularWebpackPlugin').use(angularWebpackPlugin, [
+			{
+				tsconfig: tsConfigPath,
+			},
+		]);
+	}
 
 	// Filter common undesirable warnings
 	config.set(
@@ -146,4 +158,9 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 function getAngularCompilerPlugin(): any {
 	const { AngularCompilerPlugin } = require('@ngtools/webpack');
 	return AngularCompilerPlugin;
+}
+
+function getAngularWebpackPlugin(): any {
+	const { AngularWebpackPlugin } = require('@ngtools/webpack');
+	return AngularWebpackPlugin;
 }
