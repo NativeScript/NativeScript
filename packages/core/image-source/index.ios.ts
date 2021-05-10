@@ -340,7 +340,8 @@ export class ImageSource implements ImageSourceDefinition {
 		const dim = getScaledDimensions(size.width, size.height, maxSize);
 
 		const newSize: CGSize = CGSizeMake(dim.width, dim.height);
-		UIGraphicsBeginImageContextWithOptions(newSize, true, this.ios.scale);
+
+		UIGraphicsBeginImageContextWithOptions(newSize, options?.opaque ?? false, this.ios.scale);
 		this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
 
 		const resizedImage = UIGraphicsGetImageFromCurrentImageContext();
