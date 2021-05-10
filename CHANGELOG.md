@@ -1,3 +1,17 @@
+## [8.0.5](https://github.com/NativeScript/NativeScript/compare/8.0.4-core...8.0.5) (2021-05-10)
+
+
+### Bug Fixes
+
+* **android:** image asset handling regarding requestLegacyExternalStorage ([#9373](https://github.com/NativeScript/NativeScript/issues/9373)) ([f311151](https://github.com/NativeScript/NativeScript/commit/f3111514960ada615a69418b906620a638f8f476))
+
+
+### Features
+
+* **docs:** typedoc api reference ([#9378](https://github.com/NativeScript/NativeScript/issues/9378)) ([6d91c2a](https://github.com/NativeScript/NativeScript/commit/6d91c2a0195e07c182d2fccfb9c6f7d783acc4b7))
+
+
+
 ## [8.0.4](https://github.com/NativeScript/NativeScript/compare/8.0.3-core...8.0.4) (2021-05-05)
 
 
