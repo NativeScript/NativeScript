@@ -110,7 +110,7 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 
 	private _initCurrentValues(scrollView: UIScrollView) {
 		const owner = this._owner.get();
-		if ((owner && owner._minimumZoomScale === undefined) || owner._maximumZoomScale === undefined || owner._zoomScale === undefined) {
+		if (owner && (owner._minimumZoomScale === undefined || owner._maximumZoomScale === undefined || owner._zoomScale === undefined)) {
 			owner._minimumZoomScale = scrollView.minimumZoomScale;
 			owner._maximumZoomScale = scrollView.maximumZoomScale;
 			owner._zoomScale = scrollView.zoomScale;
