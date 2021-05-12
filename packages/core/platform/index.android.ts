@@ -67,8 +67,6 @@ class DeviceRef {
 	private _sdkVersion: string;
 	private _deviceType: 'Phone' | 'Tablet';
 	private _uuid: string;
-	private _language: string;
-	private _region: string;
 
 	get manufacturer(): string {
 		if (!this._manufacturer) {
@@ -130,19 +128,11 @@ class DeviceRef {
 	}
 
 	get language(): string {
-		if (!this._language) {
-			this._language = java.util.Locale.getDefault().getLanguage().replace('_', '-');
-		}
-
-		return this._language;
+		return java.util.Locale.getDefault().getLanguage().replace('_', '-');
 	}
 
 	get region(): string {
-		if (!this._region) {
-			this._region = java.util.Locale.getDefault().getCountry();
-		}
-
-		return this._region;
+		return java.util.Locale.getDefault().getCountry();
 	}
 }
 

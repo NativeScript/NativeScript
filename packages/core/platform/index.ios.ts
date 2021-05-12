@@ -10,8 +10,6 @@ class DeviceRef {
 	private _osVersion: string;
 	private _sdkVersion: string;
 	private _deviceType: 'Phone' | 'Tablet';
-	private _language: string;
-	private _region: string;
 
 	get manufacturer(): string {
 		return 'Apple';
@@ -72,20 +70,11 @@ class DeviceRef {
 	}
 
 	get language(): string {
-		if (!this._language) {
-			const languages = NSLocale.preferredLanguages;
-			this._language = languages[0];
-		}
-
-		return this._language;
+		return NSLocale.preferredLanguages[0];
 	}
 
 	get region(): string {
-		if (!this._region) {
-			this._region = NSLocale.currentLocale.objectForKey(NSLocaleCountryCode);
-		}
-
-		return this._region;
+		return NSLocale.currentLocale.objectForKey(NSLocaleCountryCode);
 	}
 }
 
