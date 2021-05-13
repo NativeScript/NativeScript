@@ -1,5 +1,5 @@
 import { WebViewNavigationType } from '.';
-import { WebViewBase } from './web-view-common';
+import { disableZoomProperty, WebViewBase } from './web-view-common';
 import { profile } from '../../profiling';
 import { Trace } from '../../trace';
 export * from './web-view-common';
@@ -96,9 +96,54 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 	}
 }
 
+@NativeClass
+@ObjCClass(UIScrollViewDelegate)
+class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
+	public static initWithOwner(owner: WeakRef<WebView>): UIScrollViewDelegateImpl {
+		const handler = <UIScrollViewDelegateImpl>UIScrollViewDelegateImpl.new();
+		handler._owner = owner;
+
+		return handler;
+	}
+
+	private _owner: WeakRef<WebView>;
+
+	private _initCurrentValues(scrollView: UIScrollView) {
+		const owner = this._owner.get();
+		if (owner && (owner._minimumZoomScale === undefined || owner._maximumZoomScale === undefined || owner._zoomScale === undefined)) {
+			owner._minimumZoomScale = scrollView.minimumZoomScale;
+			owner._maximumZoomScale = scrollView.maximumZoomScale;
+			owner._zoomScale = scrollView.zoomScale;
+		}
+	}
+
+	private _handleDisableZoom(scrollView: UIScrollView) {
+		const owner = this._owner.get();
+		if (owner.disableZoom) {
+			this._initCurrentValues(scrollView);
+			scrollView.maximumZoomScale = 1.0;
+			scrollView.minimumZoomScale = 1.0;
+			scrollView.zoomScale = 1.0;
+		}
+	}
+
+	scrollViewWillBeginZoomingWithView(scrollView: UIScrollView, view: UIView) {
+		this._handleDisableZoom(scrollView);
+	}
+
+	scrollViewDidZoom(scrollView) {
+		this._handleDisableZoom(scrollView);
+	}
+}
+
 export class WebView extends WebViewBase {
 	nativeViewProtected: WKWebView;
 	private _delegate: any;
+	private _scrollDelegate: any;
+
+	_maximumZoomScale;
+	_minimumZoomScale;
+	_zoomScale;
 
 	createNativeView() {
 		const jScript = "var meta = document.createElement('meta'); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'initial-scale=1.0'); document.getElementsByTagName('head')[0].appendChild(meta);";
@@ -118,7 +163,9 @@ export class WebView extends WebViewBase {
 	initNativeView() {
 		super.initNativeView();
 		this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
+		this._scrollDelegate = UIScrollViewDelegateImpl.initWithOwner(new WeakRef(this));
 		this.ios.navigationDelegate = this._delegate;
+		this.ios.scrollView.delegate = this._scrollDelegate;
 	}
 
 	@profile
@@ -170,5 +217,18 @@ export class WebView extends WebViewBase {
 
 	public reload() {
 		this.ios.reload();
+	}
+
+	[disableZoomProperty.setNative](value: boolean) {
+		if (!value && typeof this._minimumZoomScale === 'number' && typeof this._maximumZoomScale === 'number' && typeof this._zoomScale === 'number') {
+			if (this.ios.scrollView) {
+				this.ios.scrollView.minimumZoomScale = this._minimumZoomScale;
+				this.ios.scrollView.maximumZoomScale = this._maximumZoomScale;
+				this.ios.scrollView.zoomScale = this._zoomScale;
+				this._minimumZoomScale = undefined;
+				this._maximumZoomScale = undefined;
+				this._zoomScale = undefined;
+			}
+		}
 	}
 }
