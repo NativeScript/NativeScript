@@ -20,6 +20,7 @@ export declare const Application: {
 	lowMemoryEvent: string;
 	orientationChangedEvent: string;
 	systemAppearanceChangedEvent: string;
+	fontScaleChangedEvent: string;
 	systemAppearanceChanged: typeof systemAppearanceChanged;
 	getMainEntry: typeof getMainEntry;
 	getRootView: typeof getRootView;
