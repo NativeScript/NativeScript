@@ -1,8 +1,12 @@
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
-import { extname } from 'path';
+import { extname, join } from 'path';
 
-import { getEntryPath, getPlatformName } from '../helpers/platform';
+import {
+	getEntryDirPath,
+	getEntryPath,
+	getPlatformName,
+} from '../helpers/platform';
 import { getProjectFilePath } from '../helpers/project';
 import { env as _env, IWebpackEnv } from '../index';
 import base from './base';
@@ -126,6 +130,22 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				tsconfig: tsConfigPath,
 			},
 		]);
+	}
+
+	const getPolyfillPath = (platform?: string) =>
+		join(getEntryDirPath(), `polyfills${platform ? '.' + platform : ''}.ts`);
+	const polyfillsPath = getPolyfillPath();
+	const polyfillsPathResolved = [
+		polyfillsPath,
+		getPolyfillPath('android'),
+		getPolyfillPath('ios'),
+	];
+	if (polyfillsPathResolved.find(existsSync)) {
+		let entries = config.entry('bundle').values();
+		entries = entries.map((v) =>
+			v === '@nativescript/core/globals/index.js' ? polyfillsPath : v
+		);
+		config.entry('bundle').clear().merge(entries);
 	}
 
 	// Filter common undesirable warnings
