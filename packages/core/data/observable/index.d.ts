@@ -78,7 +78,7 @@ export class Observable {
 	/**
 	 * String value used when hooking to propertyChange event.
 	 */
-	public static propertyChangeEvent: string;
+	static propertyChangeEvent: string;
 
 	/**
 	 * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -87,6 +87,8 @@ export class Observable {
 	 * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
 	 */
 	on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+
+	static on(eventName: string, callback: any, thisArg?: any): void;
 
 	/**
 	 * Raised when a propertyChange occurs.
@@ -101,10 +103,14 @@ export class Observable {
 	 */
 	once(event: string, callback: (data: EventData) => void, thisArg?: any);
 
+	static once(eventName: string, callback: any, thisArg?: any): void;
+
 	/**
 	 * Shortcut alias to the removeEventListener method.
 	 */
 	off(eventNames: string, callback?: any, thisArg?: any);
+
+	static off(eventName: string, callback?: any, thisArg?: any): void;
 
 	/**
 	 * Adds a listener for the specified event name.
@@ -114,6 +120,8 @@ export class Observable {
 	 */
 	addEventListener(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
+	static addEventListener(eventName: string, callback: any, thisArg?: any): void;
+
 	/**
 	 * Removes listener(s) for the specified event name.
 	 * @param eventNames Comma delimited names of the events the specified listener is associated with.
@@ -121,6 +129,8 @@ export class Observable {
 	 * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
 	 */
 	removeEventListener(eventNames: string, callback?: any, thisArg?: any);
+
+	static removeEventListener(eventName: string, callback?: any, thisArg?: any): void;
 
 	/**
 	 * Updates the specified property with the provided value.
