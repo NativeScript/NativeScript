@@ -353,6 +353,9 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	private setColor(navBar: UINavigationBar, color?: Color) {
+		if (!navBar) {
+			return;
+		}
 		if (color) {
 			navBar.titleTextAttributes = <any>{
 				[NSForegroundColorAttributeName]: color.ios,
@@ -443,13 +446,12 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	private get navBar(): UINavigationBar {
-		const page = this.page;
 		// Page should be attached to frame to update the action bar.
-		if (!page || !page.frame) {
+		if (this.page?.frame?.ios?.controller) {
+			return (<UINavigationController>this.page.frame.ios.controller).navigationBar;
+		} else {
 			return undefined;
 		}
-
-		return (<UINavigationController>page.frame.ios.controller).navigationBar;
 	}
 
 	[colorProperty.getDefault](): UIColor {
