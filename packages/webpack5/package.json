@@ -46,7 +46,7 @@
 		"ts-dedent": "2.1.1",
 		"ts-loader": "8.1.0",
 		"vue-loader": "15.9.6",
-		"webpack": "5.31.2",
+		"webpack": "5.38.1",
 		"webpack-bundle-analyzer": "4.4.0",
 		"webpack-chain": "6.5.1",
 		"webpack-cli": "4.6.0",

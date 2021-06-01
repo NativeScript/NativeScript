@@ -140,6 +140,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		},
 	]);
 
+	config.optimization.runtimeChunk('single');
+
 	config.optimization.splitChunks({
 		cacheGroups: {
 			defaultVendor: {
