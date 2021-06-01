@@ -97,6 +97,24 @@ class WKNavigationDelegateImpl extends NSObject implements WKNavigationDelegate 
 }
 
 @NativeClass
+class WKUIDelegateImpl extends NSObject implements WKUIDelegate {
+	public static ObjCProtocols = [WKUIDelegate];
+	public static initWithOwner(owner: WeakRef<WebView>): WKUIDelegateImpl {
+		const handler = <WKUIDelegateImpl>WKUIDelegateImpl.new();
+		handler._owner = owner;
+		return handler;
+	}
+	private _owner: WeakRef<WebView>;
+
+	webViewCreateWebViewWithConfigurationForNavigationActionWindowFeatures(webView: WKWebView, configuration: WKWebViewConfiguration, navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures): WKWebView {
+		if (navigationAction && (!navigationAction.targetFrame || (navigationAction.targetFrame && !navigationAction.targetFrame.mainFrame))) {
+			webView.loadRequest(navigationAction.request);
+		}
+		return null;
+	}
+}
+
+@NativeClass
 @ObjCClass(UIScrollViewDelegate)
 class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
 	public static initWithOwner(owner: WeakRef<WebView>): UIScrollViewDelegateImpl {
@@ -138,8 +156,9 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 
 export class WebView extends WebViewBase {
 	nativeViewProtected: WKWebView;
-	private _delegate: any;
-	private _scrollDelegate: any;
+	private _delegate: WKNavigationDelegateImpl;
+	private _scrollDelegate: UIScrollViewDelegateImpl;
+	private _uiDelegate: WKUIDelegateImpl;
 
 	_maximumZoomScale;
 	_minimumZoomScale;
@@ -164,8 +183,10 @@ export class WebView extends WebViewBase {
 		super.initNativeView();
 		this._delegate = WKNavigationDelegateImpl.initWithOwner(new WeakRef(this));
 		this._scrollDelegate = UIScrollViewDelegateImpl.initWithOwner(new WeakRef(this));
+		this._uiDelegate = WKUIDelegateImpl.initWithOwner(new WeakRef(this));
 		this.ios.navigationDelegate = this._delegate;
 		this.ios.scrollView.delegate = this._scrollDelegate;
+		this.ios.UIDelegate = this._uiDelegate;
 	}
 
 	@profile
