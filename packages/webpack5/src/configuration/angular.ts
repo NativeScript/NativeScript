@@ -1,14 +1,14 @@
+import { extname, resolve } from 'path';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
-import { extname, join } from 'path';
 
+import { getProjectFilePath } from '../helpers/project';
+import { env as _env, IWebpackEnv } from '../index';
 import {
 	getEntryDirPath,
 	getEntryPath,
 	getPlatformName,
 } from '../helpers/platform';
-import { getProjectFilePath } from '../helpers/project';
-import { env as _env, IWebpackEnv } from '../index';
 import base from './base';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
@@ -132,20 +132,27 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		]);
 	}
 
-	const getPolyfillPath = (platform?: string) =>
-		join(getEntryDirPath(), `polyfills${platform ? '.' + platform : ''}.ts`);
-	const polyfillsPath = getPolyfillPath();
-	const polyfillsPathResolved = [
-		polyfillsPath,
-		getPolyfillPath('android'),
-		getPolyfillPath('ios'),
-	];
-	if (polyfillsPathResolved.find(existsSync)) {
-		let entries = config.entry('bundle').values();
-		entries = entries.map((v) =>
-			v === '@nativescript/core/globals/index.js' ? polyfillsPath : v
-		);
-		config.entry('bundle').clear().merge(entries);
+	// look for platform specific polyfills first
+	// falling back to independent polyfills
+	const polyfillsPath = [
+		resolve(getEntryDirPath(), `polyfills.${getPlatformName()}.ts`),
+		resolve(getEntryDirPath(), `polyfills.ts`),
+	].find((path) => existsSync(path));
+
+	if (polyfillsPath) {
+		const paths = config.entry('bundle').values();
+
+		// replace globals with the polyfills file which
+		// should handle loading the correct globals
+		// and any additional polyfills required.
+		if (paths.includes('@nativescript/core/globals/index.js')) {
+			paths[
+				paths.indexOf('@nativescript/core/globals/index.js')
+			] = polyfillsPath;
+
+			// replace paths with the update paths
+			config.entry('bundle').clear().merge(paths);
+		}
 	}
 
 	// Filter common undesirable warnings
