@@ -50,15 +50,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.loader('raw-loader');
 
 	// exclude component css files from the normal css rule
-	config.module
-		.rule('css')
-		.exclude // exclude *.component.{platform}.css
-		.add(/\.component(\.\w+)?\.css$/);
+	config.module.rule('css').test(/app(\.\w+)?\.css$/);
 
 	// and instead use raw-loader, since that's what angular expects
 	config.module
 		.rule('css|component')
-		.test(/\.component(\.\w+)?\.css$/)
+		.exclude.add(/app(\.\w+)?\.css$/)
+		.end()
+		.test(/\.css$/)
 		.use('raw-loader')
 		.loader('raw-loader');
 
@@ -69,15 +68,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.get('options');
 
 	// exclude component css files from the normal css rule
-	config.module
-		.rule('scss')
-		.exclude // exclude *.component.{platform}.scss
-		.add(/\.component(\.\w+)?\.scss$/);
+	config.module.rule('scss').test(/app(\.\w+)?\.scss$/);
 
 	// and instead use raw-loader, since that's what angular expects
 	config.module
 		.rule('scss|component')
-		.test(/\.component(\.\w+)?\.scss$/)
+		.exclude.add(/app(\.\w+)?\.scss$/)
+		.end()
+		.test(/\.scss$/)
 		.use('raw-loader')
 		.loader('raw-loader')
 		.end()

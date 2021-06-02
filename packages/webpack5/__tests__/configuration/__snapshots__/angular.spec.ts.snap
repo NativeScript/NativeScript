@@ -120,10 +120,7 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('css') */
       {
-        test: /\\\\.css$/,
-        exclude: [
-          /\\\\.component(\\\\.\\\\w+)?\\\\.css$/
-        ],
+        test: /app(\\\\.\\\\w+)?\\\\.css$/,
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
           {
@@ -148,10 +145,7 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('scss') */
       {
-        test: /\\\\.scss$/,
-        exclude: [
-          /\\\\.component(\\\\.\\\\w+)?\\\\.scss$/
-        ],
+        test: /app(\\\\.\\\\w+)?\\\\.scss$/,
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
           {
@@ -207,7 +201,10 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('css|component') */
       {
-        test: /\\\\.component(\\\\.\\\\w+)?\\\\.css$/,
+        test: /\\\\.css$/,
+        exclude: [
+          /app(\\\\.\\\\w+)?\\\\.css$/
+        ],
         use: [
           /* config.module.rule('css|component').use('raw-loader') */
           {
@@ -217,7 +214,10 @@ exports[`angular configuration for android 1`] = `
       },
       /* config.module.rule('scss|component') */
       {
-        test: /\\\\.component(\\\\.\\\\w+)?\\\\.scss$/,
+        test: /\\\\.scss$/,
+        exclude: [
+          /app(\\\\.\\\\w+)?\\\\.scss$/
+        ],
         use: [
           /* config.module.rule('scss|component').use('raw-loader') */
           {
@@ -487,10 +487,7 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('css') */
       {
-        test: /\\\\.css$/,
-        exclude: [
-          /\\\\.component(\\\\.\\\\w+)?\\\\.css$/
-        ],
+        test: /app(\\\\.\\\\w+)?\\\\.css$/,
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
           {
@@ -515,10 +512,7 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('scss') */
       {
-        test: /\\\\.scss$/,
-        exclude: [
-          /\\\\.component(\\\\.\\\\w+)?\\\\.scss$/
-        ],
+        test: /app(\\\\.\\\\w+)?\\\\.scss$/,
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
           {
@@ -574,7 +568,10 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('css|component') */
       {
-        test: /\\\\.component(\\\\.\\\\w+)?\\\\.css$/,
+        test: /\\\\.css$/,
+        exclude: [
+          /app(\\\\.\\\\w+)?\\\\.css$/
+        ],
         use: [
           /* config.module.rule('css|component').use('raw-loader') */
           {
@@ -584,7 +581,10 @@ exports[`angular configuration for ios 1`] = `
       },
       /* config.module.rule('scss|component') */
       {
-        test: /\\\\.component(\\\\.\\\\w+)?\\\\.scss$/,
+        test: /\\\\.scss$/,
+        exclude: [
+          /app(\\\\.\\\\w+)?\\\\.scss$/
+        ],
         use: [
           /* config.module.rule('scss|component').use('raw-loader') */
           {
