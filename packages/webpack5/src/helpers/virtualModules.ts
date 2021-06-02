@@ -41,7 +41,8 @@ export function addVirtualModule(
 	// AngularCompilerPlugin does not support virtual modules
 	// https://github.com/sysgears/webpack-virtual-modules/issues/96
 	// This is only an issue on v11, which has experimental webpack 5 support
-	// AngularCompilerPlugin gets replaced by AngularWebpackPlugin on v12 and i
+	// AngularCompilerPlugin gets replaced by AngularWebpackPlugin on v12
+	// todo: we can remove this special handling once we no longer support v11
 	if (config.plugins.has('AngularCompilerPlugin')) {
 		const compatEntryPath = getProjectFilePath(
 			join('node_modules', '.nativescript', `${name}`)

@@ -138,6 +138,16 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
           }
         ]
       },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
+          }
+        ]
+      },
       /* config.module.rule('css') */
       {
         test: /\\\\.css$/,
@@ -195,6 +205,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -448,6 +459,16 @@ exports[`react configuration > android > base config 1`] = `
           }
         ]
       },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
+          }
+        ]
+      },
       /* config.module.rule('css') */
       {
         test: /\\\\.css$/,
@@ -505,6 +526,7 @@ exports[`react configuration > android > base config 1`] = `
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -758,6 +780,16 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
           }
         ]
       },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
+          }
+        ]
+      },
       /* config.module.rule('css') */
       {
         test: /\\\\.css$/,
@@ -815,6 +847,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -1069,6 +1102,16 @@ exports[`react configuration > ios > base config 1`] = `
           }
         ]
       },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
+          }
+        ]
+      },
       /* config.module.rule('css') */
       {
         test: /\\\\.css$/,
@@ -1126,6 +1169,7 @@ exports[`react configuration > ios > base config 1`] = `
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
