@@ -13,6 +13,8 @@ import { Span } from './span';
 import { CoreTypes } from '../../core-types';
 import { layout } from '../../utils';
 import { isString, isNullOrUndefined } from '../../utils/types';
+import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
+import * as Utils from '../../utils';
 
 export * from './text-base-common';
 
@@ -434,6 +436,16 @@ export class TextBase extends TextBaseCommon {
 	}
 	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
+	}
+	
+	[accessibilityIdentifierProperty.setNative](value: string): void {
+		// we override the default setter to apply it on nativeTextViewProtected
+		const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+
+		if (id) {
+			this.nativeTextViewProtected.setTag(id, value);
+			this.nativeTextViewProtected.setTag(value);
+		}
 	}
 
 	_setNativeText(reset = false): void {
