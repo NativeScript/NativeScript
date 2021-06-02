@@ -1,3 +1,20 @@
+## [8.0.7](https://github.com/NativeScript/NativeScript/compare/8.0.6-core...8.0.7) (2021-06-02)
+
+
+### Bug Fixes
+
+* **animations:** stop keyframe animations after View unloaded ([#9421](https://github.com/NativeScript/NativeScript/issues/9421)) ([04381fa](https://github.com/NativeScript/NativeScript/commit/04381fa3e74e9c277970fb282223abedd937b4c1))
+* **box-shadow:** support for 'none' ([#9418](https://github.com/NativeScript/NativeScript/issues/9418)) ([263c920](https://github.com/NativeScript/NativeScript/commit/263c920cb8a4b22e257033006ce585ec32ca2605))
+* **core:** guard unstable page/frame init contexts under async conditions ([#9428](https://github.com/NativeScript/NativeScript/issues/9428)) ([d3bc4d5](https://github.com/NativeScript/NativeScript/commit/d3bc4d5b82879ccb83483f99585127d981b43b38))
+* **core:** typings for Utils.queueMacrotask and static methods on Observable ([#9425](https://github.com/NativeScript/NativeScript/issues/9425)) ([d589ac6](https://github.com/NativeScript/NativeScript/commit/d589ac600063416f3725c0abf8dfc88f556166db))
+
+
+### Features
+
+* **WebView:** allow JS bound window frame navigation to be intercepted through loadStarted ([#9430](https://github.com/NativeScript/NativeScript/issues/9430)) ([3806b85](https://github.com/NativeScript/NativeScript/commit/3806b85fcef01ad34327dda9cc2c88619b522c74))
+
+
+
 ## [8.0.6](https://github.com/NativeScript/NativeScript/compare/8.0.5-core...8.0.6) (2021-05-20)
 
 
