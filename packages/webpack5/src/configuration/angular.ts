@@ -125,6 +125,22 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	const angularWebpackPlugin = getAngularWebpackPlugin();
 	if (angularWebpackPlugin) {
+		// angular no longer supports transformers.
+		// so we patch their method until they do
+		// https://github.com/angular/angular-cli/pull/21046
+		const originalCreateFileEmitter =
+			angularWebpackPlugin.prototype.createFileEmitter;
+		angularWebpackPlugin.prototype.createFileEmitter = function (
+			...args: any[]
+		) {
+			let transformers = args[1] || {};
+			if (!transformers.before) {
+				transformers.before = [];
+			}
+			transformers.before.push(require('../transformers/NativeClass').default);
+			args[1] = transformers;
+			return originalCreateFileEmitter.apply(this, args);
+		};
 		config.plugin('AngularWebpackPlugin').use(angularWebpackPlugin, [
 			{
 				tsconfig: tsConfigPath,
