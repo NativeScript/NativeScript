@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.0-beta.12",
+	"version": "5.0.0-beta.13",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
@@ -46,7 +46,7 @@
 		"ts-dedent": "2.1.1",
 		"ts-loader": "9.2.2",
 		"vue-loader": "15.9.7",
-		"webpack": "^5.38.1",
+		"webpack": "^5.0.0",
 		"webpack-bundle-analyzer": "4.4.2",
 		"webpack-chain": "6.5.1",
 		"webpack-cli": "^4.7.0",

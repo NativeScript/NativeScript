@@ -151,7 +151,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// look for platform specific polyfills first
 	// falling back to independent polyfills
 	const polyfillsPath = [
-		resolve(getEntryDirPath(), `polyfills.${getPlatformName()}.ts`),
+		resolve(getEntryDirPath(), `polyfills.${platform}.ts`),
 		resolve(getEntryDirPath(), `polyfills.ts`),
 	].find((path) => existsSync(path));
 
@@ -191,7 +191,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * | Add only entry points to the 'files' or 'include' properties in your tsconfig.          |
 			 * +-----------------------------------------------------------------------------------------+
 			 */
-			/environment.(\w+).ts is part of the TypeScript compilation but it's unused/,
+			/environment(\.(\w+))?\.ts is part of the TypeScript compilation but it's unused/,
 		])
 	);
 

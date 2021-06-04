@@ -21,7 +21,7 @@ exports[`angular configuration for android 1`] = `
   ignoreWarnings: [
     /System.import\\\\(\\\\) is deprecated/,
     /Zone\\\\.js does not support native async\\\\/await/,
-    /environment.(\\\\w+).ts is part of the TypeScript compilation but it's unused/
+    /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/
   ],
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
@@ -388,7 +388,7 @@ exports[`angular configuration for ios 1`] = `
   ignoreWarnings: [
     /System.import\\\\(\\\\) is deprecated/,
     /Zone\\\\.js does not support native async\\\\/await/,
-    /environment.(\\\\w+).ts is part of the TypeScript compilation but it's unused/
+    /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/
   ],
   output: {
     path: '__jest__/platforms/ios/jest/app',
