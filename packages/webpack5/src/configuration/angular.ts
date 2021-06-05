@@ -192,6 +192,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * +-----------------------------------------------------------------------------------------+
 			 */
 			/environment(\.(\w+))?\.ts is part of the TypeScript compilation but it's unused/,
+			/**
+			 * This rule hides
+			 */
+			/core\/fesm2015/,
+			/core\/profiling/,
+			/core\/ui\/styling/,
 		])
 	);
 
