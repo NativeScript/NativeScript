@@ -23,7 +23,7 @@ exports[`angular configuration for android 1`] = `
     /Zone\\\\.js does not support native async\\\\/await/,
     /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/,
     {
-      module: /@angular\\\\/core\\\\/fesm2015\\\\/core.js/,
+      module: /@angular\\\\/core\\\\/(__ivy_ngcc__\\\\/)?fesm2015\\\\/core.js/,
       message: /Critical dependency: the request of a dependency is an expression/
     },
     /core\\\\/profiling/,
@@ -396,7 +396,7 @@ exports[`angular configuration for ios 1`] = `
     /Zone\\\\.js does not support native async\\\\/await/,
     /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/,
     {
-      module: /@angular\\\\/core\\\\/fesm2015\\\\/core.js/,
+      module: /@angular\\\\/core\\\\/(__ivy_ngcc__\\\\/)?fesm2015\\\\/core.js/,
       message: /Critical dependency: the request of a dependency is an expression/
     },
     /core\\\\/profiling/,
