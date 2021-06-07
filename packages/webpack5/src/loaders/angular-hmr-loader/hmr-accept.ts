@@ -4,6 +4,7 @@ import {
 	// @ts-ignore
 } from '@angular/core';
 
+declare const __webpack_require__: any;
 declare const ng: any;
 
 export default function (mod: any): void {
@@ -41,6 +42,10 @@ export default function (mod: any): void {
 		} catch (e) {
 			console.error('[NG HMR] Error disposing previous module');
 			console.error(e, e?.stack);
+			// HMR breaks when rejecting the main module dispose, so we manually trigger an HMR restart
+			const hash = __webpack_require__.h();
+			console.log(`[HMR][${hash}] failure | Error disposing previous module`);
+			throw e;
 		}
 	});
 }
