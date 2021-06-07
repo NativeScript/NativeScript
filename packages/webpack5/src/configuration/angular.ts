@@ -146,6 +146,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				tsconfig: tsConfigPath,
 			},
 		]);
+
+		config.when(env.hmr, (config) => {
+			config.module
+				.rule('angular-hmr')
+				.enforce('post')
+				.test(getEntryPath())
+				.use('angular-hmr-loader')
+				.loader('angular-hmr-loader');
+		});
 	}
 
 	// look for platform specific polyfills first
