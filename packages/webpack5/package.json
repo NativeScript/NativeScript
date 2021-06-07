@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.0-dev.2",
+	"version": "5.0.0-dev.3",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
@@ -14,7 +14,7 @@
 		"build": "tsc --project tsconfig.build.json",
 		"test": "jest",
 		"copy-stubs": "mkdirp dist/stubs && cp -R src/stubs/* dist/stubs",
-		"prepack": "npm run build && npm run copy-stubs && chmod +x dist/bin/index.js"
+		"prepack": "npm run test && npm run build && npm run copy-stubs && chmod +x dist/bin/index.js"
 	},
 	"dependencies": {
 		"@babel/core": "^7.0.0",
