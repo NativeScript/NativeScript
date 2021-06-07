@@ -204,7 +204,10 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			/**
 			 * This rule hides
 			 */
-			/core\/fesm2015/,
+			{
+				module: /@angular\/core\/fesm2015\/core.js/,
+				message: /Critical dependency: the request of a dependency is an expression/,
+			},
 			/core\/profiling/,
 			/core\/ui\/styling/,
 		])
