@@ -13,6 +13,8 @@ import { Span } from './span';
 import { CoreTypes } from '../../core-types';
 import { layout } from '../../utils';
 import { isString, isNullOrUndefined } from '../../utils/types';
+import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
+import * as Utils from '../../utils';
 
 export * from './text-base-common';
 
@@ -276,6 +278,15 @@ export class TextBase extends TextBaseCommon {
 		}
 
 		this.nativeTextViewProtected.setTransformationMethod(new TextTransformation(this));
+	}
+
+	[accessibilityIdentifierProperty.setNative](value: string): void {
+		const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+
+		if (id) {
+			this.nativeViewProtected.setTag(id, value);
+			this.nativeViewProtected.setTag(value);
+		}
 	}
 
 	[textAlignmentProperty.getDefault](): CoreTypes.TextAlignmentType {
