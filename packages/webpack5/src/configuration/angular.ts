@@ -152,8 +152,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				.rule('angular-hmr')
 				.enforce('post')
 				.test(getEntryPath())
-				.use('angular-hmr-loader')
-				.loader('angular-hmr-loader');
+				.use('angular-hot-loader')
+				.loader('angular-hot-loader');
 		});
 	}
 
@@ -201,9 +201,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * +-----------------------------------------------------------------------------------------+
 			 */
 			/environment(\.(\w+))?\.ts is part of the TypeScript compilation but it's unused/,
-			/**
-			 * This rule hides
-			 */
+			// Additional rules to suppress warnings that are safe to ignore
 			{
 				module: /@angular\/core\/(__ivy_ngcc__\/)?fesm2015\/core.js/,
 				message: /Critical dependency: the request of a dependency is an expression/,
