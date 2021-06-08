@@ -1,6 +1,6 @@
 {
 	"name": "@nativescript/webpack",
-	"version": "5.0.0-dev.5",
+	"version": "5.0.0-dev",
 	"private": false,
 	"main": "dist/index.js",
 	"files": [
@@ -37,7 +37,7 @@
 		"postcss-import": "^14.0.0",
 		"postcss-loader": "^5.0.0",
 		"raw-loader": "^4.0.0",
-		"react-refresh": "^0.10.0",
+		"react-refresh": "~0.8.3",
 		"sass": "^1.0.0",
 		"sass-loader": "^12.0.0",
 		"sax": "^1.0.0",
