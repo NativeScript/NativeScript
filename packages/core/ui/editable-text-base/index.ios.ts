@@ -59,6 +59,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				newKeyboardType = UIKeyboardType.NumberPad;
 				break;
 
+			case 'decimal':
+				newKeyboardType = UIKeyboardType.DecimalPad;
+				break;
+
 			default:
 				const kt = +value;
 				if (!isNaN(kt)) {
