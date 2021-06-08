@@ -438,7 +438,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		this.suspendRequestLayout = true;
 		this._isLoaded = true;
 		if (!this.disableCss) {
-		this._cssState.onLoaded();
+			this._cssState.onLoaded();
 		}
 		this._resumeNativeUpdates(SuspendType.Loaded);
 
@@ -449,7 +449,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		});
 
 		this.suspendRequestLayout = false;
-		this._emit('loaded');
+		this._emit(ViewBase.loadedEvent);
 	}
 
 	@profile
@@ -469,7 +469,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 		this._isLoaded = false;
 		if (!this.disableCss) {
-		this._cssState.onUnloaded();
+			this._cssState.onUnloaded();
 		}
 		this._emit('unloaded');
 	}
@@ -667,12 +667,11 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		}
 	}
 
-
 	_requetLayoutNeeded = false;
 	get isLayoutRequestNeeded() {
 		return this._requetLayoutNeeded;
 	}
-	
+
 	_suspendRequestLayout = false;
 	set suspendRequestLayout(value: boolean) {
 		this._suspendRequestLayout = value;
@@ -683,7 +682,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
 	@profile
 	public requestLayout(): void {
-
 		// Default implementation for non View instances (like TabViewItem).
 		const parent = this.parent;
 		if (parent) {
@@ -1247,7 +1245,6 @@ export const disableCssProperty = new InheritedProperty<ViewBase, boolean>({
 	valueConverter: booleanConverter,
 });
 disableCssProperty.register(ViewBase);
-
 
 export function booleanConverter(v: string): boolean {
 	const lowercase = (v + '').toLowerCase();
