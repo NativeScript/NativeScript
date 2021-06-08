@@ -21,7 +21,13 @@ exports[`angular configuration for android 1`] = `
   ignoreWarnings: [
     /System.import\\\\(\\\\) is deprecated/,
     /Zone\\\\.js does not support native async\\\\/await/,
-    /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/
+    /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/,
+    {
+      module: /@angular\\\\/core\\\\/(__ivy_ngcc__\\\\/)?fesm2015\\\\/core.js/,
+      message: /Critical dependency: the request of a dependency is an expression/
+    },
+    /core\\\\/profiling/,
+    /core\\\\/ui\\\\/styling/
   ],
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
@@ -388,7 +394,13 @@ exports[`angular configuration for ios 1`] = `
   ignoreWarnings: [
     /System.import\\\\(\\\\) is deprecated/,
     /Zone\\\\.js does not support native async\\\\/await/,
-    /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/
+    /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/,
+    {
+      module: /@angular\\\\/core\\\\/(__ivy_ngcc__\\\\/)?fesm2015\\\\/core.js/,
+      message: /Critical dependency: the request of a dependency is an expression/
+    },
+    /core\\\\/profiling/,
+    /core\\\\/ui\\\\/styling/
   ],
   output: {
     path: '__jest__/platforms/ios/jest/app',

@@ -146,6 +146,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				tsconfig: tsConfigPath,
 			},
 		]);
+
+		config.when(env.hmr, (config) => {
+			config.module
+				.rule('angular-hmr')
+				.enforce('post')
+				.test(getEntryPath())
+				.use('angular-hmr-loader')
+				.loader('angular-hmr-loader');
+		});
 	}
 
 	// look for platform specific polyfills first
@@ -192,6 +201,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * +-----------------------------------------------------------------------------------------+
 			 */
 			/environment(\.(\w+))?\.ts is part of the TypeScript compilation but it's unused/,
+			/**
+			 * This rule hides
+			 */
+			{
+				module: /@angular\/core\/(__ivy_ngcc__\/)?fesm2015\/core.js/,
+				message: /Critical dependency: the request of a dependency is an expression/,
+			},
+			/core\/profiling/,
+			/core\/ui\/styling/,
 		])
 	);
 
