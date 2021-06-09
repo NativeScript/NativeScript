@@ -62,7 +62,9 @@ declare class LAContext extends NSObject {
 
 declare const enum LACredentialType {
 
-	ApplicationPassword = 0
+	ApplicationPassword = 0,
+
+	SmartCardPIN = -3
 }
 
 declare const enum LAError {

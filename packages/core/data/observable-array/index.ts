@@ -33,7 +33,6 @@ export interface ChangedData<T> extends EventData {
 	 * Number of added items.
 	 */
 	addedCount: number;
-
 }
 
 const CHANGE = 'change';
@@ -116,8 +115,8 @@ export class ObservableArray<T> extends Observable {
 
 	set length(value: number) {
 		if (types.isNumber(value) && this._array && this._array.length !== value) {
-			const added=[];
-			for (let i=this._array.length;i < value;++i) {
+			const added = [];
+			for (let i = this._array.length; i < value; ++i) {
 				added.push(undefined);
 			}
 			this.splice(value, this._array.length - value, ...added);
@@ -247,7 +246,7 @@ export class ObservableArray<T> extends Observable {
 	 */
 	splice(start: number, deleteCount?: number, ...items: any): T[] {
 		const length = this._array.length;
-		const result = this._array.splice(start, deleteCount, ...items);
+		const result = arguments.length === 1 ? this._array.splice(start) : this._array.splice(start, deleteCount, ...items);
 
 		this.notify(<ChangedData<T>>{
 			eventName: CHANGE,
@@ -287,6 +286,15 @@ export class ObservableArray<T> extends Observable {
 		this._notifyLengthChange();
 
 		return result;
+	}
+
+	/**
+	 * Returns the index of the first element in the array where predicate is true, and -1 otherwise.
+	 * @param predicate
+	 * @param thisArg If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead.
+	 */
+	findIndex(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): number {
+		return this._array.findIndex(predicate, thisArg);
 	}
 
 	/**

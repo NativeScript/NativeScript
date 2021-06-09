@@ -1,4 +1,4 @@
-﻿import * as definition from '.';
+import * as definition from '.';
 import * as types from '../utils/types';
 import * as knownColors from './known-colors';
 import { convertHSLToRGBColor } from '../css/parser';
@@ -26,8 +26,10 @@ export class Color implements definition.Color {
 					const argb = knownColors.getKnownColor(arg);
 					this._name = arg;
 					this._argb = argb;
-				} else if (arg[0] === SHARP) {
-					// The parameter is a "#AARRGGBB" formatted string
+				} else if (arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
+					// we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
+					// strange that it would not be. And if it is not a thrown error seems best
+					// The parameter is a "#RRGGBBAA" formatted string
 					this._argb = this._argbFromString(arg);
 				} else {
 					throw new Error('Invalid color: ' + arg);
@@ -104,6 +106,11 @@ export class Color implements definition.Color {
 		if (hex.length === 6) {
 			// add the alpha component since the provided string is RRGGBB
 			intVal = (intVal & 0x00ffffff) + 0xff000000;
+		} else {
+			// the new format is #RRGGBBAA
+			// we need to shift the alpha value to 0x01000000 position
+			const a = (intVal / 0x00000001) & 0xff;
+			intVal = (intVal >>> 8) + (a & 0xff) * 0x01000000;
 		}
 
 		return intVal;
@@ -145,15 +152,6 @@ export class Color implements definition.Color {
 	public static fromHSL(a, h, s, l) {
 		const rgb = hslToRgb(h, s, l);
 		return new Color(a, rgb.r, rgb.g, rgb.b);
-	}
-
-	private _componentToHex(component: number): string {
-		let hex = component.toString(16);
-		if (hex.length === 1) {
-			hex = '0' + hex;
-		}
-
-		return hex;
 	}
 
 	public toString(): string {
@@ -198,10 +196,22 @@ export class Color implements definition.Color {
 		const GsRGB = this.g / 255;
 		const BsRGB = this.b / 255;
 
-		if (RsRGB <= 0.03928) {R = RsRGB / 12.92;} else {R = Math.pow(((RsRGB + 0.055) / 1.055), 2.4);}
-		if (GsRGB <= 0.03928) {G = GsRGB / 12.92;} else {G = Math.pow(((GsRGB + 0.055) / 1.055), 2.4);}
-		if (BsRGB <= 0.03928) {B = BsRGB / 12.92;} else {B = Math.pow(((BsRGB + 0.055) / 1.055), 2.4);}
-		return (0.2126 * R) + (0.7152 * G) + (0.0722 * B);
+		if (RsRGB <= 0.03928) {
+			R = RsRGB / 12.92;
+		} else {
+			R = Math.pow((RsRGB + 0.055) / 1.055, 2.4);
+		}
+		if (GsRGB <= 0.03928) {
+			G = GsRGB / 12.92;
+		} else {
+			G = Math.pow((GsRGB + 0.055) / 1.055, 2.4);
+		}
+		if (BsRGB <= 0.03928) {
+			B = BsRGB / 12.92;
+		} else {
+			B = Math.pow((BsRGB + 0.055) / 1.055, 2.4);
+		}
+		return 0.2126 * R + 0.7152 * G + 0.0722 * B;
 	}
 
 	/**
@@ -232,9 +242,7 @@ export class Color implements definition.Color {
 			s = Math.round(hsl.s * 100),
 			l = Math.round(hsl.l * 100);
 		const a = this.a;
-		return (a == 255) ?
-		  "hsl("  + h + ", " + s + "%, " + l + "%)" :
-		  "hsla(" + h + ", " + s + "%, " + l + "%, "+ (a/255).toFixed(2) + ")";
+		return a == 255 ? 'hsl(' + h + ', ' + s + '%, ' + l + '%)' : 'hsla(' + h + ', ' + s + '%, ' + l + '%, ' + (a / 255).toFixed(2) + ')';
 	}
 
 	/**
@@ -256,9 +264,7 @@ export class Color implements definition.Color {
 			s = Math.round(hsv.s * 100),
 			v = Math.round(hsv.v * 100);
 		const a = this.a;
-		return (a == 255) ?
-		  "hsv("  + h + ", " + s + "%, " + v + "%)" :
-		  "hsva(" + h + ", " + s + "%, " + v + "%, "+ (a/255).toFixed(2) + ")";
+		return a == 255 ? 'hsv(' + h + ', ' + s + '%, ' + v + '%)' : 'hsva(' + h + ', ' + s + '%, ' + v + '%, ' + (a / 255).toFixed(2) + ')';
 	}
 
 	/**
@@ -267,9 +273,7 @@ export class Color implements definition.Color {
 	 */
 	public toRgbString() {
 		const a = this.a;
-		return (a == 1) ?
-		  "rgb("  + Math.round(this.r) + ", " + Math.round(this.g) + ", " + Math.round(this.b) + ")" :
-		  "rgba(" + Math.round(this.r) + ", " + Math.round(this.g) + ", " + Math.round(this.b) + ", " + (a/255).toFixed(2) + ")";
+		return a == 1 ? 'rgb(' + Math.round(this.r) + ', ' + Math.round(this.g) + ', ' + Math.round(this.b) + ')' : 'rgba(' + Math.round(this.r) + ', ' + Math.round(this.g) + ', ' + Math.round(this.b) + ', ' + (a / 255).toFixed(2) + ')';
 	}
 
 	/**
@@ -281,7 +285,7 @@ export class Color implements definition.Color {
 		amount = amount === 0 ? 0 : amount || 10;
 		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.s -= amount / 100;
-		hsl.s = Math.min(1, Math.max(0, hsl.s))
+		hsl.s = Math.min(1, Math.max(0, hsl.s));
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
 	}
 
@@ -294,7 +298,7 @@ export class Color implements definition.Color {
 		amount = amount === 0 ? 0 : amount || 10;
 		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.s += amount / 100;
-		hsl.s = Math.min(1, Math.max(0, hsl.s))
+		hsl.s = Math.min(1, Math.max(0, hsl.s));
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
 	}
 
@@ -315,7 +319,7 @@ export class Color implements definition.Color {
 		amount = amount === 0 ? 0 : amount || 10;
 		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.l += amount / 100;
-		hsl.l = Math.min(1, Math.max(0, hsl.l))
+		hsl.l = Math.min(1, Math.max(0, hsl.l));
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
 	}
 
@@ -341,7 +345,7 @@ export class Color implements definition.Color {
 		amount = amount === 0 ? 0 : amount || 10;
 		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.l -= amount / 100;
-		hsl.l = Math.min(1, Math.max(0, hsl.l))
+		hsl.l = Math.min(1, Math.max(0, hsl.l));
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
 	}
 
@@ -444,14 +448,14 @@ function argbFromHslOrHsla(value: string): number {
 // *Assumes:* r, g, and b are contained in [0, 255] or [0, 1]
 // *Returns:* { h, s, l } in [0,1]
 function rgbToHsl(r, g, b) {
-	const max = Math.max(r, g, b), min = Math.min(r, g, b);
+	const max = Math.max(r, g, b),
+		min = Math.min(r, g, b);
 	let h, s;
 	const l = (max + min) / 2;
 
 	if (max == min) {
 		h = s = 0; // achromatic
-	}
-	else {
+	} else {
 		const d = max - min;
 		s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 		switch (max) {
@@ -489,8 +493,7 @@ function hslToRgb(h, s, l) {
 	let r, g, b;
 	if (s === 0) {
 		r = g = b = l; // achromatic
-	}
-	else {
+	} else {
 		const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
 		const p = 2 * l - q;
 		r = hue2rgb(p, q, h + 1 / 3);
@@ -501,13 +504,13 @@ function hslToRgb(h, s, l) {
 	return { r: r * 255, g: g * 255, b: b * 255 };
 }
 
-
 // `rgbToHsv`
 // Converts an RGB color value to HSV
 // *Assumes:* r, g, and b are contained in the set [0, 255] or [0, 1]
 // *Returns:* { h, s, v } in [0,1]
 function rgbToHsv(r, g, b) {
-	const max = Math.max(r, g, b), min = Math.min(r, g, b);
+	const max = Math.max(r, g, b),
+		min = Math.min(r, g, b);
 	let h;
 	const v = max;
 

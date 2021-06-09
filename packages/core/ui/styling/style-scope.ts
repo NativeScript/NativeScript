@@ -33,7 +33,6 @@ function ensureCssAnimationParserModule() {
 
 let parser: 'rework' | 'nativescript' | 'css-tree' = 'css-tree';
 try {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const appConfig = require('~/package.json');
 	if (appConfig) {
 		if (appConfig.cssParser === 'rework') {
@@ -114,7 +113,9 @@ class CSSSource {
 				return CSSSource.fromDetect(cssOrAst, keyframes, resolvedModuleName);
 			}
 		} catch (e) {
-			Trace.write(`Could not load CSS from ${uri}: ${e}`, Trace.categories.Error, Trace.messageType.error);
+			if (Trace.isEnabled()) {
+				Trace.write(`Could not load CSS from ${uri}: ${e}`, Trace.categories.Error, Trace.messageType.warn);
+			}
 		}
 
 		return CSSSource.fromFile(appRelativeUri, keyframes);
@@ -205,7 +206,9 @@ class CSSSource {
 				this._selectors = [];
 			}
 		} catch (e) {
-			Trace.write('Css styling failed: ' + e, Trace.categories.Error, Trace.messageType.error);
+			if (Trace.isEnabled()) {
+				Trace.write('Css styling failed: ' + e, Trace.categories.Style, Trace.messageType.error);
+			}
 			this._selectors = [];
 		}
 	}
@@ -218,7 +221,7 @@ class CSSSource {
 					this._ast = cssTreeParse(this._source, this._file);
 
 					return;
-				case 'nativescript':{
+				case 'nativescript': {
 					const cssparser = new CSS3Parser(this._source);
 					const stylesheet = cssparser.parseAStylesheet();
 					const cssNS = new CSSNativeScript();
@@ -447,6 +450,7 @@ export class CssState {
 
 	public onUnloaded(): void {
 		this.unsubscribeFromDynamicUpdates();
+		this.stopKeyframeAnimations();
 	}
 
 	@profile
@@ -472,6 +476,12 @@ export class CssState {
 		}
 
 		const matchingSelectors = this._match.selectors.filter((sel) => (sel.dynamic ? sel.match(view) : true));
+		if (!matchingSelectors || matchingSelectors.length === 0) {
+			// Ideally we should return here if there are no matching selectors, however
+			// if there are property removals, returning here would not remove them
+			// this is seen in STYLE test in automated.
+			// return;
+		}
 		view._batchUpdate(() => {
 			this.stopKeyframeAnimations();
 			this.setPropertyValues(matchingSelectors);

@@ -350,4 +350,6 @@ declare function dispatch_workloop_create_inactive(label: string | interop.Point
 
 declare function dispatch_workloop_set_autorelease_frequency(workloop: NSObject, frequency: dispatch_autorelease_frequency_t): void;
 
+declare function dispatch_workloop_set_os_workgroup(workloop: NSObject, workgroup: OS_os_workgroup): void;
+
 declare function dispatch_write(fd: number, data: NSObject, queue: NSObject, handler: (p1: NSObject, p2: number) => void): void;

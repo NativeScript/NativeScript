@@ -1,4 +1,0 @@
-platform :ios, '9.0'
-use_frameworks!
-
-pod 'MaterialComponents/Tabs', '~> 94.5'

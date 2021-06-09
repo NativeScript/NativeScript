@@ -4,7 +4,6 @@ import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, An
 
 // TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const appCommon = require('./application-common');
 
 // First reexport so that app module is initialized.
@@ -15,6 +14,8 @@ import { NavigationEntry, AndroidActivityCallbacks } from '../ui/frame/frame-int
 import { Observable } from '../data/observable';
 
 import { profile } from '../profiling';
+import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
+import { initAccessibilityFontScale } from '../accessibility/font-scale';
 
 const ActivityCreated = 'activityCreated';
 const ActivityDestroyed = 'activityDestroyed';
@@ -172,6 +173,9 @@ export function run(entry?: NavigationEntry | string) {
 		const nativeApp = getNativeApplication();
 		androidApp.init(nativeApp);
 	}
+
+	initAccessibilityCssHelper();
+	initAccessibilityFontScale();
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {

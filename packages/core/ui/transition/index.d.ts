@@ -1,11 +1,5 @@
-﻿export namespace AndroidTransitionType {
-	export const enter: string;
-	export const exit: string;
-	export const popEnter: string;
-	export const popExit: string;
-}
-
-export class Transition {
+﻿export class Transition {
+	static AndroidTransitionType: { enter: string; exit: string; popEnter: string; popExit: string };
 	constructor(duration: number, nativeCurve: any);
 	public getDuration(): number;
 	public getCurve(): any;

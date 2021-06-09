@@ -7,6 +7,7 @@ import { PageBase, actionBarHiddenProperty, statusBarStyleProperty } from './pag
 
 import { profile } from '../../profiling';
 import { iOSNativeHelper, layout } from '../../utils';
+import { getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
 
 export * from './page-common';
 
@@ -65,6 +66,10 @@ function isBackNavigationFrom(controller: UIViewControllerImpl, page: Page): boo
 
 @NativeClass
 class UIViewControllerImpl extends UIViewController {
+	// TODO: a11y
+	// static ObjCExposedMethods = {
+	// 	accessibilityPerformEscape: { returns: interop.types.bool, params: [interop.types.void] },
+	// };
 	private _owner: WeakRef<Page>;
 
 	public isBackstackSkipped: boolean;
@@ -129,7 +134,7 @@ class UIViewControllerImpl extends UIViewController {
 			// because changes happen in an interactive transition - IOS will animate between the the states.
 			// If canceled - viewWillAppear will be called for the current page(which is already loaded) and we need to
 			// update the action bar explicitly, so that it is not left styles as the previous page.
-			owner.actionBar.update();
+			owner.updateWithWillAppear(animated);
 		}
 	}
 
@@ -172,7 +177,9 @@ class UIViewControllerImpl extends UIViewController {
 			}
 
 			// If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
-			frame.ios.controller.delegate = this[DELEGATE];
+			if (frame.ios?.controller) {
+				frame.ios.controller.delegate = this[DELEGATE];
+			}
 
 			frame._processNavigationQueue(owner);
 
@@ -214,13 +221,14 @@ class UIViewControllerImpl extends UIViewController {
 		// or because we are closing a modal page,
 		// or because we are in tab and another controller is selected.
 		const tab = this.tabBarController;
-		if (owner.onNavigatingFrom && !owner._presentedViewController && !this.presentingViewController && frame && frame.currentPage === owner) {
+		if (owner.onNavigatingFrom && !owner._presentedViewController && frame && (!this.presentingViewController || frame.backStack.length > 0) && frame.currentPage === owner) {
 			const willSelectViewController = tab && (<any>tab)._willSelectViewController;
 			if (!willSelectViewController || willSelectViewController === tab.selectedViewController) {
 				const isBack = isBackNavigationFrom(this, owner);
 				owner.onNavigatingFrom(isBack);
 			}
 		}
+		owner.updateWithWillDisappear(animated);
 	}
 
 	@profile
@@ -309,6 +317,21 @@ class UIViewControllerImpl extends UIViewController {
 		}
 	}
 
+	// TODO: a11y
+	// public accessibilityPerformEscape() {
+	// 	const owner = this._owner.get();
+	// 	if (!owner) {
+	// 		return false;
+	// 	}
+	// 	console.log('page accessibilityPerformEscape');
+	// 	if (owner.onAccessibilityPerformEscape) {
+	// 		const result = owner.onAccessibilityPerformEscape();
+	// 		return result;
+	// 	} else {
+	// 		return false;
+	// 	}
+	// }
+
 	// @ts-ignore
 	public get preferredStatusBarStyle(): UIStatusBarStyle {
 		const owner = this._owner.get();
@@ -323,6 +346,7 @@ class UIViewControllerImpl extends UIViewController {
 export class Page extends PageBase {
 	nativeViewProtected: UIView;
 	viewController: UIViewControllerImpl;
+	onAccessibilityPerformEscape: () => boolean;
 
 	private _backgroundColor = majorVersion <= 12 && !UIColor.systemBackgroundColor ? UIColor.whiteColor : UIColor.systemBackgroundColor;
 	private _ios: UIViewControllerImpl;
@@ -367,6 +391,17 @@ export class Page extends PageBase {
 		if (this.hasActionBar) {
 			this.actionBar.update();
 		}
+	}
+	updateWithWillAppear(animated: boolean) {
+		// this method is important because it allows plugins to react to modal page close
+		// for example allowing updating status bar background color
+		this.actionBar.update();
+		this.updateStatusBar();
+	}
+
+	updateWithWillDisappear(animated: boolean) {
+		// this method is important because it allows plugins to react to modal page close
+		// for example allowing updating status bar background color
 	}
 
 	public updateStatusBar() {
@@ -509,6 +544,44 @@ export class Page extends PageBase {
 				navigationBar.barStyle = value;
 			}
 		}
+	}
+
+	public accessibilityScreenChanged(refocus = false): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		if (refocus) {
+			const lastFocusedView = getLastFocusedViewOnPage(this);
+			if (lastFocusedView) {
+				const uiView = lastFocusedView.nativeViewProtected;
+				if (uiView) {
+					UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, uiView);
+
+					return;
+				}
+			}
+		}
+
+		if (this.actionBarHidden) {
+			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.nativeViewProtected);
+
+			return;
+		}
+
+		if (this.accessibilityLabel) {
+			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.nativeViewProtected);
+
+			return;
+		}
+
+		if (this.actionBar.accessibilityLabel || this.actionBar.title) {
+			UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.actionBar.nativeView);
+
+			return;
+		}
+
+		UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, this.nativeViewProtected);
 	}
 }
 

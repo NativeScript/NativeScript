@@ -160,7 +160,13 @@ declare function CGColorCreateCopyByMatchingToColorSpace(p1: any, intent: CGColo
 
 declare function CGColorCreateCopyWithAlpha(color: any, alpha: number): any;
 
+declare function CGColorCreateGenericCMYK(cyan: number, magenta: number, yellow: number, black: number, alpha: number): any;
+
+declare function CGColorCreateGenericGray(gray: number, alpha: number): any;
+
 declare function CGColorCreateGenericGrayGamma2_2(gray: number, alpha: number): any;
+
+declare function CGColorCreateGenericRGB(red: number, green: number, blue: number, alpha: number): any;
 
 declare function CGColorCreateSRGB(red: number, green: number, blue: number, alpha: number): any;
 
@@ -173,6 +179,8 @@ declare function CGColorGetAlpha(color: any): number;
 declare function CGColorGetColorSpace(color: any): any;
 
 declare function CGColorGetComponents(color: any): interop.Pointer | interop.Reference<number>;
+
+declare function CGColorGetConstantColor(colorName: string): any;
 
 declare function CGColorGetNumberOfComponents(color: any): number;
 
@@ -215,11 +223,17 @@ declare function CGColorSpaceCreateDeviceGray(): any;
 
 declare function CGColorSpaceCreateDeviceRGB(): any;
 
+declare function CGColorSpaceCreateExtended(space: any): any;
+
+declare function CGColorSpaceCreateExtendedLinearized(space: any): any;
+
 declare function CGColorSpaceCreateICCBased(nComponents: number, range: interop.Pointer | interop.Reference<number>, profile: any, alternate: any): any;
 
 declare function CGColorSpaceCreateIndexed(baseSpace: any, lastIndex: number, colorTable: string | interop.Pointer | interop.Reference<any>): any;
 
 declare function CGColorSpaceCreateLab(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number>, range: interop.Reference<number>): any;
+
+declare function CGColorSpaceCreateLinearized(space: any): any;
 
 declare function CGColorSpaceCreatePattern(baseSpace: any): any;
 
@@ -277,6 +291,10 @@ declare function CGColorSpaceRelease(space: any): void;
 declare function CGColorSpaceRetain(space: any): any;
 
 declare function CGColorSpaceSupportsOutput(space: any): boolean;
+
+declare function CGColorSpaceUsesExtendedRange(space: any): boolean;
+
+declare function CGColorSpaceUsesITUR_2100TF(p1: any): boolean;
 
 declare function CGContextAddArc(c: any, x: number, y: number, radius: number, startAngle: number, endAngle: number, clockwise: number): void;
 
@@ -1495,6 +1513,10 @@ declare var CGVector: interop.StructType<CGVector>;
 
 declare function CGVectorMake(dx: number, dy: number): CGVector;
 
+declare var kCGColorBlack: string;
+
+declare var kCGColorClear: string;
+
 declare var kCGColorConversionBlackPointCompensation: string;
 
 declare var kCGColorConversionTRCSize: string;
@@ -1509,9 +1531,15 @@ declare var kCGColorSpaceDisplayP3: string;
 
 declare var kCGColorSpaceDisplayP3_HLG: string;
 
+declare var kCGColorSpaceDisplayP3_PQ: string;
+
 declare var kCGColorSpaceDisplayP3_PQ_EOTF: string;
 
+declare var kCGColorSpaceExtendedDisplayP3: string;
+
 declare var kCGColorSpaceExtendedGray: string;
+
+declare var kCGColorSpaceExtendedITUR_2020: string;
 
 declare var kCGColorSpaceExtendedLinearDisplayP3: string;
 
@@ -1541,7 +1569,13 @@ declare var kCGColorSpaceITUR_2020: string;
 
 declare var kCGColorSpaceITUR_2020_HLG: string;
 
+declare var kCGColorSpaceITUR_2020_PQ: string;
+
 declare var kCGColorSpaceITUR_2020_PQ_EOTF: string;
+
+declare var kCGColorSpaceITUR_2100_HLG: string;
+
+declare var kCGColorSpaceITUR_2100_PQ: string;
 
 declare var kCGColorSpaceITUR_709: string;
 
@@ -1552,6 +1586,8 @@ declare var kCGColorSpaceLinearSRGB: string;
 declare var kCGColorSpaceROMMRGB: string;
 
 declare var kCGColorSpaceSRGB: string;
+
+declare var kCGColorWhite: string;
 
 declare var kCGFontIndexInvalid: number;
 
@@ -1579,6 +1615,10 @@ declare var kCGPDFContextAuthor: string;
 
 declare var kCGPDFContextBleedBox: string;
 
+declare var kCGPDFContextCreateLinearizedPDF: string;
+
+declare var kCGPDFContextCreatePDFA: string;
+
 declare var kCGPDFContextCreator: string;
 
 declare var kCGPDFContextCropBox: string;
@@ -1588,6 +1628,10 @@ declare var kCGPDFContextEncryptionKeyLength: string;
 declare var kCGPDFContextKeywords: string;
 
 declare var kCGPDFContextMediaBox: string;
+
+declare var kCGPDFContextOutputIntent: string;
+
+declare var kCGPDFContextOutputIntents: string;
 
 declare var kCGPDFContextOwnerPassword: string;
 
@@ -1614,3 +1658,15 @@ declare var kCGPDFTagPropertyAlternativeText: any;
 declare var kCGPDFTagPropertyLanguageText: any;
 
 declare var kCGPDFTagPropertyTitleText: any;
+
+declare var kCGPDFXDestinationOutputProfile: string;
+
+declare var kCGPDFXInfo: string;
+
+declare var kCGPDFXOutputCondition: string;
+
+declare var kCGPDFXOutputConditionIdentifier: string;
+
+declare var kCGPDFXOutputIntentSubtype: string;
+
+declare var kCGPDFXRegistryName: string;

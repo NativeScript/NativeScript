@@ -5,13 +5,93 @@
 The following CSS rule changes the font size of all UI
 components that have the btn class name.
 */
-.btn {
-  font-size: 18;
+.btn-view-demo {
+  background-color: #65ADF1;
+  border-radius: 5;
+  font-size: 17;
+  padding: 15;
+  font-weight: bold;
 }
 
 .bold{
+  font-weight: bold;
+}
+
+.controls Label {
+    font-size: 20;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10;
+}
+
+.controls Button {
+    padding: 10 15;
+    margin: 5;
+    font-size: 17;
+    font-weight: bold;
+    color: #65ADF1;
+    border-radius: 5;
+    border-width: 1;
+    border-color: #65ADF1;
+}
+
+.box-shadow-demo .demo-component {
+    font-size: 20;
+    font-weight: bold;
+    color: #555;
+    border-color: #555;
+    margin: 10;
+    padding: 20 25;
+    text-transform: uppercase;
+}
+
+.box-shadow-demo .box-shadow-prop-controls {
+    padding: 10;
+    color: #333;
+    font-size: 17;
+}
+
+.box-shadow-demo .box-shadow-prop-controls TextField{
+    margin-left: 10;
+    padding: 5;
+    border-bottom-width: 1;
+    border-color: #65ADF1;
+}
+
+.box-shadow-demo .controls .description {
+    font-size: 15;
+    font-weight: normal;
+    color: #333;
+    margin-bottom: 10;
+}
+
+.box-shadow-demo .controls Button[selectedAttr=true] {
+    background-color: #65ADF1;
+    color: #fff;
+}
+
+.box-shadow-prop-controls .btn-apply {
+    background-color: #65ADF1;
+    color: #fff;
+    padding: 10 15;
+    border-radius: 4;
+    margin-left: 10;
+    font-size: 17;
     font-weight: bold;
 }
+
+.sample-animation {
+    animation-name: rotate-expand;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes rotate-expand {
+    0%, 50% { background-color: red; width: 200; transform: rotate(0) scale(1,1); }
+    25%, 75% { background-color: yellow; width: 100; transform: rotate(180) scale(1.2,1.2); }
+    100% { background-color: red; width: 200; transform: rotate(0) scale(1,1); }
+}
+
 
 .icon-label{
     font-size: 22;
@@ -101,4 +181,21 @@ components that have the btn class name.
 
 .list-group .list-group-item-heading {
 	margin-bottom: 5
+}
+
+.a11y-demo-page .view-item {
+  margin-bottom: 12;
+  font-size: 18;
+}
+
+.a11y-demo-page .a11y {
+  a11y-enabled: true;
+}
+
+.a11y-demo-page .a11y-role-image {
+  a11y-role: image;
+}
+
+.a11y-demo-page .a11y-state-checked {
+  a11y-state: checked;
 }

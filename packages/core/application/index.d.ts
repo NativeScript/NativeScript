@@ -55,6 +55,11 @@ export const orientationChangedEvent: string;
 export const systemAppearanceChangedEvent: string;
 
 /**
+ * String value used when hooking to fontScaleChanged event.
+ */
+export const fontScaleChangedEvent: string;
+
+/**
  * Boolean to enable/disable systemAppearanceChanged
  */
 export let autoSystemAppearanceChanged: boolean;
@@ -62,7 +67,7 @@ export let autoSystemAppearanceChanged: boolean;
 /**
  * enable/disable systemAppearanceChanged
  */
-export function setAutoSystemAppearanceChanged(value: boolean);
+export function setAutoSystemAppearanceChanged(value: boolean): void;
 
 /**
  * Updates root view classes including those of modals
@@ -131,6 +136,16 @@ export interface SystemAppearanceChangedEventData extends ApplicationEventData {
 }
 
 /**
+ * Event data containing information for font scale changed event.
+ */
+export interface FontScaleChangedEventData extends ApplicationEventData {
+	/**
+	 * New font scale value.
+	 */
+	newValue: number;
+}
+
+/**
  * Event data containing information about unhandled application errors.
  */
 export interface UnhandledErrorEventData extends ApplicationEventData {
@@ -183,6 +198,11 @@ export function setCssFileName(cssFile: string): void;
  * Gets css file name for the application.
  */
 export function getCssFileName(): string;
+
+/**
+ * Ensure css-class is set on rootView
+ */
+export function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void;
 
 /**
  * Loads immediately the app.css.
@@ -317,6 +337,8 @@ export function on(event: 'orientationChanged', callback: (args: OrientationChan
  * between light and dark mode (for iOS) and vice versa.
  */
 export function on(event: 'systemAppearanceChanged', callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any);
+
+export function on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any);
 
 /**
  * Gets the orientation of the application.

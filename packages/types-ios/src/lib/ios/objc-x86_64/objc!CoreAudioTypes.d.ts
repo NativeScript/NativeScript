@@ -528,6 +528,10 @@ declare const kAudioChannelLayoutTag_Ambisonic_B_Format: number;
 
 declare const kAudioChannelLayoutTag_Atmos_5_1_2: number;
 
+declare const kAudioChannelLayoutTag_Atmos_5_1_4: number;
+
+declare const kAudioChannelLayoutTag_Atmos_7_1_2: number;
+
 declare const kAudioChannelLayoutTag_Atmos_7_1_4: number;
 
 declare const kAudioChannelLayoutTag_Atmos_9_1_6: number;
