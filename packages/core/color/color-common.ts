@@ -74,7 +74,7 @@ export class Color implements definition.Color {
 		if (this.a === 0xff) {
 			return SHARP + ((1 << 24) + (this.r << 16) + (this.g << 8) + this.b).toString(16).slice(1);
 		} else {
-			const hex = this._argb.toString(16);
+			const hex = this._argb.toString(16).toUpperCase();
 			return SHARP + hex.slice(2) + hex.slice(0, 2);
 		}
 	}
