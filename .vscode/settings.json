@@ -7,5 +7,6 @@
         "**/*.js": true,
         "**/*.js.map": true
     },
-    "tslint.configFile": "./build/tslint.json"
+    "tslint.configFile": "./build/tslint.json",
+    "git.enabled": true
 }
