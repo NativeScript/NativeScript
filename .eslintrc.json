@@ -1,15 +1,15 @@
 {
-	"extends": ["plugin:prettier/recommended"],
+	"root": true,
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
 		"ecmaVersion": 2018,
 		"sourceType": "module",
-		"parser": "@typescript-eslint/parser",
-		"project": "tsconfig.eslint.json",
-		"warnOnUnsupportedTypeScriptVersion": false
+		"project": "tsconfig.eslint.json"
 	},
-	"plugins": ["prettier", "@nativescript"],
+	"plugins": ["@nativescript", "prettier"],
+	"extends": ["plugin:@nativescript/recommended", "prettier"],
 	"rules": {
+		"prettier/prettier": 2,
 		"@nativescript/no-nativescript-angular-imports": "warn",
 		"@nativescript/no-tns-core-modules-imports": "warn",
 		"@nativescript/no-duplicate-ns-imports": "warn"

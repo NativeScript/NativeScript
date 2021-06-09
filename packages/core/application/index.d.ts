@@ -136,6 +136,16 @@ export interface SystemAppearanceChangedEventData extends ApplicationEventData {
 }
 
 /**
+ * Event data containing information for font scale changed event.
+ */
+export interface FontScaleChangedEventData extends ApplicationEventData {
+	/**
+	 * New font scale value.
+	 */
+	newValue: number;
+}
+
+/**
  * Event data containing information about unhandled application errors.
  */
 export interface UnhandledErrorEventData extends ApplicationEventData {
@@ -327,6 +337,8 @@ export function on(event: 'orientationChanged', callback: (args: OrientationChan
  * between light and dark mode (for iOS) and vice versa.
  */
 export function on(event: 'systemAppearanceChanged', callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any);
+
+export function on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any);
 
 /**
  * Gets the orientation of the application.

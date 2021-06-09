@@ -5,7 +5,7 @@ export const VALID_FONT_SCALES = global.isIOS // iOS supports a wider number of 
 export function getClosestValidFontScale(fontScale: number): number {
 	fontScale = Number(fontScale) || 1;
 
-	return VALID_FONT_SCALES.sort((a, b) => Math.abs(fontScale - a) - Math.abs(fontScale - b)).shift();
+	return VALID_FONT_SCALES.sort((a, b) => Math.abs(fontScale - a) - Math.abs(fontScale - b))[0];
 }
 
 export enum FontScaleCategory {

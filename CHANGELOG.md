@@ -1,3 +1,68 @@
+## [8.0.7](https://github.com/NativeScript/NativeScript/compare/8.0.6-core...8.0.7) (2021-06-02)
+
+
+### Bug Fixes
+
+* **animations:** stop keyframe animations after View unloaded ([#9421](https://github.com/NativeScript/NativeScript/issues/9421)) ([04381fa](https://github.com/NativeScript/NativeScript/commit/04381fa3e74e9c277970fb282223abedd937b4c1))
+* **box-shadow:** support for 'none' ([#9418](https://github.com/NativeScript/NativeScript/issues/9418)) ([263c920](https://github.com/NativeScript/NativeScript/commit/263c920cb8a4b22e257033006ce585ec32ca2605))
+* **core:** guard unstable page/frame init contexts under async conditions ([#9428](https://github.com/NativeScript/NativeScript/issues/9428)) ([d3bc4d5](https://github.com/NativeScript/NativeScript/commit/d3bc4d5b82879ccb83483f99585127d981b43b38))
+* **core:** typings for Utils.queueMacrotask and static methods on Observable ([#9425](https://github.com/NativeScript/NativeScript/issues/9425)) ([d589ac6](https://github.com/NativeScript/NativeScript/commit/d589ac600063416f3725c0abf8dfc88f556166db))
+
+
+### Features
+
+* **WebView:** allow JS bound window frame navigation to be intercepted through loadStarted ([#9430](https://github.com/NativeScript/NativeScript/issues/9430)) ([3806b85](https://github.com/NativeScript/NativeScript/commit/3806b85fcef01ad34327dda9cc2c88619b522c74))
+
+
+
+## [8.0.6](https://github.com/NativeScript/NativeScript/compare/8.0.5-core...8.0.6) (2021-05-20)
+
+
+### Bug Fixes
+
+* **a11y:** add missing application event for fontScaleChanged ([#9396](https://github.com/NativeScript/NativeScript/issues/9396)) ([dac36c6](https://github.com/NativeScript/NativeScript/commit/dac36c68015512553689f6803d147da92f89cd93))
+* **a11y:** font size ([#9395](https://github.com/NativeScript/NativeScript/issues/9395)) ([7a92c16](https://github.com/NativeScript/NativeScript/commit/7a92c1646f92f8afb9f8a87306cc90e8d2043e91))
+* **Device:** don't cache device language & region ([#9394](https://github.com/NativeScript/NativeScript/issues/9394)) ([95596e8](https://github.com/NativeScript/NativeScript/commit/95596e82302bb945e6bf2126f19d9245e358cb79)), closes [#6082](https://github.com/NativeScript/NativeScript/issues/6082)
+* **ios:** image with alpha resize ([#9386](https://github.com/NativeScript/NativeScript/issues/9386)) ([f380782](https://github.com/NativeScript/NativeScript/commit/f380782766b7034e4f776ad78e941fd9ac405c0b)), closes [#9385](https://github.com/NativeScript/NativeScript/issues/9385)
+* **RootLayout:** prevent android touch event to pass through views underneath ([#9389](https://github.com/NativeScript/NativeScript/issues/9389)) ([0b2c190](https://github.com/NativeScript/NativeScript/commit/0b2c190662ceb63524049ac7792643414510858d))
+
+
+### Features
+
+* **text-view:** add returnPress ([#9390](https://github.com/NativeScript/NativeScript/issues/9390)) ([64adf5e](https://github.com/NativeScript/NativeScript/commit/64adf5ecfce5cae1582cbbf7d704e2ef9b75dd01)), closes [#4882](https://github.com/NativeScript/NativeScript/issues/4882)
+* **Utils:** add dismissSoftInput helper ([#9392](https://github.com/NativeScript/NativeScript/issues/9392)) ([6cf4c59](https://github.com/NativeScript/NativeScript/commit/6cf4c5981b866c8a164eea0d53fd4c93875e8ba0)), closes [#4594](https://github.com/NativeScript/NativeScript/issues/4594)
+* **web-view:** disableZoom property ([#9391](https://github.com/NativeScript/NativeScript/issues/9391)) ([7e878f8](https://github.com/NativeScript/NativeScript/commit/7e878f83a39478a7a33d89f08579df97db70fe00))
+
+
+
+## [8.0.5](https://github.com/NativeScript/NativeScript/compare/8.0.4-core...8.0.5) (2021-05-10)
+
+
+### Bug Fixes
+
+* **android:** image asset handling regarding requestLegacyExternalStorage ([#9373](https://github.com/NativeScript/NativeScript/issues/9373)) ([f311151](https://github.com/NativeScript/NativeScript/commit/f3111514960ada615a69418b906620a638f8f476))
+
+
+### Features
+
+* **docs:** typedoc api reference ([#9378](https://github.com/NativeScript/NativeScript/issues/9378)) ([6d91c2a](https://github.com/NativeScript/NativeScript/commit/6d91c2a0195e07c182d2fccfb9c6f7d783acc4b7))
+
+
+
+## [8.0.4](https://github.com/NativeScript/NativeScript/compare/8.0.3-core...8.0.4) (2021-05-05)
+
+
+### Bug Fixes
+
+* **core:** typings for showModal correction ([#9374](https://github.com/NativeScript/NativeScript/issues/9374)) ([9ec4042](https://github.com/NativeScript/NativeScript/commit/9ec404225ef0cff5f82d759fcdc7b85952e65c0d))
+
+
+### Features
+
+* add additional android global methods ([#9365](https://github.com/NativeScript/NativeScript/issues/9365)) ([a6cb46d](https://github.com/NativeScript/NativeScript/commit/a6cb46dac2d671221d9c0e972e8db89961b3e7c2))
+
+
+
 ## [8.0.3](https://github.com/NativeScript/NativeScript/compare/8.0.2-core...8.0.3) (2021-04-24)
 
 

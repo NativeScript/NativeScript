@@ -48,3 +48,10 @@ export function isRealDevice(): boolean {
 }
 
 export const ad = 0;
+
+export function dismissSoftInput(nativeView?: UIView): void {
+	if (nativeView instanceof UIView && !nativeView.isFirstResponder) {
+		return;
+	}
+	UIApplication.sharedApplication.sendActionToFromForEvent('resignFirstResponder', null, null, null);
+}

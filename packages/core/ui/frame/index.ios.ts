@@ -224,7 +224,7 @@ export class Frame extends FrameBase {
 			this._ios._disableNavBarAnimation = disableNavBarAnimationCache;
 		}
 
-		if (this._ios.controller.navigationBar) {
+		if (this._ios.controller?.navigationBar) {
 			this._ios.controller.navigationBar.userInteractionEnabled = this.navigationQueueIsEmpty();
 		}
 
@@ -666,7 +666,9 @@ class iOSFrame implements iOSFrameDefinition {
 	}
 	public set showNavigationBar(value: boolean) {
 		this._showNavigationBar = value;
-		this._controller.setNavigationBarHiddenAnimated(!value, !this._disableNavBarAnimation);
+		if (this._controller) {
+			this._controller.setNavigationBarHiddenAnimated(!value, !this._disableNavBarAnimation);
+		}
 	}
 
 	public get navBarVisibility(): 'auto' | 'never' | 'always' {

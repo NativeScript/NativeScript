@@ -452,6 +452,7 @@ export class CssState {
 
 	public onUnloaded(): void {
 		this.unsubscribeFromDynamicUpdates();
+		this.stopKeyframeAnimations();
 	}
 
 	@profile

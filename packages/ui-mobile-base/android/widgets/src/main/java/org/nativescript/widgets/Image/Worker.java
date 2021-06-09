@@ -16,6 +16,7 @@
 
 package org.nativescript.widgets.image;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -37,6 +38,7 @@ public abstract class Worker {
 
     protected static final String RESOURCE_PREFIX = "res://";
     protected static final String FILE_PREFIX = "file:///";
+    protected static final String CONTENT_PREFIX = "content://";
 
     static final String TAG = "JS";
     private static final int FADE_IN_TIME = 200;
@@ -49,7 +51,7 @@ public abstract class Worker {
 
     protected boolean mPauseWork = false;
     protected Resources mResources;
-
+		protected ContentResolver mResolver;
     private static final int MESSAGE_CLEAR = 0;
     private static final int MESSAGE_INIT_DISK_CACHE = 1;
     private static final int MESSAGE_FLUSH = 2;
@@ -59,7 +61,7 @@ public abstract class Worker {
 
     protected Worker(Context context) {
         mResources = context.getResources();
-
+        mResolver = context.getContentResolver();
         // Negative means not initialized.
         if (debuggable < 0) {
             try {

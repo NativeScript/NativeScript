@@ -92,7 +92,7 @@ function updateCurrentHelperClasses(): void {
 	const oldActiveFontScaleCategory = currentFontScaleCategory;
 	switch (fontScaleCategory) {
 		case FontScaleCategory.ExtraSmall: {
-			currentFontScaleCategory = fontScaleMediumCategoryClass;
+			currentFontScaleCategory = fontScaleExtraSmallCategoryClass;
 			break;
 		}
 		case FontScaleCategory.Medium: {
