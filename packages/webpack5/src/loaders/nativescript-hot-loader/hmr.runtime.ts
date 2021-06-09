@@ -91,13 +91,20 @@ if (module.hot) {
 		return setStatus(hash, 'success', 'Successfully applied update.');
 	};
 
-	const hasUpdate = () => {
+	const requireExists = (path) => {
 		try {
-			__non_webpack_require__(`~/bundle.${__webpack_hash__}.hot-update.json`);
+			__non_webpack_require__(path);
 			return true;
 		} catch (err) {
 			return false;
 		}
+	};
+
+	const hasUpdate = () => {
+		return [
+			`~/bundle.${__webpack_hash__}.hot-update.json`,
+			`~/runtime.${__webpack_hash__}.hot-update.json`,
+		].some((path) => requireExists(path));
 	};
 
 	const originalOnLiveSync = global.__onLiveSync;

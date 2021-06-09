@@ -123,17 +123,42 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 
 	const angularWebpackPlugin = getAngularWebpackPlugin();
 	if (angularWebpackPlugin) {
+		// angular no longer supports transformers.
+		// so we patch their method until they do
+		// https://github.com/angular/angular-cli/pull/21046
+		const originalCreateFileEmitter =
+			angularWebpackPlugin.prototype.createFileEmitter;
+		angularWebpackPlugin.prototype.createFileEmitter = function (
+			...args: any[]
+		) {
+			let transformers = args[1] || {};
+			if (!transformers.before) {
+				transformers.before = [];
+			}
+			transformers.before.push(require('../transformers/NativeClass').default);
+			args[1] = transformers;
+			return originalCreateFileEmitter.apply(this, args);
+		};
 		config.plugin('AngularWebpackPlugin').use(angularWebpackPlugin, [
 			{
 				tsconfig: tsConfigPath,
 			},
 		]);
+
+		config.when(env.hmr, (config) => {
+			config.module
+				.rule('angular-hmr')
+				.enforce('post')
+				.test(getEntryPath())
+				.use('angular-hot-loader')
+				.loader('angular-hot-loader');
+		});
 	}
 
 	// look for platform specific polyfills first
 	// falling back to independent polyfills
 	const polyfillsPath = [
-		resolve(getEntryDirPath(), `polyfills.${getPlatformName()}.ts`),
+		resolve(getEntryDirPath(), `polyfills.${platform}.ts`),
 		resolve(getEntryDirPath(), `polyfills.ts`),
 	].find((path) => existsSync(path));
 
@@ -173,7 +198,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			 * | Add only entry points to the 'files' or 'include' properties in your tsconfig.          |
 			 * +-----------------------------------------------------------------------------------------+
 			 */
-			/environment.(\w+).ts is part of the TypeScript compilation but it's unused/,
+			/environment(\.(\w+))?\.ts is part of the TypeScript compilation but it's unused/,
+			// Additional rules to suppress warnings that are safe to ignore
+			{
+				module: /@angular\/core\/(__ivy_ngcc__\/)?fesm2015\/core.js/,
+				message: /Critical dependency: the request of a dependency is an expression/,
+			},
+			/core\/profiling/,
+			/core\/ui\/styling/,
 		])
 	);
 
