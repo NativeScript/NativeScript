@@ -77,7 +77,7 @@ let applicationCssSelectors: RuleSet[] = [];
 let applicationCssSelectorVersion = 0;
 let applicationSelectors: RuleSet[] = [];
 let tagToScopeTag: Map<string | number, string> = new Map();
-let currentScopeTag = '';
+let currentScopeTag: string = null;
 const applicationAdditionalSelectors: RuleSet[] = [];
 const applicationKeyframes: any = {};
 const animationsSymbol = Symbol('animations');
@@ -314,14 +314,14 @@ export function removeTaggedAdditionalCSS(tag: string | number): boolean {
 
 export function addTaggedAdditionalCSS(cssText: string, tag?: string | number): boolean {
 	const parsed: RuleSet[] = CSSSource.fromDetect(cssText, applicationKeyframes, undefined).selectors;
-	let tagScope = currentScopeTag || (tag && tagToScopeTag.has(tag) && tagToScopeTag.get(tag)) || undefined;
+	let tagScope = currentScopeTag || (tag && tagToScopeTag.has(tag) && tagToScopeTag.get(tag)) || null;
 	if (tagScope && tag) {
 		tagToScopeTag.set(tag, tagScope);
 	}
 	let changed = false;
 	if (parsed && parsed.length) {
 		changed = true;
-		if (tag != null) {
+		if (tag != null || tagScope != null) {
 			for (let i = 0; i < parsed.length; i++) {
 				parsed[i].tag = tag;
 				parsed[i].scopedTag = tagScope;
@@ -732,7 +732,7 @@ export class StyleScope {
 		currentScopeTag = cssFileName;
 
 		const cssSelectors = CSSSource.fromURI(cssFileName, this._keyframes);
-		currentScopeTag = '';
+		currentScopeTag = null;
 		this._css = cssSelectors.source;
 		this._localCssSelectors = cssSelectors.selectors;
 		this._localCssSelectorVersion++;
@@ -760,7 +760,7 @@ export class StyleScope {
 		}
 
 		const parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromURI(cssFileName, this._keyframes);
-		currentScopeTag = '';
+		currentScopeTag = null;
 		this._css = this._css + parsedCssSelectors.source;
 		this._localCssSelectors.push(...parsedCssSelectors.selectors);
 		this._localCssSelectorVersion++;
