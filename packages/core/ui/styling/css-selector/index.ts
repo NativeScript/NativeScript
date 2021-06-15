@@ -501,6 +501,7 @@ export namespace Selector {
 
 export class RuleSet {
 	tag: string | number;
+	scopedTag: string;
 	constructor(public selectors: SelectorCore[], public declarations: Declaration[]) {
 		this.selectors.forEach((sel) => (sel.ruleset = this));
 	}
