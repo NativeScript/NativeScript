@@ -6,11 +6,11 @@ export function uptime() {
 	return global.android ? (<any>org).nativescript.Process.getUpTime() : (<any>global).__tns_uptime();
 }
 
-export function log(message: string, ...args): void {
+export function log(message: string, ...optionalParams: any[]): void {
 	if ((<any>global).__nslog) {
-		(<any>global).__nslog('CONSOLE LOG: ' + message, ...args);
+		(<any>global).__nslog('CONSOLE LOG: ' + message, ...optionalParams);
 	}
-	console.log(message, ...args);
+	console.log(message, ...optionalParams);
 }
 
 export type InstrumentationMode = 'counters' | 'timeline' | 'lifecycle';
