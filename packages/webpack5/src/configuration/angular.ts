@@ -144,6 +144,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		config.plugin('AngularWebpackPlugin').use(angularWebpackPlugin, [
 			{
 				tsconfig: tsConfigPath,
+				directTemplateLoading: false,
 			},
 		]);
 
