@@ -113,9 +113,6 @@ exports[`typescript configuration for android 1`] = `
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -445,9 +442,6 @@ exports[`typescript configuration for ios 1`] = `
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {

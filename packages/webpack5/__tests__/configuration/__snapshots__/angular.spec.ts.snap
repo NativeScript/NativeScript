@@ -104,9 +104,6 @@ exports[`angular configuration for android 1`] = `
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -358,7 +355,8 @@ exports[`angular configuration for android 1`] = `
     /* config.plugin('AngularWebpackPlugin') */
     new AngularWebpackPlugin(
       {
-        tsconfig: '__jest__/tsconfig.json'
+        tsconfig: '__jest__/tsconfig.json',
+        directTemplateLoading: false
       }
     )
   ],
@@ -477,9 +475,6 @@ exports[`angular configuration for ios 1`] = `
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -731,7 +726,8 @@ exports[`angular configuration for ios 1`] = `
     /* config.plugin('AngularWebpackPlugin') */
     new AngularWebpackPlugin(
       {
-        tsconfig: '__jest__/tsconfig.json'
+        tsconfig: '__jest__/tsconfig.json',
+        directTemplateLoading: false
       }
     )
   ],

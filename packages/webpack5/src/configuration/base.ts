@@ -250,8 +250,6 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.module
 		.rule('workers')
 		.test(/\.(js|ts)$/)
-		.exclude.add(/node_modules/)
-		.end()
 		.use('nativescript-worker-loader')
 		.loader('nativescript-worker-loader');
 
