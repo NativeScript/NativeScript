@@ -148,6 +148,10 @@ exports[`vue configuration for android 1`] = `
           {
             loader: 'css2json-loader'
           },
+          /* config.module.rule('css').use('vue-css-loader') */
+          {
+            loader: 'vue-loader/lib/loaders/stylePostLoader.js'
+          },
           /* config.module.rule('css').use('postcss-loader') */
           {
             loader: 'postcss-loader',
@@ -172,6 +176,10 @@ exports[`vue configuration for android 1`] = `
           /* config.module.rule('scss').use('css2json-loader') */
           {
             loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('vue-css-loader') */
+          {
+            loader: 'vue-loader/lib/loaders/stylePostLoader.js'
           },
           /* config.module.rule('scss').use('postcss-loader') */
           {
@@ -481,6 +489,10 @@ exports[`vue configuration for ios 1`] = `
           {
             loader: 'css2json-loader'
           },
+          /* config.module.rule('css').use('vue-css-loader') */
+          {
+            loader: 'vue-loader/lib/loaders/stylePostLoader.js'
+          },
           /* config.module.rule('css').use('postcss-loader') */
           {
             loader: 'postcss-loader',
@@ -505,6 +517,10 @@ exports[`vue configuration for ios 1`] = `
           /* config.module.rule('scss').use('css2json-loader') */
           {
             loader: 'css2json-loader'
+          },
+          /* config.module.rule('scss').use('vue-css-loader') */
+          {
+            loader: 'vue-loader/lib/loaders/stylePostLoader.js'
           },
           /* config.module.rule('scss').use('postcss-loader') */
           {
