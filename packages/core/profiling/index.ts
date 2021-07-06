@@ -8,7 +8,7 @@ export function uptime() {
 
 export function log(message: string, ...optionalParams: any[]): void {
 	if ((<any>global).__nslog) {
-		(<any>global).__nslog('CONSOLE LOG: ' + message, ...optionalParams);
+		(<any>global).__nslog('CONSOLE LOG: ' + message);
 	}
 	console.log(message, ...optionalParams);
 }
