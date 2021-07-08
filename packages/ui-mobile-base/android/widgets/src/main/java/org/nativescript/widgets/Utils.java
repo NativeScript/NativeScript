@@ -2,6 +2,7 @@ package org.nativescript.widgets;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -18,6 +19,7 @@ import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.exifinterface.media.ExifInterface;
 
 import org.json.JSONException;
@@ -31,7 +33,18 @@ import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+
 public class Utils {
+	public static Drawable getDrawable(String uri, Context context){
+		String resPath = uri.substring("res://".length());
+		int resId = context.getResources().getIdentifier(resPath, "drawable", context.getPackageName());
+		if (resId > 0) {
+			return AppCompatResources.getDrawable(context, resId);
+		} else {
+			Log.v("JS", "Missing Image with resourceID: " + uri);
+			return null;
+		}
+	}
 	public static void drawBoxShadow(View view, String value) {
 		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) {
 			return;
