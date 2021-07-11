@@ -111,6 +111,10 @@ export class AndroidApplication extends Observable implements AndroidApplication
 		this._systemAppearance = value;
 	}
 
+	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined {
+		return this._registeredReceivers[intentFilter];
+	}
+
 	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void {
 		ensureBroadCastReceiverClass();
 		const registerFunc = (context: android.content.Context) => {
