@@ -71,9 +71,9 @@ export class Color implements definition.Color {
 	}
 
 	get hex(): string {
-		let result = SHARP + ('000000' + (this._argb & 0xffffff).toString(16)).slice(-6);
+		let result = SHARP + ('000000' + (this._argb & 0xffffff).toString(16)).toUpperCase().slice(-6);
 		if (this.a !== 0xff) {
-			return (result += ('00' + this.a.toString(16)).slice(-2));
+			return (result += ('00' + this.a.toString(16).toUpperCase()).slice(-2));
 		}
 		return result;
 	}
