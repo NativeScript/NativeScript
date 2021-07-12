@@ -846,7 +846,7 @@ declare class SCNCameraController extends NSObject {
 
 	stopInertia(): void;
 
-	translateInCameraSpaceByXYZ(deltaX: number, deltaY: number, deltaX2: number): void;
+	translateInCameraSpaceByXYZ(deltaX: number, deltaY: number, deltaZ: number): void;
 }
 
 interface SCNCameraControllerDelegate extends NSObjectProtocol {
@@ -1302,6 +1302,8 @@ declare class SCNGeometryElement extends NSObject implements NSSecureCoding {
 
 	static alloc(): SCNGeometryElement; // inherited from NSObject
 
+	static geometryElementWithBufferPrimitiveTypePrimitiveCountBytesPerIndex(buffer: MTLBuffer, primitiveType: SCNGeometryPrimitiveType, primitiveCount: number, bytesPerIndex: number): SCNGeometryElement;
+
 	static geometryElementWithDataPrimitiveTypePrimitiveCountBytesPerIndex(data: NSData, primitiveType: SCNGeometryPrimitiveType, primitiveCount: number, bytesPerIndex: number): SCNGeometryElement;
 
 	static geometryElementWithMDLSubmesh(mdlSubMesh: MDLSubmesh): SCNGeometryElement;
@@ -1350,7 +1352,7 @@ declare class SCNGeometrySource extends NSObject implements NSSecureCoding {
 
 	static alloc(): SCNGeometrySource; // inherited from NSObject
 
-	static geometrySourceWithBufferVertexFormatSemanticVertexCountDataOffsetDataStride(mtlBuffer: MTLBuffer, vertexFormat: MTLVertexFormat, semantic: string, vertexCount: number, offset: number, stride: number): SCNGeometrySource;
+	static geometrySourceWithBufferVertexFormatSemanticVertexCountDataOffsetDataStride(buffer: MTLBuffer, vertexFormat: MTLVertexFormat, semantic: string, vertexCount: number, offset: number, stride: number): SCNGeometrySource;
 
 	static geometrySourceWithDataSemanticVectorCountFloatComponentsComponentsPerVectorBytesPerComponentDataOffsetDataStride(data: NSData, semantic: string, vectorCount: number, floatComponents: boolean, componentsPerVector: number, bytesPerComponent: number, offset: number, stride: number): SCNGeometrySource;
 
@@ -2342,6 +2344,8 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly focusGroupIdentifier: string; // inherited from UIFocusEnvironment
 
 	readonly focusItemContainer: UIFocusItemContainer; // inherited from UIFocusEnvironment
 
@@ -3587,6 +3591,8 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	readonly currentRenderCommandEncoder: MTLRenderCommandEncoder; // inherited from SCNSceneRenderer
 
+	readonly currentRenderPassDescriptor: MTLRenderPassDescriptor; // inherited from SCNSceneRenderer
+
 	readonly currentViewport: CGRect; // inherited from SCNSceneRenderer
 
 	readonly debugDescription: string; // inherited from NSObjectProtocol
@@ -3849,6 +3855,8 @@ interface SCNSceneRenderer extends NSObjectProtocol {
 	context: interop.Pointer | interop.Reference<any>;
 
 	currentRenderCommandEncoder: MTLRenderCommandEncoder;
+
+	currentRenderPassDescriptor: MTLRenderPassDescriptor;
 
 	currentViewport: CGRect;
 
@@ -4484,6 +4492,8 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 	readonly context: interop.Pointer | interop.Reference<any>; // inherited from SCNSceneRenderer
 
 	readonly currentRenderCommandEncoder: MTLRenderCommandEncoder; // inherited from SCNSceneRenderer
+
+	readonly currentRenderPassDescriptor: MTLRenderPassDescriptor; // inherited from SCNSceneRenderer
 
 	readonly currentViewport: CGRect; // inherited from SCNSceneRenderer
 

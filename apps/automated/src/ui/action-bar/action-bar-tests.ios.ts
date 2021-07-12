@@ -5,7 +5,7 @@ import * as LabelModule from '@nativescript/core/ui/label';
 import * as helper from '../../ui-helper';
 import * as view from '@nativescript/core/ui/core/view';
 import * as actionBar from '@nativescript/core/ui/action-bar';
-import { Visibility } from '@nativescript/core/ui/enums';
+import { CoreTypes } from '@nativescript/core';
 
 export * from './action-bar-tests-common';
 
@@ -95,7 +95,7 @@ export function test_actionItem_visibility() {
 
 	var leftBarButtonItemsCount = navigationItem.leftBarButtonItems ? navigationItem.leftBarButtonItems.count : 0;
 	TKUnit.assertEqual(leftBarButtonItemsCount, 1, 'Visibility does not work');
-	actionItem.visibility = Visibility.collapse;
+	actionItem.visibility = CoreTypes.Visibility.collapse;
 
 	TKUnit.waitUntilReady(() => {
 		leftBarButtonItemsCount = navigationItem.leftBarButtonItems ? navigationItem.leftBarButtonItems.count : 0;
@@ -118,7 +118,7 @@ export function test_navigationButton_visibility() {
 	var navigationItem: UINavigationItem = viewController.navigationItem;
 
 	TKUnit.assertFalse(navigationItem.hidesBackButton, 'Visibility does not work');
-	actionItem.visibility = Visibility.collapse;
+	actionItem.visibility = CoreTypes.Visibility.collapse;
 
 	TKUnit.waitUntilReady(() => {
 		return navigationItem.hidesBackButton;

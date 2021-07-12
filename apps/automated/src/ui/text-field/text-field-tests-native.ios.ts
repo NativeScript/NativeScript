@@ -1,7 +1,7 @@
 ﻿import * as textFieldModule from '@nativescript/core/ui/text-field';
 import * as colorModule from '@nativescript/core/color';
 import { getColor } from '../../ui-helper';
-import * as enums from '@nativescript/core/ui/enums';
+import { CoreTypes } from '@nativescript/core';
 
 export function getNativeText(textField: textFieldModule.TextField): string {
 	return textField.ios.text;
@@ -34,11 +34,11 @@ export function getNativeBackgroundColor(textField: textFieldModule.TextField): 
 export function getNativeTextAlignment(textField: textFieldModule.TextField): string {
 	switch (textField.ios.textAlignment) {
 		case NSTextAlignment.Left:
-			return enums.TextAlignment.left;
+			return CoreTypes.TextAlignment.left;
 		case NSTextAlignment.Center:
-			return enums.TextAlignment.center;
+			return CoreTypes.TextAlignment.center;
 		case NSTextAlignment.Right:
-			return enums.TextAlignment.right;
+			return CoreTypes.TextAlignment.right;
 		default:
 			return 'unexpected value';
 	}

@@ -1,7 +1,7 @@
 import * as TKUnit from '../../tk-unit';
 import * as styleScope from '@nativescript/core/ui/styling/style-scope';
 import * as keyframeAnimation from '@nativescript/core/ui/animation/keyframe-animation';
-import * as enums from '@nativescript/core/ui/enums';
+import { CoreTypes } from '@nativescript/core';
 import * as helper from '../../ui-helper';
 import * as stackModule from '@nativescript/core/ui/layouts/stack-layout';
 import * as labelModule from '@nativescript/core/ui/label';
@@ -37,7 +37,7 @@ export function test_ReadAnimationProperties() {
 	let animation = createAnimationFromCSS(css, 'test');
 	TKUnit.assertEqual(animation.name, 'first');
 	TKUnit.assertEqual(animation.duration, 4000);
-	TKUnit.assertEqual(animation.curve, enums.AnimationCurve.easeIn);
+	TKUnit.assertEqual(animation.curve, CoreTypes.AnimationCurve.easeIn);
 	TKUnit.assertEqual(animation.delay, 1500);
 	TKUnit.assertEqual(animation.iterations, 10);
 	TKUnit.assertTrue(animation.isForwards);
@@ -48,22 +48,22 @@ export function test_ReadTheAnimationProperty() {
 	let animation = createAnimationFromCSS('.test { animation: second 0.2s ease-out 1 2 }', 'test');
 	TKUnit.assertEqual(animation.name, 'second');
 	TKUnit.assertEqual(animation.duration, 200);
-	TKUnit.assertEqual(animation.curve, enums.AnimationCurve.easeOut);
+	TKUnit.assertEqual(animation.curve, CoreTypes.AnimationCurve.easeOut);
 	TKUnit.assertEqual(animation.delay, 1000);
 	TKUnit.assertEqual(animation.iterations, 2);
 }
 
 export function test_ReadAnimationCurve() {
 	let animation = createAnimationFromCSS('.test { animation-timing-function: ease-in; }', 'test');
-	TKUnit.assertEqual(animation.curve, enums.AnimationCurve.easeIn);
+	TKUnit.assertEqual(animation.curve, CoreTypes.AnimationCurve.easeIn);
 	animation = createAnimationFromCSS('.test { animation-timing-function: ease-out; }', 'test');
-	TKUnit.assertEqual(animation.curve, enums.AnimationCurve.easeOut);
+	TKUnit.assertEqual(animation.curve, CoreTypes.AnimationCurve.easeOut);
 	animation = createAnimationFromCSS('.test { animation-timing-function: linear; }', 'test');
-	TKUnit.assertEqual(animation.curve, enums.AnimationCurve.linear);
+	TKUnit.assertEqual(animation.curve, CoreTypes.AnimationCurve.linear);
 	animation = createAnimationFromCSS('.test { animation-timing-function: ease-in-out; }', 'test');
-	TKUnit.assertEqual(animation.curve, enums.AnimationCurve.easeInOut);
+	TKUnit.assertEqual(animation.curve, CoreTypes.AnimationCurve.easeInOut);
 	animation = createAnimationFromCSS('.test { animation-timing-function: spring; }', 'test');
-	TKUnit.assertEqual(animation.curve, enums.AnimationCurve.spring);
+	TKUnit.assertEqual(animation.curve, CoreTypes.AnimationCurve.spring);
 	animation = createAnimationFromCSS('.test { animation-timing-function: cubic-bezier(0.1, 1.0, 0.5, 0.5); }', 'test');
 	let curve = animation.curve;
 	TKUnit.assert(curve.x1 === 0.1 && curve.y1 === 1.0 && curve.x2 === 0.5 && curve.y2 === 0.5);
@@ -389,8 +389,8 @@ export function test_ReadTwoAnimations() {
 	scope.ensureSelectors();
 	let selector = findSelectorInScope(scope, 'test');
 	TKUnit.assertEqual(scope.getAnimations(selector.ruleset).length, 2);
-	TKUnit.assertEqual(scope.getAnimations(selector.ruleset)[0].curve, enums.AnimationCurve.easeOut);
-	TKUnit.assertEqual(scope.getAnimations(selector.ruleset)[1].curve, enums.AnimationCurve.easeIn);
+	TKUnit.assertEqual(scope.getAnimations(selector.ruleset)[0].curve, CoreTypes.AnimationCurve.easeOut);
+	TKUnit.assertEqual(scope.getAnimations(selector.ruleset)[1].curve, CoreTypes.AnimationCurve.easeIn);
 	TKUnit.assertEqual(scope.getAnimations(selector.ruleset)[1].name, 'two');
 	TKUnit.assertEqual(scope.getAnimations(selector.ruleset)[1].duration, 2000);
 }
@@ -401,12 +401,12 @@ export function test_AnimationCurveInKeyframes() {
 	scope.ensureSelectors();
 	let selector = findSelectorInScope(scope, 'test');
 	let animation = scope.getAnimations(selector.ruleset)[0];
-	TKUnit.assertEqual(animation.keyframes[0].curve, enums.AnimationCurve.linear);
+	TKUnit.assertEqual(animation.keyframes[0].curve, CoreTypes.AnimationCurve.linear);
 	TKUnit.assertEqual(animation.keyframes[1].curve, undefined);
 	TKUnit.assertEqual(animation.keyframes[1].curve, undefined);
 	let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animation);
-	TKUnit.assertEqual(realAnimation.animations[1].curve, enums.AnimationCurve.linear);
-	TKUnit.assertEqual(realAnimation.animations[2].curve, enums.AnimationCurve.easeIn);
+	TKUnit.assertEqual(realAnimation.animations[1].curve, CoreTypes.AnimationCurve.linear);
+	TKUnit.assertEqual(realAnimation.animations[2].curve, CoreTypes.AnimationCurve.easeIn);
 }
 
 function getTransformsValues(declarations) {

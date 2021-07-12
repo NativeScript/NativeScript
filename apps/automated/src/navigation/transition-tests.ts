@@ -1,10 +1,9 @@
 import * as helper from '../ui-helper';
 import * as platform from '@nativescript/core/platform';
-import { Trace } from '@nativescript/core';
+import { Trace, CoreTypes } from '@nativescript/core';
 import { Color } from '@nativescript/core/color';
 import { NavigationEntry, NavigationTransition } from '@nativescript/core/ui/frame';
 import { Page } from '@nativescript/core/ui/page';
-import { AnimationCurve } from '@nativescript/core/ui/enums';
 import { CustomTransition } from './custom-transition';
 
 function _testTransition(navigationTransition: NavigationTransition) {
@@ -51,7 +50,7 @@ export function test_Transitions() {
 
 	// Built-in transitions
 	transitions.forEach((name) => {
-		_testTransition({ name, duration: 20, curve: AnimationCurve.easeIn });
+		_testTransition({ name, duration: 20, curve: CoreTypes.AnimationCurve.easeIn });
 	});
 
 	// helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: false });

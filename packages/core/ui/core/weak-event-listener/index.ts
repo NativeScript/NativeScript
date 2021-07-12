@@ -1,7 +1,7 @@
 import { Observable, EventData } from '../../../data/observable';
 
 const handlersForEventName = new Map<string, (eventData: EventData) => void>();
-const sourcesMap = new WeakMap<Observable, Map<string, Array<TargetHandlerPair>>>();
+const sourcesMap = new WeakMap<Partial<Observable>, Map<string, Array<TargetHandlerPair>>>();
 
 class TargetHandlerPair {
 	tagetRef: WeakRef<Object>;

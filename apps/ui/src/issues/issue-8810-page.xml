@@ -1,0 +1,14 @@
+<Page>
+  <ActionBar title="issue-8810"></ActionBar>
+
+	<StackLayout
+		orientation="horizontal"
+		verticalAlignment="center"
+		horizontalAlignment="center"
+		padding="30"
+		borderWidth="1">
+		<Label
+			text="Play with NativeScript!"
+			borderWidth="1"/>
+	</StackLayout>
+</Page>

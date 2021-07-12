@@ -1,4 +1,4 @@
-import { WebViewBase, WebViewClient } from './web-view-common';
+import { disableZoomProperty, WebViewBase, WebViewClient } from './web-view-common';
 import { Trace } from '../../trace';
 import { knownFolders } from '../../file-system';
 
@@ -107,6 +107,7 @@ export class WebView extends WebViewBase {
 		const client = new WebViewClient(<any>this);
 		nativeView.setWebViewClient(client);
 		(<any>nativeView).client = client;
+		this._disableZoom(this.disableZoom);
 	}
 
 	public disposeNativeView() {
@@ -117,6 +118,19 @@ export class WebView extends WebViewBase {
 
 		(<any>nativeView).client.owner = null;
 		super.disposeNativeView();
+	}
+
+	private _disableZoom(value: boolean) {
+		if (this.nativeView && value) {
+			const settings = this.nativeView.getSettings();
+			settings.setBuiltInZoomControls(false);
+			settings.setSupportZoom(false);
+			settings.setDisplayZoomControls(false);
+		}
+	}
+
+	[disableZoomProperty.setNative](value: boolean) {
+		this._disableZoom(value);
 	}
 
 	public _loadUrl(src: string) {

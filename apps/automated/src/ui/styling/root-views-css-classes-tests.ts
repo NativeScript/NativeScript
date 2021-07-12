@@ -1,7 +1,7 @@
 import * as helper from '../../ui-helper';
 import * as TKUnit from '../../tk-unit';
 
-import { Application, isAndroid, isIOS, Device, Button, Page, ShownModallyData, ShowModalOptions, View, Utils, Enums } from '@nativescript/core';
+import { Application, isAndroid, isIOS, Device, Button, Page, ShownModallyData, ShowModalOptions, View, Utils, CoreTypes } from '@nativescript/core';
 import { _rootModalViews } from '@nativescript/core/ui/core/view/view-common';
 
 const CLASS_NAME = 'class-name';
@@ -57,7 +57,7 @@ function _test_device_type_css_class(rootView: View, shouldSetClassName: boolean
 
 	const cssClasses = rootView.cssClasses;
 	const deviceType = Device.deviceType;
-	if (deviceType === Enums.DeviceType.Phone) {
+	if (deviceType === CoreTypes.DeviceType.Phone) {
 		TKUnit.assertTrue(cssClasses.has(PHONE_DEVICE_TYPE_CSS_CLASS), `${PHONE_DEVICE_TYPE_CSS_CLASS} CSS class is missing`);
 		TKUnit.assertFalse(cssClasses.has(TABLET_DEVICE_TYPE_CSS_CLASS), `${TABLET_DEVICE_TYPE_CSS_CLASS} CSS class is present`);
 	} else {

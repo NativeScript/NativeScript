@@ -5,9 +5,8 @@ import { Button } from '@nativescript/core/ui/button';
 import * as types from '@nativescript/core/utils/types';
 import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
 import { Label } from '@nativescript/core/ui/label';
-import { Trace } from '@nativescript/core';
+import { Trace, isIOS } from '@nativescript/core';
 import { Color } from '@nativescript/core/color';
-import { isIOS } from '@nativescript/core';
 
 // enable the trace, it is disabled by default
 Trace.enable();
@@ -226,6 +225,7 @@ export function test_automation_text_set_to_native() {
 	const test = function (views: Array<View>) {
 		const newButton = new Button();
 		newButton.automationText = 'Button1';
+		newButton.accessibilityLabel = 'Button1';
 		(<StackLayout>views[1]).addChild(newButton);
 		TKUnit.assertEqual((<android.widget.Button>newButton.android).getContentDescription(), 'Button1', 'contentDescription not set to native ');
 	};

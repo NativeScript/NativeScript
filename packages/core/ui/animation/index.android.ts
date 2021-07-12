@@ -340,7 +340,7 @@ export class Animation extends AnimationBase {
 				animators.push(createObjectAnimator(nativeView, 'alpha', propertyAnimation.value));
 				break;
 
-			case Properties.backgroundColor:{
+			case Properties.backgroundColor: {
 				backgroundColorProperty._initDefaultNativeValue(style);
 
 				ensureArgbEvaluator();

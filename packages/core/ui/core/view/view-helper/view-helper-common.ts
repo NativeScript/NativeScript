@@ -1,6 +1,6 @@
 // Types
 import { View as ViewDefinition } from '..';
-import { HorizontalAlignment as HorizontalAlignmentDefinition, VerticalAlignment as VerticalAlignmentDefinition } from '../../../styling/style-properties';
+import { CoreTypes } from '../../../../core-types';
 
 // Requires
 import { layout } from '../../../../utils';
@@ -58,7 +58,7 @@ export class ViewHelper {
 		const effectiveMarginTop = child.effectiveMarginTop;
 		const effectiveMarginBottom = child.effectiveMarginBottom;
 
-		let vAlignment: VerticalAlignmentDefinition;
+		let vAlignment: CoreTypes.VerticalAlignmentType;
 		if (child.effectiveHeight >= 0 && childStyle.verticalAlignment === 'stretch') {
 			vAlignment = 'middle';
 		} else {
@@ -88,7 +88,7 @@ export class ViewHelper {
 		const effectiveMarginLeft = child.effectiveMarginLeft;
 		const effectiveMarginRight = child.effectiveMarginRight;
 
-		let hAlignment: HorizontalAlignmentDefinition;
+		let hAlignment: CoreTypes.HorizontalAlignmentType;
 		if (child.effectiveWidth >= 0 && childStyle.horizontalAlignment === 'stretch') {
 			hAlignment = 'center';
 		} else {

@@ -12,7 +12,6 @@ interface IConfigPlatform {
 	discardUncaughtJsExceptions?: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IConfigIOS extends IConfigPlatform {}
 
 interface IConfigAndroid extends IConfigPlatform {

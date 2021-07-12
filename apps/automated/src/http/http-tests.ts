@@ -1,4 +1,4 @@
-import { ImageSource } from '@nativescript/core/image-source';
+import { ImageSource } from '@nativescript/core';
 import * as TKUnit from '../tk-unit';
 import * as http from '@nativescript/core/http';
 import * as fs from '@nativescript/core/file-system';
@@ -697,7 +697,7 @@ export var test_getString_WorksProperlyInWorker = function (done) {
 		done();
 	};
 	worker.onerror = function (e) {
-		console.log('errir received');
+		console.log('error received');
 		done(e);
 	};
 };

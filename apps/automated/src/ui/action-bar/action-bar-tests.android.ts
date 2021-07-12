@@ -1,7 +1,7 @@
 ﻿import * as TKUnit from '../../tk-unit';
 import { createPageAndNavigate } from './action-bar-tests-common';
 import { ActionItem } from '@nativescript/core/ui/action-bar';
-import { Visibility } from '@nativescript/core/ui/enums';
+import { CoreTypes } from '@nativescript/core';
 import { Button } from '@nativescript/core/ui/button';
 
 export * from './action-bar-tests-common';
@@ -15,7 +15,7 @@ export function test_actionItem_visibility() {
 	const menu = toolbar.getMenu();
 
 	TKUnit.assertTrue(menu.hasVisibleItems(), 'Visibility does not work');
-	actionItem.visibility = Visibility.collapse;
+	actionItem.visibility = CoreTypes.Visibility.collapse;
 	TKUnit.assertFalse(menu.hasVisibleItems(), 'Visibility does not work');
 }
 
@@ -28,7 +28,7 @@ export function test_navigationButton_visibility() {
 	const toolbar = <androidx.appcompat.widget.Toolbar>page.actionBar.nativeViewProtected;
 
 	TKUnit.assertNotNull(toolbar.getNavigationIcon(), 'Visibility does not work');
-	actionItem.visibility = Visibility.collapse;
+	actionItem.visibility = CoreTypes.Visibility.collapse;
 	TKUnit.assertNull(toolbar.getNavigationIcon(), 'Visibility does not work');
 }
 
