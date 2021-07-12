@@ -1,39 +1,39 @@
 import * as TKUnit from '../tk-unit';
-import * as enums from '@nativescript/core/ui/enums';
+import { CoreTypes } from '@nativescript/core';
 import { findMatch, PlatformContext } from '@nativescript/core/module-name-resolver/qualifier-matcher';
 
 export const androidPhonePortraitContext: PlatformContext = {
 	width: 360,
 	height: 640,
-	deviceType: enums.DeviceType.Phone,
+	deviceType: CoreTypes.DeviceType.Phone,
 	os: 'android',
 };
 
 export const androidPhoneLandscapeContext: PlatformContext = {
 	width: 640,
 	height: 360,
-	deviceType: enums.DeviceType.Phone,
+	deviceType: CoreTypes.DeviceType.Phone,
 	os: 'android',
 };
 
 export const androidTabletPortraitContext: PlatformContext = {
 	width: 600,
 	height: 960,
-	deviceType: enums.DeviceType.Tablet,
+	deviceType: CoreTypes.DeviceType.Tablet,
 	os: 'android',
 };
 
 export const iPhonePortraitContext: PlatformContext = {
 	width: 320,
 	height: 480,
-	deviceType: enums.DeviceType.Phone,
+	deviceType: CoreTypes.DeviceType.Phone,
 	os: 'ios',
 };
 
 export const iPhoneLandscapeContext: PlatformContext = {
 	width: 480,
 	height: 320,
-	deviceType: enums.DeviceType.Phone,
+	deviceType: CoreTypes.DeviceType.Phone,
 	os: 'ios',
 };
 

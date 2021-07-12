@@ -6,13 +6,11 @@ import { getNodeById } from './dom-node';
 import { mainThreadify } from '../utils';
 
 // Use lazy requires for core modules
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const getAppRootView = () => require('../application').getRootView();
 
 let unsetValue;
 function unsetViewValue(view, name) {
 	if (!unsetValue) {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		unsetValue = require('../ui/core/properties').unsetValue;
 	}
 

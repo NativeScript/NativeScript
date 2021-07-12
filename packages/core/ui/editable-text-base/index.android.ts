@@ -216,7 +216,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		const nativeView = this.nativeTextViewProtected;
 		try {
 			this._changeFromCode = true;
-			nativeView.setInputType(inputType);
+			nativeView.setInputType(parseInt(<any>inputType, 10));
 		} finally {
 			this._changeFromCode = false;
 		}
@@ -281,7 +281,12 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 				break;
 
 			default:
-				newInputType = value;
+				const inputType = +value;
+				if (!isNaN(inputType)) {
+					newInputType = inputType;
+				} else {
+					newInputType = android.text.InputType.TYPE_CLASS_TEXT;
+				}
 				break;
 		}
 

@@ -1,6 +1,6 @@
 import { StackLayoutBase } from './stack-layout-common';
+import { CoreTypes } from '../../../core-types';
 import { View } from '../../core/view';
-import { VerticalAlignment, HorizontalAlignment } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 
@@ -112,16 +112,16 @@ export class StackLayout extends StackLayoutBase {
 		const childRight = right - left - paddingRight;
 
 		switch (this.verticalAlignment) {
-			case VerticalAlignment.MIDDLE:
-				childTop = (bottom - top - this._totalLength) / 2 + paddingTop - paddingBottom;
+			case CoreTypes.VerticalAlignment.middle:
+				childTop = (bottom - top - this._totalLength) / 2 + paddingTop;
 				break;
 
-			case VerticalAlignment.BOTTOM:
-				childTop = bottom - top - this._totalLength + paddingTop - paddingBottom;
+			case CoreTypes.VerticalAlignment.bottom:
+				childTop = bottom - top - this._totalLength + paddingTop;
 				break;
 
-			case VerticalAlignment.TOP:
-			case VerticalAlignment.STRETCH:
+			case CoreTypes.VerticalAlignment.top:
+			case CoreTypes.VerticalAlignment.stretch:
 			default:
 				childTop = paddingTop;
 				break;
@@ -146,16 +146,16 @@ export class StackLayout extends StackLayoutBase {
 		const childBottom = bottom - top - paddingBottom;
 
 		switch (this.horizontalAlignment) {
-			case HorizontalAlignment.CENTER:
-				childLeft = (right - left - this._totalLength) / 2 + paddingLeft - paddingRight;
+			case CoreTypes.HorizontalAlignment.center:
+				childLeft = (right - left - this._totalLength) / 2 + paddingLeft;
 				break;
 
-			case HorizontalAlignment.RIGHT:
-				childLeft = right - left - this._totalLength + paddingLeft - paddingRight;
+			case CoreTypes.HorizontalAlignment.right:
+				childLeft = right - left - this._totalLength + paddingLeft;
 				break;
 
-			case HorizontalAlignment.LEFT:
-			case HorizontalAlignment.STRETCH:
+			case CoreTypes.HorizontalAlignment.left:
+			case CoreTypes.HorizontalAlignment.stretch:
 			default:
 				childLeft = paddingLeft;
 				break;

@@ -1,4 +1,5 @@
-import { DockLayout as DockLayoutDefinition, Dock } from '.';
+import { DockLayout as DockLayoutDefinition } from '.';
+import { CoreTypes } from '../../../core-types';
 import { LayoutBase } from '../layout-base';
 import { View, CSSType } from '../../core/view';
 import { Property, makeValidator, makeParser } from '../../core/properties';
@@ -16,25 +17,25 @@ export * from '../layout-base';
 
 @CSSType('DockLayout')
 export class DockLayoutBase extends LayoutBase implements DockLayoutDefinition {
-	public static getDock(element: View): Dock {
+	public static getDock(element: View): CoreTypes.DockType {
 		return validateArgs(element).dock;
 	}
 
-	public static setDock(element: View, value: Dock): void {
+	public static setDock(element: View, value: CoreTypes.DockType): void {
 		validateArgs(element).dock = value;
 	}
 
 	public stretchLastChild: boolean;
 
-	public onDockChanged(view: View, oldValue: Dock, newValue: Dock) {
+	public onDockChanged(view: View, oldValue: CoreTypes.DockType, newValue: CoreTypes.DockType) {
 		//
 	}
 }
 
 DockLayoutBase.prototype.recycleNativeView = 'auto';
 
-const dockConverter = makeParser<Dock>(makeValidator<Dock>('left', 'top', 'right', 'bottom'));
-export const dockProperty = new Property<View, Dock>({
+const dockConverter = makeParser<CoreTypes.DockType>(makeValidator<CoreTypes.DockType>(CoreTypes.Dock.left, CoreTypes.Dock.top, CoreTypes.Dock.right, CoreTypes.Dock.bottom));
+export const dockProperty = new Property<View, CoreTypes.DockType>({
 	name: 'dock',
 	defaultValue: 'left',
 	valueChanged: (target, oldValue, newValue) => {

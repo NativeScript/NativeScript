@@ -3,7 +3,7 @@ import { Color } from '../../color';
 import { FormattedString } from '../text-base/formatted-string';
 import { Style } from '../styling/style';
 import { Property, CssProperty } from '../core/properties';
-import { KeyboardType } from '../enums';
+import { CoreTypes } from '../../core-types';
 
 /**
  * Represents the base class for all editable text views.
@@ -16,22 +16,22 @@ export class EditableTextBase extends TextBase {
 	/**
 	 * Gets or sets the soft keyboard type.
 	 */
-	keyboardType: KeyboardType;
+	keyboardType: CoreTypes.KeyboardInputType;
 
 	/**
 	 * Gets or sets the soft keyboard return key flavor.
 	 */
-	returnKeyType: ReturnKeyType;
+	returnKeyType: CoreTypes.ReturnKeyButtonType;
 
 	/**
 	 * Gets or sets a value indicating when the text property will be updated.
 	 */
-	updateTextTrigger: UpdateTextTrigger;
+	updateTextTrigger: CoreTypes.UpdateTextTriggerType;
 
 	/**
 	 * Gets or sets the autocapitalization type.
 	 */
-	autocapitalizationType: AutocapitalizationType;
+	autocapitalizationType: CoreTypes.AutocapitalizationInputType;
 
 	/**
 	 * Gets or sets whether the instance is editable.
@@ -71,15 +71,11 @@ export class EditableTextBase extends TextBase {
 	public setSelection(start: number, stop?: number);
 }
 
-export type ReturnKeyType = 'done' | 'next' | 'go' | 'search' | 'send';
-export type UpdateTextTrigger = 'focusLost' | 'textChanged';
-export type AutocapitalizationType = 'none' | 'words' | 'sentences' | 'allcharacters';
-
-export const keyboardTypeProperty: Property<EditableTextBase, KeyboardType>;
-export const returnKeyTypeProperty: Property<EditableTextBase, ReturnKeyType>;
+export const keyboardTypeProperty: Property<EditableTextBase, CoreTypes.KeyboardInputType>;
+export const returnKeyTypeProperty: Property<EditableTextBase, CoreTypes.ReturnKeyButtonType>;
 export const editableProperty: Property<EditableTextBase, boolean>;
-export const updateTextTriggerProperty: Property<EditableTextBase, UpdateTextTrigger>;
-export const autocapitalizationTypeProperty: Property<EditableTextBase, AutocapitalizationType>;
+export const updateTextTriggerProperty: Property<EditableTextBase, CoreTypes.UpdateTextTriggerType>;
+export const autocapitalizationTypeProperty: Property<EditableTextBase, CoreTypes.AutocapitalizationInputType>;
 export const autocorrectProperty: Property<EditableTextBase, boolean>;
 export const hintProperty: Property<EditableTextBase, string>;
 export const placeholderColorProperty: CssProperty<Style, Color>;

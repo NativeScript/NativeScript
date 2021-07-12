@@ -269,7 +269,7 @@ export class FileSystemAccess {
 
 	public write = this.writeSync.bind(this);
 
-	public writeAsync(path: string, bytes: native.Array<number>): Promise<void> {
+	public writeAsync(path: string, bytes: androidNative.Array<number>): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			try {
 				org.nativescript.widgets.Async.File.write(
@@ -291,7 +291,7 @@ export class FileSystemAccess {
 		});
 	}
 
-	public writeSync(path: string, bytes: native.Array<number>, onError?: (error: any) => any) {
+	public writeSync(path: string, bytes: androidNative.Array<number>, onError?: (error: any) => any) {
 		try {
 			const javaFile = new java.io.File(path);
 			const stream = new java.io.FileOutputStream(javaFile);

@@ -121,7 +121,7 @@ export namespace Trace {
 		export const ModuleNameResolver = 'ModuleNameResolver';
 
 		export const separator = ',';
-		export const All: Array<string>;
+		export const All: string;
 
 		export function concat(...args: any): string;
 	}

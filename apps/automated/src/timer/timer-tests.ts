@@ -155,6 +155,7 @@ export function test_setInterval_callbackCalledDuringPeriod(done) {
 export function test_setInterval_callbackCalledWithExtraArgs(done) {
 	let counter: number = 0;
 	const rnd: number = Math.random();
+	const threshold = 100;
 
 	const start = TKUnit.time();
 	const id = timer.setInterval(
@@ -163,10 +164,10 @@ export function test_setInterval_callbackCalledWithExtraArgs(done) {
 			if (counter === 4) {
 				const end = TKUnit.time();
 				timer.clearInterval(id);
-				done(end - start > 250 ? new Error('setInterval too slow.') : null);
+				done(end - start > 1000 + threshold ? new Error('setInterval too slow.') : null);
 			}
 		},
-		50,
+		250,
 		rnd
 	);
 }
@@ -179,11 +180,11 @@ export function test_setInterval_callbackNotDelayedByBusyWork() {
 		calls++;
 		if (firstCall) {
 			firstCall = false;
-			TKUnit.wait(0.025);
+			TKUnit.wait(0.125);
 		}
-	}, 50);
+	}, 250);
 
-	TKUnit.wait(0.11);
+	TKUnit.wait(0.55);
 	timer.clearInterval(id);
 	TKUnit.assertEqual(calls, 2, 'Callback should be called multiple times with busy wait');
 }

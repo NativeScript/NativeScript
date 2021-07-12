@@ -1,16 +1,16 @@
 import * as labelModule from '@nativescript/core/ui/label';
-import * as enums from '@nativescript/core/ui/enums';
+import { CoreTypes } from '@nativescript/core';
 import * as colorModule from '@nativescript/core/color';
 import { getColor } from '../../ui-helper';
 
 export function getNativeTextAlignment(label: labelModule.Label): string {
 	switch (label.ios.textAlignment) {
 		case NSTextAlignment.Left:
-			return enums.TextAlignment.left;
+			return CoreTypes.TextAlignment.left;
 		case NSTextAlignment.Center:
-			return enums.TextAlignment.center;
+			return CoreTypes.TextAlignment.center;
 		case NSTextAlignment.Right:
-			return enums.TextAlignment.right;
+			return CoreTypes.TextAlignment.right;
 		default:
 			return 'unexpected value';
 	}

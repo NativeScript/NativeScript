@@ -1,8 +1,5 @@
 import * as TKUnit from '../tk-unit';
-import { EventData, Page, NavigatedData } from '@nativescript/core';
-import { Frame, NavigationTransition } from '@nativescript/core/ui/frame';
-import { StackLayout } from '@nativescript/core/ui/layouts/stack-layout';
-import { Color } from '@nativescript/core/color';
+import { EventData, Page, NavigatedData, Frame, NavigationTransition, StackLayout, Color } from '@nativescript/core';
 import * as helper from '../ui-helper';
 import * as frame from '@nativescript/core/ui/frame';
 // Creates a random colorful page full of meaningless stuff.

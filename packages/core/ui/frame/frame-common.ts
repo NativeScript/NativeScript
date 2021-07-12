@@ -10,6 +10,7 @@ import { getAncestor } from '../core/view-base';
 import { Builder } from '../builder';
 import { sanitizeModuleName } from '../builder/module-name-sanitizer';
 import { profile } from '../../profiling';
+import { FRAME_SYMBOL } from './frame-helpers';
 
 export { NavigationType } from './frame-interfaces';
 export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame } from './frame-interfaces';
@@ -288,7 +289,6 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	private isNestedWithin(parentFrameCandidate: FrameBase): boolean {
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		let frameAncestor: FrameBase = this;
 		while (frameAncestor) {
 			frameAncestor = <FrameBase>getAncestor(frameAncestor, FrameBase);
@@ -699,6 +699,9 @@ export class FrameBase extends CustomLayoutView {
 		this._processNextNavigationEntry();
 	}
 }
+
+// Mark as a Frame with an unique Symbol
+FrameBase.prototype[FRAME_SYMBOL] = true;
 
 export function getFrameById(id: string): FrameBase {
 	console.log('getFrameById() is deprecated. Use Frame.getFrameById() instead.');

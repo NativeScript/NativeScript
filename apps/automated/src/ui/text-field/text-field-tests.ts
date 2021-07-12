@@ -514,7 +514,7 @@ export var testNativeFontSizeFromLocal = function () {
 	});
 };
 
-var expectedColorHex = '#FFFF0000';
+var expectedColorHex = '#FF0000FF';
 var expectedNormalizedColorHex = '#FF0000';
 export var testLocalColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -548,7 +548,7 @@ export var testNativeColorFromLocal = function () {
 	});
 };
 
-var expectedBackgroundColorHex = '#FF00FF00';
+var expectedBackgroundColorHex = '#00FF00FF';
 var expectedNormalizedBackgroundColorHex = '#00FF00';
 export var testLocalBackgroundColorFromCss = function () {
 	helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<View>) {
@@ -695,7 +695,7 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
 
 export function test_set_placeholder_color() {
 	const view = new TextField();
-	const expectedColorHex = '#FFFF0000';
+	const expectedColorHex = '#FF0000FF';
 	const expectedNormalizedColorHex = '#FF0000';
 	helper.buildUIAndRunTest(view, function (views: Array<View>) {
 		view.hint = 'Some text for hint';
@@ -707,7 +707,7 @@ export function test_set_placeholder_color() {
 
 export function test_set_placeholder_color_when_hint_is_not_set() {
 	const view = new TextField();
-	const expectedColorHex = '#FFFF0000';
+	const expectedColorHex = '#FF0000FF';
 	const expectedNormalizedColorHex = '#FF0000';
 	helper.buildUIAndRunTest(view, function (views: Array<View>) {
 		view.setInlineStyle('placeholder-color: ' + expectedColorHex + ';');

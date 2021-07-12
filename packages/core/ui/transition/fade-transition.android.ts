@@ -1,17 +1,17 @@
-import { Transition, AndroidTransitionType } from '.';
+import { Transition } from '.';
 
 export class FadeTransition extends Transition {
 	public createAndroidAnimator(transitionType: string): android.animation.AnimatorSet {
 		const animatorSet = new android.animation.AnimatorSet();
 		const alphaValues = Array.create('float', 2);
 		switch (transitionType) {
-			case AndroidTransitionType.enter:
-			case AndroidTransitionType.popEnter:
+			case Transition.AndroidTransitionType.enter:
+			case Transition.AndroidTransitionType.popEnter:
 				alphaValues[0] = 0;
 				alphaValues[1] = 1;
 				break;
-			case AndroidTransitionType.exit:
-			case AndroidTransitionType.popExit:
+			case Transition.AndroidTransitionType.exit:
+			case Transition.AndroidTransitionType.popExit:
 				alphaValues[0] = 1;
 				alphaValues[1] = 0;
 				break;
