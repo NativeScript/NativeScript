@@ -8,7 +8,7 @@ import base from './base';
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
 	const entryPath = getEntryPath();
-	const filterRE = '/\\.(xml|js|(?<!d\\.)ts|s?css)$/';
+	const filterRE = '/\\.(xml|js|(?<!\\.d\\.)ts|s?css)$/';
 	const virtualEntryPath = addVirtualEntry(
 		config,
 		'typescript',
