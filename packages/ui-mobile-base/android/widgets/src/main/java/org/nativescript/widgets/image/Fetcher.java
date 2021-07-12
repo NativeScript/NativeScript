@@ -20,16 +20,15 @@ import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Matrix;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import androidx.exifinterface.media.ExifInterface;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
-import android.os.RemoteException;
 import android.util.Log;
 import android.util.TypedValue;
+import androidx.exifinterface.media.ExifInterface;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -377,13 +376,12 @@ public class Fetcher extends Worker {
         // Decode bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
         Bitmap bitmap = null;
-        InputStream is = null;
+				InputStream is = null;
 
         try {
-            final TypedValue value = new TypedValue();
-            is = res.openRawResource(resId, value);
-
-            bitmap = BitmapFactory.decodeResourceStream(res, value, is, null, options);
+					final TypedValue value = new TypedValue();
+					is = res.openRawResource(resId, value);
+					bitmap = BitmapFactory.decodeResourceStream(res, value, is, null, options);
         } catch (Exception e) {
             /*  do nothing.
                 If the exception happened on open, bm will be null.
@@ -391,8 +389,10 @@ public class Fetcher extends Worker {
             */
         }
 
-        if (bitmap == null && options != null && options.inBitmap != null) {
-            throw new IllegalArgumentException("Problem decoding into existing bitmap");
+
+        if (bitmap == null) {
+           // throw new IllegalArgumentException("Problem decoding into existing bitmap");
+					return null;
         }
 
         ExifInterface ei = getExifInterface(is);
@@ -449,7 +449,7 @@ public class Fetcher extends Worker {
     /**
      * Decode and sample down a bitmap from a file to the requested width and height.
      *
-     * @param filename The full path of the file to decode
+     * @param fileName The full path of the file to decode
      * @param reqWidth The requested width of the resulting bitmap
      * @param reqHeight The requested height of the resulting bitmap
      * @param cache The Cache used to find candidate bitmaps for use with inBitmap

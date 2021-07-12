@@ -26,8 +26,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
-import android.widget.ImageView;
 import java.lang.ref.WeakReference;
+
+import org.nativescript.widgets.Utils;
 
 /**
  * This class wraps up completing some arbitrary long running work when loading a bitmap to an
@@ -52,6 +53,7 @@ public abstract class Worker {
     protected boolean mPauseWork = false;
     protected Resources mResources;
 		protected ContentResolver mResolver;
+		protected Context mContext;
     private static final int MESSAGE_CLEAR = 0;
     private static final int MESSAGE_INIT_DISK_CACHE = 1;
     private static final int MESSAGE_FLUSH = 2;
@@ -62,6 +64,7 @@ public abstract class Worker {
     protected Worker(Context context) {
         mResources = context.getResources();
         mResolver = context.getContentResolver();
+        mContext = context;
         // Negative means not initialized.
         if (debuggable < 0) {
             try {
@@ -102,7 +105,7 @@ public abstract class Worker {
             return;
         }
 
-        Bitmap value = null;
+        Object value = null;
         String cacheUri = uri;
 
         if (debuggable > 0) {
@@ -124,9 +127,14 @@ public abstract class Worker {
                     if (debuggable > 0) {
                         Log.v(TAG, "loadImage.addBitmapToCache: " + owner + ", src: " + cacheUri);
                     }
-                    mCache.addBitmapToCache(cacheUri, value);
+                    mCache.addBitmapToCache(cacheUri, (Bitmap) value);
                 }
             }
+
+            /* Try loading as drawable */
+					if(value == null){
+						value = Utils.getDrawable(uri, mContext);
+					}
         }
 
         if (value != null) {
@@ -134,7 +142,12 @@ public abstract class Worker {
             if (debuggable > 0) {
                 Log.v(TAG, "Set ImageBitmap on: " + owner + " to: " + uri);
             }
-            owner.setBitmap(value);
+            if(value instanceof Drawable){
+							owner.setDrawable((Drawable) value);
+						}else {
+							owner.setBitmap((Bitmap) value);
+						}
+
             if (listener != null) {
                 if (debuggable > 0) {
                     Log.v(TAG, "OnImageLoadedListener on: " + owner + " to: " + uri);
@@ -145,6 +158,8 @@ public abstract class Worker {
             final BitmapWorkerTask task = new BitmapWorkerTask(uri, owner, decodeWidth, decodeHeight, keepAspectRatio, useCache, listener);
             final AsyncDrawable asyncDrawable =
                     new AsyncDrawable(mResources, mLoadingBitmap, task);
+
+
             owner.setDrawable(asyncDrawable);
 
             // NOTE: This uses a custom version of AsyncTask that has been pulled from the
@@ -277,7 +292,7 @@ public abstract class Worker {
     /**
      * The actual AsyncTask that will asynchronously process the image.
      */
-    private class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
+    private class BitmapWorkerTask extends AsyncTask<Void, Void, Object> {
         private int mDecodeWidth;
         private int mDecodeHeight;
         private boolean mKeepAspectRatio;
@@ -306,13 +321,13 @@ public abstract class Worker {
          * Background processing.
          */
         @Override
-        protected Bitmap doInBackground(Void... params) {
+        protected Object doInBackground(Void... params) {
             if (debuggable > 0) {
                 Log.v(TAG, "doInBackground - starting work: " + imageViewReference.get() + ", on: " + mUri);
             }
 
 
-            Bitmap bitmap = null;
+            Object bitmap = null;
 
             // Wait here if work is paused and the task is not cancelled
             synchronized (mPauseWorkLock) {
@@ -327,8 +342,7 @@ public abstract class Worker {
             // another thread and the ImageView that was originally bound to this task is still
             // bound back to this task and our "exit early" flag is not set, then call the main
             // process method (as implemented by a subclass)
-            if (bitmap == null && !isCancelled() && getAttachedOwner() != null
-                    && !mExitTasksEarly) {
+            if (!isCancelled() && getAttachedOwner() != null && !mExitTasksEarly) {
                 bitmap = processBitmap(mUri, mDecodeWidth, mDecodeHeight, mKeepAspectRatio, mCacheImage);
             }
 
@@ -341,9 +355,14 @@ public abstract class Worker {
                     if (debuggable > 0) {
                         Log.v(TAG, "addBitmapToCache: " + imageViewReference.get() + ", src: " + mCacheUri);
                     }
-                    mCache.addBitmapToCache(mCacheUri, bitmap);
+                    mCache.addBitmapToCache(mCacheUri, (Bitmap) bitmap);
                 }
             }
+
+            /* Try loading as Drawable */
+            if (bitmap == null){
+							bitmap = Utils.getDrawable(mUri, mContext);
+						}
 
             if (debuggable > 0) {
                 Log.v(TAG, "doInBackground - finished work");
@@ -356,7 +375,7 @@ public abstract class Worker {
          * Once the image is processed, associates it to the imageView
          */
         @Override
-        protected void onPostExecute(Bitmap value) {
+        protected void onPostExecute(Object value) {
             boolean success = false;
             // if cancel was called on this task or the "exit early" flag is set then we're done
             if (isCancelled() || mExitTasksEarly) {
@@ -377,7 +396,11 @@ public abstract class Worker {
                 if (debuggable > 0) {
                     Log.v(TAG, "Set ImageDrawable on: " + owner + " to: " + mUri);
                 }
-                owner.setBitmap(value);
+                if(value instanceof Drawable){
+									owner.setDrawable((Drawable) value);
+								} else if(value instanceof Bitmap){
+									owner.setBitmap((Bitmap) value);
+								}
             }
 
             if (mOnImageLoadedListener != null) {
@@ -389,7 +412,7 @@ public abstract class Worker {
         }
 
         @Override
-        protected void onCancelled(Bitmap value) {
+        protected void onCancelled(Object value) {
             super.onCancelled(value);
             synchronized (mPauseWorkLock) {
                 mPauseWorkLock.notifyAll();

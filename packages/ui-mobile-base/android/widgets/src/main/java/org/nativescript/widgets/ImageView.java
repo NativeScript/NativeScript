@@ -7,6 +7,9 @@ import android.content.Context;
 import android.graphics.*;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.shapes.RoundRectShape;
+import android.util.Log;
+
+import androidx.appcompat.app.AppCompatDelegate;
 
 import org.nativescript.widgets.image.BitmapOwner;
 import org.nativescript.widgets.image.Fetcher;
@@ -14,7 +17,7 @@ import org.nativescript.widgets.image.Worker;
 /**
  * @author hhristov
  */
-public class ImageView extends android.widget.ImageView implements BitmapOwner {
+public class ImageView extends androidx.appcompat.widget.AppCompatImageView implements BitmapOwner {
     private static final double EPSILON = 1E-05;
 
     private Path path = new Path();
@@ -35,6 +38,10 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
     private boolean mAsync;
     private Worker.OnImageLoadedListener mListener;
     private boolean mAttachedToWindow = false;
+
+		static  {
+			AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+		}
 
     public float getRotationAngle() {
         return rotationAngle;
@@ -214,7 +221,9 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
     @Override
     protected void onDraw(Canvas canvas) {
         BorderDrawable background = this.getBackground() instanceof BorderDrawable ? (BorderDrawable) this.getBackground() : null;
-
+        if(this.mBitmap == null && this.getDrawable() != null) {
+        	super.onDraw(canvas);
+				}
         if (this.mBitmap != null) {
             float borderTopLeftRadius, borderTopRightRadius, borderBottomRightRadius, borderBottomLeftRadius;
 
