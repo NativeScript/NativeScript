@@ -1,3 +1,13 @@
+## [8.0.8](https://github.com/NativeScript/NativeScript/compare/8.0.7-core...8.0.8) (2021-06-15)
+
+
+### Bug Fixes
+
+* stop leaking style scopes ([#9444](https://github.com/NativeScript/NativeScript/issues/9444)) ([b8d8110](https://github.com/NativeScript/NativeScript/commit/b8d8110994ecb5a882e89ae10e7b13070ae4d709)), closes [#9311](https://github.com/NativeScript/NativeScript/issues/9311)
+* **android:** accessibilityIdentifier ([#9432](https://github.com/NativeScript/NativeScript/issues/9432)) ([9f582ba](https://github.com/NativeScript/NativeScript/commit/9f582ba168dd6f4366e2591a9fed10e1c2443ca4))
+
+
+
 ## [8.0.7](https://github.com/NativeScript/NativeScript/compare/8.0.6-core...8.0.7) (2021-06-02)
 
 
