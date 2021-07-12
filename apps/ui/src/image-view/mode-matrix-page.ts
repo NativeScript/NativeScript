@@ -1,4 +1,4 @@
-import { Image, Enums } from '@nativescript/core';
+import { Image, CoreTypes } from '@nativescript/core';
 import { GridLayout } from '@nativescript/core/ui/layouts/grid-layout';
 import { Color } from '@nativescript/core/color';
 import * as imageSource from '@nativescript/core/image-source';

@@ -4,7 +4,6 @@ import { ApplicationEventData, CssChangedEventData, LaunchEventData, LoadAppCSSE
 
 // TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common');
 // First reexport so that app module is initialized.
 export * from './application-common';

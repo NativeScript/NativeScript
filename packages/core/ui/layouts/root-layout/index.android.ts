@@ -10,6 +10,26 @@ export class RootLayout extends RootLayoutBase {
 		super();
 	}
 
+	insertChild(view: View, atIndex: number): void {
+		super.insertChild(view, atIndex);
+		if (!view.hasGestureObservers()) {
+			// block tap events from going through to layers behind the view
+			view.nativeViewProtected.setOnTouchListener(
+				new android.view.View.OnTouchListener({
+					onTouch: function (view, event) {
+						return true;
+					},
+				})
+			);
+		}
+	}
+	removeChild(view: View): void {
+		if (view.hasGestureObservers()) {
+			view.nativeViewProtected.setOnTouchListener(null);
+		}
+		super.removeChild(view);
+	}
+
 	protected _bringToFront(view: View) {
 		(<android.view.View>view.nativeViewProtected).bringToFront();
 	}

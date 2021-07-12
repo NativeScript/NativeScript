@@ -286,3 +286,8 @@ export function eliminateDuplicates(arr: Array<any>): Array<any>;
  * Checks whether the application is running on real device and not on simulator/emulator.
  */
 export function isRealDevice(): boolean;
+
+/**
+ * Hides the soft input method, usually a soft keyboard.
+ */
+export function dismissSoftInput(nativeView?: any): void;
