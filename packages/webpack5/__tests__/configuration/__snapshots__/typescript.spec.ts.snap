@@ -313,7 +313,7 @@ exports[`typescript configuration for android 1`] = `
     /* config.plugin('VirtualModulesPlugin') */
     new VirtualModulesPlugin(
       {
-        '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__': '// VIRTUAL ENTRY START\\\\nrequire(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /\\\\\\\\.(xml|js|(?<!d\\\\\\\\.)ts|s?css)$/);\\\\nglobal.registerWebpackModules(context);\\\\n// VIRTUAL ENTRY END'
+        '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__': '// VIRTUAL ENTRY START\\\\nrequire(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /\\\\\\\\.(xml|js|(?<!\\\\\\\\.d\\\\\\\\.)ts|s?css)$/);\\\\nglobal.registerWebpackModules(context);\\\\n// VIRTUAL ENTRY END'
       }
     )
   ],
@@ -642,7 +642,7 @@ exports[`typescript configuration for ios 1`] = `
     /* config.plugin('VirtualModulesPlugin') */
     new VirtualModulesPlugin(
       {
-        '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__': '// VIRTUAL ENTRY START\\\\nrequire(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /\\\\\\\\.(xml|js|(?<!d\\\\\\\\.)ts|s?css)$/);\\\\nglobal.registerWebpackModules(context);\\\\n// VIRTUAL ENTRY END'
+        '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__': '// VIRTUAL ENTRY START\\\\nrequire(\\\\'@nativescript/core/bundle-entry-points\\\\')\\\\nconst context = require.context(\\"~/\\", /* deep: */ true, /* filter: */ /\\\\\\\\.(xml|js|(?<!\\\\\\\\.d\\\\\\\\.)ts|s?css)$/);\\\\nglobal.registerWebpackModules(context);\\\\n// VIRTUAL ENTRY END'
       }
     )
   ],
