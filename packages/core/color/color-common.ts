@@ -1,4 +1,4 @@
-﻿import * as definition from '.';
+import * as definition from '.';
 import * as types from '../utils/types';
 import * as knownColors from './known-colors';
 import { convertHSLToRGBColor } from '../css/parser';
@@ -30,8 +30,7 @@ export class Color implements definition.Color {
 					// we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
 					// strange that it would not be. And if it is not a thrown error seems best
 					// The parameter is a "#RRGGBBAA" formatted string
-					const hex = this._normalizeHex(arg);
-					this._argb = this._argbFromString(hex);
+					this._argb = this._argbFromString(arg);
 				} else {
 					throw new Error('Invalid color: ' + arg);
 				}
@@ -72,11 +71,11 @@ export class Color implements definition.Color {
 	}
 
 	get hex(): string {
-		if (this.a === 0xff) {
-			return ('#' + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b)).toUpperCase();
-		} else {
-			return ('#' + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b) + this._componentToHex(this.a)).toUpperCase();
+		let result = SHARP + ('000000' + (this._argb & 0xffffff).toString(16)).toUpperCase().slice(-6);
+		if (this.a !== 0xff) {
+			return (result += ('00' + this.a.toString(16).toUpperCase()).slice(-2));
 		}
+		return result;
 	}
 
 	get name(): string {
@@ -92,13 +91,13 @@ export class Color implements definition.Color {
 	}
 
 	public _argbFromString(hex: string): number {
-		if (hex.charAt(0) === '#') {
-			hex = hex.substr(1);
-		}
-
-		if (hex.length === 3) {
+		// always called as SHARP as first char
+		hex = hex.substr(1);
+		const length = hex.length;
+		// first we normalize
+		if (length === 3) {
 			hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-		} else if (hex.length === 4) {
+		} else if (length === 4) {
 			hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
 		}
 
@@ -152,25 +151,6 @@ export class Color implements definition.Color {
 	public static fromHSL(a, h, s, l) {
 		const rgb = hslToRgb(h, s, l);
 		return new Color(a, rgb.r, rgb.g, rgb.b);
-	}
-
-	private _componentToHex(component: number): string {
-		let hex = component.toString(16);
-		if (hex.length === 1) {
-			hex = '0' + hex;
-		}
-
-		return hex;
-	}
-
-	private _normalizeHex(hexStr: string): string {
-		// we expect this to already has a # as first char as it is supposed to be tested before
-		if (hexStr.length === 4) {
-			// Duplicate each char after the #, so "#123" becomes "#112233"
-			hexStr = hexStr.charAt(0) + hexStr.charAt(1) + hexStr.charAt(1) + hexStr.charAt(2) + hexStr.charAt(2) + hexStr.charAt(3) + hexStr.charAt(3);
-		}
-
-		return hexStr;
 	}
 
 	public toString(): string {
@@ -247,7 +227,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHsl() {
-		const hsl = rgbToHsl(this.r, this.g, this.b);
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		return { h: hsl.h * 360, s: hsl.s, l: hsl.l, a: this.a };
 	}
 
@@ -256,7 +236,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHslString() {
-		const hsl = rgbToHsl(this.r, this.g, this.b);
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		const h = Math.round(hsl.h * 360),
 			s = Math.round(hsl.s * 100),
 			l = Math.round(hsl.l * 100);
@@ -269,7 +249,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHsv() {
-		const hsv = rgbToHsv(this.r, this.g, this.b);
+		const hsv = rgbToHsv(this.r / 255, this.g / 255, this.b / 255);
 		return { h: hsv.h * 360, s: hsv.s, v: hsv.v, a: this.a };
 	}
 
@@ -278,7 +258,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHsvString() {
-		const hsv = rgbToHsv(this.r, this.g, this.b);
+		const hsv = rgbToHsv(this.r / 255, this.g / 255, this.b / 255);
 		const h = Math.round(hsv.h * 360),
 			s = Math.round(hsv.s * 100),
 			v = Math.round(hsv.v * 100);
@@ -302,7 +282,7 @@ export class Color implements definition.Color {
 	 */
 	public desaturate(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = this.toHsl();
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.s -= amount / 100;
 		hsl.s = Math.min(1, Math.max(0, hsl.s));
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
@@ -315,7 +295,7 @@ export class Color implements definition.Color {
 	 */
 	public saturate(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = this.toHsl();
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.s += amount / 100;
 		hsl.s = Math.min(1, Math.max(0, hsl.s));
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
@@ -336,7 +316,7 @@ export class Color implements definition.Color {
 	 */
 	public lighten(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = this.toHsl();
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.l += amount / 100;
 		hsl.l = Math.min(1, Math.max(0, hsl.l));
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
@@ -362,7 +342,7 @@ export class Color implements definition.Color {
 	 */
 	public darken(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = this.toHsl();
+		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.l -= amount / 100;
 		hsl.l = Math.min(1, Math.max(0, hsl.l));
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
@@ -388,6 +368,19 @@ export class Color implements definition.Color {
 		const hsl = this.toHsl();
 		hsl.h = (hsl.h + 180) % 360;
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
+	}
+
+	static mix(color1: Color, color2: Color, amount = 50) {
+		const p = amount / 100;
+
+		const rgba = {
+			r: (color2.r - color1.r) * p + color1.r,
+			g: (color2.g - color1.g) * p + color1.g,
+			b: (color2.b - color1.b) * p + color1.b,
+			a: (color2.a - color1.a) * p + color1.a,
+		};
+
+		return new Color(rgba.a, rgba.r, rgba.g, rgba.b);
 	}
 }
 

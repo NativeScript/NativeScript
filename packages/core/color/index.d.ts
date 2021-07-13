@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Represents a color object. Stores all color components (alpha (opacity), red, green, blue) in a [0..255] range.
  */
 export class Color {
@@ -190,4 +190,10 @@ export class Color {
 	 *
 	 */
 	public complement(): Color;
+
+	/**
+	 * returns the color complement
+	 *
+	 */
+	public static mix(color1: Color, color2: Color, amount: number): Color;
 }
