@@ -116,6 +116,13 @@ module.exports = {
           script: 'nx run webpack:test',
           description: '@nativescript/webpack: Unit tests'
         },
+      },
+      // @nativescript/webpack (5)
+			webpack5: {
+				build: {
+          script: 'nx run webpack5:build',
+          description: '@nativescript/webpack(5): Build for npm'
+        },
 			},
     },
     "⚡": {
