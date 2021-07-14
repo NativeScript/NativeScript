@@ -233,6 +233,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			.plugin('ForkTsCheckerWebpackPlugin')
 			.use(ForkTsCheckerWebpackPlugin, [
 				{
+					// If we use "async" errors compiling typescript will be ignored by
+					// WebPack (we will send the "compilation" message back to the CLI,
+					// and the process exit code will be zero), therefore we will end
+					// up with a broken build
+					async: false,
 					typescript: {
 						memoryLimit: 4096,
 					},
