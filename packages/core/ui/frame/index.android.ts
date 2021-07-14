@@ -1110,7 +1110,9 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			rootView._saveFragmentsState();
 		}
 
-		outState.putInt(ROOT_VIEW_ID_EXTRA, rootView._domId);
+		if (rootView) {
+			outState.putInt(ROOT_VIEW_ID_EXTRA, rootView._domId);
+		}
 	}
 
 	@profile
