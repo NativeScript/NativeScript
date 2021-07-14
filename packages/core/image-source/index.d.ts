@@ -199,11 +199,26 @@ export class ImageSource {
 	saveToFile(path: string, format: 'png' | 'jpeg' | 'jpg', quality?: number): boolean;
 
 	/**
+	 * Saves this instance to the specified file, using the provided image format and quality asynchronously.
+	 * @param path The path of the file on the file system to save to.
+	 * @param format The format (encoding) of the image.
+	 * @param quality Optional parameter, specifying the quality of the encoding. Defaults to the maximum available quality. Quality varies on a scale of 0 to 100.
+	 */
+	saveToFileAsync(path: string, format: 'png' | 'jpeg' | 'jpg', quality?: number): Promise<boolean>;
+
+	/**
 	 * Converts the image to base64 encoded string, using the provided image format and quality.
 	 * @param format The format (encoding) of the image.
 	 * @param quality Optional parameter, specifying the quality of the encoding. Defaults to the maximum available quality. Quality varies on a scale of 0 to 100.
 	 */
 	toBase64String(format: 'png' | 'jpeg' | 'jpg', quality?: number): string;
+
+	/**
+	 * Converts the image to base64 encoded string, using the provided image format and quality asynchronously.
+	 * @param format The format (encoding) of the image.
+	 * @param quality Optional parameter, specifying the quality of the encoding. Defaults to the maximum available quality. Quality varies on a scale of 0 to 100.
+	 */
+	toBase64StringAsync(format: 'png' | 'jpeg' | 'jpg', quality?: number): Promise<string>;
 
 	/**
 	 * Returns a new ImageSource that is a resized version of this image with the same aspect ratio, but the max dimension set to the provided maxSize.
@@ -217,6 +232,19 @@ export class ImageSource {
 	 *     bilinear filtering is typically minimal and the improved image quality is significant.
 	 */
 	resize(maxSize: number, options?: any): ImageSource;
+
+	/**
+	 * Returns a new ImageSource that is a resized version of this image with the same aspect ratio, but the max dimension set to the provided maxSize asynchronously.
+	 * @param maxSize The maximum pixel dimension of the resulting image.
+	 * @param options Optional parameter, Only used for android, options.filter is a boolean which
+	 *     determines whether or not bilinear filtering should be used when scaling the bitmap.
+	 *     If this is true then bilinear filtering will be used when scaling which has
+	 *     better image quality at the cost of worse performance. If this is false then
+	 *     nearest-neighbor scaling is used instead which will have worse image quality
+	 *     but is faster. Recommended default is to set filter to 'true' as the cost of
+	 *     bilinear filtering is typically minimal and the improved image quality is significant.
+	 */
+	resizeAsync(maxSize: number, options?: any): Promise<ImageSource>;
 }
 
 /**

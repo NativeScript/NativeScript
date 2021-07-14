@@ -635,6 +635,9 @@ declare module org {
 				public static class: java.lang.Class<org.nativescript.widgets.Utils>;
 				public static loadImageAsync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: number, param4: number, param5: org.nativescript.widgets.Utils.AsyncImageCallback): void;
 				public static drawBoxShadow(param0: globalAndroid.view.View, param1: string): void;
+                public static saveToFileAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: string, param3: number, param4: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+                public static toBase64StringAsync(param0: globalAndroid.graphics.Bitmap, param1: string, param2: number, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+                public static resizeAsync(param0: globalAndroid.graphics.Bitmap, param1: number, param2: string, param3: org.nativescript.widgets.Utils.AsyncImageCallback): void;
 				public constructor();
 			}
 			export module Utils {
@@ -644,11 +647,11 @@ declare module org {
 					 * Constructs a new instance of the org.nativescript.widgets.Utils$AsyncImageCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
 					 */
 					public constructor(implementation: {
-						onSuccess(param0: globalAndroid.graphics.Bitmap): void;
+						onSuccess(param0: any): void;
 						onError(param0: java.lang.Exception): void;
 					});
 					public constructor();
-					public onSuccess(param0: globalAndroid.graphics.Bitmap): void;
+					public onSuccess(param0: any): void;
 					public onError(param0: java.lang.Exception): void;
 				}
 				export class ImageAssetOptions {

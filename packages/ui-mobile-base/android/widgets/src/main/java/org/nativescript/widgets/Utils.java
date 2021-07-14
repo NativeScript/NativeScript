@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.util.Base64OutputStream;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
@@ -22,6 +23,8 @@ import androidx.exifinterface.media.ExifInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -72,7 +75,7 @@ public class Utils {
 	}
 
 	public interface AsyncImageCallback {
-		void onSuccess(Bitmap bitmap);
+		void onSuccess(Object bitmap);
 
 		void onError(Exception exception);
 	}
@@ -283,6 +286,145 @@ public class Utils {
 						}
 					});
 				}
+			}
+		});
+	}
+
+	static Bitmap.CompressFormat getTargetFormat(String format) {
+		switch (format) {
+			case "jpeg":
+			case "jpg":
+				return Bitmap.CompressFormat.JPEG;
+			default:
+				return Bitmap.CompressFormat.PNG;
+		}
+	}
+
+
+	public static void saveToFileAsync(final Bitmap bitmap, final String path, final String format, final int quality, final AsyncImageCallback callback) {
+		executors.execute(new Runnable() {
+			@Override
+			public void run() {
+				boolean isSuccess = false;
+				Exception exception = null;
+				if (bitmap != null) {
+					Bitmap.CompressFormat targetFormat = getTargetFormat(format);
+					try (BufferedOutputStream outputStream = new BufferedOutputStream(new java.io.FileOutputStream(path))) {
+						isSuccess = bitmap.compress(targetFormat, quality, outputStream);
+					} catch (Exception e) {
+						exception = e;
+					}
+				}
+
+				final Exception finalException = exception;
+				final boolean finalIsSuccess = isSuccess;
+				mainHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						if (finalException != null) {
+							callback.onError(finalException);
+						} else {
+							callback.onSuccess(finalIsSuccess);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	public static void toBase64StringAsync(final Bitmap bitmap, final String format, final int quality, final AsyncImageCallback callback) {
+		executors.execute(new Runnable() {
+			@Override
+			public void run() {
+				String result = null;
+				Exception exception = null;
+				if (bitmap != null) {
+
+					Bitmap.CompressFormat targetFormat = getTargetFormat(format);
+
+					try (
+						ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+						Base64OutputStream base64Stream = new Base64OutputStream(outputStream, android.util.Base64.NO_WRAP)
+					) {
+						bitmap.compress(targetFormat, quality, base64Stream);
+						result = outputStream.toString();
+					} catch (Exception e) {
+						exception = e;
+					}
+				}
+
+				final Exception finalException = exception;
+				final String finalResult = result;
+				mainHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						if (finalException != null) {
+							callback.onError(finalException);
+						} else {
+							callback.onSuccess(finalResult);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	static Pair<Integer, Integer> getScaledDimensions(float width, float height, float maxSize) {
+		if (height >= width) {
+			if (height <= maxSize) {
+				// if image already smaller than the required height
+				return new Pair<>((int) width, (int) height);
+			}
+
+			return new Pair<>(
+				Math.round((maxSize * width) / height)
+				, (int) height);
+		}
+
+		if (width <= maxSize) {
+			// if image already smaller than the required width
+			return new Pair<>((int) width, (int) height);
+		}
+
+		return new Pair<>((int) maxSize, Math.round((maxSize * height) / width));
+
+	}
+
+	public static void resizeAsync(final Bitmap bitmap, final float maxSize, final String options, final AsyncImageCallback callback) {
+		executors.execute(new Runnable() {
+			@Override
+			public void run() {
+				Bitmap result = null;
+				Exception exception = null;
+				if (bitmap != null) {
+					Pair<Integer, Integer> dim = getScaledDimensions(bitmap.getWidth(), bitmap.getHeight(), maxSize);
+					boolean filter = false;
+					if (options != null) {
+						try {
+							JSONObject json = new JSONObject(options);
+							filter = json.optBoolean("filter", false);
+						} catch (JSONException ignored) {
+						}
+					}
+					try {
+						result = android.graphics.Bitmap.createScaledBitmap(bitmap, dim.first, dim.second, filter);
+					} catch (Exception e) {
+						exception = e;
+					}
+				}
+
+				final Exception finalException = exception;
+				final Bitmap finalResult = result;
+				mainHandler.post(new Runnable() {
+					@Override
+					public void run() {
+						if (finalException != null) {
+							callback.onError(finalException);
+						} else {
+							callback.onSuccess(finalResult);
+						}
+					}
+				});
 			}
 		});
 	}
