@@ -478,8 +478,11 @@ export class Frame extends FrameBase {
 		const currentIndex = this.backStack.length;
 		const goBackToIndex = this.backStack.indexOf(backstackEntry);
 
-		// the order is important so that the transition listener called be
-		// the one from the current entry we are going back from
+		// the order is important so that the last transition listener called be
+        // the one from the current entry we are going back from
+        for (let index = goBackToIndex + 1; index < currentIndex; index++) {
+            transaction.remove(this.backStack[index].fragment);
+        }
 		if (this._currentEntry !== backstackEntry) {
 			const entry = this._currentEntry as ExpandedEntry;
 			// if we are going back we need to store where we are backing to
@@ -491,9 +494,6 @@ export class Frame extends FrameBase {
 
 			// we only did hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
 			transaction.hide(this._currentEntry.fragment);
-		}
-		for (let index = goBackToIndex + 1; index < currentIndex; index++) {
-			transaction.remove(this.backStack[index].fragment);
 		}
 
 		transaction.commitAllowingStateLoss();
