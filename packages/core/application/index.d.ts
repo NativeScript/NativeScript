@@ -629,6 +629,12 @@ export class AndroidApplication extends Observable {
 	public static activityRequestPermissionsEvent: string;
 
 	/**
+	 * Get a registered BroadcastReceiver, then you can get the result code of BroadcastReceiver in onReceiveCallback method.
+	 * @param intentFilter A string containing the intent filter.
+	 */
+	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined;
+
+	/**
 	 * Register a BroadcastReceiver to be run in the main activity thread. The receiver will be called with any broadcast Intent that matches filter, in the main application thread.
 	 * For more information, please visit 'http://developer.android.com/reference/android/content/Context.html#registerReceiver%28android.content.BroadcastReceiver,%20android.content.IntentFilter%29'
 	 * @param intentFilter A string containing the intent filter.
