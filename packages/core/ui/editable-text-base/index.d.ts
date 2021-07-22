@@ -34,6 +34,11 @@ export class EditableTextBase extends TextBase {
 	autocapitalizationType: CoreTypes.AutocapitalizationInputType;
 
 	/**
+	 * Gets or sets the autofill type.
+	 */
+	 autofillType: CoreTypes.AutofillType;
+
+	/**
 	 * Gets or sets whether the instance is editable.
 	 */
 	editable: boolean;

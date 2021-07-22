@@ -1,7 +1,8 @@
-import { EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty, returnKeyTypeProperty, editableProperty, autocapitalizationTypeProperty, autocorrectProperty, hintProperty, placeholderColorProperty, maxLengthProperty } from './editable-text-base-common';
+import { EditableTextBase as EditableTextBaseCommon, autofillTypeProperty, keyboardTypeProperty, returnKeyTypeProperty, editableProperty, autocapitalizationTypeProperty, autocorrectProperty, hintProperty, placeholderColorProperty, maxLengthProperty } from './editable-text-base-common';
 import { textTransformProperty, textProperty, resetSymbol } from '../text-base';
 import { Color } from '../../color';
 import { ad } from '../../utils';
+import { CoreTypes } from '../../core-types';
 
 export * from './editable-text-base-common';
 
@@ -291,6 +292,47 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 		}
 
 		this._setInputType(newInputType);
+	}
+
+	[autofillTypeProperty.setNative](value: CoreTypes.AutofillType) {
+		let newOptions;
+		switch (value) {
+			case 'phone':
+				newOptions = android.view.View.AUTOFILL_HINT_PHONE;
+				break;
+			case 'postalCode':
+				newOptions = android.view.View.AUTOFILL_HINT_POSTAL_CODE;
+				break;
+			case 'creditCardNumber':
+				newOptions = android.view.View.AUTOFILL_HINT_CREDIT_CARD_NUMBER;
+				break;
+			case 'email':
+				newOptions = android.view.View.AUTOFILL_HINT_EMAIL_ADDRESS;
+				break;
+			case 'name':
+				newOptions = android.view.View.AUTOFILL_HINT_NAME;
+				break;
+			case 'username':
+				newOptions = android.view.View.AUTOFILL_HINT_USERNAME;
+				break;
+			case 'password':
+				newOptions = android.view.View.AUTOFILL_HINT_PASSWORD;
+				break;
+			case 'none':
+				newOptions = null;
+				break;
+			default: {
+				newOptions = value;
+				break;
+			}
+		}
+		if (newOptions) {
+			const array = Array.create(java.lang.String, 1);
+			array[0] = newOptions;
+			this.nativeTextViewProtected.setAutofillHints(array);
+		} else {
+			this.nativeTextViewProtected.setAutofillHints(null);
+		}
 	}
 
 	[returnKeyTypeProperty.getDefault](): 'done' | 'next' | 'go' | 'search' | 'send' | string {
