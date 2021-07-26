@@ -216,26 +216,19 @@ class CSSSource {
 	@profile
 	private parseCSSAst() {
 		if (this._source) {
-			switch (parser) {
-				case 'css-tree':
-					const cssTreeParse = require('../../css/css-tree-parser').cssTreeParse;
-					this._ast = cssTreeParse(this._source, this._file);
-					return;
-				case 'nativescript': {
-					const CSS3Parser = require('../../css/parser').CSS3Parser;
-					const CSSNativeScript = require('../../css/parser').CSSNativeScript;
-					const cssparser = new CSS3Parser(this._source);
-					const stylesheet = cssparser.parseAStylesheet();
-					const cssNS = new CSSNativeScript();
-					this._ast = cssNS.parseStylesheet(stylesheet);
-
-					return;
-				}
-				case 'rework':
-					const parseCss = require('../../css').parse;
-					this._ast = parseCss(this._source, { source: this._file });
-
-					return;
+			if (__CSS_PARSER__ === 'css-tree') {
+				const cssTreeParse = require('../../css/css-tree-parser').cssTreeParse;
+				this._ast = cssTreeParse(this._source, this._file);
+			} else if(__CSS_PARSER__ === 'nativescript') {
+				const CSS3Parser = require('../../css/CSS3Parser').CSS3Parser;
+				const CSSNativeScript = require('../../css/CSSNativeScript').CSSNativeScript;
+				const cssparser = new CSS3Parser(this._source);
+				const stylesheet = cssparser.parseAStylesheet();
+				const cssNS = new CSSNativeScript();
+				this._ast = cssNS.parseStylesheet(stylesheet);
+			} else if(__CSS_PARSER__ === 'rework') {
+				const parseCss = require('../../css').parse;
+				this._ast = parseCss(this._source, { source: this._file });
 			}
 		}
 	}
@@ -592,23 +585,23 @@ export class CssState {
 			}
 			if (isCssVariableExpression(value) || isCssCalcExpression(value)) {
 				value = evaluateCssExpressions(view, property, newPropertyValues[property]);
-		}
-				if (value === unsetValue) {
-					delete newPropertyValues[property];
-					continue;
-				}
+			}
+			if (value === unsetValue) {
+				delete newPropertyValues[property];
+				continue;
+			}
 			valuesToApply[property] = value;
 		}
 
 		// Unset removed values
 		for (const property in oldProperties) {
-				if (property in view.style) {
-					view.style[`css:${property}`] = unsetValue;
+			if (property in view.style) {
+				view.style[`css:${property}`] = unsetValue;
 			}
 			else {
-					// TRICKY: How do we unset local value?
-				}
+				// TRICKY: How do we unset local value?
 			}
+		}
 		// Set new values to the style
 		for (const property in valuesToApply) {
 			const value = valuesToApply[property];

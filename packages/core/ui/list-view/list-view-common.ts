@@ -27,7 +27,8 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public _defaultTemplate: KeyedTemplate = {
 		key: 'default',
 		createView: () => {
-			if (this.itemTemplate) {
+			if (__UI_USE_EXTERNAL_RENDERER__) {
+			} else if (this.itemTemplate) {
 				return Builder.parse(this.itemTemplate, this);
 			}
 
@@ -196,7 +197,11 @@ export const itemTemplatesProperty = new Property<ListViewBase, string | Array<K
 	name: 'itemTemplates',
 	valueConverter: (value) => {
 		if (typeof value === 'string') {
-			return Builder.parseMultipleTemplates(value, null);
+			if (__UI_USE_XML_PARSER__) {
+				return Builder.parseMultipleTemplates(value, null);
+			} else {
+				return null;
+			}
 		}
 
 		return value;
