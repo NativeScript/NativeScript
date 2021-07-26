@@ -279,16 +279,7 @@ export class TextBase extends TextBaseCommon {
 
 		this.nativeTextViewProtected.setTransformationMethod(new TextTransformation(this));
 	}
-
-	[accessibilityIdentifierProperty.setNative](value: string): void {
-		const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
-
-		if (id) {
-			this.nativeTextViewProtected.setTag(id, value);
-			this.nativeTextViewProtected.setTag(value);
-		}
-	}
-
+	
 	[textAlignmentProperty.getDefault](): CoreTypes.TextAlignmentType {
 		return 'initial';
 	}
