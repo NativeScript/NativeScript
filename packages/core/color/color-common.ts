@@ -1,7 +1,6 @@
 import * as definition from '.';
 import * as types from '../utils/types';
 import * as knownColors from './known-colors';
-import { convertHSLToRGBColor } from '../css/parser';
 
 const SHARP = '#';
 const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
@@ -12,18 +11,21 @@ export class Color implements definition.Color {
 
 	constructor(color: number);
 	constructor(color: string);
-	constructor(a: number, r: number, g: number, b: number);
+	constructor(a: number, r: number, g: number, b: number, type?: 'rbg' | 'hsl' | 'hsv');
 	constructor(...args) {
 		if (args.length === 1) {
 			const arg = args[0];
 			if (types.isString(arg)) {
-				if (isRgbOrRgba(arg)) {
-					this._argb = argbFromRgbOrRgba(arg);
-				} else if (isHslOrHsla(arg)) {
-					this._argb = argbFromHslOrHsla(arg);
-				} else if (knownColors.isKnownName(arg)) {
+				const lowered = arg.toLowerCase();
+				if (isRgbOrRgba(lowered)) {
+					this._argb = argbFromRgbOrRgba(lowered);
+				} else if (isHslOrHsla(lowered)) {
+					this._argb = argbFromHslOrHsla(lowered);
+				} else if (isHsvOrHsva(lowered)) {
+					this._argb = argbFromHsvOrHsva(lowered);
+				} else if (knownColors.isKnownName(lowered)) {
 					// The parameter is a known color name
-					const argb = knownColors.getKnownColor(arg);
+					const argb = knownColors.getKnownColor(lowered);
 					this._name = arg;
 					this._argb = argb;
 				} else if (arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
@@ -46,8 +48,23 @@ export class Color implements definition.Color {
 			} else {
 				throw new Error('Expected 1 or 4 constructor parameters.');
 			}
-		} else if (args.length === 4) {
-			this._argb = (args[0] & 0xff) * 0x01000000 + (args[1] & 0xff) * 0x00010000 + (args[2] & 0xff) * 0x00000100 + (args[3] & 0xff) * 0x00000001;
+		} else if (args.length >= 4) {
+			const a = args[0];
+			switch (args[4]) {
+				case 'hsl': {
+					const { r, g, b } = hslToRgb(args[1], args[2], args[3]);
+					this._argb = (a & 0xff) * 0x01000000 + (r & 0xff) * 0x00010000 + (g & 0xff) * 0x00000100 + (b & 0xff) * 0x00000001;
+					break;
+				}
+				case 'hsv': {
+					const { r, g, b } = hsvToRgb(args[1], args[2], args[3]);
+					this._argb = (a & 0xff) * 0x01000000 + (r & 0xff) * 0x00010000 + (g & 0xff) * 0x00000100 + (b & 0xff) * 0x00000001;
+					break;
+				}
+				default:
+					this._argb = (a & 0xff) * 0x01000000 + (args[1] & 0xff) * 0x00010000 + (args[2] & 0xff) * 0x00000100 + (args[3] & 0xff) * 0x00000001;
+					break;
+			}
 		} else {
 			throw new Error('Expected 1 or 4 constructor parameters.');
 		}
@@ -141,16 +158,19 @@ export class Color implements definition.Color {
 		if (!types.isString(value)) {
 			return false;
 		}
+		const lowered = value.toLowerCase();
 
-		if (knownColors.isKnownName(value)) {
+		if (knownColors.isKnownName(lowered)) {
 			return true;
 		}
 
-		return HEX_REGEX.test(value) || isRgbOrRgba(value) || isHslOrHsla(value);
+		return HEX_REGEX.test(value) || isRgbOrRgba(lowered) || isHslOrHsla(lowered);
 	}
 	public static fromHSL(a, h, s, l) {
-		const rgb = hslToRgb(h, s, l);
-		return new Color(a, rgb.r, rgb.g, rgb.b);
+		return new Color(a, h, s, l, 'hsl');
+	}
+	public static fromHSV(a, h, s, l) {
+		return new Color(a, h, s, l, 'hsv');
 	}
 
 	public toString(): string {
@@ -285,7 +305,7 @@ export class Color implements definition.Color {
 		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.s -= amount / 100;
 		hsl.s = Math.min(1, Math.max(0, hsl.s));
-		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
+		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, hsl.l * 100);
 	}
 
 	/**
@@ -298,7 +318,7 @@ export class Color implements definition.Color {
 		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.s += amount / 100;
 		hsl.s = Math.min(1, Math.max(0, hsl.s));
-		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
+		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, hsl.l * 100);
 	}
 
 	/**
@@ -319,7 +339,7 @@ export class Color implements definition.Color {
 		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.l += amount / 100;
 		hsl.l = Math.min(1, Math.max(0, hsl.l));
-		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
+		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, hsl.l * 100);
 	}
 
 	/**
@@ -345,13 +365,13 @@ export class Color implements definition.Color {
 		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
 		hsl.l -= amount / 100;
 		hsl.l = Math.min(1, Math.max(0, hsl.l));
-		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
+		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, hsl.l * 100);
 	}
 
 	/**
 	 * Spin the hue a given amount, from -360 to 360. Calling with 0, 360, or -360 will do nothing (since it sets the hue back to what it was before).
 	 *
-	 * @param amount (between 0 and 100)
+	 * @param amount (between -360 and 360)
 	 */
 	public spin(amount: number) {
 		const hsl = this.toHsl();
@@ -385,20 +405,18 @@ export class Color implements definition.Color {
 }
 
 function isRgbOrRgba(value: string): boolean {
-	const toLower = value.toLowerCase();
-
-	return (toLower.indexOf('rgb(') === 0 || toLower.indexOf('rgba(') === 0) && toLower.indexOf(')') === toLower.length - 1;
+	return (value.startsWith('rgb(') || value.startsWith('rgba(')) && value.endsWith(')');
 }
 
 function isHslOrHsla(value: string): boolean {
-	const toLower = value.toLowerCase();
-
-	return (toLower.indexOf('hsl(') === 0 || toLower.indexOf('hsla(') === 0) && toLower.indexOf(')') === toLower.length - 1;
+	return (value.startsWith('hsl') || value.startsWith('hsla(')) && value.endsWith(')');
+}
+function isHsvOrHsva(value: string): boolean {
+	return (value.startsWith('hsv') || value.startsWith('hsva(')) && value.endsWith(')');
 }
 
 function parseColorWithAlpha(value: string): any {
-	const toLower = value.toLowerCase();
-	const parts = toLower
+	const parts = value
 		.replace(/(rgb|hsl)a?\(/, '')
 		.replace(')', '')
 		.trim()
@@ -437,7 +455,15 @@ function argbFromRgbOrRgba(value: string): number {
 function argbFromHslOrHsla(value: string): number {
 	const { f: h, s: s, t: l, a } = parseColorWithAlpha(value);
 
-	const { r, g, b } = convertHSLToRGBColor(h, s, l);
+	const { r, g, b } = hslToRgb(h, s, l);
+
+	return (a & 0xff) * 0x01000000 + (r & 0xff) * 0x00010000 + (g & 0xff) * 0x00000100 + (b & 0xff);
+}
+
+function argbFromHsvOrHsva(value: string): number {
+	const { f: h, s: s, t: v, a } = parseColorWithAlpha(value);
+
+	const { r, g, b } = hsvToRgb(h, s, v);
 
 	return (a & 0xff) * 0x01000000 + (r & 0xff) * 0x00010000 + (g & 0xff) * 0x00000100 + (b & 0xff);
 }
@@ -486,9 +512,12 @@ function hue2rgb(p, q, t) {
 
 // `hslToRgb`
 // Converts an HSL color value to RGB.
-// *Assumes:* h is contained in [0, 1] or [0, 360] and s and l are contained [0, 1] or [0, 100]
+// *Assumes:* h is contained in  [0, 360] and s and l are contained  [0, 100]
 // *Returns:* { r, g, b } in the set [0, 255]
-function hslToRgb(h, s, l) {
+function hslToRgb(h1, s1, l1) {
+	const h = ((h1 % 360) / 360) * 6;
+	const s = s1 / 100;
+	const l = l1 / 100;
 	let r, g, b;
 	if (s === 0) {
 		r = g = b = l; // achromatic
@@ -505,7 +534,7 @@ function hslToRgb(h, s, l) {
 
 // `rgbToHsv`
 // Converts an RGB color value to HSV
-// *Assumes:* r, g, and b are contained in the set [0, 255] or [0, 1]
+// *Assumes:* r, g, and b are contained in the set [0, 1]
 // *Returns:* { h, s, v } in [0,1]
 function rgbToHsv(r, g, b) {
 	const max = Math.max(r, g, b),
@@ -533,4 +562,26 @@ function rgbToHsv(r, g, b) {
 		h /= 6;
 	}
 	return { h: h, s: s, v: v };
+}
+
+// `hsvToRgb`
+// Converts an HSV color value to RGB.
+// *Assumes:* h is contained in [0, 360] and s and v are contained [0, 100]
+// *Returns:* { r, g, b } in the set [0, 255]
+function hsvToRgb(h1, s1, v1) {
+	const h = ((h1 % 360) / 360) * 6;
+	const s = s1 / 100;
+	const v = v1 / 100;
+
+	var i = Math.floor(h),
+		f = h - i,
+		p = v * (1 - s),
+		q = v * (1 - f * s),
+		t = v * (1 - (1 - f) * s),
+		mod = i % 6,
+		r = [v, q, p, p, t, v][mod],
+		g = [t, v, v, q, p, p][mod],
+		b = [p, p, t, v, v, q][mod];
+
+	return { r: r * 255, g: g * 255, b: b * 255 };
 }
