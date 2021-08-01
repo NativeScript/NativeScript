@@ -361,9 +361,7 @@ export class Color implements definition.Color {
 	public darken(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
 		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
-		hsl.l -= amount / 100;
-		hsl.l = Math.min(1, Math.max(0, hsl.l));
-		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, hsl.l * 100);
+		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, Math.min(100, Math.max(0, hsl.l - amount)));
 	}
 
 	/**
@@ -415,7 +413,7 @@ function isHsvOrHsva(value: string): boolean {
 
 function parseColorWithAlpha(value: string): any {
 	const parts = value
-		.replace(/(rgb|hsl)a?\(/, '')
+		.replace(/(rgb|hsl|hsv)a?\(/, '')
 		.replace(')', '')
 		.trim()
 		.split(',');
@@ -468,7 +466,7 @@ function argbFromHsvOrHsva(value: string): number {
 
 // `rgbToHsl`
 // Converts an RGB color value to HSL.
-// *Assumes:* r, g, and b are contained in [0, 255] or [0, 1]
+// *Assumes:* r, g, and b are contained in [0, 1]
 // *Returns:* { h, s, l } in [0,1]
 function rgbToHsl(r, g, b) {
 	const max = Math.max(r, g, b),
@@ -514,7 +512,7 @@ function hue2rgb(p, q, t) {
 // *Returns:* { r, g, b } in the set [0, 255]
 function hslToRgb(h1, s1, l1) {
 
-    const h = (h1 % 360) / 360 * 6;
+    const h = (h1 % 360) / 360;
     const s = s1 / 100;
     const l = l1 / 100;
 	let r, g, b;
