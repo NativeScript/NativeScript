@@ -48,9 +48,15 @@ export class WatchStatePlugin {
 				isWatchMode ? messages.startWatching : messages.compilationComplete
 			);
 
+			// Do not notify the CLI if the compilation failed
+			const stats = compilation.getStats();
+			if (stats.hasErrors()) {
+				return;
+			}
+
 			// logic taken from CleanWebpackPlugin
 			const assets =
-				compilation.getStats().toJson(
+				stats.toJson(
 					{
 						assets: true,
 					},
