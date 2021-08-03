@@ -2,6 +2,7 @@ import Config from 'webpack-chain';
 
 import { getEntryDirPath, getEntryPath } from '../helpers/platform';
 import { addVirtualEntry } from '../helpers/virtualModules';
+import { chainedSetAddAfter } from '../helpers/chain';
 import { env as _env, IWebpackEnv } from '../index';
 import base from './base';
 
@@ -21,9 +22,11 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	`
 	);
 
-	config.entry('bundle').add(virtualEntryPath);
-
-	// config.resolve.extensions.add('.xml');
+	chainedSetAddAfter(
+		config.entry('bundle'),
+		'@nativescript/core/globals/index.js',
+		virtualEntryPath
+	);
 
 	// set up core HMR
 	config.module
