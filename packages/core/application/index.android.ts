@@ -4,7 +4,6 @@ import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, An
 
 // TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const appCommon = require('./application-common');
 
 // First reexport so that app module is initialized.
@@ -110,6 +109,10 @@ export class AndroidApplication extends Observable implements AndroidApplication
 
 	set systemAppearance(value: 'light' | 'dark') {
 		this._systemAppearance = value;
+	}
+
+	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined {
+		return this._registeredReceivers[intentFilter];
 	}
 
 	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void {

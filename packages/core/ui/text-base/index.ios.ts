@@ -226,8 +226,11 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
+	createFormattedTextNative(value: FormattedString) {
+		return this.createNSMutableAttributedString(value);
+	}
 	setFormattedTextDecorationAndTransform() {
-		const attrText = this.createNSMutableAttributedString(this.formattedText);
+		const attrText = this.createFormattedTextNative(this.formattedText);
 		// TODO: letterSpacing should be applied per Span.
 		if (this.letterSpacing !== 0) {
 			attrText.addAttributeValueRange(NSKernAttributeName, this.letterSpacing * this.nativeTextViewProtected.font.pointSize, { location: 0, length: attrText.length });

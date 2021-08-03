@@ -1,11 +1,6 @@
 ﻿declare module org {
     module nativescript {
         module widgets {
-
-						export class Utils {
-								public static drawBoxShadow(view: android.view.View, value: string): void;
-						}
-
 						export class BoxShadowDrawable {
 								public constructor(drawable: android.graphics.drawable.Drawable, value: string);
 								public getWrappedDrawable(): android.graphics.drawable.Drawable;
@@ -37,7 +32,7 @@
                     export function readText(path: string, encoding: string, callback: CompleteCallback, context: any);
                     export function read(path: string, callback: CompleteCallback, context: any);
                     export function writeText(path: string, content: string, encoding: string, callback: CompleteCallback, context: any);
-                    export function write(path: string, content: native.Array<number>, callback: CompleteCallback, context: any);
+                    export function write(path: string, content: androidNative.Array<number>, callback: CompleteCallback, context: any);
                 }
 
                 export module Http {
@@ -108,9 +103,9 @@
                     context: android.content.Context,
                     backgroundRepeat: string,
                     backgroundPosition: string,
-                    backgroundPositionParsedCSSValues: native.Array<CSSValue>,
+                    backgroundPositionParsedCSSValues: androidNative.Array<CSSValue>,
                     backgroundSize: string,
-                    backgroundSizeParsedCSSValues: native.Array<CSSValue>
+                    backgroundSizeParsedCSSValues: androidNative.Array<CSSValue>
                 );
 
                 public getBorderTopColor(): number;
@@ -631,4 +626,35 @@
             }
         }
     }
+}
+
+declare module org {
+	export module nativescript {
+		export module widgets {
+			export class Utils {
+				public static class: java.lang.Class<org.nativescript.widgets.Utils>;
+				public static loadImageAsync(param0: globalAndroid.content.Context, param1: string, param2: string, param3: number, param4: number, param5: org.nativescript.widgets.Utils.AsyncImageCallback): void;
+				public static drawBoxShadow(param0: globalAndroid.view.View, param1: string): void;
+				public constructor();
+			}
+			export module Utils {
+				export class AsyncImageCallback {
+					public static class: java.lang.Class<org.nativescript.widgets.Utils.AsyncImageCallback>;
+					/**
+					 * Constructs a new instance of the org.nativescript.widgets.Utils$AsyncImageCallback interface with the provided implementation. An empty constructor exists calling super() when extending the interface class.
+					 */
+					public constructor(implementation: {
+						onSuccess(param0: globalAndroid.graphics.Bitmap): void;
+						onError(param0: java.lang.Exception): void;
+					});
+					public constructor();
+					public onSuccess(param0: globalAndroid.graphics.Bitmap): void;
+					public onError(param0: java.lang.Exception): void;
+				}
+				export class ImageAssetOptions {
+					public static class: java.lang.Class<org.nativescript.widgets.Utils.ImageAssetOptions>;
+				}
+			}
+		}
+	}
 }

@@ -40,6 +40,10 @@ export function parseCSSShadow(value: string): CSSShadow {
 	const first = parts[0];
 	const last = parts[parts.length - 1];
 
+	if (first === 'none') {
+		return null;
+	}
+
 	let colorRaw = 'black';
 	if (!isLength(first) && first !== 'inset') {
 		colorRaw = first;

@@ -24,6 +24,7 @@
         "androidx.core*:*",
         "androidx.viewpager.widget*:*",
         "androidx.fragment*:*",
-        "androidx.transition*:*"
+        "androidx.transition*:*",
+        "android.inputmethodservice*:*"
     ]
 }
