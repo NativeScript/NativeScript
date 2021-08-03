@@ -34,14 +34,11 @@ export class PlatformSuffixPlugin {
 	}
 
 	apply(compiler: any) {
-		console.log(
-			// this.extensions,
-			this.platform
-		);
 		const platformRE = new RegExp(`\.${this.platform}\.`);
 
 		// require.context
 		compiler.hooks.contextModuleFactory.tap(id, (cmf) => {
+			// @ts-ignore
 			cmf.hooks.alternativeRequests.tap(id, (modules, options) => {
 				const additionalModules = [];
 				// we are looking for modules that are platform specific (something.<platform>.ext)

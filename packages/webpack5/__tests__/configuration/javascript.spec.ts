@@ -1,8 +1,9 @@
 import Config from 'webpack-chain';
+
 import javascript from '../../src/configuration/javascript';
 import { init } from '../../src';
 
-describe.only('javascript configuration', () => {
+describe('javascript configuration', () => {
 	const platforms = ['ios', 'android'];
 
 	for (let platform of platforms) {

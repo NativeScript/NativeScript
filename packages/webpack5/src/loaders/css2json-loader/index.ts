@@ -36,7 +36,7 @@ export default function loader(content: string, map: any) {
 	this.callback(
 		null,
 		code, //`${dependencies.join('\n')}module.exports = ${str};`,
-		null
+		map
 	);
 }
 

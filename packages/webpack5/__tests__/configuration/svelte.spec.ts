@@ -1,13 +1,11 @@
 import Config from 'webpack-chain';
+
 import svelte from '../../src/configuration/svelte';
 import { init } from '../../src';
-import { mockFile } from '../../scripts/jest.mockFiles';
 
-mockFile('./svelte.config.js', '');
-// jest.mock('__jest__/svelte.config.js', () => {
-// }, { virtual: true })
+jest.mock('__jest__/svelte.config.js', () => {}, { virtual: true });
 
-describe.only('svelte configuration', () => {
+describe('svelte configuration', () => {
 	const platforms = ['ios', 'android'];
 
 	for (let platform of platforms) {

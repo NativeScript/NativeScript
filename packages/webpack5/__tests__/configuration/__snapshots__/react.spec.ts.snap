@@ -7,14 +7,27 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
+  ignoreWarnings: [
+    /System.import\\\\(\\\\) is deprecated/
+  ],
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
-    globalObject: 'global'
+    globalObject: 'global',
+    clean: true
   },
   resolve: {
     symlinks: true,
@@ -36,16 +49,42 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
       '.scss',
       '.android.json',
       '.json'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {
     modules: [
-      'node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
       'node_modules'
     ]
   },
   module: {
     rules: [
+      /* config.module.rule('bundle') */
+      {
+        enforce: 'post',
+        test: '__jest__/src/app.js',
+        use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader',
+            options: {
+              platform: 'android'
+            }
+          },
+          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          {
+            loader: 'nativescript-hot-loader',
+            options: {
+              injectHMRRuntime: true
+            }
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [
@@ -84,16 +123,25 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
         use: [
-          /* config.module.rule('js').use('babel-loader') */
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
           }
         ]
       },
@@ -154,6 +202,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -171,9 +220,15 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
           terserOptions: {
             compress: {
               collapse_vars: false,
-              sequences: false
+              sequences: false,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -188,26 +243,23 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         }
       }
     ),
-    /* config.plugin('CleanWebpackPlugin') */
-    new CleanWebpackPlugin(
-      {
-        cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/android/app/src/main/assets/app/**/*'
-        ],
-        verbose: false
-      }
-    ),
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
         platform: 'android'
       }
     ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
+        __NS_ENV_VERBOSE__: false,
+        __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
         __ANDROID__: true,
         __IOS__: false,
@@ -227,7 +279,8 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           },
           {
@@ -235,7 +288,8 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           },
           {
@@ -243,7 +297,8 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           }
         ]
@@ -266,7 +321,9 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
-      '__jest__/src/app.js'
+      '__jest__/src/app.js',
+      '@nativescript/core/ui/frame',
+      '@nativescript/core/ui/frame/activity'
     ]
   }
 }"
@@ -279,14 +336,27 @@ exports[`react configuration > android > base config 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
+  ignoreWarnings: [
+    /System.import\\\\(\\\\) is deprecated/
+  ],
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
-    globalObject: 'global'
+    globalObject: 'global',
+    clean: true
   },
   resolve: {
     symlinks: true,
@@ -308,16 +378,42 @@ exports[`react configuration > android > base config 1`] = `
       '.scss',
       '.android.json',
       '.json'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {
     modules: [
-      'node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
       'node_modules'
     ]
   },
   module: {
     rules: [
+      /* config.module.rule('bundle') */
+      {
+        enforce: 'post',
+        test: '__jest__/src/app.js',
+        use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader',
+            options: {
+              platform: 'android'
+            }
+          },
+          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          {
+            loader: 'nativescript-hot-loader',
+            options: {
+              injectHMRRuntime: true
+            }
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [
@@ -345,16 +441,25 @@ exports[`react configuration > android > base config 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
         use: [
-          /* config.module.rule('js').use('babel-loader') */
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
           }
         ]
       },
@@ -415,6 +520,7 @@ exports[`react configuration > android > base config 1`] = `
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -432,9 +538,15 @@ exports[`react configuration > android > base config 1`] = `
           terserOptions: {
             compress: {
               collapse_vars: false,
-              sequences: false
+              sequences: false,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -449,26 +561,23 @@ exports[`react configuration > android > base config 1`] = `
         }
       }
     ),
-    /* config.plugin('CleanWebpackPlugin') */
-    new CleanWebpackPlugin(
-      {
-        cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/android/app/src/main/assets/app/**/*'
-        ],
-        verbose: false
-      }
-    ),
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
         platform: 'android'
       }
     ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
+        __NS_ENV_VERBOSE__: false,
+        __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
         __ANDROID__: true,
         __IOS__: false,
@@ -488,7 +597,8 @@ exports[`react configuration > android > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           },
           {
@@ -496,7 +606,8 @@ exports[`react configuration > android > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           },
           {
@@ -504,7 +615,8 @@ exports[`react configuration > android > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           }
         ]
@@ -516,7 +628,9 @@ exports[`react configuration > android > base config 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
-      '__jest__/src/app.js'
+      '__jest__/src/app.js',
+      '@nativescript/core/ui/frame',
+      '@nativescript/core/ui/frame/activity'
     ]
   }
 }"
@@ -529,14 +643,27 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
+  ignoreWarnings: [
+    /System.import\\\\(\\\\) is deprecated/
+  ],
   output: {
-    path: '__jest__/platforms/ios/__jest__/app',
+    path: '__jest__/platforms/ios/jest/app',
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
-    globalObject: 'global'
+    globalObject: 'global',
+    clean: true
   },
   resolve: {
     symlinks: true,
@@ -558,16 +685,42 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
       '.scss',
       '.ios.json',
       '.json'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {
     modules: [
-      'node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
       'node_modules'
     ]
   },
   module: {
     rules: [
+      /* config.module.rule('bundle') */
+      {
+        enforce: 'post',
+        test: '__jest__/src/app.js',
+        use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader',
+            options: {
+              platform: 'ios'
+            }
+          },
+          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          {
+            loader: 'nativescript-hot-loader',
+            options: {
+              injectHMRRuntime: true
+            }
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [
@@ -606,16 +759,25 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
         use: [
-          /* config.module.rule('js').use('babel-loader') */
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
           }
         ]
       },
@@ -676,6 +838,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -693,9 +856,15 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
           terserOptions: {
             compress: {
               collapse_vars: true,
-              sequences: true
+              sequences: true,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -710,26 +879,23 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         }
       }
     ),
-    /* config.plugin('CleanWebpackPlugin') */
-    new CleanWebpackPlugin(
-      {
-        cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/ios/__jest__/app/**/*'
-        ],
-        verbose: false
-      }
-    ),
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
         platform: 'ios'
       }
     ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
+        __NS_ENV_VERBOSE__: false,
+        __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
         __ANDROID__: false,
         __IOS__: true,
@@ -749,7 +915,8 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           },
           {
@@ -757,7 +924,8 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           },
           {
@@ -765,7 +933,8 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           }
         ]
@@ -790,7 +959,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
       '@nativescript/core/globals/index.js',
       '__jest__/src/app.js'
     ],
-    'tns_modules/@nativescript/core/inspector_modules': [
+    'tns_modules/inspector_modules': [
       '@nativescript/core/inspector_modules'
     ]
   }
@@ -804,14 +973,27 @@ exports[`react configuration > ios > base config 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
+  watchOptions: {
+    ignored: [
+      '__jest__/platforms/**',
+      '__jest__/App_Resources/**'
+    ]
+  },
+  ignoreWarnings: [
+    /System.import\\\\(\\\\) is deprecated/
+  ],
   output: {
-    path: '__jest__/platforms/ios/__jest__/app',
+    path: '__jest__/platforms/ios/jest/app',
     pathinfo: false,
     publicPath: '',
     libraryTarget: 'commonjs',
-    globalObject: 'global'
+    globalObject: 'global',
+    clean: true
   },
   resolve: {
     symlinks: true,
@@ -833,16 +1015,42 @@ exports[`react configuration > ios > base config 1`] = `
       '.scss',
       '.ios.json',
       '.json'
+    ],
+    modules: [
+      '__jest__/node_modules',
+      'node_modules'
     ]
   },
   resolveLoader: {
     modules: [
-      'node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules/@nativescript/webpack/dist/loaders',
+      '__jest__/node_modules',
       'node_modules'
     ]
   },
   module: {
     rules: [
+      /* config.module.rule('bundle') */
+      {
+        enforce: 'post',
+        test: '__jest__/src/app.js',
+        use: [
+          /* config.module.rule('bundle').use('app-css-loader') */
+          {
+            loader: 'app-css-loader',
+            options: {
+              platform: 'ios'
+            }
+          },
+          /* config.module.rule('bundle').use('nativescript-hot-loader') */
+          {
+            loader: 'nativescript-hot-loader',
+            options: {
+              injectHMRRuntime: true
+            }
+          }
+        ]
+      },
       /* config.module.rule('ts') */
       {
         test: [
@@ -870,16 +1078,25 @@ exports[`react configuration > ios > base config 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
+        ]
+      },
+      /* config.module.rule('workers') */
+      {
+        test: /\\\\.(js|ts)$/,
         use: [
-          /* config.module.rule('js').use('babel-loader') */
+          /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
+            loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
           }
         ]
       },
@@ -940,6 +1157,7 @@ exports[`react configuration > ios > base config 1`] = `
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -957,9 +1175,15 @@ exports[`react configuration > ios > base config 1`] = `
           terserOptions: {
             compress: {
               collapse_vars: true,
-              sequences: true
+              sequences: true,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -974,26 +1198,23 @@ exports[`react configuration > ios > base config 1`] = `
         }
       }
     ),
-    /* config.plugin('CleanWebpackPlugin') */
-    new CleanWebpackPlugin(
-      {
-        cleanOnceBeforeBuildPatterns: [
-          '__jest__/platforms/ios/__jest__/app/**/*'
-        ],
-        verbose: false
-      }
-    ),
     /* config.plugin('PlatformSuffixPlugin') */
     new PlatformSuffixPlugin(
       {
         platform: 'ios'
       }
     ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
+    ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
       {
         __DEV__: true,
         __NS_WEBPACK__: true,
+        __NS_ENV_VERBOSE__: false,
+        __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
         __ANDROID__: false,
         __IOS__: true,
@@ -1013,7 +1234,8 @@ exports[`react configuration > ios > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           },
           {
@@ -1021,7 +1243,8 @@ exports[`react configuration > ios > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           },
           {
@@ -1029,7 +1252,8 @@ exports[`react configuration > ios > base config 1`] = `
             context: '__jest__/src',
             noErrorOnMissing: true,
             globOptions: {
-              dot: false
+              dot: false,
+              ignore: []
             }
           }
         ]
@@ -1043,7 +1267,7 @@ exports[`react configuration > ios > base config 1`] = `
       '@nativescript/core/globals/index.js',
       '__jest__/src/app.js'
     ],
-    'tns_modules/@nativescript/core/inspector_modules': [
+    'tns_modules/inspector_modules': [
       '@nativescript/core/inspector_modules'
     ]
   }
