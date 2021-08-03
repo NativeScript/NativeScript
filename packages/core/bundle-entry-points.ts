@@ -6,7 +6,7 @@ import './globals';
 import * as coreUIModules from './ui/index';
 if (__UI_USE_EXTERNAL_RENDERER__) {
 } else {
-    global.registerModule('@nativescript/core/ui', () => coreUIModules);
+	global.registerModule('@nativescript/core/ui', () => coreUIModules);
 }
 
 // global.registerModule('text/formatted-string', () => require('./text/formatted-string'));
@@ -15,7 +15,6 @@ if (__UI_USE_EXTERNAL_RENDERER__) {
 // global.registerModule('ui/text-base/span', () => require('./ui/text-base/span'));
 // global.registerModule('ui/action-bar', () => require('./ui/action-bar'));
 // global.registerModule('ui/activity-indicator', () => require('./ui/activity-indicator'));
-// global.registerModule('ui/bottom-navigation', () => require('./ui/bottom-navigation'));
 // global.registerModule('ui/button', () => require('./ui/button'));
 // global.registerModule('ui/content-view', () => require('./ui/content-view'));
 // global.registerModule('ui/date-picker', () => require('./ui/date-picker'));
@@ -41,10 +40,6 @@ if (__UI_USE_EXTERNAL_RENDERER__) {
 // global.registerModule('ui/slider', () => require('./ui/slider'));
 // global.registerModule('ui/switch', () => require('./ui/switch'));
 // global.registerModule('ui/tab-view', () => require('./ui/tab-view'));
-// global.registerModule('ui/tab-navigation-base/tab-strip', () => require('./ui/tab-navigation-base/tab-strip'));
-// global.registerModule('ui/tab-navigation-base/tab-strip-item', () => require('./ui/tab-navigation-base/tab-strip-item'));
-// global.registerModule('ui/tab-navigation-base/tab-content-item', () => require('./ui/tab-navigation-base/tab-content-item'));
-// global.registerModule('ui/tabs', () => require('./ui/tabs'));
 // global.registerModule('ui/web-view', () => require('./ui/web-view'));
 // global.registerModule('ui/text-field', () => require('./ui/text-field'));
 // global.registerModule('ui/text-view', () => require('./ui/text-view'));

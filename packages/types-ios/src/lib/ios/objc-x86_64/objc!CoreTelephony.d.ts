@@ -139,6 +139,10 @@ declare var CTRadioAccessTechnologyHSUPA: string;
 
 declare var CTRadioAccessTechnologyLTE: string;
 
+declare var CTRadioAccessTechnologyNR: string;
+
+declare var CTRadioAccessTechnologyNRNSA: string;
+
 declare var CTRadioAccessTechnologyWCDMA: string;
 
 declare var CTRadioAccessTechnologyeHRPD: string;

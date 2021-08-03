@@ -565,7 +565,7 @@ class CustomRotateGestureDetector {
 
 		switch (event.getActionMasked()) {
 			case android.view.MotionEvent.ACTION_DOWN:
-			case android.view.MotionEvent.ACTION_POINTER_DOWN:{
+			case android.view.MotionEvent.ACTION_POINTER_DOWN: {
 				let assigned = false;
 				if (this.trackedPtrId1 === INVALID_POINTER_ID && pointerID !== this.trackedPtrId2) {
 					this.trackedPtrId1 = pointerID;

@@ -9,9 +9,10 @@
 **/node_modules
 **/package-lock.json
 **/yarn.lock
+**/pnpm-lock.yaml
 
 # IDEs and editors
-/.idea
+.idea
 .project
 .classpath
 .c9/
@@ -48,3 +49,6 @@ Thumbs.db
 # core
 # https://github.com/NativeScript/nativescript-dev-webpack/issues/932
 !packages/core/xml/index.js
+
+# types
+ios-typings-prj

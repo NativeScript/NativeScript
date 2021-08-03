@@ -1,10 +1,9 @@
 // >> observable-require
-import { Observable, PropertyChangeData, EventData, WrappedValue, fromObject, fromObjectRecursive } from '@nativescript/core';
+import { Observable, PropertyChangeData, EventData, WrappedValue, fromObject, fromObjectRecursive, ObservableArray } from '@nativescript/core';
 // << observable-require
 
 import * as TKUnit from '../tk-unit';
 import * as types from '@nativescript/core/utils/types';
-import { ObservableArray } from '@nativescript/core';
 
 var TESTED_NAME = 'tested';
 class TestObservable extends Observable {

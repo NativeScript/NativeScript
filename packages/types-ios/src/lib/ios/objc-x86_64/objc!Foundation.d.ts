@@ -576,6 +576,8 @@ declare const NSBundleErrorMaximum: number;
 
 declare const NSBundleErrorMinimum: number;
 
+declare const NSBundleExecutableArchitectureARM64: number;
+
 declare const NSBundleExecutableArchitectureI386: number;
 
 declare const NSBundleExecutableArchitecturePPC: number;
@@ -1202,6 +1204,10 @@ declare class NSCoder extends NSObject {
 
 	decodeArrayOfObjCTypeCountAt(itemType: string | interop.Pointer | interop.Reference<any>, count: number, array: interop.Pointer | interop.Reference<any>): void;
 
+	decodeArrayOfObjectsOfClassForKey(cls: typeof NSObject, key: string): NSArray<any>;
+
+	decodeArrayOfObjectsOfClassesForKey(classes: NSSet<typeof NSObject>, key: string): NSArray<any>;
+
 	decodeBoolForKey(key: string): boolean;
 
 	decodeBytesForKeyReturnedLength(key: string, lengthp: interop.Pointer | interop.Reference<number>): string;
@@ -1225,6 +1231,10 @@ declare class NSCoder extends NSObject {
 	decodeCMTimeRangeForKey(key: string): CMTimeRange;
 
 	decodeDataObject(): NSData;
+
+	decodeDictionaryWithKeysOfClassObjectsOfClassForKey(keyCls: typeof NSObject, objectCls: typeof NSObject, key: string): NSDictionary<any, any>;
+
+	decodeDictionaryWithKeysOfClassesObjectsOfClassesForKey(keyClasses: NSSet<typeof NSObject>, objectClasses: NSSet<typeof NSObject>, key: string): NSDictionary<any, any>;
 
 	decodeDirectionalEdgeInsetsForKey(key: string): NSDirectionalEdgeInsets;
 
@@ -1852,6 +1862,8 @@ declare class NSDate extends NSObject implements CKRecordValue, NSCopying, NSSec
 
 	static date(): NSDate;
 
+	static dateWithSRAbsoluteTime(time: number): NSDate;
+
 	static dateWithTimeIntervalSince1970(secs: number): NSDate;
 
 	static dateWithTimeIntervalSinceDate(secsToBeAdded: number, date: Date): NSDate;
@@ -1861,6 +1873,8 @@ declare class NSDate extends NSObject implements CKRecordValue, NSCopying, NSSec
 	static dateWithTimeIntervalSinceReferenceDate(ti: number): NSDate;
 
 	static new(): NSDate; // inherited from NSObject
+
+	readonly srAbsoluteTime: number;
 
 	readonly timeIntervalSince1970: number;
 
@@ -1892,6 +1906,8 @@ declare class NSDate extends NSObject implements CKRecordValue, NSCopying, NSSec
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { SRAbsoluteTime: number; });
+
 	constructor(o: { timeIntervalSince1970: number; });
 
 	constructor(o: { timeInterval: number; sinceDate: Date; });
@@ -1919,6 +1935,8 @@ declare class NSDate extends NSObject implements CKRecordValue, NSCopying, NSSec
 	encodeWithCoder(coder: NSCoder): void;
 
 	initWithCoder(coder: NSCoder): this;
+
+	initWithSRAbsoluteTime(time: number): this;
 
 	initWithTimeIntervalSince1970(secs: number): this;
 
@@ -4733,6 +4751,14 @@ declare class NSKeyedUnarchiver extends NSCoder {
 
 	static unarchiveTopLevelObjectWithDataError(data: NSData): any;
 
+	static unarchivedArrayOfObjectsOfClassFromDataError(cls: typeof NSObject, data: NSData): NSArray<any>;
+
+	static unarchivedArrayOfObjectsOfClassesFromDataError(classes: NSSet<typeof NSObject>, data: NSData): NSArray<any>;
+
+	static unarchivedDictionaryWithKeysOfClassObjectsOfClassFromDataError(keyCls: typeof NSObject, valueCls: typeof NSObject, data: NSData): NSDictionary<any, any>;
+
+	static unarchivedDictionaryWithKeysOfClassesObjectsOfClassesFromDataError(keyClasses: NSSet<typeof NSObject>, valueClasses: NSSet<typeof NSObject>, data: NSData): NSDictionary<any, any>;
+
 	static unarchivedObjectOfClassFromDataError(cls: typeof NSObject, data: NSData): any;
 
 	static unarchivedObjectOfClassesFromDataError(classes: NSSet<typeof NSObject>, data: NSData): any;
@@ -6404,7 +6430,9 @@ declare const enum NSNetServicesError {
 
 	InvalidError = -72006,
 
-	TimeoutError = -72007
+	TimeoutError = -72007,
+
+	MissingRequiredConfigurationError = -72008
 }
 
 declare var NSNetServicesErrorCode: string;
@@ -7723,6 +7751,8 @@ declare class NSProcessInfo extends NSObject {
 
 	readonly hostName: string;
 
+	readonly iOSAppOnMac: boolean;
+
 	readonly lowPowerModeEnabled: boolean;
 
 	readonly macCatalystApp: boolean;
@@ -8880,6 +8910,8 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	constructor(o: { bytes: interop.Pointer | interop.Reference<any>; length: number; encoding: number; });
 
+	constructor(o: { bytesNoCopy: interop.Pointer | interop.Reference<any>; length: number; encoding: number; deallocator: (p1: interop.Pointer | interop.Reference<any>, p2: number) => void; });
+
 	constructor(o: { bytesNoCopy: interop.Pointer | interop.Reference<any>; length: number; encoding: number; freeWhenDone: boolean; });
 
 	constructor(o: { CString: string | interop.Pointer | interop.Reference<any>; });
@@ -8891,6 +8923,8 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	constructor(o: { CStringNoCopy: string | interop.Pointer | interop.Reference<any>; length: number; freeWhenDone: boolean; });
 
 	constructor(o: { characters: interop.Pointer | interop.Reference<string>; length: number; });
+
+	constructor(o: { charactersNoCopy: interop.Pointer | interop.Reference<string>; length: number; deallocator: (p1: interop.Pointer | interop.Reference<string>, p2: number) => void; });
 
 	constructor(o: { charactersNoCopy: interop.Pointer | interop.Reference<string>; length: number; freeWhenDone: boolean; });
 
@@ -9012,6 +9046,8 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	initWithBytesLengthEncoding(bytes: interop.Pointer | interop.Reference<any>, len: number, encoding: number): this;
 
+	initWithBytesNoCopyLengthEncodingDeallocator(bytes: interop.Pointer | interop.Reference<any>, len: number, encoding: number, deallocator: (p1: interop.Pointer | interop.Reference<any>, p2: number) => void): this;
+
 	initWithBytesNoCopyLengthEncodingFreeWhenDone(bytes: interop.Pointer | interop.Reference<any>, len: number, encoding: number, freeBuffer: boolean): this;
 
 	initWithCString(bytes: string | interop.Pointer | interop.Reference<any>): this;
@@ -9023,6 +9059,8 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	initWithCStringNoCopyLengthFreeWhenDone(bytes: string | interop.Pointer | interop.Reference<any>, length: number, freeBuffer: boolean): this;
 
 	initWithCharactersLength(characters: interop.Pointer | interop.Reference<string>, length: number): this;
+
+	initWithCharactersNoCopyLengthDeallocator(chars: interop.Pointer | interop.Reference<string>, len: number, deallocator: (p1: interop.Pointer | interop.Reference<string>, p2: number) => void): this;
 
 	initWithCharactersNoCopyLengthFreeWhenDone(characters: interop.Pointer | interop.Reference<string>, length: number, freeBuffer: boolean): this;
 
@@ -9140,13 +9178,19 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	sizeWithFontMinFontSizeActualFontSizeForWidthLineBreakMode(font: UIFont, minFontSize: number, actualFontSize: interop.Pointer | interop.Reference<number>, width: number, lineBreakMode: NSLineBreakMode): CGSize;
 
+	sr_sensorForDeletionRecordsFromSensor(): string;
+
 	stringByAddingPercentEncodingWithAllowedCharacters(allowedCharacters: NSCharacterSet): string;
 
 	stringByAddingPercentEscapesUsingEncoding(enc: number): string;
 
 	stringByAppendingPathComponent(str: string): string;
 
+	stringByAppendingPathComponentConformingToType(partialName: string, contentType: UTType): string;
+
 	stringByAppendingPathExtension(str: string): string;
+
+	stringByAppendingPathExtensionForType(contentType: UTType): string;
 
 	stringByAppendingString(aString: string): string;
 
@@ -9244,6 +9288,10 @@ declare const enum NSStringEnumerationOptions {
 	ByWords = 3,
 
 	BySentences = 4,
+
+	ByCaretPositions = 5,
+
+	ByDeletionClusters = 6,
 
 	Reverse = 256,
 
@@ -9804,9 +9852,13 @@ declare class NSURL extends NSObject implements NSCopying, NSItemProviderReading
 
 	URLByAppendingPathComponent(pathComponent: string): NSURL;
 
+	URLByAppendingPathComponentConformingToType(partialName: string, contentType: UTType): NSURL;
+
 	URLByAppendingPathComponentIsDirectory(pathComponent: string, isDirectory: boolean): NSURL;
 
 	URLByAppendingPathExtension(pathExtension: string): NSURL;
+
+	URLByAppendingPathExtensionForType(contentType: UTType): NSURL;
 
 	bookmarkDataWithOptionsIncludingResourceValuesForKeysRelativeToURLError(options: NSURLBookmarkCreationOptions, keys: NSArray<string> | string[], relativeURL: NSURL): NSData;
 
@@ -10214,6 +10266,8 @@ declare var NSURLContentAccessDateKey: string;
 
 declare var NSURLContentModificationDateKey: string;
 
+declare var NSURLContentTypeKey: string;
+
 declare var NSURLCreationDateKey: string;
 
 declare class NSURLCredential extends NSObject implements NSCopying, NSSecureCoding {
@@ -10446,6 +10500,8 @@ declare const NSURLErrorZeroByteResource: number;
 
 declare var NSURLFileAllocatedSizeKey: string;
 
+declare var NSURLFileContentIdentifierKey: string;
+
 declare var NSURLFileProtectionComplete: string;
 
 declare var NSURLFileProtectionCompleteUnlessOpen: string;
@@ -10502,9 +10558,13 @@ declare var NSURLIsMountTriggerKey: string;
 
 declare var NSURLIsPackageKey: string;
 
+declare var NSURLIsPurgeableKey: string;
+
 declare var NSURLIsReadableKey: string;
 
 declare var NSURLIsRegularFileKey: string;
+
+declare var NSURLIsSparseKey: string;
 
 declare var NSURLIsSymbolicLinkKey: string;
 
@@ -10531,6 +10591,10 @@ declare var NSURLLocalizedLabelKey: string;
 declare var NSURLLocalizedNameKey: string;
 
 declare var NSURLLocalizedTypeDescriptionKey: string;
+
+declare var NSURLMayHaveExtendedAttributesKey: string;
+
+declare var NSURLMayShareFileContentKey: string;
 
 declare var NSURLNameKey: string;
 
@@ -11235,6 +11299,19 @@ declare class NSURLSessionTaskMetrics extends NSObject {
 	readonly transactionMetrics: NSArray<NSURLSessionTaskTransactionMetrics>;
 }
 
+declare const enum NSURLSessionTaskMetricsDomainResolutionProtocol {
+
+	Unknown = 0,
+
+	UDP = 1,
+
+	TCP = 2,
+
+	TLS = 3,
+
+	HTTPS = 4
+}
+
 declare const enum NSURLSessionTaskMetricsResourceFetchType {
 
 	Unknown = 0,
@@ -11292,6 +11369,8 @@ declare class NSURLSessionTaskTransactionMetrics extends NSObject {
 	readonly domainLookupEndDate: Date;
 
 	readonly domainLookupStartDate: Date;
+
+	readonly domainResolutionProtocol: NSURLSessionTaskMetricsDomainResolutionProtocol;
 
 	readonly expensive: boolean;
 
@@ -11545,6 +11624,8 @@ declare var NSURLVolumeSupportsExclusiveRenamingKey: string;
 declare var NSURLVolumeSupportsExtendedSecurityKey: string;
 
 declare var NSURLVolumeSupportsFileCloningKey: string;
+
+declare var NSURLVolumeSupportsFileProtectionKey: string;
 
 declare var NSURLVolumeSupportsHardLinksKey: string;
 
@@ -12666,6 +12747,8 @@ declare class NSUserActivity extends NSObject implements NSItemProviderReading, 
 
 	readonly activityType: string;
 
+	readonly appClipActivationPayload: APActivationPayload;
+
 	contentAttributeSet: CSSearchableItemAttributeSet;
 
 	readonly contextIdentifierPath: NSArray<string>;
@@ -12703,6 +12786,8 @@ declare class NSUserActivity extends NSObject implements NSItemProviderReading, 
 	referrerURL: NSURL;
 
 	requiredUserInfoKeys: NSSet<string>;
+
+	shortcutAvailability: INShortcutAvailabilityOptions;
 
 	suggestedInvocationPhrase: string;
 

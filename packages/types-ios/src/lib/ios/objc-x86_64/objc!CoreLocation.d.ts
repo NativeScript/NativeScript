@@ -1,4 +1,11 @@
 
+declare const enum CLAccuracyAuthorization {
+
+	FullAccuracy = 0,
+
+	ReducedAccuracy = 1
+}
+
 declare const enum CLActivityType {
 
 	Other = 1,
@@ -208,7 +215,9 @@ declare const enum CLError {
 
 	kCLErrorRangingUnavailable = 16,
 
-	kCLErrorRangingFailure = 17
+	kCLErrorRangingFailure = 17,
+
+	kCLErrorPromptDeclined = 18
 }
 
 declare class CLFloor extends NSObject implements NSCopying, NSSecureCoding {
@@ -300,11 +309,15 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 
 	readonly course: number;
 
+	readonly courseAccuracy: number;
+
 	readonly floor: CLFloor;
 
 	readonly horizontalAccuracy: number;
 
 	readonly speed: number;
+
+	readonly speedAccuracy: number;
 
 	readonly timestamp: Date;
 
@@ -326,6 +339,8 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; horizontalAccuracy: number; verticalAccuracy: number; course: number; courseAccuracy: number; speed: number; speedAccuracy: number; timestamp: Date; });
+
 	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; horizontalAccuracy: number; verticalAccuracy: number; course: number; speed: number; timestamp: Date; });
 
 	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; horizontalAccuracy: number; verticalAccuracy: number; timestamp: Date; });
@@ -345,6 +360,8 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 	getDistanceFrom(location: CLLocation): number;
 
 	initWithCoder(coder: NSCoder): this;
+
+	initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseCourseAccuracySpeedSpeedAccuracyTimestamp(coordinate: CLLocationCoordinate2D, altitude: number, hAccuracy: number, vAccuracy: number, course: number, courseAccuracy: number, speed: number, speedAccuracy: number, timestamp: Date): this;
 
 	initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(coordinate: CLLocationCoordinate2D, altitude: number, hAccuracy: number, vAccuracy: number, course: number, speed: number, timestamp: Date): this;
 
@@ -407,9 +424,15 @@ declare class CLLocationManager extends NSObject {
 
 	static significantLocationChangeMonitoringAvailable(): boolean;
 
+	readonly accuracyAuthorization: CLAccuracyAuthorization;
+
 	activityType: CLActivityType;
 
 	allowsBackgroundLocationUpdates: boolean;
+
+	readonly authorizationStatus: CLAuthorizationStatus;
+
+	readonly authorizedForWidgetUpdates: boolean;
 
 	delegate: CLLocationManagerDelegate;
 
@@ -455,6 +478,10 @@ declare class CLLocationManager extends NSObject {
 
 	requestStateForRegion(region: CLRegion): void;
 
+	requestTemporaryFullAccuracyAuthorizationWithPurposeKey(purposeKey: string): void;
+
+	requestTemporaryFullAccuracyAuthorizationWithPurposeKeyCompletion(purposeKey: string, completion: (p1: NSError) => void): void;
+
 	requestWhenInUseAuthorization(): void;
 
 	startMonitoringForRegion(region: CLRegion): void;
@@ -489,6 +516,8 @@ declare class CLLocationManager extends NSObject {
 }
 
 interface CLLocationManagerDelegate extends NSObjectProtocol {
+
+	locationManagerDidChangeAuthorization?(manager: CLLocationManager): void;
 
 	locationManagerDidChangeAuthorizationStatus?(manager: CLLocationManager, status: CLAuthorizationStatus): void;
 
@@ -689,6 +718,8 @@ declare var kCLLocationAccuracyHundredMeters: number;
 declare var kCLLocationAccuracyKilometer: number;
 
 declare var kCLLocationAccuracyNearestTenMeters: number;
+
+declare var kCLLocationAccuracyReduced: number;
 
 declare var kCLLocationAccuracyThreeKilometers: number;
 

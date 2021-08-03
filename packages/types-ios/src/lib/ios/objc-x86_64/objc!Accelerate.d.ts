@@ -36,8 +36,135 @@ declare const enum BNNSActivationFunction {
 
 	IntegerLinearSaturatePerChannel = 10,
 
-	Softmax = 11
+	Softmax = 11,
+
+	GELUApproximation = 12,
+
+	Gumbel = 13,
+
+	GumbelMax = 14,
+
+	HardSigmoid = 15,
+
+	Softplus = 16,
+
+	Softsign = 17,
+
+	ELU = 18,
+
+	ClampedLeakyRectifiedLinear = 19,
+
+	LinearWithBias = 20,
+
+	LogSoftmax = 21,
+
+	LogSigmoid = 22,
+
+	SELU = 23,
+
+	CELU = 24,
+
+	HardShrink = 25,
+
+	SoftShrink = 26,
+
+	TanhShrink = 27,
+
+	Threshold = 28,
+
+	PReLUPerChannel = 29,
+
+	GELUApproximation2 = 30
 }
+
+declare function BNNSApplyMultiheadAttention(F: interop.Pointer | interop.Reference<any>, batch_size: number, query: interop.Pointer | interop.Reference<any>, query_stride: number, key: interop.Pointer | interop.Reference<any>, key_stride: number, key_mask: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, key_mask_stride: number, value: interop.Pointer | interop.Reference<any>, value_stride: number, output: interop.Pointer | interop.Reference<any>, output_stride: number, add_to_attention: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, backprop_cache_size: interop.Pointer | interop.Reference<number>, backprop_cache: interop.Pointer | interop.Reference<any>, workspace_size: interop.Pointer | interop.Reference<number>, workspace: interop.Pointer | interop.Reference<any>): number;
+
+declare function BNNSApplyMultiheadAttentionBackward(F: interop.Pointer | interop.Reference<any>, batch_size: number, query: interop.Pointer | interop.Reference<any>, query_stride: number, query_param_delta: interop.Pointer | interop.Reference<BNNSMHAProjectionParameters>, key: interop.Pointer | interop.Reference<any>, key_stride: number, key_mask: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, key_mask_stride: number, key_param_delta: interop.Pointer | interop.Reference<BNNSMHAProjectionParameters>, value: interop.Pointer | interop.Reference<any>, value_stride: number, value_param_delta: interop.Pointer | interop.Reference<BNNSMHAProjectionParameters>, add_to_attention: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, key_attn_bias_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, value_attn_bias_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<any>, output_stride: number, output_param_delta: interop.Pointer | interop.Reference<BNNSMHAProjectionParameters>, backprop_cache_size: number, backprop_cache: interop.Pointer | interop.Reference<any>, workspace_size: interop.Pointer | interop.Reference<number>, workspace: interop.Pointer | interop.Reference<any>): number;
+
+interface BNNSArithmeticBinary {
+	in1: BNNSNDArrayDescriptor;
+	in1_type: BNNSDescriptorType;
+	in2: BNNSNDArrayDescriptor;
+	in2_type: BNNSDescriptorType;
+	out: BNNSNDArrayDescriptor;
+	out_type: BNNSDescriptorType;
+}
+declare var BNNSArithmeticBinary: interop.StructType<BNNSArithmeticBinary>;
+
+declare function BNNSArithmeticFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, number_of_inputs: number, _in: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, in_stride: interop.Pointer | interop.Reference<number>, in_delta: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>, in_delta_stride: interop.Pointer | interop.Reference<number>, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number): number;
+
+declare function BNNSArithmeticFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, number_of_inputs: number, _in: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, in_stride: interop.Pointer | interop.Reference<number>, out: interop.Pointer | interop.Reference<any>, out_stride: number): number;
+
+declare const enum BNNSArithmeticFunction {
+
+	Add = 0,
+
+	Subtract = 1,
+
+	Multiply = 2,
+
+	Divide = 3,
+
+	SquareRoot = 4,
+
+	ReciprocalSquareRoot = 5,
+
+	Ceil = 6,
+
+	Floor = 7,
+
+	Round = 8,
+
+	Sin = 9,
+
+	Cos = 10,
+
+	Tan = 11,
+
+	Asin = 12,
+
+	Acos = 13,
+
+	Atan = 14,
+
+	Sinh = 15,
+
+	Cosh = 16,
+
+	Tanh = 17,
+
+	Asinh = 18,
+
+	Acosh = 19,
+
+	Atanh = 20,
+
+	Pow = 21,
+
+	Exp = 22,
+
+	Exp2 = 23,
+
+	Log = 24,
+
+	Log2 = 25,
+
+	MultiplyNoNaN = 26,
+
+	DivideNoNaN = 27
+}
+
+interface BNNSArithmeticUnary {
+	in: BNNSNDArrayDescriptor;
+	in_type: BNNSDescriptorType;
+	out: BNNSNDArrayDescriptor;
+	out_type: BNNSDescriptorType;
+}
+declare var BNNSArithmeticUnary: interop.StructType<BNNSArithmeticUnary>;
+
+declare function BNNSCompareTensor(in0: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in1: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, op: BNNSRelationalOperator, out: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>): number;
+
+declare function BNNSComputeLSTMTrainingCacheCapacity(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersLSTM>): number;
 
 interface BNNSConvolutionLayerParameters {
 	x_stride: number;
@@ -54,6 +181,59 @@ interface BNNSConvolutionLayerParameters {
 }
 declare var BNNSConvolutionLayerParameters: interop.StructType<BNNSConvolutionLayerParameters>;
 
+declare function BNNSCopy(dest: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, src: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare const enum BNNSDataLayout {
+
+	LayoutVector = 65536,
+
+	Layout1DLastMajor = 98304,
+
+	Layout1DFirstMajor = 98305,
+
+	LayoutRowMajorMatrix = 131072,
+
+	LayoutColumnMajorMatrix = 131073,
+
+	Layout2DLastMajor = 163840,
+
+	Layout2DFirstMajor = 163841,
+
+	LayoutImageCHW = 196608,
+
+	Layout3DLastMajor = 229376,
+
+	Layout3DFirstMajor = 229377,
+
+	LayoutConvolutionWeightsOIHW = 262144,
+
+	LayoutConvolutionWeightsOIHrWr = 262145,
+
+	LayoutConvolutionWeightsIOHrWr = 262146,
+
+	LayoutConvolutionWeightsOIHW_Pack32 = 262160,
+
+	Layout4DLastMajor = 294912,
+
+	Layout4DFirstMajor = 294913,
+
+	Layout5DLastMajor = 360448,
+
+	Layout5DFirstMajor = 360449,
+
+	Layout6DLastMajor = 425984,
+
+	Layout6DFirstMajor = 425985,
+
+	Layout7DLastMajor = 491520,
+
+	Layout7DFirstMajor = 491521,
+
+	Layout8DLastMajor = 557056,
+
+	Layout8DFirstMajor = 557057
+}
+
 declare const enum BNNSDataType {
 
 	FloatBit = 65536,
@@ -64,6 +244,12 @@ declare const enum BNNSDataType {
 
 	IntBit = 131072,
 
+	Int1 = 131073,
+
+	Int2 = 131074,
+
+	Int4 = 131076,
+
 	Int8 = 131080,
 
 	Int16 = 131088,
@@ -71,6 +257,12 @@ declare const enum BNNSDataType {
 	Int32 = 131104,
 
 	UIntBit = 262144,
+
+	UInt1 = 262145,
+
+	UInt2 = 262146,
+
+	UInt4 = 262148,
 
 	UInt8 = 262152,
 
@@ -80,16 +272,93 @@ declare const enum BNNSDataType {
 
 	IndexedBit = 524288,
 
-	Indexed8 = 524296
+	Indexed1 = 524289,
+
+	Indexed2 = 524290,
+
+	Indexed4 = 524292,
+
+	Indexed8 = 524296,
+
+	MiscellaneousBit = 1048576,
+
+	Boolean = 1048584
 }
+
+declare const enum BNNSDescriptorType {
+
+	Constant = 0,
+
+	Sample = 1,
+
+	Parameter = 2
+}
+
+declare function BNNSDirectApplyActivationBatch(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersActivation>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>, batch_size: number, in_stride: number, out_stride: number): number;
+
+declare function BNNSDirectApplyBroadcastMatMul(transA: boolean, transB: boolean, alpha: number, inputA: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, inputB: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): void;
+
+declare function BNNSDirectApplyInTopK(K: number, axis: number, batch_size: number, input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, input_batch_stride: number, test_indices: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, test_indices_batch_stride: number, output: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, output_batch_stride: number, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSDirectApplyLSTMBatchBackward(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersLSTM>, layer_delta_params: interop.Pointer | interop.Reference<BNNSLayerParametersLSTM>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>, training_cache_ptr: interop.Pointer | interop.Reference<any>, training_cache_capacity: number): number;
+
+declare function BNNSDirectApplyLSTMBatchTrainingCaching(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersLSTM>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>, training_cache_ptr: interop.Pointer | interop.Reference<any>, training_cache_capacity: number): number;
+
+declare function BNNSDirectApplyReduction(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersReduction>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare function BNNSDirectApplyTopK(K: number, axis: number, batch_size: number, input: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, input_batch_stride: number, best_values: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, best_values_batch_stride: number, best_indices: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, best_indices_batch_stride: number, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
 
 declare function BNNSFilterApply(filter: interop.Pointer | interop.Reference<any>, _in: interop.Pointer | interop.Reference<any>, out: interop.Pointer | interop.Reference<any>): number;
 
+declare function BNNSFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, weights_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, bias_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>): number;
+
+declare function BNNSFilterApplyBackwardTwoInputBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, inA: interop.Pointer | interop.Reference<any>, inA_stride: number, inA_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, inA_delta_stride: number, inB: interop.Pointer | interop.Reference<any>, inB_stride: number, inB_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, inB_delta_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, weights_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, bias_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>): number;
+
 declare function BNNSFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number): number;
+
+declare function BNNSFilterApplyTwoInput(filter: interop.Pointer | interop.Reference<any>, inA: interop.Pointer | interop.Reference<any>, inB: interop.Pointer | interop.Reference<any>, out: interop.Pointer | interop.Reference<any>): number;
+
+declare function BNNSFilterApplyTwoInputBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, inA: interop.Pointer | interop.Reference<any>, inA_stride: number, inB: interop.Pointer | interop.Reference<any>, inB_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number): number;
 
 declare function BNNSFilterCreateConvolutionLayer(in_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, layer_params: interop.Pointer | interop.Reference<BNNSConvolutionLayerParameters>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
 
 declare function BNNSFilterCreateFullyConnectedLayer(in_desc: interop.Pointer | interop.Reference<BNNSVectorDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSVectorDescriptor>, layer_params: interop.Pointer | interop.Reference<BNNSFullyConnectedLayerParameters>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateFusedLayer(number_of_fused_filters: number, filter_type: interop.Pointer | interop.Reference<BNNSFilterType>, layer_params: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerActivation(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersActivation>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerArithmetic(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersArithmetic>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerBroadcastMatMul(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersBroadcastMatMul>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerConvolution(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersConvolution>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerDropout(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersDropout>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerFullyConnected(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersFullyConnected>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerGram(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersGram>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerLoss(layer_params: interop.Pointer | interop.Reference<any>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerMultiheadAttention(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersMultiheadAttention>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerNormalization(normType: BNNSFilterType, layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersNormalization>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerPadding(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersPadding>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerPermute(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersPermute>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerPooling(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersPooling>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerReduction(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersReduction>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerResize(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersResize>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerTensorContraction(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersTensorContraction>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateLayerTransposedConvolution(layer_params: interop.Pointer | interop.Reference<BNNSLayerParametersConvolution>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
 
 declare function BNNSFilterCreatePoolingLayer(in_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, layer_params: interop.Pointer | interop.Reference<BNNSPoolingLayerParameters>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
 
@@ -105,6 +374,23 @@ interface BNNSFilterParameters {
 }
 declare var BNNSFilterParameters: interop.StructType<BNNSFilterParameters>;
 
+declare const enum BNNSFilterType {
+
+	Convolution = 0,
+
+	FullyConnected = 1,
+
+	BatchNorm = 2,
+
+	InstanceNorm = 3,
+
+	LayerNorm = 4,
+
+	GroupNorm = 5,
+
+	TransposedConvolution = 6
+}
+
 declare const enum BNNSFlags {
 
 	UseClientPtr = 1
@@ -119,6 +405,12 @@ interface BNNSFullyConnectedLayerParameters {
 }
 declare var BNNSFullyConnectedLayerParameters: interop.StructType<BNNSFullyConnectedLayerParameters>;
 
+declare function BNNSFusedFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, delta_parameters: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>): number;
+
+declare function BNNSFusedFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, training: boolean): number;
+
+declare function BNNSGetPointer(filter: interop.Pointer | interop.Reference<any>, target: BNNSPointerSpecifier): BNNSNDArrayDescriptor;
+
 interface BNNSImageStackDescriptor {
 	width: number;
 	height: number;
@@ -131,6 +423,29 @@ interface BNNSImageStackDescriptor {
 }
 declare var BNNSImageStackDescriptor: interop.StructType<BNNSImageStackDescriptor>;
 
+declare const enum BNNSInterpolationMethod {
+
+	Nearest = 0,
+
+	Linear = 1
+}
+
+interface BNNSLSTMDataDescriptor {
+	data_desc: BNNSNDArrayDescriptor;
+	hidden_desc: BNNSNDArrayDescriptor;
+	cell_state_desc: BNNSNDArrayDescriptor;
+}
+declare var BNNSLSTMDataDescriptor: interop.StructType<BNNSLSTMDataDescriptor>;
+
+interface BNNSLSTMGateDescriptor {
+	iw_desc: interop.Reference<BNNSNDArrayDescriptor>;
+	hw_desc: BNNSNDArrayDescriptor;
+	cw_desc: BNNSNDArrayDescriptor;
+	b_desc: BNNSNDArrayDescriptor;
+	activation: BNNSActivation;
+}
+declare var BNNSLSTMGateDescriptor: interop.StructType<BNNSLSTMGateDescriptor>;
+
 interface BNNSLayerData {
 	data: interop.Pointer | interop.Reference<any>;
 	data_type: BNNSDataType;
@@ -140,9 +455,427 @@ interface BNNSLayerData {
 }
 declare var BNNSLayerData: interop.StructType<BNNSLayerData>;
 
+declare const enum BNNSLayerFlags {
+
+	LSTMBidirectional = 1,
+
+	LSTMDefaultActivations = 2
+}
+
+interface BNNSLayerParametersActivation {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	activation: BNNSActivation;
+	axis_flags: number;
+}
+declare var BNNSLayerParametersActivation: interop.StructType<BNNSLayerParametersActivation>;
+
+interface BNNSLayerParametersArithmetic {
+	arithmetic_function: BNNSArithmeticFunction;
+	arithmetic_function_fields: interop.Pointer | interop.Reference<any>;
+	activation: BNNSActivation;
+}
+declare var BNNSLayerParametersArithmetic: interop.StructType<BNNSLayerParametersArithmetic>;
+
+interface BNNSLayerParametersBroadcastMatMul {
+	alpha: number;
+	beta: number;
+	transA: boolean;
+	transB: boolean;
+	quadratic: boolean;
+	a_is_weights: boolean;
+	b_is_weights: boolean;
+	iA_desc: BNNSNDArrayDescriptor;
+	iB_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+}
+declare var BNNSLayerParametersBroadcastMatMul: interop.StructType<BNNSLayerParametersBroadcastMatMul>;
+
+interface BNNSLayerParametersConvolution {
+	i_desc: BNNSNDArrayDescriptor;
+	w_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	bias: BNNSNDArrayDescriptor;
+	activation: BNNSActivation;
+	x_stride: number;
+	y_stride: number;
+	x_dilation_stride: number;
+	y_dilation_stride: number;
+	x_padding: number;
+	y_padding: number;
+	groups: number;
+	pad: interop.Reference<number>;
+}
+declare var BNNSLayerParametersConvolution: interop.StructType<BNNSLayerParametersConvolution>;
+
+interface BNNSLayerParametersDropout {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	rate: number;
+	seed: number;
+	control: number;
+}
+declare var BNNSLayerParametersDropout: interop.StructType<BNNSLayerParametersDropout>;
+
+interface BNNSLayerParametersFullyConnected {
+	i_desc: BNNSNDArrayDescriptor;
+	w_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	bias: BNNSNDArrayDescriptor;
+	activation: BNNSActivation;
+}
+declare var BNNSLayerParametersFullyConnected: interop.StructType<BNNSLayerParametersFullyConnected>;
+
+interface BNNSLayerParametersGram {
+	alpha: number;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+}
+declare var BNNSLayerParametersGram: interop.StructType<BNNSLayerParametersGram>;
+
+interface BNNSLayerParametersLSTM {
+	input_size: number;
+	hidden_size: number;
+	batch_size: number;
+	num_layers: number;
+	seq_len: number;
+	dropout: number;
+	lstm_flags: number;
+	sequence_descriptor: BNNSNDArrayDescriptor;
+	input_descriptor: BNNSLSTMDataDescriptor;
+	output_descriptor: BNNSLSTMDataDescriptor;
+	input_gate: BNNSLSTMGateDescriptor;
+	forget_gate: BNNSLSTMGateDescriptor;
+	candidate_gate: BNNSLSTMGateDescriptor;
+	output_gate: BNNSLSTMGateDescriptor;
+	hidden_activation: BNNSActivation;
+}
+declare var BNNSLayerParametersLSTM: interop.StructType<BNNSLayerParametersLSTM>;
+
+interface BNNSLayerParametersLossBase {
+	function: BNNSLossFunction;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	reduction: BNNSLossReductionFunction;
+}
+declare var BNNSLayerParametersLossBase: interop.StructType<BNNSLayerParametersLossBase>;
+
+interface BNNSLayerParametersLossHuber {
+	function: BNNSLossFunction;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	reduction: BNNSLossReductionFunction;
+	huber_delta: number;
+}
+declare var BNNSLayerParametersLossHuber: interop.StructType<BNNSLayerParametersLossHuber>;
+
+interface BNNSLayerParametersLossSigmoidCrossEntropy {
+	function: BNNSLossFunction;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	reduction: BNNSLossReductionFunction;
+	label_smooth: number;
+}
+declare var BNNSLayerParametersLossSigmoidCrossEntropy: interop.StructType<BNNSLayerParametersLossSigmoidCrossEntropy>;
+
+interface BNNSLayerParametersLossSoftmaxCrossEntropy {
+	function: BNNSLossFunction;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	reduction: BNNSLossReductionFunction;
+	label_smooth: number;
+}
+declare var BNNSLayerParametersLossSoftmaxCrossEntropy: interop.StructType<BNNSLayerParametersLossSoftmaxCrossEntropy>;
+
+interface BNNSLayerParametersLossYolo {
+	function: BNNSLossFunction;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	reduction: BNNSLossReductionFunction;
+	huber_delta: number;
+	number_of_grid_columns: number;
+	number_of_grid_rows: number;
+	number_of_anchor_boxes: number;
+	anchor_box_size: number;
+	rescore: boolean;
+	scale_xy: number;
+	scale_wh: number;
+	scale_object: number;
+	scale_no_object: number;
+	scale_classification: number;
+	object_minimum_iou: number;
+	no_object_maximum_iou: number;
+	anchors_data: interop.Pointer | interop.Reference<number>;
+}
+declare var BNNSLayerParametersLossYolo: interop.StructType<BNNSLayerParametersLossYolo>;
+
+interface BNNSLayerParametersMultiheadAttention {
+	query: BNNSMHAProjectionParameters;
+	key: BNNSMHAProjectionParameters;
+	value: BNNSMHAProjectionParameters;
+	add_zero_attn: boolean;
+	key_attn_bias: BNNSNDArrayDescriptor;
+	value_attn_bias: BNNSNDArrayDescriptor;
+	output: BNNSMHAProjectionParameters;
+	dropout: number;
+	seed: number;
+}
+declare var BNNSLayerParametersMultiheadAttention: interop.StructType<BNNSLayerParametersMultiheadAttention>;
+
+interface BNNSLayerParametersNormalization {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	beta_desc: BNNSNDArrayDescriptor;
+	gamma_desc: BNNSNDArrayDescriptor;
+	moving_mean_desc: BNNSNDArrayDescriptor;
+	moving_variance_desc: BNNSNDArrayDescriptor;
+	momentum: number;
+	epsilon: number;
+	activation: BNNSActivation;
+	num_groups: number;
+	normalization_axis: number;
+}
+declare var BNNSLayerParametersNormalization: interop.StructType<BNNSLayerParametersNormalization>;
+
+interface BNNSLayerParametersPadding {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	padding_size: interop.Reference<interop.Reference<number>>;
+	padding_mode: BNNSPaddingMode;
+	padding_value: number;
+}
+declare var BNNSLayerParametersPadding: interop.StructType<BNNSLayerParametersPadding>;
+
+interface BNNSLayerParametersPermute {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	permutation: interop.Reference<number>;
+}
+declare var BNNSLayerParametersPermute: interop.StructType<BNNSLayerParametersPermute>;
+
+interface BNNSLayerParametersPooling {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	bias: BNNSNDArrayDescriptor;
+	activation: BNNSActivation;
+	pooling_function: BNNSPoolingFunction;
+	k_width: number;
+	k_height: number;
+	x_stride: number;
+	y_stride: number;
+	x_dilation_stride: number;
+	y_dilation_stride: number;
+	x_padding: number;
+	y_padding: number;
+	pad: interop.Reference<number>;
+}
+declare var BNNSLayerParametersPooling: interop.StructType<BNNSLayerParametersPooling>;
+
+interface BNNSLayerParametersReduction {
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	w_desc: BNNSNDArrayDescriptor;
+	reduce_func: BNNSReduceFunction;
+	epsilon: number;
+}
+declare var BNNSLayerParametersReduction: interop.StructType<BNNSLayerParametersReduction>;
+
+interface BNNSLayerParametersResize {
+	method: BNNSInterpolationMethod;
+	i_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+	align_corners: boolean;
+}
+declare var BNNSLayerParametersResize: interop.StructType<BNNSLayerParametersResize>;
+
+interface BNNSLayerParametersTensorContraction {
+	operation: string;
+	alpha: number;
+	beta: number;
+	iA_desc: BNNSNDArrayDescriptor;
+	iB_desc: BNNSNDArrayDescriptor;
+	o_desc: BNNSNDArrayDescriptor;
+}
+declare var BNNSLayerParametersTensorContraction: interop.StructType<BNNSLayerParametersTensorContraction>;
+
+declare function BNNSLossFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, labels: interop.Pointer | interop.Reference<any>, labels_stride: number, weights: interop.Pointer | interop.Reference<any>, weights_size: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number): number;
+
+declare function BNNSLossFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, labels: interop.Pointer | interop.Reference<any>, labels_stride: number, weights: interop.Pointer | interop.Reference<any>, weights_size: number, out: interop.Pointer | interop.Reference<any>, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number): number;
+
+declare const enum BNNSLossFunction {
+
+	SoftmaxCrossEntropy = 1,
+
+	SigmoidCrossEntropy = 2,
+
+	MeanSquareError = 3,
+
+	Huber = 4,
+
+	Yolo = 5,
+
+	Log = 6,
+
+	CosineDistance = 7,
+
+	Hinge = 8,
+
+	MeanAbsoluteError = 9,
+
+	CategoricalCrossEntropy = 10
+}
+
+declare const enum BNNSLossReductionFunction {
+
+	None = 0,
+
+	Sum = 1,
+
+	WeightedMean = 2,
+
+	Mean = 3,
+
+	NonZeroWeightMean = 4
+}
+
+interface BNNSMHAProjectionParameters {
+	target_desc: BNNSNDArrayDescriptor;
+	weights: BNNSNDArrayDescriptor;
+	bias: BNNSNDArrayDescriptor;
+}
+declare var BNNSMHAProjectionParameters: interop.StructType<BNNSMHAProjectionParameters>;
+
+interface BNNSNDArrayDescriptor {
+	flags: BNNSNDArrayFlags;
+	layout: BNNSDataLayout;
+	size: interop.Reference<number>;
+	stride: interop.Reference<number>;
+	data: interop.Pointer | interop.Reference<any>;
+	data_type: BNNSDataType;
+	table_data: interop.Pointer | interop.Reference<any>;
+	table_data_type: BNNSDataType;
+	data_scale: number;
+	data_bias: number;
+}
+declare var BNNSNDArrayDescriptor: interop.StructType<BNNSNDArrayDescriptor>;
+
+declare const enum BNNSNDArrayFlags {
+
+	BackpropSet = 0,
+
+	BackpropAccumulate = 1
+}
+
+declare function BNNSNormalizationFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, beta_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, gamma_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>): number;
+
+declare function BNNSNormalizationFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, training: boolean): number;
+
+interface BNNSOptimizerAdamFields {
+	learning_rate: number;
+	beta1: number;
+	beta2: number;
+	time_step: number;
+	epsilon: number;
+	gradient_scale: number;
+	regularization_scale: number;
+	clip_gradients: boolean;
+	clip_gradients_min: number;
+	clip_gradients_max: number;
+	regularization_func: BNNSOptimizerRegularizationFunction;
+}
+declare var BNNSOptimizerAdamFields: interop.StructType<BNNSOptimizerAdamFields>;
+
+declare const enum BNNSOptimizerFunction {
+
+	SGDMomentum = 1,
+
+	Adam = 2,
+
+	RMSProp = 3
+}
+
+interface BNNSOptimizerRMSPropFields {
+	learning_rate: number;
+	alpha: number;
+	epsilon: number;
+	centered: boolean;
+	momentum: number;
+	gradient_scale: number;
+	regularization_scale: number;
+	clip_gradients: boolean;
+	clip_gradients_min: number;
+	clip_gradients_max: number;
+	regularization_func: BNNSOptimizerRegularizationFunction;
+}
+declare var BNNSOptimizerRMSPropFields: interop.StructType<BNNSOptimizerRMSPropFields>;
+
+declare const enum BNNSOptimizerRegularizationFunction {
+
+	None = 0,
+
+	L1 = 1,
+
+	L2 = 2
+}
+
+interface BNNSOptimizerSGDMomentumFields {
+	learning_rate: number;
+	momentum: number;
+	gradient_scale: number;
+	regularization_scale: number;
+	clip_gradients: boolean;
+	clip_gradients_min: number;
+	clip_gradients_max: number;
+	nesterov: boolean;
+	regularization_func: BNNSOptimizerRegularizationFunction;
+	sgd_momentum_variant: BNNSOptimizerSGDMomentumVariant;
+}
+declare var BNNSOptimizerSGDMomentumFields: interop.StructType<BNNSOptimizerSGDMomentumFields>;
+
+declare const enum BNNSOptimizerSGDMomentumVariant {
+
+	SGDMomentumVariant0 = 0,
+
+	SGDMomentumVariant1 = 1,
+
+	SGDMomentumVariant2 = 2
+}
+
+declare function BNNSOptimizerStep(_function: BNNSOptimizerFunction, OptimizerAlgFields: interop.Pointer | interop.Reference<any>, number_of_parameters: number, parameters: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>, gradients: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>, accumulators: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
+
+declare const enum BNNSPaddingMode {
+
+	Constant = 0,
+
+	Reflect = 1,
+
+	Symmetric = 2
+}
+
+declare function BNNSPermuteFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number): number;
+
+declare const enum BNNSPointerSpecifier {
+
+	Alpha = 0,
+
+	Beta = 1
+}
+
+declare function BNNSPoolingFilterApplyBackwardBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, in_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, in_delta_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, out_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, out_delta_stride: number, bias_delta: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, indices: interop.Pointer | interop.Reference<number>, idx_stride: number): number;
+
+declare function BNNSPoolingFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number, indices: interop.Pointer | interop.Reference<number>, idx_stride: number): number;
+
 declare const enum BNNSPoolingFunction {
 
 	Max = 0,
+
+	AverageCountIncludePadding = 1,
+
+	AverageCountExcludePadding = 2,
+
+	UnMax = 3,
+
+	L2Norm = 4,
 
 	Average = 1
 }
@@ -161,6 +894,66 @@ interface BNNSPoolingLayerParameters {
 	activation: BNNSActivation;
 }
 declare var BNNSPoolingLayerParameters: interop.StructType<BNNSPoolingLayerParameters>;
+
+declare const enum BNNSReduceFunction {
+
+	Max = 0,
+
+	Min = 1,
+
+	ArgMax = 2,
+
+	ArgMin = 3,
+
+	Mean = 4,
+
+	MeanNonZero = 5,
+
+	Sum = 6,
+
+	SumSquare = 7,
+
+	SumLog = 8,
+
+	L1Norm = 9,
+
+	LogicalOr = 10,
+
+	LogicalAnd = 11,
+
+	Any = 10,
+
+	All = 11
+}
+
+declare const enum BNNSRelationalOperator {
+
+	Equal = 0,
+
+	Less = 1,
+
+	LessEqual = 2,
+
+	Greater = 3,
+
+	GreaterEqual = 4,
+
+	NotEqual = 5,
+
+	LogicalAND = 6,
+
+	LogicalOR = 7,
+
+	LogicalNOT = 8,
+
+	LogicalNAND = 9,
+
+	LogicalNOR = 10,
+
+	LogicalXOR = 11
+}
+
+declare function BNNSTranspose(dest: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, src: interop.Pointer | interop.Reference<BNNSNDArrayDescriptor>, axis0: number, axis1: number, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): number;
 
 interface BNNSVectorDescriptor {
 	size: number;
@@ -5311,6 +6104,8 @@ declare function vImageConverter_CreateForCGToCVImageFormat(srcFormat: interop.P
 
 declare function vImageConverter_CreateForCVToCGImageFormat(srcFormat: any, destFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, backgroundColor: interop.Pointer | interop.Reference<number>, flags: number, error: interop.Pointer | interop.Reference<number>): interop.Unmanaged<any>;
 
+declare function vImageConverter_CreateWithCGColorConversionInfo(colorConversionInfoRef: any, sFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, dFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, bg: interop.Pointer | interop.Reference<number>, flags: number, error: interop.Pointer | interop.Reference<number>): interop.Unmanaged<any>;
+
 declare function vImageConverter_CreateWithCGImageFormat(srcFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, destFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, backgroundColor: interop.Pointer | interop.Reference<number>, flags: number, error: interop.Pointer | interop.Reference<number>): interop.Unmanaged<any>;
 
 declare function vImageConverter_CreateWithColorSyncCodeFragment(codeFragment: any, srcFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, destFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, backgroundColor: interop.Pointer | interop.Reference<number>, flags: number, error: interop.Pointer | interop.Reference<number>): interop.Unmanaged<any>;
@@ -5757,6 +6552,14 @@ declare function vImageScale_XRGB2101010W(src: interop.Pointer | interop.Referen
 declare function vImageSelectChannels_ARGB8888(newSrc: interop.Pointer | interop.Reference<vImage_Buffer>, origSrc: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, copyMask: number, flags: number): number;
 
 declare function vImageSelectChannels_ARGBFFFF(newSrc: interop.Pointer | interop.Reference<vImage_Buffer>, origSrc: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, copyMask: number, flags: number): number;
+
+declare function vImageSepConvolve_Planar16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernelX: interop.Pointer | interop.Reference<number>, kernelX_width: number, kernelY: interop.Pointer | interop.Reference<number>, kernelY_width: number, bias: number, backgroundColor: number, flags: number): number;
+
+declare function vImageSepConvolve_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernelX: interop.Pointer | interop.Reference<number>, kernelX_width: number, kernelY: interop.Pointer | interop.Reference<number>, kernelY_width: number, bias: number, backgroundColor: number, flags: number): number;
+
+declare function vImageSepConvolve_Planar8to16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernelX: interop.Pointer | interop.Reference<number>, kernelX_width: number, kernelY: interop.Pointer | interop.Reference<number>, kernelY_width: number, scale: number, bias: number, backgroundColor: number, flags: number): number;
+
+declare function vImageSepConvolve_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, kernelX: interop.Pointer | interop.Reference<number>, kernelX_width: number, kernelY: interop.Pointer | interop.Reference<number>, kernelY_width: number, bias: number, backgroundColor: number, flags: number): number;
 
 declare function vImageSymmetricPiecewiseGamma_Planar16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, exponentialCoeffs: interop.Reference<number>, gamma: number, linearCoeffs: interop.Reference<number>, boundary: number, flags: number): number;
 

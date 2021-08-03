@@ -1,10 +1,12 @@
 import { PageBase, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from './page-common';
+import { CoreTypes } from '../../core-types';
 import { View } from '../core/view';
 import { Color } from '../../color';
 import { ActionBar } from '../action-bar';
 import { GridLayout } from '../layouts/grid-layout';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
+import { AndroidAccessibilityEvent, getLastFocusedViewOnPage, isAccessibilityServiceEnabled } from '../../accessibility';
 
 export * from './page-common';
 
@@ -121,5 +123,34 @@ export class Page extends PageBase {
 			const color = value instanceof Color ? value.android : value;
 			(<any>window).setStatusBarColor(color);
 		}
+	}
+
+	public accessibilityScreenChanged(refocus = false): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		if (refocus) {
+			const lastFocusedView = getLastFocusedViewOnPage(this);
+			if (lastFocusedView) {
+				const announceView = lastFocusedView.nativeViewProtected;
+				if (announceView) {
+					announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED);
+					announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+
+					return;
+				}
+			}
+		}
+
+		if (this.actionBarHidden || this.accessibilityLabel) {
+			this.sendAccessibilityEvent({
+				androidAccessibilityEvent: AndroidAccessibilityEvent.WINDOW_STATE_CHANGED,
+			});
+
+			return;
+		}
+
+		this.actionBar.accessibilityScreenChanged();
 	}
 }

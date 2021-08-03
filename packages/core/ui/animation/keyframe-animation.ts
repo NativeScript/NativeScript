@@ -1,14 +1,14 @@
 import { View } from '../core/view';
 import { Color } from '../../color';
 
-import { AnimationCurve } from '../enums';
+import { CoreTypes } from '../../core-types';
 
 import { Trace } from '../../trace';
 
 // Types.
 import { unsetValue } from '../core/properties';
 import { Animation } from '.';
-import { backgroundColorProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, opacityProperty, rotateXProperty, rotateYProperty, widthProperty, heightProperty, PercentLength } from '../styling/style-properties';
+import { backgroundColorProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, rotateProperty, opacityProperty, rotateXProperty, rotateYProperty, widthProperty, heightProperty } from '../styling/style-properties';
 
 export class Keyframes {
 	name: string;
@@ -28,7 +28,7 @@ export class KeyframeDeclaration {
 export class KeyframeInfo {
 	public duration: number;
 	public declarations: Array<KeyframeDeclaration>;
-	public curve?: any = AnimationCurve.ease;
+	public curve?: any = CoreTypes.AnimationCurve.ease;
 }
 
 export class KeyframeAnimationInfo {
@@ -48,8 +48,8 @@ interface Keyframe {
 	translate?: { x: number; y: number };
 	rotate?: { x: number; y: number; z: number };
 	opacity?: number;
-	width?: PercentLength;
-	height?: PercentLength;
+	width?: CoreTypes.PercentLengthType;
+	height?: CoreTypes.PercentLengthType;
 	valueSource?: 'keyframe' | 'animation';
 	duration?: number;
 	curve?: any;

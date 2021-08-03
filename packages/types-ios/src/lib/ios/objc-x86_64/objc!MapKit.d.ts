@@ -70,6 +70,10 @@ declare class MKAnnotationView extends UIView {
 
 	selected: boolean;
 
+	selectedZPriority: number;
+
+	zPriority: number;
+
 	constructor(o: { annotation: MKAnnotation; reuseIdentifier: string; });
 
 	initWithAnnotationReuseIdentifier(annotation: MKAnnotation, reuseIdentifier: string): this;
@@ -87,7 +91,9 @@ declare const enum MKAnnotationViewCollisionMode {
 
 	Rectangle = 0,
 
-	Circle = 1
+	Circle = 1,
+
+	None = 2
 }
 
 declare const enum MKAnnotationViewDragState {
@@ -102,6 +108,14 @@ declare const enum MKAnnotationViewDragState {
 
 	Ending = 4
 }
+
+declare var MKAnnotationViewZPriorityDefaultSelected: number;
+
+declare var MKAnnotationViewZPriorityDefaultUnselected: number;
+
+declare var MKAnnotationViewZPriorityMax: number;
+
+declare var MKAnnotationViewZPriorityMin: number;
 
 declare class MKCircle extends MKShape implements MKOverlay {
 
@@ -171,6 +185,10 @@ declare class MKCircleRenderer extends MKOverlayPathRenderer {
 	static new(): MKCircleRenderer; // inherited from NSObject
 
 	readonly circle: MKCircle;
+
+	strokeEnd: number;
+
+	strokeStart: number;
 
 	constructor(o: { circle: MKCircle; });
 
@@ -536,6 +554,19 @@ declare class MKGeodesicPolyline extends MKPolyline {
 	static polylineWithPointsCount(points: interop.Pointer | interop.Reference<MKMapPoint>, count: number): MKGeodesicPolyline; // inherited from MKPolyline
 }
 
+declare class MKGradientPolylineRenderer extends MKPolylineRenderer {
+
+	static alloc(): MKGradientPolylineRenderer; // inherited from NSObject
+
+	static new(): MKGradientPolylineRenderer; // inherited from NSObject
+
+	readonly colors: NSArray<UIColor>;
+
+	readonly locations: NSArray<number>;
+
+	setColorsAtLocations(colors: NSArray<UIColor> | UIColor[], locations: NSArray<number> | number[]): void;
+}
+
 declare var MKLaunchOptionsCameraKey: string;
 
 declare var MKLaunchOptionsDirectionsModeDefault: string;
@@ -556,6 +587,31 @@ declare var MKLaunchOptionsMapTypeKey: string;
 
 declare var MKLaunchOptionsShowsTrafficKey: string;
 
+declare class MKLocalPointsOfInterestRequest extends NSObject implements NSCopying {
+
+	static alloc(): MKLocalPointsOfInterestRequest; // inherited from NSObject
+
+	static new(): MKLocalPointsOfInterestRequest; // inherited from NSObject
+
+	readonly coordinate: CLLocationCoordinate2D;
+
+	pointOfInterestFilter: MKPointOfInterestFilter;
+
+	readonly radius: number;
+
+	readonly region: MKCoordinateRegion;
+
+	constructor(o: { centerCoordinate: CLLocationCoordinate2D; radius: number; });
+
+	constructor(o: { coordinateRegion: MKCoordinateRegion; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithCenterCoordinateRadius(coordinate: CLLocationCoordinate2D, radius: number): this;
+
+	initWithCoordinateRegion(region: MKCoordinateRegion): this;
+}
+
 declare class MKLocalSearch extends NSObject {
 
 	static alloc(): MKLocalSearch; // inherited from NSObject
@@ -564,9 +620,13 @@ declare class MKLocalSearch extends NSObject {
 
 	readonly searching: boolean;
 
+	constructor(o: { pointsOfInterestRequest: MKLocalPointsOfInterestRequest; });
+
 	constructor(o: { request: MKLocalSearchRequest; });
 
 	cancel(): void;
+
+	initWithPointsOfInterestRequest(request: MKLocalPointsOfInterestRequest): this;
 
 	initWithRequest(request: MKLocalSearchRequest): this;
 
@@ -1285,6 +1345,10 @@ declare class MKMultiPoint extends MKShape implements MKGeoJSONObject {
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
 
+	locationAtPointIndex(index: number): number;
+
+	locationsAtPointIndexes(indexes: NSIndexSet): NSArray<number>;
+
 	performSelector(aSelector: string): any;
 
 	performSelectorWithObject(aSelector: string, object: any): any;
@@ -1901,6 +1965,8 @@ declare class MKPointOfInterestFilter extends NSObject implements NSCopying, NSS
 	initWithCoder(coder: NSCoder): this;
 }
 
+declare var MKPointsOfInterestRequestMaxRadius: number;
+
 declare class MKPolygon extends MKMultiPoint implements MKGeoJSONObject, MKOverlay {
 
 	static alloc(): MKPolygon; // inherited from NSObject
@@ -1973,6 +2039,10 @@ declare class MKPolygonRenderer extends MKOverlayPathRenderer {
 	static new(): MKPolygonRenderer; // inherited from NSObject
 
 	readonly polygon: MKPolygon;
+
+	strokeEnd: number;
+
+	strokeStart: number;
 
 	constructor(o: { polygon: MKPolygon; });
 
@@ -2070,6 +2140,10 @@ declare class MKPolylineRenderer extends MKOverlayPathRenderer {
 	static new(): MKPolylineRenderer; // inherited from NSObject
 
 	readonly polyline: MKPolyline;
+
+	strokeEnd: number;
+
+	strokeStart: number;
 
 	constructor(o: { polyline: MKPolyline; });
 
@@ -2416,6 +2490,25 @@ declare class MKUserLocation extends NSObject implements MKAnnotation {
 	setCoordinate(newCoordinate: CLLocationCoordinate2D): void;
 }
 
+declare class MKUserLocationView extends MKAnnotationView {
+
+	static alloc(): MKUserLocationView; // inherited from NSObject
+
+	static appearance(): MKUserLocationView; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): MKUserLocationView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): MKUserLocationView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKUserLocationView; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKUserLocationView; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKUserLocationView; // inherited from UIAppearance
+
+	static new(): MKUserLocationView; // inherited from NSObject
+}
+
 declare class MKUserTrackingBarButtonItem extends UIBarButtonItem {
 
 	static alloc(): MKUserTrackingBarButtonItem; // inherited from NSObject
@@ -2431,6 +2524,10 @@ declare class MKUserTrackingBarButtonItem extends UIBarButtonItem {
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): MKUserTrackingBarButtonItem; // inherited from UIAppearance
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): MKUserTrackingBarButtonItem; // inherited from UIAppearance
+
+	static fixedSpaceItemOfWidth(width: number): MKUserTrackingBarButtonItem; // inherited from UIBarButtonItem
+
+	static flexibleSpaceItem(): MKUserTrackingBarButtonItem; // inherited from UIBarButtonItem
 
 	static new(): MKUserTrackingBarButtonItem; // inherited from NSObject
 

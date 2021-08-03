@@ -1,4 +1,110 @@
 
+declare class ASAccountAuthenticationModificationController extends NSObject {
+
+	static alloc(): ASAccountAuthenticationModificationController; // inherited from NSObject
+
+	static new(): ASAccountAuthenticationModificationController; // inherited from NSObject
+
+	delegate: ASAccountAuthenticationModificationControllerDelegate;
+
+	presentationContextProvider: ASAccountAuthenticationModificationControllerPresentationContextProviding;
+
+	performRequest(request: ASAccountAuthenticationModificationRequest): void;
+}
+
+interface ASAccountAuthenticationModificationControllerDelegate extends NSObjectProtocol {
+
+	accountAuthenticationModificationControllerDidFailRequestWithError?(controller: ASAccountAuthenticationModificationController, request: ASAccountAuthenticationModificationRequest, error: NSError): void;
+
+	accountAuthenticationModificationControllerDidSuccessfullyCompleteRequestWithUserInfo?(controller: ASAccountAuthenticationModificationController, request: ASAccountAuthenticationModificationRequest, userInfo: NSDictionary<any, any>): void;
+}
+declare var ASAccountAuthenticationModificationControllerDelegate: {
+
+	prototype: ASAccountAuthenticationModificationControllerDelegate;
+};
+
+interface ASAccountAuthenticationModificationControllerPresentationContextProviding extends NSObjectProtocol {
+
+	presentationAnchorForAccountAuthenticationModificationController(controller: ASAccountAuthenticationModificationController): UIWindow;
+}
+declare var ASAccountAuthenticationModificationControllerPresentationContextProviding: {
+
+	prototype: ASAccountAuthenticationModificationControllerPresentationContextProviding;
+};
+
+declare class ASAccountAuthenticationModificationExtensionContext extends NSExtensionContext {
+
+	static alloc(): ASAccountAuthenticationModificationExtensionContext; // inherited from NSObject
+
+	static new(): ASAccountAuthenticationModificationExtensionContext; // inherited from NSObject
+
+	completeChangePasswordRequestWithUpdatedCredentialUserInfo(updatedCredential: ASPasswordCredential, userInfo: NSDictionary<any, any>): void;
+
+	completeUpgradeToSignInWithAppleWithUserInfo(userInfo: NSDictionary<any, any>): void;
+
+	getSignInWithAppleUpgradeAuthorizationWithStateNonceCompletionHandler(state: string, nonce: string, completionHandler: (p1: ASAuthorizationAppleIDCredential, p2: NSError) => void): void;
+}
+
+declare class ASAccountAuthenticationModificationReplacePasswordWithSignInWithAppleRequest extends ASAccountAuthenticationModificationRequest {
+
+	static alloc(): ASAccountAuthenticationModificationReplacePasswordWithSignInWithAppleRequest; // inherited from NSObject
+
+	static new(): ASAccountAuthenticationModificationReplacePasswordWithSignInWithAppleRequest; // inherited from NSObject
+
+	readonly serviceIdentifier: ASCredentialServiceIdentifier;
+
+	readonly user: string;
+
+	readonly userInfo: NSDictionary<any, any>;
+
+	constructor(o: { user: string; serviceIdentifier: ASCredentialServiceIdentifier; userInfo: NSDictionary<any, any>; });
+
+	initWithUserServiceIdentifierUserInfo(user: string, serviceIdentifier: ASCredentialServiceIdentifier, userInfo: NSDictionary<any, any>): this;
+}
+
+declare class ASAccountAuthenticationModificationRequest extends NSObject {
+
+	static alloc(): ASAccountAuthenticationModificationRequest; // inherited from NSObject
+
+	static new(): ASAccountAuthenticationModificationRequest; // inherited from NSObject
+}
+
+declare class ASAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest extends ASAccountAuthenticationModificationRequest {
+
+	static alloc(): ASAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest; // inherited from NSObject
+
+	static new(): ASAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest; // inherited from NSObject
+
+	readonly serviceIdentifier: ASCredentialServiceIdentifier;
+
+	readonly user: string;
+
+	readonly userInfo: NSDictionary<any, any>;
+
+	constructor(o: { user: string; serviceIdentifier: ASCredentialServiceIdentifier; userInfo: NSDictionary<any, any>; });
+
+	initWithUserServiceIdentifierUserInfo(user: string, serviceIdentifier: ASCredentialServiceIdentifier, userInfo: NSDictionary<any, any>): this;
+}
+
+declare class ASAccountAuthenticationModificationViewController extends UIViewController {
+
+	static alloc(): ASAccountAuthenticationModificationViewController; // inherited from NSObject
+
+	static new(): ASAccountAuthenticationModificationViewController; // inherited from NSObject
+
+	readonly extensionContext: ASAccountAuthenticationModificationExtensionContext;
+
+	cancelRequest(): void;
+
+	changePasswordWithoutUserInteractionForServiceIdentifierExistingCredentialNewPasswordUserInfo(serviceIdentifier: ASCredentialServiceIdentifier, existingCredential: ASPasswordCredential, newPassword: string, userInfo: NSDictionary<any, any>): void;
+
+	convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifierExistingCredentialUserInfo(serviceIdentifier: ASCredentialServiceIdentifier, existingCredential: ASPasswordCredential, userInfo: NSDictionary<any, any>): void;
+
+	prepareInterfaceToChangePasswordForServiceIdentifierExistingCredentialNewPasswordUserInfo(serviceIdentifier: ASCredentialServiceIdentifier, existingCredential: ASPasswordCredential, newPassword: string, userInfo: NSDictionary<any, any>): void;
+
+	prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifierExistingCredentialUserInfo(serviceIdentifier: ASCredentialServiceIdentifier, existingCredential: ASPasswordCredential, userInfo: NSDictionary<any, any>): void;
+}
+
 declare class ASAuthorization extends NSObject {
 
 	static alloc(): ASAuthorization; // inherited from NSObject
@@ -332,6 +438,8 @@ declare var ASAuthorizationProvider: {
 	prototype: ASAuthorizationProvider;
 };
 
+declare var ASAuthorizationProviderAuthorizationOperationConfigurationRemoved: string;
+
 declare class ASAuthorizationProviderExtensionAuthorizationRequest extends NSObject {
 
 	static alloc(): ASAuthorizationProviderExtensionAuthorizationRequest; // inherited from NSObject
@@ -342,11 +450,17 @@ declare class ASAuthorizationProviderExtensionAuthorizationRequest extends NSObj
 
 	readonly callerBundleIdentifier: string;
 
+	readonly callerManaged: boolean;
+
+	readonly callerTeamIdentifier: string;
+
 	readonly extensionData: NSDictionary<any, any>;
 
 	readonly httpBody: NSData;
 
 	readonly httpHeaders: NSDictionary<string, string>;
+
+	readonly localizedCallerDisplayName: string;
 
 	readonly realm: string;
 
@@ -636,6 +750,8 @@ declare const enum ASExtensionErrorCode {
 
 declare var ASExtensionErrorDomain: string;
 
+declare var ASExtensionLocalizedFailureReasonErrorKey: string;
+
 declare class ASPasswordCredential extends NSObject implements ASAuthorizationCredential {
 
 	static alloc(): ASPasswordCredential; // inherited from NSObject
@@ -751,6 +867,8 @@ declare class ASWebAuthenticationSession extends NSObject {
 	static alloc(): ASWebAuthenticationSession; // inherited from NSObject
 
 	static new(): ASWebAuthenticationSession; // inherited from NSObject
+
+	readonly canStart: boolean;
 
 	prefersEphemeralWebBrowserSession: boolean;
 
