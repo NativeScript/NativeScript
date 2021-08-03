@@ -1,10 +1,9 @@
-﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd"
-  showingModally="onShowingModally"
-  shownModally="onShownModally"
+<Page xmlns="http://schemas.nativescript.org/tns.xsd"
+  navigatingTo="navigatingTo"
   loaded="onLoaded" unloaded="onUnloaded" backgroundColor="Red">
   <StackLayout backgroundColor="PaleGreen" margin="10">
     <Label text="{{ context }}"/>
     <Button text="Show Alert" tap="{{ onTap }}"/>
-    <Button text="Open Nested Modal" tap="{{ openNestedModal }}"/>
+    <Button text="Open Nested Frames" tap="{{ openNestedFrames }}" />
   </StackLayout>
 </Page>
