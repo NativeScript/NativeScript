@@ -223,6 +223,7 @@ exports[`base configuration for android 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -530,6 +531,7 @@ exports[`base configuration for ios 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }

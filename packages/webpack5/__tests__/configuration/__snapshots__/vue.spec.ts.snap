@@ -257,6 +257,7 @@ exports[`vue configuration for android 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096,
           extensions: {
@@ -598,6 +599,7 @@ exports[`vue configuration for ios 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096,
           extensions: {

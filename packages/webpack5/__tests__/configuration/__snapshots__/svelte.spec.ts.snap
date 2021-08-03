@@ -248,6 +248,7 @@ exports[`svelte configuration for android 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -574,6 +575,7 @@ exports[`svelte configuration for ios 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }

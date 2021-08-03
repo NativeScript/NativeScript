@@ -240,6 +240,7 @@ exports[`typescript configuration for android 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -320,10 +321,10 @@ exports[`typescript configuration for android 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
+      '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
-      '@nativescript/core/ui/frame/activity',
-      '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__'
+      '@nativescript/core/ui/frame/activity'
     ]
   }
 }"
@@ -569,6 +570,7 @@ exports[`typescript configuration for ios 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -649,8 +651,8 @@ exports[`typescript configuration for ios 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
-      '__jest__/src/app.js',
-      '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__'
+      '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__',
+      '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [
       '@nativescript/core/inspector_modules'

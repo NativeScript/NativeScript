@@ -56,6 +56,8 @@ program
 			env['env'] = options.env;
 		}
 
+		env['watch'] = options.watch;
+
 		const configPath = (() => {
 			if (options.config) {
 				return path.resolve(options.config);

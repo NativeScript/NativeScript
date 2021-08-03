@@ -186,7 +186,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				paths.indexOf('@nativescript/core/globals/index.js')
 			] = polyfillsPath;
 
-			// replace paths with the update paths
+			// replace paths with the updated paths
 			config.entry('bundle').clear().merge(paths);
 		}
 	}

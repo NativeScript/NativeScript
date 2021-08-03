@@ -238,6 +238,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -556,6 +557,7 @@ exports[`react configuration > android > base config 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -874,6 +876,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -1193,6 +1196,7 @@ exports[`react configuration > ios > base config 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
