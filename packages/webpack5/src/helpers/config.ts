@@ -1,11 +1,15 @@
 import { env } from '../index';
-import { error } from './log';
+import { error, warnOnce } from './log';
 
 function getCLILib() {
 	if (!env.nativescriptLibPath) {
-		throw error(`
+		warnOnce(
+			'getCLILib',
+			`
 			Cannot find NativeScript CLI path. Make sure --env.nativescriptLibPath is passed
-		`);
+		`
+		);
+		return false;
 	}
 
 	return require(env.nativescriptLibPath);
@@ -15,11 +19,16 @@ function getCLILib() {
  * Utility to get a value from the nativescript.config.ts file.
  *
  * @param {string} key The key to get from the config. Supports dot-notation.
+ * @param defaultValue The fallback value if the key is not set in the config.
  */
-export function getValue<T = any>(key: string): T {
+export function getValue<T = any>(key: string, defaultValue?: any): T {
 	const lib = getCLILib();
 
-	return (lib.projectConfigService as { getValue(key: string): T }).getValue(
-		key
-	);
+	if (!lib) {
+		return defaultValue;
+	}
+
+	return (lib.projectConfigService as {
+		getValue(key: string, defaultValue?: any): T;
+	}).getValue(key, defaultValue);
 }

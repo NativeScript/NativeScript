@@ -84,7 +84,7 @@ declare class IOSurface extends NSObject implements NSSecureCoding {
 
 declare function IOSurfaceAlignProperty(property: string, value: number): number;
 
-declare function IOSurfaceAllowsPixelSizeCasting(buffer: any): boolean;
+declare function IOSurfaceAllowsPixelSizeCasting(buffer: IOSurface): boolean;
 
 declare const enum IOSurfaceComponentName {
 
@@ -127,81 +127,81 @@ declare const enum IOSurfaceComponentType {
 	kIOSurfaceComponentTypeFloat = 3
 }
 
-declare function IOSurfaceCopyAllValues(buffer: any): NSDictionary<any, any>;
+declare function IOSurfaceCopyAllValues(buffer: IOSurface): NSDictionary<any, any>;
 
-declare function IOSurfaceCopyValue(buffer: any, key: string): any;
+declare function IOSurfaceCopyValue(buffer: IOSurface, key: string): any;
 
-declare function IOSurfaceCreate(properties: NSDictionary<any, any>): any;
+declare function IOSurfaceCreate(properties: NSDictionary<any, any>): IOSurface;
 
-declare function IOSurfaceCreateMachPort(buffer: any): number;
+declare function IOSurfaceCreateMachPort(buffer: IOSurface): number;
 
-declare function IOSurfaceDecrementUseCount(buffer: any): void;
+declare function IOSurfaceDecrementUseCount(buffer: IOSurface): void;
 
-declare function IOSurfaceGetAllocSize(buffer: any): number;
+declare function IOSurfaceGetAllocSize(buffer: IOSurface): number;
 
-declare function IOSurfaceGetBaseAddress(buffer: any): interop.Pointer | interop.Reference<any>;
+declare function IOSurfaceGetBaseAddress(buffer: IOSurface): interop.Pointer | interop.Reference<any>;
 
-declare function IOSurfaceGetBaseAddressOfPlane(buffer: any, planeIndex: number): interop.Pointer | interop.Reference<any>;
+declare function IOSurfaceGetBaseAddressOfPlane(buffer: IOSurface, planeIndex: number): interop.Pointer | interop.Reference<any>;
 
-declare function IOSurfaceGetBitDepthOfComponentOfPlane(buffer: any, planeIndex: number, componentIndex: number): number;
+declare function IOSurfaceGetBitDepthOfComponentOfPlane(buffer: IOSurface, planeIndex: number, componentIndex: number): number;
 
-declare function IOSurfaceGetBitOffsetOfComponentOfPlane(buffer: any, planeIndex: number, componentIndex: number): number;
+declare function IOSurfaceGetBitOffsetOfComponentOfPlane(buffer: IOSurface, planeIndex: number, componentIndex: number): number;
 
-declare function IOSurfaceGetBytesPerElement(buffer: any): number;
+declare function IOSurfaceGetBytesPerElement(buffer: IOSurface): number;
 
-declare function IOSurfaceGetBytesPerElementOfPlane(buffer: any, planeIndex: number): number;
+declare function IOSurfaceGetBytesPerElementOfPlane(buffer: IOSurface, planeIndex: number): number;
 
-declare function IOSurfaceGetBytesPerRow(buffer: any): number;
+declare function IOSurfaceGetBytesPerRow(buffer: IOSurface): number;
 
-declare function IOSurfaceGetBytesPerRowOfPlane(buffer: any, planeIndex: number): number;
+declare function IOSurfaceGetBytesPerRowOfPlane(buffer: IOSurface, planeIndex: number): number;
 
-declare function IOSurfaceGetElementHeight(buffer: any): number;
+declare function IOSurfaceGetElementHeight(buffer: IOSurface): number;
 
-declare function IOSurfaceGetElementHeightOfPlane(buffer: any, planeIndex: number): number;
+declare function IOSurfaceGetElementHeightOfPlane(buffer: IOSurface, planeIndex: number): number;
 
-declare function IOSurfaceGetElementWidth(buffer: any): number;
+declare function IOSurfaceGetElementWidth(buffer: IOSurface): number;
 
-declare function IOSurfaceGetElementWidthOfPlane(buffer: any, planeIndex: number): number;
+declare function IOSurfaceGetElementWidthOfPlane(buffer: IOSurface, planeIndex: number): number;
 
-declare function IOSurfaceGetHeight(buffer: any): number;
+declare function IOSurfaceGetHeight(buffer: IOSurface): number;
 
-declare function IOSurfaceGetHeightOfPlane(buffer: any, planeIndex: number): number;
+declare function IOSurfaceGetHeightOfPlane(buffer: IOSurface, planeIndex: number): number;
 
-declare function IOSurfaceGetID(buffer: any): number;
+declare function IOSurfaceGetID(buffer: IOSurface): number;
 
-declare function IOSurfaceGetNameOfComponentOfPlane(buffer: any, planeIndex: number, componentIndex: number): IOSurfaceComponentName;
+declare function IOSurfaceGetNameOfComponentOfPlane(buffer: IOSurface, planeIndex: number, componentIndex: number): IOSurfaceComponentName;
 
-declare function IOSurfaceGetNumberOfComponentsOfPlane(buffer: any, planeIndex: number): number;
+declare function IOSurfaceGetNumberOfComponentsOfPlane(buffer: IOSurface, planeIndex: number): number;
 
-declare function IOSurfaceGetPixelFormat(buffer: any): number;
+declare function IOSurfaceGetPixelFormat(buffer: IOSurface): number;
 
-declare function IOSurfaceGetPlaneCount(buffer: any): number;
+declare function IOSurfaceGetPlaneCount(buffer: IOSurface): number;
 
 declare function IOSurfaceGetPropertyAlignment(property: string): number;
 
 declare function IOSurfaceGetPropertyMaximum(property: string): number;
 
-declare function IOSurfaceGetRangeOfComponentOfPlane(buffer: any, planeIndex: number, componentIndex: number): IOSurfaceComponentRange;
+declare function IOSurfaceGetRangeOfComponentOfPlane(buffer: IOSurface, planeIndex: number, componentIndex: number): IOSurfaceComponentRange;
 
-declare function IOSurfaceGetSeed(buffer: any): number;
+declare function IOSurfaceGetSeed(buffer: IOSurface): number;
 
-declare function IOSurfaceGetSubsampling(buffer: any): IOSurfaceSubsampling;
+declare function IOSurfaceGetSubsampling(buffer: IOSurface): IOSurfaceSubsampling;
 
 declare function IOSurfaceGetTypeID(): number;
 
-declare function IOSurfaceGetTypeOfComponentOfPlane(buffer: any, planeIndex: number, componentIndex: number): IOSurfaceComponentType;
+declare function IOSurfaceGetTypeOfComponentOfPlane(buffer: IOSurface, planeIndex: number, componentIndex: number): IOSurfaceComponentType;
 
-declare function IOSurfaceGetUseCount(buffer: any): number;
+declare function IOSurfaceGetUseCount(buffer: IOSurface): number;
 
-declare function IOSurfaceGetWidth(buffer: any): number;
+declare function IOSurfaceGetWidth(buffer: IOSurface): number;
 
-declare function IOSurfaceGetWidthOfPlane(buffer: any, planeIndex: number): number;
+declare function IOSurfaceGetWidthOfPlane(buffer: IOSurface, planeIndex: number): number;
 
-declare function IOSurfaceIncrementUseCount(buffer: any): void;
+declare function IOSurfaceIncrementUseCount(buffer: IOSurface): void;
 
-declare function IOSurfaceIsInUse(buffer: any): boolean;
+declare function IOSurfaceIsInUse(buffer: IOSurface): boolean;
 
-declare function IOSurfaceLock(buffer: any, options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number>): number;
+declare function IOSurfaceLock(buffer: IOSurface, options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number>): number;
 
 declare const enum IOSurfaceLockOptions {
 
@@ -210,9 +210,9 @@ declare const enum IOSurfaceLockOptions {
 	kIOSurfaceLockAvoidSync = 2
 }
 
-declare function IOSurfaceLookup(csid: number): any;
+declare function IOSurfaceLookup(csid: number): IOSurface;
 
-declare function IOSurfaceLookupFromMachPort(port: number): any;
+declare function IOSurfaceLookupFromMachPort(port: number): IOSurface;
 
 declare var IOSurfacePropertyAllocSizeKey: string;
 
@@ -269,15 +269,15 @@ declare const enum IOSurfacePurgeabilityState {
 	kIOSurfacePurgeableKeepCurrent = 3
 }
 
-declare function IOSurfaceRemoveAllValues(buffer: any): void;
+declare function IOSurfaceRemoveAllValues(buffer: IOSurface): void;
 
-declare function IOSurfaceRemoveValue(buffer: any, key: string): void;
+declare function IOSurfaceRemoveValue(buffer: IOSurface, key: string): void;
 
-declare function IOSurfaceSetPurgeable(buffer: any, newState: number, oldState: interop.Pointer | interop.Reference<number>): number;
+declare function IOSurfaceSetPurgeable(buffer: IOSurface, newState: number, oldState: interop.Pointer | interop.Reference<number>): number;
 
-declare function IOSurfaceSetValue(buffer: any, key: string, value: any): void;
+declare function IOSurfaceSetValue(buffer: IOSurface, key: string, value: any): void;
 
-declare function IOSurfaceSetValues(buffer: any, keysAndValues: NSDictionary<any, any>): void;
+declare function IOSurfaceSetValues(buffer: IOSurface, keysAndValues: NSDictionary<any, any>): void;
 
 declare const enum IOSurfaceSubsampling {
 
@@ -292,7 +292,7 @@ declare const enum IOSurfaceSubsampling {
 	kIOSurfaceSubsampling411 = 4
 }
 
-declare function IOSurfaceUnlock(buffer: any, options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number>): number;
+declare function IOSurfaceUnlock(buffer: IOSurface, options: IOSurfaceLockOptions, seed: interop.Pointer | interop.Reference<number>): number;
 
 declare var kIOSurfaceAllocSize: string;
 

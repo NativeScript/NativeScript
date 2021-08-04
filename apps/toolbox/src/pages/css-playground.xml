@@ -1,0 +1,19 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="CSS Playground" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <GridLayout rows="*, *">
+			<ContentView>
+				<Label id="play" text="I'm a test label." verticalAlignment="center"/>
+			</ContentView>
+
+			<GridLayout row="1" rows="*, auto, auto" borderTopWidth="1">
+				<TextView text="{{ currentCSS }}" textChange="{{ onTextChange }}"/>
+
+				<Button class="btn btn-primary" text="Apply" row="1" tap="{{ applyCSS }}"/>
+				<Button class="btn btn-primary btn-orange" text="Reset" row="2" tap="{{ resetCSS }}"/>
+			</GridLayout>
+		</GridLayout>
+</Page>

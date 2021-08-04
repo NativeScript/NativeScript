@@ -1,1 +1,1 @@
-declare var __TEST__: boolean;
+// define globals here

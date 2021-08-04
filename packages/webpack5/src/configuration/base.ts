@@ -1,21 +1,26 @@
-import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
+import {
+	ContextExclusionPlugin,
+	DefinePlugin,
+	HotModuleReplacementPlugin,
+} from 'webpack';
 import Config from 'webpack-chain';
 import { resolve } from 'path';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
-import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 
-// import { WatchStateLoggerPlugin } from '../plugins/WatchStateLoggerPlugin';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
+import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
-import { getValue } from '../helpers/config';
+import { getProjectFilePath } from '../helpers/project';
 import { projectUsesCustomFlavor } from '../helpers/flavor';
-import { getProjectRootPath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
-import { IWebpackEnv } from '../index';
+import { applyDotEnvPlugin } from '../helpers/dotEnv';
+import { env as _env, IWebpackEnv } from '../index';
+import { getValue } from '../helpers/config';
+import { getIPS } from '../helpers/host';
 import {
 	getPlatformName,
 	getAbsoluteDistPath,
@@ -23,7 +28,7 @@ import {
 	getEntryPath,
 } from '../helpers/platform';
 
-export default function (config: Config, env: IWebpackEnv): Config {
+export default function (config: Config, env: IWebpackEnv = _env): Config {
 	const entryPath = getEntryPath();
 	const platform = getPlatformName();
 	const mode = env.production ? 'production' : 'development';
@@ -40,8 +45,39 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	// resolved at runtime
 	config.externals(['package.json', '~/package.json']);
 
-	// todo: devtool
-	config.devtool('inline-source-map');
+	// disable marking built-in node modules as external
+	// since they are not available at runtime and
+	// should be bundled (requires polyfills)
+	// for example `npm i --save url` to
+	// polyfill the node url module.
+	config.set('externalsPresets', {
+		node: false,
+	});
+
+	const getSourceMapType = (map: string | boolean): Config.DevTool => {
+		const defaultSourceMap = 'inline-source-map';
+
+		if (typeof map === 'undefined') {
+			// source-maps disabled in production by default
+			// enabled with --env.sourceMap=<type>
+			if (mode === 'production') {
+				// todo: we may set up SourceMapDevToolPlugin to generate external maps in production
+				return false;
+			}
+
+			return defaultSourceMap;
+		}
+
+		// when --env.sourceMap=true is passed, use default
+		if (typeof map === 'boolean' && map) {
+			return defaultSourceMap;
+		}
+
+		// pass any type of sourceMap with --env.sourceMap=<type>
+		return map as Config.DevTool;
+	};
+
+	config.devtool(getSourceMapType(env.sourceMap));
 
 	// todo: figure out easiest way to make "node" target work in ns
 	// rather than the custom ns target implementation that's hard to maintain
@@ -54,10 +90,20 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		.add('@nativescript/core/globals/index.js')
 		.add(entryPath);
 
+	// Add android app components to the bundle to SBG can generate the java classes
+	if (platform === 'android') {
+		const appComponents = env.appComponents || [];
+		appComponents.push('@nativescript/core/ui/frame');
+		appComponents.push('@nativescript/core/ui/frame/activity');
+		appComponents.map((component) => {
+			config.entry('bundle').add(component);
+		});
+	}
+
 	// inspector_modules
 	config.when(shouldIncludeInspectorModules(), (config) => {
 		config
-			.entry('tns_modules/@nativescript/core/inspector_modules')
+			.entry('tns_modules/inspector_modules')
 			.add('@nativescript/core/inspector_modules');
 	});
 
@@ -66,7 +112,15 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		.pathinfo(false)
 		.publicPath('')
 		.libraryTarget('commonjs')
-		.globalObject('global');
+		.globalObject('global')
+		.set('clean', true);
+
+	config.watchOptions({
+		ignored: [
+			`${getProjectFilePath('platforms')}/**`,
+			`${getProjectFilePath(env.appResourcesPath ?? 'App_Resources')}/**`,
+		],
+	});
 
 	// Set up Terser options
 	config.optimization.minimizer('TerserPlugin').use(TerserPlugin, [
@@ -75,12 +129,19 @@ export default function (config: Config, env: IWebpackEnv): Config {
 				compress: {
 					collapse_vars: platform !== 'android',
 					sequences: platform !== 'android',
+					keep_infinity: true,
+					drop_console: mode === 'production',
+					global_defs: {
+						__UGLIFIED__: true,
+					},
 				},
-				// todo: move into vue.ts if not required in other flavors?
 				keep_fnames: true,
+				keep_classnames: true,
 			},
 		},
 	]);
+
+	config.optimization.runtimeChunk('single');
 
 	config.optimization.splitChunks({
 		cacheGroups: {
@@ -95,10 +156,13 @@ export default function (config: Config, env: IWebpackEnv): Config {
 
 	// look for loaders in
 	//  - node_modules/@nativescript/webpack/dist/loaders
+	//  - node_modules/@nativescript/webpack/node_modules
 	//  - node_modules
 	// allows for cleaner rules, without having to specify full paths to loaders
 	config.resolveLoader.modules
-		.add('node_modules/@nativescript/webpack/dist/loaders')
+		.add(resolve(__dirname, '../loaders'))
+		.add(resolve(__dirname, '../../node_modules'))
+		.add(getProjectFilePath('node_modules'))
 		.add('node_modules');
 
 	config.resolve.extensions
@@ -118,6 +182,28 @@ export default function (config: Config, env: IWebpackEnv): Config {
 
 	// resolve symlinks
 	config.resolve.symlinks(true);
+
+	// resolve modules in project node_modules first
+	// then fall-back to default node resolution (up the parent folder chain)
+	config.resolve.modules
+		.add(getProjectFilePath('node_modules'))
+		.add('node_modules');
+
+	config.module
+		.rule('bundle')
+		.enforce('post')
+		.test(entryPath)
+		.use('app-css-loader')
+		.loader('app-css-loader')
+		.options({
+			platform,
+		})
+		.end()
+		.use('nativescript-hot-loader')
+		.loader('nativescript-hot-loader')
+		.options({
+			injectHMRRuntime: true,
+		});
 
 	// set up ts support
 	config.module
@@ -148,6 +234,7 @@ export default function (config: Config, env: IWebpackEnv): Config {
 			.plugin('ForkTsCheckerWebpackPlugin')
 			.use(ForkTsCheckerWebpackPlugin, [
 				{
+					async: !!env.watch,
 					typescript: {
 						memoryLimit: 4096,
 					},
@@ -156,19 +243,25 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	});
 
 	// set up js
-	// todo: do we need babel-loader? It's useful to support it
 	config.module
 		.rule('js')
 		.test(/\.js$/)
 		.exclude.add(/node_modules/)
-		.end()
-		.use('babel-loader')
-		.loader('babel-loader')
-		.options({
-			generatorOpts: {
-				compact: false,
-			},
-		});
+		.end();
+
+	config.module
+		.rule('workers')
+		.test(/\.(js|ts)$/)
+		.use('nativescript-worker-loader')
+		.loader('nativescript-worker-loader');
+
+	// config.resolve.extensions.add('.xml');
+	// set up xml
+	config.module
+		.rule('xml')
+		.test(/\.xml$/)
+		.use('xml-namespace-loader')
+		.loader('xml-namespace-loader');
 
 	// default PostCSS options to use
 	// projects can change settings
@@ -213,14 +306,6 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		.use('sass-loader')
 		.loader('sass-loader');
 
-	// items to clean
-	config.plugin('CleanWebpackPlugin').use(CleanWebpackPlugin, [
-		{
-			cleanOnceBeforeBuildPatterns: [`${getAbsoluteDistPath()}/**/*`],
-			verbose: !!env.verbose,
-		},
-	]);
-
 	// config.plugin('NormalModuleReplacementPlugin').use(NormalModuleReplacementPlugin, [
 	// 	/.*/,
 	// 	request => {
@@ -237,14 +322,39 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		},
 	]);
 
+	// Makes sure that require.context will never include
+	// App_Resources, regardless where they are located.
+	config
+		.plugin('ContextExclusionPlugin|App_Resources')
+		.use(ContextExclusionPlugin, [new RegExp(`(.*)App_Resources(.*)`)]);
+
+	// Filter common undesirable warnings
+	config.set(
+		'ignoreWarnings',
+		(config.get('ignoreWarnings') ?? []).concat([
+			/**
+			 * This rule hides
+			 * +-----------------------------------------------------------------------------------------+
+			 * | WARNING in ./node_modules/@angular/core/fesm2015/core.js 29714:15-102                   |
+			 * | System.import() is deprecated and will be removed soon. Use import() instead.           |
+			 * | For more info visit https://webpack.js.org/guides/code-splitting/                       |
+			 * +-----------------------------------------------------------------------------------------+
+			 */
+			/System.import\(\) is deprecated/,
+		])
+	);
+
 	// todo: refine defaults
 	config.plugin('DefinePlugin').use(DefinePlugin, [
 		{
 			__DEV__: mode === 'development',
 			__NS_WEBPACK__: true,
+			__NS_ENV_VERBOSE__: !!env.verbose,
+			__NS_DEV_HOST_IPS__:
+				mode === 'development' ? JSON.stringify(getIPS()) : `[]`,
+			__CSS_PARSER__: JSON.stringify(getValue('cssParser', 'css-tree')),
 			__UI_USE_XML_PARSER__: true,
 			__UI_USE_EXTERNAL_RENDERER__: projectUsesCustomFlavor(),
-			__CSS_PARSER__: JSON.stringify(getValue('cssParser')), // todo: replace from config value
 			__ANDROID__: platform === 'android',
 			__IOS__: platform === 'ios',
 			/* for compat only */ 'global.isAndroid': platform === 'android',
@@ -256,6 +366,12 @@ export default function (config: Config, env: IWebpackEnv): Config {
 		},
 	]);
 
+	// enable DotEnv
+	applyDotEnvPlugin(config);
+
+	// replacements
+	applyFileReplacements(config);
+
 	// set up default copy rules
 	addCopyRule('assets/**');
 	addCopyRule('fonts/**');
@@ -263,8 +379,6 @@ export default function (config: Config, env: IWebpackEnv): Config {
 
 	applyCopyRules(config);
 
-	// add the WatchStateLogger plugin used to notify the CLI of build state
-	// config.plugin('WatchStateLoggerPlugin').use(WatchStateLoggerPlugin);
 	config.plugin('WatchStatePlugin').use(WatchStatePlugin);
 
 	config.when(env.hmr, (config) => {
@@ -272,14 +386,13 @@ export default function (config: Config, env: IWebpackEnv): Config {
 	});
 
 	config.when(env.report, (config) => {
-		const projectRoot = getProjectRootPath();
 		config.plugin('BundleAnalyzerPlugin').use(BundleAnalyzerPlugin, [
 			{
 				analyzerMode: 'static',
 				generateStatsFile: true,
 				openAnalyzer: false,
-				reportFilename: resolve(projectRoot, 'report', 'report.html'),
-				statsFilename: resolve(projectRoot, 'report', 'stats.json'),
+				reportFilename: getProjectFilePath('report/report.html'),
+				statsFilename: getProjectFilePath('report/stats.json'),
 			},
 		]);
 	});

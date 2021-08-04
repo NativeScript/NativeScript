@@ -1,4 +1,5 @@
 import dedent from 'ts-dedent';
+import { env } from '@nativescript/webpack';
 
 // de-indents strings so multi-line string literals can be used
 function cleanup(data: any[]) {
@@ -27,8 +28,20 @@ export function warn(...data: any): void {
 	console.warn(`[@nativescript/webpack] Warn: \n`, ...cleanup(data));
 }
 
+const warnedMap: any = {};
+export function warnOnce(key: string, ...data: any): void {
+	if (warnedMap[key]) {
+		return;
+	}
+
+	warnedMap[key] = true;
+	warn(...data);
+}
+
 export function info(...data: any): void {
-	console.log(`[@nativescript/webpack] Info: \n`, ...cleanup(data));
+	if (env.verbose) {
+		console.log(`[@nativescript/webpack] Info: \n`, ...cleanup(data));
+	}
 }
 
 // todo: refine

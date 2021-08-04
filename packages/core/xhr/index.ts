@@ -1,5 +1,6 @@
 import * as http from '../http';
 import * as types from '../utils/types';
+import { Trace } from '../trace';
 
 namespace XMLHttpRequestResponseType {
 	export const empty = '';
@@ -170,7 +171,9 @@ export class XMLHttpRequest {
 
 	public addEventListener(eventName: string, handler: Function) {
 		if (['abort', 'error', 'load', 'loadend', 'loadstart', 'progress', 'readystatechange'].indexOf(eventName) === -1) {
-			throw new Error('Event not supported: ' + eventName);
+			if (Trace.isEnabled()) {
+				Trace.write('XHR Event not supported: ' + eventName, Trace.categories.Debug, Trace.messageType.warn);
+			}
 		}
 
 		const handlers = this._listeners.get(eventName) || [];

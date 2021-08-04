@@ -28,7 +28,7 @@ export default function loader(content, map) {
 		`
 		: ``;
 
-	if (hasLoader('apply-css-loader')) {
+	if (hasLoader('css2json-loader')) {
 		content = dedent`
 			${content}
 			const { addTaggedAdditionalCSS } = require("@nativescript/core/ui/styling/style-scope");
@@ -53,5 +53,5 @@ export default function loader(content, map) {
 		this.emitWarning(new Error(cssLoaderWarning));
 	}
 
-	this.callback(null, content, map);
+	this.callback(null, content, null);
 }

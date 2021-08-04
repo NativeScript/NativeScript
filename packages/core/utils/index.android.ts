@@ -167,3 +167,7 @@ Please ensure you have your manifest correctly configured with the FileProvider.
 export function isRealDevice(): boolean {
 	return ad.isRealDevice();
 }
+
+export function dismissSoftInput(nativeView?: any): void {
+	ad.dismissSoftInput(nativeView);
+}

@@ -1,9 +1,8 @@
-import { Observable } from '@nativescript/core/data/observable';
+import { Observable, Frame } from '@nativescript/core';
 import { Button } from '@nativescript/core/ui/button';
 import { Color } from '@nativescript/core/color';
 import { WrapLayout } from '@nativescript/core/ui/layouts/wrap-layout';
 import { alert } from '@nativescript/core/ui/dialogs';
-import * as frame from '@nativescript/core/ui/frame';
 import * as platform from '@nativescript/core/platform';
 
 export class TestPageMainViewModel extends Observable {
@@ -30,7 +29,7 @@ export class TestPageMainViewModel extends Observable {
 
 	protected navigateToExample(exampleFullPath: string) {
 		try {
-			frame.topmost().navigate(exampleFullPath);
+			Frame.topmost().navigate(exampleFullPath);
 		} catch (error) {
 			console.log('EXAMPLE LOAD FAILED:' + error);
 			alert('Error loading example: ' + exampleFullPath + ' \nerror: ' + error && error.message);

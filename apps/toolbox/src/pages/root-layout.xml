@@ -1,0 +1,47 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="RootLayout" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+    
+    <GridLayout rows="2*, *">
+      <!-- background color transparent here to hide children overflow -->
+      <AbsoluteLayout row="0" backgroundColor="transparent">
+      <!-- Root layout demo -->
+      <RootLayout height="100%" width="100%">
+        <GridLayout height="100%" backgroundColor="#ededed">
+          <Label verticalAlignment="center" textAlignment="center" fontWeight="bold" color="#333" text="ROOT LAYOUT CONTENT"></Label>
+        </GridLayout>
+      </RootLayout>
+      </AbsoluteLayout>
+
+      <!-- Root layout controls -->
+      <StackLayout row="1">
+        <ScrollView height="100%">
+          <StackLayout padding="20" class="controls">
+            <Label text="ORANGE"></Label>
+            <FlexboxLayout flexDirection="row" justifyContent="space-between">
+              <Button flexGrow="1" text="open" tap="{{ open }}" popupIndex="0"/>
+              <Button flexGrow="1" text="front" tap="{{ bringToFront }}" popupIndex="0"/>
+              <Button flexGrow="1" text="close" tap="{{ close }}" popupIndex="0"/>
+            </FlexboxLayout>
+
+            <Label text="NAVY"></Label>
+            <FlexboxLayout flexDirection="row" justifyContent="space-between">
+              <Button flexGrow="1" text="open" tap="{{ open }}" popupIndex="1"/>
+              <Button flexGrow="1" text="front" tap="{{ bringToFront }}" popupIndex="1"/>
+              <Button flexGrow="1" text="close" tap="{{ close }}" popupIndex="1"/>
+            </FlexboxLayout>
+
+            <Label text="GRAY"></Label>
+            <FlexboxLayout flexDirection="row" justifyContent="space-between">
+              <Button flexGrow="1" text="open" tap="{{ open }}" popupIndex="2"/>
+              <Button flexGrow="1" text="front" tap="{{ bringToFront }}" popupIndex="2"/>
+              <Button flexGrow="1" text="close" tap="{{ close }}" popupIndex="2"/>
+            </FlexboxLayout>
+
+          </StackLayout>
+        </ScrollView>
+      </StackLayout>
+    </GridLayout>
+</Page>

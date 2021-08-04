@@ -131,7 +131,13 @@ declare const enum ILMessageFilterAction {
 
 	Allow = 1,
 
-	Filter = 2
+	Junk = 2,
+
+	Filter = 2,
+
+	Promotion = 3,
+
+	Transaction = 4
 }
 
 declare const enum ILMessageFilterError {

@@ -10,7 +10,6 @@ import { escapeRegexSymbols } from '../../../utils';
 import { Trace } from '../../../trace';
 import * as types from '../../../utils/types';
 import * as bindableResources from './bindable-resources';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const polymerExpressions = require('../../../js-libs/polymer-expressions');
 import { PolymerExpressions } from '../../../js-libs/polymer-expressions';
 
@@ -370,7 +369,6 @@ export class Binding {
 
 			newValue = expressionValue;
 		}
-		
 
 		this.updateSource(newValue);
 	}
@@ -390,7 +388,7 @@ export class Binding {
 							addedProps.push(prop);
 						}
 					}
-	
+
 					this.prepareContextForExpression(context, expression, addedProps);
 					model[contextKey] = context;
 					const result = exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
@@ -400,14 +398,14 @@ export class Binding {
 						delete context[addedProps[i]];
 					}
 					addedProps.length = 0;
-	
+
 					return result;
 				}
-	
+
 				return new Error(expression + ' is not a valid expression.');
 			} catch (e) {
 				const errorMessage = 'Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column;
-	
+
 				return new Error(errorMessage);
 			}
 		}

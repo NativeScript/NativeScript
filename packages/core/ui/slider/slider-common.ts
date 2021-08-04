@@ -1,13 +1,28 @@
 import { Slider as SliderDefinition } from '.';
-import { View, CSSType } from '../core/view';
-import { Property, CoercibleProperty } from '../core/properties';
+import { AccessibilityRole } from '../../accessibility';
+import { CoercibleProperty, Property } from '../core/properties';
+import { CSSType, View } from '../core/view';
 
 // TODO: Extract base Range class for slider and progress
 @CSSType('Slider')
 export class SliderBase extends View implements SliderDefinition {
+	static readonly accessibilityIncrementEvent = 'accessibilityIncrement';
+	static readonly accessibilityDecrementEvent = 'accessibilityDecrement';
+
 	public value: number;
 	public minValue: number;
 	public maxValue: number;
+
+	get accessibilityStep(): number {
+		return this.style.accessibilityStep;
+	}
+
+	set accessibilityStep(value: number) {
+		this.style.accessibilityStep = value;
+	}
+
+	accessible = true;
+	accessibilityRole = AccessibilityRole.Adjustable;
 }
 
 SliderBase.prototype.recycleNativeView = 'auto';

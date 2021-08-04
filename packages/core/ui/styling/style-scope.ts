@@ -33,7 +33,6 @@ function ensureCssAnimationParserModule() {
 
 let parser: 'rework' | 'nativescript' | 'css-tree' = 'css-tree';
 try {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const appConfig = require('~/package.json');
 	if (appConfig) {
 		if (appConfig.cssParser === 'rework') {
@@ -77,6 +76,8 @@ export function mergeCssSelectors(): void {
 let applicationCssSelectors: RuleSet[] = [];
 let applicationCssSelectorVersion = 0;
 let applicationSelectors: RuleSet[] = [];
+let tagToScopeTag: Map<string | number, string> = new Map();
+let currentScopeTag: string = null;
 const applicationAdditionalSelectors: RuleSet[] = [];
 const applicationKeyframes: any = {};
 const animationsSymbol = Symbol('animations');
@@ -114,7 +115,9 @@ class CSSSource {
 				return CSSSource.fromDetect(cssOrAst, keyframes, resolvedModuleName);
 			}
 		} catch (e) {
-			Trace.write(`Could not load CSS from ${uri}: ${e}`, Trace.categories.Error, Trace.messageType.error);
+			if (Trace.isEnabled()) {
+				Trace.write(`Could not load CSS from ${uri}: ${e}`, Trace.categories.Error, Trace.messageType.warn);
+			}
 		}
 
 		return CSSSource.fromFile(appRelativeUri, keyframes);
@@ -205,7 +208,9 @@ class CSSSource {
 				this._selectors = [];
 			}
 		} catch (e) {
-			Trace.write('Css styling failed: ' + e, Trace.categories.Error, Trace.messageType.error);
+			if (Trace.isEnabled()) {
+				Trace.write('Css styling failed: ' + e, Trace.categories.Style, Trace.messageType.error);
+			}
 			this._selectors = [];
 		}
 	}
@@ -216,14 +221,14 @@ class CSSSource {
 			if (__CSS_PARSER__ === 'css-tree') {
 				const cssTreeParse = require('../../css/css-tree-parser').cssTreeParse;
 				this._ast = cssTreeParse(this._source, this._file);
-			} else if(__CSS_PARSER__ === 'nativescript') {
+			} else if (__CSS_PARSER__ === 'nativescript') {
 				const CSS3Parser = require('../../css/CSS3Parser').CSS3Parser;
 				const CSSNativeScript = require('../../css/CSSNativeScript').CSSNativeScript;
 				const cssparser = new CSS3Parser(this._source);
 				const stylesheet = cssparser.parseAStylesheet();
 				const cssNS = new CSSNativeScript();
 				this._ast = cssNS.parseStylesheet(stylesheet);
-			} else if(__CSS_PARSER__ === 'rework') {
+			} else if (__CSS_PARSER__ === 'rework') {
 				const parseCss = require('../../css').parse;
 				this._ast = parseCss(this._source, { source: this._file });
 			}
@@ -305,12 +310,17 @@ export function removeTaggedAdditionalCSS(tag: string | number): boolean {
 
 export function addTaggedAdditionalCSS(cssText: string, tag?: string | number): boolean {
 	const parsed: RuleSet[] = CSSSource.fromDetect(cssText, applicationKeyframes, undefined).selectors;
+	let tagScope = currentScopeTag || (tag && tagToScopeTag.has(tag) && tagToScopeTag.get(tag)) || null;
+	if (tagScope && tag) {
+		tagToScopeTag.set(tag, tagScope);
+	}
 	let changed = false;
 	if (parsed && parsed.length) {
 		changed = true;
-		if (tag != null) {
+		if (tag != null || tagScope != null) {
 			for (let i = 0; i < parsed.length; i++) {
 				parsed[i].tag = tag;
+				parsed[i].scopedTag = tagScope;
 			}
 		}
 		applicationAdditionalSelectors.push(...parsed);
@@ -443,6 +453,7 @@ export class CssState {
 
 	public onUnloaded(): void {
 		this.unsubscribeFromDynamicUpdates();
+		this.stopKeyframeAnimations();
 	}
 
 	@profile
@@ -468,6 +479,12 @@ export class CssState {
 		}
 
 		const matchingSelectors = this._match.selectors.filter((sel) => (sel.dynamic ? sel.match(view) : true));
+		if (!matchingSelectors || matchingSelectors.length === 0) {
+			// Ideally we should return here if there are no matching selectors, however
+			// if there are property removals, returning here would not remove them
+			// this is seen in STYLE test in automated.
+			// return;
+		}
 		view._batchUpdate(() => {
 			this.stopKeyframeAnimations();
 			this.setPropertyValues(matchingSelectors);
@@ -565,16 +582,16 @@ export class CssState {
 			}
 
 			isCssExpressionInUse = isCssExpressionInUse || isCssVariableExpression(value) || isCssCalcExpression(value);
-			}
+		}
 
 		if (isCssExpressionInUse) {
 			// Evalute css-expressions to get the latest values.
 			for (const property in newPropertyValues) {
 				const value = evaluateCssExpressions(view, property, newPropertyValues[property]);
-			if (value === unsetValue) {
-				delete newPropertyValues[property];
-				continue;
-			}
+				if (value === unsetValue) {
+					delete newPropertyValues[property];
+					continue;
+				}
 
 				newPropertyValues[property] = value;
 			}
@@ -586,12 +603,12 @@ export class CssState {
 		// Unset removed values
 		for (const property in oldProperties) {
 			if (!(property in newPropertyValues)) {
-			if (property in view.style) {
-				view.style[`css:${property}`] = unsetValue;
+				if (property in view.style) {
+					view.style[`css:${property}`] = unsetValue;
 				} else {
-				// TRICKY: How do we unset local value?
+					// TRICKY: How do we unset local value?
+				}
 			}
-		}
 		}
 
 		// Set new values to the style
@@ -685,6 +702,7 @@ export class StyleScope {
 	private _localCssSelectorsAppliedVersion = 0;
 	private _applicationCssSelectorsAppliedVersion = 0;
 	private _keyframes = new Map<string, Keyframes>();
+	private _cssFiles: string[] = [];
 
 	get css(): string {
 		return this._css;
@@ -706,8 +724,11 @@ export class StyleScope {
 		if (!cssFileName) {
 			return;
 		}
+		this._cssFiles.push(cssFileName);
+		currentScopeTag = cssFileName;
 
 		const cssSelectors = CSSSource.fromURI(cssFileName, this._keyframes);
+		currentScopeTag = null;
 		this._css = cssSelectors.source;
 		this._localCssSelectors = cssSelectors.selectors;
 		this._localCssSelectorVersion++;
@@ -729,8 +750,13 @@ export class StyleScope {
 		if (!cssString && !cssFileName) {
 			return;
 		}
+		if (cssFileName) {
+			this._cssFiles.push(cssFileName);
+			currentScopeTag = cssFileName;
+		}
 
 		const parsedCssSelectors = cssString ? CSSSource.fromSource(cssString, this._keyframes, cssFileName) : CSSSource.fromURI(cssFileName, this._keyframes);
+		currentScopeTag = null;
 		this._css = this._css + parsedCssSelectors.source;
 		this._localCssSelectors.push(...parsedCssSelectors.selectors);
 		this._localCssSelectorVersion++;
@@ -774,7 +800,7 @@ export class StyleScope {
 	@profile
 	private _createSelectors() {
 		const toMerge: RuleSet[][] = [];
-		toMerge.push(applicationCssSelectors);
+		toMerge.push(applicationCssSelectors.filter((v) => !v.scopedTag || this._cssFiles.indexOf(v.scopedTag) >= 0));
 		this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
 		toMerge.push(this._localCssSelectors);
 		this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;

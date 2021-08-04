@@ -9,6 +9,14 @@ export function onShowingModally(args: ShownModallyData) {
 		onTap: function () {
 			Dialogs.alert('it works!');
 		},
+		openNestedModal: function () {
+			page.showModal('modal-view/nested-nested-modal', {
+				context: 'Neste mODAL',
+				closeCallback: () => {
+					console.log('nested-modal.openNestedModal');
+				},
+			});
+		},
 	});
 }
 

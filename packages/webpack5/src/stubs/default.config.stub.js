@@ -3,7 +3,8 @@ const webpack = require("@nativescript/webpack");
 module.exports = (env) => {
 	webpack.init(env);
 
-	// todo: comments for common usage
+	// Learn how to customize:
+	// https://docs.nativescript.org/webpack
 
 	return webpack.resolveConfig();
 };

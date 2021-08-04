@@ -6,6 +6,8 @@ declare class SKAdNetwork extends NSObject {
 	static new(): SKAdNetwork; // inherited from NSObject
 
 	static registerAppForAdNetworkAttribution(): void;
+
+	static updateConversionValue(conversionValue: number): void;
 }
 
 declare class SKArcadeService extends NSObject {
@@ -182,7 +184,17 @@ declare const enum SKErrorCode {
 
 	MissingOfferParams = 13,
 
-	InvalidOfferPrice = 14
+	InvalidOfferPrice = 14,
+
+	OverlayCancelled = 15,
+
+	OverlayInvalidConfiguration = 16,
+
+	OverlayTimeout = 17,
+
+	IneligibleForOffer = 18,
+
+	UnsupportedPlatform = 19
 }
 
 declare var SKErrorDomain: string;
@@ -206,6 +218,115 @@ declare class SKMutablePayment extends SKPayment {
 	requestData: NSData;
 
 	simulatesAskToBuyInSandbox: boolean;
+}
+
+declare class SKOverlay extends NSObject {
+
+	static alloc(): SKOverlay; // inherited from NSObject
+
+	static dismissOverlayInScene(scene: UIWindowScene): void;
+
+	static new(): SKOverlay; // inherited from NSObject
+
+	readonly configuration: SKOverlayConfiguration;
+
+	delegate: SKOverlayDelegate;
+
+	constructor(o: { configuration: SKOverlayConfiguration; });
+
+	initWithConfiguration(configuration: SKOverlayConfiguration): this;
+
+	presentInScene(scene: UIWindowScene): void;
+}
+
+declare class SKOverlayAppClipConfiguration extends SKOverlayConfiguration {
+
+	static alloc(): SKOverlayAppClipConfiguration; // inherited from NSObject
+
+	static new(): SKOverlayAppClipConfiguration; // inherited from NSObject
+
+	campaignToken: string;
+
+	position: SKOverlayPosition;
+
+	providerToken: string;
+
+	constructor(o: { position: SKOverlayPosition; });
+
+	additionalValueForKey(key: string): any;
+
+	initWithPosition(position: SKOverlayPosition): this;
+
+	setAdditionalValueForKey(value: any, key: string): void;
+}
+
+declare class SKOverlayAppConfiguration extends SKOverlayConfiguration {
+
+	static alloc(): SKOverlayAppConfiguration; // inherited from NSObject
+
+	static new(): SKOverlayAppConfiguration; // inherited from NSObject
+
+	appIdentifier: string;
+
+	campaignToken: string;
+
+	position: SKOverlayPosition;
+
+	providerToken: string;
+
+	userDismissible: boolean;
+
+	constructor(o: { appIdentifier: string; position: SKOverlayPosition; });
+
+	additionalValueForKey(key: string): any;
+
+	initWithAppIdentifierPosition(appIdentifier: string, position: SKOverlayPosition): this;
+
+	setAdditionalValueForKey(value: any, key: string): void;
+}
+
+declare class SKOverlayConfiguration extends NSObject {
+
+	static alloc(): SKOverlayConfiguration; // inherited from NSObject
+
+	static new(): SKOverlayConfiguration; // inherited from NSObject
+}
+
+interface SKOverlayDelegate extends NSObjectProtocol {
+
+	storeOverlayDidFailToLoadWithError?(overlay: SKOverlay, error: NSError): void;
+
+	storeOverlayDidFinishDismissal?(overlay: SKOverlay, transitionContext: SKOverlayTransitionContext): void;
+
+	storeOverlayDidFinishPresentation?(overlay: SKOverlay, transitionContext: SKOverlayTransitionContext): void;
+
+	storeOverlayWillStartDismissal?(overlay: SKOverlay, transitionContext: SKOverlayTransitionContext): void;
+
+	storeOverlayWillStartPresentation?(overlay: SKOverlay, transitionContext: SKOverlayTransitionContext): void;
+}
+declare var SKOverlayDelegate: {
+
+	prototype: SKOverlayDelegate;
+};
+
+declare const enum SKOverlayPosition {
+
+	Bottom = 0,
+
+	BottomRaised = 1
+}
+
+declare class SKOverlayTransitionContext extends NSObject {
+
+	static alloc(): SKOverlayTransitionContext; // inherited from NSObject
+
+	static new(): SKOverlayTransitionContext; // inherited from NSObject
+
+	readonly endFrame: CGRect;
+
+	readonly startFrame: CGRect;
+
+	addAnimationBlock(block: () => void): void;
 }
 
 declare class SKPayment extends NSObject implements NSCopying, NSMutableCopying {
@@ -270,6 +391,8 @@ declare class SKPaymentQueue extends NSObject {
 
 	readonly storefront: SKStorefront;
 
+	readonly transactionObservers: NSArray<SKPaymentTransactionObserver>;
+
 	readonly transactions: NSArray<SKPaymentTransaction>;
 
 	addPayment(payment: SKPayment): void;
@@ -282,6 +405,8 @@ declare class SKPaymentQueue extends NSObject {
 
 	pauseDownloads(downloads: NSArray<SKDownload> | SKDownload[]): void;
 
+	presentCodeRedemptionSheet(): void;
+
 	removeTransactionObserver(observer: SKPaymentTransactionObserver): void;
 
 	restoreCompletedTransactions(): void;
@@ -290,12 +415,16 @@ declare class SKPaymentQueue extends NSObject {
 
 	resumeDownloads(downloads: NSArray<SKDownload> | SKDownload[]): void;
 
+	showPriceConsentIfNeeded(): void;
+
 	startDownloads(downloads: NSArray<SKDownload> | SKDownload[]): void;
 }
 
 interface SKPaymentQueueDelegate extends NSObjectProtocol {
 
 	paymentQueueShouldContinueTransactionInStorefront?(paymentQueue: SKPaymentQueue, transaction: SKPaymentTransaction, newStorefront: SKStorefront): boolean;
+
+	paymentQueueShouldShowPriceConsent?(paymentQueue: SKPaymentQueue): boolean;
 }
 declare var SKPaymentQueueDelegate: {
 
@@ -328,6 +457,8 @@ declare class SKPaymentTransaction extends NSObject {
 interface SKPaymentTransactionObserver extends NSObjectProtocol {
 
 	paymentQueueDidChangeStorefront?(queue: SKPaymentQueue): void;
+
+	paymentQueueDidRevokeEntitlementsForProductIdentifiers?(queue: SKPaymentQueue, productIdentifiers: NSArray<string> | string[]): void;
 
 	paymentQueueRemovedTransactions?(queue: SKPaymentQueue, transactions: NSArray<SKPaymentTransaction> | SKPaymentTransaction[]): void;
 
@@ -376,6 +507,8 @@ declare class SKProduct extends NSObject {
 	readonly introductoryPrice: SKProductDiscount;
 
 	readonly isDownloadable: boolean;
+
+	readonly isFamilyShareable: boolean;
 
 	readonly localizedDescription: string;
 
@@ -561,7 +694,11 @@ declare var SKStoreProductParameterAdNetworkIdentifier: string;
 
 declare var SKStoreProductParameterAdNetworkNonce: string;
 
+declare var SKStoreProductParameterAdNetworkSourceAppStoreIdentifier: string;
+
 declare var SKStoreProductParameterAdNetworkTimestamp: string;
+
+declare var SKStoreProductParameterAdNetworkVersion: string;
 
 declare var SKStoreProductParameterAdvertisingPartnerToken: string;
 
@@ -602,6 +739,8 @@ declare class SKStoreReviewController extends NSObject {
 	static new(): SKStoreReviewController; // inherited from NSObject
 
 	static requestReview(): void;
+
+	static requestReviewInScene(windowScene: UIWindowScene): void;
 }
 
 declare class SKStorefront extends NSObject {

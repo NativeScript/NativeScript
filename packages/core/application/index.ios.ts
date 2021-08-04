@@ -4,7 +4,6 @@ import { ApplicationEventData, CssChangedEventData, LaunchEventData, LoadAppCSSE
 
 // TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common');
 // First reexport so that app module is initialized.
 export * from './application-common';
@@ -13,11 +12,14 @@ import { View } from '../ui/core/view';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
 // TODO: Remove this and get it from global to decouple builder for angular
 import { Builder } from '../ui/builder';
+import { Observable } from '../data/observable';
 import { CSSUtils } from '../css/system-classes';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { Device } from '../platform';
 import { profile } from '../profiling';
 import { iOSNativeHelper } from '../utils';
+import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
+import { initAccessibilityFontScale } from '../accessibility/font-scale';
 
 const IOS_PLATFORM = 'ios';
 
@@ -435,6 +437,9 @@ export function run(entry?: string | NavigationEntry) {
 			}
 		}
 	}
+
+	initAccessibilityCssHelper();
+	initAccessibilityFontScale();
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {

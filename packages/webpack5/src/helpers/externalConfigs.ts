@@ -2,9 +2,9 @@ import path from 'path';
 import fs from 'fs';
 
 import { getAllDependencies, getDependencyPath } from './dependencies';
+import { clearCurrentPlugin, setCurrentPlugin } from '../index';
 import { info, warn } from './log';
 import * as lib from '../index';
-import { clearCurrentPlugin, setCurrentPlugin } from '../index';
 
 /**
  * @internal
