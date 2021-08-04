@@ -1,37 +1,33 @@
 {
-    "compilerOptions": {
-        "noEmitOnError": true,
-        "noEmitHelpers": true,
-        "target": "es5",
-        "module": "commonjs",
-        "declaration": false,
-        "noImplicitAny": false,
-        "noImplicitUseStrict": true,
-        "experimentalDecorators": true,
-        "lib": [
-            "es6",
-            "dom"
-        ]
-    },
-    "include": [
-        "nativescript-core/**/*.d.ts"
-    ],
-    "exclude": [
-        "nativescript-core/index.d.ts",
-        "nativescript-core/ui/index.d.ts",
-        "nativescript-core/ui/layouts/index.d.ts",
-        
-        "nativescript-core/references.d.ts",
-        "nativescript-core/node_modules",
-        "nativescript-core/ui/frame/transition-definitions.android.d.ts",
-        "nativescript-core/platforms/*"
-    ],
-    "typedocOptions": {
-        "out": "bin/dist/apiref",
-        "includeDeclarations": true,
-        "name": "NativeScript",
-        "theme": "./node_modules/nativescript-typedoc-theme",
-        "excludeExternals": true,
-        "externalPattern": "**/+(tns-core-modules|module).d.ts"
-    }
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"outDir": "../../dist/packages/core",
+		"target": "es5",
+		"module": "commonjs",
+		"declaration": false,
+		"lib": ["es6", "dom"]
+	},
+	"include": ["../../packages/core/**/*.d.ts"],
+	"exclude": [
+		// "../../packages/core/index.d.ts",
+
+		"../../packages/core/ui/layouts/index.d.ts",
+
+		// "../../packages/core/__tests__",
+
+		"../../packages/core/references.d.ts",
+		"../../packages/core/node_modules",
+		"../../node_modules",
+		"../../packages/core/ui/frame/transition-definitions.android.d.ts",
+		"../../packages/core/platforms/*"
+	],
+	"typedocOptions": {
+		"entryPoints": ["../../packages/core/index.d.ts", "../../packages/core"],
+		"out": "dist/apiref",
+		"name": "NativeScript",
+		"theme": "../../node_modules/nativescript-typedoc-theme",
+		"excludeExternals": true,
+		"externalPattern": "**/+(tns-core-modules|module).d.ts",
+		"exclude": ["../../packages/core/__tests__", "../../packages/core/**/*.ts"]
+	}
 }

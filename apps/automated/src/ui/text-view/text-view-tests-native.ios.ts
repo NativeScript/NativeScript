@@ -1,7 +1,7 @@
 ﻿import * as textViewModule from '@nativescript/core/ui/text-view';
 import * as colorModule from '@nativescript/core/color';
 import { getColor } from '../../ui-helper';
-import * as enums from '@nativescript/core/ui/enums';
+import { CoreTypes } from '@nativescript/core';
 
 export function getNativeText(textView: textViewModule.TextView): string {
 	return textView.ios.text;
@@ -35,11 +35,11 @@ export function getNativeBackgroundColor(textView: textViewModule.TextView): col
 export function getNativeTextAlignment(textView: textViewModule.TextView): string {
 	switch (textView.ios.textAlignment) {
 		case NSTextAlignment.Left:
-			return enums.TextAlignment.left;
+			return CoreTypes.TextAlignment.left;
 		case NSTextAlignment.Center:
-			return enums.TextAlignment.center;
+			return CoreTypes.TextAlignment.center;
 		case NSTextAlignment.Right:
-			return enums.TextAlignment.right;
+			return CoreTypes.TextAlignment.right;
 		default:
 			return 'unexpected value';
 	}

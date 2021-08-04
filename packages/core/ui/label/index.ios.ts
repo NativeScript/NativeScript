@@ -3,7 +3,8 @@ import { Background } from '../styling/background';
 import { Length, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from '../styling/style-properties';
 import { booleanConverter } from '../core/view-base';
 import { View, CSSType } from '../core/view';
-import { TextBase, whiteSpaceProperty, WhiteSpace } from '../text-base';
+import { CoreTypes } from '../../core-types';
+import { TextBase, whiteSpaceProperty } from '../text-base';
 import { layout } from '../../utils';
 
 import { ios } from '../styling/background';
@@ -111,7 +112,7 @@ export class Label extends TextBase implements LabelDefinition {
 		return nativeSize;
 	}
 
-	[whiteSpaceProperty.setNative](value: WhiteSpace) {
+	[whiteSpaceProperty.setNative](value: CoreTypes.WhiteSpaceType) {
 		const nativeView = this.nativeTextViewProtected;
 		switch (value) {
 			case 'normal':
@@ -141,7 +142,7 @@ export class Label extends TextBase implements LabelDefinition {
 		this._setNativeClipToBounds();
 	}
 
-	[borderTopWidthProperty.setNative](value: Length) {
+	[borderTopWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
 		nativeView.borderThickness = {
@@ -152,7 +153,7 @@ export class Label extends TextBase implements LabelDefinition {
 		};
 	}
 
-	[borderRightWidthProperty.setNative](value: Length) {
+	[borderRightWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
 		nativeView.borderThickness = {
@@ -163,7 +164,7 @@ export class Label extends TextBase implements LabelDefinition {
 		};
 	}
 
-	[borderBottomWidthProperty.setNative](value: Length) {
+	[borderBottomWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
 		nativeView.borderThickness = {
@@ -174,7 +175,7 @@ export class Label extends TextBase implements LabelDefinition {
 		};
 	}
 
-	[borderLeftWidthProperty.setNative](value: Length) {
+	[borderLeftWidthProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const border = nativeView.borderThickness;
 		nativeView.borderThickness = {
@@ -185,7 +186,7 @@ export class Label extends TextBase implements LabelDefinition {
 		};
 	}
 
-	[paddingTopProperty.setNative](value: Length) {
+	[paddingTopProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const padding = nativeView.padding;
 		nativeView.padding = {
@@ -196,7 +197,7 @@ export class Label extends TextBase implements LabelDefinition {
 		};
 	}
 
-	[paddingRightProperty.setNative](value: Length) {
+	[paddingRightProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const padding = nativeView.padding;
 		nativeView.padding = {
@@ -207,7 +208,7 @@ export class Label extends TextBase implements LabelDefinition {
 		};
 	}
 
-	[paddingBottomProperty.setNative](value: Length) {
+	[paddingBottomProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const padding = nativeView.padding;
 		nativeView.padding = {
@@ -218,7 +219,7 @@ export class Label extends TextBase implements LabelDefinition {
 		};
 	}
 
-	[paddingLeftProperty.setNative](value: Length) {
+	[paddingLeftProperty.setNative](value: CoreTypes.LengthType) {
 		const nativeView = this.nativeTextViewProtected;
 		const padding = nativeView.padding;
 		nativeView.padding = {

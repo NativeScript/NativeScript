@@ -1,6 +1,7 @@
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, FlexboxLayoutBase, orderProperty, Order, flexGrowProperty, FlexGrow, flexShrinkProperty, FlexShrink, flexWrapBeforeProperty, FlexWrapBefore, alignSelfProperty, AlignSelf, flexDirectionProperty, flexWrapProperty, justifyContentProperty, alignItemsProperty, alignContentProperty } from './flexbox-layout-common';
+import { CoreTypes } from '../../../core-types';
 import { View } from '../../core/view';
-import { Length, minHeightProperty, minWidthProperty } from '../../styling/style-properties';
+import { Length } from '../../styling/style-properties';
 
 export * from './flexbox-layout-common';
 
@@ -149,7 +150,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		child.nativeViewProtected.setLayoutParams(lp);
 	}
 
-	public _setChildMinWidthNative(child: View, value: Length): void {
+	public _setChildMinWidthNative(child: View, value: CoreTypes.LengthType): void {
 		// Check needed to maintain back-compat after https://github.com/NativeScript/NativeScript/pull/7804
 		if (!child._ignoreFlexMinWidthHeightReset) {
 			child._setMinWidthNative(0);
@@ -163,7 +164,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		}
 	}
 
-	public _setChildMinHeightNative(child: View, value: Length): void {
+	public _setChildMinHeightNative(child: View, value: CoreTypes.LengthType): void {
 		// Check needed to maintain back-compat after https://github.com/NativeScript/NativeScript/pull/7804
 		if (!child._ignoreFlexMinWidthHeightReset) {
 			child._setMinHeightNative(0);

@@ -1,4 +1,8 @@
-import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
+import {
+	ContextExclusionPlugin,
+	DefinePlugin,
+	HotModuleReplacementPlugin,
+} from 'webpack';
 import Config from 'webpack-chain';
 import { resolve } from 'path';
 
@@ -6,11 +10,11 @@ import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 import TerserPlugin from 'terser-webpack-plugin';
 
-import { getProjectFilePath, getProjectRootPath } from '../helpers/project';
 import { PlatformSuffixPlugin } from '../plugins/PlatformSuffixPlugin';
 import { applyFileReplacements } from '../helpers/fileReplacements';
 import { addCopyRule, applyCopyRules } from '../helpers/copyRules';
 import { WatchStatePlugin } from '../plugins/WatchStatePlugin';
+import { getProjectFilePath } from '../helpers/project';
 import { hasDependency } from '../helpers/dependencies';
 import { applyDotEnvPlugin } from '../helpers/dotEnv';
 import { env as _env, IWebpackEnv } from '../index';
@@ -40,8 +44,39 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// resolved at runtime
 	config.externals(['package.json', '~/package.json']);
 
-	// todo: devtool
-	config.devtool('inline-source-map');
+	// disable marking built-in node modules as external
+	// since they are not available at runtime and
+	// should be bundled (requires polyfills)
+	// for example `npm i --save url` to
+	// polyfill the node url module.
+	config.set('externalsPresets', {
+		node: false,
+	});
+
+	const getSourceMapType = (map: string | boolean): Config.DevTool => {
+		const defaultSourceMap = 'inline-source-map';
+
+		if (typeof map === 'undefined') {
+			// source-maps disabled in production by default
+			// enabled with --env.sourceMap=<type>
+			if (mode === 'production') {
+				// todo: we may set up SourceMapDevToolPlugin to generate external maps in production
+				return false;
+			}
+
+			return defaultSourceMap;
+		}
+
+		// when --env.sourceMap=true is passed, use default
+		if (typeof map === 'boolean' && map) {
+			return defaultSourceMap;
+		}
+
+		// pass any type of sourceMap with --env.sourceMap=<type>
+		return map as Config.DevTool;
+	};
+
+	config.devtool(getSourceMapType(env.sourceMap));
 
 	// todo: figure out easiest way to make "node" target work in ns
 	// rather than the custom ns target implementation that's hard to maintain
@@ -82,7 +117,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.watchOptions({
 		ignored: [
 			`${getProjectFilePath('platforms')}/**`,
-			`${env.appResourcesPath ?? getProjectFilePath('App_Resources')}/**`,
+			`${getProjectFilePath(env.appResourcesPath ?? 'App_Resources')}/**`,
 		],
 	});
 
@@ -93,12 +128,19 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				compress: {
 					collapse_vars: platform !== 'android',
 					sequences: platform !== 'android',
+					keep_infinity: true,
+					drop_console: mode === 'production',
+					global_defs: {
+						__UGLIFIED__: true,
+					},
 				},
-				// todo: move into vue.ts if not required in other flavors?
 				keep_fnames: true,
+				keep_classnames: true,
 			},
 		},
 	]);
+
+	config.optimization.runtimeChunk('single');
 
 	config.optimization.splitChunks({
 		cacheGroups: {
@@ -191,6 +233,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			.plugin('ForkTsCheckerWebpackPlugin')
 			.use(ForkTsCheckerWebpackPlugin, [
 				{
+					async: !!env.watch,
 					typescript: {
 						memoryLimit: 4096,
 					},
@@ -199,27 +242,25 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	});
 
 	// set up js
-	// todo: do we need babel-loader? It's useful to support it
 	config.module
 		.rule('js')
 		.test(/\.js$/)
 		.exclude.add(/node_modules/)
-		.end()
-		.use('babel-loader')
-		.loader('babel-loader')
-		.options({
-			generatorOpts: {
-				compact: false,
-			},
-		});
+		.end();
 
 	config.module
 		.rule('workers')
 		.test(/\.(js|ts)$/)
-		.exclude.add(/node_modules/)
-		.end()
 		.use('nativescript-worker-loader')
 		.loader('nativescript-worker-loader');
+
+	// config.resolve.extensions.add('.xml');
+	// set up xml
+	config.module
+		.rule('xml')
+		.test(/\.xml$/)
+		.use('xml-namespace-loader')
+		.loader('xml-namespace-loader');
 
 	// default PostCSS options to use
 	// projects can change settings
@@ -280,6 +321,12 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		},
 	]);
 
+	// Makes sure that require.context will never include
+	// App_Resources, regardless where they are located.
+	config
+		.plugin('ContextExclusionPlugin|App_Resources')
+		.use(ContextExclusionPlugin, [new RegExp(`(.*)App_Resources(.*)`)]);
+
 	// Filter common undesirable warnings
 	config.set(
 		'ignoreWarnings',
@@ -336,14 +383,13 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	});
 
 	config.when(env.report, (config) => {
-		const projectRoot = getProjectRootPath();
 		config.plugin('BundleAnalyzerPlugin').use(BundleAnalyzerPlugin, [
 			{
 				analyzerMode: 'static',
 				generateStatsFile: true,
 				openAnalyzer: false,
-				reportFilename: resolve(projectRoot, 'report', 'report.html'),
-				statsFilename: resolve(projectRoot, 'report', 'stats.json'),
+				reportFilename: getProjectFilePath('report/report.html'),
+				statsFilename: getProjectFilePath('report/stats.json'),
 			},
 		]);
 	});

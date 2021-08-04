@@ -36,6 +36,21 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			};
 		});
 
+	// apply vue stylePostLoader to inject component scope into the css
+	// this would usually be automatic, however in NS we don't use the
+	// css-loader, so VueLoader doesn't inject the rule at all.
+	config.module
+		.rule('css')
+		.use('vue-css-loader')
+		.after('css2json-loader')
+		.loader('vue-loader/lib/loaders/stylePostLoader.js');
+
+	config.module
+		.rule('scss')
+		.use('vue-css-loader')
+		.after('css2json-loader')
+		.loader('vue-loader/lib/loaders/stylePostLoader.js');
+
 	// set up ts support in vue files
 	config.module
 		.rule('ts')

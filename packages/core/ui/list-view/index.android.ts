@@ -2,9 +2,9 @@ import { ItemEventData, ItemsSource } from '.';
 import { ListViewBase, separatorColorProperty, itemTemplatesProperty } from './list-view-common';
 import { View, KeyedTemplate } from '../core/view';
 import { unsetValue } from '../core/properties';
+import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { Observable } from '../../data/observable';
-import { Length } from '../styling/style-properties';
 import { StackLayout } from '../layouts/stack-layout';
 import { ProxyViewContainer } from '../proxy-view-container';
 import { LayoutBase } from '../layouts/layout-base';
@@ -395,7 +395,7 @@ function ensureListViewAdapterClass() {
 				if (this.owner._effectiveRowHeight > -1) {
 					args.view.height = this.owner.rowHeight;
 				} else {
-					args.view.height = <Length>unsetValue;
+					args.view.height = <CoreTypes.LengthType>unsetValue;
 				}
 
 				this.owner._prepareItem(args.view, index);

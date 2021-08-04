@@ -56,6 +56,8 @@ program
 			env['env'] = options.env;
 		}
 
+		env['watch'] = options.watch;
+
 		const configPath = (() => {
 			if (options.config) {
 				return path.resolve(options.config);
@@ -98,6 +100,9 @@ program
 			}
 
 			if (stats) {
+				// Set the process exit code depending on errors
+				process.exitCode = stats.hasErrors() ? 1 : 0;
+
 				console.log(
 					stats.toString({
 						chunks: false,

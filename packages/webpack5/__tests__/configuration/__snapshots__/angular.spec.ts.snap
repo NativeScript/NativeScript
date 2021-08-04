@@ -7,6 +7,9 @@ exports[`angular configuration for android 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
@@ -18,7 +21,13 @@ exports[`angular configuration for android 1`] = `
   ignoreWarnings: [
     /System.import\\\\(\\\\) is deprecated/,
     /Zone\\\\.js does not support native async\\\\/await/,
-    /environment.(\\\\w+).ts is part of the TypeScript compilation but it's unused/
+    /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/,
+    {
+      module: /@angular\\\\/core\\\\/(__ivy_ngcc__\\\\/)?fesm2015\\\\/core.js/,
+      message: /Critical dependency: the request of a dependency is an expression/
+    },
+    /core\\\\/profiling/,
+    /core\\\\/ui\\\\/styling/
   ],
   output: {
     path: '__jest__/platforms/android/app/src/main/assets/app',
@@ -90,25 +99,11 @@ exports[`angular configuration for android 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -116,9 +111,24 @@ exports[`angular configuration for android 1`] = `
           }
         ]
       },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
+          }
+        ]
+      },
       /* config.module.rule('css') */
       {
         test: /\\\\.css$/,
+        include: [
+          '__jest__/src/app.css',
+          '__jest__/src/app.android.css',
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
           {
@@ -144,6 +154,11 @@ exports[`angular configuration for android 1`] = `
       /* config.module.rule('scss') */
       {
         test: /\\\\.scss$/,
+        include: [
+          '__jest__/src/app.scss',
+          '__jest__/src/app.android.scss',
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
           {
@@ -196,10 +211,56 @@ exports[`angular configuration for android 1`] = `
             loader: 'raw-loader'
           }
         ]
+      },
+      /* config.module.rule('css|component') */
+      {
+        test: /\\\\.css$/,
+        exclude: [
+          '__jest__/src/app.css',
+          '__jest__/src/app.android.css',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('css|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss|component') */
+      {
+        test: /\\\\.scss$/,
+        exclude: [
+          '__jest__/src/app.css',
+          '__jest__/src/app.android.css',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('scss|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          },
+          /* config.module.rule('scss|component').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  'postcss-import'
+                ]
+              }
+            }
+          },
+          /* config.module.rule('scss|component').use('sass-loader') */
+          {
+            loader: 'sass-loader'
+          }
+        ]
       }
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -217,9 +278,15 @@ exports[`angular configuration for android 1`] = `
           terserOptions: {
             compress: {
               collapse_vars: false,
-              sequences: false
+              sequences: false,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -231,6 +298,10 @@ exports[`angular configuration for android 1`] = `
       {
         platform: 'android'
       }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -288,9 +359,18 @@ exports[`angular configuration for android 1`] = `
       {
         tsConfigPath: '__jest__/tsconfig.json',
         mainPath: '__jest__/src/app.js',
+        forkTypeChecker: false,
+        hostReplacementPaths: function () { /* omitted long function */ },
         platformTransformers: [
           function () { /* omitted long function */ }
         ]
+      }
+    ),
+    /* config.plugin('AngularWebpackPlugin') */
+    new AngularWebpackPlugin(
+      {
+        tsconfig: '__jest__/tsconfig.json',
+        directTemplateLoading: false
       }
     )
   ],
@@ -312,6 +392,9 @@ exports[`angular configuration for ios 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
@@ -323,7 +406,13 @@ exports[`angular configuration for ios 1`] = `
   ignoreWarnings: [
     /System.import\\\\(\\\\) is deprecated/,
     /Zone\\\\.js does not support native async\\\\/await/,
-    /environment.(\\\\w+).ts is part of the TypeScript compilation but it's unused/
+    /environment(\\\\.(\\\\w+))?\\\\.ts is part of the TypeScript compilation but it's unused/,
+    {
+      module: /@angular\\\\/core\\\\/(__ivy_ngcc__\\\\/)?fesm2015\\\\/core.js/,
+      message: /Critical dependency: the request of a dependency is an expression/
+    },
+    /core\\\\/profiling/,
+    /core\\\\/ui\\\\/styling/
   ],
   output: {
     path: '__jest__/platforms/ios/jest/app',
@@ -395,25 +484,11 @@ exports[`angular configuration for ios 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -421,9 +496,24 @@ exports[`angular configuration for ios 1`] = `
           }
         ]
       },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
+          }
+        ]
+      },
       /* config.module.rule('css') */
       {
         test: /\\\\.css$/,
+        include: [
+          '__jest__/src/app.css',
+          '__jest__/src/app.ios.css',
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('css').use('apply-css-loader') */
           {
@@ -449,6 +539,11 @@ exports[`angular configuration for ios 1`] = `
       /* config.module.rule('scss') */
       {
         test: /\\\\.scss$/,
+        include: [
+          '__jest__/src/app.scss',
+          '__jest__/src/app.ios.scss',
+          /node_modules/
+        ],
         use: [
           /* config.module.rule('scss').use('apply-css-loader') */
           {
@@ -501,10 +596,56 @@ exports[`angular configuration for ios 1`] = `
             loader: 'raw-loader'
           }
         ]
+      },
+      /* config.module.rule('css|component') */
+      {
+        test: /\\\\.css$/,
+        exclude: [
+          '__jest__/src/app.css',
+          '__jest__/src/app.ios.css',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('css|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          }
+        ]
+      },
+      /* config.module.rule('scss|component') */
+      {
+        test: /\\\\.scss$/,
+        exclude: [
+          '__jest__/src/app.css',
+          '__jest__/src/app.ios.css',
+          /node_modules/
+        ],
+        use: [
+          /* config.module.rule('scss|component').use('raw-loader') */
+          {
+            loader: 'raw-loader'
+          },
+          /* config.module.rule('scss|component').use('postcss-loader') */
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: [
+                  'postcss-import'
+                ]
+              }
+            }
+          },
+          /* config.module.rule('scss|component').use('sass-loader') */
+          {
+            loader: 'sass-loader'
+          }
+        ]
       }
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -522,9 +663,15 @@ exports[`angular configuration for ios 1`] = `
           terserOptions: {
             compress: {
               collapse_vars: true,
-              sequences: true
+              sequences: true,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -536,6 +683,10 @@ exports[`angular configuration for ios 1`] = `
       {
         platform: 'ios'
       }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -593,9 +744,18 @@ exports[`angular configuration for ios 1`] = `
       {
         tsConfigPath: '__jest__/tsconfig.json',
         mainPath: '__jest__/src/app.js',
+        forkTypeChecker: false,
+        hostReplacementPaths: function () { /* omitted long function */ },
         platformTransformers: [
           function () { /* omitted long function */ }
         ]
+      }
+    ),
+    /* config.plugin('AngularWebpackPlugin') */
+    new AngularWebpackPlugin(
+      {
+        tsconfig: '__jest__/tsconfig.json',
+        directTemplateLoading: false
       }
     )
   ],
@@ -609,4 +769,27 @@ exports[`angular configuration for ios 1`] = `
     ]
   }
 }"
+`;
+
+exports[`angular configuration loads polyfills.android.ts into the bundle entry if it exists  1`] = `
+Array [
+  "__jest__/src/polyfills.android.ts",
+  "__jest__/src/app.js",
+  "@nativescript/core/ui/frame",
+  "@nativescript/core/ui/frame/activity",
+]
+`;
+
+exports[`angular configuration loads polyfills.ios.ts into the bundle entry if it exists  1`] = `
+Array [
+  "__jest__/src/polyfills.ios.ts",
+  "__jest__/src/app.js",
+]
+`;
+
+exports[`angular configuration loads polyfills.ts into the bundle entry if it exists  1`] = `
+Array [
+  "__jest__/src/polyfills.ts",
+  "__jest__/src/app.js",
+]
 `;

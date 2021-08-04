@@ -1,15 +1,18 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform, getClosestPropertyValue } from './text-base-common';
+import { getClosestPropertyValue } from './text-base-common';
+import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
-import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, letterSpacingProperty, lineHeightProperty, resetSymbol } from './text-base-common';
+import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, VerticalAlignment } from '../styling/style-properties';
-import { isString, isDefined, isNullOrUndefined } from '../../utils/types';
+import { colorProperty, fontInternalProperty, Length } from '../styling/style-properties';
+import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
+import { Trace } from '../../trace';
+import { CoreTypes } from '../../core-types';
 
 export * from './text-base-common';
 
@@ -151,12 +154,11 @@ export class TextBase extends TextBaseCommon {
 		if (!(value instanceof Font) || !this.formattedText) {
 			let nativeView = this.nativeTextViewProtected;
 			nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
-			const font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
-			nativeView.font = font;
+			nativeView.font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
 		}
 	}
 
-	[textAlignmentProperty.setNative](value: TextAlignment) {
+	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		const nativeView = <UITextField | UITextView | UILabel>this.nativeTextViewProtected;
 		switch (value) {
 			case 'initial':
@@ -172,11 +174,11 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textDecorationProperty.setNative](value: TextDecoration) {
+	[textDecorationProperty.setNative](value: CoreTypes.TextDecorationType) {
 		this._setNativeText();
 	}
 
-	[textTransformProperty.setNative](value: TextTransform) {
+	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
 		this._setNativeText();
 	}
 
@@ -186,6 +188,10 @@ export class TextBase extends TextBaseCommon {
 
 	[lineHeightProperty.setNative](value: number) {
 		this._setNativeText();
+	}
+
+	[textShadowProperty.setNative](value: CSSShadow) {
+		this._setShadow(value);
 	}
 
 	_setNativeText(reset = false): void {
@@ -220,8 +226,11 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
+	createFormattedTextNative(value: FormattedString) {
+		return this.createNSMutableAttributedString(value);
+	}
 	setFormattedTextDecorationAndTransform() {
-		const attrText = this.createNSMutableAttributedString(this.formattedText);
+		const attrText = this.createFormattedTextNative(this.formattedText);
 		// TODO: letterSpacing should be applied per Span.
 		if (this.letterSpacing !== 0) {
 			attrText.addAttributeValueRange(NSKernAttributeName, this.letterSpacing * this.nativeTextViewProtected.font.pointSize, { location: 0, length: attrText.length });
@@ -343,6 +352,42 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
+	_setShadow(value: CSSShadow): void {
+		const layer = iOSNativeHelper.getShadowLayer(this.nativeTextViewProtected, 'ns-text-shadow');
+		if (!layer) {
+			Trace.write('text-shadow not applied, no layer.', Trace.categories.Style, Trace.messageType.info);
+			return;
+		}
+
+		if (isNullOrUndefined(value)) {
+			// clear the text shadow
+			layer.shadowOpacity = 0;
+			layer.shadowRadius = 0;
+			layer.shadowColor = UIColor.clearColor;
+			layer.shadowOffset = CGSizeMake(0, 0);
+			return;
+		}
+
+		// shadow opacity is handled on the shadow's color instance
+		layer.shadowOpacity = value.color?.a ? value.color?.a / 255 : 1;
+		layer.shadowColor = value.color.ios.CGColor;
+		layer.shadowRadius = Length.toDevicePixels(value.blurRadius, 0.0);
+
+		// prettier-ignore
+		layer.shadowOffset = CGSizeMake(
+			Length.toDevicePixels(value.offsetX, 0.0),
+			Length.toDevicePixels(value.offsetY, 0.0)
+		);
+
+		layer.masksToBounds = false;
+
+		// NOTE: generally should not need shouldRasterize
+		// however for various detailed animation work which involves text-shadow applicable layers, we may want to give users the control of enabling this with text-shadow
+		// if (!(this.nativeTextViewProtected instanceof UITextView)) {
+		//   layer.shouldRasterize = true;
+		// }
+	}
+
 	createNSMutableAttributedString(formattedString: FormattedString): NSMutableAttributedString {
 		const mas = NSMutableAttributedString.alloc().init();
 		this._spanRanges = [];
@@ -369,7 +414,7 @@ export class TextBase extends TextBaseCommon {
 		return mas;
 	}
 
-	getBaselineOffset(font: UIFont, align?: VerticalAlignment): number {
+	getBaselineOffset(font: UIFont, align?: CoreTypes.VerticalAlignmentTextType): number {
 		if (!align || ['stretch', 'baseline'].includes(align)) {
 			return 0;
 		}
@@ -394,7 +439,7 @@ export class TextBase extends TextBaseCommon {
 			return (font.descender - font.ascender) / 2 - font.descender;
 		}
 
-		if (align === 'super') {
+		if (align === 'sup') {
 			return -this.fontSize * 0.4;
 		}
 
@@ -424,7 +469,7 @@ export class TextBase extends TextBaseCommon {
 			attrDict[NSBackgroundColorAttributeName] = backgroundColor.ios;
 		}
 
-		const textDecoration: TextDecoration = getClosestPropertyValue(textDecorationProperty, span);
+		const textDecoration: CoreTypes.TextDecorationType = getClosestPropertyValue(textDecorationProperty, span);
 
 		if (textDecoration) {
 			const underline = textDecoration.indexOf('underline') !== -1;
@@ -446,7 +491,7 @@ export class TextBase extends TextBaseCommon {
 	}
 }
 
-export function getTransformedText(text: string, textTransform: TextTransform): string {
+export function getTransformedText(text: string, textTransform: CoreTypes.TextTransformType): string {
 	if (!text || !isString(text)) {
 		return '';
 	}

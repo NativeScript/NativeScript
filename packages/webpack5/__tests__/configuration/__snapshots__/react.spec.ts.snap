@@ -7,6 +7,9 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
@@ -120,29 +123,25 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
             loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
           }
         ]
       },
@@ -203,6 +202,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -220,9 +220,15 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
           terserOptions: {
             compress: {
               collapse_vars: false,
-              sequences: false
+              sequences: false,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -232,6 +238,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -242,6 +249,10 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
       {
         platform: 'android'
       }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -326,6 +337,9 @@ exports[`react configuration > android > base config 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
@@ -428,29 +442,25 @@ exports[`react configuration > android > base config 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
             loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
           }
         ]
       },
@@ -511,6 +521,7 @@ exports[`react configuration > android > base config 1`] = `
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -528,9 +539,15 @@ exports[`react configuration > android > base config 1`] = `
           terserOptions: {
             compress: {
               collapse_vars: false,
-              sequences: false
+              sequences: false,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -540,6 +557,7 @@ exports[`react configuration > android > base config 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -550,6 +568,10 @@ exports[`react configuration > android > base config 1`] = `
       {
         platform: 'android'
       }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -623,6 +645,9 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
@@ -736,29 +761,25 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
             loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
           }
         ]
       },
@@ -819,6 +840,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -836,9 +858,15 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
           terserOptions: {
             compress: {
               collapse_vars: true,
-              sequences: true
+              sequences: true,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -848,6 +876,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -858,6 +887,10 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
       {
         platform: 'ios'
       }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
@@ -943,6 +976,9 @@ exports[`react configuration > ios > base config 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
@@ -1045,29 +1081,25 @@ exports[`react configuration > ios > base config 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
             loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
           }
         ]
       },
@@ -1128,6 +1160,7 @@ exports[`react configuration > ios > base config 1`] = `
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -1145,9 +1178,15 @@ exports[`react configuration > ios > base config 1`] = `
           terserOptions: {
             compress: {
               collapse_vars: true,
-              sequences: true
+              sequences: true,
+              keep_infinity: true,
+              drop_console: false,
+              global_defs: {
+                __UGLIFIED__: true
+              }
             },
-            keep_fnames: true
+            keep_fnames: true,
+            keep_classnames: true
           }
         }
       )
@@ -1157,6 +1196,7 @@ exports[`react configuration > ios > base config 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -1167,6 +1207,10 @@ exports[`react configuration > ios > base config 1`] = `
       {
         platform: 'ios'
       }
+    ),
+    /* config.plugin('ContextExclusionPlugin|App_Resources') */
+    new ContextExclusionPlugin(
+      /(.*)App_Resources(.*)/
     ),
     /* config.plugin('DefinePlugin') */
     new DefinePlugin(
