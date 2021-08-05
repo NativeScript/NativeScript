@@ -3,8 +3,12 @@ import { textTransformProperty, textProperty, resetSymbol } from '../text-base';
 import { Color } from '../../color';
 import { ad } from '../../utils';
 import { CoreTypes } from '../../core-types';
+import { Device } from '../../platform';
+import lazy from '../../utils/lazy';
 
 export * from './editable-text-base-common';
+
+const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 //https://github.com/NativeScript/NativeScript/issues/2942
 export let dismissKeyboardTimeoutId: NodeJS.Timer;
@@ -139,6 +143,8 @@ function initializeEditTextListeners(): void {
 	EditTextListeners = EditTextListenersImpl;
 }
 
+let apiLevel: number;
+
 export abstract class EditableTextBase extends EditableTextBaseCommon {
 	/* tslint:disable */
 	_dirtyTextAccumulator: string;
@@ -158,6 +164,9 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	public createNativeView() {
+		if (!apiLevel) {
+			apiLevel = sdkVersion();
+		}
 		return new android.widget.EditText(this._context);
 	}
 
@@ -299,28 +308,31 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	[autofillTypeProperty.setNative](value: CoreTypes.AutofillType) {
+		if (apiLevel < 26) {
+			return;
+		}
 		let newOptions;
 		switch (value) {
 			case 'phone':
-				newOptions = android.view.View.AUTOFILL_HINT_PHONE;
+				newOptions = 'phone'; // android.view.View.AUTOFILL_HINT_PHONE
 				break;
 			case 'postalCode':
-				newOptions = android.view.View.AUTOFILL_HINT_POSTAL_CODE;
+				newOptions = 'postalCode'; // android.view.View.AUTOFILL_HINT_POSTAL_CODE
 				break;
 			case 'creditCardNumber':
-				newOptions = android.view.View.AUTOFILL_HINT_CREDIT_CARD_NUMBER;
+				newOptions = 'creditCardNumber'; // android.view.View.AUTOFILL_HINT_CREDIT_CARD_NUMBER
 				break;
 			case 'email':
-				newOptions = android.view.View.AUTOFILL_HINT_EMAIL_ADDRESS;
+				newOptions = 'emailAddress'; // android.view.View.AUTOFILL_HINT_EMAIL_ADDRESS
 				break;
 			case 'name':
-				newOptions = android.view.View.AUTOFILL_HINT_NAME;
+				newOptions = 'name'; // android.view.View.AUTOFILL_HINT_NAME
 				break;
 			case 'username':
-				newOptions = android.view.View.AUTOFILL_HINT_USERNAME;
+				newOptions = 'username'; // android.view.View.AUTOFILL_HINT_USERNAME
 				break;
 			case 'password':
-				newOptions = android.view.View.AUTOFILL_HINT_PASSWORD;
+				newOptions = 'password'; // android.view.View.AUTOFILL_HINT_PASSWORD
 				break;
 			case 'none':
 				newOptions = null;
