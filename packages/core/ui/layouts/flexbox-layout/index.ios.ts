@@ -12,7 +12,7 @@ import MEASURED_SIZE_MASK = layout.MEASURED_SIZE_MASK;
 import MEASURED_STATE_TOO_SMALL = layout.MEASURED_STATE_TOO_SMALL;
 
 function requestFlexboxLayout(this: View, value) {
-	let flexbox = this.parent;
+	const flexbox = this.parent;
 	if (flexbox instanceof FlexboxLayoutBase) {
 		flexbox.requestLayout();
 	}
@@ -63,13 +63,13 @@ class FlexLine {
 	_right: number = Number.MAX_VALUE;
 	_bottom: number = Number.MAX_VALUE;
 
-	_mainSize: number = 0;
+	_mainSize = 0;
 	_dividerLengthInMainSize = 0;
-	_crossSize: number = 0;
-	_itemCount: number = 0;
-	_totalFlexGrow: number = 0;
-	_totalFlexShrink: number = 0;
-	_maxBaseline: number = 0;
+	_crossSize = 0;
+	_itemCount = 0;
+	_totalFlexGrow = 0;
+	_totalFlexShrink = 0;
+	_maxBaseline = 0;
 
 	_indicesAlignSelfStretch: number[] = [];
 
@@ -158,7 +158,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		if (index < 0 || index >= this._reorderedIndices.length) {
 			child = null;
 		} else {
-			let reorderedIndex = this._reorderedIndices[index];
+			const reorderedIndex = this._reorderedIndices[index];
 			child = this.measureContext.childAt(reorderedIndex);
 		}
 
@@ -166,8 +166,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 	}
 
 	private _createReorderedIndices(): number[] {
-		let childCount = this.measureContext.childrenCount;
-		let orders = this._createOrders(childCount);
+		const childCount = this.measureContext.childrenCount;
+		const orders = this._createOrders(childCount);
 
 		return this._sortOrdersIntoReorderedIndices(childCount, orders);
 	}
@@ -179,7 +179,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		}
 
 		this._orderCache.length = 0;
-		let reorderedIndices: number[] = [];
+		const reorderedIndices: number[] = [];
 		orders.forEach((order, i) => {
 			reorderedIndices[i] = order.index;
 			this._orderCache[i] = order.order;
@@ -189,10 +189,10 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 	}
 
 	private _createOrders(childCount: number): Order[] {
-		let orders: Order[] = [];
+		const orders: Order[] = [];
 		for (let i = 0; i < childCount; i++) {
-			let child = this.measureContext.childAt(i);
-			let order = new Order();
+			const child = this.measureContext.childAt(i);
+			const order = new Order();
 			order.order = FlexboxLayout.getOrder(child);
 			order.index = i;
 			orders.push(order);
@@ -202,7 +202,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 	}
 
 	private get _isOrderChangedFromLastMeasurement(): boolean {
-		let childCount = this.measureContext.childrenCount;
+		const childCount = this.measureContext.childrenCount;
 		if (!this._orderCache) {
 			this._orderCache = [];
 		}
@@ -210,7 +210,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 			return true;
 		}
 		for (let i = 0; i < childCount; i++) {
-			let view = this.measureContext.childAt(i);
+			const view = this.measureContext.childAt(i);
 			if (view === null) {
 				continue;
 			}
@@ -234,16 +234,16 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		this._flexLines.length = 0;
 
 		(() => {
-			let childCount = this.measureContext.childrenCount;
-			let paddingStart = FlexboxLayout.getPaddingStart(this);
-			let paddingEnd = FlexboxLayout.getPaddingEnd(this);
+			const childCount = this.measureContext.childrenCount;
+			const paddingStart = FlexboxLayout.getPaddingStart(this);
+			const paddingEnd = FlexboxLayout.getPaddingEnd(this);
 			let largestHeightInRow = Number.MIN_VALUE;
 			let flexLine = new FlexLine();
 
 			let indexInFlexLine = 0;
 			flexLine._mainSize = paddingStart + paddingEnd;
 			for (let i = 0; i < childCount; i++) {
-				let child = this._getReorderedChildAt(i);
+				const child = this._getReorderedChildAt(i);
 				if (child === null) {
 					this._addFlexLineIfLastFlexItem(i, childCount, flexLine);
 					continue;
@@ -254,7 +254,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				}
 
 				child._updateEffectiveLayoutValues(widthSize, widthMode, heightSize, heightMode);
-				let lp = child; // child.style;
+				const lp = child; // child.style;
 				if (FlexboxLayout.getAlignSelf(child) === 'stretch') {
 					flexLine._indicesAlignSelfStretch.push(i);
 				}
@@ -264,9 +264,9 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					childWidth = Math.round(widthSize * FlexBasisPercent.DEFAULT /*lp.flexBasisPercent*/);
 				}
 
-				let childWidthMeasureSpec = FlexboxLayout.getChildMeasureSpec(widthMeasureSpec, lp.effectivePaddingLeft + lp.effectivePaddingRight + lp.effectiveMarginLeft + lp.effectiveMarginRight, childWidth < 0 ? WRAP_CONTENT : childWidth);
+				const childWidthMeasureSpec = FlexboxLayout.getChildMeasureSpec(widthMeasureSpec, lp.effectivePaddingLeft + lp.effectivePaddingRight + lp.effectiveMarginLeft + lp.effectiveMarginRight, childWidth < 0 ? WRAP_CONTENT : childWidth);
 
-				let childHeightMeasureSpec = FlexboxLayout.getChildMeasureSpec(heightMeasureSpec, lp.effectivePaddingTop + lp.effectivePaddingBottom + lp.effectiveMarginTop + lp.effectiveMarginBottom, lp.effectiveHeight < 0 ? WRAP_CONTENT : lp.effectiveHeight);
+				const childHeightMeasureSpec = FlexboxLayout.getChildMeasureSpec(heightMeasureSpec, lp.effectivePaddingTop + lp.effectivePaddingBottom + lp.effectiveMarginTop + lp.effectiveMarginBottom, lp.effectiveHeight < 0 ? WRAP_CONTENT : lp.effectiveHeight);
 
 				child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
 
@@ -313,7 +313,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 			this._flexLines.forEach((flexLine) => {
 				let largestHeightInLine = Number.MIN_VALUE;
 				for (let i = viewIndex; i < viewIndex + flexLine._itemCount; i++) {
-					let child = this._getReorderedChildAt(i);
+					const child = this._getReorderedChildAt(i);
 					const lp = child; // .style;
 					if (this.flexWrap !== FlexWrap.WRAP_REVERSE) {
 						let marginTop = flexLine._maxBaseline - FlexboxLayout.getBaseline(child);
@@ -344,16 +344,16 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
 		this._flexLines.length = 0;
 
-		let childCount = this.measureContext.childrenCount;
-		let paddingTop = this.effectivePaddingTop;
-		let paddingBottom = this.effectivePaddingBottom;
+		const childCount = this.measureContext.childrenCount;
+		const paddingTop = this.effectivePaddingTop;
+		const paddingBottom = this.effectivePaddingBottom;
 		let largestWidthInColumn = Number.MIN_VALUE;
 		let flexLine = new FlexLine();
 		flexLine._mainSize = paddingTop + paddingBottom;
 
 		let indexInFlexLine = 0;
 		for (let i = 0; i < childCount; i++) {
-			let child = this._getReorderedChildAt(i);
+			const child = this._getReorderedChildAt(i);
 			if (child === null) {
 				this._addFlexLineIfLastFlexItem(i, childCount, flexLine);
 				continue;
@@ -375,8 +375,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				childHeight = Math.round(heightSize * FlexBasisPercent.DEFAULT /* lp.flexBasisPercent */);
 			}
 
-			let childWidthMeasureSpec = FlexboxLayout.getChildMeasureSpec(widthMeasureSpec, this.effectivePaddingLeft + this.effectivePaddingRight + lp.effectiveMarginLeft + lp.effectiveMarginRight, lp.effectiveWidth < 0 ? WRAP_CONTENT : lp.effectiveWidth);
-			let childHeightMeasureSpec = FlexboxLayout.getChildMeasureSpec(heightMeasureSpec, this.effectivePaddingTop + this.effectivePaddingBottom + lp.effectiveMarginTop + lp.effectiveMarginBottom, childHeight < 0 ? WRAP_CONTENT : childHeight);
+			const childWidthMeasureSpec = FlexboxLayout.getChildMeasureSpec(widthMeasureSpec, this.effectivePaddingLeft + this.effectivePaddingRight + lp.effectiveMarginLeft + lp.effectiveMarginRight, lp.effectiveWidth < 0 ? WRAP_CONTENT : lp.effectiveWidth);
+			const childHeightMeasureSpec = FlexboxLayout.getChildMeasureSpec(heightMeasureSpec, this.effectivePaddingTop + this.effectivePaddingBottom + lp.effectiveMarginTop + lp.effectiveMarginBottom, childHeight < 0 ? WRAP_CONTENT : childHeight);
 			child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
 
 			this._checkSizeConstraints(child);
@@ -420,7 +420,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		let childWidth = view.getMeasuredWidth();
 		let childHeight = view.getMeasuredHeight();
 
-		let minWidth = view.effectiveMinWidth;
+		const minWidth = view.effectiveMinWidth;
 		view.effectiveMinWidth = 0;
 		if (view.getMeasuredWidth() < minWidth) {
 			needsMeasure = true;
@@ -430,7 +430,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 			childWidth = MAX_SIZE /*lp.maxWidth*/;
 		}
 
-		let minHeight = view.effectiveMinHeight;
+		const minHeight = view.effectiveMinHeight;
 		view.effectiveMinHeight = 0;
 		if (childHeight < minHeight) {
 			needsMeasure = true;
@@ -463,9 +463,9 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
 		switch (flexDirection) {
 			case FlexDirection.ROW:
-			case FlexDirection.ROW_REVERSE:
-				let widthMode = getMeasureSpecMode(widthMeasureSpec);
-				let widthSize = getMeasureSpecSize(widthMeasureSpec);
+			case FlexDirection.ROW_REVERSE: {
+				const widthMode = getMeasureSpecMode(widthMeasureSpec);
+				const widthSize = getMeasureSpecSize(widthMeasureSpec);
 				if (widthMode === EXACTLY) {
 					mainSize = widthSize;
 				} else {
@@ -473,10 +473,11 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				}
 				paddingAlongMainAxis = this.effectivePaddingLeft + this.effectivePaddingRight;
 				break;
+			}
 			case FlexDirection.COLUMN:
-			case FlexDirection.COLUMN_REVERSE:
-				let heightMode = getMeasureSpecMode(heightMeasureSpec);
-				let heightSize = getMeasureSpecSize(heightMeasureSpec);
+			case FlexDirection.COLUMN_REVERSE: {
+				const heightMode = getMeasureSpecMode(heightMeasureSpec);
+				const heightSize = getMeasureSpecSize(heightMeasureSpec);
 				if (heightMode === EXACTLY) {
 					mainSize = heightSize;
 				} else {
@@ -484,6 +485,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				}
 				paddingAlongMainAxis = this.effectivePaddingTop + this.effectivePaddingBottom;
 				break;
+			}
 			default:
 				throw new Error('Invalid flex direction: ' + flexDirection);
 		}
@@ -505,14 +507,14 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
 			return childIndex;
 		}
-		let sizeBeforeExpand = flexLine._mainSize;
+		const sizeBeforeExpand = flexLine._mainSize;
 		let needsReexpand = false;
-		let pendingSpace = maxMainSize - flexLine._mainSize;
-		let unitSpace = pendingSpace / flexLine._totalFlexGrow;
+		const pendingSpace = maxMainSize - flexLine._mainSize;
+		const unitSpace = pendingSpace / flexLine._totalFlexGrow;
 		flexLine._mainSize = paddingAlongMainAxis + flexLine._dividerLengthInMainSize;
 		let accumulatedRoundError = 0;
 		for (let i = 0; i < flexLine.itemCount; i++) {
-			let child = this._getReorderedChildAt(childIndex);
+			const child = this._getReorderedChildAt(childIndex);
 			if (child === null) {
 				continue;
 			} else if (child.isCollapsed) {
@@ -522,8 +524,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 			const lp = child; // .style;
 			if (this._isMainAxisDirectionHorizontal(flexDirection)) {
 				if (!this._childrenFrozen[childIndex]) {
-					let flexGrow = FlexboxLayout.getFlexGrow(child);
-					let rawCalculatedWidth = child.getMeasuredWidth() + unitSpace * flexGrow + accumulatedRoundError;
+					const flexGrow = FlexboxLayout.getFlexGrow(child);
+					const rawCalculatedWidth = child.getMeasuredWidth() + unitSpace * flexGrow + accumulatedRoundError;
 					let roundedCalculatedWidth = Math.round(rawCalculatedWidth);
 					// TODO: MAX_SIZE is so big, this is always false:
 					if (roundedCalculatedWidth > MAX_SIZE /* lp.maxWidth */) {
@@ -539,8 +541,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				flexLine._mainSize += child.getMeasuredWidth() + lp.effectiveMarginLeft + lp.effectiveMarginRight;
 			} else {
 				if (!this._childrenFrozen[childIndex]) {
-					let flexGrow = FlexboxLayout.getFlexGrow(child);
-					let rawCalculatedHeight = child.getMeasuredHeight() + unitSpace * flexGrow + accumulatedRoundError;
+					const flexGrow = FlexboxLayout.getFlexGrow(child);
+					const rawCalculatedHeight = child.getMeasuredHeight() + unitSpace * flexGrow + accumulatedRoundError;
 					let roundedCalculatedHeight = Math.round(rawCalculatedHeight);
 					// TODO: MAX_SIZE is so big this is always false:
 					if (roundedCalculatedHeight > MAX_SIZE /*lp.maxHeight*/) {
@@ -567,18 +569,18 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
 	private _shrinkFlexItems(flexLine: FlexLine, flexDirection: FlexDirection, maxMainSize: number, paddingAlongMainAxis: number, startIndex: number): number {
 		let childIndex = startIndex;
-		let sizeBeforeShrink = flexLine._mainSize;
+		const sizeBeforeShrink = flexLine._mainSize;
 		if (flexLine._totalFlexShrink <= 0 || maxMainSize > flexLine._mainSize) {
 			childIndex += flexLine.itemCount;
 
 			return childIndex;
 		}
 		let needsReshrink = false;
-		let unitShrink = (flexLine._mainSize - maxMainSize) / flexLine._totalFlexShrink;
+		const unitShrink = (flexLine._mainSize - maxMainSize) / flexLine._totalFlexShrink;
 		let accumulatedRoundError = 0;
 		flexLine._mainSize = paddingAlongMainAxis + flexLine._dividerLengthInMainSize;
 		for (let i = 0; i < flexLine.itemCount; i++) {
-			let child = this._getReorderedChildAt(childIndex);
+			const child = this._getReorderedChildAt(childIndex);
 			if (child === null) {
 				continue;
 			} else if (child.isCollapsed) {
@@ -589,10 +591,10 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 			if (this._isMainAxisDirectionHorizontal(flexDirection)) {
 				// The direction of main axis is horizontal
 				if (!this._childrenFrozen[childIndex]) {
-					let flexShrink = FlexboxLayout.getFlexShrink(child);
-					let rawCalculatedWidth = child.getMeasuredWidth() - unitShrink * flexShrink + accumulatedRoundError;
+					const flexShrink = FlexboxLayout.getFlexShrink(child);
+					const rawCalculatedWidth = child.getMeasuredWidth() - unitShrink * flexShrink + accumulatedRoundError;
 					let roundedCalculatedWidth = Math.round(rawCalculatedWidth);
-					let minWidth = child.effectiveMinWidth;
+					const minWidth = child.effectiveMinWidth;
 					child.effectiveMinWidth = 0;
 					if (roundedCalculatedWidth < minWidth) {
 						needsReshrink = true;
@@ -620,8 +622,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				flexLine._mainSize += child.getMeasuredWidth() + lp.effectiveMarginLeft + lp.effectiveMarginRight;
 			} else {
 				if (!this._childrenFrozen[childIndex]) {
-					let flexShrink = FlexboxLayout.getFlexShrink(child);
-					let rawCalculatedHeight = child.getMeasuredHeight() - unitShrink * flexShrink + accumulatedRoundError;
+					const flexShrink = FlexboxLayout.getFlexShrink(child);
+					const rawCalculatedHeight = child.getMeasuredHeight() - unitShrink * flexShrink + accumulatedRoundError;
 					let roundedCalculatedHeight = Math.round(rawCalculatedHeight);
 					const minHeight = child.effectiveMinHeight;
 					child.effectiveMinHeight = 0;
@@ -666,17 +668,17 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				throw new Error('Invalid flex direction: ' + flexDirection);
 		}
 		if (mode === EXACTLY) {
-			let totalCrossSize = this._getSumOfCrossSize() + paddingAlongCrossAxis;
+			const totalCrossSize = this._getSumOfCrossSize() + paddingAlongCrossAxis;
 			if (this._flexLines.length === 1) {
 				this._flexLines[0]._crossSize = size - paddingAlongCrossAxis;
 			} else if (this._flexLines.length >= 2 && totalCrossSize < size) {
 				switch (this.alignContent) {
 					case AlignContent.STRETCH:
 						(() => {
-							let freeSpaceUnit = (size - totalCrossSize) / this._flexLines.length;
+							const freeSpaceUnit = (size - totalCrossSize) / this._flexLines.length;
 							let accumulatedError = 0;
 							for (let i = 0, flexLinesSize = this._flexLines.length; i < flexLinesSize; i++) {
-								let flexLine = this._flexLines[i];
+								const flexLine = this._flexLines[i];
 								let newCrossSizeAsFloat = flexLine._crossSize + freeSpaceUnit;
 								if (i === this._flexLines.length - 1) {
 									newCrossSizeAsFloat += accumulatedError;
@@ -698,10 +700,10 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					case AlignContent.SPACE_AROUND:
 						(() => {
 							let spaceTopAndBottom = size - totalCrossSize;
-							let numberOfSpaces = this._flexLines.length * 2;
+							const numberOfSpaces = this._flexLines.length * 2;
 							spaceTopAndBottom = spaceTopAndBottom / numberOfSpaces;
-							let newFlexLines: FlexLine[] = [];
-							let dummySpaceFlexLine = new FlexLine();
+							const newFlexLines: FlexLine[] = [];
+							const dummySpaceFlexLine = new FlexLine();
 							dummySpaceFlexLine._crossSize = spaceTopAndBottom;
 							this._flexLines.forEach((flexLine) => {
 								newFlexLines.push(dummySpaceFlexLine);
@@ -714,16 +716,16 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					case AlignContent.SPACE_BETWEEN:
 						(() => {
 							let spaceBetweenFlexLine = size - totalCrossSize;
-							let numberOfSpaces = this._flexLines.length - 1;
+							const numberOfSpaces = this._flexLines.length - 1;
 							spaceBetweenFlexLine = spaceBetweenFlexLine / numberOfSpaces;
 							let accumulatedError = 0;
-							let newFlexLines: FlexLine[] = [];
+							const newFlexLines: FlexLine[] = [];
 							for (let i = 0, flexLineSize = this._flexLines.length; i < flexLineSize; i++) {
-								let flexLine = this._flexLines[i];
+								const flexLine = this._flexLines[i];
 								newFlexLines.push(flexLine);
 
 								if (i !== this._flexLines.length - 1) {
-									let dummySpaceFlexLine = new FlexLine();
+									const dummySpaceFlexLine = new FlexLine();
 									if (i === this._flexLines.length - 2) {
 										dummySpaceFlexLine._crossSize = Math.round(spaceBetweenFlexLine + accumulatedError);
 										accumulatedError = 0;
@@ -747,14 +749,14 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					case AlignContent.CENTER: {
 						let spaceAboveAndBottom = size - totalCrossSize;
 						spaceAboveAndBottom = spaceAboveAndBottom / 2;
-						let newFlexLines: FlexLine[] = [];
-						let dummySpaceFlexLine = new FlexLine();
+						const newFlexLines: FlexLine[] = [];
+						const dummySpaceFlexLine = new FlexLine();
 						dummySpaceFlexLine._crossSize = spaceAboveAndBottom;
 						for (let i = 0, flexLineSize = this._flexLines.length; i < flexLineSize; i++) {
 							if (i === 0) {
 								newFlexLines.push(dummySpaceFlexLine);
 							}
-							let flexLine = this._flexLines[i];
+							const flexLine = this._flexLines[i];
 							newFlexLines.push(flexLine);
 							if (i === this._flexLines.length - 1) {
 								newFlexLines.push(dummySpaceFlexLine);
@@ -764,8 +766,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 						break;
 					}
 					case AlignContent.FLEX_END: {
-						let spaceTop = size - totalCrossSize;
-						let dummySpaceFlexLine = new FlexLine();
+						const spaceTop = size - totalCrossSize;
+						const dummySpaceFlexLine = new FlexLine();
 						dummySpaceFlexLine._crossSize = spaceTop;
 						this._flexLines.unshift(dummySpaceFlexLine);
 						break;
@@ -780,8 +782,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 			let viewIndex = 0;
 			this._flexLines.forEach((flexLine) => {
 				for (let i = 0; i < flexLine.itemCount; i++, viewIndex++) {
-					let view = this._getReorderedChildAt(viewIndex);
-					let alignSelf = FlexboxLayout.getAlignSelf(view);
+					const view = this._getReorderedChildAt(viewIndex);
+					const alignSelf = FlexboxLayout.getAlignSelf(view);
 					if (alignSelf !== 'auto' && alignSelf !== 'stretch') {
 						continue;
 					}
@@ -802,7 +804,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 		} else {
 			this._flexLines.forEach((flexLine) => {
 				flexLine._indicesAlignSelfStretch.forEach((index) => {
-					let view = this._getReorderedChildAt(index);
+					const view = this._getReorderedChildAt(index);
 					switch (flexDirection) {
 						case FlexDirection.ROW:
 						case FlexDirection.ROW_REVERSE:
@@ -823,7 +825,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 	private _stretchViewVertically(view: View, crossSize: number) {
 		let newHeight = crossSize - view.effectiveMarginTop - view.effectiveMarginBottom;
 		newHeight = Math.max(newHeight, 0);
-		let originalMeasuredWidth = view.getMeasuredWidth();
+		const originalMeasuredWidth = view.getMeasuredWidth();
 		let childWidthMeasureSpec = FlexboxLayout.getChildMeasureSpec(this._currentWidthMeasureSpec, view.effectivePaddingLeft + view.effectivePaddingRight + view.effectiveMarginLeft + view.effectiveMarginRight, view.effectiveWidth < 0 ? WRAP_CONTENT : Math.min(view.effectiveWidth, originalMeasuredWidth));
 
 		view.measure(childWidthMeasureSpec, makeMeasureSpec(newHeight, EXACTLY));
@@ -841,9 +843,9 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 	}
 
 	private _setMeasuredDimensionForFlex(flexDirection: FlexDirection, widthMeasureSpec: number, heightMeasureSpec: number, childState: number) {
-		let widthMode = getMeasureSpecMode(widthMeasureSpec);
+		const widthMode = getMeasureSpecMode(widthMeasureSpec);
 		let widthSize = getMeasureSpecSize(widthMeasureSpec);
-		let heightMode = getMeasureSpecMode(heightMeasureSpec);
+		const heightMode = getMeasureSpecMode(heightMeasureSpec);
 		let heightSize = getMeasureSpecSize(heightMeasureSpec);
 		let calculatedMaxHeight;
 		let calculatedMaxWidth;
@@ -977,16 +979,16 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
 	private _layoutHorizontal(isRtl: boolean, left: number, top: number, right: number, bottom: number, insets: { left; top; right; bottom }) {
 		// include insets
-		let paddingLeft = this.effectivePaddingLeft + insets.left;
-		let paddingTop = this.effectivePaddingTop + insets.top;
-		let paddingRight = this.effectivePaddingRight + insets.right;
-		let paddingBottom = this.effectivePaddingBottom + insets.bottom;
+		const paddingLeft = this.effectivePaddingLeft + insets.left;
+		const paddingTop = this.effectivePaddingTop + insets.top;
+		const paddingRight = this.effectivePaddingRight + insets.right;
+		const paddingBottom = this.effectivePaddingBottom + insets.bottom;
 
 		let childLeft;
 		let currentViewIndex = 0;
 
-		let height = bottom - top;
-		let width = right - left;
+		const height = bottom - top;
+		const width = right - left;
 
 		// include insets
 		let childBottom = height - paddingBottom;
@@ -1017,19 +1019,20 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					childLeft = paddingLeft + spaceBetweenItem / 2.0;
 					childRight = width - paddingRight - spaceBetweenItem / 2.0;
 					break;
-				case JustifyContent.SPACE_BETWEEN:
+				case JustifyContent.SPACE_BETWEEN: {
 					childLeft = paddingLeft;
-					let denominator = flexLine.itemCount !== 1 ? flexLine.itemCount - 1 : 1.0;
+					const denominator = flexLine.itemCount !== 1 ? flexLine.itemCount - 1 : 1.0;
 					spaceBetweenItem = (width - insets.left - insets.right - flexLine.mainSize) / denominator;
 					childRight = width - paddingRight;
 					break;
+				}
 				default:
 					throw new Error('Invalid justifyContent is set: ' + this.justifyContent);
 			}
 			spaceBetweenItem = Math.max(spaceBetweenItem, 0);
 
 			for (let j = 0; j < flexLine.itemCount; j++) {
-				let child = this._getReorderedChildAt(currentViewIndex);
+				const child = this._getReorderedChildAt(currentViewIndex);
 				if (child === null) {
 					continue;
 				} else if (child.isCollapsed) {
@@ -1059,7 +1062,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				childRight -= child.getMeasuredWidth() + spaceBetweenItem + lp.effectiveMarginLeft;
 				currentViewIndex++;
 
-				let bounds = child._getCurrentLayoutBounds();
+				const bounds = child._getCurrentLayoutBounds();
 				flexLine._left = Math.min(flexLine._left, bounds.left - lp.effectiveMarginLeft);
 				flexLine._top = Math.min(flexLine._top, bounds.top - lp.effectiveMarginTop);
 				flexLine._right = Math.max(flexLine._right, bounds.right + lp.effectiveMarginRight);
@@ -1072,14 +1075,14 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 	}
 
 	private _layoutSingleChildHorizontal(view: View, flexLine: FlexLine, flexWrap: FlexWrap, alignItems: AlignItems, left: number, top: number, right: number, bottom: number): void {
-		let lp = view; // .style;
+		const lp = view; // .style;
 
-		let alignSelf = FlexboxLayout.getAlignSelf(view);
+		const alignSelf = FlexboxLayout.getAlignSelf(view);
 		if (alignSelf !== 'auto') {
 			alignItems = alignSelf;
 		}
 
-		let crossSize = flexLine._crossSize;
+		const crossSize = flexLine._crossSize;
 		switch (alignItems) {
 			case AlignItems.FLEX_START:
 			case AlignItems.STRETCH:
@@ -1107,28 +1110,29 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					view.layout(left, top - crossSize + view.getMeasuredHeight() + lp.effectiveMarginTop, right, bottom - crossSize + view.getMeasuredHeight() + lp.effectiveMarginTop);
 				}
 				break;
-			case AlignItems.CENTER:
-				let topFromCrossAxis = (crossSize - view.getMeasuredHeight()) / 2;
+			case AlignItems.CENTER: {
+				const topFromCrossAxis = (crossSize - view.getMeasuredHeight()) / 2;
 				if (flexWrap !== FlexWrap.WRAP_REVERSE) {
 					view.layout(left, top + topFromCrossAxis + lp.effectiveMarginTop - lp.effectiveMarginBottom, right, top + topFromCrossAxis + view.getMeasuredHeight() + lp.effectiveMarginTop - lp.effectiveMarginBottom);
 				} else {
 					view.layout(left, top - topFromCrossAxis + lp.effectiveMarginTop - lp.effectiveMarginBottom, right, top - topFromCrossAxis + view.getMeasuredHeight() + lp.effectiveMarginTop - lp.effectiveMarginBottom);
 				}
 				break;
+			}
 		}
 	}
 
 	private _layoutVertical(isRtl: boolean, fromBottomToTop: boolean, left: number, top: number, right: number, bottom: number, insets: { left; top; right; bottom }) {
-		let paddingLeft = this.effectivePaddingLeft + insets.left;
-		let paddingTop = this.effectivePaddingTop + insets.top;
-		let paddingRight = this.effectivePaddingRight + insets.right;
-		let paddingBottom = this.effectivePaddingBottom + insets.bottom;
+		const paddingLeft = this.effectivePaddingLeft + insets.left;
+		const paddingTop = this.effectivePaddingTop + insets.top;
+		const paddingRight = this.effectivePaddingRight + insets.right;
+		const paddingBottom = this.effectivePaddingBottom + insets.bottom;
 
 		let childLeft = paddingLeft;
 		let currentViewIndex = 0;
 
-		let width = right - left;
-		let height = bottom - top;
+		const width = right - left;
+		const height = bottom - top;
 		let childRight = width - paddingRight;
 
 		let childTop;
@@ -1159,19 +1163,20 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					childTop = paddingTop + spaceBetweenItem / 2.0;
 					childBottom = height - paddingBottom - spaceBetweenItem / 2.0;
 					break;
-				case JustifyContent.SPACE_BETWEEN:
+				case JustifyContent.SPACE_BETWEEN: {
 					childTop = paddingTop;
-					let denominator = flexLine.itemCount !== 1 ? flexLine.itemCount - 1 : 1.0;
+					const denominator = flexLine.itemCount !== 1 ? flexLine.itemCount - 1 : 1.0;
 					spaceBetweenItem = (height - insets.top - insets.bottom - flexLine.mainSize) / denominator;
 					childBottom = height - paddingBottom;
 					break;
+				}
 				default:
 					throw new Error('Invalid justifyContent is set: ' + this.justifyContent);
 			}
 			spaceBetweenItem = Math.max(spaceBetweenItem, 0);
 
 			for (let j = 0; j < flexLine.itemCount; j++) {
-				let child = this._getReorderedChildAt(currentViewIndex);
+				const child = this._getReorderedChildAt(currentViewIndex);
 				if (child === null) {
 					continue;
 				} else if (child.isCollapsed) {
@@ -1201,7 +1206,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 				childBottom -= child.getMeasuredHeight() + spaceBetweenItem + lp.effectiveMarginTop;
 				currentViewIndex++;
 
-				let bounds = child._getCurrentLayoutBounds();
+				const bounds = child._getCurrentLayoutBounds();
 				flexLine._left = Math.min(flexLine._left, bounds.left - lp.effectiveMarginLeft);
 				flexLine._top = Math.min(flexLine._top, bounds.top - lp.effectiveMarginTop);
 				flexLine._right = Math.max(flexLine._right, bounds.right + lp.effectiveMarginRight);
@@ -1214,12 +1219,12 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 	}
 
 	private _layoutSingleChildVertical(view: View, flexLine: FlexLine, isRtl: boolean, alignItems: AlignItems, left: number, top: number, right: number, bottom: number) {
-		let lp = view; // .style;
-		let alignSelf = FlexboxLayout.getAlignSelf(view);
+		const lp = view; // .style;
+		const alignSelf = FlexboxLayout.getAlignSelf(view);
 		if (alignSelf !== 'auto') {
 			alignItems = alignSelf;
 		}
-		let crossSize = flexLine.crossSize;
+		const crossSize = flexLine.crossSize;
 		switch (alignItems) {
 			case AlignItems.FLEX_START:
 			case AlignItems.STRETCH:
@@ -1239,14 +1244,15 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 					view.layout(left - crossSize + view.getMeasuredWidth() + lp.effectiveMarginLeft, top, right - crossSize + view.getMeasuredWidth() + lp.effectiveMarginLeft, bottom);
 				}
 				break;
-			case AlignItems.CENTER:
-				let leftFromCrossAxis = (crossSize - view.getMeasuredWidth()) / 2;
+			case AlignItems.CENTER: {
+				const leftFromCrossAxis = (crossSize - view.getMeasuredWidth()) / 2;
 				if (!isRtl) {
 					view.layout(left + leftFromCrossAxis + lp.effectiveMarginLeft - lp.effectiveMarginRight, top, right + leftFromCrossAxis + lp.effectiveMarginLeft - lp.effectiveMarginRight, bottom);
 				} else {
 					view.layout(left - leftFromCrossAxis + lp.effectiveMarginLeft - lp.effectiveMarginRight, top, right - leftFromCrossAxis + lp.effectiveMarginLeft - lp.effectiveMarginRight, bottom);
 				}
 				break;
+			}
 		}
 	}
 
@@ -1256,10 +1262,10 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
 	// NOTE Consider moving to View if frequently used
 	private static getChildMeasureSpec(spec: number, padding: number, childDimension: number): number {
-		let specMode = layout.getMeasureSpecMode(spec);
-		let specSize = layout.getMeasureSpecSize(spec);
+		const specMode = layout.getMeasureSpecMode(spec);
+		const specSize = layout.getMeasureSpecSize(spec);
 
-		let size = Math.max(0, specSize - padding);
+		const size = Math.max(0, specSize - padding);
 
 		let resultSize = 0;
 		let resultMode = 0;

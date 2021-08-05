@@ -1,0 +1,22 @@
+{
+	"extends": "../../.eslintrc.json",
+	"rules": {},
+	"ignorePatterns": ["!**/*", "**/global-types.d.ts", "**/node_modules/**/*", "**/__tests__/**/*"],
+	"overrides": [
+		{
+			"files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+			"parserOptions": {
+				"project": ["packages/core/tsconfig.*?.json"]
+			},
+			"rules": {}
+		},
+		{
+			"files": ["*.ts", "*.tsx"],
+			"rules": {}
+		},
+		{
+			"files": ["*.js", "*.jsx"],
+			"rules": {}
+		}
+	]
+}

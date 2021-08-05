@@ -10,11 +10,19 @@ declare class NLEmbedding extends NSObject {
 
 	static currentRevisionForLanguage(language: string): number;
 
+	static currentSentenceEmbeddingRevisionForLanguage(language: string): number;
+
 	static embeddingWithContentsOfURLError(url: NSURL): NLEmbedding;
 
 	static new(): NLEmbedding; // inherited from NSObject
 
+	static sentenceEmbeddingForLanguage(language: string): NLEmbedding;
+
+	static sentenceEmbeddingForLanguageRevision(language: string, revision: number): NLEmbedding;
+
 	static supportedRevisionsForLanguage(language: string): NSIndexSet;
+
+	static supportedSentenceEmbeddingRevisionsForLanguage(language: string): NSIndexSet;
 
 	static wordEmbeddingForLanguage(language: string): NLEmbedding;
 
@@ -233,6 +241,10 @@ declare class NLModel extends NSObject {
 
 	predictedLabelForString(string: string): string;
 
+	predictedLabelHypothesesForStringMaximumCount(string: string, maximumCount: number): NSDictionary<string, number>;
+
+	predictedLabelHypothesesForTokensMaximumCount(tokens: NSArray<string> | string[], maximumCount: number): NSArray<NSDictionary<string, number>>;
+
 	predictedLabelsForTokens(tokens: NSArray<string> | string[]): NSArray<string>;
 }
 
@@ -384,9 +396,13 @@ declare class NLTagger extends NSObject {
 
 	tagAtIndexUnitSchemeTokenRange(characterIndex: number, unit: NLTokenUnit, scheme: string, tokenRange: interop.Pointer | interop.Reference<NSRange>): string;
 
+	tagHypothesesAtIndexUnitSchemeMaximumCountTokenRange(characterIndex: number, unit: NLTokenUnit, scheme: string, maximumCount: number, tokenRange: interop.Pointer | interop.Reference<NSRange>): NSDictionary<string, number>;
+
 	tagsInRangeUnitSchemeOptionsTokenRanges(range: NSRange, unit: NLTokenUnit, scheme: string, options: NLTaggerOptions, tokenRanges: interop.Pointer | interop.Reference<NSArray<NSValue>>): NSArray<string>;
 
 	tokenRangeAtIndexUnit(characterIndex: number, unit: NLTokenUnit): NSRange;
+
+	tokenRangeForRangeUnit(range: NSRange, unit: NLTokenUnit): NSRange;
 }
 
 declare const enum NLTaggerAssetsResult {
@@ -443,6 +459,8 @@ declare class NLTokenizer extends NSObject {
 	setLanguage(language: string): void;
 
 	tokenRangeAtIndex(characterIndex: number): NSRange;
+
+	tokenRangeForRange(range: NSRange): NSRange;
 
 	tokensForRange(range: NSRange): NSArray<NSValue>;
 }

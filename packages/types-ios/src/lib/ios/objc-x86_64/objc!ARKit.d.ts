@@ -1,4 +1,15 @@
 
+declare const enum ARAltitudeSource {
+
+	Unknown = 0,
+
+	Coarse = 1,
+
+	Precise = 2,
+
+	UserDefined = 3
+}
+
 declare class ARAnchor extends NSObject implements ARAnchorCopying, NSSecureCoding {
 
 	static alloc(): ARAnchor; // inherited from NSObject
@@ -44,6 +55,64 @@ declare var ARAnchorCopying: {
 
 	prototype: ARAnchorCopying;
 };
+
+declare class ARAppClipCodeAnchor extends ARAnchor implements ARTrackable {
+
+	static alloc(): ARAppClipCodeAnchor; // inherited from NSObject
+
+	static new(): ARAppClipCodeAnchor; // inherited from NSObject
+
+	readonly radius: number;
+
+	readonly url: NSURL;
+
+	readonly urlDecodingState: ARAppClipCodeURLDecodingState;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly isTracked: boolean; // inherited from ARTrackable
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare const enum ARAppClipCodeURLDecodingState {
+
+	Decoding = 0,
+
+	Failed = 1,
+
+	Decoded = 2
+}
 
 declare var ARBlendShapeLocationBrowDownLeft: string;
 
@@ -211,6 +280,8 @@ declare class ARBodyTrackingConfiguration extends ARConfiguration {
 
 	static new(): ARBodyTrackingConfiguration; // inherited from NSObject
 
+	appClipCodeTrackingEnabled: boolean;
+
 	autoFocusEnabled: boolean;
 
 	automaticImageScaleEstimationEnabled: boolean;
@@ -228,6 +299,8 @@ declare class ARBodyTrackingConfiguration extends ARConfiguration {
 	planeDetection: ARPlaneDetection;
 
 	wantsHDREnvironmentTextures: boolean;
+
+	static readonly supportsAppClipCodeTracking: boolean;
 }
 
 declare class ARCamera extends NSObject implements NSCopying {
@@ -346,6 +419,15 @@ declare const enum ARCollaborationDataPriority {
 	Optional = 1
 }
 
+declare const enum ARConfidenceLevel {
+
+	Low = 0,
+
+	Medium = 1,
+
+	High = 2
+}
+
 declare class ARConfiguration extends NSObject implements NSCopying {
 
 	static alloc(): ARConfiguration; // inherited from NSObject
@@ -369,6 +451,17 @@ declare class ARConfiguration extends NSObject implements NSCopying {
 	static readonly supportedVideoFormats: NSArray<ARVideoFormat>;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class ARDepthData extends NSObject {
+
+	static alloc(): ARDepthData; // inherited from NSObject
+
+	static new(): ARDepthData; // inherited from NSObject
+
+	readonly confidenceMap: any;
+
+	readonly depthMap: any;
 }
 
 declare class ARDirectionalLightEstimate extends ARLightEstimate {
@@ -424,7 +517,13 @@ declare const enum ARErrorCode {
 
 	MicrophoneUnauthorized = 104,
 
+	LocationUnauthorized = 105,
+
 	WorldTrackingFailed = 200,
+
+	GeoTrackingNotAvailableAtLocation = 201,
+
+	GeoTrackingFailed = 202,
 
 	InvalidReferenceImage = 300,
 
@@ -442,7 +541,9 @@ declare const enum ARErrorCode {
 
 	ObjectMergeFailed = 401,
 
-	FileIOFailed = 500
+	FileIOFailed = 500,
+
+	RequestFailed = 501
 }
 
 declare var ARErrorDomain: string;
@@ -572,11 +673,17 @@ declare class ARFrame extends NSObject implements NSCopying {
 
 	readonly estimatedDepthData: any;
 
+	readonly geoTrackingStatus: ARGeoTrackingStatus;
+
 	readonly lightEstimate: ARLightEstimate;
 
 	readonly rawFeaturePoints: ARPointCloud;
 
+	readonly sceneDepth: ARDepthData;
+
 	readonly segmentationBuffer: any;
+
+	readonly smoothedSceneDepth: ARDepthData;
 
 	readonly timestamp: number;
 
@@ -599,7 +706,230 @@ declare const enum ARFrameSemantics {
 
 	PersonSegmentationWithDepth = 3,
 
-	BodyDetection = 4
+	BodyDetection = 4,
+
+	SceneDepth = 8,
+
+	SmoothedSceneDepth = 16
+}
+
+declare class ARGeoAnchor extends ARAnchor implements ARTrackable {
+
+	static alloc(): ARGeoAnchor; // inherited from NSObject
+
+	static new(): ARGeoAnchor; // inherited from NSObject
+
+	readonly altitude: number;
+
+	readonly altitudeSource: ARAltitudeSource;
+
+	readonly coordinate: CLLocationCoordinate2D;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly isTracked: boolean; // inherited from ARTrackable
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { coordinate: CLLocationCoordinate2D; });
+
+	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; });
+
+	constructor(o: { name: string; coordinate: CLLocationCoordinate2D; });
+
+	constructor(o: { name: string; coordinate: CLLocationCoordinate2D; altitude: number; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithCoordinate(coordinate: CLLocationCoordinate2D): this;
+
+	initWithCoordinateAltitude(coordinate: CLLocationCoordinate2D, altitude: number): this;
+
+	initWithNameCoordinate(name: string, coordinate: CLLocationCoordinate2D): this;
+
+	initWithNameCoordinateAltitude(name: string, coordinate: CLLocationCoordinate2D, altitude: number): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare const enum ARGeoTrackingAccuracy {
+
+	Undetermined = 0,
+
+	Low = 1,
+
+	Medium = 2,
+
+	High = 3
+}
+
+declare class ARGeoTrackingConfiguration extends ARConfiguration {
+
+	static alloc(): ARGeoTrackingConfiguration; // inherited from NSObject
+
+	static checkAvailabilityAtCoordinateCompletionHandler(coordinate: CLLocationCoordinate2D, completionHandler: (p1: boolean, p2: NSError) => void): void;
+
+	static checkAvailabilityWithCompletionHandler(completionHandler: (p1: boolean, p2: NSError) => void): void;
+
+	static new(): ARGeoTrackingConfiguration; // inherited from NSObject
+
+	appClipCodeTrackingEnabled: boolean;
+
+	automaticImageScaleEstimationEnabled: boolean;
+
+	detectionImages: NSSet<ARReferenceImage>;
+
+	detectionObjects: NSSet<ARReferenceObject>;
+
+	environmentTexturing: AREnvironmentTexturing;
+
+	maximumNumberOfTrackedImages: number;
+
+	planeDetection: ARPlaneDetection;
+
+	wantsHDREnvironmentTextures: boolean;
+
+	static readonly supportsAppClipCodeTracking: boolean;
+}
+
+declare const enum ARGeoTrackingState {
+
+	NotAvailable = 0,
+
+	Initializing = 1,
+
+	Localizing = 2,
+
+	Localized = 3
+}
+
+declare const enum ARGeoTrackingStateReason {
+
+	None = 0,
+
+	NotAvailableAtLocation = 1,
+
+	NeedLocationPermissions = 2,
+
+	WorldTrackingUnstable = 3,
+
+	WaitingForLocation = 4,
+
+	WaitingForAvailabilityCheck = 5,
+
+	GeoDataNotLoaded = 6,
+
+	DevicePointedTooLow = 7,
+
+	VisualLocalizationFailed = 8
+}
+
+declare class ARGeoTrackingStatus extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): ARGeoTrackingStatus; // inherited from NSObject
+
+	static new(): ARGeoTrackingStatus; // inherited from NSObject
+
+	readonly accuracy: ARGeoTrackingAccuracy;
+
+	readonly state: ARGeoTrackingState;
+
+	readonly stateReason: ARGeoTrackingStateReason;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare class ARGeometryElement extends NSObject implements NSSecureCoding {
+
+	static alloc(): ARGeometryElement; // inherited from NSObject
+
+	static new(): ARGeometryElement; // inherited from NSObject
+
+	readonly buffer: MTLBuffer;
+
+	readonly bytesPerIndex: number;
+
+	readonly count: number;
+
+	readonly indexCountPerPrimitive: number;
+
+	readonly primitiveType: ARGeometryPrimitiveType;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare const enum ARGeometryPrimitiveType {
+
+	Line = 0,
+
+	Triangle = 1
+}
+
+declare class ARGeometrySource extends NSObject implements NSSecureCoding {
+
+	static alloc(): ARGeometrySource; // inherited from NSObject
+
+	static new(): ARGeometrySource; // inherited from NSObject
+
+	readonly buffer: MTLBuffer;
+
+	readonly componentsPerVector: number;
+
+	readonly count: number;
+
+	readonly format: MTLVertexFormat;
+
+	readonly offset: number;
+
+	readonly stride: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ARHitTestResult extends NSObject {
@@ -725,6 +1055,57 @@ declare const enum ARMatteResolution {
 	Full = 0,
 
 	Half = 1
+}
+
+declare class ARMeshAnchor extends ARAnchor {
+
+	static alloc(): ARMeshAnchor; // inherited from NSObject
+
+	static new(): ARMeshAnchor; // inherited from NSObject
+
+	readonly geometry: ARMeshGeometry;
+}
+
+declare const enum ARMeshClassification {
+
+	None = 0,
+
+	Wall = 1,
+
+	Floor = 2,
+
+	Ceiling = 3,
+
+	Table = 4,
+
+	Seat = 5,
+
+	Window = 6,
+
+	Door = 7
+}
+
+declare class ARMeshGeometry extends NSObject implements NSSecureCoding {
+
+	static alloc(): ARMeshGeometry; // inherited from NSObject
+
+	static new(): ARMeshGeometry; // inherited from NSObject
+
+	readonly classification: ARGeometrySource;
+
+	readonly faces: ARGeometryElement;
+
+	readonly normals: ARGeometrySource;
+
+	readonly vertices: ARGeometrySource;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class ARObjectAnchor extends ARAnchor {
@@ -1274,6 +1655,15 @@ declare var ARSKViewDelegate: {
 	prototype: ARSKViewDelegate;
 };
 
+declare const enum ARSceneReconstruction {
+
+	None = 0,
+
+	Mesh = 1,
+
+	MeshWithClassification = 3
+}
+
 declare const enum ARSegmentationClass {
 
 	None = 0,
@@ -1302,6 +1692,8 @@ declare class ARSession extends NSObject {
 	createReferenceObjectWithTransformCenterExtentCompletionHandler(transform: simd_float4x4, center: interop.Reference<number>, extent: interop.Reference<number>, completionHandler: (p1: ARReferenceObject, p2: NSError) => void): void;
 
 	getCurrentWorldMapWithCompletionHandler(completionHandler: (p1: ARWorldMap, p2: NSError) => void): void;
+
+	getGeoLocationForPointCompletionHandler(position: interop.Reference<number>, completionHandler: (p1: CLLocationCoordinate2D, p2: number, p3: NSError) => void): void;
 
 	pause(): void;
 
@@ -1339,6 +1731,8 @@ interface ARSessionObserver extends NSObjectProtocol {
 
 	sessionCameraDidChangeTrackingState?(session: ARSession, camera: ARCamera): void;
 
+	sessionDidChangeGeoTrackingStatus?(session: ARSession, geoTrackingStatus: ARGeoTrackingStatus): void;
+
 	sessionDidFailWithError?(session: ARSession, error: NSError): void;
 
 	sessionDidOutputAudioSampleBuffer?(session: ARSession, audioSampleBuffer: any): void;
@@ -1371,7 +1765,9 @@ declare const enum ARSessionRunOptions {
 
 	RemoveExistingAnchors = 2,
 
-	StopTrackedRaycasts = 4
+	StopTrackedRaycasts = 4,
+
+	ResetSceneReconstruction = 8
 }
 
 declare class ARSkeleton extends NSObject {
@@ -1433,6 +1829,8 @@ declare class ARSkeletonDefinition extends NSObject {
 
 	indexForJointName(jointName: string): number;
 }
+
+declare function ARSkeletonJointNameForRecognizedPointKey(recognizedPointKey: string): string;
 
 declare var ARSkeletonJointNameHead: string;
 
@@ -1556,6 +1954,10 @@ declare class ARWorldTrackingConfiguration extends ARConfiguration {
 
 	static new(): ARWorldTrackingConfiguration; // inherited from NSObject
 
+	static supportsSceneReconstruction(sceneReconstruction: ARSceneReconstruction): boolean;
+
+	appClipCodeTrackingEnabled: boolean;
+
 	autoFocusEnabled: boolean;
 
 	automaticImageScaleEstimationEnabled: boolean;
@@ -1574,9 +1976,13 @@ declare class ARWorldTrackingConfiguration extends ARConfiguration {
 
 	planeDetection: ARPlaneDetection;
 
+	sceneReconstruction: ARSceneReconstruction;
+
 	userFaceTrackingEnabled: boolean;
 
 	wantsHDREnvironmentTextures: boolean;
+
+	static readonly supportsAppClipCodeTracking: boolean;
 
 	static readonly supportsUserFaceTracking: boolean;
 }

@@ -1,7 +1,0 @@
-{
-  "main": "app.js",
-  "android": {
-    "v8Flags": "--expose_gc",
-    "markingMode": "none"
-  }
-}

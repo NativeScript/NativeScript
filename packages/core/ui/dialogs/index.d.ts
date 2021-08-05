@@ -2,7 +2,7 @@
 /**
  * Defines the input type for prompt dialog.
  */
-export module inputType {
+export namespace inputType {
 	/**
 	 * Plain text input type.
 	 */
@@ -37,7 +37,7 @@ export module inputType {
 /**
  * Defines the capitalization type for prompt dialog.
  */
-export module capitalizationType {
+export namespace capitalizationType {
 	/**
 	 * No automatic capitalization.
 	 */
@@ -142,6 +142,11 @@ export interface CancelableOptions {
 	 * [Android only] Gets or sets if the dialog can be canceled by taping outside of the dialog.
 	 */
 	cancelable?: boolean;
+
+	/**
+	 * [Android only] Sets the theme of the Dialog. Usable themes can be found: https://developer.android.com/reference/android/R.style
+	 */
+	theme?: number;
 }
 
 /**

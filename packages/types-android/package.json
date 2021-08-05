@@ -1,4 +1,11 @@
 {
   "name": "@nativescript/types-android",
-  "version": "0.0.1"
+  "version": "8.0.1",
+  "description": "NativeScript Types for Android.",
+  "homepage": "https://nativescript.org",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/NativeScript/NativeScript"
+  },
+  "license": "Apache-2.0"
 }

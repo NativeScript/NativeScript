@@ -1,6 +1,7 @@
-import { dip, px } from '../ui/core/view';
+import { CoreTypes } from '../core-types';
 
 export * from './mainthread-helper';
+export * from './macrotask-scheduler';
 export { Source } from './debug';
 
 export * from './native-helper';
@@ -67,19 +68,19 @@ export namespace layout {
 	 * Convert device independent pixels to device pixels - dip to px.
 	 * @param value - The pixel to convert.
 	 */
-	export function toDevicePixels(value: dip): px;
+	export function toDevicePixels(value: CoreTypes.dip): CoreTypes.px;
 
 	/**
 	 * Convert device pixels to device independent pixels - px to dip.
 	 * @param value - The pixel to convert.
 	 */
-	export function toDeviceIndependentPixels(value: px): dip;
+	export function toDeviceIndependentPixels(value: CoreTypes.px): CoreTypes.dip;
 
 	/**
 	 * Rounds value used in layout.
 	 * @param px to round.
 	 */
-	export function round(px: px): px;
+	export function round(px: CoreTypes.px): CoreTypes.px;
 
 	/**
 	 * Converts device pixels to device independent pixes and measure the nativeView.
@@ -131,7 +132,7 @@ export namespace ad {
 	/**
 	 * Utility module dealing with some android collections.
 	 */
-	module collections {
+	namespace collections {
 		/**
 		 * Converts string array into a String [hash set](http://developer.android.com/reference/java/util/HashSet.html).
 		 * @param str - An array of strings to convert.
@@ -148,7 +149,7 @@ export namespace ad {
 	/**
 	 * Utility module related to android resources.
 	 */
-	export module resources {
+	export namespace resources {
 		/**
 		 * Gets the drawable id from a given name.
 		 * @param name - Name of the resource.
@@ -191,6 +192,12 @@ export function GC();
  * @param object The Java/Objective-C object to release.
  */
 export function releaseNativeObject(object: any /*java.lang.Object | NSObject*/);
+
+/**
+ * Queues the passed function to be ran in a macroTask
+ * @param task the function to execute as a macroTask
+ */
+export function queueMacrotask(task: () => void): void;
 
 /**
  * Checks if the current thread is the main thread. Directly calls the passed function
@@ -279,3 +286,8 @@ export function eliminateDuplicates(arr: Array<any>): Array<any>;
  * Checks whether the application is running on real device and not on simulator/emulator.
  */
 export function isRealDevice(): boolean;
+
+/**
+ * Hides the soft input method, usually a soft keyboard.
+ */
+export function dismissSoftInput(nativeView?: any): void;

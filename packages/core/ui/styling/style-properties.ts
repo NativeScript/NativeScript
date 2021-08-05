@@ -3,8 +3,6 @@ import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, Inher
 import { Style } from '../styling/style';
 import { Transformation, TransformationValue, TransformFunctionsInfo } from '../animation';
 
-import { dip, px, percent } from '../core/view';
-
 import { Color } from '../../color';
 import { Font, parseFont, FontStyle, FontWeight } from '../../ui/styling/font';
 import { layout, hasDuplicates } from '../../utils';
@@ -14,20 +12,15 @@ import { radiansToDegrees } from '../../utils/number-utils';
 
 import { decompose2DTransformMatrix, getTransformMatrix, matrixArrayToCssMatrix, multiplyAffine2d } from '../../matrix';
 import { Trace } from '../../trace';
+import { CoreTypes } from '../../core-types';
 
 import * as parser from '../../css/parser';
 import { LinearGradient } from './linear-gradient';
+import { CSSShadow, parseCSSShadow } from './css-shadow';
 
-export type LengthDipUnit = { readonly unit: 'dip'; readonly value: dip };
-export type LengthPxUnit = { readonly unit: 'px'; readonly value: px };
-export type LengthPercentUnit = { readonly unit: '%'; readonly value: percent };
-
-export type Length = 'auto' | dip | LengthDipUnit | LengthPxUnit;
-export type PercentLength = 'auto' | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
-
-function equalsCommon(a: Length, b: Length): boolean;
-function equalsCommon(a: PercentLength, b: PercentLength): boolean;
-function equalsCommon(a: PercentLength, b: PercentLength): boolean {
+function equalsCommon(a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean;
+function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
+function equalsCommon(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean {
 	if (a == 'auto') {
 		// tslint:disable-line
 		return b == 'auto'; // tslint:disable-line
@@ -58,7 +51,7 @@ function equalsCommon(a: PercentLength, b: PercentLength): boolean {
 	return a.value == b.value && a.unit == b.unit; // tslint:disable-line
 }
 
-function convertToStringCommon(length: Length | PercentLength): string {
+function convertToStringCommon(length: CoreTypes.LengthType | CoreTypes.PercentLengthType): string {
 	if (length == 'auto') {
 		// tslint:disable-line
 		return 'auto';
@@ -76,7 +69,7 @@ function convertToStringCommon(length: Length | PercentLength): string {
 	return val + length.unit;
 }
 
-function toDevicePixelsCommon(length: PercentLength, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
+function toDevicePixelsCommon(length: CoreTypes.PercentLengthType, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
 	if (length == 'auto') {
 		// tslint:disable-line
 		return auto;
@@ -99,16 +92,16 @@ function toDevicePixelsCommon(length: PercentLength, auto: number = Number.NaN, 
 }
 
 export namespace PercentLength {
-	export function parse(fromValue: string | Length): PercentLength {
+	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.PercentLengthType {
 		if (fromValue == 'auto') {
 			// tslint:disable-line
 			return 'auto';
 		}
 		if (typeof fromValue === 'string') {
 			let stringValue = fromValue.trim();
-			let percentIndex = stringValue.indexOf('%');
+			const percentIndex = stringValue.indexOf('%');
 			if (percentIndex !== -1) {
-				let value: percent;
+				let value: CoreTypes.percent;
 				// if only % or % is not last we treat it as invalid value.
 				if (percentIndex !== stringValue.length - 1 || percentIndex === 0) {
 					value = Number.NaN;
@@ -124,14 +117,14 @@ export namespace PercentLength {
 				return { unit: '%', value };
 			} else if (stringValue.indexOf('px') !== -1) {
 				stringValue = stringValue.replace('px', '').trim();
-				let value: px = parseFloat(stringValue);
+				const value: CoreTypes.px = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${fromValue}`);
 				}
 
 				return { unit: 'px', value };
 			} else {
-				let value: dip = parseFloat(stringValue);
+				const value: CoreTypes.dip = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${fromValue}`);
 				}
@@ -144,18 +137,18 @@ export namespace PercentLength {
 	}
 
 	export const equals: {
-		(a: PercentLength, b: PercentLength): boolean;
+		(a: CoreTypes.PercentLengthType, b: CoreTypes.PercentLengthType): boolean;
 	} = equalsCommon;
 	export const toDevicePixels: {
-		(length: PercentLength, auto: number, parentAvailableWidth: number): number;
+		(length: CoreTypes.PercentLengthType, auto: number, parentAvailableWidth: number): number;
 	} = toDevicePixelsCommon;
 	export const convertToString: {
-		(length: PercentLength): string;
+		(length: CoreTypes.PercentLengthType): string;
 	} = convertToStringCommon;
 }
 
 export namespace Length {
-	export function parse(fromValue: string | Length): Length {
+	export function parse(fromValue: string | CoreTypes.LengthType): CoreTypes.LengthType {
 		if (fromValue == 'auto') {
 			// tslint:disable-line
 			return 'auto';
@@ -164,14 +157,14 @@ export namespace Length {
 			let stringValue = fromValue.trim();
 			if (stringValue.indexOf('px') !== -1) {
 				stringValue = stringValue.replace('px', '').trim();
-				let value: px = parseFloat(stringValue);
+				const value: CoreTypes.px = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${stringValue}`);
 				}
 
 				return { unit: 'px', value };
 			} else {
-				let value: dip = parseFloat(stringValue);
+				const value: CoreTypes.dip = parseFloat(stringValue);
 				if (isNaN(value) || !isFinite(value)) {
 					throw new Error(`Invalid value: ${stringValue}`);
 				}
@@ -182,18 +175,18 @@ export namespace Length {
 			return fromValue;
 		}
 	}
-	export const equals: { (a: Length, b: Length): boolean } = equalsCommon;
+	export const equals: { (a: CoreTypes.LengthType, b: CoreTypes.LengthType): boolean } = equalsCommon;
 	export const toDevicePixels: {
-		(length: Length, auto?: number): number;
+		(length: CoreTypes.LengthType, auto?: number): number;
 	} = toDevicePixelsCommon;
 	export const convertToString: {
-		(length: Length): string;
+		(length: CoreTypes.LengthType): string;
 	} = convertToStringCommon;
 }
 
-export const zeroLength: Length = { value: 0, unit: 'px' };
+export const zeroLength: CoreTypes.LengthType = { value: 0, unit: 'px' };
 
-export const minWidthProperty = new CssProperty<Style, Length>({
+export const minWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minWidth',
 	cssName: 'min-width',
 	defaultValue: zeroLength,
@@ -211,7 +204,7 @@ export const minWidthProperty = new CssProperty<Style, Length>({
 });
 minWidthProperty.register(Style);
 
-export const minHeightProperty = new CssProperty<Style, Length>({
+export const minHeightProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'minHeight',
 	cssName: 'min-height',
 	defaultValue: zeroLength,
@@ -229,7 +222,7 @@ export const minHeightProperty = new CssProperty<Style, Length>({
 });
 minHeightProperty.register(Style);
 
-export const widthProperty = new CssAnimationProperty<Style, PercentLength>({
+export const widthProperty = new CssAnimationProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'width',
 	cssName: 'width',
 	defaultValue: 'auto',
@@ -248,7 +241,7 @@ export const widthProperty = new CssAnimationProperty<Style, PercentLength>({
 });
 widthProperty.register(Style);
 
-export const heightProperty = new CssAnimationProperty<Style, PercentLength>({
+export const heightProperty = new CssAnimationProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'height',
 	cssName: 'height',
 	defaultValue: 'auto',
@@ -267,7 +260,7 @@ export const heightProperty = new CssAnimationProperty<Style, PercentLength>({
 });
 heightProperty.register(Style);
 
-const marginProperty = new ShorthandProperty<Style, string | PercentLength>({
+const marginProperty = new ShorthandProperty<Style, string | CoreTypes.PercentLengthType>({
 	name: 'margin',
 	cssName: 'margin',
 	getter: function (this: Style) {
@@ -281,7 +274,7 @@ const marginProperty = new ShorthandProperty<Style, string | PercentLength>({
 });
 marginProperty.register(Style);
 
-export const marginLeftProperty = new CssProperty<Style, PercentLength>({
+export const marginLeftProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginLeft',
 	cssName: 'margin-left',
 	defaultValue: zeroLength,
@@ -291,7 +284,7 @@ export const marginLeftProperty = new CssProperty<Style, PercentLength>({
 });
 marginLeftProperty.register(Style);
 
-export const marginRightProperty = new CssProperty<Style, PercentLength>({
+export const marginRightProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginRight',
 	cssName: 'margin-right',
 	defaultValue: zeroLength,
@@ -301,7 +294,7 @@ export const marginRightProperty = new CssProperty<Style, PercentLength>({
 });
 marginRightProperty.register(Style);
 
-export const marginTopProperty = new CssProperty<Style, PercentLength>({
+export const marginTopProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginTop',
 	cssName: 'margin-top',
 	defaultValue: zeroLength,
@@ -311,7 +304,7 @@ export const marginTopProperty = new CssProperty<Style, PercentLength>({
 });
 marginTopProperty.register(Style);
 
-export const marginBottomProperty = new CssProperty<Style, PercentLength>({
+export const marginBottomProperty = new CssProperty<Style, CoreTypes.PercentLengthType>({
 	name: 'marginBottom',
 	cssName: 'margin-bottom',
 	defaultValue: zeroLength,
@@ -321,7 +314,7 @@ export const marginBottomProperty = new CssProperty<Style, PercentLength>({
 });
 marginBottomProperty.register(Style);
 
-const paddingProperty = new ShorthandProperty<Style, string | Length>({
+const paddingProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
 	name: 'padding',
 	cssName: 'padding',
 	getter: function (this: Style) {
@@ -335,7 +328,7 @@ const paddingProperty = new ShorthandProperty<Style, string | Length>({
 });
 paddingProperty.register(Style);
 
-export const paddingLeftProperty = new CssProperty<Style, Length>({
+export const paddingLeftProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingLeft',
 	cssName: 'padding-left',
 	defaultValue: zeroLength,
@@ -353,7 +346,7 @@ export const paddingLeftProperty = new CssProperty<Style, Length>({
 });
 paddingLeftProperty.register(Style);
 
-export const paddingRightProperty = new CssProperty<Style, Length>({
+export const paddingRightProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingRight',
 	cssName: 'padding-right',
 	defaultValue: zeroLength,
@@ -371,7 +364,7 @@ export const paddingRightProperty = new CssProperty<Style, Length>({
 });
 paddingRightProperty.register(Style);
 
-export const paddingTopProperty = new CssProperty<Style, Length>({
+export const paddingTopProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingTop',
 	cssName: 'padding-top',
 	defaultValue: zeroLength,
@@ -389,7 +382,7 @@ export const paddingTopProperty = new CssProperty<Style, Length>({
 });
 paddingTopProperty.register(Style);
 
-export const paddingBottomProperty = new CssProperty<Style, Length>({
+export const paddingBottomProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'paddingBottom',
 	cssName: 'padding-bottom',
 	defaultValue: zeroLength,
@@ -407,47 +400,21 @@ export const paddingBottomProperty = new CssProperty<Style, Length>({
 });
 paddingBottomProperty.register(Style);
 
-export type HorizontalAlignment = 'left' | 'center' | 'right' | 'stretch';
-export namespace HorizontalAlignment {
-	export const LEFT: 'left' = 'left';
-	export const CENTER: 'center' = 'center';
-	export const RIGHT: 'right' = 'right';
-	export const STRETCH: 'stretch' = 'stretch';
-	export const isValid = makeValidator<HorizontalAlignment>(LEFT, CENTER, RIGHT, STRETCH);
-	export const parse = makeParser<HorizontalAlignment>(isValid);
-}
-
-export const horizontalAlignmentProperty = new CssProperty<Style, HorizontalAlignment>({
+export const horizontalAlignmentProperty = new CssProperty<Style, CoreTypes.HorizontalAlignmentType>({
 	name: 'horizontalAlignment',
 	cssName: 'horizontal-align',
-	defaultValue: HorizontalAlignment.STRETCH,
+	defaultValue: CoreTypes.HorizontalAlignment.stretch,
 	affectsLayout: global.isIOS,
-	valueConverter: HorizontalAlignment.parse,
+	valueConverter: CoreTypes.HorizontalAlignment.parse,
 });
 horizontalAlignmentProperty.register(Style);
 
-export type VerticalAlignment = 'top' | 'middle' | 'bottom' | 'stretch' | 'text-top' | 'text-bottom' | 'super' | 'sub' | 'baseline';
-export namespace VerticalAlignment {
-	export const TOP: 'top' = 'top';
-	export const MIDDLE: 'middle' = 'middle';
-	export const BOTTOM: 'bottom' = 'bottom';
-	export const STRETCH: 'stretch' = 'stretch';
-	export const TEXTTOP: 'text-top' = 'text-top';
-	export const TEXTBOTTOM: 'text-bottom' = 'text-bottom';
-	export const SUPER: 'super' = 'super';
-	export const SUB: 'sub' = 'sub';
-	export const BASELINE: 'baseline' = 'baseline';
-	export const isValid = makeValidator<VerticalAlignment>(TOP, MIDDLE, BOTTOM, STRETCH, TEXTTOP, TEXTBOTTOM, SUPER, SUB, BASELINE);
-	export const parse = (value: string) => (value.toLowerCase() === 'center' ? MIDDLE : parseStrict(value));
-	const parseStrict = makeParser<VerticalAlignment>(isValid);
-}
-
-export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignment>({
+export const verticalAlignmentProperty = new CssProperty<Style, CoreTypes.VerticalAlignmentTextType>({
 	name: 'verticalAlignment',
 	cssName: 'vertical-align',
-	defaultValue: VerticalAlignment.STRETCH,
+	defaultValue: CoreTypes.VerticalAlignmentText.stretch,
 	affectsLayout: global.isIOS,
-	valueConverter: VerticalAlignment.parse,
+	valueConverter: CoreTypes.VerticalAlignmentText.parse,
 });
 verticalAlignmentProperty.register(Style);
 
@@ -460,7 +427,7 @@ interface Thickness {
 
 function parseThickness(value: string): Thickness {
 	if (typeof value === 'string') {
-		let arr = value.split(/[ ,]+/);
+		const arr = value.split(/[ ,]+/);
 
 		let top: string;
 		let right: string;
@@ -502,9 +469,9 @@ function parseThickness(value: string): Thickness {
 	}
 }
 
-function convertToMargins(this: void, value: string | PercentLength): [CssProperty<any, any>, any][] {
+function convertToMargins(this: void, value: string | CoreTypes.PercentLengthType): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
-		let thickness = parseThickness(value);
+		const thickness = parseThickness(value);
 
 		return [
 			[marginTopProperty, PercentLength.parse(thickness.top)],
@@ -522,9 +489,9 @@ function convertToMargins(this: void, value: string | PercentLength): [CssProper
 	}
 }
 
-function convertToPaddings(this: void, value: string | Length): [CssProperty<any, any>, any][] {
+function convertToPaddings(this: void, value: string | CoreTypes.LengthType): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string' && value !== 'auto') {
-		let thickness = parseThickness(value);
+		const thickness = parseThickness(value);
 
 		return [
 			[paddingTopProperty, Length.parse(thickness.top)],
@@ -590,7 +557,7 @@ export const scaleYProperty = new CssAnimationProperty<Style, number>({
 });
 scaleYProperty.register(Style);
 
-function parseDIPs(value: string): dip {
+function parseDIPs(value: string): CoreTypes.dip {
 	if (value.indexOf('px') !== -1) {
 		return layout.toDeviceIndependentPixels(parseFloat(value.replace('px', '').trim()));
 	} else {
@@ -598,7 +565,7 @@ function parseDIPs(value: string): dip {
 	}
 }
 
-export const translateXProperty = new CssAnimationProperty<Style, dip>({
+export const translateXProperty = new CssAnimationProperty<Style, CoreTypes.dip>({
 	name: 'translateX',
 	cssName: 'translateX',
 	defaultValue: 0,
@@ -606,7 +573,7 @@ export const translateXProperty = new CssAnimationProperty<Style, dip>({
 });
 translateXProperty.register(Style);
 
-export const translateYProperty = new CssAnimationProperty<Style, dip>({
+export const translateYProperty = new CssAnimationProperty<Style, CoreTypes.dip>({
 	name: 'translateY',
 	cssName: 'translateY',
 	defaultValue: 0,
@@ -618,13 +585,13 @@ const transformProperty = new ShorthandProperty<Style, string>({
 	name: 'transform',
 	cssName: 'transform',
 	getter: function (this: Style) {
-		let scaleX = this.scaleX;
-		let scaleY = this.scaleY;
-		let translateX = this.translateX;
-		let translateY = this.translateY;
-		let rotate = this.rotate;
-		let rotateX = this.rotateX;
-		let rotateY = this.rotateY;
+		const scaleX = this.scaleX;
+		const scaleY = this.scaleY;
+		const translateX = this.translateX;
+		const translateY = this.translateY;
+		const rotate = this.rotate;
+		const rotateX = this.rotateX;
+		const rotateY = this.rotateY;
 		let result = '';
 		if (translateX !== 0 || translateY !== 0) {
 			result += `translate(${translateX}, ${translateY}) `;
@@ -749,7 +716,7 @@ export function transformConverter(text: string): TransformFunctionsInfo {
 // properties is faster than using more specific regex
 // https://jsperf.com/cssparse
 function parseTransformString(text: string): Transformation[] {
-	let matches: Transformation[] = [];
+	const matches: Transformation[] = [];
 	let match;
 
 	while ((match = TRANSFORM_SPLITTER.exec(text)) !== null) {
@@ -801,8 +768,7 @@ export const backgroundImageProperty = new CssProperty<Style, string | LinearGra
 	name: 'backgroundImage',
 	cssName: 'background-image',
 	valueChanged: (target, oldValue, newValue) => {
-		const background = target.backgroundInternal.withImage(newValue);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withImage(newValue);
 	},
 	equalityComparer: (value1, value2) => {
 		if (value1 instanceof LinearGradient && value2 instanceof LinearGradient) {
@@ -815,8 +781,7 @@ export const backgroundImageProperty = new CssProperty<Style, string | LinearGra
 		if (typeof value === 'string') {
 			const parsed = parser.parseBackground(value);
 			if (parsed) {
-				const background = parsed.value;
-				value = typeof background.image === 'object' ? LinearGradient.parse(background.image) : value;
+				value = typeof parsed.value.image === 'object' ? LinearGradient.parse(parsed.value.image) : value;
 			}
 		}
 
@@ -829,31 +794,19 @@ export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
 	name: 'backgroundColor',
 	cssName: 'background-color',
 	valueChanged: (target, oldValue, newValue) => {
-		const background = target.backgroundInternal.withColor(newValue);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withColor(newValue);
 	},
 	equalityComparer: Color.equals,
 	valueConverter: (value) => new Color(value),
 });
 backgroundColorProperty.register(Style);
 
-export type BackgroundRepeat = 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat';
-export namespace BackgroundRepeat {
-	export const REPEAT: 'repeat' = 'repeat';
-	export const REPEAT_X: 'repeat-x' = 'repeat-x';
-	export const REPEAT_Y: 'repeat-y' = 'repeat-y';
-	export const NO_REPEAT: 'no-repeat' = 'no-repeat';
-	export const isValid = makeValidator<BackgroundRepeat>(REPEAT, REPEAT_X, REPEAT_Y, NO_REPEAT);
-	export const parse = makeParser<BackgroundRepeat>(isValid);
-}
-
-export const backgroundRepeatProperty = new CssProperty<Style, BackgroundRepeat>({
+export const backgroundRepeatProperty = new CssProperty<Style, CoreTypes.BackgroundRepeatType>({
 	name: 'backgroundRepeat',
 	cssName: 'background-repeat',
-	valueConverter: BackgroundRepeat.parse,
+	valueConverter: CoreTypes.BackgroundRepeat.parse,
 	valueChanged: (target, oldValue, newValue) => {
-		const background = target.backgroundInternal.withRepeat(newValue);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withRepeat(newValue);
 	},
 });
 backgroundRepeatProperty.register(Style);
@@ -862,8 +815,7 @@ export const backgroundSizeProperty = new CssProperty<Style, string>({
 	name: 'backgroundSize',
 	cssName: 'background-size',
 	valueChanged: (target, oldValue, newValue) => {
-		const background = target.backgroundInternal.withSize(newValue);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withSize(newValue);
 	},
 });
 backgroundSizeProperty.register(Style);
@@ -872,8 +824,7 @@ export const backgroundPositionProperty = new CssProperty<Style, string>({
 	name: 'backgroundPosition',
 	cssName: 'background-position',
 	valueChanged: (target, oldValue, newValue) => {
-		const background = target.backgroundInternal.withPosition(newValue);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withPosition(newValue);
 	},
 });
 backgroundPositionProperty.register(Style);
@@ -910,7 +861,7 @@ function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>
 }
 
 function parseBorderColor(value: string): { top: Color; right: Color; bottom: Color; left: Color } {
-	let result: { top: Color; right: Color; bottom: Color; left: Color } = {
+	const result: { top: Color; right: Color; bottom: Color; left: Color } = {
 		top: undefined,
 		right: undefined,
 		bottom: undefined,
@@ -922,33 +873,33 @@ function parseBorderColor(value: string): { top: Color; right: Color; bottom: Co
 		return result;
 	}
 
-	let arr = value.split(/[ ,]+/);
+	const arr = value.split(/[ ,]+/);
 	if (arr.length === 1) {
-		let arr0 = new Color(arr[0]);
+		const arr0 = new Color(arr[0]);
 		result.top = arr0;
 		result.right = arr0;
 		result.bottom = arr0;
 		result.left = arr0;
 	} else if (arr.length === 2) {
-		let arr0 = new Color(arr[0]);
-		let arr1 = new Color(arr[1]);
+		const arr0 = new Color(arr[0]);
+		const arr1 = new Color(arr[1]);
 		result.top = arr0;
 		result.right = arr1;
 		result.bottom = arr0;
 		result.left = arr1;
 	} else if (arr.length === 3) {
-		let arr0 = new Color(arr[0]);
-		let arr1 = new Color(arr[1]);
-		let arr2 = new Color(arr[2]);
+		const arr0 = new Color(arr[0]);
+		const arr1 = new Color(arr[1]);
+		const arr2 = new Color(arr[2]);
 		result.top = arr0;
 		result.right = arr1;
 		result.bottom = arr2;
 		result.left = arr1;
 	} else if (arr.length === 4) {
-		let arr0 = new Color(arr[0]);
-		let arr1 = new Color(arr[1]);
-		let arr2 = new Color(arr[2]);
-		let arr3 = new Color(arr[3]);
+		const arr0 = new Color(arr[0]);
+		const arr1 = new Color(arr[1]);
+		const arr2 = new Color(arr[2]);
+		const arr3 = new Color(arr[3]);
 		result.top = arr0;
 		result.right = arr1;
 		result.bottom = arr2;
@@ -973,7 +924,7 @@ const borderColorProperty = new ShorthandProperty<Style, string | Color>({
 	},
 	converter: function (value) {
 		if (typeof value === 'string') {
-			let fourColors = parseBorderColor(value);
+			const fourColors = parseBorderColor(value);
 
 			return [
 				[borderTopColorProperty, fourColors.top],
@@ -997,8 +948,7 @@ export const borderTopColorProperty = new CssProperty<Style, Color>({
 	name: 'borderTopColor',
 	cssName: 'border-top-color',
 	valueChanged: (target, oldValue, newValue) => {
-		const background = target.backgroundInternal.withBorderTopColor(newValue);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderTopColor(newValue);
 	},
 	equalityComparer: Color.equals,
 	valueConverter: (value) => new Color(value),
@@ -1009,8 +959,7 @@ export const borderRightColorProperty = new CssProperty<Style, Color>({
 	name: 'borderRightColor',
 	cssName: 'border-right-color',
 	valueChanged: (target, oldValue, newValue) => {
-		const background = target.backgroundInternal.withBorderRightColor(newValue);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderRightColor(newValue);
 	},
 	equalityComparer: Color.equals,
 	valueConverter: (value) => new Color(value),
@@ -1021,8 +970,7 @@ export const borderBottomColorProperty = new CssProperty<Style, Color>({
 	name: 'borderBottomColor',
 	cssName: 'border-bottom-color',
 	valueChanged: (target, oldValue, newValue) => {
-		const background = target.backgroundInternal.withBorderBottomColor(newValue);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderBottomColor(newValue);
 	},
 	equalityComparer: Color.equals,
 	valueConverter: (value) => new Color(value),
@@ -1033,8 +981,7 @@ export const borderLeftColorProperty = new CssProperty<Style, Color>({
 	name: 'borderLeftColor',
 	cssName: 'border-left-color',
 	valueChanged: (target, oldValue, newValue) => {
-		const background = target.backgroundInternal.withBorderLeftColor(newValue);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderLeftColor(newValue);
 	},
 	equalityComparer: Color.equals,
 	valueConverter: (value) => new Color(value),
@@ -1042,7 +989,7 @@ export const borderLeftColorProperty = new CssProperty<Style, Color>({
 borderLeftColorProperty.register(Style);
 
 // Border Width properties.
-const borderWidthProperty = new ShorthandProperty<Style, string | Length>({
+const borderWidthProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
 	name: 'borderWidth',
 	cssName: 'border-width',
 	getter: function (this: Style) {
@@ -1054,7 +1001,7 @@ const borderWidthProperty = new ShorthandProperty<Style, string | Length>({
 	},
 	converter: function (value) {
 		if (typeof value === 'string' && value !== 'auto') {
-			let borderWidths = parseThickness(value);
+			const borderWidths = parseThickness(value);
 
 			return [
 				[borderTopWidthProperty, borderWidths.top],
@@ -1074,14 +1021,14 @@ const borderWidthProperty = new ShorthandProperty<Style, string | Length>({
 });
 borderWidthProperty.register(Style);
 
-export const borderTopWidthProperty = new CssProperty<Style, Length>({
+export const borderTopWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderTopWidth',
 	cssName: 'border-top-width',
 	defaultValue: zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1092,21 +1039,20 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		const background = target.backgroundInternal.withBorderTopWidth(value);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderTopWidth(value);
 	},
 	valueConverter: Length.parse,
 });
 borderTopWidthProperty.register(Style);
 
-export const borderRightWidthProperty = new CssProperty<Style, Length>({
+export const borderRightWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderRightWidth',
 	cssName: 'border-right-width',
 	defaultValue: zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1117,21 +1063,20 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		const background = target.backgroundInternal.withBorderRightWidth(value);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderRightWidth(value);
 	},
 	valueConverter: Length.parse,
 });
 borderRightWidthProperty.register(Style);
 
-export const borderBottomWidthProperty = new CssProperty<Style, Length>({
+export const borderBottomWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderBottomWidth',
 	cssName: 'border-bottom-width',
 	defaultValue: zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1142,21 +1087,20 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		const background = target.backgroundInternal.withBorderBottomWidth(value);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderBottomWidth(value);
 	},
 	valueConverter: Length.parse,
 });
 borderBottomWidthProperty.register(Style);
 
-export const borderLeftWidthProperty = new CssProperty<Style, Length>({
+export const borderLeftWidthProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderLeftWidth',
 	cssName: 'border-left-width',
 	defaultValue: zeroLength,
 	affectsLayout: global.isIOS,
 	equalityComparer: Length.equals,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
 		}
@@ -1167,15 +1111,14 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}
-		const background = target.backgroundInternal.withBorderLeftWidth(value);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderLeftWidth(value);
 	},
 	valueConverter: Length.parse,
 });
 borderLeftWidthProperty.register(Style);
 
 // Border Radius properties.
-const borderRadiusProperty = new ShorthandProperty<Style, string | Length>({
+const borderRadiusProperty = new ShorthandProperty<Style, string | CoreTypes.LengthType>({
 	name: 'borderRadius',
 	cssName: 'border-radius',
 	getter: function (this: Style) {
@@ -1187,7 +1130,7 @@ const borderRadiusProperty = new ShorthandProperty<Style, string | Length>({
 	},
 	converter: function (value) {
 		if (typeof value === 'string') {
-			let borderRadius = parseThickness(value);
+			const borderRadius = parseThickness(value);
 
 			return [
 				[borderTopLeftRadiusProperty, borderRadius.top],
@@ -1207,84 +1150,92 @@ const borderRadiusProperty = new ShorthandProperty<Style, string | Length>({
 });
 borderRadiusProperty.register(Style);
 
-export const borderTopLeftRadiusProperty = new CssProperty<Style, Length>({
+export const borderTopLeftRadiusProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderTopLeftRadius',
 	cssName: 'border-top-left-radius',
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-top-left-radius should be Non-Negative Finite number. Value: ${value}`);
 		}
-		const background = target.backgroundInternal.withBorderTopLeftRadius(value);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderTopLeftRadius(value);
 	},
 	valueConverter: Length.parse,
 });
 borderTopLeftRadiusProperty.register(Style);
 
-export const borderTopRightRadiusProperty = new CssProperty<Style, Length>({
+export const borderTopRightRadiusProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderTopRightRadius',
 	cssName: 'border-top-right-radius',
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-top-right-radius should be Non-Negative Finite number. Value: ${value}`);
 		}
-		const background = target.backgroundInternal.withBorderTopRightRadius(value);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderTopRightRadius(value);
 	},
 	valueConverter: Length.parse,
 });
 borderTopRightRadiusProperty.register(Style);
 
-export const borderBottomRightRadiusProperty = new CssProperty<Style, Length>({
+export const borderBottomRightRadiusProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderBottomRightRadius',
 	cssName: 'border-bottom-right-radius',
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-bottom-right-radius should be Non-Negative Finite number. Value: ${value}`);
 		}
-		const background = target.backgroundInternal.withBorderBottomRightRadius(value);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderBottomRightRadius(value);
 	},
 	valueConverter: Length.parse,
 });
 borderBottomRightRadiusProperty.register(Style);
 
-export const borderBottomLeftRadiusProperty = new CssProperty<Style, Length>({
+export const borderBottomLeftRadiusProperty = new CssProperty<Style, CoreTypes.LengthType>({
 	name: 'borderBottomLeftRadius',
 	cssName: 'border-bottom-left-radius',
 	defaultValue: 0,
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		let value = Length.toDevicePixels(newValue, 0);
+		const value = Length.toDevicePixels(newValue, 0);
 		if (!isNonNegativeFiniteNumber(value)) {
 			throw new Error(`border-bottom-left-radius should be Non-Negative Finite number. Value: ${value}`);
 		}
-		const background = target.backgroundInternal.withBorderBottomLeftRadius(value);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withBorderBottomLeftRadius(value);
 	},
 	valueConverter: Length.parse,
 });
 borderBottomLeftRadiusProperty.register(Style);
 
+const boxShadowProperty = new CssProperty<Style, CSSShadow>({
+	name: 'boxShadow',
+	cssName: 'box-shadow',
+	valueChanged: (target, oldValue, newValue) => {
+		target.backgroundInternal = target.backgroundInternal.withBoxShadow(newValue);
+	},
+	valueConverter: (value) => {
+		return parseCSSShadow(value);
+	},
+});
+boxShadowProperty.register(Style);
+
 function isNonNegativeFiniteNumber(value: number): boolean {
 	return isFinite(value) && !isNaN(value) && value >= 0;
 }
 
-let supportedPaths = ['rect', 'circle', 'ellipse', 'polygon', 'inset'];
+const supportedPaths = ['rect', 'circle', 'ellipse', 'polygon', 'inset'];
 function isClipPathValid(value: string): boolean {
 	if (!value) {
 		return true;
 	}
-	let functionName = value.substring(0, value.indexOf('(')).trim();
+	const functionName = value.substring(0, value.indexOf('(')).trim();
 
 	return supportedPaths.indexOf(functionName) !== -1;
 }
@@ -1297,14 +1248,13 @@ export const clipPathProperty = new CssProperty<Style, string>({
 			throw new Error('clip-path is not valid.');
 		}
 
-		const background = target.backgroundInternal.withClipPath(newValue);
-		target.backgroundInternal = background;
+		target.backgroundInternal = target.backgroundInternal.withClipPath(newValue);
 	},
 });
 clipPathProperty.register(Style);
 
 function isFloatValueConverter(value: string): number {
-	let newValue = parseFloat(value);
+	const newValue = parseFloat(value);
 	if (isNaN(newValue)) {
 		throw new Error(`Invalid value: ${newValue}`);
 	}
@@ -1320,7 +1270,7 @@ export const zIndexProperty = new CssProperty<Style, number>({
 zIndexProperty.register(Style);
 
 function opacityConverter(value: any): number {
-	let newValue = parseFloat(value);
+	const newValue = parseFloat(value);
 	if (!isNaN(newValue) && 0 <= newValue && newValue <= 1) {
 		return newValue;
 	}
@@ -1355,7 +1305,7 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 	cssName: 'font-family',
 	affectsLayout: global.isIOS,
 	valueChanged: (target, oldValue, newValue) => {
-		let currentFont = target.fontInternal || Font.default;
+		const currentFont = target.fontInternal || Font.default;
 		if (currentFont.fontFamily !== newValue) {
 			const newFont = currentFont.withFontFamily(newValue);
 			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
@@ -1363,6 +1313,27 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 	},
 });
 fontFamilyProperty.register(Style);
+
+export const fontScaleProperty = new InheritedCssProperty<Style, number>({
+	name: '_fontScale',
+	cssName: '_fontScale',
+	affectsLayout: global.isIOS,
+	valueChanged: (target, oldValue, newValue) => {
+		if (global.isIOS) {
+			if (target.viewRef['handleFontSize'] === true) {
+				return;
+			}
+
+			const currentFont = target.fontInternal || Font.default;
+			if (currentFont.fontScale !== newValue) {
+				const newFont = currentFont.withFontScale(newValue);
+				target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
+			}
+		}
+	},
+	valueConverter: (v) => parseFloat(v),
+});
+fontScaleProperty.register(Style);
 
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 	name: 'fontSize',
@@ -1372,7 +1343,7 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 		if (target.viewRef['handleFontSize'] === true) {
 			return;
 		}
-		let currentFont = target.fontInternal || Font.default;
+		const currentFont = target.fontInternal || Font.default;
 		if (currentFont.fontSize !== newValue) {
 			const newFont = currentFont.withFontSize(newValue);
 			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
@@ -1389,7 +1360,7 @@ export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
 	defaultValue: FontStyle.NORMAL,
 	valueConverter: FontStyle.parse,
 	valueChanged: (target, oldValue, newValue) => {
-		let currentFont = target.fontInternal || Font.default;
+		const currentFont = target.fontInternal || Font.default;
 		if (currentFont.fontStyle !== newValue) {
 			const newFont = currentFont.withFontStyle(newValue);
 			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
@@ -1405,7 +1376,7 @@ export const fontWeightProperty = new InheritedCssProperty<Style, FontWeight>({
 	defaultValue: FontWeight.NORMAL,
 	valueConverter: FontWeight.parse,
 	valueChanged: (target, oldValue, newValue) => {
-		let currentFont = target.fontInternal || Font.default;
+		const currentFont = target.fontInternal || Font.default;
 		if (currentFont.fontWeight !== newValue) {
 			const newFont = currentFont.withFontWeight(newValue);
 			target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
@@ -1443,26 +1414,16 @@ const fontProperty = new ShorthandProperty<Style, string>({
 });
 fontProperty.register(Style);
 
-export type Visibility = 'visible' | 'hidden' | 'collapse';
-export namespace Visibility {
-	export const VISIBLE: 'visible' = 'visible';
-	export const HIDDEN: 'hidden' = 'hidden';
-	export const COLLAPSE: 'collapse' = 'collapse';
-	export const isValid = makeValidator<Visibility>(VISIBLE, HIDDEN, COLLAPSE);
-	export const parse = (value: string) => (value.toLowerCase() === 'collapsed' ? COLLAPSE : parseStrict(value));
-	const parseStrict = makeParser<Visibility>(isValid);
-}
-
-export const visibilityProperty = new CssProperty<Style, Visibility>({
+export const visibilityProperty = new CssProperty<Style, CoreTypes.VisibilityType>({
 	name: 'visibility',
 	cssName: 'visibility',
-	defaultValue: Visibility.VISIBLE,
+	defaultValue: CoreTypes.Visibility.visible,
 	affectsLayout: global.isIOS,
-	valueConverter: Visibility.parse,
+	valueConverter: CoreTypes.Visibility.parse,
 	valueChanged: (target, oldValue, newValue) => {
 		const view = target.viewRef.get();
 		if (view) {
-			view.isCollapsed = newValue === Visibility.COLLAPSE;
+			view.isCollapsed = newValue === CoreTypes.Visibility.collapse;
 		} else {
 			Trace.write(`${newValue} not set to view's property because ".viewRef" is cleared`, Trace.categories.Style, Trace.messageType.warn);
 		}

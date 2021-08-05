@@ -1,4 +1,3 @@
-import { ProxyViewContainer as ProxyViewContainerDefinition } from '.';
 import { View, CSSType } from '../core/view';
 import { LayoutBase } from '../layouts/layout-base';
 import { Property } from '../core/properties';
@@ -14,7 +13,7 @@ import { Trace } from '../../trace';
 // * Child is removed from attached proxy. Handled in _removeViewFromNativeVisualTree.
 // * Proxy (with children) is removed form the DOM. In _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
 @CSSType('ProxyViewContainer')
-export class ProxyViewContainer extends LayoutBase implements ProxyViewContainerDefinition {
+export class ProxyViewContainer extends LayoutBase {
 	private proxiedLayoutProperties = new Set<string>();
 
 	constructor() {
@@ -23,10 +22,12 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
 	}
 
 	// No native view for proxy container.
+	// @ts-ignore
 	get ios(): any {
 		return null;
 	}
 
+	// @ts-ignore
 	get android(): any {
 		return null;
 	}

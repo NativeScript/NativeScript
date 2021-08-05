@@ -1,4 +1,4 @@
-﻿export module ios {
+﻿export namespace ios {
 	export function getActualHeight(view: any): number {
 		throw new Error('Not implemented for Android');
 	}

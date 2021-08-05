@@ -22,7 +22,6 @@ const legacyShortBarrels = [
 	'ui/text-base/span',
 	'ui/action-bar',
 	'ui/activity-indicator',
-	'ui/bottom-navigation',
 	'ui/button',
 	'ui/content-view',
 	'ui/date-picker',
@@ -48,10 +47,6 @@ const legacyShortBarrels = [
 	'ui/slider',
 	'ui/switch',
 	'ui/tab-view',
-	'ui/tab-navigation-base/tab-strip',
-	'ui/tab-navigation-base/tab-strip-item',
-	'ui/tab-navigation-base/tab-content-item',
-	'ui/tabs',
 	'ui/web-view',
 	'ui/text-field',
 	'ui/text-view',
@@ -95,7 +90,7 @@ const createComponentInstance = profile('createComponentInstance', (elementName:
 		}
 
 		// Get the component type from module.
-    const instanceType = instanceModule[elementName];
+		const instanceType = instanceModule[elementName];
 
 		// Create instance of the component.
 		instance = new instanceType();
@@ -131,7 +126,7 @@ const applyComponentCss = profile('applyComponentCss', (instance: View, moduleNa
 	let cssApplied = false;
 
 	if (attributes && attributes[CSS_FILE]) {
-		let resolvedCssModuleName = resolveModuleName(sanitizeModuleName(attributes[CSS_FILE]), 'css');
+		const resolvedCssModuleName = resolveModuleName(sanitizeModuleName(attributes[CSS_FILE]), 'css');
 
 		if (resolvedCssModuleName) {
 			instance.addCssFile(resolvedCssModuleName);
@@ -142,7 +137,7 @@ const applyComponentCss = profile('applyComponentCss', (instance: View, moduleNa
 	}
 
 	if (moduleName && !cssApplied) {
-		let resolvedCssModuleName = resolveModuleName(moduleName, 'css');
+		const resolvedCssModuleName = resolveModuleName(moduleName, 'css');
 		if (resolvedCssModuleName) {
 			instance.addCssFile(resolvedCssModuleName);
 		}
@@ -252,7 +247,7 @@ function isBinding(value: any): boolean {
 }
 
 // For example, ListView.itemTemplateSelector
-let KNOWN_FUNCTIONS = 'knownFunctions';
+const KNOWN_FUNCTIONS = 'knownFunctions';
 function isKnownFunction(name: string, instance: View): boolean {
 	return instance.constructor && KNOWN_FUNCTIONS in instance.constructor && instance.constructor[KNOWN_FUNCTIONS].indexOf(name) !== -1;
 }

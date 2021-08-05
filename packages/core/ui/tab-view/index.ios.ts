@@ -7,7 +7,8 @@ import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, tab
 import { Color } from '../../color';
 import { Trace } from '../../trace';
 import { fontInternalProperty } from '../styling/style-properties';
-import { textTransformProperty, TextTransform, getTransformedText } from '../text-base';
+import { textTransformProperty, getTransformedText } from '../text-base';
+import { CoreTypes } from '../../core-types';
 import { ImageSource } from '../../image-source';
 import { profile } from '../../profiling';
 import { Frame } from '../frame';
@@ -29,7 +30,7 @@ const setupControllers = function () {
 			private _owner: WeakRef<TabView>;
 
 			public static initWithOwner(owner: WeakRef<TabView>): typeof UITabBarControllerImpl {
-				let handler = <typeof UITabBarControllerImpl>UITabBarControllerImpl.new();
+				const handler = <typeof UITabBarControllerImpl>UITabBarControllerImpl.new();
 				handler._owner = owner;
 
 				return handler;
@@ -101,7 +102,7 @@ const setupControllers = function () {
 			private _owner: WeakRef<TabView>;
 
 			public static initWithOwner(owner: WeakRef<TabView>): typeof UITabBarControllerDelegateImpl {
-				let delegate = <typeof UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
+				const delegate = <typeof UITabBarControllerDelegateImpl>UITabBarControllerDelegateImpl.new();
 				delegate._owner = owner;
 
 				return delegate;
@@ -112,10 +113,10 @@ const setupControllers = function () {
 					Trace.write('TabView.delegate.SHOULD_select(' + tabBarController + ', ' + viewController + ');', Trace.categories.Debug);
 				}
 
-				let owner = this._owner.get();
+				const owner = this._owner.get();
 				if (owner) {
 					// "< More" cannot be visible after clicking on the main tab bar buttons.
-					let backToMoreWillBeVisible = false;
+					const backToMoreWillBeVisible = false;
 					owner._handleTwoNavigationBars(backToMoreWillBeVisible);
 				}
 
@@ -150,7 +151,7 @@ const setupControllers = function () {
 			private _owner: WeakRef<TabView>;
 
 			public static initWithOwner(owner: WeakRef<TabView>): typeof UINavigationControllerDelegateImpl {
-				let delegate = <typeof UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
+				const delegate = <typeof UINavigationControllerDelegateImpl>UINavigationControllerDelegateImpl.new();
 				delegate._owner = owner;
 
 				return delegate;
@@ -161,11 +162,11 @@ const setupControllers = function () {
 					Trace.write('TabView.moreNavigationController.WILL_show(' + navigationController + ', ' + viewController + ', ' + animated + ');', Trace.categories.Debug);
 				}
 
-				let owner = this._owner.get();
+				const owner = this._owner.get();
 				if (owner) {
 					// If viewController is one of our tab item controllers, then "< More" will be visible shortly.
 					// Otherwise viewController is the UIMoreListController which shows the list of all tabs beyond the 4th tab.
-					let backToMoreWillBeVisible = owner._ios.viewControllers.containsObject(viewController);
+					const backToMoreWillBeVisible = owner._ios.viewControllers.containsObject(viewController);
 					owner._handleTwoNavigationBars(backToMoreWillBeVisible);
 				}
 			}
@@ -176,7 +177,7 @@ const setupControllers = function () {
 				}
 				// We don't need Edit button in More screen.
 				navigationController.navigationBar.topItem.rightBarButtonItem = null;
-				let owner = this._owner.get();
+				const owner = this._owner.get();
 				if (owner) {
 					owner._onViewControllerShown(viewController);
 				}
@@ -279,7 +280,7 @@ export class TabViewItem extends TabViewItemBase {
 		updateTitleAndIconPositions(this, this.__controller.tabBarItem, this.__controller);
 	}
 
-	[textTransformProperty.setNative](value: TextTransform) {
+	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
 		this._update();
 	}
 }
@@ -330,6 +331,7 @@ export class TabView extends TabViewBase {
 		super.onUnloaded();
 	}
 
+	// @ts-ignore
 	get ios(): UITabBarController {
 		return this._ios;
 	}
@@ -405,7 +407,7 @@ export class TabView extends TabViewBase {
 			return;
 		}
 
-		let actionBarVisible = page.frame._getNavBarVisible(page);
+		const actionBarVisible = page.frame._getNavBarVisible(page);
 
 		if (backToMoreWillBeVisible && actionBarVisible) {
 			page.frame.ios._disableNavBarAnimation = true;
@@ -594,7 +596,7 @@ export class TabView extends TabViewBase {
 	}
 	[iosIconRenderingModeProperty.setNative](value: 'automatic' | 'alwaysOriginal' | 'alwaysTemplate') {
 		this._iconsCache = {};
-		let items = this.items;
+		const items = this.items;
 		if (items && items.length) {
 			for (let i = 0, length = items.length; i < length; i++) {
 				const item = items[i];

@@ -57,6 +57,17 @@ const webpackConfigAngular = proxyquire('./webpack.angular', {
 			return FakeNativeClassTransformerFlag;
 		},
 	},
+	'@nativescript/webpack/helpers/angular-config-parser': {
+		parseWorkspaceConfig: (platform, envConfigs, rootPath = '') => {
+			return {
+				fileReplacements: {},
+				copyReplacements: [],
+			};
+		},
+		hasConfigurations: (envConfigs) => {
+			return false;
+		},
+	},
 	'@nativescript/webpack/utils/ast-utils': {
 		getMainModulePath: () => {
 			return 'fakePath';

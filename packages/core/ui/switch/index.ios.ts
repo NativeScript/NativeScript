@@ -10,14 +10,14 @@ class SwitchChangeHandlerImpl extends NSObject {
 	private _owner: WeakRef<Switch>;
 
 	public static initWithOwner(owner: WeakRef<Switch>): SwitchChangeHandlerImpl {
-		let handler = <SwitchChangeHandlerImpl>SwitchChangeHandlerImpl.new();
+		const handler = <SwitchChangeHandlerImpl>SwitchChangeHandlerImpl.new();
 		handler._owner = owner;
 
 		return handler;
 	}
 
 	public valueChanged(sender: UISwitch) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			checkedProperty.nativeValueChange(owner, sender.on);
 		}
@@ -55,13 +55,14 @@ export class Switch extends SwitchBase {
 		super.disposeNativeView();
 	}
 
+	// @ts-ignore
 	get ios(): UISwitch {
 		return this.nativeViewProtected;
 	}
 
 	public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
 		// It can't be anything different from 51x31
-		let nativeSize = this.nativeViewProtected.sizeThatFits(zeroSize);
+		const nativeSize = this.nativeViewProtected.sizeThatFits(zeroSize);
 		this.width = nativeSize.width;
 		this.height = nativeSize.height;
 

@@ -2,6 +2,7 @@
 import { iOSApplication as iOSApplicationDefinition } from '.';
 import { ApplicationEventData, CssChangedEventData, LaunchEventData, LoadAppCSSEventData, OrientationChangedEventData, SystemAppearanceChangedEventData } from './application-interfaces';
 
+// TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
 const { displayedEvent, exitEvent, getCssFileName, launchEvent, livesync, lowMemoryEvent, notify, on, orientationChanged, orientationChangedEvent, resumeEvent, setApplication, suspendEvent, systemAppearanceChanged, systemAppearanceChangedEvent } = require('./application-common');
 // First reexport so that app module is initialized.
@@ -11,11 +12,14 @@ import { View } from '../ui/core/view';
 import { NavigationEntry } from '../ui/frame/frame-interfaces';
 // TODO: Remove this and get it from global to decouple builder for angular
 import { Builder } from '../ui/builder';
+import { Observable } from '../data/observable';
 import { CSSUtils } from '../css/system-classes';
 import { IOSHelper } from '../ui/core/view/view-helper';
 import { Device } from '../platform';
 import { profile } from '../profiling';
 import { iOSNativeHelper } from '../utils';
+import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
+import { initAccessibilityFontScale } from '../accessibility/font-scale';
 
 const IOS_PLATFORM = 'ios';
 
@@ -205,7 +209,9 @@ export class iOSApplication implements iOSApplicationDefinition {
 
 		// this._window will be undefined when NS app is embedded in a native one
 		if (this._window) {
-			this.setWindowContent(args.root);
+			if (args.root !== null) {
+				this.setWindowContent(args.root);
+			}
 		} else {
 			this._window = UIApplication.sharedApplication.delegate.window;
 		}
@@ -381,7 +387,7 @@ export function getRootView() {
 	return iosApp.rootView;
 }
 
-let started: boolean = false;
+let started = false;
 export function run(entry?: string | NavigationEntry) {
 	mainEntry = typeof entry === 'string' ? { moduleName: entry } : entry;
 	started = true;
@@ -400,11 +406,11 @@ export function run(entry?: string | NavigationEntry) {
 				if (rootController) {
 					const controller = getViewController(rootView);
 					rootView._setupAsRootView({});
-					let embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
+					const embedderDelegate = NativeScriptEmbedder.sharedInstance().delegate;
 					if (embedderDelegate) {
 						embedderDelegate.presentNativeScriptApp(controller);
 					} else {
-						let visibleVC = getVisibleViewController(rootController);
+						const visibleVC = getVisibleViewController(rootController);
 						visibleVC.presentViewControllerAnimatedCompletion(controller, true, null);
 					}
 
@@ -431,6 +437,9 @@ export function run(entry?: string | NavigationEntry) {
 			}
 		}
 	}
+
+	initAccessibilityCssHelper();
+	initAccessibilityFontScale();
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {
@@ -528,3 +537,8 @@ global.__onLiveSync = function __onLiveSync(context?: ModuleContext) {
 	const rootView = getRootView();
 	livesync(rootView, context);
 };
+
+// core exports this symbol so apps may import them in general
+// technically they are only available for use when running that platform
+// helps avoid a webpack nonexistent warning
+export const AndroidApplication = undefined;

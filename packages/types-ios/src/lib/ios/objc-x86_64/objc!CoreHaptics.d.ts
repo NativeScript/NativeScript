@@ -144,6 +144,10 @@ declare const enum CHHapticEngineStoppedReason {
 
 	NotifyWhenFinished = 4,
 
+	EngineDestroyed = 5,
+
+	GameControllerDisconnect = 6,
+
 	SystemError = -1
 }
 

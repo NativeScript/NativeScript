@@ -6,6 +6,7 @@ import { layout, RESOURCE_PREFIX, isFontIconURI } from '../../utils';
 import { colorProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import * as application from '../../application';
+import { isAccessibilityServiceEnabled, updateContentDescription } from '../../accessibility';
 
 export * from './action-bar-common';
 
@@ -72,7 +73,7 @@ function initializeMenuItemClickListener(): void {
 		}
 
 		onMenuItemClick(item: android.view.MenuItem): boolean {
-			let itemId = item.getItemId();
+			const itemId = item.getItemId();
 
 			return this.owner._onAndroidItemSelected(itemId);
 		}
@@ -96,6 +97,7 @@ export class ActionItem extends ActionItemBase {
 		this._itemId = generateItemId();
 	}
 
+	// @ts-ignore
 	public get android(): AndroidActionItemSettings {
 		return this._androidPosition;
 	}
@@ -224,7 +226,7 @@ export class ActionBar extends ActionBarBase {
 
 		// Find item with the right ID;
 		let menuItem: ActionItem = undefined;
-		let items = this.actionItems.getItems();
+		const items = this.actionItems.getItems();
 		for (let i = 0; i < items.length; i++) {
 			if ((<ActionItem>items[i])._getItemId() === itemId) {
 				menuItem = <ActionItem>items[i];
@@ -261,11 +263,11 @@ export class ActionBar extends ActionBarBase {
 			// Set navigation content description, used by screen readers for the vision-impaired users
 			this.nativeViewProtected.setNavigationContentDescription(navButton.text || null);
 
-			let navBtn = new WeakRef(navButton);
+			const navBtn = new WeakRef(navButton);
 			this.nativeViewProtected.setNavigationOnClickListener(
 				new android.view.View.OnClickListener({
 					onClick: function (v) {
-						let owner = navBtn.get();
+						const owner = navBtn.get();
 						if (owner) {
 							owner._raiseTap();
 						}
@@ -278,18 +280,18 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	public _updateIcon() {
-		let visibility = getIconVisibility(this.android.iconVisibility);
+		const visibility = getIconVisibility(this.android.iconVisibility);
 		if (visibility) {
-			let icon = this.android.icon;
+			const icon = this.android.icon;
 			if (icon !== undefined) {
-				let drawableOrId = getDrawableOrResourceId(icon, appResources);
+				const drawableOrId = getDrawableOrResourceId(icon, appResources);
 				if (drawableOrId) {
 					this.nativeViewProtected.setLogo(drawableOrId);
 				} else {
 					traceMissingIcon(icon);
 				}
 			} else {
-				let defaultIcon = application.android.nativeApp.getApplicationInfo().icon;
+				const defaultIcon = application.android.nativeApp.getApplicationInfo().icon;
 				this.nativeViewProtected.setLogo(defaultIcon);
 			}
 		} else {
@@ -297,31 +299,34 @@ export class ActionBar extends ActionBarBase {
 		}
 	}
 
-	public _updateTitleAndTitleView() {
+	public _updateTitleAndTitleView(): void {
 		if (!this.titleView) {
 			// No title view - show the title
-			let title = this.title;
+			const title = this.title;
 			if (title !== undefined) {
 				this.nativeViewProtected.setTitle(title);
 			} else {
-				let appContext = application.android.context;
-				let appInfo = appContext.getApplicationInfo();
-				let appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
+				const appContext = application.android.context;
+				const appInfo = appContext.getApplicationInfo();
+				const appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
 				if (appLabel) {
 					this.nativeViewProtected.setTitle(appLabel);
 				}
 			}
 		}
+
+		// Update content description for the screen reader.
+		updateContentDescription(this, true);
 	}
 
 	public _addActionItems() {
-		let menu = this.nativeViewProtected.getMenu();
-		let items = this.actionItems.getVisibleItems();
+		const menu = this.nativeViewProtected.getMenu();
+		const items = this.actionItems.getVisibleItems();
 
 		menu.clear();
 		for (let i = 0; i < items.length; i++) {
-			let item = <ActionItem>items[i];
-			let menuItem = menu.add(android.view.Menu.NONE, item._getItemId(), android.view.Menu.NONE, item.text + '');
+			const item = <ActionItem>items[i];
+			const menuItem = menu.add(android.view.Menu.NONE, item._getItemId(), android.view.Menu.NONE, item.text + '');
 
 			if (item.actionView && item.actionView.android) {
 				// With custom action view, the menuitem cannot be displayed in a popup menu.
@@ -330,7 +335,7 @@ export class ActionBar extends ActionBarBase {
 				ActionBar._setOnClickListener(item);
 			} else if (item.android.systemIcon) {
 				// Try to look in the system resources.
-				let systemResourceId = getSystemResourceId(item.android.systemIcon);
+				const systemResourceId = getSystemResourceId(item.android.systemIcon);
 				if (systemResourceId) {
 					menuItem.setIcon(systemResourceId);
 				}
@@ -341,7 +346,7 @@ export class ActionBar extends ActionBarBase {
 				}
 			}
 
-			let showAsAction = getShowAsAction(item);
+			const showAsAction = getShowAsAction(item);
 			menuItem.setShowAsAction(showAsAction);
 		}
 	}
@@ -446,6 +451,74 @@ export class ActionBar extends ActionBarBase {
 			this.nativeViewProtected.setContentInsetsAbsolute(this.effectiveContentInsetLeft, this.effectiveContentInsetRight);
 		}
 	}
+
+	public accessibilityScreenChanged(): void {
+		if (!isAccessibilityServiceEnabled()) {
+			return;
+		}
+
+		const nativeView = this.nativeViewProtected;
+		if (!nativeView) {
+			return;
+		}
+
+		const originalFocusableState = android.os.Build.VERSION.SDK_INT >= 26 && nativeView.getFocusable();
+		const originalImportantForAccessibility = nativeView.getImportantForAccessibility();
+		const originalIsAccessibilityHeading = android.os.Build.VERSION.SDK_INT >= 28 && nativeView.isAccessibilityHeading();
+
+		try {
+			nativeView.setFocusable(false);
+			nativeView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+
+			let announceView: android.view.View | null = null;
+
+			const numChildren = nativeView.getChildCount();
+			for (let i = 0; i < numChildren; i += 1) {
+				const childView = nativeView.getChildAt(i);
+				if (!childView) {
+					continue;
+				}
+
+				childView.setFocusable(true);
+				if (childView instanceof androidx.appcompat.widget.AppCompatTextView) {
+					announceView = childView;
+					if (android.os.Build.VERSION.SDK_INT >= 28) {
+						announceView.setAccessibilityHeading(true);
+					}
+				}
+			}
+
+			if (!announceView) {
+				announceView = nativeView;
+			}
+
+			announceView.setFocusable(true);
+			announceView.setImportantForAccessibility(android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+
+			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED);
+			announceView.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+		} catch {
+			// ignore
+		} finally {
+			setTimeout(() => {
+				// Reset status after the focus have been reset.
+				const localNativeView = this.nativeViewProtected;
+				if (!localNativeView) {
+					return;
+				}
+
+				if (android.os.Build.VERSION.SDK_INT >= 28) {
+					nativeView.setAccessibilityHeading(originalIsAccessibilityHeading);
+				}
+
+				if (android.os.Build.VERSION.SDK_INT >= 26) {
+					localNativeView.setFocusable(originalFocusableState);
+				}
+
+				localNativeView.setImportantForAccessibility(originalImportantForAccessibility);
+			});
+		}
+	}
 }
 
 function getAppCompatTextView(toolbar: androidx.appcompat.widget.Toolbar): typeof AppCompatTextView {
@@ -470,13 +543,13 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
 
 	let result = null;
 	if (icon.indexOf(RESOURCE_PREFIX) === 0) {
-		let resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', application.android.packageName);
+		const resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', application.android.packageName);
 		if (resourceId > 0) {
 			result = resourceId;
 		}
 	} else {
 		let drawable: android.graphics.drawable.BitmapDrawable;
-		let is = ImageSource.fromFileOrResourceSync(icon);
+		const is = ImageSource.fromFileOrResourceSync(icon);
 		if (is) {
 			drawable = new android.graphics.drawable.BitmapDrawable(appResources, is.android);
 		}

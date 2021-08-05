@@ -2,15 +2,15 @@ import { Style as StyleDefinition } from '.';
 import { Color } from '../../../color';
 import { Font, FontStyle, FontWeight } from '../font';
 import { Background } from '../background';
-import { dip } from '../../core/view';
 import { ViewBase } from '../../core/view-base';
-import { Length, PercentLength, HorizontalAlignment, VerticalAlignment, BackgroundRepeat, Visibility } from '../../styling/style-properties';
 import { LinearGradient } from '../../styling/linear-gradient';
 import { Observable } from '../../../data/observable';
 
 import { FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent, Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from '../../layouts/flexbox-layout';
 import { Trace } from '../../../trace';
-import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from '../../text-base';
+import { CoreTypes } from '../../../core-types';
+import { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState } from '../../../accessibility/accessibility-types';
+import { CSSShadow } from '../css-shadow';
 
 export interface CommonLayoutParams {
 	width: number;
@@ -29,8 +29,8 @@ export interface CommonLayoutParams {
 	rightMarginPercent: number;
 	bottomMarginPercent: number;
 
-	horizontalAlignment: HorizontalAlignment;
-	verticalAlignment: VerticalAlignment;
+	horizontalAlignment: CoreTypes.HorizontalAlignmentType;
+	verticalAlignment: CoreTypes.VerticalAlignmentType;
 }
 
 export class Style extends Observable implements StyleDefinition {
@@ -97,6 +97,7 @@ export class Style extends Observable implements StyleDefinition {
 	}
 
 	public fontInternal: Font;
+	public _fontScale: number;
 	public backgroundInternal: Background;
 
 	public rotate: number;
@@ -106,8 +107,8 @@ export class Style extends Observable implements StyleDefinition {
 
 	public scaleX: number;
 	public scaleY: number;
-	public translateX: dip;
-	public translateY: dip;
+	public translateX: CoreTypes.dip;
+	public translateY: CoreTypes.dip;
 
 	public clipPath: string;
 	public color: Color;
@@ -117,7 +118,7 @@ export class Style extends Observable implements StyleDefinition {
 	public background: string;
 	public backgroundColor: Color;
 	public backgroundImage: string | LinearGradient;
-	public backgroundRepeat: BackgroundRepeat;
+	public backgroundRepeat: CoreTypes.BackgroundRepeatType;
 	public backgroundSize: string;
 	public backgroundPosition: string;
 
@@ -126,16 +127,18 @@ export class Style extends Observable implements StyleDefinition {
 	public borderRightColor: Color;
 	public borderBottomColor: Color;
 	public borderLeftColor: Color;
-	public borderWidth: string | Length;
-	public borderTopWidth: Length;
-	public borderRightWidth: Length;
-	public borderBottomWidth: Length;
-	public borderLeftWidth: Length;
-	public borderRadius: string | Length;
-	public borderTopLeftRadius: Length;
-	public borderTopRightRadius: Length;
-	public borderBottomRightRadius: Length;
-	public borderBottomLeftRadius: Length;
+	public borderWidth: string | CoreTypes.LengthType;
+	public borderTopWidth: CoreTypes.LengthType;
+	public borderRightWidth: CoreTypes.LengthType;
+	public borderBottomWidth: CoreTypes.LengthType;
+	public borderLeftWidth: CoreTypes.LengthType;
+	public borderRadius: string | CoreTypes.LengthType;
+	public borderTopLeftRadius: CoreTypes.LengthType;
+	public borderTopRightRadius: CoreTypes.LengthType;
+	public borderBottomRightRadius: CoreTypes.LengthType;
+	public borderBottomLeftRadius: CoreTypes.LengthType;
+
+	public boxShadow: CSSShadow;
 
 	public fontSize: number;
 	public fontFamily: string;
@@ -147,31 +150,32 @@ export class Style extends Observable implements StyleDefinition {
 	public androidDynamicElevationOffset: number;
 	public zIndex: number;
 	public opacity: number;
-	public visibility: Visibility;
+	public visibility: CoreTypes.VisibilityType;
 
 	public letterSpacing: number;
 	public lineHeight: number;
-	public textAlignment: TextAlignment;
-	public textDecoration: TextDecoration;
-	public textTransform: TextTransform;
-	public whiteSpace: WhiteSpace;
+	public textAlignment: CoreTypes.TextAlignmentType;
+	public textDecoration: CoreTypes.TextDecorationType;
+	public textTransform: CoreTypes.TextTransformType;
+	public textShadow: CSSShadow;
+	public whiteSpace: CoreTypes.WhiteSpaceType;
 
-	public minWidth: Length;
-	public minHeight: Length;
-	public width: PercentLength;
-	public height: PercentLength;
-	public margin: string | PercentLength;
-	public marginLeft: PercentLength;
-	public marginTop: PercentLength;
-	public marginRight: PercentLength;
-	public marginBottom: PercentLength;
-	public padding: string | Length;
-	public paddingLeft: Length;
-	public paddingTop: Length;
-	public paddingRight: Length;
-	public paddingBottom: Length;
-	public horizontalAlignment: HorizontalAlignment;
-	public verticalAlignment: VerticalAlignment;
+	public minWidth: CoreTypes.LengthType;
+	public minHeight: CoreTypes.LengthType;
+	public width: CoreTypes.PercentLengthType;
+	public height: CoreTypes.PercentLengthType;
+	public margin: string | CoreTypes.PercentLengthType;
+	public marginLeft: CoreTypes.PercentLengthType;
+	public marginTop: CoreTypes.PercentLengthType;
+	public marginRight: CoreTypes.PercentLengthType;
+	public marginBottom: CoreTypes.PercentLengthType;
+	public padding: string | CoreTypes.LengthType;
+	public paddingLeft: CoreTypes.LengthType;
+	public paddingTop: CoreTypes.LengthType;
+	public paddingRight: CoreTypes.LengthType;
+	public paddingBottom: CoreTypes.LengthType;
+	public horizontalAlignment: CoreTypes.HorizontalAlignmentType;
+	public verticalAlignment: CoreTypes.VerticalAlignmentType;
 
 	// TabView-specific props
 	public tabTextFontSize: number;
@@ -191,9 +195,9 @@ export class Style extends Observable implements StyleDefinition {
 	public androidStatusBarBackground: Color;
 
 	// ActionBar-specific props
-	public androidContentInset: string | Length;
-	public androidContentInsetLeft: Length;
-	public androidContentInsetRight: Length;
+	public androidContentInset: string | CoreTypes.LengthType;
+	public androidContentInsetLeft: CoreTypes.LengthType;
+	public androidContentInsetRight: CoreTypes.LengthType;
 
 	//flexbox layout properties
 	public flexDirection: FlexDirection;
@@ -206,6 +210,16 @@ export class Style extends Observable implements StyleDefinition {
 	public flexShrink: FlexShrink;
 	public flexWrapBefore: FlexWrapBefore;
 	public alignSelf: AlignSelf;
+
+	// Accessibility properties
+	public accessible: boolean;
+	public accessibilityHidden: boolean;
+	public accessibilityRole: AccessibilityRole;
+	public accessibilityState: AccessibilityState;
+	public accessibilityLiveRegion: AccessibilityLiveRegion;
+	public accessibilityLanguage: string;
+	public accessibilityMediaSession: boolean;
+	public accessibilityStep: number;
 
 	public PropertyBag: {
 		new (): { [property: string]: string };

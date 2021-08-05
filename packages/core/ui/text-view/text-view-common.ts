@@ -3,6 +3,7 @@ import { EditableTextBase } from '../editable-text-base';
 import { Property } from '../core/properties';
 
 export class TextViewBase extends EditableTextBase implements TextViewDefinition {
+	public static returnPressEvent = 'returnPress';
 	public maxLines: number;
 }
 

@@ -6,7 +6,7 @@ import { AddArrayFromBuilder, AddChildFromBuilder } from '../core/view';
 import { ViewBase } from '../core/view-base';
 import { Color } from '../../color';
 import { FontStyle, FontWeight } from '../styling/font';
-import { TextDecoration } from '../text-base';
+import { CoreTypes } from '../../core-types';
 
 export class FormattedString extends ViewBase implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
 	private _spans: ObservableArray<Span>;
@@ -45,10 +45,10 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 		this.style.fontWeight = value;
 	}
 
-	get textDecoration(): TextDecoration {
+	get textDecoration(): CoreTypes.TextDecorationType {
 		return this.style.textDecoration;
 	}
-	set textDecoration(value: TextDecoration) {
+	set textDecoration(value: CoreTypes.TextDecorationType) {
 		this.style.textDecoration = value;
 	}
 
@@ -103,7 +103,7 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 				// First add to logical tree so that inherited properties are set.
 				this._addView(<any>span);
 
-				// Then attach handlers - we skip the first nofitication because
+				// Then attach handlers - we skip the first notification because
 				// we raise change for the whole instance.
 				this.addPropertyChangeHandler(span);
 			}

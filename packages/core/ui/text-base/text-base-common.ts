@@ -9,13 +9,11 @@ import { Span } from './span';
 import { View } from '../core/view';
 import { Property, CssProperty, InheritedCssProperty, makeValidator, makeParser } from '../core/properties';
 import { Style } from '../styling/style';
-import { Length } from '../styling/style-properties';
 import { Observable } from '../../data/observable';
-
-import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from './text-base-interfaces';
+import { CoreTypes } from '../../core-types';
 import { TextBase as TextBaseDefinition } from '.';
-
-export * from './text-base-interfaces';
+import { Color } from '../../color';
+import { CSSShadow, parseCSSShadow } from '../styling/css-shadow';
 
 const CHILD_SPAN = 'Span';
 const CHILD_FORMATTED_TEXT = 'formattedText';
@@ -26,6 +24,26 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	public text: string;
 	public formattedText: FormattedString;
 
+	/***
+	 * In the NativeScript Core; by default the nativeTextViewProtected points to the same value as nativeViewProtected.
+	 * At this point no internal NS components need this indirection functionality.
+	 * This indirection is used to allow support usage by third party components so they don't have to duplicate functionality.
+	 *
+	 * A third party component can just override the `nativeTextViewProtected` getter and return a different internal view and that view would be
+	 * what all TextView/TextInput class features would be applied to.
+	 *
+	 * A example is the Android MaterialDesign TextInput class, it has a wrapper view of a TextInputLayout
+	 *    https://developer.android.com/reference/com/google/android/material/textfield/TextInputLayout
+	 * which wraps the actual TextInput.  This wrapper layout (TextInputLayout) must be assigned to the nativeViewProtected as the entire
+	 * NS Core uses nativeViewProtected for everything related to layout, so that it can be measured, added to the parent view as a child, ect.
+	 *
+	 * However, its internal view would be the actual TextView/TextInput and to allow that sub-view to have the normal TextView/TextInput
+	 * class features, which we expose and to allow them to work on it, the internal TextView/TextInput is what the needs to have the class values applied to it.
+	 *
+	 * So all code that works on what is expected to be a TextView/TextInput should use `nativeTextViewProtected` so that any third party
+	 * components that need to have two separate components can work properly without them having to duplicate all the TextBase (and decendants) functionality
+	 * by just overriding the nativeTextViewProtected getter.
+	 **/
 	get nativeTextViewProtected() {
 		return this.nativeViewProtected;
 	}
@@ -72,66 +90,73 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 		this.style.lineHeight = value;
 	}
 
-	get textAlignment(): TextAlignment {
+	get textAlignment(): CoreTypes.TextAlignmentType {
 		return this.style.textAlignment;
 	}
-	set textAlignment(value: TextAlignment) {
+	set textAlignment(value: CoreTypes.TextAlignmentType) {
 		this.style.textAlignment = value;
 	}
 
-	get textDecoration(): TextDecoration {
+	get textDecoration(): CoreTypes.TextDecorationType {
 		return this.style.textDecoration;
 	}
-	set textDecoration(value: TextDecoration) {
+	set textDecoration(value: CoreTypes.TextDecorationType) {
 		this.style.textDecoration = value;
 	}
 
-	get textTransform(): TextTransform {
+	get textTransform(): CoreTypes.TextTransformType {
 		return this.style.textTransform;
 	}
-	set textTransform(value: TextTransform) {
+	set textTransform(value: CoreTypes.TextTransformType) {
 		this.style.textTransform = value;
 	}
 
-	get whiteSpace(): WhiteSpace {
+	get textShadow(): CSSShadow {
+		return this.style.textShadow;
+	}
+	set textShadow(value: CSSShadow) {
+		this.style.textShadow = value;
+	}
+
+	get whiteSpace(): CoreTypes.WhiteSpaceType {
 		return this.style.whiteSpace;
 	}
-	set whiteSpace(value: WhiteSpace) {
+	set whiteSpace(value: CoreTypes.WhiteSpaceType) {
 		this.style.whiteSpace = value;
 	}
 
-	get padding(): string | Length {
+	get padding(): string | CoreTypes.LengthType {
 		return this.style.padding;
 	}
-	set padding(value: string | Length) {
+	set padding(value: string | CoreTypes.LengthType) {
 		this.style.padding = value;
 	}
 
-	get paddingTop(): Length {
+	get paddingTop(): CoreTypes.LengthType {
 		return this.style.paddingTop;
 	}
-	set paddingTop(value: Length) {
+	set paddingTop(value: CoreTypes.LengthType) {
 		this.style.paddingTop = value;
 	}
 
-	get paddingRight(): Length {
+	get paddingRight(): CoreTypes.LengthType {
 		return this.style.paddingRight;
 	}
-	set paddingRight(value: Length) {
+	set paddingRight(value: CoreTypes.LengthType) {
 		this.style.paddingRight = value;
 	}
 
-	get paddingBottom(): Length {
+	get paddingBottom(): CoreTypes.LengthType {
 		return this.style.paddingBottom;
 	}
-	set paddingBottom(value: Length) {
+	set paddingBottom(value: CoreTypes.LengthType) {
 		this.style.paddingBottom = value;
 	}
 
-	get paddingLeft(): Length {
+	get paddingLeft(): CoreTypes.LengthType {
 		return this.style.paddingLeft;
 	}
-	set paddingLeft(value: Length) {
+	set paddingLeft(value: CoreTypes.LengthType) {
 		this.style.paddingLeft = value;
 	}
 
@@ -161,13 +186,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 	}
 
 	eachChild(callback: (child: ViewBase) => boolean): void {
-		let text = this.formattedText;
+		const text = this.formattedText;
 		if (text) {
 			callback(text);
 		}
 	}
 
-	_setNativeText(reset: boolean = false): void {
+	_setNativeText(reset = false): void {
 		//
 	}
 }
@@ -221,8 +246,8 @@ export function getClosestPropertyValue<T>(property: CssProperty<any, T>, span: 
 	}
 }
 
-const textAlignmentConverter = makeParser<TextAlignment>(makeValidator<TextAlignment>('initial', 'left', 'center', 'right'));
-export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({
+const textAlignmentConverter = makeParser<CoreTypes.TextAlignmentType>(makeValidator<CoreTypes.TextAlignmentType>('initial', 'left', 'center', 'right'));
+export const textAlignmentProperty = new InheritedCssProperty<Style, CoreTypes.TextAlignmentType>({
 	name: 'textAlignment',
 	cssName: 'text-align',
 	defaultValue: 'initial',
@@ -230,8 +255,8 @@ export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignme
 });
 textAlignmentProperty.register(Style);
 
-const textTransformConverter = makeParser<TextTransform>(makeValidator<TextTransform>('initial', 'none', 'capitalize', 'uppercase', 'lowercase'));
-export const textTransformProperty = new CssProperty<Style, TextTransform>({
+const textTransformConverter = makeParser<CoreTypes.TextTransformType>(makeValidator<CoreTypes.TextTransformType>('initial', 'none', 'capitalize', 'uppercase', 'lowercase'));
+export const textTransformProperty = new CssProperty<Style, CoreTypes.TextTransformType>({
 	name: 'textTransform',
 	cssName: 'text-transform',
 	defaultValue: 'initial',
@@ -239,8 +264,18 @@ export const textTransformProperty = new CssProperty<Style, TextTransform>({
 });
 textTransformProperty.register(Style);
 
-const whiteSpaceConverter = makeParser<WhiteSpace>(makeValidator<WhiteSpace>('initial', 'normal', 'nowrap'));
-export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({
+export const textShadowProperty = new CssProperty<Style, string | CSSShadow>({
+	name: 'textShadow',
+	cssName: 'text-shadow',
+	affectsLayout: global.isIOS,
+	valueConverter: (value) => {
+		return parseCSSShadow(value);
+	},
+});
+textShadowProperty.register(Style);
+
+const whiteSpaceConverter = makeParser<CoreTypes.WhiteSpaceType>(makeValidator<CoreTypes.WhiteSpaceType>('initial', 'normal', 'nowrap'));
+export const whiteSpaceProperty = new CssProperty<Style, CoreTypes.WhiteSpaceType>({
 	name: 'whiteSpace',
 	cssName: 'white-space',
 	defaultValue: 'initial',
@@ -249,8 +284,8 @@ export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({
 });
 whiteSpaceProperty.register(Style);
 
-const textDecorationConverter = makeParser<TextDecoration>(makeValidator<TextDecoration>('none', 'underline', 'line-through', 'underline line-through'));
-export const textDecorationProperty = new CssProperty<Style, TextDecoration>({
+const textDecorationConverter = makeParser<CoreTypes.TextDecorationType>(makeValidator<CoreTypes.TextDecorationType>('none', 'underline', 'line-through', 'underline line-through'));
+export const textDecorationProperty = new CssProperty<Style, CoreTypes.TextDecorationType>({
 	name: 'textDecoration',
 	cssName: 'text-decoration',
 	defaultValue: 'none',

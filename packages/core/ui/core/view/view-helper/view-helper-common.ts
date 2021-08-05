@@ -1,6 +1,6 @@
 // Types
 import { View as ViewDefinition } from '..';
-import { HorizontalAlignment as HorizontalAlignmentDefinition, VerticalAlignment as VerticalAlignmentDefinition } from '../../../styling/style-properties';
+import { CoreTypes } from '../../../../core-types';
 
 // Requires
 import { layout } from '../../../../utils';
@@ -42,12 +42,12 @@ export class ViewHelper {
 		return { measuredWidth: measureWidth, measuredHeight: measureHeight };
 	}
 
-	public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number, setFrame: boolean = true): void {
+	public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number, setFrame = true): void {
 		if (!child || child.isCollapsed) {
 			return;
 		}
 
-		let childStyle = child.style;
+		const childStyle = child.style;
 
 		let childTop: number;
 		let childLeft: number;
@@ -55,10 +55,10 @@ export class ViewHelper {
 		let childWidth = child.getMeasuredWidth();
 		let childHeight = child.getMeasuredHeight();
 
-		let effectiveMarginTop = child.effectiveMarginTop;
-		let effectiveMarginBottom = child.effectiveMarginBottom;
+		const effectiveMarginTop = child.effectiveMarginTop;
+		const effectiveMarginBottom = child.effectiveMarginBottom;
 
-		let vAlignment: VerticalAlignmentDefinition;
+		let vAlignment: CoreTypes.VerticalAlignmentType;
 		if (child.effectiveHeight >= 0 && childStyle.verticalAlignment === 'stretch') {
 			vAlignment = 'middle';
 		} else {
@@ -85,10 +85,10 @@ export class ViewHelper {
 				break;
 		}
 
-		let effectiveMarginLeft = child.effectiveMarginLeft;
-		let effectiveMarginRight = child.effectiveMarginRight;
+		const effectiveMarginLeft = child.effectiveMarginLeft;
+		const effectiveMarginRight = child.effectiveMarginRight;
 
-		let hAlignment: HorizontalAlignmentDefinition;
+		let hAlignment: CoreTypes.HorizontalAlignmentType;
 		if (child.effectiveWidth >= 0 && childStyle.horizontalAlignment === 'stretch') {
 			hAlignment = 'center';
 		} else {
@@ -115,8 +115,8 @@ export class ViewHelper {
 				break;
 		}
 
-		let childRight = Math.round(childLeft + childWidth);
-		let childBottom = Math.round(childTop + childHeight);
+		const childRight = Math.round(childLeft + childWidth);
+		const childBottom = Math.round(childTop + childHeight);
 		childLeft = Math.round(childLeft);
 		childTop = Math.round(childTop);
 

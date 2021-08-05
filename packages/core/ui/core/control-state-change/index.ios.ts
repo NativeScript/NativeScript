@@ -18,7 +18,7 @@ class ObserverClass extends NSObject {
 export class ControlStateChangeListener implements ControlStateChangeListenerDefinition {
 	private _observer: NSObject;
 	private _control: UIControl;
-	private _observing: boolean = false;
+	private _observing = false;
 
 	private _callback: (state: string) => void;
 

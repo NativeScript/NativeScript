@@ -1,8 +1,12 @@
 import { DatePickerBase, yearProperty, monthProperty, dayProperty, dateProperty, maxDateProperty, minDateProperty } from './date-picker-common';
 import { colorProperty } from '../styling/style-properties';
 import { Color } from '../../color';
+import { Device } from '../../platform';
 
 export * from './date-picker-common';
+
+const SUPPORT_DATE_PICKER_STYLE = parseFloat(Device.osVersion) >= 13.4;
+const SUPPORT_TEXT_COLOR = parseFloat(Device.osVersion) < 14.0;
 
 export class DatePicker extends DatePickerBase {
 	private _changeHandler: NSObject;
@@ -11,7 +15,9 @@ export class DatePicker extends DatePickerBase {
 	public createNativeView() {
 		const picker = UIDatePicker.new();
 		picker.datePickerMode = UIDatePickerMode.Date;
-
+		if (SUPPORT_DATE_PICKER_STYLE) {
+			picker.preferredDatePickerStyle = this.iosPreferredDatePickerStyle;
+		}
 		return picker;
 	}
 
@@ -27,6 +33,7 @@ export class DatePicker extends DatePickerBase {
 		super.disposeNativeView();
 	}
 
+	// @ts-ignore
 	get ios(): UIDatePicker {
 		return this.nativeViewProtected;
 	}
@@ -74,11 +81,13 @@ export class DatePicker extends DatePickerBase {
 	}
 
 	[colorProperty.getDefault](): UIColor {
-		return this.nativeViewProtected.valueForKey('textColor');
+		return SUPPORT_TEXT_COLOR ? this.nativeViewProtected.valueForKey('textColor') : UIColor.new();
 	}
 	[colorProperty.setNative](value: Color | UIColor) {
-		const picker = this.nativeViewProtected;
-		picker.setValueForKey(value instanceof Color ? value.ios : value, 'textColor');
+		if (SUPPORT_TEXT_COLOR) {
+			const picker = this.nativeViewProtected;
+			picker.setValueForKey(value instanceof Color ? value.ios : value, 'textColor');
+		}
 	}
 }
 

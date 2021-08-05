@@ -3,10 +3,13 @@ import { ContainerView, CSSType } from '../core/view';
 import { Property } from '../core/properties';
 import { EventData } from '../../data/observable';
 import { knownFolders } from '../../file-system';
+import { booleanConverter } from '../core/view-base';
 
 export * from './web-view-interfaces';
 
 export const srcProperty = new Property<WebViewBase, string>({ name: 'src' });
+
+export const disableZoomProperty = new Property<WebViewBase, boolean>({ name: 'disableZoom', defaultValue: false, valueConverter: booleanConverter });
 
 @CSSType('WebView')
 export abstract class WebViewBase extends ContainerView {
@@ -15,8 +18,10 @@ export abstract class WebViewBase extends ContainerView {
 
 	public src: string;
 
+	public disableZoom: boolean;
+
 	public _onLoadFinished(url: string, error?: string) {
-		let args = <LoadEventData>{
+		const args = <LoadEventData>{
 			eventName: WebViewBase.loadFinishedEvent,
 			object: this,
 			url: url,
@@ -28,7 +33,7 @@ export abstract class WebViewBase extends ContainerView {
 	}
 
 	public _onLoadStarted(url: string, navigationType: WebViewNavigationType) {
-		let args = <LoadEventData>{
+		const args = <LoadEventData>{
 			eventName: WebViewBase.loadStartedEvent,
 			object: this,
 			url: url,
@@ -102,3 +107,4 @@ export interface WebViewBase {
 }
 
 srcProperty.register(WebViewBase);
+disableZoomProperty.register(WebViewBase);

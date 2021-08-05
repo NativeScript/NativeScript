@@ -1,0 +1,74 @@
+name: 'tns-core-modules -> npm'
+
+on:
+  push:
+    branches: [ 'tns-core-modules' ]
+    paths:
+      - 'nativescript-core/**'
+  workflow_dispatch:
+
+env:
+  NPM_TAG: 'tns-next'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup
+        run: npm install --legacy-peer-deps
+
+      - name: Generate Version
+        run: |
+          echo NPM_VERSION=$(node -e "console.log(require('./package.json').version);")-$NPM_TAG-$(date +"%m-%d-%Y")-$GITHUB_RUN_ID >> $GITHUB_ENV
+
+      - name: Bump Versions
+        run: |
+          # bump root version
+          npm version --no-git-tag-version $NPM_VERSION
+
+          # bump @nativescript/core
+          cd nativescript-core
+          npm version --no-git-tag-version $NPM_VERSION
+          cd ..
+
+          # bump tns-core-modules version & @nativescript/core dep
+          cd tns-core-modules-package
+          npm version --no-git-tag-version $NPM_VERSION
+          cat <<EOT > _bump_core.js
+            const {readFileSync: read, writeFileSync: write} = require('fs'),
+            p = 'package.json',
+            pkg = read(p).toString()
+            ver = process.argv.splice(2).join(' ');
+            u = pkg.replace(/("@nativescript\/core": ")(?:.+)(")/g, \`\$1\${ver}\$2\`);
+            console.log(u)
+            write(p, u);
+          EOT
+          node _bump_core.js $NPM_VERSION
+
+          # for debugging - just show diff
+          git diff package.json
+          cd ..
+
+      - name: Build @nativescript/core
+        run: npm run build-core
+
+      - name: Build tns-core-modules
+        run: npm run build-compat
+
+      - name: Publish @nativescript/core
+        working-directory: dist
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ../.npmrc
+
+          ls -al
+
+          echo "Publishing @nativescript/core@$NPM_VERSION to NPM with tag $NPM_TAG..."
+          # npm publish nativescript-core-$NPM_VERSION.tgz --tag $NPM_TAG --dry-run
+
+          echo "Publishing tns-core-modules@$NPM_VERSION to NPM with tag $NPM_TAG..."
+          # npm publish tns-core-modules-$NPM_VERSION.tgz --tag $NPM_TAG --dry-run

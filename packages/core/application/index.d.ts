@@ -55,6 +55,21 @@ export const orientationChangedEvent: string;
 export const systemAppearanceChangedEvent: string;
 
 /**
+ * String value used when hooking to fontScaleChanged event.
+ */
+export const fontScaleChangedEvent: string;
+
+/**
+ * Boolean to enable/disable systemAppearanceChanged
+ */
+export let autoSystemAppearanceChanged: boolean;
+
+/**
+ * enable/disable systemAppearanceChanged
+ */
+export function setAutoSystemAppearanceChanged(value: boolean): void;
+
+/**
  * Updates root view classes including those of modals
  * @param rootView the root view
  * @param newSystemAppearance the new appearance change
@@ -93,8 +108,9 @@ export interface LaunchEventData extends ApplicationEventData {
 	/**
 	 * The root view for this Window on iOS or Activity for Android.
 	 * If not set a new Frame will be created as a root view in order to maintain backwards compatibility.
+	 * If explicitly set to null, there will be no root view.
 	 */
-	root?: View;
+	root?: View | null;
 
 	savedInstanceState?: any /* android.os.Bundle */;
 }
@@ -117,6 +133,16 @@ export interface SystemAppearanceChangedEventData extends ApplicationEventData {
 	 * New system appearance value.
 	 */
 	newValue: 'light' | 'dark';
+}
+
+/**
+ * Event data containing information for font scale changed event.
+ */
+export interface FontScaleChangedEventData extends ApplicationEventData {
+	/**
+	 * New font scale value.
+	 */
+	newValue: number;
 }
 
 /**
@@ -174,6 +200,11 @@ export function setCssFileName(cssFile: string): void;
 export function getCssFileName(): string;
 
 /**
+ * Ensure css-class is set on rootView
+ */
+export function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void;
+
+/**
  * Loads immediately the app.css.
  * By default the app.css file is loaded shortly after "loaded".
  * For the Android snapshot the CSS can be parsed during the snapshot generation,
@@ -189,21 +220,6 @@ export function loadAppCss();
 export function addCss(cssText: string, attributeScoped?: boolean): void;
 
 /**
- * This event is raised when application css is changed.
- */
-export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any);
-
-/**
- * Event raised then livesync operation is performed.
- */
-export function on(event: 'livesync', callback: (args: EventData) => void);
-
-/**
- * Removes listener for the specified event name.
- */
-export function off(eventNames: string, callback?: any, thisArg?: any);
-
-/**
  * Call this method to run the application. Important: All code after this method call will not be executed!
  * Compared to start this method won't create Frame as root view.
  */
@@ -216,12 +232,9 @@ export function run(entry?: NavigationEntry | string);
 export function _resetRootView(entry?: NavigationEntry | string);
 
 /**
- * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
- * @param eventNames - String corresponding to events (e.g. "onLaunch"). Optionally could be used more events separated by `,` (e.g. "onLaunch", "onSuspend").
- * @param callback - Callback function which will be executed when event is raised.
- * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+ * Removes listener for the specified event name.
  */
-export function on(eventNames: string, callback: (data: any) => void, thisArg?: any);
+export function off(eventNames: string, callback?: any, thisArg?: any);
 
 /**
  * Shortcut alias to the removeEventListener method.
@@ -242,6 +255,34 @@ export function notify(data: any): void;
  * @param eventName The name of the event to check for.
  */
 export function hasListeners(eventName: string): boolean;
+
+/**
+ * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+ * @param eventNames - String corresponding to events (e.g. "onLaunch"). Optionally could be used more events separated by `,` (e.g. "onLaunch", "onSuspend").
+ * @param callback - Callback function which will be executed when event is raised.
+ * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+ */
+export function on(eventNames: string, callback: (data: any) => void, thisArg?: any);
+
+/**
+ * This event is raised when application css is changed.
+ */
+export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any);
+
+/**
+ * Event raised then livesync operation is performed.
+ */
+export function on(event: 'livesync', callback: (args: EventData) => void);
+
+/**
+ * This event is raised when application css is changed.
+ */
+export function on(event: 'cssChanged', callback: (args: CssChangedEventData) => void, thisArg?: any);
+
+/**
+ * Event raised then livesync operation is performed.
+ */
+export function on(event: 'livesync', callback: (args: EventData) => void);
 
 /**
  * This event is raised on application launchEvent.
@@ -296,6 +337,8 @@ export function on(event: 'orientationChanged', callback: (args: OrientationChan
  * between light and dark mode (for iOS) and vice versa.
  */
 export function on(event: 'systemAppearanceChanged', callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any);
+
+export function on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any);
 
 /**
  * Gets the orientation of the application.
@@ -584,6 +627,12 @@ export class AndroidApplication extends Observable {
 	 * String value used when hooking to requestPermissions event.
 	 */
 	public static activityRequestPermissionsEvent: string;
+
+	/**
+	 * Get a registered BroadcastReceiver, then you can get the result code of BroadcastReceiver in onReceiveCallback method.
+	 * @param intentFilter A string containing the intent filter.
+	 */
+	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined;
 
 	/**
 	 * Register a BroadcastReceiver to be run in the main activity thread. The receiver will be called with any broadcast Intent that matches filter, in the main application thread.

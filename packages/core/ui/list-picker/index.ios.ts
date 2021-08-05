@@ -28,6 +28,7 @@ export class ListPicker extends ListPickerBase {
 		super.disposeNativeView();
 	}
 
+	// @ts-ignore
 	get ios() {
 		return this.nativeViewProtected;
 	}
@@ -84,7 +85,7 @@ class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
 	private _owner: WeakRef<ListPicker>;
 
 	public static initWithOwner(owner: WeakRef<ListPicker>): ListPickerDataSource {
-		let dataSource = <ListPickerDataSource>ListPickerDataSource.new();
+		const dataSource = <ListPickerDataSource>ListPickerDataSource.new();
 		dataSource._owner = owner;
 
 		return dataSource;
@@ -95,7 +96,7 @@ class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
 	}
 
 	public pickerViewNumberOfRowsInComponent(pickerView: UIPickerView, component: number) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 
 		return owner && owner.items ? owner.items.length : 0;
 	}
@@ -108,16 +109,16 @@ class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
 	private _owner: WeakRef<ListPicker>;
 
 	public static initWithOwner(owner: WeakRef<ListPicker>): ListPickerDelegateImpl {
-		let delegate = <ListPickerDelegateImpl>ListPickerDelegateImpl.new();
+		const delegate = <ListPickerDelegateImpl>ListPickerDelegateImpl.new();
 		delegate._owner = owner;
 
 		return delegate;
 	}
 
 	public pickerViewAttributedTitleForRowForComponent(pickerView: UIPickerView, row: number, component: number): NSAttributedString {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
-			let title = NSAttributedString.alloc().initWithStringAttributes(owner._getItemAsString(row), <any>{ [NSForegroundColorAttributeName]: pickerView.tintColor });
+			const title = NSAttributedString.alloc().initWithStringAttributes(owner._getItemAsString(row), <any>{ [NSForegroundColorAttributeName]: pickerView.tintColor });
 
 			return title;
 		}
@@ -126,7 +127,7 @@ class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
 	}
 
 	public pickerViewDidSelectRowInComponent(pickerView: UIPickerView, row: number, component: number): void {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			selectedIndexProperty.nativeValueChange(owner, row);
 			owner.updateSelectedValue(row);

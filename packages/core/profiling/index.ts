@@ -1,15 +1,16 @@
-declare var __startCPUProfiler: any;
-declare var __stopCPUProfiler: any;
+/* eslint-disable prefer-rest-params */
+declare let __startCPUProfiler: any;
+declare let __stopCPUProfiler: any;
 
 export function uptime() {
 	return global.android ? (<any>org).nativescript.Process.getUpTime() : (<any>global).__tns_uptime();
 }
 
-export function log(message: string): void {
+export function log(message: string, ...optionalParams: any[]): void {
 	if ((<any>global).__nslog) {
 		(<any>global).__nslog('CONSOLE LOG: ' + message);
 	}
-	console.log(message);
+	console.log(message, ...optionalParams);
 }
 
 export type InstrumentationMode = 'counters' | 'timeline' | 'lifecycle';
@@ -192,7 +193,7 @@ const profileMethodUnnamed = (target, key, descriptor) => {
 		className = target.constructor.name + '.';
 	}
 
-	let name = className + key;
+	const name = className + key;
 
 	//editing the descriptor/value parameter
 	descriptor.value = profileFunctionFactory(originalMethod, name, MemberType.Instance);
@@ -213,7 +214,7 @@ const profileStaticMethodUnnamed = (ctor, key, descriptor) => {
 	if (ctor && ctor.name) {
 		className = ctor.name + '.';
 	}
-	let name = className + key;
+	const name = className + key;
 
 	//editing the descriptor/value parameter
 	descriptor.value = profileFunctionFactory(originalMethod, name, MemberType.Static);

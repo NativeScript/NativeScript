@@ -128,7 +128,7 @@ export class DOMNode {
 
 				return true;
 			});
-			const index = !!previousChild ? previousChild._domId : 0;
+			const index = previousChild ? previousChild._domId : 0;
 
 			childView.ensureDomNode();
 			ins.childNodeInserted(this.nodeId, index, childView.domNode);

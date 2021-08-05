@@ -1,7 +1,7 @@
 // regex that contains all symbols applicable for expression used to AI detect an expression.
 const expressionSymbolsRegex = /[\+\-\*\/%\?:<>=!\|&\(\)^~]/;
 
-export module bindingConstants {
+export namespace bindingConstants {
 	export const sourceProperty = 'sourceProperty';
 	export const targetProperty = 'targetProperty';
 	export const expression = 'expression';
@@ -185,7 +185,7 @@ export function getBindingOptions(name: string, value: string): any {
 		targetProperty: name,
 	};
 
-	for (let prop in bindingOptionsParameters) {
+	for (const prop in bindingOptionsParameters) {
 		if (bindingOptionsParameters.hasOwnProperty(prop)) {
 			bindOptions[prop] = bindingOptionsParameters[prop];
 		}

@@ -12,6 +12,7 @@ Provide version numbers for the following components (information can be retriev
  - Cross-platform modules:
  - Android Runtime:
  - iOS Runtime:
+ - XCode Version:
  - Plugin(s):
 
 **Describe the bug**

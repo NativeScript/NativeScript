@@ -1,4 +1,5 @@
 ﻿import { AbsoluteLayoutBase } from './absolute-layout-common';
+import { CoreTypes } from '../../../core-types';
 import { View } from '../../core/view';
 import { Length } from '../../styling/style-properties';
 import { layout } from '../../../utils';
@@ -6,11 +7,11 @@ import { layout } from '../../../utils';
 export * from './absolute-layout-common';
 
 export class AbsoluteLayout extends AbsoluteLayoutBase {
-	onLeftChanged(view: View, oldValue: Length, newValue: Length) {
+	onLeftChanged(view: View, oldValue: CoreTypes.LengthType, newValue: CoreTypes.LengthType) {
 		this.requestLayout();
 	}
 
-	onTopChanged(view: View, oldValue: Length, newValue: Length) {
+	onTopChanged(view: View, oldValue: CoreTypes.LengthType, newValue: CoreTypes.LengthType) {
 		this.requestLayout();
 	}
 
@@ -29,7 +30,7 @@ export class AbsoluteLayout extends AbsoluteLayoutBase {
 		const childMeasureSpec = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 
 		this.eachLayoutChild((child, last) => {
-			let childSize = View.measureChild(this, child, childMeasureSpec, childMeasureSpec);
+			const childSize = View.measureChild(this, child, childMeasureSpec, childMeasureSpec);
 			measureWidth = Math.max(measureWidth, child.effectiveLeft + childSize.measuredWidth);
 			measureHeight = Math.max(measureHeight, child.effectiveTop + childSize.measuredHeight);
 		});
