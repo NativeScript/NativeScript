@@ -417,6 +417,7 @@ function parseColorWithAlpha(value: string): any {
 	const parts = value
 		.replace(/(rgb|hsl|hsv)a?\(/, '')
 		.replace(')', '')
+		.replace(/%/g, '')
 		.trim()
 		.split(',');
 
