@@ -42,6 +42,9 @@
 		},
 		"webpack": {
 			"tags": []
+		},
+		"webpack5": {
+			"tags": []
 		}
 	}
 }
