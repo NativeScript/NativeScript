@@ -1,3 +1,4 @@
+import { Color } from '../color';
 import { getKnownColor } from '../color/known-colors';
 
 export type Parsed<V> = { start: number; end: number; value: V };
@@ -75,17 +76,7 @@ export function parseHexColor(text: string, start = 0): Parsed<ARGB> {
 		return null;
 	}
 	const end = hexColorRegEx.lastIndex;
-	const hex = result[1];
-	let argb;
-	if (hex.length === 8) {
-		argb = parseInt('0x' + hex);
-	} else if (hex.length === 6) {
-		argb = parseInt('0xFF' + hex);
-	} else if (hex.length === 3) {
-		argb = parseInt('0xFF' + hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2]);
-	}
-
-	return { start, end, value: argb };
+	return { start, end, value: new Color('#'+ result[1]).argb };
 }
 
 function rgbaToArgbNumber(r: number, g: number, b: number, a = 1): number | undefined {
