@@ -83,8 +83,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// and instead use raw-loader, since that's what angular expects
 	config.module
 		.rule('scss|component')
-		.exclude.add(resolve(getEntryDirPath(), 'app.css'))
-		.add(resolve(getEntryDirPath(), `app.${platform}.css`))
+		.exclude.add(resolve(getEntryDirPath(), 'app.scss'))
+		.add(resolve(getEntryDirPath(), `app.${platform}.scss`))
 		.add(/node_modules/)
 		.end()
 		.test(/\.scss$/)
