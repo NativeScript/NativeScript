@@ -56,7 +56,12 @@ program
 			env['env'] = options.env;
 		}
 
-		env['watch'] = options.watch;
+		env['watch'] ??= options.watch;
+
+		// if --env.config is passed, we'll set an environment
+		// variable to it's value so that the config Util
+		// reads from the correct config file.
+		process.env.NATIVESCRIPT_CONFIG_NAME ??= env['config'];
 
 		const configPath = (() => {
 			if (options.config) {
