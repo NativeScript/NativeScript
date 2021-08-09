@@ -231,8 +231,8 @@ exports[`angular configuration for android 1`] = `
       {
         test: /\\\\.scss$/,
         exclude: [
-          '__jest__/src/app.css',
-          '__jest__/src/app.android.css',
+          '__jest__/src/app.scss',
+          '__jest__/src/app.android.scss',
           /node_modules/
         ],
         use: [
@@ -616,8 +616,8 @@ exports[`angular configuration for ios 1`] = `
       {
         test: /\\\\.scss$/,
         exclude: [
-          '__jest__/src/app.css',
-          '__jest__/src/app.ios.css',
+          '__jest__/src/app.scss',
+          '__jest__/src/app.ios.scss',
           /node_modules/
         ],
         use: [
