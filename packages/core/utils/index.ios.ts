@@ -8,10 +8,10 @@ export { Source } from './debug';
 export function openFile(filePath: string): boolean {
 	try {
 		const appPath = iOSNativeHelper.getCurrentAppPath();
-		let path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
+		const path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
 
 		const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
-		controller.delegate = <UIDocumentInteractionControllerDelegate>new iOSNativeHelper.UIDocumentInteractionControllerDelegateImpl();
+		controller.delegate = iOSNativeHelper.createUIDocumentInteractionControllerDelegate();
 
 		return controller.presentPreviewAnimated(true);
 	} catch (e) {
@@ -48,3 +48,10 @@ export function isRealDevice(): boolean {
 }
 
 export const ad = 0;
+
+export function dismissSoftInput(nativeView?: UIView): void {
+	if (nativeView instanceof UIView && !nativeView.isFirstResponder) {
+		return;
+	}
+	UIApplication.sharedApplication.sendActionToFromForEvent('resignFirstResponder', null, null, null);
+}

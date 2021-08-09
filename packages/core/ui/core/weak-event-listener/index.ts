@@ -1,7 +1,7 @@
 import { Observable, EventData } from '../../../data/observable';
 
 const handlersForEventName = new Map<string, (eventData: EventData) => void>();
-const sourcesMap = new WeakMap<Observable, Map<string, Array<TargetHandlerPair>>>();
+const sourcesMap = new WeakMap<Partial<Observable>, Map<string, Array<TargetHandlerPair>>>();
 
 class TargetHandlerPair {
 	tagetRef: WeakRef<Object>;
@@ -81,7 +81,7 @@ function validateArgs(source: Observable, eventName: string, handler: (eventData
 export function addWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any) {
 	validateArgs(source, eventName, handler, target);
 
-	let shouldAttach: boolean = false;
+	let shouldAttach = false;
 
 	let sourceEventMap = sourcesMap.get(source);
 	if (!sourceEventMap) {

@@ -2,8 +2,10 @@
 import { AndroidApplication as AndroidApplicationDefinition } from '.';
 import { AndroidActivityBackPressedEventData, AndroidActivityBundleEventData, AndroidActivityEventData, AndroidActivityNewIntentEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, ApplicationEventData, CssChangedEventData, OrientationChangedEventData, SystemAppearanceChangedEventData } from './application-interfaces';
 
+// TODO: explain why we need to this or remov it
 // Use requires to ensure order of imports is maintained
 const appCommon = require('./application-common');
+
 // First reexport so that app module is initialized.
 export * from './application-common';
 
@@ -12,6 +14,8 @@ import { NavigationEntry, AndroidActivityCallbacks } from '../ui/frame/frame-int
 import { Observable } from '../data/observable';
 
 import { profile } from '../profiling';
+import { initAccessibilityCssHelper } from '../accessibility/accessibility-css-helper';
+import { initAccessibilityFontScale } from '../accessibility/font-scale';
 
 const ActivityCreated = 'activityCreated';
 const ActivityDestroyed = 'activityDestroyed';
@@ -107,6 +111,10 @@ export class AndroidApplication extends Observable implements AndroidApplication
 		this._systemAppearance = value;
 	}
 
+	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined {
+		return this._registeredReceivers[intentFilter];
+	}
+
 	public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void): void {
 		ensureBroadCastReceiverClass();
 		const registerFunc = (context: android.content.Context) => {
@@ -169,6 +177,9 @@ export function run(entry?: NavigationEntry | string) {
 		const nativeApp = getNativeApplication();
 		androidApp.init(nativeApp);
 	}
+
+	initAccessibilityCssHelper();
+	initAccessibilityFontScale();
 }
 
 export function addCss(cssText: string, attributeScoped?: boolean): void {
@@ -188,7 +199,7 @@ export function addCss(cssText: string, attributeScoped?: boolean): void {
 const CALLBACKS = '_callbacks';
 
 export function _resetRootView(entry?: NavigationEntry | string): void {
-	const activity = androidApp.foregroundActivity;
+	const activity = androidApp.foregroundActivity || androidApp.startActivity;
 	if (!activity) {
 		throw new Error('Cannot find android activity.');
 	}
@@ -476,24 +487,23 @@ function ensureBroadCastReceiverClass() {
 		return;
 	}
 
-	 @NativeClass
-	 class BroadcastReceiver extends android.content.BroadcastReceiver {
-	 	private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
+	@NativeClass
+	class BroadcastReceiver extends android.content.BroadcastReceiver {
+		private _onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void;
 
-	 	constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
-	 		super();
-	 		this._onReceiveCallback = onReceiveCallback;
+		constructor(onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
+			super();
+			this._onReceiveCallback = onReceiveCallback;
 
-	 		return global.__native(this);
-	 	}
+			return global.__native(this);
+		}
 
-	 	public onReceive(context: android.content.Context, intent: android.content.Intent) {
-	 		if (this._onReceiveCallback) {
-	 			this._onReceiveCallback(context, intent);
-	 		}
-	 	}
-	 }
-
+		public onReceive(context: android.content.Context, intent: android.content.Intent) {
+			if (this._onReceiveCallback) {
+				this._onReceiveCallback(context, intent);
+			}
+		}
+	}
 
 	BroadcastReceiverClass = BroadcastReceiver;
 }
@@ -505,3 +515,8 @@ declare namespace com {
 		}
 	}
 }
+
+// core exports this symbol so apps may import them in general
+// technically they are only available for use when running that platform
+// helps avoid a webpack nonexistent warning
+export const iOSApplication = undefined;

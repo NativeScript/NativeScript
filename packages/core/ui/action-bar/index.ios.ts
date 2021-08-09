@@ -5,6 +5,7 @@ import { Color } from '../../color';
 import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from '../styling/style-properties';
 import { ImageSource } from '../../image-source';
 import { layout, iOSNativeHelper, isFontIconURI } from '../../utils';
+import { accessibilityHintProperty, accessibilityLabelProperty, accessibilityLanguageProperty, accessibilityValueProperty } from '../../accessibility/accessibility-properties';
 
 export * from './action-bar-common';
 
@@ -40,14 +41,14 @@ class TapBarItemHandlerImpl extends NSObject {
 	private _owner: WeakRef<ActionItemDefinition>;
 
 	public static initWithOwner(owner: WeakRef<ActionItemDefinition>): TapBarItemHandlerImpl {
-		let handler = <TapBarItemHandlerImpl>TapBarItemHandlerImpl.new();
+		const handler = <TapBarItemHandlerImpl>TapBarItemHandlerImpl.new();
 		handler._owner = owner;
 
 		return handler;
 	}
 
 	public tap(args) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			owner._raiseTap();
 		}
@@ -64,6 +65,7 @@ export class ActionItem extends ActionItemBase {
 		systemIcon: undefined,
 	};
 
+	// @ts-ignore
 	public get ios(): IOSActionItemSettings {
 		return this._ios;
 	}
@@ -96,6 +98,46 @@ export class ActionBar extends ActionBarBase {
 		}
 
 		return null;
+	}
+
+	[accessibilityValueProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityValue = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityValue = value;
+		}
+	}
+
+	[accessibilityLabelProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityLabel = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityLabel = value;
+		}
+	}
+
+	[accessibilityHintProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityHint = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityHint = value;
+		}
+	}
+
+	[accessibilityLanguageProperty.setNative](value: string): void {
+		value = value == null ? null : `${value}`;
+		this.nativeViewProtected.accessibilityLanguage = value;
+
+		const navigationItem = this._getNavigationItem();
+		if (navigationItem) {
+			navigationItem.accessibilityLanguage = value;
+		}
 	}
 
 	public createNativeView(): UIView {
@@ -147,7 +189,18 @@ export class ActionBar extends ActionBarBase {
 		}
 	}
 
-	public update() {
+	private _getNavigationItem(): UINavigationItem | null {
+		const page = this.page;
+		// Page should be attached to frame to update the action bar.
+		if (!page || !page.frame) {
+			return null;
+		}
+
+		const viewController = <UIViewController>page.ios;
+		return viewController.navigationItem;
+	}
+
+	public update(): void {
 		const page = this.page;
 		// Page should be attached to frame to update the action bar.
 		if (!page || !page.frame) {
@@ -183,8 +236,8 @@ export class ActionBar extends ActionBarBase {
 		// Set back button text
 		if (previousController) {
 			if (this.navigationButton) {
-				let tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
-				let barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + '', UIBarButtonItemStyle.Plain, tapHandler, 'tap');
+				const tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
+				const barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + '', UIBarButtonItemStyle.Plain, tapHandler, 'tap');
 				previousController.navigationItem.backBarButtonItem = barButtonItem;
 			} else {
 				previousController.navigationItem.backBarButtonItem = null;
@@ -201,7 +254,7 @@ export class ActionBar extends ActionBarBase {
 		// show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
 		// Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
 		if (img) {
-			let image = img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+			const image = img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 			navigationBar.backIndicatorImage = image;
 			navigationBar.backIndicatorTransitionMaskImage = image;
 		} else {
@@ -227,6 +280,12 @@ export class ActionBar extends ActionBarBase {
 		if (!this.isLayoutValid) {
 			this.layoutInternal();
 		}
+
+		// Make sure accessibility values are up-to-date on the navigationItem
+		navigationItem.accessibilityValue = this.accessibilityValue;
+		navigationItem.accessibilityLabel = this.accessibilityLabel;
+		navigationItem.accessibilityLanguage = this.accessibilityLanguage;
+		navigationItem.accessibilityHint = this.accessibilityHint;
 	}
 
 	private populateMenuItems(navigationItem: UINavigationItem) {
@@ -256,7 +315,7 @@ export class ActionBar extends ActionBarBase {
 
 		let barButtonItem: UIBarButtonItem;
 		if (item.actionView && item.actionView.ios) {
-			let recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, 'tap');
+			const recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, 'tap');
 			item.actionView.ios.addGestureRecognizer(recognizer);
 			barButtonItem = UIBarButtonItem.alloc().initWithCustomView(item.actionView.ios);
 		} else if (item.ios.systemIcon !== undefined) {
@@ -294,6 +353,9 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	private setColor(navBar: UINavigationBar, color?: Color) {
+		if (!navBar) {
+			return;
+		}
 		if (color) {
 			navBar.titleTextAttributes = <any>{
 				[NSForegroundColorAttributeName]: color.ios,
@@ -319,7 +381,7 @@ export class ActionBar extends ActionBarBase {
 			page.frame._updateActionBar();
 		}
 
-		let navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
+		const navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
 		navigationItem.title = this.title;
 	}
 
@@ -384,13 +446,12 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	private get navBar(): UINavigationBar {
-		const page = this.page;
 		// Page should be attached to frame to update the action bar.
-		if (!page || !page.frame) {
+		if (this.page?.frame?.ios?.controller) {
+			return (<UINavigationController>this.page.frame.ios.controller).navigationBar;
+		} else {
 			return undefined;
 		}
-
-		return (<UINavigationController>page.frame.ios.controller).navigationBar;
 	}
 
 	[colorProperty.getDefault](): UIColor {
@@ -407,9 +468,9 @@ export class ActionBar extends ActionBarBase {
 		return null;
 	}
 	[backgroundColorProperty.setNative](value: UIColor | Color) {
-		let navBar = this.navBar;
+		const navBar = this.navBar;
 		if (navBar) {
-			let color = value instanceof Color ? value.ios : value;
+			const color = value instanceof Color ? value.ios : value;
 			navBar.barTintColor = color;
 		}
 	}

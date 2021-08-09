@@ -10,6 +10,7 @@ import { getAncestor } from '../core/view-base';
 import { Builder } from '../builder';
 import { sanitizeModuleName } from '../builder/module-name-sanitizer';
 import { profile } from '../../profiling';
+import { FRAME_SYMBOL } from './frame-helpers';
 
 export { NavigationType } from './frame-interfaces';
 export type { AndroidActivityCallbacks, AndroidFragmentCallbacks, AndroidFrame, BackstackEntry, NavigationContext, NavigationEntry, NavigationTransition, TransitionState, ViewEntry, iOSFrame } from './frame-interfaces';
@@ -249,6 +250,12 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		newPage.onNavigatedTo(isBack);
+		this.notify({
+			eventName: Page.navigatedToEvent,
+			object: this,
+			isBack,
+			entry,
+		});
 
 		// Reset executing context after NavigatedTo is raised;
 		// we do not want to execute two navigations in parallel in case
@@ -412,6 +419,13 @@ export class FrameBase extends CustomLayoutView {
 		}
 
 		backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
+		this.notify({
+			eventName: Page.navigatingToEvent,
+			object: this,
+			isBack,
+			entry: backstackEntry.entry,
+			fromEntry: this.currentEntry,
+		});
 	}
 
 	public get animated(): boolean {
@@ -561,7 +575,7 @@ export class FrameBase extends CustomLayoutView {
 		let i = length - 1;
 		console.log(`Frame Back Stack: `);
 		while (i >= 0) {
-			let backstackEntry = <BackstackEntry>this.backStack[i--];
+			const backstackEntry = <BackstackEntry>this.backStack[i--];
 			console.log(`\t${backstackEntry.resolvedPage}`);
 		}
 	}
@@ -681,6 +695,9 @@ export class FrameBase extends CustomLayoutView {
 		this._processNextNavigationEntry();
 	}
 }
+
+// Mark as a Frame with an unique Symbol
+FrameBase.prototype[FRAME_SYMBOL] = true;
 
 export function getFrameById(id: string): FrameBase {
 	console.log('getFrameById() is deprecated. Use Frame.getFrameById() instead.');

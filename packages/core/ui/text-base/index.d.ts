@@ -3,6 +3,8 @@ import { FormattedString } from './formatted-string';
 import { Style } from '../styling/style';
 import { Length } from '../styling/style-properties';
 import { Property, CssProperty, InheritedCssProperty } from '../core/properties';
+import { CoreTypes } from '../../core-types';
+import { CSSShadow } from '../styling/css-shadow';
 
 export class TextBase extends View implements AddChildFromBuilder {
 	/**
@@ -39,47 +41,52 @@ export class TextBase extends View implements AddChildFromBuilder {
 	/**
 	 * Gets or sets text-alignment style property.
 	 */
-	textAlignment: TextAlignment;
+	textAlignment: CoreTypes.TextAlignmentType;
 
 	/**
 	 * Gets or sets text decorations style property.
 	 */
-	textDecoration: TextDecoration;
+	textDecoration: CoreTypes.TextDecorationType;
 
 	/**
 	 * Gets or sets text transform style property.
 	 */
-	textTransform: TextTransform;
+	textTransform: CoreTypes.TextTransformType;
+
+	/**
+	 * Gets or sets text shadow style property.
+	 */
+	textShadow: CSSShadow;
 
 	/**
 	 * Gets or sets white space style property.
 	 */
-	whiteSpace: WhiteSpace;
+	whiteSpace: CoreTypes.WhiteSpaceType;
 
 	/**
 	 * Gets or sets padding style property.
 	 */
-	padding: string | Length;
+	padding: string | CoreTypes.LengthType;
 
 	/**
 	 * Specify the bottom padding of this layout.
 	 */
-	paddingBottom: Length;
+	paddingBottom: CoreTypes.LengthType;
 
 	/**
 	 * Specify the left padding of this layout.
 	 */
-	paddingLeft: Length;
+	paddingLeft: CoreTypes.LengthType;
 
 	/**
 	 * Specify the right padding of this layout.
 	 */
-	paddingRight: Length;
+	paddingRight: CoreTypes.LengthType;
 
 	/**
 	 * Specify the top padding of this layout.
 	 */
-	paddingTop: Length;
+	paddingTop: CoreTypes.LengthType;
 
 	/**
 	 * Called for every child element declared in xml.
@@ -116,19 +123,15 @@ export interface TextTransformation {
 export const textProperty: Property<TextBase, string>;
 export const formattedTextProperty: Property<TextBase, FormattedString>;
 
-export type WhiteSpace = 'initial' | 'normal' | 'nowrap';
-export type TextAlignment = 'initial' | 'left' | 'center' | 'right';
-export type TextTransform = 'initial' | 'none' | 'capitalize' | 'uppercase' | 'lowercase';
-export type TextDecoration = 'none' | 'underline' | 'line-through' | 'underline line-through';
-
-export const textAlignmentProperty: InheritedCssProperty<Style, TextAlignment>;
-export const textDecorationProperty: CssProperty<Style, TextDecoration>;
-export const textTransformProperty: CssProperty<Style, TextTransform>;
-export const whiteSpaceProperty: CssProperty<Style, WhiteSpace>;
+export const textAlignmentProperty: InheritedCssProperty<Style, CoreTypes.TextAlignmentType>;
+export const textDecorationProperty: CssProperty<Style, CoreTypes.TextDecorationType>;
+export const textTransformProperty: CssProperty<Style, CoreTypes.TextTransformType>;
+export const textShadowProperty: CssProperty<Style, CSSShadow>;
+export const whiteSpaceProperty: CssProperty<Style, CoreTypes.WhiteSpaceType>;
 export const letterSpacingProperty: CssProperty<Style, number>;
 export const lineHeightProperty: CssProperty<Style, number>;
 
 //Used by tab view
-export function getTransformedText(text: string, textTransform: TextTransform): string;
+export function getTransformedText(text: string, textTransform: CoreTypes.TextTransformType): string;
 
 export const resetSymbol: symbol;

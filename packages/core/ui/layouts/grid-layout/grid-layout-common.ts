@@ -106,10 +106,10 @@ export class ItemSpec extends Observable implements ItemSpecDefinition {
 
 	public owner: GridLayoutBase;
 	public index: number;
-	public _actualLength: number = 0;
+	public _actualLength = 0;
 
 	public static create(value: number, type: GridUnitType): ItemSpec {
-		let spec = new ItemSpec();
+		const spec = new ItemSpec();
 		spec._value = value;
 		spec._unitType = type;
 

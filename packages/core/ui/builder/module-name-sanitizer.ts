@@ -3,7 +3,7 @@
  * @param moduleName the name
  * @param removeExtension whether to remove extension
  */
-export function sanitizeModuleName(moduleName: string, removeExtension: boolean = true): string {
+export function sanitizeModuleName(moduleName: string, removeExtension = true): string {
 	moduleName = moduleName.trim();
 
 	if (moduleName.startsWith('~/')) {

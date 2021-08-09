@@ -1,7 +1,7 @@
 ﻿import { Color } from '../../color';
 import { ViewBase } from '../core/view-base';
 import { FontStyle, FontWeight } from '../styling/font';
-import { TextDecoration } from '../text-base';
+import { CoreTypes } from '../../core-types';
 
 /**
  * A class used to create a single part of formatted string with a common text properties.
@@ -30,7 +30,7 @@ export class Span extends ViewBase {
 	/**
 	 * Gets or sets text decorations for the span.
 	 */
-	public textDecoration: TextDecoration;
+	public textDecoration: CoreTypes.TextDecorationType;
 
 	/**
 	 * Gets or sets the font foreground color of the span.

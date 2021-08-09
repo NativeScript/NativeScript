@@ -1,4 +1,4 @@
-import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyle, FontWeight } from './font-common';
+import { Font as FontBase, parseFontFamily, genericFontFamilies, FontStyle, FontWeight, FontStyleType, FontWeightType } from './font-common';
 import { Trace } from '../../trace';
 import { Device } from '../../platform';
 import * as fs from '../../file-system';
@@ -11,28 +11,32 @@ const DEFAULT_MONOSPACE = 'Courier New';
 const SUPPORT_FONT_WEIGHTS = parseFloat(Device.osVersion) >= 10.0;
 
 export class Font extends FontBase {
-	public static default = new Font(undefined, undefined, FontStyle.NORMAL, FontWeight.NORMAL);
+	public static default = new Font(undefined, undefined, FontStyle.NORMAL, FontWeight.NORMAL, 1);
 
 	private _uiFont: UIFont;
 
-	constructor(family: string, size: number, style: FontStyle, weight: FontWeight) {
-		super(family, size, style, weight);
+	constructor(family: string, size: number, style: FontStyleType, weight: FontWeightType, scale: number) {
+		super(family, size, style, weight, scale);
 	}
 
 	public withFontFamily(family: string): Font {
-		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight);
+		return new Font(family, this.fontSize, this.fontStyle, this.fontWeight, this.fontScale);
 	}
 
-	public withFontStyle(style: FontStyle): Font {
-		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
+	public withFontStyle(style: FontStyleType): Font {
+		return new Font(this.fontFamily, this.fontSize, style, this.fontWeight, this.fontScale);
 	}
 
-	public withFontWeight(weight: FontWeight): Font {
-		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
+	public withFontWeight(weight: FontWeightType): Font {
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight, this.fontScale);
 	}
 
 	public withFontSize(size: number): Font {
-		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight);
+		return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight, this.fontScale);
+	}
+
+	public withFontScale(scale: number): Font {
+		return new Font(this.fontFamily, this.fontSize, this.fontStyle, this.fontWeight, scale);
 	}
 
 	public getUIFont(defaultFont: UIFont): UIFont {
@@ -69,7 +73,7 @@ function shouldUseSystemFont(fontFamily: string) {
 	return !fontFamily || fontFamily === genericFontFamilies.sansSerif || fontFamily === genericFontFamilies.system;
 }
 
-function getNativeFontWeight(fontWeight: FontWeight): number {
+function getNativeFontWeight(fontWeight: FontWeightType): number {
 	switch (fontWeight) {
 		case FontWeight.THIN:
 			return UIFontWeightUltraLight;
@@ -101,7 +105,7 @@ function getNativeFontWeight(fontWeight: FontWeight): number {
 function getSystemFont(size: number, nativeWeight: number, italic: boolean, symbolicTraits: number): UIFont {
 	let result = UIFont.systemFontOfSizeWeight(size, nativeWeight);
 	if (italic) {
-		let descriptor = result.fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits);
+		const descriptor = result.fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits);
 		result = UIFont.fontWithDescriptorSize(descriptor, size);
 	}
 
@@ -114,7 +118,7 @@ function createUIFont(font: Font, defaultFont: UIFont): UIFont {
 	const nativeWeight = getNativeFontWeight(font.fontWeight);
 	const fontFamilies = parseFontFamily(font.fontFamily);
 
-	let symbolicTraits: number = 0;
+	let symbolicTraits = 0;
 	if (font.isBold) {
 		symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitBold;
 	}
@@ -122,7 +126,7 @@ function createUIFont(font: Font, defaultFont: UIFont): UIFont {
 		symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitItalic;
 	}
 
-	let fontDescriptorTraits = {
+	const fontDescriptorTraits = {
 		[UIFontSymbolicTrait]: symbolicTraits,
 	};
 
@@ -147,7 +151,7 @@ function createUIFont(font: Font, defaultFont: UIFont): UIFont {
 			let descriptor = UIFontDescriptor.fontDescriptorWithFontAttributes(<any>fontAttributes);
 			result = UIFont.fontWithDescriptorSize(descriptor, size);
 
-			let actualItalic = result.fontDescriptor.symbolicTraits & UIFontDescriptorSymbolicTraits.TraitItalic;
+			const actualItalic = result.fontDescriptor.symbolicTraits & UIFontDescriptorSymbolicTraits.TraitItalic;
 			if (font.isItalic && !actualItalic && EMULATE_OBLIQUE) {
 				// The font we got is not actually italic so emulate that with a matrix
 				descriptor = descriptor.fontDescriptorWithMatrix(OBLIQUE_TRANSFORM);
@@ -172,7 +176,7 @@ function createUIFont(font: Font, defaultFont: UIFont): UIFont {
 	return result;
 }
 
-export module ios {
+export namespace ios {
 	export function registerFont(fontFile: string) {
 		let filePath = fs.path.join(fs.knownFolders.currentApp().path, 'fonts', fontFile);
 		if (!fs.File.exists(filePath)) {

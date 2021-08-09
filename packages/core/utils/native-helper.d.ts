@@ -35,7 +35,7 @@ export namespace ad {
 	/**
 	 * Utility module dealing with some android collections.
 	 */
-	module collections {
+	namespace collections {
 		/**
 		 * Converts string array into a String [hash set](http://developer.android.com/reference/java/util/HashSet.html).
 		 * @param str - An array of strings to convert.
@@ -52,7 +52,7 @@ export namespace ad {
 	/**
 	 * Utility module related to android resources.
 	 */
-	export module resources {
+	export namespace resources {
 		/**
 		 * Gets the drawable id from a given name.
 		 * @param name - Name of the resource.
@@ -112,13 +112,13 @@ export namespace iOSNativeHelper {
 		 * Converts JavaScript array to [NSArray](https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSArray_Class/).
 		 * @param str - JavaScript string array to convert.
 		 */
-		export function jsArrayToNSArray(str: string[]): any;
+		export function jsArrayToNSArray<T>(str: T[]): NSArray<T>;
 
 		/**
 		 * Converts NSArray to JavaScript array.
 		 * @param a - NSArray to convert.
 		 */
-		export function nsArrayToJSArray(a: any): string[];
+		export function nsArrayToJSArray<T>(a: NSArray<T>): T[];
 	}
 
 	/**
@@ -168,7 +168,17 @@ export namespace iOSNativeHelper {
 	 */
 	export function applyRotateTransform(transform: any /* CATransform3D*/, x: number, y: number, z: number): any; /* CATransform3D*/
 
-	export class UIDocumentInteractionControllerDelegateImpl {}
+	/**
+	 * @param nativeView UIView to find shadow layer with
+	 * @param name Name of the shadow layer if looking for specifically named layer
+	 * @param create should we create a new layer if not found
+	 */
+	export function getShadowLayer(nativeView: any /* UIView */, name?: string, create?: boolean): any; /* CALayer */
+
+	/**
+	 * Create a UIDocumentInteractionControllerDelegate implementation for use with UIDocumentInteractionController
+	 */
+	export function createUIDocumentInteractionControllerDelegate(): any;
 
 	/**
 	 * Checks whether the application is running on real device and not on simulator.

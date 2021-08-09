@@ -7,7 +7,7 @@ import { Color } from '../color';
 
 // Types.
 import { path as fsPath, knownFolders } from '../file-system';
-import { isFileOrResourcePath, RESOURCE_PREFIX, layout } from '../utils';
+import { isFileOrResourcePath, RESOURCE_PREFIX, layout, releaseNativeObject } from '../utils';
 
 import { getScaledDimensions } from './image-source-common';
 
@@ -154,8 +154,13 @@ export class ImageSource implements ImageSourceDefinition {
 		return new Promise<ImageSource>((resolve, reject) => {
 			try {
 				const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
-				UIImage.imageWithData['async'](UIImage, [data]).then((uiImage) => {
-					resolve(new ImageSource(uiImage));
+				const main_queue = dispatch_get_current_queue();
+				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
+				dispatch_async(background_queue, () => {
+					const uiImage = UIImage.imageWithData(data);
+					dispatch_async(main_queue, () => {
+						resolve(new ImageSource(uiImage));
+					});
 				});
 			} catch (ex) {
 				reject(ex);
@@ -335,7 +340,8 @@ export class ImageSource implements ImageSourceDefinition {
 		const dim = getScaledDimensions(size.width, size.height, maxSize);
 
 		const newSize: CGSize = CGSizeMake(dim.width, dim.height);
-		UIGraphicsBeginImageContextWithOptions(newSize, true, this.ios.scale);
+
+		UIGraphicsBeginImageContextWithOptions(newSize, options?.opaque ?? false, this.ios.scale);
 		this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
 
 		const resizedImage = UIGraphicsGetImageFromCurrentImageContext();

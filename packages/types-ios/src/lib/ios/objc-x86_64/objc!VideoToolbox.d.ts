@@ -177,6 +177,8 @@ declare var kVTCompressionPropertyKey_GammaLevel: string;
 
 declare var kVTCompressionPropertyKey_H264EntropyMode: string;
 
+declare var kVTCompressionPropertyKey_HDRMetadataInsertionMode: string;
+
 declare var kVTCompressionPropertyKey_ICCProfile: string;
 
 declare var kVTCompressionPropertyKey_MasteringDisplayColorVolume: string;
@@ -204,6 +206,10 @@ declare var kVTCompressionPropertyKey_PixelAspectRatio: string;
 declare var kVTCompressionPropertyKey_PixelBufferPoolIsShared: string;
 
 declare var kVTCompressionPropertyKey_PixelTransferProperties: string;
+
+declare var kVTCompressionPropertyKey_PreserveDynamicHDRMetadata: string;
+
+declare var kVTCompressionPropertyKey_PrioritizeEncodingSpeedOverQuality: string;
 
 declare var kVTCompressionPropertyKey_ProfileLevel: string;
 
@@ -260,6 +266,8 @@ declare var kVTDecompressionPropertyKey_PixelBufferPoolIsShared: string;
 declare var kVTDecompressionPropertyKey_PixelFormatsWithReducedResolutionSupport: string;
 
 declare var kVTDecompressionPropertyKey_PixelTransferProperties: string;
+
+declare var kVTDecompressionPropertyKey_PropagatePerFrameHDRDisplayMetadata: string;
 
 declare var kVTDecompressionPropertyKey_RealTime: string;
 
@@ -322,6 +330,10 @@ declare const kVTFrameSiloInvalidTimeStampErr: number;
 declare var kVTH264EntropyMode_CABAC: string;
 
 declare var kVTH264EntropyMode_CAVLC: string;
+
+declare var kVTHDRMetadataInsertionMode_Auto: string;
+
+declare var kVTHDRMetadataInsertionMode_None: string;
 
 declare const kVTImageRotationNotSupportedErr: number;
 
@@ -495,6 +507,8 @@ declare var kVTScalingMode_Normal: string;
 
 declare var kVTScalingMode_Trim: string;
 
+declare const kVTSessionMalfunctionErr: number;
+
 declare const kVTUnlimitedFrameDelayCount: number;
 
 declare const kVTVideoDecoderAuthorizationErr: number;
@@ -502,6 +516,8 @@ declare const kVTVideoDecoderAuthorizationErr: number;
 declare const kVTVideoDecoderBadDataErr: number;
 
 declare const kVTVideoDecoderMalfunctionErr: number;
+
+declare const kVTVideoDecoderNeedsRosettaErr: number;
 
 declare const kVTVideoDecoderNotAvailableNowErr: number;
 
@@ -537,7 +553,11 @@ declare var kVTVideoEncoderList_QualityRating: string;
 
 declare var kVTVideoEncoderList_SupportedSelectionProperties: string;
 
+declare var kVTVideoEncoderList_SupportsFrameReordering: string;
+
 declare const kVTVideoEncoderMalfunctionErr: number;
+
+declare const kVTVideoEncoderNeedsRosettaErr: number;
 
 declare const kVTVideoEncoderNotAvailableNowErr: number;
 

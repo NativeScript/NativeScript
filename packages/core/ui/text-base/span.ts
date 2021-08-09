@@ -2,14 +2,14 @@
 import { Span as SpanDefinition } from './span';
 import { ViewBase } from '../core/view-base';
 import { FontStyle, FontWeight } from '../styling/font';
-import { TextDecoration } from '../text-base';
+import { CoreTypes } from '../../core-types';
 import { EventData } from '../../data/observable';
 import { isNullOrUndefined, isString } from '../../utils/types';
 
 export class Span extends ViewBase implements SpanDefinition {
 	static linkTapEvent = 'linkTap';
 	private _text: string;
-	private _tappable: boolean = false;
+	private _tappable = false;
 
 	get fontFamily(): string {
 		return this.style.fontFamily;
@@ -41,10 +41,10 @@ export class Span extends ViewBase implements SpanDefinition {
 		this.style.fontWeight = value;
 	}
 
-	get textDecoration(): TextDecoration {
+	get textDecoration(): CoreTypes.TextDecorationType {
 		return this.style.textDecoration;
 	}
-	set textDecoration(value: TextDecoration) {
+	set textDecoration(value: CoreTypes.TextDecorationType) {
 		this.style.textDecoration = value;
 	}
 

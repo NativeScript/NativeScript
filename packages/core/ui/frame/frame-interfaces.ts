@@ -80,7 +80,7 @@ export interface AndroidActivityCallbacks {
 	onPostResume(activity: any, superFunc: Function): void;
 	onDestroy(activity: any, superFunc: Function): void;
 	onBackPressed(activity: any, superFunc: Function): void;
-	onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void;
+	onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<string>, grantResults: Array<number>, superFunc: Function): void;
 	onActivityResult(activity: any, requestCode: number, resultCode: number, data: any, superFunc: Function);
 	onNewIntent(activity: any, intent: any, superSetIntentFunc: Function, superFunc: Function): void;
 }

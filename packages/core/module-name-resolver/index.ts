@@ -39,7 +39,7 @@ export class ModuleNameResolver {
 		// This call will return a clean path without qualifiers
 		path = stripQualifiers(path);
 
-		let candidates = this.getCandidates(path, ext);
+		const candidates = this.getCandidates(path, ext);
 		result = findMatch(path, ext, candidates, this.context);
 
 		return result;

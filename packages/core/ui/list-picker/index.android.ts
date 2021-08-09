@@ -59,7 +59,7 @@ function initializeNativeClasses(): void {
 
 function getEditText(picker: android.widget.NumberPicker): android.widget.EditText {
 	for (let i = 0, count = picker.getChildCount(); i < count; i++) {
-		let child = picker.getChildAt(i);
+		const child = picker.getChildAt(i);
 		if (child instanceof android.widget.EditText) {
 			return child;
 		}
@@ -165,7 +165,7 @@ export class ListPicker extends ListPickerBase {
 		return null;
 	}
 	[itemsProperty.setNative](value: any[] | ItemsSource) {
-		let maxValue = value && value.length > 0 ? value.length - 1 : 0;
+		const maxValue = value && value.length > 0 ? value.length - 1 : 0;
 		this.nativeViewProtected.setMaxValue(maxValue);
 		this._fixNumberPickerRendering();
 

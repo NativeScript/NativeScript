@@ -1,4 +1,4 @@
-import { WebViewBase, WebViewClient } from './web-view-common';
+import { disableZoomProperty, WebViewBase, WebViewClient } from './web-view-common';
 import { Trace } from '../../trace';
 import { knownFolders } from '../../file-system';
 
@@ -49,13 +49,13 @@ function initializeWebViewClient(): void {
 			}
 		}
 
-		public onReceivedError() {
-			let view: android.webkit.WebView = arguments[0];
+		public onReceivedError(...args) {
+			const view: android.webkit.WebView = args[0];
 
 			if (arguments.length === 4) {
-				let errorCode: number = arguments[1];
-				let description: string = arguments[2];
-				let failingUrl: string = arguments[3];
+				const errorCode: number = args[1];
+				const description: string = args[2];
+				const failingUrl: string = args[3];
 
 				super.onReceivedError(view, errorCode, description, failingUrl);
 
@@ -67,8 +67,8 @@ function initializeWebViewClient(): void {
 					owner._onLoadFinished(failingUrl, description + '(' + errorCode + ')');
 				}
 			} else {
-				let request: any = arguments[1];
-				let error: any = arguments[2];
+				const request: any = args[1];
+				const error: any = args[2];
 
 				// before API version 23 there's no onReceiveError with 3 parameters, so it shouldn't come here
 				// but we don't have the onReceivedError with 3 parameters there and that's why we are ignorint tye typescript error
@@ -107,6 +107,7 @@ export class WebView extends WebViewBase {
 		const client = new WebViewClient(<any>this);
 		nativeView.setWebViewClient(client);
 		(<any>nativeView).client = client;
+		this._disableZoom(this.disableZoom);
 	}
 
 	public disposeNativeView() {
@@ -117,6 +118,19 @@ export class WebView extends WebViewBase {
 
 		(<any>nativeView).client.owner = null;
 		super.disposeNativeView();
+	}
+
+	private _disableZoom(value: boolean) {
+		if (this.nativeView && value) {
+			const settings = this.nativeView.getSettings();
+			settings.setBuiltInZoomControls(false);
+			settings.setSupportZoom(false);
+			settings.setDisplayZoomControls(false);
+		}
+	}
+
+	[disableZoomProperty.setNative](value: boolean) {
+		this._disableZoom(value);
 	}
 
 	public _loadUrl(src: string) {

@@ -9,6 +9,7 @@ import { Label } from '../label';
 import { Observable, EventData } from '../../data/observable';
 import { ObservableArray, ChangedData } from '../../data/observable-array';
 import { addWeakEventListener, removeWeakEventListener } from '../core/weak-event-listener';
+import { CoreTypes } from '../../core-types';
 
 const autoEffectiveRowHeight = -1;
 
@@ -36,8 +37,8 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 
 	public _itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
 	public _effectiveRowHeight: number = autoEffectiveRowHeight;
-	public rowHeight: Length;
-	public iosEstimatedRowHeight: Length;
+	public rowHeight: CoreTypes.LengthType;
+	public iosEstimatedRowHeight: CoreTypes.LengthType;
 	public items: any[] | ItemsSource;
 	public itemTemplate: string | Template;
 	public itemTemplates: string | Array<KeyedTemplate>;
@@ -97,7 +98,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	public _getItemTemplate(index: number): KeyedTemplate {
 		let templateKey = 'default';
 		if (this.itemTemplateSelector) {
-			let dataItem = this._getDataItem(index);
+			const dataItem = this._getDataItem(index);
 			templateKey = this._itemTemplateSelector(dataItem, index, this.items);
 		}
 
@@ -118,13 +119,13 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 	}
 
 	private _getDataItem(index: number): any {
-		let thisItems = <ItemsSource>this.items;
+		const thisItems = <ItemsSource>this.items;
 
 		return thisItems.getItem ? thisItems.getItem(index) : thisItems[index];
 	}
 
 	public _getDefaultItemContent(index: number): View {
-		let lbl = new Label();
+		const lbl = new Label();
 		lbl.bind({
 			targetProperty: 'text',
 			sourceProperty: '$value',
@@ -137,7 +138,7 @@ export abstract class ListViewBase extends ContainerView implements ListViewDefi
 		this.refresh();
 	}
 
-	public _onRowHeightPropertyChanged(oldValue: Length, newValue: Length) {
+	public _onRowHeightPropertyChanged(oldValue: CoreTypes.LengthType, newValue: CoreTypes.LengthType) {
 		this.refresh();
 	}
 
@@ -203,11 +204,11 @@ export const itemTemplatesProperty = new Property<ListViewBase, string | Array<K
 });
 itemTemplatesProperty.register(ListViewBase);
 
-const defaultRowHeight: Length = 'auto';
+const defaultRowHeight: CoreTypes.LengthType = 'auto';
 /**
  * Represents the observable property backing the rowHeight property of each ListView instance.
  */
-export const rowHeightProperty = new CoercibleProperty<ListViewBase, Length>({
+export const rowHeightProperty = new CoercibleProperty<ListViewBase, CoreTypes.LengthType>({
 	name: 'rowHeight',
 	defaultValue: defaultRowHeight,
 	equalityComparer: Length.equals,
@@ -223,7 +224,7 @@ export const rowHeightProperty = new CoercibleProperty<ListViewBase, Length>({
 });
 rowHeightProperty.register(ListViewBase);
 
-export const iosEstimatedRowHeightProperty = new Property<ListViewBase, Length>({
+export const iosEstimatedRowHeightProperty = new Property<ListViewBase, CoreTypes.LengthType>({
 	name: 'iosEstimatedRowHeight',
 	valueConverter: (v) => Length.parse(v),
 });

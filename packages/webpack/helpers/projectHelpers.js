@@ -44,6 +44,20 @@ const isVue = ({ projectDir, packageJson } = {}) => {
         .some(dependency => dependency === "nativescript-vue");
 };
 
+const isReact = ({ projectDir, packageJson } = {}) => {
+  packageJson = packageJson || getPackageJson(projectDir);
+
+  return packageJson.dependencies && Object.keys(packageJson.dependencies)
+      .some(dependency => dependency === "react-nativescript");
+};
+
+const isSvelte = ({ projectDir, packageJson } = {}) => {
+  packageJson = packageJson || getPackageJson(projectDir);
+
+  return packageJson.dependencies && Object.keys(packageJson.dependencies)
+      .some(dependency => dependency === "svelte-native");
+};
+
 const getPackageJson = projectDir => {
     const packageJsonPath = getPackageJsonPath(projectDir);
     const result = readJsonFile(packageJsonPath);
@@ -88,7 +102,15 @@ const getIndentationCharacter = (jsonContent) => {
 
 const getProjectDir = hook.findProjectDir;
 
-const getPackageJsonPath = projectDir => resolve(projectDir, "package.json");
+const getPackageJsonPath = projectDir => {
+  const packagePath = resolve(projectDir, "package.json");
+  if (fs.existsSync(packagePath)) {
+    return packagePath;
+  } else {
+    return getPackageJsonPath(resolve(projectDir, '..'));
+  }
+
+}
 const getNsConfigPath = projectDir => resolve(projectDir, "nsconfig.json");
 
 const isAndroid = platform => /android/i.test(platform);
@@ -129,6 +151,8 @@ module.exports = {
     isPlugin,
     getAngularVersion,
     isVue,
+    isReact,
+    isSvelte,
     isTypeScript,
     writePackageJson,
     convertSlashesInPath,

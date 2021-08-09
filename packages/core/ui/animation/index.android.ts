@@ -21,14 +21,14 @@ function ensureArgbEvaluator() {
 	}
 }
 
-let easeIn = lazy(() => new android.view.animation.AccelerateInterpolator(1));
-let easeOut = lazy(() => new android.view.animation.DecelerateInterpolator(1));
-let easeInOut = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
-let linear = lazy(() => new android.view.animation.LinearInterpolator());
-let bounce = lazy(() => new android.view.animation.BounceInterpolator());
+const easeIn = lazy(() => new android.view.animation.AccelerateInterpolator(1));
+const easeOut = lazy(() => new android.view.animation.DecelerateInterpolator(1));
+const easeInOut = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
+const linear = lazy(() => new android.view.animation.LinearInterpolator());
+const bounce = lazy(() => new android.view.animation.BounceInterpolator());
 
-let keyPrefix = 'ui.animation.';
-let propertyKeys = {};
+const keyPrefix = 'ui.animation.';
+const propertyKeys = {};
 propertyKeys[Properties.backgroundColor] = Symbol(keyPrefix + Properties.backgroundColor);
 propertyKeys[Properties.opacity] = Symbol(keyPrefix + Properties.opacity);
 propertyKeys[Properties.rotate] = Symbol(keyPrefix + Properties.rotate);
@@ -92,7 +92,7 @@ function getAndroidRepeatCount(iterations: number): number {
 }
 
 function createObjectAnimator(nativeView: android.view.View, propertyName: string, value: number): android.animation.ObjectAnimator {
-	let arr = Array.create('float', 1);
+	const arr = Array.create('float', 1);
 	arr[0] = value;
 
 	return android.animation.ObjectAnimator.ofFloat(nativeView, propertyName, arr);
@@ -126,7 +126,7 @@ export class Animation extends AnimationBase {
 	private _propertyResetCallbacks: Array<Function>;
 	private _valueSource: 'animation' | 'keyframe';
 	private _target: View;
-	private _resetOnFinish: boolean = true;
+	private _resetOnFinish = true;
 
 	constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
 		super(animationDefinitions, playSequentially);
@@ -136,7 +136,7 @@ export class Animation extends AnimationBase {
 			this._valueSource = animationDefinitions[0].valueSource;
 		}
 
-		let that = new WeakRef(this);
+		const that = new WeakRef(this);
 		this._animatorListener = new android.animation.Animator.AnimatorListener({
 			onAnimationStart: function (animator: android.animation.Animator): void {
 				if (Trace.isEnabled()) {
@@ -300,7 +300,7 @@ export class Animation extends AnimationBase {
 		let originalValue3;
 		const density = layout.getDisplayDensity();
 
-		let key = propertyKeys[propertyAnimation.property];
+		const key = propertyKeys[propertyAnimation.property];
 		if (key) {
 			propertyAnimation.target[key] = propertyAnimation;
 		}
@@ -313,7 +313,7 @@ export class Animation extends AnimationBase {
 			};
 		}
 
-		let setLocal = this._valueSource === 'animation';
+		const setLocal = this._valueSource === 'animation';
 		const style = propertyAnimation.target.style;
 		switch (propertyAnimation.property) {
 			case Properties.opacity:
@@ -340,7 +340,7 @@ export class Animation extends AnimationBase {
 				animators.push(createObjectAnimator(nativeView, 'alpha', propertyAnimation.value));
 				break;
 
-			case Properties.backgroundColor:
+			case Properties.backgroundColor: {
 				backgroundColorProperty._initDefaultNativeValue(style);
 
 				ensureArgbEvaluator();
@@ -348,11 +348,11 @@ export class Animation extends AnimationBase {
 				const nativeArray = Array.create(java.lang.Object, 2);
 				nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);
 				nativeArray[1] = java.lang.Integer.valueOf((<Color>propertyAnimation.value).argb);
-				let animator = android.animation.ValueAnimator.ofObject(argbEvaluator, nativeArray);
+				const animator = android.animation.ValueAnimator.ofObject(argbEvaluator, nativeArray);
 				animator.addUpdateListener(
 					new android.animation.ValueAnimator.AnimatorUpdateListener({
 						onAnimationUpdate(animator: android.animation.ValueAnimator) {
-							let argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
+							const argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
 							propertyAnimation.target.style[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = new Color(argb);
 						},
 					})
@@ -378,7 +378,7 @@ export class Animation extends AnimationBase {
 				);
 				animators.push(animator);
 				break;
-
+			}
 			case Properties.translate:
 				translateXProperty._initDefaultNativeValue(style);
 				translateYProperty._initDefaultNativeValue(style);
@@ -494,18 +494,18 @@ export class Animation extends AnimationBase {
 				extentProperty._initDefaultNativeValue(style);
 				const nativeArray = Array.create('float', 2);
 				let toValue = propertyAnimation.value;
-				let parent = propertyAnimation.target.parent as View;
+				const parent = propertyAnimation.target.parent as View;
 				if (!parent) {
 					throw new Error(`cannot animate ${propertyAnimation.property} on root view`);
 				}
 				const parentExtent: number = isVertical ? parent.getMeasuredHeight() : parent.getMeasuredWidth();
 				toValue = PercentLength.toDevicePixels(toValue, parentExtent, parentExtent) / Screen.mainScreen.scale;
-				let nativeHeight: number = isVertical ? nativeView.getHeight() : nativeView.getWidth();
+				const nativeHeight: number = isVertical ? nativeView.getHeight() : nativeView.getWidth();
 				const targetStyle: string = setLocal ? extentProperty.name : extentProperty.keyframe;
 				originalValue1 = nativeHeight / Screen.mainScreen.scale;
 				nativeArray[0] = originalValue1;
 				nativeArray[1] = toValue;
-				let extentAnimator = android.animation.ValueAnimator.ofFloat(nativeArray);
+				const extentAnimator = android.animation.ValueAnimator.ofFloat(nativeArray);
 				extentAnimator.addUpdateListener(
 					new android.animation.ValueAnimator.AnimatorUpdateListener({
 						onAnimationUpdate(animator: android.animation.ValueAnimator) {

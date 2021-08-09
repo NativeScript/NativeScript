@@ -39,7 +39,7 @@ describe('css', () => {
 			describe('color', () => {
 				test(parseColor, '  #369 ', { start: 0, end: 7, value: 0xff336699 });
 				test(parseColor, '  #456789 ', { start: 0, end: 10, value: 0xff456789 });
-				test(parseColor, '  #85456789 ', { start: 0, end: 12, value: 0x85456789 });
+				test(parseColor, '  #45678985 ', { start: 0, end: 12, value: 0x45678985 });
 				test(parseColor, '  rgb(255, 8, 128) ', { start: 0, end: 18, value: 0xffff0880 });
 				test(parseColor, '  rgba(255, 8, 128, 0.5) ', { start: 0, end: 24, value: 0x80ff0880 });
 				test(parseColor, '  hsl(330.9, 100%, 51.6%) ', { start: 0, end: 25, value: 0xffff0880 });
@@ -278,8 +278,8 @@ describe('css', () => {
 					const cssparser = new CSS3Parser(themeCoreLightIos);
 					const stylesheet = cssparser.tokenize();
 
-					let original = themeCoreLightIos.replace(/\/\*([^\/]|\/[^\*])*\*\//g, '').replace(/\n/g, ' ');
-					let roundtrip = stylesheet
+					const original = themeCoreLightIos.replace(/\/\*([^\/]|\/[^\*])*\*\//g, '').replace(/\n/g, ' ');
+					const roundtrip = stylesheet
 						.map((m) => {
 							if (!m) {
 								return '';
@@ -293,8 +293,8 @@ describe('css', () => {
 						})
 						.join('');
 
-					let lastIndex = Math.min(original.length, roundtrip.length);
-					for (var i = 0; i < lastIndex; i++) {
+					const lastIndex = Math.min(original.length, roundtrip.length);
+					for (let i = 0; i < lastIndex; i++) {
 						if (original[i] !== roundtrip[i]) {
 							assert.equal(roundtrip.substr(i, 50), original.substr(i, 50), 'Round-tripped CSS string differ at index: ' + i);
 						}

@@ -23,6 +23,11 @@ export interface CancelableOptions {
 	 * [Android only] Gets or sets if the dialog can be canceled by taping outside of the dialog.
 	 */
 	cancelable?: boolean;
+
+	/**
+	 * [Android only] Sets the theme of the Dialog. Usable themes can be found: https://developer.android.com/reference/android/R.style
+	 */
+	theme?: number;
 }
 
 /**
@@ -178,65 +183,65 @@ export interface LoginOptions extends ConfirmOptions {
 /**
  * Defines the input type for prompt dialog.
  */
-export module inputType {
+export namespace inputType {
 	/**
 	 * Plain text input type.
 	 */
-	export const text: string = 'text';
+	export const text = 'text';
 
 	/**
 	 * Password input type.
 	 */
-	export const password: string = 'password';
+	export const password = 'password';
 
 	/**
 	 * Email input type.
 	 */
-	export const email: string = 'email';
+	export const email = 'email';
 
 	/**
 	 * Number input type
 	 */
-	export const number: string = 'number';
+	export const number = 'number';
 
 	/**
 	 * Decimal input type
 	 */
-	export const decimal: string = 'decimal';
+	export const decimal = 'decimal';
 
 	/**
 	 * Phone input type
 	 */
-	export const phone: string = 'phone';
+	export const phone = 'phone';
 }
 
 /**
  * Defines the capitalization type for prompt dialog.
  */
-export module capitalizationType {
+export namespace capitalizationType {
 	/**
 	 * No automatic capitalization.
 	 */
-	export const none: string = 'none';
+	export const none = 'none';
 
 	/**
 	 * Capitalizes every character.
 	 */
-	export const all: string = 'all';
+	export const all = 'all';
 
 	/**
 	 * Capitalize the first word of each sentence.
 	 */
-	export const sentences: string = 'sentences';
+	export const sentences = 'sentences';
 
 	/**
 	 * Capitalize the first letter of every word.
 	 */
-	export const words: string = 'words';
+	export const words = 'words';
 }
 
 export function getCurrentPage(): Page {
-	let topmostFrame = Frame.topmost();
+	const topmostFrame = Frame.topmost();
 	if (topmostFrame) {
 		return topmostFrame.currentPage;
 	}
@@ -245,9 +250,9 @@ export function getCurrentPage(): Page {
 }
 
 function applySelectors<T extends View>(view: T, callback: (view: T) => void) {
-	let currentPage = getCurrentPage();
+	const currentPage = getCurrentPage();
 	if (currentPage) {
-		let styleScope = currentPage._styleScope;
+		const styleScope = currentPage._styleScope;
 		if (styleScope) {
 			view._inheritStyleScope(styleScope);
 			view.onLoaded();
@@ -324,7 +329,7 @@ export function parseLoginOptions(args: any[]): LoginOptions {
 		return args[0];
 	}
 
-	let options: LoginOptions = {
+	const options: LoginOptions = {
 		title: DialogStrings.LOGIN,
 		okButtonText: DialogStrings.OK,
 		cancelButtonText: DialogStrings.CANCEL,

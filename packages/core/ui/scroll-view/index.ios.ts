@@ -12,14 +12,14 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 	private _owner: WeakRef<ScrollView>;
 
 	public static initWithOwner(owner: WeakRef<ScrollView>): UIScrollViewDelegateImpl {
-		let impl = <UIScrollViewDelegateImpl>UIScrollViewDelegateImpl.new();
+		const impl = <UIScrollViewDelegateImpl>UIScrollViewDelegateImpl.new();
 		impl._owner = owner;
 
 		return impl;
 	}
 
 	public scrollViewDidScroll(sv: UIScrollView): void {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			owner.notify(<ScrollEventData>{
 				object: owner,
@@ -35,8 +35,8 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 
 export class ScrollView extends ScrollViewBase {
 	public nativeViewProtected: UIScrollView;
-	private _contentMeasuredWidth: number = 0;
-	private _contentMeasuredHeight: number = 0;
+	private _contentMeasuredWidth = 0;
+	private _contentMeasuredHeight = 0;
 	private _delegate: UIScrollViewDelegateImpl;
 
 	public createNativeView() {

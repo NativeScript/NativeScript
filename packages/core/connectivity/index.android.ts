@@ -1,4 +1,5 @@
 import { android as androidApp, getNativeApplication } from '../application';
+
 export enum connectionType {
 	none = 0,
 	wifi = 1,
@@ -20,7 +21,7 @@ function getConnectivityManager(): android.net.ConnectivityManager {
 }
 
 function getActiveNetworkInfo(): android.net.NetworkInfo {
-	let connectivityManager = getConnectivityManager();
+	const connectivityManager = getConnectivityManager();
 	if (!connectivityManager) {
 		return null;
 	}
@@ -29,13 +30,15 @@ function getActiveNetworkInfo(): android.net.NetworkInfo {
 }
 
 function getNetworkCapabilities() {
-	const connectivityManager = getConnectivityManager() as any;
+	// @ts-ignore
+	const connectivityManager: any = getConnectivityManager();
 	const network = connectivityManager.getActiveNetwork();
 	const capabilities = connectivityManager.getNetworkCapabilities(network);
 	if (capabilities == null) {
 		return connectionType.none;
 	}
 
+	// @ts-ignore
 	const NetworkCapabilities = (android as any).net.NetworkCapabilities;
 
 	if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
@@ -65,12 +68,12 @@ export function getConnectionType(): number {
 	if (android.os.Build.VERSION.SDK_INT >= 28) {
 		return getNetworkCapabilities();
 	} else {
-		let activeNetworkInfo = getActiveNetworkInfo();
+		const activeNetworkInfo = getActiveNetworkInfo();
 		if (!activeNetworkInfo || !activeNetworkInfo.isConnected()) {
 			return connectionType.none;
 		}
 
-		let type = activeNetworkInfo.getTypeName().toLowerCase();
+		const type = activeNetworkInfo.getTypeName().toLowerCase();
 		if (type.indexOf(wifi) !== -1) {
 			return connectionType.wifi;
 		}
@@ -96,24 +99,26 @@ export function getConnectionType(): number {
 }
 
 function startMonitoringLegacy(connectionTypeChangedCallback) {
-	let onReceiveCallback = function onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
-		let newConnectionType = getConnectionType();
+	const onReceiveCallback = function onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
+		const newConnectionType = getConnectionType();
 		connectionTypeChangedCallback(newConnectionType);
 	};
-	let zoneCallback = <any>zonedCallback(onReceiveCallback);
+	const zoneCallback = zonedCallback(onReceiveCallback);
+	// @ts-ignore
 	androidApp.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, zoneCallback);
 }
 
 let callback;
 let networkCallback;
 let notifyCallback;
+
 export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
 	if (android.os.Build.VERSION.SDK_INT >= 28) {
 		const manager = getConnectivityManager();
 		if (manager) {
 			notifyCallback = () => {
-				let newConnectionType = getConnectionType();
-				let zoneCallback = <any>zonedCallback(connectionTypeChangedCallback);
+				const newConnectionType = getConnectionType();
+				const zoneCallback = zonedCallback(connectionTypeChangedCallback);
 				zoneCallback(newConnectionType);
 			};
 			const ConnectivityManager = android.net.ConnectivityManager;
@@ -121,18 +126,30 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 				@NativeClass
 				class NetworkCallbackImpl extends ConnectivityManager.NetworkCallback {
 					onAvailable(network: android.net.Network) {
-						notifyCallback();
+						if (notifyCallback) {
+							notifyCallback();
+						}
 					}
+
 					onCapabilitiesChanged(network: android.net.Network, networkCapabilities: android.net.NetworkCapabilities) {
-						notifyCallback();
+						if (notifyCallback) {
+							notifyCallback();
+						}
 					}
+
 					onLost(network) {
-						notifyCallback();
+						if (notifyCallback) {
+							notifyCallback();
+						}
 					}
+
 					onUnavailable() {
-						notifyCallback();
+						if (notifyCallback) {
+							notifyCallback();
+						}
 					}
 				}
+
 				networkCallback = NetworkCallbackImpl;
 			}
 			callback = new networkCallback();
@@ -145,7 +162,8 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
 
 export function stopMonitoring(): void {
 	if (android.os.Build.VERSION.SDK_INT >= 28) {
-		const manager = getConnectivityManager() as any;
+		// @ts-ignore
+		const manager = getConnectivityManager();
 		if (manager && callback) {
 			manager.unregisterNetworkCallback(callback);
 			notifyCallback = null;

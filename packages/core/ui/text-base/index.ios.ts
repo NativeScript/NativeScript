@@ -1,15 +1,18 @@
 // Types
-import { TextDecoration, TextAlignment, TextTransform, getClosestPropertyValue } from './text-base-common';
+import { getClosestPropertyValue } from './text-base-common';
+import { CSSShadow } from '../styling/css-shadow';
 
 // Requires
 import { Font } from '../styling/font';
-import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, letterSpacingProperty, lineHeightProperty, resetSymbol } from './text-base-common';
+import { TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty, textTransformProperty, textShadowProperty, letterSpacingProperty, lineHeightProperty, resetSymbol } from './text-base-common';
 import { Color } from '../../color';
 import { FormattedString } from './formatted-string';
 import { Span } from './span';
-import { colorProperty, fontInternalProperty, VerticalAlignment } from '../styling/style-properties';
-import { isString, isDefined, isNullOrUndefined } from '../../utils/types';
+import { colorProperty, fontInternalProperty, Length } from '../styling/style-properties';
+import { isString, isNullOrUndefined } from '../../utils/types';
 import { iOSNativeHelper } from '../../utils';
+import { Trace } from '../../trace';
+import { CoreTypes } from '../../core-types';
 
 export * from './text-base-common';
 
@@ -20,20 +23,20 @@ class UILabelClickHandlerImpl extends NSObject {
 	private _owner: WeakRef<TextBase>;
 
 	public static initWithOwner(owner: WeakRef<TextBase>): UILabelClickHandlerImpl {
-		let handler = <UILabelClickHandlerImpl>UILabelClickHandlerImpl.new();
+		const handler = <UILabelClickHandlerImpl>UILabelClickHandlerImpl.new();
 		handler._owner = owner;
 
 		return handler;
 	}
 
 	public linkTap(tapGesture: UITapGestureRecognizer) {
-		let owner = this._owner.get();
+		const owner = this._owner.get();
 		if (owner) {
 			// https://stackoverflow.com/a/35789589
-			let label = <UILabel>owner.nativeTextViewProtected;
-			let layoutManager = NSLayoutManager.alloc().init();
-			let textContainer = NSTextContainer.alloc().initWithSize(CGSizeZero);
-			let textStorage = NSTextStorage.alloc().initWithAttributedString(owner.nativeTextViewProtected['attributedText']);
+			const label = <UILabel>owner.nativeTextViewProtected;
+			const layoutManager = NSLayoutManager.alloc().init();
+			const textContainer = NSTextContainer.alloc().initWithSize(CGSizeZero);
+			const textStorage = NSTextStorage.alloc().initWithAttributedString(owner.nativeTextViewProtected['attributedText']);
 
 			layoutManager.addTextContainer(textContainer);
 			textStorage.addLayoutManager(layoutManager);
@@ -41,22 +44,22 @@ class UILabelClickHandlerImpl extends NSObject {
 			textContainer.lineFragmentPadding = 0;
 			textContainer.lineBreakMode = label.lineBreakMode;
 			textContainer.maximumNumberOfLines = label.numberOfLines;
-			let labelSize = label.bounds.size;
+			const labelSize = label.bounds.size;
 			textContainer.size = labelSize;
 
-			let locationOfTouchInLabel = tapGesture.locationInView(label);
-			let textBoundingBox = layoutManager.usedRectForTextContainer(textContainer);
+			const locationOfTouchInLabel = tapGesture.locationInView(label);
+			const textBoundingBox = layoutManager.usedRectForTextContainer(textContainer);
 
-			let textContainerOffset = CGPointMake((labelSize.width - textBoundingBox.size.width) * 0.5 - textBoundingBox.origin.x, (labelSize.height - textBoundingBox.size.height) * 0.5 - textBoundingBox.origin.y);
+			const textContainerOffset = CGPointMake((labelSize.width - textBoundingBox.size.width) * 0.5 - textBoundingBox.origin.x, (labelSize.height - textBoundingBox.size.height) * 0.5 - textBoundingBox.origin.y);
 
-			let locationOfTouchInTextContainer = CGPointMake(locationOfTouchInLabel.x - textContainerOffset.x, locationOfTouchInLabel.y - textContainerOffset.y);
+			const locationOfTouchInTextContainer = CGPointMake(locationOfTouchInLabel.x - textContainerOffset.x, locationOfTouchInLabel.y - textContainerOffset.y);
 
-			let indexOfCharacter = layoutManager.characterIndexForPointInTextContainerFractionOfDistanceBetweenInsertionPoints(locationOfTouchInTextContainer, textContainer, null);
+			const indexOfCharacter = layoutManager.characterIndexForPointInTextContainerFractionOfDistanceBetweenInsertionPoints(locationOfTouchInTextContainer, textContainer, null);
 
 			let span: Span = null;
 			// try to find the corresponding span using the spanRanges
 			for (let i = 0; i < owner._spanRanges.length; i++) {
-				let range = owner._spanRanges[i];
+				const range = owner._spanRanges[i];
 				if (range.location <= indexOfCharacter && range.location + range.length > indexOfCharacter) {
 					if (owner.formattedText && owner.formattedText.spans.length > i) {
 						span = owner.formattedText.spans.getItem(i);
@@ -79,8 +82,9 @@ class UILabelClickHandlerImpl extends NSObject {
 
 export class TextBase extends TextBaseCommon {
 	public nativeViewProtected: UITextField | UITextView | UILabel | UIButton;
+	// @ts-ignore
 	public nativeTextViewProtected: UITextField | UITextView | UILabel | UIButton;
-	private _tappable: boolean = false;
+	private _tappable = false;
 	private _tapGestureRecognizer: UITapGestureRecognizer;
 	public _spanRanges: NSRange[];
 
@@ -128,7 +132,7 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[colorProperty.getDefault](): UIColor {
-		let nativeView = this.nativeTextViewProtected;
+		const nativeView = this.nativeTextViewProtected;
 		if (nativeView instanceof UIButton) {
 			return nativeView.titleColorForState(UIControlState.Normal);
 		} else {
@@ -150,12 +154,11 @@ export class TextBase extends TextBaseCommon {
 		if (!(value instanceof Font) || !this.formattedText) {
 			let nativeView = this.nativeTextViewProtected;
 			nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
-			const font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
-			nativeView.font = font;
+			nativeView.font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
 		}
 	}
 
-	[textAlignmentProperty.setNative](value: TextAlignment) {
+	[textAlignmentProperty.setNative](value: CoreTypes.TextAlignmentType) {
 		const nativeView = <UITextField | UITextView | UILabel>this.nativeTextViewProtected;
 		switch (value) {
 			case 'initial':
@@ -171,11 +174,11 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
-	[textDecorationProperty.setNative](value: TextDecoration) {
+	[textDecorationProperty.setNative](value: CoreTypes.TextDecorationType) {
 		this._setNativeText();
 	}
 
-	[textTransformProperty.setNative](value: TextTransform) {
+	[textTransformProperty.setNative](value: CoreTypes.TextTransformType) {
 		this._setNativeText();
 	}
 
@@ -187,7 +190,11 @@ export class TextBase extends TextBaseCommon {
 		this._setNativeText();
 	}
 
-	_setNativeText(reset: boolean = false): void {
+	[textShadowProperty.setNative](value: CSSShadow) {
+		this._setShadow(value);
+	}
+
+	_setNativeText(reset = false): void {
 		if (reset) {
 			const nativeView = this.nativeTextViewProtected;
 			if (nativeView instanceof UIButton) {
@@ -219,8 +226,11 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
+	createFormattedTextNative(value: FormattedString) {
+		return this.createNSMutableAttributedString(value);
+	}
 	setFormattedTextDecorationAndTransform() {
-		const attrText = this.createNSMutableAttributedString(this.formattedText);
+		const attrText = this.createFormattedTextNative(this.formattedText);
 		// TODO: letterSpacing should be applied per Span.
 		if (this.letterSpacing !== 0) {
 			attrText.addAttributeValueRange(NSKernAttributeName, this.letterSpacing * this.nativeTextViewProtected.font.pointSize, { location: 0, length: attrText.length });
@@ -342,8 +352,44 @@ export class TextBase extends TextBaseCommon {
 		}
 	}
 
+	_setShadow(value: CSSShadow): void {
+		const layer = iOSNativeHelper.getShadowLayer(this.nativeTextViewProtected, 'ns-text-shadow');
+		if (!layer) {
+			Trace.write('text-shadow not applied, no layer.', Trace.categories.Style, Trace.messageType.info);
+			return;
+		}
+
+		if (isNullOrUndefined(value)) {
+			// clear the text shadow
+			layer.shadowOpacity = 0;
+			layer.shadowRadius = 0;
+			layer.shadowColor = UIColor.clearColor;
+			layer.shadowOffset = CGSizeMake(0, 0);
+			return;
+		}
+
+		// shadow opacity is handled on the shadow's color instance
+		layer.shadowOpacity = value.color?.a ? value.color?.a / 255 : 1;
+		layer.shadowColor = value.color.ios.CGColor;
+		layer.shadowRadius = Length.toDevicePixels(value.blurRadius, 0.0);
+
+		// prettier-ignore
+		layer.shadowOffset = CGSizeMake(
+			Length.toDevicePixels(value.offsetX, 0.0),
+			Length.toDevicePixels(value.offsetY, 0.0)
+		);
+
+		layer.masksToBounds = false;
+
+		// NOTE: generally should not need shouldRasterize
+		// however for various detailed animation work which involves text-shadow applicable layers, we may want to give users the control of enabling this with text-shadow
+		// if (!(this.nativeTextViewProtected instanceof UITextView)) {
+		//   layer.shouldRasterize = true;
+		// }
+	}
+
 	createNSMutableAttributedString(formattedString: FormattedString): NSMutableAttributedString {
-		let mas = NSMutableAttributedString.alloc().init();
+		const mas = NSMutableAttributedString.alloc().init();
 		this._spanRanges = [];
 		if (formattedString && formattedString.parent) {
 			for (let i = 0, spanStart = 0, length = formattedString.spans.length; i < length; i++) {
@@ -368,7 +414,7 @@ export class TextBase extends TextBaseCommon {
 		return mas;
 	}
 
-	getBaselineOffset(font: UIFont, align?: VerticalAlignment): number {
+	getBaselineOffset(font: UIFont, align?: CoreTypes.VerticalAlignmentTextType): number {
 		if (!align || ['stretch', 'baseline'].includes(align)) {
 			return 0;
 		}
@@ -393,7 +439,7 @@ export class TextBase extends TextBaseCommon {
 			return (font.descender - font.ascender) / 2 - font.descender;
 		}
 
-		if (align === 'super') {
+		if (align === 'sup') {
 			return -this.fontSize * 0.4;
 		}
 
@@ -423,7 +469,7 @@ export class TextBase extends TextBaseCommon {
 			attrDict[NSBackgroundColorAttributeName] = backgroundColor.ios;
 		}
 
-		const textDecoration: TextDecoration = getClosestPropertyValue(textDecorationProperty, span);
+		const textDecoration: CoreTypes.TextDecorationType = getClosestPropertyValue(textDecorationProperty, span);
 
 		if (textDecoration) {
 			const underline = textDecoration.indexOf('underline') !== -1;
@@ -445,7 +491,7 @@ export class TextBase extends TextBaseCommon {
 	}
 }
 
-export function getTransformedText(text: string, textTransform: TextTransform): string {
+export function getTransformedText(text: string, textTransform: CoreTypes.TextTransformType): string {
 	if (!text || !isString(text)) {
 		return '';
 	}

@@ -1,3 +1,4 @@
+/* eslint-disable prefer-rest-params */
 import { Observable, EventData } from '../observable';
 import * as types from '../../utils/types';
 
@@ -58,6 +59,7 @@ export class ObservableArray<T> extends Observable {
 		if (arguments.length === 1 && Array.isArray(arguments[0])) {
 			this._array = arguments[0].slice();
 		} else {
+			// eslint-disable-next-line prefer-spread
 			this._array = Array.apply(null, arguments);
 		}
 
@@ -66,7 +68,7 @@ export class ObservableArray<T> extends Observable {
 			object: this,
 			action: ChangeType.Add,
 			index: null,
-			removed: new Array(),
+			removed: [],
 			addedCount: 1,
 		};
 
@@ -91,7 +93,7 @@ export class ObservableArray<T> extends Observable {
 	 * Sets item at specified index.
 	 */
 	setItem(index: number, value: T) {
-		let oldValue = this._array[index];
+		const oldValue = this._array[index];
 		this._array[index] = value;
 
 		this.notify(<ChangedData<T>>{
@@ -113,7 +115,11 @@ export class ObservableArray<T> extends Observable {
 
 	set length(value: number) {
 		if (types.isNumber(value) && this._array && this._array.length !== value) {
-			this.splice(value, this._array.length - value);
+			const added = [];
+			for (let i = this._array.length; i < value; ++i) {
+				added.push(undefined);
+			}
+			this.splice(value, this._array.length - value, ...added);
 		}
 	}
 
@@ -132,9 +138,9 @@ export class ObservableArray<T> extends Observable {
 	 * Combines two or more arrays.
 	 * @param items Additional items to add to the end of array1.
 	 */
-	concat(_args?: any): T[] {
+	concat(...args): T[] {
 		this._addArgs.index = this._array.length;
-		const result = this._array.concat.apply(this._array, arguments);
+		const result = this._array.concat(...args);
 
 		return result;
 	}
@@ -177,7 +183,7 @@ export class ObservableArray<T> extends Observable {
 				this._array.push(source[i]);
 			}
 		} else {
-			this._array.push.apply(this._array, arguments);
+			this._array.push(...args);
 		}
 
 		this._addArgs.addedCount = this._array.length - this._addArgs.index;
@@ -240,13 +246,21 @@ export class ObservableArray<T> extends Observable {
 	 */
 	splice(start: number, deleteCount?: number, ...items: any): T[] {
 		const length = this._array.length;
-		const result = this._array.splice.apply(this._array, arguments);
+		const result = arguments.length === 1 ? this._array.splice(start) : this._array.splice(start, deleteCount, ...items);
 
 		this.notify(<ChangedData<T>>{
 			eventName: CHANGE,
 			object: this,
 			action: ChangeType.Splice,
-			index: start,
+
+			// The logic here is a bit weird; so lets explain why it is written this way
+			// First of all, if you ADD any items to the array, we want the index to point to
+			//   the first value of the index, so this fixes it when you put a value to high in
+			// If you remove items from the array, then the index needs to point to the INDEX
+			//   where you removed the item.
+			// If you add and remove items, the index will point to the remove location as that
+			//   is the index you passed in.
+			index: Math.max(Math.min(start, length - (result.length > 0 ? 1 : 0)), 0),
 			removed: result,
 			addedCount: this._array.length + result.length - length,
 		});
@@ -263,7 +277,7 @@ export class ObservableArray<T> extends Observable {
 	 */
 	unshift(...args: any): number {
 		const length = this._array.length;
-		const result = this._array.unshift.apply(this._array, arguments);
+		const result = this._array.unshift(...args);
 
 		this._addArgs.index = 0;
 		this._addArgs.addedCount = result - length;
@@ -272,6 +286,15 @@ export class ObservableArray<T> extends Observable {
 		this._notifyLengthChange();
 
 		return result;
+	}
+
+	/**
+	 * Returns the index of the first element in the array where predicate is true, and -1 otherwise.
+	 * @param predicate
+	 * @param thisArg If provided, it will be used as the this value for each invocation of predicate. If it is not provided, undefined is used instead.
+	 */
+	findIndex(predicate: (value: any, index: number, obj: any[]) => unknown, thisArg?: any): number {
+		return this._array.findIndex(predicate, thisArg);
 	}
 
 	/**

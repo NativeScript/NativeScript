@@ -1,3 +1,3 @@
-# types-ios
+# @nativescript/types-ios
 
-This library was generated with [Nx](https://nx.dev).
+NativeScript Types for iOS

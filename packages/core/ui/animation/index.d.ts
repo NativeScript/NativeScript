@@ -1,6 +1,6 @@
 ﻿import { View } from '../core/view';
+import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
-import { PercentLength } from '../styling/style-properties';
 
 export { KeyframeAnimation, KeyframeAnimationInfo, KeyframeDeclaration, KeyframeInfo } from './keyframe-animation';
 
@@ -36,12 +36,12 @@ export interface AnimationDefinition {
 	/**
 	 * Animates the height of a view.
 	 */
-	height?: PercentLength | string;
+	height?: CoreTypes.PercentLengthType | string;
 
 	/**
 	 * Animates the width of a view.
 	 */
-	width?: PercentLength | string;
+	width?: CoreTypes.PercentLengthType | string;
 
 	/**
 	 * Animates the rotate affine transform of the view. Value should be a number specifying the rotation amount in degrees.

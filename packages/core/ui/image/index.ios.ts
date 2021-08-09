@@ -8,7 +8,7 @@ export * from './image-common';
 
 export class Image extends ImageBase {
 	nativeViewProtected: UIImageView;
-	private _imageSourceAffectsLayout: boolean = true;
+	private _imageSourceAffectsLayout = true;
 	private _templateImageWasCreated: boolean;
 
 	public createNativeView() {

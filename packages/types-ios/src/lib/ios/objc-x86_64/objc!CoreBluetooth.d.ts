@@ -305,7 +305,13 @@ declare const enum CBError {
 
 	UnknownDevice = 12,
 
-	OperationNotSupported = 13
+	OperationNotSupported = 13,
+
+	PeerRemovedPairingInformation = 14,
+
+	EncryptionTimedOut = 15,
+
+	TooManyLEPairedDevices = 16
 }
 
 declare var CBErrorDomain: string;

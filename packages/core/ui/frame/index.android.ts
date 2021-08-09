@@ -81,7 +81,7 @@ function getAttachListener(): android.view.View.OnAttachStateChangeListener {
 export class Frame extends FrameBase {
 	public _originalBackground: any;
 	private _android: AndroidFrame;
-	private _containerViewId: number = -1;
+	private _containerViewId = -1;
 	private _tearDownPending = false;
 	private _attachedToWindow = false;
 	private _cachedTransitionState: TransitionState;
@@ -131,6 +131,7 @@ export class Frame extends FrameBase {
 		return this._containerViewId;
 	}
 
+	// @ts-ignore
 	get android(): AndroidFrame {
 		return this._android;
 	}
@@ -190,7 +191,7 @@ export class Frame extends FrameBase {
 			// simulated navigation (NoTransition, zero duration animator) and thus the fragment immediately disappears;
 			// the user only sees the animation of the entering fragment as per its specific enter animation settings.
 			// NOTE: we are restoring the animation settings in Frame.setCurrent(...) as navigation completes asynchronously
-			let cachedTransitionState = getTransitionState(this._currentEntry);
+			const cachedTransitionState = getTransitionState(this._currentEntry);
 
 			if (cachedTransitionState) {
 				this._cachedTransitionState = cachedTransitionState;
@@ -430,7 +431,7 @@ export class Frame extends FrameBase {
 			navigationTransition = null;
 		}
 
-		let isNestedDefaultTransition = !currentEntry;
+		const isNestedDefaultTransition = !currentEntry;
 
 		_setAndroidFragmentTransitions(animated, navigationTransition, currentEntry, newEntry, this._android.frameId, transaction, isNestedDefaultTransition);
 
@@ -664,7 +665,7 @@ function clearEntry(entry: BackstackEntry): void {
 }
 
 let framesCounter = 0;
-let framesCache = new Array<WeakRef<AndroidFrame>>();
+const framesCache = new Array<WeakRef<AndroidFrame>>();
 
 class AndroidFrame extends Observable implements AndroidFrameDefinition {
 	public rootViewGroup: android.view.ViewGroup;
@@ -694,7 +695,7 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
 	}
 
 	public get activity(): androidx.appcompat.app.AppCompatActivity {
-		let activity: androidx.appcompat.app.AppCompatActivity = this.owner._context;
+		const activity: androidx.appcompat.app.AppCompatActivity = this.owner._context;
 		if (activity) {
 			return activity;
 		}
@@ -713,12 +714,12 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
 	}
 
 	public get actionBar(): android.app.ActionBar {
-		let activity = this.currentActivity;
+		const activity = this.currentActivity;
 		if (!activity) {
 			return undefined;
 		}
 
-		let bar = activity.getActionBar();
+		const bar = activity.getActionBar();
 		if (!bar) {
 			return undefined;
 		}
@@ -732,7 +733,7 @@ class AndroidFrame extends Observable implements AndroidFrameDefinition {
 			return activity;
 		}
 
-		let frames = _stack();
+		const frames = _stack();
 		for (let length = frames.length, i = length - 1; i >= 0; i--) {
 			activity = frames[i].android.activity;
 			if (activity) {
@@ -817,7 +818,7 @@ function startActivity(activity: androidx.appcompat.app.AppCompatActivity, frame
 function getFrameByNumberId(frameId: number): Frame {
 	// Find the frame for this activity.
 	for (let i = 0; i < framesCache.length; i++) {
-		let aliveFrame = framesCache[i].get();
+		const aliveFrame = framesCache[i].get();
 		if (aliveFrame && aliveFrame.frameId === frameId) {
 			return aliveFrame.owner;
 		}
@@ -988,10 +989,13 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 			const hasRemovingParent = fragment.getRemovingParentFragment();
 
 			if (hasRemovingParent) {
-				const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), this.backgroundBitmap);
-				this.frame._originalBackground = this.frame.backgroundColor || new Color('White');
-				this.frame.nativeViewProtected.setBackgroundDrawable(bitmapDrawable);
-				this.backgroundBitmap = null;
+				const nativeFrameView = this.frame.nativeViewProtected;
+				if (nativeFrameView) {
+					const bitmapDrawable = new android.graphics.drawable.BitmapDrawable(application.android.context.getResources(), this.backgroundBitmap);
+					this.frame._originalBackground = this.frame.backgroundColor || new Color('White');
+					nativeFrameView.setBackgroundDrawable(bitmapDrawable);
+					this.backgroundBitmap = null;
+				}
 			}
 		} finally {
 			superFunc.call(fragment);
@@ -1106,7 +1110,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		// If there is savedInstanceState and moduleLoaded is false we are restarted but process was killed.
 		// For now we treat it like first run (e.g. we are not passing savedInstanceState so no fragments are being restored).
 		// When we add support for application save/load state - revise this logic.
-		let isRestart = !!savedInstanceState && moduleLoaded;
+		const isRestart = !!savedInstanceState && moduleLoaded;
 		superFunc.call(activity, isRestart ? savedInstanceState : null);
 
 		// Try to get the rootViewId form the saved state in case the activity
@@ -1270,7 +1274,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 	}
 
 	@profile
-	public onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void {
+	public onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<string>, grantResults: Array<number>, superFunc: Function): void {
 		if (Trace.isEnabled()) {
 			Trace.write('NativeScriptActivity.onRequestPermissionsResult;', Trace.categories.NativeLifecycle);
 		}
@@ -1330,13 +1334,19 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 		if (!rootView) {
 			const mainEntry = application.getMainEntry();
 			const intent = activity.getIntent();
+			// useful for integrations that would like to set rootView asynchronously after app launch
+			let shouldRootViewBeEmpty = false;
 
 			if (fireLaunchEvent) {
 				// entry point for Angular and Vue frameworks
 				rootView = notifyLaunch(intent, <any>savedInstanceState, null);
+				shouldRootViewBeEmpty = rootView === null;
 			}
 
 			if (!rootView) {
+				if (shouldRootViewBeEmpty) {
+					return;
+				}
 				// entry point for NS Core
 				if (!mainEntry) {
 					// Also handles scenarios with Angular and Vue where the notifyLaunch didn't return a root view.

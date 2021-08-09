@@ -1,11 +1,6 @@
+import '../../globals';
 import { setActivityCallbacks, AndroidActivityCallbacks } from '.';
-// use requires to ensure import order
-const globals = require('../../globals');
 const appModule = require('../../application');
-
-if (global.__snapshot) {
-	globals.initGlobal();
-}
 
 /**
  * NOTE: We cannot use NativeClass here because this is used in appComponents in webpack.config

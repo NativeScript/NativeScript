@@ -1,6 +1,6 @@
 import { StackLayoutBase } from './stack-layout-common';
+import { CoreTypes } from '../../../core-types';
 import { View } from '../../core/view';
-import { VerticalAlignment, HorizontalAlignment } from '../../styling/style-properties';
 import { layout } from '../../../utils';
 import { Trace } from '../../../trace';
 
@@ -27,7 +27,7 @@ export class StackLayout extends StackLayoutBase {
 
 		let measureSpec: number;
 
-		let mode = isVertical ? heightMode : widthMode;
+		const mode = isVertical ? heightMode : widthMode;
 		let remainingLength: number;
 
 		if (mode === layout.UNSPECIFIED) {
@@ -63,13 +63,13 @@ export class StackLayout extends StackLayoutBase {
 				}
 
 				measureWidth = Math.max(measureWidth, childSize.measuredWidth);
-				let viewHeight = childSize.measuredHeight;
+				const viewHeight = childSize.measuredHeight;
 				measureHeight += viewHeight;
 				remainingLength = Math.max(0, remainingLength - viewHeight);
 			} else {
 				childSize = View.measureChild(this, child, layout.makeMeasureSpec(remainingLength, measureSpec), childMeasureSpec);
 				measureHeight = Math.max(measureHeight, childSize.measuredHeight);
-				let viewWidth = childSize.measuredWidth;
+				const viewWidth = childSize.measuredWidth;
 				measureWidth += viewWidth;
 				remainingLength = Math.max(0, remainingLength - viewWidth);
 			}
@@ -108,20 +108,20 @@ export class StackLayout extends StackLayoutBase {
 		const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom + insets.bottom;
 
 		let childTop: number;
-		let childLeft: number = paddingLeft;
-		let childRight = right - left - paddingRight;
+		const childLeft: number = paddingLeft;
+		const childRight = right - left - paddingRight;
 
 		switch (this.verticalAlignment) {
-			case VerticalAlignment.MIDDLE:
-				childTop = (bottom - top - this._totalLength) / 2 + paddingTop - paddingBottom;
+			case CoreTypes.VerticalAlignment.middle:
+				childTop = (bottom - top - this._totalLength) / 2 + paddingTop;
 				break;
 
-			case VerticalAlignment.BOTTOM:
-				childTop = bottom - top - this._totalLength + paddingTop - paddingBottom;
+			case CoreTypes.VerticalAlignment.bottom:
+				childTop = bottom - top - this._totalLength + paddingTop;
 				break;
 
-			case VerticalAlignment.TOP:
-			case VerticalAlignment.STRETCH:
+			case CoreTypes.VerticalAlignment.top:
+			case CoreTypes.VerticalAlignment.stretch:
 			default:
 				childTop = paddingTop;
 				break;
@@ -141,21 +141,21 @@ export class StackLayout extends StackLayoutBase {
 		const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight + insets.right;
 		const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom + insets.bottom;
 
-		let childTop: number = paddingTop;
+		const childTop: number = paddingTop;
 		let childLeft: number;
-		let childBottom = bottom - top - paddingBottom;
+		const childBottom = bottom - top - paddingBottom;
 
 		switch (this.horizontalAlignment) {
-			case HorizontalAlignment.CENTER:
-				childLeft = (right - left - this._totalLength) / 2 + paddingLeft - paddingRight;
+			case CoreTypes.HorizontalAlignment.center:
+				childLeft = (right - left - this._totalLength) / 2 + paddingLeft;
 				break;
 
-			case HorizontalAlignment.RIGHT:
-				childLeft = right - left - this._totalLength + paddingLeft - paddingRight;
+			case CoreTypes.HorizontalAlignment.right:
+				childLeft = right - left - this._totalLength + paddingLeft;
 				break;
 
-			case HorizontalAlignment.LEFT:
-			case HorizontalAlignment.STRETCH:
+			case CoreTypes.HorizontalAlignment.left:
+			case CoreTypes.HorizontalAlignment.stretch:
 			default:
 				childLeft = paddingLeft;
 				break;

@@ -1,6 +1,6 @@
 import { Trace } from '../trace';
 
-declare var UIImagePickerControllerSourceType: any;
+declare let UIImagePickerControllerSourceType: any;
 
 const radToDeg = Math.PI / 180;
 
@@ -11,10 +11,10 @@ function isOrientationLandscape(orientation: number) {
 function openFileAtRootModule(filePath: string): boolean {
 	try {
 		const appPath = iOSNativeHelper.getCurrentAppPath();
-		let path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
+		const path = iOSNativeHelper.isRealDevice() ? filePath.replace('~', appPath) : filePath;
 
 		const controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
-		controller.delegate = new iOSNativeHelper.UIDocumentInteractionControllerDelegateImpl();
+		controller.delegate = iOSNativeHelper.createUIDocumentInteractionControllerDelegate();
 
 		return controller.presentPreviewAnimated(true);
 	} catch (e) {
@@ -36,14 +36,14 @@ export namespace iOSNativeHelper {
 	}
 
 	export namespace collections {
-		export function jsArrayToNSArray(str: string[]): NSArray<any> {
-			return NSArray.arrayWithArray(<any>str);
+		export function jsArrayToNSArray<T>(str: T[]): NSArray<T> {
+			return NSArray.arrayWithArray(str);
 		}
 
-		export function nsArrayToJSArray(a: NSArray<any>): Array<Object> {
+		export function nsArrayToJSArray<T>(a: NSArray<T>): Array<T> {
 			const arr = [];
 			if (a !== undefined) {
-				let count = a.count;
+				const count = a.count;
 				for (let i = 0; i < count; i++) {
 					arr.push(a.objectAtIndex(i));
 				}
@@ -96,19 +96,12 @@ export namespace iOSNativeHelper {
 	}
 
 	export function getVisibleViewController(rootViewController: UIViewController): UIViewController {
-		if (rootViewController.presentedViewController) {
-			return getVisibleViewController(rootViewController.presentedViewController);
-		}
+		let viewController = rootViewController;
 
-		if (rootViewController.isKindOfClass(UINavigationController.class())) {
-			return getVisibleViewController((<UINavigationController>rootViewController).visibleViewController);
+		while (viewController && viewController.presentedViewController) {
+			viewController = viewController.presentedViewController;
 		}
-
-		if (rootViewController.isKindOfClass(UITabBarController.class())) {
-			return getVisibleViewController(<UITabBarController>rootViewController);
-		}
-
-		return rootViewController;
+		return viewController;
 	}
 
 	export function applyRotateTransform(transform: CATransform3D, x: number, y: number, z: number): CATransform3D {
@@ -127,27 +120,112 @@ export namespace iOSNativeHelper {
 		return transform;
 	}
 
-	@NativeClass
-	export class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
-		public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
+	export function getShadowLayer(nativeView: UIView, name: string = 'ns-shadow-layer', create: boolean = true): CALayer {
+		return nativeView.layer;
 
-		public getViewController(): UIViewController {
-			const app = UIApplication.sharedApplication;
+		console.log(`--- ${create ? 'CREATE' : 'READ'}`);
 
-			return app.keyWindow.rootViewController;
+		/**
+		 * UIView
+		 *  -> Shadow
+		 *
+		 *
+		 *  UIView
+		 *   -> UIView
+		 *   -> Shadow
+		 */
+
+		if (!nativeView) {
+			return null;
 		}
 
-		public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
-			return this.getViewController();
+		if (!nativeView.layer) {
+			// should never hit this?
+			console.log('- no layer! -');
+			return null;
 		}
 
-		public documentInteractionControllerViewForPreview(controller: UIDocumentInteractionController) {
-			return this.getViewController().view;
+		// if the nativeView's layer is the shadow layer?
+		if (nativeView.layer.name === name) {
+			console.log('- found shadow layer - reusing.');
+			return nativeView.layer;
 		}
 
-		public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
-			return this.getViewController().view.frame;
+		console.log('>> layer                :', nativeView.layer);
+		if (nativeView.layer.sublayers?.count) {
+			const count = nativeView.layer.sublayers.count;
+			for (let i = 0; i < count; i++) {
+				const subLayer = nativeView.layer.sublayers.objectAtIndex(i);
+
+				console.log(`>> subLayer ${i + 1}/${count}         :`, subLayer);
+				console.log(`>> subLayer ${i + 1}/${count} name    :`, subLayer.name);
+
+				if (subLayer.name === name) {
+					console.log('- found shadow sublayer - reusing.');
+					return subLayer;
+				}
+			}
+			// if (nativeView instanceof UITextView) {
+			// 	return nativeView.layer.sublayers.objectAtIndex(1);
+			// } else {
+			// 	return nativeView.layer.sublayers.objectAtIndex(nativeView.layer.sublayers.count - 1);
+			// }
 		}
+		// else {
+		// 		layer = nativeView.layer;
+		// }
+
+		// we're not interested in creating a new layer
+		if (!create) {
+			return null;
+		}
+
+		console.log(`- adding a new layer for - ${name}`);
+
+		const viewLayer = nativeView.layer;
+		const newLayer = CALayer.layer();
+
+		newLayer.name = name;
+		newLayer.zPosition = 0.0;
+		// nativeView.layer.insertSublayerBelow(newLayer, nativeView.layer)
+		// newLayer.insertSublayerAtIndex(nativeView.layer, 0)
+		// nativeView.layer.zPosition = 1.0;
+		// nativeView.layer.addSublayer(newLayer);
+
+		// nativeView.layer = CALayer.layer()
+
+		nativeView.layer.insertSublayerAtIndex(newLayer, 0);
+		// nativeView.layer.insertSublayerAtIndex(viewLayer, 1)
+
+		// nativeView.layer.replaceSublayerWith(newLayer, nativeView.layer);
+
+		return newLayer;
+	}
+
+	export function createUIDocumentInteractionControllerDelegate(): NSObject {
+		@NativeClass
+		class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
+			public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
+
+			public getViewController(): UIViewController {
+				const app = UIApplication.sharedApplication;
+
+				return app.keyWindow.rootViewController;
+			}
+
+			public documentInteractionControllerViewControllerForPreview(controller: UIDocumentInteractionController) {
+				return this.getViewController();
+			}
+
+			public documentInteractionControllerViewForPreview(controller: UIDocumentInteractionController) {
+				return this.getViewController().view;
+			}
+
+			public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
+				return this.getViewController().view.frame;
+			}
+		}
+		return new UIDocumentInteractionControllerDelegateImpl();
 	}
 
 	export function isRealDevice() {

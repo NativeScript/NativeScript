@@ -958,6 +958,15 @@ declare const enum HMCharacteristicValueCurrentHeaterCoolerState {
 	Cooling = 3
 }
 
+declare const enum HMCharacteristicValueCurrentHeatingCooling {
+
+	Off = 0,
+
+	Heat = 1,
+
+	Cool = 2
+}
+
 declare const enum HMCharacteristicValueCurrentHumidifierDehumidifierState {
 
 	Inactive = 0,
@@ -1178,6 +1187,13 @@ declare const enum HMCharacteristicValueTargetAirPurifierState {
 	Automatic = 1
 }
 
+declare const enum HMCharacteristicValueTargetDoorState {
+
+	Open = 0,
+
+	Closed = 1
+}
+
 declare const enum HMCharacteristicValueTargetFanState {
 
 	Manual = 0,
@@ -1201,6 +1217,13 @@ declare const enum HMCharacteristicValueTargetHumidifierDehumidifierState {
 	Humidify = 1,
 
 	Dehumidify = 2
+}
+
+declare const enum HMCharacteristicValueTargetLockMechanismState {
+
+	Unsecured = 0,
+
+	Secured = 1
 }
 
 declare const enum HMCharacteristicValueTargetSecuritySystemState {
@@ -1471,7 +1494,15 @@ declare const enum HMErrorCode {
 
 	MaximumAccessoriesOfTypeInHome = 97,
 
-	WiFiCredentialGenerationFailed = 98
+	WiFiCredentialGenerationFailed = 98,
+
+	EnterpriseNetworkNotSupported = 99,
+
+	TimedOutWaitingForAccessory = 100,
+
+	AccessoryCommunicationFailure = 101,
+
+	FailedToJoinNetwork = 102
 }
 
 declare var HMErrorDomain: string;

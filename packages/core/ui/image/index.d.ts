@@ -3,7 +3,7 @@ import { Style } from '../styling/style';
 import { ImageSource } from '../../image-source';
 import { Color } from '../../color';
 import { Property, InheritedCssProperty } from '../core/properties';
-import { Length } from '../styling/style-properties';
+import { CoreTypes } from '../../core-types';
 
 /**
  * Represents a class that provides functionality for loading and streching image(s).
@@ -37,7 +37,7 @@ export class Image extends View {
 	/**
 	 * Gets or sets the image stretch mode.
 	 */
-	stretch: Stretch;
+	stretch: CoreTypes.ImageStretchType;
 
 	/**
 	 * Gets or sets the loading strategy for images on the local file system:
@@ -56,22 +56,20 @@ export class Image extends View {
 	 * Gets or sets the desired decode height of the image.
 	 * This property is Android specific.
 	 */
-	decodeHeight: Length;
+	decodeHeight: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets the desired decode width of the image.
 	 * This property is Android specific.
 	 */
-	decodeWidth: Length;
+	decodeWidth: CoreTypes.LengthType;
 }
-
-export type Stretch = 'none' | 'aspectFill' | 'aspectFit' | 'fill';
 
 export const imageSourceProperty: Property<Image, ImageSource>;
 export const srcProperty: Property<Image, any>;
 export const isLoadingProperty: Property<Image, string>;
 export const loadMode: Property<Image, 'sync' | 'async'>;
-export const stretchProperty: Property<Image, Stretch>;
+export const stretchProperty: Property<Image, CoreTypes.ImageStretchType>;
 export const tintColorProperty: InheritedCssProperty<Style, Color>;
-export const decodeHeightProperty: Property<Image, Length>;
-export const decodeWidthProperty: Property<Image, Length>;
+export const decodeHeightProperty: Property<Image, CoreTypes.LengthType>;
+export const decodeWidthProperty: Property<Image, CoreTypes.LengthType>;

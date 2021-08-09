@@ -28,6 +28,10 @@ export class TextView extends TextViewBaseCommon {
 
 		this.nativeTextViewProtected.setMaxLines(value);
 	}
+
+	public _onReturnPress() {
+		this.notify({ eventName: TextView.returnPressEvent, object: this });
+	}
 }
 
 TextView.prototype.recycleNativeView = 'auto';
