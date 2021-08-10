@@ -1,4 +1,5 @@
 {
+  "sideEffects": false,
   "name": "polymer-expressions",
   "main": "polymer-expressions",
   "types": "polymer-expressions.d.ts"

@@ -3,9 +3,7 @@ import Config from 'webpack-chain';
 import svelte from '../../src/configuration/svelte';
 import { init } from '../../src';
 
-jest.mock('__jest__/svelte.config.js', () => {
-
-}, { virtual: true })
+jest.mock('__jest__/svelte.config.js', () => {}, { virtual: true });
 
 describe('svelte configuration', () => {
 	const platforms = ['ios', 'android'];

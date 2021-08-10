@@ -218,23 +218,19 @@ class CSSSource {
 	@profile
 	private parseCSSAst() {
 		if (this._source) {
-			switch (parser) {
-				case 'css-tree':
-					this._ast = cssTreeParse(this._source, this._file);
-
-					return;
-				case 'nativescript': {
-					const cssparser = new CSS3Parser(this._source);
-					const stylesheet = cssparser.parseAStylesheet();
-					const cssNS = new CSSNativeScript();
-					this._ast = cssNS.parseStylesheet(stylesheet);
-
-					return;
-				}
-				case 'rework':
-					this._ast = parseCss(this._source, { source: this._file });
-
-					return;
+			if (__CSS_PARSER__ === 'css-tree') {
+				const cssTreeParse = require('../../css/css-tree-parser').cssTreeParse;
+				this._ast = cssTreeParse(this._source, this._file);
+			} else if (__CSS_PARSER__ === 'nativescript') {
+				const CSS3Parser = require('../../css/CSS3Parser').CSS3Parser;
+				const CSSNativeScript = require('../../css/CSSNativeScript').CSSNativeScript;
+				const cssparser = new CSS3Parser(this._source);
+				const stylesheet = cssparser.parseAStylesheet();
+				const cssNS = new CSSNativeScript();
+				this._ast = cssNS.parseStylesheet(stylesheet);
+			} else if (__CSS_PARSER__ === 'rework') {
+				const parseCss = require('../../css').parse;
+				this._ast = parseCss(this._source, { source: this._file });
 			}
 		}
 	}
