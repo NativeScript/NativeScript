@@ -3,8 +3,6 @@ import { ViewBase } from '../core/view-base';
 import { View } from '../core/view';
 import { unsetValue, _evaluateCssVariableExpression, _evaluateCssCalcExpression, isCssVariable, isCssVariableExpression, isCssCalcExpression } from '../core/properties';
 import { SyntaxTree, Keyframes as KeyframesDefinition, parse as parseCss, Node as CssNode } from '../../css';
-import { CSS3Parser, CSSNativeScript } from '../../css/parser';
-import { cssTreeParse } from '../../css/css-tree-parser';
 
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from './css-selector';
 import { Trace } from '../../trace';
