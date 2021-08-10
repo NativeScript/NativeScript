@@ -1,5 +1,7 @@
 import { assert } from 'chai';
-import { parseURL, parseColor, parsePercentageOrLength, parseBackgroundPosition, parseBackground, parseSelector, AttributeSelectorTest, CSS3Parser, TokenObjectType, CSSNativeScript } from '@nativescript/core/css/parser';
+import { parseURL, parseColor, parsePercentageOrLength, parseBackgroundPosition, parseBackground, parseSelector, AttributeSelectorTest } from '@nativescript/core/css/parser';
+import { CSS3Parser, TokenObjectType } from '@nativescript/core/css/CSS3Parser';
+import { CSSNativeScript } from '@nativescript/core/css/CSSNativeScript';
 
 import * as fs from 'fs';
 import * as shadyCss from 'shady-css-parser';
