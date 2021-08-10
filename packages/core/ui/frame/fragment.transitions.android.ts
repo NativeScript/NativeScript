@@ -8,8 +8,8 @@ import { FlipTransition } from '../transition/flip-transition';
 import { _resolveAnimationCurve } from '../animation';
 import lazy from '../../utils/lazy';
 import { Trace } from '../../trace';
-import { FadeTransition } from 'ui/transition/fade-transition.android';
-import { SlideTransition } from 'ui/transition/slide-transition.android';
+import { FadeTransition } from '../transition/fade-transition';
+import { SlideTransition } from '../transition/slide-transition';
 
 interface TransitionListener {
 	new (entry: ExpandedEntry, transition: androidx.transition.Transition): ExpandedTransitionListener;
