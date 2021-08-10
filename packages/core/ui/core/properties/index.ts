@@ -1375,7 +1375,7 @@ export const initNativeView = profile('"properties".initNativeView', function in
 	// if the view requestLayout was not suspended before
 	// it means we can request a layout if needed.
 	// will be done after otherwise
-	view.suspendRequestLayout = false;
+	view.suspendRequestLayout = wasSuspended;
 	if (!wasSuspended && view.isLayoutRequestNeeded) {
 		view.requestLayout();
 	}
