@@ -271,9 +271,7 @@
 					"builder": "@nrwl/workspace:run-commands",
 					"outputs": ["dist/packages"],
 					"options": {
-						"commands": [
-							"npm run build"
-						],
+						"commands": ["npm run build"],
 						"cwd": "packages/webpack5",
 						"parallel": false
 					}
