@@ -3,26 +3,15 @@ import { getAllDependencies } from './dependencies';
 import { error } from './log';
 
 /**
- * Utility to determine the project flavor based on installed dependencies
- * (vue, angular, react, svelete, typescript, javascript...)
+ * Utility to determine if the project uses an external flavor/framework
  */
 export function projectUsesCustomFlavor(): boolean {
-	const dependencies = getAllDependencies();
-	return [
-	  'vue', 
-	  'angular',
-	  'react',
-	  'svelte'
-	].includes(determineProjectFlavor())
-	if (dependencies.includes('nativescript-vue') ||
-		dependencies.includes('@nativescript/angular') ||
-		dependencies.includes('react-nativescript') ||
-		dependencies.includes('svelte-native')
-	) {
-		return true;
-	}
+	const projectFlavor = determineProjectFlavor();
 
-	return false;
+	return (
+		projectFlavor &&
+		['vue', 'angular', 'react', 'svelte'].includes(projectFlavor)
+	);
 }
 /**
  * Utility to determine the project flavor based on installed dependencies
