@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"rootDir": ".",
+		"baseUrl": ".",
+		"target": "es2017",
+		"module": "commonjs",
+		"outDir": "./dist",
+		"declaration": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"lib": ["es2017"],
+		"sourceMap": true,
+		"skipLibCheck": true,
+		"skipDefaultLibCheck": true,
+		"diagnostics": true,
+		"paths": {
+			"@nativescript/webpack": ["src"]
+		},
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"stripInternal": true
+	},
+	"include": ["src", "scripts", "__tests__"],
+	"exclude": ["node_modules"]
+}
