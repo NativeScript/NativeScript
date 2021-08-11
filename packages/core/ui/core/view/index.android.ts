@@ -345,9 +345,6 @@ export class View extends ViewCommon {
 	}
 
 	public _getFragmentManager(): androidx.fragment.app.FragmentManager {
-		if ((<any>global)._dialogFragment) {
-			return (<any>global)._dialogFragment.getChildFragmentManager();
-		}
 		let manager = this._manager;
 		if (!manager) {
 			let view: View = this;
@@ -693,19 +690,20 @@ export class View extends ViewCommon {
 		};
 
 		saveModal(dialogOptions);
+
 		this._dialogFragment = df;
-		(<any>global)._dialogFragment = df;
 		this._raiseShowingModallyEvent();
+
 		this._dialogFragment.show(parent._getRootFragmentManager(), this._domId.toString());
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
-		const manager = this._dialogFragment.getParentFragmentManager();
+		const manager = this._dialogFragment.getFragmentManager();
 		if (manager) {
 			this._dialogFragment.dismissAllowingStateLoss();
 		}
+
 		this._dialogFragment = null;
-		(<any>global)._dialogFragment = null;
 		whenClosedCallback();
 	}
 
