@@ -1,11 +1,11 @@
-﻿/**
+/**
  * Represents a color object. Stores all color components (alpha (opacity), red, green, blue) in a [0..255] range.
  */
 export class Color {
 	constructor(knownColor: string);
 	constructor(hex: string);
 	constructor(argb: number);
-	constructor(alpha: number, red: number, green: number, blue: number);
+	constructor(alpha: number, red: number, green: number, blue: number, type?: 'rgb' | 'hsl' | 'hsv');
 
 	/**
 	 * Gets the Alpha component (in the [0, 255] range) of this color. This is a read-only property.
@@ -190,4 +190,17 @@ export class Color {
 	 *
 	 */
 	public complement(): Color;
+
+	/**
+	 * returns the color complement
+	 *
+	 */
+	public static mix(color1: Color, color2: Color, amount: number): Color;
+
+	/**
+	 * returns a new Color from HSL
+	 *
+	 */
+	public static fromHSL(a, h, s, l): Color;
+	public static fromHSV(a, h, s, l): Color;
 }
