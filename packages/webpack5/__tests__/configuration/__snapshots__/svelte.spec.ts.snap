@@ -194,18 +194,19 @@ exports[`svelte configuration for android 1`] = `
           /node_modules/
         ],
         use: [
-          /* config.module.rule('svelte').use('svelte-loader-hot') */
+          /* config.module.rule('svelte').use('svelte-loader') */
           {
-            loader: 'svelte-loader-hot',
+            loader: 'svelte-loader',
             options: {
-              dev: true,
+              compilerOptions: {
+                dev: true
+              },
               preprocess: undefined,
               hotReload: true,
               hotOptions: {
                 injectCss: false,
                 'native': true
-              },
-              onwarn: function () { /* omitted long function */ }
+              }
             }
           }
         ]
@@ -525,18 +526,19 @@ exports[`svelte configuration for ios 1`] = `
           /node_modules/
         ],
         use: [
-          /* config.module.rule('svelte').use('svelte-loader-hot') */
+          /* config.module.rule('svelte').use('svelte-loader') */
           {
-            loader: 'svelte-loader-hot',
+            loader: 'svelte-loader',
             options: {
-              dev: true,
+              compilerOptions: {
+                dev: true
+              },
               preprocess: undefined,
               hotReload: true,
               hotOptions: {
                 injectCss: false,
                 'native': true
-              },
-              onwarn: function () { /* omitted long function */ }
+              }
             }
           }
         ]
