@@ -11,7 +11,7 @@ exports[`svelte configuration for android 1`] = `
     node: false
   },
   devtool: 'inline-source-map',
-  target: 'node',
+  target: 'electron-main',
   watchOptions: {
     ignored: [
       '__jest__/platforms/**',
@@ -33,7 +33,8 @@ exports[`svelte configuration for android 1`] = `
     symlinks: true,
     alias: {
       '~': '__jest__/src',
-      '@': '__jest__/src'
+      '@': '__jest__/src',
+      'tns-core-modules': '@nativescript/core'
     },
     extensions: [
       '.android.svelte',
@@ -114,7 +115,7 @@ exports[`svelte configuration for android 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(js|ts)$/,
+        test: /\\\\.(js|ts|svelte)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -193,18 +194,19 @@ exports[`svelte configuration for android 1`] = `
           /node_modules/
         ],
         use: [
-          /* config.module.rule('svelte').use('svelte-loader-hot') */
+          /* config.module.rule('svelte').use('svelte-loader') */
           {
-            loader: 'svelte-loader-hot',
+            loader: 'svelte-loader',
             options: {
-              dev: true,
+              compilerOptions: {
+                dev: true
+              },
               preprocess: undefined,
               hotReload: true,
               hotOptions: {
                 injectCss: false,
                 'native': true
-              },
-              onwarn: function () { /* omitted long function */ }
+              }
             }
           }
         ]
@@ -338,7 +340,7 @@ exports[`svelte configuration for ios 1`] = `
     node: false
   },
   devtool: 'inline-source-map',
-  target: 'node',
+  target: 'electron-main',
   watchOptions: {
     ignored: [
       '__jest__/platforms/**',
@@ -360,7 +362,8 @@ exports[`svelte configuration for ios 1`] = `
     symlinks: true,
     alias: {
       '~': '__jest__/src',
-      '@': '__jest__/src'
+      '@': '__jest__/src',
+      'tns-core-modules': '@nativescript/core'
     },
     extensions: [
       '.ios.svelte',
@@ -441,7 +444,7 @@ exports[`svelte configuration for ios 1`] = `
       },
       /* config.module.rule('workers') */
       {
-        test: /\\\\.(js|ts)$/,
+        test: /\\\\.(js|ts|svelte)$/,
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
@@ -520,18 +523,19 @@ exports[`svelte configuration for ios 1`] = `
           /node_modules/
         ],
         use: [
-          /* config.module.rule('svelte').use('svelte-loader-hot') */
+          /* config.module.rule('svelte').use('svelte-loader') */
           {
-            loader: 'svelte-loader-hot',
+            loader: 'svelte-loader',
             options: {
-              dev: true,
+              compilerOptions: {
+                dev: true
+              },
               preprocess: undefined,
               hotReload: true,
               hotOptions: {
                 injectCss: false,
                 'native': true
-              },
-              onwarn: function () { /* omitted long function */ }
+              }
             }
           }
         ]
