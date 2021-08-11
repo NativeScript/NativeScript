@@ -5,6 +5,7 @@ import { getPlatformName } from '../helpers/platform';
 import { env as _env, IWebpackEnv } from '../index';
 import { error } from '../helpers/log';
 import base from './base';
+import { hasDependency } from '../helpers/dependencies';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
@@ -28,31 +29,68 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config.module.rule('workers').test(/\.(js|ts|svelte)$/);
 
 	// add a rule for .svelte files
-	config.module
-		.rule('svelte')
-		.test(/\.svelte$/)
-		.exclude.add(/node_modules/)
-		.end()
-		.use('svelte-loader')
-		.loader('svelte-loader')
-		.tap((options) => {
-			const svelteConfig = getSvelteConfig();
-			return {
-				...options,
-				compilerOptions: {
-					...svelteConfig?.compilerOptions,
+	if (hasDependency('svelte-loader')) {
+		// configure using svelte-loader
+		config.module
+			.rule('svelte')
+			.test(/\.svelte$/)
+			.exclude.add(/node_modules/)
+			.end()
+			.use('svelte-loader')
+			.loader('svelte-loader')
+			.tap((options) => {
+				const svelteConfig = getSvelteConfig();
+				return {
+					...options,
+					compilerOptions: {
+						...svelteConfig?.compilerOptions,
+						dev: !production,
+					},
+					preprocess: svelteConfig?.preprocess,
+					hotReload: !production,
+					hotOptions: {
+						injectCss: false,
+						native: true,
+					},
+				};
+			});
+	} else {
+		// fallback for projects still using svelte-loader-hot
+		config.module
+			.rule('svelte')
+			.test(/\.svelte$/)
+			.exclude.add(/node_modules/)
+			.end()
+			.use('svelte-loader-hot')
+			.loader('svelte-loader-hot')
+			.tap((options) => {
+				const svelteConfig = getSvelteConfig();
+				return {
+					...options,
 					dev: !production,
-				},
-				preprocess: svelteConfig?.preprocess,
-				hotReload: !production,
-				hotOptions: {
-					injectCss: false,
-					native: true,
-				},
-			};
-		});
+					preprocess: getSvelteConfigPreprocessor(),
+					hotReload: !production,
+					hotOptions: {
+						injectCss: false,
+						native: true,
+					},
+					// Suppress A11y warnings
+					onwarn(warning, warn) {
+						if (!/A11y:/.test(warning.message)) {
+							warn(warning);
+						}
+					},
+				};
+			});
+	}
 
 	return config;
+}
+
+function getSvelteConfigPreprocessor(): any {
+	const config = getSvelteConfig();
+
+	return config?.preprocess;
 }
 
 interface ISvelteConfig {
