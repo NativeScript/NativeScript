@@ -212,7 +212,7 @@ export function test_ReadTranslateSingle() {
 
 	TKUnit.assertEqual(translate.property, 'translate');
 	TKUnit.assertAreClose(translate.value.x, 30, DELTA);
-	TKUnit.assertAreClose(translate.value.y, 30, DELTA);
+	TKUnit.assertAreClose(translate.value.y, 0, DELTA);
 }
 
 export function test_ReadTranslateXY() {
