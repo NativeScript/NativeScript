@@ -1,4 +1,4 @@
-import { dip, px } from '../../ui/core/view';
+import { CoreTypes } from '../../core-types';
 
 /**
  * Bits that provide the actual measured size.
@@ -45,19 +45,19 @@ export function getDisplayDensity(): number;
  * Convert device independent pixels to device pixels - dip to px.
  * @param value - The pixel to convert.
  */
-export function toDevicePixels(value: dip): px;
+export function toDevicePixels(value: CoreTypes.dip): CoreTypes.px;
 
 /**
  * Convert device pixels to device independent pixels - px to dip.
  * @param value - The pixel to convert.
  */
-export function toDeviceIndependentPixels(value: px): dip;
+export function toDeviceIndependentPixels(value: CoreTypes.px): CoreTypes.dip;
 
 /**
  * Rounds value used in layout.
  * @param px to round.
  */
-export function round(px: px): px;
+export function round(px: CoreTypes.px): CoreTypes.px;
 
 /**
  * Converts device pixels to device independent pixes and measure the nativeView.

@@ -108,6 +108,8 @@ declare const kDNSServiceErr_NoSuchRecord: number;
 
 declare const kDNSServiceErr_NotInitialized: number;
 
+declare const kDNSServiceErr_PolicyDenied: number;
+
 declare const kDNSServiceErr_PollingMode: number;
 
 declare const kDNSServiceErr_Refused: number;
@@ -139,6 +141,8 @@ declare const kDNSServiceFlagsBogus: number;
 declare const kDNSServiceFlagsBrowseDomains: number;
 
 declare const kDNSServiceFlagsDefault: number;
+
+declare const kDNSServiceFlagsEnableDNSSEC: number;
 
 declare const kDNSServiceFlagsExpiredAnswer: number;
 
@@ -250,6 +254,8 @@ declare const kDNSServiceType_HINFO: number;
 
 declare const kDNSServiceType_HIP: number;
 
+declare const kDNSServiceType_HTTPS: number;
+
 declare const kDNSServiceType_IPSECKEY: number;
 
 declare const kDNSServiceType_ISDN: number;
@@ -323,6 +329,8 @@ declare const kDNSServiceType_SPF: number;
 declare const kDNSServiceType_SRV: number;
 
 declare const kDNSServiceType_SSHFP: number;
+
+declare const kDNSServiceType_SVCB: number;
 
 declare const kDNSServiceType_TKEY: number;
 

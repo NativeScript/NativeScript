@@ -5,7 +5,7 @@ import './globals';
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
 
-import { launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance } from './application';
+import { fontScaleChangedEvent, launchEvent, displayedEvent, uncaughtErrorEvent, discardedErrorEvent, suspendEvent, resumeEvent, exitEvent, lowMemoryEvent, orientationChangedEvent, systemAppearanceChanged, systemAppearanceChangedEvent, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, android as appAndroid, ios as iosApp, systemAppearance, setAutoSystemAppearanceChanged } from './application';
 export const Application = {
 	launchEvent,
 	displayedEvent,
@@ -18,6 +18,7 @@ export const Application = {
 	orientationChangedEvent,
 	systemAppearanceChangedEvent,
 	systemAppearanceChanged,
+	fontScaleChangedEvent,
 
 	getMainEntry,
 	getRootView,
@@ -37,6 +38,7 @@ export const Application = {
 	getNativeApplication,
 	hasLaunched,
 	systemAppearance,
+	setAutoSystemAppearanceChanged,
 
 	android: appAndroid,
 	ios: iosApp,
@@ -58,6 +60,15 @@ export const ApplicationSettings = {
 	setNumber,
 };
 
+import { accessibilityBlurEvent, accessibilityFocusEvent, accessibilityFocusChangedEvent, accessibilityPerformEscapeEvent } from './accessibility';
+export const AccessibilityEvents = {
+	accessibilityBlurEvent,
+	accessibilityFocusEvent,
+	accessibilityFocusChangedEvent,
+	accessibilityPerformEscapeEvent,
+};
+export { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, FontScaleCategory } from './accessibility';
+
 export { Color } from './color';
 
 import { connectionType, getConnectionType, startMonitoring, stopMonitoring } from './connectivity';
@@ -67,6 +78,8 @@ export const Connectivity = {
 	startMonitoring,
 	stopMonitoring,
 };
+
+export * from './core-types';
 
 export { CSSUtils } from './css/system-classes';
 
@@ -110,7 +123,7 @@ export * from './trace';
 
 export * from './ui';
 
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, queueMacrotask, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, queueMacrotask, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, RESOURCE_PREFIX, FILE_PREFIX, escapeRegexSymbols, convertString, dismissSoftInput } from './utils';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 
 export const Utils = {
@@ -126,6 +139,8 @@ export const Utils = {
 	dispatchToMainThread,
 	queueMacrotask,
 	releaseNativeObject,
+	convertString,
+	escapeRegexSymbols,
 
 	getModuleName,
 	openFile,
@@ -156,6 +171,7 @@ export const Utils = {
 	isUndefined,
 	toUIString,
 	verifyCallback,
+	dismissSoftInput,
 };
 
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

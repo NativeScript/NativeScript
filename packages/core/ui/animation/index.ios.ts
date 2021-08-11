@@ -380,7 +380,7 @@ export class Animation extends AnimationBase {
 				toValue = NSValue.valueWithCATransform3D(Animation._createNativeAffineTransform(animation));
 				break;
 			case Properties.width:
-			case Properties.height:{
+			case Properties.height: {
 				const direction: string = animation.property;
 				const isHeight: boolean = direction === 'height';
 				propertyNameToAnimate = 'bounds';

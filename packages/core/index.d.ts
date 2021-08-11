@@ -8,7 +8,7 @@
 export type { NativeScriptConfig } from './config';
 export { iOSApplication, AndroidApplication } from './application';
 export type { ApplicationEventData, LaunchEventData, OrientationChangedEventData, UnhandledErrorEventData, DiscardedErrorEventData, CssChangedEventData, LoadAppCSSEventData, AndroidActivityEventData, AndroidActivityBundleEventData, AndroidActivityRequestPermissionsEventData, AndroidActivityResultEventData, AndroidActivityNewIntentEventData, AndroidActivityBackPressedEventData, SystemAppearanceChangedEventData } from './application';
-import { systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, systemAppearance } from './application';
+import { systemAppearanceChanged, getMainEntry, getRootView, _resetRootView, getResources, setResources, setCssFileName, getCssFileName, loadAppCss, addCss, on, off, notify, hasListeners, run, orientation, getNativeApplication, hasLaunched, systemAppearance, setAutoSystemAppearanceChanged } from './application';
 export declare const Application: {
 	launchEvent: string;
 	displayedEvent: string;
@@ -20,6 +20,7 @@ export declare const Application: {
 	lowMemoryEvent: string;
 	orientationChangedEvent: string;
 	systemAppearanceChangedEvent: string;
+	fontScaleChangedEvent: string;
 	systemAppearanceChanged: typeof systemAppearanceChanged;
 	getMainEntry: typeof getMainEntry;
 	getRootView: typeof getRootView;
@@ -39,6 +40,7 @@ export declare const Application: {
 	getNativeApplication: typeof getNativeApplication;
 	hasLaunched: typeof hasLaunched;
 	systemAppearance: typeof systemAppearance;
+	setAutoSystemAppearanceChanged: typeof setAutoSystemAppearanceChanged;
 	android: import('./application').AndroidApplication;
 	ios: import('./application').iOSApplication;
 };
@@ -56,6 +58,12 @@ export declare const ApplicationSettings: {
 	getNumber: typeof getNumber;
 	setNumber: typeof setNumber;
 };
+export declare const AccessibilityEvents: {
+	accessibilityBlurEvent: string;
+	accessibilityFocusEvent: string;
+	accessibilityFocusChangedEvent: string;
+};
+export { AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait, FontScaleCategory } from './accessibility';
 export { Color } from './color';
 import { connectionType, getConnectionType, startMonitoring, stopMonitoring } from './connectivity';
 export declare const Connectivity: {
@@ -64,6 +72,7 @@ export declare const Connectivity: {
 	startMonitoring: typeof startMonitoring;
 	stopMonitoring: typeof stopMonitoring;
 };
+export * from './core-types';
 export { CSSUtils } from './css/system-classes';
 export { ObservableArray, ChangeType } from './data/observable-array';
 export type { ChangedData } from './data/observable-array';
@@ -93,12 +102,13 @@ export type { InstrumentationMode, TimerInfo } from './profiling';
 export { encoding } from './text';
 export * from './trace';
 export * from './ui';
-import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source } from './utils';
+import { GC, isFontIconURI, isDataURI, isFileOrResourcePath, executeOnMainThread, mainThreadify, isMainThread, dispatchToMainThread, releaseNativeObject, getModuleName, openFile, openUrl, isRealDevice, layout, ad as androidUtils, iOSNativeHelper as iosUtils, Source, escapeRegexSymbols, convertString, dismissSoftInput, queueMacrotask } from './utils';
 import { ClassInfo, getClass, getBaseClasses, getClassInfo, isBoolean, isDefined, isFunction, isNullOrUndefined, isNumber, isObject, isString, isUndefined, toUIString, verifyCallback } from './utils/types';
 export declare const Utils: {
 	GC: typeof GC;
 	RESOURCE_PREFIX: string;
 	FILE_PREFIX: string;
+	queueMacrotask: typeof queueMacrotask;
 	isFontIconURI: typeof isFontIconURI;
 	isDataURI: typeof isDataURI;
 	isFileOrResourcePath: typeof isFileOrResourcePath;
@@ -107,6 +117,8 @@ export declare const Utils: {
 	isMainThread: typeof isMainThread;
 	dispatchToMainThread: typeof dispatchToMainThread;
 	releaseNativeObject: typeof releaseNativeObject;
+	escapeRegexSymbols: typeof escapeRegexSymbols;
+	convertString: typeof convertString;
 	getModuleName: typeof getModuleName;
 	openFile: typeof openFile;
 	openUrl: typeof openUrl;
@@ -134,5 +146,6 @@ export declare const Utils: {
 	isUndefined: typeof isUndefined;
 	toUIString: typeof toUIString;
 	verifyCallback: typeof verifyCallback;
+	dismissSoftInput: typeof dismissSoftInput;
 };
 export { XmlParser, ParserEventType, ParserEvent } from './xml';

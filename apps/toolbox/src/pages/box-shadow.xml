@@ -1,0 +1,202 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="Box Shadow" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+
+    <GridLayout rows="*, auto, *" class="box-shadow-demo">
+        <StackLayout backgroundColor="#ededed" row="0" id="boxShadowDemo">
+            <!-- layouts -->
+            <ScrollView height="100%" visibility="{{ selectedComponentType === 'layouts' ? 'visible' : 'collapsed' }}">
+                <StackLayout padding="20">
+									<StackLayout
+                        width="300"
+                        height="100"
+                        class="demo-component"
+                        boxShadow="{{ appliedBoxShadow }}"
+                        borderWidth="{{ borderWidth }}"
+                        borderRadius="{{ borderRadius }}"
+                        background="{{ background }}"
+                        tap="{{ toggleAnimation }}"
+                    >
+                        <Label text="StackLayout"></Label>
+                    </StackLayout>
+
+                    <GridLayout
+                        width="300"
+                        height="100"
+                        class="demo-component"
+                        boxShadow="{{ appliedBoxShadow }}"
+                        borderWidth="{{ borderWidth }}"
+                        borderRadius="{{ borderRadius }}"
+                        background="{{ background }}"
+                        tap="{{ toggleAnimation }}"
+                    >
+                        <Label text="GridLayout"></Label>
+                    </GridLayout>
+
+                    <AbsoluteLayout
+                        width="300"
+                        height="100"
+                        class="demo-component"
+                        boxShadow="{{ appliedBoxShadow }}"
+                        borderWidth="{{ borderWidth }}"
+                        borderRadius="{{ borderRadius }}"
+                        background="{{ background }}"
+                        tap="{{ toggleAnimation }}"
+                    >
+                        <Label text="AbsoluteLayout"></Label>
+                    </AbsoluteLayout>
+
+                    <DockLayout
+                        width="300"
+                        height="100"
+                        class="demo-component"
+                        boxShadow="{{ appliedBoxShadow }}"
+                        borderWidth="{{ borderWidth }}"
+                        borderRadius="{{ borderRadius }}"
+                        background="{{ background }}"
+                        tap="{{ toggleAnimation }}"
+                    >
+                        <Label text="DockLayout"></Label>
+                    </DockLayout>
+
+                    <FlexboxLayout
+                        width="300"
+                        height="100"
+                        class="demo-component"
+                        boxShadow="{{ appliedBoxShadow }}"
+                        borderWidth="{{ borderWidth }}"
+                        borderRadius="{{ borderRadius }}"
+                        background="{{ background }}"
+                        tap="{{ toggleAnimation }}"
+                    >
+                        <Label text="FlexboxLayout"></Label>
+                    </FlexboxLayout>
+
+                </StackLayout>
+            </ScrollView>
+
+            <!-- labels -->
+            <GridLayout
+                rows="*"
+                height="100%"
+                visibility="{{ selectedComponentType === 'labels' ? 'visible' : 'collapsed' }}">
+
+                <Label
+                    horizontalAlignment="center"
+                    verticalAlignment="center"
+                    class="demo-component"
+                    boxShadow="{{ appliedBoxShadow }}"
+                    borderWidth="{{ borderWidth }}"
+                    borderRadius="{{ borderRadius }}"
+                    background="{{ background }}"
+                    tap="{{ toggleAnimation }}"
+                    text="Label"></Label>
+
+            </GridLayout>
+
+            <!-- buttons -->
+            <GridLayout
+                rows="*"
+                height="100%"
+                visibility="{{ selectedComponentType === 'buttons' ? 'visible' : 'collapsed' }}">
+
+                <Button
+                    horizontalAlignment="center"
+                    verticalAlignment="center"
+                    class="demo-component"
+                    boxShadow="{{ appliedBoxShadow }}"
+                    borderWidth="{{ borderWidth }}"
+                    borderRadius="{{ borderRadius }}"
+                    background="{{ background }}"
+                    tap="{{ toggleAnimation }}"
+                    text="button"
+                ></Button>
+
+            </GridLayout>
+
+						<!-- images -->
+						<GridLayout
+							rows="*"
+							height="100%"
+							visibility="{{ selectedComponentType === 'images' ? 'visible' : 'collapsed' }}">
+
+							<ContentView width="100"
+													 height="100"
+													 horizontalAlignment="center"
+													 verticalAlignment="center"
+													 class="demo-component"
+													 boxShadow="{{ appliedBoxShadow }}"
+													 borderWidth="{{ borderWidth }}"
+													 borderRadius="{{ borderRadius }}"
+													 tap="{{ toggleAnimation }}">
+								<Image src="https://raw.githubusercontent.com/NativeScript/artwork/main/logo/export/NativeScript_Logo_Blue_Transparent.png"></Image>
+							</ContentView>
+
+
+						</GridLayout>
+
+        </StackLayout>
+
+        <GridLayout
+            row="1"
+            rows="auto"
+            columns="auto, *, auto"
+            class="box-shadow-prop-controls">
+            <Label
+                col="0"
+                verticalAlignment="center"
+                text="box-shadow:"></Label>
+            <TextField
+                col="1"
+                placeholder="box-shadow"
+								text="{{ boxShadow }}"
+                textChange="{{ textChange }}"
+            >
+            </TextField>
+            <Button
+                col="2"
+                text="APPLY"
+                class="btn-apply"
+                tap="{{ applyBoxShadow }}"></Button>
+        </GridLayout>
+        <ScrollView row="2">
+            <StackLayout padding="10" class="controls">
+                <Label text="Components"></Label>
+                <FlexboxLayout flexDirection="row" flexWrap="wrap">
+                    <Button text="Layouts" componentType="layouts" tap="{{ selectComponentType }}"></Button>
+                    <Button text="Labels" componentType="labels" selectedAttr="{{ selectedComponentType }}" tap="{{ selectComponentType }}"></Button>
+                    <Button text="Buttons" componentType="buttons" selectedAttr="{{ selectedComponentType == 'buttons' }}" tap="{{ selectComponentType }}"></Button>
+                    <Button text="Images" componentType="images" selectedAttr="{{ selectedComponentType == 'images' }}" tap="{{ selectComponentType }}"></Button>
+                </FlexboxLayout>
+
+                <Label text="Background"></Label>
+                <FlexboxLayout flexDirection="row" flexWrap="wrap">
+                    <Button text="Solid" backgroundType="solid" tap="{{ selectBackgroundType }}"></Button>
+                    <Button text="Transparent" backgroundType="transparent" tap="{{ selectBackgroundType }}"></Button>
+                    <Button text="Gradient" backgroundType="gradient" tap="{{ selectBackgroundType }}"></Button>
+                </FlexboxLayout>
+
+                <Label text="Borders"></Label>
+                <FlexboxLayout flexDirection="row" flexWrap="wrap">
+                    <Button text="Solid" borderType="solid" tap="{{ selectBorderType }}"></Button>
+                    <Button text="Rounded" borderType="rounded" tap="{{ selectBorderType }}"></Button>
+                    <Button text="None" borderType="none" tap="{{ selectBorderType }}"></Button>
+                </FlexboxLayout>
+
+                <Label text="Animations"></Label>
+                <Label text="Tap on the component to start and stop animation" class="description"></Label>
+                <FlexboxLayout flexDirection="row" flexWrap="wrap">
+                    <Button text="Width" animationType="width" tap="{{ selectAnimationType }}"></Button>
+                    <Button text="Height" animationType="height" tap="{{ selectAnimationType }}"></Button>
+                    <Button text="Opacity" animationType="opacity" tap="{{ selectAnimationType }}"></Button>
+                    <Button text="Translate" animationType="translate" tap="{{ selectAnimationType }}"></Button>
+                    <Button text="Scale" animationType="scale" tap="{{ selectAnimationType }}"></Button>
+                    <Button text="Rotate" animationType="rotate" tap="{{ selectAnimationType }}"></Button>
+                </FlexboxLayout>
+
+            </StackLayout>
+        </ScrollView>
+    </GridLayout>
+</Page>

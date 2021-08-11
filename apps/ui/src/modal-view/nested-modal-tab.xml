@@ -1,0 +1,24 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+
+    <ActionBar>
+        <Label text="Nested Modal Tab"></Label>
+    </ActionBar>
+
+    <TabView selectedTabTextColor="green">
+         <TabViewItem title="First">
+            <GridLayout>
+                <Frame id="nestedFrame" defaultPage="nested-frames/nested-page" actionBarVisibility="always"></Frame>
+            </GridLayout>
+        </TabViewItem>
+        <TabViewItem title="Second">
+            <GridLayout>
+                <Frame id="nestedFrame" defaultPage="nested-frames/nested-page" actionBarVisibility="always"></Frame>
+            </GridLayout>
+        </TabViewItem>
+        <TabViewItem title="Third">
+            <GridLayout>
+                <Frame id="nestedFrame" defaultPage="nested-frames/nested-page" actionBarVisibility="always"></Frame>
+            </GridLayout>
+        </TabViewItem>
+    </TabView>
+</Page>

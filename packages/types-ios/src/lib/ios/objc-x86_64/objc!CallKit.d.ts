@@ -139,6 +139,8 @@ declare class CXCallDirectoryManager extends NSObject {
 
 	getEnabledStatusForExtensionWithIdentifierCompletionHandler(identifier: string, completion: (p1: CXCallDirectoryEnabledStatus, p2: NSError) => void): void;
 
+	openSettingsWithCompletionHandler(completion: (p1: NSError) => void): void;
+
 	reloadExtensionWithIdentifierCompletionHandler(identifier: string, completion: (p1: NSError) => void): void;
 }
 

@@ -1,4 +1,4 @@
-import { LengthPercentUnit } from './style-properties';
+import { CoreTypes } from '../../core-types';
 import { Color } from '../../color';
 import { LinearGradient as LinearGradientDefinition } from '../../css/parser';
 
@@ -13,5 +13,5 @@ export class LinearGradient {
 
 export interface ColorStop {
 	color: Color;
-	offset?: LengthPercentUnit;
+	offset?: CoreTypes.LengthPercentUnit;
 }

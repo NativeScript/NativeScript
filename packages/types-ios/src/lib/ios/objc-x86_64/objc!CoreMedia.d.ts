@@ -879,6 +879,8 @@ declare var kCMFormatDescriptionExtension_OriginalCompressionSettings: string;
 
 declare var kCMFormatDescriptionExtension_PixelAspectRatio: string;
 
+declare var kCMFormatDescriptionExtension_ProtectedContentOriginalFormat: string;
+
 declare var kCMFormatDescriptionExtension_RevisionLevel: string;
 
 declare var kCMFormatDescriptionExtension_SampleDescriptionExtensionAtoms: string;
@@ -1068,6 +1070,10 @@ declare const kCMMediaType_Text: number;
 declare const kCMMediaType_TimeCode: number;
 
 declare const kCMMediaType_Video: number;
+
+declare const kCMMemoryPoolError_AllocationFailed: number;
+
+declare const kCMMemoryPoolError_InvalidParameter: number;
 
 declare var kCMMemoryPoolOption_AgeOutPeriod: string;
 
@@ -1734,3 +1740,5 @@ declare const kCMVideoCodecType_MPEG4Video: number;
 declare const kCMVideoCodecType_SorensonVideo: number;
 
 declare const kCMVideoCodecType_SorensonVideo3: number;
+
+declare const kCMVideoCodecType_VP9: number;

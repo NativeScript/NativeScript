@@ -218,13 +218,6 @@ declare function OSAtomicXor32OrigBarrier(__theMask: number, __theValue: interop
 
 declare const OSBigEndian: number;
 
-interface OSFifoQueueHead {
-	opaque1: interop.Pointer | interop.Reference<any>;
-	opaque2: interop.Pointer | interop.Reference<any>;
-	opaque3: number;
-}
-declare var OSFifoQueueHead: interop.StructType<OSFifoQueueHead>;
-
 declare const OSLittleEndian: number;
 
 declare function OSMemoryBarrier(): void;
@@ -1056,6 +1049,18 @@ interface __Reply__mach_port_kernel_object_t {
 }
 declare var __Reply__mach_port_kernel_object_t: interop.StructType<__Reply__mach_port_kernel_object_t>;
 
+interface __Reply__mach_port_kobject_description_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	RetCode: number;
+	object_type: number;
+	object_addr: number;
+	descriptionOffset: number;
+	descriptionCnt: number;
+	description: interop.Reference<number>;
+}
+declare var __Reply__mach_port_kobject_description_t: interop.StructType<__Reply__mach_port_kobject_description_t>;
+
 interface __Reply__mach_port_kobject_t {
 	Head: mach_msg_header_t;
 	NDR: NDR_record_t;
@@ -1376,6 +1381,15 @@ interface __Reply__processor_set_tasks_t {
 }
 declare var __Reply__processor_set_tasks_t: interop.StructType<__Reply__processor_set_tasks_t>;
 
+interface __Reply__processor_set_tasks_with_flavor_t {
+	Head: mach_msg_header_t;
+	msgh_body: mach_msg_body_t;
+	task_list: mach_msg_ool_ports_descriptor_t;
+	NDR: NDR_record_t;
+	task_listCnt: number;
+}
+declare var __Reply__processor_set_tasks_with_flavor_t: interop.StructType<__Reply__processor_set_tasks_with_flavor_t>;
+
 interface __Reply__processor_set_threads_t {
 	Head: mach_msg_header_t;
 	msgh_body: mach_msg_body_t;
@@ -1419,6 +1433,13 @@ interface __Reply__task_assign_t {
 	RetCode: number;
 }
 declare var __Reply__task_assign_t: interop.StructType<__Reply__task_assign_t>;
+
+interface __Reply__task_create_suid_cred_t {
+	Head: mach_msg_header_t;
+	msgh_body: mach_msg_body_t;
+	delegation: mach_msg_port_descriptor_t;
+}
+declare var __Reply__task_create_suid_cred_t: interop.StructType<__Reply__task_create_suid_cred_t>;
 
 interface __Reply__task_create_t {
 	Head: mach_msg_header_t;
@@ -1799,6 +1820,15 @@ interface __Reply__thread_assign_t {
 	RetCode: number;
 }
 declare var __Reply__thread_assign_t: interop.StructType<__Reply__thread_assign_t>;
+
+interface __Reply__thread_convert_thread_state_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	RetCode: number;
+	out_stateCnt: number;
+	out_state: interop.Reference<number>;
+}
+declare var __Reply__thread_convert_thread_state_t: interop.StructType<__Reply__thread_convert_thread_state_t>;
 
 interface __Reply__thread_create_running_t {
 	Head: mach_msg_header_t;
@@ -2887,6 +2917,13 @@ interface __Request__mach_port_kernel_object_t {
 }
 declare var __Request__mach_port_kernel_object_t: interop.StructType<__Request__mach_port_kernel_object_t>;
 
+interface __Request__mach_port_kobject_description_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	name: number;
+}
+declare var __Request__mach_port_kobject_description_t: interop.StructType<__Request__mach_port_kobject_description_t>;
+
 interface __Request__mach_port_kobject_t {
 	Head: mach_msg_header_t;
 	NDR: NDR_record_t;
@@ -3173,6 +3210,13 @@ interface __Request__processor_set_tasks_t {
 }
 declare var __Request__processor_set_tasks_t: interop.StructType<__Request__processor_set_tasks_t>;
 
+interface __Request__processor_set_tasks_with_flavor_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	flavor: number;
+}
+declare var __Request__processor_set_tasks_with_flavor_t: interop.StructType<__Request__processor_set_tasks_with_flavor_t>;
+
 interface __Request__processor_set_threads_t {
 	Head: mach_msg_header_t;
 }
@@ -3213,6 +3257,16 @@ interface __Request__task_assign_t {
 	assign_threads: number;
 }
 declare var __Request__task_assign_t: interop.StructType<__Request__task_assign_t>;
+
+interface __Request__task_create_suid_cred_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	pathOffset: number;
+	pathCnt: number;
+	path: interop.Reference<number>;
+	uid: number;
+}
+declare var __Request__task_create_suid_cred_t: interop.StructType<__Request__task_create_suid_cred_t>;
 
 interface __Request__task_create_t {
 	Head: mach_msg_header_t;
@@ -3568,6 +3622,17 @@ interface __Request__thread_assign_t {
 	new_set: mach_msg_port_descriptor_t;
 }
 declare var __Request__thread_assign_t: interop.StructType<__Request__thread_assign_t>;
+
+interface __Request__thread_convert_thread_state_t {
+	Head: mach_msg_header_t;
+	NDR: NDR_record_t;
+	direction: number;
+	flavor: number;
+	in_stateCnt: number;
+	in_state: interop.Reference<number>;
+	out_stateCnt: number;
+}
+declare var __Request__thread_convert_thread_state_t: interop.StructType<__Request__thread_convert_thread_state_t>;
 
 interface __Request__thread_create_running_t {
 	Head: mach_msg_header_t;
@@ -4018,6 +4083,8 @@ declare function __cospi(p1: number): number;
 
 declare function __cospif(p1: number): number;
 
+declare function __darwin_check_fd_set_overflow(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: number): number;
+
 interface __darwin_pthread_handler_rec {
 	__routine: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 	__arg: interop.Pointer | interop.Reference<any>;
@@ -4206,11 +4273,7 @@ declare function _host_page_size(host: number, out_page_size: interop.Pointer | 
 
 declare function _kernelrpc_mach_port_allocate_trap(target: number, right: number, name: interop.Pointer | interop.Reference<number>): number;
 
-declare function _kernelrpc_mach_port_construct_trap(target: number, options: interop.Pointer | interop.Reference<mach_port_options_t>, context: number, name: interop.Pointer | interop.Reference<number>): number;
-
 declare function _kernelrpc_mach_port_deallocate_trap(target: number, name: number): number;
-
-declare function _kernelrpc_mach_port_destroy_trap(target: number, name: number): number;
 
 declare function _kernelrpc_mach_port_destruct_trap(target: number, name: number, srdelta: number, guard: number): number;
 
@@ -4313,8 +4376,6 @@ interface _pcred {
 	p_refcnt: number;
 }
 declare var _pcred: interop.StructType<_pcred>;
-
-declare function _pthread_mutex_enable_legacy_mode(): void;
 
 declare function _setjmp(p1: interop.Reference<number>): number;
 
@@ -4569,6 +4630,8 @@ declare var addrinfo: interop.StructType<addrinfo>;
 declare function adjtime(p1: interop.Pointer | interop.Reference<timeval>, p2: interop.Pointer | interop.Reference<timeval>): number;
 
 declare function alarm(p1: number): number;
+
+declare function aligned_alloc(__alignment: number, __size: number): interop.Pointer | interop.Reference<any>;
 
 declare function alloca(p1: number): interop.Pointer | interop.Reference<any>;
 
@@ -5309,17 +5372,6 @@ declare function fclonefileat(p1: number, p2: number, p3: string | interop.Point
 
 declare function fclose(p1: interop.Pointer | interop.Reference<FILE>): number;
 
-interface fcodeblobs_t {
-	f_cd_hash: interop.Pointer | interop.Reference<any>;
-	f_hash_size: number;
-	f_cd_buffer: interop.Pointer | interop.Reference<any>;
-	f_cd_size: number;
-	f_out_size: interop.Pointer | interop.Reference<number>;
-	f_arch: number;
-	__padding: number;
-}
-declare var fcodeblobs_t: interop.StructType<fcodeblobs_t>;
-
 declare function fcopyfile(from_fd: number, to_fd: number, p3: interop.Pointer | interop.Reference<any>, flags: number): number;
 
 declare function fcvt(p1: number, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>): string;
@@ -5394,6 +5446,13 @@ declare function fgetln(p1: interop.Pointer | interop.Reference<FILE>, p2: inter
 declare function fgetpos(p1: interop.Pointer | interop.Reference<FILE>, p2: interop.Pointer | interop.Reference<number>): number;
 
 declare function fgets(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<FILE>): string;
+
+interface fgetsigsinfo_t {
+	fg_file_start: number;
+	fg_info_request: number;
+	fg_sig_is_platform: number;
+}
+declare var fgetsigsinfo_t: interop.StructType<fgetsigsinfo_t>;
 
 declare function fgetwc(p1: interop.Pointer | interop.Reference<FILE>): number;
 
@@ -5596,6 +5655,9 @@ interface fsignatures_t {
 	fs_file_start: number;
 	fs_blob_start: interop.Pointer | interop.Reference<any>;
 	fs_blob_size: number;
+	fs_fsignatures_size: number;
+	fs_cdhash: interop.Reference<number>;
+	fs_hash_type: number;
 }
 declare var fsignatures_t: interop.StructType<fsignatures_t>;
 
@@ -5645,6 +5707,14 @@ interface fstore_t {
 	fst_bytesalloc: number;
 }
 declare var fstore_t: interop.StructType<fstore_t>;
+
+interface fsupplement_t {
+	fs_file_start: number;
+	fs_blob_start: number;
+	fs_blob_size: number;
+	fs_orig_fd: number;
+}
+declare var fsupplement_t: interop.StructType<fsupplement_t>;
 
 declare function fsync(p1: number): number;
 
@@ -6089,7 +6159,7 @@ declare function host_security_set_task_token(host_security: number, target_task
 
 declare function host_set_UNDServer(host: number, server: number): number;
 
-declare function host_set_atm_diagnostic_flag(host_priv: number, diagnostic_flag: number): number;
+declare function host_set_atm_diagnostic_flag(host: number, diagnostic_flag: number): number;
 
 declare function host_set_exception_ports(host_priv: number, exception_mask: number, new_port: number, behavior: number, new_flavor: number): number;
 
@@ -7218,8 +7288,6 @@ declare function mach_port_allocate_name(task: number, right: number, name: numb
 
 declare function mach_port_allocate_qos(task: number, right: number, qos: interop.Pointer | interop.Reference<mach_port_qos_t>, name: interop.Pointer | interop.Reference<number>): number;
 
-declare function mach_port_construct(task: number, options: interop.Pointer | interop.Reference<mach_port_options_t>, context: number, name: interop.Pointer | interop.Reference<number>): number;
-
 declare function mach_port_deallocate(task: number, name: number): number;
 
 interface mach_port_deleted_notification_t {
@@ -7276,6 +7344,8 @@ declare const enum mach_port_guard_exception_codes {
 
 	kGUARD_EXC_STRICT_REPLY = 64,
 
+	kGUARD_EXC_MSG_FILTERED = 128,
+
 	kGUARD_EXC_INVALID_RIGHT = 256,
 
 	kGUARD_EXC_INVALID_NAME = 512,
@@ -7320,6 +7390,8 @@ declare function mach_port_kernel_object(task: number, name: number, object_type
 
 declare function mach_port_kobject(task: number, name: number, object_type: interop.Pointer | interop.Reference<number>, object_addr: interop.Pointer | interop.Reference<number>): number;
 
+declare function mach_port_kobject_description(task: number, name: number, object_type: interop.Pointer | interop.Reference<number>, object_addr: interop.Pointer | interop.Reference<number>, description: interop.Reference<number>): number;
+
 interface mach_port_limits_t {
 	mpl_qlimit: number;
 }
@@ -7330,13 +7402,6 @@ declare function mach_port_mod_refs(task: number, name: number, right: number, d
 declare function mach_port_move_member(task: number, member: number, after: number): number;
 
 declare function mach_port_names(task: number, names: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, namesCnt: interop.Pointer | interop.Reference<number>, types: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, typesCnt: interop.Pointer | interop.Reference<number>): number;
-
-interface mach_port_options_t {
-	flags: number;
-	mpl: mach_port_limits_t;
-	reserved: interop.Reference<number>;
-}
-declare var mach_port_options_t: interop.StructType<mach_port_options_t>;
 
 declare function mach_port_peek(task: number, name: number, trailer_type: number, request_seqnop: interop.Pointer | interop.Reference<number>, msg_sizep: interop.Pointer | interop.Reference<number>, msg_idp: interop.Pointer | interop.Reference<number>, trailer_infop: string | interop.Pointer | interop.Reference<any>, trailer_infopCnt: interop.Pointer | interop.Reference<number>): number;
 
@@ -7362,7 +7427,7 @@ declare function mach_port_set_seqno(task: number, name: number, seqno: number):
 
 declare function mach_port_space_basic_info(task: number, basic_info: interop.Pointer | interop.Reference<ipc_info_space_basic_t>): number;
 
-declare function mach_port_space_info(task: number, space_info: interop.Pointer | interop.Reference<ipc_info_space_t>, table_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ipc_info_name_t>>, table_infoCnt: interop.Pointer | interop.Reference<number>, tree_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ipc_info_tree_name_t>>, tree_infoCnt: interop.Pointer | interop.Reference<number>): number;
+declare function mach_port_space_info(space: number, space_info: interop.Pointer | interop.Reference<ipc_info_space_t>, table_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ipc_info_name_t>>, table_infoCnt: interop.Pointer | interop.Reference<number>, tree_info: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<ipc_info_tree_name_t>>, tree_infoCnt: interop.Pointer | interop.Reference<number>): number;
 
 interface mach_port_status_t {
 	mps_pset: number;
@@ -8179,6 +8244,8 @@ declare function posix_spawnattr_destroy(p1: interop.Pointer | interop.Reference
 
 declare function posix_spawnattr_get_qos_class_np(__attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __qos_class: interop.Pointer | interop.Reference<qos_class_t>): number;
 
+declare function posix_spawnattr_getarchpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<number>): number;
+
 declare function posix_spawnattr_getbinpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>): number;
 
 declare function posix_spawnattr_getflags(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: interop.Pointer | interop.Reference<number>): number;
@@ -8191,7 +8258,11 @@ declare function posix_spawnattr_getsigmask(p1: interop.Pointer | interop.Refere
 
 declare function posix_spawnattr_init(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
+declare function posix_spawnattr_set_csm_np(attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, flags: number): number;
+
 declare function posix_spawnattr_set_qos_class_np(__attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __qos_class: qos_class_t): number;
+
+declare function posix_spawnattr_setarchpref_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<number>): number;
 
 declare function posix_spawnattr_setauditsessionport_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): number;
 
@@ -8200,6 +8271,8 @@ declare function posix_spawnattr_setbinpref_np(p1: interop.Pointer | interop.Ref
 declare function posix_spawnattr_setexceptionports_np(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: number, p4: number, p5: number): number;
 
 declare function posix_spawnattr_setflags(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): number;
+
+declare function posix_spawnattr_setnosmt_np(attr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function posix_spawnattr_setpgroup(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number): number;
 
@@ -8218,6 +8291,8 @@ declare function powf(p1: number, p2: number): number;
 declare function powl(p1: number, p2: number): number;
 
 declare function pread(__fd: number, __buf: interop.Pointer | interop.Reference<any>, __nbyte: number, __offset: number): number;
+
+declare function preadv(p1: number, p2: interop.Pointer | interop.Reference<iovec>, p3: number, p4: number): number;
 
 interface proc_rlimit_control_wakeupmon {
 	wm_flags: number;
@@ -8284,6 +8359,8 @@ declare function processor_set_stack_usage(pset: number, ltotal: interop.Pointer
 declare function processor_set_statistics(pset: number, flavor: number, info_out: interop.Pointer | interop.Reference<number>, info_outCnt: interop.Pointer | interop.Reference<number>): number;
 
 declare function processor_set_tasks(processor_set: number, task_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, task_listCnt: interop.Pointer | interop.Reference<number>): number;
+
+declare function processor_set_tasks_with_flavor(processor_set: number, flavor: number, task_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, task_listCnt: interop.Pointer | interop.Reference<number>): number;
 
 declare function processor_set_threads(processor_set: number, thread_list: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, thread_listCnt: interop.Pointer | interop.Reference<number>): number;
 
@@ -8379,6 +8456,8 @@ declare function pthread_condattr_getpshared(p1: interop.Pointer | interop.Refer
 declare function pthread_condattr_init(p1: interop.Pointer | interop.Reference<_opaque_pthread_condattr_t>): number;
 
 declare function pthread_condattr_setpshared(p1: interop.Pointer | interop.Reference<_opaque_pthread_condattr_t>, p2: number): number;
+
+declare function pthread_cpu_number_np(cpu_number_out: interop.Pointer | interop.Reference<number>): number;
 
 declare function pthread_create(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<_opaque_pthread_t>>, p2: interop.Pointer | interop.Reference<_opaque_pthread_attr_t>, p3: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>, p4: interop.Pointer | interop.Reference<any>): number;
 
@@ -8549,6 +8628,8 @@ declare function putwchar(p1: number): number;
 declare function putwchar_l(p1: number, p2: interop.Pointer | interop.Reference<any>): number;
 
 declare function pwrite(__fd: number, __buf: interop.Pointer | interop.Reference<any>, __nbyte: number, __offset: number): number;
+
+declare function pwritev(p1: number, p2: interop.Pointer | interop.Reference<iovec>, p3: number, p4: number): number;
 
 declare function qos_class_main(): qos_class_t;
 
@@ -8956,6 +9037,47 @@ interface rusage_info_v4 {
 }
 declare var rusage_info_v4: interop.StructType<rusage_info_v4>;
 
+interface rusage_info_v5 {
+	ri_uuid: interop.Reference<number>;
+	ri_user_time: number;
+	ri_system_time: number;
+	ri_pkg_idle_wkups: number;
+	ri_interrupt_wkups: number;
+	ri_pageins: number;
+	ri_wired_size: number;
+	ri_resident_size: number;
+	ri_phys_footprint: number;
+	ri_proc_start_abstime: number;
+	ri_proc_exit_abstime: number;
+	ri_child_user_time: number;
+	ri_child_system_time: number;
+	ri_child_pkg_idle_wkups: number;
+	ri_child_interrupt_wkups: number;
+	ri_child_pageins: number;
+	ri_child_elapsed_abstime: number;
+	ri_diskio_bytesread: number;
+	ri_diskio_byteswritten: number;
+	ri_cpu_time_qos_default: number;
+	ri_cpu_time_qos_maintenance: number;
+	ri_cpu_time_qos_background: number;
+	ri_cpu_time_qos_utility: number;
+	ri_cpu_time_qos_legacy: number;
+	ri_cpu_time_qos_user_initiated: number;
+	ri_cpu_time_qos_user_interactive: number;
+	ri_billed_system_time: number;
+	ri_serviced_system_time: number;
+	ri_logical_writes: number;
+	ri_lifetime_max_phys_footprint: number;
+	ri_instructions: number;
+	ri_cycles: number;
+	ri_billed_energy: number;
+	ri_serviced_energy: number;
+	ri_interval_max_phys_footprint: number;
+	ri_runnable_time: number;
+	ri_flags: number;
+}
+declare var rusage_info_v5: interop.StructType<rusage_info_v5>;
+
 declare function ruserok(p1: string | interop.Pointer | interop.Reference<any>, p2: number, p3: string | interop.Pointer | interop.Reference<any>, p4: string | interop.Pointer | interop.Reference<any>): number;
 
 interface sa_endpoints_t {
@@ -9018,6 +9140,8 @@ declare var security_token_t: interop.StructType<security_token_t>;
 declare function seed48(p1: interop.Reference<number>): interop.Pointer | interop.Reference<number>;
 
 declare function seekdir(p1: interop.Pointer | interop.Reference<DIR>, p2: number): void;
+
+declare function select(p1: number, p2: interop.Pointer | interop.Reference<fd_set>, p3: interop.Pointer | interop.Reference<fd_set>, p4: interop.Pointer | interop.Reference<fd_set>, p5: interop.Pointer | interop.Reference<timeval>): number;
 
 interface sem {
 	semval: number;
@@ -9521,6 +9645,8 @@ declare function strsep(__stringp: interop.Pointer | interop.Reference<string>, 
 
 declare function strsignal(__sig: number): string;
 
+declare function strsignal_r(__sig: number, __strsignalbuf: string | interop.Pointer | interop.Reference<any>, __buflen: number): number;
+
 declare function strspn(__s: string | interop.Pointer | interop.Reference<any>, __charset: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function strstr(__big: string | interop.Pointer | interop.Reference<any>, __little: string | interop.Pointer | interop.Reference<any>): string;
@@ -9554,6 +9680,8 @@ declare function strtold_l(p1: string | interop.Pointer | interop.Reference<any>
 declare function strtoll(__str: string | interop.Pointer | interop.Reference<any>, __endptr: interop.Pointer | interop.Reference<string>, __base: number): number;
 
 declare function strtoll_l(p1: string | interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<string>, p3: number, p4: interop.Pointer | interop.Reference<any>): number;
+
+declare function strtonum(__numstr: string | interop.Pointer | interop.Reference<any>, __minval: number, __maxval: number, __errstrp: interop.Pointer | interop.Reference<string>): number;
 
 declare function strtoq(__str: string | interop.Pointer | interop.Reference<any>, __endptr: interop.Pointer | interop.Reference<string>, __base: number): number;
 
@@ -9680,11 +9808,13 @@ interface task_basic_info_64 {
 declare var task_basic_info_64: interop.StructType<task_basic_info_64>;
 
 interface task_category_policy {
-	role: number;
+	role: task_role_t;
 }
 declare var task_category_policy: interop.StructType<task_category_policy>;
 
 declare function task_create(target_task: number, ledgers: interop.Pointer | interop.Reference<number>, ledgersCnt: number, inherit_memory: number, child_task: interop.Pointer | interop.Reference<number>): number;
+
+declare function task_create_suid_cred(task: number, path: interop.Reference<number>, uid: number, delegation: interop.Pointer | interop.Reference<number>): number;
 
 interface task_dyld_info {
 	all_image_info_addr: number;
@@ -9807,7 +9937,7 @@ declare function task_resume(target_task: number): number;
 
 declare function task_resume2(suspend_token: number): number;
 
-declare const enum task_role {
+declare const enum task_role_t {
 
 	TASK_RENICED = -1,
 
@@ -10104,6 +10234,8 @@ interface thread_basic_info {
 	sleep_time: number;
 }
 declare var thread_basic_info: interop.StructType<thread_basic_info>;
+
+declare function thread_convert_thread_state(thread: number, direction: number, flavor: number, in_state: interop.Pointer | interop.Reference<number>, in_stateCnt: number, out_state: interop.Pointer | interop.Reference<number>, out_stateCnt: interop.Pointer | interop.Reference<number>): number;
 
 declare function thread_create(parent_task: number, child_act: interop.Pointer | interop.Reference<number>): number;
 
@@ -10799,6 +10931,8 @@ interface vm_statistics64 {
 	total_uncompressed_pages_in_compressor: number;
 }
 declare var vm_statistics64: interop.StructType<vm_statistics64>;
+
+declare function vm_stats(info: interop.Pointer | interop.Reference<any>, count: interop.Pointer | interop.Reference<number>): number;
 
 declare function vm_wire(host_priv: number, task: number, address: number, size: number, desired_access: number): number;
 

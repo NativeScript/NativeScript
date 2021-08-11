@@ -55,6 +55,11 @@ export const orientationChangedEvent: string;
 export const systemAppearanceChangedEvent: string;
 
 /**
+ * String value used when hooking to fontScaleChanged event.
+ */
+export const fontScaleChangedEvent: string;
+
+/**
  * Boolean to enable/disable systemAppearanceChanged
  */
 export let autoSystemAppearanceChanged: boolean;
@@ -62,7 +67,7 @@ export let autoSystemAppearanceChanged: boolean;
 /**
  * enable/disable systemAppearanceChanged
  */
-export function setAutoSystemAppearanceChanged(value: boolean);
+export function setAutoSystemAppearanceChanged(value: boolean): void;
 
 /**
  * Updates root view classes including those of modals
@@ -103,8 +108,9 @@ export interface LaunchEventData extends ApplicationEventData {
 	/**
 	 * The root view for this Window on iOS or Activity for Android.
 	 * If not set a new Frame will be created as a root view in order to maintain backwards compatibility.
+	 * If explicitly set to null, there will be no root view.
 	 */
-	root?: View;
+	root?: View | null;
 
 	savedInstanceState?: any /* android.os.Bundle */;
 }
@@ -127,6 +133,16 @@ export interface SystemAppearanceChangedEventData extends ApplicationEventData {
 	 * New system appearance value.
 	 */
 	newValue: 'light' | 'dark';
+}
+
+/**
+ * Event data containing information for font scale changed event.
+ */
+export interface FontScaleChangedEventData extends ApplicationEventData {
+	/**
+	 * New font scale value.
+	 */
+	newValue: number;
 }
 
 /**
@@ -182,6 +198,11 @@ export function setCssFileName(cssFile: string): void;
  * Gets css file name for the application.
  */
 export function getCssFileName(): string;
+
+/**
+ * Ensure css-class is set on rootView
+ */
+export function applyCssClass(rootView: View, cssClasses: string[], newCssClass: string): void;
 
 /**
  * Loads immediately the app.css.
@@ -316,6 +337,8 @@ export function on(event: 'orientationChanged', callback: (args: OrientationChan
  * between light and dark mode (for iOS) and vice versa.
  */
 export function on(event: 'systemAppearanceChanged', callback: (args: SystemAppearanceChangedEventData) => void, thisArg?: any);
+
+export function on(event: 'fontScaleChanged', callback: (args: FontScaleChangedEventData) => void, thisArg?: any);
 
 /**
  * Gets the orientation of the application.
@@ -604,6 +627,12 @@ export class AndroidApplication extends Observable {
 	 * String value used when hooking to requestPermissions event.
 	 */
 	public static activityRequestPermissionsEvent: string;
+
+	/**
+	 * Get a registered BroadcastReceiver, then you can get the result code of BroadcastReceiver in onReceiveCallback method.
+	 * @param intentFilter A string containing the intent filter.
+	 */
+	public getRegisteredBroadcastReceiver(intentFilter: string): android.content.BroadcastReceiver | undefined;
 
 	/**
 	 * Register a BroadcastReceiver to be run in the main activity thread. The receiver will be called with any broadcast Intent that matches filter, in the main application thread.

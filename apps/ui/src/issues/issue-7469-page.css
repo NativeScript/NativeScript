@@ -1,0 +1,15 @@
+.test-label {
+    padding: 10;
+    background-color: black;
+    color: white;
+  }
+  
+  .stack1 {
+    background-color: green;
+    color: white;
+  }
+  
+  .stack2 {
+    background-color: blue;
+    color: red;
+  }

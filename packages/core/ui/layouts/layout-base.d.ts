@@ -1,6 +1,6 @@
-﻿import { View, CustomLayoutView } from '../core/view';
+﻿import { CoreTypes } from '../../core-types';
+import { View, CustomLayoutView } from '../core/view';
 import { Property } from '../core/properties';
-import { Length } from '../styling/style-properties';
 
 /**
  * Base class for all views that supports children positioning.
@@ -66,27 +66,27 @@ export class LayoutBase extends CustomLayoutView {
 	/**
 	 * Gets or sets padding style property.
 	 */
-	padding: string | Length;
+	padding: string | CoreTypes.LengthType;
 
 	/**
 	 * Specify the bottom padding of this layout.
 	 */
-	paddingBottom: Length;
+	paddingBottom: CoreTypes.LengthType;
 
 	/**
 	 * Specify the left padding of this layout.
 	 */
-	paddingLeft: Length;
+	paddingLeft: CoreTypes.LengthType;
 
 	/**
 	 * Specify the right padding of this layout.
 	 */
-	paddingRight: Length;
+	paddingRight: CoreTypes.LengthType;
 
 	/**
 	 * Specify the top padding of this layout.
 	 */
-	paddingTop: Length;
+	paddingTop: CoreTypes.LengthType;
 
 	/**
 	 * Gets or sets a value indicating whether to clip the content of this layout.

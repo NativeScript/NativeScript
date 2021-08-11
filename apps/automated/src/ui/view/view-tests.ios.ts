@@ -84,7 +84,8 @@ export function testBackgroundInternalChangedOnceOnResize() {
 export function test_automation_text_set_to_native() {
 	var newButton = new Button();
 	newButton.automationText = 'Button1';
+	newButton.accessibilityLabel = 'Button1';
 	helper.getCurrentPage().content = newButton;
 	TKUnit.assertEqual((<UIView>newButton.ios).accessibilityIdentifier, 'Button1', 'accessibilityIdentifier not set to native view.');
-	TKUnit.assertEqual((<UIView>newButton.ios).accessibilityLabel, 'Button1', 'accessibilityIdentifier not set to native view.');
+	TKUnit.assertEqual((<UIView>newButton.ios).accessibilityLabel, 'Button1', 'accessibilityLabel not set to native view.');
 }

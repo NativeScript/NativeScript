@@ -549,6 +549,8 @@ declare class MPMediaPlaylist extends MPMediaItemCollection {
 
 	readonly authorDisplayName: string;
 
+	readonly cloudGlobalID: string;
+
 	readonly descriptionText: string;
 
 	readonly name: string;
@@ -591,6 +593,8 @@ declare class MPMediaPlaylistCreationMetadata extends NSObject {
 }
 
 declare var MPMediaPlaylistPropertyAuthorDisplayName: string;
+
+declare var MPMediaPlaylistPropertyCloudGlobalID: string;
 
 declare var MPMediaPlaylistPropertyDescriptionText: string;
 
