@@ -9,8 +9,9 @@ export class LayoutBase extends LayoutBaseCommon {
 		return true;
 	}
 	[clipToBoundsProperty.setNative](value: boolean) {
-		(<any>this.nativeViewProtected).setClipToBounds(value);
-
+		if ((<any>this.nativeViewProtected).setClipToBounds) {
+			(<any>this.nativeViewProtected).setClipToBounds(value);
+		}
 	}
 
 	[isPassThroughParentEnabledProperty.setNative](value: boolean) {
