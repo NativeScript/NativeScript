@@ -13,6 +13,7 @@ export function projectUsesCustomFlavor(): boolean {
 	  'angular',
 	  'react',
 	  'svelte'
+	//@ts-ignore
 	].includes(determineProjectFlavor())
 	if (dependencies.includes('nativescript-vue') ||
 		dependencies.includes('@nativescript/angular') ||
