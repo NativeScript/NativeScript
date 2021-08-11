@@ -26,7 +26,6 @@ let AnimationListener: android.animation.Animator.AnimatorListener;
 
 interface ExpandedTransitionListener extends androidx.transition.Transition.TransitionListener {
 	entry: ExpandedEntry;
-	backEntry?: BackstackEntry;
 	transition: androidx.transition.Transition;
 }
 
@@ -144,7 +143,7 @@ export function _setAndroidFragmentTransitions(animated: boolean, navigationTran
 		if (currentFragmentNeedsDifferentAnimation) {
 			setupCurrentFragmentFadeTransition(navigationTransition, currentEntry);
 		}
-	} else if (name === 'explode') { 
+	} else if (name === 'explode') {
 		setupNewFragmentExplodeTransition(navigationTransition, newEntry);
 		if (currentFragmentNeedsDifferentAnimation) {
 			setupCurrentFragmentExplodeTransition(navigationTransition, currentEntry);
@@ -224,7 +223,6 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 
 			onAnimationStart(animator: ExpandedAnimator): void {
 				const entry = animator.entry;
-				const backEntry = animator.backEntry;
 				addToWaitingQueue(entry);
 				if (Trace.isEnabled()) {
 					Trace.write(`START ${animator.transitionType} for ${entry.fragmentTag}`, Trace.categories.Transition);
@@ -238,13 +236,10 @@ function getAnimationListener(): android.animation.Animator.AnimatorListener {
 			}
 
 			onAnimationEnd(animator: ExpandedAnimator): void {
-				const entry = animator.entry;
-				const backEntry = animator.backEntry;
 				if (Trace.isEnabled()) {
-					Trace.write(`END ${animator.transitionType} for ${entry.fragmentTag} backEntry:${backEntry ? backEntry.fragmentTag : 'none'}`, Trace.categories.Transition);
+					Trace.write(`END ${animator.transitionType} for ${animator.entry.fragmentTag}`, Trace.categories.Transition);
 				}
-				transitionOrAnimationCompleted(entry, backEntry);
-				animator.backEntry = null;
+				transitionOrAnimationCompleted(animator.entry, animator.backEntry);
 			}
 
 			onAnimationCancel(animator: ExpandedAnimator): void {
@@ -350,12 +345,10 @@ function getTransitionListener(entry: ExpandedEntry, transition: androidx.transi
 
 			onTransitionEnd(transition: androidx.transition.Transition): void {
 				const entry = this.entry;
-				const backEntry = this.backEntry;
 				if (Trace.isEnabled()) {
-					Trace.write(`END ${toShortString(transition)} transition for ${entry.fragmentTag} backEntry:${backEntry ? backEntry.fragmentTag : 'none'}`, Trace.categories.Transition);
+					Trace.write(`END ${toShortString(transition)} transition for ${entry.fragmentTag}`, Trace.categories.Transition);
 				}
-				transitionOrAnimationCompleted(entry, backEntry);
-				this.backEntry = null;
+				transitionOrAnimationCompleted(entry, this.backEntry);
 			}
 
 			onTransitionResume(transition: androidx.transition.Transition): void {
@@ -667,7 +660,6 @@ function transitionOrAnimationCompleted(entry: ExpandedEntry, backEntry: Backsta
 	if (!entries) {
 		return;
 	}
-	console.log('transitionOrAnimationCompleted', frameId, backEntry && backEntry.fragmentTag, waitingQueue.size, entries.size, completedEntries.size );
 
 	entries.delete(entry);
 	if (entries.size === 0) {
