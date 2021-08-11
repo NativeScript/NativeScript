@@ -145,8 +145,8 @@ export class Frame extends FrameBase {
 
 		// _onAttachedToWindow called from OS again after it was detach
 		// still happens with androidx.fragment:1.3.2
-		const activity = androidApplication.foregroundActivity;
-		if ((this._manager && this._manager.isDestroyed()) || !activity.getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
+		const activity = androidApplication.foregroundActivity || androidApplication.startActivity;
+		if ((this._manager && this._manager.isDestroyed()) || !activity.getLifecycle?.().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
 			return;
 		}
 
