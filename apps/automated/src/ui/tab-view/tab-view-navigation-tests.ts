@@ -255,8 +255,10 @@ export function testLoadedAndUnloadedAreFired_WhenNavigatingAwayAndBack() {
 	}
 
 	if (isAndroid) {
-		TKUnit.arrayAssert(loadedEventsCount, [2, 2]);
-		TKUnit.arrayAssert(unloadedEventsCount, [1, 1]);
+		// now that we dont unload views on navigation "IN"
+		// we will also not get unloaded events as the views are actually not unloaded
+		TKUnit.arrayAssert(loadedEventsCount, [1, 1]);
+		TKUnit.arrayAssert(unloadedEventsCount, [0, 0]);
 	}
 }
 

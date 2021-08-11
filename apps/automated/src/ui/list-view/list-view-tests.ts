@@ -685,15 +685,15 @@ export class ListViewTest extends UITest<ListView> {
 
 		helper.navigateWithHistory(() => new Page());
 		for (let i = 0; i < count; i++) {
-			TKUnit.assertEqual(items.getItem(i).loadedCount, 1, 'Loaded Count');
-			TKUnit.assertEqual(items.getItem(i).unloadedCount, 1, 'Unloaded Count');
+			TKUnit.assertEqual(items.getItem(i).loadedCount, isIOS ? 1 : 0, 'Loaded Count');
+			TKUnit.assertEqual(items.getItem(i).unloadedCount, isIOS ? 1 : 0, 'Unloaded Count');
 		}
 
 		helper.goBack();
 
 		for (let i = 0; i < count; i++) {
-			TKUnit.assertEqual(items.getItem(i).loadedCount, 2, 'Loaded Count');
-			TKUnit.assertEqual(items.getItem(i).unloadedCount, 1, 'Unloaded Count');
+			TKUnit.assertEqual(items.getItem(i).loadedCount, isIOS ? 2 : 1, 'Loaded Count');
+			TKUnit.assertEqual(items.getItem(i).unloadedCount, isIOS ? 1 : 0, 'Unloaded Count');
 		}
 	}
 
