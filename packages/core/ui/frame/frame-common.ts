@@ -266,8 +266,8 @@ export class FrameBase extends CustomLayoutView {
 	public _updateBackstack(entry: BackstackEntry, navigationType: NavigationType): void {
 		const isBack = navigationType === NavigationType.back;
 		const isReplace = navigationType === NavigationType.replace;
-		const current = this._currentEntry;
 		this.raiseCurrentPageNavigatedEvents(isBack);
+		const current = this._currentEntry;
 
 		// Do nothing for Hot Module Replacement
 		if (isBack) {
@@ -303,6 +303,10 @@ export class FrameBase extends CustomLayoutView {
 	private raiseCurrentPageNavigatedEvents(isBack: boolean) {
 		const page = this.currentPage;
 		if (page) {
+			if (page.isLoaded) {
+				// Forward navigation does not remove page from frame so we raise unloaded manually.
+				page.callUnloaded();
+			}
 			page.onNavigatedFrom(isBack);
 		}
 	}

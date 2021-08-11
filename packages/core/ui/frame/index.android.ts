@@ -19,7 +19,6 @@ import { Builder } from '../builder';
 import { CSSUtils } from '../../css/system-classes';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
-import { ExpandedEntry } from './fragment.transitions.android';
 
 export * from './frame-common';
 
@@ -326,8 +325,6 @@ export class Frame extends FrameBase {
 
 			// If we had real navigation process queue.
 			this._processNavigationQueue(entry.resolvedPage);
-
-
 		} else {
 			// Otherwise currentPage was recreated so this wasn't real navigation.
 			// Continue with next item in the queue.
@@ -440,14 +437,7 @@ export class Frame extends FrameBase {
 			//transaction.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		}
 
-		if (clearHistory || isReplace) {
-			transaction.replace(this.containerViewId, newFragment, newFragmentTag);
-		} else  {
-			transaction.add(this.containerViewId, newFragment, newFragmentTag);
-		}
-		if (this._currentEntry && this._currentEntry.entry.backstackVisible === false) {
-			transaction.remove(this._currentEntry.fragment);
-		}
+		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
 		transaction.commitAllowingStateLoss();
 	}
 
@@ -469,26 +459,8 @@ export class Frame extends FrameBase {
 
 		_reverseTransitions(backstackEntry, this._currentEntry);
 
-		const currentIndex =this.backStack.length;
-		const goBackToIndex = this.backStack.indexOf(backstackEntry);
-		
-		// the order is important so that the transition listener called be 
-		// the one from the current entry we are going back from
-		if (this._currentEntry !== backstackEntry) {
-			const entry = this._currentEntry as ExpandedEntry;
-			// if we are going back we need to store where we are backing to
-			// so that we can set the current entry
-			// it only needs to be done on the return transition
-			if (entry.returnTransitionListener) {
-				entry.returnTransitionListener.backEntry = backstackEntry;
-			}
-			
-			transaction.remove((this._currentEntry).fragment);	
-		}
-		for (let index = goBackToIndex + 1; index < currentIndex; index++) {
-			transaction.remove(this.backStack[index].fragment);
-		}
-		
+		transaction.replace(this.containerViewId, backstackEntry.fragment, backstackEntry.fragmentTag);
+
 		transaction.commitAllowingStateLoss();
 	}
 
@@ -780,12 +752,6 @@ function findPageForFragment(fragment: androidx.fragment.app.Fragment, frame: Fr
 		entry = current;
 	} else if (executingContext && executingContext.entry && executingContext.entry.fragmentTag === fragmentTag) {
 		entry = executingContext.entry;
-	} else {
-		frame.backStack.forEach(e=>{
-			if (e && e.fragmentTag === fragmentTag) {
-				entry = e;
-			}
-		})
 	}
 
 	let page: Page;
