@@ -631,7 +631,14 @@ export class FrameBase extends CustomLayoutView {
 		if (this.currentPage && viewMatchesModuleContext(this.currentPage, context, ['markup', 'script'])) {
 			Trace.write(`Change Handled: Replacing page ${context.path}`, Trace.categories.Livesync);
 
-			this.replacePage(context.path);
+			// replace current page with a default fade transition
+			this.replacePage({
+				moduleName: context.path,
+				transition: {
+					name: 'fade',
+					duration: 100,
+				},
+			});
 
 			return true;
 		}
@@ -687,7 +694,7 @@ export class FrameBase extends CustomLayoutView {
 		const newPage = Builder.createViewFromEntry(entry) as Page;
 
 		const newBackstackEntry: BackstackEntry = {
-			entry: currentBackstackEntry.entry,
+			entry: Object.assign({}, currentBackstackEntry.entry, entry),
 			resolvedPage: newPage,
 			navDepth: currentBackstackEntry.navDepth,
 			fragmentTag: currentBackstackEntry.fragmentTag,
