@@ -92,7 +92,7 @@ export class View extends ViewCommon implements ViewDefinition {
 	public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
 		const measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
 		const forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
-		if (forceLayout || measureSpecsChanged) {
+		if (this.nativeViewProtected && (forceLayout || measureSpecsChanged)) {
 			// first clears the measured dimension flag
 			this._privateFlags &= ~PFLAG_MEASURED_DIMENSION_SET;
 
