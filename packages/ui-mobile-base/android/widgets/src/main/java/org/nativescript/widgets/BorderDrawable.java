@@ -482,6 +482,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
             if (this.clipPath != null && !this.clipPath.isEmpty()) {
                 drawClipPath(this.clipPath, canvas, backgroundGradientPaint, backgroundBoundsF, this.density);
             } else {
+                generateBackgroundPath(bounds);
                 canvas.drawPath(backgroundPath, backgroundGradientPaint);
             }
         }
