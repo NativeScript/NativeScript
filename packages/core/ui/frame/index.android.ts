@@ -1190,12 +1190,18 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 				rootView._tearDownUI(true);
 			}
 
-			const exitArgs = {
-				eventName: application.exitEvent,
-				object: application.android,
-				android: activity,
-			};
-			application.notify(exitArgs);
+			// this may happen when the user changes the system theme
+			// In such case, isFinishing() is false (and isChangingConfigurations is true), and the app will start again (onCreate) with a savedInstanceState
+			// as a result, launchEvent will never be called
+			// possible alternative: always fire launchEvent and exitEvent, but pass extra flags to make it clear what kind of launch/destroy is happening
+			if (activity.isFinishing()) {
+				const exitArgs = {
+					eventName: application.exitEvent,
+					object: application.android,
+					android: activity,
+				};
+				application.notify(exitArgs);
+			}
 		} finally {
 			superFunc.call(activity);
 		}
