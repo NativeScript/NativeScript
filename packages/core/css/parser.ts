@@ -75,10 +75,10 @@ export function parseHexColor(text: string, start = 0): Parsed<Color> {
 		return null;
 	}
 	const end = hexColorRegEx.lastIndex;
-	return { start, end, value: new Color('#'+ result[1]) };
+	return { start, end, value: new Color('#' + result[1]) };
 }
 
-const cssColorRegEx = /\s*((?:rgb|rgba|hsl|hsla|hsv|hsva)\([^\(\)]\))/gy;
+const cssColorRegEx = /\s*((?:rgb|rgba|hsl|hsla|hsv|hsva)\([^\(\)]*\))/gy;
 export function parseCssColor(text: string, start = 0): Parsed<Color> {
 	cssColorRegEx.lastIndex = start;
 	const result = cssColorRegEx.exec(text);
@@ -87,11 +87,10 @@ export function parseCssColor(text: string, start = 0): Parsed<Color> {
 	}
 	const end = cssColorRegEx.lastIndex;
 	try {
-		return { start, end, value: new Color(text) };
+		return { start, end, value: new Color(result[1]) };
 	} catch {
 		return null;
 	}
-
 }
 
 export function convertHSLToRGBColor(hue: number, saturation: number, lightness: number): { r: number; g: number; b: number } {
@@ -131,7 +130,6 @@ export function convertHSLToRGBColor(hue: number, saturation: number, lightness:
 		b: Math.round(b * 0xff),
 	};
 }
-
 
 export function parseColorKeyword(value, start: number, keyword = parseKeyword(value, start)): Parsed<Color> {
 	const parseColor = keyword && getKnownColor(keyword.value);
