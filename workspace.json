@@ -132,6 +132,7 @@
 							"./node_modules/.bin/tsc -p packages/core/tsconfig.lib.json",
 							"./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/**/*.d.ts\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/js-libs/**/*\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/cli-hooks/**/*.js\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/platforms/**/*\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/fetch/**/*\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/css/**/*\" dist && ./node_modules/.bin/copyfiles -e \"packages/core/__tests__/**/*\" \"packages/core/css-value/**/*\" dist",
 							"cp packages/core/package.json dist/packages/core",
+							"cp packages/core/README.md dist/packages/core",
 							"cp LICENSE dist/packages/core",
 							"cd dist/packages/core && npm pack && mv *.tgz .."
 						],
@@ -249,6 +250,29 @@
 					"options": {
 						"commands": ["npm run setup", "mkdir -p ../../dist/packages", "mv \"$(npm pack | tail -n 1)\" ../../dist/packages/nativescript-webpack.tgz"],
 						"cwd": "packages/webpack",
+						"parallel": false
+					}
+				}
+			}
+		},
+		"webpack5": {
+			"root": "packages/webpack5",
+			"sourceRoot": "packages/webpack5",
+			"projectType": "library",
+			"schematics": {},
+			"architect": {
+				"lint": {
+					"builder": "@nrwl/linter:eslint",
+					"options": {
+						"lintFilePatterns": []
+					}
+				},
+				"build": {
+					"builder": "@nrwl/workspace:run-commands",
+					"outputs": ["dist/packages"],
+					"options": {
+						"commands": ["npm run build"],
+						"cwd": "packages/webpack5",
 						"parallel": false
 					}
 				}

@@ -289,7 +289,6 @@ export class FrameBase extends CustomLayoutView {
 	}
 
 	private isNestedWithin(parentFrameCandidate: FrameBase): boolean {
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		let frameAncestor: FrameBase = this;
 		while (frameAncestor) {
 			frameAncestor = <FrameBase>getAncestor(frameAncestor, FrameBase);

@@ -11,6 +11,7 @@ function fontScaleChanged(origFontScale: number) {
 		Application.notify({
 			eventName: Application.fontScaleChangedEvent,
 			object: Application,
+			newValue: currentFontScale,
 		});
 	}
 }

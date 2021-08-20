@@ -177,7 +177,9 @@ class UIViewControllerImpl extends UIViewController {
 			}
 
 			// If page was shown with custom animation - we need to set the navigationController.delegate to the animatedDelegate.
-			frame.ios.controller.delegate = this[DELEGATE];
+			if (frame.ios?.controller) {
+				frame.ios.controller.delegate = this[DELEGATE];
+			}
 
 			frame._processNavigationQueue(owner);
 

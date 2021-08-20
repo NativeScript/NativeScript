@@ -389,10 +389,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 		return this._isLoaded;
 	}
 
-	get class(): string {
+	get ['class'](): string {
 		return this.className;
 	}
-	set class(v: string) {
+	set ['class'](v: string) {
 		this.className = v;
 	}
 
