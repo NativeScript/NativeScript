@@ -245,8 +245,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHsl() {
-		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
-		return { h: hsl.h * 360, s: hsl.s, l: hsl.l, a: this.a };
+		return { ...rgbToHsl(this.r, this.g, this.b), a: this.a };
 	}
 
 	/**
@@ -254,10 +253,10 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHslString() {
-		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
-		const h = Math.round(hsl.h * 360),
-			s = Math.round(hsl.s * 100),
-			l = Math.round(hsl.l * 100);
+		const hsl = rgbToHsl(this.r, this.g, this.b);
+		const h = Math.round(hsl.h),
+			s = Math.round(hsl.s),
+			l = Math.round(hsl.l);
 		const a = this.a;
 		return a == 255 ? 'hsl(' + h + ', ' + s + '%, ' + l + '%)' : 'hsla(' + h + ', ' + s + '%, ' + l + '%, ' + (a / 255).toFixed(2) + ')';
 	}
@@ -267,8 +266,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHsv() {
-		const hsv = rgbToHsv(this.r / 255, this.g / 255, this.b / 255);
-		return { h: hsv.h * 360, s: hsv.s, v: hsv.v, a: this.a };
+		return { ...rgbToHsv(this.r, this.g, this.b), a: this.a };
 	}
 
 	/**
@@ -276,7 +274,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHsvString() {
-		const hsv = rgbToHsv(this.r / 255, this.g / 255, this.b / 255);
+		const hsv = rgbToHsv(this.r, this.g, this.b);
 		const h = Math.round(hsv.h * 360),
 			s = Math.round(hsv.s * 100),
 			v = Math.round(hsv.v * 100);
@@ -300,10 +298,8 @@ export class Color implements definition.Color {
 	 */
 	public desaturate(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
-		hsl.s -= amount / 100;
-		hsl.s = Math.min(1, Math.max(0, hsl.s));
-		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, hsl.l * 100);
+		const hsl = rgbToHsl(this.r, this.g, this.b);
+		return Color.fromHSL(this.a, hsl.h, Math.min(100, Math.max(0, hsl.s - amount)), hsl.l);
 	}
 
 	/**
@@ -313,10 +309,8 @@ export class Color implements definition.Color {
 	 */
 	public saturate(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
-		hsl.s += amount / 100;
-		hsl.s = Math.min(1, Math.max(0, hsl.s));
-		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, hsl.l * 100);
+		const hsl = rgbToHsl(this.r, this.g, this.b);
+		return Color.fromHSL(this.a, hsl.h, Math.min(100, Math.max(0, hsl.s + amount)), hsl.l);
 	}
 
 	/**
@@ -334,10 +328,8 @@ export class Color implements definition.Color {
 	 */
 	public lighten(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
-		hsl.l += amount / 100;
-		hsl.l = Math.min(1, Math.max(0, hsl.l));
-		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, hsl.l * 100);
+		const hsl = rgbToHsl(this.r, this.g, this.b);
+		return Color.fromHSL(this.a, hsl.h, hsl.s, Math.min(100, Math.max(0, hsl.l + amount)));
 	}
 
 	/**
@@ -360,8 +352,8 @@ export class Color implements definition.Color {
 	 */
 	public darken(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
-		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, Math.min(100, Math.max(0, hsl.l * 100 - amount)));
+		const hsl = rgbToHsl(this.r, this.g, this.b);
+		return Color.fromHSL(this.a, hsl.h, hsl.s, Math.min(100, Math.max(0, hsl.l - amount)));
 	}
 
 	/**
@@ -467,11 +459,11 @@ function argbFromHsvOrHsva(value: string): number {
 
 // `rgbToHsl`
 // Converts an RGB color value to HSL.
-// *Assumes:* r, g, and b are contained in [0, 1]
-// *Returns:* { h, s, l } in [0,1]
+// *Assumes:* r, g, and b are contained in [0, 255]
+// *Returns:* { h, s, l } in [0,360] and [0,100]
 function rgbToHsl(r, g, b) {
-	const max = Math.max(r, g, b),
-		min = Math.min(r, g, b);
+	const max = Math.max(r, g, b) / 255,
+		min = Math.min(r, g, b) / 255;
 	let h, s;
 	const l = (max + min) / 2;
 
@@ -482,20 +474,20 @@ function rgbToHsl(r, g, b) {
 		s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 		switch (max) {
 			case r:
-				h = (g - b) / d + (g < b ? 6 : 0);
+				h = (g - b) / 255 / d + (g < b ? 6 : 0);
 				break;
 			case g:
-				h = (b - r) / d + 2;
+				h = (b - r) / 255 / d + 2;
 				break;
 			case b:
-				h = (r - g) / d + 4;
+				h = (r - g) / 255 / d + 4;
 				break;
 		}
 
 		h /= 6;
 	}
 
-	return { h: h, s: s, l: l };
+	return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
 function hue2rgb(p, q, t) {
@@ -532,11 +524,11 @@ function hslToRgb(h1, s1, l1) {
 
 // `rgbToHsv`
 // Converts an RGB color value to HSV
-// *Assumes:* r, g, and b are contained in the set [0, 1]
-// *Returns:* { h, s, v } in [0,1]
+// *Assumes:* r, g, and b are contained in the set [0, 255]
+// *Returns:* { h, s, v } in [0,360] and [0,100]
 function rgbToHsv(r, g, b) {
-	const max = Math.max(r, g, b),
-		min = Math.min(r, g, b);
+	const max = Math.max(r, g, b) / 255,
+		min = Math.min(r, g, b) / 255;
 	let h;
 	const v = max;
 
@@ -548,18 +540,18 @@ function rgbToHsv(r, g, b) {
 	} else {
 		switch (max) {
 			case r:
-				h = (g - b) / d + (g < b ? 6 : 0);
+				h = (g - b) / 255 / d + (g < b ? 6 : 0);
 				break;
 			case g:
-				h = (b - r) / d + 2;
+				h = (b - r) / 255 / d + 2;
 				break;
 			case b:
-				h = (r - g) / d + 4;
+				h = (r - g) / 255 / d + 4;
 				break;
 		}
 		h /= 6;
 	}
-	return { h: h, s: s, v: v };
+	return { h: h * 360, s: s * 100, v: v * 100 };
 }
 
 // `hsvToRgb`
