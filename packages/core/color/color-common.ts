@@ -363,7 +363,7 @@ export class Color implements definition.Color {
 	public darken(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
 		const hsl = rgbToHsl(this.r / 255, this.g / 255, this.b / 255);
-		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, Math.min(100, Math.max(0, hsl.l - amount)));
+		return Color.fromHSL(this.a, hsl.h * 360, hsl.s * 100, Math.min(100, Math.max(0, hsl.l * 100 - amount)));
 	}
 
 	/**
