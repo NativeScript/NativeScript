@@ -32,7 +32,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.tap((options) => {
 			return {
 				...options,
-				compiler: require('nativescript-vue-template-compiler'),
+				compiler: getTemplateCompiler(),
 			};
 		});
 
@@ -115,5 +115,13 @@ function patchVueLoaderForHMR() {
 		delete require.cache[vueLoaderPath];
 	} catch (err) {
 		error('Failed to patch VueLoader - HMR may not work properly!');
+	}
+}
+
+function getTemplateCompiler() {
+	try {
+		return require('nativescript-vue-template-compiler');
+	} catch (err) {
+		// ignore
 	}
 }
