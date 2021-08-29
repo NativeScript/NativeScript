@@ -88,6 +88,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// add an alias for vue, since some plugins may try to import it
 	config.resolve.alias.set('vue', 'nativescript-vue');
 
+	config.plugin('DefinePlugin').tap((args) => {
+		args[0] = merge(args[0], {
+			__UI_USE_EXTERNAL_RENDERER__: true,
+		});
+
+		return args;
+	});
+
 	return config;
 }
 
