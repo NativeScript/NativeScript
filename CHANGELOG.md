@@ -1,3 +1,12 @@
+## [8.0.9](https://github.com/NativeScript/NativeScript/compare/8.0.8-core...8.0.9) (2021-09-02)
+
+
+### Bug Fixes
+
+* **ios:** backport: actionBar to use appearance api on ios13+ ([#9530](https://github.com/NativeScript/NativeScript/issues/9530)) ([2b8783e](https://github.com/NativeScript/NativeScript/commit/2b8783e9eb97c1ed627dcf7b3413543bf9c5907d))
+
+
+
 ## [8.0.8](https://github.com/NativeScript/NativeScript/compare/8.0.7-core...8.0.8) (2021-06-15)
 
 
