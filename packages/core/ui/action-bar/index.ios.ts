@@ -357,13 +357,19 @@ export class ActionBar extends ActionBarBase {
 			return;
 		}
 		if (color) {
-			navBar.titleTextAttributes = <any>{
-				[NSForegroundColorAttributeName]: color.ios,
-			};
-			navBar.largeTitleTextAttributes = <any>{
-				[NSForegroundColorAttributeName]: color.ios,
-			};
-			navBar.tintColor = color.ios;
+			if (majorVersion >= 15) {
+				const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+				appearance.titleTextAttributes = NSDictionary.dictionaryWithObjectForKey(color.ios, NSForegroundColorAttributeName);
+			} else {
+				// legacy styling
+				navBar.titleTextAttributes = <any>{
+					[NSForegroundColorAttributeName]: color.ios,
+				};
+				navBar.largeTitleTextAttributes = <any>{
+					[NSForegroundColorAttributeName]: color.ios,
+				};
+				navBar.tintColor = color.ios;
+			}
 		} else {
 			navBar.titleTextAttributes = null;
 			navBar.largeTitleTextAttributes = null;
@@ -377,7 +383,7 @@ export class ActionBar extends ActionBarBase {
 		}
 
 		const color_ = color instanceof Color ? color.ios : color;
-		if (majorVersion >= 13) {
+		if (majorVersion >= 15) {
 			const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
 			// appearance.configureWithOpaqueBackground();
 			appearance.backgroundColor = color_;
