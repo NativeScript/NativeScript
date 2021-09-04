@@ -404,13 +404,13 @@ class UINavigationControllerImpl extends UINavigationController {
 	}
 
 	get owner(): Frame {
-		return this._owner.get();
+		return this._owner.get?.();
 	}
 
 	@profile
 	public viewWillAppear(animated: boolean): void {
 		super.viewWillAppear(animated);
-		const owner = this._owner.get();
+		const owner = this._owner.get?.();
 		if (owner && !owner.isLoaded && !owner.parent) {
 			owner.callLoaded();
 		}
@@ -419,7 +419,7 @@ class UINavigationControllerImpl extends UINavigationController {
 	@profile
 	public viewDidDisappear(animated: boolean): void {
 		super.viewDidDisappear(animated);
-		const owner = this._owner?.get();
+		const owner = this._owner?.get?.();
 		if (owner && owner.isLoaded && !owner.parent && !this.presentedViewController) {
 			owner.callUnloaded();
 			owner._tearDownUI(true);
@@ -543,7 +543,7 @@ class UINavigationControllerImpl extends UINavigationController {
 		super.traitCollectionDidChange(previousTraitCollection);
 
 		if (majorVersion >= 13) {
-			const owner = this._owner.get();
+			const owner = this._owner.get?.();
 			if (owner && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection && this.traitCollection.hasDifferentColorAppearanceComparedToTraitCollection(previousTraitCollection)) {
 				owner.notify({
 					eventName: IOSHelper.traitCollectionColorAppearanceChangedEvent,
