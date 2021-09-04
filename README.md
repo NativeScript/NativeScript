@@ -54,7 +54,7 @@ We love you and your PR's 🤗. Please follow our [contributing guide](https://g
 
 ## our Other frameworks sources repositories:-
 
-Outside of the source centralized in this repo, the NativeScript framework consists of a number of components, all of which are available as open source on GitHub. Here are the major ones:
+Outside of the source centralized in this repo, the NativeScript framework consists of a number of components, all of which are available as open source on GitHub. Here are the major ones. you should surely check it out:
 
 - **[iOS runtime](https://github.com/NativeScript/ns-v8ios-runtime)**
 	- [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/@nativescript/ios) 
