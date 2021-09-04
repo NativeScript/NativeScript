@@ -161,6 +161,7 @@ function initializeDialogFragment() {
 		private _cancelable: boolean;
 		private _shownCallback: () => void;
 		private _dismissCallback: () => void;
+		private activity: WeakRef<android.app.Activity>;
 
 		constructor() {
 			super();
@@ -215,6 +216,7 @@ function initializeDialogFragment() {
 
 		public onCreateView(inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle): android.view.View {
 			const owner = this.owner;
+			this.activity = new WeakRef(this.getActivity());
 			owner._setupAsRootView(this.getActivity());
 			owner._isAddedToNativeVisualTree = true;
 
@@ -252,7 +254,8 @@ function initializeDialogFragment() {
 		public onDismiss(dialog: android.content.DialogInterface): void {
 			super.onDismiss(dialog);
 			const manager = this.getFragmentManager();
-			if (manager) {
+			const activity = this.activity?.get();
+			if (manager && !activity?.isChangingConfigurations()) {
 				removeModal(this.owner._domId);
 				this._dismissCallback();
 			}
@@ -266,6 +269,10 @@ function initializeDialogFragment() {
 		public onDestroy(): void {
 			super.onDestroy();
 			const owner = this.owner;
+			const activity = this.activity?.get();
+			if (!activity?.isChangingConfigurations()) {
+				this.activity = null;
+			}
 
 			if (owner) {
 				// Android calls onDestroy before onDismiss.
