@@ -4,7 +4,10 @@ import './globals';
 // Register "dynamically" loaded module that need to be resolved by the
 // XML/component builders.
 import * as coreUIModules from './ui/index';
-global.registerModule('@nativescript/core/ui', () => coreUIModules);
+if (__UI_USE_EXTERNAL_RENDERER__) {
+} else {
+	global.registerModule('@nativescript/core/ui', () => coreUIModules);
+}
 
 // global.registerModule('text/formatted-string', () => require('./text/formatted-string'));
 // global.registerModule('text/span', () => require('./text/span'));

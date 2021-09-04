@@ -38,6 +38,17 @@ const statePressed = 16842919; // android.R.attr.state_pressed
 const stateEnabled = 16842910; // android.R.attr.state_enabled
 const styleAnimationDialog = 16973826; // android.R.style.Animation_Dialog
 
+const VERTICAL_GRAVITY_MASK = 112; // android.view.Gravity.VERTICAL_GRAVITY_MASK
+const HORIZONTAL_GRAVITY_MASK = 7; // android.view.Gravity.HORIZONTAL_GRAVITY_MASK
+const GRAVITY_LEFT = 3; // android.view.Gravity.LEFT
+const GRAVITY_RIGHT = 5; // android.view.Gravity.RIGHT
+const GRAVITY_TOP = 48; // android.view.Gravity.TOP
+const GRAVITY_BOTTOM = 80; // android.view.Gravity.BOTTOM
+const GRAVITY_CENTER_HORIZONTAL = 1; // android.view.Gravity.CENTER_HORIZONTAL
+const GRAVITY_FILL_HORIZONTAL = 7; // android.view.Gravity.FILL_HORIZONTAL
+const GRAVITY_CENTER_VERTICAL = 16; // android.view.Gravity.CENTER_VERTICAL
+const GRAVITY_FILL_VERTICAL = 112; // android.view.Gravity.FILL_VERTICAL
+
 const sdkVersion = lazy(() => parseInt(Device.sdkVersion));
 
 const modalMap = new Map<number, DialogOptions>();
@@ -352,9 +363,6 @@ export class View extends ViewCommon {
 	}
 
 	public _getFragmentManager(): androidx.fragment.app.FragmentManager {
-		if ((<any>global)._dialogFragment) {
-			return (<any>global)._dialogFragment.getChildFragmentManager();
-		}
 		let manager = this._manager;
 		if (!manager) {
 			let view: View = this;
@@ -529,6 +537,11 @@ export class View extends ViewCommon {
 
 	@profile
 	public requestLayout(): void {
+		if (this._suspendRequestLayout) {
+			this._requestLayoutNeeded = true;
+			return;
+		}
+		this._requestLayoutNeeded = false;
 		super.requestLayout();
 		if (this.nativeViewProtected) {
 			this.nativeViewProtected.requestLayout();
@@ -700,19 +713,20 @@ export class View extends ViewCommon {
 		};
 
 		saveModal(dialogOptions);
+
 		this._dialogFragment = df;
-		(<any>global)._dialogFragment = df;
 		this._raiseShowingModallyEvent();
+
 		this._dialogFragment.show(parent._getRootFragmentManager(), this._domId.toString());
 	}
 
 	protected _hideNativeModalView(parent: View, whenClosedCallback: () => void) {
-		const manager = this._dialogFragment.getParentFragmentManager();
+		const manager = this._dialogFragment.getFragmentManager();
 		if (manager) {
 			this._dialogFragment.dismissAllowingStateLoss();
 		}
+
 		this._dialogFragment = null;
-		(<any>global)._dialogFragment = null;
 		whenClosedCallback();
 	}
 
@@ -941,30 +955,32 @@ export class View extends ViewCommon {
 	[horizontalAlignmentProperty.setNative](value: CoreTypes.HorizontalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+		const gravity = lp.gravity;
+		const weight = lp.weight;
 		// Set only if params gravity exists.
-		if (lp.gravity !== undefined) {
+		if (gravity !== undefined) {
 			switch (value) {
 				case 'left':
-					lp.gravity = android.view.Gravity.LEFT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-					if (lp.weight < 0) {
+					lp.gravity = GRAVITY_LEFT | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
 						lp.weight = -2;
 					}
 					break;
 				case 'center':
-					lp.gravity = android.view.Gravity.CENTER_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-					if (lp.weight < 0) {
+					lp.gravity = GRAVITY_CENTER_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
 						lp.weight = -2;
 					}
 					break;
 				case 'right':
-					lp.gravity = android.view.Gravity.RIGHT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-					if (lp.weight < 0) {
+					lp.gravity = GRAVITY_RIGHT | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
 						lp.weight = -2;
 					}
 					break;
 				case 'stretch':
-					lp.gravity = android.view.Gravity.FILL_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-					if (lp.weight < 0) {
+					lp.gravity = GRAVITY_FILL_HORIZONTAL | (gravity & VERTICAL_GRAVITY_MASK);
+					if (weight < 0) {
 						lp.weight = -1;
 					}
 					break;
@@ -979,30 +995,32 @@ export class View extends ViewCommon {
 	[verticalAlignmentProperty.setNative](value: CoreTypes.VerticalAlignmentType) {
 		const nativeView = this.nativeViewProtected;
 		const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+		const gravity = lp.gravity;
+		const height = lp.height;
 		// Set only if params gravity exists.
-		if (lp.gravity !== undefined) {
+		if (gravity !== undefined) {
 			switch (value) {
 				case 'top':
-					lp.gravity = android.view.Gravity.TOP | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-					if (lp.height < 0) {
+					lp.gravity = GRAVITY_TOP | (gravity & HORIZONTAL_GRAVITY_MASK);
+					if (height < 0) {
 						lp.height = -2;
 					}
 					break;
 				case 'middle':
-					lp.gravity = android.view.Gravity.CENTER_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-					if (lp.height < 0) {
+					lp.gravity = GRAVITY_CENTER_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
+					if (height < 0) {
 						lp.height = -2;
 					}
 					break;
 				case 'bottom':
-					lp.gravity = android.view.Gravity.BOTTOM | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-					if (lp.height < 0) {
+					lp.gravity = GRAVITY_BOTTOM | (gravity & HORIZONTAL_GRAVITY_MASK);
+					if (height < 0) {
 						lp.height = -2;
 					}
 					break;
 				case 'stretch':
-					lp.gravity = android.view.Gravity.FILL_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-					if (lp.height < 0) {
+					lp.gravity = GRAVITY_FILL_VERTICAL | (gravity & HORIZONTAL_GRAVITY_MASK);
+					if (height < 0) {
 						lp.height = -1;
 					}
 					break;

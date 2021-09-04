@@ -26,6 +26,7 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		args[0] = merge(args[0], {
 			/** For various libraries in the React ecosystem. */
 			__TEST__: false,
+			__UI_USE_EXTERNAL_RENDERER__: true,
 			/**
 			 * Primarily for React Fast Refresh plugin, but technically the allowHmrInProduction option could be used instead.
 			 * Worth including anyway, as there are plenty of Node libraries that use this flag.

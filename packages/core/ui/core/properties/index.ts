@@ -1,4 +1,3 @@
-import * as reduceCSSCalc from 'reduce-css-calc';
 
 import { ViewBase } from '../view-base';
 
@@ -153,7 +152,7 @@ export function _evaluateCssCalcExpression(value: string) {
 
 	if (isCssCalcExpression(value)) {
 		// WORKAROUND: reduce-css-calc can't handle the dip-unit.
-		return reduceCSSCalc(value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1'));
+		return require('reduce-css-calc')(value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1'));
 	} else {
 		return value;
 	}
@@ -1363,6 +1362,8 @@ function inheritableCssPropertyValuesOn(style: Style): Array<{ property: Inherit
 type PropertyInterface = Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any>;
 
 export const initNativeView = profile('"properties".initNativeView', function initNativeView(view: ViewBase): void {
+	const wasSuspended = view.suspendRequestLayout;
+	view.suspendRequestLayout = true;
 	if (view._suspendedUpdates) {
 		applyPendingNativeSetters(view);
 	} else {
@@ -1370,6 +1371,14 @@ export const initNativeView = profile('"properties".initNativeView', function in
 	}
 	// Would it be faster to delete all members of the old object?
 	view._suspendedUpdates = {};
+
+	// if the view requestLayout was not suspended before
+	// it means we can request a layout if needed.
+	// will be done after otherwise
+	view.suspendRequestLayout = wasSuspended;
+	if (!wasSuspended && view.isLayoutRequestNeeded) {
+		view.requestLayout();
+	}
 });
 
 export function applyPendingNativeSetters(view: ViewBase): void {
