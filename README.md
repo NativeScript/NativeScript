@@ -52,9 +52,9 @@ We love you and your PR's 🤗. Please follow our [contributing guide](https://g
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
 - [NativeScript documentation](https://docs.nativescript.org/)
 
-## our Other frameworks sources repositories:-
+## Other source repos
 
-Outside of the source centralized in this repo, the NativeScript framework consists of a number of components, all of which are available as open source on GitHub. Here are the major ones. you should surely check it out:
+Outside of the source centralized in this repo, NativeScript consists of a few other source repos. Here are the major ones:
 
 - **[iOS runtime](https://github.com/NativeScript/ns-v8ios-runtime)**
 	- [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/@nativescript/ios) 
