@@ -357,19 +357,14 @@ export class ActionBar extends ActionBarBase {
 			return;
 		}
 		if (color) {
+			const titleTextColor = NSDictionary.dictionaryWithObjectForKey(color.ios, NSForegroundColorAttributeName);
 			if (majorVersion >= 15) {
 				const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
-				appearance.titleTextAttributes = NSDictionary.dictionaryWithObjectForKey(color.ios, NSForegroundColorAttributeName);
-			} else {
-				// legacy styling
-				navBar.titleTextAttributes = <any>{
-					[NSForegroundColorAttributeName]: color.ios,
-				};
-				navBar.largeTitleTextAttributes = <any>{
-					[NSForegroundColorAttributeName]: color.ios,
-				};
-				navBar.tintColor = color.ios;
+				appearance.titleTextAttributes = titleTextColor;
 			}
+			navBar.titleTextAttributes = titleTextColor;
+			navBar.largeTitleTextAttributes = titleTextColor;
+			navBar.tintColor = color.ios;
 		} else {
 			navBar.titleTextAttributes = null;
 			navBar.largeTitleTextAttributes = null;
