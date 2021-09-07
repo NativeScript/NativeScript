@@ -1,3 +1,12 @@
+## [8.0.11](https://github.com/NativeScript/NativeScript/compare/8.0.10-core...8.0.11) (2021-09-07)
+
+
+### Bug Fixes
+
+* **ios:** actionitem coloring with 15+ ([bf89aa2](https://github.com/NativeScript/NativeScript/commit/bf89aa2ff379242b3a6a283990d182106423672e))
+
+
+
 ## [8.0.10](https://github.com/NativeScript/NativeScript/compare/8.0.9-core...8.0.10) (2021-09-03)
 
 
