@@ -29,7 +29,6 @@ const INTENT_EXTRA = 'com.tns.activity';
 const ROOT_VIEW_ID_EXTRA = 'com.tns.activity.rootViewId';
 const FRAMEID = '_frameId';
 const CALLBACKS = '_callbacks';
-const HMR_REPLACE_TRANSITION = 'fade';
 
 const ownerSymbol = Symbol('_owner');
 const activityRootViewsMap = new Map<number, WeakRef<View>>();
@@ -413,13 +412,7 @@ export class Frame extends FrameBase {
 		// layout pass so we will wait forever for transitionCompleted handler...
 		// https://github.com/NativeScript/NativeScript/issues/4895
 		let navigationTransition: NavigationTransition;
-		if (isReplace) {
-			animated = true;
-			navigationTransition = {
-				name: HMR_REPLACE_TRANSITION,
-				duration: 100,
-			};
-		} else if (this._currentEntry) {
+		if (this._currentEntry) {
 			navigationTransition = this._getNavigationTransition(newEntry.entry);
 		} else {
 			navigationTransition = null;
