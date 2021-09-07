@@ -324,6 +324,7 @@ exports[`typescript configuration for android 1`] = `
     bundle: [
       '@nativescript/core/globals/index.js',
       '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__',
+      '@nativescript/core/bundle-entry-points.js',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -656,6 +657,7 @@ exports[`typescript configuration for ios 1`] = `
     bundle: [
       '@nativescript/core/globals/index.js',
       '__jest__/src/__@nativescript_webpack_virtual_entry_typescript__',
+      '@nativescript/core/bundle-entry-points.js',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [

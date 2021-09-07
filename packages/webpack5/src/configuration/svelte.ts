@@ -85,13 +85,14 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			});
 	}
 
-	config.plugin('DefinePlugin').tap((args) => {
-		args[0] = merge(args[0], {
-			__UI_USE_EXTERNAL_RENDERER__: true,
-		});
+	// todo: re-visit later, disabling by default now
+	// config.plugin('DefinePlugin').tap((args) => {
+	// 	args[0] = merge(args[0], {
+	// 		__UI_USE_EXTERNAL_RENDERER__: true,
+	// 	});
 
-		return args;
-	});
+	// 	return args;
+	// });
 
 	return config;
 }
