@@ -15,6 +15,8 @@ declare class INUIAddVoiceShortcutButton extends UIButton {
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): INUIAddVoiceShortcutButton; // inherited from UIAppearance
 
+	static buttonWithConfigurationPrimaryAction(configuration: UIButtonConfiguration, primaryAction: UIAction): INUIAddVoiceShortcutButton; // inherited from UIButton
+
 	static buttonWithType(buttonType: UIButtonType): INUIAddVoiceShortcutButton; // inherited from UIButton
 
 	static buttonWithTypePrimaryAction(buttonType: UIButtonType, primaryAction: UIAction): INUIAddVoiceShortcutButton; // inherited from UIButton

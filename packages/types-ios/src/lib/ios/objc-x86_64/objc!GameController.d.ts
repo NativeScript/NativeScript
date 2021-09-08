@@ -73,6 +73,8 @@ declare class GCController extends NSObject implements GCDevice {
 
 	static readonly current: GCController;
 
+	static shouldMonitorBackgroundEvents: boolean;
+
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
@@ -319,6 +321,74 @@ declare class GCDirectionalGamepad extends GCMicroGamepad {
 	static new(): GCDirectionalGamepad; // inherited from NSObject
 }
 
+declare class GCDualSenseAdaptiveTrigger extends GCControllerButtonInput {
+
+	static alloc(): GCDualSenseAdaptiveTrigger; // inherited from NSObject
+
+	static new(): GCDualSenseAdaptiveTrigger; // inherited from NSObject
+
+	readonly armPosition: number;
+
+	readonly mode: GCDualSenseAdaptiveTriggerMode;
+
+	readonly status: GCDualSenseAdaptiveTriggerStatus;
+
+	setModeFeedbackWithStartPositionResistiveStrength(startPosition: number, resistiveStrength: number): void;
+
+	setModeOff(): void;
+
+	setModeVibrationWithStartPositionAmplitudeFrequency(startPosition: number, amplitude: number, frequency: number): void;
+
+	setModeWeaponWithStartPositionEndPositionResistiveStrength(startPosition: number, endPosition: number, resistiveStrength: number): void;
+}
+
+declare const enum GCDualSenseAdaptiveTriggerMode {
+
+	Off = 0,
+
+	Feedback = 1,
+
+	Weapon = 2,
+
+	Vibration = 3
+}
+
+declare const enum GCDualSenseAdaptiveTriggerStatus {
+
+	Unknown = -1,
+
+	FeedbackNoLoad = 0,
+
+	FeedbackLoadApplied = 1,
+
+	WeaponReady = 2,
+
+	WeaponFiring = 3,
+
+	WeaponFired = 4,
+
+	VibrationNotVibrating = 5,
+
+	VibrationIsVibrating = 6
+}
+
+declare class GCDualSenseGamepad extends GCExtendedGamepad {
+
+	static alloc(): GCDualSenseGamepad; // inherited from NSObject
+
+	static new(): GCDualSenseGamepad; // inherited from NSObject
+
+	readonly leftTrigger: GCDualSenseAdaptiveTrigger;
+
+	readonly rightTrigger: GCDualSenseAdaptiveTrigger;
+
+	readonly touchpadButton: GCControllerButtonInput;
+
+	readonly touchpadPrimary: GCControllerDirectionPad;
+
+	readonly touchpadSecondary: GCControllerDirectionPad;
+}
+
 declare class GCDualShockGamepad extends GCExtendedGamepad {
 
 	static alloc(): GCDualShockGamepad; // inherited from NSObject
@@ -554,11 +624,21 @@ declare var GCInputButtonMenu: string;
 
 declare var GCInputButtonOptions: string;
 
+declare var GCInputButtonShare: string;
+
 declare var GCInputButtonX: string;
 
 declare var GCInputButtonY: string;
 
 declare var GCInputDirectionPad: string;
+
+declare var GCInputDirectionalCardinalDpad: string;
+
+declare var GCInputDirectionalCenterButton: string;
+
+declare var GCInputDirectionalDpad: string;
+
+declare var GCInputDirectionalTouchSurfaceButton: string;
 
 declare var GCInputDualShockTouchpadButton: string;
 
@@ -573,6 +653,14 @@ declare var GCInputLeftThumbstick: string;
 declare var GCInputLeftThumbstickButton: string;
 
 declare var GCInputLeftTrigger: string;
+
+declare var GCInputMicroGamepadButtonA: string;
+
+declare var GCInputMicroGamepadButtonMenu: string;
+
+declare var GCInputMicroGamepadButtonX: string;
+
+declare var GCInputMicroGamepadDpad: string;
 
 declare var GCInputRightShoulder: string;
 
@@ -636,7 +724,23 @@ declare var GCKeyCodeF11: number;
 
 declare var GCKeyCodeF12: number;
 
+declare var GCKeyCodeF13: number;
+
+declare var GCKeyCodeF14: number;
+
+declare var GCKeyCodeF15: number;
+
+declare var GCKeyCodeF16: number;
+
+declare var GCKeyCodeF17: number;
+
+declare var GCKeyCodeF18: number;
+
+declare var GCKeyCodeF19: number;
+
 declare var GCKeyCodeF2: number;
+
+declare var GCKeyCodeF20: number;
 
 declare var GCKeyCodeF3: number;
 
@@ -886,7 +990,23 @@ declare var GCKeyF11: string;
 
 declare var GCKeyF12: string;
 
+declare var GCKeyF13: string;
+
+declare var GCKeyF14: string;
+
+declare var GCKeyF15: string;
+
+declare var GCKeyF16: string;
+
+declare var GCKeyF17: string;
+
+declare var GCKeyF18: string;
+
+declare var GCKeyF19: string;
+
 declare var GCKeyF2: string;
+
+declare var GCKeyF20: string;
 
 declare var GCKeyF3: string;
 
@@ -1378,6 +1498,8 @@ declare class GCPhysicalInputProfile extends NSObject {
 
 	readonly allElements: NSSet<GCControllerElement>;
 
+	readonly allTouchpads: NSSet<GCControllerTouchpad>;
+
 	readonly axes: NSDictionary<string, GCControllerAxisInput>;
 
 	readonly buttons: NSDictionary<string, GCControllerButtonInput>;
@@ -1388,9 +1510,17 @@ declare class GCPhysicalInputProfile extends NSObject {
 
 	readonly elements: NSDictionary<string, GCControllerElement>;
 
+	readonly hasRemappedElements: boolean;
+
 	readonly lastEventTimestamp: number;
 
+	readonly touchpads: NSDictionary<string, GCControllerTouchpad>;
+
 	capture(): this;
+
+	mappedElementAliasForPhysicalInputName(inputName: string): string;
+
+	mappedPhysicalInputNamesForElementAlias(elementAlias: string): NSSet<string>;
 
 	objectForKeyedSubscript(key: string): GCControllerElement;
 
@@ -1430,11 +1560,56 @@ declare const enum GCTouchState {
 	Moving = 2
 }
 
+declare class GCVirtualController extends NSObject {
+
+	static alloc(): GCVirtualController; // inherited from NSObject
+
+	static new(): GCVirtualController; // inherited from NSObject
+
+	static virtualControllerWithConfiguration(configuration: GCVirtualControllerConfiguration): GCVirtualController;
+
+	readonly controller: GCController;
+
+	constructor(o: { configuration: GCVirtualControllerConfiguration; });
+
+	connectWithReplyHandler(reply: (p1: NSError) => void): void;
+
+	disconnect(): void;
+
+	initWithConfiguration(configuration: GCVirtualControllerConfiguration): this;
+
+	updateConfigurationForElementConfiguration(element: string, config: (p1: GCVirtualControllerElementConfiguration) => GCVirtualControllerElementConfiguration): void;
+}
+
+declare class GCVirtualControllerConfiguration extends NSObject {
+
+	static alloc(): GCVirtualControllerConfiguration; // inherited from NSObject
+
+	static new(): GCVirtualControllerConfiguration; // inherited from NSObject
+
+	elements: NSSet<string>;
+}
+
+declare class GCVirtualControllerElementConfiguration extends NSObject {
+
+	static alloc(): GCVirtualControllerElementConfiguration; // inherited from NSObject
+
+	static new(): GCVirtualControllerElementConfiguration; // inherited from NSObject
+
+	actsAsTouchpad: boolean;
+
+	hidden: boolean;
+
+	path: UIBezierPath;
+}
+
 declare class GCXboxGamepad extends GCExtendedGamepad {
 
 	static alloc(): GCXboxGamepad; // inherited from NSObject
 
 	static new(): GCXboxGamepad; // inherited from NSObject
+
+	readonly buttonShare: GCControllerButtonInput;
 
 	readonly paddleButton1: GCControllerButtonInput;
 
