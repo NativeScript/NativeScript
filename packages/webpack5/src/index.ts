@@ -89,6 +89,11 @@ export const defaultConfigs = configs;
 export const Utils = helpers;
 
 /**
+ * webpack-merge exported for convenience. Useful for merging configuration objects
+ */
+export { merge };
+
+/**
  * Initialize @nativescript/webpack with the webpack env.
  * Must be called first.
  *
