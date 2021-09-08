@@ -37,9 +37,13 @@ declare class AUAudioUnit extends NSObject {
 
 	static registerSubclassAsComponentDescriptionNameVersion(cls: typeof NSObject, componentDescription: AudioComponentDescription, name: string, version: number): void;
 
+	readonly AudioUnitMIDIProtocol: MIDIProtocolID;
+
 	MIDIOutputBufferSizeHint: number;
 
 	MIDIOutputEventBlock: (p1: number, p2: number, p3: number, p4: string) => number;
+
+	MIDIOutputEventListBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList>) => number;
 
 	readonly MIDIOutputNames: NSArray<string>;
 
@@ -76,6 +80,8 @@ declare class AUAudioUnit extends NSObject {
 	fullState: NSDictionary<string, any>;
 
 	fullStateForDocument: NSDictionary<string, any>;
+
+	hostMIDIProtocol: MIDIProtocolID;
 
 	readonly inputBusses: AUAudioUnitBusArray;
 
@@ -120,6 +126,8 @@ declare class AUAudioUnit extends NSObject {
 	readonly running: boolean;
 
 	readonly scheduleMIDIEventBlock: (p1: number, p2: number, p3: number, p4: string) => void;
+
+	readonly scheduleMIDIEventListBlock: (p1: number, p2: number, p3: interop.Pointer | interop.Reference<MIDIEventList>) => number;
 
 	readonly scheduleParameterBlock: (p1: number, p2: number, p3: number, p4: number) => void;
 
@@ -573,7 +581,9 @@ declare const enum AURenderEventType {
 
 	MIDI = 8,
 
-	MIDISysEx = 9
+	MIDISysEx = 9,
+
+	MIDIEventList = 10
 }
 
 declare const enum AUReverbRoomType {
@@ -702,6 +712,13 @@ declare const enum AUSpatializationAlgorithm {
 	kSpatializationAlgorithm_UseOutputType = 7
 }
 
+declare const enum AUVoiceIOSpeechActivityEvent {
+
+	kAUVoiceIOSpeechActivityHasStarted = 0,
+
+	kAUVoiceIOSpeechActivityHasEnded = 1
+}
+
 interface AudioBalanceFade {
 	mLeftRightBalance: number;
 	mBackFrontFade: number;
@@ -814,7 +831,9 @@ declare const enum AudioComponentInstantiationOptions {
 
 	kAudioComponentInstantiation_LoadOutOfProcess = 1,
 
-	kAudioComponentInstantiation_LoadInProcess = 2
+	kAudioComponentInstantiation_LoadInProcess = 2,
+
+	kAudioComponentInstantiation_LoadedRemotely = 2147483648
 }
 
 interface AudioComponentPlugInInterface {
@@ -1458,7 +1477,9 @@ declare const enum AudioUnitParameterUnit {
 
 	kAudioUnitParameterUnit_Ratio = 25,
 
-	kAudioUnitParameterUnit_CustomUnit = 26
+	kAudioUnitParameterUnit_CustomUnit = 26,
+
+	kAudioUnitParameterUnit_MIDI2Controller = 27
 }
 
 interface AudioUnitParameterValueFromString {
@@ -1527,6 +1548,8 @@ declare function AudioUnitSetParameter(inUnit: interop.Pointer | interop.Referen
 declare function AudioUnitSetProperty(inUnit: interop.Pointer | interop.Reference<any>, inID: number, inScope: number, inElement: number, inData: interop.Pointer | interop.Reference<any>, inDataSize: number): number;
 
 declare function AudioUnitUninitialize(inUnit: interop.Pointer | interop.Reference<any>): number;
+
+declare function AudioWorkIntervalCreate(name: string | interop.Pointer | interop.Reference<any>, clock: os_clockid_t, attr: interop.Pointer | interop.Reference<os_workgroup_attr_opaque_s>): OS_os_workgroup;
 
 interface CABarBeatTime {
 	bar: number;
@@ -1816,6 +1839,8 @@ interface MixerDistanceParams {
 declare var MixerDistanceParams: interop.StructType<MixerDistanceParams>;
 
 declare function MusicDeviceMIDIEvent(inUnit: interop.Pointer | interop.Reference<any>, inStatus: number, inData1: number, inData2: number, inOffsetSampleFrame: number): number;
+
+declare function MusicDeviceMIDIEventList(inUnit: interop.Pointer | interop.Reference<any>, inOffsetSampleFrame: number, evtList: interop.Pointer | interop.Reference<MIDIEventList>): number;
 
 interface MusicDeviceNoteParams {
 	argCount: number;
@@ -2234,6 +2259,8 @@ declare const kAUVoiceIOProperty_BypassVoiceProcessing: number;
 declare const kAUVoiceIOProperty_DuckNonVoiceAudio: number;
 
 declare const kAUVoiceIOProperty_MuteOutput: number;
+
+declare const kAUVoiceIOProperty_MutedSpeechActivityEventListener: number;
 
 declare const kAUVoiceIOProperty_VoiceProcessingEnableAGC: number;
 
@@ -3421,6 +3448,8 @@ declare const kAudioUnitProperty_3DMixerRenderingFlags: number;
 
 declare const kAudioUnitProperty_AudioChannelLayout: number;
 
+declare const kAudioUnitProperty_AudioUnitMIDIProtocol: number;
+
 declare const kAudioUnitProperty_BypassEffect: number;
 
 declare const kAudioUnitProperty_CPULoad: number;
@@ -3453,6 +3482,8 @@ declare const kAudioUnitProperty_FrequencyResponse: number;
 
 declare const kAudioUnitProperty_HostCallbacks: number;
 
+declare const kAudioUnitProperty_HostMIDIProtocol: number;
+
 declare const kAudioUnitProperty_InPlaceProcessing: number;
 
 declare const kAudioUnitProperty_InputAnchorTimeStamp: number;
@@ -3463,11 +3494,17 @@ declare const kAudioUnitProperty_IsInterAppConnected: number;
 
 declare const kAudioUnitProperty_LastRenderError: number;
 
+declare const kAudioUnitProperty_LastRenderSampleTime: number;
+
 declare const kAudioUnitProperty_Latency: number;
+
+declare const kAudioUnitProperty_LoadedOutOfProcess: number;
 
 declare const kAudioUnitProperty_MIDIOutputCallback: number;
 
 declare const kAudioUnitProperty_MIDIOutputCallbackInfo: number;
+
+declare const kAudioUnitProperty_MIDIOutputEventListCallback: number;
 
 declare const kAudioUnitProperty_MakeConnection: number;
 
@@ -3674,6 +3711,8 @@ declare const kAudioUnitSubType_ScheduledSoundPlayer: number;
 declare const kAudioUnitSubType_SpatialMixer: number;
 
 declare const kAudioUnitSubType_Splitter: number;
+
+declare const kAudioUnitSubType_TimePitch: number;
 
 declare const kAudioUnitSubType_Varispeed: number;
 
@@ -3895,6 +3934,8 @@ declare const kDynamicsProcessorParam_MasterGain: number;
 
 declare const kDynamicsProcessorParam_OutputAmplitude: number;
 
+declare const kDynamicsProcessorParam_OverallGain: number;
+
 declare const kDynamicsProcessorParam_ReleaseTime: number;
 
 declare const kDynamicsProcessorParam_Threshold: number;
@@ -4024,6 +4065,8 @@ declare const kMultiChannelMixerParam_PreAveragePower: number;
 declare const kMultiChannelMixerParam_PrePeakHoldLevel: number;
 
 declare const kMultiChannelMixerParam_Volume: number;
+
+declare const kMusicDeviceMIDIEventListSelect: number;
 
 declare const kMusicDeviceMIDIEventSelect: number;
 
@@ -4192,6 +4235,10 @@ declare const kSpatialMixerParam_PlaybackRate: number;
 declare const kSpatialMixerParam_ReverbBlend: number;
 
 declare const kSystemSoundID_Vibrate: number;
+
+declare const kTimePitchParam_EffectBlend: number;
+
+declare const kTimePitchParam_Pitch: number;
 
 declare const kTimePitchParam_Rate: number;
 

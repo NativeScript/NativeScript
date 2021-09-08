@@ -35,6 +35,33 @@ declare class SFSpeechAudioBufferRecognitionRequest extends SFSpeechRecognitionR
 	endAudio(): void;
 }
 
+declare class SFSpeechRecognitionMetadata extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): SFSpeechRecognitionMetadata; // inherited from NSObject
+
+	static new(): SFSpeechRecognitionMetadata; // inherited from NSObject
+
+	readonly averagePauseDuration: number;
+
+	readonly speakingRate: number;
+
+	readonly speechDuration: number;
+
+	readonly speechStartTimestamp: number;
+
+	readonly voiceAnalytics: SFVoiceAnalytics;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare class SFSpeechRecognitionRequest extends NSObject {
 
 	static alloc(): SFSpeechRecognitionRequest; // inherited from NSObject
@@ -61,6 +88,8 @@ declare class SFSpeechRecognitionResult extends NSObject implements NSCopying, N
 	readonly bestTranscription: SFTranscription;
 
 	readonly final: boolean;
+
+	readonly speechRecognitionMetadata: SFSpeechRecognitionMetadata;
 
 	readonly transcriptions: NSArray<SFTranscription>;
 

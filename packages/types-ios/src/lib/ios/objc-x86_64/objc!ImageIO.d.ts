@@ -829,6 +829,28 @@ declare var kCGImagePropertyGPSTrackRef: string;
 
 declare var kCGImagePropertyGPSVersion: string;
 
+declare var kCGImagePropertyGroupImageIndexLeft: string;
+
+declare var kCGImagePropertyGroupImageIndexRight: string;
+
+declare var kCGImagePropertyGroupImageIsAlternateImage: string;
+
+declare var kCGImagePropertyGroupImageIsLeftImage: string;
+
+declare var kCGImagePropertyGroupImageIsRightImage: string;
+
+declare var kCGImagePropertyGroupImagesAlternate: string;
+
+declare var kCGImagePropertyGroupIndex: string;
+
+declare var kCGImagePropertyGroupType: string;
+
+declare var kCGImagePropertyGroupTypeAlternate: string;
+
+declare var kCGImagePropertyGroupTypeStereoPair: string;
+
+declare var kCGImagePropertyGroups: string;
+
 declare var kCGImagePropertyHEICSCanvasPixelHeight: string;
 
 declare var kCGImagePropertyHEICSCanvasPixelWidth: string;
@@ -1329,6 +1351,8 @@ declare var kCGImagePropertyIPTCWriterEditor: string;
 
 declare var kCGImagePropertyImageCount: string;
 
+declare var kCGImagePropertyImageIndex: string;
+
 declare var kCGImagePropertyImages: string;
 
 declare var kCGImagePropertyIsFloat: string;
@@ -1445,11 +1469,15 @@ declare var kCGImagePropertyPNGInterlaceType: string;
 
 declare var kCGImagePropertyPNGModificationTime: string;
 
+declare var kCGImagePropertyPNGPixelsAspectRatio: string;
+
 declare var kCGImagePropertyPNGSoftware: string;
 
 declare var kCGImagePropertyPNGSource: string;
 
 declare var kCGImagePropertyPNGTitle: string;
+
+declare var kCGImagePropertyPNGTransparency: string;
 
 declare var kCGImagePropertyPNGWarning: string;
 

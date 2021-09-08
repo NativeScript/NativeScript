@@ -303,6 +303,8 @@ declare class MPMediaItem extends MPMediaEntity {
 
 	readonly podcastTitle: string;
 
+	readonly preorder: boolean;
+
 	readonly protectedAsset: boolean;
 
 	readonly rating: number;
@@ -406,6 +408,8 @@ declare var MPMediaItemPropertyIsCompilation: string;
 
 declare var MPMediaItemPropertyIsExplicit: string;
 
+declare var MPMediaItemPropertyIsPreorder: string;
+
 declare var MPMediaItemPropertyLastPlayedDate: string;
 
 declare var MPMediaItemPropertyLyrics: string;
@@ -444,7 +448,7 @@ declare class MPMediaLibrary extends NSObject implements NSSecureCoding {
 
 	static new(): MPMediaLibrary; // inherited from NSObject
 
-	static requestAuthorization(handler: (p1: MPMediaLibraryAuthorizationStatus) => void): void;
+	static requestAuthorization(completionHandler: (p1: MPMediaLibraryAuthorizationStatus) => void): void;
 
 	readonly lastModifiedDate: Date;
 

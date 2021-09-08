@@ -1,4 +1,6 @@
 
+declare var CSActionIdentifier: string;
+
 declare class CSCustomAttributeKey extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CSCustomAttributeKey; // inherited from NSObject
@@ -32,6 +34,51 @@ declare class CSCustomAttributeKey extends NSObject implements NSCopying, NSSecu
 	initWithKeyName(keyName: string): this;
 
 	initWithKeyNameSearchableSearchableByDefaultUniqueMultiValued(keyName: string, searchable: boolean, searchableByDefault: boolean, unique: boolean, multiValued: boolean): this;
+}
+
+declare class CSImportExtension extends NSObject implements NSExtensionRequestHandling {
+
+	static alloc(): CSImportExtension; // inherited from NSObject
+
+	static new(): CSImportExtension; // inherited from NSObject
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	beginRequestWithExtensionContext(context: NSExtensionContext): void;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
+	updateAttributesForFileAtURLError(attributes: CSSearchableItemAttributeSet, contentURL: NSURL): boolean;
 }
 
 declare const enum CSIndexErrorCode {
@@ -361,6 +408,8 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	acquisitionModel: string;
 
+	actionIdentifiers: NSArray<string>;
+
 	addedDate: Date;
 
 	additionalRecipients: NSArray<CSPerson>;
@@ -448,6 +497,8 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	coverage: NSArray<string>;
 
 	creator: string;
+
+	darkThumbnailURL: NSURL;
 
 	deliveryType: number;
 
@@ -634,6 +685,8 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	role: string;
 
 	securityMethod: string;
+
+	sharedItemContentType: UTType;
 
 	speed: number;
 

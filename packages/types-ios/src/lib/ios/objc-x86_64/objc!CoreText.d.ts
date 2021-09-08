@@ -66,6 +66,10 @@ declare const enum CTCharacterCollection {
 	kCTAdobeKorea1CharacterCollection = 5
 }
 
+declare function CTFontCollectionCopyFontAttribute(collection: any, attributeName: string, options: CTFontCollectionCopyOptions): NSArray<any>;
+
+declare function CTFontCollectionCopyFontAttributes(collection: any, attributeNames: NSSet<any>, options: CTFontCollectionCopyOptions): NSArray<any>;
+
 declare const enum CTFontCollectionCopyOptions {
 
 	kCTFontCollectionCopyDefaultOptions = 0,

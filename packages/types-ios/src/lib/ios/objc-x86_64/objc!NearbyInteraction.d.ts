@@ -50,6 +50,19 @@ declare const enum NIErrorCode {
 
 declare var NIErrorDomain: string;
 
+declare class NINearbyAccessoryConfiguration extends NIConfiguration {
+
+	static alloc(): NINearbyAccessoryConfiguration; // inherited from NSObject
+
+	static new(): NINearbyAccessoryConfiguration; // inherited from NSObject
+
+	readonly accessoryDiscoveryToken: NIDiscoveryToken;
+
+	constructor(o: { data: NSData; });
+
+	initWithDataError(data: NSData): this;
+}
+
 declare class NINearbyObject extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NINearbyObject; // inherited from NSObject
@@ -121,6 +134,8 @@ declare class NISession extends NSObject {
 }
 
 interface NISessionDelegate extends NSObjectProtocol {
+
+	sessionDidGenerateShareableConfigurationDataForObject?(session: NISession, shareableConfigurationData: NSData, object: NINearbyObject): void;
 
 	sessionDidInvalidateWithError?(session: NISession, error: NSError): void;
 

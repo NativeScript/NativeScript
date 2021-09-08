@@ -47,6 +47,8 @@ declare function _os_log_impl(dso: interop.Pointer | interop.Reference<any>, log
 
 declare function _os_signpost_emit_with_name_impl(dso: interop.Pointer | interop.Reference<any>, log: NSObject, type: os_signpost_type_t, spid: number, name: string | interop.Pointer | interop.Reference<any>, format: string | interop.Pointer | interop.Reference<any>, buf: string | interop.Pointer | interop.Reference<any>, size: number): void;
 
+declare function _os_trace_with_buffer(dso: interop.Pointer | interop.Reference<any>, message: string | interop.Pointer | interop.Reference<any>, type: number, buffer: interop.Pointer | interop.Reference<any>, buffer_size: number, payload: (p1: interop.Pointer | interop.Reference<any>) => void): void;
+
 declare function os_activity_apply(activity: NSObject, block: () => void): void;
 
 declare function os_activity_apply_f(activity: NSObject, context: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
@@ -110,3 +112,7 @@ declare const enum os_signpost_type_t {
 
 	OS_SIGNPOST_INTERVAL_END = 2
 }
+
+declare function os_trace_debug_enabled(): boolean;
+
+declare function os_trace_info_enabled(): boolean;

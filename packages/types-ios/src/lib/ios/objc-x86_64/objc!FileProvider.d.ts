@@ -31,6 +31,13 @@ declare class NSFileProviderDomain extends NSObject {
 	initWithIdentifierDisplayNamePathRelativeToDocumentStorage(identifier: string, displayName: string, pathRelativeToDocumentStorage: string): this;
 }
 
+declare const enum NSFileProviderDomainTestingModes {
+
+	AlwaysEnabled = 1,
+
+	Interactive = 2
+}
+
 interface NSFileProviderEnumerationObserver extends NSObjectProtocol {
 
 	didEnumerateItems(updatedItems: NSArray<NSFileProviderItem> | NSFileProviderItem[]): void;
@@ -73,12 +80,34 @@ declare const enum NSFileProviderErrorCode {
 
 	ServerUnreachable = -1004,
 
-	NoSuchItem = -1005
+	NoSuchItem = -1005,
+
+	DeletionRejected = -1006,
+
+	DirectoryNotEmpty = -1007,
+
+	ProviderNotFound = -2001,
+
+	ProviderTranslocated = -2002,
+
+	OlderExtensionVersionRunning = -2003,
+
+	NewerExtensionVersionFound = -2004,
+
+	CannotSynchronize = -2005,
+
+	NonEvictableChildren = -2006,
+
+	UnsyncedEdits = -2007,
+
+	NonEvictable = -2008
 }
 
 declare var NSFileProviderErrorCollidingItemKey: string;
 
 declare var NSFileProviderErrorDomain: string;
+
+declare var NSFileProviderErrorItemKey: string;
 
 declare var NSFileProviderErrorNonExistentItemIdentifierKey: string;
 
@@ -140,6 +169,19 @@ declare class NSFileProviderExtension extends NSObject {
 }
 
 declare var NSFileProviderFavoriteRankUnranked: number;
+
+declare const enum NSFileProviderFileSystemFlags {
+
+	UserExecutable = 1,
+
+	UserReadable = 2,
+
+	UserWritable = 4,
+
+	Hidden = 8,
+
+	PathExtensionHidden = 16
+}
 
 declare var NSFileProviderInitialPageSortedByDate: NSData;
 
@@ -220,6 +262,10 @@ declare const enum NSFileProviderItemCapabilities {
 
 	AllowsDeleting = 32,
 
+	AllowsEvicting = 64,
+
+	AllowsExcludingFromSync = 128,
+
 	AllowsAddingSubItems = 2,
 
 	AllowsContentEnumerating = 1,
@@ -270,5 +316,11 @@ declare var NSFileProviderServiceSource: {
 
 	prototype: NSFileProviderServiceSource;
 };
+
+interface NSFileProviderTypeAndCreator {
+	type: number;
+	creator: number;
+}
+declare var NSFileProviderTypeAndCreator: interop.StructType<NSFileProviderTypeAndCreator>;
 
 declare var NSFileProviderWorkingSetContainerItemIdentifier: string;
