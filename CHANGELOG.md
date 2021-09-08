@@ -38,6 +38,7 @@
 * handle config name ([3bf55b7](https://github.com/NativeScript/NativeScript/commit/3bf55b7a0468afc4b4fd28ed479a63fd747caaa0))
 * **image-source:** add saveToFileAsync, toBase64StringAsync & resizeAsync ([#9404](https://github.com/NativeScript/NativeScript/issues/9404)) ([36900d7](https://github.com/NativeScript/NativeScript/commit/36900d7c0512803395782a5fd1f55586d28cf3db))
 * requestLayout performance improvements ([#9122](https://github.com/NativeScript/NativeScript/issues/9122)) ([e4ce17e](https://github.com/NativeScript/NativeScript/commit/e4ce17e15641dc044e5b514aa1eb333b467d600d))
+* **types-android:** API 31 ([b5b46273b](https://github.com/NativeScript/NativeScript/pull/9542/commits/b5b46273bfb97c50cf71583e9aff9085997a297a))
 * **types-ios:** iOS 15 ([cb8bf6f](https://github.com/NativeScript/NativeScript/commit/cb8bf6f930cab37160f318efb44fef17d9ed06e1))
 * **webpack:** -v and --version flags ([7530ee4](https://github.com/NativeScript/NativeScript/commit/7530ee4bb5bc7893c15ef5cce84a34a1675674d3))
 * **webpack:** export merge helper ([53492ea](https://github.com/NativeScript/NativeScript/commit/53492ea34ad66e263054af628208a20a32fb1cac))
