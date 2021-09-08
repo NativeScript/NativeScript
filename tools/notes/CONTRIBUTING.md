@@ -1,7 +1,6 @@
 # Contributing to NativeScript
 
-:+1: First of all, thank you for taking the time to contribute! :+1:
-
+:+1: First of all,We would like to thank you for taking the time to contribute! :+1:
 Here are some guides on how to do that:
  - [Code of Conduct](#coc)
  - [Reporting Bugs](#bugs)
@@ -12,30 +11,30 @@ Here are some guides on how to do that:
  - [Releasing new versions](#release)
 
 ##  <a name="coc"></a> Code of Conduct
-Help us keep a healthy and open community. We expect all participants in this project to adhere to the [NativeScript Code Of Conduct](https://github.com/NativeScript/codeofconduct).
+Help us to keep a healthy and open community. We expect all the participants in this project to adhere to the [NativeScript Code Of Conduct](https://github.com/NativeScript/codeofconduct).
 
 
 ## <a name="bugs"></a> Reporting Bugs
 
-1. Always update to the most recent master release; the bug may already be resolved.
+1. Always update to the most recent master release; may the bug had already resolved.
 2. Search for similar issues in the issues list for this repo; it may already be an identified problem.
-3. If this is a bug or problem that is clear, simple, and is unlikely to require any discussion -- it is OK to open an issue on GitHub with a reproduction of the bug including workflows and screenshots. If possible, submit a Pull Request with a failing test, entire application or module. If you'd rather take matters into your own hands, fix the bug yourself (jump down to the [Submitting a PR](#pr) section).
+3. If this is a bug or problem that is clear, simple, and it dosen't require any discussion -- it is OK to open an issue on GitHub with a reproduction of the bug including the workflows and screenshots. If possible, submit a Pull Request with a failing tests, entire application or module. If you'd rather take matters in your own hands, fix the bug yourself (jump down to the [Submitting a PR](#pr) section).
 
 > While we are doing all we can to take care of every issue, sometimes we get overwhelmed. That's why
-> - issues that are not constructive or describe problems that cannot be reproduced will be closed
-> - feature requests or bug reports with unanswered questions regarding the behavior/reproduction for more than 20 days will be closed 
+> - issues that are not constructive or describe problems that cannot be reproduced, will be closed.
+> - feature requests or bug reports with unanswered questions regarding the behavior/reproduction for more than 20 days will be closed.
 
 ## <a name="features"></a> Requesting Features
 
 1. Use Github Issues to submit feature requests.
-2. First, search for a similar request and extend it if applicable. This way it would be easier for the community to track the features.
-3. When requesting a new feature, please provide as much detail as possible about why you need the feature in your apps. We prefer that you explain a need rather than explain a technical solution for it. That might trigger a nice conversation on finding the best and broadest technical solution to a specific need.
+2. First, search for a similar request and extend it if applicable. In this way it would be easier for the community to track the features.
+3. While requesting a new feature, please provide as much detail as possible about why you need that feature in your apps. We prefer that you explain a need rather than explain a technical solution for it. That might trigger a nice conversation on finding the best and broadest technical solution for a specific need.
 
 ## <a name="pr"></a> Submitting a PR
 
 Before you begin:
 * Read and sign the [NativeScript Contribution License Agreement](http://www.nativescript.org/cla).
-* Make sure there is an issue for the bug or feature you will be working on.
+* Make sure there is an issue for the bug or feature, you will be working on.
 
 Following these steps is the best way to get you code included in the project:
 
@@ -69,18 +68,18 @@ git checkout -b <my-fix-branch> master
 
 5. Before you submit your PR:
     - Rebase your changes to the latest master: `git pull --rebase upstream master`.
-    - Ensure all unit test are green for Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
-    - Ensure your changes pass tslint validation. (run `npm run tslint` in the root of the repo).
+    - Ensure that all the unit test are green for Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
+    - Ensure your changes and pass tslint validation. (run `npm run tslint` in the root of the repo).
     - If you've made changes to a public API, make sure you update and add the `api-reports/NativeScript.api.md` file to the PR. (run `npm run api-extractor` to update the api-report and definitions).
 
-6. Push your fork. If you have rebased you might have to use force-push your branch:
+6. Push your fork. If you have rebased, you might have to use force-push your branch:
 ```
 git push origin <my-fix-branch> --force
 ```
 
 7. [Submit your pull request](https://github.com/NativeScript/NativeScript/compare). Please, fill in the Pull Request template - it will help us better understand the PR and increase the chances of it getting merged quickly.
 
-It's our turn from there on! We will review the PR and discuss changes you might have to make before merging it! Thanks! 
+It's our turn from there on! We will review the PR and discuss changes that you might have to make before merging it! Thanks! 
 
 >Note: Sometimes you will see someone from the contributors team writing strange comments like: `test` or `test branch_functional_tests#css-gradients-tests branch_widgets#vultix/css-gradients` - don't worry about it, these are just phrases that trigger the internal CI builds.
 
@@ -88,13 +87,13 @@ It's our turn from there on! We will review the PR and discuss changes you might
 
 The purpose of the test report view is to show the tests' results for the PRs for the external contributors. When a NativeScript team member triggers the tests, you can review the result by selecting the `Details` button next to the `ci/jenkins/core-modules-tests`  task. 
 
-> Note: the `Details` button will be available when the execution of the test completes and there is at least one failing test.
+> Note: the `Details` button will be available only when the execution of the test completes and there is at least one failing test.
 
 When you click on the button, you will be redirected to the report page. On the left pane you can find a list of all failed jobs.
 
 > Note: Each item name consists of the application name, type of device and platform version: `pr-e2e-tests-[application-name]-[device-type]-[platform-version]`. Usually, the test applications, that are executed for PRs are part of NativeScript repository.
 
-Based on the executed suite, one of the following or all of the following files will be generated: `mochawesome.html` | `index.html` | `unit-tests.log`. Some of the reports also might include `*.png`, `*.logs` or `[page source].xml` files that can help in understanding where is the problem.
+Based on the executed suite, one of the following or all of the following files will be generated: `mochawesome.html` | `index.html` | `unit-tests.log`. Some of the reports also might include `*.png`, `*.logs` or `[page source].xml` files that can help you in understanding where is the problem.
 
 For example:
 1. When you select the `index.html` page, an additional `TestNG Results` sidebar will be displayed. There you can find a list of all failures. 
@@ -139,7 +138,7 @@ release: cut the 3.2.0 release
 ```
 
 ### Revert
-If the commit reverts a previous commit, it should begin with `revert: `, followed by the header of the reverted commit. In the body it should say: `This reverts commit <hash>.`, where the hash is the SHA of the commit being reverted.
+If the commit reverts a previous commit, it should begin with `revert: `, followed by the header of the reverted commit. In the body it should say: `This reverts commit <hash>.`, where the hash is the SHA of the commit that is being reverted.
 
 ### Type
 Must be one of the following:
@@ -150,7 +149,7 @@ Must be one of the following:
 * **feat**: A new feature
 * **fix**: A bug fix
 * **fix-next**: A fix for a bug in the master branch, that's not yet released
-* **perf**: A code change that improves performance
+* **perf**: A code change that improves the performance
 * **refactor**: A code change that neither fixes a bug nor adds a feature
 * **release**: Reference commit for the git tag of the release
 * **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
@@ -170,7 +169,7 @@ Sample scopes for the `@nativescript/core` package:
 * **profiling**
 
 ### Subject
-The subject contains succinct description of the change:
+The subject contains brief description of the change:
 
 * use the imperative, present tense: "change" not "changed" nor "changes"
 * don't capitalize first letter
@@ -290,7 +289,7 @@ git add changed-files
 git commit -m "release: cut the %s release"
 git push
 ```
-8. Create git tag as git tag 6.3.0 or use git UI
+8. Create git tag as git tag 6.3.0 or use the git UI
 ```
 git tag [release-version]
 git push --tags
@@ -309,12 +308,12 @@ curl -d '{"title": "release: cut the [release-version] release","body": "docs: u
 
 ### Here are steps described in the diagram above.
 
-1. Make sure you are in release branch:
+1. Make sure that you are in the release branch:
 ```
 git checkout release
 git pull
 ```
-2. Create PR to merge changes back in master and preserve history:
+2. Create the PR to merge changes back in master and preserve history:
 ```
 export MERGE_BRANCH='merge-release-in-master'
 git checkout -b ${MERGE_BRANCH}
@@ -333,7 +332,7 @@ git commit
 git push
 ```
 
-6. Create pull request. Replace replace env ${MERGE_BRANCH} with its value
+6. Create a pull request. Replace replace env ${MERGE_BRANCH} with its value
 ```
 curl -d '{"title": "chore: merge release in master","body": "chore: merge release in master","head": "merge-release-in-master","base": "master"}' -X POST https://api.github.com/repos/NativeScript/NativeScript/pulls -H "Authorization: token ${GIT_TOKEN}"
 ```
