@@ -4465,11 +4465,8 @@ interface __darwin_fp_control {
 	__ovrfl: number;
 	__undfl: number;
 	__precis: number;
-	: number;
 	__pc: number;
 	__rc: number;
-	: number;
-	: number;
 }
 declare var __darwin_fp_control: interop.StructType<__darwin_fp_control>;
 
