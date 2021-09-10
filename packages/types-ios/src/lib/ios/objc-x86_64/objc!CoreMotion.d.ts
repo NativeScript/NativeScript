@@ -1,4 +1,17 @@
 
+declare class CMAbsoluteAltitudeData extends CMLogItem {
+
+	static alloc(): CMAbsoluteAltitudeData; // inherited from NSObject
+
+	static new(): CMAbsoluteAltitudeData; // inherited from NSObject
+
+	readonly accuracy: number;
+
+	readonly altitude: number;
+
+	readonly precision: number;
+}
+
 interface CMAcceleration {
 	x: number;
 	y: number;
@@ -21,11 +34,17 @@ declare class CMAltimeter extends NSObject {
 
 	static authorizationStatus(): CMAuthorizationStatus;
 
+	static isAbsoluteAltitudeAvailable(): boolean;
+
 	static isRelativeAltitudeAvailable(): boolean;
 
 	static new(): CMAltimeter; // inherited from NSObject
 
+	startAbsoluteAltitudeUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMAbsoluteAltitudeData, p2: NSError) => void): void;
+
 	startRelativeAltitudeUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMAltitudeData, p2: NSError) => void): void;
+
+	stopAbsoluteAltitudeUpdates(): void;
 
 	stopRelativeAltitudeUpdates(): void;
 }

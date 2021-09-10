@@ -122,6 +122,8 @@ declare class NEAppPushManager extends NSObject {
 
 	localizedDescription: string;
 
+	matchPrivateLTENetworks: NSArray<NEPrivateLTENetwork>;
+
 	matchSSIDs: NSArray<string>;
 
 	providerBundleIdentifier: string;
@@ -157,6 +159,8 @@ declare class NEAppPushProvider extends NEProvider {
 	handleTimerEvent(): void;
 
 	reportIncomingCallWithUserInfo(userInfo: NSDictionary<any, any>): void;
+
+	start(): void;
 
 	startWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
@@ -1108,11 +1112,26 @@ declare class NEHotspotNetwork extends NSObject {
 
 	readonly secure: boolean;
 
+	readonly securityType: NEHotspotNetworkSecurityType;
+
 	readonly signalStrength: number;
 
 	setConfidence(confidence: NEHotspotHelperConfidence): void;
 
 	setPassword(password: string): void;
+}
+
+declare const enum NEHotspotNetworkSecurityType {
+
+	Open = 0,
+
+	WEP = 1,
+
+	Personal = 2,
+
+	Enterprise = 3,
+
+	Unknown = 4
 }
 
 declare class NEIPv4Route extends NSObject implements NSCopying, NSSecureCoding {
@@ -1386,6 +1405,29 @@ declare class NEPacketTunnelProvider extends NETunnelProvider {
 	startTunnelWithOptionsCompletionHandler(options: NSDictionary<string, NSObject>, completionHandler: (p1: NSError) => void): void;
 
 	stopTunnelWithReasonCompletionHandler(reason: NEProviderStopReason, completionHandler: () => void): void;
+}
+
+declare class NEPrivateLTENetwork extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NEPrivateLTENetwork; // inherited from NSObject
+
+	static new(): NEPrivateLTENetwork; // inherited from NSObject
+
+	mobileCountryCode: string;
+
+	mobileNetworkCode: string;
+
+	trackingAreaCode: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
 }
 
 declare class NEProvider extends NSObject {

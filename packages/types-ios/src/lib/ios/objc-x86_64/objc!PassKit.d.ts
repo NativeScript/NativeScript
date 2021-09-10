@@ -6,6 +6,8 @@ declare class PKAddCarKeyPassConfiguration extends PKAddSecureElementPassConfigu
 	static new(): PKAddCarKeyPassConfiguration; // inherited from NSObject
 
 	password: string;
+
+	supportedRadioTechnologies: PKRadioTechnology;
 }
 
 declare class PKAddPassButton extends UIButton {
@@ -25,6 +27,8 @@ declare class PKAddPassButton extends UIButton {
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKAddPassButton; // inherited from UIAppearance
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PKAddPassButton; // inherited from UIAppearance
+
+	static buttonWithConfigurationPrimaryAction(configuration: UIButtonConfiguration, primaryAction: UIAction): PKAddPassButton; // inherited from UIButton
 
 	static buttonWithType(buttonType: UIButtonType): PKAddPassButton; // inherited from UIButton
 
@@ -383,6 +387,44 @@ declare var PKContactFieldPhoneticName: string;
 
 declare var PKContactFieldPostalAddress: string;
 
+declare class PKDateComponentsRange extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): PKDateComponentsRange; // inherited from NSObject
+
+	static new(): PKDateComponentsRange; // inherited from NSObject
+
+	readonly endDateComponents: NSDateComponents;
+
+	readonly startDateComponents: NSDateComponents;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { startDateComponents: NSDateComponents; endDateComponents: NSDateComponents; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithStartDateComponentsEndDateComponents(startDateComponents: NSDateComponents, endDateComponents: NSDateComponents): this;
+}
+
+declare class PKDeferredPaymentSummaryItem extends PKPaymentSummaryItem {
+
+	static alloc(): PKDeferredPaymentSummaryItem; // inherited from NSObject
+
+	static new(): PKDeferredPaymentSummaryItem; // inherited from NSObject
+
+	static summaryItemWithLabelAmount(label: string, amount: NSDecimalNumber): PKDeferredPaymentSummaryItem; // inherited from PKPaymentSummaryItem
+
+	static summaryItemWithLabelAmountType(label: string, amount: NSDecimalNumber, type: PKPaymentSummaryItemType): PKDeferredPaymentSummaryItem; // inherited from PKPaymentSummaryItem
+
+	deferredDate: Date;
+}
+
 declare class PKDisbursementAuthorizationController extends NSObject {
 
 	static alloc(): PKDisbursementAuthorizationController; // inherited from NSObject
@@ -669,6 +711,8 @@ declare class PKPassLibrary extends NSObject {
 
 	replacePassWithPass(pass: PKPass): boolean;
 
+	serviceProviderDataForSecureElementPassCompletion(secureElementPass: PKSecureElementPass, completion: (p1: NSData, p2: NSError) => void): void;
+
 	signDataWithSecureElementPassCompletion(signData: NSData, secureElementPass: PKSecureElementPass, completion: (p1: NSData, p2: NSData, p3: NSError) => void): void;
 }
 
@@ -754,6 +798,8 @@ interface PKPaymentAuthorizationControllerDelegate extends NSObjectProtocol {
 
 	paymentAuthorizationControllerDidAuthorizePaymentHandler?(controller: PKPaymentAuthorizationController, payment: PKPayment, completion: (p1: PKPaymentAuthorizationResult) => void): void;
 
+	paymentAuthorizationControllerDidChangeCouponCodeHandler?(controller: PKPaymentAuthorizationController, couponCode: string, completion: (p1: PKPaymentRequestCouponCodeUpdate) => void): void;
+
 	paymentAuthorizationControllerDidFinish(controller: PKPaymentAuthorizationController): void;
 
 	paymentAuthorizationControllerDidRequestMerchantSessionUpdate?(controller: PKPaymentAuthorizationController, handler: (p1: PKPaymentRequestMerchantSessionUpdate) => void): void;
@@ -838,6 +884,8 @@ interface PKPaymentAuthorizationViewControllerDelegate extends NSObjectProtocol 
 
 	paymentAuthorizationViewControllerDidAuthorizePaymentHandler?(controller: PKPaymentAuthorizationViewController, payment: PKPayment, completion: (p1: PKPaymentAuthorizationResult) => void): void;
 
+	paymentAuthorizationViewControllerDidChangeCouponCodeHandler?(controller: PKPaymentAuthorizationViewController, couponCode: string, completion: (p1: PKPaymentRequestCouponCodeUpdate) => void): void;
+
 	paymentAuthorizationViewControllerDidFinish(controller: PKPaymentAuthorizationViewController): void;
 
 	paymentAuthorizationViewControllerDidRequestMerchantSessionUpdate?(controller: PKPaymentAuthorizationViewController, handler: (p1: PKPaymentRequestMerchantSessionUpdate) => void): void;
@@ -878,6 +926,8 @@ declare class PKPaymentButton extends UIButton {
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKPaymentButton; // inherited from UIAppearance
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject> | typeof NSObject[]): PKPaymentButton; // inherited from UIAppearance
+
+	static buttonWithConfigurationPrimaryAction(configuration: UIButtonConfiguration, primaryAction: UIAction): PKPaymentButton; // inherited from UIButton
 
 	static buttonWithType(buttonType: UIButtonType): PKPaymentButton; // inherited from UIButton
 
@@ -941,7 +991,9 @@ declare const enum PKPaymentButtonType {
 
 	Contribute = 14,
 
-	Tip = 15
+	Tip = 15,
+
+	Continue = 16
 }
 
 declare const enum PKPaymentErrorCode {
@@ -952,7 +1004,11 @@ declare const enum PKPaymentErrorCode {
 
 	BillingContactInvalidError = 2,
 
-	ShippingAddressUnserviceableError = 3
+	ShippingAddressUnserviceableError = 3,
+
+	CouponCodeInvalidError = 4,
+
+	CouponCodeExpiredError = 5
 }
 
 declare var PKPaymentErrorContactFieldUserInfoKey: string;
@@ -1021,7 +1077,9 @@ declare const enum PKPaymentMethodType {
 
 	Prepaid = 3,
 
-	Store = 4
+	Store = 4,
+
+	EMoney = 5
 }
 
 declare var PKPaymentNetworkAmex: string;
@@ -1058,6 +1116,10 @@ declare var PKPaymentNetworkMaestro: string;
 
 declare var PKPaymentNetworkMasterCard: string;
 
+declare var PKPaymentNetworkMir: string;
+
+declare var PKPaymentNetworkNanaco: string;
+
 declare var PKPaymentNetworkPrivateLabel: string;
 
 declare var PKPaymentNetworkQuicPay: string;
@@ -1067,6 +1129,8 @@ declare var PKPaymentNetworkSuica: string;
 declare var PKPaymentNetworkVPay: string;
 
 declare var PKPaymentNetworkVisa: string;
+
+declare var PKPaymentNetworkWaon: string;
 
 declare class PKPaymentPass extends PKSecureElementPass {
 
@@ -1102,6 +1166,10 @@ declare class PKPaymentRequest extends NSObject {
 
 	static paymentContactInvalidErrorWithContactFieldLocalizedDescription(field: string, localizedDescription: string): NSError;
 
+	static paymentCouponCodeExpiredErrorWithLocalizedDescription(localizedDescription: string): NSError;
+
+	static paymentCouponCodeInvalidErrorWithLocalizedDescription(localizedDescription: string): NSError;
+
 	static paymentShippingAddressInvalidErrorWithKeyLocalizedDescription(postalAddressKey: string, localizedDescription: string): NSError;
 
 	static paymentShippingAddressUnserviceableErrorWithLocalizedDescription(localizedDescription: string): NSError;
@@ -1113,6 +1181,8 @@ declare class PKPaymentRequest extends NSObject {
 	billingContact: PKContact;
 
 	countryCode: string;
+
+	couponCode: string;
 
 	currencyCode: string;
 
@@ -1134,6 +1204,8 @@ declare class PKPaymentRequest extends NSObject {
 
 	shippingContact: PKContact;
 
+	shippingContactEditingMode: PKShippingContactEditingMode;
+
 	shippingMethods: NSArray<PKShippingMethod>;
 
 	shippingType: PKShippingType;
@@ -1141,6 +1213,21 @@ declare class PKPaymentRequest extends NSObject {
 	supportedCountries: NSSet<string>;
 
 	supportedNetworks: NSArray<string>;
+
+	supportsCouponCode: boolean;
+}
+
+declare class PKPaymentRequestCouponCodeUpdate extends PKPaymentRequestUpdate {
+
+	static alloc(): PKPaymentRequestCouponCodeUpdate; // inherited from NSObject
+
+	static new(): PKPaymentRequestCouponCodeUpdate; // inherited from NSObject
+
+	errors: NSArray<NSError>;
+
+	constructor(o: { errors: NSArray<NSError> | NSError[]; paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]; });
+
+	initWithErrorsPaymentSummaryItemsShippingMethods(errors: NSArray<NSError> | NSError[], paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[], shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]): this;
 }
 
 declare class PKPaymentRequestMerchantSessionUpdate extends NSObject {
@@ -1179,8 +1266,6 @@ declare class PKPaymentRequestShippingContactUpdate extends PKPaymentRequestUpda
 
 	errors: NSArray<NSError>;
 
-	shippingMethods: NSArray<PKShippingMethod>;
-
 	constructor(o: { errors: NSArray<NSError> | NSError[]; paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[]; shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]; });
 
 	initWithErrorsPaymentSummaryItemsShippingMethods(errors: NSArray<NSError> | NSError[], paymentSummaryItems: NSArray<PKPaymentSummaryItem> | PKPaymentSummaryItem[], shippingMethods: NSArray<PKShippingMethod> | PKShippingMethod[]): this;
@@ -1200,6 +1285,8 @@ declare class PKPaymentRequestUpdate extends NSObject {
 	static new(): PKPaymentRequestUpdate; // inherited from NSObject
 
 	paymentSummaryItems: NSArray<PKPaymentSummaryItem>;
+
+	shippingMethods: NSArray<PKShippingMethod>;
 
 	status: PKPaymentAuthorizationStatus;
 
@@ -1249,6 +1336,34 @@ declare class PKPaymentToken extends NSObject {
 	readonly transactionIdentifier: string;
 }
 
+declare const enum PKRadioTechnology {
+
+	None = 0,
+
+	NFC = 1,
+
+	Bluetooth = 2
+}
+
+declare class PKRecurringPaymentSummaryItem extends PKPaymentSummaryItem {
+
+	static alloc(): PKRecurringPaymentSummaryItem; // inherited from NSObject
+
+	static new(): PKRecurringPaymentSummaryItem; // inherited from NSObject
+
+	static summaryItemWithLabelAmount(label: string, amount: NSDecimalNumber): PKRecurringPaymentSummaryItem; // inherited from PKPaymentSummaryItem
+
+	static summaryItemWithLabelAmountType(label: string, amount: NSDecimalNumber, type: PKPaymentSummaryItemType): PKRecurringPaymentSummaryItem; // inherited from PKPaymentSummaryItem
+
+	endDate: Date;
+
+	intervalCount: number;
+
+	intervalUnit: NSCalendarUnit;
+
+	startDate: Date;
+}
+
 declare class PKSecureElementPass extends PKPass {
 
 	static alloc(): PKSecureElementPass; // inherited from NSObject
@@ -1289,6 +1404,8 @@ declare class PKShareablePassMetadata extends NSObject {
 
 	static new(): PKShareablePassMetadata; // inherited from NSObject
 
+	readonly accountHash: string;
+
 	readonly cardConfigurationIdentifier: string;
 
 	readonly credentialIdentifier: string;
@@ -1299,11 +1416,28 @@ declare class PKShareablePassMetadata extends NSObject {
 
 	readonly passThumbnailImage: any;
 
+	readonly relyingPartyIdentifier: string;
+
+	readonly requiresUnifiedAccessCapableDevice: boolean;
+
 	readonly sharingInstanceIdentifier: string;
+
+	readonly templateIdentifier: string;
 
 	constructor(o: { provisioningCredentialIdentifier: string; cardConfigurationIdentifier: string; sharingInstanceIdentifier: string; passThumbnailImage: any; ownerDisplayName: string; localizedDescription: string; });
 
+	constructor(o: { provisioningCredentialIdentifier: string; sharingInstanceIdentifier: string; passThumbnailImage: any; ownerDisplayName: string; localizedDescription: string; accountHash: string; templateIdentifier: string; relyingPartyIdentifier: string; requiresUnifiedAccessCapableDevice: boolean; });
+
 	initWithProvisioningCredentialIdentifierCardConfigurationIdentifierSharingInstanceIdentifierPassThumbnailImageOwnerDisplayNameLocalizedDescription(credentialIdentifier: string, cardConfigurationIdentifier: string, sharingInstanceIdentifier: string, passThumbnailImage: any, ownerDisplayName: string, localizedDescription: string): this;
+
+	initWithProvisioningCredentialIdentifierSharingInstanceIdentifierPassThumbnailImageOwnerDisplayNameLocalizedDescriptionAccountHashTemplateIdentifierRelyingPartyIdentifierRequiresUnifiedAccessCapableDevice(credentialIdentifier: string, sharingInstanceIdentifier: string, passThumbnailImage: any, ownerDisplayName: string, localizedDescription: string, accountHash: string, templateIdentifier: string, relyingPartyIdentifier: string, requiresUnifiedAccessCapableDevice: boolean): this;
+}
+
+declare const enum PKShippingContactEditingMode {
+
+	Enabled = 1,
+
+	StorePickup = 2
 }
 
 declare class PKShippingMethod extends PKPaymentSummaryItem {
@@ -1315,6 +1449,8 @@ declare class PKShippingMethod extends PKPaymentSummaryItem {
 	static summaryItemWithLabelAmount(label: string, amount: NSDecimalNumber): PKShippingMethod; // inherited from PKPaymentSummaryItem
 
 	static summaryItemWithLabelAmountType(label: string, amount: NSDecimalNumber, type: PKPaymentSummaryItemType): PKShippingMethod; // inherited from PKPaymentSummaryItem
+
+	dateComponentsRange: PKDateComponentsRange;
 
 	detail: string;
 
@@ -1332,13 +1468,51 @@ declare const enum PKShippingType {
 	ServicePickup = 3
 }
 
+declare class PKStoredValuePassBalance extends NSObject {
+
+	static alloc(): PKStoredValuePassBalance; // inherited from NSObject
+
+	static new(): PKStoredValuePassBalance; // inherited from NSObject
+
+	readonly amount: NSDecimalNumber;
+
+	readonly balanceType: string;
+
+	readonly currencyCode: string;
+
+	readonly expiryDate: Date;
+
+	isEqualToBalance(balance: PKStoredValuePassBalance): boolean;
+}
+
+declare var PKStoredValuePassBalanceTypeCash: string;
+
+declare var PKStoredValuePassBalanceTypeLoyaltyPoints: string;
+
+declare class PKStoredValuePassProperties extends NSObject {
+
+	static alloc(): PKStoredValuePassProperties; // inherited from NSObject
+
+	static new(): PKStoredValuePassProperties; // inherited from NSObject
+
+	static passPropertiesForPass(pass: PKPass): PKStoredValuePassProperties;
+
+	readonly balances: NSArray<PKStoredValuePassBalance>;
+
+	readonly blacklisted: boolean;
+
+	readonly blocked: boolean;
+
+	readonly expirationDate: Date;
+}
+
 declare class PKSuicaPassProperties extends PKTransitPassProperties {
 
 	static alloc(): PKSuicaPassProperties; // inherited from NSObject
 
 	static new(): PKSuicaPassProperties; // inherited from NSObject
 
-	static passPropertiesForPass(pass: PKPass): PKSuicaPassProperties; // inherited from PKTransitPassProperties
+	static passPropertiesForPass(pass: PKPass): PKSuicaPassProperties; // inherited from PKStoredValuePassProperties
 
 	readonly balanceAllowedForCommute: boolean;
 
@@ -1349,17 +1523,13 @@ declare class PKSuicaPassProperties extends PKTransitPassProperties {
 	readonly lowBalanceGateNotificationEnabled: boolean;
 }
 
-declare class PKTransitPassProperties extends NSObject {
+declare class PKTransitPassProperties extends PKStoredValuePassProperties {
 
 	static alloc(): PKTransitPassProperties; // inherited from NSObject
 
 	static new(): PKTransitPassProperties; // inherited from NSObject
 
-	static passPropertiesForPass(pass: PKPass): PKTransitPassProperties;
-
-	readonly blacklisted: boolean;
-
-	readonly expirationDate: Date;
+	static passPropertiesForPass(pass: PKPass): PKTransitPassProperties; // inherited from PKStoredValuePassProperties
 
 	readonly inStation: boolean;
 

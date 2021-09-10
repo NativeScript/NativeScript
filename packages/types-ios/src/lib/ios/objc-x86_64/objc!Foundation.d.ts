@@ -30,6 +30,8 @@ declare function NSAllocateMemoryPages(bytes: number): interop.Pointer | interop
 
 declare function NSAllocateObject(aClass: typeof NSObject, extraBytes: number, zone: interop.Pointer | interop.Reference<any>): any;
 
+declare var NSAlternateDescriptionAttributeName: string;
+
 declare var NSArgumentDomain: string;
 
 declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSCopying, NSFastEnumeration, NSMutableCopying, NSSecureCoding {
@@ -302,9 +304,15 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSItemPr
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
+	constructor(o: { contentsOfMarkdownFileAtURL: NSURL; options: NSAttributedStringMarkdownParsingOptions; baseURL: NSURL; });
+
 	constructor(o: { data: NSData; options: NSDictionary<string, any>; documentAttributes: interop.Pointer | interop.Reference<NSDictionary<string, any>>; });
 
 	constructor(o: { fileURL: NSURL; options: NSDictionary<any, any>; documentAttributes: interop.Pointer | interop.Reference<NSDictionary<any, any>>; });
+
+	constructor(o: { markdown: NSData; options: NSAttributedStringMarkdownParsingOptions; baseURL: NSURL; });
+
+	constructor(o: { markdownString: string; options: NSAttributedStringMarkdownParsingOptions; baseURL: NSURL; });
 
 	constructor(o: { string: string; });
 
@@ -315,6 +323,8 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSItemPr
 	attributeAtIndexEffectiveRange(attrName: string, location: number, range: interop.Pointer | interop.Reference<NSRange>): any;
 
 	attributeAtIndexLongestEffectiveRangeInRange(attrName: string, location: number, range: interop.Pointer | interop.Reference<NSRange>, rangeLimit: NSRange): any;
+
+	attributedStringByInflectingString(): NSAttributedString;
 
 	attributedSubstringFromRange(range: NSRange): NSAttributedString;
 
@@ -352,9 +362,15 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSItemPr
 
 	initWithCoder(coder: NSCoder): this;
 
+	initWithContentsOfMarkdownFileAtURLOptionsBaseURLError(markdownFile: NSURL, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL): this;
+
 	initWithDataOptionsDocumentAttributesError(data: NSData, options: NSDictionary<string, any>, dict: interop.Pointer | interop.Reference<NSDictionary<string, any>>): this;
 
 	initWithFileURLOptionsDocumentAttributesError(url: NSURL, options: NSDictionary<any, any>, dict: interop.Pointer | interop.Reference<NSDictionary<any, any>>): this;
+
+	initWithMarkdownOptionsBaseURLError(markdown: NSData, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL): this;
+
+	initWithMarkdownStringOptionsBaseURLError(markdownString: string, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL): this;
 
 	initWithString(str: string): this;
 
@@ -396,6 +412,46 @@ declare const enum NSAttributedStringEnumerationOptions {
 	Reverse = 2,
 
 	LongestEffectiveRangeNotRequired = 1048576
+}
+
+declare const enum NSAttributedStringFormattingOptions {
+
+	InsertArgumentAttributesWithoutMerging = 1,
+
+	ApplyReplacementIndexAttribute = 2
+}
+
+declare const enum NSAttributedStringMarkdownInterpretedSyntax {
+
+	Full = 0,
+
+	InlineOnly = 1,
+
+	InlineOnlyPreservingWhitespace = 2
+}
+
+declare const enum NSAttributedStringMarkdownParsingFailurePolicy {
+
+	ReturnError = 0,
+
+	ReturnPartiallyParsedIfPossible = 1
+}
+
+declare class NSAttributedStringMarkdownParsingOptions extends NSObject implements NSCopying {
+
+	static alloc(): NSAttributedStringMarkdownParsingOptions; // inherited from NSObject
+
+	static new(): NSAttributedStringMarkdownParsingOptions; // inherited from NSObject
+
+	allowsExtendedAttributes: boolean;
+
+	failurePolicy: NSAttributedStringMarkdownParsingFailurePolicy;
+
+	interpretedSyntax: NSAttributedStringMarkdownInterpretedSyntax;
+
+	languageCode: string;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class NSAutoreleasePool extends NSObject {
@@ -544,6 +600,8 @@ declare class NSBundle extends NSObject {
 	loadAndReturnError(): boolean;
 
 	loadNibNamedOwnerOptions(name: string, owner: any, options: NSDictionary<string, any>): NSArray<any>;
+
+	localizedAttributedStringForKeyValueTable(key: string, value: string, tableName: string): NSAttributedString;
 
 	localizedStringForKeyValueTable(key: string, value: string, tableName: string): string;
 
@@ -2826,6 +2884,8 @@ declare class NSError extends NSObject implements NSCopying, NSSecureCoding {
 
 	readonly recoveryAttempter: any;
 
+	readonly underlyingErrors: NSArray<NSError>;
+
 	readonly userInfo: NSDictionary<string, any>;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
@@ -3896,6 +3956,67 @@ declare function NSGetUncaughtExceptionHandler(): interop.Pointer | interop.Refe
 
 declare var NSGlobalDomain: string;
 
+declare const enum NSGrammaticalGender {
+
+	NotSet = 0,
+
+	Feminine = 1,
+
+	Masculine = 2,
+
+	Neuter = 3
+}
+
+declare const enum NSGrammaticalNumber {
+
+	NotSet = 0,
+
+	Singular = 1,
+
+	Zero = 2,
+
+	Plural = 3,
+
+	PluralTwo = 4,
+
+	PluralFew = 5,
+
+	PluralMany = 6
+}
+
+declare const enum NSGrammaticalPartOfSpeech {
+
+	NotSet = 0,
+
+	Determiner = 1,
+
+	Pronoun = 2,
+
+	Letter = 3,
+
+	Adverb = 4,
+
+	Particle = 5,
+
+	Adjective = 6,
+
+	Adposition = 7,
+
+	Verb = 8,
+
+	Noun = 9,
+
+	Conjunction = 10,
+
+	Numeral = 11,
+
+	Interjection = 12,
+
+	Preposition = 13,
+
+	Abbreviation = 14
+}
+
 declare var NSGregorianCalendar: string;
 
 declare const NSHPUXOperatingSystem: number;
@@ -4210,6 +4331,8 @@ declare const NSISOLatin1StringEncoding: number;
 
 declare const NSISOLatin2StringEncoding: number;
 
+declare var NSImageURLAttributeName: string;
+
 declare var NSInconsistentArchiveException: string;
 
 declare function NSIncrementExtraRefCount(object: any): void;
@@ -4357,6 +4480,67 @@ declare class NSIndexSet extends NSObject implements NSCopying, NSMutableCopying
 }
 
 declare var NSIndianCalendar: string;
+
+declare var NSInflectionAlternativeAttributeName: string;
+
+declare class NSInflectionRule extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSInflectionRule; // inherited from NSObject
+
+	static canInflectLanguage(language: string): boolean;
+
+	static new(): NSInflectionRule; // inherited from NSObject
+
+	static readonly automaticRule: NSInflectionRule;
+
+	static readonly canInflectPreferredLocalization: boolean;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare var NSInflectionRuleAttributeName: string;
+
+declare class NSInflectionRuleExplicit extends NSInflectionRule {
+
+	static alloc(): NSInflectionRuleExplicit; // inherited from NSObject
+
+	static new(): NSInflectionRuleExplicit; // inherited from NSObject
+
+	readonly morphology: NSMorphology;
+
+	constructor(o: { morphology: NSMorphology; });
+
+	initWithMorphology(morphology: NSMorphology): this;
+}
+
+declare const enum NSInlinePresentationIntent {
+
+	Emphasized = 1,
+
+	StronglyEmphasized = 2,
+
+	Code = 4,
+
+	Strikethrough = 32,
+
+	SoftBreak = 64,
+
+	LineBreak = 128,
+
+	InlineHTML = 256,
+
+	BlockHTML = 512
+}
+
+declare var NSInlinePresentationIntentAttributeName: string;
 
 declare class NSInputStream extends NSStream {
 
@@ -4595,6 +4779,10 @@ declare const enum NSJSONReadingOptions {
 
 	FragmentsAllowed = 4,
 
+	JSON5Allowed = 8,
+
+	TopLevelDictionaryAssumed = 16,
+
 	AllowFragments = 4
 }
 
@@ -4800,6 +4988,8 @@ declare var NSKeyedUnarchiverDelegate: {
 
 	prototype: NSKeyedUnarchiverDelegate;
 };
+
+declare var NSLanguageIdentifierAttributeName: string;
 
 declare class NSLengthFormatter extends NSFormatter {
 
@@ -5742,6 +5932,72 @@ declare class NSMethodSignature extends NSObject {
 
 declare var NSMinimumKeyValueOperator: string;
 
+declare class NSMorphology extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSMorphology; // inherited from NSObject
+
+	static new(): NSMorphology; // inherited from NSObject
+
+	grammaticalGender: NSGrammaticalGender;
+
+	number: NSGrammaticalNumber;
+
+	partOfSpeech: NSGrammaticalPartOfSpeech;
+
+	readonly unspecified: boolean;
+
+	static readonly userMorphology: NSMorphology;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	customPronounForLanguage(language: string): NSMorphologyCustomPronoun;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	setCustomPronounForLanguageError(features: NSMorphologyCustomPronoun, language: string): boolean;
+}
+
+declare var NSMorphologyAttributeName: string;
+
+declare class NSMorphologyCustomPronoun extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSMorphologyCustomPronoun; // inherited from NSObject
+
+	static isSupportedForLanguage(language: string): boolean;
+
+	static new(): NSMorphologyCustomPronoun; // inherited from NSObject
+
+	static requiredKeysForLanguage(language: string): NSArray<string>;
+
+	objectForm: string;
+
+	possessiveAdjectiveForm: string;
+
+	possessiveForm: string;
+
+	reflexiveForm: string;
+
+	subjectForm: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+declare var NSMultipleUnderlyingErrorsKey: string;
+
 declare class NSMutableArray<ObjectType> extends NSArray<ObjectType> {
 
 	static alloc<ObjectType>(): NSMutableArray<ObjectType>; // inherited from NSObject
@@ -6259,6 +6515,10 @@ declare class NSMutableURLRequest extends NSURLRequest {
 	allowsConstrainedNetworkAccess: boolean;
 
 	allowsExpensiveNetworkAccess: boolean;
+
+	assumesHTTP3Capable: boolean;
+
+	attribution: NSURLRequestAttribution;
 
 	cachePolicy: NSURLRequestCachePolicy;
 
@@ -7456,6 +7716,8 @@ declare class NSPersonNameComponentsFormatter extends NSFormatter {
 
 	static new(): NSPersonNameComponentsFormatter; // inherited from NSObject
 
+	locale: NSLocale;
+
 	phonetic: boolean;
 
 	style: NSPersonNameComponentsFormatterStyle;
@@ -7735,6 +7997,109 @@ declare const enum NSPredicateOperatorType {
 	BetweenPredicateOperatorType = 100
 }
 
+declare class NSPresentationIntent extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSPresentationIntent; // inherited from NSObject
+
+	static blockQuoteIntentWithIdentityNestedInsideIntent(identity: number, parent: NSPresentationIntent): NSPresentationIntent;
+
+	static codeBlockIntentWithIdentityLanguageHintNestedInsideIntent(identity: number, languageHint: string, parent: NSPresentationIntent): NSPresentationIntent;
+
+	static headerIntentWithIdentityLevelNestedInsideIntent(identity: number, level: number, parent: NSPresentationIntent): NSPresentationIntent;
+
+	static listItemIntentWithIdentityOrdinalNestedInsideIntent(identity: number, ordinal: number, parent: NSPresentationIntent): NSPresentationIntent;
+
+	static new(): NSPresentationIntent; // inherited from NSObject
+
+	static orderedListIntentWithIdentityNestedInsideIntent(identity: number, parent: NSPresentationIntent): NSPresentationIntent;
+
+	static paragraphIntentWithIdentityNestedInsideIntent(identity: number, parent: NSPresentationIntent): NSPresentationIntent;
+
+	static tableCellIntentWithIdentityColumnNestedInsideIntent(identity: number, column: number, parent: NSPresentationIntent): NSPresentationIntent;
+
+	static tableHeaderRowIntentWithIdentityNestedInsideIntent(identity: number, parent: NSPresentationIntent): NSPresentationIntent;
+
+	static tableIntentWithIdentityColumnCountAlignmentsNestedInsideIntent(identity: number, columnCount: number, alignments: NSArray<number> | number[], parent: NSPresentationIntent): NSPresentationIntent;
+
+	static tableRowIntentWithIdentityRowNestedInsideIntent(identity: number, row: number, parent: NSPresentationIntent): NSPresentationIntent;
+
+	static thematicBreakIntentWithIdentityNestedInsideIntent(identity: number, parent: NSPresentationIntent): NSPresentationIntent;
+
+	static unorderedListIntentWithIdentityNestedInsideIntent(identity: number, parent: NSPresentationIntent): NSPresentationIntent;
+
+	readonly column: number;
+
+	readonly columnAlignments: NSArray<number>;
+
+	readonly columnCount: number;
+
+	readonly headerLevel: number;
+
+	readonly identity: number;
+
+	readonly indentationLevel: number;
+
+	readonly intentKind: NSPresentationIntentKind;
+
+	readonly languageHint: string;
+
+	readonly ordinal: number;
+
+	readonly parentIntent: NSPresentationIntent;
+
+	readonly row: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	isEquivalentToPresentationIntent(other: NSPresentationIntent): boolean;
+}
+
+declare var NSPresentationIntentAttributeName: string;
+
+declare const enum NSPresentationIntentKind {
+
+	Paragraph = 0,
+
+	Header = 1,
+
+	OrderedList = 2,
+
+	UnorderedList = 3,
+
+	ListItem = 4,
+
+	CodeBlock = 5,
+
+	BlockQuote = 6,
+
+	ThematicBreak = 7,
+
+	Table = 8,
+
+	TableHeaderRow = 9,
+
+	TableRow = 10,
+
+	TableCell = 11
+}
+
+declare const enum NSPresentationIntentTableColumnAlignment {
+
+	Left = 0,
+
+	Center = 1,
+
+	Right = 2
+}
+
 declare class NSProcessInfo extends NSObject {
 
 	static alloc(): NSProcessInfo; // inherited from NSObject
@@ -7894,9 +8259,13 @@ declare var NSProgressFileOperationKindDecompressingAfterDownloading: string;
 
 declare var NSProgressFileOperationKindDownloading: string;
 
+declare var NSProgressFileOperationKindDuplicating: string;
+
 declare var NSProgressFileOperationKindKey: string;
 
 declare var NSProgressFileOperationKindReceiving: string;
+
+declare var NSProgressFileOperationKindUploading: string;
 
 declare var NSProgressFileTotalCountKey: string;
 
@@ -8214,6 +8583,8 @@ declare const enum NSRelativeDateTimeFormatterUnitsStyle {
 
 	Abbreviated = 3
 }
+
+declare var NSReplacementIndexAttributeName: string;
 
 declare var NSRepublicOfChinaCalendar: string;
 
@@ -10031,7 +10402,9 @@ declare const enum NSURLBookmarkCreationOptions {
 
 	WithSecurityScope = 2048,
 
-	SecurityScopeAllowOnlyReadAccess = 4096
+	SecurityScopeAllowOnlyReadAccess = 4096,
+
+	WithoutImplicitSecurityScope = 536870912
 }
 
 declare const enum NSURLBookmarkResolutionOptions {
@@ -10040,7 +10413,9 @@ declare const enum NSURLBookmarkResolutionOptions {
 
 	WithoutMounting = 512,
 
-	WithSecurityScope = 1024
+	WithSecurityScope = 1024,
+
+	WithoutImplicitStartAccessing = 32768
 }
 
 declare class NSURLCache extends NSObject {
@@ -10797,6 +11172,10 @@ declare class NSURLRequest extends NSObject implements NSCopying, NSMutableCopyi
 
 	readonly allowsExpensiveNetworkAccess: boolean;
 
+	readonly assumesHTTP3Capable: boolean;
+
+	readonly attribution: NSURLRequestAttribution;
+
 	readonly cachePolicy: NSURLRequestCachePolicy;
 
 	readonly mainDocumentURL: NSURL;
@@ -10826,6 +11205,13 @@ declare class NSURLRequest extends NSObject implements NSCopying, NSMutableCopyi
 	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	valueForHTTPHeaderField(field: string): string;
+}
+
+declare const enum NSURLRequestAttribution {
+
+	Developer = 0,
+
+	User = 1
 }
 
 declare const enum NSURLRequestCachePolicy {
@@ -11173,7 +11559,7 @@ declare class NSURLSessionStreamTask extends NSURLSessionTask {
 
 	closeWrite(): void;
 
-	readDataOfMinLengthMaxLengthTimeoutCompletionHandler(minBytes: number, maxBytes: number, timeout: number, completionHandler: (p1: NSData, p2: boolean, p3: NSError) => void): void;
+	readDataOfMinLengthMaxLengthTimeoutCompletionHandler(minBytes: number, maxBytes: number, timeout: number, completionHandler: (p1: NSData) => void): void;
 
 	startSecureConnection(): void;
 
@@ -11202,11 +11588,15 @@ declare class NSURLSessionTask extends NSObject implements NSCopying, NSProgress
 
 	readonly currentRequest: NSURLRequest;
 
+	delegate: NSURLSessionTaskDelegate;
+
 	earliestBeginDate: Date;
 
 	readonly error: NSError;
 
 	readonly originalRequest: NSURLRequest;
+
+	prefersIncrementalDelivery: boolean;
 
 	priority: number;
 
@@ -11541,6 +11931,8 @@ declare var NSURLUbiquitousItemIsDownloadedKey: string;
 
 declare var NSURLUbiquitousItemIsDownloadingKey: string;
 
+declare var NSURLUbiquitousItemIsExcludedFromSyncKey: string;
+
 declare var NSURLUbiquitousItemIsSharedKey: string;
 
 declare var NSURLUbiquitousItemIsUploadedKey: string;
@@ -11688,6 +12080,8 @@ declare class NSUUID extends NSObject implements NSCopying, NSSecureCoding {
 	constructor(o: { UUIDBytes: interop.Reference<number>; });
 
 	constructor(o: { UUIDString: string; });
+
+	compare(otherUUID: NSUUID): NSComparisonResult;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 

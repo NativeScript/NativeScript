@@ -1,5 +1,3 @@
-import * as reduceCSSCalc from 'reduce-css-calc';
-
 import { ViewBase } from '../view-base';
 
 // Types.
@@ -153,7 +151,7 @@ export function _evaluateCssCalcExpression(value: string) {
 
 	if (isCssCalcExpression(value)) {
 		// WORKAROUND: reduce-css-calc can't handle the dip-unit.
-		return reduceCSSCalc(value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1'));
+		return require('reduce-css-calc')(value.replace(/([0-9]+(\.[0-9]+)?)dip\b/g, '$1'));
 	} else {
 		return value;
 	}

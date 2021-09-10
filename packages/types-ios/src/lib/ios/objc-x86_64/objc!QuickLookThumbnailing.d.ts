@@ -112,6 +112,8 @@ declare class QLThumbnailReply extends NSObject {
 	static replyWithContextSizeDrawingBlock(contextSize: CGSize, drawingBlock: (p1: any) => boolean): QLThumbnailReply;
 
 	static replyWithImageFileURL(fileURL: NSURL): QLThumbnailReply;
+
+	extensionBadge: string;
 }
 
 declare class QLThumbnailRepresentation extends NSObject {
@@ -123,6 +125,8 @@ declare class QLThumbnailRepresentation extends NSObject {
 	readonly CGImage: any;
 
 	readonly UIImage: UIImage;
+
+	readonly contentRect: CGRect;
 
 	readonly type: QLThumbnailRepresentationType;
 }

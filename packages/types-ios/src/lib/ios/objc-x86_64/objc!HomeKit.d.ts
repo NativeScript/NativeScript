@@ -191,6 +191,15 @@ declare class HMAccessoryProfile extends NSObject {
 	readonly uniqueIdentifier: NSUUID;
 }
 
+declare class HMAccessorySetupManager extends NSObject {
+
+	static alloc(): HMAccessorySetupManager; // inherited from NSObject
+
+	static new(): HMAccessorySetupManager; // inherited from NSObject
+
+	addAndSetUpAccessoriesForTopologyCompletionHandler(topology: HMCHIPServiceTopology, completion: (p1: NSError) => void): void;
+}
+
 declare class HMAccessorySetupPayload extends NSObject {
 
 	static alloc(): HMAccessorySetupPayload; // inherited from NSObject
@@ -271,6 +280,128 @@ declare class HMAddAccessoryRequest extends NSObject {
 	payloadWithOwnershipToken(ownershipToken: HMAccessoryOwnershipToken): HMAccessorySetupPayload;
 
 	payloadWithURLOwnershipToken(setupPayloadURL: NSURL, ownershipToken: HMAccessoryOwnershipToken): HMAccessorySetupPayload;
+}
+
+declare class HMCHIPServiceHome extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HMCHIPServiceHome; // inherited from NSObject
+
+	static new(): HMCHIPServiceHome; // inherited from NSObject
+
+	readonly name: string;
+
+	readonly uuid: NSUUID;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { UUID: NSUUID; name: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithUUIDName(uuid: NSUUID, name: string): this;
+}
+
+declare class HMCHIPServiceRequestHandler extends NSObject implements NSExtensionRequestHandling {
+
+	static alloc(): HMCHIPServiceRequestHandler; // inherited from NSObject
+
+	static new(): HMCHIPServiceRequestHandler; // inherited from NSObject
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	beginRequestWithExtensionContext(context: NSExtensionContext): void;
+
+	class(): typeof NSObject;
+
+	configureAccessoryWithNameRoomCompletion(accessoryName: string, accessoryRoom: HMCHIPServiceRoom, completion: (p1: NSError) => void): void;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	fetchRoomsInHomeCompletion(home: HMCHIPServiceHome, completion: (p1: NSArray<HMCHIPServiceRoom>, p2: NSError) => void): void;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	pairAccessoryInHomeOnboardingPayloadCompletion(home: HMCHIPServiceHome, onboardingPayload: string, completion: (p1: NSError) => void): void;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class HMCHIPServiceRoom extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HMCHIPServiceRoom; // inherited from NSObject
+
+	static new(): HMCHIPServiceRoom; // inherited from NSObject
+
+	readonly name: string;
+
+	readonly uuid: NSUUID;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { UUID: NSUUID; name: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithUUIDName(uuid: NSUUID, name: string): this;
+}
+
+declare class HMCHIPServiceTopology extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HMCHIPServiceTopology; // inherited from NSObject
+
+	static new(): HMCHIPServiceTopology; // inherited from NSObject
+
+	readonly homes: NSArray<HMCHIPServiceHome>;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { homes: NSArray<HMCHIPServiceHome> | HMCHIPServiceHome[]; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithHomes(homes: NSArray<HMCHIPServiceHome> | HMCHIPServiceHome[]): this;
 }
 
 declare class HMCalendarEvent extends HMTimeEvent implements NSCopying, NSMutableCopying {
@@ -397,6 +528,8 @@ declare class HMCameraSource extends NSObject {
 	static alloc(): HMCameraSource; // inherited from NSObject
 
 	static new(): HMCameraSource; // inherited from NSObject
+
+	readonly aspectRatio: number;
 }
 
 declare class HMCameraStream extends HMCameraSource {
@@ -1502,7 +1635,9 @@ declare const enum HMErrorCode {
 
 	AccessoryCommunicationFailure = 101,
 
-	FailedToJoinNetwork = 102
+	FailedToJoinNetwork = 102,
+
+	AccessoryIsSuspended = 103
 }
 
 declare var HMErrorDomain: string;

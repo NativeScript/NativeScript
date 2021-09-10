@@ -90,9 +90,13 @@ declare class HKAnchoredObjectQuery extends HKQuery {
 
 	updateHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void;
 
+	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; anchor: HKQueryAnchor; limit: number; resultsHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void; });
+
 	constructor(o: { type: HKSampleType; predicate: NSPredicate; anchor: number; limit: number; completionHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: number, p4: NSError) => void; });
 
 	constructor(o: { type: HKSampleType; predicate: NSPredicate; anchor: HKQueryAnchor; limit: number; resultsHandler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void; });
+
+	initWithQueryDescriptorsAnchorLimitResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], anchor: HKQueryAnchor, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: NSArray<HKDeletedObject>, p4: HKQueryAnchor, p5: NSError) => void): this;
 
 	initWithTypePredicateAnchorLimitCompletionHandler(type: HKSampleType, predicate: NSPredicate, anchor: number, limit: number, handler: (p1: HKAnchoredObjectQuery, p2: NSArray<HKSample>, p3: number, p4: NSError) => void): this;
 
@@ -105,6 +109,21 @@ declare const enum HKAppleECGAlgorithmVersion {
 
 	Version2 = 2
 }
+
+declare const enum HKAppleWalkingSteadinessClassification {
+
+	OK = 1,
+
+	Low = 2,
+
+	VeryLow = 3
+}
+
+declare function HKAppleWalkingSteadinessClassificationForQuantity(value: HKQuantity, classificationOut: interop.Pointer | interop.Reference<HKAppleWalkingSteadinessClassification>, errorOut: interop.Pointer | interop.Reference<NSError>): boolean;
+
+declare function HKAppleWalkingSteadinessMaximumQuantityForClassification(classification: HKAppleWalkingSteadinessClassification): HKQuantity;
+
+declare function HKAppleWalkingSteadinessMinimumQuantityForClassification(classification: HKAppleWalkingSteadinessClassification): HKQuantity;
 
 declare class HKAudiogramSample extends HKSample {
 
@@ -321,6 +340,8 @@ declare var HKCategoryTypeIdentifierAppetiteChanges: string;
 
 declare var HKCategoryTypeIdentifierAppleStandHour: string;
 
+declare var HKCategoryTypeIdentifierAppleWalkingSteadinessEvent: string;
+
 declare var HKCategoryTypeIdentifierAudioExposureEvent: string;
 
 declare var HKCategoryTypeIdentifierBladderIncontinence: string;
@@ -405,6 +426,10 @@ declare var HKCategoryTypeIdentifierPelvicPain: string;
 
 declare var HKCategoryTypeIdentifierPregnancy: string;
 
+declare var HKCategoryTypeIdentifierPregnancyTestResult: string;
+
+declare var HKCategoryTypeIdentifierProgesteroneTestResult: string;
+
 declare var HKCategoryTypeIdentifierRapidPoundingOrFlutteringHeartbeat: string;
 
 declare var HKCategoryTypeIdentifierRunnyNose: string;
@@ -452,6 +477,17 @@ declare const enum HKCategoryValueAppleStandHour {
 	Stood = 0,
 
 	Idle = 1
+}
+
+declare const enum HKCategoryValueAppleWalkingSteadinessEvent {
+
+	InitialLow = 1,
+
+	InitialVeryLow = 2,
+
+	RepeatLow = 3,
+
+	RepeatVeryLow = 4
 }
 
 declare const enum HKCategoryValueAudioExposureEvent {
@@ -530,11 +566,29 @@ declare const enum HKCategoryValueOvulationTestResult {
 	EstrogenSurge = 4
 }
 
+declare const enum HKCategoryValuePregnancyTestResult {
+
+	Negative = 1,
+
+	Positive = 2,
+
+	Indeterminate = 3
+}
+
 declare const enum HKCategoryValuePresence {
 
 	Present = 0,
 
 	NotPresent = 1
+}
+
+declare const enum HKCategoryValueProgesteroneTestResult {
+
+	Negative = 1,
+
+	Positive = 2,
+
+	Indeterminate = 3
 }
 
 declare const enum HKCategoryValueSeverity {
@@ -1122,6 +1176,8 @@ declare class HKHealthStore extends NSObject {
 
 	preferredUnitsForQuantityTypesCompletion(quantityTypes: NSSet<HKQuantityType>, completion: (p1: NSDictionary<HKQuantityType, HKUnit>, p2: NSError) => void): void;
 
+	recalibrateEstimatesForSampleTypeAtDateCompletion(sampleType: HKSampleType, date: Date, completion: (p1: boolean, p2: NSError) => void): void;
+
 	requestAuthorizationToShareTypesReadTypesCompletion(typesToShare: NSSet<HKSampleType>, typesToRead: NSSet<HKObjectType>, completion: (p1: boolean, p2: NSError) => void): void;
 
 	saveObjectWithCompletion(object: HKObject, completion: (p1: boolean, p2: NSError) => void): void;
@@ -1175,7 +1231,7 @@ declare class HKHeartbeatSeriesBuilder extends HKSeriesBuilder {
 
 	constructor(o: { healthStore: HKHealthStore; device: HKDevice; startDate: Date; });
 
-	addHeartbeatWithTimeIntervalSinceSeriesStartDatePrecededByGapCompletion(timeInterval: number, precededByGap: boolean, completion: (p1: boolean, p2: NSError) => void): void;
+	addHeartbeatWithTimeIntervalSinceSeriesStartDatePrecededByGapCompletion(timeIntervalSinceStart: number, precededByGap: boolean, completion: (p1: boolean, p2: NSError) => void): void;
 
 	addMetadataCompletion(metadata: NSDictionary<string, any>, completion: (p1: boolean, p2: NSError) => void): void;
 
@@ -1209,6 +1265,8 @@ declare const enum HKInsulinDeliveryReason {
 	Bolus = 2
 }
 
+declare var HKMetadataKeyAlgorithmVersion: string;
+
 declare var HKMetadataKeyAlpineSlopeGrade: string;
 
 declare var HKMetadataKeyAppleDeviceCalibrated: string;
@@ -1232,6 +1290,8 @@ declare var HKMetadataKeyBodyTemperatureSensorLocation: string;
 declare var HKMetadataKeyCoachedWorkout: string;
 
 declare var HKMetadataKeyCrossTrainerDistance: string;
+
+declare var HKMetadataKeyDateOfEarliestDataUsedForEstimate: string;
 
 declare var HKMetadataKeyDeviceManufacturerName: string;
 
@@ -1416,7 +1476,11 @@ declare class HKObserverQuery extends HKQuery {
 
 	static new(): HKObserverQuery; // inherited from NSObject
 
+	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; updateHandler: (p1: HKObserverQuery, p2: NSSet<HKSampleType>, p3: () => void, p4: NSError) => void; });
+
 	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate; updateHandler: (p1: HKObserverQuery, p2: () => void, p3: NSError) => void; });
+
+	initWithQueryDescriptorsUpdateHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], updateHandler: (p1: HKObserverQuery, p2: NSSet<HKSampleType>, p3: () => void, p4: NSError) => void): this;
 
 	initWithSampleTypePredicateUpdateHandler(sampleType: HKSampleType, predicate: NSPredicate, updateHandler: (p1: HKObserverQuery, p2: () => void, p3: NSError) => void): this;
 }
@@ -1611,7 +1675,11 @@ declare var HKQuantityTypeIdentifierActiveEnergyBurned: string;
 
 declare var HKQuantityTypeIdentifierAppleExerciseTime: string;
 
+declare var HKQuantityTypeIdentifierAppleMoveTime: string;
+
 declare var HKQuantityTypeIdentifierAppleStandTime: string;
+
+declare var HKQuantityTypeIdentifierAppleWalkingSteadiness: string;
 
 declare var HKQuantityTypeIdentifierBasalBodyTemperature: string;
 
@@ -1747,6 +1815,8 @@ declare var HKQuantityTypeIdentifierLeanBodyMass: string;
 
 declare var HKQuantityTypeIdentifierNikeFuel: string;
 
+declare var HKQuantityTypeIdentifierNumberOfAlcoholicBeverages: string;
+
 declare var HKQuantityTypeIdentifierNumberOfTimesFallen: string;
 
 declare var HKQuantityTypeIdentifierOxygenSaturation: string;
@@ -1837,6 +1907,8 @@ declare class HKQuery extends NSObject {
 
 	static predicateForSamplesWithStartDateEndDateOptions(startDate: Date, endDate: Date, options: HKQueryOptions): NSPredicate;
 
+	static predicateForVerifiableClinicalRecordsWithRelevantDateWithinDateInterval(dateInterval: NSDateInterval): NSPredicate;
+
 	static predicateForWorkoutsWithOperatorTypeDuration(operatorType: NSPredicateOperatorType, duration: number): NSPredicate;
 
 	static predicateForWorkoutsWithOperatorTypeTotalDistance(operatorType: NSPredicateOperatorType, totalDistance: HKQuantity): NSPredicate;
@@ -1875,6 +1947,31 @@ declare class HKQueryAnchor extends NSObject implements NSCopying, NSSecureCodin
 	initWithCoder(coder: NSCoder): this;
 }
 
+declare class HKQueryDescriptor extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKQueryDescriptor; // inherited from NSObject
+
+	static new(): HKQueryDescriptor; // inherited from NSObject
+
+	readonly predicate: NSPredicate;
+
+	readonly sampleType: HKSampleType;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithSampleTypePredicate(sampleType: HKSampleType, predicate: NSPredicate): this;
+}
+
 declare const enum HKQueryOptions {
 
 	None = 0,
@@ -1909,7 +2006,15 @@ declare class HKSampleQuery extends HKQuery {
 
 	readonly sortDescriptors: NSArray<NSSortDescriptor>;
 
+	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; limit: number; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void; });
+
+	constructor(o: { queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[]; limit: number; sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void; });
+
 	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate; limit: number; sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[]; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void; });
+
+	initWithQueryDescriptorsLimitResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], limit: number, resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void): this;
+
+	initWithQueryDescriptorsLimitSortDescriptorsResultsHandler(queryDescriptors: NSArray<HKQueryDescriptor> | HKQueryDescriptor[], limit: number, sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[], resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void): this;
 
 	initWithSampleTypePredicateLimitSortDescriptorsResultsHandler(sampleType: HKSampleType, predicate: NSPredicate, limit: number, sortDescriptors: NSArray<NSSortDescriptor> | NSSortDescriptor[], resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void): this;
 }
@@ -1923,6 +2028,8 @@ declare class HKSampleType extends HKObjectType {
 	static alloc(): HKSampleType; // inherited from NSObject
 
 	static new(): HKSampleType; // inherited from NSObject
+
+	readonly allowsRecalibrationForEstimates: boolean;
 
 	readonly isMaximumDurationRestricted: boolean;
 
@@ -2340,6 +2447,63 @@ declare const enum HKVO2MaxTestType {
 	PredictionNonExercise = 3
 }
 
+declare class HKVerifiableClinicalRecord extends HKSample {
+
+	static alloc(): HKVerifiableClinicalRecord; // inherited from NSObject
+
+	static new(): HKVerifiableClinicalRecord; // inherited from NSObject
+
+	readonly JWSRepresentation: NSData;
+
+	readonly expirationDate: Date;
+
+	readonly issuedDate: Date;
+
+	readonly issuerIdentifier: string;
+
+	readonly itemNames: NSArray<string>;
+
+	readonly recordTypes: NSArray<string>;
+
+	readonly relevantDate: Date;
+
+	readonly subject: HKVerifiableClinicalRecordSubject;
+}
+
+declare class HKVerifiableClinicalRecordQuery extends HKQuery {
+
+	static alloc(): HKVerifiableClinicalRecordQuery; // inherited from NSObject
+
+	static new(): HKVerifiableClinicalRecordQuery; // inherited from NSObject
+
+	readonly recordTypes: NSArray<string>;
+
+	constructor(o: { recordTypes: NSArray<string> | string[]; predicate: NSPredicate; resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void; });
+
+	initWithRecordTypesPredicateResultsHandler(recordTypes: NSArray<string> | string[], predicate: NSPredicate, resultsHandler: (p1: HKVerifiableClinicalRecordQuery, p2: NSArray<HKVerifiableClinicalRecord>, p3: NSError) => void): this;
+}
+
+declare class HKVerifiableClinicalRecordSubject extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): HKVerifiableClinicalRecordSubject; // inherited from NSObject
+
+	static new(): HKVerifiableClinicalRecordSubject; // inherited from NSObject
+
+	readonly dateOfBirthComponents: NSDateComponents;
+
+	readonly fullName: string;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
 declare const enum HKWeatherCondition {
 
 	None = 0,
@@ -2661,7 +2825,7 @@ declare class HKWorkoutBuilder extends NSObject {
 
 	endCollectionWithEndDateCompletion(endDate: Date, completion: (p1: boolean, p2: NSError) => void): void;
 
-	finishWorkoutWithCompletion(completion: (p1: HKWorkout, p2: NSError) => void): void;
+	finishWorkoutWithCompletion(completion: (p1: HKWorkout) => void): void;
 
 	initWithHealthStoreConfigurationDevice(healthStore: HKHealthStore, configuration: HKWorkoutConfiguration, device: HKDevice): this;
 

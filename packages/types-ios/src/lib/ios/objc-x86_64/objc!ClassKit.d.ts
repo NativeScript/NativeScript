@@ -19,6 +19,8 @@ declare class CLSActivity extends CLSObject {
 
 	addProgressRangeFromStartToEnd(start: number, end: number): void;
 
+	removeAllActivityItems(): void;
+
 	start(): void;
 
 	stop(): void;
@@ -81,6 +83,8 @@ declare class CLSContext extends CLSObject {
 
 	readonly identifierPath: NSArray<string>;
 
+	readonly navigationChildContexts: NSArray<CLSContext>;
+
 	readonly parent: CLSContext;
 
 	readonly progressReportingCapabilities: NSSet<CLSProgressReportingCapability>;
@@ -105,6 +109,8 @@ declare class CLSContext extends CLSObject {
 
 	addChildContext(child: CLSContext): void;
 
+	addNavigationChildContext(child: CLSContext): void;
+
 	addProgressReportingCapabilities(capabilities: NSSet<CLSProgressReportingCapability>): void;
 
 	becomeActive(): void;
@@ -116,6 +122,8 @@ declare class CLSContext extends CLSObject {
 	initWithTypeIdentifierTitle(type: CLSContextType, identifier: string, title: string): this;
 
 	removeFromParent(): void;
+
+	removeNavigationChildContext(child: CLSContext): void;
 
 	resetProgressReportingCapabilities(): void;
 
@@ -210,6 +218,8 @@ declare class CLSDataStore extends NSObject {
 
 	contextsMatchingPredicateCompletion(predicate: NSPredicate, completion: (p1: NSArray<CLSContext>, p2: NSError) => void): void;
 
+	fetchActivityForURLCompletion(url: NSURL, completion: (p1: CLSActivity, p2: NSError) => void): void;
+
 	removeContext(context: CLSContext): void;
 
 	saveWithCompletion(completion: (p1: NSError) => void): void;
@@ -250,6 +260,8 @@ declare const enum CLSErrorCode {
 declare var CLSErrorCodeDomain: string;
 
 declare var CLSErrorObjectKey: string;
+
+declare var CLSErrorSuccessfulObjectsKey: string;
 
 declare var CLSErrorUnderlyingErrorsKey: string;
 

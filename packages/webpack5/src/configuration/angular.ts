@@ -1,4 +1,5 @@
 import { extname, resolve } from 'path';
+import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 import { existsSync } from 'fs';
 
@@ -221,6 +222,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 			/core\/ui\/styling/,
 		])
 	);
+
+	// todo: re-visit later, disabling by default now
+	// config.plugin('DefinePlugin').tap((args) => {
+	// 	args[0] = merge(args[0], {
+	// 		__UI_USE_EXTERNAL_RENDERER__: true,
+	// 	});
+
+	// 	return args;
+	// });
 
 	return config;
 }

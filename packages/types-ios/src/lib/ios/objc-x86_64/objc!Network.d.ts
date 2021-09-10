@@ -342,15 +342,25 @@ declare function nw_connection_group_copy_parameters(group: NSObject): NSObject;
 
 declare function nw_connection_group_copy_path_for_message(group: NSObject, context: NSObject): NSObject;
 
+declare function nw_connection_group_copy_protocol_metadata(group: NSObject, definition: NSObject): NSObject;
+
+declare function nw_connection_group_copy_protocol_metadata_for_message(group: NSObject, context: NSObject, definition: NSObject): NSObject;
+
 declare function nw_connection_group_copy_remote_endpoint_for_message(group: NSObject, context: NSObject): NSObject;
 
 declare function nw_connection_group_create(group_descriptor: NSObject, parameters: NSObject): NSObject;
 
+declare function nw_connection_group_extract_connection(group: NSObject, endpoint: NSObject, protocol_options: NSObject): NSObject;
+
 declare function nw_connection_group_extract_connection_for_message(group: NSObject, context: NSObject): NSObject;
+
+declare function nw_connection_group_reinsert_extracted_connection(group: NSObject, connection: NSObject): boolean;
 
 declare function nw_connection_group_reply(group: NSObject, inbound_message: NSObject, outbound_message: NSObject, content: NSObject): void;
 
 declare function nw_connection_group_send_message(group: NSObject, content: NSObject, endpoint: NSObject, context: NSObject, completion: (p1: NSObject) => void): void;
+
+declare function nw_connection_group_set_new_connection_handler(group: NSObject, new_connection_handler: (p1: NSObject) => void): void;
 
 declare function nw_connection_group_set_queue(group: NSObject, queue: NSObject): void;
 
@@ -441,6 +451,8 @@ declare function nw_data_transfer_report_copy_path_interface(report: NSObject, p
 declare function nw_data_transfer_report_get_duration_milliseconds(report: NSObject): number;
 
 declare function nw_data_transfer_report_get_path_count(report: NSObject): number;
+
+declare function nw_data_transfer_report_get_path_radio_type(report: NSObject, path_index: number): nw_interface_radio_type_t;
 
 declare function nw_data_transfer_report_get_received_application_byte_count(report: NSObject, path_index: number): number;
 
@@ -637,6 +649,8 @@ declare function nw_group_descriptor_add_endpoint(descriptor: NSObject, endpoint
 
 declare function nw_group_descriptor_create_multicast(multicast_group: NSObject): NSObject;
 
+declare function nw_group_descriptor_create_multiplex(remote_endpoint: NSObject): NSObject;
+
 declare function nw_group_descriptor_enumerate_endpoints(descriptor: NSObject, enumerate_block: (p1: NSObject) => boolean): void;
 
 declare function nw_interface_get_index(interface: NSObject): number;
@@ -644,6 +658,41 @@ declare function nw_interface_get_index(interface: NSObject): number;
 declare function nw_interface_get_name(interface: NSObject): string;
 
 declare function nw_interface_get_type(interface: NSObject): nw_interface_type_t;
+
+declare const enum nw_interface_radio_type_t {
+
+	nw_interface_radio_type_unknown = 0,
+
+	nw_interface_radio_type_wifi_b = 1,
+
+	nw_interface_radio_type_wifi_a = 2,
+
+	nw_interface_radio_type_wifi_g = 3,
+
+	nw_interface_radio_type_wifi_n = 4,
+
+	nw_interface_radio_type_wifi_ac = 5,
+
+	nw_interface_radio_type_wifi_ax = 6,
+
+	nw_interface_radio_type_cell_lte = 128,
+
+	nw_interface_radio_type_cell_endc_sub6 = 129,
+
+	nw_interface_radio_type_cell_endc_mmw = 130,
+
+	nw_interface_radio_type_cell_nr_sa_sub6 = 131,
+
+	nw_interface_radio_type_cell_nr_sa_mmw = 132,
+
+	nw_interface_radio_type_cell_wcdma = 133,
+
+	nw_interface_radio_type_cell_gsm = 134,
+
+	nw_interface_radio_type_cell_cdma = 135,
+
+	nw_interface_radio_type_cell_evdo = 136
+}
 
 declare const enum nw_interface_type_t {
 
@@ -729,6 +778,8 @@ declare function nw_listener_set_advertise_descriptor(listener: NSObject, advert
 
 declare function nw_listener_set_advertised_endpoint_changed_handler(listener: NSObject, handler: (p1: NSObject, p2: boolean) => void): void;
 
+declare function nw_listener_set_new_connection_group_handler(listener: NSObject, handler: (p1: NSObject) => void): void;
+
 declare function nw_listener_set_new_connection_handler(listener: NSObject, handler: (p1: NSObject) => void): void;
 
 declare function nw_listener_set_new_connection_limit(listener: NSObject, new_connection_limit: number): void;
@@ -769,6 +820,22 @@ declare const enum nw_multipath_service_t {
 	nw_multipath_service_aggregate = 3
 }
 
+declare const enum nw_multipath_version_t {
+
+	nw_multipath_version_unspecified = -1,
+
+	nw_multipath_version_0 = 0,
+
+	nw_multipath_version_1 = 1
+}
+
+declare const enum nw_parameters_attribution_t {
+
+	nw_parameters_attribution_developer = 1,
+
+	nw_parameters_attribution_user = 2
+}
+
 declare function nw_parameters_clear_prohibited_interface_types(parameters: NSObject): void;
 
 declare function nw_parameters_clear_prohibited_interfaces(parameters: NSObject): void;
@@ -783,6 +850,8 @@ declare function nw_parameters_copy_required_interface(parameters: NSObject): NS
 
 declare function nw_parameters_create(): NSObject;
 
+declare function nw_parameters_create_quic(configure_quic: (p1: NSObject) => void): NSObject;
+
 declare function nw_parameters_create_secure_tcp(configure_tls: (p1: NSObject) => void, configure_tcp: (p1: NSObject) => void): NSObject;
 
 declare function nw_parameters_create_secure_udp(configure_dtls: (p1: NSObject) => void, configure_udp: (p1: NSObject) => void): NSObject;
@@ -795,6 +864,8 @@ declare const enum nw_parameters_expired_dns_behavior_t {
 
 	nw_parameters_expired_dns_behavior_prohibit = 2
 }
+
+declare function nw_parameters_get_attribution(parameters: NSObject): nw_parameters_attribution_t;
 
 declare function nw_parameters_get_expired_dns_behavior(parameters: NSObject): nw_parameters_expired_dns_behavior_t;
 
@@ -827,6 +898,8 @@ declare function nw_parameters_prohibit_interface(parameters: NSObject, interfac
 declare function nw_parameters_prohibit_interface_type(parameters: NSObject, interface_type: nw_interface_type_t): void;
 
 declare function nw_parameters_require_interface(parameters: NSObject, interface: NSObject): void;
+
+declare function nw_parameters_set_attribution(parameters: NSObject, attribution: nw_parameters_attribution_t): void;
 
 declare function nw_parameters_set_expired_dns_behavior(parameters: NSObject, expired_dns_behavior: nw_parameters_expired_dns_behavior_t): void;
 
@@ -928,6 +1001,8 @@ declare function nw_privacy_context_require_encrypted_name_resolution(privacy_co
 
 declare function nw_protocol_copy_ip_definition(): NSObject;
 
+declare function nw_protocol_copy_quic_definition(): NSObject;
+
 declare function nw_protocol_copy_tcp_definition(): NSObject;
 
 declare function nw_protocol_copy_tls_definition(): NSObject;
@@ -944,6 +1019,8 @@ declare function nw_protocol_metadata_is_framer_message(metadata: NSObject): boo
 
 declare function nw_protocol_metadata_is_ip(metadata: NSObject): boolean;
 
+declare function nw_protocol_metadata_is_quic(metadata: NSObject): boolean;
+
 declare function nw_protocol_metadata_is_tcp(metadata: NSObject): boolean;
 
 declare function nw_protocol_metadata_is_tls(metadata: NSObject): boolean;
@@ -953,6 +1030,8 @@ declare function nw_protocol_metadata_is_udp(metadata: NSObject): boolean;
 declare function nw_protocol_metadata_is_ws(metadata: NSObject): boolean;
 
 declare function nw_protocol_options_copy_definition(options: NSObject): NSObject;
+
+declare function nw_protocol_options_is_quic(options: NSObject): boolean;
 
 declare function nw_protocol_stack_clear_application_protocols(stack: NSObject): void;
 
@@ -965,6 +1044,89 @@ declare function nw_protocol_stack_iterate_application_protocols(stack: NSObject
 declare function nw_protocol_stack_prepend_application_protocol(stack: NSObject, protocol: NSObject): void;
 
 declare function nw_protocol_stack_set_transport_protocol(stack: NSObject, protocol: NSObject): void;
+
+declare function nw_quic_add_tls_application_protocol(options: NSObject, application_protocol: string | interop.Pointer | interop.Reference<any>): void;
+
+declare function nw_quic_copy_sec_protocol_metadata(metadata: NSObject): NSObject;
+
+declare function nw_quic_copy_sec_protocol_options(options: NSObject): NSObject;
+
+declare function nw_quic_create_options(): NSObject;
+
+declare function nw_quic_get_application_error(metadata: NSObject): number;
+
+declare function nw_quic_get_application_error_reason(metadata: NSObject): string;
+
+declare function nw_quic_get_idle_timeout(options: NSObject): number;
+
+declare function nw_quic_get_initial_max_data(options: NSObject): number;
+
+declare function nw_quic_get_initial_max_stream_data_bidirectional_local(options: NSObject): number;
+
+declare function nw_quic_get_initial_max_stream_data_bidirectional_remote(options: NSObject): number;
+
+declare function nw_quic_get_initial_max_stream_data_unidirectional(options: NSObject): number;
+
+declare function nw_quic_get_initial_max_streams_bidirectional(options: NSObject): number;
+
+declare function nw_quic_get_initial_max_streams_unidirectional(options: NSObject): number;
+
+declare function nw_quic_get_keepalive_interval(metadata: NSObject): number;
+
+declare function nw_quic_get_local_max_streams_bidirectional(metadata: NSObject): number;
+
+declare function nw_quic_get_local_max_streams_unidirectional(metadata: NSObject): number;
+
+declare function nw_quic_get_max_udp_payload_size(options: NSObject): number;
+
+declare function nw_quic_get_remote_idle_timeout(metadata: NSObject): number;
+
+declare function nw_quic_get_remote_max_streams_bidirectional(metadata: NSObject): number;
+
+declare function nw_quic_get_remote_max_streams_unidirectional(metadata: NSObject): number;
+
+declare function nw_quic_get_stream_application_error(metadata: NSObject): number;
+
+declare function nw_quic_get_stream_id(metadata: NSObject): number;
+
+declare function nw_quic_get_stream_is_unidirectional(options: NSObject): boolean;
+
+declare function nw_quic_set_application_error(metadata: NSObject, application_error: number, reason: string | interop.Pointer | interop.Reference<any>): void;
+
+declare function nw_quic_set_idle_timeout(options: NSObject, idle_timeout: number): void;
+
+declare function nw_quic_set_initial_max_data(options: NSObject, initial_max_data: number): void;
+
+declare function nw_quic_set_initial_max_stream_data_bidirectional_local(options: NSObject, initial_max_stream_data_bidirectional_local: number): void;
+
+declare function nw_quic_set_initial_max_stream_data_bidirectional_remote(options: NSObject, initial_max_stream_data_bidirectional_remote: number): void;
+
+declare function nw_quic_set_initial_max_stream_data_unidirectional(options: NSObject, initial_max_stream_data_unidirectional: number): void;
+
+declare function nw_quic_set_initial_max_streams_bidirectional(options: NSObject, initial_max_streams_bidirectional: number): void;
+
+declare function nw_quic_set_initial_max_streams_unidirectional(options: NSObject, initial_max_streams_unidirectional: number): void;
+
+declare function nw_quic_set_keepalive_interval(metadata: NSObject, keepalive_interval: number): void;
+
+declare function nw_quic_set_local_max_streams_bidirectional(metadata: NSObject, max_streams_bidirectional: number): void;
+
+declare function nw_quic_set_local_max_streams_unidirectional(metadata: NSObject, max_streams_unidirectional: number): void;
+
+declare function nw_quic_set_max_udp_payload_size(options: NSObject, max_udp_payload_size: number): void;
+
+declare function nw_quic_set_stream_application_error(metadata: NSObject, application_error: number): void;
+
+declare function nw_quic_set_stream_is_unidirectional(options: NSObject, is_unidirectional: boolean): void;
+
+declare const enum nw_quic_stream_type_t {
+
+	nw_quic_stream_type_unknown = 0,
+
+	nw_quic_stream_type_bidirectional = 1,
+
+	nw_quic_stream_type_unidirectional = 2
+}
 
 declare function nw_release(obj: interop.Pointer | interop.Reference<any>): void;
 
@@ -1048,6 +1210,8 @@ declare function nw_tcp_options_set_keepalive_idle_time(options: NSObject, keepa
 declare function nw_tcp_options_set_keepalive_interval(options: NSObject, keepalive_interval: number): void;
 
 declare function nw_tcp_options_set_maximum_segment_size(options: NSObject, maximum_segment_size: number): void;
+
+declare function nw_tcp_options_set_multipath_force_version(options: NSObject, multipath_force_version: nw_multipath_version_t): void;
 
 declare function nw_tcp_options_set_no_delay(options: NSObject, no_delay: boolean): void;
 

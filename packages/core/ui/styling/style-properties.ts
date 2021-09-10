@@ -736,7 +736,13 @@ function normalizeTransformation({ property, value }: Transformation): Transform
 }
 
 function convertTransformValue(property: string, stringValue: string): TransformationValue {
-	const [x, y = x, z = y] = stringValue.split(',').map(parseFloat);
+	let [x, y, z] = stringValue.split(',').map(parseFloat);
+	if (property === 'translate') {
+		y ??= IDENTITY_TRANSFORMATION.translate.y;
+	} else {
+		y ??= x;
+		z ??= y;
+	}
 
 	if (property === 'rotate' || property === 'rotateX' || property === 'rotateY') {
 		return stringValue.slice(-3) === 'rad' ? radiansToDegrees(x) : x;

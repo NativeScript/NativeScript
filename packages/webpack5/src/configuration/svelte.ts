@@ -1,11 +1,12 @@
+import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
 
 import { getProjectFilePath } from '../helpers/project';
+import { hasDependency } from '../helpers/dependencies';
 import { getPlatformName } from '../helpers/platform';
 import { env as _env, IWebpackEnv } from '../index';
 import { error } from '../helpers/log';
 import base from './base';
-import { hasDependency } from '../helpers/dependencies';
 
 export default function (config: Config, env: IWebpackEnv = _env): Config {
 	base(config, env);
@@ -83,6 +84,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 				};
 			});
 	}
+
+	// todo: re-visit later, disabling by default now
+	// config.plugin('DefinePlugin').tap((args) => {
+	// 	args[0] = merge(args[0], {
+	// 		__UI_USE_EXTERNAL_RENDERER__: true,
+	// 	});
+
+	// 	return args;
+	// });
 
 	return config;
 }

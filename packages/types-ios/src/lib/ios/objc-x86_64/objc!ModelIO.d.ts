@@ -360,6 +360,8 @@ declare class MDLAsset extends NSObject implements NSCopying, NSFastEnumeration 
 
 	masters: MDLObjectContainerComponent;
 
+	originals: MDLObjectContainerComponent;
+
 	resolver: MDLAssetResolver;
 
 	startTime: number;
@@ -969,7 +971,9 @@ declare const enum MDLMaterialPropertyType {
 
 	Float4 = 8,
 
-	Matrix44 = 9
+	Matrix44 = 9,
+
+	Buffer = 10
 }
 
 declare const enum MDLMaterialSemantic {
@@ -1380,7 +1384,9 @@ declare const enum MDLMeshBufferType {
 
 	Vertex = 1,
 
-	Index = 2
+	Index = 2,
+
+	Custom = 3
 }
 
 interface MDLMeshBufferZone extends NSObjectProtocol {
@@ -2905,3 +2911,5 @@ declare var kUTTypePolygon: string;
 declare var kUTTypeStereolithography: string;
 
 declare var kUTTypeUniversalSceneDescription: string;
+
+declare var kUTTypeUniversalSceneDescriptionMobile: string;

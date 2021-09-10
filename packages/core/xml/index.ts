@@ -2,7 +2,6 @@
 // https://github.com/NativeScript/nativescript-dev-webpack/issues/932
 
 import * as definition from '.';
-const easysax = require('../js-libs/easysax');
 import { EasySAXParser } from '../js-libs/easysax';
 
 /**
