@@ -537,11 +537,6 @@ export class View extends ViewCommon {
 
 	@profile
 	public requestLayout(): void {
-		if (this._suspendRequestLayout) {
-			this._requestLayoutNeeded = true;
-			return;
-		}
-		this._requestLayoutNeeded = false;
 		super.requestLayout();
 		if (this.nativeViewProtected) {
 			this.nativeViewProtected.requestLayout();

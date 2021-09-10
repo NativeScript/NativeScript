@@ -63,21 +63,9 @@ export class View extends ViewCommon implements ViewDefinition {
 		this.once(View.loadedEvent, () => setupAccessibleView(this));
 	}
 
-	requestLayoutIfNeeded() {
-		if (this.isLayoutRequired) {
-			this._requestLayoutNeeded = false;
-			this.requestLayout();
-		}
-	}
-
 	public requestLayout(): void {
-		if (this._suspendRequestLayout) {
-			this._requestLayoutNeeded = true;
-			return;
-		}
-		this._requestLayoutNeeded = false;
-		this._privateFlags |= PFLAG_FORCE_LAYOUT;
 		super.requestLayout();
+		this._privateFlags |= PFLAG_FORCE_LAYOUT;
 
 		const nativeView = this.nativeViewProtected;
 		if (nativeView && nativeView.setNeedsLayout) {
