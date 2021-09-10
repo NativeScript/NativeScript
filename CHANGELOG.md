@@ -1,3 +1,12 @@
+## [8.1.1](https://github.com/NativeScript/NativeScript/compare/5.0.0-rc.3-webpack...8.1.1) (2021-09-10)
+
+### Reverts
+
+* feat: requestLayout performance improvements ([#9122](https://github.com/NativeScript/NativeScript/issues/9122)) ([e4ce17e](https://github.com/NativeScript/NativeScript/commit/e4ce17e15641dc044e5b514aa1eb333b467d600d))
+
+This commit breaks back-navigation in certain cases, most prominently with Button pseudo classes. Will target inclusion for 8.2.
+
+
 # [8.1.0](https://github.com/NativeScript/NativeScript/compare/5.0.0-rc.1-webpack...8.1.0) (2021-09-08)
 
 
