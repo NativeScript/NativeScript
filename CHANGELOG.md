@@ -1,3 +1,13 @@
+## [8.1.2](https://github.com/NativeScript/NativeScript/compare/8.1.1-core...8.1.2) (2021-09-15)
+
+
+### Bug Fixes
+
+* **android:** background-image 'none' ([#9547](https://github.com/NativeScript/NativeScript/issues/9547)) ([a38e2ca](https://github.com/NativeScript/NativeScript/commit/a38e2ca3b905a638c773352c98c5afa1ec99a5b6))
+* **core:** Add missing required metadata filters ([#9543](https://github.com/NativeScript/NativeScript/issues/9543)) ([a51b628](https://github.com/NativeScript/NativeScript/commit/a51b628532c616ba8523849ca86ae8716e05a431))
+
+
+
 ## [8.1.1](https://github.com/NativeScript/NativeScript/compare/5.0.0-rc.3-webpack...8.1.1) (2021-09-10)
 
 ### Reverts
