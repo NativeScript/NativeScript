@@ -356,7 +356,15 @@ declare const enum GKErrorCode {
 
 	ConnectionTimeout = 33,
 
-	APIObsolete = 34
+	APIObsolete = 34,
+
+	FriendListDescriptionMissing = 100,
+
+	FriendListRestricted = 101,
+
+	FriendListDenied = 102,
+
+	FriendRequestNotAvailable = 103
 }
 
 declare var GKErrorDomain: string;
@@ -392,6 +400,17 @@ declare var GKFriendRequestComposeViewControllerDelegate: {
 
 	prototype: GKFriendRequestComposeViewControllerDelegate;
 };
+
+declare const enum GKFriendsAuthorizationStatus {
+
+	NotDetermined = 0,
+
+	Restricted = 1,
+
+	Denied = 2,
+
+	Authorized = 3
+}
 
 interface GKGameCenterControllerDelegate extends NSObjectProtocol {
 
@@ -447,7 +466,9 @@ declare const enum GKGameCenterViewControllerState {
 
 	LocalPlayerProfile = 3,
 
-	Dashboard = 4
+	Dashboard = 4,
+
+	LocalPlayerFriendsList = 5
 }
 
 declare class GKGameSession extends NSObject {
@@ -670,13 +691,13 @@ declare class GKLeaderboard extends NSObject {
 
 	initWithPlayers(players: NSArray<GKPlayer> | GKPlayer[]): this;
 
-	loadEntriesForPlayerScopeTimeScopeRangeCompletionHandler(playerScope: GKLeaderboardPlayerScope, timeScope: GKLeaderboardTimeScope, range: NSRange, completionHandler: (p1: GKLeaderboardEntry, p2: NSArray<GKLeaderboardEntry>, p3: number, p4: NSError) => void): void;
+	loadEntriesForPlayerScopeTimeScopeRangeCompletionHandler(playerScope: GKLeaderboardPlayerScope, timeScope: GKLeaderboardTimeScope, range: NSRange, completionHandler: (p1: GKLeaderboardEntry) => void): void;
 
-	loadEntriesForPlayersTimeScopeCompletionHandler(players: NSArray<GKPlayer> | GKPlayer[], timeScope: GKLeaderboardTimeScope, completionHandler: (p1: GKLeaderboardEntry, p2: NSArray<GKLeaderboardEntry>, p3: NSError) => void): void;
+	loadEntriesForPlayersTimeScopeCompletionHandler(players: NSArray<GKPlayer> | GKPlayer[], timeScope: GKLeaderboardTimeScope, completionHandler: (p1: GKLeaderboardEntry) => void): void;
 
 	loadImageWithCompletionHandler(completionHandler: (p1: UIImage, p2: NSError) => void): void;
 
-	loadPreviousOccurrenceWithCompletionHandler(completionHandler: (p1: GKLeaderboard, p2: NSError) => void): void;
+	loadPreviousOccurrenceWithCompletionHandler(completionHandler: (p1: GKLeaderboard) => void): void;
 
 	loadScoresWithCompletionHandler(completionHandler: (p1: NSArray<GKScore>, p2: NSError) => void): void;
 
@@ -807,6 +828,8 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	readonly friends: NSArray<string>;
 
+	readonly isPresentingFriendRequestViewController: boolean;
+
 	readonly multiplayerGamingRestricted: boolean;
 
 	readonly personalizedCommunicationRestricted: boolean;
@@ -857,7 +880,13 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	loadFriendPlayersWithCompletionHandler(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
+	loadFriends(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
+
+	loadFriendsAuthorizationStatus(completionHandler: (p1: GKFriendsAuthorizationStatus, p2: NSError) => void): void;
+
 	loadFriendsWithCompletionHandler(completionHandler: (p1: NSArray<string>, p2: NSError) => void): void;
+
+	loadFriendsWithIdentifiersCompletionHandler(identifiers: NSArray<string> | string[], completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
 	loadRecentPlayersWithCompletionHandler(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
@@ -870,6 +899,8 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 	playerDidModifySavedGame(player: GKPlayer, savedGame: GKSavedGame): void;
 
 	playerHasConflictingSavedGames(player: GKPlayer, savedGames: NSArray<GKSavedGame> | GKSavedGame[]): void;
+
+	presentFriendRequestCreatorFromViewControllerError(viewController: UIViewController): boolean;
 
 	registerListener(listener: GKLocalPlayerListener): void;
 
@@ -1045,6 +1076,8 @@ declare class GKMatchmakerViewController extends UINavigationController {
 
 	static new(): GKMatchmakerViewController; // inherited from NSObject
 
+	canStartWithMinimumPlayers: boolean;
+
 	defaultInvitationMessage: string;
 
 	hosted: boolean;
@@ -1099,7 +1132,9 @@ declare const enum GKMatchmakingMode {
 
 	NearbyOnly = 1,
 
-	AutomatchOnly = 2
+	AutomatchOnly = 2,
+
+	InviteOnly = 3
 }
 
 declare class GKNotificationBanner extends NSObject {
@@ -1600,7 +1635,7 @@ declare class GKTurnBasedMatch extends NSObject {
 
 	endTurnWithNextParticipantsTurnTimeoutMatchDataCompletionHandler(nextParticipants: NSArray<GKTurnBasedParticipant> | GKTurnBasedParticipant[], timeout: number, matchData: NSData, completionHandler: (p1: NSError) => void): void;
 
-	loadMatchDataWithCompletionHandler(completionHandler: (p1: NSData, p2: NSError) => void): void;
+	loadMatchDataWithCompletionHandler(completionHandler: (p1: NSData) => void): void;
 
 	participantQuitInTurnWithOutcomeNextParticipantMatchDataCompletionHandler(matchOutcome: GKTurnBasedMatchOutcome, nextParticipant: GKTurnBasedParticipant, matchData: NSData, completionHandler: (p1: NSError) => void): void;
 
@@ -1664,6 +1699,8 @@ declare class GKTurnBasedMatchmakerViewController extends UINavigationController
 	static alloc(): GKTurnBasedMatchmakerViewController; // inherited from NSObject
 
 	static new(): GKTurnBasedMatchmakerViewController; // inherited from NSObject
+
+	matchmakingMode: GKMatchmakingMode;
 
 	showExistingMatches: boolean;
 

@@ -6,7 +6,7 @@ import './globals';
 import * as coreUIModules from './ui/index';
 if (__UI_USE_EXTERNAL_RENDERER__) {
 } else {
-    global.registerModule('@nativescript/core/ui', () => coreUIModules);
+	global.registerModule('@nativescript/core/ui', () => coreUIModules);
 }
 
 // global.registerModule('text/formatted-string', () => require('./text/formatted-string'));

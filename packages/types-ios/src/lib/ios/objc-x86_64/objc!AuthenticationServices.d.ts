@@ -116,6 +116,8 @@ declare class ASAuthorization extends NSObject {
 	readonly provider: ASAuthorizationProvider;
 }
 
+declare function ASAuthorizationAllSupportedPublicKeyCredentialDescriptorTransports(): NSArray<string>;
+
 declare class ASAuthorizationAppleIDButton extends UIControl {
 
 	static alloc(): ASAuthorizationAppleIDButton; // inherited from NSObject
@@ -353,7 +355,9 @@ declare const enum ASAuthorizationError {
 
 	NotHandled = 1003,
 
-	Failed = 1004
+	Failed = 1004,
+
+	NotInteractive = 1005
 }
 
 declare var ASAuthorizationErrorDomain: string;
@@ -431,6 +435,356 @@ declare class ASAuthorizationPasswordRequest extends ASAuthorizationRequest {
 	static new(): ASAuthorizationPasswordRequest; // inherited from NSObject
 }
 
+declare class ASAuthorizationPlatformPublicKeyCredentialAssertion extends NSObject implements ASAuthorizationPublicKeyCredentialAssertion {
+
+	static alloc(): ASAuthorizationPlatformPublicKeyCredentialAssertion; // inherited from NSObject
+
+	static new(): ASAuthorizationPlatformPublicKeyCredentialAssertion; // inherited from NSObject
+
+	readonly credentialID: NSData; // inherited from ASPublicKeyCredential
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly rawAuthenticatorData: NSData; // inherited from ASAuthorizationPublicKeyCredentialAssertion
+
+	readonly rawClientDataJSON: NSData; // inherited from ASPublicKeyCredential
+
+	readonly signature: NSData; // inherited from ASAuthorizationPublicKeyCredentialAssertion
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly userID: NSData; // inherited from ASAuthorizationPublicKeyCredentialAssertion
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASAuthorizationPlatformPublicKeyCredentialAssertionRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialAssertionRequest {
+
+	static alloc(): ASAuthorizationPlatformPublicKeyCredentialAssertionRequest; // inherited from NSObject
+
+	static new(): ASAuthorizationPlatformPublicKeyCredentialAssertionRequest; // inherited from NSObject
+
+	allowedCredentials: NSArray<ASAuthorizationPublicKeyCredentialDescriptor>; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
+
+	challenge: NSData; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	relyingPartyIdentifier: string; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	userVerificationPreference: string; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASAuthorizationPlatformPublicKeyCredentialDescriptor extends NSObject implements ASAuthorizationPublicKeyCredentialDescriptor {
+
+	static alloc(): ASAuthorizationPlatformPublicKeyCredentialDescriptor; // inherited from NSObject
+
+	static new(): ASAuthorizationPlatformPublicKeyCredentialDescriptor; // inherited from NSObject
+
+	credentialID: NSData; // inherited from ASAuthorizationPublicKeyCredentialDescriptor
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { credentialID: NSData; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithCredentialID(credentialID: NSData): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASAuthorizationPlatformPublicKeyCredentialProvider extends NSObject implements ASAuthorizationProvider {
+
+	static alloc(): ASAuthorizationPlatformPublicKeyCredentialProvider; // inherited from NSObject
+
+	static new(): ASAuthorizationPlatformPublicKeyCredentialProvider; // inherited from NSObject
+
+	readonly relyingPartyIdentifier: string;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { relyingPartyIdentifier: string; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	createCredentialAssertionRequestWithChallenge(challenge: NSData): ASAuthorizationPlatformPublicKeyCredentialAssertionRequest;
+
+	createCredentialRegistrationRequestWithChallengeNameUserID(challenge: NSData, name: string, userID: NSData): ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest;
+
+	initWithRelyingPartyIdentifier(relyingPartyIdentifier: string): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASAuthorizationPlatformPublicKeyCredentialRegistration extends NSObject implements ASAuthorizationPublicKeyCredentialRegistration {
+
+	static alloc(): ASAuthorizationPlatformPublicKeyCredentialRegistration; // inherited from NSObject
+
+	static new(): ASAuthorizationPlatformPublicKeyCredentialRegistration; // inherited from NSObject
+
+	readonly credentialID: NSData; // inherited from ASPublicKeyCredential
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly rawAttestationObject: NSData; // inherited from ASAuthorizationPublicKeyCredentialRegistration
+
+	readonly rawClientDataJSON: NSData; // inherited from ASPublicKeyCredential
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialRegistrationRequest {
+
+	static alloc(): ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest; // inherited from NSObject
+
+	static new(): ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest; // inherited from NSObject
+
+	attestationPreference: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	challenge: NSData; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	displayName: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	name: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	readonly relyingPartyIdentifier: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	userID: NSData; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	userVerificationPreference: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
 interface ASAuthorizationProvider extends NSObjectProtocol {
 }
 declare var ASAuthorizationProvider: {
@@ -472,6 +826,8 @@ declare class ASAuthorizationProviderExtensionAuthorizationRequest extends NSObj
 
 	complete(): void;
 
+	completeWithAuthorizationResult(authorizationResult: ASAuthorizationProviderExtensionAuthorizationResult): void;
+
 	completeWithError(error: NSError): void;
 
 	completeWithHTTPAuthorizationHeaders(httpAuthorizationHeaders: NSDictionary<string, string>): void;
@@ -493,6 +849,139 @@ declare var ASAuthorizationProviderExtensionAuthorizationRequestHandler: {
 
 	prototype: ASAuthorizationProviderExtensionAuthorizationRequestHandler;
 };
+
+declare class ASAuthorizationProviderExtensionAuthorizationResult extends NSObject {
+
+	static alloc(): ASAuthorizationProviderExtensionAuthorizationResult; // inherited from NSObject
+
+	static new(): ASAuthorizationProviderExtensionAuthorizationResult; // inherited from NSObject
+
+	httpAuthorizationHeaders: NSDictionary<string, string>;
+
+	httpBody: NSData;
+
+	httpResponse: NSHTTPURLResponse;
+
+	privateKeys: NSArray<any>;
+
+	constructor(o: { HTTPAuthorizationHeaders: NSDictionary<string, string>; });
+
+	constructor(o: { HTTPResponse: NSHTTPURLResponse; httpBody: NSData; });
+
+	initWithHTTPAuthorizationHeaders(httpAuthorizationHeaders: NSDictionary<string, string>): this;
+
+	initWithHTTPResponseHttpBody(httpResponse: NSHTTPURLResponse, httpBody: NSData): this;
+}
+
+interface ASAuthorizationPublicKeyCredentialAssertion extends ASPublicKeyCredential {
+
+	rawAuthenticatorData: NSData;
+
+	signature: NSData;
+
+	userID: NSData;
+}
+declare var ASAuthorizationPublicKeyCredentialAssertion: {
+
+	prototype: ASAuthorizationPublicKeyCredentialAssertion;
+};
+
+interface ASAuthorizationPublicKeyCredentialAssertionRequest extends NSCopying, NSObjectProtocol, NSSecureCoding {
+
+	allowedCredentials: NSArray<ASAuthorizationPublicKeyCredentialDescriptor>;
+
+	challenge: NSData;
+
+	relyingPartyIdentifier: string;
+
+	userVerificationPreference: string;
+}
+declare var ASAuthorizationPublicKeyCredentialAssertionRequest: {
+
+	prototype: ASAuthorizationPublicKeyCredentialAssertionRequest;
+};
+
+declare var ASAuthorizationPublicKeyCredentialAttestationKindDirect: string;
+
+declare var ASAuthorizationPublicKeyCredentialAttestationKindEnterprise: string;
+
+declare var ASAuthorizationPublicKeyCredentialAttestationKindIndirect: string;
+
+declare var ASAuthorizationPublicKeyCredentialAttestationKindNone: string;
+
+interface ASAuthorizationPublicKeyCredentialDescriptor extends NSCopying, NSObjectProtocol, NSSecureCoding {
+
+	credentialID: NSData;
+}
+declare var ASAuthorizationPublicKeyCredentialDescriptor: {
+
+	prototype: ASAuthorizationPublicKeyCredentialDescriptor;
+};
+
+declare class ASAuthorizationPublicKeyCredentialParameters extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): ASAuthorizationPublicKeyCredentialParameters; // inherited from NSObject
+
+	static new(): ASAuthorizationPublicKeyCredentialParameters; // inherited from NSObject
+
+	readonly algorithm: number;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { algorithm: number; });
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithAlgorithm(algorithm: number): this;
+
+	initWithCoder(coder: NSCoder): this;
+}
+
+interface ASAuthorizationPublicKeyCredentialRegistration extends ASPublicKeyCredential {
+
+	rawAttestationObject: NSData;
+}
+declare var ASAuthorizationPublicKeyCredentialRegistration: {
+
+	prototype: ASAuthorizationPublicKeyCredentialRegistration;
+};
+
+interface ASAuthorizationPublicKeyCredentialRegistrationRequest extends NSCopying, NSObjectProtocol, NSSecureCoding {
+
+	attestationPreference: string;
+
+	challenge: NSData;
+
+	displayName: string;
+
+	name: string;
+
+	relyingPartyIdentifier: string;
+
+	userID: NSData;
+
+	userVerificationPreference: string;
+}
+declare var ASAuthorizationPublicKeyCredentialRegistrationRequest: {
+
+	prototype: ASAuthorizationPublicKeyCredentialRegistrationRequest;
+};
+
+declare var ASAuthorizationPublicKeyCredentialResidentKeyPreferenceDiscouraged: string;
+
+declare var ASAuthorizationPublicKeyCredentialResidentKeyPreferencePreferred: string;
+
+declare var ASAuthorizationPublicKeyCredentialResidentKeyPreferenceRequired: string;
+
+declare var ASAuthorizationPublicKeyCredentialUserVerificationPreferenceDiscouraged: string;
+
+declare var ASAuthorizationPublicKeyCredentialUserVerificationPreferencePreferred: string;
+
+declare var ASAuthorizationPublicKeyCredentialUserVerificationPreferenceRequired: string;
 
 declare class ASAuthorizationRequest extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -517,6 +1006,370 @@ declare var ASAuthorizationScopeEmail: string;
 
 declare var ASAuthorizationScopeFullName: string;
 
+declare class ASAuthorizationSecurityKeyPublicKeyCredentialAssertion extends NSObject implements ASAuthorizationPublicKeyCredentialAssertion {
+
+	static alloc(): ASAuthorizationSecurityKeyPublicKeyCredentialAssertion; // inherited from NSObject
+
+	static new(): ASAuthorizationSecurityKeyPublicKeyCredentialAssertion; // inherited from NSObject
+
+	readonly credentialID: NSData; // inherited from ASPublicKeyCredential
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly rawAuthenticatorData: NSData; // inherited from ASAuthorizationPublicKeyCredentialAssertion
+
+	readonly rawClientDataJSON: NSData; // inherited from ASPublicKeyCredential
+
+	readonly signature: NSData; // inherited from ASAuthorizationPublicKeyCredentialAssertion
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly userID: NSData; // inherited from ASAuthorizationPublicKeyCredentialAssertion
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialAssertionRequest {
+
+	static alloc(): ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest; // inherited from NSObject
+
+	static new(): ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest; // inherited from NSObject
+
+	allowedCredentials: NSArray<ASAuthorizationPublicKeyCredentialDescriptor>; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
+
+	challenge: NSData; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	relyingPartyIdentifier: string; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	userVerificationPreference: string; // inherited from ASAuthorizationPublicKeyCredentialAssertionRequest
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASAuthorizationSecurityKeyPublicKeyCredentialDescriptor extends NSObject implements ASAuthorizationPublicKeyCredentialDescriptor {
+
+	static alloc(): ASAuthorizationSecurityKeyPublicKeyCredentialDescriptor; // inherited from NSObject
+
+	static new(): ASAuthorizationSecurityKeyPublicKeyCredentialDescriptor; // inherited from NSObject
+
+	transports: NSArray<string>;
+
+	credentialID: NSData; // inherited from ASAuthorizationPublicKeyCredentialDescriptor
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { credentialID: NSData; transports: NSArray<string> | string[]; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithCredentialIDTransports(credentialID: NSData, allowedTransports: NSArray<string> | string[]): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare var ASAuthorizationSecurityKeyPublicKeyCredentialDescriptorTransportBluetooth: string;
+
+declare var ASAuthorizationSecurityKeyPublicKeyCredentialDescriptorTransportNFC: string;
+
+declare var ASAuthorizationSecurityKeyPublicKeyCredentialDescriptorTransportUSB: string;
+
+declare class ASAuthorizationSecurityKeyPublicKeyCredentialProvider extends NSObject implements ASAuthorizationProvider {
+
+	static alloc(): ASAuthorizationSecurityKeyPublicKeyCredentialProvider; // inherited from NSObject
+
+	static new(): ASAuthorizationSecurityKeyPublicKeyCredentialProvider; // inherited from NSObject
+
+	readonly relyingPartyIdentifier: string;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	constructor(o: { relyingPartyIdentifier: string; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	createCredentialAssertionRequestWithChallenge(challenge: NSData): ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest;
+
+	createCredentialRegistrationRequestWithChallengeDisplayNameNameUserID(challenge: NSData, displayName: string, name: string, userID: NSData): ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest;
+
+	initWithRelyingPartyIdentifier(relyingPartyIdentifier: string): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASAuthorizationSecurityKeyPublicKeyCredentialRegistration extends NSObject implements ASAuthorizationPublicKeyCredentialRegistration {
+
+	static alloc(): ASAuthorizationSecurityKeyPublicKeyCredentialRegistration; // inherited from NSObject
+
+	static new(): ASAuthorizationSecurityKeyPublicKeyCredentialRegistration; // inherited from NSObject
+
+	readonly credentialID: NSData; // inherited from ASPublicKeyCredential
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly rawAttestationObject: NSData; // inherited from ASAuthorizationPublicKeyCredentialRegistration
+
+	readonly rawClientDataJSON: NSData; // inherited from ASPublicKeyCredential
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+declare class ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest extends ASAuthorizationRequest implements ASAuthorizationPublicKeyCredentialRegistrationRequest {
+
+	static alloc(): ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest; // inherited from NSObject
+
+	static new(): ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest; // inherited from NSObject
+
+	credentialParameters: NSArray<ASAuthorizationPublicKeyCredentialParameters>;
+
+	excludedCredentials: NSArray<ASAuthorizationSecurityKeyPublicKeyCredentialDescriptor>;
+
+	residentKeyPreference: string;
+
+	attestationPreference: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	challenge: NSData; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	displayName: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	name: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	readonly relyingPartyIdentifier: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	userID: NSData; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	userVerificationPreference: string; // inherited from ASAuthorizationPublicKeyCredentialRegistrationRequest
+
+	readonly  // inherited from NSObjectProtocol
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
 declare class ASAuthorizationSingleSignOnCredential extends NSObject implements ASAuthorizationCredential {
 
 	static alloc(): ASAuthorizationSingleSignOnCredential; // inherited from NSObject
@@ -530,6 +1383,8 @@ declare class ASAuthorizationSingleSignOnCredential extends NSObject implements 
 	readonly authorizedScopes: NSArray<string>;
 
 	readonly identityToken: NSData;
+
+	readonly privateKeys: NSArray<any>;
 
 	readonly state: string;
 
@@ -634,7 +1489,13 @@ declare class ASAuthorizationSingleSignOnRequest extends ASAuthorizationOpenIDRe
 	static new(): ASAuthorizationSingleSignOnRequest; // inherited from NSObject
 
 	authorizationOptions: NSArray<NSURLQueryItem>;
+
+	userInterfaceEnabled: boolean;
 }
+
+declare var ASCOSEAlgorithmIdentifierES256: number;
+
+declare var ASCOSEEllipticCurveIdentifierP256: number;
 
 declare class ASCredentialIdentityStore extends NSObject {
 
@@ -843,6 +1704,17 @@ declare class ASPasswordCredentialIdentity extends NSObject implements NSCopying
 
 	initWithServiceIdentifierUserRecordIdentifier(serviceIdentifier: ASCredentialServiceIdentifier, user: string, recordIdentifier: string): this;
 }
+
+interface ASPublicKeyCredential extends ASAuthorizationCredential {
+
+	credentialID: NSData;
+
+	rawClientDataJSON: NSData;
+}
+declare var ASPublicKeyCredential: {
+
+	prototype: ASPublicKeyCredential;
+};
 
 declare const enum ASUserDetectionStatus {
 

@@ -56,6 +56,13 @@ program
 			env['env'] = options.env;
 		}
 
+		env['watch'] ??= options.watch;
+
+		// if --env.config is passed, we'll set an environment
+		// variable to it's value so that the config Util
+		// reads from the correct config file.
+		process.env.NATIVESCRIPT_CONFIG_NAME ??= env['config'];
+
 		const configPath = (() => {
 			if (options.config) {
 				return path.resolve(options.config);
@@ -98,6 +105,9 @@ program
 			}
 
 			if (stats) {
+				// Set the process exit code depending on errors
+				process.exitCode = stats.hasErrors() ? 1 : 0;
+
 				console.log(
 					stats.toString({
 						chunks: false,
@@ -118,5 +128,7 @@ program
 			compiler.run(webpackCompilationCallback);
 		}
 	});
+
+program.version(require('../../package.json').version, '-v, --version');
 
 program.parse(process.argv);

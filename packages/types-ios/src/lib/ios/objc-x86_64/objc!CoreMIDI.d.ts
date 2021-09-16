@@ -388,7 +388,9 @@ declare const enum MIDIMessageType {
 
 	kMIDIMessageTypeChannelVoice2 = 4,
 
-	kMIDIMessageTypeData128 = 5
+	kMIDIMessageTypeData128 = 5,
+
+	kMIDIMessageTypeUnknownF = 15
 }
 
 interface MIDIMessage_128 {
@@ -498,6 +500,17 @@ declare class MIDINetworkSession extends NSObject {
 	sourceEndpoint(): number;
 }
 
+declare const enum MIDINoteAttribute {
+
+	kMIDINoteAttributeNone = 0,
+
+	kMIDINoteAttributeManufacturerSpecific = 1,
+
+	kMIDINoteAttributeProfileSpecific = 2,
+
+	kMIDINoteAttributePitch = 3
+}
+
 interface MIDINotification {
 	messageID: MIDINotificationMessageID;
 	messageSize: number;
@@ -602,11 +615,23 @@ declare function MIDIPacketListAdd(pktlist: interop.Pointer | interop.Reference<
 
 declare function MIDIPacketListInit(pktlist: interop.Pointer | interop.Reference<MIDIPacketList>): interop.Pointer | interop.Reference<MIDIPacket>;
 
+declare const enum MIDIPerNoteManagementOptions {
+
+	kMIDIPerNoteManagementReset = 1,
+
+	kMIDIPerNoteManagementDetach = 2
+}
+
 declare function MIDIPortConnectSource(port: number, source: number, connRefCon: interop.Pointer | interop.Reference<any>): number;
 
 declare function MIDIPortDisconnectSource(port: number, source: number): number;
 
 declare function MIDIPortDispose(port: number): number;
+
+declare const enum MIDIProgramChangeOptions {
+
+	kMIDIProgramChangeBankValid = 1
+}
 
 declare const enum MIDIProtocolID {
 
@@ -647,7 +672,11 @@ declare const enum MIDISysExStatus {
 
 	kMIDISysExStatusContinue = 2,
 
-	kMIDISysExStatusEnd = 3
+	kMIDISysExStatusEnd = 3,
+
+	kMIDISysExStatusMixedDataSetHeader = 8,
+
+	kMIDISysExStatusMixedDataSetPayload = 9
 }
 
 interface MIDISysexSendRequest {
@@ -684,6 +713,8 @@ declare const enum MIDISystemStatus {
 	kMIDIStatusStop = 252,
 
 	kMIDIStatusActiveSending = 254,
+
+	kMIDIStatusActiveSensing = 254,
 
 	kMIDIStatusSystemReset = 255
 }
@@ -775,6 +806,15 @@ declare const enum MIDITransformType {
 	kMIDITransform_MapValue = 12
 }
 
+declare const enum MIDIUtilityStatus {
+
+	kMIDIUtilityStatusNOOP = 0,
+
+	kMIDIUtilityStatusJitterReductionClock = 1,
+
+	kMIDIUtilityStatusJitterReductionTimestamp = 2
+}
+
 interface MIDIValueMap {
 	value: interop.Reference<number>;
 }
@@ -795,14 +835,6 @@ declare const kMIDINoConnection: number;
 declare const kMIDINoCurrentSetup: number;
 
 declare const kMIDINotPermitted: number;
-
-declare const kMIDINoteAttributeManufacturerSpecific: number;
-
-declare const kMIDINoteAttributeNone: number;
-
-declare const kMIDINoteAttributePitch: number;
-
-declare const kMIDINoteAttributeProfileSpecific: number;
 
 declare const kMIDIObjectNotFound: number;
 

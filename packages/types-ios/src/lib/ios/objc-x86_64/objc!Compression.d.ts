@@ -9,6 +9,8 @@ declare const enum compression_algorithm {
 
 	COMPRESSION_LZ4_RAW = 257,
 
+	COMPRESSION_BROTLI = 2818,
+
 	COMPRESSION_LZFSE = 2049
 }
 

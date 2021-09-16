@@ -1,10 +1,12 @@
 import { ContextExclusionPlugin } from 'webpack';
 import Config from 'webpack-chain';
-import { join } from 'path';
+import { dirname, join } from 'path';
+import { writeFileSync, mkdirSync } from 'fs';
 
 import VirtualModulesPlugin from 'webpack-virtual-modules';
 import { getEntryDirPath } from './platform';
 import dedent from 'ts-dedent';
+import { getProjectFilePath } from './project';
 
 export function addVirtualEntry(
 	config: Config,
@@ -35,6 +37,20 @@ export function addVirtualModule(
 	const options = {
 		[virtualEntryPath]: dedent(contents),
 	};
+
+	// AngularCompilerPlugin does not support virtual modules
+	// https://github.com/sysgears/webpack-virtual-modules/issues/96
+	// This is only an issue on v11, which has experimental webpack 5 support
+	// AngularCompilerPlugin gets replaced by AngularWebpackPlugin on v12
+	// todo: we can remove this special handling once we no longer support v11
+	if (config.plugins.has('AngularCompilerPlugin')) {
+		const compatEntryPath = getProjectFilePath(
+			join('node_modules', '.nativescript', `${name}`)
+		);
+		mkdirSync(dirname(compatEntryPath), { recursive: true });
+		writeFileSync(compatEntryPath, options[virtualEntryPath]);
+		return compatEntryPath;
+	}
 
 	if (config.plugins.has('VirtualModulesPlugin')) {
 		config.plugin('VirtualModulesPlugin').tap((args) => {

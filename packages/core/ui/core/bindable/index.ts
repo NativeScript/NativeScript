@@ -367,7 +367,7 @@ export class Binding {
 
 			newValue = expressionValue;
 		}
-		
+
 
 		this.updateSource(newValue);
 	}
@@ -387,7 +387,7 @@ export class Binding {
 							addedProps.push(prop);
 						}
 					}
-	
+
 					this.prepareContextForExpression(context, expression, addedProps);
 					model[contextKey] = context;
 					const result = exp.getValue(model, isBackConvert, changedModel ? changedModel : model);
@@ -397,14 +397,14 @@ export class Binding {
 						delete context[addedProps[i]];
 					}
 					addedProps.length = 0;
-	
+
 					return result;
 				}
-	
+
 				return new Error(expression + ' is not a valid expression.');
 			} catch (e) {
 				const errorMessage = 'Run-time error occured in file: ' + e.sourceURL + ' at line: ' + e.line + ' and column: ' + e.column;
-	
+
 				return new Error(errorMessage);
 			}
 		}

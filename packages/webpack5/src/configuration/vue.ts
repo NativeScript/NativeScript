@@ -32,9 +32,24 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		.tap((options) => {
 			return {
 				...options,
-				compiler: require('nativescript-vue-template-compiler'),
+				compiler: getTemplateCompiler(),
 			};
 		});
+
+	// apply vue stylePostLoader to inject component scope into the css
+	// this would usually be automatic, however in NS we don't use the
+	// css-loader, so VueLoader doesn't inject the rule at all.
+	config.module
+		.rule('css')
+		.use('vue-css-loader')
+		.after('css2json-loader')
+		.loader('vue-loader/lib/loaders/stylePostLoader.js');
+
+	config.module
+		.rule('scss')
+		.use('vue-css-loader')
+		.after('css2json-loader')
+		.loader('vue-loader/lib/loaders/stylePostLoader.js');
 
 	// set up ts support in vue files
 	config.module
@@ -73,6 +88,15 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	// add an alias for vue, since some plugins may try to import it
 	config.resolve.alias.set('vue', 'nativescript-vue');
 
+	// todo: re-visit later, disabling by default now
+	// config.plugin('DefinePlugin').tap((args) => {
+	// 	args[0] = merge(args[0], {
+	// 		__UI_USE_EXTERNAL_RENDERER__: true,
+	// 	});
+
+	// 	return args;
+	// });
+
 	return config;
 }
 
@@ -92,5 +116,13 @@ function patchVueLoaderForHMR() {
 		delete require.cache[vueLoaderPath];
 	} catch (err) {
 		error('Failed to patch VueLoader - HMR may not work properly!');
+	}
+}
+
+function getTemplateCompiler() {
+	try {
+		return require('nativescript-vue-template-compiler');
+	} catch (err) {
+		// ignore
 	}
 }

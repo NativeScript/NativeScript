@@ -7,12 +7,15 @@ exports[`base configuration for android 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
     ignored: [
       '__jest__/platforms/**',
-      '__jest__/App_Resources/**'
+      '__jest__/custom_app_resources/**'
     ]
   },
   ignoreWarnings: [
@@ -105,29 +108,25 @@ exports[`base configuration for android 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
             loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
           }
         ]
       },
@@ -188,6 +187,7 @@ exports[`base configuration for android 1`] = `
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -223,6 +223,7 @@ exports[`base configuration for android 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -246,6 +247,8 @@ exports[`base configuration for android 1`] = `
         __NS_ENV_VERBOSE__: false,
         __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
+        __UI_USE_XML_PARSER__: true,
+        __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: true,
         __IOS__: false,
         'global.isAndroid': true,
@@ -263,7 +266,9 @@ exports[`base configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           },
           {
@@ -272,7 +277,9 @@ exports[`base configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           },
           {
@@ -281,7 +288,9 @@ exports[`base configuration for android 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           }
         ]
@@ -293,6 +302,7 @@ exports[`base configuration for android 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
+      '@nativescript/core/bundle-entry-points.js',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -308,12 +318,15 @@ exports[`base configuration for ios 1`] = `
     'package.json',
     '~/package.json'
   ],
+  externalsPresets: {
+    node: false
+  },
   devtool: 'inline-source-map',
   target: 'node',
   watchOptions: {
     ignored: [
       '__jest__/platforms/**',
-      '__jest__/App_Resources/**'
+      '__jest__/custom_app_resources/**'
     ]
   },
   ignoreWarnings: [
@@ -406,29 +419,25 @@ exports[`base configuration for ios 1`] = `
         test: /\\\\.js$/,
         exclude: [
           /node_modules/
-        ],
-        use: [
-          /* config.module.rule('js').use('babel-loader') */
-          {
-            loader: 'babel-loader',
-            options: {
-              generatorOpts: {
-                compact: false
-              }
-            }
-          }
         ]
       },
       /* config.module.rule('workers') */
       {
         test: /\\\\.(js|ts)$/,
-        exclude: [
-          /node_modules/
-        ],
         use: [
           /* config.module.rule('workers').use('nativescript-worker-loader') */
           {
             loader: 'nativescript-worker-loader'
+          }
+        ]
+      },
+      /* config.module.rule('xml') */
+      {
+        test: /\\\\.xml$/,
+        use: [
+          /* config.module.rule('xml').use('xml-namespace-loader') */
+          {
+            loader: 'xml-namespace-loader'
           }
         ]
       },
@@ -489,6 +498,7 @@ exports[`base configuration for ios 1`] = `
     ]
   },
   optimization: {
+    runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
         defaultVendor: {
@@ -524,6 +534,7 @@ exports[`base configuration for ios 1`] = `
     /* config.plugin('ForkTsCheckerWebpackPlugin') */
     new ForkTsCheckerWebpackPlugin(
       {
+        async: false,
         typescript: {
           memoryLimit: 4096
         }
@@ -547,6 +558,8 @@ exports[`base configuration for ios 1`] = `
         __NS_ENV_VERBOSE__: false,
         __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
+        __UI_USE_XML_PARSER__: true,
+        __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: false,
         __IOS__: true,
         'global.isAndroid': false,
@@ -564,7 +577,9 @@ exports[`base configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           },
           {
@@ -573,7 +588,9 @@ exports[`base configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           },
           {
@@ -582,7 +599,9 @@ exports[`base configuration for ios 1`] = `
             noErrorOnMissing: true,
             globOptions: {
               dot: false,
-              ignore: []
+              ignore: [
+                '**/custom_app_resources/**'
+              ]
             }
           }
         ]
@@ -594,6 +613,7 @@ exports[`base configuration for ios 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
+      '@nativescript/core/bundle-entry-points.js',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [

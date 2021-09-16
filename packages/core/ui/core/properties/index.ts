@@ -1,4 +1,3 @@
-
 import { ViewBase } from '../view-base';
 
 // Types.

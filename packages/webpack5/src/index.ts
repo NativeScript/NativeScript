@@ -1,3 +1,13 @@
+// Make sure the Acorn Parser (used by Webpack) can parse ES-Stage3 code
+// This must be at the top BEFORE webpack is loaded so that we can extend
+// and replace the parser before webpack uses it
+// Based on the issue: https://github.com/webpack/webpack/issues/10216
+import stage3 from 'acorn-stage3';
+
+// we use require to be able to override the exports
+const acorn = require('acorn');
+acorn.Parser = acorn.Parser.extend(stage3);
+
 import { highlight } from 'cli-highlight';
 import { merge } from 'webpack-merge';
 import Config from 'webpack-chain';
@@ -25,6 +35,7 @@ export interface IWebpackEnv {
 	// for custom platforms
 	platform?: string;
 
+	sourceMap?: string | boolean;
 	production?: boolean;
 	report?: boolean;
 	hmr?: boolean;
@@ -76,6 +87,11 @@ export const defaultConfigs = configs;
  * Utilities to simplify various tasks
  */
 export const Utils = helpers;
+
+/**
+ * webpack-merge exported for convenience. Useful for merging configuration objects
+ */
+export { merge };
 
 /**
  * Initialize @nativescript/webpack with the webpack env.

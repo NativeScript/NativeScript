@@ -48,6 +48,12 @@ export namespace CoreTypes {
 		export const password = 'password';
 		export const none = 'none';
 	}
+	export type AutofillType = 'username' | 'password' | 'none' | string;
+	export module AutofillType {
+		export const username = 'username';
+		export const password = 'password';
+		export const none = 'none';
+	}
 
 	export type ReturnKeyButtonType = 'done' | 'next' | 'go' | 'search' | 'send';
 	export module ReturnKeyType {

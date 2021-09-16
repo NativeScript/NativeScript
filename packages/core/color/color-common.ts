@@ -11,7 +11,7 @@ export class Color implements definition.Color {
 
 	constructor(color: number);
 	constructor(color: string);
-	constructor(a: number, r: number, g: number, b: number, type?:'rbg' | 'hsl' | 'hsv');
+	constructor(a: number, r: number, g: number, b: number, type?: 'rbg' | 'hsl' | 'hsv');
 	constructor(...args) {
 		if (args.length === 1) {
 			const arg = args[0];
@@ -28,8 +28,10 @@ export class Color implements definition.Color {
 					const argb = knownColors.getKnownColor(lowered);
 					this._name = arg;
 					this._argb = argb;
-				} else if (arg[0] === SHARP) {
-					// The parameter is a "#AARRGGBB" formatted string
+				} else if (arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
+					// we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
+					// strange that it would not be. And if it is not a thrown error seems best
+					// The parameter is a "#RRGGBBAA" formatted string
 					this._argb = this._argbFromString(arg);
 				} else {
 					throw new Error('Invalid color: ' + arg);
@@ -48,7 +50,7 @@ export class Color implements definition.Color {
 			}
 		} else if (args.length >= 4) {
 			const a = args[0];
-			switch(args[4]) {
+			switch (args[4]) {
 				case 'hsl': {
 					const { r, g, b } = hslToRgb(args[1], args[2], args[3]);
 					this._argb = (a & 0xff) * 0x01000000 + (r & 0xff) * 0x00010000 + (g & 0xff) * 0x00000100 + (b & 0xff) * 0x00000001;
@@ -86,9 +88,9 @@ export class Color implements definition.Color {
 	}
 
 	get hex(): string {
-		let result = SHARP + ('000000' + (this._argb & 0xFFFFFF).toString(16)).slice(-6);
+		let result = SHARP + ('000000' + (this._argb & 0xffffff).toString(16)).toUpperCase().slice(-6);
 		if (this.a !== 0xff) {
-			return result += ('00' + (this.a).toString(16)).slice(-2);
+			return (result += ('00' + this.a.toString(16).toUpperCase()).slice(-2));
 		}
 		return result;
 	}
@@ -504,10 +506,9 @@ function hue2rgb(p, q, t) {
 // *Assumes:* h is contained in  [0, 360] and s and l are contained  [0, 100]
 // *Returns:* { r, g, b } in the set [0, 255]
 function hslToRgb(h1, s1, l1) {
-
-    const h = (h1 % 360) / 360;
-    const s = s1 / 100;
-    const l = l1 / 100;
+	const h = (h1 % 360) / 360;
+	const s = s1 / 100;
+	const l = l1 / 100;
 	let r, g, b;
 	if (s === 0) {
 		r = g = b = l; // achromatic
@@ -559,20 +560,19 @@ function rgbToHsv(r, g, b) {
 // *Assumes:* h is contained in [0, 360] and s and v are contained [0, 100]
 // *Returns:* { r, g, b } in the set [0, 255]
 function hsvToRgb(h1, s1, v1) {
+	const h = ((h1 % 360) / 360) * 6;
+	const s = s1 / 100;
+	const v = v1 / 100;
 
-    const h = (h1 % 360) / 360 * 6;
-    const s = s1 / 100;
-    const v = v1 / 100;
+	var i = Math.floor(h),
+		f = h - i,
+		p = v * (1 - s),
+		q = v * (1 - f * s),
+		t = v * (1 - (1 - f) * s),
+		mod = i % 6,
+		r = [v, q, p, p, t, v][mod],
+		g = [t, v, v, q, p, p][mod],
+		b = [p, p, t, v, v, q][mod];
 
-    var i = Math.floor(h),
-        f = h - i,
-        p = v * (1 - s),
-        q = v * (1 - f * s),
-        t = v * (1 - (1 - f) * s),
-        mod = i % 6,
-        r = [v, q, p, p, t, v][mod],
-        g = [t, v, v, q, p, p][mod],
-        b = [p, p, t, v, v, q][mod];
-
-    return { r: r * 255, g: g * 255, b: b * 255 };
+	return { r: r * 255, g: g * 255, b: b * 255 };
 }

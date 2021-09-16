@@ -30,7 +30,6 @@ const INTENT_EXTRA = 'com.tns.activity';
 const ROOT_VIEW_ID_EXTRA = 'com.tns.activity.rootViewId';
 const FRAMEID = '_frameId';
 const CALLBACKS = '_callbacks';
-const HMR_REPLACE_TRANSITION = 'fade';
 
 const ownerSymbol = Symbol('_owner');
 const activityRootViewsMap = new Map<number, WeakRef<View>>();
@@ -147,8 +146,8 @@ export class Frame extends FrameBase {
 
 		// _onAttachedToWindow called from OS again after it was detach
 		// still happens with androidx.fragment:1.3.2
-		const activity = androidApplication.foregroundActivity;
-		if ((this._manager && this._manager.isDestroyed()) || !activity.getLifecycle().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
+		const activity = androidApplication.foregroundActivity || androidApplication.startActivity;
+		if ((this._manager && this._manager.isDestroyed()) || !activity.getLifecycle?.().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
 			return;
 		}
 
@@ -426,13 +425,7 @@ export class Frame extends FrameBase {
 		// layout pass so we will wait forever for transitionCompleted handler...
 		// https://github.com/NativeScript/NativeScript/issues/4895
 		let navigationTransition: NavigationTransition;
-		if (isReplace) {
-			animated = true;
-			navigationTransition = {
-				name: HMR_REPLACE_TRANSITION,
-				duration: 100,
-			};
-		} else if (this._currentEntry) {
+		if (this._currentEntry) {
 			navigationTransition = this._getNavigationTransition(newEntry.entry);
 		} else {
 			navigationTransition = null;
@@ -448,7 +441,7 @@ export class Frame extends FrameBase {
 		}
 
 		if (clearHistory || isReplace) {
-			transaction.replace(this.containerViewId, newFragment, newFragmentTag);
+		transaction.replace(this.containerViewId, newFragment, newFragmentTag);
 		} else {
 			transaction.add(this.containerViewId, newFragment, newFragmentTag);
 		}
@@ -1002,11 +995,11 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
 	@profile
 	public onDestroyView(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-		if (Trace.isEnabled()) {
-			Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
+			if (Trace.isEnabled()) {
+				Trace.write(`${fragment}.onDestroyView()`, Trace.categories.NativeLifecycle);
+			}
+			superFunc.call(fragment);
 		}
-		superFunc.call(fragment);
-	}
 
 	@profile
 	public onDestroy(fragment: androidx.fragment.app.Fragment, superFunc: Function): void {
@@ -1032,7 +1025,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 
 	@profile
 	public onPause(fragment: org.nativescript.widgets.FragmentBase, superFunc: Function): void {
-		superFunc.call(fragment);
+			superFunc.call(fragment);
 	}
 
 	@profile
@@ -1133,7 +1126,9 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			rootView._saveFragmentsState();
 		}
 
-		outState.putInt(ROOT_VIEW_ID_EXTRA, rootView._domId);
+		if (rootView) {
+			outState.putInt(ROOT_VIEW_ID_EXTRA, rootView._domId);
+		}
 	}
 
 	@profile
@@ -1213,12 +1208,18 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 				rootView._tearDownUI(true);
 			}
 
-			const exitArgs = {
-				eventName: application.exitEvent,
-				object: application.android,
-				android: activity,
-			};
-			application.notify(exitArgs);
+			// this may happen when the user changes the system theme
+			// In such case, isFinishing() is false (and isChangingConfigurations is true), and the app will start again (onCreate) with a savedInstanceState
+			// as a result, launchEvent will never be called
+			// possible alternative: always fire launchEvent and exitEvent, but pass extra flags to make it clear what kind of launch/destroy is happening
+			if (activity.isFinishing()) {
+				const exitArgs = {
+					eventName: application.exitEvent,
+					object: application.android,
+					android: activity,
+				};
+				application.notify(exitArgs);
+			}
 		} finally {
 			superFunc.call(activity);
 		}
