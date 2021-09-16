@@ -26,7 +26,7 @@ $ npm run setup
 $ npm start
 ```
 
-We love you and PR's 🤗 Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://github.com/NativeScript/management/blob/master/nativescript-governance.md) to become as involved as you want to be.
+We love you and your PR's 🤗. Please follow our [contributing guide](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md) and see [our code of governance](https://github.com/NativeScript/management/blob/master/nativescript-governance.md) to become as involved as you want to be.
 
 ## @nativescript/*
 
@@ -52,9 +52,9 @@ We love you and PR's 🤗 Please follow our [contributing guide](https://github.
 - [NativeScript on Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript)
 - [NativeScript documentation](https://docs.nativescript.org/)
 
-## Other framework source repositories
+## Other source repos
 
-Outside of the source centralized in this repo, the NativeScript framework consists of a number of components, all of which are open source available on GitHub. Here are the major ones:
+Outside of the source centralized in this repo, NativeScript consists of a few other source repos. Here are the major ones:
 
 - **[iOS runtime](https://github.com/NativeScript/ns-v8ios-runtime)**
 	- [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/@nativescript/ios) 

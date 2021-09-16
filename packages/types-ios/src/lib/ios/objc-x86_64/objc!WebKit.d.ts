@@ -128,6 +128,81 @@ declare const enum WKDataDetectorTypes {
 	SpotlightSuggestion = 64
 }
 
+declare class WKDownload extends NSObject implements NSProgressReporting {
+
+	static alloc(): WKDownload; // inherited from NSObject
+
+	static new(): WKDownload; // inherited from NSObject
+
+	delegate: WKDownloadDelegate;
+
+	readonly originalRequest: NSURLRequest;
+
+	readonly webView: WKWebView;
+
+	readonly debugDescription: string; // inherited from NSObjectProtocol
+
+	readonly description: string; // inherited from NSObjectProtocol
+
+	readonly hash: number; // inherited from NSObjectProtocol
+
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
+
+	readonly progress: NSProgress; // inherited from NSProgressReporting
+
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	readonly  // inherited from NSObjectProtocol
+
+	cancel(completionHandler: (p1: NSData) => void): void;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+}
+
+interface WKDownloadDelegate extends NSObjectProtocol {
+
+	downloadDecideDestinationUsingResponseSuggestedFilenameCompletionHandler(download: WKDownload, response: NSURLResponse, suggestedFilename: string, completionHandler: (p1: NSURL) => void): void;
+
+	downloadDidFailWithErrorResumeData?(download: WKDownload, error: NSError, resumeData: NSData): void;
+
+	downloadDidFinish?(download: WKDownload): void;
+
+	downloadDidReceiveAuthenticationChallengeCompletionHandler?(download: WKDownload, challenge: NSURLAuthenticationChallenge, completionHandler: (p1: NSURLSessionAuthChallengeDisposition, p2: NSURLCredential) => void): void;
+
+	downloadWillPerformHTTPRedirectionNewRequestDecisionHandler?(download: WKDownload, response: NSHTTPURLResponse, request: NSURLRequest, decisionHandler: (p1: WKDownloadRedirectPolicy) => void): void;
+}
+declare var WKDownloadDelegate: {
+
+	prototype: WKDownloadDelegate;
+};
+
+declare const enum WKDownloadRedirectPolicy {
+
+	Cancel = 0,
+
+	Allow = 1
+}
+
 declare const enum WKErrorCode {
 
 	Unknown = 1,
@@ -230,6 +305,35 @@ declare var WKHTTPCookieStoreObserver: {
 	prototype: WKHTTPCookieStoreObserver;
 };
 
+declare const enum WKMediaCaptureState {
+
+	None = 0,
+
+	Active = 1,
+
+	Muted = 2
+}
+
+declare const enum WKMediaCaptureType {
+
+	Camera = 0,
+
+	Microphone = 1,
+
+	CameraAndMicrophone = 2
+}
+
+declare const enum WKMediaPlaybackState {
+
+	None = 0,
+
+	Playing = 1,
+
+	Paused = 2,
+
+	Suspended = 3
+}
+
 declare class WKNavigation extends NSObject {
 
 	static alloc(): WKNavigation; // inherited from NSObject
@@ -249,6 +353,8 @@ declare class WKNavigationAction extends NSObject {
 
 	readonly request: NSURLRequest;
 
+	readonly shouldPerformDownload: boolean;
+
 	readonly sourceFrame: WKFrameInfo;
 
 	readonly targetFrame: WKFrameInfo;
@@ -258,7 +364,9 @@ declare const enum WKNavigationActionPolicy {
 
 	Cancel = 0,
 
-	Allow = 1
+	Allow = 1,
+
+	Download = 2
 }
 
 interface WKNavigationDelegate extends NSObjectProtocol {
@@ -285,6 +393,10 @@ interface WKNavigationDelegate extends NSObjectProtocol {
 
 	webViewDidStartProvisionalNavigation?(webView: WKWebView, navigation: WKNavigation): void;
 
+	webViewNavigationActionDidBecomeDownload?(webView: WKWebView, navigationAction: WKNavigationAction, download: WKDownload): void;
+
+	webViewNavigationResponseDidBecomeDownload?(webView: WKWebView, navigationResponse: WKNavigationResponse, download: WKDownload): void;
+
 	webViewWebContentProcessDidTerminate?(webView: WKWebView): void;
 }
 declare var WKNavigationDelegate: {
@@ -309,7 +421,9 @@ declare const enum WKNavigationResponsePolicy {
 
 	Cancel = 0,
 
-	Allow = 1
+	Allow = 1,
+
+	Download = 2
 }
 
 declare const enum WKNavigationType {
@@ -338,6 +452,15 @@ declare class WKPDFConfiguration extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
+declare const enum WKPermissionDecision {
+
+	Prompt = 0,
+
+	Grant = 1,
+
+	Deny = 2
+}
+
 declare class WKPreferences extends NSObject implements NSSecureCoding {
 
 	static alloc(): WKPreferences; // inherited from NSObject
@@ -351,6 +474,8 @@ declare class WKPreferences extends NSObject implements NSSecureCoding {
 	javaScriptEnabled: boolean;
 
 	minimumFontSize: number;
+
+	textInteractionEnabled: boolean;
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -491,6 +616,10 @@ interface WKUIDelegate extends NSObjectProtocol {
 	webViewDidClose?(webView: WKWebView): void;
 
 	webViewPreviewingViewControllerForElementDefaultActions?(webView: WKWebView, elementInfo: WKPreviewElementInfo, previewActions: NSArray<WKPreviewActionItem> | WKPreviewActionItem[]): UIViewController;
+
+	webViewRequestDeviceOrientationAndMotionPermissionForOriginInitiatedByFrameDecisionHandler?(webView: WKWebView, origin: WKSecurityOrigin, frame: WKFrameInfo, decisionHandler: (p1: WKPermissionDecision) => void): void;
+
+	webViewRequestMediaCapturePermissionForOriginInitiatedByFrameTypeDecisionHandler?(webView: WKWebView, origin: WKSecurityOrigin, frame: WKFrameInfo, type: WKMediaCaptureType, decisionHandler: (p1: WKPermissionDecision) => void): void;
 
 	webViewRunJavaScriptAlertPanelWithMessageInitiatedByFrameCompletionHandler?(webView: WKWebView, message: string, frame: WKFrameInfo, completionHandler: () => void): void;
 
@@ -634,6 +763,8 @@ declare class WKWebView extends UIView {
 
 	readonly backForwardList: WKBackForwardList;
 
+	readonly cameraCaptureState: WKMediaCaptureState;
+
 	readonly canGoBack: boolean;
 
 	readonly canGoForward: boolean;
@@ -648,9 +779,13 @@ declare class WKWebView extends UIView {
 
 	readonly hasOnlySecureContent: boolean;
 
+	interactionState: any;
+
 	readonly loading: boolean;
 
 	mediaType: string;
+
+	readonly microphoneCaptureState: WKMediaCaptureState;
 
 	navigationDelegate: WKNavigationDelegate;
 
@@ -660,11 +795,19 @@ declare class WKWebView extends UIView {
 
 	readonly serverTrust: any;
 
+	readonly themeColor: UIColor;
+
 	readonly title: string;
+
+	underPageBackgroundColor: UIColor;
 
 	constructor(o: { frame: CGRect; configuration: WKWebViewConfiguration; });
 
-	callAsyncJavaScriptArgumentsInFrameInContentWorldCompletionHandler(functionBody: string, _arguments: NSDictionary<string, any>, frame: WKFrameInfo, contentWorld: WKContentWorld, completionHandler: (p1: any, p2: NSError) => void): void;
+	callAsyncJavaScriptArgumentsInFrameInContentWorldCompletionHandler(functionBody: string, _arguments: NSDictionary<string, any>, frame: WKFrameInfo, contentWorld: WKContentWorld, completionHandler: (p1: number, p2: NSError) => void): void;
+
+	closeAllMediaPresentations(): void;
+
+	closeAllMediaPresentationsWithCompletionHandler(completionHandler: () => void): void;
 
 	createPDFWithConfigurationCompletionHandler(pdfConfiguration: WKPDFConfiguration, completionHandler: (p1: NSData, p2: NSError) => void): void;
 
@@ -686,17 +829,49 @@ declare class WKWebView extends UIView {
 
 	loadDataMIMETypeCharacterEncodingNameBaseURL(data: NSData, MIMEType: string, characterEncodingName: string, baseURL: NSURL): WKNavigation;
 
+	loadFileRequestAllowingReadAccessToURL(request: NSURLRequest, readAccessURL: NSURL): WKNavigation;
+
 	loadFileURLAllowingReadAccessToURL(URL: NSURL, readAccessURL: NSURL): WKNavigation;
 
 	loadHTMLStringBaseURL(string: string, baseURL: NSURL): WKNavigation;
 
 	loadRequest(request: NSURLRequest): WKNavigation;
 
+	loadSimulatedRequestResponseHTMLString(request: NSURLRequest, string: string): WKNavigation;
+
+	loadSimulatedRequestResponseResponseData(request: NSURLRequest, response: NSURLResponse, data: NSData): WKNavigation;
+
+	loadSimulatedRequestWithResponseHTMLString(request: NSURLRequest, string: string): WKNavigation;
+
+	loadSimulatedRequestWithResponseResponseData(request: NSURLRequest, response: NSURLResponse, data: NSData): WKNavigation;
+
+	pauseAllMediaPlayback(completionHandler: () => void): void;
+
+	pauseAllMediaPlaybackWithCompletionHandler(completionHandler: () => void): void;
+
 	reload(): WKNavigation;
 
 	reloadFromOrigin(): WKNavigation;
 
+	requestMediaPlaybackState(completionHandler: (p1: WKMediaPlaybackState) => void): void;
+
+	requestMediaPlaybackStateWithCompletionHandler(completionHandler: (p1: WKMediaPlaybackState) => void): void;
+
+	resumeAllMediaPlayback(completionHandler: () => void): void;
+
+	resumeDownloadFromResumeDataCompletionHandler(resumeData: NSData, completionHandler: (p1: WKDownload) => void): void;
+
+	setAllMediaPlaybackSuspendedCompletionHandler(suspended: boolean, completionHandler: () => void): void;
+
+	setCameraCaptureStateCompletionHandler(state: WKMediaCaptureState, completionHandler: () => void): void;
+
+	setMicrophoneCaptureStateCompletionHandler(state: WKMediaCaptureState, completionHandler: () => void): void;
+
+	startDownloadUsingRequestCompletionHandler(request: NSURLRequest, completionHandler: (p1: WKDownload) => void): void;
+
 	stopLoading(): void;
+
+	suspendAllMediaPlayback(completionHandler: () => void): void;
 
 	takeSnapshotWithConfigurationCompletionHandler(snapshotConfiguration: WKSnapshotConfiguration, completionHandler: (p1: UIImage, p2: NSError) => void): void;
 }
@@ -738,6 +913,8 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying, NSSe
 	selectionGranularity: WKSelectionGranularity;
 
 	suppressesIncrementalRendering: boolean;
+
+	upgradeKnownHostsToHTTPS: boolean;
 
 	userContentController: WKUserContentController;
 

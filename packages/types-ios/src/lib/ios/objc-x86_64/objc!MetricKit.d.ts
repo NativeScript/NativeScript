@@ -454,7 +454,7 @@ interface MXMetricManagerSubscriber extends NSObjectProtocol {
 
 	didReceiveDiagnosticPayloads?(payloads: NSArray<MXDiagnosticPayload> | MXDiagnosticPayload[]): void;
 
-	didReceiveMetricPayloads(payloads: NSArray<MXMetricPayload> | MXMetricPayload[]): void;
+	didReceiveMetricPayloads?(payloads: NSArray<MXMetricPayload> | MXMetricPayload[]): void;
 }
 declare var MXMetricManagerSubscriber: {
 
@@ -544,6 +544,8 @@ declare class MXSignpostIntervalData extends NSObject implements NSSecureCoding 
 	readonly averageMemory: MXAverage<NSUnitInformationStorage>;
 
 	readonly cumulativeCPUTime: NSMeasurement<NSUnitDuration>;
+
+	readonly cumulativeHitchTimeRatio: NSMeasurement<NSUnit>;
 
 	readonly cumulativeLogicalWrites: NSMeasurement<NSUnitInformationStorage>;
 

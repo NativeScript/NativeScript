@@ -19,6 +19,7 @@ import { Builder } from '../builder';
 import { CSSUtils } from '../../css/system-classes';
 import { Device } from '../../platform';
 import { profile } from '../../profiling';
+import { android as androidApplication } from '../../application';
 
 export * from './frame-common';
 
@@ -28,7 +29,6 @@ const INTENT_EXTRA = 'com.tns.activity';
 const ROOT_VIEW_ID_EXTRA = 'com.tns.activity.rootViewId';
 const FRAMEID = '_frameId';
 const CALLBACKS = '_callbacks';
-const HMR_REPLACE_TRANSITION = 'fade';
 
 const ownerSymbol = Symbol('_owner');
 const activityRootViewsMap = new Map<number, WeakRef<View>>();
@@ -143,8 +143,9 @@ export class Frame extends FrameBase {
 		super._onAttachedToWindow();
 
 		// _onAttachedToWindow called from OS again after it was detach
-		// TODO: Consider testing and removing it when update to androidx.fragment:1.2.0
-		if (this._manager && this._manager.isDestroyed()) {
+		// still happens with androidx.fragment:1.3.2
+		const activity = androidApplication.foregroundActivity || androidApplication.startActivity;
+		if ((this._manager && this._manager.isDestroyed()) || !activity.getLifecycle?.().getCurrentState().isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
 			return;
 		}
 
@@ -242,11 +243,6 @@ export class Frame extends FrameBase {
 
 	onUnloaded() {
 		super.onUnloaded();
-
-		// calling dispose fragment after super.onUnloaded() means we are not relying on the built-in Android logic
-		// to automatically remove child fragments when parent fragment is removed;
-		// this fixes issue with missing nested fragment on app suspend / resume;
-		this.disposeCurrentFragment();
 	}
 
 	private disposeCurrentFragment(): void {
@@ -416,13 +412,7 @@ export class Frame extends FrameBase {
 		// layout pass so we will wait forever for transitionCompleted handler...
 		// https://github.com/NativeScript/NativeScript/issues/4895
 		let navigationTransition: NavigationTransition;
-		if (isReplace) {
-			animated = true;
-			navigationTransition = {
-				name: HMR_REPLACE_TRANSITION,
-				duration: 100,
-			};
-		} else if (this._currentEntry) {
+		if (this._currentEntry) {
 			navigationTransition = this._getNavigationTransition(newEntry.entry);
 		} else {
 			navigationTransition = null;
@@ -1110,7 +1100,9 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 			rootView._saveFragmentsState();
 		}
 
-		outState.putInt(ROOT_VIEW_ID_EXTRA, rootView._domId);
+		if (rootView) {
+			outState.putInt(ROOT_VIEW_ID_EXTRA, rootView._domId);
+		}
 	}
 
 	@profile

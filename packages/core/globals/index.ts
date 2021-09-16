@@ -319,6 +319,9 @@ export function initGlobal() {
 		global.registerModule('fetch', () => require('../fetch'));
 		installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
 
+		// global.registerModule('abortcontroller', () => require('../abortcontroller'));
+		// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);
+
 		// Custom decorators
 
 		global.Deprecated = function (target: Object, key?: string | symbol, descriptor?: any) {

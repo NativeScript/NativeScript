@@ -349,7 +349,7 @@ export class ActionBar extends ActionBarBase {
 		this.setColor(navBar, color);
 
 		const bgColor = <Color>this.backgroundColor;
-		navBar.barTintColor = bgColor ? bgColor.ios : null;
+		this.setBackgroundColor(navBar, bgColor);
 	}
 
 	private setColor(navBar: UINavigationBar, color?: Color) {
@@ -357,17 +357,37 @@ export class ActionBar extends ActionBarBase {
 			return;
 		}
 		if (color) {
-			navBar.titleTextAttributes = <any>{
-				[NSForegroundColorAttributeName]: color.ios,
-			};
-			navBar.largeTitleTextAttributes = <any>{
-				[NSForegroundColorAttributeName]: color.ios,
-			};
+			const titleTextColor = NSDictionary.dictionaryWithObjectForKey(color.ios, NSForegroundColorAttributeName);
+			if (majorVersion >= 15) {
+				const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+				appearance.titleTextAttributes = titleTextColor;
+			}
+			navBar.titleTextAttributes = titleTextColor;
+			navBar.largeTitleTextAttributes = titleTextColor;
 			navBar.tintColor = color.ios;
 		} else {
 			navBar.titleTextAttributes = null;
 			navBar.largeTitleTextAttributes = null;
 			navBar.tintColor = null;
+		}
+	}
+
+	private setBackgroundColor(navBar: UINavigationBar, color?: UIColor | Color) {
+		if (!navBar) {
+			return;
+		}
+
+		const color_ = color instanceof Color ? color.ios : color;
+		if (majorVersion >= 15) {
+			const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+			// appearance.configureWithOpaqueBackground();
+			appearance.backgroundColor = color_;
+			navBar.standardAppearance = appearance;
+			navBar.compactAppearance = appearance;
+			navBar.scrollEdgeAppearance = appearance;
+		} else {
+			// legacy styling
+			navBar.barTintColor = color_;
 		}
 	}
 
@@ -467,12 +487,9 @@ export class ActionBar extends ActionBarBase {
 		// CssAnimationProperty use default value form their constructor.
 		return null;
 	}
-	[backgroundColorProperty.setNative](value: UIColor | Color) {
+	[backgroundColorProperty.setNative](color: UIColor | Color) {
 		const navBar = this.navBar;
-		if (navBar) {
-			const color = value instanceof Color ? value.ios : value;
-			navBar.barTintColor = color;
-		}
+		this.setBackgroundColor(navBar, color);
 	}
 
 	[backgroundInternalProperty.getDefault](): UIColor {

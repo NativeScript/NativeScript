@@ -262,6 +262,8 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
         __NS_ENV_VERBOSE__: false,
         __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
+        __UI_USE_XML_PARSER__: true,
+        __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: true,
         __IOS__: false,
         'global.isAndroid': true,
@@ -322,6 +324,7 @@ exports[`react configuration > android > adds ReactRefreshWebpackPlugin when HMR
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
+      '@nativescript/core/bundle-entry-points.js',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -581,6 +584,8 @@ exports[`react configuration > android > base config 1`] = `
         __NS_ENV_VERBOSE__: false,
         __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
+        __UI_USE_XML_PARSER__: true,
+        __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: true,
         __IOS__: false,
         'global.isAndroid': true,
@@ -630,6 +635,7 @@ exports[`react configuration > android > base config 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
+      '@nativescript/core/bundle-entry-points.js',
       '__jest__/src/app.js',
       '@nativescript/core/ui/frame',
       '@nativescript/core/ui/frame/activity'
@@ -900,6 +906,8 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
         __NS_ENV_VERBOSE__: false,
         __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
+        __UI_USE_XML_PARSER__: true,
+        __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: false,
         __IOS__: true,
         'global.isAndroid': false,
@@ -960,6 +968,7 @@ exports[`react configuration > ios > adds ReactRefreshWebpackPlugin when HMR ena
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
+      '@nativescript/core/bundle-entry-points.js',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [
@@ -1220,6 +1229,8 @@ exports[`react configuration > ios > base config 1`] = `
         __NS_ENV_VERBOSE__: false,
         __NS_DEV_HOST_IPS__: '[\\"127.0.0.1\\",\\"192.168.0.10\\"]',
         __CSS_PARSER__: '\\"css-tree\\"',
+        __UI_USE_XML_PARSER__: true,
+        __UI_USE_EXTERNAL_RENDERER__: false,
         __ANDROID__: false,
         __IOS__: true,
         'global.isAndroid': false,
@@ -1269,6 +1280,7 @@ exports[`react configuration > ios > base config 1`] = `
   entry: {
     bundle: [
       '@nativescript/core/globals/index.js',
+      '@nativescript/core/bundle-entry-points.js',
       '__jest__/src/app.js'
     ],
     'tns_modules/inspector_modules': [

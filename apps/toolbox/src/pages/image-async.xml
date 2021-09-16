@@ -1,0 +1,13 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+
+    <GridLayout padding="20">   
+      <ScrollView>
+          <StackLayout>
+            <Button text="Image Async?" tap="{{save}}" />
+            <Image width="200" height="200" src="{{ src }}"/>
+            <Image marginTop="10" width="200" height="200" src="{{ savedData }}" />
+            <Image marginTop="10" width="50" height="50"  imageSource="{{ resizedImage }}" />
+          </StackLayout>
+      </ScrollView>
+    </GridLayout>
+</Page>

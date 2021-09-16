@@ -31,6 +31,8 @@ declare class AVPictureInPictureController extends NSObject {
 
 	canStartPictureInPictureAutomaticallyFromInline: boolean;
 
+	contentSource: AVPictureInPictureControllerContentSource;
+
 	delegate: AVPictureInPictureControllerDelegate;
 
 	readonly pictureInPictureActive: boolean;
@@ -47,13 +49,48 @@ declare class AVPictureInPictureController extends NSObject {
 
 	static readonly pictureInPictureButtonStopImage: UIImage;
 
+	constructor(o: { contentSource: AVPictureInPictureControllerContentSource; });
+
 	constructor(o: { playerLayer: AVPlayerLayer; });
 
+	initWithContentSource(contentSource: AVPictureInPictureControllerContentSource): this;
+
 	initWithPlayerLayer(playerLayer: AVPlayerLayer): this;
+
+	invalidatePlaybackState(): void;
 
 	startPictureInPicture(): void;
 
 	stopPictureInPicture(): void;
+}
+
+declare class AVPictureInPictureControllerContentSource extends NSObject {
+
+	static alloc(): AVPictureInPictureControllerContentSource; // inherited from NSObject
+
+	static new(): AVPictureInPictureControllerContentSource; // inherited from NSObject
+
+	readonly activeVideoCallContentViewController: AVPictureInPictureVideoCallViewController;
+
+	readonly activeVideoCallSourceView: UIView;
+
+	readonly playerLayer: AVPlayerLayer;
+
+	readonly sampleBufferDisplayLayer: AVSampleBufferDisplayLayer;
+
+	readonly sampleBufferPlaybackDelegate: AVPictureInPictureSampleBufferPlaybackDelegate;
+
+	constructor(o: { activeVideoCallSourceView: UIView; contentViewController: AVPictureInPictureVideoCallViewController; });
+
+	constructor(o: { playerLayer: AVPlayerLayer; });
+
+	constructor(o: { sampleBufferDisplayLayer: AVSampleBufferDisplayLayer; playbackDelegate: AVPictureInPictureSampleBufferPlaybackDelegate; });
+
+	initWithActiveVideoCallSourceViewContentViewController(sourceView: UIView, contentViewController: AVPictureInPictureVideoCallViewController): this;
+
+	initWithPlayerLayer(playerLayer: AVPlayerLayer): this;
+
+	initWithSampleBufferDisplayLayerPlaybackDelegate(sampleBufferDisplayLayer: AVSampleBufferDisplayLayer, playbackDelegate: AVPictureInPictureSampleBufferPlaybackDelegate): this;
 }
 
 interface AVPictureInPictureControllerDelegate extends NSObjectProtocol {
@@ -75,13 +112,37 @@ declare var AVPictureInPictureControllerDelegate: {
 	prototype: AVPictureInPictureControllerDelegate;
 };
 
+interface AVPictureInPictureSampleBufferPlaybackDelegate extends NSObjectProtocol {
+
+	pictureInPictureControllerDidTransitionToRenderSize(pictureInPictureController: AVPictureInPictureController, newRenderSize: CMVideoDimensions): void;
+
+	pictureInPictureControllerIsPlaybackPaused(pictureInPictureController: AVPictureInPictureController): boolean;
+
+	pictureInPictureControllerSetPlaying(pictureInPictureController: AVPictureInPictureController, playing: boolean): void;
+
+	pictureInPictureControllerShouldProhibitBackgroundAudioPlayback?(pictureInPictureController: AVPictureInPictureController): boolean;
+
+	pictureInPictureControllerSkipByIntervalCompletionHandler(pictureInPictureController: AVPictureInPictureController, skipInterval: CMTime, completionHandler: () => void): void;
+
+	pictureInPictureControllerTimeRangeForPlayback(pictureInPictureController: AVPictureInPictureController): CMTimeRange;
+}
+declare var AVPictureInPictureSampleBufferPlaybackDelegate: {
+
+	prototype: AVPictureInPictureSampleBufferPlaybackDelegate;
+};
+
+declare class AVPictureInPictureVideoCallViewController extends UIViewController {
+
+	static alloc(): AVPictureInPictureVideoCallViewController; // inherited from NSObject
+
+	static new(): AVPictureInPictureVideoCallViewController; // inherited from NSObject
+}
+
 declare class AVPlayerViewController extends UIViewController {
 
 	static alloc(): AVPlayerViewController; // inherited from NSObject
 
 	static new(): AVPlayerViewController; // inherited from NSObject
-
-	static preparePrerollAds(): void;
 
 	allowsPictureInPicturePlayback: boolean;
 
@@ -112,10 +173,6 @@ declare class AVPlayerViewController extends UIViewController {
 	readonly videoBounds: CGRect;
 
 	videoGravity: string;
-
-	cancelPreroll(): void;
-
-	playPrerollAdWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 }
 
 interface AVPlayerViewControllerDelegate extends NSObjectProtocol {
@@ -125,6 +182,8 @@ interface AVPlayerViewControllerDelegate extends NSObjectProtocol {
 	playerViewControllerDidStopPictureInPicture?(playerViewController: AVPlayerViewController): void;
 
 	playerViewControllerFailedToStartPictureInPictureWithError?(playerViewController: AVPlayerViewController, error: NSError): void;
+
+	playerViewControllerRestoreUserInterfaceForFullScreenExitWithCompletionHandler?(playerViewController: AVPlayerViewController, completionHandler: (p1: boolean) => void): void;
 
 	playerViewControllerRestoreUserInterfaceForPictureInPictureStopWithCompletionHandler?(playerViewController: AVPlayerViewController, completionHandler: (p1: boolean) => void): void;
 

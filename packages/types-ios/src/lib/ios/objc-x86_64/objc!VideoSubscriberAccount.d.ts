@@ -10,6 +10,21 @@ declare const enum VSAccountAccessStatus {
 	Granted = 3
 }
 
+declare class VSAccountApplicationProvider extends NSObject {
+
+	static alloc(): VSAccountApplicationProvider; // inherited from NSObject
+
+	static new(): VSAccountApplicationProvider; // inherited from NSObject
+
+	readonly identifier: string;
+
+	readonly localizedDisplayName: string;
+
+	constructor(o: { localizedDisplayName: string; identifier: string; });
+
+	initWithLocalizedDisplayNameIdentifier(localizedDisplayName: string, identifier: string): this;
+}
+
 declare class VSAccountManager extends NSObject {
 
 	static alloc(): VSAccountManager; // inherited from NSObject
@@ -69,6 +84,8 @@ declare class VSAccountMetadataRequest extends NSObject {
 	static new(): VSAccountMetadataRequest; // inherited from NSObject
 
 	accountProviderAuthenticationToken: string;
+
+	applicationAccountProviders: NSArray<VSAccountApplicationProvider>;
 
 	attributeNames: NSArray<string>;
 

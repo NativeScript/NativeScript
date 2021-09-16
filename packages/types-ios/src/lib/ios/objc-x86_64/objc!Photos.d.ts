@@ -43,6 +43,8 @@ declare class PHAsset extends PHObject {
 
 	static new(): PHAsset; // inherited from NSObject
 
+	readonly adjustmentFormatIdentifier: string;
+
 	readonly burstIdentifier: string;
 
 	readonly burstSelectionTypes: PHAssetBurstSelectionType;
@@ -239,6 +241,8 @@ declare const enum PHAssetCollectionSubtype {
 	SmartAlbumLongExposures = 215,
 
 	SmartAlbumUnableToUpload = 216,
+
+	SmartAlbumRAW = 217,
 
 	Any = 9223372036854775807
 }
@@ -475,6 +479,42 @@ declare class PHChangeRequest extends NSObject {
 	static alloc(): PHChangeRequest; // inherited from NSObject
 
 	static new(): PHChangeRequest; // inherited from NSObject
+}
+
+declare class PHCloudIdentifier extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): PHCloudIdentifier; // inherited from NSObject
+
+	static new(): PHCloudIdentifier; // inherited from NSObject
+
+	readonly stringValue: string;
+
+	static readonly notFoundIdentifier: PHCloudIdentifier;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { stringValue: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithStringValue(stringValue: string): this;
+}
+
+declare class PHCloudIdentifierMapping extends NSObject {
+
+	static alloc(): PHCloudIdentifierMapping; // inherited from NSObject
+
+	static new(): PHCloudIdentifierMapping; // inherited from NSObject
+
+	readonly cloudIdentifier: PHCloudIdentifier;
+
+	readonly error: NSError;
 }
 
 declare class PHCollection extends PHObject {
@@ -1011,6 +1051,21 @@ declare class PHLivePhotoRequestOptions extends NSObject implements NSCopying {
 
 declare var PHLivePhotoShouldRenderAtPlaybackTime: string;
 
+declare class PHLocalIdentifierMapping extends NSObject {
+
+	static alloc(): PHLocalIdentifierMapping; // inherited from NSObject
+
+	static new(): PHLocalIdentifierMapping; // inherited from NSObject
+
+	readonly error: NSError;
+
+	readonly localIdentifier: string;
+}
+
+declare var PHLocalIdentifierNotFound: string;
+
+declare var PHLocalIdentifiersErrorKey: string;
+
 declare class PHObject extends NSObject implements NSCopying {
 
 	static alloc(): PHObject; // inherited from NSObject
@@ -1062,11 +1117,21 @@ declare class PHPhotoLibrary extends NSObject {
 
 	readonly unavailabilityReason: NSError;
 
+	cloudIdentifierMappingsForLocalIdentifiers(localIdentifiers: NSArray<string> | string[]): NSDictionary<string, PHCloudIdentifierMapping>;
+
+	cloudIdentifiersForLocalIdentifiers(localIdentifiers: NSArray<string> | string[]): NSArray<PHCloudIdentifier>;
+
+	localIdentifierMappingsForCloudIdentifiers(cloudIdentifiers: NSArray<PHCloudIdentifier> | PHCloudIdentifier[]): NSDictionary<PHCloudIdentifier, PHLocalIdentifierMapping>;
+
+	localIdentifiersForCloudIdentifiers(cloudIdentifiers: NSArray<PHCloudIdentifier> | PHCloudIdentifier[]): NSArray<string>;
+
 	performChangesAndWaitError(changeBlock: () => void): boolean;
 
 	performChangesCompletionHandler(changeBlock: () => void, completionHandler: (p1: boolean, p2: NSError) => void): void;
 
 	presentLimitedLibraryPickerFromViewController(controller: UIViewController): void;
+
+	presentLimitedLibraryPickerFromViewControllerCompletionHandler(controller: UIViewController, completionHandler: (p1: NSArray<string>) => void): void;
 
 	registerAvailabilityObserver(observer: PHPhotoLibraryAvailabilityObserver): void;
 
@@ -1097,7 +1162,7 @@ declare var PHPhotoLibraryChangeObserver: {
 
 declare const enum PHPhotosError {
 
-	Invalid = -1,
+	InternalError = -1,
 
 	UserCancelled = 3072,
 
@@ -1107,7 +1172,29 @@ declare const enum PHPhotosError {
 
 	SwitchingSystemPhotoLibrary = 3143,
 
-	NetworkAccessRequired = 3164
+	NetworkAccessRequired = 3164,
+
+	IdentifierNotFound = 3201,
+
+	MultipleIdentifiersFound = 3202,
+
+	ChangeNotSupported = 3300,
+
+	OperationInterrupted = 3301,
+
+	InvalidResource = 3302,
+
+	MissingResource = 3303,
+
+	NotEnoughSpace = 3305,
+
+	RequestNotSupportedForAsset = 3306,
+
+	AccessRestricted = 3310,
+
+	AccessUserDenied = 3311,
+
+	Invalid = -1
 }
 
 declare var PHPhotosErrorDomain: string;

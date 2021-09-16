@@ -404,6 +404,10 @@ declare const kAudioChannelLabel_HOA_ACN_8: number;
 
 declare const kAudioChannelLabel_HOA_ACN_9: number;
 
+declare const kAudioChannelLabel_HOA_N3D: number;
+
+declare const kAudioChannelLabel_HOA_SN3D: number;
+
 declare const kAudioChannelLabel_Haptic: number;
 
 declare const kAudioChannelLabel_HeadphonesLeft: number;
@@ -693,6 +697,72 @@ declare const kAudioChannelLayoutTag_ITU_3_2: number;
 declare const kAudioChannelLayoutTag_ITU_3_2_1: number;
 
 declare const kAudioChannelLayoutTag_ITU_3_4_1: number;
+
+declare const kAudioChannelLayoutTag_Logic_4_0_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_4_0_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_4_0_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_0_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_0_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_0_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_0_D: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_1_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_1_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_1_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_5_1_D: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_0_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_0_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_0_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_1_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_1_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_1_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_6_1_D: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_SDDS_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_SDDS_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_7_1_SDDS_C: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_5_1_2: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_5_1_4: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_7_1_2: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_7_1_4_A: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_7_1_4_B: number;
+
+declare const kAudioChannelLayoutTag_Logic_Atmos_7_1_6: number;
+
+declare const kAudioChannelLayoutTag_Logic_Mono: number;
+
+declare const kAudioChannelLayoutTag_Logic_Quadraphonic: number;
+
+declare const kAudioChannelLayoutTag_Logic_Stereo: number;
 
 declare const kAudioChannelLayoutTag_MPEG_1_0: number;
 

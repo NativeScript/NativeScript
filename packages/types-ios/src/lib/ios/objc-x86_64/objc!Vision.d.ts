@@ -24,37 +24,83 @@ declare class VNBarcodeObservation extends VNRectangleObservation {
 
 declare var VNBarcodeSymbologyAztec: string;
 
+declare var VNBarcodeSymbologyAztec_SwiftDeprecated: string;
+
+declare var VNBarcodeSymbologyCodabar: string;
+
 declare var VNBarcodeSymbologyCode128: string;
+
+declare var VNBarcodeSymbologyCode128_SwiftDeprecated: string;
 
 declare var VNBarcodeSymbologyCode39: string;
 
 declare var VNBarcodeSymbologyCode39Checksum: string;
 
+declare var VNBarcodeSymbologyCode39Checksum_SwiftDeprecated: string;
+
 declare var VNBarcodeSymbologyCode39FullASCII: string;
 
 declare var VNBarcodeSymbologyCode39FullASCIIChecksum: string;
 
+declare var VNBarcodeSymbologyCode39FullASCIIChecksum_SwiftDeprecated: string;
+
+declare var VNBarcodeSymbologyCode39FullASCII_SwiftDeprecated: string;
+
+declare var VNBarcodeSymbologyCode39_SwiftDeprecated: string;
+
 declare var VNBarcodeSymbologyCode93: string;
+
+declare var VNBarcodeSymbologyCode93_SwiftDeprecated: string;
 
 declare var VNBarcodeSymbologyCode93i: string;
 
+declare var VNBarcodeSymbologyCode93i_SwiftDeprecated: string;
+
 declare var VNBarcodeSymbologyDataMatrix: string;
+
+declare var VNBarcodeSymbologyDataMatrix_SwiftDeprecated: string;
 
 declare var VNBarcodeSymbologyEAN13: string;
 
+declare var VNBarcodeSymbologyEAN13_SwiftDeprecated: string;
+
 declare var VNBarcodeSymbologyEAN8: string;
+
+declare var VNBarcodeSymbologyEAN8_SwiftDeprecated: string;
+
+declare var VNBarcodeSymbologyGS1DataBar: string;
+
+declare var VNBarcodeSymbologyGS1DataBarExpanded: string;
+
+declare var VNBarcodeSymbologyGS1DataBarLimited: string;
 
 declare var VNBarcodeSymbologyI2of5: string;
 
 declare var VNBarcodeSymbologyI2of5Checksum: string;
 
+declare var VNBarcodeSymbologyI2of5Checksum_SwiftDeprecated: string;
+
+declare var VNBarcodeSymbologyI2of5_SwiftDeprecated: string;
+
 declare var VNBarcodeSymbologyITF14: string;
+
+declare var VNBarcodeSymbologyITF14_SwiftDeprecated: string;
+
+declare var VNBarcodeSymbologyMicroPDF417: string;
+
+declare var VNBarcodeSymbologyMicroQR: string;
 
 declare var VNBarcodeSymbologyPDF417: string;
 
+declare var VNBarcodeSymbologyPDF417_SwiftDeprecated: string;
+
 declare var VNBarcodeSymbologyQR: string;
 
+declare var VNBarcodeSymbologyQR_SwiftDeprecated: string;
+
 declare var VNBarcodeSymbologyUPCE: string;
+
+declare var VNBarcodeSymbologyUPCE_SwiftDeprecated: string;
 
 declare var VNBodyLandmarkKeyLeftAnkle: string;
 
@@ -105,6 +151,15 @@ declare var VNBodyLandmarkRegionKeyRightArm: string;
 declare var VNBodyLandmarkRegionKeyRightLeg: string;
 
 declare var VNBodyLandmarkRegionKeyTorso: string;
+
+declare const enum VNChirality {
+
+	Unknown = 0,
+
+	Left = -1,
+
+	Right = 1
+}
 
 declare class VNCircle extends NSObject implements NSCopying, NSSecureCoding {
 
@@ -165,6 +220,8 @@ declare class VNClassifyImageRequest extends VNImageBasedRequest {
 	static knownClassificationsForRevisionError(requestRevision: number): NSArray<VNClassificationObservation>;
 
 	static new(): VNClassifyImageRequest; // inherited from NSObject
+
+	supportedIdentifiersAndReturnError(): NSArray<string>;
 }
 
 declare var VNClassifyImageRequestRevision1: number;
@@ -271,9 +328,13 @@ declare class VNDetectBarcodesRequest extends VNImageBasedRequest {
 	symbologies: NSArray<string>;
 
 	static readonly supportedSymbologies: NSArray<string>;
+
+	supportedSymbologiesAndReturnError(): NSArray<string>;
 }
 
 declare var VNDetectBarcodesRequestRevision1: number;
+
+declare var VNDetectBarcodesRequestRevision2: number;
 
 declare var VNDetectContourRequestRevision1: number;
 
@@ -285,12 +346,23 @@ declare class VNDetectContoursRequest extends VNImageBasedRequest {
 
 	contrastAdjustment: number;
 
+	contrastPivot: number;
+
 	detectDarkOnLight: boolean;
 
 	detectsDarkOnLight: boolean;
 
 	maximumImageDimension: number;
 }
+
+declare class VNDetectDocumentSegmentationRequest extends VNImageBasedRequest {
+
+	static alloc(): VNDetectDocumentSegmentationRequest; // inherited from NSObject
+
+	static new(): VNDetectDocumentSegmentationRequest; // inherited from NSObject
+}
+
+declare var VNDetectDocumentSegmentationRequestRevision1: number;
 
 declare class VNDetectFaceCaptureQualityRequest extends VNImageBasedRequest implements VNFaceObservationAccepting {
 
@@ -403,6 +475,8 @@ declare var VNDetectFaceRectanglesRequestRevision1: number;
 
 declare var VNDetectFaceRectanglesRequestRevision2: number;
 
+declare var VNDetectFaceRectanglesRequestRevision3: number;
+
 declare class VNDetectHorizonRequest extends VNImageBasedRequest {
 
 	static alloc(): VNDetectHorizonRequest; // inherited from NSObject
@@ -418,17 +492,9 @@ declare class VNDetectHumanBodyPoseRequest extends VNImageBasedRequest {
 
 	static new(): VNDetectHumanBodyPoseRequest; // inherited from NSObject
 
-	static supportedIdentifiedPointGroupKeysForRevisionError(revision: number): NSArray<string>;
-
-	static supportedIdentifiedPointKeysForRevisionError(revision: number): NSArray<string>;
-
 	static supportedJointNamesForRevisionError(revision: number): NSArray<string>;
 
 	static supportedJointsGroupNamesForRevisionError(revision: number): NSArray<string>;
-
-	static supportedRecognizedPointGroupKeysForRevisionError(revision: number): NSArray<string>;
-
-	static supportedRecognizedPointKeysForRevisionError(revision: number): NSArray<string>;
 }
 
 declare var VNDetectHumanBodyPoseRequestRevision1: number;
@@ -439,17 +505,9 @@ declare class VNDetectHumanHandPoseRequest extends VNImageBasedRequest {
 
 	static new(): VNDetectHumanHandPoseRequest; // inherited from NSObject
 
-	static supportedIdentifiedPointGroupKeysForRevisionError(revision: number): NSArray<string>;
-
-	static supportedIdentifiedPointKeysForRevisionError(revision: number): NSArray<string>;
-
 	static supportedJointNamesForRevisionError(revision: number): NSArray<string>;
 
 	static supportedJointsGroupNamesForRevisionError(revision: number): NSArray<string>;
-
-	static supportedRecognizedPointGroupKeysForRevisionError(revision: number): NSArray<string>;
-
-	static supportedRecognizedPointKeysForRevisionError(revision: number): NSArray<string>;
 
 	maximumHandCount: number;
 }
@@ -461,9 +519,13 @@ declare class VNDetectHumanRectanglesRequest extends VNImageBasedRequest {
 	static alloc(): VNDetectHumanRectanglesRequest; // inherited from NSObject
 
 	static new(): VNDetectHumanRectanglesRequest; // inherited from NSObject
+
+	upperBodyOnly: boolean;
 }
 
 declare var VNDetectHumanRectanglesRequestRevision1: number;
+
+declare var VNDetectHumanRectanglesRequestRevision2: number;
 
 declare class VNDetectRectanglesRequest extends VNImageBasedRequest {
 
@@ -511,6 +573,8 @@ declare class VNDetectTrajectoriesRequest extends VNStatefulRequest {
 
 	objectMinimumNormalizedRadius: number;
 
+	targetFrameTime: CMTime;
+
 	readonly trajectoryLength: number;
 
 	constructor(o: { frameAnalysisSpacing: CMTime; trajectoryLength: number; completionHandler: (p1: VNRequest, p2: NSError) => void; });
@@ -531,6 +595,8 @@ declare class VNDetectedObjectObservation extends VNObservation {
 	static observationWithRequestRevisionBoundingBox(requestRevision: number, boundingBox: CGRect): VNDetectedObjectObservation;
 
 	readonly boundingBox: CGRect;
+
+	readonly globalSegmentationMask: VNPixelBufferObservation;
 }
 
 declare class VNDetectedPoint extends VNPoint {
@@ -591,7 +657,9 @@ declare const enum VNErrorCode {
 
 	DataUnavailable = 17,
 
-	TimeStampNotFound = 18
+	TimeStampNotFound = 18,
+
+	UnsupportedRequest = 19
 }
 
 declare var VNErrorDomain: string;
@@ -690,6 +758,8 @@ declare class VNFaceObservation extends VNDetectedObjectObservation {
 
 	static faceObservationWithRequestRevisionBoundingBoxRollYaw(requestRevision: number, boundingBox: CGRect, roll: number, yaw: number): VNFaceObservation;
 
+	static faceObservationWithRequestRevisionBoundingBoxRollYawPitch(requestRevision: number, boundingBox: CGRect, roll: number, yaw: number, pitch: number): VNFaceObservation;
+
 	static new(): VNFaceObservation; // inherited from NSObject
 
 	static observationWithBoundingBox(boundingBox: CGRect): VNFaceObservation; // inherited from VNDetectedObjectObservation
@@ -699,6 +769,8 @@ declare class VNFaceObservation extends VNDetectedObjectObservation {
 	readonly faceCaptureQuality: number;
 
 	readonly landmarks: VNFaceLandmarks2D;
+
+	readonly pitch: number;
 
 	readonly roll: number;
 
@@ -782,6 +854,28 @@ declare const enum VNGenerateOpticalFlowRequestComputationAccuracy {
 
 declare var VNGenerateOpticalFlowRequestRevision1: number;
 
+declare class VNGeneratePersonSegmentationRequest extends VNStatefulRequest {
+
+	static alloc(): VNGeneratePersonSegmentationRequest; // inherited from NSObject
+
+	static new(): VNGeneratePersonSegmentationRequest; // inherited from NSObject
+
+	outputPixelFormat: number;
+
+	qualityLevel: VNGeneratePersonSegmentationRequestQualityLevel;
+}
+
+declare const enum VNGeneratePersonSegmentationRequestQualityLevel {
+
+	Accurate = 0,
+
+	Balanced = 1,
+
+	Fast = 2
+}
+
+declare var VNGeneratePersonSegmentationRequestRevision1: number;
+
 declare class VNGeometryUtils extends NSObject {
 
 	static alloc(): VNGeometryUtils; // inherited from NSObject
@@ -798,58 +892,6 @@ declare class VNGeometryUtils extends NSObject {
 
 	static new(): VNGeometryUtils; // inherited from NSObject
 }
-
-declare var VNHandLandmarkKeyIndexDIP: string;
-
-declare var VNHandLandmarkKeyIndexMCP: string;
-
-declare var VNHandLandmarkKeyIndexPIP: string;
-
-declare var VNHandLandmarkKeyIndexTIP: string;
-
-declare var VNHandLandmarkKeyLittleDIP: string;
-
-declare var VNHandLandmarkKeyLittleMCP: string;
-
-declare var VNHandLandmarkKeyLittlePIP: string;
-
-declare var VNHandLandmarkKeyLittleTIP: string;
-
-declare var VNHandLandmarkKeyMiddleDIP: string;
-
-declare var VNHandLandmarkKeyMiddleMCP: string;
-
-declare var VNHandLandmarkKeyMiddlePIP: string;
-
-declare var VNHandLandmarkKeyMiddleTIP: string;
-
-declare var VNHandLandmarkKeyRingDIP: string;
-
-declare var VNHandLandmarkKeyRingMCP: string;
-
-declare var VNHandLandmarkKeyRingPIP: string;
-
-declare var VNHandLandmarkKeyRingTIP: string;
-
-declare var VNHandLandmarkKeyThumbCMC: string;
-
-declare var VNHandLandmarkKeyThumbIP: string;
-
-declare var VNHandLandmarkKeyThumbMP: string;
-
-declare var VNHandLandmarkKeyThumbTIP: string;
-
-declare var VNHandLandmarkKeyWrist: string;
-
-declare var VNHandLandmarkRegionKeyIndexFinger: string;
-
-declare var VNHandLandmarkRegionKeyLittleFinger: string;
-
-declare var VNHandLandmarkRegionKeyMiddleFinger: string;
-
-declare var VNHandLandmarkRegionKeyRingFinger: string;
-
-declare var VNHandLandmarkRegionKeyThumb: string;
 
 declare class VNHomographicImageRegistrationRequest extends VNImageRegistrationRequest {
 
@@ -948,6 +990,8 @@ declare class VNHumanHandPoseObservation extends VNRecognizedPointsObservation {
 
 	readonly availableJointsGroupNames: NSArray<string>;
 
+	readonly chirality: VNChirality;
+
 	recognizedPointForJointNameError(jointName: string): VNRecognizedPoint;
 
 	recognizedPointsForJointsGroupNameError(jointsGroupName: string): NSDictionary<string, VNRecognizedPoint>;
@@ -1007,6 +1051,19 @@ declare var VNHumanHandPoseObservationJointsGroupNameRingFinger: string;
 
 declare var VNHumanHandPoseObservationJointsGroupNameThumb: string;
 
+declare class VNHumanObservation extends VNDetectedObjectObservation {
+
+	static alloc(): VNHumanObservation; // inherited from NSObject
+
+	static new(): VNHumanObservation; // inherited from NSObject
+
+	static observationWithBoundingBox(boundingBox: CGRect): VNHumanObservation; // inherited from VNDetectedObjectObservation
+
+	static observationWithRequestRevisionBoundingBox(requestRevision: number, boundingBox: CGRect): VNHumanObservation; // inherited from VNDetectedObjectObservation
+
+	readonly upperBodyOnly: boolean;
+}
+
 declare class VNImageAlignmentObservation extends VNObservation {
 
 	static alloc(): VNImageAlignmentObservation; // inherited from NSObject
@@ -1038,7 +1095,7 @@ declare class VNImageHomographicAlignmentObservation extends VNImageAlignmentObs
 
 	static new(): VNImageHomographicAlignmentObservation; // inherited from NSObject
 
-	warpTransform: simd_float3x3;
+	readonly warpTransform: simd_float3x3;
 }
 
 declare var VNImageOptionCIContext: string;
@@ -1051,7 +1108,11 @@ declare function VNImagePointForFaceLandmarkPoint(faceLandmarkPoint: interop.Ref
 
 declare function VNImagePointForNormalizedPoint(normalizedPoint: CGPoint, imageWidth: number, imageHeight: number): CGPoint;
 
+declare function VNImagePointForNormalizedPointUsingRegionOfInterest(normalizedPoint: CGPoint, imageWidth: number, imageHeight: number, roi: CGRect): CGPoint;
+
 declare function VNImageRectForNormalizedRect(normalizedRect: CGRect, imageWidth: number, imageHeight: number): CGRect;
+
+declare function VNImageRectForNormalizedRectUsingRegionOfInterest(normalizedRect: CGRect, imageWidth: number, imageHeight: number, roi: CGRect): CGRect;
 
 declare class VNImageRegistrationRequest extends VNTargetedImageRequest {
 
@@ -1123,7 +1184,7 @@ declare class VNImageTranslationAlignmentObservation extends VNImageAlignmentObs
 
 	static new(): VNImageTranslationAlignmentObservation; // inherited from NSObject
 
-	alignmentTransform: CGAffineTransform;
+	readonly alignmentTransform: CGAffineTransform;
 }
 
 declare function VNNormalizedFaceBoundingBoxPointForLandmarkPoint(faceLandmarkPoint: interop.Reference<number>, faceBoundingBox: CGRect, imageWidth: number, imageHeight: number): CGPoint;
@@ -1132,7 +1193,11 @@ declare var VNNormalizedIdentityRect: CGRect;
 
 declare function VNNormalizedPointForImagePoint(imagePoint: CGPoint, imageWidth: number, imageHeight: number): CGPoint;
 
+declare function VNNormalizedPointForImagePointUsingRegionOfInterest(imagePoint: CGPoint, imageWidth: number, imageHeight: number, roi: CGRect): CGPoint;
+
 declare function VNNormalizedRectForImageRect(imageRect: CGRect, imageWidth: number, imageHeight: number): CGRect;
+
+declare function VNNormalizedRectForImageRectUsingRegionOfInterest(imageRect: CGRect, imageWidth: number, imageHeight: number, roi: CGRect): CGRect;
 
 declare function VNNormalizedRectIsIdentityRect(normalizedRect: CGRect): boolean;
 
@@ -1218,9 +1283,13 @@ declare class VNRecognizeAnimalsRequest extends VNImageBasedRequest {
 	static knownAnimalIdentifiersForRevisionError(requestRevision: number): NSArray<string>;
 
 	static new(): VNRecognizeAnimalsRequest; // inherited from NSObject
+
+	supportedIdentifiersAndReturnError(): NSArray<string>;
 }
 
 declare var VNRecognizeAnimalsRequestRevision1: number;
+
+declare var VNRecognizeAnimalsRequestRevision2: number;
 
 declare class VNRecognizeTextRequest extends VNImageBasedRequest implements VNRequestProgressProviding {
 
@@ -1277,6 +1346,8 @@ declare class VNRecognizeTextRequest extends VNImageBasedRequest implements VNRe
 	retainCount(): number;
 
 	self(): this;
+
+	supportedRecognitionLanguagesAndReturnError(): NSArray<string>;
 }
 
 declare var VNRecognizeTextRequestRevision1: number;
@@ -1324,7 +1395,7 @@ declare class VNRecognizedPointsObservation extends VNObservation {
 	recognizedPointsForGroupKeyError(groupKey: string): NSDictionary<string, VNRecognizedPoint>;
 }
 
-declare class VNRecognizedText extends NSObject implements NSCopying, NSSecureCoding {
+declare class VNRecognizedText extends NSObject implements NSCopying, NSSecureCoding, VNRequestRevisionProviding {
 
 	static alloc(): VNRecognizedText; // inherited from NSObject
 
@@ -1333,6 +1404,8 @@ declare class VNRecognizedText extends NSObject implements NSCopying, NSSecureCo
 	readonly confidence: number;
 
 	readonly string: string;
+
+	readonly requestRevision: number; // inherited from VNRequestRevisionProviding
 
 	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
@@ -1393,7 +1466,7 @@ declare class VNRequest extends NSObject implements NSCopying {
 
 	preferBackgroundProcessing: boolean;
 
-	readonly results: NSArray<any>;
+	readonly results: NSArray<VNObservation>;
 
 	revision: number;
 
@@ -1692,6 +1765,8 @@ declare class VNTrajectoryObservation extends VNObservation {
 	readonly detectedPoints: NSArray<VNPoint>;
 
 	readonly equationCoefficients: interop.Reference<number>;
+
+	readonly movingAverageRadius: number;
 
 	readonly projectedPoints: NSArray<VNPoint>;
 }

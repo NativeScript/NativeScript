@@ -426,6 +426,8 @@ declare function sqlite3_mutex_try(p1: interop.Pointer | interop.Reference<any>)
 
 declare function sqlite3_next_stmt(pDb: interop.Pointer | interop.Reference<any>, pStmt: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+declare function sqlite3_normalized_sql(pStmt: interop.Pointer | interop.Reference<any>): string;
+
 declare function sqlite3_open(filename: string | interop.Pointer | interop.Reference<any>, ppDb: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function sqlite3_open16(filename: interop.Pointer | interop.Reference<any>, ppDb: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
@@ -662,6 +664,8 @@ declare function sqlite3_trace(p1: interop.Pointer | interop.Reference<any>, xTr
 declare function sqlite3_trace_v2(p1: interop.Pointer | interop.Reference<any>, uMask: number, xCallback: interop.FunctionReference<(p1: number, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>, pCtx: interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_transfer_bindings(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>): number;
+
+declare function sqlite3_txn_state(p1: interop.Pointer | interop.Reference<any>, zSchema: string | interop.Pointer | interop.Reference<any>): number;
 
 declare function sqlite3_update_hook(p1: interop.Pointer | interop.Reference<any>, p2: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: string, p4: string, p5: number) => void>, p3: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 

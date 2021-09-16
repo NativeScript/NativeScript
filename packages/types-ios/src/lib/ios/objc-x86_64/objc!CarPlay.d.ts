@@ -82,6 +82,54 @@ declare var CPApplicationDelegate: {
 	prototype: CPApplicationDelegate;
 };
 
+declare const enum CPAssistantCellActionType {
+
+	PlayMedia = 0,
+
+	StartCall = 1
+}
+
+declare class CPAssistantCellConfiguration extends NSObject implements NSSecureCoding {
+
+	static alloc(): CPAssistantCellConfiguration; // inherited from NSObject
+
+	static new(): CPAssistantCellConfiguration; // inherited from NSObject
+
+	readonly assistantAction: CPAssistantCellActionType;
+
+	readonly position: CPAssistantCellPosition;
+
+	readonly visibility: CPAssistantCellVisibility;
+
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { position: CPAssistantCellPosition; visibility: CPAssistantCellVisibility; assistantAction: CPAssistantCellActionType; });
+
+	encodeWithCoder(coder: NSCoder): void;
+
+	initWithCoder(coder: NSCoder): this;
+
+	initWithPositionVisibilityAssistantAction(position: CPAssistantCellPosition, visibility: CPAssistantCellVisibility, assistantAction: CPAssistantCellActionType): this;
+}
+
+declare const enum CPAssistantCellPosition {
+
+	Top = 0,
+
+	Bottom = 1
+}
+
+declare const enum CPAssistantCellVisibility {
+
+	Off = 0,
+
+	WhileLimitedUIActive = 1,
+
+	Always = 2
+}
+
 declare class CPBarButton extends NSObject implements NSSecureCoding {
 
 	static alloc(): CPBarButton; // inherited from NSObject
@@ -401,7 +449,13 @@ declare class CPGridTemplate extends CPTemplate implements CPBarButtonProviding 
 	retainCount(): number;
 
 	self(): this;
+
+	updateGridButtons(gridButtons: NSArray<CPGridButton> | CPGridButton[]): void;
+
+	updateTitle(title: string): void;
 }
+
+declare var CPGridTemplateMaximumItems: number;
 
 declare class CPImageSet extends NSObject implements NSSecureCoding {
 
@@ -579,6 +633,8 @@ declare class CPListImageRowItem extends NSObject implements CPSelectableListIte
 
 	readonly description: string; // inherited from NSObjectProtocol
 
+	enabled: boolean; // inherited from CPListTemplateItem
+
 	handler: (p1: CPSelectableListItem, p2: () => void) => void; // inherited from CPSelectableListItem
 
 	readonly hash: number; // inherited from NSObjectProtocol
@@ -651,6 +707,8 @@ declare class CPListItem extends NSObject implements CPSelectableListItem {
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
+
+	enabled: boolean; // inherited from CPListTemplateItem
 
 	handler: (p1: CPSelectableListItem, p2: () => void) => void; // inherited from CPSelectableListItem
 
@@ -737,6 +795,12 @@ declare class CPListSection extends NSObject implements NSSecureCoding {
 
 	readonly header: string;
 
+	readonly headerButton: CPButton;
+
+	headerImage: UIImage;
+
+	readonly headerSubtitle: string;
+
 	readonly items: NSArray<CPListTemplateItem>;
 
 	readonly sectionIndexTitle: string;
@@ -746,6 +810,8 @@ declare class CPListSection extends NSObject implements NSSecureCoding {
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { items: NSArray<CPListTemplateItem> | CPListTemplateItem[]; });
+
+	constructor(o: { items: NSArray<CPListTemplateItem> | CPListTemplateItem[]; header: string; headerSubtitle: string; headerImage: UIImage; headerButton: CPButton; sectionIndexTitle: string; });
 
 	constructor(o: { items: NSArray<CPListTemplateItem> | CPListTemplateItem[]; header: string; sectionIndexTitle: string; });
 
@@ -757,6 +823,8 @@ declare class CPListSection extends NSObject implements NSSecureCoding {
 
 	initWithItems(items: NSArray<CPListTemplateItem> | CPListTemplateItem[]): this;
 
+	initWithItemsHeaderHeaderSubtitleHeaderImageHeaderButtonSectionIndexTitle(items: NSArray<CPListTemplateItem> | CPListTemplateItem[], header: string, headerSubtitle: string, headerImage: UIImage, headerButton: CPButton, sectionIndexTitle: string): this;
+
 	initWithItemsHeaderSectionIndexTitle(items: NSArray<CPListTemplateItem> | CPListTemplateItem[], header: string, sectionIndexTitle: string): this;
 
 	itemAtIndex(index: number): CPListTemplateItem;
@@ -767,6 +835,8 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	static alloc(): CPListTemplate; // inherited from NSObject
 
 	static new(): CPListTemplate; // inherited from NSObject
+
+	assistantCellConfiguration: CPAssistantCellConfiguration;
 
 	delegate: CPListTemplateDelegate;
 
@@ -806,6 +876,8 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 
 	constructor(o: { title: string; sections: NSArray<CPListSection> | CPListSection[]; });
 
+	constructor(o: { title: string; sections: NSArray<CPListSection> | CPListSection[]; assistantCellConfiguration: CPAssistantCellConfiguration; });
+
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
@@ -813,6 +885,8 @@ declare class CPListTemplate extends CPTemplate implements CPBarButtonProviding 
 	indexPathForItem(item: CPListTemplateItem): NSIndexPath;
 
 	initWithTitleSections(title: string, sections: NSArray<CPListSection> | CPListSection[]): this;
+
+	initWithTitleSectionsAssistantCellConfiguration(title: string, sections: NSArray<CPListSection> | CPListSection[], assistantCellConfiguration: CPAssistantCellConfiguration): this;
 
 	isEqual(object: any): boolean;
 
@@ -845,6 +919,8 @@ declare var CPListTemplateDelegate: {
 };
 
 interface CPListTemplateItem extends NSObjectProtocol {
+
+	enabled: boolean;
 
 	text: string;
 
@@ -1072,6 +1148,8 @@ declare var CPMapTemplateDelegate: {
 	prototype: CPMapTemplateDelegate;
 };
 
+declare var CPMaximumListSectionImageSize: CGSize;
+
 declare var CPMaximumMessageItemImageSize: CGSize;
 
 declare var CPMaximumNumberOfGridImages: number;
@@ -1119,6 +1197,8 @@ declare class CPMessageListItem extends NSObject implements CPListTemplateItem {
 	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	readonly description: string; // inherited from NSObjectProtocol
+
+	enabled: boolean; // inherited from CPListTemplateItem
 
 	readonly hash: number; // inherited from NSObjectProtocol
 

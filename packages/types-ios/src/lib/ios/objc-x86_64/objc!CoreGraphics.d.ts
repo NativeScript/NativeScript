@@ -172,6 +172,17 @@ declare function CGColorCreateSRGB(red: number, green: number, blue: number, alp
 
 declare function CGColorCreateWithPattern(space: any, pattern: any, components: interop.Pointer | interop.Reference<number>): any;
 
+interface CGColorDataFormat {
+	version: number;
+	colorspace_info: any;
+	bitmap_info: CGBitmapInfo;
+	bits_per_component: number;
+	bytes_per_row: number;
+	intent: CGColorRenderingIntent;
+	decode: interop.Pointer | interop.Reference<number>;
+}
+declare var CGColorDataFormat: interop.StructType<CGColorDataFormat>;
+
 declare function CGColorEqualToColor(color1: any, color2: any): boolean;
 
 declare function CGColorGetAlpha(color: any): number;
@@ -237,6 +248,8 @@ declare function CGColorSpaceCreateLinearized(space: any): any;
 
 declare function CGColorSpaceCreatePattern(baseSpace: any): any;
 
+declare function CGColorSpaceCreateWithColorSyncProfile(p1: any, options: NSDictionary<any, any>): any;
+
 declare function CGColorSpaceCreateWithICCData(data: any): any;
 
 declare function CGColorSpaceCreateWithICCProfile(data: NSData): any;
@@ -262,6 +275,10 @@ declare function CGColorSpaceGetNumberOfComponents(space: any): number;
 declare function CGColorSpaceGetTypeID(): number;
 
 declare function CGColorSpaceIsHDR(p1: any): boolean;
+
+declare function CGColorSpaceIsHLGBased(s: any): boolean;
+
+declare function CGColorSpaceIsPQBased(s: any): boolean;
 
 declare function CGColorSpaceIsWideGamutRGB(p1: any): boolean;
 
@@ -538,6 +555,8 @@ declare function CGContextSynchronize(c: any): void;
 
 declare function CGContextTranslateCTM(c: any, tx: number, ty: number): void;
 
+declare function CGConvertColorDataWithFormat(width: number, height: number, dst_data: interop.Pointer | interop.Reference<any>, dst_format: CGColorDataFormat, src_data: interop.Pointer | interop.Reference<any>, src_format: CGColorDataFormat, options: NSDictionary<any, any>): boolean;
+
 interface CGDataConsumerCallbacks {
 	putBytes: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => number>;
 	releaseConsumer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
@@ -620,6 +639,8 @@ declare const enum CGError {
 
 	kCGErrorNoneAvailable = 1011
 }
+
+declare function CGErrorSetCallback(callback: interop.FunctionReference<() => void>): void;
 
 declare function CGFontCanCreatePostScriptSubset(font: any, format: CGFontPostScriptFormat): boolean;
 
@@ -1549,6 +1570,8 @@ declare var kCGColorSpaceExtendedLinearITUR_2020: string;
 
 declare var kCGColorSpaceExtendedLinearSRGB: string;
 
+declare var kCGColorSpaceExtendedRange: string;
+
 declare var kCGColorSpaceExtendedSRGB: string;
 
 declare var kCGColorSpaceGenericCMYK: string;
@@ -1579,7 +1602,11 @@ declare var kCGColorSpaceITUR_2100_PQ: string;
 
 declare var kCGColorSpaceITUR_709: string;
 
+declare var kCGColorSpaceLinearDisplayP3: string;
+
 declare var kCGColorSpaceLinearGray: string;
+
+declare var kCGColorSpaceLinearITUR_2020: string;
 
 declare var kCGColorSpaceLinearSRGB: string;
 
