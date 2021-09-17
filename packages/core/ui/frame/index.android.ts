@@ -485,7 +485,8 @@ export class Frame extends FrameBase {
 				entry.returnTransitionListener.backEntry = backstackEntry;
 			}
 
-			// we only did hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
+			// we only hide the fragment to fix some black blick issues with GLSurfaceView and GLTextureView
+			// it will be removed once the navigation is done
 			transaction.hide(this._currentEntry.fragment);
 		}
 
