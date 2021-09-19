@@ -2,7 +2,7 @@
 set -e
 
 ENV="${ENV:-dev}"
-DIST_DIR="bin/dist"
+DIST_DIR="dist"
 PACKAGE_VERSION="${PACKAGE_VERSION:-0.0.0}"
 
 archive_dist_dir() {
@@ -29,8 +29,8 @@ extract_apiref() {
 #    npm_install
     npx typedoc --tsconfig tools/scripts/tsconfig.typedoc.json
 
-    mv "dist/apiref" "$APIREF_DIR"
-    archive_dist_dir "api-reference"
+    # mv "dist/apiref" "$APIREF_DIR"
+    # archive_dist_dir "api-reference"
 }
 
 if [ "${BASH_SOURCE[0]}" == "$0" ] ; then
