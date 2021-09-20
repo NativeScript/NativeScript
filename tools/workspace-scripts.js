@@ -99,6 +99,13 @@ module.exports = {
 					},
 				},
 			},
+      // @nativescript/core API Reference Docs
+      'core-api-docs': {
+				build: {
+          script: 'nx run core-api-docs:build',
+          description: '@nativescript/core: API Reference Docs Build'
+        }
+      },
 			// @nativescript/ui-mobile-base
 			'ui-mobile-base': {
 				build: {
@@ -115,6 +122,13 @@ module.exports = {
 				test: {
           script: 'nx run webpack:test',
           description: '@nativescript/webpack: Unit tests'
+        },
+      },
+      // @nativescript/webpack (5)
+			webpack5: {
+				build: {
+          script: 'nx run webpack5:build',
+          description: '@nativescript/webpack(5): Build for npm'
         },
 			},
     },

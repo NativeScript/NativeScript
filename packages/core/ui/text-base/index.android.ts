@@ -13,6 +13,8 @@ import { Span } from './span';
 import { CoreTypes } from '../../core-types';
 import { layout } from '../../utils';
 import { isString, isNullOrUndefined } from '../../utils/types';
+import { accessibilityIdentifierProperty } from '../../accessibility/accessibility-properties';
+import * as Utils from '../../utils';
 
 export * from './text-base-common';
 
@@ -343,10 +345,10 @@ export class TextBase extends TextBaseCommon {
 	}
 
 	[lineHeightProperty.getDefault](): number {
-		return this.nativeView.getLineSpacingExtra() / layout.getDisplayDensity();
+		return this.nativeTextViewProtected.getLineSpacingExtra() / layout.getDisplayDensity();
 	}
 	[lineHeightProperty.setNative](value: number) {
-		this.nativeView.setLineSpacing(value * layout.getDisplayDensity(), 1);
+		this.nativeTextViewProtected.setLineSpacing(value * layout.getDisplayDensity(), 1);
 	}
 
 	[fontInternalProperty.getDefault](): android.graphics.Typeface {
@@ -393,7 +395,7 @@ export class TextBase extends TextBaseCommon {
 
 	[textShadowProperty.setNative](value: CSSShadow) {
 		// prettier-ignore
-		this.nativeViewProtected.setShadowLayer(
+		this.nativeTextViewProtected.setShadowLayer(
 			Length.toDevicePixels(value.blurRadius, java.lang.Float.MIN_VALUE),
 			Length.toDevicePixels(value.offsetX, 0),
 			Length.toDevicePixels(value.offsetY, 0),
@@ -436,6 +438,16 @@ export class TextBase extends TextBaseCommon {
 		org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeTextViewProtected, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
 	}
 
+	[accessibilityIdentifierProperty.setNative](value: string): void {
+		// we override the default setter to apply it on nativeTextViewProtected
+		const id = Utils.ad.resources.getId(':id/nativescript_accessibility_id');
+
+		if (id) {
+			this.nativeTextViewProtected.setTag(id, value);
+			this.nativeTextViewProtected.setTag(value);
+		}
+	}
+
 	_setNativeText(reset = false): void {
 		if (reset) {
 			this.nativeTextViewProtected.setText(null);
@@ -459,10 +471,10 @@ export class TextBase extends TextBaseCommon {
 		if (this._tappable !== tappable) {
 			this._tappable = tappable;
 			if (this._tappable) {
-				this.nativeViewProtected.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
-				this.nativeViewProtected.setHighlightColor(null);
+				this.nativeTextViewProtected.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+				this.nativeTextViewProtected.setHighlightColor(null);
 			} else {
-				this.nativeViewProtected.setMovementMethod(this._defaultMovementMethod);
+				this.nativeTextViewProtected.setMovementMethod(this._defaultMovementMethod);
 			}
 		}
 	}

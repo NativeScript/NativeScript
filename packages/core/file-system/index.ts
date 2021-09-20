@@ -74,7 +74,7 @@ export class FileSystemEntity {
 
 			this.removeSync(localError);
 			if (!hasError) {
-				resolve();
+				resolve(true);
 			}
 		});
 	}
@@ -108,7 +108,7 @@ export class FileSystemEntity {
 			this.renameSync(newName, localError);
 
 			if (!hasError) {
-				resolve();
+				resolve(true);
 			}
 		});
 	}
@@ -357,7 +357,7 @@ export class File extends FileSystemEntity {
 				.writeTextAsync(this.path, content, encoding)
 				.then(
 					() => {
-						resolve();
+						resolve(true);
 						this._locked = false;
 					},
 					(error) => {
@@ -434,7 +434,7 @@ export class Folder extends FileSystemEntity {
 
 			this.clearSync(onError);
 			if (!hasError) {
-				resolve();
+				resolve(true);
 			}
 		});
 	}

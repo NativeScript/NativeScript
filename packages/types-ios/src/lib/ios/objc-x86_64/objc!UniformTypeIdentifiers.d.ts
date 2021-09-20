@@ -206,6 +206,8 @@ declare var UTTypeMPEG4Audio: UTType;
 
 declare var UTTypeMPEG4Movie: UTType;
 
+declare var UTTypeMakefile: UTType;
+
 declare var UTTypeMessage: UTType;
 
 declare var UTTypeMountPoint: UTType;

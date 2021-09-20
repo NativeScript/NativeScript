@@ -317,6 +317,33 @@ export class ImageSource implements ImageSourceDefinition {
 		return false;
 	}
 
+	public saveToFileAsync(path: string, format: 'png' | 'jpeg' | 'jpg', quality?: number): Promise<boolean> {
+		return new Promise<boolean>((resolve, reject) => {
+			if (!this.ios) {
+				reject(false);
+			}
+			let isSuccess = false;
+			try {
+				if (quality) {
+					quality = (quality - 0) / (100 - 0); // Normalize quality on a scale of 0 to 1
+				}
+				const main_queue = dispatch_get_current_queue();
+				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
+				dispatch_async(background_queue, () => {
+					const data = getImageData(this.ios, format, quality);
+					if (data) {
+						isSuccess = NSFileManager.defaultManager.createFileAtPathContentsAttributes(path, data, null);
+					}
+					dispatch_async(main_queue, () => {
+						resolve(isSuccess);
+					});
+				});
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
 	public toBase64String(format: 'png' | 'jpeg' | 'jpg', quality?: number): string {
 		let res = null;
 		if (!this.ios) {
@@ -335,18 +362,71 @@ export class ImageSource implements ImageSourceDefinition {
 		return res;
 	}
 
+	public toBase64StringAsync(format: 'png' | 'jpeg' | 'jpg', quality?: number): Promise<string> {
+		return new Promise<string>((resolve, reject) => {
+			if (!this.ios) {
+				reject(null);
+			}
+			let result = null;
+			try {
+				if (quality) {
+					quality = (quality - 0) / (100 - 0); // Normalize quality on a scale of 0 to 1
+				}
+				const main_queue = dispatch_get_current_queue();
+				const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
+				dispatch_async(background_queue, () => {
+					const data = getImageData(this.ios, format, quality);
+					if (data) {
+						result = data.base64Encoding();
+					}
+					dispatch_async(main_queue, () => {
+						resolve(result);
+					});
+				});
+			} catch (ex) {
+				reject(ex);
+			}
+		});
+	}
+
 	public resize(maxSize: number, options?: any): ImageSource {
 		const size: CGSize = this.ios.size;
 		const dim = getScaledDimensions(size.width, size.height, maxSize);
 
 		const newSize: CGSize = CGSizeMake(dim.width, dim.height);
-		UIGraphicsBeginImageContextWithOptions(newSize, true, this.ios.scale);
+
+		UIGraphicsBeginImageContextWithOptions(newSize, options?.opaque ?? false, this.ios.scale);
 		this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
 
 		const resizedImage = UIGraphicsGetImageFromCurrentImageContext();
 		UIGraphicsEndImageContext();
 
 		return new ImageSource(resizedImage);
+	}
+
+	public resizeAsync(maxSize: number, options?: any): Promise<ImageSource> {
+		return new Promise((resolve, reject) => {
+			if (!this.ios) {
+				reject(null);
+			}
+			const main_queue = dispatch_get_current_queue();
+			const background_queue = dispatch_get_global_queue(qos_class_t.QOS_CLASS_DEFAULT, 0);
+			dispatch_async(background_queue, () => {
+				const size: CGSize = this.ios.size;
+				const dim = getScaledDimensions(size.width, size.height, maxSize);
+
+				const newSize: CGSize = CGSizeMake(dim.width, dim.height);
+
+				UIGraphicsBeginImageContextWithOptions(newSize, options?.opaque ?? false, this.ios.scale);
+				this.ios.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
+
+				const resizedImage = UIGraphicsGetImageFromCurrentImageContext();
+				UIGraphicsEndImageContext();
+				dispatch_async(main_queue, () => {
+					resolve(new ImageSource(resizedImage));
+				});
+			});
+		});
 	}
 }
 

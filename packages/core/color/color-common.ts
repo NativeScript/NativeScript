@@ -1,7 +1,6 @@
-﻿import * as definition from '.';
+import * as definition from '.';
 import * as types from '../utils/types';
 import * as knownColors from './known-colors';
-import { convertHSLToRGBColor } from '../css/parser';
 
 const SHARP = '#';
 const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
@@ -12,26 +11,28 @@ export class Color implements definition.Color {
 
 	constructor(color: number);
 	constructor(color: string);
-	constructor(a: number, r: number, g: number, b: number);
+	constructor(a: number, r: number, g: number, b: number, type?: 'rbg' | 'hsl' | 'hsv');
 	constructor(...args) {
 		if (args.length === 1) {
 			const arg = args[0];
 			if (types.isString(arg)) {
-				if (isRgbOrRgba(arg)) {
-					this._argb = argbFromRgbOrRgba(arg);
-				} else if (isHslOrHsla(arg)) {
-					this._argb = argbFromHslOrHsla(arg);
-				} else if (knownColors.isKnownName(arg)) {
+				const lowered = arg.toLowerCase();
+				if (isRgbOrRgba(lowered)) {
+					this._argb = argbFromRgbOrRgba(lowered);
+				} else if (isHslOrHsla(lowered)) {
+					this._argb = argbFromHslOrHsla(lowered);
+				} else if (isHsvOrHsva(lowered)) {
+					this._argb = argbFromHsvOrHsva(lowered);
+				} else if (knownColors.isKnownName(lowered)) {
 					// The parameter is a known color name
-					const argb = knownColors.getKnownColor(arg);
+					const argb = knownColors.getKnownColor(lowered);
 					this._name = arg;
 					this._argb = argb;
 				} else if (arg[0].charAt(0) === SHARP && (arg.length === 4 || arg.length === 7 || arg.length === 9)) {
 					// we dont use the regexp as it is quite slow. Instead we expect it to be a valid hex format
 					// strange that it would not be. And if it is not a thrown error seems best
 					// The parameter is a "#RRGGBBAA" formatted string
-					const hex = this._normalizeHex(arg);
-					this._argb = this._argbFromString(hex);
+					this._argb = this._argbFromString(arg);
 				} else {
 					throw new Error('Invalid color: ' + arg);
 				}
@@ -47,8 +48,23 @@ export class Color implements definition.Color {
 			} else {
 				throw new Error('Expected 1 or 4 constructor parameters.');
 			}
-		} else if (args.length === 4) {
-			this._argb = (args[0] & 0xff) * 0x01000000 + (args[1] & 0xff) * 0x00010000 + (args[2] & 0xff) * 0x00000100 + (args[3] & 0xff) * 0x00000001;
+		} else if (args.length >= 4) {
+			const a = args[0];
+			switch (args[4]) {
+				case 'hsl': {
+					const { r, g, b } = hslToRgb(args[1], args[2], args[3]);
+					this._argb = (a & 0xff) * 0x01000000 + (r & 0xff) * 0x00010000 + (g & 0xff) * 0x00000100 + (b & 0xff) * 0x00000001;
+					break;
+				}
+				case 'hsv': {
+					const { r, g, b } = hsvToRgb(args[1], args[2], args[3]);
+					this._argb = (a & 0xff) * 0x01000000 + (r & 0xff) * 0x00010000 + (g & 0xff) * 0x00000100 + (b & 0xff) * 0x00000001;
+					break;
+				}
+				default:
+					this._argb = (a & 0xff) * 0x01000000 + (args[1] & 0xff) * 0x00010000 + (args[2] & 0xff) * 0x00000100 + (args[3] & 0xff) * 0x00000001;
+					break;
+			}
 		} else {
 			throw new Error('Expected 1 or 4 constructor parameters.');
 		}
@@ -72,11 +88,11 @@ export class Color implements definition.Color {
 	}
 
 	get hex(): string {
-		if (this.a === 0xff) {
-			return ('#' + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b)).toUpperCase();
-		} else {
-			return ('#' + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b) + this._componentToHex(this.a)).toUpperCase();
+		let result = SHARP + ('000000' + (this._argb & 0xffffff).toString(16)).toUpperCase().slice(-6);
+		if (this.a !== 0xff) {
+			return (result += ('00' + this.a.toString(16).toUpperCase()).slice(-2));
 		}
+		return result;
 	}
 
 	get name(): string {
@@ -92,13 +108,13 @@ export class Color implements definition.Color {
 	}
 
 	public _argbFromString(hex: string): number {
-		if (hex.charAt(0) === '#') {
-			hex = hex.substr(1);
-		}
-
-		if (hex.length === 3) {
+		// always called as SHARP as first char
+		hex = hex.substr(1);
+		const length = hex.length;
+		// first we normalize
+		if (length === 3) {
 			hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-		} else if (hex.length === 4) {
+		} else if (length === 4) {
 			hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
 		}
 
@@ -142,35 +158,19 @@ export class Color implements definition.Color {
 		if (!types.isString(value)) {
 			return false;
 		}
+		const lowered = value.toLowerCase();
 
-		if (knownColors.isKnownName(value)) {
+		if (knownColors.isKnownName(lowered)) {
 			return true;
 		}
 
-		return HEX_REGEX.test(value) || isRgbOrRgba(value) || isHslOrHsla(value);
+		return HEX_REGEX.test(value) || isRgbOrRgba(lowered) || isHslOrHsla(lowered);
 	}
 	public static fromHSL(a, h, s, l) {
-		const rgb = hslToRgb(h, s, l);
-		return new Color(a, rgb.r, rgb.g, rgb.b);
+		return new Color(a, h, s, l, 'hsl');
 	}
-
-	private _componentToHex(component: number): string {
-		let hex = component.toString(16);
-		if (hex.length === 1) {
-			hex = '0' + hex;
-		}
-
-		return hex;
-	}
-
-	private _normalizeHex(hexStr: string): string {
-		// we expect this to already has a # as first char as it is supposed to be tested before
-		if (hexStr.length === 4) {
-			// Duplicate each char after the #, so "#123" becomes "#112233"
-			hexStr = hexStr.charAt(0) + hexStr.charAt(1) + hexStr.charAt(1) + hexStr.charAt(2) + hexStr.charAt(2) + hexStr.charAt(3) + hexStr.charAt(3);
-		}
-
-		return hexStr;
+	public static fromHSV(a, h, s, l) {
+		return new Color(a, h, s, l, 'hsv');
 	}
 
 	public toString(): string {
@@ -247,8 +247,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHsl() {
-		const hsl = rgbToHsl(this.r, this.g, this.b);
-		return { h: hsl.h * 360, s: hsl.s, l: hsl.l, a: this.a };
+		return { ...rgbToHsl(this.r, this.g, this.b), a: this.a };
 	}
 
 	/**
@@ -257,9 +256,9 @@ export class Color implements definition.Color {
 	 */
 	public toHslString() {
 		const hsl = rgbToHsl(this.r, this.g, this.b);
-		const h = Math.round(hsl.h * 360),
-			s = Math.round(hsl.s * 100),
-			l = Math.round(hsl.l * 100);
+		const h = Math.round(hsl.h),
+			s = Math.round(hsl.s),
+			l = Math.round(hsl.l);
 		const a = this.a;
 		return a == 255 ? 'hsl(' + h + ', ' + s + '%, ' + l + '%)' : 'hsla(' + h + ', ' + s + '%, ' + l + '%, ' + (a / 255).toFixed(2) + ')';
 	}
@@ -269,8 +268,7 @@ export class Color implements definition.Color {
 	 *
 	 */
 	public toHsv() {
-		const hsv = rgbToHsv(this.r, this.g, this.b);
-		return { h: hsv.h * 360, s: hsv.s, v: hsv.v, a: this.a };
+		return { ...rgbToHsv(this.r, this.g, this.b), a: this.a };
 	}
 
 	/**
@@ -302,10 +300,8 @@ export class Color implements definition.Color {
 	 */
 	public desaturate(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = this.toHsl();
-		hsl.s -= amount / 100;
-		hsl.s = Math.min(1, Math.max(0, hsl.s));
-		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
+		const hsl = rgbToHsl(this.r, this.g, this.b);
+		return Color.fromHSL(this.a, hsl.h, Math.min(100, Math.max(0, hsl.s - amount)), hsl.l);
 	}
 
 	/**
@@ -315,10 +311,8 @@ export class Color implements definition.Color {
 	 */
 	public saturate(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = this.toHsl();
-		hsl.s += amount / 100;
-		hsl.s = Math.min(1, Math.max(0, hsl.s));
-		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
+		const hsl = rgbToHsl(this.r, this.g, this.b);
+		return Color.fromHSL(this.a, hsl.h, Math.min(100, Math.max(0, hsl.s + amount)), hsl.l);
 	}
 
 	/**
@@ -336,10 +330,8 @@ export class Color implements definition.Color {
 	 */
 	public lighten(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = this.toHsl();
-		hsl.l += amount / 100;
-		hsl.l = Math.min(1, Math.max(0, hsl.l));
-		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
+		const hsl = rgbToHsl(this.r, this.g, this.b);
+		return Color.fromHSL(this.a, hsl.h, hsl.s, Math.min(100, Math.max(0, hsl.l + amount)));
 	}
 
 	/**
@@ -362,16 +354,14 @@ export class Color implements definition.Color {
 	 */
 	public darken(amount: number) {
 		amount = amount === 0 ? 0 : amount || 10;
-		const hsl = this.toHsl();
-		hsl.l -= amount / 100;
-		hsl.l = Math.min(1, Math.max(0, hsl.l));
-		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
+		const hsl = rgbToHsl(this.r, this.g, this.b);
+		return Color.fromHSL(this.a, hsl.h, hsl.s, Math.min(100, Math.max(0, hsl.l - amount)));
 	}
 
 	/**
 	 * Spin the hue a given amount, from -360 to 360. Calling with 0, 360, or -360 will do nothing (since it sets the hue back to what it was before).
 	 *
-	 * @param amount (between 0 and 100)
+	 * @param amount (between -360 and 360)
 	 */
 	public spin(amount: number) {
 		const hsl = this.toHsl();
@@ -389,25 +379,37 @@ export class Color implements definition.Color {
 		hsl.h = (hsl.h + 180) % 360;
 		return Color.fromHSL(this.a, hsl.h, hsl.s, hsl.l);
 	}
+
+	static mix(color1: Color, color2: Color, amount = 50) {
+		const p = amount / 100;
+
+		const rgba = {
+			r: (color2.r - color1.r) * p + color1.r,
+			g: (color2.g - color1.g) * p + color1.g,
+			b: (color2.b - color1.b) * p + color1.b,
+			a: (color2.a - color1.a) * p + color1.a,
+		};
+
+		return new Color(rgba.a, rgba.r, rgba.g, rgba.b);
+	}
 }
 
 function isRgbOrRgba(value: string): boolean {
-	const toLower = value.toLowerCase();
-
-	return (toLower.indexOf('rgb(') === 0 || toLower.indexOf('rgba(') === 0) && toLower.indexOf(')') === toLower.length - 1;
+	return (value.startsWith('rgb(') || value.startsWith('rgba(')) && value.endsWith(')');
 }
 
 function isHslOrHsla(value: string): boolean {
-	const toLower = value.toLowerCase();
-
-	return (toLower.indexOf('hsl(') === 0 || toLower.indexOf('hsla(') === 0) && toLower.indexOf(')') === toLower.length - 1;
+	return (value.startsWith('hsl') || value.startsWith('hsla(')) && value.endsWith(')');
+}
+function isHsvOrHsva(value: string): boolean {
+	return (value.startsWith('hsv') || value.startsWith('hsva(')) && value.endsWith(')');
 }
 
 function parseColorWithAlpha(value: string): any {
-	const toLower = value.toLowerCase();
-	const parts = toLower
-		.replace(/(rgb|hsl)a?\(/, '')
+	const parts = value
+		.replace(/(rgb|hsl|hsv)a?\(/, '')
 		.replace(')', '')
+		.replace(/%/g, '')
 		.trim()
 		.split(',');
 
@@ -444,18 +446,26 @@ function argbFromRgbOrRgba(value: string): number {
 function argbFromHslOrHsla(value: string): number {
 	const { f: h, s: s, t: l, a } = parseColorWithAlpha(value);
 
-	const { r, g, b } = convertHSLToRGBColor(h, s, l);
+	const { r, g, b } = hslToRgb(h, s, l);
+
+	return (a & 0xff) * 0x01000000 + (r & 0xff) * 0x00010000 + (g & 0xff) * 0x00000100 + (b & 0xff);
+}
+
+function argbFromHsvOrHsva(value: string): number {
+	const { f: h, s: s, t: v, a } = parseColorWithAlpha(value);
+
+	const { r, g, b } = hsvToRgb(h, s, v);
 
 	return (a & 0xff) * 0x01000000 + (r & 0xff) * 0x00010000 + (g & 0xff) * 0x00000100 + (b & 0xff);
 }
 
 // `rgbToHsl`
 // Converts an RGB color value to HSL.
-// *Assumes:* r, g, and b are contained in [0, 255] or [0, 1]
-// *Returns:* { h, s, l } in [0,1]
+// *Assumes:* r, g, and b are contained in [0, 255]
+// *Returns:* { h, s, l } in [0,360] and [0,100]
 function rgbToHsl(r, g, b) {
-	const max = Math.max(r, g, b),
-		min = Math.min(r, g, b);
+	const max = Math.max(r, g, b) / 255,
+		min = Math.min(r, g, b) / 255;
 	let h, s;
 	const l = (max + min) / 2;
 
@@ -466,20 +476,20 @@ function rgbToHsl(r, g, b) {
 		s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 		switch (max) {
 			case r:
-				h = (g - b) / d + (g < b ? 6 : 0);
+				h = (g - b) / 255 / d + (g < b ? 6 : 0);
 				break;
 			case g:
-				h = (b - r) / d + 2;
+				h = (b - r) / 255 / d + 2;
 				break;
 			case b:
-				h = (r - g) / d + 4;
+				h = (r - g) / 255 / d + 4;
 				break;
 		}
 
 		h /= 6;
 	}
 
-	return { h: h, s: s, l: l };
+	return { h: h * 360, s: s * 100, l: l * 100 };
 }
 
 function hue2rgb(p, q, t) {
@@ -493,9 +503,12 @@ function hue2rgb(p, q, t) {
 
 // `hslToRgb`
 // Converts an HSL color value to RGB.
-// *Assumes:* h is contained in [0, 1] or [0, 360] and s and l are contained [0, 1] or [0, 100]
+// *Assumes:* h is contained in  [0, 360] and s and l are contained  [0, 100]
 // *Returns:* { r, g, b } in the set [0, 255]
-function hslToRgb(h, s, l) {
+function hslToRgb(h1, s1, l1) {
+	const h = (h1 % 360) / 360;
+	const s = s1 / 100;
+	const l = l1 / 100;
 	let r, g, b;
 	if (s === 0) {
 		r = g = b = l; // achromatic
@@ -512,11 +525,11 @@ function hslToRgb(h, s, l) {
 
 // `rgbToHsv`
 // Converts an RGB color value to HSV
-// *Assumes:* r, g, and b are contained in the set [0, 255] or [0, 1]
-// *Returns:* { h, s, v } in [0,1]
+// *Assumes:* r, g, and b are contained in the set [0, 255]
+// *Returns:* { h, s, v } in [0,360] and [0,100]
 function rgbToHsv(r, g, b) {
-	const max = Math.max(r, g, b),
-		min = Math.min(r, g, b);
+	const max = Math.max(r, g, b) / 255,
+		min = Math.min(r, g, b) / 255;
 	let h;
 	const v = max;
 
@@ -528,16 +541,38 @@ function rgbToHsv(r, g, b) {
 	} else {
 		switch (max) {
 			case r:
-				h = (g - b) / d + (g < b ? 6 : 0);
+				h = (g - b) / 255 / d + (g < b ? 6 : 0);
 				break;
 			case g:
-				h = (b - r) / d + 2;
+				h = (b - r) / 255 / d + 2;
 				break;
 			case b:
-				h = (r - g) / d + 4;
+				h = (r - g) / 255 / d + 4;
 				break;
 		}
 		h /= 6;
 	}
-	return { h: h, s: s, v: v };
+	return { h: h * 360, s: s * 100, v: v * 100 };
+}
+
+// `hsvToRgb`
+// Converts an HSV color value to RGB.
+// *Assumes:* h is contained in [0, 360] and s and v are contained [0, 100]
+// *Returns:* { r, g, b } in the set [0, 255]
+function hsvToRgb(h1, s1, v1) {
+	const h = ((h1 % 360) / 360) * 6;
+	const s = s1 / 100;
+	const v = v1 / 100;
+
+	var i = Math.floor(h),
+		f = h - i,
+		p = v * (1 - s),
+		q = v * (1 - f * s),
+		t = v * (1 - (1 - f) * s),
+		mod = i % 6,
+		r = [v, q, p, p, t, v][mod],
+		g = [t, v, v, q, p, p][mod],
+		b = [p, p, t, v, v, q][mod];
+
+	return { r: r * 255, g: g * 255, b: b * 255 };
 }

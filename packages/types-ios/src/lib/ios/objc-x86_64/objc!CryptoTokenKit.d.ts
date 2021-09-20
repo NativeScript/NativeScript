@@ -693,4 +693,19 @@ declare class TKTokenWatcher extends NSObject {
 	initWithInsertionHandler(insertionHandler: (p1: string) => void): this;
 
 	setInsertionHandler(insertionHandler: (p1: string) => void): void;
+
+	tokenInfoForTokenID(tokenID: string): TKTokenWatcherTokenInfo;
+}
+
+declare class TKTokenWatcherTokenInfo extends NSObject {
+
+	static alloc(): TKTokenWatcherTokenInfo; // inherited from NSObject
+
+	static new(): TKTokenWatcherTokenInfo; // inherited from NSObject
+
+	readonly driverName: string;
+
+	readonly slotName: string;
+
+	readonly tokenID: string;
 }

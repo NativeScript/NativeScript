@@ -12,7 +12,6 @@ interface IConfigPlatform {
 	discardUncaughtJsExceptions?: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface IConfigIOS extends IConfigPlatform {}
 
 interface IConfigAndroid extends IConfigPlatform {
@@ -143,4 +142,9 @@ export interface NativeScriptConfig {
 	 * Default: css-tree
 	 */
 	cssParser?: 'rework' | 'nativescript' | 'css-tree';
+
+	/**
+	 * Optionally specify a list of npm package names for which you would like the NativeScript CLI to ignore when attaching native dependencies to the build
+	 */
+	ignoredNativeDependencies?: string[];
 }

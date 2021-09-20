@@ -623,7 +623,7 @@ declare function CMTimebaseRemoveTimer(timebase: any, timer: NSTimer): number;
 
 declare function CMTimebaseRemoveTimerDispatchSource(timebase: any, timerSource: NSObject): number;
 
-declare function CMTimebaseSetAnchorTime(timebase: any, timebaseTime: CMTime, immediateMasterTime: CMTime): number;
+declare function CMTimebaseSetAnchorTime(timebase: any, timebaseTime: CMTime, immediateSourceTime: CMTime): number;
 
 declare function CMTimebaseSetMasterClock(timebase: any, newMasterClock: any): number;
 
@@ -631,7 +631,7 @@ declare function CMTimebaseSetMasterTimebase(timebase: any, newMasterTimebase: a
 
 declare function CMTimebaseSetRate(timebase: any, rate: number): number;
 
-declare function CMTimebaseSetRateAndAnchorTime(timebase: any, rate: number, timebaseTime: CMTime, immediateMasterTime: CMTime): number;
+declare function CMTimebaseSetRateAndAnchorTime(timebase: any, rate: number, timebaseTime: CMTime, immediateSourceTime: CMTime): number;
 
 declare function CMTimebaseSetTime(timebase: any, time: CMTime): number;
 
@@ -843,7 +843,11 @@ declare var kCMFormatDescriptionExtension_AlphaChannelMode: string;
 
 declare var kCMFormatDescriptionExtension_AlternativeTransferCharacteristics: string;
 
+declare var kCMFormatDescriptionExtension_AmbientViewingEnvironment: string;
+
 declare var kCMFormatDescriptionExtension_AuxiliaryTypeInfo: string;
+
+declare var kCMFormatDescriptionExtension_BitsPerComponent: string;
 
 declare var kCMFormatDescriptionExtension_BytesPerRow: string;
 
@@ -870,6 +874,8 @@ declare var kCMFormatDescriptionExtension_FormatName: string;
 declare var kCMFormatDescriptionExtension_FullRangeVideo: string;
 
 declare var kCMFormatDescriptionExtension_GammaLevel: string;
+
+declare var kCMFormatDescriptionExtension_HorizontalFieldOfView: string;
 
 declare var kCMFormatDescriptionExtension_ICCProfile: string;
 
@@ -1268,6 +1274,8 @@ declare const kCMPixelFormat_444YpCbCr8: number;
 declare const kCMPixelFormat_8IndexedGray_WhiteIsZero: number;
 
 declare var kCMSampleAttachmentKey_AudioIndependentSampleDecoderRefreshCount: string;
+
+declare var kCMSampleAttachmentKey_CryptorSubsampleAuxiliaryData: string;
 
 declare var kCMSampleAttachmentKey_DependsOnOthers: string;
 
@@ -1718,6 +1726,8 @@ declare const kCMVideoCodecType_DVCPro50NTSC: number;
 declare const kCMVideoCodecType_DVCPro50PAL: number;
 
 declare const kCMVideoCodecType_DVCProPAL: number;
+
+declare const kCMVideoCodecType_DolbyVisionHEVC: number;
 
 declare const kCMVideoCodecType_H263: number;
 

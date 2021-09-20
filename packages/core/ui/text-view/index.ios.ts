@@ -167,6 +167,10 @@ export class TextView extends TextViewBaseCommon {
 			}
 		}
 
+		if (replacementString === '\n') {
+			this.notify({ eventName: TextView.returnPressEvent, object: this });
+		}
+
 		if (this.formattedText) {
 			_updateCharactersInRangeReplacementString(this.formattedText, range.location, range.length, replacementString);
 		}

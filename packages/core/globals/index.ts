@@ -1,5 +1,4 @@
 import * as tslibType from 'tslib';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const tslib: typeof tslibType = require('tslib');
 import { Observable } from '../data/observable';
 import { trace as profilingTrace, time, uptime, level as profilingLevel } from '../profiling';
@@ -319,6 +318,9 @@ export function initGlobal() {
 
 		global.registerModule('fetch', () => require('../fetch'));
 		installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
+
+		// global.registerModule('abortcontroller', () => require('../abortcontroller'));
+		// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);
 
 		// Custom decorators
 

@@ -128,6 +128,13 @@ declare namespace NodeJS {
 		rootLayout: any;
 	}
 }
+declare const __DEV__: string;
+declare const __CSS_PARSER__: string;
+declare const __NS_WEBPACK__: boolean;
+declare const __UI_USE_EXTERNAL_RENDERER__: boolean;
+declare const __UI_USE_XML_PARSER__: boolean;
+declare const __ANDROID__: boolean;
+declare const __IOS__: boolean;
 
 declare function setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): number;
 declare function clearTimeout(timeoutId: number): void;
@@ -347,3 +354,33 @@ declare class WeakRef<T> {
 	get(): T;
 	clear(): void;
 }
+
+/**
+ * Create a Java long from a number
+ */
+declare function long(value: number): any;
+
+/**
+ * Create a Java byte from a number
+ */
+declare function byte(value: number): any;
+
+/**
+ * Create a Java short from a number
+ */
+declare function short(value: number): any;
+
+/**
+ * Create a Java double from a number
+ */
+declare function double(value: number): any;
+
+/**
+ * Create a Java float from a number
+ */
+declare function float(value: number): any;
+
+/**
+ * Create a Java char from a string
+ */
+declare function char(value: string): any;

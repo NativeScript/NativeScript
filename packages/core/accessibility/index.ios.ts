@@ -222,7 +222,6 @@ export function updateAccessibilityProperties(view: View): void {
 	uiView.accessibilityTraits = a11yTraits;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
 export const sendAccessibilityEvent = (): void => {};
 export const updateContentDescription = (): string | null => null;
 

@@ -20,6 +20,8 @@ declare var CHHapticAdvancedPatternPlayer: {
 	prototype: CHHapticAdvancedPatternPlayer;
 };
 
+declare var CHHapticAudioResourceKeyUseVolumeEnvelope: string;
+
 interface CHHapticDeviceCapability {
 
 	supportsAudio: boolean;
@@ -173,6 +175,8 @@ declare const enum CHHapticErrorCode {
 
 	InvalidAudioSession = -4815,
 
+	InvalidEngineParameter = -4816,
+
 	InvalidParameterType = -4820,
 
 	InvalidEventType = -4821,
@@ -190,6 +194,10 @@ declare const enum CHHapticErrorCode {
 	BadParameterEntry = -4831,
 
 	InvalidTime = -4840,
+
+	FileNotFound = -4851,
+
+	InsufficientPower = -4897,
 
 	UnknownError = -4898,
 
@@ -347,6 +355,8 @@ declare var CHHapticPatternKeyEventParameters: string;
 declare var CHHapticPatternKeyEventType: string;
 
 declare var CHHapticPatternKeyEventWaveformPath: string;
+
+declare var CHHapticPatternKeyEventWaveformUseVolumeEnvelope: string;
 
 declare var CHHapticPatternKeyParameter: string;
 

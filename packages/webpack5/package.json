@@ -1,0 +1,79 @@
+{
+	"name": "@nativescript/webpack",
+	"version": "5.0.0",
+	"private": false,
+	"main": "dist/index.js",
+	"files": [
+		"dist"
+	],
+	"bin": {
+		"nativescript-webpack": "dist/bin/index.js"
+	},
+	"license": "Apache-2.0",
+	"scripts": {
+		"build": "tsc --project tsconfig.build.json",
+		"test": "jest",
+		"copy-stubs": "mkdirp dist/stubs && cp -R src/stubs/* dist/stubs",
+		"prepack": "npm run test && npm run build && npm run copy-stubs && chmod +x dist/bin/index.js"
+	},
+	"dependencies": {
+		"@babel/core": "^7.0.0",
+		"@pmmmwh/react-refresh-webpack-plugin": "^0.4.0",
+		"acorn": "^8.0.0",
+		"acorn-stage3": "^4.0.0",
+		"babel-loader": "^8.0.0",
+		"chalk": "^4.0.0",
+		"cli-highlight": "^2.0.0",
+		"commander": "^8.0.0",
+		"copy-webpack-plugin": "^9.0.0",
+		"css": "^3.0.0",
+		"css-loader": "^6.0.0",
+		"dotenv-webpack": "^7.0.0",
+		"fork-ts-checker-webpack-plugin": "^6.0.0",
+		"loader-utils": "^2.0.0",
+		"lodash.get": "^4.0.0",
+		"micromatch": "^4.0.0",
+		"postcss": "^8.0.0",
+		"postcss-import": "^14.0.0",
+		"postcss-loader": "^6.0.0",
+		"raw-loader": "^4.0.0",
+		"react-refresh": "~0.8.3",
+		"sass": "^1.0.0",
+		"sass-loader": "^12.0.0",
+		"sax": "^1.0.0",
+		"source-map": "^0.7.0",
+		"terser-webpack-plugin": "^5.0.0",
+		"ts-dedent": "^2.0.0",
+		"ts-loader": "^9.0.0",
+		"vue-loader": "^15.0.0",
+		"webpack": "^5.30.0 <= 5.50.0 || ^5.51.2",
+		"webpack-bundle-analyzer": "^4.0.0",
+		"webpack-chain": "^6.0.0",
+		"webpack-cli": "^4.0.0",
+		"webpack-merge": "^5.0.0",
+		"webpack-virtual-modules": "^0.4.0"
+	},
+	"devDependencies": {
+		"@types/css": "0.0.33",
+		"@types/jest": "27.0.1",
+		"@types/loader-utils": "2.0.3",
+		"@types/lodash.get": "4.4.6",
+		"@types/micromatch": "4.0.2",
+		"@types/sax": "1.2.3",
+		"@types/terser-webpack-plugin": "5.2.0",
+		"@types/webpack-virtual-modules": "0.1.1",
+		"jest": "27.1.1",
+		"jest-matcher-utils": "27.1.1",
+		"nativescript-vue-template-compiler": "2.9.0",
+		"ts-jest": "27.0.5",
+		"typescript": "4.4.2"
+	},
+	"peerDependencies": {
+		"nativescript-vue-template-compiler": "^2.8.1"
+	},
+	"peerDependenciesMeta": {
+		"nativescript-vue-template-compiler": {
+			"optional": true
+		}
+	}
+}

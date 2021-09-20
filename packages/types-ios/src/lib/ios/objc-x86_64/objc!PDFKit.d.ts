@@ -1,4 +1,23 @@
 
+declare const enum PDFAccessPermissions {
+
+	AllowsLowQualityPrinting = 1,
+
+	AllowsHighQualityPrinting = 2,
+
+	AllowsDocumentChanges = 4,
+
+	AllowsDocumentAssembly = 8,
+
+	AllowsContentCopying = 16,
+
+	AllowsContentAccessibility = 32,
+
+	AllowsCommenting = 64,
+
+	AllowsFormFieldEntry = 128
+}
+
 declare class PDFAction extends NSObject implements NSCopying {
 
 	static alloc(): PDFAction; // inherited from NSObject
@@ -462,7 +481,9 @@ declare const enum PDFAreaOfInterest {
 
 	kPDFPopupArea = 128,
 
-	kPDFImageArea = 256
+	kPDFImageArea = 256,
+
+	kPDFAnyArea = 9223372036854775807
 }
 
 declare class PDFBorder extends NSObject implements NSCoding, NSCopying {
@@ -567,6 +588,8 @@ declare class PDFDocument extends NSObject implements NSCopying {
 
 	static new(): PDFDocument; // inherited from NSObject
 
+	readonly accessPermissions: PDFAccessPermissions;
+
 	readonly allowsCommenting: boolean;
 
 	readonly allowsContentAccessibility: boolean;
@@ -662,6 +685,8 @@ declare class PDFDocument extends NSObject implements NSCopying {
 	writeToURLWithOptions(url: NSURL, options: NSDictionary<string, any>): boolean;
 }
 
+declare var PDFDocumentAccessPermissionsOption: string;
+
 declare var PDFDocumentAuthorAttribute: string;
 
 declare var PDFDocumentCreationDateAttribute: string;
@@ -713,11 +738,15 @@ declare var PDFDocumentDidFindMatchNotification: string;
 
 declare var PDFDocumentDidUnlockNotification: string;
 
+declare var PDFDocumentFoundSelectionKey: string;
+
 declare var PDFDocumentKeywordsAttribute: string;
 
 declare var PDFDocumentModificationDateAttribute: string;
 
 declare var PDFDocumentOwnerPasswordOption: string;
+
+declare var PDFDocumentPageIndexKey: string;
 
 declare const enum PDFDocumentPermissions {
 

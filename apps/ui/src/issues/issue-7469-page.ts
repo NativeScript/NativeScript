@@ -28,7 +28,7 @@ let loaded = false;
 let isIn1 = false;
 
 function updateVcToggleText() {
-	vcToggle.text = `Container is${reusableItem.reusable ? ' ' : ' NOT '}Reusable`
+	vcToggle.text = `Container is${reusableItem.reusable ? ' ' : ' NOT '}Reusable`;
 }
 
 export function pageLoaded(args) {
@@ -82,7 +82,7 @@ export function makeReusable(args: EventData) {
 	}
 	(args.object as any).___reusableRan = true;
 	(args.object as any).reusable = true;
-	if(args.object === reusableItem) {
+	if (args.object === reusableItem) {
 		updateVcToggleText();
 	}
 }

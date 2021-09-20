@@ -97,7 +97,13 @@ declare const enum LAError {
 
 	NotInteractive = -1004,
 
-	WatchNotAvailable = -11
+	WatchNotAvailable = -11,
+
+	BiometryNotPaired = -12,
+
+	BiometryDisconnected = -13,
+
+	InvalidDimensions = -14
 }
 
 declare var LAErrorDomain: string;
