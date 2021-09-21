@@ -23,7 +23,7 @@ export interface LinearGradient {
 	colors: ColorStop[];
 }
 export interface Background {
-	readonly color?: number;
+	readonly color?: number | Color;
 	readonly image?: URL | LinearGradient;
 	readonly repeat?: BackgroundRepeat;
 	readonly position?: BackgroundPosition;
