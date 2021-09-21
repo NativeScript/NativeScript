@@ -205,7 +205,8 @@ export class TextField extends TextFieldBase {
 		}
 
 		if (this.updateTextTrigger === 'textChanged') {
-			if (textField.secureTextEntry && this.firstEdit) {
+			const shouldReplaceString = (textField.secureTextEntry && this.firstEdit) || delta > 1;
+			if (shouldReplaceString) {
 				textProperty.nativeValueChange(this, replacementString);
 			} else {
 				if (range.location <= textField.text.length) {
