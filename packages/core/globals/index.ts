@@ -301,23 +301,23 @@ export function initGlobal() {
 		};
 
 		// DOM api polyfills
-		global.registerModule('timer', () => require('../timer'));
-		installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']);
+		// global.registerModule('timer', () => require('../timer'));
+		// installPolyfills('timer', ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval']);
 
-		global.registerModule('animation', () => require('../animation-frame'));
-		installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
+		// global.registerModule('animation', () => require('../animation-frame'));
+		// installPolyfills('animation', ['requestAnimationFrame', 'cancelAnimationFrame']);
 
-		global.registerModule('ui-dialogs', () => require('../ui/dialogs'));
-		installPolyfills('ui-dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']);
+		// global.registerModule('ui-dialogs', () => require('../ui/dialogs'));
+		// installPolyfills('ui-dialogs', ['alert', 'confirm', 'prompt', 'login', 'action']);
 
-		global.registerModule('text', () => require('../text'));
-		installPolyfills('text', ['TextDecoder', 'TextEncoder']);
+		// global.registerModule('text', () => require('../text'));
+		// installPolyfills('text', ['TextDecoder', 'TextEncoder']);
 
-		global.registerModule('xhr', () => require('../xhr'));
-		installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
+		// global.registerModule('xhr', () => require('../xhr'));
+		// installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
 
-		global.registerModule('fetch', () => require('../fetch'));
-		installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
+		// global.registerModule('fetch', () => require('../fetch'));
+		// installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
 
 		// global.registerModule('abortcontroller', () => require('../abortcontroller'));
 		// installPolyfills('abortcontroller', ['AbortController', 'AbortSignal']);
