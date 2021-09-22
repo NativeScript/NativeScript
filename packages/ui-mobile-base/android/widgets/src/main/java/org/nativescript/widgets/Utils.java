@@ -41,7 +41,7 @@ public class Utils {
 		
 		if (uri.length() >= resPrefixLength) {
 			String resPath = uri.substring(resPrefixLength);
-		  resId = context.getResources().getIdentifier(resPath, "drawable", context.getPackageName());
+			resId = context.getResources().getIdentifier(resPath, "drawable", context.getPackageName());
 		}
 		
 		if (resId > 0) {
