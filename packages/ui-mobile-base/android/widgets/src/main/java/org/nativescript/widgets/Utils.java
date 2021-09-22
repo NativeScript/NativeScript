@@ -36,8 +36,14 @@ import java.util.concurrent.Executors;
 
 public class Utils {
 	public static Drawable getDrawable(String uri, Context context){
-		String resPath = uri.substring("res://".length());
-		int resId = context.getResources().getIdentifier(resPath, "drawable", context.getPackageName());
+		int resId = 0;
+		int resPrefixLength = "res://".length();
+		
+		if (uri.length() >= resPrefixLength) {
+			String resPath = uri.substring(resPrefixLength);
+		  resId = context.getResources().getIdentifier(resPath, "drawable", context.getPackageName());
+		}
+		
 		if (resId > 0) {
 			return AppCompatResources.getDrawable(context, resId);
 		} else {
