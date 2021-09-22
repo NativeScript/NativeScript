@@ -1,5 +1,5 @@
 <Page>
-    <GridLayout rows="*,*,*,*,*,*" >
+    <GridLayout rows="*,*,*,*,*,*,*,*,*" >
         <Button backgroundImage="url('~/resources/images/no-image.png')"
             borderRadius='125' borderWidth='2' borderColor='black'
             backgroundRepeat="repeat" backgroundSize="contain"
@@ -23,6 +23,18 @@
             borderRadius='10' borderWidth='2' borderColor='black'
             style="background-repeat: no-repeat"
             backgroundSize="contain"
+            height="80" width="180"
+            />
+        <Button row="6" backgroundImage="url('res://theneverfoundunicorn.png')"
+            borderRadius='10' borderWidth='2' borderColor='black'
+            height="80" width="180"
+            />
+        <Button row="7" backgroundImage="url('res://')"
+            borderRadius='10' borderWidth='2' borderColor='black'
+            height="80" width="180"
+            />
+        <Button row="8" backgroundImage="url('')"
+            borderRadius='10' borderWidth='2' borderColor='black'
             height="80" width="180"
             />
     </GridLayout>
