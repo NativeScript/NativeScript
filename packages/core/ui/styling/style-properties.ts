@@ -838,7 +838,10 @@ backgroundPositionProperty.register(Style);
 function convertToBackgrounds(this: void, value: string): [CssProperty<any, any>, any][] {
 	if (typeof value === 'string') {
 		const backgrounds = parser.parseBackground(value).value;
-		const backgroundColor = backgrounds.color ? new Color(backgrounds.color) : unsetValue;
+		let backgroundColor = unsetValue;
+		if (backgrounds.color) {
+			backgroundColor = backgrounds.color instanceof Color ? backgrounds.color : new Color(backgrounds.color);
+		}
 
 		let backgroundImage: string | LinearGradient;
 		if (typeof backgrounds.image === 'object' && backgrounds.image) {
