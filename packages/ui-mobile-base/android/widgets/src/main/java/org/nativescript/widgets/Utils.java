@@ -39,7 +39,7 @@ public class Utils {
 		int resId = 0;
 		int resPrefixLength = "res://".length();
 		
-		if (uri.length() >= resPrefixLength) {
+		if (uri.length() > resPrefixLength) {
 			String resPath = uri.substring(resPrefixLength);
 			resId = context.getResources().getIdentifier(resPath, "drawable", context.getPackageName());
 		}
