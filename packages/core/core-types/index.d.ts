@@ -104,7 +104,7 @@ export namespace CoreTypes {
 		export const send: string;
 	}
 
-	export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right';
+	export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right' | 'justify';
 	/**
 	 * Represents a text-align enumeration.
 	 */
@@ -123,6 +123,11 @@ export namespace CoreTypes {
 		 * Represents right text-align.
 		 */
 		export const right: TextAlignmentType;
+		
+		/**
+		 * Represents right text-align.
+		 */
+		 export const justify: TextAlignmentType;
 	}
 
 	export type OrientationType = 'horizontal' | 'vertical';

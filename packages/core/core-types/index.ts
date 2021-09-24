@@ -57,11 +57,12 @@ export namespace CoreTypes {
 		export const send = 'send';
 	}
 
-	export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right';
+	export type TextAlignmentType = 'initial' | 'left' | 'center' | 'right' | 'justify';
 	export module TextAlignment {
 		export const left = 'left';
 		export const center = 'center';
 		export const right = 'right';
+		export const justify = 'justify';
 	}
 
 	export type TextDecorationType = 'none' | 'underline' | 'line-through' | 'underline line-through';

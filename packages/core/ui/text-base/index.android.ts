@@ -298,6 +298,11 @@ export class TextBase extends TextBaseCommon {
 			case 'right':
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.END | verticalGravity);
 				break;
+			case 'justify':
+				//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+						this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_INTER_WORD );
+				//	}
+				break;
 		}
 	}
 
