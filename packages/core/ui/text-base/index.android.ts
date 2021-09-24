@@ -299,9 +299,10 @@ export class TextBase extends TextBaseCommon {
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.END | verticalGravity);
 				break;
 			case 'justify':
-				//if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				// android.os.Build.VERSION_CODES.O
+				if (android.os.Build.VERSION.SDK_INT >= 25) {
 						this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_INTER_WORD );
-				//	}
+				}
 				break;
 		}
 	}
