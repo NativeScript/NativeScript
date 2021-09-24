@@ -290,19 +290,17 @@ export class TextBase extends TextBaseCommon {
 			case 'left':
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.START | verticalGravity);
 				break;
-
 			case 'center':
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
 				break;
-
 			case 'right':
 				this.nativeTextViewProtected.setGravity(android.view.Gravity.END | verticalGravity);
 				break;
 		}
 		if (android.os.Build.VERSION.SDK_INT >= 25) {
-			if(value === 'justify'){
+			if (value === 'justify') {
 				this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_INTER_WORD);
-			}else{
+			} else {
 				this.nativeTextViewProtected.setJustificationMode(android.text.Layout.JUSTIFICATION_MODE_NONE);
 			}
 		}
