@@ -125,7 +125,7 @@ export namespace CoreTypes {
 		export const right: TextAlignmentType;
 		
 		/**
-		 * Represents right text-align.
+		 * Represents justify text-align.
 		 */
 		 export const justify: TextAlignmentType;
 	}
