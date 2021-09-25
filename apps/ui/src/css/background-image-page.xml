@@ -1,5 +1,5 @@
 <Page>
-    <GridLayout rows="*,*,*,*,*,*,*,*,*" >
+    <GridLayout rows="*,*,*,*,*,*,*,*,*,*,*,*,*" >
         <Button backgroundImage="url('~/resources/images/no-image.png')"
             borderRadius='125' borderWidth='2' borderColor='black'
             backgroundRepeat="repeat" backgroundSize="contain"
@@ -25,6 +25,8 @@
             backgroundSize="contain"
             height="80" width="180"
             />
+
+        <!-- Test some invalid cases - these should not crash -->
         <Button row="6" backgroundImage="url('res://theneverfoundunicorn.png')"
             borderRadius='10' borderWidth='2' borderColor='black'
             height="80" width="180"
@@ -34,6 +36,22 @@
             height="80" width="180"
             />
         <Button row="8" backgroundImage="url('')"
+            borderRadius='10' borderWidth='2' borderColor='black'
+            height="80" width="180"
+            />
+        <Button row="9" backgroundImage="res://theneverfoundunicorn.png"
+            borderRadius='10' borderWidth='2' borderColor='black'
+            height="80" width="180"
+            />
+        <Button row="10" backgroundImage="res://"
+            borderRadius='10' borderWidth='2' borderColor='black'
+            height="80" width="180"
+            />
+        <Button row="11" backgroundImage=" "
+            borderRadius='10' borderWidth='2' borderColor='black'
+            height="80" width="180"
+            />
+        <Button row="12" backgroundImage="bad"
             borderRadius='10' borderWidth='2' borderColor='black'
             height="80" width="180"
             />

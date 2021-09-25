@@ -38,7 +38,7 @@ public class Utils {
 	public static Drawable getDrawable(String uri, Context context){
 		int resId = 0;
 		int resPrefixLength = "res://".length();
-		
+
 		if (uri.length() > resPrefixLength) {
 			String resPath = uri.substring(resPrefixLength);
 			resId = context.getResources().getIdentifier(resPath, "drawable", context.getPackageName());
