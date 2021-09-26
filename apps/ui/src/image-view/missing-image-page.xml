@@ -12,6 +12,8 @@
 
             <Image src="res://theneverfoundunicorn.png" margin="1" width="30" height="30" backgroundColor="yellow" />
             <Image src="res://testlogo" margin="1" width="30" height="30" backgroundColor="yellow" />
+            <Image src="res://" margin="1" width="30" height="30" backgroundColor="yellow" />
+            <Image src="null" margin="1" width="30" height="30" backgroundColor="yellow" />
 
             <Image src="res://theneverfoundunicorn.png" margin="1" width="30" height="30" backgroundColor="yellow" borderRadius="10" />
             <Image src="res://testlogo" margin="1" width="30" height="30" backgroundColor="yellow" borderRadius="10" />
