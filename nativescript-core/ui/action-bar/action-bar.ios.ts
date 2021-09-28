@@ -85,7 +85,6 @@ export class NavigationButton extends ActionItem {
 }
 
 export class ActionBar extends ActionBarBase {
-
     get ios(): UIView {
         const page = this.page;
         if (!page || !page.parent) {
@@ -288,7 +287,6 @@ export class ActionBar extends ActionBarBase {
     }
 
     private updateColors(navBar: UINavigationBar) {
-
         const color = this.color;
         this.setColor(navBar, color);
 
@@ -297,50 +295,43 @@ export class ActionBar extends ActionBarBase {
     }
 
     private setColor(navBar: UINavigationBar, color?: Color) {
-		if (!navBar) {
-			return;
-		}
-        
-		if (color) {
-			if (majorVersion >= 15) {
-				const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
-				appearance.titleTextAttributes = NSDictionary.dictionaryWithObjectForKey(color.ios, NSForegroundColorAttributeName);
-			} else {
-				// legacy styling
-				navBar.titleTextAttributes = <any>{
-					[NSForegroundColorAttributeName]: color.ios,
-				};
-				navBar.largeTitleTextAttributes = <any>{
-					[NSForegroundColorAttributeName]: color.ios,
-				};
-				navBar.tintColor = color.ios;
-			}
-		} else {
-			navBar.titleTextAttributes = null;
-			navBar.largeTitleTextAttributes = null;
-			navBar.tintColor = null;
-		}
-	}
+        if (!navBar) {
+            return;
+        }
+        if (color) {
+            const titleTextColor = NSDictionary.dictionaryWithObjectForKey(color.ios, NSForegroundColorAttributeName);
+            if (majorVersion >= 15) {
+                const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+                appearance.titleTextAttributes = titleTextColor;
+            }
+            navBar.titleTextAttributes = titleTextColor;
+            navBar.largeTitleTextAttributes = titleTextColor;
+            navBar.tintColor = color.ios;
+        } else {
+            navBar.titleTextAttributes = null;
+            navBar.largeTitleTextAttributes = null;
+            navBar.tintColor = null;
+        }
+    }
 
-    private setBackgroundColor(navBar: UINavigationBar, color?: Color) {
-		if (!navBar) {
-			return;
-		}
+    private setBackgroundColor(navBar: UINavigationBar, color?: UIColor | Color) {
+        if (!navBar) {
+            return;
+        }
 
-		const color_ = color ? color.ios : null;
-
-		if (majorVersion >= 15) {
-			const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
-			// appearance.configureWithOpaqueBackground();
-			appearance.backgroundColor = color_;
-			navBar.standardAppearance = appearance;
-			navBar.compactAppearance = appearance;
-			navBar.scrollEdgeAppearance = appearance;
-		} else {
-			// legacy styling
-			navBar.barTintColor = color_;
-		}
-	}
+        const color_ = color instanceof Color ? color.ios : color;
+        if (majorVersion >= 15) {
+            const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+            // appearance.configureWithOpaqueBackground();
+            appearance.backgroundColor = color_;
+            navBar.standardAppearance = appearance;
+            navBar.compactAppearance = appearance;
+            navBar.scrollEdgeAppearance = appearance;
+        } else {
+            // legacy styling
+            navBar.barTintColor = color_;
+        }
+    }
 
     public _onTitlePropertyChanged() {
         const page = this.page;
@@ -358,13 +349,34 @@ export class ActionBar extends ActionBarBase {
 
     private updateFlatness(navBar: UINavigationBar) {
         if (this.flat) {
-            navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
-            navBar.shadowImage = UIImage.new();
-            navBar.translucent = false;
+            if (majorVersion >= 15) {
+                const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+                appearance.shadowColor = UIColor.clearColor;
+                
+                navBar.standardAppearance = appearance;
+                navBar.compactAppearance = appearance;
+                navBar.scrollEdgeAppearance = appearance;
+            } else { 
+
+                navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
+                navBar.shadowImage = UIImage.new();
+                navBar.translucent = false;
+            }
         } else {
-            navBar.setBackgroundImageForBarMetrics(null, null);
-            navBar.shadowImage = null;
-            navBar.translucent = true;
+            if (majorVersion >= 15) {
+                if(navBar.standardAppearance){ // Not flat and never been set do nothing.
+                    const appearance = navBar.standardAppearance;
+                    appearance.shadowColor =  UINavigationBarAppearance.new().shadowColor;
+                    
+                    navBar.standardAppearance = appearance;
+                    navBar.compactAppearance = appearance;
+                    navBar.scrollEdgeAppearance = appearance;
+                }
+            } else {
+                navBar.setBackgroundImageForBarMetrics(null, null);
+                navBar.shadowImage = null;
+                navBar.translucent = true;
+            }
         }
     }
 
@@ -439,12 +451,9 @@ export class ActionBar extends ActionBarBase {
         // CssAnimationProperty use default value form their constructor.
         return null;
     }
-    [backgroundColorProperty.setNative](value: UIColor | Color) {
-        let navBar = this.navBar;
-        if (navBar) {
-            let color = value instanceof Color ? value.ios : value;
-            navBar.barTintColor = color;
-        }
+    [backgroundColorProperty.setNative](color: UIColor | Color) {
+        const navBar = this.navBar;
+        this.setBackgroundColor(navBar, color);
     }
 
     [backgroundInternalProperty.getDefault](): UIColor {
