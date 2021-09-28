@@ -288,24 +288,59 @@ export class ActionBar extends ActionBarBase {
     }
 
     private updateColors(navBar: UINavigationBar) {
+
         const color = this.color;
         this.setColor(navBar, color);
 
         const bgColor = <Color>this.backgroundColor;
-        navBar.barTintColor = bgColor ? bgColor.ios : null;
+        this.setBackgroundColor(navBar, bgColor);
     }
 
     private setColor(navBar: UINavigationBar, color?: Color) {
-        if (color) {
-            navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
-            navBar.largeTitleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
-            navBar.tintColor = color.ios;
-        } else {
-            navBar.titleTextAttributes = null;
-            navBar.largeTitleTextAttributes = null;
-            navBar.tintColor = null;
-        }
-    }
+		if (!navBar) {
+			return;
+		}
+        
+		if (color) {
+			if (majorVersion >= 15) {
+				const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+				appearance.titleTextAttributes = NSDictionary.dictionaryWithObjectForKey(color.ios, NSForegroundColorAttributeName);
+			} else {
+				// legacy styling
+				navBar.titleTextAttributes = <any>{
+					[NSForegroundColorAttributeName]: color.ios,
+				};
+				navBar.largeTitleTextAttributes = <any>{
+					[NSForegroundColorAttributeName]: color.ios,
+				};
+				navBar.tintColor = color.ios;
+			}
+		} else {
+			navBar.titleTextAttributes = null;
+			navBar.largeTitleTextAttributes = null;
+			navBar.tintColor = null;
+		}
+	}
+
+    private setBackgroundColor(navBar: UINavigationBar, color?: UIColor | Color) {
+		if (!navBar) {
+			return;
+		}
+
+		const color_ = color instanceof Color ? color.ios : null;
+
+		if (majorVersion >= 15) {
+			const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+			// appearance.configureWithOpaqueBackground();
+			appearance.backgroundColor = color_;
+			navBar.standardAppearance = appearance;
+			navBar.compactAppearance = appearance;
+			navBar.scrollEdgeAppearance = appearance;
+		} else {
+			// legacy styling
+			navBar.barTintColor = color_;
+		}
+	}
 
     public _onTitlePropertyChanged() {
         const page = this.page;
