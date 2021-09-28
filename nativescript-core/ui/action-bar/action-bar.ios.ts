@@ -322,12 +322,12 @@ export class ActionBar extends ActionBarBase {
 		}
 	}
 
-    private setBackgroundColor(navBar: UINavigationBar, color?: UIColor | Color) {
+    private setBackgroundColor(navBar: UINavigationBar, color?: Color) {
 		if (!navBar) {
 			return;
 		}
 
-		const color_ = color instanceof Color ? color.ios : null;
+		const color_ = color ? color.ios : null;
 
 		if (majorVersion >= 15) {
 			const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
