@@ -129,7 +129,7 @@ declare namespace NodeJS {
 		rootLayout: any;
 	}
 }
-declare const __DEV__: string;
+declare const __DEV__: boolean;
 declare const __CSS_PARSER__: string;
 declare const __NS_WEBPACK__: boolean;
 declare const __UI_USE_EXTERNAL_RENDERER__: boolean;

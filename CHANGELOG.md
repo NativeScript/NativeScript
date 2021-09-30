@@ -1,3 +1,12 @@
+## [8.1.3](https://github.com/NativeScript/NativeScript/compare/8.1.2-core...8.1.3) (2021-09-18)
+
+
+### Bug Fixes
+
+* **android:** only attach if activity is CREATED ([#9552](https://github.com/NativeScript/NativeScript/issues/9552)) ([90b8718](https://github.com/NativeScript/NativeScript/commit/90b8718138fc6e67e2141d9b77017b3d96e50d51))
+
+
+
 ## [8.1.2](https://github.com/NativeScript/NativeScript/compare/8.1.1-core...8.1.2) (2021-09-15)
 
 

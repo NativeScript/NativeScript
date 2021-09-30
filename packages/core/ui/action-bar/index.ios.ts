@@ -406,14 +406,37 @@ export class ActionBar extends ActionBarBase {
 	}
 
 	private updateFlatness(navBar: UINavigationBar) {
+
 		if (this.flat) {
-			navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
-			navBar.shadowImage = UIImage.new();
-			navBar.translucent = false;
+
+			if (majorVersion >= 15) {
+				const appearance = navBar.standardAppearance ?? UINavigationBarAppearance.new();
+				appearance.shadowColor = UIColor.clearColor;
+				
+				navBar.standardAppearance = appearance;
+				navBar.compactAppearance = appearance;
+				navBar.scrollEdgeAppearance = appearance;
+			} else { 
+
+				navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
+				navBar.shadowImage = UIImage.new();
+				navBar.translucent = false;
+			}
 		} else {
-			navBar.setBackgroundImageForBarMetrics(null, null);
-			navBar.shadowImage = null;
-			navBar.translucent = true;
+			if (majorVersion >= 15) {
+				if(navBar.standardAppearance){ // Not flat and never been set do nothing.
+					const appearance = navBar.standardAppearance;
+					appearance.shadowColor =  UINavigationBarAppearance.new().shadowColor;
+					
+					navBar.standardAppearance = appearance;
+					navBar.compactAppearance = appearance;
+					navBar.scrollEdgeAppearance = appearance;
+				}
+			} else {
+				navBar.setBackgroundImageForBarMetrics(null, null);
+				navBar.shadowImage = null;
+				navBar.translucent = true;
+			}
 		}
 	}
 
