@@ -122,7 +122,7 @@ declare namespace NodeJS {
 		TNS_WEBPACK?: boolean;
 		isIOS?: boolean;
 		isAndroid?: boolean;
-		autoRegisterUIModules?: boolean;
+		autoLoadPolyfills?: boolean;
 		__requireOverride?: (name: string, dir: string) => any;
 
 		// used to get the rootlayout instance to add/remove childviews
