@@ -821,7 +821,9 @@ export class View extends ViewCommon {
 
 	[accessibilityRoleProperty.setNative](value: AccessibilityRole): void {
 		this.accessibilityRole = value;
-		updateAccessibilityProperties(this);
+		if (this.accessible) {
+			updateAccessibilityProperties(this);
+		}
 
 		if (android.os.Build.VERSION.SDK_INT >= 28) {
 			this.nativeViewProtected?.setAccessibilityHeading(value === AccessibilityRole.Header);

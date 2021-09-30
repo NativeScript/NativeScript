@@ -10,9 +10,6 @@ export const tapEvent = 'tap';
 @CSSType('Button')
 export abstract class ButtonBase extends TextBase implements ButtonDefinition {
 
-	accessible = true;
-	accessibilityRole = AccessibilityRole.Button;
-
 	get textWrap(): boolean {
 		return this.style.whiteSpace === 'normal';
 	}
