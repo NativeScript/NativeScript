@@ -314,7 +314,10 @@ export function initGlobal() {
 		// installPolyfills('text', ['TextDecoder', 'TextEncoder']);
 
 		// global.registerModule('xhr', () => require('../xhr'));
-		// installPolyfills('xhr', ['XMLHttpRequest', 'FormData', 'Blob', 'File', 'FileReader']);
+		// installPolyfills('xhr', ['XMLHttpRequest', 'Blob', 'File', 'FileReader']);
+
+		// global.registerModule('formdata', () => require('../polyfills/formdata'));
+		// installPolyfills('formdata', ['FormData']);
 
 		// global.registerModule('fetch', () => require('../fetch'));
 		// installPolyfills('fetch', ['fetch', 'Headers', 'Request', 'Response']);
