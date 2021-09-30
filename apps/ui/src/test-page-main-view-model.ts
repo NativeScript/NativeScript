@@ -1,5 +1,5 @@
 import { Observable, Frame } from '@nativescript/core';
-import { Button } from '@nativescript/core/ui/button';
+import { Button ,tapEvent} from '@nativescript/core/ui/button';
 import { Color } from '@nativescript/core/color';
 import { WrapLayout } from '@nativescript/core/ui/layouts/wrap-layout';
 import { alert } from '@nativescript/core/ui/dialogs';

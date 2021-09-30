@@ -3,8 +3,9 @@
   "compilerOptions": {
     "diagnostics": false,
     "paths": {
-      "~/*": ["src/*"],
-      "tns-core-modules/*": ["@nativescript/core/*"]
+      "~/*": ["src/*"]
     }
-  }
+  },
+  "include": ["src/**/*", "references.d.ts"],
+  "exclude": ["node_modules", "tmp", "platforms", "__tests__", "e2"]
 }
