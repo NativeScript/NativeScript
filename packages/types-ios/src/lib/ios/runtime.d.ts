@@ -5,7 +5,7 @@
 /**
  * Returns the version of the runtime.
  */
-declare function __runtimeVersion: string;
+declare const __runtimeVersion: string;
 
 /**
  * Triggers garbage collection in JavaScript

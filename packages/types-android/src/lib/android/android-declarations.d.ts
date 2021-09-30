@@ -12,7 +12,7 @@ declare var gc: () => void;
 /**
  * Returns the version of the runtime.
  */
-declare function __runtimeVersion: string;
+declare const __runtimeVersion: string;
 
 /**
  * Releases the reference to the wrapped native object
