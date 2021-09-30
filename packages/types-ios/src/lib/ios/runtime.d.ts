@@ -1,5 +1,12 @@
 /// <reference path="interop.d.ts" />
 
+
+
+/**
+ * Returns the version of the runtime.
+ */
+declare function __runtimeVersion: string;
+
 /**
  * Triggers garbage collection in JavaScript
  */
