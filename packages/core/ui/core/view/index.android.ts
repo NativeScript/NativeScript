@@ -1109,21 +1109,23 @@ export class View extends ViewCommon {
 		const nativeView = this.nativeViewProtected;
 		if (!isBorderDrawable && onlyColor) {
 			if (backgroundDrawable && backgroundDrawable.setColor) {
+				// android.graphics.drawable.ColorDrawable
 				backgroundDrawable.setColor(background.color.android);
 				backgroundDrawable.invalidateSelf();
 			} else {
 				nativeView.setBackgroundColor(background.color.android);
 			}
 		} else if (!background.isEmpty()) {
-			if (!isBorderDrawable) {
+			if (isBorderDrawable) {
+				// org.nativescript.widgets.BorderDrawable
+				refreshBorderDrawable(this, backgroundDrawable);
+			} else {
 				backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), this.toString());
 				refreshBorderDrawable(this, backgroundDrawable);
 				nativeView.setBackground(backgroundDrawable);
-			} else {
-				refreshBorderDrawable(this, backgroundDrawable);
 			}
 		} else {
-			//empty background let s reset
+			//empty background let's reset
 			const cachedDrawable = (<any>nativeView)._cachedDrawable;
 			nativeView.setBackground(cachedDrawable);
 		}
@@ -1141,6 +1143,28 @@ export class View extends ViewCommon {
 		};
 		org.nativescript.widgets.Utils.drawBoxShadow(nativeView, JSON.stringify(config));
 	}
+
+	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
+		if (value instanceof Background) {
+			this.onBackgroundOrBorderPropertyChanged();
+		} else {
+			const nativeView = this.nativeViewProtected;
+			nativeView.setBackground(value);
+
+			const style = this.style;
+			const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;
+			const paddingRight = paddingRightProperty.isSet(style) ? this.effectivePaddingRight : this._defaultPaddingRight;
+			const paddingBottom = paddingBottomProperty.isSet(style) ? this.effectivePaddingBottom : this._defaultPaddingBottom;
+			const paddingLeft = paddingLeftProperty.isSet(style) ? this.effectivePaddingLeft : this._defaultPaddingLeft;
+
+			if (this._isPaddingRelative) {
+				nativeView.setPaddingRelative(paddingLeft, paddingTop, paddingRight, paddingBottom);
+			} else {
+				nativeView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+			}
+		}
+	}
+
 	protected onBackgroundOrBorderPropertyChanged() {
 		const nativeView = <android.view.View & { _cachedDrawable: android.graphics.drawable.Drawable.ConstantState | android.graphics.drawable.Drawable }>this.nativeViewProtected;
 		if (!nativeView) {
@@ -1184,33 +1208,15 @@ export class View extends ViewCommon {
 		const topPadding = Math.ceil(this.effectiveBorderTopWidth + this.effectivePaddingTop);
 		const rightPadding = Math.ceil(this.effectiveBorderRightWidth + this.effectivePaddingRight);
 		const bottomPadding = Math.ceil(this.effectiveBorderBottomWidth + this.effectivePaddingBottom);
+
 		if (this._isPaddingRelative) {
 			nativeView.setPaddingRelative(leftPadding, topPadding, rightPadding, bottomPadding);
 		} else {
 			nativeView.setPadding(leftPadding, topPadding, rightPadding, bottomPadding);
 		}
+		
 		// reset clear flags
 		background.clearFlags = BackgroundClearFlags.NONE;
-	}
-	_redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
-		if (value instanceof Background) {
-			this.onBackgroundOrBorderPropertyChanged();
-		} else {
-			const nativeView = this.nativeViewProtected;
-			nativeView.setBackground(value);
-
-			const style = this.style;
-			const paddingTop = paddingTopProperty.isSet(style) ? this.effectivePaddingTop : this._defaultPaddingTop;
-			const paddingRight = paddingRightProperty.isSet(style) ? this.effectivePaddingRight : this._defaultPaddingRight;
-			const paddingBottom = paddingBottomProperty.isSet(style) ? this.effectivePaddingBottom : this._defaultPaddingBottom;
-			const paddingLeft = paddingLeftProperty.isSet(style) ? this.effectivePaddingLeft : this._defaultPaddingLeft;
-
-			if (this._isPaddingRelative) {
-				nativeView.setPaddingRelative(paddingLeft, paddingTop, paddingRight, paddingBottom);
-			} else {
-				nativeView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
-			}
-		}
 	}
 
 	public accessibilityAnnouncement(message = this.accessibilityLabel): void {
