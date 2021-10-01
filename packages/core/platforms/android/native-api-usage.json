@@ -46,6 +46,8 @@
         "android.content:Intent*",
         "android.content:IntentFilter*",
         "android.content.pm:PackageManager*",
+        "android.content.pm.PackageItemInfo*",
+        "android.content.pm.ComponentInfo*",
         "android.content.pm:ActivityInfo*",
         "android.content.pm:ApplicationInfo*",
         "android.content:DialogInterface*",
