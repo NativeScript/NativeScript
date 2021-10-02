@@ -246,7 +246,7 @@ export function getClosestPropertyValue<T>(property: CssProperty<any, T>, span: 
 	}
 }
 
-const textAlignmentConverter = makeParser<CoreTypes.TextAlignmentType>(makeValidator<CoreTypes.TextAlignmentType>('initial', 'left', 'center', 'right'));
+const textAlignmentConverter = makeParser<CoreTypes.TextAlignmentType>(makeValidator<CoreTypes.TextAlignmentType>('initial', 'left', 'center', 'right', 'justify'));
 export const textAlignmentProperty = new InheritedCssProperty<Style, CoreTypes.TextAlignmentType>({
 	name: 'textAlignment',
 	cssName: 'text-align',
