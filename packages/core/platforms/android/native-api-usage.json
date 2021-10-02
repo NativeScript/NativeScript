@@ -176,6 +176,7 @@
         "android.animation:AnimatorSet*",
         "android.animation:Animator*",
         "android.animation:StateListAnimator*",
+        "android.animation:TimeInterpolator*",
         "android.animation.Animator:AnimatorListener*",
         "android.provider:Settings*",
         "android.provider.Settings:Secure*",
