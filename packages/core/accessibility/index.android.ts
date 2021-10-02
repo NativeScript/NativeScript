@@ -1,8 +1,10 @@
+import { initAccessibilityFontScale } from 'accessibility';
 import * as Application from '../application';
 import { Trace } from '../trace';
 import type { View } from '../ui/core/view';
 import { GestureTypes } from '../ui/gestures';
 import { notifyAccessibilityFocusState } from './accessibility-common';
+import { initAccessibilityCssHelper } from './accessibility-css-helper';
 import { getAndroidAccessibilityManager } from './accessibility-service';
 import { AccessibilityRole, AccessibilityState, AndroidAccessibilityEvent } from './accessibility-types';
 
@@ -10,7 +12,7 @@ export * from './accessibility-common';
 export * from './accessibility-types';
 export * from './font-scale';
 
-let clickableRolesMap = new Set<string>();
+let clickableRolesMap = new Set<AccessibilityRole>();
 
 let lastFocusedView: WeakRef<Partial<View>>;
 function accessibilityEventHelper(view: Partial<View>, eventType: number) {
@@ -105,7 +107,7 @@ let TNSAccessibilityDelegate: android.view.View.androidviewViewAccessibilityDele
 const androidViewToTNSView = new WeakMap<android.view.View, WeakRef<Partial<View>>>();
 
 let accessibilityEventMap: Map<AndroidAccessibilityEvent, number>;
-let accessibilityEventTypeMap: Map<number, string>;
+let accessibilityEventTypeMap: Map<number, AndroidAccessibilityEvent>;
 
 function ensureNativeClasses() {
 	if (TNSAccessibilityDelegate) {
@@ -130,7 +132,7 @@ function ensureNativeClasses() {
 		[AccessibilityRole.ProgressBar, android.widget.ProgressBar.class.getName()],
 	]);
 
-	clickableRolesMap = new Set<string>([AccessibilityRole.Button, AccessibilityRole.ImageButton]);
+	clickableRolesMap = new Set<AccessibilityRole>([AccessibilityRole.Button, AccessibilityRole.ImageButton]);
 
 	const ignoreRoleTypesForTrace = new Set([AccessibilityRole.Header, AccessibilityRole.Link, AccessibilityRole.None, AccessibilityRole.Summary]);
 
@@ -437,9 +439,9 @@ export function isAccessibilityServiceEnabled(): boolean {
 	return accessibilityServiceEnabled;
 }
 
-export function setupAccessibleView(view: Partial<View>): void {
-	updateAccessibilityProperties(view);
-}
+// export function setupAccessibleView(view: Partial<View>): void {
+// 	updateAccessibilityProperties(view);
+// }
 
 export function updateAccessibilityProperties(view: Partial<View>): void {
 	if (!view.nativeViewProtected) {
@@ -537,9 +539,16 @@ export function updateContentDescription(view: View, forceUpdate?: boolean): str
 	return applyContentDescription(view, forceUpdate);
 }
 
+
+let started = false;
 function setAccessibilityDelegate(view: Partial<View>): void {
 	if (!view.nativeViewProtected) {
 		return;
+	}
+	if (!started) {
+		started = true;
+		initAccessibilityCssHelper();
+		initAccessibilityFontScale();
 	}
 
 	ensureNativeClasses();

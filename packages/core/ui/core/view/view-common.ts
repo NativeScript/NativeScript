@@ -24,7 +24,7 @@ import { LinearGradient } from '../../styling/linear-gradient';
 import * as am from '../../animation';
 import { AccessibilityEventOptions, AccessibilityLiveRegion, AccessibilityRole, AccessibilityState, AccessibilityTrait } from '../../../accessibility/accessibility-types';
 import { accessibilityHintProperty, accessibilityIdentifierProperty, accessibilityLabelProperty, accessibilityValueProperty, accessibilityIgnoresInvertColorsProperty } from '../../../accessibility/accessibility-properties';
-import { accessibilityBlurEvent, accessibilityFocusChangedEvent, accessibilityFocusEvent, accessibilityPerformEscapeEvent, getCurrentFontScale } from '../../../accessibility';
+import { getCurrentFontScale } from '../../../accessibility';
 import { CSSShadow } from '../../styling/css-shadow';
 
 // helpers (these are okay re-exported here)
@@ -72,10 +72,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 	public static shownModallyEvent = 'shownModally';
 	public static showingModallyEvent = 'showingModally';
 	public static closingModallyEvent = 'closingModally';
-	public static accessibilityBlurEvent = accessibilityBlurEvent;
-	public static accessibilityFocusEvent = accessibilityFocusEvent;
-	public static accessibilityFocusChangedEvent = accessibilityFocusChangedEvent;
-	public static accessibilityPerformEscapeEvent = accessibilityPerformEscapeEvent;
 
 	public accessibilityIdentifier: string;
 	public accessibilityLabel: string;
