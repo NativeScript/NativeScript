@@ -1,0 +1,93 @@
+name: 🐞 Bug report
+description: Create a bug report to help us improve NativeScript
+title: "[BUG]: "
+labels: [Bug]
+body:
+- type: markdown
+  attributes:
+    value: |
+      Thanks for taking the time to fill out this bug report! If you have usage questions, please use [Discussions](#).
+- type: checkboxes
+  attributes:
+    label: Is there an existing issue for this?
+    description: Please search to see if an issue already exists for the bug you encountered or is not already reported in StackOverflow as a question..
+    options:
+    - label: I have searched the existing issues as well as StackOverflow
+      required: true
+- type: checkboxes
+  id: terms_issues
+  attributes:
+    label: Confirm you are submitting a bug report.
+    description: Please confirm you are submitting a bug report and not a usage question. For usage questions, please use [Discussions](#).
+    options:
+      - label: Yes, this is a bug report.
+        required: true
+- type: textarea
+  attributes:
+    label: Current Behavior
+    description: |
+      A clear and concise description of what the bug is. 
+      Please, explain whether it's a build time error or a runtime error. 
+      More detailed logs can be easily obtained by following the instructions in this [guide](https://docs.nativescript.org/get-support#how-to-obtain-diagnostic-reports)
+    placeholder: |
+      When I do <X>, <Y> happens and I see the error message attached below:
+      ```...```
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Expected Behavior
+    description: A concise description of what you expected to happen.
+    placeholder: When I do <X>, <Z> should happen instead.
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Steps To Reproduce
+    description: Add commands used or steps taken to reproduce the behaviour.
+    placeholder: |
+      1. Go to '...'
+      2. Click on '....'
+      3. Scroll down to '....'
+      4. See error
+    render: markdown
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Environment
+    description: |
+      Provide version numbers for the following components (information can be retrieved by running `tns info` in your project folder or by inspecting the `package.json` of the project):
+    value: |
+      - CLI: 
+      - Version(8.x/7.x/6.x/Other): 
+      - Cross-platform modules: 
+      - Android Runtime: 
+      - iOS Runtime: 
+      - XCode Version: 
+      - Plugin(s): 
+    render: markdown
+  validations:
+    required: false
+- type: textarea
+  id: logs
+  attributes:
+    label: Relevant log output
+    description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+    render: shell
+- type: checkboxes
+  id: terms
+  attributes:
+    label: Code of Conduct
+    description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/NativeScript/NativeScript/blob/master/tools/notes/CONTRIBUTING.md#coc)
+    options:
+    - label: I agree to follow this project's Code of Conduct
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Anything else?
+    description: |
+      Links? References? Anything that will give us more context about the issue you are encountering!
+  validations:
+    required: false
