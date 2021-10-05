@@ -1,7 +1,6 @@
 name: 🚀 Feature request
 description: Suggest an idea for NativeScript
-title: "[FEATURE]: "
-labels: [Feature] 
+labels: [feature] 
 body:
 - type: markdown
   attributes:
@@ -12,7 +11,7 @@ body:
     label: Is there an existing issue for this?
     description: Please search to see if an issue related to this feature request already exists.
     options:
-    - label: I have searched the existing issues
+    - label: I have searched the existing issues, and this is a new request
       required: true
 - type: textarea
   attributes:

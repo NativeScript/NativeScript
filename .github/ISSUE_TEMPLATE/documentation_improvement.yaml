@@ -1,7 +1,7 @@
 name: 📖 Documentation Improvement
 description: Suggest improvements to our documentation
-title: "[DOCS]: "
-labels: [Documentation] 
+title: "docs: "
+labels: [docs] 
 body:
 - type: markdown
   attributes:

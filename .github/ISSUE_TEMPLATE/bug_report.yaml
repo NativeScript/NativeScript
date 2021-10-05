@@ -1,26 +1,25 @@
 name: 🐞 Bug report
 description: Create a bug report to help us improve NativeScript
-title: "[BUG]: "
-labels: [Bug]
+labels: [bug]
 body:
 - type: markdown
   attributes:
     value: |
-      Thanks for taking the time to fill out this bug report! If you have usage questions, please use [Discussions](#).
+      Thanks for taking the time to fill out this bug report! If you have usage questions, please use [Discussions](https://github.com/NativeScript/NativeScript/discussions).
 - type: checkboxes
   attributes:
     label: Is there an existing issue for this?
     description: Please search to see if an issue already exists for the bug you encountered or is not already reported in StackOverflow as a question..
     options:
-    - label: I have searched the existing issues as well as StackOverflow
+    - label: I have searched the existing issues as well as StackOverflow and this has not been posted before
       required: true
 - type: checkboxes
   id: terms_issues
   attributes:
     label: Confirm you are submitting a bug report.
-    description: Please confirm you are submitting a bug report and not a usage question. For usage questions, please use [Discussions](#).
+    description: Please confirm you are submitting a bug report and not a usage question. For usage questions, please use [Discussions](https://github.com/NativeScript/NativeScript/discussions).
     options:
-      - label: Yes, this is a bug report.
+      - label: Yes, this is a bug report
         required: true
 - type: textarea
   attributes:
@@ -28,7 +27,6 @@ body:
     description: |
       A clear and concise description of what the bug is. 
       Please, explain whether it's a build time error or a runtime error. 
-      More detailed logs can be easily obtained by following the instructions in this [guide](https://docs.nativescript.org/get-support#how-to-obtain-diagnostic-reports)
     placeholder: |
       When I do <X>, <Y> happens and I see the error message attached below:
       ```...```
@@ -57,15 +55,14 @@ body:
   attributes:
     label: Environment
     description: |
-      Provide version numbers for the following components (information can be retrieved by running `tns info` in your project folder or by inspecting the `package.json` of the project):
+      Provide version numbers for the following components (information can be retrieved by running `ns info` in your project folder or by inspecting the `package.json` of the project):
     value: |
-      - CLI: 
-      - Version(8.x/7.x/6.x/Other): 
-      - Cross-platform modules: 
-      - Android Runtime: 
-      - iOS Runtime: 
-      - XCode Version: 
-      - Plugin(s): 
+      - CLI Version (ns -v): 
+      - Core Version (@nativescript/core - 8.x, 7.x, 6.x etc.): 
+      - Android Runtime (@nativescript/android): 
+      - iOS Runtime (@nativescript/ios): 
+      - XCode Version (xcodebuild -version): 
+      - Plugin(s) (dependencies and devDependencies in package.json): 
     render: markdown
   validations:
     required: false
@@ -75,6 +72,13 @@ body:
     label: Relevant log output
     description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
     render: shell
+- type: textarea
+  attributes:
+    label: Anything else?
+    description: |
+      Links? References? Anything that will give us more context about the issue you are encountering!
+  validations:
+    required: false
 - type: checkboxes
   id: terms
   attributes:
@@ -84,10 +88,3 @@ body:
     - label: I agree to follow this project's Code of Conduct
   validations:
     required: true
-- type: textarea
-  attributes:
-    label: Anything else?
-    description: |
-      Links? References? Anything that will give us more context about the issue you are encountering!
-  validations:
-    required: false
