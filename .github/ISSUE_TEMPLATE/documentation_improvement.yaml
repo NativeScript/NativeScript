@@ -12,12 +12,12 @@ body:
     label: Is there an existing issue for this?
     description: Please search to see if an issue realated to this already exists.
     options:
-    - label: I have searched the existing issues
+    - label: I have searched the existing issues, this has not been requested before
       required: true
 - type: textarea
   attributes:
-    label: Documentation Link 
-    description: Add a link to the page which needs improvement (if relevant)
+    label: Documentation Link(s)
+    description: Add all links that would need improvements (if relevant)
   validations:
     required: false
 - type: textarea
