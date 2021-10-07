@@ -117,12 +117,6 @@
 					},
 					"outputs": ["coverage/packages/core"]
 				},
-				"setup": {
-					"builder": "@nrwl/workspace:run-commands",
-					"options": {
-						"commands": ["nx run webpack:build"]
-					}
-				},
 				"build": {
 					"builder": "@nrwl/workspace:run-commands",
 					"outputs": ["dist/packages"],
@@ -288,9 +282,7 @@
 					"builder": "@nrwl/workspace:run-commands",
 					"outputs": ["dist/packages"],
 					"options": {
-						"commands": ["npm run build"],
-						"cwd": "packages/webpack5",
-						"parallel": false
+						"command": "npx zx ./tools/scripts/pack-webpack5.mjs"
 					}
 				}
 			}
