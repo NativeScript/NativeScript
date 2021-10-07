@@ -86,8 +86,8 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 	config
 		.entry('bundle')
 		// ensure we load nativescript globals first
-		.add('@nativescript/core/globals/index.js')
-		.add('@nativescript/core/bundle-entry-points.js')
+		.add('@nativescript/core/globals/index')
+		.add('@nativescript/core/bundle-entry-points')
 		.add(entryPath);
 
 	// Add android app components to the bundle to SBG can generate the java classes
