@@ -145,7 +145,12 @@ exports[`svelte configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -170,7 +175,12 @@ exports[`svelte configuration for android 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -470,7 +480,12 @@ exports[`svelte configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }
@@ -495,7 +510,12 @@ exports[`svelte configuration for ios 1`] = `
             options: {
               postcssOptions: {
                 plugins: [
-                  'postcss-import'
+                  [
+                    'postcss-import',
+                    {
+                      resolve: function () { /* omitted long function */ }
+                    }
+                  ]
                 ]
               }
             }

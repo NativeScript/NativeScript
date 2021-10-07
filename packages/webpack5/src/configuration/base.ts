@@ -1,10 +1,11 @@
+import { extname, resolve } from 'path';
 import {
 	ContextExclusionPlugin,
 	DefinePlugin,
 	HotModuleReplacementPlugin,
 } from 'webpack';
 import Config from 'webpack-chain';
-import { resolve } from 'path';
+import { existsSync } from 'fs';
 
 import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
@@ -276,7 +277,36 @@ export default function (config: Config, env: IWebpackEnv = _env): Config {
 		postcssOptions: {
 			plugins: [
 				// inlines @imported stylesheets
-				'postcss-import',
+				[
+					'postcss-import',
+					{
+						// custom resolver to resolve platform extensions in @import statements
+						// ie. @import "foo.css" would import "foo.ios.css" if the platform is ios and it exists
+						resolve(id, baseDir, importOptions) {
+							const ext = extname(id);
+							const platformExt = ext ? `.${platform}${ext}` : '';
+
+							if (!id.includes(platformExt)) {
+								const platformRequest = id.replace(ext, platformExt);
+								const extPath = resolve(baseDir, platformRequest);
+
+								try {
+									return require.resolve(platformRequest, {
+										paths: [baseDir],
+									});
+								} catch {}
+
+								if (existsSync(extPath)) {
+									console.log(`resolving "${id}" to "${platformRequest}"`);
+									return extPath;
+								}
+							}
+
+							// fallback to postcss-import default resolution
+							return id;
+						},
+					},
+				],
 			],
 		},
 	};
