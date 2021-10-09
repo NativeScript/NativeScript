@@ -394,6 +394,11 @@
                 setImageLoadedListener(listener: image.Worker.OnImageLoadedListener): void;
             }
 
+            export enum TabIconRenderingMode {
+                original,
+                template
+            }
+
             export class TabLayout extends android.widget.HorizontalScrollView {
                 constructor(context: android.content.Context);
                 constructor(context: android.content.Context, attrs: android.util.AttributeSet);
@@ -401,6 +406,8 @@
 
                 setSelectedIndicatorColors(color: Array<number>): void;
                 getSelectedIndicatorColors(): Array<number>;
+                setIconRenderingMode(mode: TabIconRenderingMode): void;
+                getIconRenderingMode(): TabIconRenderingMode;
                 setTabTextColor(color: number): void;
                 getTabTextColor(): number;
                 setSelectedTabTextColor(color: number): void;
