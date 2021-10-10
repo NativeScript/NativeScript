@@ -26,7 +26,7 @@
 				"clean": {
 					"builder": "@nrwl/workspace:run-commands",
 					"options": {
-						"commands": ["npx rimraf -- hooks node_modules platforms package-lock.json webpack.config.js", "npm i --legacy-peer-deps", "npx rimraf -- package-lock.json"],
+						"commands": ["npx rimraf -- hooks node_modules platforms package-lock.json", "npm i --legacy-peer-deps", "npx rimraf -- package-lock.json"],
 						"cwd": "apps/automated",
 						"parallel": false
 					}

@@ -93,43 +93,47 @@ function getTargetAsWeakRef(): WeakRef<Target> {
 	return new WeakRef(new Target());
 }
 
-export function test_listenerDoesNotRetainTarget(done) {
-	const sourceRef = getSourceAsWeakRef();
-	const targetRef = getTargetAsWeakRef();
+// commented out tests because the latest v8 runtime uses the built-in WeakRef implementation
+// which does not guarantee releases after a GC call - it uses heuristics to determine when
+// a WeakRef should be released - so we don't really need to test this.
 
-	// with the v8 6.5 the GC does not release WeakRefs so fast if you pass them to a method
-	// that's why we are making the call to the addWeakEventListener in a closure so that the WeakRef will be easier released
-	(function () {
-		addWeakEventListener(sourceRef.get(), Observable.propertyChangeEvent, emptyHandler, targetRef.get());
-	})();
-	forceGC();
+// export function test_listenerDoesNotRetainTarget(done) {
+// 	const sourceRef = getSourceAsWeakRef();
+// 	const targetRef = getTargetAsWeakRef();
 
-	try {
-		TKUnit.assert(!targetRef.get(), 'Target should be released after GC');
-		done(null);
-	} catch (e) {
-		done(e);
-	}
-}
+// 	// with the v8 6.5 the GC does not release WeakRefs so fast if you pass them to a method
+// 	// that's why we are making the call to the addWeakEventListener in a closure so that the WeakRef will be easier released
+// 	(function () {
+// 		addWeakEventListener(sourceRef.get(), Observable.propertyChangeEvent, emptyHandler, targetRef.get());
+// 	})();
+// 	forceGC();
 
-export function test_listenerDoesNotRetainSource(done) {
-	const sourceRef = getSourceAsWeakRef();
-	const targetRef = getTargetAsWeakRef();
+// 	try {
+// 		TKUnit.assert(!targetRef.get(), 'Target should be released after GC');
+// 		done(null);
+// 	} catch (e) {
+// 		done(e);
+// 	}
+// }
 
-	// with the v8 6.5 the GC does not release WeakRefs so fast if you pass them to a method
-	// that's why we are making the call to the addWeakEventListener in a closure so that the WeakRef will be easier released
-	(function () {
-		addWeakEventListener(sourceRef.get(), Observable.propertyChangeEvent, targetRef.get().onEvent, targetRef.get());
-	})();
-	forceGC();
+// export function test_listenerDoesNotRetainSource(done) {
+// 	const sourceRef = getSourceAsWeakRef();
+// 	const targetRef = getTargetAsWeakRef();
 
-	try {
-		TKUnit.assert(!sourceRef.get(), 'Source should be released after GC');
-		done(null);
-	} catch (e) {
-		done(e);
-	}
-}
+// 	// with the v8 6.5 the GC does not release WeakRefs so fast if you pass them to a method
+// 	// that's why we are making the call to the addWeakEventListener in a closure so that the WeakRef will be easier released
+// 	(function () {
+// 		addWeakEventListener(sourceRef.get(), Observable.propertyChangeEvent, targetRef.get().onEvent, targetRef.get());
+// 	})();
+// 	forceGC();
+
+// 	try {
+// 		TKUnit.assert(!sourceRef.get(), 'Source should be released after GC');
+// 		done(null);
+// 	} catch (e) {
+// 		done(e);
+// 	}
+// }
 
 export function test_handlerIsDetached_WhenAllListenersAreRemoved() {
 	const source = new Observable();
