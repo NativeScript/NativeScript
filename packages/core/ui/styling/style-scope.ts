@@ -92,13 +92,19 @@ class CSSSource {
 		if (typeof cssOrAst === 'string') {
 			// raw-loader
 			return CSSSource.fromSource(cssOrAst, keyframes, fileName);
-		} else if (typeof cssOrAst === 'object' && cssOrAst.type === 'stylesheet' && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
-			// css-loader
-			return CSSSource.fromAST(cssOrAst, keyframes, fileName);
-		} else {
-			// css2json-loader
-			return CSSSource.fromSource(cssOrAst.toString(), keyframes, fileName);
+		} else if (typeof cssOrAst === 'object') {
+			if (cssOrAst.default) {
+				cssOrAst = cssOrAst.default;
+			}
+
+			if (cssOrAst.type === 'stylesheet' && cssOrAst.stylesheet && cssOrAst.stylesheet.rules) {
+				// css-loader
+				return CSSSource.fromAST(cssOrAst, keyframes, fileName);
+			}
 		}
+
+		// css2json-loader
+		return CSSSource.fromSource(cssOrAst.toString(), keyframes, fileName);
 	}
 
 	public static fromURI(uri: string, keyframes: KeyframesMap): CSSSource {
