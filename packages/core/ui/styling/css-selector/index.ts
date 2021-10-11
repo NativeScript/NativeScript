@@ -1,4 +1,5 @@
 import '../../../globals';
+import { isCssVariable } from '../../core/properties';
 import { isNullOrUndefined } from '../../../utils/types';
 
 import * as cssParser from '../../../css';
@@ -523,7 +524,7 @@ export function fromAstNodes(astRules: cssParser.Node[]): RuleSet[] {
 }
 
 function createDeclaration(decl: cssParser.Declaration): any {
-	return { property: decl.property.toLowerCase(), value: decl.value };
+	return { property: isCssVariable(decl.property) ? decl.property : decl.property.toLowerCase(), value: decl.value };
 }
 
 function createSimpleSelectorFromAst(ast: parser.SimpleSelector): SimpleSelector {

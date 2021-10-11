@@ -1,3 +1,23 @@
+## [8.1.4](https://github.com/NativeScript/NativeScript/compare/8.1.3-core...8.1.4) (2021-10-09)
+
+
+### Bug Fixes
+
+* **android:** StringIndexOutOfBoundsException with invalid drawables ([#9563](https://github.com/NativeScript/NativeScript/issues/9563)) ([8e76bbe](https://github.com/NativeScript/NativeScript/commit/8e76bbe2515c5c743d3db30a940ccb8040314bea))
+* background parsing color [#9559](https://github.com/NativeScript/NativeScript/issues/9559) ([#9560](https://github.com/NativeScript/NativeScript/issues/9560)) ([3e21748](https://github.com/NativeScript/NativeScript/commit/3e21748af4dcf76fec3822b4d5e9c844794eda1d))
+* **ios:** ActionBar flat property using new appearance api for iOS 15 ([#9558](https://github.com/NativeScript/NativeScript/issues/9558)) ([183b4d4](https://github.com/NativeScript/NativeScript/commit/183b4d4b10a4ec7f9527e5373c8ce723c3db0c3e))
+* **ios:** TextView respect editable binding ([#9589](https://github.com/NativeScript/NativeScript/issues/9589)) ([2b2ce37](https://github.com/NativeScript/NativeScript/commit/2b2ce377e6d7bd33de3fd8df9482772a650b75b5))
+* **ios:** replace autofill string in textfield ([#9555](https://github.com/NativeScript/NativeScript/issues/9555)) ([889f6d7](https://github.com/NativeScript/NativeScript/commit/889f6d73cf8bdc080c54387708562d00c2684e9b))
+* **style:** CSS variables should be case-sensitive. ([#9603](https://github.com/NativeScript/NativeScript/issues/9603)) ([02aa0f6](https://github.com/NativeScript/NativeScript/commit/02aa0f652a5637b089a8894f6635462073715205))
+
+
+### Features
+
+* **android** openFile dialog title ([#9600](https://github.com/NativeScript/NativeScript/issues/9600)) ([77d2533](https://github.com/NativeScript/NativeScript/commit/77d253379802487007c138ca025ac21f9bece002))
+* **text:** add css text-align justify ([#9573](https://github.com/NativeScript/NativeScript/issues/9573)) ([1de5295](https://github.com/NativeScript/NativeScript/commit/1de5295ad980b394460de7d9d4b884e5a3b5a679))
+
+
+
 ## [8.1.3](https://github.com/NativeScript/NativeScript/compare/8.1.2-core...8.1.3) (2021-09-18)
 
 
