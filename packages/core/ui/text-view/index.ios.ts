@@ -134,7 +134,7 @@ export class TextView extends TextViewBaseCommon {
 			this.showText();
 		}
 
-		return true;
+		return this.editable;
 	}
 
 	public textViewDidBeginEditing(textView: UITextView): void {
