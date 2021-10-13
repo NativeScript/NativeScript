@@ -15,7 +15,7 @@ export interface ComponentModule {
 	exports: any;
 }
 
-const legacyShortBarrels = [
+const legacyShortBarrels = __UI_USE_EXTERNAL_RENDERER__?[]:[
 	'text/formatted-string',
 	'text/span',
 	'ui/text-base/formatted-string',
