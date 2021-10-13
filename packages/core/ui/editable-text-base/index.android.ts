@@ -143,8 +143,6 @@ function initializeEditTextListeners(): void {
 	EditTextListeners = EditTextListenersImpl;
 }
 
-let apiLevel: number;
-
 export abstract class EditableTextBase extends EditableTextBaseCommon {
 	/* tslint:disable */
 	_dirtyTextAccumulator: string;
@@ -164,9 +162,6 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	public createNativeView() {
-		if (!apiLevel) {
-			apiLevel = sdkVersion();
-		}
 		return new android.widget.EditText(this._context);
 	}
 
@@ -308,7 +303,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 	}
 
 	[autofillTypeProperty.setNative](value: CoreTypes.AutofillType) {
-		if (apiLevel < 26) {
+		if (sdkVersion() < 26) {
 			return;
 		}
 		let newOptions;
